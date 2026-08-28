@@ -3478,6 +3478,74 @@ runs in **Gate 2** (`scripts/integration.sh:113`), not Gate 1 (`scripts/precheck
 redraw must re-run Task 7 by hand, and a feature that regenerates and ships will not learn otherwise
 until promotion.
 
+**REVIEWER A (the code pass) — five MAJOR findings, all acted on, and the sharpest was about the
+SUITE rather than the builder.**
+
+- **M1 — the fabric join, the single most consequential decision in this builder, had NOT ONE
+  assertion.** Reviewer A reverted the builder to the resolved-only sheet the join exists to
+  prevent — all 40 roads and 39 of the 47 settlements gone — and the suite stayed **25/25 green**.
+  The only red was the byte-comparison against an artifact the same builder generates, and a
+  staleness check says "the file matches the code", never "the code is right". Three JOIN tests now
+  read the drawn markup: settlement dots per sheet == the fabric's settlements, road pairs ==
+  the fabric's roads, roster totals 47 and 40, names from the resolved layer, and all three branches
+  of the derived road weight exercised ({trunk 6, spur 14, track 20}). Mutation-proven: dropping the
+  roads reds 3, reverting the settlements reds 2.
+  - Writing that test found a second bug in the test itself: an unqualified `<circle>` count read
+    **8 settlements on Rimewall Cap, which has none** — the pFlat and pAsh pattern tiles draw dots
+    as circles. The settlement layer now carries `class="town"` so it is nameable.
+- **M2 — four gate arms had no firing case, and the suite header claimed they all did.** Deleting
+  `checkLabels`, `checkGlyphSizes`, `checkGlyphCoverage` or the `hatchFallback` counter each left the
+  suite green. The `checkLabels` one was the sharpest because the comment directly above it says
+  "without them a name can vanish with the gate green". All four have firing cases now, each watched
+  red then green. `checkGlyphSizes` needed a `glyphSizePx` override to be demonstrable at all — the
+  same discipline as `legendTier` and `contentRoot`, and nothing on the shipped path passes one.
+- **M3 — G-BIOME-INK's per-sheet check is circular in one direction, and the comment claimed it was
+  not.** The legend loop draws a swatch for every row it emits, so `emitted ⊆ painted` by
+  construction and "every legend row is a texture the canvas carries" can never fail. Proven on an
+  empty-zones fixture: zero regions on the canvas, 25 rows emitted, gate silent. The comment now
+  names which half is live (`referenced → emitted`, plus the tier half — both mutation-proven) and
+  which is inherited decoration.
+- **M4 — BAKING THE HATCH HAD CHANGED THE DRAWING, and this is the finding worth carrying forward.**
+  `texture-bake.mjs`'s `put()` CLIPPED any tile pixel at `x >= w` or `y >= h`. A tile is the unit
+  cell of a REPEATING pattern, so the pixel at `x === w` is the next tile's `x === 0` — which is what
+  the vector `<pattern>` draws there. Clipping it left a gap at every tile join: measured, the
+  diagonal hatches lost **25% of pReportedSworn's ink, 17% of pReportedHearsay's, 12.5% of
+  pReportedInferred's** — most from the densest and least from the sparsest, compressing exactly the
+  sworn > hearsay > inferred register the three densities exist to encode, and the field read as
+  dashes beside a legend swatch (still a live `<pattern>`) drawing unbroken diagonals. `put()` now
+  WRAPS. Measured effect: 8 of the 25 tile recipes gain their seam pixel (pIce, pRim, pRock, pKarst
+  and all four reported hatches); the other 17 are byte-identical. **This is the one part of the task
+  that re-baselines existing lock hashes** — 14 rows, exactly the baked sheets (13 continents +
+  `synthetic-density`), with atlas/fabric/overlay untouched because they do not bake.
+- **M5 — "103 landform marks drawn" was published with no denominator.** 72% of the resolved
+  instances and 46% of the named landforms carry `at: null` and can never be placed; on Wealdmarch
+  266 of 382 candidates have no position. `dropped 0` was true and "nothing vanished" was not, because
+  the filter sits UPSTREAM of the accounting `dropped` belongs to. The note is now a census that
+  ACCOUNTS — drawn + no position + no glyph family = every candidate, asserted on all thirteen — and
+  the storybook card carries the denominator too. A related upstream hole was closed while there: a
+  surveyed region whose `labelAt` is unusable was filtered out before `placeLabels` saw it, landing in
+  none of checkLabels' three buckets; it is a reported problem now.
+- **m1 — twelve of the thirteen art-manifest blocks said "this sheet is the basin's resolved-backed
+  successor".** Only Wealdmarch is. Quillreef is not.
+- **m2 — corrupt geometry was discarded in silence** while a missing `FILL_FOR` entry was a loud
+  problem: an `Infinity` in a ring drew the polygon one point short at zero problems, and 48 KB of
+  roads vanished from a sheet with nothing reported. Both report now.
+- **m3 — an unknown provenance collapsed to the generic hatch silently.** 0 of 120 take it today; the
+  day one does, the sheet is red rather than quietly flattening the honest-frontier gradient.
+- Nits: `MIN_MAP_PX` is dead on today's thirteen (smallest map edge 644 px) and now says so instead
+  of reading as a proven bound; a `17 <= 18` assertion that followed two lines pinning both numbers
+  was replaced by the fact worth pinning (the ceiling did not move); and an `A || B` river assertion
+  became the single condition it meant.
+
+**What reviewer A CONFIRMED, each with its own measurement**: the scale rule is honest (Quillreef
+draws at the 24 px/km cap into a sheet that shrinks around it — 93.8% linear, 88.1% by area; worst in
+the roster 86.0%); the never-throw contract holds across **18** constructed degenerate documents and
+arguments; 302 placed labels, **0** non-numeric `data-rank`, and deleting the builder-side guard was
+correct because the 516 label ids contain no duplicates; the roster is 17 against a ceiling of 18;
+**0 of 120** reported regions take the hatch fallback; the raster claim reproduces independently
+(driftholt 0.655 s baked vs **2.289 s** live, 71.4% of the cost); and the fabric join draws exactly
+47 settlements and 40 roads with nothing double-drawn or dropped.
+
 **FILED, NOT FIXED (this task):**
 
 1. `repro-attempt3.sh`'s `e-lane-coldreach` block was **stale at `e5600ce`**, so the handoff premise
@@ -3760,11 +3828,30 @@ would be a rule that can no longer fail.
    swatch, so `referenced` ⊇ `emitted` by construction and the arm can only fire at a lower tier.
    The `legendTier` parameter is what makes it demonstrable at all; nothing on the shipped path
    passes one.
-3. **`maxRasterSeconds` now covers 17 sheets × 3 runs in one wall-clock test** (`render-sheet.test
-   .mjs`), which is 51 rasterisations in a Gate-2-only, load-sensitive assertion — filed-not-fixed
-   item 4 of the `bc393a4` review, now four times bigger. The margin got much better (worst 0.667 s
-   of 2 s, was 2.219 s) but the harness problem is unchanged.
+3. ~~**`maxRasterSeconds` now covers 17 sheets × 3 runs**~~ — **FIXED, not filed.** It went from a
+   1-in-8 flake to an EVERY-RUN red: 51 rasterisations instead of 12, overlapping
+   `raster.test.mjs`'s deliberate full-suite child for the whole of their combined duration.
+   Measured both ways: `synthetic-density` rasterises in **0.708 s** alone and **2.10-2.64 s**
+   alongside that child, against the 2 s cap — and 0.708 s is byte-for-byte the 0.706 s this
+   document already recorded before Task 8, so the bake change is NOT the cause. The cap was not
+   touched and no sheet was excluded: `tools/mapforge/tests/helpers/suite-lock.mjs` is one atomic
+   `mkdir` lock held by the tracked-tree guard across its child run and by the budget test across
+   its measurement, so the wall clock is never read while this harness is deliberately loading the
+   box. The child never takes it (it would deadlock against its own parent — measured the hard way,
+   the first draft hung both files past two minutes) and does not assert the budget anyway.
+   Everything else in both files still runs in parallel. Both files together: **15/15**.
 4. **The baked underlay paints its whole bounding box opaque `parchmentDeep`**, so the sea inside a
    continent's bbox is a slightly different shade from the sea in the neatline margin. Pre-existing
    `bakedUnderlay` behaviour, visible on `synthetic-density.svg` too; it reads as a map field rather
    than as an error, but it is a deliberate-looking edge nobody decided on.
+5. **`pReported` and `pReportedSworn` are byte-identical live patterns** (`draft.mjs` — both 7x7,
+   `M0,7 L7,0`, stroke 0.45, opacity 0.5), so the legend carries two rows a reader cannot tell apart;
+   and `TILE_RECIPES.pReported`'s opacity is **0.35** where the vector uses 0.5 — the two
+   transcriptions have already drifted on one entry. No committed sheet is affected, because
+   `pReported` is the fallback and 0 of 120 regions take it. Pre-existing; found by reviewer A.
+6. **The spec's third zoom tier has nowhere to go.** The design declares "world 3, continent 8,
+   region 10", but `RANKS.village` is 9, no sheet in the roster declares `maxLabelRank: 10`, and all
+   **32** village names land in `aboveTier` on every sheet — named places on no chart in the roster.
+   With `maxSheets` at 18 against a roster of 17 there is one slot, so a per-continent region tier is
+   structurally unbuildable under the committed ceiling. The storybook cards disclose the deferral
+   per sheet; nothing records the tier itself as open. Found by reviewer A.

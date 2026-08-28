@@ -8,6 +8,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SHEETS, parseArgs } from "../render-sheet.mjs";
 import { inkStats } from "../lib/png-ink.mjs";
+import { acquireHeavyLock, releaseHeavyLock } from "./helpers/suite-lock.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../../..");
@@ -218,6 +219,20 @@ test("BUDGET: every committed sheet rasterises inside maxRasterSeconds at raster
   const cap = budgets.sheets.maxRasterSeconds;
   const dir = mkdtempSync(join(tmpdir(), "sheet-raster-"));
   const slow = [];
+  // The budget is a claim about the RENDERER, not about what a box this suite
+  // is loading on purpose happened to manage. raster.test.mjs spawns a second
+  // full mapforge suite by design; this waits it out. Measured: `synthetic`
+  // reads 0.708 s alone and 2.10-2.64 s alongside that child, against a 2 s
+  // cap — a 1-in-8 flake at four sheets that became every-run at seventeen.
+  // The cap is untouched and every sheet is still measured on its committed
+  // bytes at the ship width, best of three.
+  //
+  // The CHILD must never take this lock: raster.test.mjs holds it while it
+  // waits for that child, so a child that waited for it would deadlock the
+  // suite. Measured the hard way — the first draft hung both files past two
+  // minutes. The child does not assert the budget anyway.
+  const isChild = !!process.env.MAPFORGE_TRACKED_TREE_CHILD;
+  if (!isChild) acquireHeavyLock();
   for (const [id, sheet] of Object.entries(SHEETS)) {
     const out = join(dir, `${id}.png`);
     let best = Infinity;
@@ -257,10 +272,11 @@ test("BUDGET: every committed sheet rasterises inside maxRasterSeconds at raster
   // The child exists to detect writes into the tracked maps directory, not to
   // measure performance, and timing there is what made review A's 1-in-8 red
   // possible. Everything above still runs; only the CLAIM is withheld.
-  if (process.env.MAPFORGE_TRACKED_TREE_CHILD) {
+  if (isChild) {
     t.diagnostic(`G-RASTER-BUDGET not asserted in the nested child run: ${slow.length} over cap`);
     return;
   }
+  releaseHeavyLock();
   assert.deepEqual(slow, [], `G-RASTER-BUDGET: over ${cap} s at ${width} px: ${slow.join(", ")}`);
 });
 

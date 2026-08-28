@@ -522,8 +522,20 @@ function tileFor(patternId) {
     rgba[i * 4 + 2] = bb;
     rgba[i * 4 + 3] = 255;
   }
-  const put = (x, y) => {
-    if (x < 0 || y < 0 || x >= r.w || y >= r.h) return;
+  // WRAP, never clip. A tile is the unit cell of a REPEATING pattern, so a
+  // segment endpoint at x === w is the next tile's x === 0, and that is the
+  // pixel the vector <pattern> actually draws there. Clipping it instead left
+  // a 2 px gap at EVERY tile join, which the adversarial review measured on
+  // the frontier hatches: 8 segment pixels, 6 inside the tile, 2 discarded on
+  // pReported and pReportedSworn; 12/10 on pReportedHearsay; 16/14 on
+  // pReportedInferred. That is 25% / 17% / 12.5% of the ink — MOST from the
+  // densest hatch and least from the sparsest, so the clip was compressing
+  // exactly the sworn > hearsay > inferred register the three densities exist
+  // to encode, and the baked field read as dashes beside a legend swatch (a
+  // live <pattern>) drawing unbroken diagonals.
+  const put = (rawX, rawY) => {
+    const x = ((rawX % r.w) + r.w) % r.w;
+    const y = ((rawY % r.h) + r.h) % r.h;
     const i = (y * r.w + x) * 4,
       a = r.opacity;
     rgba[i] = br + (ir - br) * a;

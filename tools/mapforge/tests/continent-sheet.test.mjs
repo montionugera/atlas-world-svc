@@ -9,6 +9,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
+import * as require_glyphs from "../lib/glyphs.mjs";
+import { C } from "../lib/draft.mjs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -98,8 +100,10 @@ test("every continent sheet is registered at the continent zoom tier", () => {
 // ceiling would otherwise pass this silently.
 test("the roster closes at 17 — 4 standing sheets + 13 continents, inside a ceiling of 18", () => {
   assert.equal(Object.keys(SHEETS).length, 17);
-  assert.equal(budgets().sheets.maxSheets, 18);
-  assert.ok(Object.keys(SHEETS).length <= budgets().sheets.maxSheets);
+  // The ceiling is asserted as a SEPARATE fact, not as `17 <= 18` — that
+  // comparison follows two lines that already pin both numbers and so cannot
+  // fail. What is worth pinning is that the ceiling did not move to make room.
+  assert.equal(budgets().sheets.maxSheets, 18, "the sheet ceiling moved — E-C10 derived 18 counting a basin sheet ruling 8 retired");
   assert.ok(SHEETS.cluster1 === undefined, "the basin sheet came back as a separate entry — ruling 8 says it is wealdmarch");
 });
 
@@ -209,7 +213,10 @@ test("RULING 8: the basin's subject keys are drawn on wealdmarch, from the resol
   const { svg, notes } = buildContinentSheet({ repoRoot: ROOT, continent: "c02" });
   assert.ok(doc.coastline && doc.river && doc.saltmire && doc.terrainPatches.length > 0);
   assert.ok(/stroke-width="1.6"/.test(svg), "the coast is not drawn");
-  assert.ok(svg.includes(`stroke="#3a6b7a"`) || /stroke-width="2.2"/.test(svg), "the river is not drawn");
+  // ONE condition, not two OR'd together — an alternation of two sufficient
+  // conditions is weaker than either alone. The river is the only 2.2-wide
+  // stroke this sheet draws, in C.sea.
+  assert.match(svg, new RegExp(`stroke="${C.sea}" stroke-width="2.2"`), "the river is not drawn");
   assert.ok(/url\(#pMire\)/.test(svg), "the saltmire is not drawn");
   assert.ok(/fill-opacity="0.6"/.test(svg), "no terrain patch is drawn");
   assert.equal(doc.iceEdge, null, "an ice edge appeared in the resolved doc — decide what the sheet should say about it");
@@ -399,4 +406,161 @@ test("the reported hatch is in the baked underlay, not in a live pattern fill", 
   assert.deepEqual(liveHatch, [], `${liveHatch.length} live reported-hatch fills — the raster budget breaks at 2000 px`);
   assert.ok(/<rect [^>]*fill="url\(#pReportedHearsay\)"/.test(svg), "the legend swatch went with it — the reader has no key");
   assert.ok(/<image href="data:image\/png;base64,/.test(svg), "there is no baked underlay at all");
+});
+
+// ── THE FABRIC JOIN, ASSERTED ─────────────────────────────────────────────
+// Adversarial review, MAJOR 1: reverting the builder to the resolved-only
+// sheet the join was invented to prevent — all 40 roads and 39 of the 47
+// settlements gone — left this suite 25/25 green. The ONLY red was the
+// byte-comparison against an artifact the same builder generates, and a
+// staleness check says "the file matches the code", never "the code is right".
+// These read the drawn markup and the roster totals instead.
+test("JOIN: every fabric settlement and road reaches the sheet, and the roster sums to the world", () => {
+  let dots = 0, roadPairs = 0, settlements = 0, roads = 0;
+  for (const s of CONTINENT_SHEETS) {
+    const nn = s.continent.slice(1);
+    const fab = fabricDoc(nn);
+    const { svg } = buildContinentSheet({ repoRoot: ROOT, continent: s.continent });
+    // One <circle> per settlement — the only circles this sheet draws.
+    // class="town", not a bare <circle> count: the pFlat and pAsh pattern tiles
+    // draw dots as circles too, so an unqualified count reads texture specks as
+    // settlements — it read 8 "settlements" on a landmass that has none.
+    const circles = (svg.match(/<circle class="town"/g) ?? []).length;
+    assert.equal(circles, fab.settlements.length, `${s.id}: ${circles} settlement dots for ${fab.settlements.length} fabric settlements`);
+    // Each road is a casing path plus an ink path, both stroke-linecap round.
+    const casings = (svg.match(/stroke-linecap="round"/g) ?? []).length;
+    assert.equal(casings, fab.roads.length * 2, `${s.id}: ${casings / 2} roads drawn for ${fab.roads.length} in the fabric`);
+    dots += circles; roadPairs += casings / 2;
+    settlements += fab.settlements.length; roads += fab.roads.length;
+  }
+  // The world totals, derived from the fabric rather than retyped. The whole
+  // reason the join exists is that the resolved docs carry 0 roads and only
+  // the civil-pinned towns; if these ever equal those, the join has reverted.
+  assert.equal(dots, settlements, "settlement dots across the roster");
+  assert.equal(roadPairs, roads, "roads across the roster");
+  assert.ok(dots >= 40 && roadPairs >= 30, `the roster drew only ${dots} settlements and ${roadPairs} roads — has the builder gone back to the resolved doc?`);
+  const resolvedTowns = CONTINENT_SHEETS.reduce((n, s) => n + resolvedDoc(s.continent.slice(1)).towns.length, 0);
+  const resolvedRoads = CONTINENT_SHEETS.reduce((n, s) => n + (resolvedDoc(s.continent.slice(1)).roads ?? []).length, 0);
+  assert.ok(dots > resolvedTowns, `${dots} drawn vs ${resolvedTowns} in the resolved docs — the fabric join is not doing anything`);
+  assert.equal(resolvedRoads, 0, "the resolved docs grew roads — re-check which layer this sheet should read");
+});
+
+test("JOIN: a settlement's NAME comes from the resolved layer, its position from the fabric", () => {
+  const { svg } = buildContinentSheet({ repoRoot: ROOT, continent: "c02" });
+  const named = resolvedDoc("02").towns.filter((t) => t.name);
+  assert.ok(named.length > 0, "no resolved town carries a name — this test is vacuous");
+  for (const t of named)
+    assert.ok(svg.includes(`>${t.name}<`), `${t.id}: the resolved name "${t.name}" is not on the sheet`);
+  // …and a settlement the resolved layer has NOT named still draws, under the
+  // fabric's own title, rather than being dropped for want of a name.
+  const fab = fabricDoc("02");
+  const unnamed = fab.settlements.filter((s) => !named.some((t) => t.id === s.id));
+  assert.ok(unnamed.length > 0, "every fabric settlement is resolved-named — this half is vacuous");
+});
+
+test("JOIN: the derived road weight uses all three classes and reads real endpoint ranks", () => {
+  // capital -> trunk, hub -> spur, else track. If a branch is unreachable the
+  // rule is decoration; measured across the roster all three fire.
+  const widths = { "3.2": 0, "2.2": 0, "1.5": 0 };
+  for (const s of CONTINENT_SHEETS) {
+    const { svg } = buildContinentSheet({ repoRoot: ROOT, continent: s.continent });
+    for (const m of svg.matchAll(/stroke-width="([\d.]+)" stroke-linecap="round"/g))
+      if (m[1] in widths) widths[m[1]] += 1;
+  }
+  for (const [w, n] of Object.entries(widths))
+    assert.ok(n > 0, `road weight ${w} is never drawn — a branch of the derivation is unreachable: ${JSON.stringify(widths)}`);
+});
+
+// ── THE FOUR GATE ARMS THE REVIEW FOUND UNPROVEN ─────────────────────────
+// Deleting each of these from the builder left the suite green. They have
+// firing cases now, and each was watched red with the arm removed.
+test("G-LABEL fires: two labels forced onto the same point cannot both be placed", () => {
+  const doc = resolvedDoc("02");
+  // 60 names stacked on one coordinate — no displacement ladder can clear it,
+  // so placeLabels must drop some and checkLabels must say so.
+  const at = doc.zones.find((z) => z.labelAt).labelAt;
+  const landmarks = Array.from({ length: 60 }, (_, i) => ({
+    id: `lm-stack-${i}`, name: `Stacked Name ${i}`, at, type: null, glyph: null,
+  }));
+  const out = buildIn(fixtureRoot({ resolved: { ...doc, landmarks, instances: [], dungeons: [], towns: [] } }));
+  assert.match(out.problems.join("\n"), /G-LABEL: \d+ labels dropped at tier 8/, out.problems.join(" | "));
+});
+
+// The hole UPSTREAM of the accounting rule: a name filtered out before
+// placeLabels is asked for it is in none of the three buckets, so checkLabels
+// cannot see it. The builder reports it instead.
+test("a surveyed region whose labelAt is unusable is REPORTED, not quietly unnamed", () => {
+  const doc = resolvedDoc("02");
+  const zones = doc.zones.map((z) => (z.survey === "surveyed" ? { ...z, labelAt: [z.labelAt[0], "x"] } : z));
+  const out = buildIn(fixtureRoot({ resolved: { ...doc, zones } }));
+  assert.match(
+    out.problems.join("\n"),
+    /surveyed region "c02\/r\d+" has no usable labelAt/,
+    out.problems.join(" | "),
+  );
+});
+
+test("G-GLYPH size fires: a mark under the family-identity floor is reported", () => {
+  const { GLYPH_SIZE } = require_glyphs;
+  // The BUILDER's own gate, driven through the size override — not the helper
+  // called directly, which would prove the helper and not the wiring. Deleting
+  // the `checkGlyphSizes(...)` line from continent-sheet.mjs reds this.
+  const shrunk = buildContinentSheet({ repoRoot: ROOT, continent: "c02", glyphSizePx: GLYPH_SIZE.generic - 1 });
+  assert.ok(shrunk.problems.length > 0, "a mark below the legibility floor was drawn with no problem reported");
+  assert.match(shrunk.problems.join("\n"), /G-GLYPH: glyph "[^"]+" is placed at [\d.]+ px, under the \d+ px floor/);
+  assert.equal(shrunk.svg, "", "a red sheet must not produce bytes");
+  // …and the shipped sizes clear it: the committed sheets are green, and every
+  // drawn mark is at or above the family-identity minimum.
+  for (const s of CONTINENT_SHEETS) {
+    const { svg, problems } = buildContinentSheet({ repoRoot: ROOT, continent: s.continent });
+    assert.deepEqual(problems, [], s.id);
+    for (const m of svg.matchAll(/<use href="#[^"]+" x="[-\d.]+" y="[-\d.]+" width="([\d.]+)"/g))
+      assert.ok(Number(m[1]) >= GLYPH_SIZE.min, `${s.id}: a mark at ${m[1]} px is under the ${GLYPH_SIZE.min} px floor`);
+  }
+});
+
+test("G-GLYPH coverage fires: a lexicon row naming a family that does not exist", () => {
+  const doc = resolvedDoc("02");
+  const lex = JSON.parse(readFileSync(join(CONTENT, "world/lexicon/landforms.json"), "utf8"));
+  const type = doc.landmarks.find((l) => l.type).type;
+  const broken = lex.map((r) => (r.id === type ? { ...r, glyph: "g-not-a-family" } : r));
+  const dir = fixtureRoot({ resolved: doc });
+  writeFileSync(join(dir, "world/lexicon/landforms.json"), JSON.stringify(broken));
+  const out = buildIn(dir);
+  assert.match(out.problems.join("\n"), /G-GLYPH: type "[^"]+" has \d+ named instances but no glyph family/, out.problems.join(" | "));
+});
+
+test("the generic-hatch fallback is a PROBLEM, not a silent flattening of the frontier", () => {
+  const doc = resolvedDoc("02");
+  const zones = doc.zones.map((z) => (z.survey === "reported" ? { ...z, provenance: "whispered" } : z));
+  const out = buildIn(fixtureRoot({ resolved: { ...doc, zones } }));
+  assert.match(
+    out.problems.join("\n"),
+    /20 reported region\(s\) carry a provenance the frontier table does not know/,
+    out.problems.join(" | "),
+  );
+});
+
+test("corrupt geometry is REPORTED, not filtered out in silence", () => {
+  const doc = resolvedDoc("02");
+  const zones = doc.zones.map((z, i) => (i === 0 ? { ...z, polygon: [[Infinity, 1], ...z.polygon] } : z));
+  assert.match(buildIn(fixtureRoot({ resolved: { ...doc, zones } })).problems.join("\n"), /drawn point\(s\) are not a finite/);
+  const fab = fabricDoc("02");
+  const roads = fab.roads.map((r, i) => (i === 0 ? { ...r, points: [[NaN, NaN]] } : r));
+  assert.match(
+    buildIn(fixtureRoot({ resolved: doc, fabric: { ...fab, roads } })).problems.join("\n"),
+    /fabric roads have fewer than 2 usable points/,
+  );
+});
+
+test("the mark census ACCOUNTS: drawn + no position + no glyph family = every candidate", () => {
+  for (const s of CONTINENT_SHEETS) {
+    const { notes } = buildContinentSheet({ repoRoot: ROOT, continent: s.continent });
+    const m = /marks (\d+) drawn of (\d+) candidates · (\d+) carry no position[^·]*· (\d+) carry no glyph/.exec(notes.join("\n"));
+    assert.ok(m, `${s.id}: the mark census note did not parse: ${notes.join(" | ")}`);
+    assert.equal(Number(m[1]) + Number(m[3]) + Number(m[4]), Number(m[2]), `${s.id}: the census does not account`);
+    // The denominator is the point: 72% of the resolved instances carry no
+    // position, so a bare "103 marks drawn" reads as completeness.
+    assert.ok(Number(m[3]) > 0, `${s.id}: no candidate lacks a position — has the resolved doc been filled in?`);
+  }
 });

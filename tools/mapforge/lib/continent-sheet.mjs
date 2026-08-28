@@ -71,7 +71,12 @@ export const CONTINENT_SHEETS = Object.freeze([
 // floor is right and the frame was wrong.
 const MAP_PX = 1400;
 // A sheet narrower than this stops being a sheet: the legend needs one column
-// and the title needs somewhere to sit.
+// and the title needs somewhere to sit. DEAD ON TODAY'S THIRTEEN and said so
+// deliberately — the smallest map-area edge in the roster is 644 px
+// (ashen-spar, loamspit), so the clamp never binds. It stays because the
+// alternative is a 40 km chain at some future scale rendering as a strip too
+// narrow to carry its own legend, and it is cheap; it is NOT a rule anyone
+// should read as proven.
 const MIN_MAP_PX = 460;
 // The NEATLINE MARGIN — clear px between the drawn extent and the edge of the
 // map area, on all four sides. It is not decoration and it is not a fudge: the
@@ -117,6 +122,8 @@ function bounds(rings) {
 
 const isPt = (p) => Array.isArray(p) && Number.isFinite(p[0]) && Number.isFinite(p[1]);
 const ring3 = (r) => Array.isArray(r) && r.filter(isPt).length >= 3;
+/** How many points of a list this sheet cannot place. */
+const unusable = (pts) => (Array.isArray(pts) ? pts.filter((p) => !isPt(p)).length : 0);
 
 /**
  * A ROAD'S WEIGHT IS DERIVED, NOT DECLARED. content/world/fabric/continent-NN
@@ -144,9 +151,20 @@ function roadWeight(road, rankById) {
  *   `fixture`.
  * @param legendTier   overrides the committed tier 3, for the same reason.
  */
-export function buildContinentSheet({ repoRoot, continent, contentRoot = null, legendTier: legendTierArg = null } = {}) {
+export function buildContinentSheet({
+  repoRoot,
+  continent,
+  contentRoot = null,
+  legendTier: legendTierArg = null,
+  // The size every landform mark is drawn at, overriding GLYPH_SIZE. Exists for
+  // the same reason `legendTier` and `contentRoot` do: with the size a constant
+  // at or above the floor, checkGlyphSizes can never report, and deleting its
+  // call left the suite green — a gate that is never handed anything wrong
+  // cannot be shown to work. Nothing on the shipped path passes it.
+  glyphSizePx = null,
+} = {}) {
   try {
-    return build({ repoRoot, continent, contentRoot, legendTierArg });
+    return build({ repoRoot, continent, contentRoot, legendTierArg, glyphSizePx });
   } catch (e) {
     // The last line of the never-throw contract. Every degenerate DOCUMENT is
     // answered in-band below and none of them reaches here; what does reach
@@ -162,7 +180,7 @@ export function buildContinentSheet({ repoRoot, continent, contentRoot = null, l
   }
 }
 
-function build({ repoRoot, continent, contentRoot, legendTierArg }) {
+function build({ repoRoot, continent, contentRoot, legendTierArg, glyphSizePx = null }) {
   const problems = [];
   const notes = [];
   const root = contentRoot ?? join(repoRoot ?? ".", "content");
@@ -252,9 +270,17 @@ function build({ repoRoot, continent, contentRoot, legendTierArg }) {
       name: nameOfTown.get(s.id) ?? s.title ?? s.id,
     }));
   const rankById = new Map(settlements.map((s) => [s.id, s.rank]));
-  const roads = fabric.roads
-    .filter((rd) => rd && Array.isArray(rd.points) && rd.points.filter(isPt).length >= 2)
-    .map((rd) => ({ id: rd.id, points: rd.points.filter(isPt), weight: roadWeight(rd, rankById) }));
+  const usableRoads = fabric.roads.filter(
+    (rd) => rd && Array.isArray(rd.points) && rd.points.filter(isPt).length >= 2,
+  );
+  const droppedRoads = fabric.roads.length - usableRoads.length;
+  const roads = usableRoads.map((rd) => ({
+    id: rd.id,
+    points: rd.points.filter(isPt),
+    weight: roadWeight(rd, rankById),
+  }));
+  let badVertices = usableRoads.reduce((n, rd) => n + unusable(rd.points), 0);
+  let hatchFallback = 0;
 
   // ---- frame: fit the drawn extent, never re-centre per element -------------
   const b = bounds([world.coastline.points, ...world.zones.map((z) => z && z.polygon)]);
@@ -262,6 +288,13 @@ function build({ repoRoot, continent, contentRoot, legendTierArg }) {
     problems.push(`continent-sheet ${continent}: no finite km point to frame the sheet with`);
     return { svg: "", notes, problems };
   }
+  badVertices += unusable(world.coastline.points);
+  for (const z of world.zones) badVertices += unusable(z && z.polygon);
+  for (const tp of world.terrainPatches) badVertices += unusable(tp && tp.polygon);
+  if (world.river) badVertices += unusable(world.river.points);
+  if (world.iceEdge) badVertices += unusable(world.iceEdge.points);
+  if (world.saltmire) badVertices += unusable(world.saltmire.polygon);
+
   const spanX = b.maxX - b.minX || 1;
   const spanY = b.maxY - b.minY || 1;
   // ONE scale on both axes — a per-axis fit would stretch a coastline, which is
@@ -292,7 +325,6 @@ function build({ repoRoot, continent, contentRoot, legendTierArg }) {
   const reported = world.zones.filter((z) => z && z.survey === "reported");
   const local = (ringPts) => ringPts.filter(isPt).map(([x, y]) => [x - b.minX, y - b.minY]);
   const bakeRegions = [];
-  let hatchFallback = 0;
   for (const z of surveyed) {
     if (!ring3(z.polygon)) {
       problems.push(`continent-sheet ${continent}: surveyed region "${z.id}" has no usable polygon`);
@@ -335,13 +367,15 @@ function build({ repoRoot, continent, contentRoot, legendTierArg }) {
     );
 
   // ---- G-GLYPH -------------------------------------------------------------
+  const markPx = Number.isFinite(glyphSizePx) ? glyphSizePx : GLYPH_SIZE.min;
+  const heroPx = Number.isFinite(glyphSizePx) ? glyphSizePx : GLYPH_SIZE.preferred;
   const glyphInstances = [
     ...world.instances
       .filter((i) => i && i.glyph && isPt(i.at))
-      .map((i) => ({ id: i.id, glyph: i.glyph, at: i.at, size: GLYPH_SIZE.min })),
+      .map((i) => ({ id: i.id, glyph: i.glyph, at: i.at, size: markPx })),
     ...world.landmarks
       .filter((l) => l && l.glyph && isPt(l.at))
-      .map((l) => ({ id: l.id, glyph: l.glyph, at: l.at, size: GLYPH_SIZE.preferred })),
+      .map((l) => ({ id: l.id, glyph: l.glyph, at: l.at, size: heroPx })),
   ];
   const usedGlyphs = [...new Set(glyphInstances.map((g) => g.glyph))].sort();
   problems.push(...checkGlyphSizes({ instances: glyphInstances.map((g) => ({ id: g.glyph, size: g.size })) }));
@@ -364,6 +398,14 @@ function build({ repoRoot, continent, contentRoot, legendTierArg }) {
   const labels = [];
   for (const z of surveyed)
     if (isPt(z.labelAt)) labels.push({ id: z.id, text: z.name ?? z.id, rank: RANKS.region, at: z.labelAt });
+    else
+      // Not a drop and not above-tier — a name that never reached the placer at
+      // all, which is precisely the bucket checkLabels' accounting rule exists
+      // to make impossible. The pre-filter has to report or the rule has a hole
+      // upstream of itself.
+      problems.push(
+        `continent-sheet ${continent}: surveyed region "${z.id}" has no usable labelAt, so its name is never asked for and G-LABEL cannot account for it`,
+      );
   for (const s of settlements)
     labels.push({
       id: s.id,
@@ -476,9 +518,13 @@ function build({ repoRoot, continent, contentRoot, legendTierArg }) {
   for (const g of glyphInstances)
     body.push(glyphUse({ id: g.glyph, x: X(g.at[0]), y: Y(g.at[1]), size: g.size }));
   body.push("</g>");
+  // class="town" is not decoration: several <pattern> tiles (pFlat, pAsh) draw
+  // dots as <circle>, so "count the circles" cannot tell a settlement from a
+  // texture speck. The class makes the settlement layer nameable by the test
+  // that proves the fabric join is still doing its job.
   for (const s of settlements)
     body.push(
-      `<circle cx="${X(s.at[0])}" cy="${Y(s.at[1])}" r="${s.rank === "capital" ? 5 : s.rank === "hub" ? 3.5 : 2.2}" fill="${C.ink}"/>`,
+      `<circle class="town" cx="${X(s.at[0])}" cy="${Y(s.at[1])}" r="${s.rank === "capital" ? 5 : s.rank === "hub" ? 3.5 : 2.2}" fill="${C.ink}"/>`,
     );
   for (const p of placed) {
     if (p.leader)
@@ -523,11 +569,19 @@ function build({ repoRoot, continent, contentRoot, legendTierArg }) {
       problems.push(`G-GLYPH: sheet "${meta ? meta.id : continent}" emits <symbol id="${id}"> that nothing uses`);
 
   // ---- G-BIOME-INK ---------------------------------------------------------
-  // `referenced` is scanned out of the markup PLUS the biome fills the baked
-  // <image> paints, which no markup scan can see. `emitted` is the legend's own
-  // pattern set, so the rule is a real statement about this sheet: every
-  // texture on the canvas has a legend row a reader can look it up in, and
-  // every legend row is a texture the canvas actually carries.
+  // WHICH HALF OF THIS IS LIVE, stated rather than assumed. `referenced` is
+  // scanned out of the markup PLUS the biome and frontier tiles the baked
+  // <image> paints, which no markup scan can see; `emitted` is the legend's own
+  // pattern set. So `referenced -> emitted` ("every texture on the canvas has a
+  // legend row a reader can look it up in") is a REAL statement and fires — the
+  // legendTier case in continent-sheet.test.mjs proves it, naming the three
+  // frontier hatches. The converse is NOT: the legend loop draws a swatch for
+  // every row it emits, so `emitted` is a subset of `painted` by construction
+  // and "every legend row is a texture the canvas carries" can never fail here.
+  // The adversarial review proved it on an empty-zones fixture — nothing on the
+  // canvas, 25 rows emitted, gate silent. Saying so is the point; a rule that
+  // cannot fail is a defect, and this one is inherited from the legend design
+  // (synthetic-sheet.mjs records the same thing about itself), not introduced.
   const emitted = [...new Set(legendRows.map((r) => r.pattern))].sort();
   const painted = [...new Set([...body.join("\n").matchAll(/url\(#([^)"]+)\)/g)].map((m) => m[1]))];
   // The tile id a baked region actually paints — its explicit `fill` (the
@@ -545,12 +599,49 @@ function build({ repoRoot, continent, contentRoot, legendTierArg }) {
   const referenced = [...new Set([...painted, ...underlaid])].sort();
   problems.push(...checkBiomeInk({ emittedIds: emitted, referencedIds: referenced, legendTier }));
 
+  // A DEFECT IN THE GEOMETRY IS REPORTED, exactly as a missing FILL_FOR entry
+  // is. The builder used to filter a non-finite vertex out with `isPt` and say
+  // nothing, so a ring with an Infinity in it drew one point short and a road
+  // with NaN points vanished entirely, both at zero problems — the adversarial
+  // review measured 48 KB of roads disappearing in silence. Reporting table
+  // misses loudly while swallowing corrupt coordinates was the inconsistency.
+  if (badVertices)
+    problems.push(
+      `continent-sheet ${continent}: ${badVertices} drawn point(s) are not a finite [x, y] and were dropped — the shapes they belong to are drawn short`,
+    );
+  if (droppedRoads)
+    problems.push(
+      `continent-sheet ${continent}: ${droppedRoads} of ${fabric.roads.length} fabric roads have fewer than 2 usable points and are not drawn`,
+    );
+  // A provenance the frontier table does not know collapses to the generic
+  // `pReported` hatch, which is indistinguishable from the sworn one — the
+  // honest-frontier gradient silently flattened. Measured today: 0 of 120
+  // reported regions take it. The day one does, this says so instead of
+  // shipping a sheet whose hatch means less than the reader thinks.
+  if (hatchFallback)
+    problems.push(
+      `continent-sheet ${continent}: ${hatchFallback} reported region(s) carry a provenance the frontier table does not know, so they draw the generic hatch and their survey grade is not readable`,
+    );
+
   notes.push(`continent ${continent} · ${meta ? meta.title : "(unregistered)"}`);
   notes.push(
     `regions ${world.zones.length} surveyed ${surveyed.length} reported ${reported.length} (hatch fallback ${hatchFallback})`,
   );
+  // THE DENOMINATOR IS PART OF THE FIGURE. 72% of the resolved instances and
+  // 46% of the named landforms carry `at: null` and can never be placed, so a
+  // bare "103 marks drawn" reads as completeness. Both halves are stated here
+  // and on the storybook card.
+  // The three buckets ACCOUNT: drawn + no position + no glyph family = every
+  // candidate. An unaccounted remainder is how "103 marks" reads as complete.
+  const candidates = [...world.instances, ...world.landmarks].filter(Boolean);
+  const noPosition = candidates.filter((c) => !isPt(c.at)).length;
+  const noGlyph = candidates.filter((c) => isPt(c.at) && !c.glyph).length;
+  const placeableLandmarks = world.landmarks.filter((l) => l && isPt(l.at)).length;
   notes.push(
-    `instances ${glyphInstances.length} drawn of ${world.instances.length} · named ${world.landmarks.length} · settlements ${settlements.length} · roads ${roads.length}`,
+    `marks ${glyphInstances.length} drawn of ${candidates.length} candidates · ${noPosition} carry no position in the resolved doc · ${noGlyph} carry no glyph family`,
+  );
+  notes.push(
+    `named ${world.landmarks.length} (${placeableLandmarks} placeable) · settlements ${settlements.length} · roads ${roads.length} drawn of ${fabric.roads.length}`,
   );
   notes.push(
     `labels ${asked} asked · ${placed.length} placed · dropped ${dropped.length} · above tier ${aboveTier.length}`,

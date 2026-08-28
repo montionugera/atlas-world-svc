@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { rasterize } from "../lib/raster.mjs";
+import { acquireHeavyLock, releaseHeavyLock } from "./helpers/suite-lock.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 // Plan A Task 11: was fixtures/basin-baseline.svg at the default 2000 px —
@@ -162,12 +163,21 @@ test("running the whole mapforge suite touches nothing in the tracked maps direc
   const env = { ...process.env, [CHILD_ENV]: "1" };
   delete env.NODE_TEST_CONTEXT;
 
+  // Held across the child run so the wall-clock raster budget in
+  // render-sheet.test.mjs is never measured against a box THIS test is
+  // deliberately loading. See helpers/suite-lock.mjs for the measurements.
   const before = snapshotTrackedMaps();
-  const child = spawnSync(
-    process.execPath,
-    ["--test", "--test-reporter=tap", ...files.map((f) => join(HERE, f))],
-    { encoding: "utf8", stdio: "pipe", env },
-  );
+  acquireHeavyLock();
+  let child;
+  try {
+    child = spawnSync(
+      process.execPath,
+      ["--test", "--test-reporter=tap", ...files.map((f) => join(HERE, f))],
+      { encoding: "utf8", stdio: "pipe", env },
+    );
+  } finally {
+    releaseHeavyLock();
+  }
   const after = snapshotTrackedMaps();
 
   // Report the tree damage FIRST: if the suite also failed, the write is still
