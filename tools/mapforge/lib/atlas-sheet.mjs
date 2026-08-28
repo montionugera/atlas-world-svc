@@ -374,6 +374,34 @@ export function drawAtlasSheet({
   const legendRows = LEGEND.filter((r) => r.tier <= legendTier);
   const legendPatterns = legendRows.map((r) => r.pattern);
 
+  // THE KEY SAYS WHICH OF ITS ROWS THIS CHART ACTUALLY DRAWS (review of
+  // bc393a4, 2026-08-28). The band is the ink vocabulary for every sheet, and
+  // it read as an inventory of THIS one: fourteen swatches at tier 2, of which
+  // the chart paints exactly two on the ground. The reported densities are the
+  // sharp case — the key offers four (`pReported` generic, sworn, hearsay,
+  // inferred) and the world rolls every reported landmass up to `hearsay`, so
+  // three of the four are swatches the reader will never find on the page.
+  // They are NOT deleted from LEGEND: the fabric carries all three densities at
+  // region level (measured: 19 sworn, 77 hearsay, 24 inferred over 160
+  // regions), so they are live vocabulary, and G-BIOME-INK requires exactly one
+  // legend row per reachable pattern in BOTH directions — deleting a row would
+  // report the pattern as unexplained ink.
+  //
+  // So the heading is DERIVED from what the draw pass actually fills, and
+  // re-derives itself on every render. A hand-typed "this chart draws two
+  // fills" is the citation-rot defect this repo has now hit five times.
+  const drawnFills = [...new Set([...worldLand, cluster].map(patternFor).filter(Boolean))];
+  for (const id of drawnFills)
+    if (!legendPatterns.includes(id))
+      problems.push(
+        `G-BIOME-INK: fill "${id}" is painted on the map but has no legend row at tier ` +
+          `${legendTier} — the key's "this chart draws" line would under-report it`,
+      );
+  const drawnLabels = legendRows.filter((r) => drawnFills.includes(r.pattern)).map((r) => r.label);
+  const legendHead =
+    "FILLS · SURVEYED AND REPORTED" +
+    (drawnLabels.length ? ` · THIS CHART DRAWS ONLY: ${drawnLabels.join(", ")}` : "");
+
   // ---- sheet geometry -------------------------------------------------------
   const MAP_W = EXT_W * ATLAS_PX_PER_KM;
   const MAP_H = EXT_H * ATLAS_PX_PER_KM;
@@ -490,23 +518,29 @@ export function drawAtlasSheet({
   const sheetLabels = [];
   const putLabel = (l) => sheetLabels.push(l);
 
-  // The survey note is a note about a PLACE — anchored just east of the
-  // surveyed ground's own extent — not part of the fixed chrome cartouche, so
-  // it goes through the same declutter as every other placed name. It used to
-  // be painted straight onto the sheet, which is why the redraw could sit it
-  // squarely on top of the trade-wind lane's label with every gate green: a
-  // label that skips the placement pass is a label no collision check sees.
-  // Lowest rank on the sheet, so when space is tight it is the one that moves.
-  // F-045 Task 4: +15 -> +3 (÷5) — a km offset east of the polygon's own
-  // (already-rescaled) extent, placing the note just clear of it.
-  const clusterMaxX = Math.max(...cluster.placement.points.map((p) => p[0]));
+  // THE PRINCIPAL LANDMASS IS LETTERED LIKE EVERY OTHER (review of bc393a4,
+  // 2026-08-28). `worldLand` excludes `landIds`, so the one landmass this
+  // chart is built around — Wealdmarch, which carries 16 of the 47 towns and
+  // BOTH of the sheet's region bounds — was the only one of the thirteen
+  // drawn anonymous: its name was never even asked for, so the label census
+  // ("32 asked, 32 placed, none dropped") read as complete naming while the
+  // principal name was missing from the question.
+  //
+  // WHAT YIELDED FOR IT, and why. The budget was at 32 of 32 with no
+  // headroom, and it is NOT raised here (raising it is a content decision
+  // that needs its own evidence — see ATLAS_LABEL_BUDGET). The slot comes
+  // from the 32nd label, the chrome survey note, which is retired from the
+  // sheet and from the descriptor with it: it read "surveyed ground · bound
+  // only at this scale" against an unfilled outline, which is exactly what
+  // the `hand` already says in full ("at this scale only its bound is set
+  // down") and what the legend's own grammar says of every unfilled coast. A
+  // principal landmass's NAME outranks a chrome annotation that repeats the
+  // hand. Net: 32 asked, 32 placed, unchanged.
   putLabel({
-    id: `${cluster.id}-survey-note`,
-    text: sheet.surveyNote,
-    at: [clusterMaxX + 3, cluster.placement.anchor[1]],
-    rank: RANKS.namedLandform,
-    italic: true,
-    fill: C.inkMid,
+    id: cluster.id,
+    text: cluster.title.toUpperCase(),
+    at: cluster.placement.anchor,
+    rank: RANKS.continent,
   });
 
   // sea names, at each sea's own polygon centroid — the same derivation the
@@ -901,7 +935,7 @@ export function drawAtlasSheet({
     let ly = ATLAS_MAP_TOP + MAP_H + 8 + 16;
     put(
       `<text x="${ATLAS_MAP_LEFT}" y="${r2(ly - 4)}" font-size="12" letter-spacing="2" ` +
-        `fill="${C.inkMid}">FILLS · SURVEYED AND REPORTED</text>`,
+        `fill="${C.inkMid}">${esc(legendHead)}</text>`,
     );
     ly += 8;
     for (let i = 0; i < legendRows.length; i++) {

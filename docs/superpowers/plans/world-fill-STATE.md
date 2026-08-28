@@ -3278,7 +3278,7 @@ Reproducing attempt 3 from a clean tree reported **5** `--only=spine` failures, 
 
 **D2 — rulings 3 and 5 collide on `e-cindervast-approach`, and Step 6d's snap collides with `e-river-road-south`.** Both are the same defect: an endpoint was re-pointed at a DIFFERENT PLACE while its drawn geometry stayed put. The measured invariant on the committed roads is that **every road tip sits exactly (d = 0.000) on its endpoint's resolved root anchor** — true for all five roads whose Step-6 substitution was same-place (`{node: n-X}` → `{feature: f-town-X}` names the same pin). The rule, now Task 6 **Step 6g**: after the substitutions, the snap and the ruling-5 translation, a road's terminal point IS its endpoint's anchor, read from `pinned-roster.json`, never typed; `{edge, atIndex}` ends skipped. It is a measured **no-op on five of six roads** and moves exactly three tips — `e-cindervast-approach` 2.823 km / 1.200 km and `e-river-road-south` 3.640 km. Retiring the approach was rejected: ruling 3 is owner-approved and the edge carries canon §7.1 / §2 content; loosening the 1-unit tolerance at `check_content.mjs:2734` was rejected as weakening a general contract to absorb one edge.
 
-**Two record corrections.** (a) `scripts/tests/trunk-census.test.mjs` **does not exist** — Task 6 Step 1 has not run — so attempt 3's "census 5/5" was unbacked. The repro now asserts E-C4's composition directly (1 world + 13 continent + 3 ocean + 9 sea + 2 region + 1 town + 7 runtime = 36, edges 6 road / 7 leg / 2 sealane). (b) Step 6d's "update the Plan D real-world test literals that pin the old coordinates" is a **no-op**: grepped 2026-08-27, no test carries `[98, 163.5]`.
+**Two record corrections.** (a) `scripts/tests/trunk-census.test.mjs` **did not exist** at the time of writing — Task 6 Step 1 had not run — so attempt 3's "census 5/5" was unbacked. **SUPERSEDED 2026-08-28:** Step 1 has since run and the file IS committed, created by `bc393a4`; it holds 8 tests (9 with the `bands` tripwire this review adds) and is the machine that reads `content/spine/trunk-census.json`. The repro script's inline composition assert stays — two independent readings of the same arithmetic — but the sentence above must not be quoted as live. The repro now asserts E-C4's composition directly (1 world + 13 continent + 3 ocean + 9 sea + 2 region + 1 town + 7 runtime = 36, edges 6 road / 7 leg / 2 sealane). (b) Step 6d's "update the Plan D real-world test literals that pin the old coordinates" is a **no-op**: grepped 2026-08-27, no test carries `[98, 163.5]`.
 
 ### CLASS 9 CLEARED (2026-08-27) — the atlas sheet re-keyed onto the redrawn trunk
 
@@ -3344,3 +3344,101 @@ This is a **record defect, not an unlicensed re-ink**: each of the four is a com
 2. **The raster budget flakes on `synthetic` under concurrent load** — `tools/mapforge/tests/render-sheet.test.mjs:190`. Run alone the file is 10/10 and `rsvg-convert -w 2000` on the committed `synthetic-density.svg` measures **0.706 s** against the 2 s cap (atlas 0.527, fabric 0.327, overlay 0.323 — the whole roster is inside, best of three). Under `node --test 'tools/mapforge/tests/*.test.mjs'`, sharing a machine with the tracked-tree guard's own child suite, the same sheet measures **2.04–2.08 s** and reds. The SVG is byte-unchanged, so this is contention, not drift. Best-of-three already exists in the test and is not enough when the contention is a sibling `node --test` process; the fix (measure serially, or exclude the meta-test's child run from the same wall clock) is a test-harness decision, not a sheet one.
 
 **Record correction:** the four Plan B/C defects filed under CLASS 9 CLEARED are no longer all open. (1) `terrainKind: null on every generated continent` — closed: `generate-world.mjs` derives it from composition (`terrainKindOfComposition`, with the STATE reference in its own comment) and 7 of 13 continents now carry a kind. (2) and (3) — closed together by `patternFor`'s re-key onto `lore.reportedAs` plus the survey verdict, which is what makes "only reported ground is filled" true of the drawing: measured on the committed chart, **4 landmasses carry `lore.reported` and exactly 4 take a fill**, where 12 of 13 hatched before. (4) bare ocean titles stands.
+
+### REVIEW OF `bc393a4` — ten findings acted on, one follow-up commit (2026-08-28)
+
+Three adversarial reviews of the Step-14 commit found that it had fixed a real lie (12 landmasses drawn as
+"reported" off 4 flags) and shipped its **mirror image in prose**. The core defect: **the survey vocabulary was
+over-voiced**. Every number below was re-measured for this pass, not copied.
+
+**The root, and the ruling.** `scripts/lib/survey.mjs`'s `surveyOf()` returned **"surveyed" as the DEFAULT**
+when nothing said reported — and **no trunk node carries a `survey` field at all** (measured: 0 of 36). So the
+two review surfaces published "the **nine surveyed** landmasses" as vouched ground, on the strength of an
+answer the function invented for the absence of an answer. **The default is now `"unknown"`.** Decided on
+evidence, and the evidence is that it changes nothing and buys correctness: all three production readers
+compare against `"reported"` and only `"reported"` — `patternFor` and the `coast-reported` class in
+`atlas-sheet.mjs`, and G-SPINE-COMPLETE's childless downgrade in `spine.mjs` — so `"unknown"` travels the
+identical branch, the chart is byte-identical and **no gate changes verdict**. That is not asserted in a
+comment: `scripts/tests/survey.test.mjs` now greps those two source files and reds if any `surveyOf()`
+comparison is ever written against a string other than `"reported"`, which is the day someone must decide what
+an evidence-free node means. Nothing TRUE was lost — the positive knowledge lives in the fabric, which carries
+**40 surveyed regions of 160** across the nine unflagged landmasses (1 on Ashen Spar and Brightfall, up to 10 on
+Wealdmarch), and `lore.reported` is still written iff a landmass's fabric declares zero surveyed regions.
+
+**WEALDMARCH IS ON THE CHART.** `worldLand` excludes `landIds`, so the one landmass the sheet is built around —
+16 of the 47 towns, **both** of the sheet's region bounds — was the only one of the thirteen drawn anonymous,
+and its name was never even *asked* for, which is how "thirty-two asked, thirty-two placed, none dropped" read
+as complete naming with the principal name missing from the question. **What yielded:** the 32nd label, the
+chrome survey note, retired from the sheet **and from the descriptor with it** (`surveyNote` had no other
+reader, and it said "surveyed ground · bound only at this scale" against an unfilled outline — which the `hand`
+already says in full). **The budget was not raised.** Measured after: **32 asked · 32 placed · 0 dropped**, and
+all thirteen landmasses lettered — pinned by a new assertion that counts the upper-case names on the built
+sheet.
+
+**The nine, measured honestly.** Not "with their regions and towns on them": **towns fall on seven** of the
+thirteen (Wealdmarch 16, Coldreach 12, Stonemoor 11, Thirstwold 5, Brightfall / Driftholt / Reedstrand 1 each),
+**Ashen Spar and Wracklow carry nothing at all**, and the chart's **two** region bounds are both on Wealdmarch.
+Not "two ice caps": **only Rimewall Cap is an ice cap** (`class: "cap"`, composition ice 96.9); `n-skerryfast`
+is premise c12, `class: "chain"`, `coastClass: "fjordland"`, and takes `pIce` because its composition is **75%
+ice** — the terrain inference was independently reviewed and found SOUND, so this was a prose fix, not a
+generator one.
+
+**The legend now says what it draws.** The hand's rule held one way only — "a hatched coast is reported, never
+vouched" while **2 of the 4** reported coasts draw as ICE and nothing told the reader ice meant reported. The
+`hand` now reads *"A FILLED coast is reported, never vouched — the hatch and the ice pattern alike; only a bare
+outline is ours"*, and `withheld[1]` moved from the singular "the ice-cap's edge" to "the ice edges". The key
+advertised **four** reported densities while the world rolls **every** reported landmass up to `hearsay`
+(measured on the chart: `pIce` ×2 and `pReportedHearsay` ×2 painted on ground; `pReported`, `pReportedSworn`,
+`pReportedInferred` appear as legend swatches and **nowhere else**). The rows are NOT deleted — the fabric
+carries all three densities at region level (19 sworn, 77 hearsay, 24 inferred over 160 regions) and
+G-BIOME-INK requires one legend row per reachable pattern in both directions. Instead the band's heading is
+**derived from what the draw pass actually fills** and re-derives on every render: *"FILLS · SURVEYED AND
+REPORTED · THIS CHART DRAWS ONLY: ice shelf, reported — hearsay"*. Two tests keep it derived, and the first is
+mutation-proven: replacing the derivation with the literal it currently prints plus one extra density reds it.
+
+**Fixed at source, then regenerated — never hand-edited on the generated node.** `n-cluster1`'s
+`lore.summary` read *"An inland sea fed by the Meltwash with no ocean outlet"*, copied verbatim from the
+premise's `structuralIdea` and published as a **continent's** lore; `content/world/premises/continent-02.json`
+now describes the landmass, not the sea. `n-thirstwold` shipped the generation-budget word *"**cheap** reported
+sand"* and a figure nobody had checked; `continent-05.json` drops the word and the figure is re-measured off
+the fabric — **9,879 km² reported**, published as "some 9,900 km²". Both nodes were regenerated through
+`generate-world` → `promote-world`, not touched.
+
+**The rest.** `content/spine/edges.json`'s `e-lane-coldreach` note still cited **`e-sea-lane`**, which ruling 2
+retires in the same commit — citation rot, **sixth** occurrence; the fact it carried (one voyage, not two) is
+kept and the dead id is gone. `overlay-sheet.mjs`'s panel line and `world.mjs`'s G-SEALAND note both still said
+the trunk "is redrawn in Plan E, **not here**" — future tense on a sheet whose baseline **is** the redrawn
+trunk; both now say what they measure, and `world-gates.test.mjs`'s pin moved with them.
+
+**G-BANDS, the tripwire on the exhaustiveness claim.** `generate-world.mjs`'s preserved-node pass spreads
+`...rest` and asserts **in a comment** that "nothing else in the doc is parent-frame" — the licence on which
+`lore.labelAt` was singled out. `bands` is inside that spread, is declared `{ "type": "array" }` with no item
+shape, is read by nothing in `scripts/` or `tools/`, and is `[]` on all 36 nodes: the claim is safe only
+because the field is empty. A band that ever carries coordinates is very likely parent-frame and would be
+carried across a re-placement untranslated — exactly how `labelAt` failed, with every gate green.
+`scripts/tests/trunk-census.test.mjs` now reds the moment `bands` is populated, with a message that sends the
+reader back to the frame classification. Mutation-proven red, then restored.
+
+**FILED, NOT FIXED (this review):**
+
+1. `content/zones/zone-meltwash-terrace.json:37` cites `content/maps/cluster1-geography.json`, **a file that
+   does not exist** (pre-existing, unrelated to the redraw).
+2. `canon.md:186-231,308-334` still asserts six towns, a 27-tower relay chain and the Ashvale/Cindervast basin
+   against a 47-town, zero-tower world — scoped to **Task 15** by ruling E.
+3. **The POI enforcement gap.** `content/world/budgets.json`'s `poi.supplyLimitedSurveyedRegions` downgrades
+   five G-POI floor shortfalls to WARN, including **c05/r06 at 0 POIs against a floor of 12**, and the only
+   tripwire on ADDING a declaration is the exact `"8 warnings"` literal in
+   `scripts/tests/edges-schema.test.mjs:379` — which a silencing commit would update in the same diff.
+4. **The load-sensitive raster gate**, `tools/mapforge/tests/render-sheet.test.mjs:190` — sole live reader of
+   `maxRasterSeconds`, Gate-2-only, wall-clock based. The classic profile of a gate that gets muted rather than
+   fixed.
+5. **Five weak-but-live assertions:** `scripts/tests/trunk-census.test.mjs:75` (36 ≤ 96, 62% headroom);
+   `scripts/tests/world-budget.test.mjs:592` (derives the expected ink with the same stats the gate uses);
+   `scripts/tests/zone-content.test.mjs` (no positive lower bound on target — a budget of 0 passes with zero
+   records); `scripts/tests/resolve.test.mjs:263` (a global census counted as a basin-local bound — a town on
+   another continent reds it falsely); `tools/mapforge/tests/generate-world.test.mjs`'s translation-equality
+   (self-declared unarmed on an idempotent run).
+6. `content/spine/sheet-atlas.json`'s **`scaleBarNote` has no reader** — `basin-sheet.mjs` reads `sheet.json`'s,
+   not this one. Pre-existing dead field; `surveyNote` was removed above only because THIS diff retired its
+   reader.
+

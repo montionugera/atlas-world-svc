@@ -11,7 +11,7 @@
   "coastClass": "drowned-valley",
   "palette": ["meadow","forest","bramble","marsh","river","lake","rock","upland","built"],
   "landformKit": ["fluvial","wetland","lakes","coastal","erosional"],
-  "structuralIdea": "An inland sea fed by the Meltwash with no ocean outlet — hosts the redrawn basin.",
+  "structuralIdea": "a landmass built around an inland sea — the Meltwash feeds it and no channel carries it out to the ocean; the surveyed basin sits on its shore.",
   "structures": [
     {
       "kind": "inland-sea",

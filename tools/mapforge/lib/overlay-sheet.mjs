@@ -141,7 +141,10 @@ export function buildOverlaySheet({ repoRoot, baselineDir = null }) {
   const ratio = baseTotal === 0 ? "n/a" : `x${(newTotal / baseTotal).toFixed(2)}`;
   lines.push(`TOTAL ${baseTotal.toFixed(1)}  ->  ${newTotal.toFixed(1)} km²   ${ratio}`);
   lines.push(`sea:land ${world ? world.seaToLandRatio : "?"} : 1 generated`);
-  lines.push(`the trunk is redrawn in Plan E, not here`);
+  // Past tense since the redraw landed (bc393a4): this sheet's BASELINE is
+  // the redrawn trunk, so the row above is a drift check between the trunk and
+  // its own fabric, not a before/after of two worlds.
+  lines.push(`baseline = the redrawn trunk; this row is trunk-vs-fabric drift`);
   const panelH = ty0 + (lines.length + 1) * dy;
   body.push(`<rect x="${tx - 10}" y="14" width="${panelW}" height="${panelH - 6}" fill="${C.parchment}" ` +
             `stroke="${C.ink}" stroke-width="0.8"/>`);

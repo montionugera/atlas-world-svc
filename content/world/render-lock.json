@@ -5,9 +5,9 @@
     "version": "3.0.0"
   },
   "artifacts": {
-    "game-client/assets/art/maps/atlas-world.svg": "sha256:8ba1cf64bc7ee8ef01ec4daa4edc0530c0d4158ebd2d495db44d56eb199f355a",
+    "game-client/assets/art/maps/atlas-world.svg": "sha256:89b2e92b0ff8b9b7d9560342aeec2bbc8ac1843ead1215691f1bb83bb73c4096",
     "game-client/assets/art/maps/world-fabric.svg": "sha256:bf135a6aab694bb41a581883eb98657b797aaf568987b75cf639415db904dcb9",
-    "game-client/assets/art/maps/world-overlay.svg": "sha256:5818357d3cdd49f590d3842cbb56a06742c50ba4e7e0e1d279c1944fcfe93369",
+    "game-client/assets/art/maps/world-overlay.svg": "sha256:a415403ccdc50dc7358a5b875b5335c3cc324133819db925c525a8549dfad418",
     "game-client/assets/art/maps/synthetic-density.svg": "sha256:7b7a2c5c9f7ae3853d9b44fee07ba0977b8ea324c2a1ff16437a52e54d0b9912",
     "content/world/fabric/continent-01.json": "sha256:5bdc829a186f0b83e13ec8c6ad6838549eee63e462c739ac6b6d6a8427fa069a",
     "content/world/fabric/continent-02.json": "sha256:56853dbde66d14d5795ca7447fdd92b817e1b9c214d044ada8724d9d2319acbe",

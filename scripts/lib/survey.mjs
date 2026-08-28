@@ -12,12 +12,52 @@
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
-/** @typedef {"surveyed"|"reported"} Survey */
+/** @typedef {"surveyed"|"reported"|"unknown"} Survey */
 
-/** @returns {Survey} */
+/**
+ * THE DEFAULT IS "unknown", NOT "surveyed" (review of bc393a4, 2026-08-28).
+ *
+ * It used to be "surveyed", and that is the root of the over-voiced survey
+ * prose this review corrected: the two review surfaces published "the nine
+ * SURVEYED landmasses" as vouched ground when **no trunk node carries a
+ * `survey` field at all** — measured, 0 of 36. "Surveyed" was the answer this
+ * function invented for the absence of an answer, and prose read it back as
+ * data. A default that silently upgrades missing data to vouched ground is the
+ * same class of defect as a chart drawing 12 landmasses as "reported" off 4
+ * flags: absence of evidence published as evidence.
+ *
+ * WHAT IS AND IS NOT LOST. For a GENERATED continent, absence of
+ * `lore.reported` is a real derivation, not an absence: generate-world writes
+ * `reported: true` iff the landmass's fabric declares ZERO surveyed regions
+ * (`manifest.landmasses[].surveyed`), and the fabric carries 40 surveyed
+ * regions of 160 spread across the nine unflagged landmasses (1 on Ashen Spar
+ * and Brightfall, up to 10 on Wealdmarch). That knowledge lives in the fabric
+ * and the manifest, where it is measurable — it never lived here. What this
+ * function sees is one boolean, and one boolean cannot distinguish "walked"
+ * from "nobody has said". The other 23 committed nodes — every ocean, sea,
+ * town, site and fixture — carry no survey evidence of any kind, and used to
+ * be answered "surveyed" all the same.
+ *
+ * NO GATE FLIPS, and this was checked rather than assumed. Every production
+ * reader compares against "reported" and only "reported":
+ *   tools/mapforge/lib/atlas-sheet.mjs  patternFor      === "reported"
+ *   tools/mapforge/lib/atlas-sheet.mjs  coast-reported  === "reported"
+ *   scripts/lib/spine.mjs               G-SPINE-COMPLETE childless downgrade
+ *                                                       === "reported"
+ * so "unknown" travels the identical branch "surveyed" did — the chart is
+ * byte-identical and no gate changes verdict. (The `surveyOf` names in
+ * tools/mapforge/lib/passes/landforms.mjs and its tests are LOCAL Maps over
+ * fabric `regions[].survey`, a different vocabulary that is never routed
+ * through this function.) The change buys a future reader the ability to be
+ * correct: `=== "surveyed"` now means walked, and no longer silently answers
+ * true for every node nobody has surveyed.
+ *
+ * @returns {Survey}
+ */
 export function surveyOf({ node }) {
   if (node?.survey === "reported" || node?.survey === "surveyed") return node.survey;
-  return node?.lore?.reported === true ? "reported" : "surveyed";
+  if (node?.lore?.reported === true) return "reported";
+  return "unknown";
 }
 
 /**

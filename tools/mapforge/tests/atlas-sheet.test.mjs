@@ -351,12 +351,29 @@ test("the sheet's zoom tier keeps every name the chart draws, and the registry r
   const note = notes.find((n) => n.startsWith("labels "));
   const [, asked, placed] = /^labels (\d+) asked · (\d+) placed/.exec(note);
   assert.equal(asked, placed, `${asked} labels asked, ${placed} placed — the tier is eating names`);
-  // Re-keyed: the redraw retired every authored line feature, so the old
-  // needles ("the Coldreach Interior", "the Stonemoor Spine") name nothing. One
-  // survivor per rank above the ocean/continent/sea floor — region (4), harbour
-  // (6) and the survey note (8) — so a tier that silently ate a band reds here.
-  for (const needle of ["Thornveil", "Tallowquay", realSheet().surveyNote])
-    assert.ok(svg.includes(esc(needle)), `${needle}: a rank-4+ name vanished`);
+  // Re-keyed twice. First by the redraw, which retired every authored line
+  // feature, so the old needles ("the Coldreach Interior", "the Stonemoor
+  // Spine") name nothing. Then by the review of bc393a4, which retired the
+  // chrome survey note to free the slot the principal landmass's own name
+  // needed — so the rank-8 needle is gone with it.
+  //
+  // MEASURED, so the next reader does not have to re-derive it: the 32 placed
+  // labels occupy ranks 1 (3 oceans), 2 (13 landmasses), 3 (9 seas + 2 lanes),
+  // 4 (2 regions) and 6 (3 harbours). Ranks 7 and 8 have NO subject on this
+  // sheet today; ATLAS_MAX_LABEL_RANK stays 8 because Task 8's continent
+  // sheets put line-feature names back at that rank. One survivor per live
+  // rank above the ocean floor — continent (2), region (4), harbour (6) — so a
+  // tier that silently ate a band still reds here.
+  for (const needle of ["WEALDMARCH", "Thornveil", "Tallowquay"])
+    assert.ok(svg.includes(esc(needle)), `${needle}: a rank-2/4/6 name vanished`);
+  // The principal landmass is lettered AT ALL. `worldLand` excludes landIds,
+  // so Wealdmarch — 16 of the 47 towns, both region bounds — was drawn
+  // anonymous and its name was never asked for, which is what let the label
+  // census read "32 asked, 32 placed, none dropped" while the chart's own
+  // subject had no name on it. Deleting the putLabel reds this line.
+  const named = [...svg.matchAll(/<text class="lbl"[^>]*>([^<]*)<\/text>/g)].map((m) => m[1]);
+  assert.equal(named.filter((t) => t === t.toUpperCase() && /[A-Z]/.test(t)).length, 13,
+    "all thirteen landmasses must be lettered, the surveyed one included");
 });
 
 test("a tighter zoom tier really does drop the lower ranks (the tier is not decorative)", () => {
@@ -564,6 +581,51 @@ test("the atlas's committed legend tier explains every fill it draws", () => {
   const { problems } = buildAtlasSheet({ repoRoot: ROOT });
   assert.deepEqual(problems.filter((p) => p.startsWith("G-BIOME-INK")), [], problems.join("\n"));
   assert.equal(ATLAS_LEGEND_TIER, 2);
+});
+
+// ── the key's "this chart draws" line, ARMED (review of bc393a4) ────────────
+//
+// The band is the ink vocabulary for every sheet and it read as an inventory
+// of THIS one: fourteen tier-2 swatches, of which the chart paints two. The
+// four reported densities were the sharp case — the world rolls every reported
+// landmass up to `hearsay`, so three of the four could never be found on the
+// page. The heading now names what the draw pass actually fills, DERIVED, so
+// it cannot go stale; these two tests are what keep it derived.
+test("the legend heading names exactly the fills the chart paints on the ground", () => {
+  const { svg } = buildAtlasSheet({ repoRoot: ROOT });
+  const head = /<text[^>]*>(FILLS[^<]*)<\/text>/.exec(svg)?.[1];
+  assert.ok(head, "the legend band lost its heading");
+  const listed = head.split("THIS CHART DRAWS ONLY: ")[1]?.split(", ") ?? [];
+  // Independently derived: scan the map's own painted fills back out of the
+  // markup, minus the legend swatches, and translate them through LEGEND.
+  const swatches = new Set(
+    [...svg.matchAll(/<rect [^>]*width="40" height="24" fill="url\(#([^)"]+)\)"/g)].map((m) => m[1]),
+  );
+  const painted = new Set(
+    [...svg.matchAll(/<path [^>]*fill="url\(#([^)"]+)\)"/g)].map((m) => m[1]),
+  );
+  const want = LEGEND.filter((r) => painted.has(r.pattern)).map((r) => r.label);
+  assert.deepEqual(listed, want, `heading: ${head}`);
+  // and the thing the defect was: a density with a swatch but no ground.
+  for (const id of ["pReported", "pReportedSworn", "pReportedInferred"]) {
+    assert.ok(swatches.has(id), `${id} lost its legend swatch`);
+    assert.ok(!painted.has(id), `${id} is now painted — the heading must pick it up`);
+  }
+});
+
+test("the heading FOLLOWS the ink — give a landmass a different density and it moves", () => {
+  const { spine, tree } = realTree();
+  const S = realSheet().subjects;
+  const land = [...tree.byId.values()].find(
+    (n) => n.parentId === S.rootId && n.tier === "continent" && !S.landIds.includes(n.id) &&
+      n.lore?.reported === true && n.terrainKind === null && n.lore?.reportedAs === "hearsay",
+  );
+  assert.ok(land, "no hearsay-hatched continent to re-key");
+  land.lore = { ...land.lore, reportedAs: "sworn" };
+  const { svg } = drawAtlasSheet({ spine, tree, sheet: realSheet() });
+  const head = /<text[^>]*>(FILLS[^<]*)<\/text>/.exec(svg)[1];
+  assert.ok(head.includes("reported — sworn log"),
+    `a sworn coast is now drawn but the key does not say so: ${head}`);
 });
 
 

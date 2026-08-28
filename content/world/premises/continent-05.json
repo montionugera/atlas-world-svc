@@ -11,7 +11,7 @@
   "coastClass": "rain-shadow-erg",
   "palette": ["desert","badland","alkali","scree","rock","river"],
   "landformKit": ["desert","erosional","mountain","fluvial"],
-  "structuralIdea": "a rain-shadow erg behind a coastal range — one wet strip, then 9,000 km² of cheap reported sand",
+  "structuralIdea": "a rain-shadow erg behind a coastal range — one wet strip along its seaward foot, then some 9,900 km² of reported sand",
   "structures": [
     {
       "kind": "spine-ridge",

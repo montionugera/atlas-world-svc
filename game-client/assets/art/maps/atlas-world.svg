@@ -105,19 +105,22 @@
 <path d="M1017,1013 l7,-3 l0,6 Z" fill="#241f18" transform="rotate(253.82999999999998 1017 1013)"/>
 <text class="zn" x="420" y="950" text-anchor="middle" font-size="42" letter-spacing="10">THE ATLAS WORLD</text>
 <text class="zn" x="420" y="990" text-anchor="middle" font-size="17" font-style="italic" fill="#5d5344">Bellfaith survey where the ground is walked; mariners' report beyond</text>
-<text class="zn" x="420" y="1042" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">This is a compiled chart, not a single hand's survey. The surveyed ground is</text>
-<text class="zn" x="420" y="1061" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">the Bellfaith's own work, but at this scale only its bound is set down — the</text>
-<text class="zn" x="420" y="1080" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">coast and channel it was walked and sounded for are not drawn here. Every</text>
-<text class="zn" x="420" y="1099" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">coast beyond it is set down from masters' logs sworn at Gildmark harbour,</text>
-<text class="zn" x="420" y="1118" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">not from any keel of ours. A hatched coast is reported, never vouched.</text>
-<text class="zn" x="420" y="1167" text-anchor="middle" font-size="13" letter-spacing="4" fill="#5d5344">NOT SHOWN ON THIS SHEET</text>
-<text class="zn" x="420" y="1189" text-anchor="middle" font-size="12.5" fill="#5d5344">·  the far interiors, past what any crew has walked</text>
-<text class="zn" x="420" y="1207" text-anchor="middle" font-size="12.5" fill="#5d5344">·  whatever lies past the ice-cap's edge</text>
+<text class="zn" x="420" y="1042" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">This is a compiled chart, not a single hand's survey. Where a coast is drawn</text>
+<text class="zn" x="420" y="1061" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">as a bare outline the Bellfaith has walked ground behind it, though at this</text>
+<text class="zn" x="420" y="1080" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">scale only the bound is set down — the coasts and channels it was walked and</text>
+<text class="zn" x="420" y="1099" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">sounded for are the continent sheets' business. Every filled coast is set</text>
+<text class="zn" x="420" y="1118" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">down from masters' logs sworn at Gildmark harbour, not from any keel of</text>
+<text class="zn" x="420" y="1137" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">ours. A FILLED coast is reported, never vouched — the hatch and the ice</text>
+<text class="zn" x="420" y="1156" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">pattern alike; only a bare outline is ours.</text>
+<text class="zn" x="420" y="1205" text-anchor="middle" font-size="13" letter-spacing="4" fill="#5d5344">NOT SHOWN ON THIS SHEET</text>
+<text class="zn" x="420" y="1227" text-anchor="middle" font-size="12.5" fill="#5d5344">·  the far interiors, past what any crew has walked</text>
+<text class="zn" x="420" y="1245" text-anchor="middle" font-size="12.5" fill="#5d5344">·  whatever lies past the ice edges</text>
 <text class="lbl" x="482.5" y="801.43" font-size="15" font-style="italic" fill="#8a7f6c" letter-spacing="2">Galereach</text>
 <text class="lbl" x="896.05" y="1111.67" font-size="15" font-style="italic" fill="#8a7f6c" letter-spacing="2">Keelbreak</text>
 <text class="lbl" x="1079" y="447.2" font-size="15" font-style="italic" fill="#8a7f6c" letter-spacing="2">Tarnmark</text>
 <text class="lbl" x="483.18" y="1328.72" font-size="13" fill="#241f18" letter-spacing="2">ASHEN SPAR</text>
 <text class="lbl" x="1298.68" y="724.97" font-size="13" fill="#241f18" letter-spacing="2">BRIGHTFALL</text>
+<text class="lbl" x="330.93" y="619.97" font-size="13" fill="#241f18" letter-spacing="2">WEALDMARCH</text>
 <text class="lbl" x="1083.43" y="471.22" font-size="13" fill="#241f18" letter-spacing="2">COLDREACH</text>
 <text class="lbl" x="232.93" y="399.47" font-size="13" fill="#241f18" letter-spacing="2">DRIFTHOLT</text>
 <text class="lbl" x="176.93" y="1286.72" font-size="13" fill="#241f18" letter-spacing="2">LOAMSPIT</text>
@@ -140,15 +143,14 @@
 <text class="lbl" x="692.43" y="731.03" font-size="13" font-style="italic" fill="#8a7f6c" letter-spacing="2">West Sea</text>
 <text class="lbl" x="1194.73" y="1304.11" font-size="13" font-style="italic" fill="#8a7f6c" letter-spacing="2">Wreckwater</text>
 <text class="lbl" x="426.5" y="551.08" font-size="11" fill="#241f18" letter-spacing="0.6">Northern Icefield</text>
-<text class="lbl" x="433.5" y="629.48" font-size="11" fill="#241f18" letter-spacing="0.6">Thornveil</text>
+<text class="lbl" x="433.5" y="653.68" font-size="11" fill="#241f18" letter-spacing="0.6">Thornveil</text>
 <text class="lbl" x="355.8" y="648.38" font-size="11" font-style="italic" fill="#5d5344" letter-spacing="0.6">Gildmark</text>
 <text class="lbl" x="1023.6" y="1003.98" font-size="11" font-style="italic" fill="#5d5344" letter-spacing="0.6">Netstead</text>
 <text class="lbl" x="946.6" y="534.98" font-size="11" font-style="italic" fill="#5d5344" letter-spacing="0.6">Tallowquay</text>
-<text class="lbl" x="443.71" y="643.74" font-size="9.5" font-style="italic" fill="#5d5344" letter-spacing="0.6">surveyed ground · bound only at this scale</text>
 <g stroke="#241f18" stroke-width="1.6" fill="none"><path d="M1346,1448 L1346,1406"/><path d="M1341,1414 L1346,1404 L1351,1414 Z" fill="#241f18"/></g>
 <text x="1346" y="1464" text-anchor="middle" font-size="15" letter-spacing="2" fill="#241f18">N</text>
 <rect x="58" y="96" width="1400" height="1400" fill="none" stroke="#241f18" stroke-width="1.6"/>
-<text x="58" y="1516" font-size="12" letter-spacing="2" fill="#5d5344">FILLS · SURVEYED AND REPORTED</text>
+<text x="58" y="1516" font-size="12" letter-spacing="2" fill="#5d5344">FILLS · SURVEYED AND REPORTED · THIS CHART DRAWS ONLY: ice shelf, reported — hearsay</text>
 <rect x="58" y="1528" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
 <rect x="58" y="1528" width="40" height="24" fill="url(#pIce)"/>
 <text x="106" y="1544" font-size="12.5" fill="#241f18">ice shelf</text>

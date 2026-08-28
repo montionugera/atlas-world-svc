@@ -89,3 +89,41 @@ test("the edge census matches the committed edge list", () => {
   const sum = Object.values(CENSUS.edges.byKind).reduce((a, b) => a + b, 0);
   assert.equal(sum, CENSUS.edges.expected, "the edge census must be arithmetically closed too");
 });
+
+// ── `bands` is EMPTY, and stays empty until someone decides what it means ───
+//
+// generate-world.mjs's preserved-node block spreads `...rest` and asserts, in
+// a COMMENT, that "nothing else in the doc is parent-frame" — the licence on
+// which `lore.labelAt` was singled out as the one field that must ride along
+// with a moved placement. `bands` is inside that spread and is the one field
+// the claim cannot be checked against: spine-node.schema.json declares it
+// `{ "type": "array" }` with no item shape, nothing in scripts/ or tools/
+// reads it, and the generator writes `bands: []` on every node it makes.
+//
+// So the claim holds today only because the field is empty. If a band ever
+// carries coordinates it is very likely PARENT-FRAME — bands are level/extent
+// ranges over a parent's ground — and it would be carried across a
+// re-placement untranslated, silently, exactly the way labelAt was
+// (G-LABEL-FRAME exists because that already happened once). This test is the
+// tripwire: populate `bands` and you must come back to
+// generate-world.mjs's frame classification and decide, rather than inherit a
+// stale-frame bug with every gate green.
+test("no committed node populates `bands` — the frame claim depends on it", () => {
+  const bad = [];
+  for (const f of readdirSync(NODES).filter((n) => n.endsWith(".json")).sort()) {
+    const n = JSON.parse(readFileSync(join(NODES, f), "utf8"));
+    if (!("bands" in n)) continue;
+    if (!Array.isArray(n.bands))
+      bad.push(`${n.id}: bands is ${n.bands === null ? "null" : typeof n.bands}, not an array`);
+    else if (n.bands.length) bad.push(`${n.id}: bands carries ${n.bands.length} entr(y|ies)`);
+  }
+  assert.deepEqual(
+    bad,
+    [],
+    "generate-world.mjs's preserved-node pass spreads `...rest` and claims in a comment that " +
+      "nothing but `lore.labelAt` is parent-frame. `bands` is schema-unconstrained, unread, and " +
+      "empty on every node, which is the only reason that claim is safe. It is no longer empty:\n" +
+      bad.join("\n") +
+      "\nGo re-classify the field's frame in tools/mapforge/generate-world.mjs before shipping it.",
+  );
+});

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { surveyOf, loadFabricRegionIndex, fabricRegionCountsFor } from "../lib/survey.mjs";
@@ -16,14 +16,42 @@ function treeOf(nodes) {
 const node = (id, tier, extra = {}) =>
   ({ id, tier, parentId: null, lore: {}, provenance: { generator: null }, ...extra });
 
-test("surveyOf prefers the field, falls back to lore.reported, defaults surveyed", () => {
+test("surveyOf prefers the field, falls back to lore.reported, defaults UNKNOWN", () => {
   assert.equal(surveyOf({ node: node("a", "region", { survey: "reported" }) }), "reported");
   assert.equal(surveyOf({ node: node("b", "region", { lore: { reported: true } }) }), "reported");
-  assert.equal(surveyOf({ node: node("c", "region") }), "surveyed");
+  // RE-PINNED by the review of bc393a4 (2026-08-28): was "surveyed". A node
+  // that carries no survey evidence must not be answered as vouched ground —
+  // that default is what let the review surfaces publish "the nine SURVEYED
+  // landmasses" when 0 of the 36 committed nodes carry a `survey` field.
+  assert.equal(surveyOf({ node: node("c", "region") }), "unknown");
+  assert.equal(surveyOf({ node: node("c2", "region", { lore: { reported: false } }) }), "unknown");
   // The field WINS over a stale lore flag — one source of truth after migration.
   assert.equal(
     surveyOf({ node: node("d", "region", { survey: "surveyed", lore: { reported: true } }) }),
     "surveyed");
+});
+
+test("the unknown default travels the same branch surveyed did — no reader flips", () => {
+  // The proof that the default change is gate-neutral, kept as a machine and
+  // not as a claim in a comment. EVERY production reader of surveyOf compares
+  // against the string "reported"; none tests for "surveyed". If one ever
+  // does, it must decide what an evidence-free node means, and this reds.
+  const files = [
+    "tools/mapforge/lib/atlas-sheet.mjs",
+    "scripts/lib/spine.mjs",
+  ];
+  const root = new URL("../..", import.meta.url);
+  let sites = 0;
+  for (const rel of files) {
+    const src = readFileSync(new URL(rel, root), "utf8");
+    for (const m of src.matchAll(/surveyOf\(\{[^}]*\}\)\s*(===|!==)\s*"([a-z]+)"/g)) {
+      sites++;
+      assert.equal(m[2], "reported",
+        `${rel}: surveyOf() is compared against "${m[2]}" — the "unknown" default now reaches ` +
+        `this branch, so this site must say what an evidence-free node means`);
+    }
+  }
+  assert.equal(sites, 3, "expected the 3 known comparison sites; the roster moved");
 });
 
 test("TRUNK_TIERS gains ocean and sea; WATER_TIERS is exactly those two", () => {

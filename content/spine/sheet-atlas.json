@@ -1,14 +1,13 @@
 {
   "title": "THE ATLAS WORLD",
   "subtitle": "Bellfaith survey where the ground is walked; mariners' report beyond",
-  "hand": "This is a compiled chart, not a single hand's survey. The surveyed ground is the Bellfaith's own work, but at this scale only its bound is set down — the coast and channel it was walked and sounded for are not drawn here. Every coast beyond it is set down from masters' logs sworn at Gildmark harbour, not from any keel of ours. A hatched coast is reported, never vouched.",
+  "hand": "This is a compiled chart, not a single hand's survey. Where a coast is drawn as a bare outline the Bellfaith has walked ground behind it, though at this scale only the bound is set down — the coasts and channels it was walked and sounded for are the continent sheets' business. Every filled coast is set down from masters' logs sworn at Gildmark harbour, not from any keel of ours. A FILLED coast is reported, never vouched — the hatch and the ice pattern alike; only a bare outline is ours.",
   "noScaleBar": true,
   "scaleBarNote": "no scale bar; distances inside the surveyed ground are the continent sheets' business",
   "northMark": { "at": [368, 380], "label": "N" },
-  "surveyNote": "surveyed ground · bound only at this scale",
   "withheld": [
     "the far interiors, past what any crew has walked",
-    "whatever lies past the ice-cap's edge"
+    "whatever lies past the ice edges"
   ],
   "subjects": {
     "rootId": "n-atlas",

@@ -907,7 +907,7 @@ test("G-SEALAND prints the TRUNK DIVERGENCE whenever there is a trunk to diverge
   // THE RATIOS FIRST, in the same unit as the band two lines above. n-c is an
   // 80x80 km polygon on a 160,000 km² frame, so the trunk reads 24.00 : 1 —
   // the shape of the committed chart's 24.63 : 1 — against the fabric's 1.50.
-  assert.match(r.out, /G-SEALAND: trunk 24\.00 : 1 vs fabric 1\.50 : 1 \(trunk land 6400\.0 km², fabric net land 64000\.0 km²\) — the trunk is redrawn in Plan E, not here/);
+  assert.match(r.out, /G-SEALAND: trunk 24\.00 : 1 vs fabric 1\.50 : 1 \(trunk land 6400\.0 km², fabric net land 64000\.0 km²\) — trunk and fabric are two measurements of the SAME redrawn world/);
 });
 
 test("…and OMITS it, rather than printing null, on a root with a fabric and no spine", () => {

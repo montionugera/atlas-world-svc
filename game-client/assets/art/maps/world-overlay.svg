@@ -227,5 +227,5 @@
 <text x="22" y="216" font-family="monospace" font-size="10" fill="#241f18">c13  975.1  -&gt;  999.8 km²   x1.03</text>
 <text x="22" y="230" font-family="monospace" font-size="10" fill="#241f18">TOTAL 65498.4  -&gt;  65599.5 km²   x1.00</text>
 <text x="22" y="244" font-family="monospace" font-size="10" fill="#241f18">sea:land 1.5 : 1 generated</text>
-<text x="22" y="258" font-family="monospace" font-size="10" fill="#241f18">the trunk is redrawn in Plan E, not here</text>
+<text x="22" y="258" font-family="monospace" font-size="10" fill="#241f18">baseline = the redrawn trunk; this row is trunk-vs-fabric drift</text>
 </svg>
