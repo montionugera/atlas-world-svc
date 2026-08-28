@@ -4317,3 +4317,25 @@ the canon ten.
 - The plan's Task 12 text tells its author to cite `content/world/resolved/continent-04.json` for a
   fabric-placed landmark. Under MAJOR 2's rule that is a citation to a file that will not carry the
   name; Task 12 should cite A4 §5 as Task 11 now does, or the new gate reds.
+
+### TASK 11 — the third defect, found only by the FULL suite (2026-08-29)
+
+The two directly-affected suites were green and every gate passed while
+`scripts/tests/places.test.mjs` was red. **Running only the suites you touched is not
+verification** — the count that broke is in a file Task 11 never edited.
+
+`places.test.mjs`'s Risk A2 test (the null-document case) pinned `content-gate: … 10 zones, 0 towns`
+as an exact literal. Six new records made it 16 and the test went red. The literal described the
+CORPUS; the property it exists to guard is that `checkZoneContent` does **not** bail on a null
+document and zero its count (Task 9 review MAJOR 1). It is derived from `content/zones/` now,
+computed independently of the gate's own output, so the anti-bail property survives — a re-bail
+returns 0, and 0 never equals the number of files on disk — and no per-record edit is needed by
+Tasks 12-14. **Two mutations killed**: the whole-function bail re-introduced, and the corpus shrunk
+by one record.
+
+**FINAL VERIFICATION, all on the committed tree.** spine gate **0 failures / 8 warnings / 36 nodes**
+(exit 0) · `check_content --require-complete` **26 failures** = 24 `surveyed region … has no record`
++ `town-millcross` + `placement-thornveil`, **0** other zone-gate lines, **16 zones** · canon legs
+**7/7 inside ±8%** · spine-emit **clean, 39 files** · world-digest **matches** · render-lock **clean,
+44 artifacts** · A4 `--check` **40 rows, matches** · scripts suite **1286/1286** · mapforge
+**786/786** · storybook **86/86** · repro **6/6** · `precheck.sh --no-install` **GATE 1 PASS**.
