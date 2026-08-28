@@ -41,7 +41,7 @@ import { anchorDungeons, anchorBoundEntrances, hopsToSettlement, MAX_HOPS } from
 import { buildRegionRings, buildCoastRings, buildTrunkRings, buildFabricFile, hashOf,
          fabricStringify, trunkRingCap, townFeatureId, townSlug, townFeatureIds } from "./lib/fabric.mjs";
 import { GENERATOR_VERSION } from "./lib/version.mjs";
-import { BIOMES, buildTree, placementArea, composeToRoot, TERRAIN_IMPLIES } from "../../scripts/lib/spine.mjs";
+import { BIOMES, buildTree, placementArea, composeToRoot, resolveToRoot, TERRAIN_IMPLIES } from "../../scripts/lib/spine.mjs";
 import { canonicalNode, canonStringify, derivedSidecar } from "../../scripts/check_spine_emit.mjs";
 // Plan D Task 11 Step 4b: the draft carries the civil join, so a re-seed
 // promotes content/world/resolved/ in the SAME command — never behind a
@@ -795,6 +795,11 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [], 
   for (const rel of ["content/world/manifest.json", "content/world/budgets.json",
                      "content/spine/roots.json", "content/spine/load-budget.json",
                      "content/spine/coverage-budget.json", "content/spine/sheet.json",
+                     // The freeze authority travels with the draft so the draft
+                     // root can be gated on it: G-FROZEN's reverse arm reads
+                     // this file, and without it a draft that dropped the whole
+                     // freeze would gate green in its own directory.
+                     "content/spine/freeze-reasons.json",
                      "content/spine/sheet-atlas.json"]) {
     if (!existsSync(join(repoRoot, rel))) continue;
     write(rel, readFileSync(join(repoRoot, rel)));
@@ -899,7 +904,11 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [], 
         `by [${q(dx)}, ${q(dy)}] onto ${host.id} and still not inside its ring — G-CONTAIN will red it`);
     // `derived` and `absoluteAnchor` are DROPPED, not overwritten: the sidecar
     // is regenerated for the whole draft tree, and G-FROZEN is directional —
-    // an unfrozen node still carrying absoluteAnchor fails too.
+    // an unfrozen node still carrying absoluteAnchor fails too. The pre-redraw
+    // anchor is meaningless in the new geometry, so dropping it is right; step
+    // 4b RE-DERIVES one from the regenerated composition for whatever
+    // freeze-reasons.json says is frozen, which is why `frozen: false` below is
+    // a starting state and no longer the last word.
     const { derived: _d, absoluteAnchor: _a, ...rest } = doc;
     // `lore.labelAt` RIDES ALONG. It is authored in the SAME frame as
     // `placement` — on both preserved regions the committed value is byte-equal
@@ -958,8 +967,81 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [], 
   for (const n of run.trunk) if (adopted.has(n.id)) n.interstitial = { ...n.composition };
 
   const allNodes = [atlas, ...generated, ...runtimeDocs];
-  const tree = buildTree({ nodes: allNodes.map((n) => ({ ...n, file: `${n.id}.json` })), rootIds: roots });
+  let tree = buildTree({ nodes: allNodes.map((n) => ({ ...n, file: `${n.id}.json` })), rootIds: roots });
   if (tree.errors.length) throw new Error(`generate-world: draft tree is invalid: ${tree.errors.join("; ")}`);
+
+  // ── 4b. THE COMMITTED FREEZE TRAVELS WITH THE REDRAW ──────────────────────
+  //
+  // Until this pass every node this generator wrote was unfrozen — the
+  // continents by mint (`frozen: false` on the trunk nodes above) and the
+  // preserved chart nodes by the carry, which hard-coded the same `false` and
+  // dropped `absoluteAnchor` with `derived`. So a regeneration took the trunk
+  // from 10 frozen to 1 and left the freeze to be re-applied BY HAND, once per
+  // redraw, with nothing in Gate 1 saying so. G-FROZEN's new reverse arm
+  // (check_content.mjs) is what makes that loss loud; this pass is what makes
+  // it not happen.
+  //
+  // WHY NOT JUST CARRY `doc.frozen` ON THE PRESERVED NODES. Measured, not
+  // argued (2026-08-28): carrying the flag alone clears the three
+  // `G-CANON-LEG ... endpoint n-millcross is not frozen` work orders and
+  // replaces them with SIX G-FROZEN failures on the draft — each of
+  // n-millcross / n-thornveil / n-northern-icefield "frozen but ancestor
+  // n-cluster1 is not" AND "frozen without absoluteAnchor". Neither is a stale
+  // anchor: one says the freeze must be ANCESTOR-CLOSED and the preserved
+  // node's new parent is a freshly minted continent with nothing to inherit
+  // from; the other says a freeze is a flag AND a composed anchor, and the
+  // carry drops the anchor because the pre-redraw one is meaningless in the
+  // new geometry. A freeze is therefore a property of a SET, not of a document
+  // — which is exactly what content/spine/freeze-reasons.json already commits,
+  // one written sentence per node. So the generator reads that file as the
+  // authority too, and the same artefact answers "what is frozen" for the
+  // generator and for the gate.
+  //
+  // WHY HERE AND NOT IN promote-world.mjs. Promotion verifies every file it
+  // copies against the run manifest's hash map (promote-world.mjs, "an unhashed
+  // file cannot be verified and will not be promoted") — re-applying a freeze
+  // there would mean editing node bytes AFTER they were hashed, which is the
+  // stale-rider hazard that guard exists for. And the draft is gated in its own
+  // right: generate-world.test.mjs runs check_content against it, and
+  // edgeWorkOrder below reads `n.frozen` to decide whether a canon leg still
+  // has an unfrozen endpoint. A draft frozen only at promotion time is a draft
+  // that lies to both.
+  //
+  // The anchor is COMPOSED FROM THE REGENERATED GEOMETRY, never copied: the
+  // same arithmetic composedAnchor() uses in the gate, resolved through the
+  // parent's frame. Ordering does not matter — freezing is a write, and the
+  // composition it reads is the placement, which no freeze touches — so the
+  // root-first discipline a hand refreeze needs (G-FROZEN reds an intermediate
+  // commit whose ancestor is not yet frozen) does not apply to one atomic pass.
+  const freezePath = join(repoRoot, "content/spine/freeze-reasons.json");
+  if (existsSync(freezePath)) {
+    const reasons = JSON.parse(readFileSync(freezePath, "utf8")).reasons ?? {};
+    const draftById = new Map(allNodes.map((n) => [n.id, n]));
+    for (const id of Object.keys(reasons).sort()) {
+      const node = draftById.get(id);
+      if (!node) {
+        // LOUD, never silent: a reason with no node is a freeze this run would
+        // drop. G-FROZEN says the same thing after promotion; saying it here
+        // names the run that did it.
+        run.problems.push(`freeze: content/spine/freeze-reasons.json holds a written reason for ` +
+          `${id}, which this draft does not carry — the redraw would drop that freeze; retire the ` +
+          `reason or keep the node`);
+        continue;
+      }
+      node.frozen = true;
+      node.absoluteAnchor = node.parentId === null
+        ? node.placement.anchor
+        : resolveToRoot({ tree, id: node.parentId, point: node.placement.anchor });
+    }
+    // Rebuilt so the tree the nodes are WRITTEN from is the tree they now are.
+    // deriveNode composes `absoluteAnchorRoot` off `placement.anchor` and never
+    // reads `frozen`, so the sidecar is unmoved by this pass — but a tree that
+    // disagrees with the bytes beside it is the shape every frame defect in
+    // this programme has taken, and it costs one pass to not have one.
+    tree = buildTree({ nodes: allNodes.map((n) => ({ ...n, file: `${n.id}.json` })), rootIds: roots });
+    if (tree.errors.length) throw new Error(`generate-world: draft tree is invalid after the freeze pass: ${tree.errors.join("; ")}`);
+  }
+
   for (const node of allNodes) {
     const r = canonicalNode({ node: { ...node, file: `${node.id}.json` }, tree, plans: [] });
     if (r.error) throw new Error(`generate-world: ${r.error}`);
@@ -1168,10 +1250,12 @@ export function edgeWorkOrder({ edges, nodes }) {
                        `which the redraw moved` });
       });
     }
-    // G-CANON-LEG: a leg endpoint that DOES resolve must be frozen, and every
-    // node this generator writes is unfrozen — n-millcross included, because
-    // G-FROZEN refuses a frozen node under an unfrozen parent and its parent is
-    // now a generated continent.
+    // G-CANON-LEG: a leg endpoint that DOES resolve must be frozen. This used
+    // to fire on all three Millcross legs every run, because every node this
+    // generator wrote was unfrozen; step 4b now applies the committed freeze
+    // (freeze-reasons.json, flag AND composed anchor, continents included) to
+    // the draft, so a leg whose endpoint is in that set resolves clean here and
+    // a leg whose endpoint is NOT in it still earns its order.
     if (e.kind === "leg")
       for (const ref of [e.from, e.to]) {
         const n = ref?.node && nodeById.get(ref.node);

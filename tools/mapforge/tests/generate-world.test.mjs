@@ -95,7 +95,7 @@ function gateOn(out) {
   } catch (e) { return e.stdout ?? ""; }
 }
 
-test("THE REAL SPINE GATE on the draft root fails on the carried canon and NOTHING ELSE",
+test("THE REAL SPINE GATE on the draft root is CLEAN, and the edges are still carried whole",
   { timeout: 240000 }, () => {
   // The plan asks for "0 failures" AND for every authored edge to survive. Both
   // cannot hold: measured against the live file, all 20 committed edges point
@@ -159,7 +159,22 @@ test("THE REAL SPINE GATE on the draft root fails on the carried canon and NOTHI
   assert.match(log, /G-POI: 40 surveyed regions \(band 12–30: 5 thin of which 5 declared, 0 over\)/);
   assert.deepEqual(other, [],
     `the draft root must be gate-clean apart from the carried canon:\n${other.join("\n")}`);
-  assert.ok(fails.length > 0, "if this ever reads zero the edges have stopped being carried");
+  // WAS `assert.ok(fails.length > 0, "if this ever reads zero the edges have
+  // stopped being carried")`. The premise under it — that a carried edge
+  // ALWAYS leaves a failure behind — died with the freeze pass: the last three
+  // survivors were `endpoint n-millcross is not frozen`, and step 4b now
+  // applies the committed freeze to the draft, so a clean gate is the expected
+  // state and the guard would red on the fix. Worse, it was a PROXY: it read a
+  // failure count to police a fact about edges. The fact is checked directly
+  // below instead, on the draft's own edges.json, which is what the assertion
+  // was named for.
+  const draftEdges = JSON.parse(readFileSync(join(out, "content/spine/edges.json"), "utf8"));
+  const byKind = {};
+  for (const e of draftEdges) byKind[e.kind] = (byKind[e.kind] ?? 0) + 1;
+  assert.deepEqual(byKind, { road: 6, leg: 7, sealane: 2 },
+    "the authored edges are carried into the draft WHOLE — this is the fact the old " +
+    "`fails.length > 0` guard was standing in for, and a filtered-to-what-resolves edges.json " +
+    "(the outcome the plan spends a paragraph forbidding) reads as an empty or shrunken set here");
   // SET equality against the work order, not a count: gSpineNet reports a relay
   // edge's via chain twice (once in the generic endpoint walk, once in the
   // relay branch), so the counts differ by construction while the SETS must not.
@@ -202,26 +217,32 @@ test("THE REAL SPINE GATE on the draft root fails on the carried canon and NOTHI
   //   carries into the draft are 15 that already resolve, and the 88 G-NET
   //   lines are gone at their source rather than filtered away.
   //
-  //   WHAT REMAINS IS 3, AND IT IS NOT A RESIDUE: all three are G-CANON-LEG
+  //   THEN 3, and now ZERO. The three that remained were all G-CANON-LEG
   //   `endpoint n-millcross is not frozen`, on the three legs that start at
-  //   Millcross. The draft unfreezes the whole trunk by construction, and
-  //   G-FROZEN only permits refreezing under a frozen ancestor — which is Task
-  //   7's refreeze, root-first, AFTER this commit. The work order says so in
-  //   as many words, including that re-pointing the endpoint would EVADE the
-  //   rule rather than satisfy it. The set is pinned below so a fourth line,
-  //   or a different edge, cannot hide inside the count.
+  //   Millcross, because the draft unfroze the whole trunk by construction and
+  //   G-FROZEN only permits refreezing under a frozen ancestor — so the freeze
+  //   had to be re-applied by hand after every redraw. generate-world step 4b
+  //   applies content/spine/freeze-reasons.json to the draft instead (the flag
+  //   AND an absoluteAnchor composed from the regenerated geometry, continents
+  //   included, which is what makes the set ancestor-closed), so all three
+  //   resolve at their source. Measured on this run: 0 gate failures, 0 work
+  //   orders, and the promoted node bytes are byte-identical to the ten Task 7
+  //   froze by hand — the generator derives the same anchors.
+  //
+  //   ZERO IS NOT A WEAKER ASSERTION HERE. The empty set is pinned in BOTH
+  //   directions: `other` above already forbids any non-edge failure, the set
+  //   equality below still joins gate failures to work orders one-for-one, and
+  //   the carried-whole edge census added above is what proves the subject is
+  //   still present to fail. A leg whose endpoint leaves the freeze set, or an
+  //   endpoint the redraw deletes, reds this line again.
   //
   // Moving either number is a WORLD CHANGE and needs a reason written beside
   // it, exactly like the ring goldens.
   assert.deepEqual(
     fails.map((l) => l.replace(/^FAIL {2}spine: /, "")).sort(),
-    [
-      "G-CANON-LEG e-leg-millcross-embervale: endpoint n-millcross is not frozen",
-      "G-CANON-LEG e-leg-millcross-gildmark: endpoint n-millcross is not frozen",
-      "G-CANON-LEG e-leg-millcross-rooktide: endpoint n-millcross is not frozen",
-    ],
-    "the draft root's carried-canon failures moved — the only legal residue here is the three " +
-    "Millcross legs waiting on Task 7's root-first refreeze",
+    [],
+    "the draft root's carried-canon failures moved — with the committed freeze applied to the " +
+    "draft there is no legal residue left, so any line here is a real regression",
   );
   // NOT `fails.length - poi.length`, which is what this line used to be. That
   // subtraction LOOKED like it guarded the carried-canon count and did not: a
@@ -229,14 +250,20 @@ test("THE REAL SPINE GATE on the draft root fails on the carried canon and NOTHI
   // still 91. Measured — 15 instances stripped from c05/r15 gave fails 97,
   // poi 6, difference 91, green. It is moot now that the five are warnings, and
   // the filtered assertion below is what the line was always trying to say.
-  assert.equal(fails.filter((l) => /G-NET|G-CANON-LEG/.test(l)).length, 3,
+  assert.equal(fails.filter((l) => /G-NET|G-CANON-LEG/.test(l)).length, 0,
     "the draft root's carried-canon failure count moved");
   // The 63 work orders were 60 endpoint + 3 road-end, and the 28-line gap
   // against the gate's 91 was gSpineNet double-reporting each RELAY endpoint.
   // Both relays are retired (ruling 1), so the gap is gone with them and the
-  // two sides now agree one-for-one: 3 orders for 3 failures.
-  assert.equal(manifest.problems.filter((p) => p.startsWith("edge ")).length, 3,
+  // two sides agreed one-for-one at 3; the freeze pass took both to 0.
+  assert.equal(manifest.problems.filter((p) => p.startsWith("edge ")).length, 0,
     "the work-order count moved");
+  // The freeze pass reports its OWN dropped freezes as problems (a reason with
+  // no node in the draft). None is the expected state; one here means the
+  // redraw retired a node freeze-reasons.json still defends, which G-FROZEN
+  // would only say after promotion.
+  assert.deepEqual(manifest.problems.filter((p) => p.startsWith("freeze:")), [],
+    "the redraw dropped a committed freeze");
 });
 
 test("lore.reported tracks the world this run BUILT, not the node it replaces", () => {
@@ -561,15 +588,32 @@ test("every authored edge survives into the draft, endpoint shapes unmangled", {
     assert.deepEqual(byId.get(e.id).from, e.from, `${e.id}.from was mangled`);
     assert.deepEqual(byId.get(e.id).to, e.to, `${e.id}.to was mangled`);
   }
-  // And the redraw's real consequence is REPORTED. The vanished-town-endpoint
-  // work orders are gone because Step 6 already re-pointed those legs at their
-  // f-town-* features in the committed file; what the generator still has to
-  // name is the ONE unresolved thing left — n-millcross unfrozen in the draft,
-  // which Task 7's root-first refreeze closes. A run that names nothing at all
-  // would mean the reporting path went dark, so it is asserted non-empty.
-  assert.ok(manifest.problems.some((p) =>
-    /^edge e-leg-millcross-gildmark \(leg\): canon-leg endpoint n-millcross is not frozen/.test(p)),
-    `the surviving work order must be named. problems: ${JSON.stringify(manifest.problems)}`);
+  // AND THE REDRAW NOW HAS NO UNRESOLVED CONSEQUENCE LEFT TO REPORT. This
+  // assertion used to require the ONE surviving work order —
+  // `canon-leg endpoint n-millcross is not frozen` — on the grounds that a run
+  // naming nothing meant the reporting path had gone dark. Both halves have
+  // moved: Step 6 re-pointed the vanished-town endpoints in the committed file,
+  // and generate-world step 4b applies the committed freeze to the draft, so
+  // the last three orders resolve at their source rather than being reported.
+  //
+  // "The reporting path is live" is asserted where it can be asserted without
+  // requiring a defect to exist: edgeWorkOrder's own unit test below drives all
+  // three endpoint shapes plus the frozen rule through it on a fixture. What
+  // belongs HERE is the real run's outcome, and the honest one is empty.
+  assert.deepEqual(manifest.problems.filter((p) => p.startsWith("edge ")), [],
+    `every carried edge resolves in the draft now; a work order here is a real regression. ` +
+    `problems: ${JSON.stringify(manifest.problems)}`);
+  // The reason it is empty, stated as its own fact rather than inferred: the
+  // leg endpoints G-CANON-LEG requires frozen ARE frozen in the draft.
+  const draftNodes = readdirSync(join(out, "content/spine/nodes"))
+    .map((f) => rj(join(out, "content/spine/nodes", f)));
+  const nodeById = new Map(draftNodes.map((n) => [n.id, n]));
+  const legEndpoints = [...new Set(draft.filter((e) => e.kind === "leg")
+    .flatMap((e) => [e.from?.node, e.to?.node]).filter(Boolean))];
+  assert.ok(legEndpoints.length > 0, "no leg carries a {node} endpoint — the frozen rule lost its subject");
+  for (const id of legEndpoints)
+    assert.equal(nodeById.get(id)?.frozen, true,
+      `${id} is a canon-leg endpoint and G-CANON-LEG requires it frozen in the draft`);
 });
 
 test("edgeWorkOrder names all three endpoint shapes and the frozen rule", () => {
@@ -629,10 +673,32 @@ test("the three preserved chart anchors survive generation, re-parented and tran
     const n = byId.get(id);
     assert.ok(n, `${id} was deleted — G-ALIAS or T1 will go red`);
     assert.equal(byId.get(n.parentId).tier, "continent", `${id} must hang off a generated continent`);
-    assert.equal(n.frozen, false, `${id} must be unfrozen in the draft`);
-    assert.equal(n.absoluteAnchor, undefined,
-      "G-FROZEN is directional: an unfrozen node carrying absoluteAnchor fails too");
   }
+  // THE FREEZE TRAVELS. This block used to assert the opposite — `frozen ===
+  // false` and no absoluteAnchor on all three — which was true of the carry and
+  // was exactly the defect: a regeneration took the trunk from 10 frozen to 1
+  // and only a Gate-2 test noticed. The freeze set is now applied from
+  // content/spine/freeze-reasons.json (generate-world step 4b), so the draft
+  // carries it, and the directional half of G-FROZEN is asserted from the
+  // AUTHORITY rather than from a hard-coded list: everything the file names is
+  // frozen with a composed anchor, everything it does not name is unfrozen with
+  // no anchor.
+  const reasons = rj(join(ROOT, "content/spine/freeze-reasons.json")).reasons;
+  for (const n of nodes) {
+    if (reasons[n.id]) {
+      assert.equal(n.frozen, true, `${n.id} has a written freeze reason but came out of the draft unfrozen`);
+      assert.ok(Array.isArray(n.absoluteAnchor) && n.absoluteAnchor.length === 2,
+        `${n.id} is frozen in the draft without an absoluteAnchor — G-FROZEN fails a freeze with no anchor`);
+    } else {
+      assert.equal(n.frozen, false, `${n.id} is frozen in the draft with no entry in freeze-reasons.json`);
+      assert.equal(n.absoluteAnchor, undefined,
+        "G-FROZEN is directional: an unfrozen node carrying absoluteAnchor fails too");
+    }
+  }
+  // Every id the authority names must EXIST in the draft, or the freeze was
+  // dropped rather than carried — the half a per-node walk cannot see.
+  for (const id of Object.keys(reasons))
+    assert.ok(byId.has(id), `freeze-reasons.json defends ${id} and the draft does not carry it`);
   // THE PLAN SAID THEIR GEOMETRY SURVIVES VERBATIM (:6983) AND IT COULD NOT:
   // all three sat in the retired 30 x 38 km cluster-1 frame, and every one of
   // those points was open sea in the generated world.
