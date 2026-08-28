@@ -3504,3 +3504,87 @@ until promotion.
    (>= 40 chars AND >= 8 words AND a full stop, all three arms watched red). Worth carrying forward
    as a pattern — the plan wrote the assertion's NAME for what it wanted and its BODY for what was
    easy, and only a mutation told them apart.
+
+### THE FREEZE SURVIVES THE REDRAW (2026-08-29) — one authority, read by three machines
+
+Task 7 shipped a freeze that a regeneration silently destroyed. Both halves of that are closed, in
+three commits: `c707dee` (the gate reads the authority in both directions) · `dff5f06` (the
+generator applies it to the draft) · `3a5a165` (a promotion that drops it is a promotion error).
+`content/spine/freeze-reasons.json` is now the single authority for the freeze SET, read by
+`gSpineFrozen`, by `generate-world.mjs` and by `promote-world.mjs`'s step-5 baseline — the
+constraint lives where the machines read it instead of in one Gate-2 test.
+
+**A — the loss is a Gate-1 failure now.** G-FROZEN's rule was one-directional: it could fail a
+freeze PRESENT without a written reason and could not fail a reason whose freeze had VANISHED.
+Re-measured before the fix: regenerate and the trunk comes back **10 frozen → 1**, with
+`check_content --only=spine` at **0 failures**; the only tripwire was
+`scripts/tests/freeze-reasons.test.mjs`'s set equality, which runs in Gate 2
+(`scripts/integration.sh`), not Gate 1 (`scripts/precheck.sh`). The reverse arm
+(`scripts/check_content.mjs`, end of `gSpineFrozen`) reads every id in the reasons file and fails
+the ones that are not frozen, or that the spine does not carry at all. **Proven red then green on
+the live corpus**: after a regeneration it names all nine nodes whose freeze the redraw dropped
+(`n-atlas` is the one that survives, hence nine and not ten); restored, 0 failures / 8 warnings /
+36 nodes. Two hermetic cases added beside the existing three in `scripts/tests/spine-gates.test.mjs`
+(**122**, was 120), both mutation-proven red with the arm stubbed out. The soft-skip is unchanged
+and load-bearing: no fixture root under `scripts/tests/fixtures/spine` carries a reasons file, so
+the arm is a no-op on all of them.
+
+**B — the six G-FROZEN failures, diagnosed before choosing.** Carrying `doc.frozen` on the
+preserved nodes (`tools/mapforge/generate-world.mjs:918`) does clear the three
+`G-CANON-LEG … endpoint n-millcross is not frozen` items, and produces exactly six failures on the
+draft — measured, not predicted: `n-millcross`, `n-thornveil` and `n-northern-icefield` each
+**"frozen but ancestor n-cluster1 is not"** AND **"frozen without absoluteAnchor"**. *Neither is a
+stale anchor.* One says the freeze must be **ancestor-closed** and a preserved node's new parent is
+a freshly minted continent with nothing to inherit from; the other says a freeze is a flag **and** a
+composed anchor, and the carry drops the anchor because the pre-redraw one is meaningless in the new
+geometry. So the answer is neither of the handoff's two options as stated: a freeze is a property of
+a **SET**, not of a document, and the set is what `freeze-reasons.json` already commits. The
+generator applies it (new step 4b, after the draft tree is built): the flag plus an
+`absoluteAnchor` composed from the **regenerated** geometry, continents included — which is what
+makes the set ancestor-closed — and a reason naming a node the draft does not carry is a loud
+`run.problems` line, proven live by adding a ghost id to the authority. **Not** done in
+`promote-world.mjs` (the handoff's option ii): promotion verifies every file it copies against the
+run manifest's hash map, so re-applying a freeze there would edit node bytes after they were hashed,
+which is the stale-rider hazard that guard exists for — and the draft is gated in its own right.
+
+**What that bought, measured.** The freeze survives regeneration at **10/10**; the promoted node
+bytes are **byte-identical to the ten Task 7 froze by hand**, so the generator derives the same
+anchors; the draft root gates at **0 failures** (was 3) and carries **0 edge work orders** (was 3),
+so **the three carried-canon items ARE cleared** — at their source, not by re-pointing. Ordering is
+a non-issue for one atomic pass: freezing is a write and the composition it reads is the placement,
+so the root-first discipline a hand refreeze needs does not apply.
+
+**Three goldens moved in `tools/mapforge/tests/generate-world.test.mjs`, and one was a proxy.**
+`assert.ok(fails.length > 0, "if this ever reads zero the edges have stopped being carried")` read a
+FAILURE COUNT to police a fact about EDGES; it would have red on the fix. Replaced by the fact it
+was named for — the draft's own `edges.json` census, `{road: 6, leg: 7, sealane: 2}`. The
+carried-canon golden went `[…3 lines…] → []` and the preserved-node block's
+`assert.equal(n.frozen, false)` became an authority-driven loop (everything the file names is frozen
+with an anchor, everything it does not name is unfrozen without one, and every id it names exists).
+All three mutation-proven: stubbing step 4b reds them (**31 of 34**), restored **34/34**.
+
+**The promotion gap the review found (MEDIUM, fixed in `3a5a165`).** `budgets.json`'s
+`promotion.gateRulesThatMustBeGreen` listed only G-ALIAS / G-PARENT / G-TOWN-FRAME, so a promotion
+that wrote a broken freeze logged the gate's red as a NOTE and **exited 0** — the next Gate-1 run
+was the only backstop. G-FROZEN added **with its measurement**, which is what that file's own policy
+requires. Proven red then green END TO END: with step 4b stubbed, generate+promote prints
+`gate integrity rules RED — G-ALIAS, G-FROZEN, G-PARENT, G-TOWN-FRAME over 9 failure line(s)` and
+refuses; restored, `clean … over 0 failure line(s)`. The unit test is armed on the REAL captured
+lines from both failing runs, and the declaration is mutation-proven (deleting the row reds three
+tests). `promote.test.mjs` **42/42**.
+
+**FILED, NOT FIXED (this task):**
+
+1. Neither `gSpineFrozen` (`scripts/check_content.mjs`, both arms) nor `generate-world.mjs`'s step 4b
+   checks that `freezeReasons.reasons` is a plain OBJECT before `Object.keys()` — a committed file
+   whose `reasons` is an array or a string would misbehave rather than fail cleanly. Pre-existing in
+   the forward arm, so not a regression; the schema-shaped fix is one guard beside the load in
+   `checkSpine`.
+2. `scripts/tests/fixtures/world-d/base/world/budgets.json` has drifted from
+   `content/world/budgets.json` independently of this change, and unlike
+   `scripts/tests/fixtures/world/base/world/budgets.json` nothing pins it — `world-gates.test.mjs`'s
+   parity test covers only the `world` fixture.
+3. Step 4b does not itself enforce that the authority's set is ANCESTOR-CLOSED; it trusts the file
+   and lets G-FROZEN's forward arm say so on the draft. True today (`n-atlas` → `n-cluster1` → the
+   three preserved children; the oceans hang off `n-atlas`), and the failure is loud rather than
+   silent, but the set's closure is an unwritten precondition of the file.
