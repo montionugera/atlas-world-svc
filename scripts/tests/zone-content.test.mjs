@@ -1378,3 +1378,53 @@ test("Z0: every committed record's zone slug is kebab-case", () => {
     assert.match(JSON.parse(readFileSync(join(ROOT, "content/zones", f), "utf8")).zone,
       ZONE_ID_RE, `${f}: zone slug is not kebab-case`);
 });
+
+// ---------------------------------------------------------------------------
+// TASK 11 REVIEW FINDING (content, MAJOR 2) — a landmark's `source` pointed at a
+// file that does not carry its name.
+//
+// The six Coldreach records first cited content/world/resolved/continent-03.json,
+// which owns the GROUND but not the NAMES: grep returned 0 for all twelve. The
+// document that mints and publishes them is docs/worldbuilding/A4-zone-allocation.md
+// section 5. Nothing in check_content.mjs reads `source` at all — no Z-rule
+// covers it — so this is the only thing standing between a citation and rot,
+// which is the fifth time this programme has had that conversation (spec 9.6).
+//
+// The LEGACY TEN are measured, not fixed. They are canon and preserved byte for
+// byte under the owner's ruling, and they carry 14 broken citations of their
+// own: 12 names their cited doc does not contain, and 2 pointing at
+// content/maps/cluster1-geography.json, a file the redraw retired. That is Task
+// 15's prose reconciliation. It is pinned as a NUMBER here so it cannot grow
+// quietly and cannot be quietly declared fixed.
+// ---------------------------------------------------------------------------
+test("every landmark source is a real file, and for records written after the redraw it carries the name", () => {
+  const carries = (source, name) => {
+    const path = join(ROOT, source.split("#")[0]);
+    if (!existsSync(path)) return "missing-file";
+    return readFileSync(path, "utf8").toLowerCase().includes(name.trim().toLowerCase()) ? "ok" : "name-absent";
+  };
+
+  // The six, and every record Tasks 12-14 add, must cite a doc that names them.
+  let checked = 0;
+  for (const id of COLDREACH_ZONE_IDS) {
+    const doc = JSON.parse(readFileSync(join(ROOT, `content/zones/zone-${id}.json`), "utf8"));
+    for (const l of doc.landmarks) {
+      assert.ok(l.source, `${id}: landmark "${l.name}" has no source`);
+      assert.equal(carries(l.source, l.name), "ok",
+        `${id}: landmark "${l.name}" cites ${l.source}, which does not carry the name`);
+      checked++;
+    }
+  }
+  assert.equal(checked, 12, "the post-redraw record set moved — this floor must move with it");
+
+  // The legacy ten: measured debt, in both directions.
+  const broken = [];
+  for (const id of ZONE_IDS) {
+    const doc = JSON.parse(readFileSync(join(ROOT, `content/zones/zone-${id}.json`), "utf8"));
+    for (const l of doc.landmarks)
+      if (l.source && carries(l.source, l.name) !== "ok") broken.push(`${id}/${l.name}`);
+  }
+  assert.equal(broken.length, 14,
+    `the legacy ten's broken-citation debt moved to ${broken.length} (was 14). Growing it is a defect; `
+    + "shrinking it means Task 15 landed and this number should be updated, not deleted");
+});

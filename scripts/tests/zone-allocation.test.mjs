@@ -212,10 +212,20 @@ test("a record written for a DERIVED row must agree with the table, not replace 
   const byZone = new Map(rows().map((r) => [r.zone, r]));
   const legacy = new Set(legacyPlaceholderRecords({ root: ROOT }).map((c) => c.zone));
   const written = committedRecords({ root: ROOT }).filter((c) => !legacy.has(c.zone));
+  // A FLOOR, not decoration — REVIEW FINDING (MINOR 2): without it, moving all
+  // six Coldreach records out of content/zones/ left this suite at 33 pass / 0
+  // fail and `--check` still printing "A4 matches the fabric". The whole payload
+  // of the task could vanish and its own gate would stay green. Tasks 12-14
+  // raise this number, the same way the record count in zone-content.test.mjs does.
+  assert.equal(written.length, 6,
+    "the number of records written for derived rows moved — say so here, or an empty loop reports success");
   for (const c of written) {
     const row = byZone.get(c.zone);
     assert.ok(row, `record "${c.zone}" names no row in A4 — a zone slug A4 does not mint is a zone nothing allocated`);
-    assert.equal(row.join, "derived", `${c.zone}: expected a derived row`);
+    // NOT asserting row.join === "derived": `written` is defined as the records
+    // whose slug is NOT reserved, and the PLACEHOLDER rows are by construction
+    // exactly the reserved-slug ten, so that assertion cannot fail. A rule that
+    // cannot fail is a defect, so it is gone rather than left reading as cover.
     assert.equal(row.region, c.region, `${c.zone}: the record's region disagrees with A4`);
     assert.deepEqual([...new Set(row.kinds)].sort(), c.kinds,
       `${c.zone}: the record's resource kinds disagree with A4 — fix the record, never A4`);
@@ -591,6 +601,27 @@ test("no minted name is a name the DRAWN world already publishes", () => {
   const drawn = new Map();
   for (const n of drawnPlaceNames({ root: ROOT })) drawn.set(n.trim().toLowerCase(), n);
   assert.ok(drawn.size > 300, `the drawn world published only ${drawn.size} names — the source is not being read`);
+  // REVIEW FINDING (MAJOR 1): the first version of drawnPlaceNames read
+  // `landmarks` and `towns` only, and missed the 60 named `dungeons`. Renaming a
+  // dungeon onto a minted landmark left this test green. The function enumerates
+  // every array now; this asserts the source really does reach EVERY array that
+  // carries a name, by re-deriving the set here from the files themselves.
+  const expected = new Set();
+  const byArray = new Map();
+  for (const f of readdirSync(join(ROOT, "content/world/resolved")).filter((n) => /^continent-\d+\.json$/.test(n))) {
+    const doc = JSON.parse(readFileSync(join(ROOT, "content/world/resolved", f), "utf8"));
+    for (const [key, value] of Object.entries(doc)) {
+      if (!Array.isArray(value)) continue;
+      for (const p of value)
+        if (p && typeof p.name === "string" && p.name.trim()) {
+          expected.add(p.name.trim());
+          byArray.set(key, (byArray.get(key) ?? 0) + 1);
+        }
+    }
+  }
+  assert.deepEqual([...byArray.keys()].sort(), ["dungeons", "landmarks", "towns", "zones"],
+    "the resolved world grew or lost a name-bearing array — drawnPlaceNames must still reach all of them");
+  assert.equal(drawn.size, expected.size, "drawnPlaceNames is not reading every name the drawn world publishes");
   let checked = 0;
   for (const r of allocate({ root: ROOT }).rows.filter((x) => x.derived)) {
     // An INHERITED landmark is the drawn world's own name, deliberately reused

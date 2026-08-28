@@ -225,8 +225,18 @@ export function legacyPlaceholderRecords({ root }) {
 }
 
 /**
- * Every place name the DRAWN world already publishes — the resolved
- * continents' landmarks (generated `c-lm-cNN-*` ones included) and towns.
+ * Every place name the DRAWN world already publishes.
+ *
+ * It walks EVERY array in a resolved continent and takes any `name` string it
+ * finds, rather than naming the arrays it knows about. REVIEW FINDING (MAJOR 1):
+ * the hand-listed version read `landmarks` and `towns` only and missed
+ * `dungeons` — 60 named places ("Ashvale Cinder Galleries", "Coldreach Arete
+ * Shelters", ...). Renaming a dungeon onto a minted zone landmark left the whole
+ * suite green, which is the very defect this function exists to stop. A
+ * hand-listed source set fails again the day the resolved world grows a new
+ * named array; enumerating closes the class instead of the instance. `zones[]`
+ * is swept too and contributes only region ids (`c03/r06`), which no mint can
+ * produce — harmless, and cheaper than a rule about which arrays count.
  *
  * REVIEW/TASK 11 FINDING, measured: `used` was seeded from reserved.json, the
  * committed records and the hand-pinned canon places, but NOT from the 377
@@ -250,11 +260,20 @@ export function legacyPlaceholderRecords({ root }) {
 export function drawnPlaceNames({ root }) {
   const dir = join(root, "content/world/resolved");
   const out = new Set();
+  // Soft-skip, deliberately, and the same one canonPinsByRegion() takes: a root
+  // with no drawn world is a fixture, not a corrupt corpus. The consequence — an
+  // empty set bars nothing and allocate() mints unguarded — is real, so the REAL
+  // root's floor lives in the gate ("no minted name is a name the DRAWN world
+  // already publishes" asserts the source is large before it asserts anything
+  // about it). Reported here so the trade is visible rather than inferred.
   if (!existsSync(dir)) return out;
   for (const f of readdirSync(dir).filter((n) => /^continent-\d+\.json$/.test(n)).sort()) {
     const doc = JSON.parse(readFileSync(join(dir, f), "utf8"));
-    for (const p of [...(doc.landmarks ?? []), ...(doc.towns ?? [])])
-      if (typeof p.name === "string" && p.name.trim()) out.add(p.name.trim());
+    for (const value of Object.values(doc)) {
+      if (!Array.isArray(value)) continue;
+      for (const p of value)
+        if (p && typeof p.name === "string" && p.name.trim()) out.add(p.name.trim());
+    }
   }
   return out;
 }

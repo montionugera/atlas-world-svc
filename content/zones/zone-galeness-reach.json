@@ -2,7 +2,7 @@
   "zone": "galeness-reach",
   "region": "c03/r12",
   "survey": "surveyed",
-  "reasonToGo": "The only standing wood on the eastern road grows on the far side of a drowned valley here, so anyone who needs a plank, a shaft or a mast walks in at low water and walks out with it before the tide turns.",
+  "reasonToGo": "Wood grows on the seaward side of a drowned valley here and there is no way to take a log out of it but on foot, so anyone who needs a plank, a shaft or a mast walks in and out again inside one tide.",
   "hazards": [
     {
       "id": "the-drowned-crossing",
@@ -22,13 +22,13 @@
       "id": "valley-timber",
       "name": "Valley timber",
       "kind": "timber",
-      "description": "The one stand of wood on this coast, cut on the seaward side of the drowned valley and rafted across at slack water rather than carried the long way round the head of it."
+      "description": "Cut on the seaward side of the drowned valley and rafted across at slack water, because the way round the head of it is three days with a log on your shoulder."
     },
     {
       "id": "headland-greens",
       "name": "Headland greens",
       "kind": "forage",
-      "description": "Meadow growth taken off the open headland from thaw to frost, and the reason a cutting party can work a month out here without a cart coming after it."
+      "description": "Meadow growth taken off the open headland from thaw to frost, and the reason a cutting party feeds itself off the ground instead of out of the villages' stores."
     }
   ],
   "landmarks": [
@@ -36,13 +36,13 @@
       "id": "haulsound-stack",
       "name": "Haulsound Stack",
       "description": "A rib of rock left standing offshore on its own legs. Kept square off the bow it brings a raft in on the right side of the flats; let it drift and the flats have the raft.",
-      "source": "content/world/resolved/continent-03.json"
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     },
     {
       "id": "ford-past-cairnbreak",
       "name": "Ford past Cairnbreak",
-      "description": "The one crossing on the river above the wood, floored with its own gravel and wide enough to walk in the season the timber comes down — which is the only season anyone is here to walk it.",
-      "source": "content/world/resolved/continent-03.json"
+      "description": "The one crossing on the river above the wood, hard-bottomed and shallow in the season the timber comes down — which is the only season anyone is here to walk it.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     }
   ]
 }

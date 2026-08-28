@@ -35,14 +35,14 @@
     {
       "id": "halehaven-roads",
       "name": "Halehaven Roads",
-      "description": "A lagoon closed off from the open shore, and the only water on this coast a hull can lie in without a man watching the weather all night. The stone goes out of it and almost nothing comes back in.",
-      "source": "content/world/resolved/continent-03.json"
+      "description": "A lagoon closed off from the open shore, and the only water on this stretch a hull can lie in without a man watching the weather all night. The stone goes out of it and almost nothing comes back in.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     },
     {
       "id": "reach-out-of-coldwall",
       "name": "Reach out of Coldwall",
-      "description": "The straight of river above the yard, running in a dozen shallow threads across its own gravel — wide, loud, and shallow enough that a loaded sledge crosses it without being unpacked.",
-      "source": "content/world/resolved/continent-03.json"
+      "description": "The straight of river above the yard, spread so wide and so thin over its bed that a loaded sledge is driven straight through it — and loud enough, all the same, that nobody at the yard hears what is coming down the road.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     }
   ]
 }

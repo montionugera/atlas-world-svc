@@ -2,7 +2,7 @@
   "zone": "lodereach-race",
   "region": "c03/r22",
   "survey": "surveyed",
-  "reasonToGo": "Everything the west cuts and everything it ploughs leaves through the one gut behind the offshore bar, so the timber and the grain are stacked on the same mile of shore waiting for the same tide.",
+  "reasonToGo": "Wood and grain both come down to the same mile of shore here — the wood floated to the boom, the grain carted to it — so a party buys either on the beach, before the road takes it up to Tallowquay.",
   "hazards": [
     {
       "id": "the-race-in-the-gut",
@@ -35,14 +35,14 @@
     {
       "id": "haulholt-geo",
       "name": "Haulholt Geo",
-      "description": "The gut between the bar and the shore: mud at low water, a running sea at high, and no clear edge between the two. It is the only way in or out for a hull with anything in it.",
-      "source": "content/world/resolved/continent-03.json"
+      "description": "The gut between the bar and the shore: mud at low water, a running sea at high, and no clear edge between the two. It is the only water on this shore a laden hull can cross at all.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     },
     {
       "id": "confluence-north-of-fastbreak",
       "name": "Confluence north of Fastbreak",
       "description": "Where the river stops being a river — it gives up behind the bar and splits into a fan of shifting channels, and the timber booms are set across the largest of them.",
-      "source": "content/world/resolved/continent-03.json"
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     }
   ]
 }

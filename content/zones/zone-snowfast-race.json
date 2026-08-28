@@ -7,7 +7,7 @@
     {
       "id": "the-braid-that-moved",
       "name": "The braid that moved",
-      "description": "The river runs in a dozen threads across its own gravel and takes different ones each spring. Last year's crossing is this year's chest-deep channel, it is not marked, and the cold does the rest.",
+      "description": "The river runs in a dozen threads over a bed of loose gravel and takes different ones each spring. Last year's crossing is this year's chest-deep channel, it is not marked, and the cold does the rest.",
       "effect": "damage"
     },
     {
@@ -35,14 +35,14 @@
     {
       "id": "keelshore-reach",
       "name": "Keelshore Reach",
-      "description": "The long straight above the upper village where the water gathers into one channel instead of twelve — the only part of this river that looks like a river rather than a field of gravel.",
-      "source": "content/world/resolved/continent-03.json"
+      "description": "The long straight above the upper village where the water runs in one channel instead of splitting — the only part of this river a loaded boat is poled up rather than carried round.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     },
     {
       "id": "confluence-beyond-stormhold",
       "name": "Confluence beyond Stormhold",
       "description": "The dry tongue of ground between two rivers just before they become one. Both villages stack their year on it, because it is the last ground on this side that a flood has not reached.",
-      "source": "content/world/resolved/continent-03.json"
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     }
   ]
 }

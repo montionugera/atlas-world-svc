@@ -10,7 +10,9 @@ here first, before a word of zone prose is written.
 
 **This table is a generated artifact.** It is derived from `content/world/fabric/continent-NN.json`,
 `content/world/premises/continent-NN.json`, `content/world/names/{registers,classifiers,reserved}.json`
-and the ten committed `content/zones/zone-*.json` records by `scripts/lib/zone-allocation.mjs`.
+and the **ten legacy** `content/zones/zone-*.json` records — the ones named for reserved canon places
+— by `scripts/lib/zone-allocation.mjs`. `content/zones/` also holds records written **for derived
+rows** (six as of Task 11); those are checked against this table and never fed into it.
 Do not hand-edit the rows: change the inputs or the rule and re-run
 `node scripts/derive_zone_allocation.mjs --write`. `scripts/tests/zone-allocation.test.mjs` re-derives
 the whole table and fails on any drift.

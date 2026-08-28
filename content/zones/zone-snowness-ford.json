@@ -2,7 +2,7 @@
   "zone": "snowness-ford",
   "region": "c03/r18",
   "survey": "surveyed",
-  "reasonToGo": "Every road east of Tallowquay meets here and every one of them crosses water to do it, so anything going east eats, drinks and dries out at this junction before it goes anywhere at all.",
+  "reasonToGo": "Every road east of Tallowquay meets here and every one of them crosses water to do it, so grain, green and clean water are all sold at the fords to people who cannot go on without them.",
   "hazards": [
     {
       "id": "the-undertow-in-the-basins",
@@ -42,13 +42,13 @@
       "id": "rimehold-race",
       "name": "Rimehold Race",
       "description": "One of three basins scoured out under the falls above the junction, loud enough that a party shouts across it, with an undercut behind the water that nobody has been paid enough to sound.",
-      "source": "content/world/resolved/continent-03.json"
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     },
     {
       "id": "reach-off-keelfast",
       "name": "Reach off Keelfast",
       "description": "The dry step above the river, cut when the water stood higher than it does now. The eastern road runs along it clear of every crossing, and it is the only ground at the junction big enough to camp a train on.",
-      "source": "content/world/resolved/continent-03.json"
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     }
   ]
 }

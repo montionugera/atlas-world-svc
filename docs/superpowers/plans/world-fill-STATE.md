@@ -4188,9 +4188,8 @@ untouched here.
 `plunge-pool` x3) · `lodereach-race` c03/r22 crop + timber (forest 23.3%, `floodplain-levee` x3).
 Identity comes from the **road tree**, which is measured and not invented: all six hang off
 `c-town-tallowquay` in `c03/r21`, west through r15 to r22 and east through r18 — the junction where
-every eastern road meets — to r12 and r10 and out to r06, the far terminus. Two claims were checked
-before they were written and both hold: r12 is **the only region on the eastern chain carrying
-forest at all** (3.3% against 0.2 / 0 / 0), and `c03/r18` is the only region three roads meet in.
+every eastern road meets — to r12 and r10 and out to r06, the far terminus. One claim checked before writing holds — `c03/r18` is the only region three
+roads meet in (`rd05`, `rd06`, `rd10`). **The other was false and the review caught it; see below.**
 Three hazards are **absence** hazards carrying the D3 `note` (no fuel on the steppe, no side off the
 canyon, the crossing that ceases); the unmapped-effect ratio goes 13/23 -> **16/35**, i.e. down from
 57% to 46%.
@@ -4243,3 +4242,78 @@ rot back into the wrong one.
   geo. Worth a rule if the pattern recurs across Tasks 12-14.
 - `content/zones/*.json`'s `spineId` is still unset on all sixteen; the fabric join and the spine join
   remain unrelated keys (carried forward from Tasks 9 and 10).
+
+### TASK 11 REVIEW — two independent adversarial passes, eight findings acted on (2026-08-29)
+
+One reviewer read the six as an **editor and fact-checker**, one read the diff as an **engineer**;
+both ran on `a2508de` and both found real defects. The content pass mattered most, which is the point
+of running it separately — the code was green through every prose defect below.
+
+**CONTENT MAJOR 1 — "the only standing wood on the eastern road" was FALSE, and it is the
+absence-as-fact defect again.** Re-measured independently by point-in-polygon of every eastern road
+point against c03's region rings: the road crosses **eleven** regions, and `c03/r19` (forest 4.7%),
+`c03/r20` (**8.7%**) and `c03/r21` (5.2%) all carry more wood than `galeness-reach`'s `c03/r12`
+(3.3%). All three are **reported**, so they carry no survey record — and the first version of the
+paragraph above, written by me, compared only the four surveyed regions and published "3.3% against
+0.2 / 0 / 0". **An absence of a survey record was published as an absence of wood**, which is exactly
+the "nine surveyed landmasses" failure named in the task brief. The superlative is gone; the record
+now says what the drowned valley does to anyone carrying a log, which is what the ground supports.
+
+**CONTENT MAJOR 2 — all twelve landmarks cited a file that does not carry their names.** They cited
+`content/world/resolved/continent-03.json`, which owns the GROUND; `grep` returns **0** for all
+twelve names. The document that mints and publishes them is `A4-zone-allocation.md` §5, and that is
+what they cite now (verified: 12 of 12 present). **Nothing in `check_content.mjs` reads `source` at
+all**, so a new test owns it — and measuring the whole corpus turned up the bigger half: **the legacy
+ten carry 14 broken citations**, 12 names their doc does not contain plus 2 pointing at
+`content/maps/cluster1-geography.json`, *a file the redraw retired*. Those are canon and preserved
+byte for byte, so they are **pinned as a number that fails in both directions** rather than fixed
+here — growing the debt is a defect, shrinking it means Task 15 landed. Three mutations killed.
+
+**CONTENT MAJOR 3 — `lodereach-race` routed the west's whole export past the continent's only port.**
+`c03/r22` is 36.9 km of road from `c-town-tallowquay` (`rd03` + `rd01`), and A2 §2 makes Tallowquay
+the trade-wind lane's terminus. Re-voiced: the gut is how wood and grain reach the beach, and the
+road takes them up to Tallowquay.
+
+**CONTENT MINOR, all acted on** — three competing anchorage-uniqueness claims scoped to their own
+shores; "its own gravel" in four records and two near-identical ford sentences rewritten;
+"one channel instead of twelve" regrounded on the delta and anabranch the region actually declares;
+`galeness-reach` no longer reads `c03/r12` as unpeopled (it holds two villages); `snowness-ford`'s
+reasonToGo now names what is carried out rather than a service. **Accepted, not changed:** `damage`
+is 6 of 9 mapped effects — six different bodily harms, and it is the runtime's general-injury bucket.
+
+**CODE MAJOR — `drawnPlaceNames` read `landmarks` and `towns` only and missed the 60 named
+`dungeons`.** Proven by renaming a dungeon onto `Halehaven Roads`: the suite stayed **33 pass / 0
+fail**; the same name onto `landmarks` red. It enumerates **every array** in a resolved continent
+now and takes any `name` — the class, not the instance, because a hand-listed source set breaks again
+the day the drawn world grows an array. The gate re-derives the source set from the files and asserts
+the name-bearing arrays are exactly `dungeons, landmarks, towns, zones`. No live collision existed,
+so **A4 did not move** (`--check` clean, table byte-identical).
+
+**CODE MINOR, all acted on** — the derived-agreement test had **no floor**: moving all six records
+out of `content/zones/` left it 33 pass / 0 fail with `--check` still green, so the task's whole
+payload could vanish inside its own gate; it floors at 6 now, mutation-proven. An `assert.equal(row.join,
+"derived")` that could not fail (by construction `written` excludes every PLACEHOLDER row) is deleted
+rather than left reading as cover. `drawnPlaceNames`' soft-skip on a missing resolved directory is
+documented as the trade it is. A4's opening line still said the table derives from "the ten committed
+records" when the directory holds sixteen.
+
+**Confirmed clean by the code reviewer, not changed:** all three `committedRecords` ->
+`legacyPlaceholderRecords` re-points are corrections and none was weakened (each mutation-killed);
+`--write` five times is byte-identical (md5 `ab21dee5…`) and independent of array order — reversing
+every array in a copied tree changed **0 of 40** rows; the name re-mint moved `zone` in 19 cells and
+`landmarks` in 22 and left `continent`, `region`, `terrain`, `kinds` and `join` identical on every
+row, so the commit message's claim holds; a 7th record not listed in `COLDREACH_ZONE_IDS` reds three
+tests rather than going unchecked; `reserved.json` emptied reports rather than silently re-deriving
+the canon ten.
+
+**Filed, not chased.**
+
+- **Nothing binds a zone landmark to the landform instance it stands on.** Four of the twelve name a
+  feature of a type whose region also holds a drawn-named sibling (`c03/r15` ford 2 of which 1 named,
+  `c03/r06` braided-channel 2/1, `c03/r18` plunge-pool 3/1, `c03/r22` delta 2/1). A free instance
+  exists in every case so no defect is provable — but neither is the negative, because neither
+  `instances[]` nor `landmarks[]` carries an instance→landmark id. Tasks 12-14 meet this on a denser
+  corpus.
+- The plan's Task 12 text tells its author to cite `content/world/resolved/continent-04.json` for a
+  fabric-placed landmark. Under MAJOR 2's rule that is a citation to a file that will not carry the
+  name; Task 12 should cite A4 §5 as Task 11 now does, or the new gate reds.
