@@ -1,5 +1,7 @@
 {
   "zone": "ashvale-front",
+  "region": "c02/r01",
+  "survey": "surveyed",
   "reasonToGo": "The only ground both towns reach in a day and neither can hold, which is why four seasons of what either army carried is still lying on it.",
   "hazards": [
     {

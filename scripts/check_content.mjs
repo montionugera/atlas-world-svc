@@ -217,6 +217,30 @@ function loadBestiaryDesigns(path) {
 // cosmetic only: every fixture assertion is /geography: .* is shape-invalid/,
 // which both spellings satisfy.
 const placesByRoot = new Map();
+// Plan E Task 9: the fabric region index gains a SECOND reader. checkSpine has
+// read it since Task 2 (G-SPINE-COMPLETE's fabric pins) and checkZoneContent
+// reads it now (Z2 in both directions). Both must FAIL its problems — a fabric
+// nobody can list is not a soft-skip — but a full sweep must print each problem
+// ONCE, which is why the index is memoised per content root and each problem is
+// failed only the first time it is seen. `fabricRegionCountsFor` APPENDS
+// stale-pin problems to the same array after checkZoneContent has already
+// drained it, so the counter (not a boolean) is what lets the spine sweep
+// report only what it added. Same run-scoped-state discipline as placesByRoot:
+// cleared in main().
+const fabricByRoot = new Map();
+const fabricProblemsReported = new Map();
+function fabricIndexFor(contentRoot) {
+  if (!fabricByRoot.has(contentRoot))
+    fabricByRoot.set(contentRoot, loadFabricRegionIndex({ contentRoot }));
+  return fabricByRoot.get(contentRoot);
+}
+function failNewFabricProblems(contentRoot) {
+  const index = fabricIndexFor(contentRoot);
+  const from = fabricProblemsReported.get(contentRoot) ?? 0;
+  for (const p of index.problems.slice(from)) fail(p);
+  fabricProblemsReported.set(contentRoot, index.problems.length);
+  return index;
+}
 // Ruling 7a (owner, 2026-08-26; STATE §28): the resolved world's town ids are
 // the CIVIL ids (`c-town-rooktide`), but every consumer of these sets —
 // bestiary region slugs, `art:town-<slug>` keys, story refs — speaks BARE
@@ -374,6 +398,8 @@ function main() {
   // fills it. Without the reset, a second in-process `--only=spine` run gets
   // run one's geography document and re-reports none of its problems.
   placesByRoot.clear();
+  fabricByRoot.clear();
+  fabricProblemsReported.clear();
   const opts = parseArgs(process.argv);
   if (opts.only === "spine") {
     // Gate 1 fast path (--only=spine): structural spine gates only (~1 s),
@@ -1152,10 +1178,18 @@ function checkZoneContent(opts) {
     "zone-content schema", fail);
   if (!validate) return 0;
 
-  // REQUIRED once a zone file exists: Z1 and Z2 are both assertions against
-  // the Cartographer's geography, which is the authority on which zones exist.
+  // Plan E Task 9: the FABRIC is the authority on which ground exists and
+  // whether anyone walked it. Z1 still checks the DRAWN world (a record must
+  // join to a zone the renderer knows); Z2 now checks the fabric in BOTH
+  // directions and filters on survey. The two authorities are deliberately
+  // different documents over the same subject, so a disagreement between the
+  // drawn world and the fabric surfaces as a FAIL instead of hiding.
   const zones = loadGeographyZones(opts.contentRoot);
   if (!zones) return 0;
+  const fabric = failNewFabricProblems(opts.contentRoot);
+  // Soft-skip only when NEITHER layer is present. A root with one of them is a
+  // root that has adopted the world and must be checked against it.
+  if (!zones.size && !fabric.byRegionId.size) return 0;
 
   const records = []; // { label, file, doc } for every valid record naming a real zone
 
@@ -1174,13 +1208,25 @@ function checkZoneContent(opts) {
       continue; // downstream rules assume a valid shape
     }
 
-    // Z1 — the zone exists in the Cartographer's geography. This is also the
+    // Z1 — the record's REGION exists in the drawn world. This is also the
     // "no orphans" half of Z2. Unlike checkBestiaryPlacement's G1 this does
     // NOT continue: Z3/Z4/Z5/Z7 are purely intra-record, so bailing here would
     // hide real defects behind one typo. The orphan is FAILed and simply not
     // pushed into `records`, which withholds it from Z2, Z6 and the count.
-    const known = zones.has(doc.zone);
-    if (!known) fail(`${label}: zone "${doc.zone}" not in content/world/resolved#zones`);
+    //
+    // PLAN E TASK 9, DEVIATION FROM THE PLAN TEXT (measured): the plan says
+    // "Z1 still checks the drawn world (a record must name a zone the renderer
+    // knows)" and leaves the subject as `doc.zone`. After the redraw NO drawn
+    // zone id is a slug — measured, 0 of 160 resolved zone ids match
+    // /^[a-z-]+$/ and all 160 are `cNN/rNN` — so keeping `doc.zone` as the
+    // subject would leave all 10 committed records permanently orphaned with
+    // no remedy in any task, contradicting Task 11 Step 1's own acceptance
+    // criterion ("no Z1-Z7 failure survives") and its own record shape
+    // (`"zone": "tallowquay-roads", "region": "c03/r01"`). The SUBJECT moves to
+    // `doc.region`; the `zone` slug stays the human name and keeps its
+    // duplicate rule below.
+    const known = zones.has(doc.region);
+    if (!known) fail(`${label}: region "${doc.region}" not in content/world/resolved#zones`);
 
     // Z3 — floors (design D4). Owned here, not by the schema: Ajv would emit
     // "/hazards must NOT have fewer than 2 items" and would reject the doc
@@ -1233,18 +1279,51 @@ function checkZoneContent(opts) {
 
   // --- pass 2: the cross-file rules -----------------------------------------
 
-  // Z2 — completeness, the direct analogue of the placement gate's G4. The
-  // geography is the authority; every zone it declares must have exactly one
-  // record. Missing = the pass is half-finished; duplicated = two files claim
-  // the same ground. (An orphan was already FAILed by Z1 and is not here.)
+  // Z2 — completeness, the direct analogue of the placement gate's G4.
+  // Missing = the pass is half-finished; duplicated = two files claim the same
+  // ground. (An orphan was already FAILed by Z1 and is not here.)
   for (const [zone, group] of findDuplicateGroups(records, (r) => r.doc.zone))
     fail(`zones: zone "${zone}" has ${group.length} records (${group.map((r) => r.file).sort().join(", ")})`);
 
-  // Iterates the geography, NOT the files: the whole point of Z2 is the zone
-  // that was never written.
-  const covered = new Set(records.map((r) => r.doc.zone));
-  for (const id of zones.keys())
-    if (!covered.has(id)) fail(`zones: geography zone "${id}" has no record in content/zones/`);
+  // ── Z2, BOTH DIRECTIONS (plan E / spec §9.5) ───────────────────────────────
+  // Direction 1 unchanged in spirit: iterate the GROUND, not the files — the
+  // whole point of Z2 is the region that was never written. The authority moved
+  // from the retired mirror to content/world/fabric/, and it now filters on
+  // survey: a reported region needs no prose.
+  //
+  // Direction 2 is new and is the half that makes "40 written, 120 hatched" a
+  // policy instead of a hope. Without it the frontier erodes into 160 thin
+  // stubs (R13). It is a FAIL, never a warning.
+  const coveredRegions = new Map();
+  for (const r of records) {
+    const declared = r.doc.survey;
+    const region = r.doc.region;
+    const known = fabric.byRegionId.get(region);
+    if (!known) {
+      fail(`zones: zone record "${r.doc.zone}" names region "${region}", which no fabric file declares`);
+      continue;
+    }
+    if (known.survey !== declared)
+      fail(`zones: zone record "${r.doc.zone}" declares survey "${declared}" but fabric region "${region}" is "${known.survey}"`);
+    if (known.survey === "reported")
+      fail(`zones: zone record "${r.doc.zone}" is on a reported region — writing prose for unwalked ground is exactly the dishonesty the hatching prevents`);
+    coveredRegions.set(region, r);
+  }
+
+  // NOT IN THE PLAN TEXT, and the hole it closes was measured: the plan's Z2
+  // body is only `coveredRegions.set(region, r)`, which silently overwrites —
+  // two records on one region both count as coverage and neither is named,
+  // leaving the region-to-record bijection Tasks 10-14 build unenforced. Same
+  // rule, same shape and same N-record handling as the zone-slug duplicate
+  // above; it runs over `records` (not the Map) so a third claimant is named
+  // too. Only records whose region the fabric knows can collide, because the
+  // unknown-region branch above `continue`s.
+  for (const [region, group] of findDuplicateGroups(
+    records.filter((r) => fabric.byRegionId.has(r.doc.region)), (r) => r.doc.region))
+    fail(`zones: region "${region}" has ${group.length} records (${group.map((r) => r.file).sort().join(", ")})`);
+  for (const [id, meta] of fabric.byRegionId)
+    if (meta.survey === "surveyed" && !coveredRegions.has(id))
+      fail(`zones: surveyed region "${id}" has no record in content/zones/`);
 
   // Z6 — distinctiveness (design D4/C5). Terrain is too coarse an axis to keep
   // ten zones apart — three of them are "river-country" — so identity is
@@ -2357,15 +2436,16 @@ function checkSpine(opts, mobTypes) {
   // Plan E (E-C3): after the redraw the regions live in content/world/fabric/,
   // so a continent's completeness is proved by its fabric pin, not by spine
   // children. An absent fabric dir yields an empty map and today's behaviour.
-  const fabricIndex = loadFabricRegionIndex({ contentRoot: opts.contentRoot });
+  const fabricIndex = fabricIndexFor(opts.contentRoot);
   const complete = checkSpineComplete({
     tree,
     fabricRegionCounts: fabricRegionCountsFor({ nodes: validNodes, index: fabricIndex }),
   });
   // After the counting: fabricRegionCountsFor appends stale-pin problems to
   // the same array (review fix — a dead pin names itself, it does not hide
-  // inside "has no children").
-  for (const p of fabricIndex.problems) fail(p);
+  // inside "has no children"). Only the ones checkZoneContent has not already
+  // reported are failed here (Plan E Task 9) — the index is shared now.
+  failNewFabricProblems(opts.contentRoot);
   for (const w of complete.warns) warn(w);
   if (opts.requireComplete) for (const e of complete.errors) fail(e);
   else for (const e of complete.errors) warn(e);
@@ -3825,9 +3905,9 @@ function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0
 // argument lapses and the capture must move to an explicit sink.
 //
 // EVERY module-level mutable binding in this file is reset here. There are
-// SIX, not the four the plan's risk A7 names — the enumeration below is the
-// contract, and `no-leak: …` in spine-gates.test.mjs pins the ones a run can
-// actually observe:
+// EIGHT — six until Plan E Task 9 added the fabric memo and its report counter
+// (7 and 8 below) — the enumeration below is the contract, and the leak tests
+// in spine-gates.test.mjs pin the ones a run can actually observe:
 //   1. `failures`   (:225)  — reset; the exit code and every FAIL line read it
 //   2. `warnings`   (:226)  — reset; every WARN line reads it
 //   3. `zoneHazardsTotal`   (:231) — reset; summaryLines' guard reads it
@@ -3841,7 +3921,15 @@ function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0
 //      because main() already clears it (see the note there: checkSpine ->
 //      checkSpineExternalAliases -> placesDoc is reachable under --only=spine
 //      whenever an alias misses the spine).
-// There is NO seventh. An independent review checked the whole transitive
+//   7. `fabricByRoot`        — reset. checkSpine reads it on EVERY --only=spine
+//      run (G-SPINE-COMPLETE's fabric pins), so a same-root re-entry would
+//      otherwise reuse run one's index.
+//   8. `fabricProblemsReported` — reset, and this is the one that actually
+//      bites: it is the counter that says "these problems have already been
+//      printed". Left standing, run two of an unlistable or shape-invalid
+//      fabric prints ZERO fabric FAILs while exiting 0 — the memo
+//      short-circuiting before the fail() calls, exactly as (5) and (6) do.
+// There is NO ninth. An independent review checked the whole transitive
 // local-import closure — lib/story.mjs, spawn-pairing, places, bestiary-sheet,
 // town-geometry, spine, geometry — for module-level reassignment, container
 // mutation and property assignment, and found zero mutable module state in any
@@ -3861,6 +3949,11 @@ export function runSpineGateInProcess({ argv }) {
   zoneHazardsUnmapped = 0;
   townPlansCache = null;
   placesByRoot.clear();
+  // Plan E Task 9: the fabric index and — the half that can go dark — the
+  // counter of which of its problems have already been failed. See (7) and (8)
+  // in the enumeration above.
+  fabricByRoot.clear();
+  fabricProblemsReported.clear();
   // Ruling 7a: resolvedWorldSets() builds from placesDoc(), whose problems are
   // reported ONCE per run through fail() and then memoised. Keeping stale sets
   // here would skip that placesDoc call entirely on a second in-process run

@@ -1,5 +1,7 @@
 {
   "zone": "emberdown",
+  "region": "c02/r08",
+  "survey": "surveyed",
   "reasonToGo": "The only hillside in the land where the fuel and the food come out of the same ground.",
   "hazards": [
     {

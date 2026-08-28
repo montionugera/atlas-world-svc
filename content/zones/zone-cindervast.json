@@ -1,5 +1,7 @@
 {
   "zone": "cindervast",
+  "region": "c02/r02",
+  "survey": "surveyed",
   "reasonToGo": "A city the weapon took without knocking it down: intact mortar, no rubble in the streets, and what the people in it were carrying still where they dropped it.",
   "hazards": [
     {

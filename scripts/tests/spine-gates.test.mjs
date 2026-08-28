@@ -1856,6 +1856,32 @@ t11("in-process: placesByRoot does NOT leak — a geography problem FAILs on EVE
   assert11.equal(second.out, first.out);
 });
 
+// PLAN E TASK 9 added a THIRD memo pair, and the half that can go dark is the
+// counter, not the index: `fabricProblemsReported` records which of the fabric
+// index's problems have already been failed, so that a full sweep prints each
+// one once across checkZoneContent and checkSpine. Left un-reset, run two of an
+// UNLISTABLE fabric prints zero fabric FAILs and exits 0 — the gate seeing a
+// broken world and reporting nothing, which is the exact failure mode the two
+// memo tests above exist for. Mutation-checked: deleting
+// `fabricProblemsReported.clear()` from runSpineGateInProcess turns this red
+// (1 fabric FAIL -> 0, and exit 1 -> 0 on the second run).
+t11("in-process: the fabric problem counter does NOT leak — an unreadable fabric FAILs on EVERY run", () => {
+  const dir = spineFixture();
+  mkdirSync(join11(dir, "world/fabric"), { recursive: true });
+  // The filename must match /^continent-\d+\.json$/ or loadFabricRegionIndex
+  // never looks at it and the test passes for no reason.
+  write11(join11(dir, "world/fabric/continent-02.json"), "{ not json");
+  const first = runSpineGateInProcess({ argv: ["--only=spine", "--content-root", dir] });
+  const second = runSpineGateInProcess({ argv: ["--only=spine", "--content-root", dir] });
+  const fabricOf = (r) => r.out.split("\n")
+    .filter((l) => /^FAIL {2}fabric: content\/world\/fabric\/continent-02\.json is unreadable/.test(l));
+  assert11.equal(first.code, 1, first.out);
+  assert11.equal(fabricOf(first).length, 1, first.out);
+  assert11.equal(second.code, 1, second.out);
+  assert11.equal(fabricOf(second).length, 1, second.out);
+  assert11.equal(second.out, first.out);
+});
+
 t11("in-process: no test in this file is async — the console capture's safety argument depends on it", () => {
   // runSpineGateInProcess swaps console.log/console.error and restores them in
   // a `finally`. That is safe against interleaving for ONE reason: the call and

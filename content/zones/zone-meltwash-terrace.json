@@ -1,5 +1,7 @@
 {
   "zone": "meltwash-terrace",
+  "region": "c02/r16",
+  "survey": "surveyed",
   "reasonToGo": "The last drained ground before the crossing: grass for the stock, gravel underfoot, and a camp that is still standing when the water goes down.",
   "hazards": [
     {

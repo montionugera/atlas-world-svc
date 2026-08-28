@@ -211,9 +211,15 @@ const REAL_WORLD = (() => {
 })();
 const GEOGRAPHY_ZONE_IDS = REAL_WORLD.zones.map((z) => z.id);
 
-/** A Z3-complete record: two hazards, two resources, two landmarks, a reason. */
-const completeRecord = (zone) => ({
+/** A Z3-complete record: two hazards, two resources, two landmarks, a reason.
+ *  Plan E Task 9 added the two JOIN keys (`region`, `survey`) to
+ *  zone-content.schema.json's `required`, so a record without them is
+ *  schema-invalid and never reaches the Z-rules or the count. `region` matters
+ *  only to the gate test below; MEASURES.zones never reads it. */
+const completeRecord = (zone, region = "c02/r01") => ({
   zone,
+  region,
+  survey: "surveyed",
   reasonToGo: `why anyone walks into ${zone}`,
   hazards: [{ id: "h-one" }, { id: "h-two" }],
   resources: [{ id: "r-one" }, { id: "r-two" }],
@@ -346,6 +352,18 @@ test("the gate and the zones measure agree on which filenames are records", () =
       instances: [], relay: null, distances: null, seaLane: null, sheet: null,
     }));
 
+    // Plan E Task 9: Z2's authority is the FABRIC, so the root needs one — and
+    // writing any fabric file arms G-POI, whose floor is 12 points of interest
+    // on surveyed ground (scripts/lib/world.mjs:626). One surveyed region, the
+    // one the record joins to, with twelve instances on it.
+    mkdirSync(join(root, "content/world/fabric"), { recursive: true });
+    writeFileSync(join(root, "content/world/fabric/continent-02.json"), JSON.stringify({
+      continent: "c02",
+      regions: [{ id: GEOGRAPHY_ZONE_IDS[0], survey: "surveyed" }],
+      instances: Array.from({ length: 12 },
+        (_, i) => ({ id: `poi-${i}`, region: GEOGRAPHY_ZONE_IDS[0] })),
+    }));
+
     // Hermeticity, exactly as Task 4's fixture()/runGate() do it. parseArgs in
     // check_content.mjs defaults --keys, --manifest, --mob-types and
     // --spawn-areas to the LIVE repo artifacts (colyseus-server/generated/*,
@@ -363,13 +381,16 @@ test("the gate and the zones measure agree on which filenames are records", () =
     // `zone-emberdown.json` is the ONLY record. The other three sit one
     // character off the pattern on three different sides: no hyphen, a plural
     // stem, and no `zone` stem at all.
-    // The zone id must be one the fixture geography above declares, or Z1
-    // orphans the record and checkZoneContent's `N zones` count — the very
-    // number this test reads — drops to 0. It used to be the legacy slug
-    // "emberdown"; on the redrawn trunk it is the first real resolved zone id.
-    // The FILENAME stays `zone-emberdown.json`: this test is about the filename
-    // filter, so the file's slug is deliberately NOT the record's zone id.
-    const record = completeRecord(GEOGRAPHY_ZONE_IDS[0]);
+    // PLAN E TASK 9 CORRECTION. This comment used to say the record's `zone`
+    // becomes the resolved region id, citing Task 11's shape as `"zone":
+    // "c02/r21"`. Read on the plan: Task 11's record is `"zone":
+    // "tallowquay-roads", "region": "c03/r01"` — the slug stayed a NAME and the
+    // region id became a separate JOIN key, which is the key Z1 and Z2 both
+    // read. So the slug goes back to being a slug and `region` carries the
+    // first real resolved zone id; get that wrong and Z1 orphans the record and
+    // checkZoneContent's `N zones` count — the very number this test reads —
+    // drops to 0.
+    const record = completeRecord("emberdown", GEOGRAPHY_ZONE_IDS[0]);
     record.hazards = [{ id: "h-one", name: "H one", description: "d", effect: "burn" },
                       { id: "h-two", name: "H two", description: "d", effect: "poison" }];
     record.resources = [{ id: "r-one", name: "R one", kind: "fuel", description: "d" },

@@ -74,6 +74,14 @@ const FIXTURE_KINDS_BY_ZONE = {
   "cindervast": ["salvage", "ore"],
 };
 
+// PLAN E TASK 9. A record joins the world by `region` (a fabric region id), not
+// by its slug — after the redraw no drawn zone id is a slug at all. These are
+// hermetic fixture regions, ten of them so the fixture is a clean bijection;
+// they are NOT the committed records' regions and must not be "reconciled"
+// with them, for the same reason FIXTURE_KINDS_BY_ZONE is not.
+const FIXTURE_REGION_BY_ZONE = Object.fromEntries(
+  ZONE_IDS.map((id, i) => [id, `c02/r${String(i + 1).padStart(2, "0")}`]));
+
 function compile() {
   return new AjvClass({ allErrors: true }).compile(
     JSON.parse(readFileSync(SCHEMA_PATH, "utf8")));
@@ -86,6 +94,8 @@ function zoneRecord(id) {
   const [k1, k2] = FIXTURE_KINDS_BY_ZONE[id];
   return {
     zone: id,
+    region: FIXTURE_REGION_BY_ZONE[id],
+    survey: "surveyed",
     reasonToGo: `What a person walks into ${id} to take out again.`,
     hazards: [
       { id: `${id}-hazard-a`, name: `${id} hazard A`, description: "d", effect: "burn" },
@@ -360,9 +370,20 @@ test("the committed records have ten distinct resource-kind sets and no shared l
   assert.equal(kindSets.size, 10);
 });
 
+// Plan E Task 9: Z1's subject moved from `doc.zone` to `doc.region`, so the
+// drawn world this fixture stands for is keyed by REGION id. `name` keeps the
+// slug so a failure message still reads legibly.
 const GEOGRAPHY = {
-  zones: ZONE_IDS.map((id) => ({ id, name: id, levelBand: ZONE_BANDS[id] })),
+  zones: ZONE_IDS.map((id) => ({
+    id: FIXTURE_REGION_BY_ZONE[id], name: id, levelBand: ZONE_BANDS[id],
+  })),
 };
+
+// The fabric half of the same fixture: the authority on which ground exists and
+// whether anyone walked it. Default = the same ten regions, all surveyed, so
+// the baseline root is a clean bijection and every Z2 test has to manufacture
+// the disagreement it asserts.
+const FABRIC = ZONE_IDS.map((id) => ({ id: FIXTURE_REGION_BY_ZONE[id], survey: "surveyed" }));
 
 // All ten records, keyed by filename. `mutators` is zoneId -> (record) => void,
 // applied after construction so a test can reach into a nested array.
@@ -402,7 +423,7 @@ function writeResolvedFixture(dir, { zones = [], towns = [], body = null } = {})
   writeFileSync(join(dir, "content/world/resolved/continent-02.json"), bytes);
 }
 
-function fixture({ zones = {}, geography = GEOGRAPHY, zoneSchema = true } = {}) {
+function fixture({ zones = {}, geography = GEOGRAPHY, zoneSchema = true, fabric = FABRIC } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "zone-gate-"));
   mkdirSync(join(dir, "content/characters"), { recursive: true });
   mkdirSync(join(dir, "content/schemas"), { recursive: true });
@@ -411,6 +432,23 @@ function fixture({ zones = {}, geography = GEOGRAPHY, zoneSchema = true } = {}) 
     towns: geography === null ? [] : geography.towns ?? [],
     body: geography === null ? "null" : null,
   });
+  // `fabric: null` = no content/world/fabric at all (the half-soft-skip path).
+  //
+  // The twelve instances per SURVEYED region are not decoration: writing any
+  // fabric file at all arms G-POI (scripts/lib/world.mjs:626), whose floor is
+  // 12 points of interest on surveyed ground. Without them every fixture root
+  // here would exit 1 on a rule that has nothing to do with the Z-rules. A
+  // reported region gets none, which is the same gate's other half.
+  if (fabric !== null) {
+    mkdirSync(join(dir, "content/world/fabric"), { recursive: true });
+    const instances = [];
+    for (const r of fabric)
+      if (r.survey === "surveyed")
+        for (let i = 0; i < 12; i++)
+          instances.push({ id: `${r.id}/i${i}`, region: r.id });
+    writeFileSync(join(dir, "content/world/fabric/continent-02.json"),
+      JSON.stringify({ continent: "c02", regions: fabric, instances }));
+  }
   const schemas = ["character.schema.json", "map.schema.json"];
   if (zoneSchema) schemas.push("zone-content.schema.json");
   for (const s of schemas)
@@ -508,11 +546,33 @@ test("the zone-content line is PRESENT once the root has zone records", () => {
 // throws on the first record and the gate dies with a stack trace instead of a
 // FAIL line. This test says nothing about how many times the geography is
 // parsed; see the Interfaces note on reusing loadGeographyZones unchanged.
+// PLAN E TASK 9 SPLIT THIS IN TWO, because Z2's authority is no longer the same
+// document as Z1's. With BOTH layers unusable the contract is unchanged: one
+// shape-invalid FAIL and a clean bail. With only the DRAWN world broken the
+// fabric is still an authority, and the gate must say so rather than fall
+// silent — that is the second test, and it is new coverage, not a relaxation.
 test("a geography parsing to null is one shape-invalid FAIL, not a skip", () => {
-  const r = runGate(fixture({ zones: allZones(), geography: null }));
+  const r = runGate(fixture({ zones: allZones(), geography: null, fabric: null }));
   assert.equal(r.code, 1);
   assert.match(r.out, /geography: .* is shape-invalid/);
   assert.doesNotMatch(r.out, /has no record in content\/zones\//);
+  // The bail is CLEAN, not silent: the shape failure is the only zone-side line.
+  assert.doesNotMatch(r.out, /not in content\/world\/resolved#zones/);
+  assert.match(r.out, /0 zones/);
+});
+
+test("a broken drawn world with a healthy fabric names BOTH disagreements", () => {
+  const r = runGate(fixture({ zones: allZones(), geography: null }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /geography: .* is shape-invalid/);
+  // Z1 against the drawn world…
+  assert.match(r.out, /zones\/zone-thornveil\.json: region "c02\/r04" not in content\/world\/resolved#zones/);
+  // …and Z2 direction 1 against the fabric, which is intact and still owed
+  // prose. Ten of each: the record is withheld from `records` by Z1, so its
+  // region reads as uncovered. A gate that printed only one of these would be
+  // publishing one authority's silence as the other's verdict.
+  assert.equal((r.out.match(/not in content\/world\/resolved#zones/g) ?? []).length, 10);
+  assert.equal((r.out.match(/has no record in content\/zones\//g) ?? []).length, 10);
 });
 
 test("a schema-invalid record FAILs and its Z-rules are skipped, not crashed on", () => {
@@ -527,10 +587,14 @@ test("a schema-invalid record FAILs and its Z-rules are skipped, not crashed on"
 // The fixture keeps all ten real records present and adds an ELEVENTH file, so
 // Z2's completeness rule is fully satisfied and Z1 is the only rule that can
 // reject this root. Delete Z1 from the gate and this root exits 0.
-test("Z1: a record naming a zone the geography does not have fails", () => {
+test("Z1: a record whose region the drawn world does not have fails", () => {
   const zones = allZones();
   const orphan = zoneRecord("emberdown");
   orphan.zone = "nowhere";
+  // c02/r11 is in the FABRIC (so Z2 knows the ground and the record covers it)
+  // but NOT in GEOGRAPHY (the drawn world). That isolates Z1 as the only rule
+  // that can reject this root: delete Z1 from the gate and it exits 0.
+  orphan.region = "c02/r11";
   orphan.resources = [
     { id: "nowhere-res-a", name: "A", kind: "crop", description: "d" },
     { id: "nowhere-res-b", name: "B", kind: "timber", description: "d" },
@@ -540,16 +604,16 @@ test("Z1: a record naming a zone the geography does not have fails", () => {
     { id: "nowhere-mark-b", name: "nowhere landmark B", description: "d" },
   ];
   zones["zone-nowhere.json"] = orphan;
-  const r = runGate(fixture({ zones }));
+  const r = runGate(fixture({ zones, fabric: [...FABRIC, { id: "c02/r11", survey: "surveyed" }] }));
   assert.equal(r.code, 1);
-  assert.match(r.out, /zones\/zone-nowhere\.json: zone "nowhere" not in content\/world\/resolved#zones/);
+  assert.match(r.out, /zones\/zone-nowhere\.json: region "c02\/r11" not in content\/world\/resolved#zones/);
   // The orphan must be withheld from the summary count too, not just FAILed:
   // it is not pushed into `records`, so the ten real geography zones — not
   // eleven — are what the gate reports as covered.
   assert.match(r.out, /\b10 zones, \d+ towns, 0 nodes,/);
 });
 
-test("Z1: all ten geography zone ids are accepted", () => {
+test("Z1: all ten drawn region ids are accepted", () => {
   const r = runGate(fixture({ zones: allZones() }));
   assert.equal(r.code, 0);
   assert.doesNotMatch(r.out, /not in content\/world\/resolved/);
@@ -559,12 +623,12 @@ test("Z1: all ten geography zone ids are accepted", () => {
 // Every surviving record is fully valid, so nothing but Z2 can reject this
 // root. Delete Z2 and a nine-tenths-finished cluster passes — the one thing Z2
 // exists to make impossible.
-test("Z2: a geography zone with no record fails", () => {
+test("Z2: a surveyed region with no record fails", () => {
   const zones = allZones();
   delete zones["zone-thornveil.json"];
   const r = runGate(fixture({ zones }));
   assert.equal(r.code, 1);
-  assert.match(r.out, /zones: geography zone "thornveil" has no record in content\/zones\//);
+  assert.match(r.out, /zones: surveyed region "c02\/r04" has no record in content\/zones\//);
   assert.match(r.out, /9 zones/);
   assert.doesNotMatch(r.out, /not in content\/world\/resolved/);
 });
@@ -585,7 +649,7 @@ test("Z2: two records claiming the same zone fail", () => {
     /zones: zone "emberdown" has 2 records \(zone-emberdown-copy\.json, zone-emberdown\.json\)/);
 });
 
-test("Z2: exactly ten records, one per zone, is the passing shape", () => {
+test("Z2: exactly ten records, one per surveyed region, is the passing shape", () => {
   const r = runGate(fixture({ zones: allZones() }));
   assert.equal(r.code, 0);
   assert.match(r.out, /10 zones/);
@@ -973,4 +1037,215 @@ test("Z7: all eight enum kinds are accepted", () => {
   assert.equal(r.code, 0);
   assert.doesNotMatch(r.out, /is not a resource kind/);
   assert.match(r.out, /10 zones/);
+});
+
+// ─── Plan E Task 9: Z2 in both directions, against the fabric ───────────────
+//
+// The FABRIC (content/world/fabric/continent-NN.json) is the authority on which
+// ground exists and whether anyone walked it. A record's own `survey` is a
+// DECLARATION checked against the fabric — a drift check, never a second source
+// of truth. Direction 2 (a record on reported ground is a FAILURE) is the half
+// that makes "40 written, 120 hatched" a policy instead of a hope: without it
+// the frontier erodes into 160 thin stubs.
+//
+// Every test below manufactures exactly one disagreement against the baseline
+// fixture, which is a clean ten-region bijection by construction.
+
+test("Z2 reverse: a record on a REPORTED region FAILs, and says why", () => {
+  // c02/r10 is cindervast's region in FIXTURE_REGION_BY_ZONE.
+  const fabric = FABRIC.map((r) => r.id === "c02/r10" ? { ...r, survey: "reported" } : r);
+  const r = runGate(fixture({
+    fabric,
+    zones: allZones({ cindervast: (z) => { z.survey = "reported"; } }),
+  }));
+  assert.equal(r.code, 1);
+  assert.match(r.out,
+    /zones: zone record "cindervast" is on a reported region — writing prose for unwalked ground is exactly the dishonesty the hatching prevents/);
+  // The declaration AGREES with the fabric here, so this must be the reported
+  // rule speaking and not the drift rule wearing its coat.
+  assert.doesNotMatch(r.out, /declares survey/);
+  // …and the nine surveyed regions are all still covered.
+  assert.doesNotMatch(r.out, /has no record in content\/zones\//);
+});
+
+test("Z2 drift: a declared survey that disagrees with the fabric FAILs — in BOTH directions", () => {
+  // (a) record says surveyed, fabric says reported. Both the drift rule and the
+  //     reported rule fire, because both are true of this record.
+  const reportedFabric = FABRIC.map((r) => r.id === "c02/r10" ? { ...r, survey: "reported" } : r);
+  const a = runGate(fixture({ fabric: reportedFabric, zones: allZones() }));
+  assert.equal(a.code, 1);
+  assert.match(a.out,
+    /zones: zone record "cindervast" declares survey "surveyed" but fabric region "c02\/r10" is "reported"/);
+  assert.match(a.out, /is on a reported region/);
+
+  // (b) the mirror image, which isolates the drift rule on its own: the fabric
+  //     says surveyed, so the reported rule cannot fire and only drift can.
+  const b = runGate(fixture({
+    zones: allZones({ cindervast: (z) => { z.survey = "reported"; } }),
+  }));
+  assert.equal(b.code, 1);
+  assert.match(b.out,
+    /zones: zone record "cindervast" declares survey "reported" but fabric region "c02\/r10" is "surveyed"/);
+  assert.doesNotMatch(b.out, /is on a reported region/);
+});
+
+test("Z2: a record naming a region no fabric declares FAILs", () => {
+  const zones = allZones();
+  const ghost = zoneRecord("emberdown");
+  ghost.zone = "ghost";
+  ghost.region = "c02/r99";
+  ghost.resources = [
+    { id: "ghost-res-a", name: "A", kind: "crop", description: "d" },
+    { id: "ghost-res-b", name: "B", kind: "timber", description: "d" },
+  ];
+  ghost.landmarks = [
+    { id: "ghost-mark-a", name: "ghost landmark A", description: "d" },
+    { id: "ghost-mark-b", name: "ghost landmark B", description: "d" },
+  ];
+  // The drawn world knows c02/r99 (so Z1 is silent) and the fabric does not —
+  // which is precisely the two-authority disagreement Z2 exists to surface.
+  const geography = {
+    zones: [...GEOGRAPHY.zones, { id: "c02/r99", name: "ghost", levelBand: [1, 10] }],
+  };
+  zones["zone-ghost.json"] = ghost;
+  const r = runGate(fixture({ zones, geography }));
+  assert.equal(r.code, 1);
+  assert.match(r.out,
+    /zones: zone record "ghost" names region "c02\/r99", which no fabric file declares/);
+  assert.doesNotMatch(r.out, /not in content\/world\/resolved#zones/);
+});
+
+test("Z2: a REPORTED region needs no record — hatched ground is not a hole", () => {
+  const r = runGate(fixture({
+    fabric: [...FABRIC, { id: "c02/r20", survey: "reported" }],
+    zones: allZones(),
+  }));
+  assert.equal(r.code, 0, r.out);
+  assert.doesNotMatch(r.out, /c02\/r20/);
+  assert.doesNotMatch(r.out, /has no record in content\/zones\//);
+});
+
+test("Z2: two records on the SAME region fail, and the message names both files", () => {
+  const zones = allZones();
+  const twin = zoneRecord("emberdown");
+  twin.zone = "emberdown-twin";
+  twin.region = FIXTURE_REGION_BY_ZONE["emberdown"];
+  // Non-colliding kind set and landmark names, so neither Z6 rule nor the
+  // duplicate-ZONE rule can supply the exit-1 — only the duplicate-REGION rule.
+  twin.resources = [
+    { id: "twin-res-a", name: "A", kind: "timber", description: "d" },
+    { id: "twin-res-b", name: "B", kind: "water", description: "d" },
+  ];
+  twin.landmarks = [
+    { id: "twin-mark-a", name: "twin landmark A", description: "d" },
+    { id: "twin-mark-b", name: "twin landmark B", description: "d" },
+  ];
+  zones["zone-emberdown-twin.json"] = twin;
+  const r = runGate(fixture({ zones }));
+  assert.equal(r.code, 1);
+  assert.match(r.out,
+    /zones: region "c02\/r05" has 2 records \(zone-emberdown-twin\.json, zone-emberdown\.json\)/);
+  assert.doesNotMatch(r.out, /has 2 records \(zone-emberdown-copy/);
+  // The overwrite this rule exists to stop: without it the twin silently
+  // "covers" emberdown's region and no line is printed at all.
+  assert.doesNotMatch(r.out, /resource-kind set/);
+});
+
+test("Z2: a complete surveyed set with no reported records passes, and prints nothing", () => {
+  const r = runGate(fixture({
+    fabric: [...FABRIC, { id: "c02/r20", survey: "reported" }, { id: "c02/r21", survey: "reported" }],
+    zones: allZones(),
+  }));
+  assert.equal(r.code, 0, r.out);
+  // NOT `/^zones: /m`: every gate line is printed as `FAIL  zones: …`, so a
+  // line-anchored form matches nothing and the assertion can never fail. Each
+  // of the five Z2 message families is named instead.
+  for (const re of [
+    /has no record in content\/zones\//,
+    /is on a reported region/,
+    /declares survey/,
+    /which no fabric file declares/,
+    /has \d+ records/,
+  ]) assert.doesNotMatch(r.out, re);
+});
+
+// ─── the schema half of the join ───────────────────────────────────────────
+
+test("the schema requires both join keys", () => {
+  const validate = compile();
+  const doc = zoneRecord("thornveil");
+  delete doc.region;
+  assert.equal(validate(doc), false, "a record with no region must not validate");
+  const noSurvey = zoneRecord("thornveil");
+  delete noSurvey.survey;
+  assert.equal(validate(noSurvey), false, "a record with no survey must not validate");
+  assert.ok(validate({ ...zoneRecord("thornveil"), region: "c02/r01", survey: "surveyed" }));
+  assert.equal(validate({ ...zoneRecord("thornveil"), survey: "rumoured" }), false,
+    "survey is a closed two-value enum");
+});
+
+test("the schema's region pattern accepts every id the generator can emit, and rejects the near-misses", () => {
+  const validate = compile();
+  const ok = (region) => validate({ ...zoneRecord("thornveil"), region });
+  // c01–c13 is the whole continent range (content/world/fabric/continent-NN.json),
+  // and rNN runs to r30 on Wealdmarch, the widest continent.
+  for (const region of ["c01/r01", "c09/r09", "c10/r01", "c13/r02", "c02/r30"])
+    assert.ok(ok(region), `${region} must validate: ${JSON.stringify(validate.errors)}`);
+  for (const region of ["c00/r01", "c14/r01", "c2/r01", "c02/r1", "c02r01", "c02/R01", " c02/r01"])
+    assert.equal(ok(region), false, `${region} must NOT validate`);
+});
+
+// REACHABILITY, the same division of labour the floors and the two enums keep:
+// the schema must NOT ban `survey: "reported"`. If it did, the Z2 rule that
+// fails on a record sitting on reported ground could never be reached — it
+// could be deleted from check_content.mjs and this suite would stay green off
+// an Ajv error. The ban is a GATE rule; the schema only fixes the vocabulary.
+test("reachability: the schema must NOT ban survey \"reported\" — Z2 owns that ban", () => {
+  const validate = compile();
+  assert.ok(validate({ ...zoneRecord("thornveil"), survey: "reported" }),
+    JSON.stringify(validate.errors, null, 2));
+});
+
+// ─── the committed records ─────────────────────────────────────────────────
+
+test("every committed record joins to a SURVEYED fabric region, one apiece", () => {
+  const files = readdirSync(join(ROOT, "content/zones")).filter((f) => /^zone-.+\.json$/.test(f));
+  // Plan E Task 11 raises this to 40 (Wealdmarch's 10 verified + Coldreach's 6,
+  // then Tasks 12-14). Pinned rather than derived so growing the corpus is a
+  // deliberate edit here, exactly as the plan's own literal does.
+  assert.equal(files.length, 10);
+
+  // The fabric, read fresh — this is a cross-artifact assertion, not a re-read
+  // of the same numbers from a second copy.
+  const surveyed = new Set();
+  const fabricDir = join(ROOT, "content/world/fabric");
+  for (const f of readdirSync(fabricDir).filter((n) => /^continent-\d+\.json$/.test(n)))
+    for (const region of JSON.parse(readFileSync(join(fabricDir, f), "utf8")).regions)
+      if (region.survey === "surveyed") surveyed.add(region.id);
+  assert.equal(surveyed.size, 40, "the fabric declares 40 surveyed regions");
+
+  const seen = new Map();
+  for (const f of files) {
+    const doc = JSON.parse(readFileSync(join(ROOT, "content/zones", f), "utf8"));
+    assert.match(doc.region, /^c(0[1-9]|1[0-3])\/r\d{2}$/, `${f}: bad region id`);
+    assert.equal(doc.survey, "surveyed", `${f}: a committed record may only sit on surveyed ground`);
+    assert.ok(surveyed.has(doc.region), `${f}: region ${doc.region} is not surveyed in the fabric`);
+    assert.equal(seen.get(doc.region), undefined,
+      `${f}: region ${doc.region} is already claimed by ${seen.get(doc.region)}`);
+    seen.set(doc.region, f);
+  }
+  // THE PAIRING IS ARBITRARY AND SAYS SO. Task 9 Step 5 takes the `region`
+  // column from Task 10's allocation table, which does not exist yet; measured,
+  // no derivable pairing does either — all six named cluster-1 towns and all
+  // thirteen pinned cluster-1 landmarks sit on REPORTED regions after the redraw
+  // (c02/r11, r12, r18, r19), the ten surveyed c02 regions carry only unnamed
+  // generated villages (c02/s01…s10), and the plan's own example literal
+  // (`thornveil → c02/r04`) names a region the fabric marks reported. So the
+  // ten Wealdmarch slugs are paired with c02's ten surveyed regions
+  // alphabetically against ascending region id — reproducible, stated, and
+  // carrying no geographic claim. Task 11 Step 1 verifies the prose against the
+  // new ground and owns any re-voicing.
+  assert.deepEqual([...seen.keys()].sort(),
+    ["c02/r01", "c02/r02", "c02/r08", "c02/r10", "c02/r14",
+     "c02/r16", "c02/r21", "c02/r24", "c02/r28", "c02/r30"]);
 });

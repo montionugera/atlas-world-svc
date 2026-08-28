@@ -3855,3 +3855,76 @@ would be a rule that can no longer fail.
    With `maxSheets` at 18 against a roster of 17 there is one slot, so a per-continent region tier is
    structurally unbuildable under the committed ceiling. The storybook cards disclose the deferral
    per sheet; nothing records the tier itself as open. Found by reviewer A.
+
+### TASK 9 SHIPPED (2026-08-29) — Z2 in both directions, and the pairing nobody could derive
+
+`check_content.mjs`'s `checkZoneContent` now reads **two** authorities over the same subject: `Z1`
+against the drawn world (`content/world/resolved/`) and `Z2` against the fabric
+(`content/world/fabric/continent-NN.json`), which is the authority on which ground exists and
+whether anyone walked it. `check_content --require-complete` goes **172 failures -> 32**: the 160
+`geography zone "cNN/rNN" has no record` lines collapse to **30** `surveyed region "..." has no
+record` (40 surveyed regions minus the 10 now joined), all **10** zone-record orphans clear, and the
+2 survivors are `towns/town-millcross.json` and `bestiary/placement-thornveil.json`, which still
+swear to legacy slugs and belong to Tasks 14/15.
+
+**Five plan premises measured false, each acted on rather than worked around.**
+
+1. **Z1's subject had to move from `doc.zone` to `doc.region`.** The plan's Step 4 leaves it on
+   `doc.zone` ("a record must name a zone the renderer knows"). Measured: **0 of 160** resolved zone
+   ids is a slug — all are `cNN/rNN` — so on the plan's literal all ten committed records stay
+   orphaned for ever, contradicting Task 11 Step 1's own acceptance criterion (`grep -vE "surveyed
+   region"` must print empty) and Task 11's own record shape (`"zone": "tallowquay-roads", "region":
+   "c03/r01"`). The slug stays the human name and keeps its duplicate rule; `region` is the join key
+   both Z1 and Z2 read.
+2. **Step 1's fifth test can never fail as written.** `assert.doesNotMatch(out, /^zones: /m)` — every
+   gate line is printed as `FAIL  zones: …`, so the line-anchored form matches nothing on any input.
+   Replaced with an explicit sweep of all five Z2 message families.
+3. **Step 5's example literal is wrong ground.** It pairs `thornveil` with `c02/r04`; the fabric
+   marks `c02/r04` **reported**, which the new Z2 fails outright. The surveyed set on Wealdmarch is
+   `c02/{r01,r02,r08,r10,r14,r16,r21,r24,r28,r30}`.
+4. **NO DERIVABLE ZONE -> REGION PAIRING EXISTS, and this is the finding that matters.** Step 5 takes
+   the `region` column from Task 10's allocation table, which is unwritten. Measured on the redrawn
+   world: all **6** named cluster-1 towns (`c-town-cindervast/embervale/gildmark/millcross/norhollow/
+   rooktide`) and all **13** pinned cluster-1 landmarks sit on **reported** regions (one, `c-lm-thornveil`, on none at all) — `c02/r11`,
+   `r12`, `r18`, `r19` — while c02's ten **surveyed** regions carry only unnamed generated villages
+   `c02/s01`…`s10` (`content/world/fabric/continent-02.json#pinReceipts,settlements`). Nearest-region
+   is false precision too: the closest surveyed region to `c-town-millcross` is 41.5 km away. The ten
+   slugs are therefore paired **alphabetically against ascending region id** — reproducible, stated
+   in `scripts/tests/zone-content.test.mjs`, and carrying no geographic claim. `ashvale-front`→`r01`,
+   `cindervast`→`r02`, `emberdown`→`r08`, `gildmark-head`→`r10`, `hollowmarch`→`r14`,
+   `meltwash-terrace`→`r16`, `millcross-ford`→`r21`, `northern-icefield`→`r24`,
+   `rooktide-reach`→`r28`, `thornveil`→`r30`. **Task 11 Step 1 cannot "verify the join" — there is
+   nothing to verify it against; it can only verify the prose.** No committed prose byte changed
+   (10 files, +20 lines, -0).
+5. **Step 4's Z2 body silently tolerates two records on one region** (`coveredRegions.set(region, r)`
+   overwrites). Added the duplicate-**region** rule beside the existing duplicate-**zone** one, on
+   `findDuplicateGroups` so a third claimant is named too; without it the 40:1 bijection Tasks 10-14
+   build is unenforced.
+
+**Two defects found in existing surfaces, not introduced by this task.**
+
+- `scripts/tests/places.test.mjs:305` asserted `/zone "thornveil" not in …#zones/` **unqualified**,
+  and `bestiary/placement-thornveil.json` emits the identical sentence from a different gate — so
+  after the re-homing the test kept passing while the thing it is named for had been fixed. Both
+  assertions are file-qualified now, and the zone half is inverted to `doesNotMatch`.
+- `scripts/tests/season1.test.mjs`'s filename-filter comment claimed Task 11's shape is
+  `"zone": "c02/r21"`. The plan's own literal is `"zone": "tallowquay-roads"` with a separate
+  `region`. Corrected in place.
+
+**The memo, and the leak it would have caused.** `loadFabricRegionIndex` had one reader (`checkSpine`)
+and now has two, so a full sweep would have printed every fabric problem twice. It is memoised per
+content root with a *counter* of how many of its problems have been failed — a counter and not a
+boolean, because `fabricRegionCountsFor` appends stale-pin problems after `checkZoneContent` has
+already drained the array. `runSpineGateInProcess` resets both (its enumeration is **eight** bindings
+now, not six); un-reset, run two of an unreadable fabric printed **zero** fabric FAILs and exited 0.
+Pinned by a new leak test beside the `townPlansCache` / `placesByRoot` pair, mutation-checked.
+
+**Filed, not chased.**
+
+- Writing **any** file into `content/world/fabric/` arms `G-POI` (`scripts/lib/world.mjs:626`) and its
+  12-POI floor, so every zone-gate fixture must now carry 12 synthetic instances per surveyed region
+  or fail on a rule unrelated to the Z-rules. Fixture-cost coupling; three suites pay it.
+- `content/bestiary/placement-thornveil.json` (G1) and `content/towns/town-millcross.json` (T-rules)
+  are the last two legacy-slug joins on the real root — the 2 residual `--require-complete` failures.
+- `content/zones/*.json`'s `spineId` is still optional and unset on all ten; `G-ALIAS` checks it only
+  when present, so the fabric join and the spine join remain unrelated keys.

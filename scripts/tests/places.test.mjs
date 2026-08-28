@@ -305,8 +305,20 @@ function runFullGate(contentRoot) {
 test("gate joins: the real content root FAILS LOUDLY on the not-yet-rehomed legacy records", () => {
   const r = runFullGate(CONTENT);
   assert.equal(r.code, 1);
-  assert.match(r.out, /zone "thornveil" not in content\/world\/resolved#zones/);
-  assert.match(r.out, /town "millcross" not in content\/world\/resolved#towns/);
+  // PLAN E TASK 9 re-homed the ten content/zones records onto fabric region
+  // ids, so the ZONE half of this pin is now the opposite claim: the records
+  // join. The bestiary placement file and town-millcross.json still swear to
+  // the legacy slugs and are Tasks 14/15's to re-home.
+  //
+  // The assertions are FILE-QUALIFIED for a reason found here: the old
+  // unqualified /zone "thornveil" not in …#zones/ still matched after the
+  // re-homing, because bestiary/placement-thornveil.json emits the identical
+  // sentence from a different gate. The test went on passing while the thing
+  // it was named for had been fixed — a rule that can no longer fail for its
+  // stated reason.
+  assert.doesNotMatch(r.out, /^FAIL\s+zones\/zone-.*not in content\/world\/resolved#zones/m);
+  assert.match(r.out, /bestiary\/placement-thornveil\.json: zone "thornveil" not in content\/world\/resolved#zones/);
+  assert.match(r.out, /towns\/town-millcross\.json: town "millcross" not in content\/world\/resolved#towns/);
   // finish() ran — the summary is printed, nothing went dark.
   assert.match(r.out, /content-gate: .* failures/, r.out);
 });

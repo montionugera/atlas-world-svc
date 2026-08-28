@@ -765,19 +765,31 @@ test("THE COUNTING ASSERTION: the joins still count on a root whose records matc
       continent: "c02",
       coastline: { id: "f-coast-c02", points: [[0, 0], [10, 0], [10, 10]] },
       river: null, saltmire: null, iceEdge: null, terrainPatches: [],
-      zones: [{ id: "z-one", name: "Zone One", levelBand: [1, 10] }],
-      towns: [{ id: "t-one", name: "Town One", at: [5, 5], zone: "z-one" }],
+      zones: [{ id: "c02/r01", name: "Zone One", levelBand: [1, 10] }],
+      towns: [{ id: "t-one", name: "Town One", at: [5, 5], zone: "c02/r01" }],
       camps: [], roads: [], landmarks: [], dungeons: [],
       instances: [], relay: null, distances: null, seaLane: null, sheet: null,
     }));
+    // Plan E Task 9: the record joins the world by `region` (checked by Z1
+    // against the resolved world above and by Z2 against the fabric below);
+    // `zone` is the human name. Both join keys are schema-required.
     writeFileSync(join(dir, "content/zones/zone-z-one.json"), JSON.stringify({
-      zone: "z-one", reasonToGo: "because",
+      zone: "z-one", region: "c02/r01", survey: "surveyed", reasonToGo: "because",
       hazards: [{ id: "h-one", name: "H one", description: "d" },
                 { id: "h-two", name: "H two", description: "d" }],
       resources: [{ id: "r-one", name: "R one", kind: "fuel", description: "d" },
                   { id: "r-two", name: "R two", kind: "crop", description: "d" }],
       landmarks: [{ id: "l-one", name: "L one", description: "d" },
                   { id: "l-two", name: "L two", description: "d" }],
+    }));
+    // Plan E Task 9: Z2 iterates the FABRIC, so the root that must count needs
+    // one. Twelve instances because any fabric file arms G-POI's 12-POI floor
+    // on surveyed ground (scripts/lib/world.mjs:626).
+    mkdirSync(join(dir, "content/world/fabric"), { recursive: true });
+    writeFileSync(join(dir, "content/world/fabric/continent-02.json"), JSON.stringify({
+      continent: "c02",
+      regions: [{ id: "c02/r01", survey: "surveyed" }],
+      instances: Array.from({ length: 12 }, (_, i) => ({ id: `poi-${i}`, region: "c02/r01" })),
     }));
     cpSync(join(ROOT, "content/world/budgets.json"), join(dir, "content/world/budgets.json"));
     cpSync(join(ROOT, "content/world/manifest.json"), join(dir, "content/world/manifest.json"));
