@@ -2713,6 +2713,40 @@ function gSpineFrozen({ nodes, tree, freezeReasons, fail }) {
     if (!eq(node.absoluteAnchor, composed))
       fail(`spine: G-FROZEN ${node.id}: absoluteAnchor [${node.absoluteAnchor.join(", ")}] != composed [${composed.join(", ")}]`);
   }
+
+  // ── THE OTHER DIRECTION: A REASON WITH NO FREEZE ──────────────────────────
+  //
+  // Everything above reads the NODES and asks the reasons file about each one,
+  // so it can only fail a freeze that is PRESENT. It cannot fail one that has
+  // VANISHED — and vanishing is the failure mode the redraw actually produces.
+  // Measured on this tree (Plan E Task 7's own finding, re-measured 2026-08-28
+  // before this arm existed): regenerate the world and the trunk comes back
+  // 10 frozen -> 1, and `check_content --only=spine` reports ZERO failures.
+  // The only tripwire was scripts/tests/freeze-reasons.test.mjs's set equality,
+  // which runs in Gate 2 (scripts/integration.sh), not Gate 1
+  // (scripts/precheck.sh) — so a feature that regenerates and ships learns
+  // nothing until promotion, and G-CANON-LEG's "endpoint must be frozen"
+  // protection goes with it.
+  //
+  // content/spine/freeze-reasons.json is the AUTHORITY for the set, not a
+  // commentary on it: it is the only artefact that says which nodes are meant
+  // to be frozen and why, one written sentence each. So the gate reads it as
+  // the authority in both directions and the constraint lives where the
+  // machine reads it, rather than in a test one gate too late.
+  //
+  // Same soft-skip as the forward arm: a content root with no reasons file
+  // (every minimal structural fixture, and the generator's draft root before
+  // it copies one) asserts nothing here.
+  if (freezeReasons?.reasons) {
+    const present = new Map(nodes.map((n) => [n.id, n]));
+    for (const id of Object.keys(freezeReasons.reasons).sort()) {
+      const node = present.get(id);
+      if (node?.frozen) continue;
+      fail(node
+        ? `spine: G-FROZEN ${id}: content/spine/freeze-reasons.json holds a written reason for this node but it is NOT frozen — a regeneration drops the freeze silently, and this is where that is caught`
+        : `spine: G-FROZEN ${id}: content/spine/freeze-reasons.json holds a written reason for "${id}", which this spine does not carry — retire the reason or restore the node`);
+    }
+  }
 }
 
 // F-041 Phase 1 Task 1.8: G-NET (endpoint resolution + road-end proximity)

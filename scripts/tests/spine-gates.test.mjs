@@ -505,6 +505,53 @@ t11("G-FROZEN silent: every frozen node covered by the reasons file", () => {
   } }));
   assert11.doesNotMatch(r.out, /frozen with no entry in content\/spine\/freeze-reasons\.json/);
 });
+// ── the OTHER direction: a reason with no freeze ──────────────────────────
+// The three cases above all read the NODES and ask the reasons file about each
+// one, so between them they can only fail a freeze that is PRESENT. The freeze
+// that VANISHES is the one the redraw actually produces — measured on the live
+// tree: regenerate and the trunk comes back 10 frozen to 1 with the gate at
+// ZERO failures. These two cases are that half, and they are why
+// freeze-reasons.json is read as the AUTHORITY for the set rather than as a
+// lookup table the nodes index into.
+t11("G-FROZEN red: a written reason for a node that is NOT frozen", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-frozen-unfrozen-ancestor", mutate: (dir) => {
+    freezeChain(dir);
+    // n-r is unfrozen again — the exact shape a regeneration leaves behind —
+    // while its reason stays committed.
+    const p = join11(dir, "spine/nodes/n-r.json");
+    const doc = JSON.parse(read11(p, "utf8"));
+    doc.frozen = false; doc.absoluteAnchor = undefined;
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+    write11(join11(dir, "spine/freeze-reasons.json"), JSON.stringify({
+      version: 1, why: "fixture", reasons: {
+        "n-w": "The fixture world frame, with a reason long enough to be a sentence rather than a label.",
+        "n-c": "The fixture continent, with a reason long enough to be a sentence rather than a label.",
+        "n-r": "The fixture leaf, with a reason long enough to be a sentence rather than a label.",
+      },
+    }, null, 2) + "\n");
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-FROZEN n-r: content\/spine\/freeze-reasons\.json holds a written reason for this node but it is NOT frozen/);
+  // The frozen two are silent, so the message names the node that lost its
+  // freeze and not the set that kept it.
+  assert11.doesNotMatch(r.out, /G-FROZEN n-w: content\/spine\/freeze-reasons/);
+  assert11.doesNotMatch(r.out, /G-FROZEN n-c: content\/spine\/freeze-reasons/);
+});
+t11("G-FROZEN red: a written reason for a node the spine does not carry", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-frozen-unfrozen-ancestor", mutate: (dir) => {
+    freezeChain(dir);
+    write11(join11(dir, "spine/freeze-reasons.json"), JSON.stringify({
+      version: 1, why: "fixture", reasons: {
+        "n-w": "The fixture world frame, with a reason long enough to be a sentence rather than a label.",
+        "n-c": "The fixture continent, with a reason long enough to be a sentence rather than a label.",
+        "n-r": "The fixture leaf, with a reason long enough to be a sentence rather than a label.",
+        "n-ghost": "A node a redraw retired while its reason stayed committed behind it.",
+      },
+    }, null, 2) + "\n");
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-FROZEN n-ghost: content\/spine\/freeze-reasons\.json holds a written reason for "n-ghost", which this spine does not carry/);
+});
 t11("G-NET red: edge endpoint does not resolve", () => {
   const r = runSpineGate(spineFixture({ mutate: (dir) => {
     write11(join11(dir, "spine/edges.json"), JSON.stringify([
