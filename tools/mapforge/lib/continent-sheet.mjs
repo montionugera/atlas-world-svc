@@ -203,10 +203,21 @@ function build({ repoRoot, continent, contentRoot, legendTierArg }) {
       problems.push(`continent-sheet ${continent}: resolved key "${k}" is not an array`);
       world[k] = [];
     }
+  // The fabric doc's own shape FIRST. Guarding only the keys let a `null`
+  // fabric fall through to `fabric.regions.map(...)` a few lines down, where it
+  // became "unexpected throw: Cannot read properties of null" from the outer
+  // catch — a real diagnosis replaced by a generic one. Measured, not argued:
+  // a fabric of `null` produced exactly that message before this guard.
+  if (!fabric || typeof fabric !== "object" || Array.isArray(fabric)) {
+    problems.push(
+      `continent-sheet ${continent}: content/world/fabric/continent-${nn}.json is not an object`,
+    );
+    return { svg: "", notes, problems };
+  }
   for (const k of ["regions", "settlements", "roads"])
-    if (!Array.isArray(fabric?.[k])) {
+    if (!Array.isArray(fabric[k])) {
       problems.push(`continent-sheet ${continent}: fabric key "${k}" is not an array`);
-      if (fabric && typeof fabric === "object") fabric[k] = [];
+      fabric[k] = [];
     }
   if (!Array.isArray(lexicon)) {
     problems.push(`continent-sheet ${continent}: lexicon is not an array`);

@@ -25,7 +25,8 @@
 //            is the ship raster, produced on demand and NEVER committed.
 //   --no-png: accepted and now a no-op, because not writing a PNG is the
 //            default. Kept so every existing invocation and doc line — CI's
-//            three `--no-png --check` lines included — keeps working.
+//            `--no-png --check` lines, one per registered sheet, included —
+//            keeps working.
 //   --check: build, print problems, exit 1 if any OR if the built svg
 //            differs from the committed outSvg; writes nothing.
 
@@ -180,7 +181,7 @@ export function parseArgs(argv) {
     else if (
       argv[i] === "--png" ||
       // --no-png is a LEGACY NO-OP: not writing a PNG is the default now. It
-      // stays accepted because CI's three `--no-png --check` lines and the
+      // stays accepted because CI's per-sheet `--no-png --check` lines and the
       // README's examples would otherwise exit 2 on an unknown arg.
       argv[i] === "--no-png" ||
       argv[i] === "--check"

@@ -34,13 +34,24 @@ const fabricDoc = (nn) => JSON.parse(readFileSync(join(CONTENT, `world/fabric/co
  * committed article, so the fixture differs from production in exactly the
  * mutation under test.
  */
-function fixtureRoot({ nn = "02", resolved = null, fabric = null }) {
+// `undefined` means "use the committed article"; an explicit `null` is a
+// MUTATION and must reach the builder as null. `?? ` cannot tell those apart,
+// which is how the first draft of the fabric-shape test passed a healthy doc
+// and asserted on an empty problems array.
+const ABSENT = Symbol("absent");
+function fixtureRoot({ nn = "02", resolved = ABSENT, fabric = ABSENT }) {
   const dir = mkdtempSync(join(tmpdir(), "continent-sheet-"));
   mkdirSync(join(dir, "world/resolved"), { recursive: true });
   mkdirSync(join(dir, "world/fabric"), { recursive: true });
   mkdirSync(join(dir, "world/lexicon"), { recursive: true });
-  writeFileSync(join(dir, `world/resolved/continent-${nn}.json`), JSON.stringify(resolved ?? resolvedDoc(nn)));
-  writeFileSync(join(dir, `world/fabric/continent-${nn}.json`), JSON.stringify(fabric ?? fabricDoc(nn)));
+  writeFileSync(
+    join(dir, `world/resolved/continent-${nn}.json`),
+    JSON.stringify(resolved === ABSENT ? resolvedDoc(nn) : resolved),
+  );
+  writeFileSync(
+    join(dir, `world/fabric/continent-${nn}.json`),
+    JSON.stringify(fabric === ABSENT ? fabricDoc(nn) : fabric),
+  );
   writeFileSync(join(dir, "world/lexicon/landforms.json"), readFileSync(join(CONTENT, "world/lexicon/landforms.json")));
   writeFileSync(join(dir, "world/budgets.json"), readFileSync(join(CONTENT, "world/budgets.json")));
   return dir;
@@ -204,8 +215,22 @@ test("RULING 8: the basin's subject keys are drawn on wealdmarch, from the resol
   assert.equal(doc.iceEdge, null, "an ice edge appeared in the resolved doc — decide what the sheet should say about it");
   assert.ok(
     notes.some((n) => /iceEdge none in the resolved doc/.test(n)),
-    "the sheet must SAY the ice edge is absent rather than pass over it in silence",
+    "the builder must SAY the ice edge is absent rather than pass over it in silence",
   );
+});
+
+// The builder's `notes` reach a terminal, not a reader — `grep -c iceEdge` on
+// every committed SVG is 0. The review surface is the storybook card, so the
+// disclosure has to be THERE, and on all thirteen rather than only on the six
+// with no river: Skerryfast's own subtitle says "under standing ice", and it
+// was the one sheet whose prose invited the inference while staying silent.
+test("every storybook row states the ice-edge status — all thirteen, not only the riverless ones", () => {
+  const rows = new Map(idx().sheets.map((r) => [r.id, r]));
+  for (const s of CONTINENT_SHEETS) {
+    const note = rows.get(s.id).note;
+    assert.match(note, /no ice edge — the resolved doc carries none/, `${s.id}: the card says nothing about the ice edge`);
+    assert.ok(!/an ice edge/.test(note), `${s.id}: the card claims an ice edge the resolved doc does not carry`);
+  }
 });
 
 test("the iceEdge draw path works — it is dormant because the DATA is null, not because the code is dead", () => {
@@ -271,6 +296,22 @@ test("a surveyed region the fabric cannot give a biome for REPORTS rather than b
   const regions = fab.regions.map((r) => (r.id === first.id ? { ...r, biomeShares: {} } : r));
   const out = buildIn(fixtureRoot({ resolved: doc, fabric: { ...fab, regions } }));
   assert.match(out.problems.join("\n"), new RegExp(`surveyed region "${first.id.replace("/", "\\/")}" has no dominant biome`));
+});
+
+// Found in the review pass, by running it: a `null` fabric skipped the key
+// repair below and reached `fabric.regions.map(...)`, so the outer catch turned
+// a diagnosable shape error into "unexpected throw: Cannot read properties of
+// null". A generic message where a specific one belongs is a lost diagnosis.
+test("a fabric doc that is not an object NAMES the file, rather than becoming a generic throw", () => {
+  for (const bad of [null, [], "x", 3]) {
+    const out = buildIn(fixtureRoot({ fabric: bad }));
+    assert.match(
+      out.problems.join("\n"),
+      /content\/world\/fabric\/continent-02\.json is not an object/,
+      `fabric ${JSON.stringify(bad)}: ${out.problems.join(" | ")}`,
+    );
+    assert.ok(!out.problems.some((p) => /unexpected throw/.test(p)), out.problems.join(" | "));
+  }
 });
 
 test("a resolved doc whose array keys are not arrays REPORTS each key by name", () => {

@@ -3588,3 +3588,183 @@ tests). `promote.test.mjs` **42/42**.
    and lets G-FROZEN's forward arm say so on the draft. True today (`n-atlas` → `n-cluster1` → the
    three preserved children; the oceans hang off `n-atlas`), and the failure is loud rather than
    silent, but the set's closure is an unwritten precondition of the file.
+
+### TASK 8 SHIPPED (2026-08-29) — the continent zoom tier, and ruling 8 discharged
+
+`SHEETS` 4 → **17** (`budgets.sheets.maxSheets` = 18 unchanged, one row of headroom).
+`tools/mapforge/lib/continent-sheet.mjs` is one builder for all thirteen landmasses; the registry
+entries are generated from `CONTINENT_SHEETS`, so a fourteenth is one row. Every number below was
+measured on this tree, not carried from the plan.
+
+**RULING 8 IS DISCHARGED, AND NOT THE WAY THE PLAN'S TEST DRAFT ASSUMED.** The retired `cluster1`
+basin sheet does NOT come back as an 18th entry: the basin IS Wealdmarch, so its ground is drawn by
+the `wealdmarch` continent sheet, from the resolved doc, at 4 + 13 = **17**. The plan's Step 1 test
+literal ("the roster closes at 18 — 1 atlas + 1 basin + 13 continent + 1 overlay + 1 fabric + 1
+synthetic") is therefore wrong and was corrected to 17 with the ceiling asserted separately, which
+is ruling 8's own arithmetic. Of the five surviving subject keys, **four are drawn** (`coastline`,
+`river`, `saltmire`, `terrainPatches` — asserted on the built wealdmarch SVG) and `iceEdge` is
+`null` on all thirteen resolved continents, so nothing is drawn anywhere; the sheet's note SAYS
+`iceEdge none in the resolved doc` rather than passing over it, and the draw path is proven live
+through an injected content root so it is dormant for want of DATA, not because the code is dead.
+That is filed-not-fixed item 1 biting exactly where STATE said it would.
+
+**`basin-sheet.mjs` and `resolveWorld` were NOT consumed.** Ruling 8 left them on disk as this
+task's raw material; the successor reads `content/world/resolved/` directly, which is what
+"resolved-backed" describes, so both stay dormant and `places.test.mjs`'s arm-3 assertion (no
+production path calls them) is unchanged and still true. The pin was updated honestly rather than
+deleted: its roster half moved 4 → 17, its message moved from "dormant until Task 8" to "dormant
+permanently", and the real coverage it asked for now lives in `continent-sheet.test.mjs`'s RULING 8
+test. **Their permanent dormancy is a dead-code question for an owner — filed below, not decided here.**
+
+**FOUR PLAN PREMISES FALSIFIED BY MEASUREMENT, each fixed at the generator:**
+
+1. **`roads` is EMPTY on all thirteen resolved continents and `towns` carries only the 8 civil-pinned
+   towns.** The plan drew both from the resolved doc. The 47 settlements and 40 roads live in the
+   FABRIC (already a declared input of this sheet), and the resolved town ids are a strict subset of
+   the fabric settlement ids — verified, zero resolved towns absent from the fabric. The builder now
+   takes ids and positions from the fabric and NAMES from the resolved doc where it has one. Drawing
+   the plan's way would have shipped Wealdmarch with 6 of its 16 settlements and none of its 15 roads.
+   Fabric road records carry no class field, so `ROAD_W` is keyed by a stated derivation — a road
+   touching a capital is trunk, a hub is spur, else track — rather than by an invented column.
+2. **`bakedUnderlay` returns `{svg, problems, notes}`, not a string.** The plan interpolated the
+   object straight into the markup. It also sizes its raster from the ABSOLUTE maximum of the rings
+   it is handed, so world km would allocate a frame reaching back to km 0 — 3,576 px wide for Ashen
+   Spar, of which 2,304 px is empty. Rings are shifted into a local frame and translated back.
+3. **`checkGlyphCoverage({emittedIds})` requires a `<symbol>` for every glyph family in the WHOLE
+   170-row catalogue (40 of them).** A continent draws between **1** (Loamspit) and **10**
+   (Wealdmarch), so the plan's `emittedIds: usedGlyphs` would have reported 30-39 phantom problems
+   per sheet. The catalogue half is called as `atlas-sheet.mjs` calls it (no `emittedIds`); the real
+   per-sheet invariant — a `<use>` whose `<symbol>` is missing renders NOTHING — is checked here in
+   both directions off the markup the sheet produced, and is mutation-proven.
+4. **The plan's `checkLabels` call omitted `aboveTier` and `asked`**, which switches off the
+   accounting rule those arguments exist for. Both are passed. Measured on the committed sheets:
+   **0 dropped on all thirteen**, with 10 above-tier on Wealdmarch and 9 on Coldreach — village names
+   (rank 9) sitting above the rank-8 continent tier, counted rather than lost.
+
+**THE SQUARE FRAME WAS WRONG, AND THREE THUMBS PROVED IT.** At the plan's fixed 1400×1400 map area,
+Rimewall Cap (162.5 × 55.5 km), Ashen Spar (53 × 24.5 km) and Loamspit (49 × 25 km) drew ink on
+**35.0%, 41.2% and 42.1%** of their thumbs' scanlines against `budgets.json`'s 50%
+`minThumbInkRowFraction` — a 3:1 landmass on a square canvas is half empty by construction. The
+floor is right and the frame was wrong: the long edge takes 1400 px, the short edge follows the
+landmass's own aspect at ONE uniform scale, plus a 28 px neatline margin. After: the drawn extent is
+**86.0%-92.2%** of its map area on every sheet, smallest chains included, and every thumb clears all
+three ink floors (rows 76.5%-89.9%). The neatline margin is not cosmetic — without it Stonemoor red
+G-LABEL with 2 leader lines crossing a name, because a coastal label with the neatline hard against
+it loses half the declutter's candidate directions.
+
+**THE REPORTED HATCH IS BAKED, AND THE CAP WAS NOT RAISED.** Drawn as live `<pattern>` fills, three
+continents breached `maxRasterSeconds` = 2 at `rasterWidthPx` = 2000 — Coldreach **2.153 s**,
+Stonemoor **2.215 s**, Driftholt **2.219 s**, best of three, run serially. Profiled before
+concluding, exactly as the F-042/F-047 lesson requires: stripping the reported hatch took Driftholt
+to **0.599 s** and Coldreach to **0.475 s**, so the hatch was **72-78%** of the cost — the same
+single-live-hatch class that once made the basin sheet 11.31 s. Merging same-provenance regions into
+one fill was measured too and does nothing (2.143 s): the cost is AREA, not fill count.
+`texture-bake.mjs` grew one optional door — a region may name its tile by an explicit `fill` pattern
+id instead of by biome, validated against the same recipe table — and the frontier hatches go
+through the same raster the biome ink already does. After: **every one of the seventeen sheets is
+inside the cap, worst 0.667 s (Driftholt)**, and the whole roster runs 0.277-0.701 s. The `<pattern>`
+defs stay because the legend swatches still draw them.
+
+**SIX GATE ARMS, EACH WATCHED RED THEN GREEN.** Mutation runs against the new suite: deleting the
+`<use>`/`<symbol>` integrity arm (24 → 23), restoring the plan's `?? "pRock"` terrain-kind fallback
+(23), restoring its `?? "meadow"` biome fallback (23), returning the reported hatch to a live fill
+(23), removing the never-throw catch (23), and reading only `BIOME_FILL` in G-BIOME-INK's referenced
+set (23). **The last one is the one worth remembering:** it left the suite GREEN at first, because the
+tier-1 firing test only asserted `problems.length > 0` — the three frontier hatches had gone dark and
+6 of 12 problems vanished with nobody watching. The assertion now NAMES them.
+
+**A RULE THAT COULD NOT FAIL, DELETED RATHER THAN KEPT.** A draft of the builder pushed a problem when
+a placed label resolved to no rank. `placeLabels`' placed ids are a subset of the ids it was handed and
+`rankOfLabel` is built from that same array, so no input can make it fire — it survived mutation
+untouched. It is gone, and the property is checked where it can be observed instead: the suite reads
+`data-rank` back out of all thirteen BUILT sheets and reds on anything that is not a number.
+
+**Answers to the reviewer's five questions, all measured.** (a) The drawn extent fills 86.0%-92.2% of
+its map area; Quillreef 852×864 px in a 908×920 frame (88.1%), Loamspit 1176×600 in 1232×656 (87.3%).
+(b) `buildContinentSheet` does not throw on an empty `zones`, a two-point polygon, a null `labelAt`, a
+landmark with no glyph or `at`, a null coastline, NaN in a ring, or a doc with no river/mire/patches/
+towns — seven constructed cases, each asserted. The one input that gets past every in-band guard is a
+non-string `contentRoot` (`join` throws before a file is read), which is what arms the outer catch.
+(c) Zero `data-rank="undefined"` across all thirteen sheets. (d) 17 sheets against a ceiling of 18;
+`world-budget: sheets 17 files, 256264 bytes largest (world-fabric.svg) (budget 18, 524288)`; all 13
+thumbs inside `maxThumbBytes` at exactly 512 px. (e) **Zero** reported regions take the `pReported`
+fallback — all 120 carry a real provenance (77 hearsay, 24 inferred, 19 sworn), and a test now says so
+in both directions.
+
+**Two incidental corrections, both real defects the new ids exposed.** `render-sheet.test.mjs`'s CI
+self-check scan matched `--sheet (\w+)`, and `\w` stops at a hyphen — eleven of the thirteen new ids
+carry one, so the scan would have collected "rimewall" and reported a registry mismatch that was
+really a regex bug. And `game-client/assets/.thumbs` held a **stale thumb for `maps/atlas-world.png`**
+(srcHash drifted at Task 7's atlas re-render and was never re-baked); `bake_thumbnails --only maps`
+reported 15 stale of 17 and corrected it.
+
+**Render lock: additions only.** 31 → **44** rows, **13 added, zero changed, zero removed** —
+`git diff` on `content/world/render-lock.json` shows 13 insertions and 0 deletions. The plan expected
+26 (13 SVGs + 13 PNGs); the lock has never hashed PNGs, so 13 is the correct number.
+
+**THE REVIEW PASS — two independent reviewers, ten findings acted on in one follow-up commit.**
+Reviewer B recomputed all ~160 published figures in the 13 storybook rows and 13 art-manifest
+entries against the resolved and fabric docs AND against the committed SVGs: **zero arithmetic
+mismatches**. Every defect it found was in prose or in a cross-reference — which is exactly this
+programme's recorded failure mode. Acted on:
+
+- **M1 — `places.test.mjs` claimed all FIVE ruling-8 subject keys are "asserted as DRAWN".**
+  `iceEdge` is null on all thirteen and the cited test asserts the opposite for it. The comment now
+  says four drawn, one measured-null. Publishing absence as a positive fact, inside the one file
+  whose job is keeping ruling 8 honest.
+- **M2 — that same comment cited a STATE §28 filing that did not exist.** Rule 11: prose that points
+  at a decision nobody recorded is decoration. The filing is now real — items 1-4 below.
+- **M3 — all 13 art-manifest entries carried the tag `"spine"`** while their `gen.input` is the
+  resolved + fabric layers and ruling 8 retired the spine-backed path this sheet replaces. Thirteen
+  searchable tags asserting a lineage the change had just retired. Now `"review-sheet"`, matching
+  `art:map-fabric` and `art:map-overlay`; `art:map-atlas` keeps `"spine"` because its input IS the spine.
+- **m4 — "eleven of the thirteen ids carry a hyphen" was wrong (TWO do)** and the stated mechanism was
+  wrong too: `--sheet (\w+)` does not mis-capture "rimewall", it fails to match the line at all, so
+  the two sheets would have gone silently uncovered. Both corrected by measurement.
+- **m5 — "CI's three `--no-png` lines"** was true until this diff made it 17. Fixed in the test name
+  and in both `render-sheet.mjs` comments.
+- **m6 — the village-label sentence was pasted onto all 26 surfaces**, including six sheets with ZERO
+  settlements, where it asserted a property of an empty set. It also read as reassurance that village
+  names are present when the measured `data-rank="9"` count is 0 on every sheet.
+- **m7 — the ice-edge disclosure was asymmetric**: only the six riverless sheets mentioned it, so
+  Skerryfast — whose own subtitle says "the fjord skerries" and which STATE names as an ice-bearing
+  landmass — was the one sheet silent about it. All thirteen now state it, and a mutation-proven test
+  reds if any card drops the clause or claims an ice edge.
+- **m8 — inventory figures read as sheet contents.** Wealdmarch published "113 named landforms" while
+  the sheet letters 52 of them. Every count is now "N in the world, M lettered here", read back off
+  the committed SVG's own `data-rank` attributes rather than predicted.
+- **The authored one-line shapes were replaced by each premise's own `structuralIdea`** — derive, not
+  invent. "the polar ice divide at the top of the world" was my paraphrase; the premise says "one ice
+  divide shedding outlet glaciers to every quarter; no rivers".
+- **Self-found, and proven by running it: a `null` fabric doc produced
+  `unexpected throw: Cannot read properties of null` from the outer catch** instead of a named shape
+  problem — a real diagnosis replaced by a generic one. Guarded, and the fix is mutation-proven. The
+  test fixture that first covered it passed a HEALTHY doc, because `fabric ?? committed` cannot tell
+  "not supplied" from "supplied as null"; the helper now uses an explicit ABSENT sentinel.
+
+Reviewer B's verdict on the three edited test files, independently checked: the `places.test.mjs`
+tripwire is structurally intact (all three legs unchanged, two assertions added); the roster pin and
+the declutter test are NET STRONGER; the CI-scan regex widening is a fix, not a weakening, because
+the binding `deepEqual` is untouched; and `fabric-sheet.test.mjs`'s literal-to-derivation change is
+acceptable ONLY because of the companion line that re-pins the roster at 17 — the derivation alone
+would be a rule that can no longer fail.
+
+**FILED, NOT FIXED (this task):**
+
+1. **`basin-sheet.mjs` (30.3 KB) and `scripts/lib/places.mjs#resolveWorld` are now permanently dead
+   production code.** Ruling 8 kept them as Task 8's raw material; Task 8 did not need them, and
+   `content/spine/sheet.json`'s descriptor still cannot resolve. Deleting them retires their tests
+   too, which is an owner call, not a refit.
+2. **G-BIOME-INK's per-sheet half is degenerate at the committed legend tier 3**, on the continent
+   sheets exactly as `synthetic-sheet.mjs` already records for itself: every legend row draws a
+   swatch, so `referenced` ⊇ `emitted` by construction and the arm can only fire at a lower tier.
+   The `legendTier` parameter is what makes it demonstrable at all; nothing on the shipped path
+   passes one.
+3. **`maxRasterSeconds` now covers 17 sheets × 3 runs in one wall-clock test** (`render-sheet.test
+   .mjs`), which is 51 rasterisations in a Gate-2-only, load-sensitive assertion — filed-not-fixed
+   item 4 of the `bc393a4` review, now four times bigger. The margin got much better (worst 0.667 s
+   of 2 s, was 2.219 s) but the harness problem is unchanged.
+4. **The baked underlay paints its whole bounding box opaque `parchmentDeep`**, so the sea inside a
+   continent's bbox is a slightly different shade from the sea in the neatline margin. Pre-existing
+   `bakedUnderlay` behaviour, visible on `synthetic-density.svg` too; it reads as a map field rather
+   than as an error, but it is a deliberate-looking edge nobody decided on.

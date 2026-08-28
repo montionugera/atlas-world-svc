@@ -168,7 +168,7 @@ test("the default png width is the committed-thumb width, not the ship width", (
   );
 });
 
-test("--no-png stays accepted as a no-op, so CI's three --no-png lines still run", () => {
+test("--no-png stays accepted as a no-op, so CI's --no-png lines still run", () => {
   const p = parseArgs(["--sheet", "fabric", "--no-png", "--check"]);
   assert.equal(p.error, undefined);
   assert.equal(p.wantPng, false);
@@ -275,11 +275,13 @@ test("CI's sheet self-check covers EVERY id in the registry, not a subset", () =
   // here instead of going quietly uncovered.
   const yml = readFileSync(join(ROOT, ".github/workflows/ci.yml"), "utf8");
   const step = yml.slice(yml.indexOf("- name: Sheet self-check"));
-  // `[\w-]+`, not `\w+`: eleven of the thirteen continent sheet ids carry a
-  // hyphen (rimewall-cap, ashen-spar), and `\w` stops at it — the scan would
-  // have collected "rimewall" and reported a registry mismatch that was really
-  // a regex bug. Found by adding the sheets, which is the only way this kind
-  // of scan defect ever surfaces.
+  // `[\w-]+`, not `\w+`: TWO of the thirteen continent sheet ids carry a
+  // hyphen — `rimewall-cap` and `ashen-spar` — and `\w` stops at one. Measured
+  // rather than assumed: the old pattern does not mis-capture "rimewall", it
+  // fails to match the line AT ALL, so those two sheets would have been
+  // silently missing from `checked` and the registry comparison would have
+  // reported a mismatch that was really a regex bug. Found by adding the
+  // sheets, which is the only way this kind of scan defect ever surfaces.
   const checked = [...step.slice(0, step.indexOf("\n\n")).matchAll(/--sheet ([\w-]+) --no-png --check/g)].map((m) => m[1]);
   assert.ok(checked.length > 0, "the self-check step no longer matches — this scan has gone dark");
   assert.deepEqual(checked.slice().sort(), Object.keys(SHEETS).sort(),

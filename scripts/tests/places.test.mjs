@@ -58,13 +58,18 @@ function realTree() {
 //     describes. So the call below still returns null.
 //   - production STILL does not reach the two dormant functions. Their
 //     dormancy is therefore PERMANENT rather than "until Task 8" — which
-//     makes them a dead-code question for an owner, filed to STATE §28, not
-//     something this test should settle by deleting them.
+//     makes them a dead-code question for an owner, filed to STATE §28's
+//     Task 8 "FILED, NOT FIXED" list, not something this test should settle
+//     by deleting them.
 //
-// The real coverage the pin asked for lives where it can be observed: the five
-// surviving subject keys (coastline, river, saltmire, iceEdge, terrainPatches)
-// are asserted as DRAWN on the wealdmarch continent sheet, from the resolved
-// doc, by tools/mapforge/tests/continent-sheet.test.mjs's "RULING 8" test.
+// The real coverage the pin asked for lives where it can be observed, in
+// tools/mapforge/tests/continent-sheet.test.mjs's "RULING 8" test — and it is
+// FOUR of the five subject keys, not five. `coastline`, `river`, `saltmire`
+// and `terrainPatches` are asserted as DRAWN on the wealdmarch continent
+// sheet; `iceEdge` is asserted as ABSENT FROM THE DATA, because it is null on
+// all thirteen resolved continents. Writing "five drawn" here would be this
+// programme's own named failure — publishing absence as a positive fact — in
+// the one file whose job is to keep ruling 8 honest.
 // ---------------------------------------------------------------------------
 test("RULING 8: the basin sheet's spine path stays dead; its ground came back as `wealdmarch`", async () => {
   // (1) The descriptor no longer names a basin. Ruling 8 retired the cluster1
