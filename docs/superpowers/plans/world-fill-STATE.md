@@ -3928,3 +3928,46 @@ Pinned by a new leak test beside the `townPlansCache` / `placesByRoot` pair, mut
   are the last two legacy-slug joins on the real root — the 2 residual `--require-complete` failures.
 - `content/zones/*.json`'s `spineId` is still optional and unset on all ten; `G-ALIAS` checks it only
   when present, so the fabric join and the spine join remain unrelated keys.
+
+### TASK 9 REVIEW — two MAJOR findings acted on (2026-08-29, refactor step of the quality gate)
+
+An independent adversarial reviewer re-derived every claim above by construction and mutation. The
+pairing claim (4) held under an independent point-in-polygon test of each pinned civil coordinate
+against the fabric's own region `rings`: **all 9 resolvable pins land in reported regions**, and
+`c-lm-thornveil`'s lands in none — no committed artifact joins a legacy slug to surveyed ground. All
+six named rules were independently mutation-killed. Two MAJOR defects were found, both mine, both
+fixed in the follow-up commit.
+
+1. **The blanket soft-skip took the intra-record rules down with the join rules.** Both the plan's
+   `if (!zones) return 0` and its `if (!zones.size && !fabric.byRegionId.size) return 0` return from
+   the WHOLE function, so `Z3`/`Z4`/`Z5`/`Z7` — which need no authority, being intra-record — went
+   dark too. The reviewer built the tree: a resolved continent declaring `"zones": []` and no
+   `content/world/fabric/`, which is what a partially-generated or WIP root genuinely looks like. A
+   record with a duplicate hazard id, a non-kebab id AND an invalid resource kind printed **`0
+   zones`, zero failures, exit 0**. Each rule now bails on its own missing authority and nothing
+   else. Two consequences pinned as tests: an EMPTY drawn world reports **no** orphans (an absence of
+   data must not be published as a verdict — the old code printed ten "not in
+   content/world/resolved#zones" FAILs claiming it had looked), and a drawn world that has merely
+   fallen BEHIND the fabric still names both disagreements.
+2. **`zone` had lost every format check.** Moving Z1's join subject to `doc.region` left the slug
+   validated by exact-string duplicate detection alone, while it remains the name every Z3/Z5/Z6
+   message and every duplicate group is keyed on — measured, a fully-joined record carrying
+   `"zone": "GARBAGE_NOT_KEBAB!! "` passed with 0 failures and 0 warnings. Added **Z0**: the slug is
+   kebab-case, the same rule its item ids have had since I-060. Deliberately NOT "slug equals
+   filename": `zone-emberdown-copy.json` holding `"zone": "emberdown"` is the fixture that reaches
+   the duplicate-zone rule, so binding the two would make that rule unreachable dead code.
+
+**Accepted and filed, not fixed here.**
+
+- When `content/world/resolved/` is stale against a fabric that has moved on, the same root cause
+  prints two differently-worded FAILs and the Z1 one blames "not in the resolved world" for what is
+  really a resolved-join that has not been re-run (`scripts/check_content.mjs`, Z1's message). Nothing
+  hides — exit 1 either way, and the reviewer could construct no silent disagreement class — so the
+  wording is left alone rather than churn ~10 fixture regexes.
+- `checkZoneContent` reporting the fabric index's problems before `checkSpine` adds its stale-pin
+  ones is an **implicit ordering dependency** between two functions ~1,200 lines apart, enforced by
+  `main()`'s call order and by nothing else. Correct today on both paths (full sweep and
+  `--only=spine`); fragile.
+- `survey` on a record is informationally redundant once Z2 passes (only `"surveyed"` can survive),
+  but the drift check is live and mutation-killed. Ruling: a verified declaration, like a checksum —
+  not rot.

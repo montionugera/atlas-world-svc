@@ -558,21 +558,44 @@ test("a geography parsing to null is one shape-invalid FAIL, not a skip", () => 
   assert.doesNotMatch(r.out, /has no record in content\/zones\//);
   // The bail is CLEAN, not silent: the shape failure is the only zone-side line.
   assert.doesNotMatch(r.out, /not in content\/world\/resolved#zones/);
-  assert.match(r.out, /0 zones/);
+  // REVIEW FINDING (MAJOR 1): this used to read `/0 zones/`, because the gate
+  // returned from the WHOLE function. It counts the ten records now — the two
+  // JOIN rules are what have no authority here, not the four intra-record ones,
+  // which still ran. Proven by the test below, which puts real defects on this
+  // exact root.
+  assert.match(r.out, /10 zones/);
 });
 
-test("a broken drawn world with a healthy fabric names BOTH disagreements", () => {
-  const r = runGate(fixture({ zones: allZones(), geography: null }));
+test("a drawn world that has fallen behind the fabric names BOTH disagreements", () => {
+  // A drawn world that is EMPTY cannot answer and must stay silent (the test
+  // above). A drawn world that answers and answers DIFFERENTLY is the real
+  // two-authority disagreement: here it has resolved nine of the ten regions
+  // the fabric declares surveyed, which is what a resolved join that has not
+  // been re-run after a fabric edit looks like.
+  const geography = { zones: GEOGRAPHY.zones.filter((z) => z.id !== "c02/r04") };
+  const r = runGate(fixture({ zones: allZones(), geography }));
   assert.equal(r.code, 1);
-  assert.match(r.out, /geography: .* is shape-invalid/);
   // Z1 against the drawn world…
   assert.match(r.out, /zones\/zone-thornveil\.json: region "c02\/r04" not in content\/world\/resolved#zones/);
-  // …and Z2 direction 1 against the fabric, which is intact and still owed
-  // prose. Ten of each: the record is withheld from `records` by Z1, so its
-  // region reads as uncovered. A gate that printed only one of these would be
-  // publishing one authority's silence as the other's verdict.
-  assert.equal((r.out.match(/not in content\/world\/resolved#zones/g) ?? []).length, 10);
-  assert.equal((r.out.match(/has no record in content\/zones\//g) ?? []).length, 10);
+  // …and Z2 direction 1 against the fabric, which still declares c02/r04
+  // surveyed and owed prose. The record is withheld from `records` by Z1, so
+  // its region reads as uncovered. A gate that printed only one of these would
+  // be publishing one authority's silence as the other's verdict.
+  assert.match(r.out, /zones: surveyed region "c02\/r04" has no record in content\/zones\//);
+  assert.equal((r.out.match(/not in content\/world\/resolved#zones/g) ?? []).length, 1);
+  assert.equal((r.out.match(/has no record in content\/zones\//g) ?? []).length, 1);
+});
+
+test("an EMPTY drawn world reports no orphans — absence of data is not a verdict", () => {
+  // The mirror image of the test above, and the reason Z1 is gated on
+  // `drawnKnown`: ten records against a resolved world that declares nothing
+  // used to print ten "not in content/world/resolved#zones" FAILs, each of
+  // which said the drawn world had LOOKED and not found the region. It had not
+  // looked; it had nothing to look in.
+  const r = runGate(fixture({ zones: allZones(), geography: { zones: [] } }));
+  assert.equal(r.code, 0, r.out);
+  assert.doesNotMatch(r.out, /not in content\/world\/resolved#zones/);
+  assert.match(r.out, /10 zones/);
 });
 
 test("a schema-invalid record FAILs and its Z-rules are skipped, not crashed on", () => {
@@ -1248,4 +1271,58 @@ test("every committed record joins to a SURVEYED fabric region, one apiece", () 
   assert.deepEqual([...seen.keys()].sort(),
     ["c02/r01", "c02/r02", "c02/r08", "c02/r10", "c02/r14",
      "c02/r16", "c02/r21", "c02/r24", "c02/r28", "c02/r30"]);
+});
+
+// ─── the two findings of the adversarial review of c4d59c7 ─────────────────
+
+// MAJOR 1. The plan's two bails (`if (!zones) return 0` and the neither-layer
+// soft-skip) return from the whole function, so Z3/Z4/Z5/Z7 — which need no
+// authority, being intra-record — went dark with the join rules. The reviewer
+// built the tree that does it: a resolved continent declaring `"zones": []` and
+// no content/world/fabric/ at all, which is what a partially-generated or WIP
+// root genuinely looks like. Three real defects in one record produced `0
+// zones`, ZERO failures and exit 0.
+test("a root with NEITHER authority still enforces every intra-record rule", () => {
+  const zones = allZones({
+    emberdown: (z) => {
+      z.zone = "GARBAGE_NOT_KEBAB!! ";              // Z0
+      z.hazards[1].id = z.hazards[0].id;            // Z4 duplicate
+      z.landmarks[0].id = "Not Kebab";              // Z4 shape
+      z.resources[0].kind = "not-a-real-kind";      // Z7
+      z.reasonToGo = "   ";                         // Z3
+    },
+  });
+  const r = runGate(fixture({ zones, geography: { zones: [] }, fabric: null }));
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /zones\/zone-emberdown\.json: zone "GARBAGE_NOT_KEBAB!! " is not kebab-case/);
+  assert.match(r.out, /duplicate hazard id "emberdown-hazard-a"/);
+  assert.match(r.out, /landmark id "Not Kebab" is not kebab-case/);
+  assert.match(r.out, /kind "not-a-real-kind" is not a resource kind/);
+  assert.match(r.out, /has an empty reasonToGo/);
+  // …and the two JOIN rules stay silent, because neither authority can answer.
+  assert.doesNotMatch(r.out, /not in content\/world\/resolved#zones/);
+  assert.doesNotMatch(r.out, /has no record in content\/zones\//);
+});
+
+// MAJOR 2. Z1's join subject moved from `zone` to `region`, and nothing filled
+// the hole: `zone` was left checked by exact-string duplicate detection alone,
+// while remaining the name every Z3/Z5/Z6 message and every duplicate group is
+// keyed on. Measured by the reviewer on a fully-joined, otherwise-valid record:
+// `"zone": "GARBAGE_NOT_KEBAB!! "` passed the gate with 0 failures, 0 warnings.
+test("Z0: a zone slug that is not kebab-case fails even when the join is perfect", () => {
+  const r = runGate(fixture({
+    zones: allZones({ emberdown: (z) => { z.zone = "GARBAGE_NOT_KEBAB!! "; } }),
+  }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones\/zone-emberdown\.json: zone "GARBAGE_NOT_KEBAB!! " is not kebab-case/);
+  // The record still JOINS — its region is untouched — so nothing else fires
+  // and this rule is the only thing that can reject the root.
+  assert.doesNotMatch(r.out, /has no record in content\/zones\//);
+  assert.doesNotMatch(r.out, /not in content\/world\/resolved#zones/);
+});
+
+test("Z0: every committed record's zone slug is kebab-case", () => {
+  for (const f of readdirSync(join(ROOT, "content/zones")).filter((n) => /^zone-.+\.json$/.test(n)))
+    assert.match(JSON.parse(readFileSync(join(ROOT, "content/zones", f), "utf8")).zone,
+      ZONE_ID_RE, `${f}: zone slug is not kebab-case`);
 });

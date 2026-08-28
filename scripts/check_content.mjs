@@ -1185,11 +1185,22 @@ function checkZoneContent(opts) {
   // different documents over the same subject, so a disagreement between the
   // drawn world and the fabric surfaces as a FAIL instead of hiding.
   const zones = loadGeographyZones(opts.contentRoot);
-  if (!zones) return 0;
   const fabric = failNewFabricProblems(opts.contentRoot);
-  // Soft-skip only when NEITHER layer is present. A root with one of them is a
-  // root that has adopted the world and must be checked against it.
-  if (!zones.size && !fabric.byRegionId.size) return 0;
+
+  // REVIEW FINDING (adversarial review of c4d59c7, MAJOR 1) — NO BLANKET BAIL.
+  // Both the plan's `if (!zones) return 0` and its
+  // `if (!zones.size && !fabric.byRegionId.size) return 0` return from the
+  // WHOLE function, which takes Z3/Z4/Z5/Z7 down with the two join rules even
+  // though those four need no authority at all: they are intra-record. Measured
+  // on the reviewer's tree — a resolved continent declaring `"zones": []` and no
+  // content/world/fabric/ (a genuinely reachable partially-generated state) —
+  // a record with a duplicate hazard id, a non-kebab id AND an invalid resource
+  // kind produced `0 zones`, ZERO failures and exit 0. Three real defects,
+  // silent. Each rule now bails on ITS OWN missing authority and on nothing
+  // else, which is the same discipline `loadMobTypes`/`spawnAreas` keep at the
+  // top of checkMaps.
+  const drawnKnown = zones !== null && zones.size > 0;
+  const fabricKnown = fabric.byRegionId.size > 0;
 
   const records = []; // { label, file, doc } for every valid record naming a real zone
 
@@ -1225,8 +1236,28 @@ function checkZoneContent(opts) {
     // (`"zone": "tallowquay-roads", "region": "c03/r01"`). The SUBJECT moves to
     // `doc.region`; the `zone` slug stays the human name and keeps its
     // duplicate rule below.
-    const known = zones.has(doc.region);
-    if (!known) fail(`${label}: region "${doc.region}" not in content/world/resolved#zones`);
+    // …and it runs only when the drawn world CAN answer. `zones === null` is a
+    // shape failure already FAILed by loadGeographyZones, and an empty drawn
+    // world answers "no" to every record — reporting that as ten orphans would
+    // be publishing an absence of data as a positive verdict.
+    let known = true;
+    if (drawnKnown) {
+      known = zones.has(doc.region);
+      if (!known) fail(`${label}: region "${doc.region}" not in content/world/resolved#zones`);
+    }
+
+    // Z0 — the `zone` slug is kebab-case. REVIEW FINDING (MAJOR 2): moving Z1's
+    // join subject to `doc.region` left `zone` checked by nothing but exact
+    // -string duplicate detection — measured, `"zone": "GARBAGE_NOT_KEBAB!! "`
+    // passed the whole gate with 0 failures and 0 warnings. It is still the
+    // name every Z3/Z5/Z6 message and every duplicate group is keyed on, so it
+    // gets the shape rule its item ids have had since I-060.
+    // DELIBERATELY NOT "the slug equals the filename": `zone-emberdown-copy.json`
+    // holding `"zone": "emberdown"` is exactly the fixture that reaches the
+    // duplicate-zone rule, so binding the two would make that rule unreachable
+    // dead code — the reachability discipline the floors and the two enums keep.
+    if (!ZONE_ID_RE.test(doc.zone))
+      fail(`${label}: zone "${doc.zone}" is not kebab-case`);
 
     // Z3 — floors (design D4). Owned here, not by the schema: Ajv would emit
     // "/hazards must NOT have fewer than 2 items" and would reject the doc
@@ -1294,8 +1325,13 @@ function checkZoneContent(opts) {
   // Direction 2 is new and is the half that makes "40 written, 120 hatched" a
   // policy instead of a hope. Without it the frontier erodes into 160 thin
   // stubs (R13). It is a FAIL, never a warning.
+  //
+  // Gated on the FABRIC alone (review finding MAJOR 1): with no fabric there is
+  // no authority on which ground exists or was walked, and every one of the
+  // four rules below would be answering from an empty index — an absence of
+  // data published as a verdict. Z1 and the intra-record rules are unaffected.
   const coveredRegions = new Map();
-  for (const r of records) {
+  for (const r of fabricKnown ? records : []) {
     const declared = r.doc.survey;
     const region = r.doc.region;
     const known = fabric.byRegionId.get(region);
@@ -1318,8 +1354,12 @@ function checkZoneContent(opts) {
   // above; it runs over `records` (not the Map) so a third claimant is named
   // too. Only records whose region the fabric knows can collide, because the
   // unknown-region branch above `continue`s.
+  // Two files claiming one region is a FILE-vs-FILE defect and needs no
+  // authority, so it runs whether or not a fabric is present; the filter only
+  // withholds records the unknown-region branch above has already named, and
+  // there are none of those when the fabric is silent.
   for (const [region, group] of findDuplicateGroups(
-    records.filter((r) => fabric.byRegionId.has(r.doc.region)), (r) => r.doc.region))
+    records.filter((r) => !fabricKnown || fabric.byRegionId.has(r.doc.region)), (r) => r.doc.region))
     fail(`zones: region "${region}" has ${group.length} records (${group.map((r) => r.file).sort().join(", ")})`);
   for (const [id, meta] of fabric.byRegionId)
     if (meta.survey === "surveyed" && !coveredRegions.has(id))

@@ -367,8 +367,21 @@ test("the gate FAILS rather than zeroing its counts when the document is null (R
     const r = runFullGate(join(dir, "content"));
     assert.equal(r.code, 1, r.out);
     assert.match(r.out, /FAIL {2}geography: places: .*world\/resolved\/ holds no continent files/, r.out);
-    // finish() still ran — the counts are zeroed, but loudly, not silently.
-    assert.match(r.out, /content-gate: .* 0 zones, 0 towns, .* [1-9]\d* failures/, r.out);
+    // finish() still ran — loudly, not silently. The risk this pins is a null
+    // document that zeroes every count while the gate LOOKS GREEN, so the
+    // load-bearing halves are the exit code above and the non-zero failure
+    // count here; the individual zeros are evidence, not the contract.
+    assert.match(r.out, /content-gate: .* [1-9]\d* failures/, r.out);
+    // The town join really did go dark on the null document.
+    assert.match(r.out, /content-gate: .* 0 towns,/, r.out);
+    // PLAN E TASK 9 REVIEW (MAJOR 1): the ZONE count is 10 here, not 0, and
+    // that is the fix rather than a regression. checkZoneContent used to return
+    // 0 from the WHOLE function on a null document, which took Z3/Z4/Z5/Z7 —
+    // intra-record rules needing no geography at all — down with the two join
+    // rules; a defective record on this very root printed nothing. The ten
+    // files are read and checked now, and only Z1/Z2 go dark. Pinned as an
+    // exact literal so a future re-bail cannot pass this test silently.
+    assert.match(r.out, /content-gate: .* 10 zones, 0 towns,/, r.out);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
