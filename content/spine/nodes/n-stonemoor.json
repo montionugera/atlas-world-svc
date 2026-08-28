@@ -12,7 +12,8 @@
     },
     "source": "content/world/premises/continent-04.json"
   },
-  "frozen": false,
+  "frozen": true,
+  "absoluteAnchor": [305.25, 241.25],
   "seed": {
     "value": "e32f8778d5a74f7f",
     "epoch": 0,

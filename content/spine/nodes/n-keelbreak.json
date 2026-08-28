@@ -12,7 +12,8 @@
     },
     "source": "content/world/manifest.json"
   },
-  "frozen": false,
+  "frozen": true,
+  "absoluteAnchor": [346.75, 346.25],
   "seed": {
     "value": "25b5dbb13021a596",
     "epoch": 0,
