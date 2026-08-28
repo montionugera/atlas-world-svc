@@ -3442,3 +3442,65 @@ reader back to the frame classification. Mutation-proven red, then restored.
    not this one. Pre-existing dead field; `surveyNote` was removed above only because THIS diff retired its
    reader.
 
+
+### TASK 7 SHIPPED (2026-08-28) — the shrunken freeze, root-first, in three commits
+
+`55a9b5e` (depth 1: `n-cluster1`, `n-coldreach`, `n-stonemoor`, `n-galereach`, `n-keelbreak`,
+`n-tarnmark`) · `6413867` (depth 2-3: `n-thornveil`, `n-northern-icefield`, `n-millcross`, plus
+`content/spine/freeze-reasons.json` and `scripts/tests/freeze-reasons.test.mjs`) · `627e268`
+(G-FROZEN requires a written reason, digest re-baseline) · `1328bfc` (the review fix). The freeze
+went **1 → 10**: only `n-atlas` survived Task 5, and Task 5's unfreeze had also stripped
+`absoluteAnchor` from all nine, so there was **nothing to copy** — checked at `bc393a4~1` and at
+`e5600ce`, every one of the nine reads `frozen: false` with no anchor. Under the `per=1` identity
+frame `composeToRoot` never translates, so each composed anchor equals its own `placement.anchor`;
+that is the frame convention, not a transcription. Both arms of G-FROZEN proven live before the
+first commit (a 0.01 km anchor mutation, and unfreezing `n-atlas`), and neither intermediate commit
+was red (0 failures / 8 warnings at both).
+
+**THE THREE CARRIED-CANON ITEMS ARE NOT CLEARED BY THE REFREEZE — the record above is REFUTED.**
+`tools/mapforge/generate-world.mjs:918` writes `frozen: false` on every preserved chart node and
+mints the continents unfrozen, so a draft can never inherit a committed freeze; the three
+`G-CANON-LEG ... endpoint n-millcross is not frozen` lines survive Task 7 untouched and
+`tools/mapforge/tests/generate-world.test.mjs:219-221` still pins them, green, at 34/34. Probed by
+mutation rather than argued: carrying `doc.frozen` through instead clears all three and **replaces
+them with six G-FROZEN failures** — `n-millcross`/`n-thornveil`/`n-northern-icefield` each "frozen
+but ancestor n-cluster1 is not" and "frozen without absoluteAnchor" — which is exactly what the
+generator's own comment at `:1171-1173` says the hard-coded `false` is for. Clearing them is not a
+refreeze at all: it is teaching generation to emit the freeze (flag **and** anchor, continents
+first), which is a commit of its own with the census and promotion goldens attached.
+
+**A REGENERATION SILENTLY DROPS THE WHOLE FREEZE, AND ONLY A TEST SEES IT.** Measured by running
+the repro script on top of Task 7: the trunk comes back **10 frozen → 1** (`n-atlas` alone) and
+`check_content --only=spine` reports **0 FAIL**, because G-FROZEN's new rule is one-directional — it
+fails a freeze with no reason, and cannot fail a reason with no freeze. The only tripwire is
+`scripts/tests/freeze-reasons.test.mjs`'s set equality (2 of 4 red, naming the nine), and that suite
+runs in **Gate 2** (`scripts/integration.sh:113`), not Gate 1 (`scripts/precheck.sh`). So any future
+redraw must re-run Task 7 by hand, and a feature that regenerates and ships will not learn otherwise
+until promotion.
+
+**FILED, NOT FIXED (this task):**
+
+1. `repro-attempt3.sh`'s `e-lane-coldreach` block was **stale at `e5600ce`**, so the handoff premise
+   "the redraw reproduces from a clean tree" was already false before Task 7 touched anything: the
+   prose delta it re-applied is committed at `e5600ce`, and its own `startsWith` guard threw before
+   the pipeline could run. Corrected in the scratchpad script to an assertion, the same treatment
+   the rulings-1-5 replay already had. OVERALL is **PASS** after that, with 36 nodes, census 5/5,
+   7/7 legs, 0 spine failures, every preserved node and every road tip at d = 0.0000.
+2. `check_content --require-complete` was **already 172 failures at `e5600ce`** — the failure sets
+   diff to **zero lines** against the post-Task-7 tree, so Step 7's "Everything else PASS" premise
+   is false and Task 7 added none of them. They are the zone-record and resolved-join debt scoped to
+   Task 15 (160 `zones: geography zone "cNN/rNN" has no record`, 10 `zone … not in
+   content/world/resolved#zones`, plus `town-millcross` and `placement-thornveil`).
+3. Nothing verifies a freeze reason is **TRUE** — only that it is present and sentence-shaped. That
+   is a reviewer's job, and it is named in the test rather than faked by a check.
+4. Three plan literals corrected by measurement, not transcribed: (a) `n-cluster1`'s reason said
+   "five of the seven canon-leg endpoints" — measured, **all seven legs have both endpoints on
+   Wealdmarch** (five `f-town-*` features on the node plus `n-millcross`, its own child); (b) the
+   G-ALIAS citation for `representsNodeId` is `scripts/lib/spine.mjs:918-920`, not `:875-877`, which
+   is G-SPAWN-ID-STABLE; (c) Steps 4 and 5 both `git add content/spine/derived.json`, which the
+   freeze changes by **zero bytes** — the sidecar carries no frozen flag.
+5. The plan's `why.length >= 40` check, named "every reason is a sentence, not a label", was
+   **theatre**: `"x".repeat(45)` passed it. Found by the adversarial review, fixed in `1328bfc`
+   (>= 40 chars AND >= 8 words AND a full stop, all three arms watched red). Worth carrying forward
+   as a pattern — the plan wrote the assertion's NAME for what it wanted and its BODY for what was
+   easy, and only a mutation told them apart.
