@@ -26,7 +26,7 @@
 // real. The retirement itself is pinned by the first test below.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, cpSync } from "node:fs";
+import { readFileSync, readdirSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, cpSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -374,14 +374,22 @@ test("the gate FAILS rather than zeroing its counts when the document is null (R
     assert.match(r.out, /content-gate: .* [1-9]\d* failures/, r.out);
     // The town join really did go dark on the null document.
     assert.match(r.out, /content-gate: .* 0 towns,/, r.out);
-    // PLAN E TASK 9 REVIEW (MAJOR 1): the ZONE count is 10 here, not 0, and
-    // that is the fix rather than a regression. checkZoneContent used to return
-    // 0 from the WHOLE function on a null document, which took Z3/Z4/Z5/Z7 —
+    // PLAN E TASK 9 REVIEW (MAJOR 1): the ZONE count is NON-ZERO here, and that
+    // is the fix rather than a regression. checkZoneContent used to return 0
+    // from the WHOLE function on a null document, which took Z3/Z4/Z5/Z7 —
     // intra-record rules needing no geography at all — down with the two join
-    // rules; a defective record on this very root printed nothing. The ten
-    // files are read and checked now, and only Z1/Z2 go dark. Pinned as an
-    // exact literal so a future re-bail cannot pass this test silently.
-    assert.match(r.out, /content-gate: .* 10 zones, 0 towns,/, r.out);
+    // rules; a defective record on this very root printed nothing. Every record
+    // is read and checked now, and only Z1/Z2 go dark.
+    //
+    // TASK 11: this was an exact literal `10 zones`, and Task 11 writing six
+    // more records turned it red — a count literal describing the corpus rather
+    // than the rule. It is DERIVED from the directory now, which keeps the whole
+    // anti-bail property (a re-bail returns 0, and 0 never equals the number of
+    // files on disk) while not needing an edit per record. Not a widening: the
+    // expected number is computed independently of the gate's own output.
+    const onDisk = readdirSync(join(dir, "content/zones")).filter((f) => /^zone-.+\.json$/.test(f)).length;
+    assert.ok(onDisk >= 16, `only ${onDisk} zone records — the corpus shrank`);
+    assert.match(r.out, new RegExp(`content-gate: .* ${onDisk} zones, 0 towns,`), r.out);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
