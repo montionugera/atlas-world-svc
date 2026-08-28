@@ -3,7 +3,7 @@
   "inputs": {
     "content/world/fabric": "sha256:8002647d4568ef646dac6b2290431ece8d180ba8e1500d7dd4dd9c503df31b49",
     "content/world/resolved": "sha256:d664f42953036aba18c1e87ed9c90bed9eb2f3f8e6bfed15f72caade62d055b6",
-    "content/spine/nodes": "sha256:0c2f428f64eb90788dac9f4d52e5c07bd907a972fe23a324b4d4d5d191b9ca19"
+    "content/spine/nodes": "sha256:5ac34794a723eb436f24e74a29128f868b53d410a8c614d71c11dec7381a5609"
   },
-  "digest": "sha256:acc246ec254dd1dfda4e3adfd8506a9916a1c65bc281f9dba7be0e6136b85f8f"
+  "digest": "sha256:29bda08555a5a16a7eb03f4461ca033afccd3afb2bec7eb211f1904895d64e0e"
 }

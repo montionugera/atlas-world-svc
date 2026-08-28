@@ -457,6 +457,54 @@ t11("G-FROZEN red: absoluteAnchor drifted from the composed transform", () => {
   assert11.equal(r.code, 1);
   assert11.match(r.out, /G-FROZEN n-r: absoluteAnchor \[1, 1\] != composed \[30, 30\]/);
 });
+
+// Plan E Task 7 (spec §9.3) — the shrunken freeze. Three cases, because the
+// rule has three states and only one of them is a failure. The soft-skip is
+// the load-bearing one: every structural fixture in this file freezes nodes
+// and none of them carries a reasons file, so a rule that fired on absence
+// would red ~45 green tests rather than catch anything.
+const freezeChain = (dir) => {
+  for (const id of ["n-w", "n-c", "n-r"]) {
+    const p = join11(dir, `spine/nodes/${id}.json`);
+    const doc = JSON.parse(read11(p, "utf8"));
+    doc.frozen = true; doc.absoluteAnchor = undefined;
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+  }
+};
+t11("G-FROZEN red: frozen with no entry in freeze-reasons.json", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-frozen-unfrozen-ancestor", mutate: (dir) => {
+    freezeChain(dir);
+    // n-r is deliberately absent: a freeze nobody wrote a reason for.
+    write11(join11(dir, "spine/freeze-reasons.json"), JSON.stringify({
+      version: 1, why: "fixture", reasons: {
+        "n-w": "The fixture world frame, named here so the ancestors are covered and only the leaf is not.",
+        "n-c": "The fixture continent, named here so the ancestors are covered and only the leaf is not.",
+      },
+    }, null, 2) + "\n");
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-FROZEN n-r: frozen with no entry in content\/spine\/freeze-reasons\.json/);
+  assert11.doesNotMatch(r.out, /G-FROZEN n-w: frozen with no entry/);
+  assert11.doesNotMatch(r.out, /G-FROZEN n-c: frozen with no entry/);
+});
+t11("G-FROZEN silent: a frozen chain in a root with NO reasons file (the fixture soft-skip)", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-frozen-unfrozen-ancestor",
+                                        mutate: (dir) => freezeChain(dir) }));
+  assert11.doesNotMatch(r.out, /frozen with no entry in content\/spine\/freeze-reasons\.json/);
+});
+t11("G-FROZEN silent: every frozen node covered by the reasons file", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-frozen-unfrozen-ancestor", mutate: (dir) => {
+    freezeChain(dir);
+    write11(join11(dir, "spine/freeze-reasons.json"), JSON.stringify({
+      version: 1, why: "fixture", reasons: {
+        "n-w": "The fixture world frame, with a reason long enough to be a sentence rather than a label.",
+        "n-c": "The fixture continent, with a reason long enough to be a sentence rather than a label.",
+        "n-r": "The fixture leaf, with a reason long enough to be a sentence rather than a label.",
+      },
+    }, null, 2) + "\n");
+  } }));
+  assert11.doesNotMatch(r.out, /frozen with no entry in content\/spine\/freeze-reasons\.json/);
+});
 t11("G-NET red: edge endpoint does not resolve", () => {
   const r = runSpineGate(spineFixture({ mutate: (dir) => {
     write11(join11(dir, "spine/edges.json"), JSON.stringify([

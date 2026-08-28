@@ -2214,7 +2214,10 @@ function checkSpine(opts, mobTypes) {
   // Same validNodes discipline, and since Plan B Task 3 the same for edges:
   // validEdges is spine.edges filtered by G-EDGE-SCHEMA above (and, on a root
   // with no edge schema to compile, spine.edges itself).
-  gSpineFrozen({ nodes: validNodes, tree, fail });
+  const reasonsPath = join(opts.contentRoot, "spine/freeze-reasons.json");
+  const freezeReasons = existsSync(reasonsPath)
+    ? readJson(reasonsPath, "freeze-reasons", fail) : null;
+  gSpineFrozen({ nodes: validNodes, tree, freezeReasons, fail });
   // Plan E Task 3 (E-C7): G-CANON-LEG's endpoint rule becomes frozen-OR-pinned,
   // resolved through content/spine/canon-legs.json — the ONLY place a leg
   // endpoint may be named. Both inputs are optional: with neither
@@ -2675,7 +2678,7 @@ function composedAnchor({ tree, node }) {
 // parentId chain. Guarded the same way Task 1.7 established: only nodes
 // BFS-reached from a root (tree.depthOf.has(id)) are safe to recompute; a
 // cyclic/orphan island already carries its own G-TREE failure.
-function gSpineFrozen({ nodes, tree, fail }) {
+function gSpineFrozen({ nodes, tree, freezeReasons, fail }) {
   const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   for (const node of nodes) {
     if (!node.frozen) {
@@ -2683,6 +2686,20 @@ function gSpineFrozen({ nodes, tree, fail }) {
         fail(`spine: G-FROZEN ${node.id}: absoluteAnchor on an unfrozen node`);
       continue;
     }
+    // Plan E Task 7 / spec §9.3: the shrunken freeze. Under generated land a
+    // coordinate is generated, so a freeze is no longer a statement about
+    // geometry — it is a statement that this node's POSITION is load-bearing
+    // for something OUTSIDE the geometry (a runtime pointer, a canon distance,
+    // a town plan's frame, the sea-to-land rollup). A freeze with no written
+    // reason is one nobody can defend at the next redraw, which is how the
+    // pre-redraw set of 14 accumulated. Soft-skips a content root that carries
+    // no reasons file — every minimal structural fixture — the same way the
+    // canon-legs ledger soft-skips below; the live root always has one, and
+    // scripts/tests/freeze-reasons.test.mjs holds the two sets equal in BOTH
+    // directions, which is the half this gate cannot see (a reason for a node
+    // nobody froze).
+    if (freezeReasons && !freezeReasons.reasons?.[node.id])
+      fail(`spine: G-FROZEN ${node.id}: frozen with no entry in content/spine/freeze-reasons.json`);
     if (node.parentId) {
       const parent = tree.byId.get(node.parentId);
       if (parent && !parent.frozen) fail(`spine: G-FROZEN ${node.id}: frozen but ancestor ${parent.id} is not`);
