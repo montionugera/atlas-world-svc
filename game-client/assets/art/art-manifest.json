@@ -710,6 +710,357 @@
         "deterministic": true, "width": 512,
         "note": "No model, no sampler, no seed \u2014 this sheet is drawn from committed JSON, so there are no generation parameters to record. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash, and the 27 fabric and handle files it is drawn from are locked beside it."
       }
-    }
+    },
+    "art:map-rimewall-cap": {
+        "group": "map",
+        "title": "Rimewall Cap — the ice divide",
+        "file": "maps/rimewall-cap.png",
+        "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet rimewall-cap from content/world/resolved/continent-01.json (the civil join) and content/world/fabric/continent-01.json (biome shares, settlements, roads). The SVG beside this PNG (maps/rimewall-cap.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+        "description": "Rimewall Cap at its own scale — the polar ice divide at the top of the world. 12 regions: 0 surveyed and inked in their dominant biome, 12 reported under the provenance hatch (4 sworn, 5 hearsay, 3 inferred) and claiming no terrain. no settlement, no road, 8 named landforms, 0 dungeons, 28 drawn landform marks, and no river, mire or ice edge in the resolved doc. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost.",
+        "tags": [
+          "rimewall-cap",
+          "map",
+          "continent",
+          "authored-vector",
+          "svg",
+          "spine"
+        ],
+        "source": "docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md",
+        "gen": {
+          "method": "authored-vector",
+          "generated": false,
+          "tool": "tools/mapforge/render-sheet.mjs --sheet rimewall-cap",
+          "input": "content/world/resolved/continent-01.json + content/world/fabric/continent-01.json",
+          "vector": "maps/rimewall-cap.svg",
+          "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+          "deterministic": true,
+          "width": 512,
+          "note": "No model, no sampler, no seed — drawn from committed JSON. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
+        }
+      },
+    "art:map-wealdmarch": {
+        "group": "map",
+        "title": "Wealdmarch — the inland-sea basin",
+        "file": "maps/wealdmarch.png",
+        "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet wealdmarch from content/world/resolved/continent-02.json (the civil join) and content/world/fabric/continent-02.json (biome shares, settlements, roads). The SVG beside this PNG (maps/wealdmarch.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+        "description": "Wealdmarch at its own scale — the inland sea the trunk river feeds, with no ocean outlet. 30 regions: 10 surveyed and inked in their dominant biome, 20 reported under the provenance hatch (3 sworn, 14 hearsay, 3 inferred) and claiming no terrain. 16 settlements (1 capital, 5 hubs, 10 villages), 15 roads, 113 named landforms, 17 dungeons, 103 drawn landform marks, and the trunk river and a saltmire. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost.",
+        "tags": [
+          "wealdmarch",
+          "map",
+          "continent",
+          "authored-vector",
+          "svg",
+          "spine"
+        ],
+        "source": "docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md",
+        "gen": {
+          "method": "authored-vector",
+          "generated": false,
+          "tool": "tools/mapforge/render-sheet.mjs --sheet wealdmarch",
+          "input": "content/world/resolved/continent-02.json + content/world/fabric/continent-02.json",
+          "vector": "maps/wealdmarch.svg",
+          "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+          "deterministic": true,
+          "width": 512,
+          "note": "No model, no sampler, no seed — drawn from committed JSON. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
+        }
+      },
+    "art:map-coldreach": {
+        "group": "map",
+        "title": "Coldreach — one spine, one rain shadow",
+        "file": "maps/coldreach.png",
+        "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet coldreach from content/world/resolved/continent-03.json (the civil join) and content/world/fabric/continent-03.json (biome shares, settlements, roads). The SVG beside this PNG (maps/coldreach.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+        "description": "Coldreach at its own scale — one mountain spine and the rain shadow behind it. 26 regions: 6 surveyed and inked in their dominant biome, 20 reported under the provenance hatch (3 sworn, 15 hearsay, 2 inferred) and claiming no terrain. 12 settlements (1 capital, 2 hubs, 9 villages), 11 roads, 61 named landforms, 12 dungeons, 73 drawn landform marks, and the trunk river. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost.",
+        "tags": [
+          "coldreach",
+          "map",
+          "continent",
+          "authored-vector",
+          "svg",
+          "spine"
+        ],
+        "source": "docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md",
+        "gen": {
+          "method": "authored-vector",
+          "generated": false,
+          "tool": "tools/mapforge/render-sheet.mjs --sheet coldreach",
+          "input": "content/world/resolved/continent-03.json + content/world/fabric/continent-03.json",
+          "vector": "maps/coldreach.svg",
+          "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+          "deterministic": true,
+          "width": 512,
+          "note": "No model, no sampler, no seed — drawn from committed JSON. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
+        }
+      },
+    "art:map-stonemoor": {
+        "group": "map",
+        "title": "Stonemoor — the drowned karst plateau",
+        "file": "maps/stonemoor.png",
+        "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet stonemoor from content/world/resolved/continent-04.json (the civil join) and content/world/fabric/continent-04.json (biome shares, settlements, roads). The SVG beside this PNG (maps/stonemoor.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+        "description": "Stonemoor at its own scale — a karst plateau drowned to its pavements. 28 regions: 7 surveyed and inked in their dominant biome, 21 reported under the provenance hatch (2 sworn, 17 hearsay, 2 inferred) and claiming no terrain. 11 settlements (1 capital, 3 hubs, 7 villages), 10 roads, 65 named landforms, 14 dungeons, 170 drawn landform marks, and the trunk river. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost.",
+        "tags": [
+          "stonemoor",
+          "map",
+          "continent",
+          "authored-vector",
+          "svg",
+          "spine"
+        ],
+        "source": "docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md",
+        "gen": {
+          "method": "authored-vector",
+          "generated": false,
+          "tool": "tools/mapforge/render-sheet.mjs --sheet stonemoor",
+          "input": "content/world/resolved/continent-04.json + content/world/fabric/continent-04.json",
+          "vector": "maps/stonemoor.svg",
+          "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+          "deterministic": true,
+          "width": 512,
+          "note": "No model, no sampler, no seed — drawn from committed JSON. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
+        }
+      },
+    "art:map-thirstwold": {
+        "group": "map",
+        "title": "Thirstwold — the rain-shadow erg",
+        "file": "maps/thirstwold.png",
+        "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet thirstwold from content/world/resolved/continent-05.json (the civil join) and content/world/fabric/continent-05.json (biome shares, settlements, roads). The SVG beside this PNG (maps/thirstwold.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+        "description": "Thirstwold at its own scale — the erg the rain shadow leaves behind. 28 regions: 7 surveyed and inked in their dominant biome, 21 reported under the provenance hatch (4 sworn, 9 hearsay, 8 inferred) and claiming no terrain. 5 settlements (2 hubs, 3 villages), 4 roads, 55 named landforms, 8 dungeons, 70 drawn landform marks, and the trunk river. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost.",
+        "tags": [
+          "thirstwold",
+          "map",
+          "continent",
+          "authored-vector",
+          "svg",
+          "spine"
+        ],
+        "source": "docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md",
+        "gen": {
+          "method": "authored-vector",
+          "generated": false,
+          "tool": "tools/mapforge/render-sheet.mjs --sheet thirstwold",
+          "input": "content/world/resolved/continent-05.json + content/world/fabric/continent-05.json",
+          "vector": "maps/thirstwold.svg",
+          "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+          "deterministic": true,
+          "width": 512,
+          "note": "No model, no sampler, no seed — drawn from committed JSON. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
+        }
+      },
+    "art:map-reedstrand": {
+        "group": "map",
+        "title": "Reedstrand — the bird's-foot delta",
+        "file": "maps/reedstrand.png",
+        "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet reedstrand from content/world/resolved/continent-06.json (the civil join) and content/world/fabric/continent-06.json (biome shares, settlements, roads). The SVG beside this PNG (maps/reedstrand.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+        "description": "Reedstrand at its own scale — a bird's-foot delta pushing into open water. 8 regions: 3 surveyed and inked in their dominant biome, 5 reported under the provenance hatch (1 sworn, 3 hearsay, 1 inferred) and claiming no terrain. 1 settlement (1 village), no road, 22 named landforms, 3 dungeons, 28 drawn landform marks, and the trunk river and a saltmire. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost.",
+        "tags": [
+          "reedstrand",
+          "map",
+          "continent",
+          "authored-vector",
+          "svg",
+          "spine"
+        ],
+        "source": "docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md",
+        "gen": {
+          "method": "authored-vector",
+          "generated": false,
+          "tool": "tools/mapforge/render-sheet.mjs --sheet reedstrand",
+          "input": "content/world/resolved/continent-06.json + content/world/fabric/continent-06.json",
+          "vector": "maps/reedstrand.svg",
+          "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+          "deterministic": true,
+          "width": 512,
+          "note": "No model, no sampler, no seed — drawn from committed JSON. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
+        }
+      },
+    "art:map-driftholt": {
+        "group": "map",
+        "title": "Driftholt — the fog forest",
+        "file": "maps/driftholt.png",
+        "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet driftholt from content/world/resolved/continent-07.json (the civil join) and content/world/fabric/continent-07.json (biome shares, settlements, roads). The SVG beside this PNG (maps/driftholt.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+        "description": "Driftholt at its own scale — the fog forest, wet coast to wet coast. 8 regions: 3 surveyed and inked in their dominant biome, 5 reported under the provenance hatch (2 sworn, 2 hearsay, 1 inferred) and claiming no terrain. 1 settlement (1 village), no road, 17 named landforms, 4 dungeons, 28 drawn landform marks, and the trunk river and a saltmire. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost.",
+        "tags": [
+          "driftholt",
+          "map",
+          "continent",
+          "authored-vector",
+          "svg",
+          "spine"
+        ],
+        "source": "docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md",
+        "gen": {
+          "method": "authored-vector",
+          "generated": false,
+          "tool": "tools/mapforge/render-sheet.mjs --sheet driftholt",
+          "input": "content/world/resolved/continent-07.json + content/world/fabric/continent-07.json",
+          "vector": "maps/driftholt.svg",
+          "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+          "deterministic": true,
+          "width": 512,
+          "note": "No model, no sampler, no seed — drawn from committed JSON. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
+        }
+      },
+    "art:map-wracklow": {
+        "group": "map",
+        "title": "Wracklow — the erosional coast",
+        "file": "maps/wracklow.png",
+        "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet wracklow from content/world/resolved/continent-08.json (the civil join) and content/world/fabric/continent-08.json (biome shares, settlements, roads). The SVG beside this PNG (maps/wracklow.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+        "description": "Wracklow at its own scale — an erosional coast losing ground to the sea. 8 regions: 2 surveyed and inked in their dominant biome, 6 reported under the provenance hatch (2 hearsay, 4 inferred) and claiming no terrain. no settlement, no road, 6 named landforms, 0 dungeons, 19 drawn landform marks, and no river, mire or ice edge in the resolved doc. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost.",
+        "tags": [
+          "wracklow",
+          "map",
+          "continent",
+          "authored-vector",
+          "svg",
+          "spine"
+        ],
+        "source": "docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md",
+        "gen": {
+          "method": "authored-vector",
+          "generated": false,
+          "tool": "tools/mapforge/render-sheet.mjs --sheet wracklow",
+          "input": "content/world/resolved/continent-08.json + content/world/fabric/continent-08.json",
+          "vector": "maps/wracklow.svg",
+          "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+          "deterministic": true,
+          "width": 512,
+          "note": "No model, no sampler, no seed — drawn from committed JSON. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
+        }
+      },
+    "art:map-brightfall": {
+        "group": "map",
+        "title": "Brightfall — the cliff-hung falls",
+        "file": "maps/brightfall.png",
+        "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet brightfall from content/world/resolved/continent-09.json (the civil join) and content/world/fabric/continent-09.json (biome shares, settlements, roads). The SVG beside this PNG (maps/brightfall.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+        "description": "Brightfall at its own scale — the cliff-hung falls at the head of the sound. 3 regions: 1 surveyed and inked in their dominant biome, 2 reported under the provenance hatch (2 hearsay) and claiming no terrain. 1 settlement (1 village), no road, 9 named landforms, 2 dungeons, 14 drawn landform marks, and no river, mire or ice edge in the resolved doc. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost.",
+        "tags": [
+          "brightfall",
+          "map",
+          "continent",
+          "authored-vector",
+          "svg",
+          "spine"
+        ],
+        "source": "docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md",
+        "gen": {
+          "method": "authored-vector",
+          "generated": false,
+          "tool": "tools/mapforge/render-sheet.mjs --sheet brightfall",
+          "input": "content/world/resolved/continent-09.json + content/world/fabric/continent-09.json",
+          "vector": "maps/brightfall.svg",
+          "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+          "deterministic": true,
+          "width": 512,
+          "note": "No model, no sampler, no seed — drawn from committed JSON. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
+        }
+      },
+    "art:map-ashen-spar": {
+        "group": "map",
+        "title": "Ashen Spar — the volcanic arc",
+        "file": "maps/ashen-spar.png",
+        "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet ashen-spar from content/world/resolved/continent-10.json (the civil join) and content/world/fabric/continent-10.json (biome shares, settlements, roads). The SVG beside this PNG (maps/ashen-spar.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+        "description": "Ashen Spar at its own scale — the volcanic arc, ash over new rock. 3 regions: 1 surveyed and inked in their dominant biome, 2 reported under the provenance hatch (2 hearsay) and claiming no terrain. no settlement, no road, 8 named landforms, 0 dungeons, 14 drawn landform marks, and no river, mire or ice edge in the resolved doc. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost.",
+        "tags": [
+          "ashen-spar",
+          "map",
+          "continent",
+          "authored-vector",
+          "svg",
+          "spine"
+        ],
+        "source": "docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md",
+        "gen": {
+          "method": "authored-vector",
+          "generated": false,
+          "tool": "tools/mapforge/render-sheet.mjs --sheet ashen-spar",
+          "input": "content/world/resolved/continent-10.json + content/world/fabric/continent-10.json",
+          "vector": "maps/ashen-spar.svg",
+          "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+          "deterministic": true,
+          "width": 512,
+          "note": "No model, no sampler, no seed — drawn from committed JSON. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
+        }
+      },
+    "art:map-quillreef": {
+        "group": "map",
+        "title": "Quillreef — the atoll ring",
+        "file": "maps/quillreef.png",
+        "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet quillreef from content/world/resolved/continent-11.json (the civil join) and content/world/fabric/continent-11.json (biome shares, settlements, roads). The SVG beside this PNG (maps/quillreef.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+        "description": "Quillreef at its own scale — the atoll ring, land as a rim around water. 2 regions: 0 surveyed and inked in their dominant biome, 2 reported under the provenance hatch (2 hearsay) and claiming no terrain. no settlement, no road, 2 named landforms, 0 dungeons, 3 drawn landform marks, and no river, mire or ice edge in the resolved doc. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost.",
+        "tags": [
+          "quillreef",
+          "map",
+          "continent",
+          "authored-vector",
+          "svg",
+          "spine"
+        ],
+        "source": "docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md",
+        "gen": {
+          "method": "authored-vector",
+          "generated": false,
+          "tool": "tools/mapforge/render-sheet.mjs --sheet quillreef",
+          "input": "content/world/resolved/continent-11.json + content/world/fabric/continent-11.json",
+          "vector": "maps/quillreef.svg",
+          "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+          "deterministic": true,
+          "width": 512,
+          "note": "No model, no sampler, no seed — drawn from committed JSON. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
+        }
+      },
+    "art:map-skerryfast": {
+        "group": "map",
+        "title": "Skerryfast — the fjord skerries",
+        "file": "maps/skerryfast.png",
+        "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet skerryfast from content/world/resolved/continent-12.json (the civil join) and content/world/fabric/continent-12.json (biome shares, settlements, roads). The SVG beside this PNG (maps/skerryfast.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+        "description": "Skerryfast at its own scale — the fjord skerries under standing ice. 2 regions: 0 surveyed and inked in their dominant biome, 2 reported under the provenance hatch (2 hearsay) and claiming no terrain. no settlement, no road, 1 named landform, 0 dungeons, 9 drawn landform marks, and the trunk river. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost.",
+        "tags": [
+          "skerryfast",
+          "map",
+          "continent",
+          "authored-vector",
+          "svg",
+          "spine"
+        ],
+        "source": "docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md",
+        "gen": {
+          "method": "authored-vector",
+          "generated": false,
+          "tool": "tools/mapforge/render-sheet.mjs --sheet skerryfast",
+          "input": "content/world/resolved/continent-12.json + content/world/fabric/continent-12.json",
+          "vector": "maps/skerryfast.svg",
+          "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+          "deterministic": true,
+          "width": 512,
+          "note": "No model, no sampler, no seed — drawn from committed JSON. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
+        }
+      },
+    "art:map-loamspit": {
+        "group": "map",
+        "title": "Loamspit — the sandbar chain",
+        "file": "maps/loamspit.png",
+        "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet loamspit from content/world/resolved/continent-13.json (the civil join) and content/world/fabric/continent-13.json (biome shares, settlements, roads). The SVG beside this PNG (maps/loamspit.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+        "description": "Loamspit at its own scale — the sandbar chain, the least of the thirteen. 2 regions: 0 surveyed and inked in their dominant biome, 2 reported under the provenance hatch (2 hearsay) and claiming no terrain. no settlement, no road, 2 named landforms, 0 dungeons, 4 drawn landform marks, and no river, mire or ice edge in the resolved doc. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost.",
+        "tags": [
+          "loamspit",
+          "map",
+          "continent",
+          "authored-vector",
+          "svg",
+          "spine"
+        ],
+        "source": "docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md",
+        "gen": {
+          "method": "authored-vector",
+          "generated": false,
+          "tool": "tools/mapforge/render-sheet.mjs --sheet loamspit",
+          "input": "content/world/resolved/continent-13.json + content/world/fabric/continent-13.json",
+          "vector": "maps/loamspit.svg",
+          "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+          "deterministic": true,
+          "width": 512,
+          "note": "No model, no sampler, no seed — drawn from committed JSON. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
+        }
+      }
   }
 }

@@ -38,6 +38,11 @@ import { buildAtlasSheet, ATLAS_MAX_LABEL_RANK } from "./lib/atlas-sheet.mjs";
 import { buildSyntheticSheet } from "./lib/synthetic-sheet.mjs";
 import { buildFabricSheet } from "./lib/fabric-sheet.mjs";
 import { buildOverlaySheet } from "./lib/overlay-sheet.mjs";
+import {
+  CONTINENT_SHEETS,
+  CONTINENT_MAX_LABEL_RANK,
+  buildContinentSheet,
+} from "./lib/continent-sheet.mjs";
 import { rasterize } from "./lib/raster.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -122,6 +127,31 @@ export const SHEETS = {
     build: buildOverlaySheet,
   },
 };
+
+// PLAN E TASK 8 / spec §7.4 — the continent zoom tier, and ruling 8's tail.
+// One builder, thirteen entries, GENERATED from the roster: thirteen
+// hand-written blocks would be thirteen chances for a typo and thirteen places
+// for a divergence to hide, and a fourteenth landmass is then one row in
+// continent-sheet.mjs rather than a block here.
+//
+// This is also where the retired `cluster1` basin sheet comes back. Ruling 8
+// named its five surviving subject keys (coastline, river, saltmire, iceEdge,
+// terrainPatches) in the RESOLVED world, and the basin ground is Wealdmarch —
+// so the successor is the `wealdmarch` row below, drawn from
+// content/world/resolved/continent-02.json, not a fourteenth registry entry.
+// Roster arithmetic, from the ruling: 4 here + 13 = 17, inside
+// budgets.sheets.maxSheets = 18, which stays as the committed ceiling.
+for (const s of CONTINENT_SHEETS) {
+  if (SHEETS[s.id])
+    throw new Error(`render-sheet: sheet id "${s.id}" is already registered`);
+  SHEETS[s.id] = {
+    title: s.title,
+    outSvg: `game-client/assets/art/maps/${s.id}.svg`,
+    outPng: `game-client/assets/art/maps/${s.id}.png`,
+    maxLabelRank: CONTINENT_MAX_LABEL_RANK,
+    build: ({ repoRoot }) => buildContinentSheet({ repoRoot, continent: s.continent }),
+  };
+}
 
 /**
  * The CLI contract, as a pure function — no process, no fs, no exit.

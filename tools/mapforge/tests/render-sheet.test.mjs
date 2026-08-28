@@ -64,12 +64,27 @@ test("SHEETS entries declare title, outSvg, outPng and maxLabelRank", () => {
   // key set is asserted first. Plan B extends this roster; updating this line
   // is the deliberate acknowledgement that the roster changed.
   // Plan E ruling 8: cluster1 retired here, 5 -> 4. Task 8's 13 continent
-  // sheets take the roster to 17, inside budgets.sheets.maxSheets = 18.
+  // sheets took the roster to 17, inside budgets.sheets.maxSheets = 18 — and
+  // the basin ground came back with them, as `wealdmarch`, rather than as a
+  // fourteenth entry.
   assert.deepEqual(Object.keys(SHEETS).sort(), [
+    "ashen-spar",
     "atlas",
+    "brightfall",
+    "coldreach",
+    "driftholt",
     "fabric",
+    "loamspit",
     "overlay",
+    "quillreef",
+    "reedstrand",
+    "rimewall-cap",
+    "skerryfast",
+    "stonemoor",
     "synthetic",
+    "thirstwold",
+    "wealdmarch",
+    "wracklow",
   ]);
   for (const [id, sheet] of Object.entries(SHEETS)) {
     assert.equal(typeof sheet.title, "string", `${id}.title`);
@@ -97,19 +112,24 @@ test("SHEETS entries declare title, outSvg, outPng and maxLabelRank", () => {
 // ruling 8 has since retired that row entirely.
 //
 // This pins WHICH sheets run a declutter pass, from the source rather than
-// from a comment. basin-sheet.mjs is DORMANT since Plan E ruling 8 retired its
-// registry entry, so it draws nothing today — the assertion stays because
-// Task 8 rebuilds that builder resolved-backed, and a declutter arriving with
-// the rebuild should be a deliberate change to this list, not a silent one.
+// from a comment. Task 8 changed the answer: continent-sheet.mjs decluttes at
+// the rank-8 tier on all thirteen of its sheets, so `maxLabelRank` is LIVE on
+// thirteen of the seventeen rows. basin-sheet.mjs stays dormant and unread —
+// Task 8 built a successor rather than repairing it (see
+// scripts/tests/places.test.mjs's ruling-8 test), so a declutter appearing
+// there would mean somebody revived the spine-backed path.
 test("which sheets actually RUN a label declutter — the registry field is not proof", () => {
   const consumes = (file) =>
     /placeLabels\(/.test(readFileSync(join(ROOT, "tools/mapforge/lib", file), "utf8"));
   assert.equal(consumes("atlas-sheet.mjs"), true, "the atlas stopped decluttering");
   assert.equal(consumes("synthetic-sheet.mjs"), true, "the canary stopped decluttering");
+  assert.equal(consumes("continent-sheet.mjs"), true, "the continent tier stopped decluttering");
+  assert.equal(consumes("fabric-sheet.mjs"), false, "the fabric sheet's maxLabelRank is documented INERT");
+  assert.equal(consumes("overlay-sheet.mjs"), false, "the overlay sheet's maxLabelRank is documented INERT");
   assert.equal(
     consumes("basin-sheet.mjs"),
     false,
-    "basin-sheet.mjs now calls placeLabels — if Task 8's resolved-backed rebuild did that, " +
+    "basin-sheet.mjs now calls placeLabels — the spine-backed basin path was revived; " +
       "re-add its SHEETS row with a live maxLabelRank and re-baseline the render lock deliberately",
   );
 });
@@ -255,7 +275,12 @@ test("CI's sheet self-check covers EVERY id in the registry, not a subset", () =
   // here instead of going quietly uncovered.
   const yml = readFileSync(join(ROOT, ".github/workflows/ci.yml"), "utf8");
   const step = yml.slice(yml.indexOf("- name: Sheet self-check"));
-  const checked = [...step.slice(0, step.indexOf("\n\n")).matchAll(/--sheet (\w+) --no-png --check/g)].map((m) => m[1]);
+  // `[\w-]+`, not `\w+`: eleven of the thirteen continent sheet ids carry a
+  // hyphen (rimewall-cap, ashen-spar), and `\w` stops at it — the scan would
+  // have collected "rimewall" and reported a registry mismatch that was really
+  // a regex bug. Found by adding the sheets, which is the only way this kind
+  // of scan defect ever surfaces.
+  const checked = [...step.slice(0, step.indexOf("\n\n")).matchAll(/--sheet ([\w-]+) --no-png --check/g)].map((m) => m[1]);
   assert.ok(checked.length > 0, "the self-check step no longer matches — this scan has gone dark");
   assert.deepEqual(checked.slice().sort(), Object.keys(SHEETS).sort(),
     "ci.yml's sheet self-check is not the SHEETS registry");

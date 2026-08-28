@@ -212,14 +212,16 @@ test("the render lock covers the committed fabric and handle files too", () => {
   for (const fam of ["content/world/fabric", "content/world/handles"])
     for (const f of readdirSync(join(ROOT, fam)))
       assert.ok(lock[`${fam}/${f}`], `${fam}/${f} is committed but not locked — a hand edit would be silent`);
-  // 4 sheets + 14 fabric files + 13 handles. The sheet term was 5 until Plan E
-  // ruling 8 (STATE §28) retired the cluster1 basin sheet: its SHEETS entry,
-  // its storybook row, its art-manifest block, its committed bytes and this
-  // lock row all leave in the redraw commit together, and Task 8 rebuilds it
-  // resolved-backed. The lock's own `--check` catches an ORPHAN row ("locked
-  // but nothing builds it any more"), so this literal is the other direction:
-  // it catches a row silently dropped.
-  assert.equal(Object.keys(lock).length, 4 + 14 + 13);
+  // 17 sheets + 14 fabric files + 13 handles. The sheet term was 5 before Plan
+  // E ruling 8 (STATE §28) retired the cluster1 basin sheet, 4 after it, and
+  // 17 since Task 8 added the thirteen continent sheets — which brought the
+  // basin's ground back as `wealdmarch` rather than as a fourteenth entry. The
+  // lock's own `--check` catches an ORPHAN row ("locked but nothing builds it
+  // any more"), so this literal is the other direction: it catches a row
+  // silently dropped. Derived from the registry rather than retyped, so the
+  // sheet term cannot drift from the thing it is counting.
+  assert.equal(Object.keys(lock).length, Object.keys(SHEETS).length + 14 + 13);
+  assert.equal(Object.keys(SHEETS).length, 17, "the roster moved — was that deliberate?");
 });
 
 test("both sheets degrade in-band on a root with no fabric — they never throw", () => {

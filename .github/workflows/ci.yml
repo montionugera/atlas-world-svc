@@ -192,10 +192,23 @@ jobs:
       # reds rather than going quietly uncovered.
       - name: Sheet self-check (render-sheet --check)
         run: |
+          node tools/mapforge/render-sheet.mjs --sheet ashen-spar --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet atlas --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet brightfall --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet coldreach --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet driftholt --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet fabric --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet loamspit --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet overlay --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet quillreef --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet reedstrand --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet rimewall-cap --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet skerryfast --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet stonemoor --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet synthetic --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet thirstwold --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet wealdmarch --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet wracklow --no-png --check
 
       # Story explorer (F-012 Task 6): graph.mjs is the pure buildGraph()
       # shared by tools/story-explorer/index.html and this smoke test — every

@@ -42,18 +42,31 @@ function realTree() {
 }
 
 // ---------------------------------------------------------------------------
-// THE RETIREMENT, PINNED. Plan E ruling 8 is a decision, and a decision that
-// lives only in a plan document is decoration — the machine has to be able to
-// read it. This asserts the three facts that together MAKE the basin sheet
-// retired, so none of them can be quietly undone, and so Plan E Task 8 cannot
-// rebuild the sheet resolved-backed without deliberately coming through here.
+// THE RETIREMENT, PINNED — AND NOW DISCHARGED. Plan E ruling 8 is a decision,
+// and a decision that lives only in a plan document is decoration, so this
+// asserts the facts that MAKE the basin sheet retired.
 //
-// It is deliberately written to go RED when Task 8 lands. That is the point:
-// the day content/spine/sheet.json's subjects resolve again is the day this
-// pin has to be replaced by real coverage, and a red test is the only thing
-// that reliably makes that happen.
+// It was written to go RED when Task 8 landed, and it did: the roster
+// assertion below read the four standing sheets, and Task 8 took it to
+// seventeen. Updating it rather than deleting it is the whole point of the
+// tripwire. What CHANGED is the roster; what did NOT change is the other two
+// halves, and that is the honest report of what Task 8 actually did:
+//
+//   - the spine-backed basin descriptor is STILL dead. Task 8 did not repair
+//     resolveWorld; it built a successor that reads content/world/resolved/
+//     directly, which is what ruling 8's phrase "rebuilt resolved-backed"
+//     describes. So the call below still returns null.
+//   - production STILL does not reach the two dormant functions. Their
+//     dormancy is therefore PERMANENT rather than "until Task 8" — which
+//     makes them a dead-code question for an owner, filed to STATE §28, not
+//     something this test should settle by deleting them.
+//
+// The real coverage the pin asked for lives where it can be observed: the five
+// surviving subject keys (coastline, river, saltmire, iceEdge, terrainPatches)
+// are asserted as DRAWN on the wealdmarch continent sheet, from the resolved
+// doc, by tools/mapforge/tests/continent-sheet.test.mjs's "RULING 8" test.
 // ---------------------------------------------------------------------------
-test("RULING 8: the basin sheet is retired — descriptor dead, registry clean, builders dormant", async () => {
+test("RULING 8: the basin sheet's spine path stays dead; its ground came back as `wealdmarch`", async () => {
   // (1) The descriptor no longer names a basin. Ruling 8 retired the cluster1
   // SHEET "with its whole tail ... in the same single commit", and
   // content/spine/sheet.json's `subjects` block IS that sheet's data, so its
@@ -64,11 +77,14 @@ test("RULING 8: the basin sheet is retired — descriptor dead, registry clean, 
   //
   // Asserted as an EXACT set for the same reason as before: a subject key
   // quietly coming back is as visible as one leaving. The five retired ids
-  // themselves live on in RETIRED_BASIN_SUBJECTS below, which is where Task 8
-  // reads them from when it rebuilds this sheet resolved-backed.
+  // themselves live on in RETIRED_BASIN_SUBJECTS below. Task 8 did NOT read
+  // them from there in the end: the same ground is keyed differently in the
+  // resolved doc (coastline, river, saltmire, iceEdge, terrainPatches), and
+  // the successor sheet reads that — so these five ids are now only a record
+  // of what the dead descriptor used to name.
   const { spine, tree } = realTree();
   const { doc, problems } = resolveWorld({ spine, tree });
-  assert.equal(doc, null, "the basin descriptor resolved — has Task 8 landed? Then retire this pin.");
+  assert.equal(doc, null, "the spine-backed basin descriptor resolved again — decide what owns this ground");
   assert.deepEqual(problems.slice().sort(), [
     "resolveWorld: descriptor.featureIds is missing or not an object",
     "resolveWorld: descriptor.mireIds is missing or empty",
@@ -79,21 +95,28 @@ test("RULING 8: the basin sheet is retired — descriptor dead, registry clean, 
   // storybook parity gate and check_render_lock both key off: leaving the
   // entry while the sheet cannot build is what made check_render_lock BAIL.
   const { SHEETS } = await import("../../tools/mapforge/render-sheet.mjs");
-  assert.equal(SHEETS.cluster1, undefined, "cluster1 is back in SHEETS but its subjects still do not resolve");
-  assert.deepEqual(Object.keys(SHEETS), ["atlas", "synthetic", "fabric", "overlay"],
-    "ruling 8's arithmetic: SHEETS runs 5 -> 4 here, and Task 8's 13 continent sheets take it to 17");
+  assert.equal(SHEETS.cluster1, undefined, "cluster1 is back in SHEETS as a separate entry — ruling 8 says it is wealdmarch");
+  assert.deepEqual(
+    Object.keys(SHEETS),
+    ["atlas", "synthetic", "fabric", "overlay",
+     "rimewall-cap", "wealdmarch", "coldreach", "stonemoor", "thirstwold", "reedstrand",
+     "driftholt", "wracklow", "brightfall", "ashen-spar", "quillreef", "skerryfast", "loamspit"],
+    "ruling 8's arithmetic: SHEETS ran 5 -> 4 at the redraw, and Task 8's 13 continent sheets take it to 17",
+  );
+  assert.ok(SHEETS.wealdmarch, "the basin ground has no successor sheet at all");
+  assert.equal(SHEETS.wealdmarch.outSvg, "game-client/assets/art/maps/wealdmarch.svg");
 
-  // (3) Nothing in PRODUCTION reaches the dormant builders any more. Without
-  // this, the two functions look live because their tests import them — the
-  // reason ruling 8 could leave them on disk as Task 8's raw material is
-  // precisely that no shipping path calls them.
+  // (3) Nothing in PRODUCTION reaches the dormant builders. Without this, the
+  // two functions look live because their tests import them. Ruling 8 left
+  // them on disk as Task 8's raw material; Task 8 did not need them, so this
+  // assertion now records a permanent state rather than a temporary one.
   const srcs = ["scripts/check_content.mjs", "tools/mapforge/render-sheet.mjs"];
   for (const rel of srcs) {
     const src = readFileSync(join(ROOT, rel), "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, " ")
       .replace(/(^|[^:])\/\/.*$/gm, "$1");
     for (const fn of ["resolveWorld", "drawBasinSheet"])
-      assert.ok(!src.includes(fn), `${rel} calls ${fn} — the basin path is meant to be dormant until Task 8`);
+      assert.ok(!src.includes(fn), `${rel} calls ${fn} — the spine-backed basin path is dormant permanently; the successor reads content/world/resolved/ directly`);
   }
 });
 

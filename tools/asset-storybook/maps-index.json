@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "One row per tools/mapforge/render-sheet.mjs SHEETS entry. svg/png are repo-relative, matching SHEETS[id].outSvg/outPng exactly — see tools/asset-storybook/tests/maps-index.test.mjs for the parity gate, which asserts the correspondence in BOTH directions. The `cluster1` row retired with its SHEETS entry under Plan E ruling 8 (STATE §28); Plan E Task 8 re-adds it resolved-backed alongside the 13 continent rows.",
+  "note": "One row per tools/mapforge/render-sheet.mjs SHEETS entry. svg/png are repo-relative, matching SHEETS[id].outSvg/outPng exactly — see tools/asset-storybook/tests/maps-index.test.mjs for the parity gate, which asserts the correspondence in BOTH directions. The `cluster1` row retired with its SHEETS entry under Plan E ruling 8 (STATE §28); Plan E Task 8 brings that ground back as the `wealdmarch` row \u2014 the basin IS Wealdmarch \u2014 alongside the other twelve continent rows, for a roster of 17 inside budgets.sheets.maxSheets = 18.",
   "sheets": [
     {
       "id": "atlas",
@@ -29,6 +29,97 @@
       "svg": "game-client/assets/art/maps/world-overlay.svg",
       "png": "game-client/assets/art/maps/world-overlay.png",
       "note": "Baseline coastline ghosted under the generated one, with a per-continent area-delta table joined through the manifest's landmasses[].nodeId. Since the redraw the committed trunk IS drawn from this fabric, so the sheet reads as a near-identity rather than a before/after: 13 baseline polygons against 13 generated, gross land 65,498.4 \u2192 65,599.5 km\u00b2 (x1.00), every continent between x0.99 and x1.05, and sea:land 1.44 : 1 on the committed trunk, which is what G-SEALAND measures; the sheet's own footer line quotes the fabric layer's generated figure instead, and the two are different measures of the same world. Baseline read from the draft folder's baseline/ when one is present and from content/spine/nodes otherwise, never from git."
+    },
+    {
+      "id": "rimewall-cap",
+      "title": "Rimewall Cap — the ice divide",
+      "svg": "game-client/assets/art/maps/rimewall-cap.svg",
+      "png": "game-client/assets/art/maps/rimewall-cap.png",
+      "note": "Rimewall Cap at its own scale — the polar ice divide at the top of the world. 12 regions: 0 surveyed and inked in their dominant biome, 12 reported under the provenance hatch (4 sworn, 5 hearsay, 3 inferred) and claiming no terrain. no settlement, no road, 8 named landforms, 0 dungeons, 28 drawn landform marks, and no river, mire or ice edge in the resolved doc. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost."
+    },
+    {
+      "id": "wealdmarch",
+      "title": "Wealdmarch — the inland-sea basin",
+      "svg": "game-client/assets/art/maps/wealdmarch.svg",
+      "png": "game-client/assets/art/maps/wealdmarch.png",
+      "note": "Wealdmarch at its own scale — the inland sea the trunk river feeds, with no ocean outlet. 30 regions: 10 surveyed and inked in their dominant biome, 20 reported under the provenance hatch (3 sworn, 14 hearsay, 3 inferred) and claiming no terrain. 16 settlements (1 capital, 5 hubs, 10 villages), 15 roads, 113 named landforms, 17 dungeons, 103 drawn landform marks, and the trunk river and a saltmire. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost."
+    },
+    {
+      "id": "coldreach",
+      "title": "Coldreach — one spine, one rain shadow",
+      "svg": "game-client/assets/art/maps/coldreach.svg",
+      "png": "game-client/assets/art/maps/coldreach.png",
+      "note": "Coldreach at its own scale — one mountain spine and the rain shadow behind it. 26 regions: 6 surveyed and inked in their dominant biome, 20 reported under the provenance hatch (3 sworn, 15 hearsay, 2 inferred) and claiming no terrain. 12 settlements (1 capital, 2 hubs, 9 villages), 11 roads, 61 named landforms, 12 dungeons, 73 drawn landform marks, and the trunk river. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost."
+    },
+    {
+      "id": "stonemoor",
+      "title": "Stonemoor — the drowned karst plateau",
+      "svg": "game-client/assets/art/maps/stonemoor.svg",
+      "png": "game-client/assets/art/maps/stonemoor.png",
+      "note": "Stonemoor at its own scale — a karst plateau drowned to its pavements. 28 regions: 7 surveyed and inked in their dominant biome, 21 reported under the provenance hatch (2 sworn, 17 hearsay, 2 inferred) and claiming no terrain. 11 settlements (1 capital, 3 hubs, 7 villages), 10 roads, 65 named landforms, 14 dungeons, 170 drawn landform marks, and the trunk river. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost."
+    },
+    {
+      "id": "thirstwold",
+      "title": "Thirstwold — the rain-shadow erg",
+      "svg": "game-client/assets/art/maps/thirstwold.svg",
+      "png": "game-client/assets/art/maps/thirstwold.png",
+      "note": "Thirstwold at its own scale — the erg the rain shadow leaves behind. 28 regions: 7 surveyed and inked in their dominant biome, 21 reported under the provenance hatch (4 sworn, 9 hearsay, 8 inferred) and claiming no terrain. 5 settlements (2 hubs, 3 villages), 4 roads, 55 named landforms, 8 dungeons, 70 drawn landform marks, and the trunk river. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost."
+    },
+    {
+      "id": "reedstrand",
+      "title": "Reedstrand — the bird's-foot delta",
+      "svg": "game-client/assets/art/maps/reedstrand.svg",
+      "png": "game-client/assets/art/maps/reedstrand.png",
+      "note": "Reedstrand at its own scale — a bird's-foot delta pushing into open water. 8 regions: 3 surveyed and inked in their dominant biome, 5 reported under the provenance hatch (1 sworn, 3 hearsay, 1 inferred) and claiming no terrain. 1 settlement (1 village), no road, 22 named landforms, 3 dungeons, 28 drawn landform marks, and the trunk river and a saltmire. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost."
+    },
+    {
+      "id": "driftholt",
+      "title": "Driftholt — the fog forest",
+      "svg": "game-client/assets/art/maps/driftholt.svg",
+      "png": "game-client/assets/art/maps/driftholt.png",
+      "note": "Driftholt at its own scale — the fog forest, wet coast to wet coast. 8 regions: 3 surveyed and inked in their dominant biome, 5 reported under the provenance hatch (2 sworn, 2 hearsay, 1 inferred) and claiming no terrain. 1 settlement (1 village), no road, 17 named landforms, 4 dungeons, 28 drawn landform marks, and the trunk river and a saltmire. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost."
+    },
+    {
+      "id": "wracklow",
+      "title": "Wracklow — the erosional coast",
+      "svg": "game-client/assets/art/maps/wracklow.svg",
+      "png": "game-client/assets/art/maps/wracklow.png",
+      "note": "Wracklow at its own scale — an erosional coast losing ground to the sea. 8 regions: 2 surveyed and inked in their dominant biome, 6 reported under the provenance hatch (2 hearsay, 4 inferred) and claiming no terrain. no settlement, no road, 6 named landforms, 0 dungeons, 19 drawn landform marks, and no river, mire or ice edge in the resolved doc. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost."
+    },
+    {
+      "id": "brightfall",
+      "title": "Brightfall — the cliff-hung falls",
+      "svg": "game-client/assets/art/maps/brightfall.svg",
+      "png": "game-client/assets/art/maps/brightfall.png",
+      "note": "Brightfall at its own scale — the cliff-hung falls at the head of the sound. 3 regions: 1 surveyed and inked in their dominant biome, 2 reported under the provenance hatch (2 hearsay) and claiming no terrain. 1 settlement (1 village), no road, 9 named landforms, 2 dungeons, 14 drawn landform marks, and no river, mire or ice edge in the resolved doc. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost."
+    },
+    {
+      "id": "ashen-spar",
+      "title": "Ashen Spar — the volcanic arc",
+      "svg": "game-client/assets/art/maps/ashen-spar.svg",
+      "png": "game-client/assets/art/maps/ashen-spar.png",
+      "note": "Ashen Spar at its own scale — the volcanic arc, ash over new rock. 3 regions: 1 surveyed and inked in their dominant biome, 2 reported under the provenance hatch (2 hearsay) and claiming no terrain. no settlement, no road, 8 named landforms, 0 dungeons, 14 drawn landform marks, and no river, mire or ice edge in the resolved doc. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost."
+    },
+    {
+      "id": "quillreef",
+      "title": "Quillreef — the atoll ring",
+      "svg": "game-client/assets/art/maps/quillreef.svg",
+      "png": "game-client/assets/art/maps/quillreef.png",
+      "note": "Quillreef at its own scale — the atoll ring, land as a rim around water. 2 regions: 0 surveyed and inked in their dominant biome, 2 reported under the provenance hatch (2 hearsay) and claiming no terrain. no settlement, no road, 2 named landforms, 0 dungeons, 3 drawn landform marks, and no river, mire or ice edge in the resolved doc. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost."
+    },
+    {
+      "id": "skerryfast",
+      "title": "Skerryfast — the fjord skerries",
+      "svg": "game-client/assets/art/maps/skerryfast.svg",
+      "png": "game-client/assets/art/maps/skerryfast.png",
+      "note": "Skerryfast at its own scale — the fjord skerries under standing ice. 2 regions: 0 surveyed and inked in their dominant biome, 2 reported under the provenance hatch (2 hearsay) and claiming no terrain. no settlement, no road, 1 named landform, 0 dungeons, 9 drawn landform marks, and the trunk river. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost."
+    },
+    {
+      "id": "loamspit",
+      "title": "Loamspit — the sandbar chain",
+      "svg": "game-client/assets/art/maps/loamspit.svg",
+      "png": "game-client/assets/art/maps/loamspit.png",
+      "note": "Loamspit at its own scale — the sandbar chain, the least of the thirteen. 2 regions: 0 surveyed and inked in their dominant biome, 2 reported under the provenance hatch (2 hearsay) and claiming no terrain. no settlement, no road, 2 named landforms, 0 dungeons, 4 drawn landform marks, and no river, mire or ice edge in the resolved doc. Labels are the rank-8 continent tier, so village names sit above it and are counted, not lost."
     }
   ]
 }
