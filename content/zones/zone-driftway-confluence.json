@@ -1,0 +1,48 @@
+{
+  "zone": "driftway-confluence",
+  "region": "c03/r15",
+  "survey": "surveyed",
+  "reasonToGo": "Grain off the benches and green off the islands, both within two hours of Tallowquay's gate, which is why a party bound inland fills its packs out here and not in the town.",
+  "hazards": [
+    {
+      "id": "the-step-water",
+      "name": "The step water",
+      "description": "Above the crossings the river is still cutting down through hard rock, and what comes off those steps arrives as a wall rather than a rise. There is no interval between hearing it and being in it.",
+      "effect": "damage"
+    },
+    {
+      "id": "wet-at-the-crossings",
+      "name": "Wet at the crossings",
+      "description": "Two crossings here and no bridge on either. A body that goes through in the cold half of the year is carried to a fire inside the hour or is not carried anywhere.",
+      "effect": "freeze"
+    }
+  ],
+  "resources": [
+    {
+      "id": "bench-grain",
+      "name": "Bench grain",
+      "kind": "crop",
+      "description": "Sown on the dry ground between the waters, where the flood lays fresh silt most springs and takes the whole year's ploughing back about one spring in five."
+    },
+    {
+      "id": "island-green",
+      "name": "Island green",
+      "kind": "forage",
+      "description": "Cut off the wooded islands the river has split around and not yet taken back — the only growth here a spate cannot reach, and the reason the two villages still eat green in a wet year."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "bearreach-ford",
+      "name": "Bearreach Ford",
+      "description": "The upper of the two crossings, floored with its own gravel and shallow enough to walk in the right season, which is not most of them.",
+      "source": "content/world/resolved/continent-03.json"
+    },
+    {
+      "id": "race-beyond-skerryspar",
+      "name": "Race beyond Skerryspar",
+      "description": "The steep-walled reach above the fords where the river is still eating into rock. It is loud enough to be heard from the road, and it is why the road stays up on the terrace instead of taking the short line.",
+      "source": "content/world/resolved/continent-03.json"
+    }
+  ]
+}

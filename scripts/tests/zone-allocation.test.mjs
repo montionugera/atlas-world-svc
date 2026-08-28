@@ -13,7 +13,7 @@ import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   KINDS, surveyedRegions, licensedKinds, committedRecords, nameSources, allocate,
-  canonPinsByRegion, UNPLACED,
+  canonPinsByRegion, UNPLACED, legacyPlaceholderRecords, drawnPlaceNames, zoneSlug,
 } from "../lib/zone-allocation.mjs";
 import { renderTable, splice, BEGIN, END } from "../derive_zone_allocation.mjs";
 import { titleStem } from "../../tools/mapforge/lib/name-gen.mjs";
@@ -182,21 +182,56 @@ test("every DERIVED row's kinds are licensed by its own region's measured ground
   }
 });
 
-test("the PLACEHOLDER rows are exactly the ten committed records, and nothing else is exempt", () => {
-  const committed = committedRecords({ root: ROOT });
+test("the PLACEHOLDER rows are exactly the ten LEGACY records, and nothing else is exempt", () => {
+  // TASK 11 CORRECTION. This used to compare against committedRecords() — every
+  // file in content/zones/ — which was the same set as the legacy ten only
+  // because nothing else had been written yet. The exemption belongs to the ten
+  // zones named for hand-pinned canon places (A4 section 2), and the derived
+  // criterion for that is "the slug is a reserved canon name". Writing a record
+  // for a derived row must not flip its row to PLACEHOLDER.
+  const legacy = legacyPlaceholderRecords({ root: ROOT });
+  assert.equal(legacy.length, 10, "the legacy placeholder set is no longer ten records");
   const placeholder = rows().filter((r) => r.join === "PLACEHOLDER").map((r) => r.zone).sort();
-  assert.deepEqual(placeholder, committed.map((c) => c.zone).sort());
+  assert.deepEqual(placeholder, legacy.map((c) => c.zone).sort());
   for (const r of rows())
     assert.ok(["derived", "PLACEHOLDER"].includes(r.join), `${r.zone}: unknown join "${r.join}"`);
+  // The criterion itself, in both directions: every legacy slug IS a reserved
+  // canon name, and no derived row's slug is. Without the second arm the rule
+  // could not tell a derived record from a legacy one at all.
+  const reserved = new Set(nameSources({ root: ROOT }).reserved.names.map((n) => zoneSlug(n)));
+  for (const c of legacy) assert.ok(reserved.has(c.zone), `${c.zone} is legacy but not a reserved canon name`);
+  for (const r of rows().filter((x) => x.join === "derived"))
+    assert.ok(!reserved.has(r.zone), `derived row ${r.zone} carries a reserved canon name`);
 });
 
-test("the ten committed records keep their exact kind sets and landmark names", () => {
+test("a record written for a DERIVED row must agree with the table, not replace it", () => {
+  // The enforcement layer for Tasks 11-14: A4 is the authority on a derived
+  // zone's slug, region, kind set and landmark names, and a record is checked
+  // against it. Nothing else compares content/zones/ to the table for these
+  // rows — allocate() derives them from the ground and never reads the file.
   const byZone = new Map(rows().map((r) => [r.zone, r]));
-  const committed = committedRecords({ root: ROOT });
+  const legacy = new Set(legacyPlaceholderRecords({ root: ROOT }).map((c) => c.zone));
+  const written = committedRecords({ root: ROOT }).filter((c) => !legacy.has(c.zone));
+  for (const c of written) {
+    const row = byZone.get(c.zone);
+    assert.ok(row, `record "${c.zone}" names no row in A4 — a zone slug A4 does not mint is a zone nothing allocated`);
+    assert.equal(row.join, "derived", `${c.zone}: expected a derived row`);
+    assert.equal(row.region, c.region, `${c.zone}: the record's region disagrees with A4`);
+    assert.deepEqual([...new Set(row.kinds)].sort(), c.kinds,
+      `${c.zone}: the record's resource kinds disagree with A4 — fix the record, never A4`);
+    assert.deepEqual(c.landmarks.map((n) => n.trim().toLowerCase()).sort(),
+      row.landmarks.map((n) => n.trim().toLowerCase()).sort(),
+      `${c.zone}: the record's landmark names disagree with A4`);
+  }
+});
+
+test("the ten legacy records keep their exact kind sets and landmark names", () => {
+  const byZone = new Map(rows().map((r) => [r.zone, r]));
+  const committed = legacyPlaceholderRecords({ root: ROOT });
   // A floor, not decoration: with content/zones/ absent committedRecords()
   // returns [] and every assertion below is skipped — an empty loop reporting
   // success is an absence of data published as a verdict.
-  assert.equal(committed.length, 10, "content/zones no longer holds ten records");
+  assert.equal(committed.length, 10, "content/zones no longer holds the ten legacy records");
   for (const c of committed) {
     const row = byZone.get(c.zone);
     assert.ok(row, `${c.zone} is committed but absent from A4`);
@@ -393,9 +428,13 @@ test("every minted STEM is unique in the whole world, not just every full name",
     }
   // And no minted stem shadows a canon one.
   const sources = nameSources({ root: ROOT });
+  // The canon stem set is reserved.json plus the LEGACY ten's landmark names —
+  // NOT every file in content/zones/. Once Tasks 11-14 write records for the
+  // derived rows, those records carry the very names this table minted, so
+  // reading them back as "canon" makes every minted stem shadow itself.
   const canon = new Set([
     ...sources.reserved.names,
-    ...committedRecords({ root: ROOT }).flatMap((c) => c.landmarks),
+    ...legacyPlaceholderRecords({ root: ROOT }).flatMap((c) => c.landmarks),
   ].map((n) => titleStem(n).toLowerCase()));
   assert.ok(canon.size > 20, "the canon stem set is too small to be a real exclusion");
   for (const stem of seen.keys())
@@ -466,7 +505,9 @@ test("the kind-set space A4 rule 4 promises is measured, not asserted", () => {
 /** Maximum bipartite matching, records to regions, ties by ascending region id. */
 function maxLicensedMatching() {
   const c02 = surveyedRegions({ root: ROOT }).filter((r) => r.continent === "c02");
-  const committed = committedRecords({ root: ROOT });
+  // A' re-pairs the TEN legacy placeholders against c02's ten surveyed regions.
+  // Records written for derived rows are not candidates and never were.
+  const committed = legacyPlaceholderRecords({ root: ROOT });
   const options = new Map(committed.map((c) => [c.zone,
     c02.filter((r) => c.kinds.every((k) => licensedKinds({ region: r }).includes(k)))
       .map((r) => r.id).sort()]));
@@ -497,7 +538,7 @@ test("A4 §2 alternative A′ scores 9 of 10, and A (shipped) scores 5", () => {
 test("A4 §2 alternative A″: 7 of 10 zones have a requires-matching surveyed region, and the shipped join hits 4", () => {
   const c02 = surveyedRegions({ root: ROOT }).filter((r) => r.continent === "c02");
   const byId = new Map(c02.map((r) => [r.id, r]));
-  const committed = committedRecords({ root: ROOT });
+  const committed = legacyPlaceholderRecords({ root: ROOT });
   const wants = new Map();
   for (const f of readdirSync(join(ROOT, "content/world/civil/pinned"))) {
     const doc = JSON.parse(readFileSync(join(ROOT, "content/world/civil/pinned", f), "utf8"));
@@ -533,4 +574,61 @@ test("A4 §1's published ore-boundary sensitivity is real: the fluvial rock cuts
   const alone = { biomes: {}, landforms: cuts, terrain: "headland" };
   assert.deepEqual(licensedKinds({ region: alone }), [],
     "a fluvial rock cut now licenses something — A4 §1's sensitivity note must be re-measured");
+});
+
+// ---------------------------------------------------------------------------
+// TASK 11 FINDING — the drawn world's own names were never barred.
+// ---------------------------------------------------------------------------
+
+test("no minted name is a name the DRAWN world already publishes", () => {
+  // Measured before the fix: FIVE derived zone names duplicated a landmark the
+  // resolved world renders on its own sheets — `wracksound-race` (c03/r10)
+  // against the delta "Wracksound Race" in c03/r15, `lodespar-confluence`
+  // (c03/r15) against the levee "Lodespar Confluence" in c03/r18, plus
+  // `grykestone-fenster`, `flagsink-stair` and `siroccwold-waste`. Two places,
+  // one name, on one landmass — the failure A4 section 4's stem rules exist to
+  // prevent, escaping through the one name source `used` was never seeded from.
+  const drawn = new Map();
+  for (const n of drawnPlaceNames({ root: ROOT })) drawn.set(n.trim().toLowerCase(), n);
+  assert.ok(drawn.size > 300, `the drawn world published only ${drawn.size} names — the source is not being read`);
+  let checked = 0;
+  for (const r of allocate({ root: ROOT }).rows.filter((x) => x.derived)) {
+    // An INHERITED landmark is the drawn world's own name, deliberately reused
+    // for the ground it already stands on; barring it would defeat inheritance.
+    const inherited = new Set(r.inheritedLandmarks ?? []);
+    for (const name of [r.zoneName, ...r.landmarks]) {
+      if (inherited.has(name)) continue;
+      checked++;
+      assert.ok(!drawn.has(name.trim().toLowerCase()),
+        `${r.region}: minted name "${name}" is already the drawn world's name for another place`);
+    }
+  }
+  assert.equal(checked, 89, "expected 30 zone names + 59 minted landmarks, minus the 1 inherited slot");
+});
+
+test("barring drawn STEMS was a scope choice, not a capacity one — the occupancy is measured", () => {
+  // The comment in zone-allocation.mjs once claimed stem-barring would exhaust
+  // a 16x12 register. It would not, and publishing that as a reason would have
+  // been a false measurement in a file whose whole point is measured claims.
+  // These are the real figures; if a redraw moves them the comment goes red.
+  const sources = nameSources({ root: ROOT });
+  const stems = new Map();
+  for (const f of readdirSync(join(ROOT, "content/world/resolved")).filter((n) => /^continent-\d+\.json$/.test(n))) {
+    const doc = JSON.parse(readFileSync(join(ROOT, "content/world/resolved", f), "utf8"));
+    const registerId = sources.registers.continentRegister[doc.continent];
+    if (!registerId) continue;
+    if (!stems.has(registerId)) stems.set(registerId, new Set());
+    for (const l of doc.landmarks ?? []) stems.get(registerId).add(titleStem(l.name).toLowerCase());
+  }
+  const measured = Object.fromEntries([...stems].map(([k, v]) => [k, v.size]));
+  assert.deepEqual(measured, {
+    "north-log": 68, "basin-anglic": 110, "moorstone": 66, "sandtongue": 60, "reedspeech": 52,
+  });
+  for (const [registerId, seen] of stems) {
+    const reg = sources.registers.registers[registerId];
+    const capacity = reg.onsets.length * reg.rimes.length;
+    assert.equal(capacity, 192, `${registerId}: register capacity moved`);
+    assert.ok(seen.size < capacity,
+      `${registerId}: ${seen.size} drawn stems against a capacity of ${capacity} — the scope claim would need re-stating`);
+  }
 });

@@ -4160,3 +4160,86 @@ story ids, town ids or the committed landmark names.
   empty-diff modification to `content/world/resolved/continent-02.json`) and could not reproduce it in
   eleven further runs; a concurrent session in this worktree is the likeliest cause. Re-run here 5x
   clean. Unattributed.
+
+### TASK 11 SHIPPED (2026-08-29) — sixteen records, and two ways the table could not tell a derived row from a placeholder
+
+`content/zones/` holds **16** records: Wealdmarch's ten unchanged and Coldreach's six written.
+`check_content --require-complete` goes **32 failures -> 26** — the 30 `surveyed region "..." has no
+record` lines become **24**, and the 2 survivors are still `towns/town-millcross.json` and
+`bestiary/placement-thornveil.json` (Tasks 14/15). **No `Z0`-`Z7` failure exists on any of the 16.**
+
+**THE WEALDMARCH TEN, under the owner's ruling.** Alternative A′ is REJECTED; the ten keep Task 9's
+alphabetical join, byte for byte. Task 11 Step 1 asks for `check_content --require-complete | grep
+-vE "surveyed region ... has no record"` to print **empty**, and it does — measured **before** this
+task's first edit as well as after, so the step passes on a tree Task 11 had not touched. **That is
+the whole of what Step 1 can measure.** The step's own remedy ("fix the join first; only re-voice
+prose if the ground changed") assumes a join there is something to verify against, and A4 §2 and Task
+9 both record that there is not: no canon pin stands on Wealdmarch's surveyed ground, so no ground
+underneath those ten rows can have "changed" in a way prose could be checked against. **Zero prose
+bytes changed in the ten, and none should have.** The one Wealdmarch claim the redraw genuinely did
+falsify — `hollowmarch`'s `ore`, unlicensed by any c02 region surveyed *or* reported — is Task 15's,
+untouched here.
+
+**COLDREACH'S SIX, and every kind traced to the ground that licenses it.**
+`fastholt-ford` c03/r06 forage (tundra 97%) + stone (`marine-terrace`) · `snowfast-race` c03/r10 crop
++ water (river 4.1%, `ford`, `plunge-pool`) · `galeness-reach` c03/r12 forage (meadow 90.9%) + timber
+(forest 3.3%, the licence floor) · `driftway-confluence` c03/r15 crop + forage (meadow 70.3%, tundra
+20.8%, `ford` x2) · `snowness-ford` c03/r18 crop + forage + water (meadow 79.1%, `ford` x3,
+`plunge-pool` x3) · `lodereach-race` c03/r22 crop + timber (forest 23.3%, `floodplain-levee` x3).
+Identity comes from the **road tree**, which is measured and not invented: all six hang off
+`c-town-tallowquay` in `c03/r21`, west through r15 to r22 and east through r18 — the junction where
+every eastern road meets — to r12 and r10 and out to r06, the far terminus. Two claims were checked
+before they were written and both hold: r12 is **the only region on the eastern chain carrying
+forest at all** (3.3% against 0.2 / 0 / 0), and `c03/r18` is the only region three roads meet in.
+Three hazards are **absence** hazards carrying the D3 `note` (no fuel on the steppe, no side off the
+canyon, the crossing that ceases); the unmapped-effect ratio goes 13/23 -> **16/35**, i.e. down from
+57% to 46%.
+
+**DEFECT 1 — the PLACEHOLDER exemption keyed on "a file exists", so writing a derived record flipped
+its own row.** `allocate()` read `committedRecords()` — every file in `content/zones/` — and any
+region with one became `derived: false`: kinds transcribed instead of derived, `terrain` blanked, and
+the row published as "a join no geography supports" over ground the table had itself derived. The
+criterion is now **derived, not listed**: a record is legacy iff its zone slug is a **reserved canon
+name** (`legacyPlaceholderRecords`), which is exactly A4 §2's ten, and which stays correct for Tasks
+12-14 because `reserved.json` is a hard exclusion inside `mintForRegion`. Three further tests were
+reading `committedRecords` where they meant the legacy ten — A′, A″ and the canon-stem exclusion, the
+last of which made every minted stem shadow **itself**. Reverting `allocate` alone takes **7** tests
+red. A new test, mutation-killed twice, makes A4 the authority Task 11's plan says it is: a record on
+a derived row must agree with the table on slug, region, kind set and landmark names — *fix the
+record, never A4*.
+
+**DEFECT 2 — `used` was never seeded from the world's own drawn names, and five zones were minted
+onto a name another place already wore.** `used` carried `reserved.json`, the committed records and
+the hand-pinned canon places, but not the **377** names the resolved continents render on their own
+sheets. Measured: `wracksound-race` (c03/r10) against the delta **Wracksound Race** in `c03/r15`;
+`lodespar-confluence` (c03/r15) against the levee **Lodespar Confluence** in `c03/r18`; plus
+`grykestone-fenster`, `flagsink-stair` and `siroccwold-waste` — two places, one name, on one
+landmass, which is the failure A4 §4's stem rules exist to prevent, escaping through the one name
+source nothing seeded. Fixed at the seed (`drawnPlaceNames`), which re-minted **26 of 40** rows'
+names and changed **no** row's region, terrain, kind set or join. **Whole names are barred, not
+stems** — and the first draft of that comment justified it with a capacity claim that was false when
+measured: the drawn stems occupy 68/110/66/60/52 of each register's 16x12 = 192, so there is room.
+The real reason is scope, and the occupancy figures are now asserted so the corrected comment cannot
+rot back into the wrong one.
+
+**Filed, not chased.**
+
+- **`A2-wider-world.md` §1 and the fabric disagree about whether Coldreach has been walked.** A2
+  swears "Nobody from the basin has walked any of this" and "No crew claims to have gone inland past
+  the spine", while `content/world/fabric/continent-03.json` declares **6 surveyed regions** on c03 —
+  and spec §9.5 defines `surveyed` as ground that carries full ink and a hard-required prose record.
+  The six records are written impersonally, from the ground and the people on it, and **not one of
+  them cites A2 or frames itself as a basin expedition**; that keeps them from asserting the thing A2
+  denies, but it does not reconcile the two documents. Task 15.
+- **A zone landmark and a drawn landmark can describe the same feature under two names.** A4 §4
+  inherits only from *hand-pinned* canon places, so the 45 generated `c-lm-c03-*` landmarks standing
+  on the surveyed six were minted around, not reused. Each of the twelve landmarks written here was
+  deliberately grounded on a landform instance the drawn world has **not** already named (checked
+  region by region), so no collision exists today — but nothing enforces that, and Tasks 12-14 have
+  the same trap with a denser drawn corpus.
+- **One classifier in the six has no instance behind it.** `Haulholt Geo` (c03/r22) carries a coastal
+  classifier and `c03/r22` declares no `geo`; A4 §4's own warning covers this (the classifier names
+  the landform GROUP), and the record describes the tidal gut it actually stands on rather than a
+  geo. Worth a rule if the pattern recurs across Tasks 12-14.
+- `content/zones/*.json`'s `spineId` is still unset on all sixteen; the fabric join and the spine join
+  remain unrelated keys (carried forward from Tasks 9 and 10).

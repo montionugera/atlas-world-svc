@@ -103,7 +103,13 @@ ground.** Three measurements, all reproducible by the gate:
    is bigger than this task.
 
 **So these ten rows are marked `PLACEHOLDER`, are exempt from the licence rule, and publish no
-`terrain`.** Their kind sets and landmark names are transcribed from the shipped files and are canon;
+`terrain`.** Which ten is itself derived, not a list: a committed record is legacy **iff its zone
+slug is a reserved canon name**, which is exactly this set — every one of the ten is named for a
+hand-pinned canon place, and rule 5 below means no minted slug can ever be. That matters from Task 11
+on: `content/zones/` now also holds records written **for derived rows**, and those are checked
+*against* this table rather than transcribed into it. Before the criterion was derived, writing the
+first such record flipped its row to `PLACEHOLDER` and blanked its terrain — the table would have
+published "a join no geography supports" over ground it had derived itself. Their kind sets and landmark names are transcribed from the shipped files and are canon;
 only the `region` join is a placeholder — the alphabetical-against-ascending-region-id pairing Task 9
 committed, preserved byte for byte. **A Task 11 author must not write a Wealdmarch sentence that
 depends on the region join.** Task 9 recorded the same: Task 11 Step 1 can verify the prose, not the
@@ -138,8 +144,11 @@ avoid. The measurement is published so the ruling is a decision and not a guess.
 
 ## 3. Rules this table keeps
 
-1. **The ten committed records keep their exact kind sets and landmark names.** Nothing about a
+1. **The ten LEGACY records keep their exact kind sets and landmark names.** Nothing about a
    shipped record changes. Only its `region` join was ever added, and that join is a placeholder.
+   A record written for one of the **thirty derived rows** is the other way round: this table is the
+   authority on its slug, region, kind set and landmark names, and the gate fails the record — never
+   the table — when they disagree.
 2. **Every kind comes from `crop, timber, ore, fuel, stone, water, forage, salvage` and nowhere else.**
 3. **Every derived row's kinds are licensed by its own region's measured ground** (§1 step 2). The ten
    placeholder rows are exempt and say so.
@@ -179,6 +188,17 @@ strength of words that are not the name.
 
 Two further rules came out of review, and both were minting real defects before they existed:
 
+- **No minted name may be a name the DRAWN world already publishes.** `used` was seeded from
+  `reserved.json`, the committed records and the hand-pinned canon places — but not from the **377**
+  names the resolved world renders on its own sheets. Five derived zone names had therefore landed on
+  a name another place already wore: `wracksound-race` (`c03/r10`) against the delta *Wracksound
+  Race* in `c03/r15`, `lodespar-confluence` (`c03/r15`) against the levee *Lodespar Confluence* in
+  `c03/r18`, plus `grykestone-fenster`, `flagsink-stair` and `siroccwold-waste`. Barring those names
+  re-minted **26** of the 40 rows' names; **no row's region, terrain, kind set or join changed**.
+  Whole names are barred and not stems, and that is a scope choice rather than a capacity one: the
+  drawn world's stems occupy 68 / 110 / 66 / 60 / 52 of each register's 16 x 12 = 192 combinations,
+  so there is room — but `Z6` and `G-NAME-SOUND` both judge the name a reader actually meets, which
+  is what was going wrong.
 - **A stem is spoken for once in the whole world.** Barring whole *names* was not enough: "Race of
   the Searwaste" and "Tube under Searwaste" were two different places, on two different landmasses,
   wearing one name. Stems are now globally unique — 90 minted names, 90 distinct stems.
@@ -228,34 +248,34 @@ region join no geography supports.
 | rooktide-reach | Wealdmarch | c02/r28 | — | forage, salvage | The barge-cranes / The rook flats | PLACEHOLDER |
 | thornveil | Wealdmarch | c02/r30 | — | timber, water | The heartwood / The crown thickets | PLACEHOLDER |
 | fastholt-ford | Coldreach | c03/r06 | tundra-steppe | forage, stone | Halehaven Roads / Reach out of Coldwall | derived |
-| wracksound-race | Coldreach | c03/r10 | tundra-steppe | crop, water | Keelshore Reach / Confluence beyond Stormhold | derived |
-| snowfast-reach | Coldreach | c03/r12 | headland | forage, timber | Skerrybreak Stack / Ford north of Frostreach | derived |
-| lodespar-confluence | Coldreach | c03/r15 | headland | crop, forage | Cairnness Ford / Race out of Haulway | derived |
-| drifthold-ford | Coldreach | c03/r18 | headland | crop, forage, water | Halesound Race / Reach beyond Bearway | derived |
-| lodereach-race | Coldreach | c03/r22 | headland | crop, timber | Wrackbreak Geo / Confluence past Keelspar | derived |
-| clintmoor-head | Stonemoor | c04/r01 | karst-plateau | crop, forage, ore | Paverake Fenster / Geo under Dolinflow | derived |
-| grykestone-fenster | Stonemoor | c04/r07 | karst-plateau | ore, water | Scarlack Geo / Pot under Sinkgrike | derived |
-| flagsink-stair | Stonemoor | c04/r12 | karst-plateau | crop, ore | Fenshaft Confluence / Sink below Shaleclint | derived |
-| slategill-stack | Stonemoor | c04/r15 | karst-plateau | ore, stone, water | Karnpot Sink / Roads at Grikegill | derived |
-| tarnfell-sink | Stonemoor | c04/r19 | karst-plateau | ore, stone | Tarnstone Mere / Stair through Stonepot | derived |
-| clintlack-fenster | Stonemoor | c04/r25 | karst-plateau | crop, ore, stone | Pavefell Geo / Pot at Limerake | derived |
-| karnshaft-geo | Stonemoor | c04/r28 | karst-plateau | crop, ore, water | Scarclint Pot / Head through Dolingrike | derived |
-| sabkhwaste-pan | Thirstwold | c05/r06 | sand-sea | stone | Barchanvent Waste / Barchan of the Pumicwater | derived |
-| emberreach-race | Thirstwold | c05/r15 | sand-sea | salvage, water | Ashwold Barchan / Confluence under Thirstburn | derived |
-| dunepan-reach | Thirstwold | c05/r17 | sand-sea | crop, ore, salvage | Fumeflat Yardang / Ford of the Cinderwind | derived |
-| yardcone-confluence | Thirstwold | c05/r20 | sand-sea | crop, stone, water | Regspar Pan / Race under Ergsea | derived |
-| thirstvent-pan | Thirstwold | c05/r21 | sand-sea | ore, salvage | Yardburn Saddle / Barchan across Charspar | derived |
-| siroccwold-waste | Thirstwold | c05/r23 | sand-sea | ore, salvage, stone | Charwater Horn / Yardang beyond Emberflat | derived |
-| sabkhcone-reach | Thirstwold | c05/r28 | sand-sea | crop, salvage, stone | Regreach Rake / Ford past Ergwaste | derived |
-| siltrun-head | Reedstrand | c06/r06 | headland | fuel, water | Marramlow Carr / Geo at Loamshallow | derived |
-| sedgebar-roads | Reedstrand | c06/r07 | headland | salvage, timber | Mereeyot Reach / Stack below Brightlobe | derived |
-| quillholm-geo | Reedstrand | c06/r08 | headland | crop, fuel, timber | Wrackfall Quag / Head between Bitternstrand | derived |
+| snowfast-race | Coldreach | c03/r10 | tundra-steppe | crop, water | Keelshore Reach / Confluence beyond Stormhold | derived |
+| galeness-reach | Coldreach | c03/r12 | headland | forage, timber | Haulsound Stack / Ford past Cairnbreak | derived |
+| driftway-confluence | Coldreach | c03/r15 | headland | crop, forage | Bearreach Ford / Race beyond Skerryspar | derived |
+| snowness-ford | Coldreach | c03/r18 | headland | crop, forage, water | Rimehold Race / Reach off Keelfast | derived |
+| lodereach-race | Coldreach | c03/r22 | headland | crop, timber | Haulholt Geo / Confluence north of Fastbreak | derived |
+| grikepot-head | Stonemoor | c04/r01 | karst-plateau | crop, forage, ore | Paverake Fenster / Geo under Dolinflow | derived |
+| shalegill-fenster | Stonemoor | c04/r07 | karst-plateau | ore, water | Scarlack Geo / Pot under Sinkgrike | derived |
+| tarnmoor-stair | Stonemoor | c04/r12 | karst-plateau | crop, ore | Fenshaft Confluence / Sink through Flagclint | derived |
+| grykefell-stack | Stonemoor | c04/r15 | karst-plateau | ore, stone, water | Karnstone Sink / Roads of Slatesink | derived |
+| limepot-sink | Stonemoor | c04/r19 | karst-plateau | ore, stone | Shalesink Mere / Stair under Clintfell | derived |
+| clintlack-fenster | Stonemoor | c04/r25 | karst-plateau | crop, ore, stone | Paveshaft Geo / Pot at Limerake | derived |
+| flaggrike-geo | Stonemoor | c04/r28 | karst-plateau | crop, ore, water | Scarclint Pot / Head below Slatemoor | derived |
+| thirstreach-pan | Thirstwold | c05/r06 | sand-sea | stone | Searcone Waste / Barchan of the Pumicwater | derived |
+| charwaste-race | Thirstwold | c05/r15 | sand-sea | salvage, water | Glasswold Barchan / Confluence beyond Dunespar | derived |
+| siroccvent-reach | Thirstwold | c05/r17 | sand-sea | crop, ore, salvage | Fumeflat Yardang / Ford past Sabkhpan | derived |
+| yardburn-confluence | Thirstwold | c05/r20 | sand-sea | crop, stone, water | Cindersea Pan / Race within Siroccwaste | derived |
+| thirstvent-pan | Thirstwold | c05/r21 | sand-sea | ore, salvage | Searwind Saddle / Barchan across Charspar | derived |
+| regflat-waste | Thirstwold | c05/r23 | sand-sea | ore, salvage, stone | Regwind Horn / Yardang across Emberwater | derived |
+| barchanburn-reach | Thirstwold | c05/r28 | sand-sea | crop, salvage, stone | Pumicsea Rake / Ford past Fumewold | derived |
+| siltrun-head | Reedstrand | c06/r06 | headland | fuel, water | Marramlow Carr / Geo between Lagoonmere | derived |
+| sedgebar-roads | Reedstrand | c06/r07 | headland | salvage, timber | Quillfall Reach / Stack below Brightlobe | derived |
+| wrackeyot-geo | Reedstrand | c06/r08 | headland | crop, fuel, timber | Osierholm Quag / Head between Bitternstrand | derived |
 | osierspit-head | Driftholt | c07/r01 | headland | crop, forage, stone | Withyshallow Saddle / Geo at Merefall | derived |
-| willowlobe-roads | Driftholt | c07/r03 | headland | fuel, timber | Loamholm Horn / Stack within Tidalstrand | derived |
-| brightreef-geo | Driftholt | c07/r06 | headland | forage, ore | Siltbar Rake / Head at Wrackrun | derived |
+| quillstrand-roads | Driftholt | c07/r03 | headland | fuel, timber | Reedmere Horn / Stack at Alderrun | derived |
+| brightreef-geo | Driftholt | c07/r06 | headland | forage, ore | Siltbar Rake / Head below Tidallobe | derived |
 | lagoonlobe-head | Wracklow | c08/r06 | headland | forage, fuel | Reedfall Eyot / Geo between Siltreef | derived |
 | withybar-roads | Wracklow | c08/r08 | bramble | fuel, stone | Brightspit Skerry / Stack at Willowshallow | derived |
-| brightrun-head | Brightfall | c09/r03 | cloud-forest | stone, timber | Brightfall Leap / Geo between Sedgestrand | derived |
-| emberburn-cone | Ashen Spar | c10/r01 | volcanic-arc | fuel, ore | Searflat Cleft / Tube under Glasswold | derived |
+| alderlow-head | Brightfall | c09/r03 | cloud-forest | stone, timber | Brightfall Leap / Geo between Sedgestrand | derived |
+| emberburn-cone | Ashen Spar | c10/r01 | volcanic-arc | fuel, ore | Searflat Cleft / Tube within Regspar | derived |
 
 <!-- END GENERATED TABLE -->

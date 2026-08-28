@@ -198,6 +198,68 @@ export function committedRecords({ root }) {
 }
 
 /**
+ * The LEGACY ten — the records A4 section 2 marks PLACEHOLDER.
+ *
+ * The criterion is derived, not a hardcoded list: a committed record is legacy
+ * iff its zone slug is a RESERVED canon name. That is exactly A4 section 2's own
+ * set — the ten zones are named for hand-pinned canon places, every one of which
+ * is in content/world/names/reserved.json — and it stays correct as Tasks 11-14
+ * write records for the thirty DERIVED rows, because reserved.json is a hard
+ * exclusion inside mintForRegion() and no minted slug can ever be a reserved
+ * name (A4 rule 5, asserted by the "no zone slug reuses a reserved canon name"
+ * test).
+ *
+ * WHY THIS EXISTS (Task 11). Before this, `allocate` keyed the PLACEHOLDER
+ * exemption on "a committed record exists for this region", which was true of
+ * the ten and of nothing else only because content/zones/ held nothing else.
+ * Writing the first derived record flipped its row to PLACEHOLDER, blanked its
+ * terrain and transcribed its kinds instead of deriving them — A4 would have
+ * published "this join no geography supports" over ground the table had itself
+ * derived. The exemption is a property of the TEN, not of the presence of a file.
+ */
+export function legacyPlaceholderRecords({ root }) {
+  const reserved = new Set(
+    nameSources({ root }).reserved.names.map((n) => zoneSlug(n)),
+  );
+  return committedRecords({ root }).filter((c) => reserved.has(c.zone));
+}
+
+/**
+ * Every place name the DRAWN world already publishes — the resolved
+ * continents' landmarks (generated `c-lm-cNN-*` ones included) and towns.
+ *
+ * REVIEW/TASK 11 FINDING, measured: `used` was seeded from reserved.json, the
+ * committed records and the hand-pinned canon places, but NOT from the 377
+ * names the resolved world renders on its own sheets. Five derived zone names
+ * were therefore minted onto a name another place already wore on the same
+ * landmass — `wracksound-race` (c03/r10) against the delta named "Wracksound
+ * Race" in c03/r15, `lodespar-confluence` (c03/r15) against the levee named
+ * "Lodespar Confluence" in c03/r18, plus `grykestone-fenster`, `flagsink-stair`
+ * and `siroccwold-waste`.
+ *
+ * Whole NAMES are barred, not stems, and the reason is scope rather than
+ * capacity — an earlier draft of this comment claimed stem-barring would
+ * exhaust the register and that claim was false when measured. The drawn
+ * world's own stems occupy 68 / 110 / 66 / 60 / 52 of each register's 16x12 =
+ * 192 combinations (north-log / basin-anglic / moorstone / sandtongue /
+ * reedspeech), so there is room. What there is no warrant for is the stricter
+ * rule: Z6's uniqueness rule and G-NAME-SOUND both judge the name a reader
+ * actually meets, and the defect measured here is two places wearing one
+ * NAME. The occupancy figures are asserted by the gate so they cannot rot.
+ */
+export function drawnPlaceNames({ root }) {
+  const dir = join(root, "content/world/resolved");
+  const out = new Set();
+  if (!existsSync(dir)) return out;
+  for (const f of readdirSync(dir).filter((n) => /^continent-\d+\.json$/.test(n)).sort()) {
+    const doc = JSON.parse(readFileSync(join(dir, f), "utf8"));
+    for (const p of [...(doc.landmarks ?? []), ...(doc.towns ?? [])])
+      if (typeof p.name === "string" && p.name.trim()) out.add(p.name.trim());
+  }
+  return out;
+}
+
+/**
  * Hand-pinned canon places (`c-town-*` / `c-lm-*`, never the generated
  * `c-lm-cNN-<group>-<hash>` ones) keyed by the fabric region they stand in, as
  * the resolved world records it.
@@ -451,7 +513,10 @@ export const zoneSlug = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, "-")
  */
 export function allocate({ root }) {
   const regions = surveyedRegions({ root });
-  const committed = committedRecords({ root });
+  // The PLACEHOLDER exemption belongs to the LEGACY ten, never to "a file
+  // exists" — see legacyPlaceholderRecords(). A record written for a derived
+  // row is checked AGAINST the derivation by the gate; it does not replace it.
+  const committed = legacyPlaceholderRecords({ root });
   const byRegion = new Map(committed.map((c) => [c.region, c]));
   const sources = nameSources({ root });
   const pins = canonPinsByRegion({ root });
@@ -465,6 +530,9 @@ export function allocate({ root }) {
     ...committed.map((c) => c.zone),
     ...committed.flatMap((c) => c.landmarks),
     ...[...pins.values()].flat().map((p) => p.name),
+    // Everything the drawn world already calls something. Without this a
+    // minted zone name can land on a name a rendered map sheet already prints.
+    ...drawnPlaceNames({ root }),
   ]);
   const perContinent = new Map();
   // Seed the per-landmass sound pool with the committed landmark names so a

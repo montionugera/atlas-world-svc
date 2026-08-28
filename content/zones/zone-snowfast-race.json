@@ -1,0 +1,48 @@
+{
+  "zone": "snowfast-race",
+  "region": "c03/r10",
+  "survey": "surveyed",
+  "reasonToGo": "The stretch of tundra where the river lays down enough silt to plough and still runs clean enough to drink, so a party comes out of it with its sacks and its skins both full.",
+  "hazards": [
+    {
+      "id": "the-braid-that-moved",
+      "name": "The braid that moved",
+      "description": "The river runs in a dozen threads across its own gravel and takes different ones each spring. Last year's crossing is this year's chest-deep channel, it is not marked, and the cold does the rest.",
+      "effect": "damage"
+    },
+    {
+      "id": "the-standing-loops",
+      "name": "The standing loops",
+      "description": "The cut-off bends beside the river look like the river and are not: they stand all summer and go green at the edges. A skin filled from one puts a man on his back for three days and a child for longer.",
+      "effect": "poison"
+    }
+  ],
+  "resources": [
+    {
+      "id": "spring-silt",
+      "name": "Spring silt",
+      "kind": "crop",
+      "description": "The ground the river re-lays every year where it splits and drops its load. It is ploughed the week the water falls and gives one crop before the next spate takes the field back."
+    },
+    {
+      "id": "thread-water",
+      "name": "Thread water",
+      "kind": "water",
+      "description": "Drawn from the running threads above the villages and never from the loops below them, carried uphill in barrels because the river is only fit to drink while it is moving."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "keelshore-reach",
+      "name": "Keelshore Reach",
+      "description": "The long straight above the upper village where the water gathers into one channel instead of twelve — the only part of this river that looks like a river rather than a field of gravel.",
+      "source": "content/world/resolved/continent-03.json"
+    },
+    {
+      "id": "confluence-beyond-stormhold",
+      "name": "Confluence beyond Stormhold",
+      "description": "The dry tongue of ground between two rivers just before they become one. Both villages stack their year on it, because it is the last ground on this side that a flood has not reached.",
+      "source": "content/world/resolved/continent-03.json"
+    }
+  ]
+}

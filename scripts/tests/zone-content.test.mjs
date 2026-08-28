@@ -26,6 +26,20 @@ const ZONE_IDS = [
   "gildmark-head", "hollowmarch", "ashvale-front", "northern-icefield", "cindervast",
 ];
 
+// PLAN E TASK 11. Coldreach's six, written from A4's derived rows. They are NOT
+// added to ZONE_IDS: that list is the cluster-1 ten and doubles as the basis of
+// every hermetic fixture below, which is deliberately a fixed ten-zone world.
+// The real-content tests read COMMITTED_ZONE_IDS instead, so a new record has to
+// be declared here — growing the corpus stays a deliberate edit, exactly as the
+// count assertions do.
+const COLDREACH_ZONE_IDS = [
+  "fastholt-ford", "snowfast-race", "galeness-reach",
+  "driftway-confluence", "snowness-ford", "lodereach-race",
+];
+
+/** Every record content/zones/ is supposed to hold today. Tasks 12-14 raise it. */
+const COMMITTED_ZONE_IDS = [...ZONE_IDS, ...COLDREACH_ZONE_IDS];
+
 // Real levelBands from content/maps/cluster1-geography.json#zones. No Z-rule
 // reads them, but the fixture geography must be shaped like the real one.
 const ZONE_BANDS = {
@@ -243,7 +257,7 @@ test("schema does NOT catch duplicate ids within an array — that is Z4's job",
 
 test("every committed zone record validates against the committed schema", () => {
   const validate = compile();
-  for (const id of ZONE_IDS) {
+  for (const id of COMMITTED_ZONE_IDS) {
     const path = join(ROOT, `content/zones/zone-${id}.json`);
     assert.ok(existsSync(path), `missing ${path}`);
     const doc = JSON.parse(readFileSync(path, "utf8"));
@@ -273,7 +287,15 @@ test("every committed zone record validates against the committed schema", () =>
 //
 // It is armed on the world side too: had the redraw left any legacy slug in the
 // resolved world, the first assertion below would name it.
-test("INTERIM (until Task 11): none of the ten records is a zone the resolved world declares", () => {
+// PLAN E TASK 11. The interim state above has ended: records now exist for
+// derived rows, so "the committed records are still sworn to exactly the ten
+// legacy slugs" is no longer true and is not something to widen into passing.
+// What replaces it is the half of exact cover that HAS landed, stated on the key
+// the join actually uses. The slug and the region id stay separate namespaces —
+// a record's `zone` is a name, its `region` is the join — and every record's
+// region is a zone the drawn world declares. Cover is still partial (16 of 40)
+// and the count is pinned, so Tasks 12-14 come back through here.
+test("every record joins the resolved world by REGION, and no slug has crept into the zone-id namespace", () => {
   const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
   assert.deepEqual(problems, []);
   const worldZones = new Set(doc.zones.map((z) => z.id));
@@ -281,14 +303,30 @@ test("INTERIM (until Task 11): none of the ten records is a zone the resolved wo
   assert.deepEqual(stillDeclared, [],
     "a legacy basin slug is a zone id in the resolved world — the redraw was supposed to retire it");
 
-  const recorded = readdirSync(join(ROOT, "content/zones"))
-    .filter((f) => /^zone-.+\.json$/.test(f))
-    .map((f) => JSON.parse(readFileSync(join(ROOT, "content/zones", f), "utf8")).zone);
-  const rehomed = recorded.filter((z) => worldZones.has(z));
-  assert.deepEqual(rehomed, [],
-    "a zone record now joins the resolved world — Task 11 has landed, so restore the exact-cover assertion this replaced");
-  assert.deepEqual([...recorded].sort(), [...ZONE_IDS].sort(),
-    "the committed records are still sworn to exactly the ten legacy basin slugs");
+  const records = readdirSync(join(ROOT, "content/zones"))
+    .filter((f) => /^zone-.+\.json$/.test(f)).sort()
+    .map((f) => JSON.parse(readFileSync(join(ROOT, "content/zones", f), "utf8")));
+  assert.deepEqual(records.map((r) => r.zone).sort(), [...COMMITTED_ZONE_IDS].sort(),
+    "the committed records are no longer exactly the set this file declares");
+
+  const asZoneId = records.map((r) => r.zone).filter((z) => worldZones.has(z));
+  assert.deepEqual(asZoneId, [],
+    "a record's SLUG is also a resolved zone id — the name and the join key have collided");
+
+  // The exact-cover half that has landed: every record's region is real ground.
+  const covered = new Set();
+  for (const r of records) {
+    assert.ok(worldZones.has(r.region),
+      `zone "${r.zone}" joins region ${r.region}, which the resolved world does not declare`);
+    assert.equal(covered.has(r.region), false, `region ${r.region} is claimed twice`);
+    covered.add(r.region);
+  }
+  const surveyedWorld = doc.zones.filter((z) => z.survey === "surveyed").map((z) => z.id);
+  assert.equal(surveyedWorld.length, 40, "the resolved world no longer declares 40 surveyed zones");
+  assert.equal(covered.size, 16,
+    "the covered-region count moved — Tasks 12-14 raise it to 40 and must say so here");
+  for (const id of covered)
+    assert.ok(surveyedWorld.includes(id), `${id} is covered by a record but is not surveyed`);
 });
 
 // ENUMERATES the directory instead of addressing it by constructed name. Every
@@ -306,8 +344,15 @@ test("INTERIM (until Task 11): none of the ten records is a zone the resolved wo
 test("content/zones holds exactly the ten records and nothing else", () => {
   const files = readdirSync(join(ROOT, "content/zones"))
     .filter((f) => /^zone-.+\.json$/.test(f)).sort();
-  assert.deepEqual(files, ZONE_IDS.map((id) => `zone-${id}.json`).sort(),
+  assert.deepEqual(files, COMMITTED_ZONE_IDS.map((id) => `zone-${id}.json`).sort(),
     "an extra or misnamed zone-*.json is invisible to the by-name tests but fatal to Z1/Z2");
+  // The other half of the same defence: a file whose name and `zone` field
+  // disagree passes the enumeration above AND every by-name loop, because both
+  // address it by the name it is not sworn to.
+  for (const f of files) {
+    const doc = JSON.parse(readFileSync(join(ROOT, "content/zones", f), "utf8"));
+    assert.equal(`zone-${doc.zone}.json`, f, `${f} is sworn to zone "${doc.zone}"`);
+  }
 });
 
 // Z3's floors, Z4's id rules and Z6's distinctiveness, asserted against the
@@ -327,7 +372,7 @@ test("content/zones holds exactly the ten records and nothing else", () => {
 // for anything that still reaches its Step 7 — the three defences are layered,
 // none of them is claimed to be complete on its own.
 test("every committed record clears the Z3 floors and the Z4 id rules", () => {
-  for (const id of ZONE_IDS) {
+  for (const id of COMMITTED_ZONE_IDS) {
     const doc = JSON.parse(readFileSync(join(ROOT, `content/zones/zone-${id}.json`), "utf8"));
     assert.ok(doc.reasonToGo.trim() !== "", `${id}: empty reasonToGo`);
     for (const f of ["hazards", "resources", "landmarks"]) {
@@ -342,7 +387,7 @@ test("every committed record clears the Z3 floors and the Z4 id rules", () => {
   }
 });
 
-test("the committed records have ten distinct resource-kind sets and no shared landmark name", () => {
+test("the committed records have one distinct resource-kind set each and no shared landmark name", () => {
   const kindSets = new Map();
   // DELIBERATELY STRICTER THAN Z6. The gate's Z6 landmark rule fires only when a
   // name is shared ACROSS zones (`if (shared.length > 1)`), so one zone repeating
@@ -351,7 +396,7 @@ test("the committed records have ten distinct resource-kind sets and no shared l
   // exceptions. If this ever fails on an intra-zone repeat, fix the record — do
   // not relax the test to match the gate.
   const names = new Map();
-  for (const id of ZONE_IDS) {
+  for (const id of COMMITTED_ZONE_IDS) {
     const doc = JSON.parse(readFileSync(join(ROOT, `content/zones/zone-${id}.json`), "utf8"));
     for (const r of doc.resources)
       assert.ok(RESOURCE_KINDS.includes(r.kind), `${id}: bad kind "${r.kind}"`);
@@ -367,7 +412,8 @@ test("the committed records have ten distinct resource-kind sets and no shared l
       names.set(k, id);
     }
   }
-  assert.equal(kindSets.size, 10);
+  assert.equal(kindSets.size, COMMITTED_ZONE_IDS.length,
+    "two committed records now share a resource-kind set — Z6's set-packing has been broken");
 });
 
 // Plan E Task 9: Z1's subject moved from `doc.zone` to `doc.region`, so the
@@ -1233,10 +1279,11 @@ test("reachability: the schema must NOT ban survey \"reported\" — Z2 owns that
 
 test("every committed record joins to a SURVEYED fabric region, one apiece", () => {
   const files = readdirSync(join(ROOT, "content/zones")).filter((f) => /^zone-.+\.json$/.test(f));
-  // Plan E Task 11 raises this to 40 (Wealdmarch's 10 verified + Coldreach's 6,
-  // then Tasks 12-14). Pinned rather than derived so growing the corpus is a
-  // deliberate edit here, exactly as the plan's own literal does.
-  assert.equal(files.length, 10);
+  // Plan E Task 11 has taken this from 10 to 16 (Wealdmarch's 10 verified,
+  // Coldreach's 6 written); Tasks 12-14 raise it to 40. Pinned rather than
+  // derived so growing the corpus is a deliberate edit here, exactly as the
+  // plan's own literal does.
+  assert.equal(files.length, 16);
 
   // The fabric, read fresh — this is a cross-artifact assertion, not a re-read
   // of the same numbers from a second copy.
@@ -1270,7 +1317,12 @@ test("every committed record joins to a SURVEYED fabric region, one apiece", () 
   // new ground and owns any re-voicing.
   assert.deepEqual([...seen.keys()].sort(),
     ["c02/r01", "c02/r02", "c02/r08", "c02/r10", "c02/r14",
-     "c02/r16", "c02/r21", "c02/r24", "c02/r28", "c02/r30"]);
+     "c02/r16", "c02/r21", "c02/r24", "c02/r28", "c02/r30",
+     // TASK 11. Coldreach's six, and these ARE derived: A4 assigns each region
+     // its zone from the ground, and every kind in the record is licensed by
+     // that region's own measured landforms and biomes. Unlike the ten above,
+     // this half of the list carries a geographic claim.
+     "c03/r06", "c03/r10", "c03/r12", "c03/r15", "c03/r18", "c03/r22"]);
 });
 
 // ─── the two findings of the adversarial review of c4d59c7 ─────────────────

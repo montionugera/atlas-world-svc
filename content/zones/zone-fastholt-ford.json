@@ -1,0 +1,48 @@
+{
+  "zone": "fastholt-ford",
+  "region": "c03/r06",
+  "survey": "surveyed",
+  "reasonToGo": "Cut stone comes off the stranded shoreline here in courses two men can lift, and the eastern road ends at the yard where it is stacked.",
+  "hazards": [
+    {
+      "id": "the-terrace-face",
+      "name": "The terrace face",
+      "description": "The old shoreline is worked from underneath, and it does not shed single stones — it lets go a whole course at once, onto whoever prised the last one out.",
+      "effect": "damage"
+    },
+    {
+      "id": "nothing-here-to-burn",
+      "name": "Nothing here to burn",
+      "description": "The steppe runs unbroken from the yard to the shore without a tree on it, so a party's fire is whatever the party carried; a body that comes in wet has nothing to dry itself by and stays wet until it stops mattering.",
+      "note": "Absence hazard: the harm is the fuel that is not there. Nothing in the runtime enum expresses a thing the ground fails to provide."
+    }
+  ],
+  "resources": [
+    {
+      "id": "steppe-forage",
+      "name": "Steppe forage",
+      "kind": "forage",
+      "description": "Greens, roots and berries taken off the open tundra in the few weeks it is not frozen, gathered by the basketful and dried on bare stone because there is nothing here to smoke them over."
+    },
+    {
+      "id": "terrace-course",
+      "name": "Terrace course",
+      "kind": "stone",
+      "description": "Flat courses prised out of the stranded shoreline above the yard, split to a size a sledge takes and a mason does not have to dress twice."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "halehaven-roads",
+      "name": "Halehaven Roads",
+      "description": "A lagoon closed off from the open shore, and the only water on this coast a hull can lie in without a man watching the weather all night. The stone goes out of it and almost nothing comes back in.",
+      "source": "content/world/resolved/continent-03.json"
+    },
+    {
+      "id": "reach-out-of-coldwall",
+      "name": "Reach out of Coldwall",
+      "description": "The straight of river above the yard, running in a dozen shallow threads across its own gravel — wide, loud, and shallow enough that a loaded sledge crosses it without being unpacked.",
+      "source": "content/world/resolved/continent-03.json"
+    }
+  ]
+}
