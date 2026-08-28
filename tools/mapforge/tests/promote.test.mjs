@@ -548,7 +548,12 @@ test("the COMMITTED declaration names the 36-file census and at least one integr
   assert.deepEqual(d.errors, []);
   assert.equal(d.minTrunkNodes, 36,
     "the committed floor is not the 36-file trunk census Plan E's trunk-census.json restates");
-  assert.deepEqual(Object.keys(d.gateRules).sort(), ["G-ALIAS", "G-PARENT", "G-TOWN-FRAME"]);
+  // G-FROZEN joined the three on 2026-08-28, with the measurement the
+  // declaration itself carries: before generate-world applied the committed
+  // freeze to the draft, a regeneration promoted a trunk that came back 10
+  // frozen to 1 and promote-world printed OK at exit 0. It is the same class as
+  // the other three — a thing only the promotion can drop.
+  assert.deepEqual(Object.keys(d.gateRules).sort(), ["G-ALIAS", "G-FROZEN", "G-PARENT", "G-TOWN-FRAME"]);
   for (const [id, why] of Object.entries(d.gateRules))
     assert.ok(why.length > 40, `${id}'s reason is a label, not a reason`);
 });
@@ -604,19 +609,45 @@ const FAITHFUL_GATE_FAILS = [
   'FAIL  spine: G-CANON-LEG e-leg-millcross-gildmark: no such node',
   'FAIL  spine-alias: story/regions.json#region-gildmark: no such node',
 ];
+// …and these are the REAL ones a promotion that DROPPED THE FREEZE leaves
+// behind, captured 2026-08-28 off two live runs on feat/F-051: the first four
+// from a plain regeneration promoted before generate-world applied
+// content/spine/freeze-reasons.json to the draft (the trunk came back 10 frozen
+// to 1 and promote-world printed OK at exit 0), the last two from the variant
+// that carried the flag without an ancestor-closed set or a recomputed anchor.
+// G-FROZEN is in the declared set because of these, so it is armed here on the
+// lines that earned it and not on an invented shape.
+const DROPPED_FREEZE_GATE_FAILS = [
+  'FAIL  spine: G-FROZEN n-cluster1: content/spine/freeze-reasons.json holds a written reason for this node but it is NOT frozen — a regeneration drops the freeze silently, and this is where that is caught',
+  'FAIL  spine: G-FROZEN n-millcross: content/spine/freeze-reasons.json holds a written reason for this node but it is NOT frozen — a regeneration drops the freeze silently, and this is where that is caught',
+  'FAIL  spine: G-FROZEN n-millcross: frozen but ancestor n-cluster1 is not',
+  'FAIL  spine: G-FROZEN n-millcross: frozen without absoluteAnchor',
+];
 
 test("step 5 ERRORS on a gate failure that names an integrity rule, and is silent on carried canon", () => {
   const rules = readPromotionDeclaration({ repoRoot: ROOT }).gateRules;
   const clean = [];
   assert.deepEqual(gateIntegrityErrors({ out: FAITHFUL_GATE_FAILS.join("\n"), rules, notes: clean }), [],
     "the carried-canon debt Plan E clears was read as a promotion defect");
-  assert.match(clean[0], /gate integrity rules clean — G-ALIAS, G-PARENT, G-TOWN-FRAME over 3 failure line\(s\)/);
+  assert.match(clean[0], /gate integrity rules clean — G-ALIAS, G-FROZEN, G-PARENT, G-TOWN-FRAME over 3 failure line\(s\)/);
 
   const red = [];
   const errs = gateIntegrityErrors({ out: [...FAITHFUL_GATE_FAILS, ...AMPUTATED_GATE_FAILS].join("\n"), rules, notes: red });
   assert.deepEqual(errs.map((e) => e.match(/reports (\d+) (G-[A-Z-]+)/).slice(1, 3)),
     [["2", "G-ALIAS"], ["1", "G-PARENT"], ["1", "G-TOWN-FRAME"]]);
   assert.match(red[0], /gate integrity rules RED/);
+
+  // G-FROZEN, on the lines that earned its declaration. Both shapes of the
+  // failure are in the input — a freeze that vanished, and a freeze carried
+  // without an ancestor-closed set or a recomputed anchor — and one error is
+  // raised naming all four.
+  const frozenRed = [];
+  const frozenErrs = gateIntegrityErrors({
+    out: [...FAITHFUL_GATE_FAILS, ...DROPPED_FREEZE_GATE_FAILS].join("\n"), rules, notes: frozenRed });
+  assert.deepEqual(frozenErrs.map((e) => e.match(/reports (\d+) (G-[A-Z-]+)/).slice(1, 3)),
+    [["4", "G-FROZEN"]],
+    "a promotion that dropped the committed freeze must be a promotion ERROR, not a note");
+  assert.match(frozenRed[0], /gate integrity rules RED/);
 
   // The rule id is matched as a WHOLE token: a longer id that merely starts
   // with a declared one is a different rule and must not be claimed.
@@ -642,7 +673,7 @@ test("a FAITHFUL promotion of the committed draft leaves every integrity rule gr
   const repo = scratchRepo(), run = sharedRun();
   const r = promoteWorld({ repoRoot: repo, runDir: run });
   assert.deepEqual(r.errors, [], "a faithful promotion reported an error");
-  assert.ok(r.notes.some((n) => /gate integrity rules clean — G-ALIAS, G-PARENT, G-TOWN-FRAME over \d+ failure line\(s\)/.test(n)),
+  assert.ok(r.notes.some((n) => /gate integrity rules clean — G-ALIAS, G-FROZEN, G-PARENT, G-TOWN-FRAME over \d+ failure line\(s\)/.test(n)),
     r.notes.join("\n"));
 });
 
