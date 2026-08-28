@@ -24,12 +24,16 @@
 // sets. The pairing Task 9 committed is alphabetical-against-ascending-region-
 // id, it carries no geographic claim, and this module preserves it byte for
 // byte rather than inventing a better-looking one. It is marked PLACEHOLDER in
-// every row it touches and it is exempt from the licence rule below — see
-// LEGACY_EXEMPT and A4's own "The ten that cannot be derived" section.
+// every row it touches, and it is exempt from the licence rule below — the
+// exemption is `derived: false` on the row, and A4's own section 2 carries the
+// measurement and the four alternatives.
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { mintName, phonemeDistance, titleStem } from "../../tools/mapforge/lib/name-gen.mjs";
+
+/** Landmark slots a zone row carries. The zone slot is never inherited. */
+export const LANDMARK_SLOTS = 2;
 
 export const KINDS = Object.freeze([
   "crop", "timber", "ore", "fuel", "stone", "water", "forage", "salvage",
@@ -142,10 +146,14 @@ export const LICENCE = Object.freeze({
       "raised-beach", "karst-tower", "hoodoo", "zeugen-ridge", "desert-pavement-reg",
       "ventifact-field", "talus-cone", "rockfall-apron", "spatter-rampart"),
   // Water a party can drink and carry off — running, ponded or held in rock.
+  // `wadi` and `playa` were in this list and are OUT: a dry watercourse and a
+  // dry lake bed are named for the water that is NOT there, and licensing water
+  // off them put a drinkable spring in a 92.8% desert (c05/r21). Review finding;
+  // the fix is the predicate, not the row.
   water: (r) => BIOME(r, "river") > 0
     || LF(r, "tarn", "oasis-spring", "plunge-pool", "estuary", "ford", "spring-mire",
       "moraine-dammed-lake", "landslide-dammed-lake", "lake-terrace", "karst-cenote",
-      "polje", "ponor", "foiba", "wadi", "playa"),
+      "polje", "ponor", "foiba"),
   // What grows without tending, on land or in the shallows.
   forage: (r) => BIOME(r, "meadow") > 0 || BIOME(r, "reef") > 0 || BIOME(r, "marsh") > 0
     || BIOME(r, "bramble") > 0 || BIOME(r, "tundra") > 0
@@ -194,6 +202,11 @@ export function committedRecords({ root }) {
  * `c-lm-cNN-<group>-<hash>` ones) keyed by the fabric region they stand in, as
  * the resolved world records it.
  *
+ * A pin the resolved world could not place carries no region, so it is keyed
+ * under `UNPLACED` rather than dropped — `c-lm-thornveil` is exactly that, and
+ * silently skipping it would let the census below answer from a set it had
+ * quietly narrowed.
+ *
  * MEASURED, and the reason this function exists: exactly one canon pin in the
  * whole world stands on surveyed ground — `c-lm-brightfall-leap` on `c09/r03`.
  * Task 9's "every canon pin is on reported ground" was measured on cluster 1
@@ -201,6 +214,8 @@ export function committedRecords({ root }) {
  * holds a named canon place INHERITS that name as a landmark rather than
  * minting a second name for the same ground.
  */
+export const UNPLACED = Symbol.for("zone-allocation:unplaced");
+
 export function canonPinsByRegion({ root }) {
   const dir = join(root, "content/world/resolved");
   const out = new Map();
@@ -213,9 +228,9 @@ export function canonPinsByRegion({ root }) {
       ...(doc.landmarks ?? []).filter((l) => /^c-(lm|town)-/.test(l.id) && !GENERATED.test(l.id)),
     ];
     for (const c of civil) {
-      if (!c.zone) continue;
-      if (!out.has(c.zone)) out.set(c.zone, []);
-      out.get(c.zone).push({ id: c.id, name: c.name });
+      const key = c.zone ?? UNPLACED;
+      if (!out.has(key)) out.set(key, []);
+      out.get(key).push({ id: c.id, name: c.name });
     }
   }
   for (const list of out.values()) list.sort((a, b) => (a.id < b.id ? -1 : 1));
@@ -288,7 +303,7 @@ export function packKindSets({ regions, taken, budget = 2000 }) {
     return false;
   };
   const ordered = [...regions].sort((a, b) => (a.id < b.id ? -1 : 1));
-  return rec(ordered) && steps <= budget ? assigned : null;
+  return rec(ordered) ? assigned : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -327,11 +342,23 @@ function classifiersFor({ classifiers, registerId, group }) {
  * a within-landmass problem — a reader never holds two continents' name lists
  * side by side — which is the same scope G-NAME-SOUND uses.
  */
-export function mintForRegion({ region, sources, used, perContinent, ordinal, reserved, inherited, minDistance = 3 }) {
+export function mintForRegion({
+  region, sources, used, usedStems, perContinent, morphemes, ordinal, reserved, inherited,
+  minDistance = 3,
+}) {
   const registerId = sources.registers.continentRegister[region.continent];
   const register = sources.registers.registers[registerId];
   const local = perContinent.get(region.continent) ?? [];
   perContinent.set(region.continent, local);
+  const tally = morphemes.get(region.continent) ?? new Map();
+  morphemes.set(region.continent, tally);
+  // Split a stem back into the register morphemes it was built from, longest
+  // onset first so "Cinder"+"vast" does not read as "Cinderva"+"st".
+  const split = (stem) => {
+    for (const o of [...register.onsets].sort((a, b) => b.length - a.length))
+      if (stem.startsWith(o)) return [o, stem.slice(o.length)];
+    return [stem, ""];
+  };
 
   const groups = region.groups.length ? region.groups : [region.group];
   const slots = [
@@ -343,7 +370,7 @@ export function mintForRegion({ region, sources, used, perContinent, ordinal, re
   // there, it has a name, and minting a second name for the same ground is how
   // a table stops describing the world. The zone slot is never inherited — a
   // zone is the whole region, not the one thing standing in it.
-  const inherit = (inherited ?? []).slice(0, slots.length - 1);
+  const inherit = (inherited ?? []).slice(0, LANDMARK_SLOTS);
   for (const [i, name] of inherit.entries()) slots[i + 1] = { inherited: name };
 
   const out = [];
@@ -360,7 +387,13 @@ export function mintForRegion({ region, sources, used, perContinent, ordinal, re
     // and independent of the retry counter, which only salts the draw stream.
     const classifier = legal.length ? legal[(ordinal + slotIndex) % legal.length] : null;
     let name = null;
-    for (let bump = 0; bump < 128 && name === null; bump++) {
+    // The morpheme ceiling relaxes as the search runs out of room: a register is
+    // 16 onsets x 12 rimes, so on a landmass wanting 24 names some reuse is
+    // arithmetic, not sloppiness. Starting tight and loosening keeps the reuse
+    // as low as the register can afford instead of letting one morpheme run to
+    // five ("barchan" x5 on Thirstwold, before this).
+    for (let bump = 0; bump < 512 && name === null; bump++) {
+      const ceiling = 1 + Math.floor(bump / 128);
       const cand = mintName({
         register, form: slot.form, classifier,
         stream: `${slot.stream}#${bump}`, used, reserved,
@@ -374,6 +407,14 @@ export function mintForRegion({ region, sources, used, perContinent, ordinal, re
       // is and starts stuttering.
       const stem = titleStem(cand);
       if (classifier && stem.toLowerCase().includes(classifier.toLowerCase())) continue;
+      // A STEM may be spoken for exactly once in the whole world. `used` bars
+      // whole names, which let "Race of the Searwaste" and "Tube under
+      // Searwaste" both through — two different places, one name, on two
+      // different landmasses. Review finding.
+      if (usedStems.has(stem.toLowerCase())) continue;
+      const [onset, rime] = split(stem);
+      if ((tally.get(`o:${onset}`) ?? 0) >= ceiling) continue;
+      if (rime && (tally.get(`r:${rime}`) ?? 0) >= ceiling) continue;
       // Confusability is judged on the STEM, not the whole title: name-gen's
       // titleStem() is the register word G-NAME-SOUND judges, and comparing
       // whole titles lets "Grykestone Fenster" and "Stair below Grikestone"
@@ -382,7 +423,12 @@ export function mintForRegion({ region, sources, used, perContinent, ordinal, re
     }
     if (name === null) throw new Error(`unmintable name for ${region.id} (${slot.stream})`);
     used.add(name);
-    local.push(titleStem(name));
+    const stem = titleStem(name);
+    usedStems.add(stem.toLowerCase());
+    const [onset, rime] = split(stem);
+    tally.set(`o:${onset}`, (tally.get(`o:${onset}`) ?? 0) + 1);
+    if (rime) tally.set(`r:${rime}`, (tally.get(`r:${rime}`) ?? 0) + 1);
+    local.push(stem);
     out.push({ name, register: registerId, group: slot.group, classifier });
   }
   return {
@@ -410,7 +456,6 @@ export function allocate({ root }) {
   const sources = nameSources({ root });
   const pins = canonPinsByRegion({ root });
 
-  const legacy = regions.filter((r) => byRegion.has(r.id));
   const fresh = regions.filter((r) => !byRegion.has(r.id));
   const packed = packKindSets({ regions: fresh, taken: committed.map((c) => key(c.kinds)) });
   if (!packed) return { regions, rows: null, problem: "no licensed kind-set packing exists" };
@@ -433,6 +478,10 @@ export function allocate({ root }) {
   }
 
   const reserved = new Set(sources.reserved.names);
+  // Every stem already spoken for anywhere — reserved canon, the committed
+  // records, and the pins — so a minted stem can never shadow one of them.
+  const usedStems = new Set([...used].map((n) => titleStem(n).toLowerCase()));
+  const morphemes = new Map();
   const ordinals = new Map();
   const rows = [];
   for (const region of regions) {
@@ -441,26 +490,34 @@ export function allocate({ root }) {
       const c = byRegion.get(region.id);
       rows.push({
         region: region.id, continent: region.continentName, continentId: region.continent,
-        terrain: region.terrain, group: region.group, zone: c.zone, kinds: c.kinds, landmarks: c.landmarks,
+        terrain: null, regionTerrain: region.terrain, zone: c.zone, zoneName: null,
+        kinds: c.kinds, landmarks: c.landmarks,
         licensed, derived: false,
+        // The measure A4 section 2 publishes: how many of a committed record's
+        // kinds the placeholder region cannot yield. Asserted by the gate, so
+        // the "five of ten" figure cannot rot silently.
         unlicensed: c.kinds.filter((k) => !licensed.includes(k)),
       });
       continue;
     }
     const ordinal = ordinals.get(region.continent) ?? 0;
     ordinals.set(region.continent, ordinal + 1);
-    const inherited = (pins.get(region.id) ?? []).map((p) => p.name);
-    // The name is spoken for by the pin, not by the mint: drop it from `used`
-    // so the inherit branch can claim it, and let every other name stay barred.
+    // Only as many pins as there are landmark slots can be inherited, and ONLY
+    // those may leave `used` — un-barring a pin the region cannot seat would
+    // free a canon name for minting somewhere else entirely.
+    const inherited = (pins.get(region.id) ?? []).map((p) => p.name).slice(0, LANDMARK_SLOTS);
     for (const n of inherited) used.delete(n);
-    const minted = mintForRegion({ region, sources, used, perContinent, ordinal, reserved, inherited });
+    const minted = mintForRegion({
+      region, sources, used, usedStems, perContinent, morphemes, ordinal, reserved, inherited,
+    });
     const kinds = packed.get(region.id).split(", ");
     rows.push({
       region: region.id, continent: region.continentName, continentId: region.continent,
-      terrain: region.terrain, group: region.group, zone: zoneSlug(minted.zoneName), zoneName: minted.zoneName,
+      terrain: region.terrain, regionTerrain: region.terrain,
+      zone: zoneSlug(minted.zoneName), zoneName: minted.zoneName,
       kinds, landmarks: minted.landmarks, licensed, derived: true, unlicensed: [],
       inheritedLandmarks: minted.inheritedLandmarks,
     });
   }
-  return { regions, rows, legacy: legacy.length, problem: null };
+  return { regions, rows, problem: null };
 }

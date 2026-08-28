@@ -13,7 +13,7 @@ import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   KINDS, surveyedRegions, licensedKinds, committedRecords, nameSources, allocate,
-  canonPinsByRegion,
+  canonPinsByRegion, UNPLACED,
 } from "../lib/zone-allocation.mjs";
 import { renderTable, splice, BEGIN, END } from "../derive_zone_allocation.mjs";
 import { titleStem } from "../../tools/mapforge/lib/name-gen.mjs";
@@ -138,10 +138,20 @@ test("no two rows claim one region — the bijection Z2 enforces", () => {
   }
 });
 
-test("the terrain column is the fabric's own, not a transcription that can rot", () => {
+test("the terrain column is the fabric's own on derived rows, and BLANK on placeholder rows", () => {
   const { terrain } = fabricSurvey();
-  for (const r of rows())
-    assert.equal(r.terrain, terrain.get(r.region), `${r.zone}: A4 says ${r.terrain}, the fabric says ${terrain.get(r.region)}`);
+  for (const r of rows()) {
+    if (r.join === "derived") {
+      assert.equal(r.terrain, terrain.get(r.region),
+        `${r.zone}: A4 says ${r.terrain}, the fabric says ${terrain.get(r.region)}`);
+      continue;
+    }
+    // A placeholder row's region is a gate join, not a place the zone is. Printing
+    // the region's terrain beside the zone's name publishes a claim about the zone
+    // — "northern-icefield … cloud-forest" — that the record's own prose denies.
+    // Review finding: the cell is blank, and the join column says why.
+    assert.equal(r.terrain, "—", `${r.zone}: a placeholder row must publish no terrain`);
+  }
 });
 
 test("the per-continent distribution is the fabric's own", () => {
@@ -182,7 +192,12 @@ test("the PLACEHOLDER rows are exactly the ten committed records, and nothing el
 
 test("the ten committed records keep their exact kind sets and landmark names", () => {
   const byZone = new Map(rows().map((r) => [r.zone, r]));
-  for (const c of committedRecords({ root: ROOT })) {
+  const committed = committedRecords({ root: ROOT });
+  // A floor, not decoration: with content/zones/ absent committedRecords()
+  // returns [] and every assertion below is skipped — an empty loop reporting
+  // success is an absence of data published as a verdict.
+  assert.equal(committed.length, 10, "content/zones no longer holds ten records");
+  for (const c of committed) {
     const row = byZone.get(c.zone);
     assert.ok(row, `${c.zone} is committed but absent from A4`);
     assert.deepEqual([...new Set(row.kinds)].sort(), c.kinds, `${c.zone}: A4 disagrees with the committed record`);
@@ -200,10 +215,43 @@ test("the ten committed records keep their exact kind sets and landmark names", 
 // surveyed region, this goes red and A4's ruling has to be reopened.
 // ---------------------------------------------------------------------------
 
+test("no licence predicate licenses everything or nothing — a rule that cannot discriminate is a defect", () => {
+  const regions = surveyedRegions({ root: ROOT });
+  assert.equal(regions.length, 40);
+  for (const kind of KINDS) {
+    const n = regions.filter((r) => licensedKinds({ region: r }).includes(kind)).length;
+    assert.ok(n > 0, `licence "${kind}" fires on no surveyed region at all — dead vocabulary`);
+    assert.ok(n < regions.length,
+      `licence "${kind}" fires on all ${n} surveyed regions — it licenses everything and constrains nothing`);
+  }
+});
+
+test("the licence's per-landmass NEGATIVES hold — this is what stops a predicate being widened to pass", () => {
+  // The whole "derived, not chosen" claim rests on the licence actually
+  // REFUSING ground. Each line below is a measured fact about the fabric that
+  // dies the moment its predicate is loosened, which the global 0<n<40 bound
+  // above cannot catch on its own: widening one kind by one region would slip
+  // through it. Read as: this landmass can yield none of these.
+  const want = {
+    c02: ["ore"], c03: ["fuel"], c04: ["timber", "fuel"],
+    c05: ["timber", "fuel", "forage"], c06: ["ore"], c07: [],
+    c08: ["timber", "ore"], c09: ["crop", "fuel", "forage"],
+    c10: ["crop", "timber", "water", "forage", "salvage"],
+  };
+  const regions = surveyedRegions({ root: ROOT });
+  const got = {};
+  for (const c of Object.keys(want)) {
+    const local = regions.filter((r) => r.continent === c);
+    assert.ok(local.length, `${c} has no surveyed regions — the row below would be vacuous`);
+    got[c] = KINDS.filter((k) => local.every((r) => !licensedKinds({ region: r }).includes(k)));
+  }
+  assert.deepEqual(got, want);
+});
+
 test("A4 §2 part 1: no cluster-1 canon pin stands on surveyed ground", () => {
   const { survey } = fabricSurvey();
   const pins = canonPinsByRegion({ root: ROOT });
-  const c1 = [...pins].filter(([region]) => region.startsWith("c02/"));
+  const c1 = [...pins].filter(([region]) => typeof region === "string" && region.startsWith("c02/"));
   assert.ok(c1.length >= 4,
     `only ${c1.length} cluster-1 regions hold a canon pin — the set is too empty to conclude from`);
   const onSurveyed = c1.filter(([region]) => survey.get(region) === "surveyed");
@@ -221,7 +269,7 @@ test("A4 §2 part 1b: world-wide, the canon pins on surveyed ground are exactly 
   const { survey } = fabricSurvey();
   const pins = canonPinsByRegion({ root: ROOT });
   const onSurveyed = [...pins]
-    .filter(([region]) => survey.get(region) === "surveyed")
+    .filter(([region]) => typeof region === "string" && survey.get(region) === "surveyed")
     .flatMap(([, list]) => list.map((p) => p.name)).sort();
   const inherited = allocate({ root: ROOT }).rows
     .flatMap((r) => r.inheritedLandmarks ?? []).sort();
@@ -229,6 +277,30 @@ test("A4 §2 part 1b: world-wide, the canon pins on surveyed ground are exactly 
     "a canon pin stands on surveyed ground that no zone in A4 inherits — it would be minted over");
   assert.equal(onSurveyed.length, 1,
     `${onSurveyed.length} canon pins stand on surveyed ground (${onSurveyed.join(", ")}); A4 §2 says one`);
+});
+
+test("A4 §2's canon-pin census is the fabric's own — 41 pins, 39 reported, 1 surveyed, 1 unplaced", () => {
+  const { survey } = fabricSurvey();
+  const pins = canonPinsByRegion({ root: ROOT });
+  const tally = { reported: 0, surveyed: 0, unplaced: 0 };
+  let total = 0;
+  for (const [region, list] of pins) {
+    total += list.length;
+    if (region === UNPLACED) { tally.unplaced += list.length; continue; }
+    const s = survey.get(region);
+    assert.ok(s, `pin region "${region}" is in no fabric file`);
+    tally[s] += list.length;
+  }
+  assert.equal(total, 41, "the hand-pinned canon set has changed size");
+  assert.deepEqual(tally, { reported: 39, surveyed: 1, unplaced: 1 });
+});
+
+test("A4 §2's \"five of ten\" — half the placeholder rows put a resource on ground that cannot yield it", () => {
+  const legacy = allocate({ root: ROOT }).rows.filter((r) => !r.derived);
+  assert.equal(legacy.length, 10);
+  const unlicensed = legacy.filter((r) => r.unlicensed.length).map((r) => r.zone).sort();
+  assert.deepEqual(unlicensed,
+    ["ashvale-front", "cindervast", "hollowmarch", "millcross-ford", "thornveil"]);
 });
 
 test("A4 §2 part 2: no Wealdmarch surveyed region licenses ore", () => {
@@ -261,13 +333,14 @@ test("no landmark name is reserved, and every MINTED name is in its landmass's r
   const inherited = new Set(allocate({ root: ROOT }).rows.flatMap((r) => r.inheritedLandmarks ?? []));
   const reserved = new Set(sources.reserved.names.map((n) => n.toLowerCase()));
   const byId = new Map(surveyedRegions({ root: ROOT }).map((r) => [r.id, r]));
+  const zoneNames = new Map(allocate({ root: ROOT }).rows.map((x) => [x.region, x.zoneName]));
   for (const r of rows().filter((x) => x.join === "derived")) {
     const region = byId.get(r.region);
     const registerId = sources.registers.continentRegister[region.continent];
     const reg = sources.registers.registers[registerId];
     const legal = new Set();
     for (const o of reg.onsets) for (const rime of reg.rimes) legal.add(`${o}${rime}`);
-    for (const name of [r.zone.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" "), ...r.landmarks]) {
+    for (const name of [zoneNames.get(r.region), ...r.landmarks]) {
       assert.ok(!reserved.has(name.toLowerCase()), `"${name}" is a reserved canon name`);
       if (inherited.has(name)) continue;
       const stem = titleStem(name);
@@ -299,4 +372,165 @@ test("the packing spends two-element sets before three, and one only where no pa
   const region = surveyedRegions({ root: ROOT }).find((r) => r.id === singleton.region);
   assert.equal(licensedKinds({ region }).length, 2,
     `${singleton.zone} took a one-element set but its ground licenses ${licensedKinds({ region }).length} kinds`);
+});
+
+// ---------------------------------------------------------------------------
+// Names, at morpheme depth
+// ---------------------------------------------------------------------------
+
+test("every minted STEM is unique in the whole world, not just every full name", () => {
+  const { rows: derived } = allocate({ root: ROOT });
+  const minted = derived.filter((r) => r.derived);
+  assert.equal(minted.length, 30);
+  const seen = new Map();
+  for (const r of minted)
+    for (const name of [r.zoneName, ...r.landmarks]) {
+      if ((r.inheritedLandmarks ?? []).includes(name)) continue;
+      const stem = titleStem(name).toLowerCase();
+      assert.equal(seen.get(stem), undefined,
+        `stem "${stem}" names both ${seen.get(stem)} and ${name} — two places, one name`);
+      seen.set(stem, name);
+    }
+  // And no minted stem shadows a canon one.
+  const sources = nameSources({ root: ROOT });
+  const canon = new Set([
+    ...sources.reserved.names,
+    ...committedRecords({ root: ROOT }).flatMap((c) => c.landmarks),
+  ].map((n) => titleStem(n).toLowerCase()));
+  assert.ok(canon.size > 20, "the canon stem set is too small to be a real exclusion");
+  for (const stem of seen.keys())
+    assert.ok(!canon.has(stem), `minted stem "${stem}" shadows a canon name`);
+});
+
+test("no register morpheme is reused more than twice on one landmass", () => {
+  const sources = nameSources({ root: ROOT });
+  const { rows: derived } = allocate({ root: ROOT });
+  const byContinent = new Map();
+  for (const r of derived.filter((x) => x.derived)) {
+    const c = r.region.slice(0, 3);
+    if (!byContinent.has(c)) byContinent.set(c, []);
+    byContinent.get(c).push(r.zoneName, ...r.landmarks);
+  }
+  assert.equal(byContinent.size, 8, "the minted landmasses have changed");
+  for (const [c, names] of byContinent) {
+    const reg = sources.registers.registers[sources.registers.continentRegister[c]];
+    const onsets = [...reg.onsets].sort((a, b) => b.length - a.length);
+    const tally = new Map();
+    for (const name of names) {
+      const stem = titleStem(name);
+      const onset = onsets.find((o) => stem.startsWith(o));
+      if (!onset) continue; // an inherited canon name, judged by its own register
+      for (const key of [`onset ${onset}`, stem.slice(onset.length) && `rime ${stem.slice(onset.length)}`])
+        if (key) tally.set(key, (tally.get(key) ?? 0) + 1);
+    }
+    for (const [key, n] of tally)
+      assert.ok(n <= 2, `${c}: ${key} is used ${n} times — the landmass reads as one word repeated`);
+  }
+});
+
+test("the licence does not read water off DRY features", () => {
+  // `wadi` and `playa` are named for water that is not there. The rule that
+  // let them license `water` put a drinkable spring in a 92.8% desert; this is
+  // the regression case, and it fails the moment either comes back.
+  const dry = { biomes: {}, landforms: ["wadi", "playa", "salt-pan-crust", "sabkha"], terrain: "sand-sea" };
+  assert.ok(!licensedKinds({ region: dry }).includes("water"),
+    "a dry watercourse or a dry lake bed now licenses water again");
+  // The other direction: a genuinely wet landform still does license it.
+  assert.ok(licensedKinds({ region: { biomes: {}, landforms: ["oasis-spring"], terrain: "sand-sea" } })
+    .includes("water"), "the water predicate no longer fires on an oasis spring — it has gone dead");
+});
+
+test("the kind-set space A4 rule 4 promises is measured, not asserted", () => {
+  // Rule 4 exists to keep cheap sets free for the deferred town-plan zones
+  // (E-C9). Measured, it does not: every two-element set is spent. The doc says
+  // so, and this test is what stops that sentence rotting back into a promise.
+  const spent = new Set(rows().map((r) => [...new Set(r.kinds)].sort().join(",")));
+  const all = [];
+  const rec = (i, cur) => {
+    if (i === KINDS.length) { if (cur.length) all.push([...cur].sort().join(",")); return; }
+    rec(i + 1, cur); cur.push(KINDS[i]); rec(i + 1, cur); cur.pop();
+  };
+  rec(0, []);
+  const free = (size) => all.filter((k) => k.split(",").length === size && !spent.has(k)).length;
+  assert.equal(all.length, 255);
+  assert.deepEqual(
+    { one: free(1), two: free(2), three: free(3), total: all.length - spent.size },
+    { one: 7, two: 0, three: 45, total: 215 });
+});
+
+// ---------------------------------------------------------------------------
+// A4 §2's alternatives table — every score in it is measured here, so the
+// owner rules on numbers that are still true when they read them.
+// ---------------------------------------------------------------------------
+
+/** Maximum bipartite matching, records to regions, ties by ascending region id. */
+function maxLicensedMatching() {
+  const c02 = surveyedRegions({ root: ROOT }).filter((r) => r.continent === "c02");
+  const committed = committedRecords({ root: ROOT });
+  const options = new Map(committed.map((c) => [c.zone,
+    c02.filter((r) => c.kinds.every((k) => licensedKinds({ region: r }).includes(k)))
+      .map((r) => r.id).sort()]));
+  const owner = new Map();
+  const augment = (zone, seen) => {
+    for (const region of options.get(zone)) {
+      if (seen.has(region)) continue;
+      seen.add(region);
+      if (!owner.has(region) || augment(owner.get(region), seen)) { owner.set(region, zone); return true; }
+    }
+    return false;
+  };
+  let matched = 0;
+  for (const c of committed) if (augment(c.zone, new Set())) matched++;
+  return { matched, total: committed.length, options };
+}
+
+test("A4 §2 alternative A′ scores 9 of 10, and A (shipped) scores 5", () => {
+  const { matched, total, options } = maxLicensedMatching();
+  assert.equal(total, 10);
+  assert.equal(matched, 9, "the licence-maximising placeholder no longer scores 9");
+  assert.deepEqual([...options].filter(([, o]) => !o.length).map(([z]) => z), ["hollowmarch"],
+    "the one record with no licensed region is no longer hollowmarch alone");
+  const shipped = allocate({ root: ROOT }).rows.filter((r) => !r.derived && !r.unlicensed.length);
+  assert.equal(shipped.length, 5, "the shipped alphabetical join no longer scores 5");
+});
+
+test("A4 §2 alternative A″: 7 of 10 zones have a requires-matching surveyed region, and the shipped join hits 4", () => {
+  const c02 = surveyedRegions({ root: ROOT }).filter((r) => r.continent === "c02");
+  const byId = new Map(c02.map((r) => [r.id, r]));
+  const committed = committedRecords({ root: ROOT });
+  const wants = new Map();
+  for (const f of readdirSync(join(ROOT, "content/world/civil/pinned"))) {
+    const doc = JSON.parse(readFileSync(join(ROOT, "content/world/civil/pinned", f), "utf8"));
+    // Nine zones take their requirement from their own `c-lm-` pin; `cindervast`
+    // has no landmark pin, only the town of that name, so its town pin is the
+    // one that speaks for it.
+    if (!/^c-(lm|town)-/.test(doc.id ?? "")) continue;
+    const slug = doc.id.replace(/^c-(lm|town)-/, "");
+    if (!committed.some((c) => c.zone === slug)) continue;
+    const req = [].concat(doc.requires?.landform ?? doc.requires?.landforms ?? []);
+    if (req.length) wants.set(slug, req);
+  }
+  assert.equal(wants.size, 10, "not every committed zone still has a pin declaring a required landform");
+  const satisfiable = [...wants].filter(([, req]) =>
+    c02.some((r) => req.some((w) => r.landforms.includes(w)))).map(([z]) => z).sort();
+  assert.equal(satisfiable.length, 7, `A″ now scores ${satisfiable.length} of 10`);
+  assert.deepEqual([...wants].filter(([z]) => !satisfiable.includes(z)).map(([z]) => z).sort(),
+    ["ashvale-front", "northern-icefield", "rooktide-reach"]);
+  const hit = allocate({ root: ROOT }).rows.filter((r) => !r.derived)
+    .filter((r) => satisfiable.includes(r.zone)
+      && wants.get(r.zone).some((w) => byId.get(r.region)?.landforms.includes(w)));
+  assert.equal(hit.length, 4, "the shipped join no longer satisfies four of the seven");
+});
+
+test("A4 §1's published ore-boundary sensitivity is real: the fluvial rock cuts are in NO predicate", () => {
+  // If `ore` counted these, c02/r01 would license ore and §2's second pillar
+  // would have to be re-run. The claim is only worth publishing while it is
+  // true that they license nothing today.
+  const cuts = ["canyon", "slot-canyon", "knickpoint-gorge", "natural-bridge"];
+  const r01 = surveyedRegions({ root: ROOT }).find((r) => r.id === "c02/r01");
+  for (const t of cuts)
+    assert.ok(r01.landforms.includes(t), `c02/r01 no longer carries ${t}`);
+  const alone = { biomes: {}, landforms: cuts, terrain: "headland" };
+  assert.deepEqual(licensedKinds({ region: alone }), [],
+    "a fluvial rock cut now licenses something — A4 §1's sensitivity note must be re-measured");
 });

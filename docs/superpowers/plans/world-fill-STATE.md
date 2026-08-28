@@ -4059,3 +4059,104 @@ closed by A4 §2 part 2, which fails the moment Wealdmarch licenses ore.
   failure that file exists to prevent. A4 keeps it by inheritance; `reserved.json` does not.
 - `content/zones/*.json` still has no `region`-vs-`spineId` relationship, and A4 adds none: the
   fabric join and the spine join remain unrelated keys (carried forward from Task 9).
+
+### TASK 10 REVIEW — two independent adversarial passes, eleven findings acted on (2026-08-29)
+
+Two reviewers ran in parallel on `36028be`: one on the gate code, one on the allocation as content.
+Both confirmed the central claim by independent construction — reviewer B re-derived every pinned
+civil coordinate with its own point-in-polygon against the fabric's `rings`/`holes` and got the same
+41 / 39 reported / 1 surveyed / 1 unplaced — and both found real defects. Eleven were fixed; the
+fixes land in a second commit with **eight new mutations, all killed**.
+
+**MAJOR 1 — the licence could be widened to pass and the gate stayed green.** Setting `stone` or
+`salvage` to `() => true` re-rendered A4 and the suite still printed **19/19**; the STATE claim that
+"`M20` is the widen-to-pass hole and it is closed by A4 §2 part 2" was **false for seven of the eight
+kinds**. The one negative fact the gate asserted (Wealdmarch yields no ore) is not reachable from
+most predicates. Closed with two rules: **no predicate may fire on all 40 surveyed regions or on
+none** (measured spread: crop 33, timber 11, ore 17, fuel 13, stone 32, water 34, forage 26, salvage
+30), and the **per-landmass negatives are asserted outright** — c02 no ore, c03 no fuel, c04 no
+timber/fuel, c05 no timber/fuel/forage, c06 no ore, c07 none, c08 no timber/ore, c09 no
+crop/fuel/forage, c10 no crop/timber/water/forage/salvage. `stone := true` and `salvage := true` now
+both go red.
+
+**MAJOR 2 — the licence was WRONG on one predicate, not merely loose.** `water` was licensed by
+`wadi` and `playa` — a dry watercourse and a dry lake bed, features named for the water that is not
+there — which put drinkable water in a 92.8%-desert region (`c05/r21`). Removed; the fix is the
+predicate, not the row, and a regression case pins both directions (dry features license nothing, an
+oasis spring still licenses water). The packing was re-run.
+
+**MAJOR 3 — A4 published something false about the ten placeholder rows.** The `terrain` column was
+join-derived and rendered identically on every row, so the table printed "northern-icefield …
+cloud-forest" and "hollowmarch … cloud-forest" — statements the records' own prose denies. Placeholder
+rows now publish **no** terrain (`—`) and the gate asserts it. The related claim that the placeholder
+is inert was also wrong and is corrected in A4: nothing *renders* a zone's region, but `doc.region`
+is `Z1`'s join subject and `Z2`'s bijection key, so it is load-bearing inside the gate.
+
+**MAJOR 4 — §2 presented the ruling as forced when two strictly better placeholders exist.** Maximum
+bipartite matching of the ten committed records against c02's ten surveyed regions under this file's
+own licence scores **9 of 10** (only `hollowmarch` is impossible) against the shipped alphabetical
+join's **5 of 10**, and it costs no content — ten `region` fields, no prose. A `requires`-respecting
+join is a third option: **7 of 10** zones have a surveyed region carrying the landform their own pin
+declares, and the shipped join satisfies **4 of those 7**. Both are now in A4's alternatives table
+with their measured scores, A′ is named as the one to take if a ruling is wanted with no further
+work, and the reason it was not simply taken is stated: it is better on a checkable criterion but
+still a choice, and it would make the table look more principled than the world without a ruling.
+**Every score in that table is asserted by the gate**, so the owner rules on numbers still true when
+they read them.
+
+**MAJOR 5 — a third measurement, which is not about the join at all.** The reported regions the canon
+pins actually stand in — `c02/r11`, `r12`, `r18`, `r19` — **do not license `ore` either**.
+Hollowmarch's committed ore is unlicensed on its *own* ground. The redraw invalidated committed prose
+independently of any zone join. Recorded in A4 §2.3 and filed; it is bigger than this task.
+
+**MAJOR 6 — rule 4's stated purpose was refuted by the table it justified.** "Two-element sets are
+spent before three so the cheap space stays legible for the deferred town-plan zones" — measured, all
+**28** two-element sets are spent and **0** remain; free space is 7 singletons, 45 triples and every
+set of four or more, 215 of 255. The rule text now says what is true, and a test publishes the census
+so the sentence cannot rot back into a promise.
+
+**MAJOR 7 — §1's "none of which is a matter of taste" was false, and the licence's boundary is
+load-bearing.** Step 2 is authored judgement; A4 now says so. And the boundary is published because
+it moves the ruling: `canyon`, `slot-canyon`, `knickpoint-gorge` and `natural-bridge` sit on `c02/r01`
+and are in **no** predicate at all — **if `ore` counted them, c02/r01 would license ore and §2's
+second pillar would have to be re-run.** A test asserts they license nothing today, so the note stays
+honest.
+
+**MAJOR 8 — two places wore one name, and landmasses read as one word repeated.** `used` barred whole
+NAMES, so "Race of the Searwaste" (c05/r20) and "Tube under Searwaste" (c10/r01) both minted. Stems
+are now globally unique — **90 minted names, 90 distinct stems** — and no minted stem may shadow a
+canon one. Separately, morpheme reuse within a landmass ran to five (`barchan` x5, `waste` x5 on
+Thirstwold; `sink` x5, `stone` x5 on Stonemoor); a ceiling that relaxes only when the register runs
+out of room brings the measured maximum to **2**.
+
+**MINOR, all fixed.** The census was self-contradictory (39 + 1 + 1 = 41, published as "of the 40")
+— the code keyed on `zone` and dropped the unplaced pin from the denominator while keeping it in the
+numerators; `canonPinsByRegion` now keys unplaced pins under `UNPLACED` and the gate asserts
+41/39/1/1. "The nearest surveyed region to Millcross is 41.5 km" (inherited from Task 9) matches no
+region under any metric: measured, `c02/r21` is **34.64 km to its boundary and 42.36 km to its
+centroid**. "The 60 new landmark names" was 59 minted plus 1 inherited. The committed-records test
+passed with `content/zones/` deleted (empty loop, zero assertions) and now floors at ten. The
+`used.delete` for inherited pins un-barred more names than the row could seat. Dead: a comment
+pointing at a `LEGACY_EXEMPT` that does not exist, an unreachable `&& steps <= budget`, and unused
+row fields; `unlicensed` was kept and is now what the gate reads to assert the "five of ten" figure.
+
+**Confirmed clean by reviewer A, not changed:** the table parser fails (never silently drops) on all
+12 malformations tried; no dead landform vocabulary — all 75 cited tokens occur in the fabric and in
+at least one surveyed region; output byte-identical over 5 runs and with every fabric array reversed;
+the budget bounds an infeasible instance to 355 ms; `mintForRegion` cannot return a filter-violating
+name; and zero collisions between the 30 derived slugs and spine node ids, landform types, `region-*`
+story ids, town ids or the committed landmark names.
+
+**Filed, not chased.**
+
+- `Brightfall Leap` is a hand-authored canon landmark absent from `content/world/names/reserved.json`,
+  so a re-seed could re-mint it elsewhere. A4 keeps it by inheritance; `reserved.json` does not.
+- A4 §4 says an inherited name is judged by the register it was authored in; nothing enforces that.
+- Cross-landmass morpheme repetition is unruled — `withybar-roads` (c08) beside `Withyshallow Saddle`
+  (c07) — the ceiling is per-landmass, matching `G-NAME-SOUND`'s own scope.
+- Reserving two-element sets for the seven deferred E-C9 town-plan zones needs a re-pack that pushes
+  triples onto the licence-rich karst and volcanic regions.
+- Reviewer B saw two cold runs go red (once with `--check` reporting drift and `git status` showing an
+  empty-diff modification to `content/world/resolved/continent-02.json`) and could not reproduce it in
+  eleven further runs; a concurrent session in this worktree is the likeliest cause. Re-run here 5x
+  clean. Unattributed.

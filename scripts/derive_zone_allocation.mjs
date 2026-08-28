@@ -31,7 +31,7 @@ export function renderTable({ rows }) {
     "| --- | --- | --- | --- | --- | --- | --- |",
   ];
   for (const r of rows) {
-    out.push(`| ${r.zone} | ${r.continent} | ${r.region} | ${r.terrain} | ${r.kinds.join(", ")}`
+    out.push(`| ${r.zone} | ${r.continent} | ${r.region} | ${r.terrain ?? "—"} | ${r.kinds.join(", ")}`
       + ` | ${r.landmarks.join(" / ")} | ${r.derived ? "derived" : "PLACEHOLDER"} |`);
   }
   return out.join("\n");
