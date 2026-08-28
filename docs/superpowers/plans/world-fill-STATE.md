@@ -3971,3 +3971,91 @@ fixed in the follow-up commit.
 - `survey` on a record is informationally redundant once Z2 passes (only `"surveyed"` can survive),
   but the drift check is live and mutation-killed. Ruling: a verified declaration, like a checksum —
   not rot.
+
+### TASK 10 SHIPPED (2026-08-29) — the allocation is derived; the ten legacy joins still are not
+
+`docs/worldbuilding/A4-zone-allocation.md` is a **generated** 40-row table.
+`scripts/lib/zone-allocation.mjs` derives it from `content/world/fabric/continent-NN.json`,
+`content/world/premises/continent-NN.json`, `content/world/names/*.json` and the ten committed
+records; `scripts/derive_zone_allocation.mjs --write|--check` renders it; the 19 tests in
+`scripts/tests/zone-allocation.test.mjs` re-derive every claim and fail on drift. Nothing in the
+table is retyped from the plan.
+
+**What the allocation keys on, and it is not geography.** Three mechanical steps. (1) The ground,
+measured: `terrainKind`, `biomeShares`, the region's `instances[].type` landforms, and its dominant
+landform **group** read off the instance handles (`c06/coastal/h-...`), ties alphabetical; `c05/r06`
+has no instances at all so its group falls back to biome. (2) A **licence**: an affordance table from
+each of the eight kinds to the measured evidence that would let a person carry it out — `LICENCE` in
+the lib, one predicate per kind, authored once and never tuned per region. **A derived zone may only
+be given kinds its own region licenses**, which is what lets Tasks 11-14 justify a kind in prose
+without contradicting the ground. (3) A deterministic packing: licensed 2-subsets first, then
+3-subsets, then 1-subsets; fewest-candidates-first, ties by ascending region id, backtracking.
+Measured composition: **28 two-element, 11 three-element, 1 one-element** (`c05/r06`, whose ground
+licenses only `{stone, salvage}` and whose one pair is spent by `gildmark-head`). A one-element kind
+set is legal — Z3 floors `resources` at two ENTRIES, Z6 compares KINDS as a deduped set.
+
+**The plan's own fixed kind-set column was authored against an imagined geography and is refuted.**
+Measured against the redrawn fabric, Thirstwold's `timber` (twice) and `fuel` are licensed by no c05
+region — 0% forest, no swamp-forest, no peat, no ash. The 40 sets are kept as a **packing** (all
+distinct, cheap space spent first) but their assignment to regions is re-derived. **Six of the plan's
+30 zone slugs also had to go**: `tallowquay-roads`, `coldreach-shelf`, `peatrun-mouth`,
+`netstead-bight`, `drowned-pavement`, `slateflow-sink` each re-mint a name in `reserved.json` onto
+ground that canon name does not stand on — exactly the failure that file exists to prevent.
+
+**THE RULING THAT IS STILL OPEN — the ten committed Wealdmarch records.** Task 9's finding holds and
+this task measured it a second, independent way, so it is now refuted in two dimensions, not one.
+*Position:* of the 40 hand-pinned canon places in the resolved world, **39 stand on reported ground,
+`c-lm-thornveil` stands on no owned region, and exactly one stands on surveyed ground** —
+`c-lm-brightfall-leap` in `c09/r03`, on Brightfall, not Wealdmarch. Cluster 1's own six towns and
+twelve resolvable landmarks are all on `c02/r11`, `r12`, `r18`, `r19`, all reported. *Economy:*
+`hollowmarch`'s committed `ore` is licensed by **no c02 surveyed region at all** — c02 carries no
+rock, upland, scree, badland or karst biome and no ore-bearing landform — so there is not even a
+licence-respecting permutation of the ten committed sets onto Wealdmarch's surveyed ground. Under
+Task 9's alphabetical join, **five of the ten rows are licensed and five are not** (`ashvale-front`,
+`cindervast`, `hollowmarch`, `millcross-ford`, `thornveil`). Those ten rows are therefore marked
+`PLACEHOLDER`, exempt from the licence rule, and **preserved byte for byte** — no record was touched.
+A4 §2 carries the four alternatives (keep the placeholder / join the reported ground / re-survey the
+canon ground / decouple) with their costs; **an owner ruling is wanted before Task 11 writes a
+Wealdmarch sentence that leans on the join.** Task 11 can proceed on the 30 derived rows regardless.
+
+**Inheritance beats minting.** Because one canon pin does stand on surveyed ground, a derived zone
+whose region already holds a hand-pinned canon place takes that place's name as a landmark instead of
+minting a second name for the same ground: `c09/r03` inherits **Brightfall Leap**. The zone slot is
+never inherited — a zone is the whole region, not the one thing standing in it.
+
+**Names.** 30 zone names and 59 landmark names minted through the Plan D generator
+(`tools/mapforge/lib/name-gen.mjs`), so the landmass's register is the only vocabulary in play and
+`reserved.json` is a hard exclusion by construction. Classifier comes from the landform GROUP and
+**rotates by the region's ordinal on its landmass**, or six fluvial Coldreach regions all come out
+`<stem> Ford`. A candidate is redrawn on a triple letter, on the classifier appearing inside the
+stem ("Pumicreach Reach"), and on its **stem** coming within 3 phonemes of another stem on the same
+landmass — judged on `titleStem()`, not the whole title, because whole-title comparison let
+"Grykestone Fenster" and "Stair below Grikestone" both through. `G-NAME-*` sweeps resolved **place**
+documents, not zone landmarks, so no gate elsewhere was claiming to enforce this.
+
+**One defect found in this task's own work and fixed before commit.** `packKindSets` had no search
+budget. An INFEASIBLE instance is where an exhaustive backtracker costs the most, and it is
+reachable: mutating the `ore` predicate to `() => false` made the gate **hang past two minutes**
+instead of going red — worse than a wrong answer. The real instance solves inside **50** nodes
+(measured at budgets 50/200/1000/5000, all solve, all under 35 ms), so the budget is 2000 and
+exhausting it returns null, which every caller already reports as "no licensed packing exists".
+
+**Twenty mutations, all killed** (`M1` dropped column · `M2` kind outside the enum · `M3` duplicate
+kind set · `M4` duplicate landmark · `M5` non-kebab slug · `M6` region not surveyed · `M7` two rows
+on one region · `M8` terrain-column rot · `M9` distribution moved · `M10` unlicensed kind ·
+`M11` a fresh row claiming exemption · `M12` committed kind set rewritten · `M13` c09/r03 unsurveyed ·
+`M14` a canon pin landing on surveyed ground · `M15` Wealdmarch licensing ore · `M16` slug reusing a
+reserved name · `M17` out-of-register stem · `M18` hand edit vs derivation · `M19` ore predicate
+always false · `M20` every licence predicate always true). `M20` is the widen-to-pass hole and it is
+closed by A4 §2 part 2, which fails the moment Wealdmarch licenses ore.
+
+**Filed, not chased.**
+
+- `content/world/premises/continent-11.json` declares `"register": "reedspeech"` while
+  `content/world/names/registers.json`'s `continentRegister` says `moorstone` for `c11`. Quillreef has
+  zero surveyed regions so nothing in this task reads it; nothing reconciles the two sources either.
+- `Brightfall Leap` (`c-lm-brightfall-leap`) is a hand-authored canon landmark that is **not** in
+  `content/world/names/reserved.json`, so a re-seed could re-mint it onto other ground — the exact
+  failure that file exists to prevent. A4 keeps it by inheritance; `reserved.json` does not.
+- `content/zones/*.json` still has no `region`-vs-`spineId` relationship, and A4 adds none: the
+  fabric join and the spine join remain unrelated keys (carried forward from Task 9).
