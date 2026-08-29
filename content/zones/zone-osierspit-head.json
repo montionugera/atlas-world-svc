@@ -2,12 +2,12 @@
   "zone": "osierspit-head",
   "region": "c07/r01",
   "survey": "surveyed",
-  "reasonToGo": "Driftholt's crossing ground. The col and the saddle here are the only walked way between one coast of the island and the other, and the meadow that carries them is the widest on the landmass — 94.8 per cent of this region against 91.4 and 95.2 on the other two walked ones. A party comes over it for the grazing on either side, for what the marsh yields at the edges, and for the cut platform, which is the only stone this ground offers and the only stone on Driftholt that anyone has walked to.",
+  "reasonToGo": "Driftholt's crossing ground. The col here is the only one drawn on the island and the saddle beside it is one of two — the other stands on reported ground — so this is the only walked way between one coast and the other. A party comes over it for the grazing on either flank, for what the marsh yields at the edges, and for the cut platform, which is where this ground's stone is prised out.",
   "hazards": [
     {
       "id": "the-notch-wind",
       "name": "The notch wind",
-      "description": "Everything crossing the island is funnelled through one saddle and comes out of it at a pitch nothing on either coast prepares a party for. A crew caught in the notch with a load goes down and stays down until it drops, which is usually hours and occasionally a day.",
+      "description": "Everything crossing the island is funnelled through one saddle and comes out of it at a pitch nothing on either coast prepares a party for. A crew caught in the notch with a load goes down and stays down until it drops. The notch is under a kilometre end to end, which is the only reason that is survivable.",
       "effect": "stun"
     },
     {
@@ -22,26 +22,26 @@
       "id": "saddle-grain",
       "name": "Saddle grain",
       "kind": "crop",
-      "description": "Sown on the sheltered flanks either side of the col, where the meadow is deep and the notch wind goes over rather than through. It is the only tilled ground drawn on Driftholt and it feeds the crossing rather than any settlement, because there is no settlement on this region."
+      "description": "Sown on the sheltered flanks either side of the col, where the meadow is deep and the notch wind goes over rather than through. It feeds the crossing rather than any settlement: no village is drawn on this region, and the island's one village is two regions off."
     },
     {
       "id": "marsh-greens",
       "name": "Marsh greens",
       "kind": "forage",
-      "description": "Gathered off the marsh strip at the tidal flat and the estuary head, which is a twentieth of this ground and the whole of its green food. It is taken between tides and eaten the same day; nothing here keeps."
+      "description": "Gathered off the marsh strip at the tidal flat and the estuary head, a twentieth of this ground and the only part of it that yields without being sown or grazed. It is taken between tides and eaten the same day; nothing here keeps."
     },
     {
       "id": "platform-flag",
       "name": "Platform flag",
       "kind": "stone",
-      "description": "Levered off the cut platform where the sea has already loosened the bedding, and carried up whole. It is the only stone worked anywhere on Driftholt: the island draws no rock, no scree and no karst in any of its eight regions, so what is not prised off the platform does not exist."
+      "description": "Levered off the cut platform where the sea has already loosened the bedding, and carried up whole. The island draws no rock, no scree and no karst in any of its eight regions, so every stone worked on Driftholt comes off an old shoreline or a fallen apron — five such exposures across four of its regions, and this platform is one."
     }
   ],
   "landmarks": [
     {
       "id": "withyshallow-saddle",
       "name": "Withyshallow Saddle",
-      "description": "The notch through the ridge, and with the col below it the only crossing between Driftholt's two coasts that anyone has walked. It is bare, it is short, and in the wrong weather it is impassable for days at a time.",
+      "description": "The notch through the ridge, and with the col below it the only crossing between Driftholt's two coasts that anyone has walked. It is bare, it is under a kilometre end to end, and in the wrong weather it is impassable anyway.",
       "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     },
     {

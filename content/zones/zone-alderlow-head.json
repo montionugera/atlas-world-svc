@@ -2,7 +2,7 @@
   "zone": "alderlow-head",
   "region": "c09/r03",
   "survey": "surveyed",
-  "reasonToGo": "The only ground on Brightfall anyone has walked, and the only surveyed region in the whole world with a hand-pinned canon place standing on it — one of forty. The Leap is why hulls know the isle at all. What a party comes ashore for is behind it: the cloud forest, which is the majority of this region and the only forest on the isle that is not overtopped by bare rock, and the rock and scree the massif drops down the talus into reach.",
+  "reasonToGo": "The only ground on Brightfall anyone has walked, and the only surveyed region in the whole world with a hand-pinned canon place standing on it — one of forty. The Leap is why hulls know the isle at all. What a party comes ashore for is behind it: the cloud forest, which is the majority of this region and the only forest on the isle that is not overtopped by bare rock, and the broken rock the massif drops down the talus into reach.",
   "hazards": [
     {
       "id": "the-cloud-on-the-slope",
@@ -35,13 +35,13 @@
     {
       "id": "brightfall-leap",
       "name": "Brightfall Leap",
-      "description": "White water leaving the rock clear of the face and reaching the sea without touching it, from a little over five hundred metres up. The isle and the whole chain are named off it. It is the only canon place in the world that stands on ground the survey has actually walked.",
+      "description": "White water leaving the rock clear of the face and reaching the sea without touching it. The chain is named off it, and every account of it that reached a chart came by fog-sight or wreck-report; this is the first ground under it anyone has stood on. It is the only canon place in the world that stands on ground the survey has walked.",
       "source": "content/world/civil/pinned/c-lm-brightfall-leap.json"
     },
     {
       "id": "geo-between-sedgestrand",
       "name": "Geo between Sedgestrand",
-      "description": "The cleft below the wood, with the lagoon inside the bar behind it and the drowned valley running in past the stacks. It is the landing: everything cut on this region goes out through it, and there is no other way off the isle with a load.",
+      "description": "The cleft below the wood, with the lagoon inside the bar behind it and the drowned valley running in past the one stack. It is the landing. Everything cut on this region goes out through it, down off the talus and onto the water in one carry.",
       "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     }
   ]

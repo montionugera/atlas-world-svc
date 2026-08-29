@@ -2,18 +2,18 @@
   "zone": "sedgebar-roads",
   "region": "c06/r07",
   "survey": "surveyed",
-  "reasonToGo": "The river's last reach, and the only walked ground on Reedstrand that carries any river at all — 0.9 per cent of it here, 0.5 on one reported lobe, and nothing in the other six regions. The delta's single village stands on the levee above it. Below the levee the mangrove is cut for stakes, and outside the levee the reef and the drowned valley put enough on the shore to keep a salvage crew working between spates.",
+  "reasonToGo": "The river's last reach, and the only walked ground on Reedstrand that carries any river at all — 0.9 per cent of it here, 0.5 on one reported lobe, and nothing in the other six regions. The delta's single village stands on the river terrace above it. Below the terrace the mangrove is cut for stakes, and outside it the reef and the drowned valley put enough on the shore to keep a salvage crew working between spates.",
   "hazards": [
     {
       "id": "last-years-channel",
       "name": "Last year's channel",
-      "description": "The braid re-cuts itself every spate and the bar at the mouth moves with it. A loaded boat that takes the channel it took last season goes on the bar broadside to whatever swell is running, and the crews sound the mouth again after every flood for exactly this reason.",
+      "description": "The braid re-cuts itself every spate and the spit at the mouth moves with it. A loaded boat that takes the channel it took last season goes aground broadside to whatever swell is running, and a crew that has been away a winter sounds the mouth again before it trusts it.",
       "effect": "damage"
     },
     {
       "id": "the-oxbow-fever",
       "name": "The oxbow fever",
-      "description": "The cut-off bends behind the levee hold water the river has abandoned and the tide still reaches twice a month. It is neither fresh nor salt and it does not move. A crew that waters above the ford instead of at it is a crew short by the third week.",
+      "description": "The cut-off bends behind the scroll plain hold water the river has abandoned and the tide still reaches twice a month. It is neither fresh nor salt and it does not move. A crew that waters above the ford instead of at it is a crew short by the third week.",
       "effect": "poison"
     }
   ],
@@ -35,13 +35,13 @@
     {
       "id": "quillfall-reach",
       "name": "Quillfall Reach",
-      "description": "The last straight water above the braid, deep enough on a flood to bring a laden boat right up to the levee and shallow enough on the ebb to leave it there. The village on the bank above it is the only settlement drawn anywhere on Reedstrand.",
+      "description": "The last straight water above the braid, deep enough on a flood to bring a laden boat right up under the terrace and shallow enough on the ebb to leave it there. The village on the bank above it is the only settlement drawn anywhere on Reedstrand.",
       "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     },
     {
       "id": "stack-below-brightlobe",
       "name": "Stack below Brightlobe",
-      "description": "The seaward end of the reach, where the cut platform runs out under the reef and the drowned valley turns in behind it. Nothing stands off this shore; the mark is the line of broken water over the platform edge, which is visible from the levee and from nowhere further inland.",
+      "description": "The seaward end of the reach, where the cut platform runs out under the reef and the drowned valley turns in behind it. Nothing stands off this shore; the mark is the line of broken water over the platform edge, which is visible from the terrace and from nowhere further inland.",
       "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     }
   ]

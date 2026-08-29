@@ -1391,17 +1391,6 @@ test("every committed record joins to a SURVEYED fabric region, one apiece", () 
   // alphabetically against ascending region id — reproducible, stated, and
   // carrying no geographic claim. Task 11 Step 1 verifies the prose against the
   // new ground and owns any re-voicing.
-  // PLAN E TASK 14 — Z2 CLOSED, stated rather than implied. The literal list
-  // below is the corpus RATCHET: it fails when the corpus moves without a
-  // deliberate edit. This line is the CLOSURE: both sides are derived — the
-  // left from content/zones/, the right fresh from content/world/fabric/ — so
-  // it fails when the corpus and the ground DISAGREE, whatever the literal
-  // says. The two failure modes are different and neither subsumes the other
-  // once either half is edited, which is the whole reason a closure asserted
-  // only by the absence of a FAIL line is not asserted at all.
-  assert.deepEqual([...seen.keys()].sort(), [...surveyed].sort(),
-    "Z2 is not closed: the surveyed ground and the written records are not the same set");
-
   assert.deepEqual([...seen.keys()].sort(),
     ["c02/r01", "c02/r02", "c02/r08", "c02/r10", "c02/r14",
      "c02/r16", "c02/r21", "c02/r24", "c02/r28", "c02/r30",
@@ -1458,6 +1447,50 @@ test("every committed record joins to a SURVEYED fabric region, one apiece", () 
      "c08/r06", "c08/r08",
      "c09/r03",
      "c10/r01"]);
+});
+
+// PLAN E TASK 14 — Z2 CLOSED, in its own scope so it can actually be the
+// failing assertion.
+//
+// CODE REVIEW, MAJOR, and the reason this is a separate test. The first version
+// of this line sat at the end of "every committed record joins to a SURVEYED
+// fabric region, one apiece", AFTER that test had already asserted (1) the file
+// count equals the declared corpus, (2) `surveyed.size` equals SURVEYED_REGIONS
+// and (3) every record's region is in `surveyed`, no duplicates. Those three
+// ENTAIL set equality by pigeonhole, so the closure could never be the
+// assertion that fired: the reviewer swapped two survey flags in the fabric
+// (c02/r01 surveyed -> reported, c02/r11 the other way, count held at 40) and
+// the test redded on (3), never reaching it. My own mutation had "proved" it
+// only by stubbing (1) and (3) — by deleting the very assertions that entail
+// it, which proves nothing about the code as written. A rule that cannot fail
+// for its own reason is a defect (standing rule 3), so it moves rather than
+// being defended.
+//
+// Standing alone, both sides are derived — left from content/zones/, right
+// fresh from content/world/fabric/ — and nothing here constrains either first.
+// It is the only assertion in the suite that STATES the deliverable rather than
+// implying it from three other facts, and it names the offending regions.
+test("Z2 is closed in both directions: the surveyed ground and the written records are one set", () => {
+  const covered = readdirSync(join(ROOT, "content/zones"))
+    .filter((n) => /^zone-.+\.json$/.test(n))
+    .map((n) => JSON.parse(readFileSync(join(ROOT, "content/zones", n), "utf8")).region);
+
+  const surveyed = [];
+  const fabricDir = join(ROOT, "content/world/fabric");
+  for (const f of readdirSync(fabricDir).filter((n) => /^continent-\d+\.json$/.test(n)))
+    for (const region of JSON.parse(readFileSync(join(fabricDir, f), "utf8")).regions)
+      if (region.survey === "surveyed") surveyed.push(region.id);
+
+  // A floor first, for the reason every count in this file carries one: with
+  // content/zones/ absent both sides are [] and deepEqual passes, which is an
+  // absence of data published as a verdict.
+  assert.ok(covered.length > 0 && surveyed.length > 0,
+    "one side of the closure is empty — this test proves nothing on this tree");
+
+  const missing = surveyed.filter((r) => !covered.includes(r)).sort();
+  const extra = covered.filter((r) => !surveyed.includes(r)).sort();
+  assert.deepEqual({ missing, extra }, { missing: [], extra: [] },
+    "Z2 is not closed: surveyed ground with no record, or a record off surveyed ground");
 });
 
 // ─── the two findings of the adversarial review of c4d59c7 ─────────────────

@@ -2,12 +2,12 @@
   "zone": "emberburn-cone",
   "region": "c10/r01",
   "survey": "surveyed",
-  "reasonToGo": "The one region of the arc anybody walks, and the reason is in the shares: 55.9 per cent ash against 48.6 and 48.7 on the two reported regions, and 16.9 per cent lava against 22.9 and 20.3. Ash is a depositional plain a loaded party crosses at a walk. Lava is a broken flow field that is not crossed at any pace. This region carries the most of the first and the least of the second, and it is the only ground in the world where the cinder cone, the ash plain, the tube and the pahoehoe field are drawn at all — one instance of each, all of them here.",
+  "reasonToGo": "The one region of the arc anybody walks, and the reason is in the shares: 55.9 per cent ash against 48.6 and 48.7 on the two reported regions, and 16.9 per cent lava against 22.9 and 20.3. Ash is a depositional plain a loaded party crosses at a walk. Lava is a broken flow field that is not crossed at any pace. This region carries the most of the first and the least of the second, and it is the only ground in the world where the fabric draws a cinder cone, an ash plain, a lava tube or a pahoehoe field at all — one of each, all of them here.",
   "hazards": [
     {
       "id": "the-flow-fields",
       "name": "The flow fields",
-      "description": "The two lava fields between the ash plains are not slow going, they are no going: broken block that turns an ankle every third step and opens boot leather in a morning. A sixth of this region is under them and a route that touches one is a route that has failed.",
+      "description": "The two lava fields either side of the ash plain are not slow going, they are no going. One is broken block that turns an ankle every third step and opens boot leather in a morning; the other is smooth crust, which is worse, being thin in places over voids nobody has sounded. A sixth of this region is under them and a route that touches one is a route that has failed.",
       "effect": "damage"
     },
     {
@@ -41,7 +41,7 @@
     {
       "id": "tube-within-regspar",
       "name": "Tube within Regspar",
-      "description": "The open mouth of the only lava tube drawn anywhere in the world, walked in for as far as the roof holds and no further by anyone who has come back. It is out of the wind and out of the gas, which is why it is used, and it is under the flow field, which is why it is not trusted.",
+      "description": "The open mouth of the only lava tube drawn anywhere in the world, walked in for as far as the roof holds and no further by anyone who has come back. It is the one the fabric draws as ground; the delved halls that carry the name on five other landmasses are somebody's workings, not this. It is out of the wind and out of the gas, which is why it is used, and it is under the flow field, which is why it is not trusted.",
       "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     }
   ]

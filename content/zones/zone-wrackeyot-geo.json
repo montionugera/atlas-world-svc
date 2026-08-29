@@ -2,7 +2,7 @@
   "zone": "wrackeyot-geo",
   "region": "c06/r08",
   "survey": "surveyed",
-  "reasonToGo": "The one lobe of the delta that carries all three of the things Reedstrand lives on at once: open meadow to sow, five mires to cut, and standing wet wood. The swamp forest and the carr here are the only carr drawn off Wealdmarch — four of the world's five stand in the basin and the fifth is this one — so the timber worked on this ground has no substitute anywhere else on the landmass.",
+  "reasonToGo": "The one lobe anyone has WALKED that carries all three of the things Reedstrand lives on at once — c06/r05 carries the same three and nobody has set foot on it: open meadow to sow, six mires to cut, and standing wet wood. The swamp forest and the carr here are the only carr drawn off Wealdmarch — four of the world's five stand in the basin and the fifth is this one — so the timber worked here is the only carr-wood on the delta that has been reached.",
   "hazards": [
     {
       "id": "the-holed-shelf",
@@ -13,7 +13,7 @@
     {
       "id": "the-floating-mat",
       "name": "The floating mat",
-      "description": "The largest of the mires is not ground at all but a mat of root and moss grown across open water, and it looks from a distance exactly like the quaking bog beside it, which will at least hold for a step. There is no mark on either and no way to tell them apart from the bank.",
+      "description": "One of the mires is not ground at all but a mat of root and moss grown across open water, and it looks from a distance exactly like the quaking bog beside it, which will at least hold for a step. There is no mark on either and no way to tell them apart from the bank.",
       "effect": "damage"
     }
   ],
@@ -22,19 +22,19 @@
       "id": "lobe-grain",
       "name": "Lobe grain",
       "kind": "crop",
-      "description": "Sown broadcast on the meadow between the mires, which is five-sixths of this ground and the largest continuous sowing on the delta. It is reaped early and always wet: there is nowhere on the lobe high enough to stook a sheaf, so the crop is carried green to the drying stacks on the terrace."
+      "description": "Sown broadcast on the meadow between the mires, which is five-sixths of this ground — though the delta's five reported lobes each carry three times the meadow this one does, and nobody has walked any of them. It is reaped early and always wet: there is nowhere on the lobe high enough to stook a sheaf, so the crop is carried green to the drying stacks on the terrace."
     },
     {
       "id": "hag-peat",
       "name": "Hag peat",
       "kind": "fuel",
-      "description": "Cut out of the peat hag and the two raised bogs, dried on the terrace beside the grain and burned in the same hearths. Five separate mires stand on this one region and no two of them cut the same: the crews name the bank a turf came out of when they sell it."
+      "description": "Cut out of the peat hag, the raised bog and the quaking bog, dried on the terrace beside the grain and burned in the same hearths. Six separate mires stand on this one region and no two of them cut the same: the crews name the bank a turf came out of when they sell it."
     },
     {
       "id": "carr-poles",
       "name": "Carr poles",
       "kind": "timber",
-      "description": "Alder and sallow off the swamp forest and the carr, cut standing in water and floated out rather than carried. It is the only wood grown on Reedstrand that is not mangrove, and it is what every hurdle, creel and roof frame on the delta is made of."
+      "description": "Alder and sallow off the swamp forest and the carr, cut standing in water and floated out rather than carried. It is the only wood anyone has walked to on Reedstrand that is not mangrove — one further stand is drawn on the delta and it is reported ground — and it is what every hurdle, creel and roof frame here is made of."
     }
   ],
   "landmarks": [

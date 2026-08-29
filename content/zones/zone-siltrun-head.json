@@ -2,18 +2,18 @@
   "zone": "siltrun-head",
   "region": "c06/r06",
   "survey": "surveyed",
-  "reasonToGo": "Turf that burns and water that is not salt, on ground that carries no stone whatever. Reedstrand's eight regions draw no rock, no scree and no karst between them, so nothing here can be quarried and nothing built on a footing; what the head does have is peat in four separate mires and a spring line at the back of the fen. One region borders this one and no road is drawn anywhere on the landmass, so a crew comes in off the water, cuts, and goes back out the way it came.",
+  "reasonToGo": "Turf that burns and water that is not salt. Reedstrand's eight regions draw no rock, no scree and no karst between them, so the only stone on this head is what the sea has broken off its own platform and laid along the raised beach — and there is nowhere near enough of it to quarry. What the head does have is peat in four separate mires and a spring line at the back of the fen. One region borders this one and no road is drawn anywhere on the landmass, so a crew comes in off the water, cuts, and goes back out the way it came.",
   "hazards": [
     {
       "id": "the-quaking-crust",
       "name": "The quaking crust",
-      "description": "Two of the mires here are raised bog and a third is a blanket laid over the whole back of the head. The crust carries a loaded barrow in a dry month and will not carry a man in a wet one, and what is under it is water to the depth of the peat, which nobody has sounded.",
+      "description": "One of the mires here is raised bog and another is a blanket laid over the whole back of the head. The crust carries a loaded barrow in a dry month and will not carry a man in a wet one, and what is under it is water to the depth of the peat, which nobody has sounded.",
       "effect": "damage"
     },
     {
       "id": "nothing-to-found-on",
       "name": "Nothing to found on",
-      "description": "There is no rock on this ground to set a wall or a hearth on, and none anywhere on Reedstrand to bring in. A camp here stands on cut turf over peat, it settles unevenly through a season, and what a winter gale lifts off it does not come back.",
+      "description": "What the beach gives is loose slab off a broken platform, and there is no bedrock under any of it — none anywhere on Reedstrand to bring in either. A camp here stands on cut turf over peat, it settles unevenly through a season, and what a winter gale lifts off it does not come back.",
       "note": "Absence hazard: the harm is the missing bedrock. Nothing in the runtime enum expresses ground that will not bear a footing."
     }
   ],
