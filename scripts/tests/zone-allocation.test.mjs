@@ -216,9 +216,10 @@ test("a record written for a DERIVED row must agree with the table, not replace 
   // six Coldreach records out of content/zones/ left this suite at 33 pass / 0
   // fail and `--check` still printing "A4 matches the fabric". The whole payload
   // of the task could vanish and its own gate would stay green. Task 12 raised it
-  // to 13 (Stonemoor's seven, re-proven by the same mutation); Tasks 13-14 raise
-  // it again, the same way the record count in zone-content.test.mjs does.
-  assert.equal(written.length, 13,
+  // to 13 (Stonemoor's seven, re-proven by the same mutation), Task 13 to 20
+  // (Thirstwold's seven); Task 14 raises it again, the same way the record count
+  // in zone-content.test.mjs does.
+  assert.equal(written.length, 20,
     "the number of records written for derived rows moved — say so here, or an empty loop reports success");
   for (const c of written) {
     const row = byZone.get(c.zone);

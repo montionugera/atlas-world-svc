@@ -1,0 +1,48 @@
+{
+  "zone": "thirstreach-pan",
+  "region": "c05/r06",
+  "survey": "surveyed",
+  "reasonToGo": "Nothing at all was charted here. Of the forty regions the survey has walked this is the only one that carries not one landform on the sheet, and no road on Thirstwold comes onto it or onto either of the two regions it touches. Parties cross it for the floor under the sand: lag the wind has swept clean of everything finer, already sorted and already graded, and the biggest stones standing in that lag, which are picked up rather than dug.",
+  "hazards": [
+    {
+      "id": "the-open-floor",
+      "name": "The open floor",
+      "description": "A hundred and sixty square kilometres with nothing standing up on it. There is no shade at any hour on any part of this ground, and a party that has not brought cloth to sit under sits in the sun from the time it arrives until the time it leaves.",
+      "effect": "burn"
+    },
+    {
+      "id": "nothing-to-steer-by",
+      "name": "Nothing to steer by",
+      "description": "Every other ground on the landmass gives a party something to take a line off — a ridge, a scarp, a bed, a dune front. This one gives nothing, in any direction, and a party that is off its line has no way of learning that it is off its line until it runs out of days.",
+      "note": "Absence hazard: the harm is the landmark that is not there. Nothing in the runtime enum expresses ground with no feature in it."
+    }
+  ],
+  "resources": [
+    {
+      "id": "lag-gravel",
+      "name": "Lag gravel",
+      "kind": "stone",
+      "description": "The stone floor the wind leaves behind when it takes the sand off it. It comes up already sorted and already graded, so it is shovelled into sacks and carried whole, and no part of the work is quarrying."
+    },
+    {
+      "id": "faceted-cobble",
+      "name": "Faceted cobble",
+      "kind": "stone",
+      "description": "The largest stones in the same lag, cut to two and three flat faces by sand that has been going over them one direction for a long time. There is no field of them on the sheet and no seam to work; they are picked out one at a time by whoever is walking, and sold for the edges the wind put on them."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "searcone-waste",
+      "name": "Searcone Waste",
+      "description": "Not a feature — the western half of the crossing, which is sand deep enough to take a boot to the ankle and holds nothing else at all. It has a name because a party has to be able to say which half of the ground it is standing on.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "barchan-of-the-pumicwater",
+      "name": "Barchan of the Pumicwater",
+      "description": "The eastern half, where the sand thins off the stone floor and a laden sledge can be dragged instead of carried. The two names divide the whole region between them, and neither of them stands for anything standing up.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

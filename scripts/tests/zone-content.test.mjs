@@ -47,6 +47,12 @@ const STONEMOOR_ZONE_IDS = [
   "limepot-sink", "clintlack-fenster", "flaggrike-geo",
 ];
 
+// PLAN E TASK 13. Thirstwold's seven, on the same terms again.
+const THIRSTWOLD_ZONE_IDS = [
+  "thirstreach-pan", "charwaste-race", "siroccvent-reach", "yardburn-confluence",
+  "thirstvent-pan", "regflat-waste", "barchanburn-reach",
+];
+
 /**
  * Every record written for a DERIVED A4 row — everything after the redraw.
  * This is the CORPUS RATCHET and nothing else: it feeds COMMITTED_ZONE_IDS,
@@ -59,7 +65,7 @@ const STONEMOOR_ZONE_IDS = [
  * the rule while the corpus stays whole. Measured by the code review — seven
  * records dropped out of the citation rule at 77 pass / 0 fail.
  */
-const POST_REDRAW_ZONE_IDS = [...COLDREACH_ZONE_IDS, ...STONEMOOR_ZONE_IDS];
+const POST_REDRAW_ZONE_IDS = [...COLDREACH_ZONE_IDS, ...STONEMOOR_ZONE_IDS, ...THIRSTWOLD_ZONE_IDS];
 
 /**
  * The post-redraw records DERIVED from the data: every committed record whose
@@ -71,7 +77,7 @@ const postRedrawRecords = () => {
   return committedRecords({ root: ROOT }).map((c) => c.zone).filter((z) => !legacy.has(z)).sort();
 };
 
-/** Every record content/zones/ is supposed to hold today. Tasks 13-14 raise it. */
+/** Every record content/zones/ is supposed to hold today. Task 14 raises it. */
 const COMMITTED_ZONE_IDS = [...ZONE_IDS, ...POST_REDRAW_ZONE_IDS];
 
 // Real levelBands from content/maps/cluster1-geography.json#zones. No Z-rule
@@ -1375,7 +1381,21 @@ test("every committed record joins to a SURVEYED fabric region, one apiece", () 
      // landmark citations to A2-wider-world.md#3 and to the resolved continent,
      // neither of which carries the names — the citation rule below reds on
      // both, which is what STATE section 28 predicted.
-     "c04/r01", "c04/r07", "c04/r12", "c04/r15", "c04/r19", "c04/r25", "c04/r28"]);
+     "c04/r01", "c04/r07", "c04/r12", "c04/r15", "c04/r19", "c04/r25", "c04/r28",
+     // TASK 13. Thirstwold's seven, derived the same way — A4 rows c05/r06,
+     // r15, r17, r20, r21, r23 and r28. The plan's Task 13 text is stale in the
+     // same FOUR ways Task 12's was, and A4 is the authority in all four:
+     // (a) it names rows c05/r01-r07, but c05/r01-r05 and r07 are all REPORTED
+     // ground and Z2 fails a record on any of them; (b) its seven zone slugs are
+     // invented, and one of them — `one-wet-strip` — re-mints the reserved canon
+     // name "The One Wet Strip", which stands on c05/r10, a reported region;
+     // (c) five of its records take `timber`, `fuel` or `forage`, and the licence
+     // gate asserts outright that Thirstwold licenses none of the three — measured
+     // per region, the seven license {crop, ore, stone, water, salvage} at most;
+     // and (d) it routes every landmark citation to content/world/resolved/
+     // continent-05.json, which carries the GROUND but not the NAMES — grep
+     // returns 0 for all fourteen, and the citation rule below reds on it.
+     "c05/r06", "c05/r15", "c05/r17", "c05/r20", "c05/r21", "c05/r23", "c05/r28"]);
 });
 
 // ─── the two findings of the adversarial review of c4d59c7 ─────────────────
@@ -1473,7 +1493,7 @@ test("every landmark source is a real file, and for records written after the re
       checked++;
     }
   }
-  assert.equal(checked, 26, "the post-redraw record set moved — this floor must move with it");
+  assert.equal(checked, 40, "the post-redraw record set moved — this floor must move with it");
 
   // The legacy ten: measured debt, in both directions.
   const broken = [];
