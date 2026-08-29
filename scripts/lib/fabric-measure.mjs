@@ -18,6 +18,25 @@
 // no survey filter applied (see survey.mjs) — so "world" is a hard 160, not
 // "whatever happens to be walked".
 //
+// THE SIDE DOOR (review round 1, F1) AND WHY IT IS NOW CLOSED TOO. Closing
+// the `population` front door does not by itself stop the exact bug this
+// helper exists to prevent, because `measure` accepts an arbitrary function:
+// `measure: r => r.survey === "surveyed" ? v : NaN, population: "world"`
+// walks in through `measure` instead, and the old code silently dropped every
+// non-finite value from `ranked` — so it reported `regionCount: 160` while
+// quietly ranking only the 40 surveyed ones, which is WORSE than not having
+// the helper: the output looks whole-corpus but isn't. `measure` cannot be
+// restricted to something that can't compute this (any per-region function
+// is, in general, Turing-complete enough to encode a filter), so the fix is
+// not to forbid it but to make a drop impossible to have silently: every
+// region a measure fails to resolve to a finite number is counted as
+// `unmeasured`, and `unmeasured > 0` always raises an entry in `problems`
+// naming the count and the population — so a caller can no longer read
+// `regionCount: 160` as "we looked at all 160" while `ranked` quietly
+// answers for 40. This does not forbid legitimate sparse measures (e.g.
+// `biomeShares.bramble` on a region with no bramble) — it makes their
+// sparseness visible instead of indistinguishable from a hidden filter.
+//
 // WHAT THIS HELPER CANNOT SEE — the sixth absence-trap form, encoded rather
 // than papered over. The fabric (`content/world/fabric/*.json`) is the
 // GENERATOR's output: terrain, biome shares, roads, region polygons. It is
@@ -116,6 +135,7 @@ function regionsForPopulation({ population, index }) {
  *   population: string, measure: string, regionCount: number,
  *   ranked: {region: string, value: number}[],
  *   top: {region: string, value: number}|null,
+ *   unmeasured: number,
  *   problems: string[], fabricOnly: readonly string[]
  * }}
  */
@@ -129,10 +149,23 @@ export function measureOverWholeFabric({ contentRoot, measure, population }) {
     : (region) => safeGet(region, measure);
   const measureLabel = typeof measure === "function" ? "<function>" : measure;
 
-  const ranked = regions
-    .map((r) => ({ region: r.id, value: measureFn(r) }))
+  const resolved = regions.map((r) => ({ region: r.id, value: measureFn(r) }));
+  const ranked = resolved
     .filter((entry) => typeof entry.value === "number" && Number.isFinite(entry.value))
     .sort((a, b) => (b.value - a.value) || a.region.localeCompare(b.region));
+  const unmeasured = resolved.length - ranked.length;
+
+  // F1 fix (review round 1): a drop must never be silent. `regionCount` says
+  // how big the population is; `ranked.length` can legitimately be smaller
+  // (a sparse measure), but the gap between them must always be named here —
+  // never just inferable by a caller doing `regionCount - ranked.length`
+  // themselves, which is exactly the step nobody did before this review.
+  if (unmeasured > 0)
+    allProblems.push(
+      `fabric-measure: ${unmeasured} of ${resolved.length} region(s) in population "${population}" ` +
+      `had no finite numeric value for measure "${measureLabel}" and were excluded from ranking — ` +
+      `if this measure is a function, verify it is not implementing a survey (or other) filter ` +
+      `through the back door`);
 
   return {
     population,
@@ -140,6 +173,7 @@ export function measureOverWholeFabric({ contentRoot, measure, population }) {
     regionCount: regions.length,
     ranked,
     top: ranked[0] ?? null,
+    unmeasured,
     problems: allProblems,
     fabricOnly: FABRIC_BLIND_SPOTS,
   };

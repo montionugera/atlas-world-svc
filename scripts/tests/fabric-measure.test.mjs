@@ -91,13 +91,37 @@ test("measure accepts a function as well as a dotted path", () => {
   assert.deepEqual(result.ranked.map((r) => r.value).sort((a, b) => a - b), [20, 40]);
 });
 
-test("regions missing the measured field are excluded from ranking but still counted in regionCount", () => {
+test("regions missing the measured field are excluded from ranking but VISIBLY, via unmeasured + a problem", () => {
   const contentRoot = fixtureRoot();
   // c02's regions carry no biomeShares at all in this fixture.
   const result = measureOverWholeFabric({ contentRoot, measure: "biomeShares.bramble", population: "landmass:c02" });
   assert.equal(result.regionCount, 2);
   assert.deepEqual(result.ranked, []);
   assert.equal(result.top, null);
+  // F1 fix (review round 1): the gap between regionCount and ranked.length
+  // must be a named number and a named problem, not something a caller has
+  // to notice by subtracting themselves.
+  assert.equal(result.unmeasured, 2);
+  assert.match(result.problems.join("\n"),
+    /2 of 2 region\(s\) in population "landmass:c02" had no finite numeric value/);
+});
+
+test("F1 REGRESSION (review round 1) — the reviewer's exact probe: a function measure " +
+  "encoding a survey filter no longer reports a clean whole-corpus result", () => {
+  const contentRoot = new URL("../../content", import.meta.url).pathname;
+  const result = measureOverWholeFabric({
+    contentRoot,
+    measure: (r) => (r.survey === "surveyed" ? 1 : NaN),
+    population: "world",
+  });
+  // Before the fix this returned regionCount:160, ranked.length:40,
+  // problems:[] — a whole-corpus claim silently answered by 40 regions.
+  assert.equal(result.regionCount, 160);
+  assert.equal(result.ranked.length, 40);
+  assert.equal(result.unmeasured, 120, "the 120 dropped (reported) regions must be counted");
+  assert.match(result.problems.join("\n"),
+    /120 of 160 region\(s\) in population "world" had no finite numeric value/,
+    "the drop must be named in problems, not just inferable from regionCount - ranked.length");
 });
 
 test("every result carries the fabric-blind-spot caveat, naming the measured lava-tube count", () => {

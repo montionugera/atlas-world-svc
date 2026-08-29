@@ -109,3 +109,23 @@ test("an unreadable zone file is named as a problem and does not throw", () => {
   assert.equal(result.problems.length, 1);
   assert.match(result.problems[0], /zone-broken\.json is unreadable or invalid JSON/);
 });
+
+test("F2 fix (review round 1): MARKER_RE now catches the widened superlative family", () => {
+  for (const word of ["thinnest", "longest", "highest", "steepest"])
+    assert.ok(MARKER_RE.test(`This is the ${word} ground on the whole landmass.`),
+      `MARKER_RE must match "${word}"`);
+});
+
+test("F2 fix (review round 1): MARKER_RE now catches never/none negative-existence", () => {
+  assert.ok(MARKER_RE.test("None of the other regions carry this ore."));
+  assert.ok(MARKER_RE.test("Never once has the flood reached this high before."));
+});
+
+test("F2 REGRESSION (review round 1) — the reviewer's named live archetype: " +
+  "zone-brightreef-geo's 'thinnest ground' sentence must trip tier 1 (and tier 2)", () => {
+  const contentRoot = new URL("../../content", import.meta.url).pathname;
+  const result = censusAbsenceTrap({ contentRoot });
+  const hit = result.trippedSentences.find((t) =>
+    t.zone === "brightreef-geo" && /thinnest ground the survey has walked/.test(t.sentence));
+  assert.ok(hit, "the 'thinnest ground' sentence in zone-brightreef-geo must now be tripped");
+});

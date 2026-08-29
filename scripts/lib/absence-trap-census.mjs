@@ -66,8 +66,20 @@ export function zoneFiles({ contentRoot }) {
 // negative existence, and superlative/first-last claims. Deliberately loose:
 // its job (per the design) is to catch every archetype, at the cost of also
 // catching plenty of ordinary sequencing prose ("it takes a boot first").
+//
+// WIDENED (review round 1, F2). The reviewer verified live that this list
+// missed a whole superlative family the corpus actually uses — "thinnest",
+// "longest", "highest", "steepest" — plus the negative-existence pair
+// "never"/"none", and named a genuine archetype this dropped:
+// zone-brightreef-geo's "The thinnest ground the survey has walked on
+// Driftholt...". Added below. "never"/"none" are common enough in ordinary
+// local negation ("never let out", "carries none") that tier 1 (already
+// documented as deliberately noisy) will over-trigger on them more than on
+// the other markers — that noise is tier 1's known job; SCOPE_RE is what is
+// supposed to filter it back out for tier 2, and Step 1's report attributes
+// the resulting count change explicitly rather than publishing one number.
 export const MARKER_RE =
-  /\b(the\s+only|only\s+(?:ground|forest|walked|surveyed|canon|region|isle|place|reason|route|road|way|water|reliable)|solely|\bsole\b|no\s+other|nowhere\s+else|nothing\s+else|nobody\s+else|not\s+a\s+single|every\s+other|the\s+first|the\s+last|largest|smallest|biggest|greatest|fewest|the\s+most|in\s+the\s+world|whole\s+world|entire\s+world)\b/i;
+  /\b(the\s+only|only\s+(?:ground|forest|walked|surveyed|canon|region|isle|place|reason|route|road|way|water|reliable)|solely|\bsole\b|no\s+other|nowhere\s+else|nothing\s+else|nobody\s+else|not\s+a\s+single|every\s+other|the\s+first|the\s+last|largest|smallest|biggest|greatest|fewest|thinnest|longest|highest|steepest|the\s+most|in\s+the\s+world|whole\s+world|entire\s+world|never|none)\b/i;
 
 // Tier 2 — "marker+scope": the marker sentence must ALSO name an explicit
 // whole-population scope, narrowing to genuine corpus-wide claims and
