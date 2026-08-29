@@ -217,7 +217,7 @@ test("a record written for a DERIVED row must agree with the table, not replace 
   // fail and `--check` still printing "A4 matches the fabric". The whole payload
   // of the task could vanish and its own gate would stay green. Tasks 12-14
   // raise this number, the same way the record count in zone-content.test.mjs does.
-  assert.equal(written.length, 6,
+  assert.equal(written.length, 13,
     "the number of records written for derived rows moved — say so here, or an empty loop reports success");
   for (const c of written) {
     const row = byZone.get(c.zone);

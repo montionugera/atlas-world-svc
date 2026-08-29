@@ -1,0 +1,54 @@
+{
+  "zone": "clintlack-fenster",
+  "region": "c04/r25",
+  "survey": "surveyed",
+  "reasonToGo": "Clintlack stands as high as Stonemoor goes, on the shore of the one enclosed sea the moor has, and at the far end of the eastern road — four stages of cart from the coast the ships use. That distance decides what leaves: garden ground on the river islands feeds the two villages rather than the port, and only the squarest slab and the best-picked ore are worth putting on a cart at all.",
+  "hazards": [
+    {
+      "id": "the-channel-behind",
+      "name": "The channel behind",
+      "description": "The river lays its load down in a fan of channels and does not keep any of them. A strip that was walked onto dry in the morning has moving water behind it by afternoon, carrying whatever the flood upstream has already picked up, and the people on it are on an island nobody made.",
+      "effect": "damage"
+    },
+    {
+      "id": "the-passage-fall",
+      "name": "The passage fall",
+      "description": "The roof of the workings under the tower comes away in plates along the bedding, without warning and without much noise. A plate the size of a door is enough to put a loaded man face down on the floor of a passage he then has to be dragged out of.",
+      "effect": "stun"
+    }
+  ],
+  "resources": [
+    {
+      "id": "island-garden",
+      "name": "Island garden",
+      "kind": "crop",
+      "description": "Worked in strips on the silt islands between the river's channels, between one flood and the next, and eaten by the two villages here rather than carted anywhere. What the road takes out is heavy; food is what stays."
+    },
+    {
+      "id": "clintlack-tower-ore",
+      "name": "Clintlack tower ore",
+      "kind": "ore",
+      "description": "Got from the workings under the limestone tower and picked over at the mouth until only the best of it goes in the basket, because everything loaded here is carried four stages before anyone will buy it."
+    },
+    {
+      "id": "carted-slab",
+      "name": "Carted slab",
+      "kind": "stone",
+      "description": "Split in flat slabs off the pavement beside the road and loaded onto the carts coming back up empty from the villages. A slab that will not lie flat in a cart is left where it was split, and the road is edged with them."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "paveshaft-geo",
+      "name": "Paveshaft Geo",
+      "description": "A slot the sea has cut back into the cliff along a weak seam, working further into the rock every winter and taking the ground above it as it goes. Carters walk their beasts past it rather than drive them.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "pot-at-limerake",
+      "name": "Pot at Limerake",
+      "description": "The hole a surface stream walks into on the high ground and does not come back out of. It is the last open water on the road east: beasts are watered above it and not again afterwards.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "zone": "limepot-sink",
+  "region": "c04/r19",
+  "survey": "surveyed",
+  "reasonToGo": "Limepot is the biggest sheet of bare split rock on Stonemoor and nobody lives on it. Parties come up onto it for two things and go straight back down: block stone levered out of the pavement along the run of the beds, and ore off the two limestone towers standing in it, which can be worked from the outside in daylight instead of from a shaft.",
+  "hazards": [
+    {
+      "id": "the-clint-leg",
+      "name": "The clint leg",
+      "description": "The pavement looks like a floor laid in blocks and it is not. The grooves between the blocks are deeper than a man is tall and are roofed over with grass and fern that will hold nothing, and a leg goes into one to the hip with the weight of a load still on the shoulders.",
+      "effect": "damage"
+    },
+    {
+      "id": "nobody-comes-up",
+      "name": "Nobody comes up",
+      "description": "There is no village on this ground and no road onto it, so nothing passes that is not a party that came here on purpose. A man who breaks a leg in the grooves is found by the people he walked in with or he is not found, and the walk out is a day whichever it is.",
+      "note": "Absence hazard: the harm is the traffic that is not there. Nothing in the runtime enum expresses ground nobody else has reason to cross."
+    }
+  ],
+  "resources": [
+    {
+      "id": "rake-blocks",
+      "name": "Rake blocks",
+      "kind": "stone",
+      "description": "Levered whole off the pavement along the one line where the beds run end to end, so a block comes up square without being cut. Every one of them leaves on a back or a sledge, because there is no road up here to put a cart on."
+    },
+    {
+      "id": "tower-ore",
+      "name": "Tower ore",
+      "kind": "ore",
+      "description": "Cut off the outsides of the two limestone stacks standing clear of the pavement, worked from staging pinned to the rock rather than from a shaft. What it costs is the carry: there is no road onto this ground, so every basket goes down on a back."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "shalesink-mere",
+      "name": "Shalesink Mere",
+      "description": "A wide flat-floored basin ringed by limestone that stands full to its own rim all winter and is dry ground all summer, with the same hard line round it in both seasons. Parties date their season by which of the two they find.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "stair-under-clintfell",
+      "name": "Stair under Clintfell",
+      "description": "A funnel in the pavement where the roof of something underneath came down, its sides stepping in broken beds to a hole at the bottom nobody has been down. Parties leave their gear at the lip of it and work outward, because it is the one thing on the sheet that is not more pavement.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

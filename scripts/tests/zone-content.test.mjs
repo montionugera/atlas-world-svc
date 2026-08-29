@@ -37,8 +37,21 @@ const COLDREACH_ZONE_IDS = [
   "driftway-confluence", "snowness-ford", "lodereach-race",
 ];
 
-/** Every record content/zones/ is supposed to hold today. Tasks 12-14 raise it. */
-const COMMITTED_ZONE_IDS = [...ZONE_IDS, ...COLDREACH_ZONE_IDS];
+// PLAN E TASK 12. Stonemoor's seven, on the same terms as Coldreach's six.
+const STONEMOOR_ZONE_IDS = [
+  "grikepot-head", "shalegill-fenster", "tarnmoor-stair", "grykefell-stack",
+  "limepot-sink", "clintlack-fenster", "flaggrike-geo",
+];
+
+/**
+ * Every record written for a DERIVED A4 row — i.e. everything after the redraw.
+ * The citation rule below applies to exactly this set; the legacy ten are
+ * measured debt, not fixed. Tasks 13-14 extend it.
+ */
+const POST_REDRAW_ZONE_IDS = [...COLDREACH_ZONE_IDS, ...STONEMOOR_ZONE_IDS];
+
+/** Every record content/zones/ is supposed to hold today. Tasks 13-14 raise it. */
+const COMMITTED_ZONE_IDS = [...ZONE_IDS, ...POST_REDRAW_ZONE_IDS];
 
 // Real levelBands from content/maps/cluster1-geography.json#zones. No Z-rule
 // reads them, but the fixture geography must be shaped like the real one.
@@ -293,8 +306,8 @@ test("every committed zone record validates against the committed schema", () =>
 // What replaces it is the half of exact cover that HAS landed, stated on the key
 // the join actually uses. The slug and the region id stay separate namespaces —
 // a record's `zone` is a name, its `region` is the join — and every record's
-// region is a zone the drawn world declares. Cover is still partial (16 of 40)
-// and the count is pinned, so Tasks 12-14 come back through here.
+// region is a zone the drawn world declares. Cover is still partial (23 of 40)
+// and the count is pinned, so Tasks 13-14 come back through here.
 test("every record joins the resolved world by REGION, and no slug has crept into the zone-id namespace", () => {
   const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
   assert.deepEqual(problems, []);
@@ -323,8 +336,8 @@ test("every record joins the resolved world by REGION, and no slug has crept int
   }
   const surveyedWorld = doc.zones.filter((z) => z.survey === "surveyed").map((z) => z.id);
   assert.equal(surveyedWorld.length, 40, "the resolved world no longer declares 40 surveyed zones");
-  assert.equal(covered.size, 16,
-    "the covered-region count moved — Tasks 12-14 raise it to 40 and must say so here");
+  assert.equal(covered.size, 23,
+    "the covered-region count moved — Tasks 13-14 raise it to 40 and must say so here");
   for (const id of covered)
     assert.ok(surveyedWorld.includes(id), `${id} is covered by a record but is not surveyed`);
 });
@@ -1279,11 +1292,11 @@ test("reachability: the schema must NOT ban survey \"reported\" — Z2 owns that
 
 test("every committed record joins to a SURVEYED fabric region, one apiece", () => {
   const files = readdirSync(join(ROOT, "content/zones")).filter((f) => /^zone-.+\.json$/.test(f));
-  // Plan E Task 11 has taken this from 10 to 16 (Wealdmarch's 10 verified,
-  // Coldreach's 6 written); Tasks 12-14 raise it to 40. Pinned rather than
-  // derived so growing the corpus is a deliberate edit here, exactly as the
-  // plan's own literal does.
-  assert.equal(files.length, 16);
+  // Plan E Task 11 took this from 10 to 16 (Wealdmarch's 10 verified,
+  // Coldreach's 6 written) and Task 12 to 23 (Stonemoor's 7); Tasks 13-14 raise
+  // it to 40. Pinned rather than derived so growing the corpus is a deliberate
+  // edit here, exactly as the plan's own literal does.
+  assert.equal(files.length, 23);
 
   // The fabric, read fresh — this is a cross-artifact assertion, not a re-read
   // of the same numbers from a second copy.
@@ -1322,7 +1335,12 @@ test("every committed record joins to a SURVEYED fabric region, one apiece", () 
      // its zone from the ground, and every kind in the record is licensed by
      // that region's own measured landforms and biomes. Unlike the ten above,
      // this half of the list carries a geographic claim.
-     "c03/r06", "c03/r10", "c03/r12", "c03/r15", "c03/r18", "c03/r22"]);
+     "c03/r06", "c03/r10", "c03/r12", "c03/r15", "c03/r18", "c03/r22",
+     // TASK 12. Stonemoor's seven, derived on the same terms — A4 rows
+     // c04/r01, r07, r12, r15, r19, r25 and r28. NOT the r01-r07 run the
+     // plan's Task 12 text names: the surveyed regions on c04 are not
+     // contiguous, and the table is the authority the record is checked against.
+     "c04/r01", "c04/r07", "c04/r12", "c04/r15", "c04/r19", "c04/r25", "c04/r28"]);
 });
 
 // ─── the two findings of the adversarial review of c4d59c7 ─────────────────
@@ -1404,9 +1422,9 @@ test("every landmark source is a real file, and for records written after the re
     return readFileSync(path, "utf8").toLowerCase().includes(name.trim().toLowerCase()) ? "ok" : "name-absent";
   };
 
-  // The six, and every record Tasks 12-14 add, must cite a doc that names them.
+  // Every record written for a derived row must cite a doc that names them.
   let checked = 0;
-  for (const id of COLDREACH_ZONE_IDS) {
+  for (const id of POST_REDRAW_ZONE_IDS) {
     const doc = JSON.parse(readFileSync(join(ROOT, `content/zones/zone-${id}.json`), "utf8"));
     for (const l of doc.landmarks) {
       assert.ok(l.source, `${id}: landmark "${l.name}" has no source`);
@@ -1415,7 +1433,7 @@ test("every landmark source is a real file, and for records written after the re
       checked++;
     }
   }
-  assert.equal(checked, 12, "the post-redraw record set moved — this floor must move with it");
+  assert.equal(checked, 26, "the post-redraw record set moved — this floor must move with it");
 
   // The legacy ten: measured debt, in both directions.
   const broken = [];

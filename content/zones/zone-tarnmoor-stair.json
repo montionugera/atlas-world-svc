@@ -1,0 +1,48 @@
+{
+  "zone": "tarnmoor-stair",
+  "region": "c04/r12",
+  "survey": "surveyed",
+  "reasonToGo": "Tarnmoor is the first ground the road out of the port reaches, and it is where the moor is farmed rather than worked: a flat-floored basin ringed by limestone, hay and grain for six months and a lake for the other six. The ore goes out on the same carts, picked off the rubble at the foot of the limestone tower instead of cut out of a passage, so it comes up in daylight while everything else on this road comes up on a line.",
+  "hazards": [
+    {
+      "id": "the-level-filling",
+      "name": "The level filling",
+      "description": "The basin does not flood from one end. It fills from underneath, everywhere at once and dead level, so there is no line of water to walk away from and no high side to make for. Carts left standing on the floor in autumn are found in spring, and the people who went back for them are not.",
+      "effect": "damage"
+    },
+    {
+      "id": "the-second-of-everything",
+      "name": "The second of everything",
+      "description": "There are two basins here, two towers, two fans of channels and two holes the water goes down, and each pair is alike enough that carters name them by which one the road is on. A party that takes the wrong one of a pair walks a day away from where it meant to be and does it with a full load.",
+      "note": "Absence hazard: the harm is the difference that is not there. Nothing in the runtime enum expresses ground that repeats itself."
+    }
+  ],
+  "resources": [
+    {
+      "id": "basin-grain",
+      "name": "Basin grain",
+      "kind": "crop",
+      "description": "Sown on the basin floor as the water goes off it and cut before the water comes back. The rest of this ground is bare rock split into blocks; a flooded basin is where the moor keeps what soil it has, and the whole crop is a race against the six dry months."
+    },
+    {
+      "id": "tower-foot-ore",
+      "name": "Tower-foot ore",
+      "kind": "ore",
+      "description": "Broken out of the rubble skirt at the base of the limestone tower, where the rock has already come down and only has to be picked over. It is poorer than anything cut from a passage and it is got standing up, which is why it is the ore the port actually sees."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "fenshaft-confluence",
+      "name": "Fenshaft Confluence",
+      "description": "The fan of shifting channels where the basin's water gives up and lays its load down, splitting into more arms every year and never keeping one of them. The road crosses it wherever the season allows and has never crossed it twice in the same place.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "sink-through-flagclint",
+      "name": "Sink through Flagclint",
+      "description": "The hole the basin's stream walks into and does not come out of. Everything the winter flood carries goes down it, which is why the villages drag its mouth clear each autumn and why the flood is worse in the years they do not.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}
