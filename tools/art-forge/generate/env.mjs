@@ -720,6 +720,8 @@ export async function generateEnv(
         type: "render",
         seed,
         hires: false,
+        control,
+        strength: control === "none" ? null : strength,
         briefHash: briefHash(rawBrief),
         out: path.relative(FORGE_DIR, baseResult.dest),
       });
@@ -754,6 +756,8 @@ export async function generateEnv(
         type: "render",
         seed,
         hires: true,
+        control,
+        strength: control === "none" ? null : strength,
         briefHash: briefHash(rawBrief),
         out: path.relative(FORGE_DIR, hiresResult.dest),
       });
