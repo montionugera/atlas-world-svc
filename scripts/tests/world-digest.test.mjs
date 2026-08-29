@@ -1,10 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { computeWorldDigest, checkWorldDigest, WORLD_DIGEST_INPUTS }
   from "../lib/world-digest.mjs";
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
 function scratch() {
   const dir = mkdtempSync(join(tmpdir(), "wdig-"));
@@ -73,4 +76,23 @@ test("checkWorldDigest names the layer that moved, not just the whole", () => {
 test("a matching digest yields no problems", () => {
   const a = { version: 1, inputs: { x: "sha256:1" }, digest: "sha256:aa" };
   assert.deepEqual(checkWorldDigest({ committed: a, computed: a }), []);
+});
+
+// ── wiring pin: a lock nobody checks is decoration ──────────────────────────
+// check_world_digest.mjs --check was already gated in Gate 2 (integration.sh)
+// and CI, but NOT Gate 1 (precheck.sh) — the check that runs on every ship.
+// commit f07dbe2 edited content/spine/nodes/n-atlas.json without re-baselining
+// the digest, and that failing gate passed five consecutive review gates
+// (batch tests, code review, content review, scoped re-review, simplify pass)
+// before being caught at final-green, several commits later — because none of
+// those reviews ran a repo-wide invariant. Pinned as a source assertion —
+// like scripts/tests/geometry-lock.test.mjs's integration.sh/ci.yml checks —
+// because the failure mode is a MISSING line, which only a text search can
+// catch.
+test("scripts/precheck.sh runs check_world_digest.mjs --check as its own Gate 1 section", () => {
+  const sh = readFileSync(join(ROOT, "scripts/precheck.sh"), "utf8");
+  assert.match(sh, /check_world_digest\.mjs["']?\s+--check/,
+    "precheck.sh never calls check_world_digest.mjs --check");
+  assert.match(sh, /run_section\s+"[^"]*world digest[^"]*"\s+world_digest/i,
+    "world_digest has no run_section line — it's defined but never invoked");
 });
