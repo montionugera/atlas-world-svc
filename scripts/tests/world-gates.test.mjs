@@ -241,7 +241,13 @@ test("the committed budgets file pins cellKm at 0.5 and the six loop stages", ()
     // generation: the frontier-reservation loop re-runs placement and P13,
     // and the pinned-water pass adds three whole-grid BFS sweeps (measured
     // ~8.2 s on the committed seed).
-    { stage: "generate",     budgetMs: 6000,  failMs: 12000 },
+    // F-051: added cpuFailMs — a second, CPU-time ceiling for the same stage
+    // (manifest.timings.cpuTotal), because Gate 2's 32-way concurrent fan-out
+    // inflates wall time under scheduling contention (measured 4.2x) while
+    // barely moving CPU time (measured <1.2x); see budgets.json's
+    // cpuFailMsWhy for the full measurement. failMs stays wall-clock on
+    // purpose and is unchanged.
+    { stage: "generate",     budgetMs: 6000,  failMs: 12000, cpuFailMs: 24000 },
     { stage: "join",         budgetMs: 2000,  failMs: 4000 },
     { stage: "gates",        budgetMs: 15000, failMs: 20000 },
     { stage: "sheets",       budgetMs: 5000,  failMs: 8000 },
