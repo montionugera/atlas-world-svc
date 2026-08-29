@@ -4443,3 +4443,109 @@ hazard ratio **18 of 49** unmapped, down from 16 of 35 · canon legs **7/7 insid
 **40 rows, matches** · scripts suite **1286/1286** · mapforge **786/786** · storybook **86/86** ·
 zone-content **77/77** · zone-allocation **33/33** · repro **OVERALL PASS** · `precheck.sh
 --no-install` **GATE 1 PASS**, 12 of 12 sections.
+
+### TASK 13 — Thirstwold's seven, and the plan's four stale literals a second time (2026-08-29)
+
+Seven records for the rain-shadow erg on A4's rows: `thirstreach-pan` (c05/r06),
+`charwaste-race` (r15), `siroccvent-reach` (r17), `yardburn-confluence` (r20),
+`thirstvent-pan` (r21), `regflat-waste` (r23), `barchanburn-reach` (r28).
+`content/zones/` **23 → 30**; `check_content --require-complete` **19 → 12 failures**, the seven
+`surveyed region … has no record` lines gone and the remaining twelve unchanged in kind (10 for
+Task 14's unwritten regions, plus `town-millcross` and `placement-thornveil`).
+
+**THE PLAN'S TASK 13 TEXT IS STALE IN THE SAME FOUR WAYS TASK 12's WAS**, measured, not assumed.
+(a) It names rows `c05/r01`–`r07`; the surveyed seven on Thirstwold are r06, r15, r17, r20, r21, r23
+and r28, and `r01`–`r05` and `r07` are **reported**, which Z2 fails outright. (b) Its seven slugs are
+invented; A4 mints different ones, and one of the plan's — `one-wet-strip` — re-mints the reserved
+canon name **The One Wet Strip**, which stands on `c05/r10`, itself reported. (c) Five of its records
+take `timber`, `fuel` or `forage`, and the licence gate asserts outright that Thirstwold licenses
+**none of the three**; measured per region the seven license `{crop, ore, stone, water, salvage}` at
+most. (d) It routes every landmark citation at `content/world/resolved/continent-05.json`, which
+carries the ground but **not the names** — grep returns 0 for all fourteen, and all fourteen appear in
+`docs/worldbuilding/A4-zone-allocation.md` §5 and nowhere else. The plan was right that A2 must not be
+cited: **A2-wider-world.md never mentions Thirstwold at all.**
+
+**THE LICENCE, PER REGION, MEASURED.** r06 `{stone, salvage}` off 100 % desert and nothing else — no
+instances at all; r15 `{crop, stone, water, salvage}` off river 3.9 % + two fords + a spring; r17 adds
+`ore` off badland 38.3 %; r20 `{crop, stone, water, salvage}` with its water off a ford and a
+plunge-pool and **no river biome whatever**; r21 and r23 `{ore, stone, salvage}` off badland and
+desert with not one water-licensing landform between them; r28 `{crop, ore, stone, water, salvage}`
+off its spring and its ford. Every record's kind set is A4's exactly.
+
+**SUPERLATIVES PUBLISHED, each with its whole-fabric number.** `c05/r06` is **the only one of the 40
+surveyed regions carrying no landform at all** (5 of 160 regions are empty; r06 is the only surveyed
+one) and **no road point on Thirstwold falls in it or in either region it touches**; all **7** desert
+springs (`oasis-spring`) charted anywhere are on Thirstwold, **3** of them on surveyed ground;
+`c05/s04` is **the only settlement on the landmass with three roads** (degrees 3, 2, 1, 1, 1);
+`c05/r20` is **the only surveyed region on Thirstwold ending against another landmass** (3 of 28 c05
+regions touch `c08/r02`; the other two are reported, and the rings share vertices exactly at
+`[226, 322]`); r21's wadi at **15.72 km is the largest of the world's 8**, all 8 on Thirstwold, and the
+region carries **five water-shaped marks and no water**; r23's ridge-spine at **34.18 km is the longest
+of the world's 13**, and **3 of the world's 8 zeugen ridges** stand on it, all 8 on Thirstwold; r28
+carries **2 of the landmass's 5 settlements** — the only region that carries two — the world's
+**largest sand sea at 46.52 km of 11**, and the **only canyon on c05**, 1 of 7 in the world.
+
+**SIX CLAIMS DELETED OR RESCOPED BY THE CONTENT REVIEW, four of them false as written.**
+`thirstreach-pan`'s "every other ground **on the landmass**" was the absence trap inverted — an
+exclusivity reaching over the 21 reported regions nobody has walked, and `c05/r12` is empty too;
+rescoped to the surveyed set. `yardburn-confluence`'s "the east end of the landmass" is **fourth**
+by easting (r18 238, r12 237, r06 231.5 — its own sibling — r20 227); deleted. `barchanburn-reach`'s
+sand sea "on the west" has its centre **east** of the region centroid (155.25 vs 153.91); direction
+deleted. `regflat-waste`'s salt floor and stone pavement "through the middle" are both in the
+**east** (x[132.5,138] and x[128.5,138] against a region spanning x[121,136]); the three-part geography
+was rewritten to rock-west / sand-and-salt-east. Two were true but unclosable and went: "the only
+work on the landmass a person can do standing in one place all season" (refuted by this batch's own
+levee grain and bench barley) and "the only thing at this end of the road that pays to cart the whole
+sixty-three kilometres" (the same buyer has an identically-described cobble **28.3 km** away). Fixed
+by measurement: seven springs are seven **desert** springs (7 `spring-mire` exist on c02/c06/c07); the
+road degrees read s04=3, s03=2, s01=s02=s05=1; 45.50 of 63.36 km is **better than** two thirds, not
+two thirds; and the three zeugen ridges at [133.8,326.3], [126.3,325.3] and [128.8,334.8] **do not
+stand in a line**.
+
+**ONE DESERT SEVEN TIMES — caught and fixed.** `yardburn`'s flood hazard was `thirstvent`'s wadi
+flood a second time down to "nobody standing in it can see" and "bank to bank"; its scroll-plain
+landmark was `barchanburn`'s a second time; its cobble was `barchanburn`'s a third variant — all three
+off the generator's own glyph notes, which is where near-duplicate prose comes from on this
+programme. r20 now carries what only r20 has: the delta the channel gives up into, and stone that
+comes out of the well holes.
+
+**CODE — no MAJOR. 82 mutations run, zero stayed green.** The four moved literals each red in the
+direction they exist to catch (delete a record → content 70/7 and allocation 32/1; a stray eighth →
+73/4 and 32/1; a citation pointed at `continent-05.json` → 76/1 naming record, landmark and file). The
+citation rule's derived scope holds: with the hand-list narrowed **and** the cross-check stubbed it
+still covers all 20 derived records at `checked == 40` and still reds a broken citation. The 70-cell
+Z0–Z7 matrix (7 records × 10 rule breaks) reds every cell naming its record; the A4 agreement rule
+reds on region, kind set and landmark name; all 30 records byte-match
+`JSON.stringify(JSON.parse(raw), null, 2) + "\n"`. MINOR acted on: three unrelated `40`s had come to
+sit within one screen, so `SURVEYED_REGIONS` and `POST_REDRAW_LANDMARKS` now name the two in
+`zone-content.test.mjs` — both watched red first at 41 and 39 (76 pass / 1 fail each).
+
+**FILED, NOT CHASED.**
+
+- **A2 never mentions Thirstwold at all** — strictly worse than the Stonemoor case filed for Task 15.
+  Seven records of confident daily life now stand on a landmass the mariners' chart does not carry,
+  and none of them can cite it. `docs/worldbuilding/A2-wider-world.md:44` (§4 lists Driftholt,
+  Reedstrand and Brightfall and stops).
+- **Minted zone-landmark names are confusable with DRAWN landmark names in the same region.**
+  "Ford past Sabkhpan" (c05/r17) stands beside the drawn "Ford beyond Sabkhcone"; "Ford past
+  Fumewold" (c05/r28) beside the drawn "Ford under Dunesea" and "Emberwaste Confluence". `G-NAME-SOUND`
+  compares minted names against minted names; nothing compares them against the resolved world's own
+  `landmarks[].name`. `tools/mapforge/lib/name-gen.mjs`.
+- **The kind-set pool is shrinking and nothing prices it.** 30 records now hold pairwise-distinct sets
+  from an 8-kind enum, and `thirstreach-pan` took the first one-element set. Task 14's ten come out of
+  what is left. `scripts/check_content.mjs:1391` (the Z6 "Compared as a SET" block).
+- **`c05/r12` is a second 100 %-desert, zero-instance region.** It is reported, so no record is owed,
+  but `content/world/budgets.json`'s `poi.supplyLimitedSurveyedRegions` declaration covers only r06 —
+  if the survey ever reaches r12 the same G-POI floor fails with no declaration behind it.
+- **Dungeon names cross the landmass they sit on.** `dungeon-coldreach-arete-shelters` (c05/r17),
+  `dungeon-stonemoor-ponor-throat` (c05/r20) and `dungeon-meltwash-ice-caves` (c05/r15) carry other
+  landmasses' names on Thirstwold ground. `content/world/resolved/continent-05.json#dungeons`.
+- **`content/zones/*.json`'s `spineId` is still unset on all thirty** (carried forward from Tasks
+  9–12).
+- **`scripts/tests/geometry-exact.test.mjs` takes 460 s on its own** — 51 tests, all green
+  standalone, but it is most of the scripts suite's 488 s wall time and it reads nothing this
+  programme's content tasks touch. Worse, on this machine a whole-directory `node --test tests/*` run
+  **wedged twice with geometry-exact as the last live worker** and never wrote its summary (the
+  isolated workers all exited; the parent never finished). The suite completed normally once, at
+  1286/1286. Verification for this task was therefore taken as the 8 tests that read `content/zones`
+  (545/545) plus geometry-exact standalone (51/51). Worth a look before the suite grows again.
