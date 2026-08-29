@@ -1,0 +1,290 @@
+{
+  "criteria": "town-criteria",
+  "version": 1,
+  "updated": "2026-08-29",
+  "ownedBy": "town-canon-reviewer (see .claude/agents/town-canon-reviewer.md — Pass 1 canon, Pass 2 realism, Pass 3 anti-cliché)",
+  "purpose": "Machine-readable town criteria, authored from the 2026-08-29 Millcross tent-removal review (docs/worldbuilding/reviews/2026-08-29-millcross-tent-removal-and-criteria.md). Three consumers, all data-driven: (1) a future consistency test asserts plan files against `measured` + `towns.*.ratified`; (2) tools/art-forge/generate/prompt-lint.mjs merges `antiCliche.forbiddenVocabulary` into its token data (R2-style) and `towns.*.briefs.countBand` into its R4 count checks; (3) tools/art-forge/forge.config.json styleGuard merges the same vocabulary at generation time. Nothing in this file is prompt text; everything is lint/check data.",
+  "honestyRule": "Every rule carries `source`. Values tagged `canon:` or `measured:` cite their file and section; values tagged `owner-decision:` cite the date and the decision; values tagged `reviewer:` are authored by the town-canon-reviewer in this file and claim NO canon force — an INVENTED value claiming canon force is a VETO under the role's veto policy. Amend canon in canon files (A0/A1/A3, style.md), never here.",
+  "sourceKeys": {
+    "A1": "docs/worldbuilding/A1-geography-cluster1.md §6 (amended 2026-08-29, commit 6894e97)",
+    "A1-31": "docs/worldbuilding/A1-geography-cluster1.md §3.1 (exactly one cart ford)",
+    "A3": "docs/worldbuilding/A3-town-plans.md §1.1–§1.3 (measured floors, derivations shown)",
+    "STYLE": "content/story/style.md §3 (palettes, commitment C7)",
+    "ERA": "tools/art-forge/forge.config.json environment.styleGuard.era",
+    "ABP": "docs/worldbuilding/ABP-segment-control.md (mustNotShow, measured 2026-08-29)",
+    "OWNER-2026-08-29": "owner decisions of 2026-08-29: tent quarter removed from world truth (commit 6894e97); concept image derived from the town map — solid buildings, real roads, realistic-but-fantasy, not cliché; references Mondstadt/Genshin and Gludio/Lineage 2 as characteristics only, never as prompt text",
+    "REVIEWER": "town-canon-reviewer, authored 2026-08-29 with the criteria file (v1)"
+  },
+  "measured": [
+    {
+      "id": "road-width-floor-cart",
+      "kind": "min",
+      "appliesTo": "plan.roads[?(@.kind=='cart')].width",
+      "value": 12,
+      "source": "measured:A3 §1.2 — largest routed mob radius 5 → diameter 10 → 1u clearance each side",
+      "check": "every cart road width >= 12"
+    },
+    {
+      "id": "road-width-floor-foot",
+      "kind": "min",
+      "appliesTo": "plan.roads[?(@.kind=='foot')].width",
+      "value": 4,
+      "source": "measured:A3 §1.2 — player radius 1.3 → diameter 2.6 → ~0.7u clearance each side",
+      "check": "every foot road width >= 4"
+    },
+    {
+      "id": "foot-road-is-mob-free",
+      "kind": "invariant",
+      "appliesTo": "plan.roads[?(@.kind=='foot')]",
+      "value": "permanently mob-free by construction (A3 §1.3); any street a mob is routed down must be sized for that mob from the day it is drawn",
+      "source": "measured:A3 §1.3 (brambleDrake radius 5 = diameter 10 vs a 4u alley)",
+      "check": "no routing config may target a foot-kind road"
+    },
+    {
+      "id": "extent-band",
+      "kind": "range",
+      "appliesTo": "plan.extent.width|height",
+      "value": [150, 260],
+      "source": "measured:A3 §1.2 — D1: ~200u across = 10s at the measured 20 u/s; band is that figure with tolerance",
+      "check": "150 <= each axis <= 260"
+    },
+    {
+      "id": "footprint-shorter-side",
+      "kind": "min",
+      "appliesTo": "plan.footprints[].rect",
+      "value": 6,
+      "source": "measured:A3 §1.2 — a building narrower than a mob reads as a prop, not a mass",
+      "check": "min(rect width, rect height) >= 6"
+    },
+    {
+      "id": "mob-band-caveat",
+      "kind": "record",
+      "appliesTo": "road-width-floor-cart",
+      "value": "the 12u floor clears mob radius <= 5 only; doubleAttacker (8) and thorncrownDrake (9) exceed it and are not routed through towns — design §10 q3 open, recorded not resolved",
+      "source": "measured:A3 §1.2 corrections + §6 q3",
+      "check": null
+    }
+  ],
+  "towns": {
+    "millcross": {
+      "plan": "content/towns/town-millcross.json",
+      "ratified": [
+        {
+          "id": "wall-less",
+          "kind": "structural",
+          "value": "no wall, no gate footprint, no bounded core; footprints[].kind never takes a wall or gate value",
+          "source": "canon:A1 — \"A town with no wall and no plan\"; enforced by schema enum (town-plan.schema.json footprints[].kind)",
+          "check": "footprints[].kind intersect {wall, gate} == empty; no closed ring of footprints around a core"
+        },
+        {
+          "id": "no-tent-quarter",
+          "kind": "structural",
+          "value": "kind 'tent' does not exist in the plan or the schema enum; refugee tents are a temporary road-side story state (quests), never a built quarter",
+          "source": "owner-decision:OWNER-2026-08-29 (commit 6894e97 + reconciliation 4a0ee15)",
+          "check": "schema enum rejects 'tent'; scripts/tests/town-millcross.test.mjs asserts tents.length === 0 and a non-empty east bank"
+        },
+        {
+          "id": "exactly-one-two-storey",
+          "kind": "structural",
+          "value": "exactly one storeys:2 mass — mill-house — and it sits at the race; all other footprints storeys:1",
+          "source": "canon:A1 — \"one tall thing, the mill-wheel housing over the race, and everything else a single storey\"",
+          "check": "count(footprints[].storeys == 2) === 1 && that footprint.kind == 'mill' && adjacent to water kind 'race'"
+        },
+        {
+          "id": "road-widths-authored",
+          "kind": "values",
+          "value": { "cart": [14, 14, 12, 12], "foot": [6] },
+          "source": "measured:A3 §1.2 — floors 12/4 are derived; every value above the floor is authored (A3 §3.2)",
+          "check": "multiset of road widths per kind equals this value (update this rule whenever the plan's roads change — the rule pins the reviewed state)"
+        },
+        {
+          "id": "extent",
+          "kind": "values",
+          "value": { "width": 220, "height": 160 },
+          "source": "measured:A3 §3.2 — INVENTED, inside the 150–260 band and D1's ~200 across",
+          "check": "extent equals value"
+        },
+        {
+          "id": "palette",
+          "kind": "values",
+          "value": ["ash-grey", "rope-brown", "tallow-yellow"],
+          "source": "canon:STYLE (Millcross row) + A1 — taken unchanged, not re-invented (C7)",
+          "check": "brief prompt carries all three palette words; styleGuard rejects palettes not in style.md §3 for the named town"
+        },
+        {
+          "id": "layout-ribbon-sprawl",
+          "kind": "structural",
+          "value": "buildings strung along the roads out of the crossing (no plan, no market square centre), both banks carry building",
+          "source": "canon:A1 — \"built along both banks ... spilling ... up each road out of it\"",
+          "check": "every footprint's entranceOn road runs to the town edge (touches extent border) or the ford; no footprint cluster enclosing a plaza centre"
+        },
+        {
+          "id": "one-cart-crossing",
+          "kind": "structural",
+          "value": "exactly one cart crossing of the water; the three canon cart roads converge at the ford",
+          "source": "canon:A1-31 — \"fordable in a dozen places on foot, in exactly one by cart — that place is Millcross\"",
+          "check": "cart-kind road segments intersect water polys only within the ford landmark radius"
+        },
+        {
+          "id": "first-sight-cart-queue",
+          "kind": "structural",
+          "value": "exactly one firstSight landmark — cart-queue — placed out along the trunk road, west of the town proper",
+          "source": "canon:A1 — \"First thing a traveller sees: the cart queue\"",
+          "check": "T7 already enforces the count; add: the firstSight landmark lies outside the built cluster on the trunk road"
+        },
+        {
+          "id": "no-toll-house",
+          "kind": "structural",
+          "value": "no toll building, ever — canon says the tolls are refused formalisation",
+          "source": "canon:A1 — \"tolls it refuses to formalise\" (A3 §2 derivation)",
+          "check": "no footprint id/kind matches /toll/"
+        },
+        {
+          "id": "water-mill-not-wind",
+          "kind": "structural",
+          "value": "the mill is a water mill on the race; windmill sails are a mustNotShow",
+          "source": "canon:A1 (mill-wheel housing over the race) + ABP mustNotShow (windmill sails)",
+          "check": "brief mustNotShow includes windmill sails; antiCliche vocabulary flags 'windmill'"
+        }
+      ],
+      "briefs": {
+        "forbiddenPhrases": {
+          "id": "millcross-brief-forbidden-phrases",
+          "kind": "forbiddenTokens",
+          "appliesTo": "tools/art-forge/briefs/A1-ART-02.json prompt and any future Millcross brief",
+          "value": ["tidy rows", "neat rows", "planned streets", "town square", "market square", "grid of streets"],
+          "source": "reviewer:REVIEWER — canon:A1 \"no plan ... strung with no plan along the roads\"; the committed prompt's \"ranged in tidy rows\" (VETOED 2026-08-29, reviews/2026-08-29-millcross-tent-removal-and-criteria.md §V-1) is the planned-village register the canon sentence forbids, and prompt-lint's negation ban means the fix must be a positive no-plan wording, not \"not tidy\"",
+          "check": "prompt-lint R2 throws when any phrase appears in a Millcross positive prompt"
+        },
+        "countBand": {
+          "id": "brief-count-band",
+          "kind": "countBand",
+          "appliesTo": "tools/art-forge/briefs/*.json prompt + mustAssert",
+          "phraseToNumber": { "a dozen": 12, "a few dozen": 36, "handful": 5, "scores": 60 },
+          "tolerance": 2,
+          "currentCount": 11,
+          "source": "reviewer:REVIEWER — makes the owner-set \"a dozen structures\" wording (briefs/A1-ART-02.json, commit 6894e97) machine-checkable; |12 − 11| = 1 <= tolerance, so the wording PASSES as a bounded approximation, and any future footprint change must re-derive the phrase",
+          "check": "for each count phrase in a brief prompt: |phraseNumber − footprints.length| <= tolerance"
+        }
+      }
+    }
+  },
+  "realism": [
+    {
+      "id": "materials-by-economy",
+      "kind": "realism",
+      "appliesTo": "town briefs + plans",
+      "value": "every asserted building material must be producible by the town's stated economy and transport, or shippable by its own traffic (here: river + cart). Millcross local set: mill timber → frames, split shingle; river stone → footings; valley clay/lime → plaster; canvas only as the temporary road-side camp register",
+      "source": "reviewer:REVIEWER, grounded in canon:A1 amended material sentence — Pass 2 asks 'who ships shingle to a river-ford town?' and the amended §6 answers it (the timber rows are the mill's output)",
+      "check": "consistency test cross-references each brief material against the town's materials-by-economy list"
+    },
+    {
+      "id": "structure-not-decoration",
+      "kind": "realism",
+      "appliesTo": "town briefs",
+      "value": "timber frames on stone footings with plastered walls is STRUCTURE (canon); decorative storybook fachwerk patterns, gingerbread trim and exposed ornamental bracing are a forbidden REGISTER",
+      "source": "reviewer:REVIEWER — separates the structural fact the owner ratified from the cliché the owner rejected (realistic-but-fantasy, not cliché)",
+      "check": "prompt may contain 'timber-framed', 'plastered'; may not contain the antiCliche decoration vocabulary"
+    },
+    {
+      "id": "roof-climate-coherence",
+      "kind": "realism",
+      "appliesTo": "town briefs",
+      "value": "steep shingled roofs suit a river-valley rain/snow load; flag flat or tiled-roof clichés that carry no local warrant",
+      "source": "reviewer:REVIEWER — Pass 2 structural sanity",
+      "check": "brief roof words resolve to the town's material list"
+    },
+    {
+      "id": "silhouette-ownership",
+      "kind": "realism",
+      "appliesTo": "town briefs",
+      "value": "each town's silhouette is singular and non-transferable: Millcross = one horizontal low ribbon + one tall mill housing + chimney stacks; Embervale's forty smoke plumes and Norhollow's palisade line belong to those towns and must not migrate into a Millcross brief",
+      "source": "reviewer:REVIEWER, grounded in canon:A1 §6 silhouettes",
+      "check": "brief mustNotShow borrows the other towns' silhouette tokens (palisade, forty-smoke)"
+    },
+    {
+      "id": "map-derived-concept",
+      "kind": "realism",
+      "appliesTo": "concept-image pipeline",
+      "value": "the concept image is derived from the town map: footprints, roads, ford and race placement in the plan are the composition's source of truth; a render contradicting the map (town centre where the map has meadow, second tall mass, walled core) fails review even if the prompt was clean",
+      "source": "reviewer:REVIEWER, executing the owner direction of 2026-08-29 (derive the concept image from the town map; the freehand spike painted 'a camp, not a town' because nothing bound it to the map)",
+      "check": "map-accurate roll stage includes a plan-overlay comparison reviewed by the town-canon-reviewer"
+    }
+  ],
+  "antiCliche": {
+    "forbiddenVocabulary": {
+      "id": "town-brief-forbidden-vocabulary",
+      "kind": "forbiddenTokens",
+      "appliesTo": "town brief positive prompts (merged into prompt-lint R2 data and styleGuard at generation time; union with forge.config.json forbiddenTokens — do not duplicate that modern-contamination list here)",
+      "value": [
+        "storybook",
+        "fairytale",
+        "fairy-tale",
+        "quaint",
+        "whimsical",
+        "idyllic",
+        "charming",
+        "gingerbread",
+        "fachwerk",
+        "cobblestone",
+        "cobbled",
+        "windmill",
+        "windmills",
+        "castle",
+        "citadel",
+        "keep",
+        "rampart",
+        "ramparts",
+        "bastion",
+        "palisade",
+        "string lanterns",
+        "paper lanterns",
+        "lantern glow",
+        "magical glow",
+        "mystical glow",
+        "tavern sign",
+        "bunting",
+        "pennants",
+        "fantasy village",
+        "medieval village"
+      ],
+      "source": "reviewer:REVIEWER (Pass 3), each token grounded: storybook/quaint/gingerbread/fachwerk = storybook half-timbered-everything register; cobblestone = era law says rutted earth roads (ERA) + A1 'hard-packed earth roads'; windmill = canon water mill (ABP mustNotShow); castle/citadel/keep/rampart/bastion/palisade = wall-less Millcross and other towns' silhouettes; lanterns/glow/tavern sign/bunting = generic-fantasy defaults that erase the 'cheap light' register; fantasy/medieval village = the generic label that pastes over the specific town",
+      "note": "a cliché is a RECOMMENDATION unless it breaks a style law; these tokens are style-law breaks (era, palette, wall-less canon) or the owner's explicit not-cliché direction, which is why they are lint data and not advice",
+      "check": "prompt-lint R2 throws when any token appears in a composed positive prompt"
+    },
+    "referencePolicy": {
+      "id": "reference-characteristics-only",
+      "kind": "policy",
+      "value": {
+        "references": ["Mondstadt (Genshin Impact)", "Gludio (Lineage 2)"],
+        "allowedCharacteristics": [
+          "painted-realistic finish over readable large shapes",
+          "legible silhouette grammar (one dominant mass, clear secondary rhythm)",
+          "warm civic solidity — a place people maintain, not a ruin or a camp",
+          "a real approach road that composes the frame"
+        ],
+        "forbiddenCharacteristics": [
+          "their walls, towers and gates (Millcross is wall-less)",
+          "their windmills (canon water mill)",
+          "storybook pastels and glow (palette is ash-grey/rope-brown/tallow, cheap light)",
+          "clean fantasy-brochure weathering (era law: unpainted wood, mud, wear)"
+        ],
+        "neverPromptText": true
+      },
+      "source": "owner-decision:OWNER-2026-08-29 (named as characteristics only, never as prompt text) + REVIEWER split of allowed vs forbidden characteristics",
+      "check": "no proper noun from the references may appear in a prompt (prompt-lint R2 data); renders are reviewed against the allowed/forbidden characteristic lists, not token-matched"
+    }
+  },
+  "knownOpenItems": [
+    {
+      "id": "quarter-mile-prose",
+      "note": "A1 §6 'spilling a quarter-mile up each road out of it' is canon prose with no unit contract — plan units (u) and miles have no committed conversion, so no gate can enforce it; treated as silhouette direction (ribbon extent >> footprint size), not a measurement",
+      "source": "reviewer:REVIEWER"
+    },
+    {
+      "id": "gate-quest-contradiction",
+      "note": "quest-the-road-of-strangers 'Meet the road at the gate' contradicts wall-less Millcross — G5-class, open before this review, NOT closed silently by the tent removal (the removal only re-scoped the tents as temporary road-side state, which that quest's canvas wording can live inside)",
+      "source": "reviewer:REVIEWER per town-canon-reviewer mandate"
+    }
+  ]
+}
