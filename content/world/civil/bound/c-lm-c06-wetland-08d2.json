@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-wetland-08d2",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Sedgerun Fen",
+  "bind": {
+    "handle": "c06/wetland/h-3208d2",
+    "expect": {
+      "type": "mangrove-flat",
+      "sizeKm": [
+        1.99,
+        7.96
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A tangle of stilt roots standing in salt mud, impassable except by the tide channels.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#mangrove-flat.gloss"
+  },
+  "resolution": null
+}

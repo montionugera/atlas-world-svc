@@ -1,0 +1,305 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync, mkdtempSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { SHEETS, parseArgs } from "../render-sheet.mjs";
+import { inkStats } from "../lib/png-ink.mjs";
+import { acquireHeavyLock, releaseHeavyLock } from "./helpers/suite-lock.mjs";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const ROOT = resolve(HERE, "../../..");
+const LOCK = join(ROOT, "content/world/render-lock.json");
+
+// Seam-4 review B, survivors 7 and 8: `atlas-sheet.mjs`'s drawn letter-spacing
+// could be replaced by a constant, and `patternFor` reduced to the old ice
+// boolean, with the whole 204-test mapforge suite still GREEN. The root cause
+// was not either rule — it was that only cluster1 had a hash here, so the atlas
+// and canary sheets had no byte assertion in `node --test` at all. They were
+// caught by scripts/check_render_lock.mjs (Gate 2 and CI line 119) and nowhere
+// else, so a mapforge-only run could not see a redraw.
+//
+// This builds EVERY sheet in the registry and hashes it, which is the same
+// guarantee check_render_lock gives, in the venue that runs on every mapforge
+// change. Both mutants die here now.
+test("EVERY sheet in the registry matches the committed render lock", () => {
+  const lock = JSON.parse(readFileSync(LOCK, "utf8")).artifacts;
+  const ids = Object.keys(SHEETS);
+  assert.ok(ids.length >= 3, `the registry has ${ids.length} sheets — this test cannot go dark`);
+  for (const id of ids) {
+    const { svg, problems } = SHEETS[id].build({ repoRoot: ROOT });
+    assert.deepEqual(problems, [], `${id}: ${problems.join("; ")}`);
+    const expected = lock[SHEETS[id].outSvg];
+    assert.equal(
+      typeof expected,
+      "string",
+      `render-lock.json has no row for ${SHEETS[id].outSvg} — this assertion would compare against undefined`,
+    );
+    assert.equal(
+      "sha256:" + createHash("sha256").update(svg, "utf8").digest("hex"),
+      expected,
+      `${id} no longer renders to its locked bytes — re-baseline deliberately or fix the drift`,
+    );
+  }
+});
+
+// Plan E ruling 8 retired the cluster1 sheet, which is the one this used to
+// build. Determinism is a property of the registry, not of that sheet, so it
+// re-points at the atlas — the sheet the redraw actually re-keyed, and the one
+// whose bytes the lock holds.
+test("building twice is deterministic", () => {
+  assert.equal(
+    SHEETS.atlas.build({ repoRoot: ROOT }).svg,
+    SHEETS.atlas.build({ repoRoot: ROOT }).svg,
+  );
+});
+
+test("SHEETS entries declare title, outSvg, outPng and maxLabelRank", () => {
+  // Pin the roster before iterating it. A `for…of Object.entries()` over an
+  // empty registry passes every assertion below vacuously — verified: with
+  // `export const SHEETS = {}` this test still reported ok. A test written to
+  // stop the registry going dark must not be able to go dark itself, so the
+  // key set is asserted first. Plan B extends this roster; updating this line
+  // is the deliberate acknowledgement that the roster changed.
+  // Plan E ruling 8: cluster1 retired here, 5 -> 4. Task 8's 13 continent
+  // sheets took the roster to 17, inside budgets.sheets.maxSheets = 18 — and
+  // the basin ground came back with them, as `wealdmarch`, rather than as a
+  // fourteenth entry.
+  assert.deepEqual(Object.keys(SHEETS).sort(), [
+    "ashen-spar",
+    "atlas",
+    "brightfall",
+    "coldreach",
+    "driftholt",
+    "fabric",
+    "loamspit",
+    "overlay",
+    "quillreef",
+    "reedstrand",
+    "rimewall-cap",
+    "skerryfast",
+    "stonemoor",
+    "synthetic",
+    "thirstwold",
+    "wealdmarch",
+    "wracklow",
+  ]);
+  for (const [id, sheet] of Object.entries(SHEETS)) {
+    assert.equal(typeof sheet.title, "string", `${id}.title`);
+    assert.ok(sheet.title.length > 0, `${id}.title is empty`);
+    assert.match(
+      sheet.outSvg,
+      /^game-client\/assets\/art\/maps\/.+\.svg$/,
+      `${id}.outSvg`,
+    );
+    assert.match(
+      sheet.outPng,
+      /^game-client\/assets\/art\/maps\/.+\.png$/,
+      `${id}.outPng`,
+    );
+    assert.equal(typeof sheet.maxLabelRank, "number", `${id}.maxLabelRank`);
+    assert.equal(typeof sheet.build, "function", `${id}.build`);
+  }
+});
+
+// Seam-4 review A, finding 6, second half — VERIFIED, and recorded rather than
+// papered over. The test above asserts every sheet DECLARES a maxLabelRank; it
+// does not and cannot assert that anything reads one. basin-sheet.mjs never
+// calls placeLabels, so the maxLabelRank on its row was inert — and a reader
+// who saw only the assertion above would reasonably conclude otherwise. Plan E
+// ruling 8 has since retired that row entirely.
+//
+// This pins WHICH sheets run a declutter pass, from the source rather than
+// from a comment. Task 8 changed the answer: continent-sheet.mjs decluttes at
+// the rank-8 tier on all thirteen of its sheets, so `maxLabelRank` is LIVE on
+// thirteen of the seventeen rows. basin-sheet.mjs stays dormant and unread —
+// Task 8 built a successor rather than repairing it (see
+// scripts/tests/places.test.mjs's ruling-8 test), so a declutter appearing
+// there would mean somebody revived the spine-backed path.
+test("which sheets actually RUN a label declutter — the registry field is not proof", () => {
+  const consumes = (file) =>
+    /placeLabels\(/.test(readFileSync(join(ROOT, "tools/mapforge/lib", file), "utf8"));
+  assert.equal(consumes("atlas-sheet.mjs"), true, "the atlas stopped decluttering");
+  assert.equal(consumes("synthetic-sheet.mjs"), true, "the canary stopped decluttering");
+  assert.equal(consumes("continent-sheet.mjs"), true, "the continent tier stopped decluttering");
+  assert.equal(consumes("fabric-sheet.mjs"), false, "the fabric sheet's maxLabelRank is documented INERT");
+  assert.equal(consumes("overlay-sheet.mjs"), false, "the overlay sheet's maxLabelRank is documented INERT");
+  assert.equal(
+    consumes("basin-sheet.mjs"),
+    false,
+    "basin-sheet.mjs now calls placeLabels — the spine-backed basin path was revived; " +
+      "re-add its SHEETS row with a live maxLabelRank and re-baseline the render lock deliberately",
+  );
+});
+
+// ── the PNG policy (Plan B Task 11) ───────────────────────────────────────
+//
+// spec 2026-08-16 §7.5: the committed raster is a 512 px review thumb; the
+// 2000 px ship raster is on demand and never committed. Asserted on the pure
+// parser, not by running the CLI — raster.test.mjs forbids any mapforge test
+// from writing game-client/assets/art/maps/, and rendering is the only other
+// way to observe the default.
+
+test("--png is OPT-IN: the default writes no raster at all", () => {
+  assert.equal(parseArgs(["--sheet", "atlas"]).wantPng, false);
+  assert.equal(parseArgs(["--sheet", "atlas", "--check"]).wantPng, false);
+  assert.equal(parseArgs(["--sheet", "atlas", "--png"]).wantPng, true);
+});
+
+test("the default png width is the committed-thumb width, not the ship width", () => {
+  const budgets = JSON.parse(
+    readFileSync(
+      new URL("../../../content/world/budgets.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  // One number, one home. If these ever disagree, the tool and the budget that
+  // polices it are describing different artifacts.
+  assert.equal(
+    parseArgs(["--sheet", "atlas", "--png"]).pngWidth,
+    budgets.sheets.thumbWidthPx,
+  );
+  assert.notEqual(budgets.sheets.thumbWidthPx, budgets.sheets.rasterWidthPx);
+  assert.equal(
+    parseArgs(["--sheet", "atlas", "--png", "--png-width", "2000"]).pngWidth,
+    budgets.sheets.rasterWidthPx,
+  );
+});
+
+test("--no-png stays accepted as a no-op, so CI's --no-png lines still run", () => {
+  const p = parseArgs(["--sheet", "fabric", "--no-png", "--check"]);
+  assert.equal(p.error, undefined);
+  assert.equal(p.wantPng, false);
+  assert.equal(p.checkOnly, true);
+  assert.equal(p.sheetId, "fabric");
+});
+
+test("bad arguments answer in-band, never by throwing", () => {
+  assert.match(parseArgs(["--sheet", "atlas", "--bogus"]).error, /unknown arg/);
+  assert.match(parseArgs([]).error, /--sheet/);
+  for (const bad of ["nope", "0", "-5", ""])
+    assert.match(
+      parseArgs(["--sheet", "atlas", "--png-width", bad]).error,
+      /positive number/,
+      `--png-width ${JSON.stringify(bad)} should be rejected`,
+    );
+});
+
+// ── G-RASTER-BUDGET, across the WHOLE roster (Plan B Task 12) ──────────────
+//
+// The 2 s budget existed and only the canary was measured against it. The
+// canary passed at 0.77 s while the committed basin sheet took 11.31 s — 5.7x
+// over — because the canary's regions carry a baked <image> underlay and its
+// only pattern fills are 40x24 legend swatches. It was not covering the thing
+// the live sheets do. Every sheet in the registry is measured here.
+//
+// SKIPS without librsvg, like every other raster test in this repo: CI has no
+// rsvg-convert (see tests/raster.test.mjs). The deterministic backstop that
+// runs everywhere is G-SHEET-BUDGET's maxPatternRectAreaRatio, which reads the
+// same defect straight out of the committed text.
+//
+// Takes the BEST of three runs. `node --test` runs files in parallel and this
+// suite shares a machine with a dozen others; a performance floor is a claim
+// about what the renderer can do, not about what a contended box happened to
+// do on one pass. The margin it is asserting is large, so this is not a way of
+// squeezing under the number.
+const rsvg = (args) => spawnSync("rsvg-convert", args, { stdio: "pipe", maxBuffer: 1 << 26 });
+
+test("BUDGET: every committed sheet rasterises inside maxRasterSeconds at rasterWidthPx", (t) => {
+  const probe = rsvg(["--version"]);
+  if (probe.error || probe.status !== 0) {
+    t.skip("rsvg-convert not installed");
+    return;
+  }
+  const budgets = JSON.parse(readFileSync(join(ROOT, "content/world/budgets.json"), "utf8"));
+  const width = budgets.sheets.rasterWidthPx;
+  const cap = budgets.sheets.maxRasterSeconds;
+  const dir = mkdtempSync(join(tmpdir(), "sheet-raster-"));
+  const slow = [];
+  // The budget is a claim about the RENDERER, not about what a box this suite
+  // is loading on purpose happened to manage. raster.test.mjs spawns a second
+  // full mapforge suite by design; this waits it out. Measured: `synthetic`
+  // reads 0.708 s alone and 2.10-2.64 s alongside that child, against a 2 s
+  // cap — a 1-in-8 flake at four sheets that became every-run at seventeen.
+  // The cap is untouched and every sheet is still measured on its committed
+  // bytes at the ship width, best of three.
+  //
+  // The CHILD must never take this lock: raster.test.mjs holds it while it
+  // waits for that child, so a child that waited for it would deadlock the
+  // suite. Measured the hard way — the first draft hung both files past two
+  // minutes. The child does not assert the budget anyway.
+  const isChild = !!process.env.MAPFORGE_TRACKED_TREE_CHILD;
+  if (!isChild) acquireHeavyLock();
+  for (const [id, sheet] of Object.entries(SHEETS)) {
+    const out = join(dir, `${id}.png`);
+    let best = Infinity;
+    for (let i = 0; i < 3; i++) {
+      const t0 = process.hrtime.bigint();
+      const run = rsvg(["-w", String(width), "-b", "#f3e7ce", join(ROOT, sheet.outSvg), "-o", out]);
+      const secs = Number(process.hrtime.bigint() - t0) / 1e9;
+      assert.equal(run.status, 0, `${id}: ${String(run.stderr)}`);
+      if (secs < best) best = secs;
+    }
+    // rsvg-convert EXITS 0 on a page it drew nothing on, so a timing that is
+    // fast because the sheet is empty must not read as a pass.
+    //
+    // This WAS `statSync(out).size > 10000`, and that could not do the job it
+    // claimed: a BLANK 2000 px raster measures 14,079-18,074 B depending on the
+    // librsvg build, comfortably over its own floor. Reviewer B proved it in
+    // situ — blanking a committed sheet left this suite 8/0 green.
+    // Compressed size is a function of the width as much as of the content, so
+    // no byte floor can separate a big blank page from a small drawn one. This
+    // reads the PIXELS, against the same budget floors the committed thumbs
+    // are held to.
+    const st = inkStats(readFileSync(out));
+    assert.equal(st.error, undefined, `${id}: ${st.error}`);
+    assert.ok(
+      st.inkFraction >= budgets.sheets.minThumbInkFraction,
+      `${id}: ${(st.inkFraction * 100).toFixed(2)}% ink at ${width} px — nothing was drawn`,
+    );
+    assert.ok(
+      st.inkRowFraction >= budgets.sheets.minThumbInkRowFraction,
+      `${id}: ink on only ${(st.inkRowFraction * 100).toFixed(1)}% of scanlines at ${width} px`,
+    );
+    if (best > cap) slow.push(`${id} ${best.toFixed(2)} s`);
+  }
+  // raster.test.mjs's tracked-tree guard spawns a child that re-runs this
+  // WHOLE file concurrently with the parent, so inside that child every sheet
+  // is timed against a box already busy rasterising the same three sheets.
+  // The child exists to detect writes into the tracked maps directory, not to
+  // measure performance, and timing there is what made review A's 1-in-8 red
+  // possible. Everything above still runs; only the CLAIM is withheld.
+  if (isChild) {
+    t.diagnostic(`G-RASTER-BUDGET not asserted in the nested child run: ${slow.length} over cap`);
+    return;
+  }
+  releaseHeavyLock();
+  assert.deepEqual(slow, [], `G-RASTER-BUDGET: over ${cap} s at ${width} px: ${slow.join(", ")}`);
+});
+
+test("CI's sheet self-check covers EVERY id in the registry, not a subset", () => {
+  // `fabric` and `overlay` landed covered only by G-RENDER-LOCK, which compares
+  // a hash to a hash. `--check` compares the DRAWING to the committed file, and
+  // they are different claims: the lock can be re-baselined green over a stale
+  // committed SVG that `--check` would red. The step listed three of five.
+  //
+  // The registry is the authority in both directions, so a sheet added without
+  // a workflow line — or a workflow line naming a sheet nobody builds — reds
+  // here instead of going quietly uncovered.
+  const yml = readFileSync(join(ROOT, ".github/workflows/ci.yml"), "utf8");
+  const step = yml.slice(yml.indexOf("- name: Sheet self-check"));
+  // `[\w-]+`, not `\w+`: TWO of the thirteen continent sheet ids carry a
+  // hyphen — `rimewall-cap` and `ashen-spar` — and `\w` stops at one. Measured
+  // rather than assumed: the old pattern does not mis-capture "rimewall", it
+  // fails to match the line AT ALL, so those two sheets would have been
+  // silently missing from `checked` and the registry comparison would have
+  // reported a mismatch that was really a regex bug. Found by adding the
+  // sheets, which is the only way this kind of scan defect ever surfaces.
+  const checked = [...step.slice(0, step.indexOf("\n\n")).matchAll(/--sheet ([\w-]+) --no-png --check/g)].map((m) => m[1]);
+  assert.ok(checked.length > 0, "the self-check step no longer matches — this scan has gone dark");
+  assert.deepEqual(checked.slice().sort(), Object.keys(SHEETS).sort(),
+    "ci.yml's sheet self-check is not the SHEETS registry");
+});

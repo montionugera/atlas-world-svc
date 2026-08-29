@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-2769",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Keelbreak Race",
+  "bind": {
+    "handle": "c03/fluvial/h-bb2769",
+    "expect": {
+      "type": "oxbow-lake",
+      "sizeKm": [
+        0.07,
+        0.26
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A cut-off loop of river left standing on its own, going quietly green at the edges.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#oxbow-lake.gloss"
+  },
+  "resolution": null
+}

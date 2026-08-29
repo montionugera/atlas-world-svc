@@ -1,0 +1,54 @@
+{
+  "zone": "flaggrike-geo",
+  "region": "c04/r28",
+  "survey": "surveyed",
+  "reasonToGo": "Flaggrike is the first settled ground the eastern road reaches out of the port, which makes it the place everything heading further east is provisioned from. It has water that can be taken standing up, a drowned valley head with soil in it, and a passage into the pavement close enough to the road that ore can be got and loaded in the same day.",
+  "hazards": [
+    {
+      "id": "the-valley-filling",
+      "name": "The valley filling",
+      "description": "The head of the drowned valley is a plot of ground at low water and an arm of the sea at high, and the tide comes up it faster than it comes up the open shore because the walls funnel it. People are caught working the far end of their own fields.",
+      "effect": "damage"
+    },
+    {
+      "id": "the-penned-water",
+      "name": "The penned water",
+      "description": "The water shut in behind the bar is brackish and does not turn over, and in a hot month it goes bad quietly. It looks the same as it did in spring, which is why parties fill from it, and why the villages lose a week of work every summer that they do.",
+      "effect": "poison"
+    }
+  ],
+  "resources": [
+    {
+      "id": "valley-head-plots",
+      "name": "Valley-head plots",
+      "kind": "crop",
+      "description": "Small plots on the floor at the head of the drowned valley, above where the salt reaches and below where the rock starts, fenced against the tide with turf that is rebuilt every year."
+    },
+    {
+      "id": "roadside-passage-ore",
+      "name": "Roadside passage ore",
+      "kind": "ore",
+      "description": "Broken out of a passage the drowned valley has cut open in the side of the pavement, close enough to the road that it is loaded where it is broken instead of being carried to a loading place. It is poor ore got cheaply, which is the only kind this end of the moor sells."
+    },
+    {
+      "id": "lip-water",
+      "name": "Lip water",
+      "kind": "water",
+      "description": "Taken from the stream where it crosses the cliff top, in the last few paces before it goes over and is lost. The penned water below is brackish and the shaft water is a descent; this is the water a party fills from without putting the load down."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "scarclint-pot",
+      "name": "Scarclint Pot",
+      "description": "A shaft dropping straight into the dark out of flat pavement, with no ledge anywhere to start from and no bottom anyone has reported. It sits within sight of the road, and every carter east knows to keep the cart on the far side of it in the dark.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "head-below-slatemoor",
+      "name": "Head below Slatemoor",
+      "description": "The cliff head where the moor's stream runs off the lip and falls the whole way into the sea, because there is no beach under it to reach. It is the mark the road turns at, and the noise of it carries further inland than the sight of it does.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "landform-type.schema.json",
+  "title": "Landform type — one row of content/world/lexicon/landforms.json. SHAPE ONLY: the census (170/178/8/23/40) is asserted by scripts/tests/landform-lexicon.test.mjs and by G-LANDFORM, never duplicated here — a bound written into a schema turns its gate rule into dead code.",
+  "type": "object",
+  "required": ["id", "group", "alsoGroups", "geometry", "biomes", "sizeKm", "dungeonCapable", "glyph", "rarity", "requires", "gloss", "absentBecause"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "group": { "enum": ["coastal", "fluvial", "mountain", "glacial", "karst", "erosional", "desert", "volcanic", "wetland", "lakes", "island", "oceanic"] },
+    "alsoGroups": {
+      "type": "array",
+      "maxItems": 1,
+      "items": { "enum": ["coastal", "fluvial", "mountain", "glacial", "karst", "erosional", "desert", "volcanic", "wetland", "lakes", "island", "oceanic"] }
+    },
+    "geometry": { "enum": ["point", "line", "area"] },
+    "biomes": {
+      "title": "Free-form in SHAPE (a schema bound would duplicate a gate rule), but CLOSED in fact against scripts/lib/spine.mjs's BIOMES, which Task 5 widened from 12 to 20 precisely so this join could hold. The 170 rows name 19 distinct strings and all 19 are members; the 8 Task 5 added (badland desert karst lake lava reef scree tundra) are exercised by 93 rows. `built` is the one BIOMES member no row names — it is a composition biome, not a landform biome. The join is enforced twice: G-LANDFORM fails on any row naming a non-member (any content root), and world-budget.test.mjs pins both the join and the fact that the added 8 are used.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "sizeKm": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+    "dungeonCapable": { "type": "boolean" },
+    "glyph": { "type": "string", "pattern": "^g-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "rarity": { "enum": ["common", "uncommon", "rare"] },
+    "requires": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rock": { "enum": ["carbonate", "clastic", "volcanic"] },
+        "precipDecileMin": { "type": "integer", "minimum": 0, "maximum": 9 },
+        "precipDecileMax": { "type": "integer", "minimum": 0, "maximum": 9 },
+        "tempDecileMin": { "type": "integer", "minimum": 0, "maximum": 9 },
+        "tempDecileMax": { "type": "integer", "minimum": 0, "maximum": 9 },
+        "slopeMin": { "type": "number", "minimum": 0 },
+        "slopeMax": { "type": "number", "minimum": 0 },
+        "nearFlag": { "enum": ["SEA", "LAKE", "RIVER", "DELTA", "GLACIER", "ARC", "CLIFF"] },
+        "flowAccMin": { "type": "number", "minimum": 0 },
+        "elevMin": { "type": "number", "minimum": 0, "maximum": 1 },
+        "elevMax": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "gloss": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "absentBecause": {
+      "title": "null = this type is INTENDED to be placed in content/world/fabric/; a string = deliberately absent, and the string is the reason. G-LANDFORM enforces the declaration in one direction only: declared-yet-placed is a failure (a stated reason contradicted by a real instance). Unplaced-with-null is a WARNING, never a failure — as a failure it demanded 170/170 coverage and made budgets.json's typeCoverageFloor unreachable. See content/world/budgets.json landformsWhy.",
+      "type": ["string", "null"]
+    }
+  }
+}

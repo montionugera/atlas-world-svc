@@ -263,3 +263,73 @@ The suite was verified load-bearing by breaking the code and watching the right 
   perturbation table is included precisely so the reader can see how much of the headline number is real.
 - **Nothing under `content/`, no manifest, `art-groups.json` or `scripts/check_asset_manifest.mjs` was
   modified.** No images are committed; `tools/art-forge/out/` is git-ignored.
+
+---
+
+## Appendix C — 2026-08-25: live-render validation sweep + embedded-fixture proof
+
+**Addendum (later the same day): the corpus is recovered and the original patch is FOUND.** The full
+52-image corpus was located intact on the generation machine at `F:\comfy-ui\output\{anchorcmp,devtest,flux}`
+(mont-pc) and copied back to `tools/art-forge/out/` — the two `flux/` files renamed to the
+`__F-base.png`/`__F-hires.png` forms the tests expect. All six corpus calibration tests now run on
+this machine: **131/131 pass, 0 skipped**, and every calibrated count (15/15 recall, 13 FP, 6
+degenerate, tiling silent) held against the originals.
+
+**The motivating artifact is located.** `flux/ART-04-norhollow__F-hires.png` carries the
+checkerboard on a palisade log at roughly **+500+745** (native 1920×1248, patch ≈ 110×120 px,
+~8px cells, low contrast, following the log's curve) — visible by eye at 400% zoom. The recorded
+miss is confirmed and now measured: the image's tiling score is **0.406 against threshold 0.55**.
+Catching it by threshold alone is impossible (corpus negatives reach 0.485); catching this class
+needs a different signal (curve-tolerant or smaller-block autocorrelation, or a frequency-domain
+peak). Pinned as a **sentinel corpus test**: it fails the moment any detector change starts
+catching the patch, forcing threshold recalibration before that change ships.
+
+Motivated by a pipeline audit flagging "tiling detector validated synthetically only" as the top
+open quality risk. The original Norhollow checkerboard patch was NOT recovered — the F-hires corpus
+was never in git and the brief (`A1-ART-04`) no longer exists in-repo. Instead the gap was attacked
+from both ends: fresh real generations, and artifacts embedded in real renders. *(Superseded by the
+addendum above: the corpus and the original patch have since been recovered from mont-pc — the
+sweeps below stand as measured.)*
+
+### Sweep 1 — 10 fresh live cells (real negatives + incidental detector evidence)
+
+Re-ran the committed env recipe (schnell + Union-Pro depth ControlNet strength 0.30 + hires pass)
+against the four in-repo briefs on the live ComfyUI server (0.24.1, RTX 3090): A1-ART-02 seeds
+12345/741852, A1-ART-03/06/07 seed 12345, base + hires each. 10 renders, all gated.
+
+- **Tiling: 0 hits, max score 0.451** (base A1-ART-02 s12345) vs threshold 0.55 — consistent with
+  the recorded corpus max 0.485. The detector still has **no natural real positive** after 62 total
+  real images (52 corpus + 10 fresh).
+- **Degenerate: 2 true positives** — both A1-ART-03 cells (σ 0.0445/0.0465 < 0.05), visually
+  confirmed flat-vector output. The known strength-window failure mode, caught by the gate as designed.
+- **Corner-signature: 2 hits, BOTH false positives by eye** — A1-ART-07 base SE (wispy cloud bands
+  against smooth sky, 3.8× local background) and A1-ART-03 base NW (sun/cloud edge stripes, 3.6×).
+  No watermark or text present in either corner. **Filed, not fixed:** smooth-sky gradient corners
+  are a corner-signature FP regime; the "recall on textured corners" improvement note above should
+  also weigh FP suppression on sky gradients. Rough FP cost today: 2 flags per 10 renders.
+
+### Sweep 2 — checkerboards embedded in REAL renders (the missing positive class)
+
+Composited 96×96 two-tone checkerboards (8px and 4px cells, full contrast ±128 and faint ±25 grey
+levels) into 512×512 crops of three fresh hires renders, patch centred at +208+208. **7/7 flagged,
+tiling score 1.0, reported box inside the patch every time, true period recovered — including the
+±25 faint cells.** The detector is not merely a synthetic-pattern responder; it detects the artifact
+class against real render statistics at realistic amplitude.
+
+### What changed in the repo
+
+- `tests/artifact-gate.test.mjs`: new regression test — a ±25 grey, 8px-cell checkerboard pasted
+  into the noise control must FLAG with the box on the patch and lag 8 (pins the faint-artifact
+  case the full-contrast fixtures did not cover).
+- No thresholds changed; no production code changed. The 10 fresh renders live in `out/env/`
+  (git-ignored, machine-local) and are not part of any committed corpus.
+
+### Honest notes
+
+- Sweep 2 proves the detector catches the artifact **class** in real renders; it still does not
+  prove it would have caught the *original* Norhollow patch, which was never located. The recorded
+  instruction stands: if that image ever surfaces, add it as a fixture.
+- Sweep 2 patches are synthetic-in-real-background, not real-in-real. A naturally occurring tiling
+  positive remains unobserved in 62 real images — either the artifact is rarer than the one sighting
+  suggested, or it co-occurs with conditions these briefs don't produce (dense wood/texture-atlas
+  content like Norhollow's palisades).

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c09-mountain-b0cf",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Mereeyot Rake",
+  "bind": {
+    "handle": "c09/mountain/h-88b0cf",
+    "expect": {
+      "type": "foothill-belt",
+      "sizeKm": [
+        4.45,
+        17.8
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The wooded rise between the plain and the real mountains, cut by short steep valleys.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#foothill-belt.gloss"
+  },
+  "resolution": null
+}

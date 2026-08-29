@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-netstead-fenster-halls",
+  "title": "Netstead Fenster Halls",
+  "family": null,
+  "bind": {
+    "handle": "c06/fluvial/h-a5b037"
+  },
+  "entranceType": "plunge-pool",
+  "floors": 3,
+  "levelBand": [
+    24,
+    40
+  ],
+  "hazards": [
+    "bad-air",
+    "grave-damp"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Halls lit by karst windows — shafts of daylight falling through the field above.",
+    "source": "content/world/premises/continent-04.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

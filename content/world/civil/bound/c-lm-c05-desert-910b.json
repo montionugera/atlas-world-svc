@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-910b",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ashwold Yardang",
+  "bind": {
+    "handle": "c05/desert/h-26910b",
+    "expect": {
+      "type": "seif-dune",
+      "sizeKm": [
+        2.89,
+        9
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A long sharp-crested ridge of sand lying with the wind rather than across it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#seif-dune.gloss"
+  },
+  "resolution": null
+}

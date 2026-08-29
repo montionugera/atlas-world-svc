@@ -135,6 +135,31 @@ combat_lab() {
   node "$REPO_ROOT/tools/combat-lab/verify.mjs"
 }
 
+# F-041: the tier-spine structural gates (cycles, orphans, depth skips) are
+# the cheapest content failures to run and the most expensive to find late —
+# without this they'd surface only at Gate 2 or CI. --only=spine keeps Gate 1
+# out of the full content sweep (~1 s).
+content_spine() { node "$REPO_ROOT/scripts/check_content.mjs" --only=spine; }
+
+# Plan E / spec §9.3: the whole-world digest — what replaces the freeze once
+# coordinates are generated. Already gated in Gate 2 and CI; belongs here too
+# (~0.19 s) because a stale digest is a repo-wide invariant, not a per-feature
+# one, and Gate 1 is the check that runs on EVERY ship. commit f07dbe2 edited
+# content/spine/nodes/n-atlas.json without re-baselining the digest, and that
+# failing gate passed five consecutive review gates before being caught at
+# final-green — none of them ran repo-wide invariants.
+world_digest() { node "$REPO_ROOT/scripts/check_world_digest.mjs" --check; }
+
+# scripts/system-deps.json is the declared source of truth for system-level
+# (non-npm) binaries this repo shells out to (magick, rsvg-convert, ...).
+# Check-only here (no --install) — Gate 1 runs on a developer's own machine,
+# which CI's apt-get/shim approach has no business touching. A missing
+# REQUIRED binary (currently: magick, needed by art_forge_tests below) fails
+# with the install command for the developer's OS; an absent OPTIONAL one
+# (rsvg-convert) is reported but never fails the gate, matching the tests'
+# own self-skip behavior.
+system_deps_check() { node "$REPO_ROOT/scripts/check-system-deps.mjs"; }
+
 art_forge_tests() {
   ( cd "$REPO_ROOT/tools/art-forge" && node --test tests/*.test.mjs )
 }
@@ -155,9 +180,12 @@ run_section "server: prettier format"       server_format
 run_section "nakama: tsc --noEmit"          nakama_typecheck
 run_section "nakama: jest suite"            nakama_tests
 run_section "client: react-client suite"    client_tests
+run_section "system deps: binary check (scripts/system-deps.json)" system_deps_check
 run_section "art-forge: node --test suite"  art_forge_tests
 run_section "asset-storybook: node --test suite" storybook_tests
 run_section "combat-lab: model gates"       combat_lab
+run_section "content: spine gates (--only=spine)" content_spine
+run_section "world digest (G-WORLD-DIGEST)" world_digest
 
 # --- Summary -----------------------------------------------------------------
 echo ""

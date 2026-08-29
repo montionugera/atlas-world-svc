@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-c4d6",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Haleness Reach",
+  "bind": {
+    "handle": "c03/fluvial/h-07c4d6",
+    "expect": {
+      "type": "confluence-bench",
+      "sizeKm": [
+        0.44,
+        1.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The dry tongue of ground between two rivers, just before they become one.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#confluence-bench.gloss"
+  },
+  "resolution": null
+}

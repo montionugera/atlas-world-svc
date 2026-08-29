@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-3059",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Harrowhollow Carr",
+  "bind": {
+    "handle": "c02/wetland/h-e33059",
+    "expect": {
+      "type": "salt-marsh",
+      "sizeKm": [
+        4.32,
+        10
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Low turf cut by creeks that fill with sea; grazed in summer, under water in a surge.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#salt-marsh.gloss"
+  },
+  "resolution": null
+}

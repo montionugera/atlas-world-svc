@@ -1,0 +1,32 @@
+{
+  "id": "c-town-rooktide",
+  "kind": "town",
+  "tier": "pinned",
+  "title": "Rooktide",
+  "settlementRank": "hub",
+  "pin": {
+    "at": [
+      94.5,
+      162.5
+    ],
+    "toleranceKm": 1.5,
+    "why": "canon §4: sits inland, south of Millcross, off the direct war road entirely — a terrace above the inland sea, which is why it has fresh water and no harbour — snapped 3.64 km WSW from [98,163.5] per STATE §28 class-6 owner ruling, re-derived 2026-08-27 with the water exclusion the first pass missed: owned-region LAND cells (grid.regionId non-null; every lake cell is unowned) ∩ millcross-leg 10.9 km ±8% ∩ cindervast-leg 34 km ±8%, minimum displacement — lands in c02/r19 on meadow, legs 10.57 / 31.40 km"
+  },
+  "requires": {
+    "continent": "c02",
+    "landform": "lake-terrace",
+    "water": {
+      "kind": "lake"
+    },
+    "slopeMax": 0.06,
+    "freshWaterWithinKm": 3
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-c6aa",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Rookwick Reach",
+  "bind": {
+    "handle": "c02/fluvial/h-c6c6aa",
+    "expect": {
+      "type": "river-terrace",
+      "sizeKm": [
+        1.25,
+        5
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A dry step above the present river, cut when the water ran higher than it does now.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#river-terrace.gloss"
+  },
+  "resolution": null
+}

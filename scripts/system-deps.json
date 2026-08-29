@@ -1,0 +1,49 @@
+{
+  "_comment": "Single source of truth for system-level (non-npm) binaries this repo shells out to. Read by scripts/check-system-deps.mjs (Gate 1 section + CI install step) — do not hand-maintain a second copy of this list anywhere. Add an entry here BEFORE adding a new execFile/spawnSync/execSync call to an external binary.",
+  "binaries": [
+    {
+      "name": "magick",
+      "package": "ImageMagick (v7 unified CLI)",
+      "required": true,
+      "usedBy": [
+        "tools/art-forge/artifact-gate.mjs",
+        "tools/art-forge/generate/blockin.mjs",
+        "tools/art-forge/generate/townplan.mjs",
+        "tools/art-forge/tests/artifact-gate.test.mjs",
+        "tools/art-forge/tests/intake-art.test.mjs"
+      ],
+      "verify": "magick -version",
+      "macos": {
+        "install": "brew install imagemagick"
+      },
+      "debian": {
+        "install": "sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick",
+        "note": "Verified against ubuntu:24.04 (2026-08-27): the `imagemagick` apt package is ImageMagick 6 (apt-cache policy shows only imagemagick-6.q16* candidates) and ships convert/identify/mogrify/composite/etc, WITHOUT the unified `magick` entrypoint IM7 introduced. Installing the apt package alone does NOT satisfy this dependency on Ubuntu. CI additionally installs scripts/ci/magick-shim.sh as /usr/local/bin/magick — a thin dispatcher that forwards `magick <legacy-tool> ...` to the like-named IM6 tool and treats any other first argument as an implicit `convert` call, mirroring IM7's own dispatch rule. macOS's brew formula ships real IM7, so local dev runs the genuine `magick` binary; CI runs the shim. See fallbackShim below.",
+        "fallbackShim": "scripts/ci/magick-shim.sh"
+      },
+      "warning": "Never use `magick` to rasterize SVG in this repo — without the librsvg delegate (which upstream ImageMagick does not ship) it silently drops every stroke (F-040 incident, 2026-08-09; see tools/mapforge/lib/raster.mjs). SVG rasterization is rsvg-convert's job, not magick's, on both the real IM7 binary and the CI shim."
+    },
+    {
+      "name": "rsvg-convert",
+      "package": "librsvg2-bin (the librsvg SVG rasterizer CLI)",
+      "required": false,
+      "requiredNote": "tools/mapforge/tests/*.test.mjs probe with spawnSync(\"rsvg-convert\", [\"--version\"]) and call t.skip(...) when it's absent — deliberate, not a gap. Installing librsvg2-bin in CI was considered and REJECTED (docs/superpowers/plans/world-fill-STATE.md, 'G-RASTER-BUDGET still runs in ONE venue (Gate 2) and that is a DECISION, not an oversight'): it would put a wall-clock performance assertion on a shared, contended GitHub runner — the exact condition that produced a documented 1-in-8 flaky red on a developer box. The deterministic half of that gate already runs in CI without rsvg-convert. Required for real local map-rendering work (tools/mapforge) and for Gate 2 (scripts/integration.sh), which does have it.",
+      "usedBy": [
+        "tools/mapforge/lib/raster.mjs",
+        "tools/mapforge/lib/draft.mjs",
+        "tools/mapforge/lib/texture-bake.mjs",
+        "tools/mapforge/lib/atlas-sheet.mjs",
+        "tools/mapforge/render-sheet.mjs",
+        "scripts/check_content.mjs"
+      ],
+      "verify": "rsvg-convert --version",
+      "macos": {
+        "install": "brew install librsvg"
+      },
+      "debian": {
+        "install": "sudo apt-get update -qq && sudo apt-get install -y -qq librsvg2-bin"
+      },
+      "warning": "Never substitute ImageMagick for rsvg-convert — see the `magick` entry's warning. tools/mapforge/lib/raster.mjs enforces this at the call site."
+    }
+  ]
+}

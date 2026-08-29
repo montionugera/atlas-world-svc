@@ -1,0 +1,26 @@
+{
+  "id": "c-lm-northern-icefield",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Northern Icefield",
+  "pin": {
+    "at": [
+      103.4,
+      132.6
+    ],
+    "toleranceKm": 1.5,
+    "why": "canon §4: the Stoneguard's detached watch keeps the old trade road here"
+  },
+  "requires": {
+    "continent": "c02",
+    "landform": "outlet-glacier"
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

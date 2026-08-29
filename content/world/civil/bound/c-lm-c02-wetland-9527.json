@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-9527",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Gildhollow Quag",
+  "bind": {
+    "handle": "c02/wetland/h-1c9527",
+    "expect": {
+      "type": "reed-fen",
+      "sizeKm": [
+        1.69,
+        6.76
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Standing reed higher than a person, water underfoot, and paths only where it is cut.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#reed-fen.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-mountain-c637",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ergwind Rake",
+  "bind": {
+    "handle": "c05/mountain/h-9ac637",
+    "expect": {
+      "type": "saddle-notch",
+      "sizeKm": [
+        0.25,
+        1
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A shallow dip in a ridge line, the only place to cross without using hands.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#saddle-notch.gloss"
+  },
+  "resolution": null
+}

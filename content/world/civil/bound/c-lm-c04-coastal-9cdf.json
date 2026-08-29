@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-coastal-9cdf",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Clintmoor Stack",
+  "bind": {
+    "handle": "c04/coastal/h-8c9cdf",
+    "expect": {
+      "type": "sea-waterfall",
+      "sizeKm": [
+        0.1,
+        0.3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A stream that runs off the cliff lip and never reaches a beach, because there is none.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sea-waterfall.gloss"
+  },
+  "resolution": null
+}

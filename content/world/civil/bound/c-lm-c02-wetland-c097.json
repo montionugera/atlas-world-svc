@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-c097",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Embervale Quag",
+  "bind": {
+    "handle": "c02/wetland/h-0dc097",
+    "expect": {
+      "type": "floating-mat",
+      "sizeKm": [
+        0.24,
+        0.8
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A raft of roots and moss lying on open water, taking weight until it does not.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#floating-mat.gloss"
+  },
+  "resolution": null
+}

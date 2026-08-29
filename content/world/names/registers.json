@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "note": "Five phonological registers. A landmass draws its names from exactly one; cross-register leakage is G-NAME-REGISTER. Island chains inherit the nearest continent's register (continentRegister below), which is why five registers cover thirteen landmasses. Capacity per register is 16 x 12 = 192 monosyllabic stems and ~2.2M disyllabic forms before filtering, against ~125 names needed — the old pool was 120 against 626.",
+  "continentRegister": {
+    "c01": "north-log", "c02": "basin-anglic", "c03": "north-log", "c04": "moorstone",
+    "c05": "sandtongue", "c06": "reedspeech", "c07": "reedspeech", "c08": "reedspeech",
+    "c09": "reedspeech", "c10": "sandtongue", "c11": "moorstone", "c12": "north-log",
+    "c13": "reedspeech"
+  },
+  "registers": {
+    "basin-anglic": {
+      "gloss": "The settled basin. Terse noun+noun compounds, first-stressed.",
+      "onsets": ["Mill", "Gild", "Rook", "Ember", "Nor", "Cinder", "Thorn", "Weld", "Harrow", "Bram", "Ford", "Wain", "Kell", "Barrow", "Stock", "Marl"],
+      "rimes": ["cross", "mark", "tide", "vale", "hollow", "veil", "stead", "gate", "wick", "field", "row", "bourne"],
+      "links": ["of the", "under", "at", "by", "over", "beneath"]
+    },
+    "north-log": {
+      "gloss": "Ships' logs off the ice. Long open vowels, hard finals.",
+      "onsets": ["Cold", "Rime", "Gale", "Keel", "Drift", "Frost", "Skerry", "Haul", "Lode", "Bear", "Storm", "Cairn", "Fast", "Wrack", "Snow", "Hale"],
+      "rimes": ["reach", "wall", "break", "holt", "fast", "shore", "sound", "hold", "way", "ness", "haven", "spar"],
+      "links": ["out of", "beyond", "off", "past", "north of", "under"]
+    },
+    "moorstone": {
+      "gloss": "Limestone pavement country. Dry, flat, consonant-heavy.",
+      "onsets": ["Stone", "Slate", "Pave", "Grike", "Clint", "Shale", "Dolin", "Sink", "Flag", "Scar", "Chalk", "Lime", "Gryke", "Karn", "Fen", "Tarn"],
+      "rimes": ["moor", "flow", "sink", "fell", "clint", "shaft", "pot", "lack", "stone", "rake", "gill", "grike"],
+      "links": ["under", "of", "below", "through", "at", "over"]
+    },
+    "sandtongue": {
+      "gloss": "Rain-shadow erg and volcanic arc. Open, breathy, borrowed.",
+      "onsets": ["Thirst", "Erg", "Ash", "Fume", "Sirocc", "Barchan", "Cinder", "Yard", "Sabkh", "Reg", "Dune", "Char", "Ember", "Sear", "Glass", "Pumic"],
+      "rimes": ["wold", "spar", "water", "sea", "reach", "wind", "burn", "pan", "flat", "cone", "vent", "waste"],
+      "links": ["of the", "beyond", "across", "under", "past", "within"]
+    },
+    "reedspeech": {
+      "gloss": "Delta, fog forest and bar country. Soft, wet, many-syllabled.",
+      "onsets": ["Reed", "Loam", "Silt", "Willow", "Bright", "Wrack", "Quill", "Mere", "Osier", "Sedge", "Alder", "Marram", "Withy", "Bittern", "Lagoon", "Tidal"],
+      "rimes": ["strand", "spit", "fall", "reef", "low", "shallow", "lobe", "bar", "mere", "run", "eyot", "holm"],
+      "links": ["of the", "among", "between", "below", "at", "within"]
+    }
+  }
+}

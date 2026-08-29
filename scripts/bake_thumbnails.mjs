@@ -28,7 +28,11 @@
 //
 // Flags:
 //   --force            re-bake everything, ignoring recorded hashes
-//   --only <substr>    only sources whose path contains <substr>
+//   --only <substr>    only BAKE sources whose path contains <substr>. Matches
+//                      the SOURCE PATH (e.g. "maps/", "concept/"), not the
+//                      manifest key — `--only art:map-cluster1` matches nothing.
+//                      Rows outside the filter are carried forward unchanged,
+//                      never dropped from the index.
 //   --skip-3d          skip the Blender queue (useful without Blender installed)
 //   --dry-run          report what would be baked, write nothing
 
@@ -45,7 +49,11 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve, join } from "node:path";
 import { tmpdir } from "node:os";
 import sharp from "sharp";
-import { thumbFilename, sourceHash } from "./lib/thumbkey.mjs";
+import {
+  thumbFilename,
+  sourceHash,
+  carryForwardFiltered,
+} from "./lib/thumbkey.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -187,8 +195,17 @@ async function main() {
 
   if (!opts.dryRun) mkdirSync(THUMB_DIR, { recursive: true });
 
-  let jobs = collectJobs(spec);
+  const allJobs = collectJobs(spec);
+  // `--only` filters what gets BAKED. It must not filter what gets INDEXED:
+  // the index is written whole, so a filtered run used to erase every row it
+  // did not visit — 643 of them — and turn guard (U) red on a clean tree.
+  // See carryForwardFiltered() in lib/thumbkey.mjs for the full account.
+  let jobs = allJobs;
   if (opts.only) jobs = jobs.filter((j) => j.srcPath.includes(opts.only));
+  const bakedPaths = new Set(jobs.map((j) => j.srcPath));
+  const retainPaths = new Set(
+    allJobs.map((j) => j.srcPath).filter((p) => !bakedPaths.has(p)),
+  );
 
   // Several manifest keys can share one source file — projectile:spear and
   // projectile:magicSpear both point at res://assets/vfx/projectile-spear.glb.
@@ -327,6 +344,22 @@ async function main() {
       ...(srcHash ? { srcHash } : {}),
     };
   }
+  // Seam-4 review B, survivor 2: deleting this call leaves thumbkey.test.mjs
+  // 12/0 and thumb_freshness.test.mjs 6/0. The pure function is covered (4 of
+  // 4 mutants killed); its WIRING is not, because covering it means running
+  // main(), which needs sharp and Blender and is not a CI-shaped test.
+  //
+  // VERIFIED BACKSTOP, which is why this is recorded rather than chased: the
+  // failure is loud, not silent. Without this call a `--only` run drops every
+  // unrelated row from index.json, and check_asset_manifest.mjs guard (U)
+  // reads a thumbnail with no index row as UNRECORDED and FAILS —
+  // scripts/tests/thumb_freshness.test.mjs pins exactly that case. A wiped
+  // index cannot reach a green commit.
+  index.entries = carryForwardFiltered({
+    entries: index.entries,
+    prior,
+    retainPaths,
+  });
   writeFileSync(
     join(THUMB_DIR, "index.json"),
     JSON.stringify(index, null, 2) + "\n",

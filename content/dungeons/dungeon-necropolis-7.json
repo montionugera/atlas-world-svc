@@ -1,0 +1,21 @@
+{
+  "id": "dungeon-necropolis-7",
+  "title": "Necropolis 8",
+  "family": "family-necropolis",
+  "familyIndex": 7,
+  "bind": {
+    "handle": "c03/fluvial/h-d10dd8"
+  },
+  "entranceType": "knickpoint-gorge",
+  "floors": 3,
+  "levelBand": [
+    64,
+    70
+  ],
+  "hazards": [
+    "grave-damp",
+    "cold",
+    "silence"
+  ],
+  "spineId": null
+}

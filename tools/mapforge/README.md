@@ -1,15 +1,39 @@
 # mapforge
 
-Draws the cluster-1 world map as an **authored vector document** from the
-world's own geography data.
+Draws the game's world sheets — cluster-1 (the Meltwash basin) and the atlas
+(the world map) — as **authored vector documents** from the world's own
+geography data.
+
+**The spine (`content/spine/`) is the source of truth.** The entry point is
+`render-sheet.mjs`, which loads the spine, builds the node tree, and draws
+straight from it:
 
 ```
-content/maps/cluster1-geography.json     the geography (source of truth)
+content/spine/                                   the spine (source of truth)
         │
-        ▼  node tools/mapforge/render-map.mjs
+        ▼  node tools/mapforge/render-sheet.mjs --sheet <cluster1|atlas>
+        │     loadSpine → buildTree → draw*Sheet()  (lib/draft.mjs +
+        │     lib/basin-sheet.mjs / lib/atlas-sheet.mjs → lib/raster.mjs)
+        ▼
 game-client/assets/art/maps/cluster1-world.svg    real paths, real text
 game-client/assets/art/maps/cluster1-world.png    2000 px raster for the storybook
+game-client/assets/art/maps/atlas-world.svg       the world sheet
+game-client/assets/art/maps/atlas-world.png       2000 px raster for the storybook
 ```
+
+There is **one** source of map truth: the spine, `content/spine/`. A sheet is
+resolved from it in memory by `resolveWorld()` in `scripts/lib/places.mjs` and
+drawn by `render-sheet.mjs`. Plan A retired the generated
+`content/maps/cluster1-geography.json` mirror and the legacy `render-map.mjs`
+CLI that read it; nothing is written to disk between the spine and the sheet.
+
+`scripts/check_render_lock.mjs` is the drift gate (**G-RENDER-LOCK**): it
+rebuilds every sheet in `render-sheet.mjs`'s `SHEETS` registry from the live
+spine, hashes each one, and compares against both `content/world/render-lock.json`
+and the committed SVG on disk, printing a unified diff on mismatch. It replaced
+`check_map_render.mjs`, `render-map.mjs --check`, the byte-parity test and its
+47 KB baseline fixture — five comparisons of one artifact collapsed into one
+hash. Run it with `--check` (default, writes nothing) or `--write`.
 
 ## Why this is not a generated image
 
@@ -26,9 +50,21 @@ the sheet is real SVG `<text>`, positioned from the data.
 ## Commands
 
 ```bash
-node tools/mapforge/render-map.mjs            # SVG + PNG (PNG needs rsvg-convert)
-node tools/mapforge/render-map.mjs --no-png   # SVG only
-node tools/mapforge/render-map.mjs --check    # run the self-checks, write nothing
+# spine-driven (current) — pick a sheet. SVG only by default.
+node tools/mapforge/render-sheet.mjs --sheet cluster1            # SVG only
+node tools/mapforge/render-sheet.mjs --sheet atlas               # SVG only
+node tools/mapforge/render-sheet.mjs --sheet cluster1 --png      # SVG + 512px review thumb (the committed one)
+node tools/mapforge/render-sheet.mjs --sheet cluster1 --check    # self-checks + drift check, write nothing
+
+# the ship raster: on demand, and NEVER committed. .gitattributes:29 tracks
+# game-client/assets/**/*.png in LFS with no cross-version dedup, so a full
+# roster redraw at 2000px is tens of MB of blobs for a file only a printer
+# wants. Write it somewhere outside the tree and delete it when you are done.
+node tools/mapforge/render-sheet.mjs --sheet atlas --png --png-width 2000
+
+# drift gate — every sheet in SHEETS, rebuilt from the live spine and hashed
+node scripts/check_render_lock.mjs             # --check (default): compare, write nothing
+node scripts/check_render_lock.mjs --write     # re-baseline content/world/render-lock.json
 ```
 
 Pure Node — **no dependencies, no network, no GPU**. Deterministic: the same
@@ -38,8 +74,7 @@ order is fixed).
 
 ### The PNG step
 
-The renderer shells out to `rsvg-convert` (librsvg) when it is on `PATH`. If it
-is not, the SVG is still written and the exact command is printed:
+The renderer shells out to `rsvg-convert` (librsvg), equivalent to running:
 
 ```bash
 rsvg-convert -w 2000 -b '#f3e7ce' \
@@ -47,14 +82,12 @@ rsvg-convert -w 2000 -b '#f3e7ce' \
   -o game-client/assets/art/maps/cluster1-world.png
 ```
 
-Equivalent alternatives, all local:
-
-```bash
-magick -density 200 -background '#f3e7ce' cluster1-world.svg cluster1-world.png
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-  --headless --disable-gpu --window-size=1614,1396 \
-  --screenshot=cluster1-world.png file:///abs/path/cluster1-world.svg
-```
+If `rsvg-convert` is not on `PATH`, the SVG is still written and a message
+tells you to install librsvg (`brew install librsvg`) — no command is
+printed, and the CLI exits 0. rsvg-convert (librsvg) is the **only**
+supported converter. Do NOT substitute ImageMagick: without the librsvg
+delegate it silently drops every stroke, producing a blank-looking PNG with
+no error.
 
 The PNG exists only because the asset storybook renders raster art today; the
 SVG is the artifact.
@@ -76,7 +109,11 @@ length runs 0–15% short of `roads[].roadKm` (A1 §5.1's surveyed figure). The
 day-counts lettered on the sheet come from `days`/`roadKm`, never from the
 drawn length.
 
-## Schema — `content/maps/cluster1-geography.json`
+## Schema — the resolved world document
+
+This is the shape `resolveWorld()` (`scripts/lib/places.mjs`) returns in memory
+and the shape `drawBasinSheet` draws from — useful as a reference even though
+the spine, not this document, is what you edit. It is never written to disk.
 
 Coordinates are **km**, `x` east, `y` south (north is smaller `y`) — the
 convention inherited from `content/maps/atlas-frontier.md`. The sheet is
@@ -117,8 +154,13 @@ the residual is always visible.
 
 ### Changing the map
 
-Edit the JSON, re-run the renderer, read its self-check output, and look at the
-PNG. If a town moves, its zone polygon and any road endpoint referencing it
-must move with it, and the relay towers sampled along that road must be
-recomputed — the tower coordinates are frozen in the JSON on purpose, so that
-downstream consumers get stable ids.
+Edit the spine (`content/spine/`), then `node scripts/check_spine_emit.mjs
+--write` to regenerate every node's `derived` block and `node
+tools/mapforge/render-sheet.mjs --sheet cluster1 --png` (or `--sheet atlas`)
+to redraw the sheet and its 512 px review thumb — read the self-check output
+and look at the thumb, or open the Map Sheets tab in the asset storybook. `node
+scripts/check_render_lock.mjs --write` re-baselines
+`content/world/render-lock.json` so drift can't slip in. If a town moves, its zone polygon and any road endpoint
+referencing it must move with it, and the relay towers sampled along that
+road must be recomputed — the tower coordinates are frozen on purpose, so
+that downstream consumers get stable ids.

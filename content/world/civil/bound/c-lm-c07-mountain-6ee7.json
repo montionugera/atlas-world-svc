@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c07-mountain-6ee7",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Wrackrun Rake",
+  "bind": {
+    "handle": "c07/mountain/h-ee6ee7",
+    "expect": {
+      "type": "foothill-belt",
+      "sizeKm": [
+        11.94,
+        30
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The wooded rise between the plain and the real mountains, cut by short steep valleys.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#foothill-belt.gloss"
+  },
+  "resolution": null
+}

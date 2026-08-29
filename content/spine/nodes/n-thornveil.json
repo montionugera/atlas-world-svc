@@ -1,0 +1,66 @@
+{
+  "id": "n-thornveil",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "Thornveil",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [105.4, 155],
+  "seed": {
+    "value": "f27312f6c649d1aa",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [101.8, 150.6],
+      [106.2, 149.8],
+      [109, 152.2],
+      [109.4, 157],
+      [107, 160.6],
+      [103.4, 160.2],
+      [101.8, 156.6]
+    ],
+    "anchor": [105.4, 155]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [7.6000000000000085, 10.799999999999983],
+    "originInParent": [101.8, 149.8]
+  },
+  "composition": {
+    "bramble": 48,
+    "forest": 26,
+    "meadow": 14,
+    "rock": 8,
+    "river": 4
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "bramble",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 4,
+    "labelAt": [105.4, 155]
+  },
+  "tags": [],
+  "levelBand": [15, 28]
+}

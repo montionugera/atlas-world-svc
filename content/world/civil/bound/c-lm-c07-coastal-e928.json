@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c07-coastal-e928",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head below Willowlobe",
+  "bind": {
+    "handle": "c07/coastal/h-dae928",
+    "expect": {
+      "type": "sea-waterfall",
+      "sizeKm": [
+        0.05,
+        0.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A stream that runs off the cliff lip and never reaches a beach, because there is none.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sea-waterfall.gloss"
+  },
+  "resolution": null
+}

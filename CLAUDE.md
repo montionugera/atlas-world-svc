@@ -90,6 +90,7 @@ Jest (ts-jest) under `colyseus-server/src/tests/*.test.ts` (~55 files) plus `src
 - Trunk-based: short-lived `feature/`, `fix/`, `docs/` branches off `main`; **squash-merge only**; conventional commit subjects (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`), kept short.
 - This repo is opted into **ps-release-workflow** (`.release.json` present) — backlog/feature work routes through `/ps-release-workflow:*` skills and `.claude/idea_backlog/` + `.claude/refined_backlog/`.
 - C# Unity client models are generated into `colyseus-server/generated/csharp/` and kept in sync with server schemas.
+- **Every produced artifact (maps, sheets, renders, reports) must be observable in a review surface** — the asset-storybook or equivalent; wiring new artifact types into it is part of the producing feature's acceptance criteria (owner rule, 2026-08-15). The maps parity gate (`tools/asset-storybook/tests/maps-index.test.mjs`) enforces this for mapforge sheets.
 
 ## Further docs
 

@@ -833,6 +833,398 @@
         color: var(--text-faint);
       }
 
+      /* ---------- F-044: Maps tab (mapforge sheets) ---------- */
+
+      .maps-card {
+        cursor: pointer;
+      }
+
+      .viewport.maps-thumb-viewport {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e9e1cf; /* parchment — mapforge's C.parchment fill, so the thumbnail's own background doesn't clash with the checkerboard */
+        padding: 0.5rem;
+      }
+
+      .viewport.maps-thumb-viewport img {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+      }
+
+      .maps-png-link {
+        display: inline-block;
+        margin-top: 0.3rem;
+      }
+
+      /* Plan B Task 11 — the map vocabulary panel. Collapsed by default: it is
+         a reference, not the subject of the tab, and expanding it mounts 65
+         inline SVGs. */
+      .maps-ref {
+        margin: 1.4rem 0 0.4rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg-elev);
+      }
+
+      .maps-ref > summary {
+        cursor: pointer;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.86rem;
+        font-weight: 650;
+        color: var(--text);
+        user-select: none;
+      }
+
+      .maps-ref > summary:hover {
+        background: var(--bg-card);
+      }
+
+      .maps-ref-body {
+        padding: 0 0.8rem 1rem;
+      }
+
+      .maps-vocab-stats {
+        padding: 0 0 0.8rem !important;
+        font-size: 0.8rem;
+      }
+
+      .maps-vocab-subhead {
+        margin: 1rem 0 0.6rem;
+        font-size: 0.78rem;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+      }
+
+      /* Denser than the sheet grid: these are swatches, not artifacts. */
+      .maps-vocab-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      }
+
+      .maps-vocab-grid.maps-vocab-marks {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      }
+
+      .maps-vocab-card {
+        padding: 0.55rem;
+        margin: 0;
+        text-align: center;
+      }
+
+      .maps-vocab-card .key,
+      .maps-vocab-card .filename {
+        text-align: center;
+        word-break: break-word;
+      }
+
+      /* The swatch and the mark carry mapforge's own parchment ground so the
+         ink reads the way it reads on a sheet, in either page theme. */
+      .maps-vocab-swatch,
+      .maps-vocab-mark {
+        display: block;
+        margin: 0 auto 0.4rem;
+        max-width: 100%;
+        border-radius: 3px;
+      }
+
+      .maps-vocab-mark {
+        background: #e9e1cf;
+        padding: 2px;
+      }
+
+      /* A glyph family bound to no landform type is drawn and unused — worth
+         seeing, not worth failing on. */
+      .maps-vocab-card.maps-vocab-warn {
+        outline: 1px solid #b4762f;
+      }
+
+      /* ── the fabric census (world-fill Plan C Task 13) ────────────────
+         A DATA artifact's review surface is its numbers. The two sheets above
+         show the world's shape; nobody can see from a drawing that c05 carries
+         a surveyed region with nothing in it, or that c10 has no settlement at
+         all. Monospace and right-aligned because every column but the first is
+         a quantity being compared down the column. */
+      .maps-fabric {
+        margin-top: 1.4rem;
+      }
+
+      .maps-fabric h3 {
+        margin: 0 0 0.4rem;
+        font-size: 0.78rem;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+      }
+
+      .maps-fabric-headline {
+        margin: 0 0 0.7rem;
+        font-size: 0.84rem;
+      }
+
+      .maps-fabric-table {
+        border-collapse: collapse;
+        font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+        font-size: 0.78rem;
+      }
+
+      .maps-fabric-table th,
+      .maps-fabric-table td {
+        padding: 0.16rem 0.9rem 0.16rem 0;
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .maps-fabric-table th:first-child,
+      .maps-fabric-table td:first-child {
+        text-align: left;
+      }
+
+      .maps-fabric-table th {
+        border-bottom: 1px solid var(--line, #3a3a3a);
+        color: var(--text-dim);
+        font-weight: 600;
+      }
+
+      .maps-fabric-table .maps-fabric-total td {
+        border-top: 1px solid var(--line, #3a3a3a);
+        font-weight: 650;
+      }
+
+      .maps-fabric-note {
+        margin: 0.7rem 0 0;
+        font-size: 0.76rem;
+        color: var(--text-dim);
+        max-width: 62ch;
+      }
+
+      /* The overlay reuses .story-overlay's chrome (header/backdrop/exit) —
+         only the stage differs: an SVG under a CSS transform instead of an
+         iframe. */
+      .maps-overlay-title {
+        font-size: 0.86rem;
+        font-weight: 650;
+        color: var(--text);
+        padding: 0 0.4rem;
+      }
+
+      .maps-overlay-stage {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+        overflow: hidden;
+        background: #12151d;
+        touch-action: none; /* pointer events drive pan/zoom directly; don't let the browser also scroll/zoom the page */
+      }
+
+      .maps-overlay-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        max-width: none;
+        transform-origin: 0 0;
+        user-select: none;
+        pointer-events: none; /* the stage, not the img, owns wheel/pointer handling */
+      /* ---------- F-050: forge pipeline dashboard ---------- */
+
+      .forge-rows {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .forge-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        padding: 0.4rem 0.55rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+
+      .forge-brief-id {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-right: 0.5rem;
+        min-width: 9ch;
+      }
+
+      .forge-cell {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        padding: 0.22rem 0.6rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #16202e;
+        color: var(--text-dim);
+        cursor: pointer;
+      }
+
+      .forge-cell.is-done {
+        border-color: #2f6b46;
+        color: #8fe3b0;
+      }
+
+      .forge-cell.is-flag {
+        border-color: #8a6d1f;
+        background: #2b2410;
+        color: #ffd76a;
+      }
+
+      .forge-cell.is-stale {
+        border-color: #8a3535;
+        background: #2b1414;
+        color: #ff9d9d;
+      }
+
+      .forge-cell.is-notrun {
+        opacity: 0.38;
+        cursor: default;
+      }
+
+      .forge-detail-json {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        background: #0b0d12;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.6rem 0.75rem;
+        overflow-x: auto;
+      }
+
+      .forge-orders {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .forge-order {
+        font-size: 0.78rem;
+        color: var(--text-dim);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-left: 3px solid #b0842a;
+        border-radius: 6px;
+        padding: 0.35rem 0.6rem;
+      }
+
+      .forge-order.is-done {
+        border-left-color: #2f6b46;
+        opacity: 0.65;
+      }
+
+      .forge-order.is-done strong {
+        color: #8fe3b0;
+      }
+
+      .forge-order-meta {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--text-faint);
+        margin-top: 0.15rem;
+      }
+
+      .forge-export-btn {
+        font-family: var(--sans);
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #dce4ff;
+        background: var(--accent-dim);
+        border: 1px solid var(--accent);
+        border-radius: 999px;
+        padding: 0.4rem 0.95rem;
+        cursor: pointer;
+      }
+
+      /* F-050 Task 9 — per-cell re-run affordance + inline order form */
+      .forge-rerun {
+        font-size: 0.72rem;
+        line-height: 1;
+        padding: 0.18rem 0.42rem;
+        border-radius: 999px;
+        border: 1px dashed var(--border);
+        background: transparent;
+        color: var(--text-faint);
+        cursor: pointer;
+      }
+
+      .forge-rerun:hover {
+        border-color: var(--accent);
+        color: #dce4ff;
+      }
+
+      .forge-rerun:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      .forge-order-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin: 0.1rem 0 0.45rem 2ch;
+        padding: 0.5rem 0.6rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-hover, var(--border));
+        border-radius: 8px;
+      }
+
+      .forge-order-reason,
+      .forge-order-seed {
+        font-family: var(--sans);
+        font-size: 0.78rem;
+        color: var(--text);
+        background: #0b0d12;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.35rem 0.5rem;
+      }
+
+      .forge-order-seed {
+        max-width: 14ch;
+        font-family: var(--mono);
+      }
+
+      .forge-order-error {
+        margin: 0;
+        font-size: 0.72rem;
+        color: #ff9d9d;
+      }
+
+      .forge-order-actions {
+        display: flex;
+        gap: 0.4rem;
+      }
+
+      .forge-order-submit,
+      .forge-order-cancel {
+        font-size: 0.74rem;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 0.28rem 0.8rem;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-dim);
+      }
+
+      .forge-order-submit {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: #dce4ff;
+      }
+
       /* ---------- F-038: thumbnail cards + virtual grid ---------- */
 
       .vgrid {

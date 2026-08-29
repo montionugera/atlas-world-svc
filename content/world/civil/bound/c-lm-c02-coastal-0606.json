@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-0606",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Kellfield Geo",
+  "bind": {
+    "handle": "c02/coastal/h-910606",
+    "expect": {
+      "type": "tombolo",
+      "sizeKm": [
+        0.66,
+        2.62
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A neck of sand and shingle joining an island to the shore; it drowns on the big tides.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#tombolo.gloss"
+  },
+  "resolution": null
+}

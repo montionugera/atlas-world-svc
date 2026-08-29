@@ -1,0 +1,66 @@
+{
+  "cellKm": 0.5,
+  "landforms": {
+    "maxInstances": 2400,
+    "maxNamed": 500,
+    "minTypes": 0,
+    "maxTypes": 200,
+    "typeCoverageFloor": 0,
+    "dungeonCapableTypes": 0
+  },
+  "poi": {
+    "supplyLimitedSurveyedRegions": {
+      "c99/r01": "fixture region carries no POIs"
+    }
+  },
+  "fabric": {
+    "maxFiles": 20,
+    "maxBytesPerFile": 262144,
+    "maxBytesTotal": 4194304
+  },
+  "civil": {
+    "maxFiles": 600,
+    "maxBytesPerFile": 8192
+  },
+  "premises": {
+    "maxFiles": 13,
+    "maxBytesPerFile": 4096
+  },
+  "handles": {
+    "maxFiles": 13,
+    "maxBytesPerFile": 131072,
+    "maxBytesTotal": 524288
+  },
+  "loop": [
+    {
+      "stage": "generate",
+      "budgetMs": 6000,
+      "failMs": 12000
+    },
+    {
+      "stage": "join",
+      "budgetMs": 6000,
+      "failMs": 12000
+    },
+    {
+      "stage": "gates",
+      "budgetMs": 6000,
+      "failMs": 12000
+    },
+    {
+      "stage": "sheets",
+      "budgetMs": 6000,
+      "failMs": 12000
+    },
+    {
+      "stage": "rasterise",
+      "budgetMs": 6000,
+      "failMs": 12000
+    },
+    {
+      "stage": "commit-lock",
+      "budgetMs": 6000,
+      "failMs": 12000
+    }
+  ]
+}

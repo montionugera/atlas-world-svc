@@ -1,0 +1,26 @@
+{
+  "id": "c-lm-rooktide-reach",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Rooktide Reach",
+  "pin": {
+    "at": [
+      95.8,
+      159.8
+    ],
+    "toleranceKm": 1.5,
+    "why": "A1 §4: Rooktide's reach — an inland basin with no outlet, which is what an inland sea's arm is"
+  },
+  "requires": {
+    "continent": "c02",
+    "landform": "endorheic-lake"
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

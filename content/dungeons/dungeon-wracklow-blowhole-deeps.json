@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-wracklow-blowhole-deeps",
+  "title": "Wracklow Blowhole Deeps",
+  "family": null,
+  "bind": {
+    "handle": "c06/coastal/h-313c7d"
+  },
+  "entranceType": "blowhole",
+  "floors": 3,
+  "levelBand": [
+    20,
+    52
+  ],
+  "hazards": [
+    "cold",
+    "loose-floor"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Blowholes that breathe on the storm schedule; the deep ones exhale old air.",
+    "source": "content/world/premises/continent-08.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

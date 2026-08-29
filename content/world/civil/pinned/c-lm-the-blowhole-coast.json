@@ -1,0 +1,29 @@
+{
+  "id": "c-lm-the-blowhole-coast",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "The Blowhole Coast",
+  "pin": {
+    "at": [
+      262,
+      352
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §7: no river reaches the sea intact"
+  },
+  "requires": {
+    "continent": "c08",
+    "landform": "blowhole",
+    "water": {
+      "kind": "sea"
+    }
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

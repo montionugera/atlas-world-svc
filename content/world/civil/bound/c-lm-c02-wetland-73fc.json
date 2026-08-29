@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-73fc",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Mire by Wainstead",
+  "bind": {
+    "handle": "c02/wetland/h-7373fc",
+    "expect": {
+      "type": "raised-bog",
+      "sizeKm": [
+        1.79,
+        7.14
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A dome of peat that has grown above the water table and drinks nothing but rain.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#raised-bog.gloss"
+  },
+  "resolution": null
+}

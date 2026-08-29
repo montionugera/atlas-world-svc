@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c09-coastal-ee4e",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Loamrun Geo",
+  "bind": {
+    "handle": "c09/coastal/h-c4ee4e",
+    "expect": {
+      "type": "estuary",
+      "sizeKm": [
+        2.31,
+        9.24
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Where the river's water and the sea's argue twice a day over the same mudflats.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#estuary.gloss"
+  },
+  "resolution": null
+}

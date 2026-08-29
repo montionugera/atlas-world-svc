@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-0c05",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Embermark Race",
+  "bind": {
+    "handle": "c02/fluvial/h-bb0c05",
+    "expect": {
+      "type": "braided-channel",
+      "sizeKm": [
+        1,
+        2.54
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wide bed of gravel bars where the river runs in a dozen shallow threads at once.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#braided-channel.gloss"
+  },
+  "resolution": null
+}

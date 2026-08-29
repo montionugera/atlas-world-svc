@@ -1,0 +1,29 @@
+{
+  "id": "c-lm-the-meltwash-mouth",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "The Meltwash",
+  "pin": {
+    "at": [
+      88.5,
+      166
+    ],
+    "toleranceKm": 1.5,
+    "why": "A1 §4: \"the Meltwash from the ice to the mire\" — the river's seaward end. NO spine node exists for it, so this `at` is a literal, 2.9 km from the translated Saltmire and t=0.184 inside c02's ellipse; it is not derived from Step 1 and must not be"
+  },
+  "requires": {
+    "continent": "c02",
+    "landform": "estuary",
+    "water": {
+      "kind": "sea"
+    }
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

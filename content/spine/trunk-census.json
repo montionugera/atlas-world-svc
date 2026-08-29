@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "note": "THE AUTHORITY on the trunk's size and shape (plan E, constraint E-C4). Any test, fixture or gate that needs a trunk-derived count reads it FROM HERE and names this file in a comment — a literal copied into a fixture is a number the next redraw has to hunt for. Changing a line here is a reviewed commit with its `why` rewritten in the same diff.",
+  "expected": 36,
+  "byTier": {
+    "world": 1,
+    "continent": 13,
+    "ocean": 3,
+    "sea": 9,
+    "region": 2,
+    "town": 1,
+    "playroot": 1,
+    "playspace": 1,
+    "site": 3,
+    "fixture": 2
+  },
+  "why": {
+    "world": "n-atlas — the 400x400 km frame. Frozen, never regenerated; its parentId is null, which is why a frozen root over unfrozen children stays legal (E-C1).",
+    "continent": "The 13 landmasses of spec §6.3. Each pins provenance.generator.fabric at the fabric file its outline was simplified from (G-TRUNK-AREA, ±3%), and each is complete-when-childless via that pin because its regions are fabric rows, not nodes (E-C3).",
+    "ocean": "Galereach, Keelbreak, Tarnmark. Polygons 41,800 / 30,400 / 19,000 km². Childless by construction — an ocean has no surveyed interior, which is the WATER_TIERS skip of E-C2.",
+    "sea": "The 9 marginal seas. Each is a SUBSET of its ocean polygon (G-CONTAIN); its area is already inside the 91,200 and is never added again. Childless for the same E-C2 reason as its ocean.",
+    "region": "n-thornveil and n-northern-icefield ONLY. The runtime tree points at both through representsNodeId and scripts/lib/spine.mjs:875-877 hard-FAILs G-ALIAS if either vanishes. Every other region is a fabric row, not a node.",
+    "town": "n-millcross ONLY — the spineId host of content/towns/town-millcross.json, the one committed town plan (check_content.mjs:1192 joins a plan to the trunk by spineId). Hangs directly off its continent via the DEPTH_EXCEPTIONS entry \"continent>town\". Each future town plan (E-C9 defers 7 against manifest.quotas.townPlans: 8) adds one node here and one line to this census, as a reviewed commit.",
+    "playroot": "n-playroot — the runtime root, copied verbatim by promote-world.mjs via roots.json membership, never regenerated. The runtime subtree is a non-goal of the redraw: if it moves, mapDimensions.ts moves with it.",
+    "playspace": "n-frontier-shelf — runtime, copied verbatim.",
+    "site": "n-site-spawn-meadow, n-site-thornveil, n-site-icefield — runtime, copied verbatim. The last two are the representsNodeId sources that make the two region anchors load-bearing.",
+    "fixture": "n-fixture-deflect, n-fixture-projectile — runtime, copied verbatim."
+  },
+  "features": {
+    "note": "TRUNK FEATURES ARE THE NETWORK (spec §5.6): every edge endpoint that is not a node resolves to one, and post-redraw the generator mints one f-town-<slug> per settlement on the drawn landmasses. The count is therefore a function of the trunk, not an authored list, which is why it lives here and not as a literal in a fixture. `attrsKeys` is the size of the union of feature attrs keys across the corpus — the number the node schema's closed attrs object is checked against.",
+    "expected": 54,
+    "byKind": { "point": 54, "line": 0, "area": 0 },
+    "attrsKeys": 5
+  },
+  "edges": {
+    "note": "Edge counts move with the trunk because an edge endpoint is a node or a trunk feature. Read from here for the same reason as byTier. Post-redraw shape after Task 6 Steps 6b/6d rulings 1-6: 5 edges retired (e-trunk-chain, e-flat-chain, e-sea-lane, e-terrace-track, e-terrace-track-north).",
+    "expected": 15,
+    "byKind": { "road": 6, "leg": 7, "sealane": 2 }
+  }
+}

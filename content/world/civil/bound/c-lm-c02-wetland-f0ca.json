@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-f0ca",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Marlveil Fen",
+  "bind": {
+    "handle": "c02/wetland/h-e8f0ca",
+    "expect": {
+      "type": "blanket-mire",
+      "sizeKm": [
+        2.34,
+        9.36
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Peat laid over everything, hill and hollow alike, wet enough to swallow a boot.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#blanket-mire.gloss"
+  },
+  "resolution": null
+}

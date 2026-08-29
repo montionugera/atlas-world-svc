@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-mountain-55f9",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Sabkhwater Saddle",
+  "bind": {
+    "handle": "c05/mountain/h-5755f9",
+    "expect": {
+      "type": "plateau-scarp",
+      "sizeKm": [
+        7.56,
+        25
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The cliffed edge where the high ground stops and the low country begins.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#plateau-scarp.gloss"
+  },
+  "resolution": null
+}

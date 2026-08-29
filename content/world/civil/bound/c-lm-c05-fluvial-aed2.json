@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-fluvial-aed2",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ashwaste Reach",
+  "bind": {
+    "handle": "c05/fluvial/h-29aed2",
+    "expect": {
+      "type": "alluvial-fan",
+      "sizeKm": [
+        1.98,
+        7.9
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A spread of stone and grit laid out where a steep stream hits the flat and slows.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#alluvial-fan.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-lakes-ecc6",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Bramcross Deep",
+  "bind": {
+    "handle": "c02/lakes/h-faecc6",
+    "expect": {
+      "type": "tarn",
+      "sizeKm": [
+        0.19,
+        0.74
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A small cold lake sitting in a rock bowl, fed by snow and nothing else.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#tarn.gloss"
+  },
+  "resolution": null
+}

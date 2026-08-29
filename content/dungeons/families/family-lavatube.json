@@ -1,0 +1,10 @@
+{
+  "id": "family-lavatube",
+  "title": "Lava tube",
+  "floors": 3,
+  "floorGraph": "linear",
+  "hazards": ["heat", "fume", "loose-floor"],
+  "roomCountCurve": [6, 9, 7],
+  "levelBand": { "base": 19, "step": 3, "span": 6 },
+  "entranceTypes": ["lava-tube", "fumarole-vent", "caldera-floor", "rift-fissure", "tectonic-cave", "blowhole"]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "n-w",
+  "tier": "world",
+  "parentId": null,
+  "title": "W",
+  "provenance": { "authored": "hand", "generator": null, "source": "fixture" },
+  "frozen": false,
+  "seed": { "value": "70e11e3d1b50810c", "epoch": 0, "why": null },
+  "placement": { "shape": "rect", "rect": { "x": 0, "y": 0, "w": 100, "h": 100 }, "anchor": [50, 50] },
+  "interior": { "units": "km", "perParentUnit": 1, "size": [100, 100], "originInParent": [0, 0] },
+  "composition": { "meadow": 96, "rock": 4 },
+  "interstitial": { "meadow": 100 },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": 5.0,
+  "toleranceWhy": "fixture: keep G-COMP-ROLLUP quiet so G-ATLAS-ROLLUP's tighter ±2pp pin is the only red",
+  "features": [],
+  "bands": [],
+  "runtime": { "mapIds": [], "originU": null, "spawnAreas": [], "mobSettings": null, "seedDemoNPCs": false, "collision": "none" },
+  "representsNodeId": null,
+  "lore": {},
+  "tags": [],
+  "levelBand": null
+}

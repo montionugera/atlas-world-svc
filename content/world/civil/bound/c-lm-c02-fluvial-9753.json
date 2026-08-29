@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-9753",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Fordmark Confluence",
+  "bind": {
+    "handle": "c02/fluvial/h-369753",
+    "expect": {
+      "type": "anabranch-island",
+      "sizeKm": [
+        0.81,
+        2.5
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wooded island the river has split around and not yet decided to take back.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#anabranch-island.gloss"
+  },
+  "resolution": null
+}

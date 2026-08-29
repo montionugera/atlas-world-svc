@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-4396",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Skerryreach Reach",
+  "bind": {
+    "handle": "c03/fluvial/h-0e4396",
+    "expect": {
+      "type": "oxbow-lake",
+      "sizeKm": [
+        0.12,
+        0.48
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A cut-off loop of river left standing on its own, going quietly green at the edges.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#oxbow-lake.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,73 @@
+{
+  "id": "n-loamspit",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "Loamspit",
+  "provenance": {
+    "authored": "generated",
+    "generator": {
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/continent-13.json"
+    },
+    "source": "content/world/premises/continent-13.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "bbf84fd9d7eab949",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [15.5, 340.5],
+      [19, 336],
+      [26.5, 332],
+      [44, 331],
+      [58, 335],
+      [64, 342.5],
+      [63.5, 347],
+      [59.5, 352],
+      [48.5, 356],
+      [28, 355.5],
+      [17, 349.5],
+      [16.5, 348.5],
+      [16, 348.5],
+      [16, 347.5],
+      [15.5, 347.5],
+      [15.5, 346.5],
+      [15, 346.5],
+      [15, 341.5],
+      [15.5, 341.5]
+    ],
+    "anchor": [31.75, 343.25]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [49, 25],
+    "originInParent": [15, 331]
+  },
+  "composition": {
+    "meadow": 83,
+    "reef": 11.1,
+    "marsh": 5.9
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": null,
+  "features": [],
+  "bands": [],
+  "runtime": null,
+  "representsNodeId": null,
+  "lore": {
+    "summary": "migrating sandbars and mangrove — the chart is redrawn every decade",
+    "reported": true,
+    "reportedAs": "hearsay"
+  },
+  "tags": [],
+  "levelBand": [8, 24]
+}

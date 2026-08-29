@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-wracklow-geo-throats",
+  "title": "Wracklow Geo Throats",
+  "family": null,
+  "bind": {
+    "handle": "c02/coastal/h-595839"
+  },
+  "entranceType": "sea-arch",
+  "floors": 3,
+  "levelBand": [
+    20,
+    52
+  ],
+  "hazards": [
+    "cold",
+    "collapse"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Geos that swallow the Atlantic swell and fire it back out as spray-clockwork.",
+    "source": "content/world/premises/continent-08.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

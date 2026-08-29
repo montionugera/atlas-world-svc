@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-5d2d",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Kellrow Race",
+  "bind": {
+    "handle": "c02/fluvial/h-a85d2d",
+    "expect": {
+      "type": "confluence-bench",
+      "sizeKm": [
+        0.39,
+        1.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The dry tongue of ground between two rivers, just before they become one.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#confluence-bench.gloss"
+  },
+  "resolution": null
+}

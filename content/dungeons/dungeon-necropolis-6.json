@@ -1,0 +1,21 @@
+{
+  "id": "dungeon-necropolis-6",
+  "title": "Necropolis 7",
+  "family": "family-necropolis",
+  "familyIndex": 6,
+  "bind": {
+    "handle": "c03/fluvial/h-f7bd3e"
+  },
+  "entranceType": "knickpoint-gorge",
+  "floors": 3,
+  "levelBand": [
+    61,
+    67
+  ],
+  "hazards": [
+    "grave-damp",
+    "cold",
+    "silence"
+  ],
+  "spineId": null
+}

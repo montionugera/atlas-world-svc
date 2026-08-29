@@ -1,0 +1,14 @@
+{
+  "continent": "c10",
+  "orderDigest": "sha256:9e3255a0db8bbd6443e3207dd634395dfcc68b5946ec75f5738fa4fce3d7e138",
+  "handles": [
+    {
+      "handle": "c10/volcanic/h-3c9d",
+      "type": "lava-tube",
+      "sizeKm": 1.2,
+      "region": "c10/r01",
+      "contentHash": "sha256:3c9d000000000000000000000000000000000000000000000000000000000000",
+      "rank": 0
+    }
+  ]
+}

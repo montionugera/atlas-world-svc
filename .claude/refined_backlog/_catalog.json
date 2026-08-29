@@ -469,5 +469,126 @@
     "claimed_at": "2026-08-09T02:26:34.558811+00:00",
     "shipped_at": "2026-08-09T03:56:49.856521+00:00",
     "promoted_at": "2026-08-09T09:38:37.900249+00:00"
+  },
+  {
+    "id": "F-041",
+    "title": "Seeded map data model: seed + derived file so cluster-1 map detail can grow without hand-authoring every point",
+    "from_idea": "I-089",
+    "created_at": "2026-08-09T15:20:45.101834+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.8",
+    "claimed_at": "2026-08-09T15:21:11.116081+00:00",
+    "shipped_at": "2026-08-10T02:14:08.325583+00:00"
+  },
+  {
+    "id": "F-042",
+    "title": "World map render: spine-driven world-scale map (F-041 tier spine has no renderer; cluster1-world.svg is region-scale)",
+    "from_idea": "I-090",
+    "created_at": "2026-08-12T11:36:50.610553+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.8",
+    "claimed_at": "2026-08-12T11:44:46.979274+00:00",
+    "shipped_at": "2026-08-12T15:29:11.333024+00:00"
+  },
+  {
+    "id": "F-043",
+    "title": "World-scale geography: seeded continent/ocean generation from n-atlas seed + composition, hand-polished into canon, so the atlas world sheet renders a complete map",
+    "from_idea": "I-092",
+    "created_at": "2026-08-12T17:08:27.156237+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.8",
+    "claimed_at": "2026-08-12T17:25:16.610221+00:00",
+    "shipped_at": "2026-08-15T07:12:50.683031+00:00"
+  },
+  {
+    "id": "F-044",
+    "title": "storybook Maps tab: serve game-client/assets/art/maps (cluster1-world, atlas-world) with pan/zoom in asset-storybook, honoring the new every-artifact-observable rule",
+    "from_idea": "I-094",
+    "created_at": "2026-08-15T07:42:33.493281+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.8",
+    "claimed_at": "2026-08-15T07:42:38.068848+00:00",
+    "shipped_at": "2026-08-15T09:32:15.309407+00:00"
+  },
+  {
+    "id": "F-045",
+    "title": "world rescale to 400x400: uniform /5 geography scale, towns keep physical size, hour-scale travel \u2014 owner-approved scale model",
+    "from_idea": "I-095",
+    "created_at": "2026-08-15T11:13:13.887291+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.8",
+    "claimed_at": "2026-08-15T11:13:19.907833+00:00",
+    "shipped_at": "2026-08-15T13:51:28.091058+00:00"
+  },
+  {
+    "id": "F-046",
+    "title": "World fill Plan A: unblock and afford \u2014 exact geometry, spatial index, places.mjs join authority, render lock",
+    "from_idea": "I-097",
+    "created_at": "2026-08-18T13:58:51.036761+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.8",
+    "claimed_at": "2026-08-18T13:58:59.554590+00:00",
+    "shipped_at": "2026-08-19T06:46:25.268443+00:00"
+  },
+  {
+    "id": "F-047",
+    "title": "World fill Plan B: vocabulary and render \u2014 170-type landform lexicon, four schemas, 20 biomes, 40 glyph families, deterministic label declutter, baked-texture rasteriser",
+    "from_idea": "I-099",
+    "created_at": "2026-08-20T12:52:02.379109+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.8",
+    "claimed_at": "2026-08-20T12:52:17.999510+00:00",
+    "shipped_at": "2026-08-21T18:51:25.138518+00:00"
+  },
+  {
+    "id": "F-048",
+    "title": "World fill Plan C: the fabric layer \u2014 seeded 400x400 generator, 13 landmasses / 160 regions / 1,740 landform instances / 45 settlements, committed content/world/fabric + handles, 1.5:1 sea-to-land by construction",
+    "from_idea": "I-100",
+    "created_at": "2026-08-22T00:17:09.953946+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.8",
+    "claimed_at": "2026-08-22T00:17:27.149556+00:00",
+    "shipped_at": "2026-08-23T07:00:24.787706+00:00"
+  },
+  {
+    "id": "F-049",
+    "title": "World fill Plan D: pinned places, bound records and relations",
+    "from_idea": "I-101",
+    "created_at": "2026-08-24T17:25:29.746526+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.8",
+    "claimed_at": "2026-08-24T17:25:45.506176+00:00",
+    "shipped_at": "2026-08-25T16:07:40.344217+00:00"
+  },
+  {
+    "id": "F-050",
+    "title": "Art-forge pipeline dashboard: pipeline view per brief with gate verdicts and per-cell re-run",
+    "from_idea": "I-102",
+    "created_at": "2026-08-25T07:20:22.906222+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.8",
+    "claimed_at": "2026-08-25T07:32:15.795624+00:00",
+    "shipped_at": "2026-08-25T11:16:36.008696+00:00"
+  },
+  {
+    "id": "F-051",
+    "title": "World fill Plan E: redraw and prose",
+    "from_idea": "I-103",
+    "created_at": "2026-08-25T16:29:20.211751+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.8",
+    "claimed_at": "2026-08-25T16:29:35.279831+00:00",
+    "shipped_at": "2026-08-29T09:06:24.475865+00:00"
   }
 ]

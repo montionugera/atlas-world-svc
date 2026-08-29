@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-2498",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ford under Driftsound",
+  "bind": {
+    "handle": "c03/fluvial/h-6c2498",
+    "expect": {
+      "type": "alluvial-fan",
+      "sizeKm": [
+        0.5,
+        1.98
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A spread of stone and grit laid out where a steep stream hits the flat and slows.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#alluvial-fan.gloss"
+  },
+  "resolution": null
+}

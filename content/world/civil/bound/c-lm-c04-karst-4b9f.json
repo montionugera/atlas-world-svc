@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-4b9f",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Karnlack Pot",
+  "bind": {
+    "handle": "c04/karst/h-024b9f",
+    "expect": {
+      "type": "foiba",
+      "sizeKm": [
+        0.06,
+        0.24
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A vertical shaft dropping straight into the dark, with no ledge to start from.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#foiba.gloss"
+  },
+  "resolution": null
+}

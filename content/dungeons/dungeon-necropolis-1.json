@@ -1,0 +1,21 @@
+{
+  "id": "dungeon-necropolis-1",
+  "title": "Necropolis 2",
+  "family": "family-necropolis",
+  "familyIndex": 1,
+  "bind": {
+    "handle": "c04/karst/h-4f8b0d"
+  },
+  "entranceType": "ponor",
+  "floors": 3,
+  "levelBand": [
+    46,
+    52
+  ],
+  "hazards": [
+    "grave-damp",
+    "cold",
+    "silence"
+  ],
+  "spineId": null
+}

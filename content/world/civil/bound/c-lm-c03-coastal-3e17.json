@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-coastal-3e17",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Cairnwall Stack",
+  "bind": {
+    "handle": "c03/coastal/h-593e17",
+    "expect": {
+      "type": "marine-terrace",
+      "sizeKm": [
+        0.94,
+        3.76
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "An old shoreline stranded above the present one, level enough to build a road on.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#marine-terrace.gloss"
+  },
+  "resolution": null
+}

@@ -67,6 +67,7 @@ import {
   floodFillRegions,
   cellIndexAt,
 } from "../lib/town-geometry.mjs";
+import { loadPlaces } from "../lib/places.mjs";
 
 // Same ESM/CJS interop guard as scripts/lib/story.mjs:11 — `ajv` is CJS, so
 // under ESM the constructor may arrive as the module namespace's `.default`.
@@ -75,7 +76,6 @@ const AjvClass = Ajv.default ?? Ajv;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const SCHEMA_PATH = join(ROOT, "content/schemas/town-plan.schema.json");
 const PLAN_PATH = join(ROOT, "content/towns/town-millcross.json");
-const GEOGRAPHY_PATH = join(ROOT, "content/maps/cluster1-geography.json");
 
 const PLAN = JSON.parse(readFileSync(PLAN_PATH, "utf8"));
 
@@ -233,10 +233,34 @@ test("the extent is the ten-second crossing, 150-260 on both axes", () => {
   }
 });
 
-test("the anchor is Millcross's own `at` in cluster1-geography.json", () => {
-  const geography = JSON.parse(readFileSync(GEOGRAPHY_PATH, "utf8"));
-  const town = geography.towns.find((t) => t.id === PLAN.town);
-  assert.ok(town, `${PLAN.town} is not a town in cluster1-geography.json`);
+// Plan A Task 12: the town's `at` used to be read straight out of the deleted
+// content/maps/cluster1-geography.json. This file was NOT on the plan's list of
+// remaining readers (enumeration defect #4).
+//
+// Plan D Task 11: loadPlaces() now reads the GENERATED world from
+// content/world/resolved/, whose town ids are the new c-town-* pins.
+//
+// PLAN E RULING 8 (Task 6): this bound to resolveWorld()'s BASIN document,
+// because the plan's subject was the live basin Millcross. That document no
+// longer exists — the redrawn trunk hosts no basin and ruling 8's tail retired
+// the dead subject keys from content/spine/sheet.json — but Millcross itself
+// survives the redraw, as the pinned civil town `c-town-millcross` in the
+// resolved world. That is what the plan's anchor has to agree with now, and it
+// is a STRONGER claim than the one it replaces: the town plan's frame is now
+// tied to the pin the whole civil layer places, not to a hand-authored basin.
+//
+// The join is by the record's own `plan` back-pointer rather than by id. That
+// was originally so this test did not depend on a re-homing that had not
+// happened; Plan E Task 14 has since re-homed the plan onto `c-town-millcross`
+// and cleared T1's orphan, and the back-pointer join is KEPT anyway because it
+// is the stronger of the two: it asserts the geometry from the resolved
+// world's own pointer at this file, which an id match would not.
+test("the anchor is Millcross's own `at` in the resolved world", () => {
+  const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
+  assert.deepEqual(problems, []);
+  const town = doc.towns.find((t) => t.plan === "content/towns/town-millcross.json");
+  assert.ok(town, "no town in the resolved world points back at this plan");
+  assert.equal(town.id, "c-town-millcross");
   assert.deepEqual(PLAN.anchor.geographyAt, town.at);
 });
 

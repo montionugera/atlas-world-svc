@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="1293" viewBox="0 0 880 1293" role="img" aria-label="Brightfall — the cliff-hung falls">
+<title>Brightfall — the cliff-hung falls</title>
+<desc>Drawn by tools/mapforge/render-sheet.mjs from content/world/resolved/continent-09.json and content/world/fabric/continent-09.json. Surveyed regions carry biome ink; reported regions carry the provenance hatch and no terrain claim.</desc>
+<defs>
+<pattern id="pAsh" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="0.55" fill="#5d5344"/><circle cx="9" cy="7" r="0.55" fill="#5d5344"/><circle cx="5" cy="11" r="0.5" fill="#5d5344"/><circle cx="12" cy="12" r="0.5" fill="#5d5344"/></pattern>
+<pattern id="pBadland" width="15" height="15" patternUnits="userSpaceOnUse"><path d="M2,14 l3,-9 l3,9 M9,14 l2.5,-6 l2.5,6" stroke="#8a7f6c" stroke-width="0.6" fill="none"/></pattern>
+<pattern id="pBramble" width="9" height="9" patternUnits="userSpaceOnUse"><path d="M0,9 l9,-9 M0,0 l9,9" stroke="#8a7f6c" stroke-width="0.65" fill="none"/></pattern>
+<pattern id="pBuilt" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M0,6 h12 M6,0 v12" stroke="#8a7f6c" stroke-width="0.5" fill="none"/></pattern>
+<pattern id="pDesert" width="22" height="14" patternUnits="userSpaceOnUse"><path d="M0,10 q5.5,-5 11,0 t11,0" stroke="#8a7f6c" stroke-width="0.7" fill="none"/></pattern>
+<pattern id="pFlat" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="3" cy="4" r="0.8" fill="#8a7f6c"/><circle cx="11" cy="9" r="0.8" fill="#8a7f6c"/><circle cx="6" cy="13" r="0.7" fill="#8a7f6c"/></pattern>
+<pattern id="pForest" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M5,14 l3,-6 l3,6 Z M12,17 l2.5,-5 l2.5,5 Z" fill="none" stroke="#8a7f6c" stroke-width="0.7"/></pattern>
+<pattern id="pIce" width="26" height="13" patternUnits="userSpaceOnUse"><path d="M0,4 h11 M15,4 h9 M4,9.5 h13 M20,9.5 h6" stroke="#8a7f6c" stroke-width="0.9" fill="none"/></pattern>
+<pattern id="pKarst" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M0,5 h16 M0,11 h16 M5,0 v5 M11,5 v6 M3,11 v5" stroke="#8a7f6c" stroke-width="0.6" fill="none"/></pattern>
+<pattern id="pLake" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M2,7 q4,-2.5 8,0 M6,14 q4,-2.5 8,0" stroke="#5d5344" stroke-width="0.6" fill="none"/></pattern>
+<pattern id="pLava" width="13" height="13" patternUnits="userSpaceOnUse"><path d="M1,4 l3,3 l-3,3 M7,2 l3,3 l-3,3 M4,10 l3,2" stroke="#5d5344" stroke-width="0.75" fill="none"/></pattern>
+<pattern id="pMeadow" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M4,15 v-3 M10,18 v-3 M16,13 v-3" stroke="#8a7f6c" stroke-width="0.6" fill="none"/></pattern>
+<pattern id="pMire" width="22" height="16" patternUnits="userSpaceOnUse"><path d="M2,8 h9 M6.5,8 v-3.5 M4,8 v-2.5 M9,8 v-2.5" stroke="#5d5344" stroke-width="0.8" fill="none"/><path d="M13,15 h8 M17,15 v-3 M14.8,15 v-2.2 M19.2,15 v-2.2" stroke="#5d5344" stroke-width="0.8" fill="none"/></pattern>
+<pattern id="pOcean" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M0,6 q6,-3 12,0 t12,0 M0,18 q6,-3 12,0 t12,0" stroke="#8a7f6c" stroke-width="0.5" fill="none" opacity="0.55"/></pattern>
+<pattern id="pReef" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M3,12 v-4 M3,10 h-1.6 M3,10 h1.6 M11,14 v-5 M11,11 h-1.6 M11,11 h1.6" stroke="#5d5344" stroke-width="0.6" fill="none"/></pattern>
+<pattern id="pReported" width="7" height="7" patternUnits="userSpaceOnUse"><path d="M0,7 L7,0" stroke="#241f18" stroke-width="0.45" opacity="0.5"/></pattern>
+<pattern id="pReportedHearsay" width="11" height="11" patternUnits="userSpaceOnUse"><path d="M0,11 L11,0" stroke="#241f18" stroke-width="0.45" opacity="0.42"/></pattern>
+<pattern id="pReportedInferred" width="15" height="15" patternUnits="userSpaceOnUse"><path d="M0,15 L15,0" stroke="#241f18" stroke-width="0.45" opacity="0.3"/></pattern>
+<pattern id="pReportedSworn" width="7" height="7" patternUnits="userSpaceOnUse"><path d="M0,7 L7,0" stroke="#241f18" stroke-width="0.45" opacity="0.5"/></pattern>
+<pattern id="pRim" width="11" height="11" patternUnits="userSpaceOnUse"><path d="M0,11 l11,-11" stroke="#8a7f6c" stroke-width="0.75" fill="none"/></pattern>
+<pattern id="pRiver" width="20" height="18" patternUnits="userSpaceOnUse"><path d="M3,12 v-5 M6,14 v-4 M13,7 v-5 M16,9 v-4" stroke="#8a7f6c" stroke-width="0.8" fill="none"/></pattern>
+<pattern id="pRock" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M2,2 v4 M7,5 v4 M10,1 v3 M4,9 v3" stroke="#8a7f6c" stroke-width="0.9" fill="none"/></pattern>
+<pattern id="pScree" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M2,3 l2,2 M8,2 l2,2 M4,9 l2,2 M10,10 l2,2" stroke="#8a7f6c" stroke-width="0.7" fill="none"/></pattern>
+<pattern id="pTundra" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M3,10 h5 M12,16 h5" stroke="#8a7f6c" stroke-width="0.6" fill="none"/><circle cx="15" cy="6" r="0.5" fill="#8a7f6c"/></pattern>
+<pattern id="pUpland" width="18" height="14" patternUnits="userSpaceOnUse"><path d="M2,10 l4,-6 l4,6 M11,13 l3,-4.5 l3,4.5" stroke="#8a7f6c" stroke-width="0.9" fill="none"/></pattern>
+<symbol id="g-arch" viewBox="-6 -6 12 12" overflow="visible"><path d="M-4,4 L-4,0 Q-0.07,-5 4,0 L4,4 M-2.6,2.6 Q-1.3,1.6 0,2.6 Q1.3,3.6 2.6,2.6" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linejoin="round"/></symbol>
+<symbol id="g-cliff" viewBox="-6 -6 12 12" overflow="visible"><path d="M-4,3 L-4,-2 L4.05,-2 M-2,-2 L-2.6,2 M1,-2 L0.4,2" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linejoin="round"/></symbol>
+<symbol id="g-peak" viewBox="-6 -6 12 12" overflow="visible"><path d="M-4,3.5 L0.46,-4 L4,3.5 Z M-1.4,-0.6 L0.46,-2 L1.4,-0.6" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linejoin="round"/></symbol>
+<symbol id="g-ridge" viewBox="-6 -6 12 12" overflow="visible"><path d="M-4.5,2.5 L-2.2,-2 L-0.27,1 L2.2,-3 L4.5,2.5" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linejoin="round"/></symbol>
+<symbol id="g-spit" viewBox="-6 -6 12 12" overflow="visible"><path d="M-4.5,2 Q0,-2.3 3.5,-1 Q4.5,-0.5 3,1.5" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linejoin="round"/></symbol>
+</defs>
+<style>text { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; fill: #241f18; }
+.lbl { paint-order: stroke fill; stroke: #f3e7ce; stroke-width: 3.4px; stroke-linejoin: round; }</style>
+<rect width="880" height="1293" fill="#f3e7ce"/>
+<text x="46" y="68" font-size="22">Brightfall — the cliff-hung falls</text>
+<g transform="translate(74 114)"><image href="data:image/png;base64,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" x="0" y="0" width="732" height="1008" preserveAspectRatio="none"/></g>
+<path d="M374,114 L494,114 L494,126 L530,126 L530,138 L554,138 L566,162 L590,162 L614,198 L638,198 L638,210 L662,222 L662,246 L710,282 L710,306 L722,306 L722,330 L734,330 L734,354 L746,354 L746,378 L758,378 L758,402 L770,402 L782,486 L794,486 L794,546 L806,546 L806,738 L794,738 L794,810 L782,810 L770,882 L698,906 L686,930 L638,942 L638,954 L614,954 L602,906 L590,906 L590,834 L578,834 L578,786 L566,786 L566,726 L554,726 L542,642 L506,618 L482,546 L446,522 L434,486 L422,486 L410,414 L398,414 L398,390 L386,390 L386,366 L374,366 L374,342 L338,330 L314,294 L290,294 L278,270 L242,258 L254,222 L266,222 L266,198 L278,198 L278,174 L302,174 L326,138 L374,126 Z" fill="none" stroke="#8a7f6c" stroke-width="0.5"/>
+<path d="M98,678 L98,666 L86,666 L86,582 L74,582 L74,474 L86,474 L86,414 L98,414 L98,378 L110,378 L110,354 L122,354 L122,318 L134,318 L134,294 L158,282 L158,258 L182,246 L182,222 L194,222 L230,174 L254,174 L266,150 L290,150 L290,138 L314,138 L314,126 L338,126 L338,114 L374,114 L374,126 L326,138 L302,174 L278,174 L278,198 L266,198 L266,222 L254,222 L242,258 L278,270 L290,294 L314,294 L338,330 L374,342 L374,366 L386,366 L386,390 L398,390 L398,414 L410,414 L422,486 L434,486 L446,522 L482,546 L506,618 L542,642 L554,726 L566,726 L566,786 L578,786 L578,834 L590,834 L590,906 L602,906 L614,954 L638,954 L638,942 L686,930 L698,906 L770,882 L758,918 L746,918 L746,942 L734,942 L734,966 L722,966 L722,990 L698,1002 L698,1026 L626,1086 L626,1098 L554,1110 L554,1122 L434,1122 L434,1110 L398,1110 L398,1098 L338,1086 L326,1062 L446,1014 L470,906 L482,906 L482,846 L494,846 L494,834 L458,834 L458,822 L434,822 L434,810 L410,810 L410,798 L374,798 L326,738 L302,738 L266,690 L218,678 L218,666 L134,654 L134,666 Z" fill="none" stroke="#8a7f6c" stroke-width="0.5"/>
+<path d="M338,114 C364,112 468,112 494,114 C520,116 488,124 494,126 C500,128 524,124 530,126 C536,128 526,136 530,138 C534,140 548,134 554,138 C560,142 560,158 566,162 C572,166 582,156 590,162 C598,168 606,192 614,198 C622,204 634,196 638,198 C642,200 634,206 638,210 C642,214 658,216 662,222 C666,228 654,236 662,246 C670,256 702,272 710,282 C718,292 708,302 710,306 C712,310 720,302 722,306 C724,310 720,326 722,330 C724,334 732,326 734,330 C736,334 732,350 734,354 C736,358 744,350 746,354 C748,358 744,374 746,378 C748,382 756,374 758,378 C760,382 756,398 758,402 C760,406 766,388 770,402 C774,416 778,472 782,486 C786,500 792,476 794,486 C796,496 792,536 794,546 C796,556 804,514 806,546 C808,578 808,706 806,738 C804,770 796,726 794,738 C792,750 796,798 794,810 C792,822 786,796 782,810 C778,824 774,880 770,894 C766,908 760,890 758,894 C756,898 760,914 758,918 C756,922 752,906 746,918 C740,930 730,976 722,990 C714,1004 702,996 698,1002 C694,1008 700,1022 698,1026 C696,1030 698,1014 686,1026 C674,1038 642,1086 626,1098 C610,1110 596,1096 590,1098 C584,1100 596,1108 590,1110 C584,1112 560,1108 554,1110 C548,1112 574,1120 554,1122 C534,1124 454,1124 434,1122 C414,1120 446,1114 434,1110 C422,1106 374,1102 362,1098 C350,1094 366,1088 362,1086 C358,1084 344,1090 338,1086 C332,1082 332,1066 326,1062 C320,1058 306,1064 302,1062 C298,1060 318,1066 302,1050 C286,1034 222,984 206,966 C190,948 210,948 206,942 C202,936 186,936 182,930 C178,924 184,910 182,906 C180,902 172,910 170,906 C168,902 172,886 170,882 C168,878 160,886 158,882 C156,878 160,862 158,858 C156,854 148,862 146,858 C144,854 148,838 146,834 C144,830 140,852 134,834 C128,816 116,744 110,726 C104,708 102,750 98,726 C94,702 90,606 86,582 C82,558 76,600 74,582 C72,564 72,492 74,474 C76,456 82,490 86,474 C90,458 94,394 98,378 C102,362 108,382 110,378 C112,374 108,358 110,354 C112,350 118,364 122,354 C126,344 130,304 134,294 C138,284 142,300 146,294 C150,288 152,266 158,258 C164,250 178,252 182,246 C186,240 180,226 182,222 C184,218 186,230 194,222 C202,214 220,182 230,174 C240,166 248,178 254,174 C260,170 260,154 266,150 C272,146 286,152 290,150 C294,148 286,140 290,138 C294,136 310,140 314,138 C318,136 310,128 314,126 C318,124 334,128 338,126 C342,124 312,116 338,114 Z" fill="none" stroke="#241f18" stroke-width="1.6"/>
+<g color="#5d5344" fill="none" stroke="currentColor" stroke-width="0.9">
+<use href="#g-cliff" x="791" y="651" width="18" height="18"/>
+<use href="#g-peak" x="791" y="579" width="18" height="18"/>
+<use href="#g-cliff" x="443" y="1107" width="18" height="18"/>
+<use href="#g-cliff" x="635" y="1059" width="18" height="18"/>
+<use href="#g-arch" x="347" y="1071" width="18" height="18"/>
+<use href="#g-peak" x="215" y="951" width="18" height="18"/>
+<use href="#g-cliff" x="119" y="783" width="18" height="18"/>
+<use href="#g-cliff" x="95" y="687" width="18" height="18"/>
+<use href="#g-cliff" x="431" y="867" width="18" height="18"/>
+<use href="#g-spit" x="343.84" y="1055.12" width="20" height="20"/>
+<use href="#g-cliff" x="262" y="998" width="20" height="20"/>
+<use href="#g-spit" x="178" y="915.2" width="20" height="20"/>
+<use href="#g-spit" x="82" y="586.88" width="20" height="20"/>
+<use href="#g-ridge" x="84.4" y="787.04" width="20" height="20"/>
+</g>
+<circle class="town" cx="116" cy="708" r="2.2" fill="#241f18"/>
+<text class="lbl" data-rank="4" x="302.84" y="818.74" font-size="11">c09/r03</text>
+<text class="lbl" data-rank="7" x="229.7" y="952.21" font-size="9.5">Ashen Spar Lava Tubes</text>
+<text class="lbl" data-rank="7" x="109.7" y="688.21" font-size="9.5">Drowned Pavement Cenotes</text>
+<text class="lbl" data-rank="8" x="439.7" y="862.21" font-size="9.5">Brightfall Leap</text>
+<text class="lbl" data-rank="8" x="359.54" y="1057.33" font-size="9.5">Head of the Brightshallow</text>
+<text class="lbl" data-rank="8" x="277.7" y="1000.21" font-size="9.5">Lagoonreef Stack</text>
+<text class="lbl" data-rank="8" x="193.7" y="917.41" font-size="9.5">Quilllow Stack</text>
+<text class="lbl" data-rank="8" x="97.7" y="589.09" font-size="9.5">Willowlobe Stack</text>
+<text class="lbl" data-rank="8" x="100.1" y="789.25" font-size="9.5">Bitternlobe Horn</text>
+<rect x="46" y="1192" width="18" height="12" fill="url(#pIce)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="69" y="1202" font-size="8" fill="#5d5344">ice shelf</text>
+<rect x="198" y="1192" width="18" height="12" fill="url(#pUpland)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="221" y="1202" font-size="8" fill="#5d5344">upland</text>
+<rect x="350" y="1192" width="18" height="12" fill="url(#pFlat)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="373" y="1202" font-size="8" fill="#5d5344">alkali flat</text>
+<rect x="502" y="1192" width="18" height="12" fill="url(#pRim)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="525" y="1202" font-size="8" fill="#5d5344">rim country</text>
+<rect x="654" y="1192" width="18" height="12" fill="url(#pBramble)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="677" y="1202" font-size="8" fill="#5d5344">bramble</text>
+<rect x="46" y="1207" width="18" height="12" fill="url(#pMire)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="69" y="1217" font-size="8" fill="#5d5344">tidal mire</text>
+<rect x="198" y="1207" width="18" height="12" fill="url(#pRock)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="221" y="1217" font-size="8" fill="#5d5344">headland rock</text>
+<rect x="350" y="1207" width="18" height="12" fill="url(#pRiver)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="373" y="1217" font-size="8" fill="#5d5344">river country</text>
+<rect x="502" y="1207" width="18" height="12" fill="url(#pForest)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="525" y="1217" font-size="8" fill="#5d5344">forest</text>
+<rect x="654" y="1207" width="18" height="12" fill="url(#pMeadow)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="677" y="1217" font-size="8" fill="#5d5344">meadow</text>
+<rect x="46" y="1222" width="18" height="12" fill="url(#pReported)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="69" y="1232" font-size="8" fill="#5d5344">reported, not surveyed</text>
+<rect x="198" y="1222" width="18" height="12" fill="url(#pReportedSworn)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="221" y="1232" font-size="8" fill="#5d5344">reported — sworn log</text>
+<rect x="350" y="1222" width="18" height="12" fill="url(#pReportedHearsay)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="373" y="1232" font-size="8" fill="#5d5344">reported — hearsay</text>
+<rect x="502" y="1222" width="18" height="12" fill="url(#pReportedInferred)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="525" y="1232" font-size="8" fill="#5d5344">reported — inferred</text>
+<rect x="654" y="1222" width="18" height="12" fill="url(#pOcean)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="677" y="1232" font-size="8" fill="#5d5344">open sea</text>
+<rect x="46" y="1237" width="18" height="12" fill="url(#pLake)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="69" y="1247" font-size="8" fill="#5d5344">lake</text>
+<rect x="198" y="1237" width="18" height="12" fill="url(#pTundra)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="221" y="1247" font-size="8" fill="#5d5344">tundra</text>
+<rect x="350" y="1237" width="18" height="12" fill="url(#pScree)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="373" y="1247" font-size="8" fill="#5d5344">scree</text>
+<rect x="502" y="1237" width="18" height="12" fill="url(#pKarst)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="525" y="1247" font-size="8" fill="#5d5344">karst pavement</text>
+<rect x="654" y="1237" width="18" height="12" fill="url(#pBadland)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="677" y="1247" font-size="8" fill="#5d5344">badland</text>
+<rect x="46" y="1252" width="18" height="12" fill="url(#pDesert)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="69" y="1262" font-size="8" fill="#5d5344">sand sea</text>
+<rect x="198" y="1252" width="18" height="12" fill="url(#pLava)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="221" y="1262" font-size="8" fill="#5d5344">lava field</text>
+<rect x="350" y="1252" width="18" height="12" fill="url(#pAsh)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="373" y="1262" font-size="8" fill="#5d5344">ash plain</text>
+<rect x="502" y="1252" width="18" height="12" fill="url(#pReef)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="525" y="1262" font-size="8" fill="#5d5344">reef</text>
+<rect x="654" y="1252" width="18" height="12" fill="url(#pBuilt)" stroke="#8a7f6c" stroke-width="0.5"/>
+<text x="677" y="1262" font-size="8" fill="#5d5344">built ground</text>
+</svg>

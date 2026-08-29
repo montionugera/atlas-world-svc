@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-1560",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Pan within Ergreach",
+  "bind": {
+    "handle": "c05/desert/h-441560",
+    "expect": {
+      "type": "playa",
+      "sizeKm": [
+        2.18,
+        8.72
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A dry lake bed cracked to a tile pattern, sheet water for one week in a year.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#playa.gloss"
+  },
+  "resolution": null
+}

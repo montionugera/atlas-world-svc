@@ -1,0 +1,26 @@
+{
+  "id": "c-lm-eastern-hills",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Eastern Hills",
+  "pin": {
+    "at": [
+      107,
+      144.2
+    ],
+    "toleranceKm": 1.5,
+    "why": "A1 §4: the eastern rise behind Thornveil"
+  },
+  "requires": {
+    "continent": "c02",
+    "landform": "spur-ridge"
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

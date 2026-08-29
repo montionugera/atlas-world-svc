@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-coastal-7e35",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Haulshore Roads",
+  "bind": {
+    "handle": "c03/coastal/h-357e35",
+    "expect": {
+      "type": "machair",
+      "sizeKm": [
+        0.31,
+        1.24
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Shell sand blown inland and gone to grass; grazing on top of what was once a beach.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#machair.gloss"
+  },
+  "resolution": null
+}

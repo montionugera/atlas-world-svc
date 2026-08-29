@@ -1,0 +1,34 @@
+{
+  "id": "c-town-cindervast",
+  "kind": "town",
+  "tier": "pinned",
+  "title": "Cindervast",
+  "settlementRank": "hub",
+  "pin": {
+    "at": [
+      90.2,
+      131.4
+    ],
+    "toleranceKm": 1.5,
+    "why": "canon §4: the fallen city beyond Ashvale Front to the north-west, on the stony fan both war towns avoid"
+  },
+  "requires": {
+    "continent": "c02",
+    "landform": "alluvial-fan",
+    "water": {
+      "kind": "none"
+    },
+    "slopeMax": 0.07,
+    "freshWaterWithinKm": 5
+  },
+  "properties": [
+    "fallen-city"
+  ],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

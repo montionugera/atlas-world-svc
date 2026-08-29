@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-96ff",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Fordrow Stack",
+  "bind": {
+    "handle": "c02/coastal/h-0296ff",
+    "expect": {
+      "type": "sea-cave",
+      "sizeKm": [
+        0.12,
+        0.3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A dark mouth in the cliff foot that the tide fills twice a day and empties again.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sea-cave.gloss"
+  },
+  "resolution": null
+}

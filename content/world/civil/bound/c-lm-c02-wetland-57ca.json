@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-57ca",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Fordwick Fen",
+  "bind": {
+    "handle": "c02/wetland/h-5c57ca",
+    "expect": {
+      "type": "seasonal-marsh",
+      "sizeKm": [
+        1.41,
+        5.62
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Ground that is meadow in one season and shallow lake in another, without warning.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#seasonal-marsh.gloss"
+  },
+  "resolution": null
+}
