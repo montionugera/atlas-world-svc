@@ -67,11 +67,30 @@ export function runPasses({ manifest, premises,
                             budgets = readJson(join(REPO_ROOT, "content/world/budgets.json")),
                             pinned = [], relations = [], dungeons = [], onStage = () => {} }) {
   const timings = {};
+  // CPU TIME, ALONGSIDE WALL TIME — NOT INSTEAD OF IT. `timings` (wall clock,
+  // via Date.now) still drives the CLI's own loop-budget exit code, because a
+  // lone developer's box IS the thing that budget protects and a stalled disk
+  // or a swapping OS is a real regression there. But Gate 2 runs this CLI as
+  // one of many concurrently-spawned child processes on a 14-core box (32
+  // mapforge test files fanned out by `node --test`, several of which spawn
+  // their own generation), and CPU scheduling contention inflates WALL time
+  // for work the process was not actually doing — it was queued, not slow.
+  // `process.cpuUsage()` reports actual CPU-seconds consumed while running,
+  // which a process does not accrue while waiting for a core: contention
+  // makes a run take longer to FINISH without making it take longer to
+  // COMPUTE. cpuTimings is what tools/mapforge/tests/generate-world.test.mjs'
+  // "the run manifest carries..." test asserts against, specifically because
+  // it is the number a real generation regression (more work per pass) still
+  // moves and a loaded CI box does not.
+  const cpuTimings = {};
   const problems = [];
   const time = (name, label, fn) => {
     const t = Date.now();
+    const c = process.cpuUsage();
     const r = fn();
     timings[name] = Date.now() - t;
+    const cpu = process.cpuUsage(c);
+    cpuTimings[name] = (cpu.user + cpu.system) / 1000;
     onStage(name, label, timings[name]);
     return r;
   };
@@ -398,6 +417,7 @@ export function runPasses({ manifest, premises,
                              settlements: settle.settlements, regions: part.regions, problems });
 
   timings.total = Object.values(timings).reduce((a, b) => a + b, 0);
+  cpuTimings.total = Object.values(cpuTimings).reduce((a, b) => a + b, 0);
   problems.push(...settle.problems, ...net.problems, ...dung.problems);
   return { grid, fabric, world: worldFile, handles: land.ledgers,
            trunk: trunk.nodes, edges: trunk.edges, problems,
@@ -421,7 +441,7 @@ export function runPasses({ manifest, premises,
            // relations })` runs unchanged, and it reaches no pass: Plan C has
            // no relation layer. Plan D must not read the parameter's presence
            // as a wired join — it is an empty seat, held open on purpose.
-           relations, timings };
+           relations, timings, cpuTimings };
 }
 
 // ── the trunk ──────────────────────────────────────────────────────────────
@@ -1462,6 +1482,13 @@ async function main() {
 
   const run = runPasses({ manifest, premises, lexicon, loadBudget, pinned, dungeons,
     onStage: opts.stageReport ? (name, label, ms) => console.log(`stage: ${name} ${label} ${ms} ms`) : undefined });
+  // Folded into `run.timings` (not kept as a separate manifest field) so the
+  // existing wiring — report.md's stage list, the manifest's `timings` blob —
+  // carries it with no second plumbing path. `cpuTotal` is CPU-seconds
+  // consumed across the same passes `timings.total` sums wall-clock over; see
+  // the note on `cpuTimings` inside runPasses for why the two diverge under
+  // contention and why the loop-budget's exit code below stays on wall time.
+  run.timings.cpuTotal = Math.round(run.cpuTimings.total);
 
   // The join lands in the DRAFT, so `build/mapforge/<runIdA>` and
   // `build/mapforge/<runIdB>` are diffable on MEANING as well as on ground.

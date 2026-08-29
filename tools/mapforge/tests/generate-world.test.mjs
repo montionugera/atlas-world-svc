@@ -444,12 +444,28 @@ test("the run manifest carries the seed, sea level, ratio and a hash per file", 
   assert.ok(Object.keys(manifest.hashes).length > 20);
   for (const h of Object.values(manifest.hashes)) assert.match(h, /^sha256:[0-9a-f]{64}$/);
   const gen = BUDGETS.loop.find((r) => r.stage === "generate");
-  // See the note on `generate()`: the fail threshold is a wall clock and this
-  // suite runs in parallel with itself. The CEILING is what is asserted.
-  assert.ok(manifest.timings.total < gen.failMs * 4,
-    `generation took ${manifest.timings.total} ms against a fail threshold of ${gen.failMs} ` +
-    `— four times over is a regression, not contention`);
-  assert.ok(Object.keys(manifest.timings).length >= 14, "a timing per pass, plus the total and the sheets");
+  // MEASURED (see budgets.json's cpuFailMsWhy): `manifest.timings.total` is a
+  // WALL CLOCK sum, and Gate 2 runs this CLI as one of 32 concurrently
+  // fanned-out mapforge test files on a 14-core box, several of which spawn
+  // their own generation — that's real scheduling contention, not a
+  // regression, and it inflated wall time 3.16x-4.28x in the measurement that
+  // found this (a `< failMs * 4` ceiling had already been tried here and
+  // Gate 2 still broke it at 50,555 ms). `manifest.timings.cpuTotal`
+  // (process.cpuUsage() summed per stage, inside the same process) is what a
+  // real regression in the generation work still moves and contention does
+  // not: the same three runs measured cpuTotal inflation of only 1x/1.13x/
+  // 1.19x while wall time moved 1x/3.16x/4.28x, because a process accrues no
+  // CPU time while queued for a core. So THIS is the ceiling asserted, and it
+  // is a CPU-time budget (gen.cpuFailMs), not the wall-clock one.
+  assert.ok(manifest.timings.cpuTotal < gen.cpuFailMs,
+    `generation consumed ${manifest.timings.cpuTotal} ms of CPU time against a fail ceiling of ` +
+    `${gen.cpuFailMs} ms — CPU time does not inflate under scheduling contention the way wall ` +
+    `time does (measured 1.13x-1.19x here vs 3.16x-4.28x for wall time under heavy load), so a ` +
+    `breach here means the generation pipeline is doing more real work, not that it queued longer`);
+  assert.equal(typeof manifest.timings.total, "number",
+    "the wall-clock total is still reported for diagnostics — it is just not what this test gates on");
+  assert.ok(Object.keys(manifest.timings).length >= 15,
+    "a timing per pass, plus the wall total, the CPU total and the sheets");
 });
 
 test("all 13 landmasses sit within +/-3% of their manifest netKm2", { timeout: 240000 }, () => {
