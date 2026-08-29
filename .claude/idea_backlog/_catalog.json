@@ -688,5 +688,11 @@
     "title": "No gate binds a minted zone landmark to the drawn world's own name",
     "created_at": "2026-08-29T09:19:15.824981+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-116",
+    "title": "Five weak gate assertions have wide headroom or cannot fail",
+    "created_at": "2026-08-29T09:19:16.354273+00:00",
+    "promoted_to": null
   }
 ]
