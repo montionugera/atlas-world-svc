@@ -664,5 +664,11 @@
     "title": "canon-legs.json's feature field is never read for correctness",
     "created_at": "2026-08-29T09:19:13.631182+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-112",
+    "title": "sheet-atlas.json's scaleBarNote field has no live reader",
+    "created_at": "2026-08-29T09:19:14.161859+00:00",
+    "promoted_to": null
   }
 ]
