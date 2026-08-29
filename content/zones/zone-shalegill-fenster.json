@@ -2,7 +2,7 @@
   "zone": "shalegill-fenster",
   "region": "c04/r07",
   "survey": "surveyed",
-  "reasonToGo": "Everything carried off the western moor comes through Shalegill, because the upper village is the one place on Stonemoor where three roads meet and not two. Parties stop here for the two things a carrying party runs out of first: sweet water standing in the rock at a depth a bucket can reach, and rock worth breaking while they wait for the road ahead to clear.",
+  "reasonToGo": "Three roads meet at Shalegill's eastern village and nowhere else on Stonemoor do more than two, so this is where the road in from the far head joins the road down to the port. Parties stop for the two things a carrying party runs out of first: sweet water standing in a flooded shaft at a depth a bucket can reach, and rock worth breaking while they wait for the road ahead to clear.",
   "hazards": [
     {
       "id": "the-undercut-lip",
@@ -22,7 +22,7 @@
       "id": "junction-ore",
       "name": "Junction ore",
       "kind": "ore",
-      "description": "Got out of a single short passage a quarter hour off the junction, worked by whoever is waiting rather than by anyone whose trade it is. Nobody has ever sunk a proper working here, because nobody has ever stayed long enough."
+      "description": "Got out of a single short face a walk off the junction, worked by whoever is waiting rather than by anyone whose trade it is. There is no proper working here — only that one face, opened and left again by every party that has stopped."
     },
     {
       "id": "shaft-water",

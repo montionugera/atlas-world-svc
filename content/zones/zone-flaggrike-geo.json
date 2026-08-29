@@ -2,7 +2,7 @@
   "zone": "flaggrike-geo",
   "region": "c04/r28",
   "survey": "surveyed",
-  "reasonToGo": "Flaggrike is the first ground the eastern road reaches out of the port, which makes it the place everything heading further east is provisioned from. It has water that can be taken standing up, a drowned valley head with soil in it, and a passage into the pavement close enough to the road that ore can be got and loaded in the same day.",
+  "reasonToGo": "Flaggrike is the first settled ground the eastern road reaches out of the port, which makes it the place everything heading further east is provisioned from. It has water that can be taken standing up, a drowned valley head with soil in it, and a passage into the pavement close enough to the road that ore can be got and loaded in the same day.",
   "hazards": [
     {
       "id": "the-valley-filling",
@@ -34,7 +34,7 @@
       "id": "lip-water",
       "name": "Lip water",
       "kind": "water",
-      "description": "Taken from the stream where it crosses the cliff top, in the last few paces before it goes over and is lost. On ground where every other water on the region stands at the bottom of a shaft, this is the one a party can fill from standing up."
+      "description": "Taken from the stream where it crosses the cliff top, in the last few paces before it goes over and is lost. The penned water below is brackish and the shaft water is a descent; this is the water a party fills from without putting the load down."
     }
   ],
   "landmarks": [

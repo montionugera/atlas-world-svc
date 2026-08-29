@@ -2,7 +2,7 @@
   "zone": "tarnmoor-stair",
   "region": "c04/r12",
   "survey": "surveyed",
-  "reasonToGo": "Tarnmoor is the first ground the road out of the port reaches, and it is where the moor is farmed rather than worked: a flat-floored basin ringed by limestone, hay and grain for six months and a lake for the other six. The ore goes out on the same carts, picked off the rubble at the foot of the limestone tower instead of cut out of a passage, so it comes up in daylight while everything else on this road comes up on a line.",
+  "reasonToGo": "Tarnmoor is the first settled ground the road out of the port reaches, and the last one every load off the western moor passes through: the four villages beyond it all come down this way. What it sends out itself is farmed rather than worked — a flat-floored basin ringed by limestone, hay and grain for six months and a lake for the other six — with ore picked off the rubble at the foot of the tower standing in it, which comes up in daylight while everything else on this road comes up on a line.",
   "hazards": [
     {
       "id": "the-level-filling",
@@ -22,7 +22,7 @@
       "id": "basin-grain",
       "name": "Basin grain",
       "kind": "crop",
-      "description": "Sown on the basin floor as the water goes off it and cut before the water comes back. The rest of this ground is bare rock split into blocks; a flooded basin is where the moor keeps what soil it has, and the whole crop is a race against the six dry months."
+      "description": "Sown on the basin floor as the water goes off it and cut before the water comes back, on silt the river has been laying down here since before anyone counted. The rest of this ground is bare rock split into blocks; a flooded basin is where the moor keeps what soil it has, and the crop has to be in and out inside the six months the floor is dry."
     },
     {
       "id": "tower-foot-ore",

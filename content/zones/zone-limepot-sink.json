@@ -2,7 +2,7 @@
   "zone": "limepot-sink",
   "region": "c04/r19",
   "survey": "surveyed",
-  "reasonToGo": "Limepot is the biggest sheet of bare split rock on Stonemoor and nobody lives on it. Parties come up onto it for two things and go straight back down: block stone levered out of the pavement along the run of the beds, and ore off the two limestone towers standing in it, which can be worked from the outside in daylight instead of from a shaft.",
+  "reasonToGo": "Limepot is the one surveyed region on Stonemoor with neither a village on it nor a road across it, and it is a sheet of bare split rock from end to end. Parties come up onto it for two things and go straight back down: block stone levered out of the pavement along the run of the beds, and ore off the two limestone towers standing in it, worked from the outside in daylight instead of from a shaft.",
   "hazards": [
     {
       "id": "the-clint-leg",
@@ -28,7 +28,7 @@
       "id": "tower-ore",
       "name": "Tower ore",
       "kind": "ore",
-      "description": "Cut off the outsides of the two limestone stacks standing clear of the pavement, worked from staging pinned to the rock rather than from a shaft. What it costs is the carry: there is no road onto this ground, so every basket goes down on a back."
+      "description": "Cut off the outside faces of the two limestone stacks standing clear of the pavement, from staging pinned to the rock — the whole of it won in the open, with nothing overhead and nothing underfoot to climb out of."
     }
   ],
   "landmarks": [

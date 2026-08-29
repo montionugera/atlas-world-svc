@@ -15,6 +15,10 @@ import Ajv from "ajv";
 const AjvClass = Ajv.default ?? Ajv;
 
 import { loadPlaces } from "../lib/places.mjs";
+// The SAME derivation zone-allocation.test.mjs uses to tell a derived record
+// from a legacy one (CODE REVIEW, MAJOR 1). The citation rule below reads this,
+// not a hand-list, so a record cannot be exempted from it by editing a constant.
+import { committedRecords, legacyPlaceholderRecords } from "../lib/zone-allocation.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_content.mjs");
@@ -44,11 +48,28 @@ const STONEMOOR_ZONE_IDS = [
 ];
 
 /**
- * Every record written for a DERIVED A4 row — i.e. everything after the redraw.
- * The citation rule below applies to exactly this set; the legacy ten are
- * measured debt, not fixed. Tasks 13-14 extend it.
+ * Every record written for a DERIVED A4 row — everything after the redraw.
+ * This is the CORPUS RATCHET and nothing else: it feeds COMMITTED_ZONE_IDS,
+ * whose name-level deepEqual against the directory listing is what makes
+ * growing content/zones/ a deliberate edit. Tasks 13-14 extend it.
+ *
+ * It is deliberately NOT what the citation rule iterates — see
+ * `postRedrawRecords()`. A hand-list that both defines the corpus AND scopes a
+ * rule lets one edit do two jobs: narrowing it silently exempts records from
+ * the rule while the corpus stays whole. Measured by the code review — seven
+ * records dropped out of the citation rule at 77 pass / 0 fail.
  */
 const POST_REDRAW_ZONE_IDS = [...COLDREACH_ZONE_IDS, ...STONEMOOR_ZONE_IDS];
+
+/**
+ * The post-redraw records DERIVED from the data: every committed record whose
+ * slug is not a reserved canon name. Identical to POST_REDRAW_ZONE_IDS today
+ * (asserted below), and the two are cross-checked so neither can drift alone.
+ */
+const postRedrawRecords = () => {
+  const legacy = new Set(legacyPlaceholderRecords({ root: ROOT }).map((c) => c.zone));
+  return committedRecords({ root: ROOT }).map((c) => c.zone).filter((z) => !legacy.has(z)).sort();
+};
 
 /** Every record content/zones/ is supposed to hold today. Tasks 13-14 raise it. */
 const COMMITTED_ZONE_IDS = [...ZONE_IDS, ...POST_REDRAW_ZONE_IDS];
@@ -336,8 +357,14 @@ test("every record joins the resolved world by REGION, and no slug has crept int
   }
   const surveyedWorld = doc.zones.filter((z) => z.survey === "surveyed").map((z) => z.id);
   assert.equal(surveyedWorld.length, 40, "the resolved world no longer declares 40 surveyed zones");
-  assert.equal(covered.size, 23,
-    "the covered-region count moved — Tasks 13-14 raise it to 40 and must say so here");
+  // NO `covered.size` PIN HERE. It used to read `assert.equal(covered.size, 23)`
+  // and it could not fail: `records` is pinned name-for-name against
+  // COMMITTED_ZONE_IDS 15 lines above, and the loop rejects a repeated region
+  // inline, so covered.size === records.length by construction. Proven by the
+  // code review — stubbing it and pointing two records at one region still
+  // redded 2 tests, and stubbing it and deleting a record still redded 7. A
+  // rule that cannot fail is a defect, so it is gone rather than left reading
+  // as cover. The ratchet it appeared to be is the deepEqual above.
   for (const id of covered)
     assert.ok(surveyedWorld.includes(id), `${id} is covered by a record but is not surveyed`);
 });
@@ -1292,11 +1319,13 @@ test("reachability: the schema must NOT ban survey \"reported\" — Z2 owns that
 
 test("every committed record joins to a SURVEYED fabric region, one apiece", () => {
   const files = readdirSync(join(ROOT, "content/zones")).filter((f) => /^zone-.+\.json$/.test(f));
-  // Plan E Task 11 took this from 10 to 16 (Wealdmarch's 10 verified,
-  // Coldreach's 6 written) and Task 12 to 23 (Stonemoor's 7); Tasks 13-14 raise
-  // it to 40. Pinned rather than derived so growing the corpus is a deliberate
-  // edit here, exactly as the plan's own literal does.
-  assert.equal(files.length, 23);
+  // DERIVED from the declared corpus, not a fourth copy of the number (CODE
+  // REVIEW, MINOR 3): the deliberate edit that grows content/zones/ belongs in
+  // COMMITTED_ZONE_IDS, and the name-level deepEqual in "content/zones holds
+  // exactly the ten records and nothing else" is what enforces it. A bare
+  // literal here was a third statement of one ratchet and was measured to
+  // contribute nothing — stubbed, deleting a record still redded 7 tests.
+  assert.equal(files.length, COMMITTED_ZONE_IDS.length);
 
   // The fabric, read fresh — this is a cross-artifact assertion, not a re-read
   // of the same numbers from a second copy.
@@ -1337,9 +1366,15 @@ test("every committed record joins to a SURVEYED fabric region, one apiece", () 
      // this half of the list carries a geographic claim.
      "c03/r06", "c03/r10", "c03/r12", "c03/r15", "c03/r18", "c03/r22",
      // TASK 12. Stonemoor's seven, derived on the same terms — A4 rows
-     // c04/r01, r07, r12, r15, r19, r25 and r28. NOT the r01-r07 run the
-     // plan's Task 12 text names: the surveyed regions on c04 are not
-     // contiguous, and the table is the authority the record is checked against.
+     // c04/r01, r07, r12, r15, r19, r25 and r28. The plan's Task 12 text is
+     // stale in FOUR ways and A4 is the authority in all four: (a) it names
+     // rows c04/r01-r07, but the surveyed regions on c04 are not contiguous;
+     // (b) its seven zone slugs are invented and A4 mints different ones;
+     // (c) five of its records take `fuel` or `timber`, which the licence gate
+     // asserts outright that Stonemoor has neither of; and (d) it routes
+     // landmark citations to A2-wider-world.md#3 and to the resolved continent,
+     // neither of which carries the names — the citation rule below reds on
+     // both, which is what STATE section 28 predicted.
      "c04/r01", "c04/r07", "c04/r12", "c04/r15", "c04/r19", "c04/r25", "c04/r28"]);
 });
 
@@ -1423,8 +1458,13 @@ test("every landmark source is a real file, and for records written after the re
   };
 
   // Every record written for a derived row must cite a doc that names them.
+  // The set is DERIVED, so no constant can quietly narrow what is checked; the
+  // hand-list is cross-checked against it rather than trusted as the scope.
+  const derivedIds = postRedrawRecords();
+  assert.deepEqual(derivedIds, [...POST_REDRAW_ZONE_IDS].sort(),
+    "the derived post-redraw set and the declared corpus disagree — one of them is wrong");
   let checked = 0;
-  for (const id of POST_REDRAW_ZONE_IDS) {
+  for (const id of derivedIds) {
     const doc = JSON.parse(readFileSync(join(ROOT, `content/zones/zone-${id}.json`), "utf8"));
     for (const l of doc.landmarks) {
       assert.ok(l.source, `${id}: landmark "${l.name}" has no source`);

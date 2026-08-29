@@ -41,7 +41,7 @@
     {
       "id": "paverake-fenster",
       "name": "Paverake Fenster",
-      "description": "A shaft open in the bare rock and flooded to the level of every other water in the moor, so a carrier looking down it is looking at the same water that stands under the whole head.",
+      "description": "A shaft open in the bare rock and flooded to the level the water stands at under the whole head, so a carrier looking down it is looking at what the ore passages inland are standing in.",
       "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     },
     {

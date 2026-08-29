@@ -2,7 +2,7 @@
   "zone": "clintlack-fenster",
   "region": "c04/r25",
   "survey": "surveyed",
-  "reasonToGo": "Clintlack stands as high as Stonemoor goes, on the shore of the one enclosed sea the moor has, and at the far end of the eastern road — four stages of cart from the coast the ships use. That distance decides what leaves: garden ground on the river islands feeds the two villages rather than the port, and only the squarest slab and the best-picked ore are worth putting on a cart at all.",
+  "reasonToGo": "Clintlack lies at the far end of the eastern road, three and four stages of cart beyond the port, on the shore of a basin of enclosed water the sea does not reach. That distance decides what leaves: garden ground on the river islands feeds the two villages rather than the port, and only the squarest slab and the best-picked ore are worth putting on a cart at all.",
   "hazards": [
     {
       "id": "the-channel-behind",
@@ -28,7 +28,7 @@
       "id": "clintlack-tower-ore",
       "name": "Clintlack tower ore",
       "kind": "ore",
-      "description": "Got from the workings under the limestone tower and picked over at the mouth until only the best of it goes in the basket, because everything loaded here is carried four stages before anyone will buy it."
+      "description": "Got from the workings driven in under the tower, where the ore lies in the rock the water left rather than on the face of it, and sorted at the mouth before it ever sees a basket."
     },
     {
       "id": "carted-slab",
@@ -47,7 +47,7 @@
     {
       "id": "pot-at-limerake",
       "name": "Pot at Limerake",
-      "description": "The hole a surface stream walks into on the high ground and does not come back out of. It is the last open water on the road east: beasts are watered above it and not again afterwards.",
+      "description": "The hole a surface stream walks into on the high ground and does not come back out of. Carters water their beasts above it, because below it the stream is not there to be found.",
       "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     }
   ]
