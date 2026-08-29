@@ -879,7 +879,13 @@ function drawNorthArrow(plan) {
 
 function drawTitle(plan) {
   const y = -TITLE_BAND;
-  const name = String(plan.town ?? "town");
+  // PLAN E TASK 14: `plan.town` is the resolved world's town ID since the
+  // re-home (`c-town-millcross`) — check_content's T1 joins it to
+  // content/world/resolved#towns, which is keyed by `id`, not by slug. The
+  // title wants the display NAME, so the id prefix is DERIVED away rather than
+  // the name being retyped beside it. A bare slug — every fixture here, and
+  // every plan before the re-home — passes through untouched.
+  const name = String(plan.town ?? "town").replace(/^c-town-/, "");
   const title = name.charAt(0).toUpperCase() + name.slice(1);
   const anchor = (plan.anchor?.geographyAt ?? []).map(num).join(", ");
   return [
