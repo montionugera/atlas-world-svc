@@ -90,7 +90,20 @@ jobs:
       # and stay linked to real asset keys / manifest tiers. Coverage gaps
       # (character keys with no sheet) are warnings until roadmap #1 flips
       # --require-complete. Also runs the gate's own unit tests (plus the shared scripts/tests suite).
+      # Task 3 (F-051 completion plan): `npm test --prefix scripts` had NO
+      # timeout anywhere, so a genuine wedge burned GitHub's 360-minute
+      # default. `npm test` now runs `node --test --test-reporter=tap`
+      # (scripts/package.json) rather than the default reporter, which
+      # DISCARDS `signal:` — under tap, a killed run is distinguishable from
+      # a failed one (see scripts/classify-test-run.mjs). Timeout set from
+      # Task 2's measured result: this step's suite dropped from 486.19 s to
+      # 47.21 s wall-clock (commit e1540f3 -> the Task 2 commit, this box);
+      # 8 minutes is ~10x that 47.21 s, with room left over for `npm ci` and
+      # `check_content.mjs`'s own run, and for a CI runner slower/less
+      # parallel than this one — while still cutting off a genuine wedge in
+      # minutes, not GitHub's 360-minute default.
       - name: Content gate (sheets ↔ schema ↔ keys ↔ manifest)
+        timeout-minutes: 8
         run: |
           npm ci --prefix scripts
           npm test --prefix scripts
