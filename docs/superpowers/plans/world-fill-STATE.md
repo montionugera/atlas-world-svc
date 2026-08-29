@@ -4763,3 +4763,107 @@ Task 11 already fixed once (a listed record silently exempted from derivation). 
   citations broke on the exact same shape: markdown emphasis opening between "the" and the noun it
   modifies. `checkLegacyLandmarkCitations`'s whole-name substring rule will catch a recurrence but
   will not explain it; worth a comment at the call site if this class shows up in the derived thirty.
+
+### TASK 15 FIX ROUND 1 OF 5 (F-051 completion Task 1, 2026-08-29) — two owner rulings implemented, ten review findings closed
+
+Two independent reviewers ran on `f07dbe2`; both verdicts were CHANGES NEEDED. The owner ruled on
+both items Task 15 had stopped for rather than let them stay open through a second round.
+
+**R-A — hollowmarch's `ore`: option (a) implemented, no partial state left standing.** The prior
+commit had half-shipped the direct fix: `zone-hollowmarch.json` was correctly reverted to its
+`{ore, timber}` baseline, but `A1-geography-cluster1.md`'s §4.2 table row still carried the invented
+replacement text ("the hanging meadow", licensed nowhere, was never reverted alongside the JSON). Both
+reviewers caught the same defect from different angles — a partial application is strictly worse than
+either endpoint, since it leaves the corpus internally contradicting itself (one file says ore, one
+says meadow) with no owner-approved state backing either half. Fully reverted: the table row now
+matches the pre-Task-15 baseline word for word except for the one unrelated citation fix ("palisade
+line" → "the palisade line") that belongs to a different, already-closed defect. `zone-content.test.mjs`'s
+re-pin comment corrected (M2): it had claimed the resource was "corrected alongside" the citation,
+which was never true even in the half-shipped state — a false comment on a shipped test is exactly the
+kind of thing that misleads whoever reads it next into believing a decision was made when none was.
+The `ore` claim now stands, unchanged, filed for backlog triage as a real defect the redraw exposed —
+not one this task created and not one it is authorized to silently fix given the four-record ripple
+Task 15's own report already measured.
+
+**R-B — placement-thornveil: option B implemented, schema untouched.** New committed file
+`content/bestiary/region-exemptions.json`, same shape as `content/spine/freeze-reasons.json`
+(`{version, why, reasons: {slug: "one sentence"}}`). `check_content.mjs`'s `checkBestiaryPlacement`
+now checks G1's zone lookup against this file before failing: an exempted zone WARNS instead of
+FAILing and G8 (the route-band comparison) is skipped for it, since there is no geography band left
+to compare a voided join against. The bijection is enforced BOTH ways, the same discipline G-FROZEN
+already keeps for freeze-reasons.json — proven by mutation, not asserted: (1) emptying `reasons` makes
+`thornveil` FAIL again (the exemption is load-bearing, not a permanent carve-out); (2) adding an unused
+key FAILs with "no placement file's zone needed it" (a stale exemption cannot rot silently); (3) a
+shape-invalid exemptions file is one FAIL and exemptions are read as empty — fails CLOSED, not open.
+Five new fixture tests in `bestiary-placement.test.mjs` (27/27 pass) exercise all of this, plus one
+proving a placement whose zone genuinely resolves is NOT silently granted the exemption (the "stale
+exemption" bijection direction). `bestiary/placement-thornveil.json` itself: untouched. The content
+gate on the real tree: **0 failures** (was 1), **34 warnings** (was 33 — the one new WARN is the ruled
+exemption itself, printed, not hidden). Three pre-existing tests (`places.test.mjs`,
+`story-migration.test.mjs`, `story-seed.test.mjs` ×2) hardcoded "exactly 1 failure, and it's
+thornveil" as their pinned expectation; all four rewritten to assert 0 failures with the WARN line
+matched positively, so the exemption's actual text is still under test, not just its absence from FAIL.
+
+**M1 (= F4) — see R-A above; the same defect, named twice by the two reviews.**
+
+**I1 — `A2-wider-world.md`'s lane table used pre-rescale sail-days.** `e-lane-coldreach`/
+`e-lane-stonemoor-foreign` read `sailDays` 1.5/1 in `edges.json`; the table said "6 days"/"4 days".
+Fixed to the measured figures. Two more instances of the same staleness found while fixing this one
+(not cited by either reviewer, found by re-reading the same document): §3's Coldreach/Stonemoor prose
+quotes ("Six days out on the trade wind...", "...four days along a foreign lane...") — re-voiced to
+"a day and a half out" / "a day along".
+
+**I2 — no non-empty-sweep floor on G-AMENDED/G-TOWER-RELAY (the tenth rule-that-cannot-fail class this
+week).** `amendedFiles()`/`towerRelayFiles()` returning `[]` (a missing/renamed `content/`,
+`docs/worldbuilding/`, or `content/story/`) makes `checkAmendedPending`/`checkTowerRelayAssertions`
+report zero problems — indistinguishable from a genuinely swept, clean corpus. Fixed: both live-corpus
+tests now assert a floor before asserting zero problems (`amendedFiles` > 100, matching G-LM-CITE's
+own `=== 10` discipline; `towerRelayFiles` pinned at exactly 9, content/story's current *.json count).
+Proven by mutation, not asserted in the abstract: two new tests point both sweeps at a scratch root
+with neither `content/` nor `docs/worldbuilding/`/`content/story/`, confirm the sweep genuinely
+returns `[]`, confirm `checkAmendedPending`/`checkTowerRelayAssertions` report zero problems on that
+empty sweep (the vacuous-green state, reproduced), THEN show the floor assertion (extracted as
+`assertSweepFloor`, the identical predicate the live tests run) throwing on that same `files.length`.
+
+**F1 — the corpus-wide half of the tower/relay reconciliation had no gate at all,** and manual re-
+reading found real drift beyond what either review cited by line number: `A1-geography-cluster1.md`
+§7 ("The map's own legend") and its §9 art brief were still built entirely around "a Bellfaith RELAY
+map" whose "actual subject" is "every tower on the ridgelines" — six more sentences across the section
+and its Theologian/withheld-items lists, all contradicting the same file's own §5.2 ("zero tower
+nodes"). Re-framed as a Bellfaith ROAD map whose accent colour is reserved for roads and the six
+towns' own belfries; "Relay towers" the table row → "Town bells"; "day-counts"/"days" lettered on the
+map → "hour-counts" (3 instances). The SAME stale subtitle/hand text was ALSO found, independently, in
+`content/spine/sheet.json` — a THIRD copy of the identical sentence, in a file neither review named.
+Confirmed dead data before touching it: `tools/mapforge/render-sheet.mjs`'s own header comment records
+PLAN E RULING 8 (2026-08-26) retiring the whole `cluster1` sheet render path — "nothing in this file
+reaches them any more" — so the fix has zero rendering consequence, but the stale sentence was still
+worth correcting since it is exactly the kind of copy-pasted drift a future reader could lift from
+without knowing it was already retired. `tools/mapforge/README.md` carries the same stale schema
+description (a `relay: {..., towers[], ...}` field, "day-counts" fields) for the same retired sheet —
+FILED, not fixed: it is the identical defect class `.claude/idea_backlog/I-098-stale-references-to-
+the-deleted-cluster1` already tracks for this exact retired path, filed separately, out of scope here.
+
+**Root cause, and why the fix is a phrase list, not a widened blanket sweep.** `checkTowerRelayAssertions`
+is a zero-tolerance word sweep, correct only where EVERY occurrence of "tower"/"relay" is a violation —
+true of `content/story/*.json` (24 of 24 were), false of `docs/worldbuilding/` and `content/spine/`,
+which carry legitimate per-town belfry flavor this task deliberately kept ("the mirror tower", "a
+single tolling tower", "27-tower chain" as history). Literally widening the same word-level rule to
+that wider corpus would immediately red on ~10 legitimate sentences, forcing either their deletion
+(destroying real content) or a rule permanently red (the opposite failure mode from I2's vacuous
+sweep, but still a rule that cannot do its job). New export `checkRetiredTowerPhrases` (G-RETIRED-
+CLAIMS) sweeps the SAME AMENDED_SCOPE corpus (`content/` + `docs/worldbuilding/`) for an explicit list
+of four phrases — `"relay towers"`, `"bellfaith relay map"`, `"tower district"`, `"given a tower
+count"` — each picked because it is unambiguous even inside a historical/explanatory sentence.
+Deliberately NOT on the list: `"27-tower chain"` and `"reaching six towns"`, both of which this
+task's OWN corrected prose still quotes verbatim as history (A1 §5.2's "down from an earlier 27-tower
+chain"; its opening sentence quoting A0's retired framing, "reaching six towns in hours") — banning
+either would fail this task's own explanatory writing. A fixture test proves exactly that boundary:
+the historical quote passes, the bare phrase fails. Wired into `check_content.mjs` with the same floor
++ mutation-proof discipline as I2. Live-corpus result: 0 matches, same as G-TOWER-RELAY.
+
+**Covering tests, all re-run after every fix in this round** (not once at the end): `prose-audit.test.mjs`
+19/19, `zone-content.test.mjs` 78/78, `zone-allocation.test.mjs`, `citations.test.mjs`,
+`bestiary-placement.test.mjs` 27/27, `places.test.mjs` 20/20, `edges-schema.test.mjs` 39/39,
+`story-migration.test.mjs`, `story-seed.test.mjs` (both rewritten for R-B's 0-failures reality),
+render-lock/spine-gates/town-millcross/season1 206/206. Full whole-directory suite re-run once, alone,
+TAP reporter: see the fix report in `.superpowers/sdd/plan/task-1-report.md` for the exact count.

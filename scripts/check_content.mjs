@@ -77,6 +77,7 @@ import { checkCitations } from "./lib/citations.mjs";
 import {
   checkAmendedPending,
   checkTowerRelayAssertions,
+  checkRetiredTowerPhrases,
   checkLegacyLandmarkCitations,
 } from "./lib/prose-audit.mjs";
 import { legacyPlaceholderRecords } from "./lib/zone-allocation.mjs";
@@ -447,6 +448,11 @@ function main() {
     // comment on that fixture's own runGate() already guards against.
     for (const p of checkAmendedPending({ repoRoot: ROOT })) fail(p);
     for (const p of checkTowerRelayAssertions({ repoRoot: ROOT })) fail(p);
+    // F1 (review, 2026-08-29): the corpus-wide half of the tower/relay
+    // reconciliation — an explicit phrase list, not a bare word sweep (see
+    // the comment on checkRetiredTowerPhrases for why a blanket sweep here
+    // would force deleting legitimate per-town belfry prose).
+    for (const p of checkRetiredTowerPhrases({ repoRoot: ROOT })) fail(p);
     // Scoped to the legacy ten (A4 §2's PLACEHOLDER set): the other derived
     // records all cite the generated A4-zone-allocation.md#5, which is
     // minted from the same landmark names and cannot drift from them the way
@@ -1052,6 +1058,29 @@ function checkMaps(opts, mobTypes) {
   return files.length;
 }
 
+// R-B (owner ruling, 2026-08-29): a bestiary placement's `zone` join to
+// content/world/resolved#zones can be ruled VOID without loosening
+// content/schemas/bestiary-placement.schema.json's `zone` pattern (option A,
+// rejected) or letting the placement's own routeBand outrank the geography's
+// levelBand (option C, rejected). content/bestiary/placement-region-
+// exemptions.json is the committed, reasoned exemption list — the same shape
+// content/spine/freeze-reasons.json already uses for G-FROZEN. Missing or
+// shape-invalid is ONE FAIL and an empty map, never a silent skip: an
+// exemption that cannot be read is not an exemption, it is an unexplained
+// gap in the gate.
+function loadPlacementRegionExemptions(contentRoot) {
+  const path = join(contentRoot, "bestiary/region-exemptions.json");
+  if (!existsSync(path)) return new Map();
+  const before = failures.length;
+  const doc = readJson(path, "bestiary placement exemptions", fail);
+  if (failures.length > before) return new Map();
+  if (!doc || typeof doc.reasons !== "object" || doc.reasons === null) {
+    fail(`bestiary placement exemptions: ${path} is shape-invalid — expected { reasons: {...} }`);
+    return new Map();
+  }
+  return new Map(Object.entries(doc.reasons));
+}
+
 // I-059: zone placement gate. Placement is OPTIONAL content — a root with no
 // bestiary/ dir, or none matching placement-*.json, skips (mirrors the maps
 // soft-skip). Once a file exists it is checked STRICTLY, because the file is
@@ -1074,6 +1103,14 @@ function checkBestiaryPlacement(opts) {
   const zones = loadGeographyZones(opts.contentRoot);
   if (!designs || !zones) return 0;
 
+  // R-B: the bijection G-FROZEN keeps for freeze-reasons.json, here — every
+  // exempted zone must actually fail G1 (an exemption for a join that has
+  // since started resolving is a stale exemption hiding a real regression,
+  // not a kept ruling), and every one must be CONSUMED by a real placement
+  // file (an unused exemption is advertising a carve-out nothing needs).
+  const exemptions = loadPlacementRegionExemptions(opts.contentRoot);
+  const exemptionsUsed = new Set();
+
   let count = 0;
   for (const file of files) {
     const label = `bestiary/${file}`;
@@ -1087,20 +1124,29 @@ function checkBestiaryPlacement(opts) {
       continue; // downstream rules assume a valid shape
     }
 
-    // G1 — the zone exists in the Cartographer's geography
+    // G1 — the zone exists in the Cartographer's geography. R-B: a zone
+    // named in region-exemptions.json is RULED void for bestiary
+    // purposes rather than treated as a defect — WARN, not FAIL, and skip
+    // G8 (there is no geography band left to compare a voided join
+    // against). Every other rule below is independent of `zone` and still
+    // runs, exempt or not.
     const zone = zones.get(doc.zone);
-    if (!zone) {
+    const exemptionReason = exemptions.get(doc.zone);
+    if (!zone && exemptionReason !== undefined) {
+      exemptionsUsed.add(doc.zone);
+      warn(`${label}: zone "${doc.zone}" not in content/world/resolved#zones — ruled void by content/bestiary/region-exemptions.json (R-B): ${exemptionReason}`);
+    } else if (!zone) {
       fail(`${label}: zone "${doc.zone}" not in content/world/resolved#zones`);
       continue; // every remaining rule is relative to the zone
+    } else {
+      // G8 — the route band is the geography's band, asserted across files
+      // rather than retyped from prose. Only meaningful when G1 resolved.
+      const geoBand = Array.isArray(zone.levelBand) ? zone.levelBand : null;
+      if (!geoBand || geoBand.length !== 2)
+        fail(`${label}: zone "${doc.zone}" has no two-element levelBand in the geography`);
+      else if (doc.routeBand[0] !== geoBand[0] || doc.routeBand[1] !== geoBand[1])
+        fail(`${label}: routeBand [${doc.routeBand}] != geography levelBand [${geoBand}] for zone "${doc.zone}"`);
     }
-
-    // G8 — the route band is the geography's band, asserted across files
-    // rather than retyped from prose.
-    const geoBand = Array.isArray(zone.levelBand) ? zone.levelBand : null;
-    if (!geoBand || geoBand.length !== 2)
-      fail(`${label}: zone "${doc.zone}" has no two-element levelBand in the geography`);
-    else if (doc.routeBand[0] !== geoBand[0] || doc.routeBand[1] !== geoBand[1])
-      fail(`${label}: routeBand [${doc.routeBand}] != geography levelBand [${geoBand}] for zone "${doc.zone}"`);
 
     // G7 — tiers must ascend, be contiguous, and not overlap. A gap or an
     // overlap means some level has no tier, or two.
@@ -1163,6 +1209,14 @@ function checkBestiaryPlacement(opts) {
 
     count++;
   }
+
+  // R-B, other half of the bijection: an exemption entry no placement file
+  // consumed is advertising a carve-out nothing needs — the same "closed
+  // both ways" discipline G-FROZEN keeps for freeze-reasons.json.
+  for (const zoneSlug of exemptions.keys())
+    if (!exemptionsUsed.has(zoneSlug))
+      fail(`bestiary placement exemptions: "${zoneSlug}" is listed in content/bestiary/region-exemptions.json but no placement file's zone needed it`);
+
   return count;
 }
 

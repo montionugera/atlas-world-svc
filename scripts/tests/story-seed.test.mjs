@@ -53,18 +53,18 @@ function run(scriptRelPath, args = []) {
   }
 }
 
-test("content gate on the real tree: the ONLY failures are the pre-Plan-E geography orphans", () => {
+test("content gate on the real tree: zero failures — Task 9/14 re-homed the zone/town orphans, R-B closed the last one", () => {
   // Plan D Task 11 cutover: content/world/resolved/ is the gate's only
   // geography source, so the ten legacy zone records, the bestiary placement
-  // and the town plan orphan LOUDLY until Plan E movement 2 re-homes them.
-  // Every FAIL must belong to that family — any other failure is a regression
-  // this test still catches.
+  // and the town plan orphaned LOUDLY until re-homed. Task 9/14 re-homed the
+  // zone and town records; R-B (owner ruling, 2026-08-29) closed the last
+  // one, bestiary/placement-thornveil.json's un-re-homable join, as a
+  // committed exemption (WARN) rather than a silenced FAIL. Any FAIL line at
+  // all is a regression this test still catches.
   const { status, output } = run("scripts/check_content.mjs");
-  assert.equal(status, 1);
+  assert.equal(status, 0, output);
   const fails = output.split("\n").filter((l) => l.startsWith("FAIL "));
-  assert.ok(fails.length > 0, "expected the named orphans");
-  for (const f of fails)
-    assert.match(f, /not in content\/world\/resolved#(zones|towns)|has no record in content\/zones\//);
+  assert.deepEqual(fails, [], `expected zero failures:\n${fails.join("\n")}`);
   assert.match(output, /[1-9]\d* nodes/);
 });
 
@@ -117,13 +117,12 @@ test("content gate on the real tree: the ONLY failures are the pre-Plan-E geogra
 // entirely from spine-completeness, a different gate. Pinned by exact FAIL
 // count and exact text so a real regression (a 5th failure, a changed id, or
 // a re-opened orphan) still fails this test loudly.
-test("content gate --require-complete: the ONLY failures are geography orphans; no continent is incomplete", () => {
-  // Plan D Task 11: same pre-Plan-E orphan window as above — pin that no
-  // UNRELATED failure (story, spine, budget) joins them.
+test("content gate --require-complete: zero failures; no continent is incomplete", () => {
+  // Plan D Task 11: same orphan window as above, now closed the same way —
+  // pin that no failure (of any shape) has joined it.
   const { status, output } = run("scripts/check_content.mjs", ["--require-complete"]);
-  assert.equal(status, 1);
-  for (const line of output.split("\n").filter((l) => l.startsWith("FAIL ")))
-    assert.match(line, /not in content\/world\/resolved#(zones|towns)|has no record in content\/zones\//);
+  assert.equal(status, 0, output);
+  assert.doesNotMatch(output, /^FAIL /m);
   // PLAN E (E-C3): F-043's four "childless by design" WARNs are GONE, and that
   // is the constraint working rather than a rule going quiet. Post-redraw all
   // 13 continents are childless — their regions are fabric rows, not nodes —

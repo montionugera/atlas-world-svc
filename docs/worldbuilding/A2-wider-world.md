@@ -41,12 +41,12 @@ the whole epistemology, so it is stated before any name is:
 
 | Lane | From → to | Season | Passage | Standing |
 | --- | --- | --- | --- | --- |
-| `e-lane-coldreach` | Gildmark → **Tallowquay** (`f-port-tallowquay`, Coldreach) | the trade wind | 6 days | **The same once-a-year trade-wind voyage as `e-sea-lane`**, its far end now charted: the merchantmen that reach Gildmark on the trade wind are the ones that tied up at Tallowquay first. Not a second service. |
-| `e-lane-stonemoor-foreign` | Tallowquay → **Netstead** (`f-port-netstead`, Stonemoor) | reported year-round | 4 days | A foreign-to-foreign coastal lane; no Gildmark keel has run it. "Mariners say it runs the year round — no log from Gildmark confirms the claim." |
+| `e-lane-coldreach` | Gildmark → **Tallowquay** (`f-port-tallowquay`, Coldreach) | the trade wind | 1.5 days | **The same once-a-year trade-wind voyage as `e-sea-lane`**, its far end now charted: the merchantmen that reach Gildmark on the trade wind are the ones that tied up at Tallowquay first. Not a second service. |
+| `e-lane-stonemoor-foreign` | Tallowquay → **Netstead** (`f-port-netstead`, Stonemoor) | reported year-round | 1 day | A foreign-to-foreign coastal lane; no Gildmark keel has run it. "Mariners say it runs the year round — no log from Gildmark confirms the claim." |
 
 ## 3. The continents
 
-**Coldreach** (`n-coldreach`) — *"Six days out on the trade wind, masters log a cold grey coast
+**Coldreach** (`n-coldreach`) — *"A day and a half out on the trade wind, masters log a cold grey coast
 under one long spine of rock; no log claims what stands behind it."* Its port, **Tallowquay**, is
 the trade-wind lane's far terminus.
 
@@ -58,7 +58,7 @@ the trade-wind lane's far terminus.
   the spine; the interior is blank chart and sailors' guessing."*
 
 **Stonemoor** (`n-stonemoor`) — *"A second continent set down from wharf-talk at Tallowquay: a
-moor-backed coast four days along a foreign lane, nothing sworn beyond the shore."* Its reported
+moor-backed coast a day along a foreign lane, nothing sworn beyond the shore."* Its reported
 port is **Netstead**.
 
 - **the Stonemoor Shore** (`n-stonemoor-shore`) — *"The stretch the foreign lane is said to

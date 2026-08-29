@@ -161,3 +161,51 @@ export function checkLegacyLandmarkCitations({ repoRoot, contentRoot, legacyZone
   }
   return problems;
 }
+
+// F1 (review, 2026-08-29): checkTowerRelayAssertions is a hard zero-tolerance
+// sweep, which only works where EVERY occurrence of "tower"/"relay" is a
+// violation — true of content/story/*.json (24 of 24 were), false of
+// docs/worldbuilding/ and content/spine/, which carry legitimate per-town
+// belfry flavor ("the mirror tower", "single tolling tower") that a blanket
+// re-sweep would force deleting. G-RETIRED-CLAIMS covers that wider corpus
+// instead with an EXPLICIT phrase list — the specific retired-infrastructure
+// claims this task found and fixed, not the bare words. Each phrase was
+// picked because it is unambiguous even in a historical/explanatory sentence
+// ("relay towers", "Bellfaith relay map", "tower district", "given a tower
+// count" never legitimately describe the redrawn world, unlike "27-tower
+// chain" or "reaching six towns", both of which this task's OWN prose still
+// quotes verbatim as history and which are deliberately NOT on this list).
+export const RETIRED_TOWER_PHRASES = Object.freeze([
+  "relay towers",
+  "bellfaith relay map",
+  "tower district",
+  "given a tower count",
+]);
+
+export function retiredPhraseFiles({ repoRoot }) {
+  return amendedFiles({ repoRoot });
+}
+
+/** G-RETIRED-CLAIMS. `files` null = sweep AMENDED_SCOPE (content/ + docs/worldbuilding/). */
+export function checkRetiredTowerPhrases({ repoRoot, files = null }) {
+  const rels = files ?? retiredPhraseFiles({ repoRoot });
+  const problems = [];
+  for (const rel of rels) {
+    const full = join(repoRoot, rel);
+    let text;
+    try {
+      text = readFileSync(full, "utf8");
+    } catch {
+      problems.push(`G-RETIRED-CLAIMS: ${rel} is unreadable — fix the file or remove it from the sweep`);
+      continue;
+    }
+    const rows = text.split("\n");
+    for (let i = 0; i < rows.length; i++) {
+      const lower = rows[i].toLowerCase();
+      for (const phrase of RETIRED_TOWER_PHRASES)
+        if (lower.includes(phrase))
+          problems.push(`G-RETIRED-CLAIMS: ${rel}:${i + 1} still says "${phrase}" — retired with the redraw's zero tower nodes`);
+    }
+  }
+  return problems;
+}

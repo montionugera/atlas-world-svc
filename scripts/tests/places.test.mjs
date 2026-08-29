@@ -302,36 +302,28 @@ function runFullGate(contentRoot) {
 // scripts/tests/{zone-content,town-plan,bestiary-placement}.test.mjs, whose
 // fixture roots now carry their geography in the resolved shape and whose
 // gates still count.
-test("gate joins: the real content root FAILS LOUDLY on the not-yet-rehomed legacy records", () => {
+test("gate joins: the real content root is clean — the one remaining legacy join is a ruled exemption, not a silent zero", () => {
   const r = runFullGate(CONTENT);
-  assert.equal(r.code, 1);
   // PLAN E TASK 9 re-homed the ten content/zones records onto fabric region
-  // ids, so the ZONE half of this pin is now the opposite claim: the records
-  // join. The bestiary placement file and town-millcross.json still swear to
-  // the legacy slugs and are Tasks 14/15's to re-home.
+  // ids, so the ZONE half of this pin is the join claim: the records join.
+  // PLAN E TASK 14 re-homed town-millcross.json onto the pinned civil town id
+  // `c-town-millcross`. R-B (owner ruling, 2026-08-29; Task 15/F-051
+  // completion Task 1) closed the last one: bestiary/placement-thornveil.json
+  // cannot be re-homed by any content edit (bestiary-placement.schema.json
+  // pins `zone` to ^[a-z0-9]+(-[a-z0-9]+)*$, which no `cNN/rNN` region id can
+  // match), so the join is ruled VOID for bestiary purposes instead — a
+  // committed, reasoned exemption (content/bestiary/region-exemptions.json),
+  // not a loosened schema and not a silenced check. The gate now exits 0.
   //
   // The assertions are FILE-QUALIFIED for a reason found here: the old
-  // unqualified /zone "thornveil" not in …#zones/ still matched after the
-  // re-homing, because bestiary/placement-thornveil.json emits the identical
-  // sentence from a different gate. The test went on passing while the thing
-  // it was named for had been fixed — a rule that can no longer fail for its
-  // stated reason.
+  // unqualified /zone "thornveil" not in …#zones/ once matched two different
+  // gates at once (the zone-content join AND the bestiary placement join), so
+  // a narrower fix to one could leave the assertion green for the wrong
+  // reason. Kept file-qualified so a regression in either gate is unambiguous.
+  assert.equal(r.code, 0, r.out);
   assert.doesNotMatch(r.out, /^FAIL\s+zones\/zone-.*not in content\/world\/resolved#zones/m);
-  assert.match(r.out, /bestiary\/placement-thornveil\.json: zone "thornveil" not in content\/world\/resolved#zones/);
-  // PLAN E TASK 14 re-homed town-millcross.json onto the pinned civil town id
-  // `c-town-millcross`, so the TOWN half of this pin is now the opposite claim
-  // too — and it is asserted against the WHOLE T1 message family, not against
-  // the old literal, because a re-homing that swapped one bad slug for another
-  // would leave a narrower assertion green. It is the same treatment the zone
-  // half got above, for the same reason.
-  //
-  // placement-thornveil.json is NOT re-homed with it, and the reason is
-  // measured rather than deferred: bestiary-placement.schema.json pins `zone`
-  // to ^[a-z0-9]+(-[a-z0-9]+)*$, which no `cNN/rNN` region id can match, so
-  // the re-homing needs a schema change; the only candidate region is c02/r30,
-  // whose join to the `thornveil` slug is Task 9's ALPHABETICAL pairing and
-  // carries no geographic claim; and G8 would then join routeBand [15,28] to
-  // that region's resolved levelBand of [8,20]. Task 15's, with a ruling.
+  assert.doesNotMatch(r.out, /^FAIL\s+bestiary\/placement-thornveil\.json/m);
+  assert.match(r.out, /^WARN {2}bestiary\/placement-thornveil\.json: zone "thornveil" not in content\/world\/resolved#zones — ruled void by content\/bestiary\/region-exemptions\.json \(R-B\)/m);
   assert.doesNotMatch(r.out, /towns\/town-millcross\.json: town ".*" not in content\/world\/resolved#towns/);
   // finish() ran — the summary is printed, nothing went dark.
   assert.match(r.out, /content-gate: .* failures/, r.out);

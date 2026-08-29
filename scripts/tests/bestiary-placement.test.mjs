@@ -103,6 +103,7 @@ function fixture({
   bestiary = BESTIARY,
   geography = GEOGRAPHY,
   placementSchema = true,
+  exemptions = null,
 } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "placement-gate-"));
   mkdirSync(join(dir, "content/characters"), { recursive: true });
@@ -119,6 +120,11 @@ function fixture({
   writeFileSync(join(dir, "content/bestiary/bestiary.json"), JSON.stringify(bestiary));
   for (const [name, body] of Object.entries(placements))
     writeFileSync(join(dir, "content/bestiary", name), JSON.stringify(body));
+  // R-B: content/bestiary/region-exemptions.json, same shape as the real
+  // committed file — `exemptions: null` (the default) omits it entirely, so
+  // most fixtures never touch this path.
+  if (exemptions !== null)
+    writeFileSync(join(dir, "content/bestiary/region-exemptions.json"), JSON.stringify(exemptions));
   writeFileSync(join(dir, "keys.json"), JSON.stringify({ version: 1, keys: [] }));
   writeFileSync(join(dir, "manifest.json"), JSON.stringify({ version: 2, entries: {} }));
   writeFileSync(join(dir, "mob-types.json"), JSON.stringify({ version: 1, mobTypes: [] }));
@@ -195,6 +201,53 @@ test("G1: unknown zone fails", () => {
     "placement-thornveil.json": placement({ zone: "nowhere" }) } }));
   assert.equal(r.code, 1);
   assert.match(r.out, /zone "nowhere" not in content\/world\/resolved/);
+});
+
+// R-B (owner ruling, 2026-08-29): an unresolved zone named in
+// region-exemptions.json is WARNED, not FAILed, and the bijection is
+// enforced both ways — an exemption for a zone that resolves fine is a
+// stale exemption; an exemption no placement file needed is dead weight.
+test("R-B: an exempted unknown zone WARNs instead of failing, and G8 is skipped", () => {
+  const r = runGate(fixture({
+    placements: { "placement-thornveil.json": placement({ zone: "nowhere" }) },
+    exemptions: { version: 1, why: "test", reasons: { nowhere: "ruled void for test purposes" } },
+  }));
+  assert.equal(r.code, 0);
+  assert.match(r.out, /WARN {2}bestiary\/placement-thornveil\.json: zone "nowhere" not in content\/world\/resolved#zones — ruled void by content\/bestiary\/region-exemptions\.json \(R-B\): ruled void for test purposes/);
+  assert.match(r.out, /1 placements/);
+});
+
+test("R-B: an exemption for a zone that actually resolves is a stale exemption, caught by the bijection — G1/G8 still ran in full, unforced", () => {
+  const r = runGate(fixture({
+    placements: { "placement-thornveil.json": placement() },
+    exemptions: { version: 1, why: "test", reasons: { thornveil: "should not apply — thornveil resolves in this fixture" } },
+  }));
+  // G1 resolved thornveil normally (the exemption never fired — "ruled void"
+  // never printed), so the entry went unconsumed, which the OTHER half of
+  // the bijection catches as a stale exemption. A join that starts resolving
+  // again must not leave a silently-inert carve-out sitting in the file.
+  assert.doesNotMatch(r.out, /ruled void/);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /"thornveil" is listed in content\/bestiary\/region-exemptions\.json but no placement file's zone needed it/);
+});
+
+test("R-B: an exemption no placement file's zone needed is a FAIL, both directions of the bijection", () => {
+  const r = runGate(fixture({
+    placements: { "placement-thornveil.json": placement() },
+    exemptions: { version: 1, why: "test", reasons: { "nobody-needs-this": "dead exemption" } },
+  }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /"nobody-needs-this" is listed in content\/bestiary\/region-exemptions\.json but no placement file's zone needed it/);
+});
+
+test("R-B: a shape-invalid region-exemptions.json is one FAIL, and exemptions are then empty (fail closed, not open)", () => {
+  const dir = fixture({ placements: {
+    "placement-thornveil.json": placement({ zone: "nowhere" }) } });
+  writeFileSync(join(dir, "content/bestiary/region-exemptions.json"), JSON.stringify({ version: 1 }));
+  const r = runGate(dir);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /bestiary placement exemptions: .* is shape-invalid/);
+  assert.match(r.out, /zone "nowhere" not in content\/world\/resolved#zones$/m);
 });
 
 test("G2: bestiaryRegion matching no design fails", () => {

@@ -1,7 +1,7 @@
 {
   "title": "CLUSTER 1 · THE MELTWASH BASIN",
-  "subtitle": "a Bellfaith relay map",
-  "hand": "A1 §7: a world map is an artifact made by someone, for a purpose. This one is drawn by the institution that owns the towers, maintained because the towers must be maintained, and copied for anyone who asks.",
+  "subtitle": "a Bellfaith road map",
+  "hand": "A1 §7: a world map is an artifact made by someone, for a purpose. This one is drawn by the institution whose bells relay along it town to town, maintained because the roads must be maintained, and copied for anyone who asks.",
   "noScaleBar": true,
   "scaleBarNote": "A1 §7.1: the map has no scale bar; it has a walking table.",
   "northMark": { "at": [27.2, 34.4], "label": "N" },

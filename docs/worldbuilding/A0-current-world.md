@@ -41,7 +41,7 @@ There is no cosmology in this world. This is not an inference from silence about
 - A grep across all of `content/` and `docs/story/undertow/core-story.md` for `god`, `gods`, `divine`, `deity`, `pantheon`, `creation myth`, `heaven`, `afterlife`, `soul` returns **zero hits**.
 - `core-story.md` names **no deity anywhere**, across 242 lines of world-and-plot spine.
 - The exclusion was deliberate at design time: `docs/superpowers/specs/2026-07-23-grand-epic-undertow-design.md` §5 records the Bellfaith as having "**no gods on stage, no sacrifice rites (user exclusion)**".
-- The Bellfaith accordingly has **institutions but no doctrine**: bells, wardens, a seal, a Bell School, a tower district with its own gate and its own "bell-time" (`content/story/lore.json`, `lore-the-tower-that-doesnt-answer`) — and no stated belief, no scripture, no object of worship.
+- The Bellfaith accordingly has **institutions but no doctrine**: bells, wardens, a seal, a Bell School, a belfry quarter with its own gate and its own "bell-time" (`content/story/lore.json`, `lore-the-belfry-that-doesnt-answer`) — and no stated belief, no scripture, no object of worship.
 
 The one supernatural noun that touches the sacred is the element **Holy**, which exists as a damage type (`colyseus-server/src/config/combat/elements.ts:10`) and as the Bell School's branch (`canon.md §5 "Wisdom branches, schools, and towns"`), with no theology attached to it at all.
 
@@ -475,7 +475,7 @@ The charter (§1) already records "World scale: **Large**, comparable to a major
 
 ## 5.3 What would strain
 
-1. **The bell relay.** One chain reaching six towns in hours is plausible over a few days' travel. Across a continent it needs a tower count, a maintenance cost and an owner — and the hours-versus-days gap that is the Broker's whole method changes shape with distance.
+1. **The bell relay.** Each town's own bell relaying to the next along the roads is plausible at frontier scale, where every leg is measured in hours. Across a continent the relay has to cross ground with no roads and no towns to relay from — a maintenance cost and an owner, not a bell rope — and the category-versus-detail gap that is the Broker's whole method changes shape once the roads it depends on stop existing everywhere.
 2. **Gildmark's monopoly weakens the moment a second coast exists.** "Whoever controls the door to the sea controls the price of the whole land" is a statement about a land with exactly one door.
 3. **"Nothing between the towns."** At frontier scale this is a striking fact. At continent scale it becomes an absence that demands an explanation — why has no one built a federation across a continent in a hundred years?
 4. **Millcross as the hub through which every road passes** cannot hold across a continent without a second hub, which weakens it.

@@ -1560,19 +1560,22 @@ test("Z0: every committed record's zone slug is kebab-case", () => {
 //
 // The LEGACY TEN are canon and preserved byte for byte under the owner's
 // ruling EXCEPT for `source` — Task 15 (F-051 completion Task 1) reconciled
-// every citation without touching a kind, region or description: the 2
-// pointing at content/maps/cluster1-geography.json (a file the redraw
+// every citation WITHOUT touching a kind, region or description anywhere:
+// the 2 pointing at content/maps/cluster1-geography.json (a file the redraw
 // retired) were re-pointed at docs/worldbuilding/A1-geography-cluster1.md,
 // and the 12 name-absent ones were closed by making the cited section carry
 // the landmark's exact name — mostly a stray "the" (a table cell or a
-// markdown `**bold**` split had broken the contiguous phrase), and Hollowmarch's
-// "ore heads" row text was also corrected once, alongside the resource
-// itself, since it was the same false claim as the JSON. Debt: 14 -> 0.
-// Was pinned as a NUMBER so it could not grow quietly or be quietly declared
-// fixed; now pinned at 0 for the same reason a regression here is silent
-// otherwise. `scripts/lib/prose-audit.mjs`'s `checkLegacyLandmarkCitations`
-// (G-LM-CITE, wired into check_content.mjs) runs the SAME whole-name
-// substring rule as a live gate, so a future edit reds before it ships.
+// markdown `**bold**` split had broken the contiguous phrase). Debt: 14 -> 0.
+// Hollowmarch's `ore` resource (licensed by no c02 region at all, surveyed
+// or reported) is a SEPARATE, unresolved defect — ruling R-A (owner,
+// 2026-08-29) left it standing rather than accept the ripple a fix causes in
+// four already-shipped derived zones' kind sets; it is filed for backlog
+// triage, not fixed by this test or this task. Was pinned as a NUMBER so it
+// could not grow quietly or be quietly declared fixed; now pinned at 0 for
+// the same reason a regression here is silent otherwise.
+// `scripts/lib/prose-audit.mjs`'s `checkLegacyLandmarkCitations` (G-LM-CITE,
+// wired into check_content.mjs) runs the SAME whole-name substring rule as a
+// live gate, so a future edit reds before it ships.
 // ---------------------------------------------------------------------------
 test("every landmark source is a real file, and for records written after the redraw it carries the name", () => {
   const carries = (source, name) => {

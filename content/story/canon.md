@@ -304,25 +304,26 @@ burned before either — never in the tone or timing of the bell itself.
   next town's along the trade roads, in a chain — category only (war,
   danger, all-clear, "await proclamation"), no detail. A signal reaches
   every town on the network within hours of the first bell ringing it.
-- **Slow detail (days).** The actual sealed proclamation — layers 2 and 3 —
-  travels by bell-rider (the Bellfaith's fast couriers) or message-bird
-  along the trade roads, at the same pace as any other road traffic (see
-  the travel times above). Each town's tower verifies the seal, tolls
-  assembly, reads the proclamation aloud, and forwards a copy on to the
-  next town.
+- **Slow detail.** The actual sealed proclamation — layers 2 and 3 — travels
+  by bell-rider (the Bellfaith's fast couriers) or message-bird along the
+  same trade roads, at the same pace as any other road traffic (see the
+  travel times above): the same hours the fast signal took, never longer.
+  Each town's tower verifies the seal, tolls assembly, reads the
+  proclamation aloud, and forwards a copy on to the next town.
 
-**The exploit (the Broker's core method):** the gap between the fast signal
-and the slow detail — hours versus days — is where truth is decided. A town
-knows *something* happened within hours, but not *what* for days; whoever's
-version of the detail arrives first at a given town is the version that
-sticks, because there is nothing to compare it against yet ("the first news
-sticks"). The Broker's own riders always ride that gap faster than anyone
-else's — better horses, paid relay stops, roads he already controls through
-Gildmark's trade contracts — and riders carrying a proclamation inconvenient
-to him get robbed on the road unusually often, always after the signal has
-already gone out and always before the truthful detail can catch up to it.
-This is recorded on his dossier in §2 and cross-referenced in "the Broker's
-hand behind Gildmark" in §3.
+**The exploit (the Broker's core method):** the gap is no longer in raw
+speed — both layers now travel the same roads in the same hours — it is in
+DETAIL. A town knows *something* happened as soon as the bare category
+arrives, but not *what* until the full proclamation catches up behind it;
+whoever's version of the detail arrives first at a given town is the
+version that sticks, because there is nothing to compare it against yet
+("the first news sticks"). The Broker's own riders always ride that gap
+faster than anyone else's — better horses, paid relay stops, roads he
+already controls through Gildmark's trade contracts — and riders carrying a
+proclamation inconvenient to him get robbed on the road unusually often,
+always after the bare signal has already gone out and always before the
+full, truthful detail can catch up to it. This is recorded on his dossier
+in §2 and cross-referenced in "the Broker's hand behind Gildmark" in §3.
 
 **Gildmark's edge:** the spec's far-mirrors — a Gildmark monopoly — are the
 one channel faster than even the fast signal, a private line outside the
