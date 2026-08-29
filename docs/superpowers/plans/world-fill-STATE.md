@@ -4549,3 +4549,76 @@ sit within one screen, so `SURVEYED_REGIONS` and `POST_REDRAW_LANDMARKS` now nam
   isolated workers all exited; the parent never finished). The suite completed normally once, at
   1286/1286. Verification for this task was therefore taken as the 8 tests that read `content/zones`
   (545/545) plus geometry-exact standalone (51/51). Worth a look before the suite grows again.
+
+### TASK 14 SHIPPED (2026-08-29) — the last ten, Z2 closed, and a closure that could not fail
+
+`content/zones/` **30 → 40**. `check_content --require-complete` **12 failures → 1**. The ten
+`surveyed region … has no record` lines are gone, `town-millcross` is re-homed, and the single
+survivor is `bestiary/placement-thornveil.json`.
+
+**THE PLAN'S TASK 14 TEXT IS STALE IN THE SAME FOUR WAYS TASKS 12 AND 13 EACH MEASURED**, and A4 §5
+is the authority in all four. (a) It names rows c06/r01-r03, c07/r01-r03, c08/r01-r02, c09/r01 and
+c10/r01; **only the last is surveyed** and the other nine are reported ground Z2 fails outright. The
+surveyed ten are c06/r06-r08, c07/r01, r03, r06, c08/r06, r08, c09/r03, c10/r01. (b) All ten of its
+zone slugs are invented; A4 mints ten different ones. (c) Its kind sets are unlicensed in eight of
+ten rows — sharpest on Ashen Spar, where it takes `salvage` and `timber` while the licence grants
+c10/r01 only {ore, fuel, stone}. (d) It routes six landmark citations at `A2-wider-world.md#4`,
+which names the three CHAINS but carries none of the twenty names, and four more at resolved
+continent-08/-10, which carry the ground but not the names. Nineteen of twenty now cite A4 §5; the
+twentieth is Brightfall Leap, inherited canon, cited at its own pinned civil record.
+
+**THE CLOSURE THAT COULD NOT FAIL — the defect worth remembering.** Z2 closing means its five
+message families go silent on the real root, which is the perfect hiding place for a rule that can
+no longer fail. The first fix was an `assert.deepEqual(covered, surveyed)` added at the END of the
+existing join test — and it was **entailed by three assertions above it**: 40 files, `surveyed.size`
+40, and every record's region ∈ surveyed with no duplicates force set equality by pigeonhole. A real
+fabric/corpus disagreement redded on one of those and never reached it. My own mutation had "proved"
+the line by stubbing the very assertions that entailed it, which proves nothing about the code as
+written. It now stands as its own test where nothing constrains either side first, and it names the
+offending regions. **Proven by the mutation no ratchet can catch**: swap which two c02 regions are
+surveyed with the count held at 40 → the closure reds with `extra: ['c02/r01'], missing: ['c02/r11']`.
+
+**THE LEGACY JOINS SPLIT ON MEASUREMENT, not on which task the plan named.** `town-millcross` was a
+one-line re-home to `c-town-millcross` (T1 joins `resolved#towns`, which is keyed by `id`).
+`placement-thornveil` is **not re-homable by a content edit at all**: `bestiary-placement.schema.json`
+pins `zone` to `^[a-z0-9]+(-[a-z0-9]+)*$` and **0 of 160** resolved zone ids match that pattern. It
+needs a schema change, a ruling on the c02/r30 join (Task 9's alphabetical pairing, carrying no
+geographic claim) and a G8 conflict (routeBand [15,28] vs that region's levelBand [8,20]). Task 15's.
+
+**TWO CORRECTIONS TO MY OWN COMMIT MESSAGES, both found by review.** (1) `b8cc910` claims the
+re-home turned T2-T7 on. **False** — `check_content.mjs:1518-1654` runs T2-T7 unconditionally;
+only membership in `records` (the count) is gated by T1. The rules were never dark; what changed is
+`0 towns → 1` and T1's own orphan clearing. (2) The re-home broke Gate 1: `drawTitle` in
+`tools/art-forge/generate/townplan.mjs` title-cases `plan.town` straight into the SVG and rendered
+"C-town-millcross — town plan". The field serves two masters — an id for T1's join, a display name
+for the renderer — and the prefix is now derived away at the point of display.
+
+**THE ABSENCE TRAP, SIXTH OCCURRENCE, and the register that produced it.** Both content reviewers
+converged on one cause: a **continental register asserted from a 160 km² sliver**. Four landmass
+superlatives were measured and **all four were false** — "the largest continuous sowing on the delta"
+(134 km² against c06/r05's 476), "the widest meadow on the landmass" (94.8, refuted by the 95.2 in
+its own sentence and correctly claimed by a sibling record in the same commit), "the one place on the
+island where stone lies in beds" (marine-terrace is also on c08/r05), "more fuel than any other on
+Wracklow" (c08/r07 carries 72.7 km² against 70.2). The sixth trap proper: "the only lava tube drawn
+anywhere in the world" is true of the fabric's one landform and **false of the drawn world's nine
+"Lava tube" dungeons**, none of them on c10/r01 — a fabric-vs-drawn-world split no previous
+occurrence had. 46 prose corrections in all; 11 claims deleted as unmeasurable or false.
+
+**FILED, NOT CHASED.**
+- **A concurrent session in this worktree destroyed uncommitted work twice**, and an adversarial
+  reviewer independently found live whole-directory `node --test` processes rewriting
+  `content/zones/*.json` and `content/world/fabric/*.json` on disk mid-review. One combined suite run
+  showed 4 phantom failures that all passed alone and passed 566/566 on re-run. Same class as the
+  F-037 `_release` worktree hazard. Uncommitted state is not durable here.
+- Minted zone-landmark names remain confusable with DRAWN names in the same region, now measured on
+  five more landmasses: "Head between Bitternstrand" vs drawn "Head between Osierbar" (c06/r08, same
+  classifier AND preposition), "Withyshallow Saddle" vs "Reedholm Saddle" (c07/r01), "Siltbar Rake"
+  vs "Sedgerun Rake" (c07/r06), "Quillfall Reach" vs "Marramstrand Reach" (c06/r07), "Marramlow Carr"
+  vs "Marrameyot Carr" (c06/r08). `drawnPlaceNames` bars whole names only, by design.
+  `tools/mapforge/lib/name-gen.mjs`.
+- Nine dungeons named "Lava tube 1-8" / "Ashen Spar Lava Tubes" stand on c02/c04/c05/c07/c09 while
+  the fabric draws exactly ONE `lava-tube` landform, on c10/r01. Nothing compares dungeon names to
+  the fabric. `content/world/resolved/continent-0*.json#dungeons`.
+- `content/zones/*.json`'s `spineId` is still unset on all forty (carried from Tasks 9-13).
+- `scripts/tests/geometry-exact.test.mjs` still runs ~460 s and still wedges whole-directory
+  `node --test` runs; another lane owns the fix.
