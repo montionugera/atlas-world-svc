@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-ac0d",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Charcone Waste",
+  "bind": {
+    "handle": "c05/desert/h-23ac0d",
+    "expect": {
+      "type": "sand-sheet",
+      "sizeKm": [
+        12.85,
+        30
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Flat wind-laid sand with no dunes at all: easy going, and the same in every direction.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sand-sheet.gloss"
+  },
+  "resolution": null
+}

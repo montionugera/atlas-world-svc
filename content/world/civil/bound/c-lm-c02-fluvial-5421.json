@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-5421",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Gildrow Race",
+  "bind": {
+    "handle": "c02/fluvial/h-8a5421",
+    "expect": {
+      "type": "floodplain-levee",
+      "sizeKm": [
+        3.36,
+        13.44
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A low natural bank along the water, built from what the floods dropped first.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#floodplain-levee.gloss"
+  },
+  "resolution": null
+}

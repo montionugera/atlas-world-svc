@@ -526,5 +526,197 @@
     "title": "Town plan view: top-down town map schema (boundary, road spine with widths, building footprints, plazas, landmarks) authored from A1 section 6 themes and bound to the physics scale, plus the footprint to static-collision binder",
     "created_at": "2026-08-09T01:17:20.139913+00:00",
     "promoted_to": "F-040"
+  },
+  {
+    "id": "I-089",
+    "title": "Seeded map data model: seed + derived file so cluster-1 map detail can grow without hand-authoring every point",
+    "created_at": "2026-08-09T10:12:56.396777+00:00",
+    "promoted_to": "F-041"
+  },
+  {
+    "id": "I-090",
+    "title": "World map render: spine-driven world-scale map (F-041 tier spine has no renderer; cluster1-world.svg is region-scale)",
+    "created_at": "2026-08-11T17:26:48.680292+00:00",
+    "promoted_to": "F-042"
+  },
+  {
+    "id": "I-091",
+    "title": "check_map_render --write with rsvg-convert missing leaves PNGs stale (gate byte-compares SVG only; F-042 final-review flag)",
+    "created_at": "2026-08-12T13:22:27.331789+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-092",
+    "title": "World-scale geography: seeded continent/ocean generation from n-atlas seed + composition, hand-polished into canon, so the atlas world sheet renders a complete map",
+    "created_at": "2026-08-12T16:21:51.957968+00:00",
+    "promoted_to": "F-043"
+  },
+  {
+    "id": "I-093",
+    "title": "harden G-ATLAS-ROLLUP: iterate union of committed+rolled-up biome keys so a rogue uncommitted biome (bounded ~6pp today) cannot pass silently",
+    "created_at": "2026-08-14T15:54:34.426311+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-094",
+    "title": "storybook Maps tab: serve game-client/assets/art/maps (cluster1-world, atlas-world) with pan/zoom in asset-storybook, honoring the new every-artifact-observable rule",
+    "created_at": "2026-08-15T07:39:53.582607+00:00",
+    "promoted_to": "F-044"
+  },
+  {
+    "id": "I-095",
+    "title": "world rescale to 400x400: uniform /5 geography scale, towns keep physical size, hour-scale travel \u2014 owner-approved scale model",
+    "created_at": "2026-08-15T11:12:30.592907+00:00",
+    "promoted_to": "F-045"
+  },
+  {
+    "id": "I-096",
+    "title": "check_spine_emit.mjs silently drops any region lacking lore.order, so a region can cease to exist on the chart with every gate green (found 2026-08-16 during world-fill design; see design doc R3)",
+    "created_at": "2026-08-16T01:59:48.203571+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-097",
+    "title": "World fill Plan A: unblock and afford \u2014 exact geometry, spatial index, places.mjs join authority, render lock",
+    "created_at": "2026-08-18T13:58:23.925477+00:00",
+    "promoted_to": "F-046"
+  },
+  {
+    "id": "I-098",
+    "title": "Stale references to the deleted cluster1-geography mirror and render-map.mjs survive in schema prose, three comments, and the basin sheet's drawn bytes",
+    "created_at": "2026-08-19T07:28:09.510343+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-099",
+    "title": "World fill Plan B: vocabulary and render \u2014 170-type landform lexicon, four schemas, 20 biomes, 40 glyph families, deterministic label declutter, baked-texture rasteriser",
+    "created_at": "2026-08-20T12:51:22.701533+00:00",
+    "promoted_to": "F-047"
+  },
+  {
+    "id": "I-100",
+    "title": "World fill Plan C: the fabric layer \u2014 seeded 400x400 generator, 13 landmasses / 160 regions / 1,740 landform instances / 45 settlements, committed content/world/fabric + handles, 1.5:1 sea-to-land by construction",
+    "created_at": "2026-08-22T00:16:39.345694+00:00",
+    "promoted_to": "F-048"
+  },
+  {
+    "id": "I-101",
+    "title": "World fill Plan D: pinned places, bound records and relations",
+    "created_at": "2026-08-24T17:24:54.417938+00:00",
+    "promoted_to": "F-049"
+  },
+  {
+    "id": "I-102",
+    "title": "Art-forge pipeline dashboard: pipeline view per brief with gate verdicts and per-cell re-run",
+    "created_at": "2026-08-25T04:32:40.373942+00:00",
+    "promoted_to": "F-050"
+  },
+  {
+    "id": "I-103",
+    "title": "World fill Plan E: redraw and prose",
+    "created_at": "2026-08-25T16:28:35.781558+00:00",
+    "promoted_to": "F-051"
+  },
+  {
+    "id": "I-104",
+    "title": "iceEdge is null on every resolved continent, including both ice caps",
+    "created_at": "2026-08-29T09:18:42.260001+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-105",
+    "title": "Hollowmarch's zone record claims ore no c02 region licenses",
+    "created_at": "2026-08-29T09:19:10.378318+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-106",
+    "title": "continent-11 premise register disagrees with names registers.json",
+    "created_at": "2026-08-29T09:19:10.931178+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-107",
+    "title": "Brightfall Leap canon landmark missing from names reserved.json",
+    "created_at": "2026-08-29T09:19:11.456730+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-108",
+    "title": "Nine Lava Tube dungeons named where the fabric draws only one",
+    "created_at": "2026-08-29T09:19:12.024386+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-109",
+    "title": "Design spec and fabric disagree on which continent owns the inland sea",
+    "created_at": "2026-08-29T09:19:12.565950+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-110",
+    "title": "G-POI floor downgrades are guarded only by a hardcoded warning count",
+    "created_at": "2026-08-29T09:19:13.092220+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-111",
+    "title": "canon-legs.json's feature field is never read for correctness",
+    "created_at": "2026-08-29T09:19:13.631182+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-112",
+    "title": "sheet-atlas.json's scaleBarNote field has no live reader",
+    "created_at": "2026-08-29T09:19:14.161859+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-113",
+    "title": "Freeze reasons are never verified true and reasons is unguarded",
+    "created_at": "2026-08-29T09:19:14.735675+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-114",
+    "title": "content zones spineId is unset on all 40 records",
+    "created_at": "2026-08-29T09:19:15.288657+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-115",
+    "title": "No gate binds a minted zone landmark to the drawn world's own name",
+    "created_at": "2026-08-29T09:19:15.824981+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-116",
+    "title": "Five weak gate assertions have wide headroom or cannot fail",
+    "created_at": "2026-08-29T09:19:16.354273+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-117",
+    "title": "world-d fixture budgets.json has drifted from the real budgets.json",
+    "created_at": "2026-08-29T09:19:16.883763+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-118",
+    "title": "basin-sheet.mjs and resolveWorld are permanently dead production code",
+    "created_at": "2026-08-29T09:19:17.435512+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-119",
+    "title": "A4's name-register inheritance rule is unenforced in code",
+    "created_at": "2026-08-29T09:19:17.974378+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-120",
+    "title": "c05 r12 is a second G-POI floor risk with no declaration",
+    "created_at": "2026-08-29T09:19:18.503205+00:00",
+    "promoted_to": null
   }
 ]

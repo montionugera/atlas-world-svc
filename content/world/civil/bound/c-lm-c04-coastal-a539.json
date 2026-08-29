@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-coastal-a539",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Fenlack Roads",
+  "bind": {
+    "handle": "c04/coastal/h-a0a539",
+    "expect": {
+      "type": "estuary",
+      "sizeKm": [
+        4.41,
+        14
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Where the river's water and the sea's argue twice a day over the same mudflats.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#estuary.gloss"
+  },
+  "resolution": null
+}

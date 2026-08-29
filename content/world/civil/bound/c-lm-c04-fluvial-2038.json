@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-fluvial-2038",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ford over Grykerake",
+  "bind": {
+    "handle": "c04/fluvial/h-ae2038",
+    "expect": {
+      "type": "delta",
+      "sizeKm": [
+        7.2,
+        20
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The river gives up and splits, laying its load down in a fan of shifting channels.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#delta.gloss"
+  },
+  "resolution": null
+}

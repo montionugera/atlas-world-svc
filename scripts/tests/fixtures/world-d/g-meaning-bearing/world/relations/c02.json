@@ -1,0 +1,4 @@
+[
+  { "rel": "unique_in_scope", "subject": "c-town-gildmark", "property": "deepwater-port", "scope": "coast:wealdmarch-west", "cite": "canon.md §4 \"Geography & trade logic\"" },
+  { "rel": "bearing", "from": "c-town-gildmark", "to": "c-lm-the-drowned-stair", "dir": "E", "toleranceDeg": 15, "cite": "canon.md §4 \"Geography & trade logic\"" }
+]

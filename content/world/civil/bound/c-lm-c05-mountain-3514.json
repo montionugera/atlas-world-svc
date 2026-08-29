@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-mountain-3514",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Spar beyond Dunevent",
+  "bind": {
+    "handle": "c05/mountain/h-e93514",
+    "expect": {
+      "type": "massif-dome",
+      "sizeKm": [
+        6.83,
+        27.3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A single great swell of rock with all its valleys running off it like spokes.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#massif-dome.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-013e",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Fumeburn Barchan",
+  "bind": {
+    "handle": "c05/desert/h-73013e",
+    "expect": {
+      "type": "sand-sheet",
+      "sizeKm": [
+        13.14,
+        30
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Flat wind-laid sand with no dunes at all: easy going, and the same in every direction.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sand-sheet.gloss"
+  },
+  "resolution": null
+}

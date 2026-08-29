@@ -1,0 +1,21 @@
+{
+  "id": "dungeon-lavatube-0",
+  "title": "Lava tube 1",
+  "family": "family-lavatube",
+  "familyIndex": 0,
+  "bind": {
+    "handle": "c07/coastal/h-634bdd"
+  },
+  "entranceType": "blowhole",
+  "floors": 3,
+  "levelBand": [
+    19,
+    25
+  ],
+  "hazards": [
+    "heat",
+    "fume",
+    "loose-floor"
+  ],
+  "spineId": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-coastal-b8b4",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head north of Drifthold",
+  "bind": {
+    "handle": "c03/coastal/h-74b8b4",
+    "expect": {
+      "type": "sea-arch",
+      "sizeKm": [
+        0.06,
+        0.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A rib of rock the waves have holed clean through, still standing on two legs.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sea-arch.gloss"
+  },
+  "resolution": null
+}

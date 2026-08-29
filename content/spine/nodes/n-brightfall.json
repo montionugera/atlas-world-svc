@@ -1,0 +1,103 @@
+{
+  "id": "n-brightfall",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "Brightfall",
+  "provenance": {
+    "authored": "generated",
+    "generator": {
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/continent-09.json"
+    },
+    "source": "content/world/premises/continent-09.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "4be3ebe76ba4dfe2",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [340.5, 196.5],
+      [338, 190],
+      [337, 184],
+      [337, 179.5],
+      [339, 173],
+      [341.5, 170],
+      [341.5, 169],
+      [345, 166],
+      [348, 164.5],
+      [354.5, 164.5],
+      [357, 165.5],
+      [361.5, 169],
+      [361.5, 170],
+      [363.5, 171.5],
+      [366.5, 178],
+      [367.5, 182.5],
+      [367.5, 190.5],
+      [366.5, 195.5],
+      [364.5, 200],
+      [364, 200],
+      [363.5, 201.5],
+      [363, 201.5],
+      [363, 202.5],
+      [360, 205],
+      [360, 205.5],
+      [357, 206],
+      [357, 206.5],
+      [352, 206.5],
+      [352, 206],
+      [349, 205.5],
+      [349, 205],
+      [347.5, 204.5],
+      [347.5, 204],
+      [346.5, 204],
+      [343, 200],
+      [342.5, 200],
+      [342.5, 199],
+      [341.5, 198.5],
+      [341, 196.5]
+    ],
+    "anchor": [352.25, 182.75]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [30.5, 42],
+    "originInParent": [337, 164.5]
+  },
+  "composition": {
+    "rock": 60.1,
+    "upland": 21.4,
+    "forest": 18.5
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "rim",
+  "features": [
+    {
+      "id": "f-town-c09-s01",
+      "kind": "point",
+      "at": [338.75, 189.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c09/s01"
+      },
+      "type": null
+    }
+  ],
+  "bands": [],
+  "runtime": null,
+  "representsNodeId": null,
+  "lore": {
+    "summary": "cliff-hung waterfalls straight into the sea"
+  },
+  "tags": [],
+  "levelBand": [30, 56]
+}

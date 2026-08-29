@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-914e",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Bramstead Fen",
+  "bind": {
+    "handle": "c02/wetland/h-10914e",
+    "expect": {
+      "type": "raised-bog",
+      "sizeKm": [
+        2.31,
+        9
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A dome of peat that has grown above the water table and drinks nothing but rain.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#raised-bog.gloss"
+  },
+  "resolution": null
+}

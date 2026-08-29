@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-dbc4",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ford north of Halebreak",
+  "bind": {
+    "handle": "c03/fluvial/h-bcdbc4",
+    "expect": {
+      "type": "confluence-bench",
+      "sizeKm": [
+        0.38,
+        1.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The dry tongue of ground between two rivers, just before they become one.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#confluence-bench.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,83 @@
+{
+  "id": "n-site-newvale",
+  "tier": "site",
+  "parentId": "n-frontier-shelf",
+  "title": "Newvale",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/atlas-frontier.md"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "a1b2c3d4e5f60718",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "rect",
+    "rect": {
+      "x": 50,
+      "y": 700,
+      "w": 200,
+      "h": 200
+    },
+    "anchor": [
+      150,
+      800
+    ]
+  },
+  "interior": {
+    "units": "u",
+    "perParentUnit": 1,
+    "size": [
+      200,
+      200
+    ],
+    "originInParent": [
+      50,
+      700
+    ]
+  },
+  "composition": {
+    "meadow": 90,
+    "built": 10
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [
+    {
+      "id": "f-spawnpoint-newvale",
+      "kind": "point",
+      "at": [
+        150,
+        800
+      ],
+      "attrs": {
+        "role": "spawnPoint"
+      }
+    }
+  ],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": [
+      50,
+      700
+    ],
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "summary": "Temporary 4th site: proves the emitted site list is derived, not hardcoded."
+  },
+  "tags": [
+    "runtime-only"
+  ],
+  "levelBand": null
+}

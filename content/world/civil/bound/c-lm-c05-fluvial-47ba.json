@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-fluvial-47ba",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Cindervent Reach",
+  "bind": {
+    "handle": "c05/fluvial/h-8347ba",
+    "expect": {
+      "type": "floodplain-levee",
+      "sizeKm": [
+        5.51,
+        14
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A low natural bank along the water, built from what the floods dropped first.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#floodplain-levee.gloss"
+  },
+  "resolution": null
+}

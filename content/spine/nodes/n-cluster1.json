@@ -1,0 +1,328 @@
+{
+  "id": "n-cluster1",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "Wealdmarch",
+  "provenance": {
+    "authored": "generated",
+    "generator": {
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/continent-02.json"
+    },
+    "source": "content/world/premises/continent-02.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [75.75, 152.75],
+  "seed": {
+    "value": "1b3b95ff748b6142",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [7, 154],
+      [8.5, 144],
+      [9, 144],
+      [9.5, 141],
+      [10, 141],
+      [10, 140],
+      [10.5, 140],
+      [10.5, 138.5],
+      [11, 138.5],
+      [12, 135.5],
+      [13, 135],
+      [13, 134],
+      [13.5, 134],
+      [13.5, 133],
+      [15, 132],
+      [15, 131],
+      [16.5, 130],
+      [16.5, 129],
+      [17, 129],
+      [17, 128.5],
+      [20.5, 125.5],
+      [20.5, 124.5],
+      [21, 124.5],
+      [22.5, 122.5],
+      [23.5, 122.5],
+      [27, 118.5],
+      [28.5, 118.5],
+      [28.5, 119],
+      [30, 119],
+      [30, 119.5],
+      [32.5, 119.5],
+      [32.5, 120],
+      [41, 120.5],
+      [41, 120],
+      [48, 119.5],
+      [48, 119],
+      [50, 119],
+      [50, 118.5],
+      [54.5, 117.5],
+      [54.5, 117],
+      [55.5, 117],
+      [55.5, 116.5],
+      [56.5, 116.5],
+      [56.5, 116],
+      [57.5, 116],
+      [57.5, 115.5],
+      [60.5, 114.5],
+      [61, 113.5],
+      [62, 113.5],
+      [62.5, 112.5],
+      [63.5, 112.5],
+      [65, 110.5],
+      [66, 110.5],
+      [66, 110],
+      [73, 103.5],
+      [73, 102.5],
+      [73.5, 102.5],
+      [73.5, 102],
+      [74.5, 101.5],
+      [74.5, 100.5],
+      [75, 100.5],
+      [84, 100.5],
+      [100, 103],
+      [112.5, 103.5],
+      [131.5, 109],
+      [149.5, 120],
+      [162, 138],
+      [163.5, 142],
+      [164.5, 152.5],
+      [161, 161],
+      [144, 175.5],
+      [128.5, 184],
+      [124.5, 185],
+      [119.5, 188],
+      [116, 188.5],
+      [116, 189],
+      [114.5, 189],
+      [114.5, 189.5],
+      [113, 189.5],
+      [97, 197],
+      [93, 200.5],
+      [93, 202],
+      [91.5, 202.5],
+      [79, 204],
+      [58.5, 208.5],
+      [47.5, 208.5],
+      [41.5, 207],
+      [33, 202],
+      [19, 188],
+      [13, 174]
+    ],
+    "anchor": [75.75, 152.75]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [157.5, 108],
+    "originInParent": [7, 100.5]
+  },
+  "composition": {
+    "meadow": 78.6,
+    "forest": 9.9,
+    "lake": 9.1,
+    "river": 1.9,
+    "marsh": 0.5
+  },
+  "interstitial": {
+    "meadow": 78.6,
+    "forest": 9.9,
+    "lake": 9.1,
+    "river": 1.9,
+    "marsh": 0.5
+  },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": null,
+  "features": [
+    {
+      "id": "f-town-cindervast",
+      "kind": "point",
+      "at": [90.2, 131.4],
+      "attrs": {
+        "name": "Cindervast",
+        "role": "hub",
+        "town": "c-town-cindervast"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-embervale",
+      "kind": "point",
+      "at": [89.7, 147.9],
+      "attrs": {
+        "name": "Embervale",
+        "role": "hub",
+        "town": "c-town-embervale"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-gildmark",
+      "kind": "point",
+      "at": [83.2, 160.4],
+      "attrs": {
+        "name": "Gildmark",
+        "role": "capital",
+        "town": "c-town-gildmark"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-millcross",
+      "kind": "point",
+      "at": [98.2, 152.6],
+      "attrs": {
+        "name": "Millcross",
+        "role": "hub",
+        "town": "c-town-millcross"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-norhollow",
+      "kind": "point",
+      "at": [96.8, 147.7],
+      "attrs": {
+        "name": "Norhollow",
+        "role": "hub",
+        "town": "c-town-norhollow"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-rooktide",
+      "kind": "point",
+      "at": [94.5, 162.5],
+      "attrs": {
+        "name": "Rooktide",
+        "role": "hub",
+        "town": "c-town-rooktide"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c02-s01",
+      "kind": "point",
+      "at": [9.25, 160.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c02/s01"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c02-s02",
+      "kind": "point",
+      "at": [10.75, 151.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c02/s02"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c02-s03",
+      "kind": "point",
+      "at": [84.75, 201.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c02/s03"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c02-s04",
+      "kind": "point",
+      "at": [148.25, 125.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c02/s04"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c02-s05",
+      "kind": "point",
+      "at": [83.25, 104.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c02/s05"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c02-s06",
+      "kind": "point",
+      "at": [139.75, 122.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c02/s06"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c02-s07",
+      "kind": "point",
+      "at": [83.25, 114.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c02/s07"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c02-s08",
+      "kind": "point",
+      "at": [70.75, 111.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c02/s08"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c02-s09",
+      "kind": "point",
+      "at": [81.25, 192.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c02/s09"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c02-s10",
+      "kind": "point",
+      "at": [68.25, 181.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c02/s10"
+      },
+      "type": null
+    }
+  ],
+  "bands": [],
+  "runtime": null,
+  "representsNodeId": null,
+  "lore": {
+    "summary": "a landmass built around an inland sea — the Meltwash feeds it and no channel carries it out to the ocean; the surveyed basin sits on its shore."
+  },
+  "tags": [],
+  "levelBand": [1, 40]
+}

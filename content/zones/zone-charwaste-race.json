@@ -1,0 +1,48 @@
+{
+  "zone": "charwaste-race",
+  "region": "c05/r15",
+  "survey": "surveyed",
+  "reasonToGo": "The road west out of the junction ends at the village here, and so does the water: this is one of three surveyed regions on Thirstwold with a spring on it, and all seven desert springs the world has charted are on this landmass. Parties work the seam where the river ground runs out into the sand — water off the two crossings, and whatever the dune front has finished with.",
+  "hazards": [
+    {
+      "id": "the-bed-that-moves",
+      "name": "The bed that moves",
+      "description": "The channel here runs in a dozen shallow threads across a wide gravel bed, and which of the threads is the deep one is a different answer between one crossing and the next. A cart taken over on last season's line goes in to the axle and stays there.",
+      "effect": "damage"
+    },
+    {
+      "id": "the-front-comes-down",
+      "name": "The front comes down",
+      "description": "The dune ranks on the dry side of the region walk toward the river a little every year, and everything a party leaves on that side — a cairn, a stake, a wheel rut, a cache — is gone inside a season. A route walked out cannot be walked back by memory.",
+      "note": "Absence hazard: the harm is the mark that no longer exists. Nothing in the runtime enum expresses ground that forgets."
+    }
+  ],
+  "resources": [
+    {
+      "id": "front-salvage",
+      "name": "Front salvage",
+      "kind": "salvage",
+      "description": "Iron, glass and worked leather off what the sand covered before this village stood and has now uncovered again, gathered in the weeks between the front exposing a thing and the front taking it back."
+    },
+    {
+      "id": "ford-water",
+      "name": "Ford water",
+      "kind": "water",
+      "description": "Drawn above both crossings and never below them, in the skins the village keeps standing at each bank. Water filled below a ford comes up with the bed in it, and the whole of Thirstwold prices everything else against a skin of it."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "glasswold-barchan",
+      "name": "Glasswold Barchan",
+      "description": "Seven and a half kilometres of sand ridges set square across the wind, rank behind rank like a swell that stopped. It is the near edge of the sand and it is moving; the far edge of it is not on any sheet.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "confluence-beyond-dunespar",
+      "name": "Confluence beyond Dunespar",
+      "description": "The dry tongue of ground between two channels just above where they join — under a kilometre across, and the piece of the road-head the village puts its stores on, because the floods take the bank on either side of it and leave the bench standing.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

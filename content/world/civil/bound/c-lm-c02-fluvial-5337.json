@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-5337",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Cinderhollow Confluence",
+  "bind": {
+    "handle": "c02/fluvial/h-cd5337",
+    "expect": {
+      "type": "braided-channel",
+      "sizeKm": [
+        2.15,
+        8.6
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wide bed of gravel bars where the river runs in a dozen shallow threads at once.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#braided-channel.gloss"
+  },
+  "resolution": null
+}

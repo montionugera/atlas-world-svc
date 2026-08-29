@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-bc15",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Fordfield Roads",
+  "bind": {
+    "handle": "c02/coastal/h-91bc15",
+    "expect": {
+      "type": "cuspate-foreland",
+      "sizeKm": [
+        1.32,
+        5.28
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A blunt triangle of shingle thrown out from the coast where two drifts meet.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#cuspate-foreland.gloss"
+  },
+  "resolution": null
+}

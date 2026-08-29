@@ -1,0 +1,32 @@
+{
+  "id": "dungeon-hollowmarch-peat-shafts",
+  "title": "Hollowmarch Peat Shafts",
+  "family": null,
+  "bind": {
+    "handle": "c02/fluvial/h-0b949f"
+  },
+  "entranceType": "knickpoint-gorge",
+  "floors": 2,
+  "levelBand": [
+    8,
+    20
+  ],
+  "hazards": [
+    "bad-air",
+    "cold"
+  ],
+  "roomCountCurve": [
+    8,
+    10
+  ],
+  "lore": {
+    "note": "Peat-cutters' shafts that broke into running water and were abandoned in an afternoon.",
+    "source": "content/world/premises/continent-02.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

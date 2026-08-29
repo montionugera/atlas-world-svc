@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c09-coastal-32f8",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head among Quillmere",
+  "bind": {
+    "handle": "c09/coastal/h-6432f8",
+    "expect": {
+      "type": "coastal-lagoon",
+      "sizeKm": [
+        0.84,
+        3.34
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Shallow brackish water penned behind a bar, calm when the sea outside is not.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#coastal-lagoon.gloss"
+  },
+  "resolution": null
+}

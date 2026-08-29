@@ -38,6 +38,10 @@ import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { appendAttempt } from "./lib/run-ledger.mjs";
+
+const FORGE_DIR = path.dirname(fileURLToPath(import.meta.url));
+const RUNS_DIR = path.join(FORGE_DIR, "runs");
 
 /**
  * Tunable thresholds. Every value was calibrated against the campaign corpus
@@ -671,7 +675,8 @@ export function writeCornerSheet({ src, out, config }) {
 
 function printUsageAndExit() {
   console.error(
-    "usage: node artifact-gate.mjs <image.png> [--json] [--corner-sheet <out.png>]\n" +
+    "usage: node artifact-gate.mjs <image.png> [--json] [--corner-sheet <out.png>] [--ledger <briefId>]\n" +
+      "       --ledger tees the verdict into the brief's run ledger (tools/art-forge/runs/)\n" +
       "       exits 0 on PASS, 1 on FLAG, 2 on usage/IO error",
   );
   process.exit(2);
@@ -688,10 +693,36 @@ function main() {
     console.error("--corner-sheet requires an output path");
     printUsageAndExit();
   }
+  const ledgerIdx = argv.indexOf("--ledger");
+  const ledgerBriefId = ledgerIdx !== -1 ? argv[ledgerIdx + 1] : null;
+  if (ledgerIdx !== -1 && (!ledgerBriefId || ledgerBriefId.startsWith("--"))) {
+    console.error("--ledger requires a brief id");
+    printUsageAndExit();
+  }
 
   const result = inspectImage({ src });
   if (sheet)
     result.cornerSheet = writeCornerSheet({ src, out: path.resolve(sheet) });
+
+  // Run-ledger entry (F-050): tee the verdict — both PASS and FLAG — into
+  // the brief's ledger before exiting.
+  if (ledgerBriefId) {
+    // Ledger failure must NOT convert a legitimate FLAG exit (1) into an
+    // IO-error exit (2) — warn and keep the gate's verdict.
+    try {
+      appendAttempt(RUNS_DIR, ledgerBriefId, {
+        type: "gate",
+        png: path.relative(FORGE_DIR, src),
+        ok: result.ok,
+        reasons: result.reasons,
+        cornerSheet: result.cornerSheet
+          ? path.relative(FORGE_DIR, result.cornerSheet)
+          : null,
+      });
+    } catch (err) {
+      console.error(`artifact-gate.mjs: WARNING: ledger append failed: ${err.message}`);
+    }
+  }
 
   if (json) {
     console.log(JSON.stringify(result, null, 2));

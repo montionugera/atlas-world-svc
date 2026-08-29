@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-e26e",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Yardspar Barchan",
+  "bind": {
+    "handle": "c05/desert/h-1fe26e",
+    "expect": {
+      "type": "oasis-spring",
+      "sizeKm": [
+        0.26,
+        0.9
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Water reaching the surface where nothing else does, and everything alive for miles at it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#oasis-spring.gloss"
+  },
+  "resolution": null
+}

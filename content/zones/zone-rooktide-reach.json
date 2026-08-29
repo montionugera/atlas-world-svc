@@ -1,5 +1,7 @@
 {
   "zone": "rooktide-reach",
+  "region": "c02/r28",
+  "survey": "surveyed",
   "reasonToGo": "Everything moving between sea and river changes hulls here, and whatever goes over the side in the change stays on the flats.",
   "hazards": [
     {

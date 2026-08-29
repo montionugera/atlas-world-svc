@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c07-coastal-8a28",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head between Reedlobe",
+  "bind": {
+    "handle": "c07/coastal/h-5d8a28",
+    "expect": {
+      "type": "sea-cave",
+      "sizeKm": [
+        0.1,
+        0.3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A dark mouth in the cliff foot that the tide fills twice a day and empties again.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sea-cave.gloss"
+  },
+  "resolution": null
+}

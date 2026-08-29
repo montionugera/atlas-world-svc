@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-f5a6",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Galespar Reach",
+  "bind": {
+    "handle": "c03/fluvial/h-5af5a6",
+    "expect": {
+      "type": "alluvial-fan",
+      "sizeKm": [
+        1.93,
+        7.72
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A spread of stone and grit laid out where a steep stream hits the flat and slows.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#alluvial-fan.gloss"
+  },
+  "resolution": null
+}

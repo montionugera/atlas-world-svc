@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-stonemoor-ponor-throat",
+  "title": "Stonemoor Ponor Throat",
+  "family": null,
+  "bind": {
+    "handle": "c05/fluvial/h-ddc30d"
+  },
+  "entranceType": "plunge-pool",
+  "floors": 3,
+  "levelBand": [
+    32,
+    50
+  ],
+  "hazards": [
+    "bad-air",
+    "collapse"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "The whole moor's streams pour in here; the sound carries for a mile.",
+    "source": "content/world/premises/continent-04.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

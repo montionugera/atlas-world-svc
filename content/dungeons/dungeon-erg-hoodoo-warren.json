@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-erg-hoodoo-warren",
+  "title": "Erg Hoodoo Warren",
+  "family": null,
+  "bind": {
+    "handle": "c04/coastal/h-7e3606"
+  },
+  "entranceType": "sea-arch",
+  "floors": 3,
+  "levelBand": [
+    46,
+    64
+  ],
+  "hazards": [
+    "heat",
+    "collapse"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "A warren beneath the hoodoos; the entrances migrate with every dune season.",
+    "source": "content/world/premises/continent-05.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

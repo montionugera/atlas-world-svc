@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-abd1",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Galereach Race",
+  "bind": {
+    "handle": "c03/fluvial/h-82abd1",
+    "expect": {
+      "type": "braided-channel",
+      "sizeKm": [
+        2.61,
+        10.44
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wide bed of gravel bars where the river runs in a dozen shallow threads at once.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#braided-channel.gloss"
+  },
+  "resolution": null
+}

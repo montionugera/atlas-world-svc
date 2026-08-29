@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-2764",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ford under Halewall",
+  "bind": {
+    "handle": "c03/fluvial/h-3d2764",
+    "expect": {
+      "type": "braided-channel",
+      "sizeKm": [
+        4.87,
+        12
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wide bed of gravel bars where the river runs in a dozen shallow threads at once.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#braided-channel.gloss"
+  },
+  "resolution": null
+}

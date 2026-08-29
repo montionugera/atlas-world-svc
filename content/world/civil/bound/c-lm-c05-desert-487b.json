@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-487b",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Barchanwind Yardang",
+  "bind": {
+    "handle": "c05/desert/h-a1487b",
+    "expect": {
+      "type": "seif-dune",
+      "sizeKm": [
+        3.01,
+        9
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A long sharp-crested ridge of sand lying with the wind rather than across it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#seif-dune.gloss"
+  },
+  "resolution": null
+}

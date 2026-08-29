@@ -1,0 +1,38 @@
+{
+  "id": "dungeon-stonemoor-cave-city",
+  "title": "Stonemoor Cave City",
+  "family": null,
+  "bind": {
+    "handle": "c03/fluvial/h-715637"
+  },
+  "entranceType": "plunge-pool",
+  "floors": 7,
+  "levelBand": [
+    46,
+    64
+  ],
+  "hazards": [
+    "bad-air",
+    "dark",
+    "collapse"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+  ],
+  "lore": {
+    "note": "Seven floors of chambers with names like streets; whoever lived here had a census.",
+    "source": "content/world/premises/continent-04.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

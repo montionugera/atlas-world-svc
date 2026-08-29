@@ -1,5 +1,7 @@
 {
   "zone": "northern-icefield",
+  "region": "c02/r24",
+  "survey": "surveyed",
   "reasonToGo": "Every river in the land starts under this shelf, and the company at the gate on its lip has been standing there since the city behind it fell.",
   "hazards": [
     {

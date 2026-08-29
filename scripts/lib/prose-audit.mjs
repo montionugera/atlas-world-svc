@@ -1,0 +1,193 @@
+// Plan E Task 15 (F-051 completion Task 1) — prose reconciliation to the
+// redrawn world (seed 7c9e4a2f8b1d6e03, 36 spine nodes, 47 settlements, ZERO
+// tower nodes — down from the old world's 44 nodes / six named towns / a
+// 27-tower relay chain).
+//
+// Three checks, each pure over text/JSON so they can run as both a gate rule
+// (check_content.mjs) and a fixture-driven unit test:
+//
+// 1. checkAmendedPending — the corpus must carry zero `AMENDED-PENDING`
+//    markers (I-095's re-voice-deferred flag). A marker left in place is a
+//    known-stale sentence nobody has fixed yet, not a passing state.
+// 2. checkTowerRelayAssertions — content/story/*.json must carry zero
+//    "tower"/"relay" occurrences. The redrawn world has no tower spine nodes
+//    at all, so any surviving occurrence is either the retired relay-chain
+//    infrastructure or a homonym that needs a different word — the gate
+//    cannot tell the two apart and does not try; a human re-voices the prose
+//    and the corpus goes to zero.
+// 3. checkLegacyLandmarkCitations — every landmark in the ten legacy
+//    (PLACEHOLDER-exempt) zone records must cite a `source` document that (a)
+//    exists and (b) actually contains the landmark's name. Scoped to the
+//    legacy ten deliberately: the other 30 derived records all cite the
+//    generated `A4-zone-allocation.md#5`, which is minted from the same
+//    landmark names by construction and cannot drift from them the way a
+//    hand-authored citation can.
+
+import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { join } from "node:path";
+// citations.mjs's CITE_SCOPE/citeFiles already walk this exact scope
+// (content/ + docs/worldbuilding/, repo-relative and sorted) for G-CITE —
+// reused rather than re-implemented so this module can't drift from that
+// walk's semantics (node_modules/dotfile skip, .md/.json extensions).
+import { CITE_SCOPE, citeFiles } from "./citations.mjs";
+
+export const AMENDED_SCOPE = CITE_SCOPE;
+export const amendedFiles = citeFiles;
+
+/**
+ * G-AMENDED. `files` null = sweep AMENDED_SCOPE under repoRoot. Pure text
+ * search — the marker is a literal string, never a regex the corpus could
+ * accidentally satisfy some other way.
+ */
+export function checkAmendedPending({ repoRoot, files = null }) {
+  const rels = files ?? amendedFiles({ repoRoot });
+  const problems = [];
+  for (const rel of rels) {
+    const full = join(repoRoot, rel);
+    let text;
+    try {
+      text = readFileSync(full, "utf8");
+    } catch {
+      problems.push(`G-AMENDED: ${rel} is unreadable — fix the file or remove it from the sweep`);
+      continue;
+    }
+    const rows = text.split("\n");
+    for (let i = 0; i < rows.length; i++)
+      if (rows[i].includes("AMENDED-PENDING"))
+        problems.push(`G-AMENDED: ${rel}:${i + 1} still carries an AMENDED-PENDING marker — re-voice it`);
+  }
+  return problems;
+}
+
+// The four content/story/*.json files the redraw's tower/relay audit found
+// occurrences in (lore.json 12, quests.json 9, events.json 2, dialogue.json
+// 1 — 24 total, case-insensitive). Swept by pattern, not by this fixed list,
+// so a FIFTH file picking up the word later still gets caught.
+export function towerRelayFiles({ repoRoot }) {
+  const dir = join(repoRoot, "content/story");
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((f) => f.endsWith(".json"))
+    .map((f) => `content/story/${f}`)
+    .sort();
+}
+
+const TOWER_RELAY_RE = /tower|relay/i;
+
+/** G-TOWER-RELAY. `files` null = sweep every content/story/*.json. */
+export function checkTowerRelayAssertions({ repoRoot, files = null }) {
+  const rels = files ?? towerRelayFiles({ repoRoot });
+  const problems = [];
+  for (const rel of rels) {
+    const full = join(repoRoot, rel);
+    let text;
+    try {
+      text = readFileSync(full, "utf8");
+    } catch {
+      problems.push(`G-TOWER-RELAY: ${rel} is unreadable — fix the file or remove it from the sweep`);
+      continue;
+    }
+    const rows = text.split("\n");
+    for (let i = 0; i < rows.length; i++)
+      if (TOWER_RELAY_RE.test(rows[i]))
+        problems.push(`G-TOWER-RELAY: ${rel}:${i + 1} still says "tower" or "relay" — the redrawn world has zero tower nodes`);
+  }
+  return problems;
+}
+
+// Whole-name, case-insensitive substring containment — the SAME standard
+// scripts/tests/zone-content.test.mjs's own "every landmark source is a real
+// file..." test already pins as a number for the legacy ten (was 14, now 0
+// after this task). Kept identical deliberately: a looser word-level rule
+// here would pass citations that test still fails, which is worse than no
+// gate rule at all — two mechanisms disagreeing about the same ten records.
+function carries(text, name) {
+  return text.toLowerCase().includes(name.trim().toLowerCase());
+}
+
+/**
+ * G-LM-CITE. Every landmark in the legacy ten's zone records: `source` must
+ * name a file that exists, and that file's text must contain the landmark's
+ * whole `name` (trimmed, case-insensitive) as a substring.
+ *
+ * `legacyZones` is the ten zone slugs (Task 9's A4 §2 set); passed in rather
+ * than re-derived so this module stays independent of zone-allocation.mjs's
+ * reserved.json read (the same "one problem, one place" split check_content.mjs
+ * already keeps between loaders).
+ */
+export function checkLegacyLandmarkCitations({ repoRoot, contentRoot, legacyZones }) {
+  const problems = [];
+  const dir = join(contentRoot, "zones");
+  if (!existsSync(dir)) return problems;
+  const legacy = new Set(legacyZones);
+  for (const file of readdirSync(dir).filter((f) => /^zone-.+\.json$/.test(f)).sort()) {
+    let doc;
+    try {
+      doc = JSON.parse(readFileSync(join(dir, file), "utf8"));
+    } catch {
+      continue; // shape failures are check_content.mjs's own job, not this rule's
+    }
+    if (!doc || typeof doc.zone !== "string" || !legacy.has(doc.zone)) continue;
+    if (!Array.isArray(doc.landmarks)) continue;
+    for (const lm of doc.landmarks) {
+      if (!lm || typeof lm.source !== "string" || typeof lm.name !== "string") continue;
+      const relPath = lm.source.split("#")[0];
+      const full = join(repoRoot, relPath);
+      if (!existsSync(full)) {
+        problems.push(`G-LM-CITE: zones/${file} landmark "${lm.id}" cites "${relPath}", which does not exist`);
+        continue;
+      }
+      if (!carries(readFileSync(full, "utf8"), lm.name))
+        problems.push(`G-LM-CITE: zones/${file} landmark "${lm.id}" ("${lm.name}") cites "${relPath}", which does not carry the name`);
+    }
+  }
+  return problems;
+}
+
+// F1 (review, 2026-08-29): checkTowerRelayAssertions is a hard zero-tolerance
+// sweep, which only works where EVERY occurrence of "tower"/"relay" is a
+// violation — true of content/story/*.json (24 of 24 were), false of
+// docs/worldbuilding/ and content/spine/, which carry legitimate per-town
+// belfry flavor ("the mirror tower", "single tolling tower") that a blanket
+// re-sweep would force deleting. G-RETIRED-CLAIMS covers that wider corpus
+// instead with an EXPLICIT phrase list — the specific retired-infrastructure
+// claims this task found and fixed, not the bare words. Each phrase was
+// picked because it is unambiguous even in a historical/explanatory sentence
+// ("relay towers", "Bellfaith relay map", "tower district", "given a tower
+// count" never legitimately describe the redrawn world, unlike "27-tower
+// chain" or "reaching six towns", both of which this task's OWN prose still
+// quotes verbatim as history and which are deliberately NOT on this list).
+export const RETIRED_TOWER_PHRASES = Object.freeze([
+  "relay towers",
+  "bellfaith relay map",
+  "tower district",
+  "given a tower count",
+]);
+
+export function retiredPhraseFiles({ repoRoot }) {
+  return amendedFiles({ repoRoot });
+}
+
+/** G-RETIRED-CLAIMS. `files` null = sweep AMENDED_SCOPE (content/ + docs/worldbuilding/). */
+export function checkRetiredTowerPhrases({ repoRoot, files = null }) {
+  const rels = files ?? retiredPhraseFiles({ repoRoot });
+  const problems = [];
+  for (const rel of rels) {
+    const full = join(repoRoot, rel);
+    let text;
+    try {
+      text = readFileSync(full, "utf8");
+    } catch {
+      problems.push(`G-RETIRED-CLAIMS: ${rel} is unreadable — fix the file or remove it from the sweep`);
+      continue;
+    }
+    const rows = text.split("\n");
+    for (let i = 0; i < rows.length; i++) {
+      const lower = rows[i].toLowerCase();
+      for (const phrase of RETIRED_TOWER_PHRASES)
+        if (lower.includes(phrase))
+          problems.push(`G-RETIRED-CLAIMS: ${rel}:${i + 1} still says "${phrase}" — retired with the redraw's zero tower nodes`);
+    }
+  }
+  return problems;
+}

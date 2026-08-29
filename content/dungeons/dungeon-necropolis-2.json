@@ -1,0 +1,21 @@
+{
+  "id": "dungeon-necropolis-2",
+  "title": "Necropolis 3",
+  "family": "family-necropolis",
+  "familyIndex": 2,
+  "bind": {
+    "handle": "c05/fluvial/h-347f2e"
+  },
+  "entranceType": "knickpoint-gorge",
+  "floors": 3,
+  "levelBand": [
+    49,
+    55
+  ],
+  "hazards": [
+    "grave-damp",
+    "cold",
+    "silence"
+  ],
+  "spineId": null
+}

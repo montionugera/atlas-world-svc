@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-coastal-8a32",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Cairnshore Geo",
+  "bind": {
+    "handle": "c03/coastal/h-9b8a32",
+    "expect": {
+      "type": "barrier-island",
+      "sizeKm": [
+        3.17,
+        9
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A low ridge of sand lying offshore, taking the weather so the mainland does not.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#barrier-island.gloss"
+  },
+  "resolution": null
+}

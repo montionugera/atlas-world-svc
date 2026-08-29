@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-fluvial-e88f",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Loamholm Confluence",
+  "bind": {
+    "handle": "c06/fluvial/h-1ae88f",
+    "expect": {
+      "type": "delta",
+      "sizeKm": [
+        4.68,
+        18.7
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The river gives up and splits, laying its load down in a fan of shifting channels.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#delta.gloss"
+  },
+  "resolution": null
+}

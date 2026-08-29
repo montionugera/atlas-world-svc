@@ -30,7 +30,7 @@ mobSpawnAreas:
   - { id: thornveil_skirmishers, x: 790, y: 320, width: 180, height: 360, mobType: spear_thrower, count: 4, regionId: region-thornveil }
   - { id: thornveil_route_stalkers, x: 760, y: 300, width: 110, height: 180, mobType: bramble_stalker, count: 2, regionId: region-thornveil }
   - { id: thornveil_route_spearlings, x: 760, y: 520, width: 110, height: 180, mobType: veil_spearling, count: 2, regionId: region-thornveil }
-  - { id: thornveil_interior, x: 890, y: 400, width: 100, height: 160, mobType: bramble_drake, count: 1, regionId: region-thornveil }
+  - { id: thornveil_interior, x: 890, y: 400, width: 95, height: 160, mobType: bramble_drake, count: 1, regionId: region-thornveil }
 links:
   - region-spawn-meadow
   - region-icefield

@@ -1,0 +1,21 @@
+{
+  "id": "dungeon-necropolis-4",
+  "title": "Necropolis 5",
+  "family": "family-necropolis",
+  "familyIndex": 4,
+  "bind": {
+    "handle": "c03/fluvial/h-bdc305"
+  },
+  "entranceType": "knickpoint-gorge",
+  "floors": 3,
+  "levelBand": [
+    50,
+    56
+  ],
+  "hazards": [
+    "grave-damp",
+    "cold",
+    "silence"
+  ],
+  "spineId": null
+}

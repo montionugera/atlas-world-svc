@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-e29e",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Regcone Barchan",
+  "bind": {
+    "handle": "c05/desert/h-dbe29e",
+    "expect": {
+      "type": "sabkha",
+      "sizeKm": [
+        1.52,
+        6.08
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A salt-crusted coastal flat where the water table sits just under a treacherous crust.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sabkha.gloss"
+  },
+  "resolution": null
+}

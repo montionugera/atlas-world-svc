@@ -1,0 +1,22 @@
+{
+  "continent": "c13",
+  "orderDigest": "sha256:250d99141aa9d57b2ce0da0e3d197222e289e35595876617f8fd41b976a33e76",
+  "handles": [
+    {"handle":"c13/coastal/h-b8d992","type":"tidal-flat","sizeKm":7.89,"region":"c13/r02","contentHash":"sha256:b8d992f7349af9c3247a32b1bd36e111988bbd794674e7b08424072df962cf9a","rank":0},
+    {"handle":"c13/coastal/h-11aa6e","type":"coastal-lagoon","sizeKm":6.65,"region":"c13/r02","contentHash":"sha256:11aa6e0de61fa90cbfcb6937b6c43ab1c97d0b2f5c3fdd99b4f09a3199c24e9b","rank":1},
+    {"handle":"c13/coastal/h-c56a8b","type":"coastal-drowned-valley","sizeKm":6.53,"region":"c13/r02","contentHash":"sha256:c56a8b888a0b219c09f8bb3b6bf5b0bc4f42af3e38c5e91c6688f1cb5d16f655","rank":2},
+    {"handle":"c13/coastal/h-d774c7","type":"tidal-flat","sizeKm":6.11,"region":"c13/r01","contentHash":"sha256:d774c767c1d5c5a6e2638e50d17a4343a0a3089dc6ce16b10bda1a0a8dbf203a","rank":3},
+    {"handle":"c13/coastal/h-cdd563","type":"barrier-island","sizeKm":5.81,"region":"c13/r01","contentHash":"sha256:cdd5633dd91f3ed5376da8d81aa2d0cd6c52b5c00b6d0d3e464317a7cd9374f0","rank":4},
+    {"handle":"c13/coastal/h-91aaab","type":"coastal-lagoon","sizeKm":5.58,"region":"c13/r01","contentHash":"sha256:91aaab278a9dd0b22ae96f5de93ffa264d6c810f746649e153156d1c2660f026","rank":5},
+    {"handle":"c13/wetland/h-2fca18","type":"blanket-mire","sizeKm":3.01,"region":"c13/r02","contentHash":"sha256:2fca185f528863028ef5fa1e057232418512f3acc33aacf2c235d42120653f0f","rank":6},
+    {"handle":"c13/wetland/h-117cc6","type":"wet-meadow","sizeKm":2.85,"region":"c13/r01","contentHash":"sha256:117cc6504aa99ccfa35a0e02551bd7a737a72f1dbfd7e902d998183c3aad9098","rank":7},
+    {"handle":"c13/coastal/h-a9b1d0","type":"spit","sizeKm":2.72,"region":"c13/r01","contentHash":"sha256:a9b1d0147ce25aae8e85c7a9668f7c13a89f3c51e453d534c342151276a3382c","rank":8},
+    {"handle":"c13/wetland/h-401092","type":"mangrove-flat","sizeKm":2.69,"region":"c13/r02","contentHash":"sha256:4010920ee25366b0e3cb7b103db8cf846b7a84b6cc45860ba08933ada82d33f2","rank":9},
+    {"handle":"c13/coastal/h-235c5e","type":"tombolo","sizeKm":2.34,"region":"c13/r02","contentHash":"sha256:235c5e977ee2248602085a3e5a1c3bc7e720b7cc09d77b1d567fa30524aa3c92","rank":10},
+    {"handle":"c13/coastal/h-baf1eb","type":"raised-beach","sizeKm":2.15,"region":"c13/r01","contentHash":"sha256:baf1ebe9a80e3994f03c9319e388cc19772f17d589415d4e9d533624a6fc11d5","rank":11},
+    {"handle":"c13/coastal/h-10f112","type":"geo","sizeKm":0.48,"region":"c13/r01","contentHash":"sha256:10f11203d4c5b081bf5f9e952c2602e5781e5c1cc09db5b3404e978f2c8e9953","rank":12},
+    {"handle":"c13/coastal/h-4ed2d4","type":"sea-stack","sizeKm":0.06,"region":"c13/r02","contentHash":"sha256:4ed2d4c2aecad57cf13590c5671e143e1d7a8598351fdcdcbe941332c8374acb","rank":13},
+    {"handle":"c13/coastal/h-36c766","type":"blowhole","sizeKm":0.03,"region":"c13/r01","contentHash":"sha256:36c766e65daa6de15449c5878c03839295c179af15b005517cd64e401114b462","rank":14},
+    {"handle":"c13/coastal/h-1c70e3","type":"blowhole","sizeKm":0.02,"region":"c13/r02","contentHash":"sha256:1c70e373474c8faa91de79616e8f5f5c56be8926d0f5c140221c8e07cb0bd332","rank":15}
+  ]
+}

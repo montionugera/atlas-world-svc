@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-coastal-4f05",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Clintclint Roads",
+  "bind": {
+    "handle": "c04/coastal/h-894f05",
+    "expect": {
+      "type": "blowhole",
+      "sizeKm": [
+        0.02,
+        0.05
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A hole in the cliff top that spits spray and thunder whenever a big swell comes in.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#blowhole.gloss"
+  },
+  "resolution": null
+}

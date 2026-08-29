@@ -84,11 +84,74 @@ content_gate()  { node "$REPO_ROOT/scripts/check_content.mjs" --require-complete
 # content without regenerating it.
 graph_drift()   { node "$REPO_ROOT/scripts/gen_story_graph.mjs" --check; }
 
+# Every content/spine/nodes/*.json `derived` block, plus the two surviving
+# mirrors (maps/atlas-frontier.md front-matter and the server's generated
+# mapDimensions.ts), is emitted from the spine; drift means someone hand-edited
+# an emitted file or changed the spine without re-emitting (F-041 G-EMIT-DRIFT).
+spine_emit_drift() { node "$REPO_ROOT/scripts/check_spine_emit.mjs" --check; }
+
+# Plan E / spec §9.4: the seven canon walking distances measured against the
+# hand-placed Tier-1 pins, BEFORE the generator. Soft-skips until the pinned
+# layer exists.
+canon_legs() { node "$REPO_ROOT/scripts/check_canon_legs.mjs"; }
+
+# Plan E / spec §9.3: the whole-world digest — what replaces the freeze once
+# coordinates are generated.
+world_digest() { node "$REPO_ROOT/scripts/check_world_digest.mjs" --check; }
+
+# Plan D: G-SLOT-STABLE. content/world/resolved/*.json is committed (D5) and
+# is the ONLY file renderers read; a silent rebinding changes what is drawn
+# with no reviewable diff anywhere else.
+resolved_drift() { node "$REPO_ROOT/scripts/check_resolved.mjs" --check; }
+
+# Plan D: how much of the prose's n-ary claim surface the relation layer
+# models. ALWAYS exits 0 — a floor that fails the build would be gamed by
+# writing thin relations; the manifest's coverageFloorPct miss prints LOW so
+# the debt is visible on every run instead.
+relation_coverage() { node "$REPO_ROOT/scripts/report_relation_coverage.mjs"; }
+
 content_tests() { (cd "$REPO_ROOT/scripts" && npm test); }
 
 explorer_smoke() { (cd "$REPO_ROOT" && node --test tools/story-explorer/tests/*.test.mjs); }
 
 art_forge_tests() { (cd "$REPO_ROOT" && node --test tools/art-forge/tests/*.test.mjs); }
+
+# Plan A: G-RENDER-LOCK replaces both `render-map.mjs --check` (which was
+# never a byte comparison — it only ran the problems[] self-check) and
+# check_map_render.mjs. One gate, one committed hash per artifact, with a
+# unified diff printed on mismatch.
+render_lock() { node "$REPO_ROOT/scripts/check_render_lock.mjs" --check; }
+
+# Task 2 fix round 1 (F-051 completion plan): G-GEOMETRY-LOCK was committed
+# with NOTHING checking it — `scripts/tests/geometry-exact.test.mjs` only
+# READS content/spine/geometry-lock.json (fast, trusts it); nothing ever
+# recomputed gridIntersectionArea against the committed lock to prove it is
+# still true. That gap made a gridIntersectionArea regression invisible (the
+# 5 live TIMED pairs all clip to 0, so the kernel's correctness on real
+# nonzero geometry was never re-exercised), let in-tolerance drift accumulate
+# forever under the 0.01 km² deviation floor, and made a post-redraw --write
+# self-certifying. --check RECOMPUTES every one of the 138 real sibling
+# pairs from scratch every run — same ~536 s single-threaded cost as the
+# original --write bake (see task-2-report.md); there is no nodesHash
+# short-circuit, because a short-circuit is exactly the "trust the lock
+# without checking it" gap this section exists to close. That cost is why
+# this lives in Gate 2 (once per release, not once per commit) and gets its
+# own CI step with its own generous timeout — never inside the fast
+# per-commit content-gate step.
+geometry_lock() { node "$REPO_ROOT/scripts/check_geometry_lock.mjs" --check; }
+
+# F-042 + world-fill Plan C: mapforge's own unit + parity suite (basin-sheet,
+# atlas-sheet, raster, render-sheet) AND G-REPRO's three idempotence properties
+# (tools/mapforge/tests/repro.test.mjs) plus the promotion suite
+# (tests/promote.test.mjs). No separate section: this glob already matches both
+# files, and a duplicate section would pay G-REPRO's generations twice for a
+# cosmetic row. The world gates (G-SEALAND, G-TRUNK-AREA, G-POI, G-ORDER,
+# G-WORLD-BUDGET) land inside checkSpine(), which the content_gate section
+# above already runs. The byte-parity member of this suite is gone — Plan A
+# Task 12 deleted parity.test.mjs and moved that comparison to the render_lock
+# section above. Glob form, not a directory arg — `node --test <directory>`
+# fails on newer Node (ledger ruling, Task 1).
+mapforge_tests() { node --test "$REPO_ROOT"/tools/mapforge/tests/*.test.mjs; }
 
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace + content-gate + contracts build" deps_install
@@ -97,6 +160,14 @@ run_section "server: jest suite"           server_tests
 run_section "server: prettier format"      server_format
 run_section "content: gate (--require-complete)" content_gate
 run_section "content: story-graph drift"   graph_drift
+run_section "content: canon-leg pre-flight"  canon_legs
+run_section "content: world digest"          world_digest
+run_section "content: spine emit drift (G-EMIT-DRIFT)" spine_emit_drift
+run_section "content: resolved join (G-SLOT-STABLE)" resolved_drift
+run_section "content: relation coverage (report)" relation_coverage
+run_section "content: render lock (G-RENDER-LOCK)" render_lock
+run_section "content: geometry lock (G-GEOMETRY-LOCK)" geometry_lock
+run_section "content: mapforge test suite (incl. G-REPRO)" mapforge_tests
 run_section "content: gate test suite"     content_tests
 run_section "content: story-explorer smoke" explorer_smoke
 run_section "art-forge: intake tests" art_forge_tests

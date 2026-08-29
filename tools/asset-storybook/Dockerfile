@@ -33,6 +33,20 @@ COPY content/asset-taxonomy.json content/asset-taxonomy.json
 # F-038 Phase 4: committed verdicts. Non-critical (the page starts empty if
 # absent), but shipping it means the container shows the same review state.
 COPY content/review-queue.json content/review-queue.json
+# Plan A Task 10: the render lock. Non-critical (loadLock() degrades to a
+# hidden hash line), but WITHOUT this line the containerised storybook shows
+# "NOT LOCKED" on every card — i.e. the artifact would be observable locally
+# and invisible in the deployed review surface, which is the failure the
+# every-artifact-observable rule exists to prevent.
+COPY content/world content/world
+# Plan B Task 11: the Maps tab's vocabulary panel imports draft.mjs and
+# glyphs.mjs FROM THE BROWSER, so the drawing library itself has to be in the
+# document root. Without this line the panel removes itself in the container
+# while working locally — the exact split the every-artifact-observable rule
+# exists to prevent, and the same omission that shipped a "NOT LOCKED" card on
+# every sheet in F-046 Task 10. lib/ ONLY: the CLI entry points and the test
+# fixtures are build inputs, not page content. ~150 KB.
+COPY tools/mapforge/lib tools/mapforge/lib
 COPY tools/story-explorer tools/story-explorer
 COPY docs/story/undertow docs/story/undertow
 

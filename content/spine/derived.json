@@ -1,0 +1,627 @@
+{
+  "n-ashen-spar": {
+    "areaParentUnits2": 1003.25,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [119.25, 355.25],
+    "resolvedSeedStreams": {
+      "terrain": "a9b5e5ada321e555",
+      "settlements": "9e2a07d8d47fc656",
+      "vegetation": "391252d81fad4f61",
+      "names": "261199ee32c63373"
+    },
+    "digest": "sha256:ae30d356dd6d33e573994dc9c3a4f29f8d8c399ee9e2d8a2ea4ae4e5f65d4d10"
+  },
+  "n-atlas": {
+    "areaParentUnits2": 160000,
+    "childAreaParentUnits2": 156816.875,
+    "coveragePct": 98.01054687499999,
+    "unclaimedPct": 1.989453125000007,
+    "computedComposition": {
+      "ash": 0.31163453125,
+      "rock": 0.6748234375000001,
+      "lava": 0.13104953125,
+      "scree": 0.0438921875,
+      "upland": 0.39181406249999995,
+      "forest": 1.0105494531249999,
+      "meadow": 13.63656953125,
+      "lake": 0.99949703125,
+      "river": 0.5727419531249999,
+      "marsh": 0.118782890625,
+      "tundra": 4.707241640624999,
+      "ocean": 59.063515625,
+      "reef": 0.592814765625,
+      "ice": 4.091372109375,
+      "karst": 6.7642975000000005,
+      "desert": 5.3349062499999995,
+      "alkali": 0.8398174999999999,
+      "badland": 0.5644674999999999,
+      "bramble": 0.1502125
+    },
+    "rollupVerdict": "CHECKED",
+    "absoluteAnchorRoot": [200, 200],
+    "resolvedSeedStreams": {
+      "terrain": "d9a0051d32afab59",
+      "settlements": "da45bd8930d33bb0",
+      "vegetation": "4430c6c4193ad72b",
+      "names": "6033b1b1f52e861c"
+    },
+    "digest": "sha256:0689aa578f701f4fce64b3341da45d6bcc87e7abc49161f01ad446fb7fd1f514"
+  },
+  "n-brightfall": {
+    "areaParentUnits2": 1008.25,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [352.25, 182.75],
+    "resolvedSeedStreams": {
+      "terrain": "2b2baf6e4d01d845",
+      "settlements": "57bfb3aabcc6682b",
+      "vegetation": "ba5d2871d7108bee",
+      "names": "b3535f49d4ed36fb"
+    },
+    "digest": "sha256:7cc1a9f6025b94468c6d4ffde8905c80e8d5dcc166551d3bd687175a6e778db3"
+  },
+  "n-cluster1": {
+    "areaParentUnits2": 12099.25,
+    "childAreaParentUnits2": 176.17999999999893,
+    "coveragePct": 1.4561233134285096,
+    "unclaimedPct": 98.54387668657148,
+    "computedComposition": {
+      "meadow": 77.60339376407629,
+      "built": 0.008145959460297126,
+      "river": 1.896930222947703,
+      "ice": 0.5440965349091901,
+      "rock": 0.21947145484224187,
+      "upland": 0.10530900675661745,
+      "bramble": 0.2637386614872769,
+      "forest": 9.898702233609518,
+      "lake": 8.967492778478006,
+      "marsh": 0.4927193834328574
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [75.75, 152.75],
+    "resolvedSeedStreams": {
+      "terrain": "1d99c2fffe28c61d",
+      "settlements": "9f674354025f278f",
+      "vegetation": "12d9aa46e3f5b00a",
+      "names": "fd81438c7c869f6d"
+    },
+    "digest": "sha256:59f93964c0b0d278109a80ad5fbd446662c1bbba2bbfb4b69b04ef4ae2548aa5"
+  },
+  "n-coldreach": {
+    "areaParentUnits2": 11030.125,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [290.75, 110.25],
+    "resolvedSeedStreams": {
+      "terrain": "5880d0633c57de14",
+      "settlements": "e896e0efbd5e571b",
+      "vegetation": "2543de7576ad38f6",
+      "names": "fc382e7d785dc19d"
+    },
+    "digest": "sha256:b14913b688e30a5a320f0678d73a0ffb95b2dc20ab0b5bc60e1f08642866ed20"
+  },
+  "n-driftholt": {
+    "areaParentUnits2": 3001,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [47.75, 89.75],
+    "resolvedSeedStreams": {
+      "terrain": "3c619dece40f3537",
+      "settlements": "7ef51d25fdc1d853",
+      "vegetation": "670498bfa0621172",
+      "names": "de2b256cfa31c219"
+    },
+    "digest": "sha256:290c184d668da61706e002a29a2e8e8f04076d2e467a5ed5923230f2ec903f38"
+  },
+  "n-drowned-pavement": {
+    "areaParentUnits2": 3600.375,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [367.75, 304.25],
+    "resolvedSeedStreams": {
+      "terrain": "bf257f426ea36f5d",
+      "settlements": "b1156cbcd48eb1f9",
+      "vegetation": "8fe44cad34860e00",
+      "names": "b181b985d5dbbf2c"
+    },
+    "digest": "sha256:ed0b97bb85085b820045515695d0bcc597ff33621c6e3bc02cd20a10589bc912"
+  },
+  "n-fixture-deflect": {
+    "areaParentUnits2": 10000,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [1250, 50],
+    "resolvedSeedStreams": {
+      "terrain": "55142d1f3bcd3453",
+      "settlements": "d524249606133b16",
+      "vegetation": "7c0c71d222c89eb1",
+      "names": "547267d0bed70205"
+    },
+    "digest": "sha256:9b4f5746321ff43e542cd38aec867e4d66ec605406f5244004237d0a1f5e58e2"
+  },
+  "n-fixture-projectile": {
+    "areaParentUnits2": 1000000,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [500, 1500],
+    "resolvedSeedStreams": {
+      "terrain": "c617fcc78e2d8079",
+      "settlements": "227c2092f2a02682",
+      "vegetation": "2092a268f5722a37",
+      "names": "66dd00068af22f6c"
+    },
+    "digest": "sha256:b6a2b4bfdf1f95d60331d2ad05f7efd86bf8521825befac686833ca0929c41d0"
+  },
+  "n-frontier-shelf": {
+    "areaParentUnits2": 1000000,
+    "childAreaParentUnits2": 465000,
+    "coveragePct": 46.5,
+    "unclaimedPct": 53.5,
+    "computedComposition": {
+      "ice": 25,
+      "meadow": 55.18000000000001,
+      "built": 7.32,
+      "bramble": 12.5
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [500, 500],
+    "resolvedSeedStreams": {
+      "terrain": "b90ab6488dd8b04f",
+      "settlements": "ee7dd4352de4e75f",
+      "vegetation": "56bcfc50c7b9c5cb",
+      "names": "9f975389a0997c60"
+    },
+    "digest": "sha256:9686344c9b7019788c013cf4150066c3dad5fe7795ba29a15e694e20495486ae"
+  },
+  "n-fumewater": {
+    "areaParentUnits2": 2200.125,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [366.25, 33.75],
+    "resolvedSeedStreams": {
+      "terrain": "6be7299f3f211742",
+      "settlements": "88c0c64569834e46",
+      "vegetation": "cd62722a5faa1efd",
+      "names": "daa0679f344a806f"
+    },
+    "digest": "sha256:5c48b1b4b134823c27775715f2d079b0152141da4b90c01f5436a019d6dc9f8d"
+  },
+  "n-galereach": {
+    "areaParentUnits2": 42003.75,
+    "childAreaParentUnits2": 6600.125,
+    "coveragePct": 15.713180370800226,
+    "unclaimedPct": 84.28681962919977,
+    "computedComposition": {
+      "ocean": 100
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [185.75, 183.25],
+    "resolvedSeedStreams": {
+      "terrain": "eefe3e23623355f5",
+      "settlements": "675c312f379aa467",
+      "vegetation": "ab937ab9da449ffb",
+      "names": "6a1a114aa99513a3"
+    },
+    "digest": "sha256:654b56f64662a086a399d246351f9a157c91090f8985a4e726b5c5ca6760892b"
+  },
+  "n-gildmark-roads": {
+    "areaParentUnits2": 1200,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [206.25, 147.25],
+    "resolvedSeedStreams": {
+      "terrain": "c4de2f65f943ffa2",
+      "settlements": "f353d0afa8a54a12",
+      "vegetation": "5b1083227300897d",
+      "names": "773ebeabb31d6726"
+    },
+    "digest": "sha256:b7cd6dcff70c440eaf485d8805f200bf2c46b1121ac95ef2f7c78fd5ca9af2de"
+  },
+  "n-keelbreak": {
+    "areaParentUnits2": 30340,
+    "childAreaParentUnits2": 8000.5,
+    "coveragePct": 26.369479235332893,
+    "unclaimedPct": 73.63052076466711,
+    "computedComposition": {
+      "ocean": 100
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [346.75, 346.25],
+    "resolvedSeedStreams": {
+      "terrain": "38f67cccbf550091",
+      "settlements": "7046a8d092d472f7",
+      "vegetation": "cb4ec256e85241ff",
+      "names": "5240c719fd1f7de5"
+    },
+    "digest": "sha256:4016df866b4a9de227cd807eee839c7d2c00b261acaeb7deefdd5e57d45a47d4"
+  },
+  "n-loamspit": {
+    "areaParentUnits2": 975.125,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [31.75, 343.25],
+    "resolvedSeedStreams": {
+      "terrain": "4b1105beee3e8c44",
+      "settlements": "57f46d71a302005d",
+      "vegetation": "1af2a9f8cb172f1a",
+      "names": "4b7049847ce33f5d"
+    },
+    "digest": "sha256:b700e8812df6114b0da3e805f26272365c322f47c5faa279b10488bb6511fdf5"
+  },
+  "n-millcross": {
+    "areaParentUnits2": 3.5200000000000005,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "CHECKED",
+    "absoluteAnchorRoot": [98.2, 152.6],
+    "resolvedSeedStreams": {
+      "terrain": "c579f922981c528d",
+      "settlements": "90d0166357877d7c",
+      "vegetation": "d53b1f3356234a93",
+      "names": "5a6e087d2bc90827"
+    },
+    "digest": "sha256:0b64ad7cc5572fa97d846745ecc5c5c459c0b9060dd8cf71a6ab1ca46d338055"
+  },
+  "n-netstead-bight": {
+    "areaParentUnits2": 1600.125,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [306.25, 363.25],
+    "resolvedSeedStreams": {
+      "terrain": "296bc663a2dd6f0c",
+      "settlements": "39cc7eb09e14d113",
+      "vegetation": "6f665ac8bf79c8d9",
+      "names": "28dc9479f6f8a4ed"
+    },
+    "digest": "sha256:ebb6429d0aa205433f06f597e255db117bcfd18e7ec77b9411d1c41d480ba50d"
+  },
+  "n-northern-icefield": {
+    "areaParentUnits2": 106.18000000000029,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [103.4, 132.6],
+    "resolvedSeedStreams": {
+      "terrain": "f5abb70a85126dda",
+      "settlements": "88eb814701991aec",
+      "vegetation": "70592ec42d68ce41",
+      "names": "60aa4059d7837b9a"
+    },
+    "digest": "sha256:6141e7f8c54ff8cbc29f63f3be5eff11599a812d47febd389c3695c19caa9581"
+  },
+  "n-peatrun-shallows": {
+    "areaParentUnits2": 2400.125,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [145.75, 207.25],
+    "resolvedSeedStreams": {
+      "terrain": "65ba2c3efd8cb616",
+      "settlements": "5734e56ed0572d17",
+      "vegetation": "cb5336c80bc79efe",
+      "names": "c3927962650ed86b"
+    },
+    "digest": "sha256:ba852e3cf9416f65fba64554f17d1288c8eb98abdcf4af750c1562d254a183e4"
+  },
+  "n-playroot": {
+    "areaParentUnits2": 4000000,
+    "childAreaParentUnits2": 2010000,
+    "coveragePct": 50.24999999999999,
+    "unclaimedPct": 49.75000000000001,
+    "computedComposition": {
+      "built": 27,
+      "ice": 16.200000000000003,
+      "bramble": 8.225000000000001,
+      "meadow": 36.1375,
+      "rock": 7.4625,
+      "marsh": 4.9750000000000005
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [1000, 1000],
+    "resolvedSeedStreams": {
+      "terrain": "869e602ad7e142db",
+      "settlements": "4fc275bd2a8e71f6",
+      "vegetation": "6cd479a220b5a0b6",
+      "names": "3a6495e345a73805"
+    },
+    "digest": "sha256:18c1f04c605c6bb84b49063e2f5643b10242e93b4d4b5461958782d832a9309a"
+  },
+  "n-quillreef": {
+    "areaParentUnits2": 1005.875,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [337.75, 64.75],
+    "resolvedSeedStreams": {
+      "terrain": "63322cbb23d13224",
+      "settlements": "a256adda6af104cf",
+      "vegetation": "64df151d3d288e04",
+      "names": "f158412df72ca567"
+    },
+    "digest": "sha256:92c561738147869b186c846f405857dbe4937a7b4a233549830d3c202e788f0d"
+  },
+  "n-reed-shallows": {
+    "areaParentUnits2": 1800.125,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [368.25, 143.75],
+    "resolvedSeedStreams": {
+      "terrain": "000695454d792f5e",
+      "settlements": "ad16a044beac8011",
+      "vegetation": "ec409e16d810dc19",
+      "names": "c75e168626f1b871"
+    },
+    "digest": "sha256:77820899f9718af232ba4ddf02cdb05545faa8f9de1ba3acd670c04b87d42a37"
+  },
+  "n-reedstrand": {
+    "areaParentUnits2": 3055.5,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [74.25, 265.25],
+    "resolvedSeedStreams": {
+      "terrain": "3be3889e5b4d1af0",
+      "settlements": "200dc8c82f6d3630",
+      "vegetation": "0973567a0b22e866",
+      "names": "d763d16efa36e05d"
+    },
+    "digest": "sha256:fded60e65152a8ff1a1fc05c56da65d93b2a78bd5d90998083ed2c4f73905af0"
+  },
+  "n-rimewall-cap": {
+    "areaParentUnits2": 5984.625,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [178.25, 35.75],
+    "resolvedSeedStreams": {
+      "terrain": "40699d982da7dab4",
+      "settlements": "b678f0b32e348803",
+      "vegetation": "8ef498799ef6fe3b",
+      "names": "fc240dc9baf009b1"
+    },
+    "digest": "sha256:9e2c6a3e2715573261234e392669825c95834e8ce800beaa4a9da6544ec17056"
+  },
+  "n-rimewall-margin": {
+    "areaParentUnits2": 2000.625,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [313.75, 28.75],
+    "resolvedSeedStreams": {
+      "terrain": "bc19a20717d22047",
+      "settlements": "ba214d3b41d6f30a",
+      "vegetation": "7c271cc53afb0f67",
+      "names": "093e2155ece605b5"
+    },
+    "digest": "sha256:b397da95707c0291cac2f41fe39db1813399b2f5962b389f00d2859761eb91ee"
+  },
+  "n-site-icefield": {
+    "areaParentUnits2": 250000,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [500, 125],
+    "resolvedSeedStreams": {
+      "terrain": "bf31b65067438eb9",
+      "settlements": "5c93c8b91996e527",
+      "vegetation": "9142393d8663e87a",
+      "names": "265c8e8448ee8bf2"
+    },
+    "digest": "sha256:77567008498aee7199e1442fb9f0c15b3afbfeb1c7a37423efebd17e31ca7af6"
+  },
+  "n-site-spawn-meadow": {
+    "areaParentUnits2": 90000,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [500, 500],
+    "resolvedSeedStreams": {
+      "terrain": "f7132d60865e144d",
+      "settlements": "4da1eb02f0f980c5",
+      "vegetation": "454dd64251daf7a6",
+      "names": "39d46a1e98bfff50"
+    },
+    "digest": "sha256:1ec5c2d82ade632110f1f237fd5822db9b77fa443708f3b41ee617c38aef84cf"
+  },
+  "n-site-thornveil": {
+    "areaParentUnits2": 125000,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [875, 500],
+    "resolvedSeedStreams": {
+      "terrain": "304be8c712c8be17",
+      "settlements": "f74ac48293f23836",
+      "vegetation": "636d0363d47b8cd1",
+      "names": "652dc9ac6aff4917"
+    },
+    "digest": "sha256:48e8fcabed5611ecd2a136edb93b3fb4633a618939a04448ff8aa547b36066f2"
+  },
+  "n-skerryfast": {
+    "areaParentUnits2": 996.125,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [255.25, 45.75],
+    "resolvedSeedStreams": {
+      "terrain": "c20f96a01e382aa3",
+      "settlements": "632e2e6e813d2b08",
+      "vegetation": "2e3db26321ce2c64",
+      "names": "60f86ef049b0680f"
+    },
+    "digest": "sha256:7dc068449ba82b2ce3e32ac9332ff760b7a2492a89be4ae8eef1d012d19e7b18"
+  },
+  "n-stonemoor": {
+    "areaParentUnits2": 11321,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [305.25, 241.25],
+    "resolvedSeedStreams": {
+      "terrain": "70e46b0d9eb0b9c5",
+      "settlements": "84866124638bf98a",
+      "vegetation": "6f1e429e60e4a049",
+      "names": "d29556b9478629db"
+    },
+    "digest": "sha256:7df8bed1a48f6bdbb333b9487d4204ed2cadd55542e62d5c233563bc1b74761e"
+  },
+  "n-tarnmark": {
+    "areaParentUnits2": 18974.75,
+    "childAreaParentUnits2": 6000.875,
+    "coveragePct": 31.625581364708367,
+    "unclaimedPct": 68.37441863529163,
+    "computedComposition": {
+      "ocean": 100
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [366.25, 33.75],
+    "resolvedSeedStreams": {
+      "terrain": "fcc0fe275d60d861",
+      "settlements": "c3eff5305db5601c",
+      "vegetation": "5d0118196c83dda2",
+      "names": "5a74464282ef2674"
+    },
+    "digest": "sha256:a521cc9de6d398db8b9ad6aabdc82d9b2b8301e9a459fdba6e872c75c08c5e16"
+  },
+  "n-thirstwold": {
+    "areaParentUnits2": 11014,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [163.75, 297.75],
+    "resolvedSeedStreams": {
+      "terrain": "13a3f8acd383cc2d",
+      "settlements": "8b2deb1475ae09d3",
+      "vegetation": "c60c243db43fd946",
+      "names": "d33bc3bee3989e1a"
+    },
+    "digest": "sha256:d6d1a8c185a8f1d74796565bb91910dd92a5318d837d5d93d7e60ffae8a41969"
+  },
+  "n-thornveil": {
+    "areaParentUnits2": 66.47999999999865,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [105.4, 155],
+    "resolvedSeedStreams": {
+      "terrain": "062f482dcf8649f4",
+      "settlements": "3f4c27594d8ae4ca",
+      "vegetation": "7108c0844d844c84",
+      "names": "85b2a4c6c3beb087"
+    },
+    "digest": "sha256:f0f22e84106dcaeb03119525998ed3c3163f01f7b661cad26772d6ddede9877d"
+  },
+  "n-westsea": {
+    "areaParentUnits2": 3000,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [185.75, 182.75],
+    "resolvedSeedStreams": {
+      "terrain": "8e14188256d746fb",
+      "settlements": "4c0892d320ae7fda",
+      "vegetation": "e3cd2286de0fd084",
+      "names": "a6315db17fb601f3"
+    },
+    "digest": "sha256:f0cf13071d0e9b0121cc21702cdf815ee4724cd8a9ff55365ee75cb58ae30d25"
+  },
+  "n-wracklow": {
+    "areaParentUnits2": 3004.25,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [252.75, 342.25],
+    "resolvedSeedStreams": {
+      "terrain": "ceddb211037d3754",
+      "settlements": "f0345a51fcc418d4",
+      "vegetation": "8617f99ac45ffe37",
+      "names": "2db4f463c2c9b705"
+    },
+    "digest": "sha256:db7a3c21cd8d4202ae1aa88b17cf5d3e3d1f25a031959edd688a4b9f1c30c393"
+  },
+  "n-wreckwater": {
+    "areaParentUnits2": 2800,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [346.75, 346.25],
+    "resolvedSeedStreams": {
+      "terrain": "25514048002682fc",
+      "settlements": "1f38b03a67ed1e68",
+      "vegetation": "b5e433be70b12b29",
+      "names": "25a2b833a6b311b9"
+    },
+    "digest": "sha256:69523fbe8e338511f8aa25c791edba8c6e0f551b6277d948b8a9fb125ce2d96d"
+  }
+}

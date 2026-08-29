@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-erosional-03cc",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Scar under Barrowrow",
+  "bind": {
+    "handle": "c02/erosional/h-e703cc",
+    "expect": {
+      "type": "slot-canyon",
+      "sizeKm": [
+        0.52,
+        2.06
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A crack you can touch both walls of, dark at noon and lethal when it rains upstream.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#slot-canyon.gloss"
+  },
+  "resolution": null
+}

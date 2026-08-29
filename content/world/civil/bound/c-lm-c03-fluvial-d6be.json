@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-d6be",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Bearness Reach",
+  "bind": {
+    "handle": "c03/fluvial/h-62d6be",
+    "expect": {
+      "type": "floodplain-levee",
+      "sizeKm": [
+        3.01,
+        12.04
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A low natural bank along the water, built from what the floods dropped first.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#floodplain-levee.gloss"
+  },
+  "resolution": null
+}

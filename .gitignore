@@ -10,6 +10,12 @@ pnpm-debug.log*
 
 # Build outputs
 build/
+# mapforge draft runs: build/mapforge/<seed8>-<generatorVersion>/, a COMPLETE
+# content root the generator writes from scratch and promote-world.mjs
+# reconciles. Never committed — Plan C commits zero spine node bytes.
+# REDUNDANT, and kept as documentation only: `build/` two lines up already
+# covers it. It says where the draft roots live, it does not make them ignored.
+build/mapforge/
 dist/
 *.tsbuildinfo
 
@@ -118,3 +124,4 @@ docs/worldbuilding/**/*.html
 docs/research/**/*.html
 .claude/idea_backlog/**/*.html
 .claude/refined_backlog/**/*.html
+

@@ -179,7 +179,8 @@ without it:
 
 ```bash
 # exit 0 = PASS, 1 = FLAG. Always look at the corner sheet.
-node artifact-gate.mjs out/<cell>.png --corner-sheet out/_corners.png
+# --ledger tees the verdict into the brief's run ledger (see below).
+node artifact-gate.mjs out/<cell>.png --corner-sheet out/_corners.png --ledger <briefId>
 ```
 
 A PASS is triage, not proof: the gate flags 13 of 37 known-clean corpus
@@ -199,6 +200,65 @@ Then QC runs **per row**, not per image:
 2. Inspect the contact sheet. Reroll **only the failing cells** — not
    the whole row — with a new seed plus reinforced identity words from
    `prompts/race-identity.json`.
+
+## Run ledger (`runs/`)
+
+Every pipeline event — blockin, render attempt, gate verdict, intake — is
+appended to an **append-only per-brief ledger** at `runs/<briefId>.json`
+and committed alongside whatever change produced it. Line 1 is a header
+object; every later line is ONE compact JSON entry (git-friendly diffs;
+appends never rewrite earlier lines):
+
+```
+{"v":1,"briefId":"A1-ART-02"}
+{"type":"blockin","ts":"…","briefHash":"3f9c…","out":"out/depth/A1-ART-02.png"}
+{"type":"render","ts":"…","seed":42,"hires":false,"out":"out/env/A1-ART-02-seed0042-s030.png","briefHash":"3f9c…"}
+{"type":"gate","ts":"…","png":"out/env/….png","ok":true,"reasons":[],"cornerSheet":null}
+{"type":"gate-skipped","ts":"…","png":"out/env/….png","reason":"<mandatory reason>"}
+{"type":"intake","ts":"…","assetKey":"environment/a1-art-02.png","manifest":"game-client/assets/art/art-manifest.json"}
+```
+
+Entry types and their fields:
+
+- **blockin** — depth PNG confirmed on disk (`generate/blockin.mjs`);
+  `briefHash` (16-hex identity hash of the brief), `out`.
+- **render** — PNG downloaded (`generate/env.mjs`, once for the base pass
+  and once per `-hires` pass); `seed`, `hires`, `briefHash`, `out`.
+  Dry-run downloads nothing and records nothing.
+- **gate** — artifact-gate verdict, both PASS and FLAG; `png`, `ok`,
+  `reasons`, `cornerSheet` (`null` when none). Written only when the gate
+  runs with `--ledger <briefId>`; a ledger write failure warns on stderr
+  but never changes the gate's exit code.
+- **gate-skipped** — intake bypassed the gate via
+  `--skip-artifact-gate "<why>"`; `png`, `reason`. Recorded only when
+  `intake-art.mjs --brief <briefId>` was given.
+- **intake** — manifest entry fully committed (survived the drift gate);
+  `assetKey`, `manifest`. Same `--brief` requirement as above.
+
+After any manual ledger surgery, regenerate the storybook-facing index:
+
+```bash
+node ledger-index.mjs   # rebuilds runs/_index.json ({ v: 1, briefs: [...] })
+```
+
+The asset-storybook **Forge** tab reads these ledgers plus `briefs/` to
+render per-brief pipeline rows with per-cell status/staleness. Re-runs are
+requested as **work orders** in `content/review-queue.json`
+(`workOrders[]`: `{ id, briefId, cell, reason, seed?, createdAt }`) — the
+UI never executes anything.
+
+### Consuming work orders during a forge session
+
+Re-runs are human-executed at the keyboard (same access path as
+"Stage: GENERATE"). For each pending order in `content/review-queue.json`:
+
+1. Read the order's `cell` (`blockin` / `render` / `gate` / `intake`),
+   `briefId` and optional `seed`, and execute it with the normal scripts.
+2. The attempts append themselves automatically via the wiring above
+   (pass `--ledger <briefId>` to the gate; `--brief <briefId>` to intake).
+3. Delete each fulfilled order from `workOrders[]` **in the same commit**
+   that lands the new ledger entries/outputs — an order left behind gets
+   executed twice.
 
 ## Files in this directory
 
@@ -225,11 +285,17 @@ Then QC runs **per row**, not per image:
 - `artifact-gate.mjs` — screens an image for hallucinated watermarks,
   checkerboard/tiling artifacts and degenerate (flat-vector) renders.
   Wired into `intake-art.mjs`, so a flagged image cannot enter the
-  manifest. **It is triage, not a classifier** — read
+  manifest; `--ledger <briefId>` tees the verdict into the run ledger
+  (see "Run ledger" above). **It is triage, not a classifier** — read
   `docs/worldbuilding/ABP-artifact-gate.md` for the measured detection
   rates and the blind spots before trusting a PASS.
-- `tests/` — `node --test` coverage for `intake-art.mjs` and
-  `artifact-gate.mjs`.
+- `lib/brief-hash.mjs` — brief normalization + 16-hex identity hash;
+  `lib/run-ledger.mjs` — `appendAttempt` / `readLedger` for the per-brief
+  ledgers under `runs/`.
+- `runs/` — committed per-brief ledger files plus `_index.json`
+  (regenerate with `node ledger-index.mjs`) — see "Run ledger" above.
+- `tests/` — `node --test` coverage for `intake-art.mjs`,
+  `artifact-gate.mjs`, the brief hash, the run ledger and the index.
 
 ## CI status
 

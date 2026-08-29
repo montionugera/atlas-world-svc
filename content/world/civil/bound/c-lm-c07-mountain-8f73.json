@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c07-mountain-8f73",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Loamshallow Rake",
+  "bind": {
+    "handle": "c07/mountain/h-1f8f73",
+    "expect": {
+      "type": "tectonic-cave",
+      "sizeKm": [
+        0.1,
+        0.4
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A cave that is a split rather than a dissolved passage, opened when the rock moved.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#tectonic-cave.gloss"
+  },
+  "resolution": null
+}

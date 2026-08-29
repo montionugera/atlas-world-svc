@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c01-glacial-f113",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Stormness Moraine",
+  "bind": {
+    "handle": "c01/glacial/h-06f113",
+    "expect": {
+      "type": "ice-shelf",
+      "sizeKm": [
+        14.65,
+        40
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Ice floating on sea, thick enough to stand on and flat to the horizon.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#ice-shelf.gloss"
+  },
+  "resolution": null
+}

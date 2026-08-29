@@ -346,7 +346,7 @@
     "threat": "melee",
     "durability": "low",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "The smallest thing the Ashvale ground makes. It comes up wherever a body went under without a burial and drags itself toward warmth. One is easy. The trouble is that one means the field under your boots is full of them.",
     "visualBrief": "An armless torso-sized shape of packed ash and cloth scraps, pulling itself on two thin fore-limbs. A cold black seam runs where the mouth would be."
@@ -634,7 +634,7 @@
     "threat": "melee",
     "durability": "mid",
     "speed": "low",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "Burial parties go out to the Ashvale Front between the fighting and they do not always all come back. A shovel wight still has the tool and still has the ground it was working. It swings on anything that comes near the row it was digging.",
     "visualBrief": "A slouched figure in banded mourning cloth gone grey, a long-handled shovel held two-handed and low. Where the face was there is packed grave dirt."
@@ -650,7 +650,7 @@
     "threat": "melee",
     "durability": "mid",
     "speed": "high",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "Not a dog that ate the dead. A dog that the dead ground made, out of what was lying there. It runs the burial rows in packs of four and it does not eat what it kills. The bell-wardens go out after them with holy work, and it is work, not mercy.",
     "visualBrief": "A hound-shaped thing of grey sinew and grave cloth, ribs open to the air with nothing behind them. The eyes are two cold voids; it leaves no prints."
@@ -666,7 +666,7 @@
     "threat": "melee",
     "durability": "high",
     "speed": "low",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-bellfaith",
     "lore": "A bell-warden went out to the front to ring the field clean and rang until his heart stopped. The holy work did not stop with him. He still walks the rows, still tolling, and the void things will not come within thirty paces of him. Neither will anyone else.",
     "visualBrief": "A bell-warden in bronze-trimmed robes, a hand bell fused into the right palm, standing too straight. A steady pale light shows through the seams of the robe."
@@ -826,7 +826,7 @@
     "threat": "melee",
     "durability": "mid",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "It works the cut lines both towns dug and then abandoned. A gnawer widens a trench as it feeds, so the diggings are longer now than either army ever made them. Walk a trench on the Ashvale Front and you are walking through something's throat.",
     "visualBrief": "A broad low quadruped of grave earth and splintered timber, jaw wider than the skull. Cold black dust pours from the joints as it moves."
@@ -842,7 +842,7 @@
     "threat": "melee",
     "durability": "mid",
     "speed": "low",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "It carries a banner with the colors worn off, so neither town claims it and both shoot at it. Where it plants the pole, the other dead stand faster and stay standing longer. It has planted the pole in the same spot forty times. The ground there will not hold grass.",
     "visualBrief": "An upright corpse in mixed iron-red and hollow-green scraps, both hands locked on a bare banner pole. The cloth at the top is grey rag with no device left."
@@ -858,7 +858,7 @@
     "threat": "ranged",
     "durability": "low",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-ashen-column",
     "lore": "The Ash Prophet sends them ahead of a raid to light what the raid will take. A torchbearer does not fight for ground and does not hold any. It burns a farm, a fence, a bridge, and walks on to the next one, and it does not look back at the work.",
     "visualBrief": "A soot-wrapped figure carrying a long pitch torch in both hands, face bare and unburned. Cinder-black cloth, relic-violet thread stitched at the cuffs."
@@ -874,7 +874,7 @@
     "threat": "melee",
     "durability": "high",
     "speed": "low",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "It wears the ground it grew in, which on the Ashvale Front means broken shields and burial stones. The shell is cold enough to sting a bare hand. Cut through it and there is nothing warm underneath either.",
     "visualBrief": "A cart-sized crawler under a dome of fused shield fragments and grave slate. Six pale legs; the shell edge scrapes furrows in the dirt."
@@ -1066,7 +1066,7 @@
     "threat": "melee",
     "durability": "mid",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "It rises with the ground when the rain lifts the shallow rows, which is why the towns call it a tide. A wight is one burial that came up carrying pieces of four others. The bell-wardens say the cure is a proper grave, and they are right, and there is no time.",
     "visualBrief": "A tall shambling figure assembled from more than one body, mismatched iron-red and hollow-green cloth fused together. Cold black seams glow where the pieces join."
@@ -1082,7 +1082,7 @@
     "threat": "zone",
     "durability": "low",
     "speed": "high",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "They breed in fallen banners and eat the cloth first and the pole second. A swarm rolling across the front reads as a low grey wind. Both armies have lost their colors to it in the same week and neither will admit which week.",
     "visualBrief": "A rolling cloud of small black flies shot through with grey banner threads. It leaves the ground behind it bare and faintly cold."
@@ -1098,7 +1098,7 @@
     "threat": "melee",
     "durability": "mid",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-bellfaith",
     "lore": "The Bell School's holy work burns the void out of a war-scar body. Sometimes the body keeps walking after it is clean. A penitent follows the bell-wardens at a distance, helps them where it can, and will not be sent away. The wardens have stopped trying.",
     "visualBrief": "A thin figure in scorched bell-warden robes, skin bleached bone-white, a brass key still on the collar. A faint steady light shows at the mouth and eyes."
@@ -1114,7 +1114,7 @@
     "threat": "ranged",
     "durability": "mid",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-ashen-column",
     "lore": "The Column has no bells and wants none, so it keeps time on a drum instead. The drum-caller sets the pace of a raid and the raiders match it without looking. Kill the caller and the raid does not stop; it only stops being a raid and starts being a mob.",
     "visualBrief": "A soot-wrapped figure with a wide hide drum slung at the hip, both sticks bone. Relic-violet thread is worked through the drum head in a broken crown pattern."
@@ -1226,7 +1226,7 @@
     "threat": "melee",
     "durability": "high",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "Where the fighting was worst and the burying was worst, the ground makes something with a mouth in it. A maw does not hunt outward. It waits in the low ground and takes what the ground funnels to it, and after four seasons of war the ground funnels a great deal.",
     "visualBrief": "A hunched slab of grave earth and rusted mail, four times a man's bulk, split across the front by a long vertical mouth. Cold black light shows between the teeth."
@@ -1242,7 +1242,7 @@
     "threat": "zone",
     "durability": "mid",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "It pulls the burial cloth off the shallow rows and works it into a grey fog that hangs at knee height. Inside the fog a person's own hands go cold and slow. The bell-wardens ring the fog apart when they can spare the wardens, and lately they cannot.",
     "visualBrief": "A stooped many-armed shape made of layered grave shrouds, no body under the cloth. Trailing threads reach out along the ground for several paces."
@@ -1258,7 +1258,7 @@
     "threat": "melee",
     "durability": "high",
     "speed": "low",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "Both towns dragged siege engines onto the plain and neither dragged them off. The timber rotted where it stood, over ground full of the unburied, and the ground took it. It still moves toward a palisade line when it can find one.",
     "visualBrief": "A walking wreck of siege timber and iron banding held together by grey sinew, twice a man's height. Antimagic runes are still cut into the plates and mean nothing now."
@@ -1274,7 +1274,7 @@
     "threat": "ranged",
     "durability": "mid",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-bellfaith",
     "lore": "A whole warden company went out to clear the burial rows and rang until the last of them fell. What stands there now still does the work and cannot be called off. It will strike a war-scar and it will strike a living soldier, and it does not tell them apart anymore.",
     "visualBrief": "A robed figure whose bell-warden vestments have gone stiff and pale, a hand bell held out at arm's length. A hard white light burns behind the eyes and inside the bell."
@@ -1450,7 +1450,7 @@
     "threat": "melee",
     "durability": "high",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "A maw that grew legs and stopped waiting. It walks the line between the two towns and takes from whichever side is closer that day, which has made it the one thing both banners agree on. They have never once agreed enough to hunt it together.",
     "visualBrief": "A long-limbed thing of grave earth and broken mail, hunched to a man's height but wider than a cart, mouths opening along the ribs. Cold black dust hangs where it has passed."
@@ -1466,7 +1466,7 @@
     "threat": "zone",
     "durability": "mid",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "Not one body. A season's worth of them, moving in the shape a company moves in, because that is the last shape they were taught. The host does not charge. It arrives, and what is already on the field stands up and falls in behind it.",
     "visualBrief": "A loose column of thirty grey corpses in mixed iron-red and hollow-green, walking in step. They share one slow cold light that shows between the ranks."
@@ -1482,7 +1482,7 @@
     "threat": "ranged",
     "durability": "mid",
     "speed": "high",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "It hatched out of the plain itself and it has never eaten anything that was alive when it found it. A scar drake circles a burial detail for hours, low and patient, and comes down when the last shovel goes into the cart. It has learned the sound of the last shovel.",
     "visualBrief": "A lean winged drake the size of a horse, hide grey as turned earth, ribs showing through. The wings are patched with grave cloth grown into the membrane."
@@ -1498,7 +1498,7 @@
     "threat": "zone",
     "durability": "mid",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-ashen-column",
     "lore": "The Ash Prophet cannot be in six places, so he trains speakers and sends them out with the raids. A speaker preaches while the Column burns, and the preaching is the point; the burning is only the illustration. They are High-Tier, all of them, and they open warded gates for a living.",
     "visualBrief": "A soot-wrapped figure standing upright and still while everything around burns, arms spread, magic stones burning out in both fists. Relic-violet thread runs the length of the sleeves."
@@ -1642,7 +1642,7 @@
     "threat": "melee",
     "durability": "high",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "The plain has been fed for four seasons and this is what four seasons buys. It holds the middle of the Ashvale Front and neither banner has crossed there since it stood up. The war has quietly moved to the flanks, and neither town has admitted why.",
     "visualBrief": "A towering shape of packed grave earth and layered mail three men high, a crown of broken banner poles fused into the shoulders. Cold black light burns in the chest cavity."
@@ -1658,7 +1658,7 @@
     "threat": "zone",
     "durability": "high",
     "speed": "low",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "Where the burial rows run deepest, the ground grew something that keeps them. It does not leave its rows and it does not let anything be taken out of them. Burial parties working that quarter dig new rows a mile away and do not argue about the extra mile.",
     "visualBrief": "A rooted mass of grey bone and grave timber the size of a house, spread wide rather than tall, with long reaching limbs. The rows around it are marked by upright shields sunk in the dirt."
@@ -1674,7 +1674,7 @@
     "threat": "zone",
     "durability": "high",
     "speed": "low",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-bellfaith",
     "lore": "The Bell School had one built to carry a tower bell onto the plain and ring the front clean without losing another warden company. It works. It has been out there for two seasons, ringing on the hour, and it will not answer a recall. The Bellfaith counts it a success and does not go near it.",
     "visualBrief": "A tall bronze-plated automaton carrying a full tower bell in a shoulder frame, striking arm raised. A steady pale light shows through the bell's mouth."
@@ -1770,7 +1770,7 @@
     "threat": "zone",
     "durability": "high",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "The whole low ground of the Ashvale Front, standing up at once. It does not walk so much as the field walks with it. Both towns have watched it from their own side of the plain and neither has sent anyone out to it, and neither has said so to the other.",
     "visualBrief": "An immense open mouth set in a rolling hill of grave earth, mail, and shattered timber, wider than a village square. Cold black light pours out of it and lies over the ground like fog."
@@ -1786,7 +1786,7 @@
     "threat": "melee",
     "durability": "high",
     "speed": "low",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-unaligned",
     "lore": "Four seasons of unburied dead, wearing four seasons of abandoned armor, standing at the head of the plain. It has never taken a step toward either town. It stands where the burying stopped and it does not permit the burying to start again.",
     "visualBrief": "A void-black figure five men high, armored in a shell of fused shields and breastplates from both banners. Where a face would be there is a hollow the size of a doorway."
@@ -1834,7 +1834,7 @@
     "threat": "zone",
     "durability": "mid",
     "speed": "mid",
-    "region": "ashvale-front",
+    "region": "c02/r11",
     "faction": "faction-bellfaith",
     "lore": "Every warden the Ashvale Front has taken, ringing together in one place. It moves across the plain in a slow line and it burns the void out of everything it passes, including the ground and including anyone standing on it. The Bellfaith does not claim it. The Bellfaith also does not deny that it is theirs.",
     "visualBrief": "A wide line of pale robed figures made of light, walking abreast, none of them fully solid. A single unbroken tolling sound moves with them."

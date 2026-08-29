@@ -1,0 +1,23 @@
+{
+  "continent": "c11",
+  "orderDigest": "sha256:5b0a8ccfb208ee890287df0567d6237d39d0464079cdbf95b718c069841270de",
+  "handles": [
+    {"handle":"c11/oceanic/h-4f9917","type":"abyssal-plain","sizeKm":69.29,"region":"c11/r02","contentHash":"sha256:4f9917b85394fbd09ecfb3d4c2f7100bab68c9182c775bcf6391d6df9acc9548","rank":0},
+    {"handle":"c11/oceanic/h-d61ba0","type":"mid-ocean-ridge","sizeKm":51.57,"region":"c11/r01","contentHash":"sha256:d61ba08bf1b3a3a485f6d4f31660e28241452d7a6716d4a14f50065bc01010ff","rank":1},
+    {"handle":"c11/oceanic/h-7e474b","type":"oceanic-trench","sizeKm":50.51,"region":"c11/r01","contentHash":"sha256:7e474b7e6f7e6fe5c6af7d4c4ae7932fa465cca53888e5b2dcd9109b67e45f7e","rank":2},
+    {"handle":"c11/oceanic/h-81c4e2","type":"submarine-canyon","sizeKm":20.82,"region":"c11/r01","contentHash":"sha256:81c4e20785c377f5548b859743b2592300d3edc7182c9e409e30801cea017f83","rank":3},
+    {"handle":"c11/oceanic/h-8674cb","type":"barrier-reef","sizeKm":14.9,"region":"c11/r01","contentHash":"sha256:8674cb45efeba84466cdf19ed8fd88bebfea6a1f04b3d527ae4cc33c94d48851","rank":4},
+    {"handle":"c11/oceanic/h-95933a","type":"reef-shelf-bank","sizeKm":14,"region":"c11/r01","contentHash":"sha256:95933ab84fd22893019161b57be7a1c47237e16361efbfeb733caf37c8d7076a","rank":5},
+    {"handle":"c11/oceanic/h-f2b3e1","type":"fringing-reef","sizeKm":7.95,"region":"c11/r01","contentHash":"sha256:f2b3e1e48f673ee2c1b3957937ca7b2b0fc134253dc9c89aeea1a80f23e448c3","rank":6},
+    {"handle":"c11/coastal/h-db1756","type":"barrier-island","sizeKm":5.88,"region":"c11/r02","contentHash":"sha256:db1756cd957b9e4d76784a0c79c0ffe666aa0aa989d1bf37a6bca5e500b8750d","rank":7},
+    {"handle":"c11/coastal/h-997b85","type":"spit","sizeKm":4.36,"region":"c11/r02","contentHash":"sha256:997b8546053b7328d974f8b22cb64bbd2139a52799443e823aa98bec3bb7bfa5","rank":8},
+    {"handle":"c11/coastal/h-72bf0a","type":"baymouth-bar","sizeKm":3.51,"region":"c11/r02","contentHash":"sha256:72bf0a96f6e1329b203cf1832d51e185a43a396c8b7f190d72accb2ddd196687","rank":9},
+    {"handle":"c11/coastal/h-e97614","type":"estuary","sizeKm":3.51,"region":"c11/r02","contentHash":"sha256:e97614ca75192a45bc513c3315c99c6103fed6bed9a1f76fe83fb0199ab22f19","rank":10},
+    {"handle":"c11/oceanic/h-10e258","type":"seamount","sizeKm":3.15,"region":"c11/r01","contentHash":"sha256:10e2582a4df3bd2f55dadaf77a663c605b5ef47ee6e574ad6db76b70f8f40a33","rank":11},
+    {"handle":"c11/oceanic/h-15d167","type":"guyot","sizeKm":3.15,"region":"c11/r01","contentHash":"sha256:15d167b0afb014c3aca1163397fa9168911af29d0c7c002d871cc8f64a08d78b","rank":12},
+    {"handle":"c11/coastal/h-6aa000","type":"cuspate-foreland","sizeKm":2.84,"region":"c11/r02","contentHash":"sha256:6aa0001f1283869721c11a0562e8daadaeb6ead56a66a96d6daa7f9194ff152d","rank":13},
+    {"handle":"c11/island/h-40d916","type":"atoll","sizeKm":2.68,"region":"c11/r01","contentHash":"sha256:40d9167a5590f744845ba47c841a27a658a5953cb4bf161d98245585feb2c774","rank":14},
+    {"handle":"c11/oceanic/h-e7d7f6","type":"fringing-reef","sizeKm":1.77,"region":"c11/r02","contentHash":"sha256:e7d7f623ffe5350abd436edb2dea92388680ee94ce19e0259a70cdb9ce297bdf","rank":15},
+    {"handle":"c11/coastal/h-5ebb14","type":"blowhole","sizeKm":0.03,"region":"c11/r02","contentHash":"sha256:5ebb1407942be5040a31998b83e693d526d8485e4063d640c35aa2a8aff250fe","rank":16}
+  ]
+}

@@ -1,0 +1,321 @@
+[
+  {
+    "id": "e-trade-road-trunk",
+    "kind": "road",
+    "from": {
+      "node": "n-millcross"
+    },
+    "to": {
+      "feature": "f-town-embervale"
+    },
+    "weight": "trunk",
+    "dashed": false,
+    "points": [
+      [98.2, 152.6],
+      [97, 151.6],
+      [95.4, 151],
+      [93.8, 149.6],
+      [92.2, 148.8],
+      [90.6, 148],
+      [89.7, 147.9]
+    ],
+    "attrs": {
+      "name": "the trade road",
+      "roadKm": 11,
+      "labelAtIndex": 1,
+      "note": "A1 §5.1: north-west off the ford, around the mire's head. canon.md §4 does not state this leg; on the rescaled world it is 11 km / 1 h.",
+      "hours": 1,
+      "hoursLabel": "1 h"
+    }
+  },
+  {
+    "id": "e-coastal-spur",
+    "kind": "road",
+    "from": {
+      "feature": "f-town-embervale"
+    },
+    "to": {
+      "feature": "f-town-gildmark"
+    },
+    "weight": "spur",
+    "dashed": false,
+    "points": [
+      [89.7, 147.9],
+      [88.8, 149.4],
+      [88.2, 151.4],
+      [87, 153],
+      [86.4, 155.2],
+      [85.2, 156.8],
+      [84.6, 158.8],
+      [84, 159.4],
+      [83.2, 160.4]
+    ],
+    "attrs": {
+      "name": "the coastal spur",
+      "roadKm": 17,
+      "labelAtIndex": 5,
+      "note": "canon.md §4: Gildmark is a coastal spur from both war towns. Already past the mire when it starts; on the rescaled world this leg is 17 km / 1.5 h.",
+      "hours": 1.5,
+      "hoursLabel": "1.5 h"
+    }
+  },
+  {
+    "id": "e-east-rim-track",
+    "kind": "road",
+    "from": {
+      "feature": "f-town-norhollow"
+    },
+    "to": {
+      "edge": "e-coastal-spur",
+      "atIndex": 2
+    },
+    "weight": "track",
+    "dashed": false,
+    "points": [
+      [96.8, 147.7],
+      [94.2, 148.6],
+      [92.6, 149.4],
+      [91, 149.8],
+      [89.4, 150.2],
+      [88.2, 151.4]
+    ],
+    "attrs": {
+      "geoTo": "coastal-spur",
+      "name": "the east-rim track",
+      "roadKm": 8.6,
+      "throughRoute": {
+        "to": "gildmark",
+        "roadKm": 19,
+        "hours": 1.5
+      },
+      "labelAtIndex": 2,
+      "note": "A1 §5.1: the east-rim track joins the spur near Emberdown, the eastern leg of the whole Norhollow → Gildmark run. On the rescaled world this leg is 8.6 km / 1 h (throughRoute to Gildmark: 19 km / 1.5 h).",
+      "hours": 1,
+      "hoursLabel": "1 h"
+    }
+  },
+  {
+    "id": "e-flat-crossing",
+    "kind": "road",
+    "from": {
+      "feature": "f-town-embervale"
+    },
+    "to": {
+      "feature": "f-town-norhollow"
+    },
+    "weight": "track",
+    "dashed": false,
+    "points": [
+      [89.7, 147.9],
+      [91.4, 147.2],
+      [93, 147],
+      [94.6, 147.2],
+      [96.8, 147.7]
+    ],
+    "attrs": {
+      "name": "the crossing of the flat",
+      "roadKm": 6,
+      "labelAtIndex": 2,
+      "note": "canon.md §4: sister towns close enough that wartime crossing is faster than peacetime traffic, which is exactly why the front is so lethal. On the rescaled world this leg is 6 km / 0.5 h.",
+      "hours": 0.5,
+      "hoursLabel": "0.5 h"
+    }
+  },
+  {
+    "id": "e-river-road-south",
+    "kind": "road",
+    "from": {
+      "node": "n-millcross"
+    },
+    "to": {
+      "feature": "f-town-rooktide"
+    },
+    "weight": "spur",
+    "dashed": false,
+    "points": [
+      [98.2, 152.6],
+      [99.4, 154.4],
+      [99.8, 156.6],
+      [99.6, 159],
+      [99, 161.4],
+      [94.5, 162.5]
+    ],
+    "attrs": {
+      "name": "the river road",
+      "roadKm": 12,
+      "labelAtIndex": 2,
+      "note": "canon.md §4: Rooktide sits inland, south of Millcross, off the war road entirely. Follows the river's south bank; on the rescaled world this leg is 12 km / 1 h.",
+      "hours": 1,
+      "hoursLabel": "1 h"
+    }
+  },
+  {
+    "id": "e-cindervast-approach",
+    "kind": "road",
+    "from": {
+      "feature": "f-town-norhollow"
+    },
+    "to": {
+      "feature": "f-town-cindervast"
+    },
+    "weight": "track",
+    "dashed": true,
+    "points": [
+      [96.8, 147.7],
+      [94.2, 144.2],
+      [93.8, 141.4],
+      [93, 139.4],
+      [92.2, 137.4],
+      [91.4, 135.4],
+      [90.6, 133.4],
+      [90.2, 131.4]
+    ],
+    "attrs": {
+      "geoFrom": "ashvale-front",
+      "geoTo": "cindervast",
+      "name": "the Cindervast approach",
+      "roadKm": null,
+      "labelAtIndex": 4,
+      "note": "A1 §7.1: drawn as a dashed line because it is not maintained. A1 §2: the only pass north runs behind Cindervast's shoulder. No leg day-count is stated; the walking table carries the end-to-end figure instead.",
+      "hours": null,
+      "hoursLabel": "not maintained"
+    }
+  },
+  {
+    "id": "e-leg-embervale-norhollow",
+    "kind": "leg",
+    "from": {
+      "feature": "f-town-embervale"
+    },
+    "to": {
+      "feature": "f-town-norhollow"
+    },
+    "attrs": {
+      "roadKm": 6,
+      "straightKm": 7.1,
+      "canonHours": "~0.5 h"
+    }
+  },
+  {
+    "id": "e-leg-millcross-rooktide",
+    "kind": "leg",
+    "from": {
+      "node": "n-millcross"
+    },
+    "to": {
+      "feature": "f-town-rooktide"
+    },
+    "attrs": {
+      "roadKm": 12,
+      "straightKm": 10.9,
+      "canonHours": "~1 h"
+    }
+  },
+  {
+    "id": "e-leg-millcross-embervale",
+    "kind": "leg",
+    "from": {
+      "node": "n-millcross"
+    },
+    "to": {
+      "feature": "f-town-embervale"
+    },
+    "attrs": {
+      "roadKm": 11,
+      "straightKm": 9.7,
+      "canonHours": "~1 h (A1-derived)"
+    }
+  },
+  {
+    "id": "e-leg-embervale-gildmark",
+    "kind": "leg",
+    "from": {
+      "feature": "f-town-embervale"
+    },
+    "to": {
+      "feature": "f-town-gildmark"
+    },
+    "attrs": {
+      "roadKm": 17,
+      "straightKm": 14.1,
+      "canonHours": "~1.5 h"
+    }
+  },
+  {
+    "id": "e-leg-millcross-gildmark",
+    "kind": "leg",
+    "from": {
+      "node": "n-millcross"
+    },
+    "to": {
+      "feature": "f-town-gildmark"
+    },
+    "attrs": {
+      "roadKm": 28,
+      "straightKm": 17,
+      "canonHours": "~2.5 h"
+    }
+  },
+  {
+    "id": "e-leg-norhollow-gildmark",
+    "kind": "leg",
+    "from": {
+      "feature": "f-town-norhollow"
+    },
+    "to": {
+      "feature": "f-town-gildmark"
+    },
+    "attrs": {
+      "roadKm": 19,
+      "straightKm": 18.6,
+      "canonHours": "~1.5 h"
+    }
+  },
+  {
+    "id": "e-leg-cindervast-rooktide",
+    "kind": "leg",
+    "from": {
+      "feature": "f-town-cindervast"
+    },
+    "to": {
+      "feature": "f-town-rooktide"
+    },
+    "attrs": {
+      "roadKm": 38,
+      "straightKm": 34,
+      "canonHours": "~3.5 h"
+    }
+  },
+  {
+    "id": "e-lane-coldreach",
+    "kind": "sealane",
+    "from": {
+      "feature": "f-town-gildmark"
+    },
+    "to": {
+      "feature": "f-town-tallowquay"
+    },
+    "attrs": {
+      "label": "the trade wind · once a year",
+      "season": "the trade wind",
+      "note": "One voyage, not two: the once-a-year trade wind, charted end to end at last — the merchantmen that reach Gildmark on the trade wind are the ones that tied up at Tallowquay first.",
+      "sailDays": 1.5
+    }
+  },
+  {
+    "id": "e-lane-stonemoor-foreign",
+    "kind": "sealane",
+    "from": {
+      "feature": "f-town-tallowquay"
+    },
+    "to": {
+      "feature": "f-town-netstead"
+    },
+    "attrs": {
+      "label": "a foreign coastal lane",
+      "season": "reported year-round",
+      "note": "A foreign-to-foreign coastal lane; no Gildmark keel has run it. Mariners say it runs the year round — no log from Gildmark confirms the claim.",
+      "sailDays": 1
+    }
+  }
+]

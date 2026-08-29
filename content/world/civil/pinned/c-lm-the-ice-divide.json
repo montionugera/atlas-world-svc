@@ -1,0 +1,28 @@
+{
+  "id": "c-lm-the-ice-divide",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "The Ice Divide",
+  "pin": {
+    "at": [
+      200,
+      34
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §1: one ice divide shedding outlet glaciers to every quarter; no rivers"
+  },
+  "requires": {
+    "continent": "c01",
+    "landform": "ice-divide"
+  },
+  "properties": [
+    "reported-ice-edge"
+  ],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

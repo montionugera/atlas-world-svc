@@ -1,0 +1,97 @@
+{
+  "id": "n-gildmark-roads",
+  "tier": "sea",
+  "parentId": "n-galereach",
+  "title": "Gildmark Roads",
+  "provenance": {
+    "authored": "generated",
+    "generator": {
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/world.json"
+    },
+    "source": "content/world/manifest.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "35106eab54fdfa90",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [189, 147.5],
+      [189, 147],
+      [206.5, 130],
+      [206.5, 130.5],
+      [225.5, 149],
+      [225.5, 150],
+      [240.5, 164.5],
+      [223.5, 182],
+      [223, 182],
+      [223, 181.5],
+      [198, 157],
+      [198, 156.5],
+      [197.5, 156.5],
+      [197.5, 156],
+      [197, 156],
+      [197, 155.5],
+      [196.5, 155.5],
+      [196.5, 155],
+      [196, 155],
+      [196, 154.5],
+      [195.5, 154.5],
+      [195.5, 154],
+      [195, 154],
+      [195, 153.5],
+      [194.5, 153.5],
+      [194.5, 153],
+      [194, 153],
+      [194, 152.5],
+      [193.5, 152.5],
+      [193.5, 152],
+      [193, 152],
+      [193, 151.5],
+      [192.5, 151.5],
+      [192.5, 151],
+      [192, 151],
+      [192, 150.5],
+      [191.5, 150.5],
+      [191.5, 150],
+      [191, 150],
+      [191, 149.5],
+      [190.5, 149.5],
+      [190.5, 149],
+      [190, 149],
+      [190, 148.5],
+      [189.5, 148.5],
+      [189.5, 148],
+      [189, 148]
+    ],
+    "anchor": [206.25, 147.25]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [51.5, 52],
+    "originInParent": [189, 130]
+  },
+  "composition": {
+    "ocean": 100
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": null,
+  "features": [],
+  "bands": [],
+  "runtime": null,
+  "representsNodeId": null,
+  "lore": {
+    "summary": null
+  },
+  "tags": [],
+  "levelBand": null
+}

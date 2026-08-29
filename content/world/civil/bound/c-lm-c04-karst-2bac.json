@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-2bac",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Sink of Limelack",
+  "bind": {
+    "handle": "c04/karst/h-822bac",
+    "expect": {
+      "type": "ponor",
+      "sizeKm": [
+        0.05,
+        0.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The hole a surface stream disappears into, and does not come back out of.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#ponor.gloss"
+  },
+  "resolution": null
+}

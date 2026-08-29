@@ -1,0 +1,34 @@
+{
+  "id": "dungeon-coldreach-outlet-crevasses",
+  "title": "Coldreach Outlet Crevasses",
+  "family": null,
+  "bind": {
+    "handle": "c03/fluvial/h-598653"
+  },
+  "entranceType": "plunge-pool",
+  "floors": 4,
+  "levelBand": [
+    40,
+    58
+  ],
+  "hazards": [
+    "cold",
+    "collapse"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12,
+    14
+  ],
+  "lore": {
+    "note": "Crevasse mouths where the icefield vents its melt; the depth gauge reads nothing.",
+    "source": "content/world/premises/continent-03.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

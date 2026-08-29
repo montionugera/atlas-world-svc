@@ -109,7 +109,11 @@ function measuredRoadWidth(svg, id) {
 /* ------------------------------- the input ------------------------------- */
 
 test("renders the real authored Millcross plan, not a fixture", () => {
-  assert.equal(millcross.town, "millcross");
+  // PLAN E TASK 14 re-homed this field from the legacy slug onto the resolved
+  // world's town id, which is what check_content's T1 joins against. The
+  // assertion tracks the file rather than being deleted: it is what proves this
+  // suite reads the real authored plan and not a fixture.
+  assert.equal(millcross.town, "c-town-millcross");
   assert.ok(millcross.roads.length > 0);
   assert.ok(millcross.footprints.length > 0);
 });

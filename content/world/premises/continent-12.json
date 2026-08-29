@@ -1,0 +1,25 @@
+{
+  "id": "c12",
+  "title": "Skerryfast",
+  "class": "chain",
+  "footprint": {
+    "centreKm": [254,44],
+    "radiiKm": [38.23,22.94],
+    "warpKm": 6
+  },
+  "areaBandKm2": [900,1100],
+  "coastClass": "fjordland",
+  "palette": ["rock","ice","scree","upland","ocean"],
+  "landformKit": ["glacial","coastal","island"],
+  "structuralIdea": "drowned glacial valleys — fjord, skerry, roche moutonnée",
+  "structures": [
+    {
+      "kind": "rift-valley",
+      "fromKm": [219.59,40.18],
+      "toKm": [288.41,51.65],
+      "amplitude": 0.38
+    }
+  ],
+  "register": "north-log",
+  "levelBand": [44,68]
+}

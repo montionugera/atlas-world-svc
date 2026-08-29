@@ -1,0 +1,25 @@
+{
+  "id": "c07",
+  "title": "Driftholt",
+  "class": "minor",
+  "footprint": {
+    "centreKm": [46,92],
+    "radiiKm": [30.43,30.43],
+    "warpKm": 8
+  },
+  "areaBandKm2": [2700,3300],
+  "coastClass": "fog-forest",
+  "palette": ["forest","marsh","meadow","river","upland"],
+  "landformKit": ["fluvial","wetland","mountain","coastal"],
+  "structuralIdea": "fog forest on a windward slope — the wettest ground in the world",
+  "structures": [
+    {
+      "kind": "spine-ridge",
+      "fromKm": [30.79,69.18],
+      "toKm": [61.21,117.36],
+      "amplitude": 0.4
+    }
+  ],
+  "register": "reedspeech",
+  "levelBand": [10,36]
+}

@@ -1,0 +1,60 @@
+{
+  "id": "n-fixture-deflect",
+  "tier": "fixture",
+  "parentId": "n-playroot",
+  "title": "Deflection Test Frame",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "colyseus-server/src/config/mapConfig.ts"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "4b0e8d2a6f13c795",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "rect",
+    "rect": {
+      "x": 1200,
+      "y": 0,
+      "w": 100,
+      "h": 100
+    },
+    "anchor": [1250, 50]
+  },
+  "interior": {
+    "units": "u",
+    "perParentUnit": 1,
+    "size": [100, 100],
+    "originInParent": [1200, 0]
+  },
+  "composition": {
+    "built": 100
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": ["map-for-test-deflect"],
+    "originU": [1200, 0],
+    "spawnAreas": [],
+    "mobSettings": {
+      "autoSpawn": true,
+      "spawnIntervalMs": 30000,
+      "respawnDelayMs": 5000
+    },
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "summary": "Debug fixture map: 100x100 deflection/projectile test frame."
+  },
+  "tags": ["runtime-only"],
+  "levelBand": null
+}

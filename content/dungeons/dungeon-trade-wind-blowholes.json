@@ -1,0 +1,32 @@
+{
+  "id": "dungeon-trade-wind-blowholes",
+  "title": "Trade Wind Blowholes",
+  "family": null,
+  "bind": {
+    "handle": "c06/coastal/h-c481b2"
+  },
+  "entranceType": "sea-arch",
+  "floors": 2,
+  "levelBand": [
+    24,
+    40
+  ],
+  "hazards": [
+    "cold",
+    "loose-floor"
+  ],
+  "roomCountCurve": [
+    8,
+    10
+  ],
+  "lore": {
+    "note": "Blowholes tuned to the trade swell; standing too close is a baptism.",
+    "source": "content/world/premises/continent-03.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

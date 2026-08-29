@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-coastal-753c",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head of Shalefell",
+  "bind": {
+    "handle": "c04/coastal/h-9f753c",
+    "expect": {
+      "type": "machair",
+      "sizeKm": [
+        1.18,
+        3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Shell sand blown inland and gone to grass; grazing on top of what was once a beach.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#machair.gloss"
+  },
+  "resolution": null
+}

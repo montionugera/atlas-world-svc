@@ -58,6 +58,10 @@ import {
   writeManifestRaw,
 } from "../asset-forge/lib/manifest.mjs";
 import { inspectImage } from "./artifact-gate.mjs";
+import { appendAttempt } from "./lib/run-ledger.mjs";
+
+const FORGE_DIR = path.dirname(fileURLToPath(import.meta.url));
+const RUNS_DIR = path.join(FORGE_DIR, "runs");
 
 /**
  * Default artifact-gate runner: screens the SOURCE image for hallucinated
@@ -233,6 +237,8 @@ function readGroupIds() {
  * @param {string[]} [opts.tags]       optional array of short tag strings
  * @param {string} [opts.source]       optional brief-source reference (e.g. a doc anchor)
  * @param {object} [opts.gen]          optional reproducibility record: { model, steps, cfg, seed, denoise, width, height }
+ * @param {string} [opts.briefId]      optional brief id (e.g. "A1-ART-02") — when given, intake
+ *   and gate-skip events are appended to the brief's run ledger (tools/art-forge/runs/)
  * @param {string} [opts.skipArtifactGate] NON-EMPTY REASON to bypass the artifact
  *   gate. Deliberate by construction: there is no boolean form, the caller must
  *   type why, and the reason is recorded in the manifest entry as
@@ -256,6 +262,7 @@ export async function intakeArt(opts = {}) {
     tags,
     source: briefSource,
     gen,
+    briefId,
     skipArtifactGate,
     root = path.join(repoRoot(), "game-client/assets/art"),
     manifestPath = path.join(root, "art-manifest.json"),
@@ -319,6 +326,15 @@ export async function intakeArt(opts = {}) {
     }
     artifactGateRecord = { skipped: true, reason: skipArtifactGate.trim() };
     actions.push(`artifact-gate: SKIPPED (${artifactGateRecord.reason})`);
+    // Run-ledger entry (F-050): a bypassed gate is a pipeline event — record
+    // the skip reason against the brief when one was given.
+    if (briefId) {
+      appendAttempt(RUNS_DIR, briefId, {
+        type: "gate-skipped",
+        png: path.relative(FORGE_DIR, src),
+        reason: artifactGateRecord.reason,
+      });
+    }
   } else {
     const artifactGate = artifactGateRunner ?? defaultArtifactGateRunner;
     let artifactResult;
@@ -443,6 +459,16 @@ export async function intakeArt(opts = {}) {
   }
   actions.push("drift-gate: passed");
 
+  // Run-ledger entry (F-050): the intake fully committed (manifest entry +
+  // copy survived the drift gate) — record it against the brief.
+  if (briefId) {
+    appendAttempt(RUNS_DIR, briefId, {
+      type: "intake",
+      assetKey: entry.file,
+      manifest: "game-client/assets/art/art-manifest.json",
+    });
+  }
+
   return { ok: true, id, actions, entry };
 }
 
@@ -480,7 +506,8 @@ function printUsageAndExit() {
     "usage: node intake-art.mjs --src <png> --id <art:key> --group <group-id> " +
       "--title <text> --note <provenance> [--description <text>] " +
       "[--tags <comma,separated,tags>] [--source <ref>] [--gen <json>] " +
-      "[--skip-artifact-gate <reason>] [--root <dir>] [--manifest-path <path>]\n" +
+      "[--brief <briefId>] [--skip-artifact-gate <reason>] [--root <dir>] " +
+      "[--manifest-path <path>]\n" +
       "\n" +
       "  --skip-artifact-gate REQUIRES a written reason and records it in the " +
       "manifest entry.\n" +
@@ -551,6 +578,7 @@ async function main() {
     tags,
     source: flags.source,
     gen,
+    briefId: flags.brief,
     skipArtifactGate: flags["skip-artifact-gate"],
     root: flags.root ? path.resolve(flags.root) : undefined,
     manifestPath: flags["manifest-path"]

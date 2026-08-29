@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-mountain-4356",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Keelsound Horn",
+  "bind": {
+    "handle": "c03/mountain/h-eb4356",
+    "expect": {
+      "type": "mesa",
+      "sizeKm": [
+        4.78,
+        16
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A table of ground standing above everything else, flat on top and cliffed all round.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#mesa.gloss"
+  },
+  "resolution": null
+}

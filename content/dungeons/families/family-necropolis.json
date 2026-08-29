@@ -1,0 +1,10 @@
+{
+  "id": "family-necropolis",
+  "title": "Necropolis",
+  "floors": 3,
+  "floorGraph": "hub-and-spoke",
+  "hazards": ["grave-damp", "cold", "silence"],
+  "roomCountCurve": [10, 14, 11],
+  "levelBand": { "base": 43, "step": 3, "span": 6 },
+  "entranceTypes": ["ponor", "foiba", "cave-system", "knickpoint-gorge"]
+}

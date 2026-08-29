@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-8b6e",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Harrowbourne Geo",
+  "bind": {
+    "handle": "c02/coastal/h-418b6e",
+    "expect": {
+      "type": "spit",
+      "sizeKm": [
+        2.15,
+        6
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A finger of shingle the drift keeps building out across open water, growing every year.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#spit.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c08-island-9448",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Holm below Tidalstrand",
+  "bind": {
+    "handle": "c08/island/h-659448",
+    "expect": {
+      "type": "skerry",
+      "sizeKm": [
+        0.06,
+        0.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A bare rock the sea covers and uncovers; a hazard, never a landing.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#skerry.gloss"
+  },
+  "resolution": null
+}

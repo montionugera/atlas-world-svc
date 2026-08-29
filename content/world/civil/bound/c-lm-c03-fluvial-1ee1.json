@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-1ee1",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Skerryness Race",
+  "bind": {
+    "handle": "c03/fluvial/h-3f1ee1",
+    "expect": {
+      "type": "anabranch-island",
+      "sizeKm": [
+        0.44,
+        1.74
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wooded island the river has split around and not yet decided to take back.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#anabranch-island.gloss"
+  },
+  "resolution": null
+}

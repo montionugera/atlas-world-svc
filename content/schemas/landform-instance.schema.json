@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "landform-instance.schema.json",
+  "title": "Landform instance — one record in content/world/fabric/continent-NN.json. MACHINE-WRITTEN: additionalProperties is false everywhere, because every unexpected key here is a generator bug, not an authoring choice. WINDING is NOT checkable here — JSON Schema cannot evaluate a signed shoelace — so the open-ring / strictly-positive-shoelace / no-self-intersection rules are enforced by gWorldInstanceGeometry (Plan C Task 11 Step 5c) over the fabric, since these records are deliberately not spine nodes and G-POLY only walks tree.byId. What IS enforceable here is the VERTEX CAP: maxItems 40 mirrors G-VERTEX-BUDGET's landform tier, so a 4,000-point generated ring fails at parse time as well as at the gate.",
+  "type": "object",
+  "required": ["id", "type", "geometry", "sizeKm", "cell", "handle", "region", "named", "glyph", "dungeonCapable", "provenance"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^lf-c[0-9]{2}-r[0-9]{2}-[0-9]{4}$" },
+    "type": { "type": "string" },
+    "geometry": {
+      "oneOf": [
+        {
+          "type": "object", "required": ["shape", "at"], "additionalProperties": false,
+          "properties": {
+            "shape": { "const": "point" },
+            "at": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } }
+          }
+        },
+        {
+          "type": "object", "required": ["shape", "points"], "additionalProperties": false,
+          "properties": {
+            "shape": { "const": "line" },
+            "points": { "type": "array", "minItems": 2, "maxItems": 40, "items": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } } }
+          }
+        },
+        {
+          "type": "object", "required": ["shape", "ring"], "additionalProperties": false,
+          "properties": {
+            "shape": { "const": "area" },
+            "ring": { "type": "array", "minItems": 3, "maxItems": 40, "items": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } } }
+          }
+        }
+      ]
+    },
+    "sizeKm": { "type": "number", "exclusiveMinimum": 0 },
+    "cell": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 0 } },
+    "handle": { "type": "string", "pattern": "^c[0-9]{2}/[a-z-]+/h-[0-9a-f]{4,6}$" },
+    "region": { "type": "string", "pattern": "^c[0-9]{2}/r[0-9]{2}$" },
+    "named": { "type": "boolean" },
+    "glyph": { "type": "string", "pattern": "^g-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "dungeonCapable": { "type": "boolean" },
+    "provenance": {
+      "type": "object",
+      "required": ["authored", "generator", "fabric"],
+      "additionalProperties": false,
+      "properties": {
+        "authored": { "const": "generated" },
+        "generator": {
+          "type": "object",
+          "required": ["pass", "seedStream", "epoch"],
+          "additionalProperties": false,
+          "properties": {
+            "pass": { "type": "string" },
+            "seedStream": { "type": "string" },
+            "epoch": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "fabric": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "fixture"
+  },
+  "frozen": false,
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": true,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {},
+  "tags": [],
+  "levelBand": null,
+  "id": "n-e-ocean",
+  "tier": "ocean",
+  "parentId": "n-w",
+  "title": "E ocean",
+  "seed": {
+    "value": "e1c0ffee00000001",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [
+        10,
+        10
+      ],
+      [
+        90,
+        10
+      ],
+      [
+        90,
+        90
+      ],
+      [
+        10,
+        90
+      ]
+    ],
+    "anchor": [
+      50,
+      50
+    ]
+  },
+  "composition": {
+    "ocean": 100
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "zone": "snowness-ford",
+  "region": "c03/r18",
+  "survey": "surveyed",
+  "reasonToGo": "Every road east of Tallowquay meets here and every one of them crosses water to do it, so grain, green and clean water are all sold at the fords to people who cannot go on without them.",
+  "hazards": [
+    {
+      "id": "the-undertow-in-the-basins",
+      "name": "The undertow in the basins",
+      "description": "Under each fall there is a basin scoured deeper than it reads from the bank, cold and loud, with an undercut behind the water. What goes into one is handed back a long way downstream and not in the same condition.",
+      "effect": "damage"
+    },
+    {
+      "id": "three-crossings-one-road",
+      "name": "Three crossings, one road",
+      "description": "This is a junction only while all three fords are down. Put one of them up and the road east stops existing, along with whatever set out from the capital that morning and is now standing on the wrong bank of it.",
+      "note": "Absence hazard: the harm is the crossing that stops being there. Nothing in the runtime enum expresses a route that ceases."
+    }
+  ],
+  "resources": [
+    {
+      "id": "scroll-ground",
+      "name": "Scroll ground",
+      "kind": "crop",
+      "description": "Flat ground ribbed with the ghosts of bends the river has already abandoned. It is ploughed along the ribs and never across them, because across them a share finds the old gravel and breaks."
+    },
+    {
+      "id": "wayside-green",
+      "name": "Wayside green",
+      "kind": "forage",
+      "description": "Gathered off the meadow either side of the fords by whoever is waiting for the water to fall, which at this junction is most people for most of the season."
+    },
+    {
+      "id": "head-water",
+      "name": "Head water",
+      "kind": "water",
+      "description": "Taken from above the falls rather than out of the basins under them, in the barrels the villages keep standing at each crossing — what is filled below a fall comes up with grit in it and worse than grit."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "rimehold-race",
+      "name": "Rimehold Race",
+      "description": "One of three basins scoured out under the falls above the junction, loud enough that a party shouts across it, with an undercut behind the water that nobody has been paid enough to sound.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "reach-off-keelfast",
+      "name": "Reach off Keelfast",
+      "description": "The dry step above the river, cut when the water stood higher than it does now. The eastern road runs along it clear of every crossing, and it is the only ground at the junction big enough to camp a train on.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

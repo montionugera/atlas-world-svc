@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-ashen-spar-lava-tubes",
+  "title": "Ashen Spar Lava Tubes",
+  "family": null,
+  "bind": {
+    "handle": "c09/mountain/h-48f000"
+  },
+  "entranceType": "tectonic-cave",
+  "floors": 3,
+  "levelBand": [
+    55,
+    80
+  ],
+  "hazards": [
+    "heat",
+    "fume"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Tubes floored with spar that glitters when a torch crosses it.",
+    "source": "content/world/premises/continent-10.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

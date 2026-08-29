@@ -1,5 +1,7 @@
 {
   "zone": "gildmark-head",
+  "region": "c02/r10",
+  "survey": "surveyed",
   "reasonToGo": "The only door the sea has, with half a day of mudflat in front of it holding everything that missed the door.",
   "hazards": [
     {

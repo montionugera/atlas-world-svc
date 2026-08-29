@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-1fb6",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Gildfield Fen",
+  "bind": {
+    "handle": "c02/wetland/h-ec1fb6",
+    "expect": {
+      "type": "saltmire-pan",
+      "sizeKm": [
+        1.01,
+        4
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A bare salt patch inside the marsh where nothing grows and the crust holds water.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#saltmire-pan.gloss"
+  },
+  "resolution": null
+}
