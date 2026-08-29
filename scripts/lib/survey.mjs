@@ -64,13 +64,24 @@ export function surveyOf({ node }) {
  * Index every fabric region by id, and count regions per fabric FILE PATH
  * (repo-relative), which is what a trunk node's provenance.generator.fabric
  * points at.
+ *
+ * F-051 Task 8 Step 2 addition: each `byRegionId` entry now carries the WHOLE
+ * region record (spread, not the old 3-field pick) plus `continent`, and a
+ * new `roadsById` map is collected in the same pass. Both are additive —
+ * every existing reader (`check_content.mjs`, `spine.mjs`,
+ * `survey.test.mjs`) only ever read `.survey`/`.areaKm2`/`.continent`, so
+ * this changes no existing verdict — and both exist so
+ * `scripts/lib/fabric-measure.mjs`'s `measureOverWholeFabric()` can be built
+ * on this ONE loader rather than re-walking `content/world/fabric/` a
+ * second time.
  */
 export function loadFabricRegionIndex({ contentRoot }) {
   const byRegionId = new Map();
   const countByFabricPath = new Map();
+  const roadsById = new Map();
   const problems = [];
   const dir = join(contentRoot, "world/fabric");
-  if (!existsSync(dir)) return { byRegionId, countByFabricPath, problems }; // soft-skip
+  if (!existsSync(dir)) return { byRegionId, countByFabricPath, roadsById, problems }; // soft-skip
   // existsSync is true when the path exists as a FILE too, and stat cannot see
   // a permission-denied directory — either way readdirSync would throw out of
   // the gate and drop every FAIL recorded before it (world-gates.test.mjs's
@@ -79,7 +90,7 @@ export function loadFabricRegionIndex({ contentRoot }) {
   try { entries = readdirSync(dir); }
   catch (e) {
     problems.push(`fabric: content/world/fabric cannot be listed: ${e.message}`);
-    return { byRegionId, countByFabricPath, problems };
+    return { byRegionId, countByFabricPath, roadsById, problems };
   }
   for (const file of entries.filter((f) => /^continent-\d+\.json$/.test(f)).sort()) {
     const rel = `content/world/fabric/${file}`;
@@ -93,10 +104,14 @@ export function loadFabricRegionIndex({ contentRoot }) {
     countByFabricPath.set(rel, doc.regions.length);
     for (const r of doc.regions) {
       if (byRegionId.has(r.id)) problems.push(`fabric: region "${r.id}" is declared twice`);
-      byRegionId.set(r.id, { continent: doc.continent, survey: r.survey, areaKm2: r.areaKm2 });
+      byRegionId.set(r.id, { ...r, continent: doc.continent });
+    }
+    for (const rd of doc.roads ?? []) {
+      if (roadsById.has(rd.id)) problems.push(`fabric: road "${rd.id}" is declared twice`);
+      roadsById.set(rd.id, { ...rd, continent: doc.continent });
     }
   }
-  return { byRegionId, countByFabricPath, problems };
+  return { byRegionId, countByFabricPath, roadsById, problems };
 }
 
 /** node id -> number of fabric regions it owns, via provenance.generator.fabric. */
