@@ -249,12 +249,12 @@ test("the extent is the ten-second crossing, 150-260 on both axes", () => {
 // is a STRONGER claim than the one it replaces: the town plan's frame is now
 // tied to the pin the whole civil layer places, not to a hand-authored basin.
 //
-// The join is by the record's own `plan` back-pointer rather than by id: the
-// plan file still says `"town": "millcross"` (the legacy slug), whose re-homing
-// is Plan E Task 11's, and pinned as still-outstanding by places.test.mjs's
-// "FAILS LOUDLY on the not-yet-rehomed legacy records". Joining on the
-// back-pointer means this test asserts the geometry it is named for without
-// silently depending on that re-homing having happened.
+// The join is by the record's own `plan` back-pointer rather than by id. That
+// was originally so this test did not depend on a re-homing that had not
+// happened; Plan E Task 14 has since re-homed the plan onto `c-town-millcross`
+// and cleared T1's orphan, and the back-pointer join is KEPT anyway because it
+// is the stronger of the two: it asserts the geometry from the resolved
+// world's own pointer at this file, which an id match would not.
 test("the anchor is Millcross's own `at` in the resolved world", () => {
   const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
   assert.deepEqual(problems, []);

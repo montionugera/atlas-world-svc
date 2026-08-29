@@ -318,7 +318,21 @@ test("gate joins: the real content root FAILS LOUDLY on the not-yet-rehomed lega
   // stated reason.
   assert.doesNotMatch(r.out, /^FAIL\s+zones\/zone-.*not in content\/world\/resolved#zones/m);
   assert.match(r.out, /bestiary\/placement-thornveil\.json: zone "thornveil" not in content\/world\/resolved#zones/);
-  assert.match(r.out, /towns\/town-millcross\.json: town "millcross" not in content\/world\/resolved#towns/);
+  // PLAN E TASK 14 re-homed town-millcross.json onto the pinned civil town id
+  // `c-town-millcross`, so the TOWN half of this pin is now the opposite claim
+  // too — and it is asserted against the WHOLE T1 message family, not against
+  // the old literal, because a re-homing that swapped one bad slug for another
+  // would leave a narrower assertion green. It is the same treatment the zone
+  // half got above, for the same reason.
+  //
+  // placement-thornveil.json is NOT re-homed with it, and the reason is
+  // measured rather than deferred: bestiary-placement.schema.json pins `zone`
+  // to ^[a-z0-9]+(-[a-z0-9]+)*$, which no `cNN/rNN` region id can match, so
+  // the re-homing needs a schema change; the only candidate region is c02/r30,
+  // whose join to the `thornveil` slug is Task 9's ALPHABETICAL pairing and
+  // carries no geographic claim; and G8 would then join routeBand [15,28] to
+  // that region's resolved levelBand of [8,20]. Task 15's, with a ruling.
+  assert.doesNotMatch(r.out, /towns\/town-millcross\.json: town ".*" not in content\/world\/resolved#towns/);
   // finish() ran — the summary is printed, nothing went dark.
   assert.match(r.out, /content-gate: .* failures/, r.out);
 });
