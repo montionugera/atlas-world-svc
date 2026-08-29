@@ -73,8 +73,8 @@
     "coveragePct": 1.4561233134285096,
     "unclaimedPct": 98.54387668657148,
     "computedComposition": {
-      "meadow": 77.60339376407629,
-      "built": 0.008145959460297126,
+      "meadow": 77.6045574725706,
+      "built": 0.006982250965968965,
       "river": 1.896930222947703,
       "ice": 0.5440965349091901,
       "rock": 0.21947145484224187,
@@ -92,7 +92,7 @@
       "vegetation": "12d9aa46e3f5b00a",
       "names": "fd81438c7c869f6d"
     },
-    "digest": "sha256:59f93964c0b0d278109a80ad5fbd446662c1bbba2bbfb4b69b04ef4ae2548aa5"
+    "digest": "sha256:2eb8007c7797e2929388ac73666689dedb3c288205184aa1992e884c693cd5d7"
   },
   "n-coldreach": {
     "areaParentUnits2": 11030.125,

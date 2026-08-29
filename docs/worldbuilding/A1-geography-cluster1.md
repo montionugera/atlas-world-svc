@@ -354,14 +354,16 @@ costume motifs are taken unchanged from `style.md` §3 (commitment C7) — they 
 
 **Millcross.** A town with no wall and no plan, built along both banks of a river crossing and
 spilling a quarter-mile up each road out of it. The silhouette is horizontal and low: one tall
-thing, the mill-wheel housing over the race, and everything else a single storey of grey plank and
-patched canvas. Material is scavenged — cart-boards, sail-cloth, roped tarpaulin — and the palette is
+thing, the mill-wheel housing over the race, and everything else a single storey, solidly built —
+timber frames on stone footings, plastered walls, steep shingled roofs, real chimneys. Material is
+local — mill timber, river stone, split shingle — and the palette is
 ash-grey, rope-brown and tallow-yellow, the colour of unpainted wood and cheap light. **First thing
 a traveller sees: the cart queue.** It starts before the town does, sometimes a mile out, because
 one crossing serves an entire land. Millcross lives on the ford — tolls it refuses to formalise,
 stabling, ferrying at high water, and feeding whoever is waiting. After the war it is the only town
-that grew: the refugee camps on the east bank never came down, and the tents have grown plank walls
-and doorframes. Its emblem, crossed roads over an empty bowl, is chalked on tarpaulins, not carved.
+that grew: the refugee camps that once ringed the east bank came down when the timber rows went up,
+and the displaced still arrive — those on the road camp under canvas at the crossroads and move on.
+Its emblem, crossed roads over an empty bowl, is chalked on awnings, not carved.
 
 **Embervale.** A hill town on the west rim, stacked up the terraced ledges — six or seven of them — above its own
 fields, so the silhouette is a stair of slate roofs with smoke standing off each ledge. Material is
@@ -502,14 +504,13 @@ hard edge along the top — the map does not pretend to know what is past the ic
 2026-08-15 (F-043, DR-006 option 3).** This brief describes the basin survey and is unchanged —
 the hard edge stays; the wider chart is a separate artifact, the atlas sheet (`A2-wider-world.md`).
 
-**A1-ART-02 · Millcross.** A sprawling, wall-less crossing town on both banks of a grey river,
+**A1-ART-02 · Millcross.** A small, wall-less crossing town on both banks of a grey river,
 viewed from the road at cart height, late afternoon. One mill-wheel housing is the only structure
-above one storey; everything else is single-height grey plank, patched canvas and roped tarpaulin,
-laid out with no plan along the roads. A queue of loaded carts and led animals stretches from the
-foreground toward the ford, longer than the town is wide. Palette ash-grey, rope-brown, tallow-yellow,
-with chalked crossed-roads-over-an-empty-bowl marks on tarpaulins. In the middle distance, former
-refugee tents that have grown plank walls and real doorframes — the seams between canvas and timber
-clearly visible.
+above one storey; everything else is a single storey, solidly built — timber frames on stone
+footings, plastered walls, steep shingled roofs — strung with no plan along the roads. A queue of
+loaded carts and led animals stretches from the foreground toward the ford, longer than the town is
+wide. Palette ash-grey, rope-brown, tallow-yellow, with chalked crossed-roads-over-an-empty-bowl
+marks on the leading awnings.
 
 **A1-ART-03 · Embervale.** A terraced hill town of six stacked ledges seen from the fields below at
 dusk, each ledge a row of slate roofs above a retaining wall of black clinker. Forty low, level

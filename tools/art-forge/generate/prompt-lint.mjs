@@ -50,7 +50,7 @@ export const RULE_ASSERTION_MISSING = "R4-assertion-missing";
  * brief asked for "a sprawling ... town" whose shelters were "sprawled at
  * every angle" with no statement that the settlement ever ENDS, and every
  * render tiled shanties to the horizon — while the ground truth
- * (content/towns/town-millcross.json) is a few dozen placed footprints in a
+ * (content/towns/town-millcross.json) is a dozen placed footprints in a
  * 220x160 extent. A diffusion model has no prior for "a small town"; an
  * unbounded scale word is an instruction to keep going.
  *

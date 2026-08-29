@@ -150,7 +150,6 @@ export const PALETTE = Object.freeze({
   roadCart: "#efe3c2",
   roadFoot: "#e6d9b6",
   footprintEdge: "#53331d",
-  tentEdge: "#8c7a53",
   ink: "#2f2a22",
   inkSoft: "#6b6152",
   gold: "#d99b1c",
@@ -158,9 +157,8 @@ export const PALETTE = Object.freeze({
 });
 
 /**
- * Footprint fills by `kind`. The plank-and-tent quarter is canvas rather than
- * roof tile, which is the one place a `kind` earns its own tone: A1 §6 makes the
- * east bank's tents a different KIND of settlement, not a different building.
+ * Footprint fills by `kind`. Most kinds share one family of earth tones; the
+ * mill earns its own darker tone as the town's single tall mass (A1 §6).
  */
 export const KIND_FILL = Object.freeze({
   mill: "#a9603a",
@@ -169,7 +167,6 @@ export const KIND_FILL = Object.freeze({
   stable: "#ab7048",
   shrine: "#b98a63",
   gate: "#9c7a55",
-  tent: "#ded0ae",
   ruin: "#9d968a",
 });
 
@@ -217,7 +214,7 @@ function u(n) {
 
 /**
  * Relative luminance of a #rrggbb colour, 0..1. Picks label ink: dark text on a
- * pale tent, pale text on a dark mill. Computed rather than hard-coded per kind
+ * pale mass, pale text on a dark mill. Computed rather than hard-coded per kind
  * so adding a kind to KIND_FILL cannot produce an unreadable label.
  */
 export function luminance(hex) {
@@ -632,10 +629,9 @@ function ringCandidates(l, lines) {
  * offsets at each — above the road, ON it, and below.
  *
  * The on-centreline offset matters more than it looks. Roads are not obstacles
- * (a label on pale road surface is perfectly readable) and on the east bank the
- * lanes are the ONLY clear corridors left between rows of tents, so without it
- * `tent-lane-north · 6u` has nowhere to go but across a building — which is
- * where it went.
+ * (a label on pale road surface is perfectly readable), and on the east bank a
+ * lane can be the only clear corridor between buildings — without it a label
+ * has nowhere to go but across one, which is where it went.
  */
 function roadCandidates(road, lines) {
   const { h } = blockMetrics(lines);
@@ -791,10 +787,9 @@ function drawFootprints(plan) {
   const fps = plan.footprints ?? [];
   const casings = fps.map((f) => {
     const multi = (f.storeys ?? 1) >= 2;
-    const edge = f.kind === "tent" && !multi ? PALETTE.tentEdge : PALETTE.footprintEdge;
     return rect(
       outset(normalizeRect(f.rect), multi ? RECT_CASING_HEAVY : RECT_CASING),
-      edge,
+      PALETTE.footprintEdge,
       'class="footprint-casing"',
     );
   });
@@ -987,7 +982,6 @@ function drawLegend(plan) {
     ],
     [
       [boxSwatch(KIND_FILL.dwelling, PALETTE.footprintEdge), "dwelling / store / stable"],
-      [boxSwatch(KIND_FILL.tent, PALETTE.tentEdge), "plank-and-tent quarter"],
       [boxSwatch(MULTI_STOREY_FILL, PALETTE.footprintEdge), "2 storeys — the mill-house"],
       [(x, y) => `<circle cx="${u(x + 2.5)}" cy="${u(y + 2)}" r="${u(2)}" fill="${PALETTE.ink}"/>`, "landmark"],
       [(x, y) => `<path d="${starPath(x + 2.5, y + 2, 2.8)}" fill="${PALETTE.gold}"/>`, "first sight"],

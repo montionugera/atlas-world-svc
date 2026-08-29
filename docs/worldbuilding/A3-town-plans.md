@@ -313,7 +313,7 @@ gameConfig.ts:14:  worldHeight: 1000,
 | `footprints[].rect` shorter side | **≥ 6** | a building narrower than a mob is standing next to reads as a prop, not a mass. |
 
 Millcross sits **above** every floor, deliberately: cart roads at **14, 14, 12, 12**; foot roads at
-**6, 6, 6**; extent **220 × 160**.
+**6, 6**; extent **220 × 160**.
 
 ### 1.3 The counter-intuitive fact, stated plainly
 
@@ -347,10 +347,10 @@ forces in `content/towns/town-millcross.json`.
 | A1 §6, verbatim | what it forces in the plan |
 | --- | --- |
 | "A town with no wall and no plan, built along both banks of a river crossing and spilling a quarter-mile up each road out of it." | **No wall, no gate footprint, no bounded core.** `footprints[].kind` never takes a wall or gate value in this file. Buildings are strung **along the roads out of the crossing** (ribbon sprawl) rather than packed round a centre, and both banks carry building. |
-| "The silhouette is horizontal and low: one tall thing, the mill-wheel housing over the race, and everything else a single storey of grey plank and patched canvas." | **Exactly one `storeys: 2` mass** — `mill-house` — and it sits **at the race**. All 16 other footprints are `storeys: 1`. A second two-storey building anywhere in the file contradicts canon. |
+| "The silhouette is horizontal and low: one tall thing, the mill-wheel housing over the race, and everything else a single storey, solidly built — timber frames on stone footings, plastered walls, steep shingled roofs, real chimneys." *(amended 2026-08-29 with the materials upgrade and tent removal)* | **Exactly one `storeys: 2` mass** — `mill-house` — and it sits **at the race**. All 10 other footprints are `storeys: 1`. A second two-storey building anywhere in the file contradicts canon. |
 | "**First thing a traveller sees: the cart queue.** It starts before the town does, sometimes a mile out, because one crossing serves an entire land." | `landmarks[].firstSight: true` belongs to **`cart-queue`** and nothing else, and it is placed **out along the trunk road, west of the town proper** — "before the town does". |
 | "Millcross lives on the ford — tolls it refuses to formalise, stabling, ferrying at high water, and feeding whoever is waiting." | Four of the trades appear as buildings: **`ford-stable`** (stabling), **`ferry-shed`** (ferrying), **`victual-shed`** (feeding whoever is waiting). Tolls have no building by design — canon says they are *refused formalisation*, so a toll-house would contradict it. |
-| "After the war it is the only town that grew: the refugee camps on the east bank never came down, and the tents have grown plank walls and doorframes." | A **plank-and-tent quarter on the east bank**: `tent-row-a` … `tent-row-f`, `kind: "tent"`, all east of the river, on their own foot lanes. |
+| "After the war it is the only town that grew: the refugee camps that once ringed the east bank came down when the timber rows went up, and the displaced still arrive — those on the road camp under canvas at the crossroads and move on." *(amended 2026-08-29, owner decision: the permanent tent quarter is removed from town truth; refugees' tents are a temporary road-side state, not a built quarter)* | **No tent rows.** `footprints[].kind` never takes `tent` — the value was removed from the schema enum and the renderer map in the same commit. The quarter's former foot lanes are gone with it; temporary camps in the story (`quests.json`, the Quartermaster's act) are canvas on the road, outside the built plan. |
 | A1 §3.1, verbatim: "Gravel-bedded, fordable in a dozen places on foot, in **exactly one** by cart — that place is Millcross" | **One** cart crossing. The three canon cart roads meet at a single point, `the-ford` at `[110, 80]`, and no other road crosses the water. |
 
 The geography file supplies the rest of the frame, also verbatim: `towns[millcross].at = [86,118]`
@@ -382,8 +382,6 @@ Three classes are used:
 | `river-road-south` — `roads[2]` | **CANON-ID** | as above | in-town `points`; `width: 12`; that it runs south-east |
 | `mill-lane` — `roads[3]` | INVENTED | — | everything: the id, that a cart lane serves the mill at all, `width: 12`, its route |
 | `bank-lane` — `roads[4]` | INVENTED | — | everything: id, `kind: "foot"`, `width: 6`, route along the east bank |
-| `tent-lane-north` — `roads[5]` | INVENTED | — | everything (the *quarter* is canon; a named lane through it is not) |
-| `tent-lane-south` — `roads[6]` | INVENTED | — | everything, as above |
 | `mill-house` — `footprints[0]` | CANON-THING | A1 §6: "one tall thing, the mill-wheel housing over the race, and everything else a single storey" | id string; `rect`; `kind: "mill"`; `entranceOn: "mill-lane"`. **`storeys: 2` is canon-forced; its being the only one is canon-forced.** |
 | `victual-shed` — `footprints[1]` | CANON-THING | A1 §6: "feeding whoever is waiting" | id string; `rect`; `kind: "store"`; that it fronts the trunk road |
 | `ford-stable` — `footprints[2]` | CANON-THING | A1 §6: "stabling" | id string; `rect`; `kind: "stable"`; siting west of the cart yard |
@@ -391,16 +389,10 @@ Three classes are used:
 | `west-row-b` — `footprints[4]` | INVENTED | *(pattern only, as above)* | as above |
 | `ford-store` — `footprints[5]` | INVENTED | — | everything: id, `rect`, `kind: "store"`, east-bank siting |
 | `ferry-shed` — `footprints[6]` | CANON-THING | A1 §6: "ferrying at high water" | id string; `rect`; `kind: "store"`; that it sits on the east bank |
-| `tent-row-a` — `footprints[7]` | CANON-THING | A1 §6: "the refugee camps on the east bank never came down, and the tents have grown plank walls and doorframes" | id string; `rect`; **that there are six of them** |
-| `tent-row-b` — `footprints[8]` | CANON-THING | as above | as above |
-| `tent-row-c` — `footprints[9]` | CANON-THING | as above | as above |
-| `tent-row-d` — `footprints[10]` | CANON-THING | as above | as above |
-| `tent-row-e` — `footprints[11]` | CANON-THING | as above | as above |
-| `tent-row-f` — `footprints[12]` | CANON-THING | as above | as above |
-| `terrace-row-a` — `footprints[13]` | INVENTED | *(pattern only: "spilling a quarter-mile up each road out of it")* | the dwelling itself, id, `rect`, siting on the terrace road |
-| `terrace-row-b` — `footprints[14]` | INVENTED | *(pattern only, as above)* | as above |
-| `terrace-row-c` — `footprints[15]` | INVENTED | *(pattern only, as above)* | as above |
-| `terrace-row-d` — `footprints[16]` | INVENTED | *(pattern only, as above)* | as above |
+| `terrace-row-a` — `footprints[7]` | INVENTED | *(pattern only: "spilling a quarter-mile up each road out of it")* | the dwelling itself, id, `rect`, siting on the terrace road |
+| `terrace-row-b` — `footprints[8]` | INVENTED | *(pattern only, as above)* | as above |
+| `terrace-row-c` — `footprints[9]` | INVENTED | *(pattern only, as above)* | as above |
+| `terrace-row-d` — `footprints[10]` | INVENTED | *(pattern only, as above)* | as above |
 | `cart-yard` — `plazas[0]` | CANON-THING | A1 §6: "It starts before the town does, sometimes a mile out, because one crossing serves an entire land." — the queue is canon; **the yard it stands in is design §6's derivation, not a canon noun** | id string; `rect`; the `why` sentence; siting west of the ford |
 | `cart-queue` — `landmarks[0]` | CANON-THING | A1 §6: "**First thing a traveller sees: the cart queue.**" | id string; `at: [24, 88]`. `firstSight: true` is canon-forced. |
 | `the-ford` — `landmarks[1]` | CANON-THING | `cluster1-geography.json` `river.ford.label: "the ford"`; A1 §3.1 "in **exactly one** by cart — that place is Millcross" | id string `the-ford`; `at: [110, 80]` in local space |
@@ -421,13 +413,13 @@ of the file is authored, and this is the honest half of the table:
 | `extent` | `220 × 160` | **INVENTED**, inside design §3's 150–260 band and D1's "~200 across" |
 | `anchor.geographyAt` | `[86, 118]` | **CANON** — copied from `towns[millcross].at` |
 | `water[].poly` | 2 polygons, **8 vertices** total | INVENTED |
-| `roads[].points` | 7 polylines, **21 vertices** total | INVENTED |
-| `roads[].width` | cart `14, 14, 12, 12` · foot `6, 6, 6` | INVENTED — the **floors** (12 / 4) are design §3; every value above them is chosen |
-| `roads[].kind` | 4 `cart`, 3 `foot` | INVENTED (the enum is schema; the assignment is authored) |
-| `footprints[].rect` | **17** rects | INVENTED |
-| `footprints[].kind` | `mill`, `store`, `stable`, `dwelling`, `tent` in use | mostly INVENTED; `mill` and `tent` are canon-forced by §2 |
-| `footprints[].storeys` | `2` on `mill-house`; `1` on the other **16** | **canon-forced values, authored fields** — A1 §6 says "everything else a single storey"; writing the number down is authoring |
-| `footprints[].entranceOn` | 17 assignments across 6 roads | INVENTED |
+| `roads[].points` | 5 polylines, **17 vertices** total | INVENTED |
+| `roads[].width` | cart `14, 14, 12, 12` · foot `6, 6` | INVENTED — the **floors** (12 / 4) are design §3; every value above them is chosen |
+| `roads[].kind` | 4 `cart`, 2 `foot` | INVENTED (the enum is schema; the assignment is authored) |
+| `footprints[].rect` | **11** rects | INVENTED |
+| `footprints[].kind` | `mill`, `store`, `stable`, `dwelling` in use | mostly INVENTED; `mill` is canon-forced by §2; `tent` was removed from the schema enum and this plan with the quarter (owner decision 2026-08-29) |
+| `footprints[].storeys` | `2` on `mill-house`; `1` on the other **10** | **canon-forced values, authored fields** — A1 §6 says "everything else a single storey"; writing the number down is authoring |
+| `footprints[].entranceOn` | 11 assignments across 5 roads | INVENTED |
 | `plazas[].rect` + `why` | 1 rect, 1 sentence | INVENTED |
 | `landmarks[].at` | 3 points | INVENTED |
 | `landmarks[].firstSight` | 1 (`cart-queue`) | **canon-forced** — A1 §6 names the cart queue |
@@ -522,8 +514,8 @@ localRun dx=2 dy=22
 ```
 
 The three canon cart roads therefore converge on the ford from **west** (`trade-road-trunk`),
-**north-east** (`terrace-track`) and **south-east** (`river-road-south`), and the plank-and-tent
-quarter sits east of the water.
+**north-east** (`terrace-track`) and **south-east** (`river-road-south`), and the east bank carries
+the ford-store and ferry-shed below the terrace road.
 
 ---
 
