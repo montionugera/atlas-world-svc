@@ -700,5 +700,11 @@
     "title": "world-d fixture budgets.json has drifted from the real budgets.json",
     "created_at": "2026-08-29T09:19:16.883763+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-118",
+    "title": "basin-sheet.mjs and resolveWorld are permanently dead production code",
+    "created_at": "2026-08-29T09:19:17.435512+00:00",
+    "promoted_to": null
   }
 ]
