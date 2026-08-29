@@ -129,7 +129,7 @@ export function censusAbsenceTrap({ contentRoot, files = null }) {
         if (!isMarker) continue;
         recordTier1++;
         sentencesTier1++;
-        const isScoped = isMarker && SCOPE_RE.test(sentence);
+        const isScoped = SCOPE_RE.test(sentence); // isMarker is already true here (see `continue` above)
         if (isScoped) {
           recordTier2++;
           sentencesTier2++;

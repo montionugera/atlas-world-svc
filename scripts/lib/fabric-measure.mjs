@@ -144,10 +144,9 @@ export function measureOverWholeFabric({ contentRoot, measure, population }) {
   const { regions, problems } = regionsForPopulation({ population, index });
   const allProblems = [...index.problems, ...problems];
 
-  const measureFn = typeof measure === "function"
-    ? measure
-    : (region) => safeGet(region, measure);
-  const measureLabel = typeof measure === "function" ? "<function>" : measure;
+  const isMeasureFn = typeof measure === "function";
+  const measureFn = isMeasureFn ? measure : (region) => safeGet(region, measure);
+  const measureLabel = isMeasureFn ? "<function>" : measure;
 
   const resolved = regions.map((r) => ({ region: r.id, value: measureFn(r) }));
   const ranked = resolved
