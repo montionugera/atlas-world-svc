@@ -346,7 +346,10 @@ test("deleting the town-edge assertion from a brief fails the lint, not the rend
   const brief = JSON.parse(
     fs.readFileSync(path.join(FORGE_DIR, "briefs", "A1-ART-02.json"), "utf8"),
   );
-  const edged = brief.prompt.replace(/The last shelter[^.]*\.\s*/, "");
+  // Strip the SENTENCE CARRYING the assertion phrase, not a prose-styled
+  // opener: brief wording changes ("the last shelter" → "the last house")
+  // must not silently hollow out this fixture.
+  const edged = brief.prompt.replace(/[^.]*beyond the town edge[^.]*\.\s*/, "");
   assert.throws(
     () =>
       buildEnvPositive(edged, forge, {
