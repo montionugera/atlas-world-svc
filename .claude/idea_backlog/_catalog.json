@@ -676,5 +676,11 @@
     "title": "Freeze reasons are never verified true and reasons is unguarded",
     "created_at": "2026-08-29T09:19:14.735675+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-114",
+    "title": "content zones spineId is unset on all 40 records",
+    "created_at": "2026-08-29T09:19:15.288657+00:00",
+    "promoted_to": null
   }
 ]
