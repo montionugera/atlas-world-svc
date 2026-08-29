@@ -712,5 +712,11 @@
     "title": "A4's name-register inheritance rule is unenforced in code",
     "created_at": "2026-08-29T09:19:17.974378+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-120",
+    "title": "c05 r12 is a second G-POI floor risk with no declaration",
+    "created_at": "2026-08-29T09:19:18.503205+00:00",
+    "promoted_to": null
   }
 ]
