@@ -255,6 +255,29 @@ jobs:
       - name: Asset storybook data-layer tests
         run: node --test tools/asset-storybook/tests/*.test.mjs
 
+      # System-level (non-npm) binaries: scripts/system-deps.json is the ONE
+      # declared source of truth (see its header) — this installs whatever it
+      # marks `required: true` for the current OS and re-verifies, rather
+      # than a hand-typed apt-get line CI would own separately from local
+      # dev's copy. Today that's ImageMagick (`magick`) for the art-forge
+      # suite below. `magick` was wired into CI for the first time in this
+      # PR, which is what exposed that it was never installed here —
+      # ENOENT'd as `spawnSync magick`. Ubuntu's `imagemagick` apt package is
+      # still ImageMagick 6 and does NOT ship the unified `magick` binary IM7
+      # introduced (verified against ubuntu:24.04 — apt-cache policy offers
+      # only imagemagick-6.q16* — see system-deps.json's note on this entry),
+      # so the script also installs scripts/ci/magick-shim.sh as
+      # /usr/local/bin/magick: a thin dispatcher that forwards to the IM6
+      # per-tool binaries (convert, identify, ...), reproducing IM7's own
+      # dispatch rule. rsvg-convert (librsvg) is declared in the same
+      # manifest but marked `required: false` and deliberately NOT installed
+      # here — tools/mapforge/tests/*.test.mjs self-skip without it, and
+      # installing it in CI was considered and REJECTED (world-fill-STATE.md):
+      # it turns a skip into a wall-clock perf assertion on a shared,
+      # contended runner, which is what produced a documented flaky red.
+      - name: Install system dependencies (scripts/system-deps.json)
+        run: node scripts/check-system-deps.mjs --install
+
       # Art forge (F-050): run-ledger, brief-hash, graph and gate unit suites.
       # Same Node 18 as above; the shell expands the glob (node:test accepts
       # explicit file paths). Without this step these tests only ran locally.

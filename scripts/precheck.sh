@@ -150,6 +150,16 @@ content_spine() { node "$REPO_ROOT/scripts/check_content.mjs" --only=spine; }
 # final-green — none of them ran repo-wide invariants.
 world_digest() { node "$REPO_ROOT/scripts/check_world_digest.mjs" --check; }
 
+# scripts/system-deps.json is the declared source of truth for system-level
+# (non-npm) binaries this repo shells out to (magick, rsvg-convert, ...).
+# Check-only here (no --install) — Gate 1 runs on a developer's own machine,
+# which CI's apt-get/shim approach has no business touching. A missing
+# REQUIRED binary (currently: magick, needed by art_forge_tests below) fails
+# with the install command for the developer's OS; an absent OPTIONAL one
+# (rsvg-convert) is reported but never fails the gate, matching the tests'
+# own self-skip behavior.
+system_deps_check() { node "$REPO_ROOT/scripts/check-system-deps.mjs"; }
+
 art_forge_tests() {
   ( cd "$REPO_ROOT/tools/art-forge" && node --test tests/*.test.mjs )
 }
@@ -170,6 +180,7 @@ run_section "server: prettier format"       server_format
 run_section "nakama: tsc --noEmit"          nakama_typecheck
 run_section "nakama: jest suite"            nakama_tests
 run_section "client: react-client suite"    client_tests
+run_section "system deps: binary check (scripts/system-deps.json)" system_deps_check
 run_section "art-forge: node --test suite"  art_forge_tests
 run_section "asset-storybook: node --test suite" storybook_tests
 run_section "combat-lab: model gates"       combat_lab
