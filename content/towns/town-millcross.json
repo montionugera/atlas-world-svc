@@ -1,8 +1,8 @@
 {
-  "town": "millcross",
+  "town": "c-town-millcross",
   "spineId": "n-millcross",
   "extent": { "width": 220, "height": 160 },
-  "anchor": { "geographyAt": [17.2, 23.6] },
+  "anchor": { "geographyAt": [98.2, 152.6] },
   "water": [
     {
       "id": "the-meltwash",

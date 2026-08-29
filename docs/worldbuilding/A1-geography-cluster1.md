@@ -41,12 +41,10 @@ That single sentence is doing all the work in this document, so it is worth nami
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **V8 — Gildmark is the coast's only deepwater port**                                   | A river draining a whole basin builds a bar across its own bay. The coast is mudflat and shifting sand for its entire length; **Gildmark Head is the one place the sea floor drops away next to standing rock.**                            |
 | **Millcross is the hub every road passes through** (`canon.md` §4)                     | The Meltwash splits the land in half. There is exactly **one crossing a loaded cart can take**, and Millcross is the mill and the cross at that crossing — its own name says so.                                                            |
-| **Millcross → Gildmark is 4–5 days, but Embervale → Gildmark is ~3** (`canon.md` §4)   | The Saltmire blocks the straight western line out of Millcross. The trade road must swing **north-west around the mire's head**, through Embervale, before it can turn for the coast (§5.2).                                                |
-| **Rooktide is inland, ~2 days south, "off the war road entirely"** (`canon.md` §4)     | Rooktide sits at the **head of tide** — the furthest point upriver the sea reaches. Barge traffic transfers there and nothing military has a reason to. Its emblem is already "a rook in flight over a rising tideline" (`style.md` §3).    |
-| **Ashvale Front is lethal, and neither town claims it** (`canon.md` §4)                | The plain is a **dry alkali flat with no water on it**. Nobody can garrison ground that cannot drink; both towns can reach it in a day; there is no cover for that whole day (§4.2, zone 8).                                                |
+| **Millcross → Gildmark is 2.5 h, and Embervale → Gildmark is 1.5 h** (`canon.md` §4)   | The Saltmire blocks the straight western line out of Millcross. The trade road must swing **north-west around the mire's head**, through Embervale, before it can turn for the coast (§5.2).                                                |
+| **Rooktide is inland, 1 h south, "off the war road entirely"** (`canon.md` §4)     | Rooktide sits at the **head of tide** — the furthest point upriver the sea reaches. Barge traffic transfers there and nothing military has a reason to. Its emblem is already "a rook in flight over a rising tideline" (`style.md` §3).    |
+| **Ashvale Front is lethal, and neither town claims it** (`canon.md` §4)                | The plain is a **dry alkali flat with no water on it**. Nobody can garrison ground that cannot drink; both towns can reach it in under an hour; there is no cover anywhere on it (§4.2, zone 8).                                                |
 | **Embervale is both a farm town and a mining town** (contradiction **X1**, unresolved) | The west rim is where hill loam meets a shallow **burning-stone seam**. A town there farms _and_ digs, which is exactly why two sources describe it differently. **Proposed** resolution, routed to the Archivist (§8) — not asserted here. |
-
-**AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.** (rows "Millcross → Gildmark is 4–5 days..." and "Rooktide is inland, ~2 days south..." above restate the pre-F-045 day-count figures.)
 
 <div class="callout danger">
 <strong>The veto standard I am holding myself to.</strong> A settlement exists because of water, a
@@ -119,11 +117,10 @@ Reported, per the Archivist's method — **not resolved here**.
   satisfying both sources to within the precision either one actually claims. This is a geometric
   accommodation, not a ruling. Routed to the Archivist.
 - **X8 — where the Stoneguard are.** They are placed on the Northern Icefield (`factions.json`, an
-  oath-tablet "half-buried in the shelf ice") _and_ at Cindervast's dead gate (`canon.md`). The basin
+  oath-tablet "half-buried in the shelf ice") _and_ at the dead gate of Cindervast (`canon.md`). The basin
   makes both true without either moving: **the icefield's southern lip and Cindervast's upland
-  shoulder are the same high ground**, a day's walk apart along the shelf. A guard company holding a
+  shoulder are the same high ground**, close together along the shelf. A guard company holding a
   gate on the ruin's north side is standing on the ice. Routed to the Archivist as an accommodation.
-  **AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.**
 
 ---
 
@@ -191,15 +188,15 @@ creatures and work in it — including the ones with a gate and a bell tower.
 
 | #      | Zone                  | Terrain                                                      | Band                        | Town       | Why it exists geographically                                                                                                   |
 | ------ | --------------------- | ------------------------------------------------------------ | --------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **1**  | **Meltwash Terrace**  | River terrace: cropped grass, gravel bars, willow scrub      | **1–10**                    | — (camp)   | The only drained flat ground within a morning's walk of the ford. Stock, tents and anyone waiting for the crossing go here     |
+| **1**  | **Meltwash Terrace**  | River terrace: cropped grass, the gravel bars, willow scrub  | **1–10**                    | — (camp)   | The only drained flat ground within a morning's walk of the ford. Stock, tents and anyone waiting for the crossing go here     |
 | **2**  | **Millcross Ford**    | Mill-race, cart-ramp, mud, refugee sprawl on both banks      | **1–15**                    | Millcross  | The one place a loaded cart crosses the Meltwash, and the fork where the north road splits                                     |
 | **3**  | **Rooktide Reach**    | Tidal river, reed flats, stepped terraces, barge landings    | **10–20**                   | Rooktide   | The head of tide. Sea barges can come this far and no further; cargo changes hulls or it does not move                         |
 | **4**  | **Thornveil**         | Stony bramble upland, dense sightlines, no through-track     | **15–28**                   | —          | The interfluve between the river and the eastern hills — the ground every road went **around**, so it stayed nobody's          |
-| **5**  | **Emberdown**         | Hill loam, terraced fields, adits into a burning-stone seam  | **25–35**                   | Embervale  | Where farmable loam sits directly on shallow fuel — and where the trade road meets the coastal spur                            |
+| **5**  | **Emberdown**         | Hill loam, terraced fields, the adits into a burning-stone seam | **25–35**                | Embervale  | Where farmable loam sits directly on shallow fuel — and where the trade road meets the coastal spur                            |
 | **6**  | **Gildmark Head**     | Rock headland, deep berth, harbour terraces, the mire's bar  | **30–45**                   | Gildmark   | The single point on a silted coast where standing rock meets water deep enough for a sea keel                                  |
-| **7**  | **Hollowmarch**       | Old timber running up to ore heads; palisade line at the rim | **35–48**                   | Norhollow  | The flat's east edge, where the timber line and the ore both start                                                             |
-| **8**  | **Ashvale Front**     | Level alkali flat, no water, no cover, grave rows            | **10–80 · gradient (§4.3)** | —          | The only ground both towns reach in a day and neither can hold: nothing to drink, nothing to hide behind, easy to dig          |
-| **9**  | **Northern Icefield** | Old ice over stone, meltwater braids, crevasse shelf         | **55–70**                   | —          | The basin's water tower — every river in cluster 1 starts under this shelf; the Stoneguard's oath-gate is in its south lip     |
+| **7**  | **Hollowmarch**       | Old timber running up to ore heads; the palisade line at the rim | **35–48**                   | Norhollow  | The flat's east edge, where the timber line and the ore both start                                                             |
+| **8**  | **Ashvale Front**     | Level alkali flat, no water, no cover, the grave rows        | **10–80 · gradient (§4.3)** | —          | The only ground both towns reach in under an hour and neither can hold: nothing to drink, nothing to hide behind, easy to dig, scored by the abandoned cut lines neither side ever filled back in |
+| **9**  | **Northern Icefield** | Old ice over stone, meltwater braids, the crevasse shelf     | **55–70**                   | —          | The basin's water tower — every river in cluster 1 starts under this shelf; the Stoneguard hold the oath-gate in its south lip |
 | **10** | **Cindervast**        | Burnt city on an upland shoulder, ash streets, standing rock | **65–80**                   | — (pop. 0) | The land's other defensible rock, sitting on the only pass out of the basin to the north — which is what made it worth killing |
 
 ### 4.3 The Ashvale Front is not a band — it is a gradient, and the bestiary already says so
@@ -267,31 +264,29 @@ sea-lane's far end is charted to the port of Tallowquay on Coldreach (`A2-wider-
 
 ### 5.1 The reconciliation canon's numbers actually force
 
-Canon states four distances in days (`canon.md` §4). The reconciliation is a **road pace**, and once
-that is fixed everything else is arithmetic rather than assertion.
+Canon states six distances in hours (`canon.md` §4, post-F-045). The reconciliation is a **road
+pace**, and once that is fixed everything else is arithmetic rather than assertion.
 
-**Pace: ~30 km per travel-day.** This is deliberately slow — laden carts and bell-riders make roughly
+**Pace: 11 km/h.** This is deliberately slow — laden carts and bell-riders make roughly
 the same time here, which is precisely what `canon.md` §4 asserts when it says the sealed
 proclamation "travels by bell-rider or message-bird along the trade roads, **at the same pace as any
 other road traffic**." A road where a courier cannot beat a cart by much is a bad road: fords,
 mud, mire edge, tolls, and no relay stables outside the Broker's own (which is the entire point of
 his edge).
 
-| Leg                                | Canon               | Road km  | Straight-line km | Why the road is longer                                           |
-| ---------------------------------- | ------------------- | -------- | ---------------- | ---------------------------------------------------------------- |
-| Embervale ↔ Norhollow              | ~1 day's ride       | **~30**  | ~30              | Straight across the flat — the road _is_ the straight line       |
-| Millcross ↔ Rooktide               | ~2 days             | **~60**  | ~55              | Follows the river's south bank                                   |
-| Millcross ↔ Embervale              | (unstated) 2 days   | **~55**  | ~50              | North-west off the ford, around the mire's head                  |
-| **Embervale ↔ Gildmark**           | **~3 days** (spur)  | **~85**  | ~75              | The coastal spur; already past the mire when it starts           |
-| **Millcross ↔ Gildmark**           | **4–5 days** (road) | **~140** | ~85              | **1.6× the straight line** — the Saltmire blocks the direct west |
-| Norhollow ↔ Gildmark               | ~3 days             | **~95**  | ~85              | East-rim track joins the spur near Emberdown                     |
-| Cindervast ↔ Rooktide (whole land) | "under a week"      | **~190** | ~170             | Six days end to end ✔ (A0 §5.1 item 5)                           |
-
-**AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.** (the "~30 km per travel-day" pace and the whole reconciliation table above are the pre-F-045 day-count model; the rescaled world runs at 11 km/h and the road-km column is ÷5.)
+| Leg                                | Canon        | Road km  | Straight-line km | Why the road is longer                                           |
+| ---------------------------------- | ------------ | -------- | ---------------- | ---------------------------------------------------------------- |
+| Embervale ↔ Norhollow              | 0.5 h        | **6**    | 7.1               | Straight across the flat — the road _is_ the straight line       |
+| Millcross ↔ Rooktide               | 1 h          | **12**   | 10.9              | Follows the river's south bank                                   |
+| Millcross ↔ Embervale              | 1 h          | **11**   | 9.7               | North-west off the ford, around the mire's head                  |
+| **Embervale ↔ Gildmark**           | **1.5 h** (spur) | **17** | 14.1            | The coastal spur; already past the mire when it starts           |
+| **Millcross ↔ Gildmark**           | **2.5 h** (road) | **28** | 17                | **1.6× the straight line** — the Saltmire blocks the direct west |
+| Norhollow ↔ Gildmark               | 1.5 h        | **19**   | 18.6              | East-rim track joins the spur near Emberdown                     |
+| Cindervast ↔ Rooktide (whole land) | 3.5 h        | **38**   | 34                | The longest committed leg (A0 §5.1 item 5)                       |
 
 <div class="callout success">
-<strong>Nothing in canon had to move.</strong> Millcross → Gildmark at 4–5 days and Embervale →
-Gildmark at 3 days look inconsistent for a land where "every road passes through or near Millcross"
+<strong>Nothing in canon had to move.</strong> Millcross → Gildmark at 2.5 h and Embervale →
+Gildmark at 1.5 h look inconsistent for a land where "every road passes through or near Millcross"
 — the hub appears to be <em>further</em> from the port than a town on its own spur. The Saltmire
 explains it exactly: the hub sits on the wrong side of an impassable basin, and canon already calls
 Embervale's route a <strong>spur</strong> — a side road, not the trunk. Millcross keeps the hub role
@@ -299,24 +294,28 @@ because it owns the crossing everything else must use; it simply does not own th
 the sea. That single fact is also the Broker's leverage, expressed as terrain.
 </div>
 
-### 5.2 The bell relay, given a tower count
+### 5.2 The bell relay, given no towers to count
 
-A0 §5.3 flags that the relay chain "reaching six towns in hours" would need a tower count, a
-maintenance cost and an owner if the world grew. At cluster-1 scale it now has one:
+A0 §5.3 flagged that a relay chain "reaching six towns in hours" would need a tower count, a
+maintenance cost and an owner if the world grew — and the redraw answered that question by removing
+the towers rather than counting them: the drawn world carries **zero tower nodes** (down from an
+earlier 27-tower chain). `canon.md` §4 now routes the fast signal through **each town's own bell**,
+relayed to the next town along the road, which needs no standing infrastructure between towns at all.
 
-- **~190 km of ridge-line and road**, with towers sited for line of sight at **8–10 km** spacing →
-  **21–24 relay towers**, plus one tower in each of the six towns.
-- A code passed hand to hand at a few minutes per relay crosses the land in **1.5–3 hours**. ✔
-  matches `canon.md` §4's "within hours."
-- The sealed detail behind it moves at road pace: **1 to 5 days** depending on the leg. ✔ The
-  hours-versus-days gap survives intact, and now has a measurable width per leg — **the gap is
-  widest on the Millcross–Gildmark trunk (hours vs 4–5 days)**, which is exactly the road the Broker
-  controls through Gildmark's trade contracts.
-- **The far-mirrors** need line of sight and elevation, so they follow the same ridgelines as the
-  relay chain — a **parallel private line on public towers' ground**, which is a sharper description
-  of Gildmark's monopoly than "they have mirrors."
-
-**AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.** (the "~190 km of ridge-line", "8–10 km" tower spacing and "1 to 5 days" road-pace figures above are the pre-F-045 absolute-km/day-count model.)
+- The longest committed leg is Cindervast–Rooktide at **3.5 h** (§5.1's table), so a code passed town
+  to town along the roads crosses the whole cluster in **at most 3.5 h** end to end. ✔ matches
+  `canon.md` §4's "within hours."
+- The sealed detail behind it moves at the same road pace: **0.5 h to 3.5 h** depending on the leg —
+  the same numbers, because the fast signal and the slow detail now travel the same roads. `canon.md`
+  §4's exploit is therefore a gap in DETAIL (a bell's bare category vs. a bell-rider's full
+  proclamation), not a gap in raw speed the way the old hours-versus-days framing had it, back when
+  towers made the fast signal near-instant; **the widest gap in raw travel time is the
+  Cindervast–Rooktide leg (3.5 h)**, and the widest gap on a road the Broker actually controls is the
+  Millcross–Gildmark trunk (2.5 h) through Gildmark's trade contracts.
+- **The far-mirrors** still need line of sight and elevation, so they still follow the same
+  ridgelines the trade roads climb — a **private line on public road ground**, which is a sharper
+  description of Gildmark's monopoly than "they have mirrors." They do not need the retired towers to
+  make that claim.
 
 ### 5.3 Game distance versus fiction distance — stated, not discovered
 
@@ -326,16 +325,14 @@ Measured: a player moves **20 world units/s** (`Player.ts:23`). The Systems Desi
 gives **~1.8 × 10⁷ u² per zone**, a square ~4,240 u on a side, ~3.5 min to cross on foot. Ten zones is
 **~1.8 × 10⁸ u²**, a square ~13,400 u on a side, **~11 minutes** end to end on foot.
 
-The same land is **~190 km** in fiction and takes **six days** to cross.
-
-**AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.** (the fictional land is now ~38 km end to end at the F-045 rescale; "six days" is the pre-F-045 canon day-count.)
+The same land is **~38 km** in fiction and takes **3.5 hours** to cross.
 
 <div class="callout danger">
 <strong>The rule: the playable map preserves topology, adjacency, ordering and terrain. It does not
-preserve metric distance.</strong> The compression is roughly <strong>14 metres of fictional ground
+preserve metric distance.</strong> The compression is roughly <strong>2.8 metres of fictional ground
 per world unit</strong>, and it must be <strong>uniform</strong> — uneven compression is what makes a
-game map feel wrong even when players cannot say why. Canon's day-counts stay canon and are never
-restated as walking times. Where the game has to express "four days," it does it with a
+game map feel wrong even when players cannot say why. Canon's hour-counts stay canon and are never
+restated as walking times. Where the game has to express "a leg's full travel time," it does it with a
 <strong>signpost at a waystation</strong>, not with the player's legs.
 </div>
 
@@ -366,7 +363,7 @@ stabling, ferrying at high water, and feeding whoever is waiting. After the war 
 that grew: the refugee camps on the east bank never came down, and the tents have grown plank walls
 and doorframes. Its emblem, crossed roads over an empty bowl, is chalked on tarpaulins, not carved.
 
-**Embervale.** A terraced hill town on the west rim, stacked in six or seven ledges above its own
+**Embervale.** A hill town on the west rim, stacked up the terraced ledges — six or seven of them — above its own
 fields, so the silhouette is a stair of slate roofs with smoke standing off each ledge. Material is
 warm: fired brick, red pantile, and a black volcanic-looking clinker from the seam used for every
 wall footing. Palette is iron-red, banner-black and hearth-orange — the ember-red banner on every
@@ -389,7 +386,7 @@ that is retaken every season and has never once failed.
 
 **Gildmark.** The only vertical town in the world. Built on a rock headland with the deep berth on
 its seaward face, it stacks warehouses, counting-houses and stairs up the cliff in five terraces, and
-the silhouette ends in one clean landmark — the **mirror tower**, a slim square shaft with a glazed
+the silhouette ends in one clean landmark — **the mirror tower**, a slim square shaft with a glazed
 cap that catches sun at a strange hour. Material is dressed stone at the bottom, timber and rendered
 plaster higher up, and every seaward face is tarred black against the salt. Palette is tarnished
 gold, wax-seal crimson and harbour-fog grey. **First thing a traveller sees: the bar.** For the last
@@ -399,11 +396,11 @@ tariffs, warehousing, insurance, and the far-mirrors. After the war it is richer
 about it, and the wax-seal rings are worn a little less openly.
 
 **Rooktide.** A low river town on stepped terraces above a tidal landing, so the silhouette is a
-staircase of long, shallow-roofed sheds with the pilings and barge-cranes below them and, twice a
+staircase of long, shallow-roofed sheds with the pilings and the barge-cranes below them and, twice a
 day, either water or mud where the boats sit. Material is deliberately mismatched — every building
 has old plank sewn into new, salvaged from the years the town was nearly empty, and nobody hides the
 join. Palette is rook-blue, tide-grey and new-thatch gold. **First thing a traveller sees: the
-birds.** Thousands of rooks working the flats at low water, lifting all at once when the tide turns.
+birds.** Thousands of rooks working the rook flats at low water, lifting all at once when the tide turns.
 Rooktide lives on the hull change: everything moving between sea barge and river barge is handled,
 warehoused and taxed here. After the war it is the least changed town in the land — which is its
 whole identity, and slightly resented.
@@ -413,9 +410,9 @@ shoulder, roofless, its street grid completely legible from below because nothin
 it. Material is stone that was never burnt so much as **bleached** — the relic did not char the city,
 it took it, so the walls stand clean and the mortar is intact and there is no rubble in the streets.
 Palette is cinder-black, bone-white and a relic-violet afterglow that shows at dusk on the north
-faces. **First thing a traveller sees, from a day's walk away: the statues.** (**AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.**) In every square, the
-Giving King holding a child, upright and undamaged among the fused shadows of the people the weapon
-took. Cindervast does nothing for a living. Its only population is the Stoneguard holding a gate
+faces. **First thing a traveller sees, as the city comes into view: the Giving King statues.** In
+every square, the Giving King holding a child, upright and undamaged among the fused shadows of the
+people the weapon took. Cindervast does nothing for a living. Its only population is the Stoneguard holding a gate
 with nothing behind it, and the Ash Prophet's people in the outer districts, and neither will say
 the city's name.
 
@@ -423,10 +420,10 @@ the city's name.
 
 ## 7. The map's own legend
 
-A world map is an artifact made by someone, for a purpose. **This one is a Bellfaith relay map** —
-drawn by the institution that owns the towers, maintained because the towers must be maintained, and
-copied for anyone who asks. That single choice decides both lists below, and it means the map's
-omissions are _in character_ rather than convenient.
+A world map is an artifact made by someone, for a purpose. **This one is a Bellfaith road map** —
+drawn by the institution whose bells relay along it town to town, maintained because the roads must
+be maintained, and copied for anyone who asks. That single choice decides both lists below, and it
+means the map's omissions are _in character_ rather than convenient.
 
 ### 7.1 What the map shows
 
@@ -436,8 +433,8 @@ omissions are _in character_ rather than convenient.
 | **Roads**             | The trade road as a solid line, the coastal spur and the east-rim track as thinner solids, the Cindervast approach as a dashed line (it is not maintained) |
 | **The crossing**      | Millcross's ford marked as a road symbol, not a town symbol — because on this map it is infrastructure                                                     |
 | **Towns**             | Six, each with its emblem from `style.md` §3, sized by nothing (the map does not rank them)                                                                |
-| **Relay towers**      | Every tower on the ridgelines, with its line-of-sight neighbours joined — this is the map's actual subject                                                 |
-| **Travel times**      | Day-counts written **on the road legs**, not a distance scale. The map has no scale bar; it has a walking table                                            |
+| **Town bells**        | Each of the six towns' own belfry, marked at the town — the relay runs town to town along the roads already drawn, no free-standing tower between them    |
+| **Travel times**      | Hour-counts written **on the road legs**, not a distance scale. The map has no scale bar; it has a walking table                                           |
 | **The Ashvale Front** | Its outline and its grave rows as a hatched band, with the northern deep left as open hatch and no rows drawn                                              |
 | **Terrain**           | Ice, upland, flat, rim, bramble, mire — six fills, no elevation contours                                                                                   |
 
@@ -447,9 +444,9 @@ omissions are _in character_ rather than convenient.
 <strong>Withheld because the mapmaker would not draw it</strong> — every omission is the Bellfaith's
 own reticence, not a UI decision.
 
-- **The far-mirror stations.** They sit on the same ridgelines and are the one channel outside the
-  Bellfaith's chain. A map that showed them would publish a Gildmark monopoly the Bellfaith cannot
-  regulate and does not acknowledge.
+- **The far-mirror stations.** They sit on the same ridgelines the roads climb and are the one
+  channel outside the Bellfaith's relay. A map that showed them would publish a Gildmark monopoly the
+  Bellfaith cannot regulate and does not acknowledge.
 - **Which ground is buried and which is not.** The Ashvale Front's northern deep is drawn as an
   empty hatch. The Bell School does not publish an inventory of its own unfinished work — and this is
   also the world state DR-001 makes player-generated, so a static map <em>must not</em> pre-empt it.
@@ -467,8 +464,8 @@ own reticence, not a UI decision.
   2026-08-15 (F-043, DR-006 option 3).** This sheet is the basin survey, unchanged; the wider
   chart — the named far coasts, seas and lanes — is the atlas sheet (`A2-wider-world.md`).
 - **Villages.** There are none named anywhere in the corpus (gap G17), and the map does not invent
-  them — but it does draw **waystations** on the road legs, because the day-counts need somewhere to
-  end.
+  them — but it does draw **waystations** on the road legs, because the hour-counts need somewhere
+  to end.
 
 </div>
 
@@ -482,7 +479,7 @@ own reticence, not a UI decision.
 | **Namer**               | Six provisional names: the Meltwash, the Saltmire, Meltwash Terrace, Emberdown, Hollowmarch, Gildmark Head. Note that **Hollowmarch** intentionally echoes Norhollow — same hollow, named twice.                                                                                        |
 | **Systems Designer**    | Cluster 1 ships **one route, no alternates** (§4.4) — a known deficiency against the three-zones-per-band model. Also: `atlas-frontier.md`'s three regions land in three different zones under this frame (§5.3); the C17 topology decision is theirs.                                  |
 | **Naturalist (L2)**     | Climate, biome and ecology for six terrain kinds; the thaw/deep-cold seasonal clock on the meltwater heads is the only climate signal this document commits to.                                                                                                                         |
-| **Theologian**          | The relay towers are Bellfaith property and the map in §7 is a Bellfaith artifact. What the institution believes it is doing by maintaining them is not geography.                                                                                                                      |
+| **Theologian**          | The town belfries are Bellfaith property and the map in §7 is a Bellfaith artifact. What the institution believes it is doing by maintaining the relay is not geography.                                                                                                                |
 | **Deep-Time Historian** | Why the alkali flat is a dry lake bed, and what the upland pass behind Cindervast used to carry, are both deep-time questions. This document states only that the flat is dry and the pass exists.                                                                                      |
 
 ---
@@ -491,14 +488,14 @@ own reticence, not a UI decision.
 
 Seven illustrations: one world map, six towns. Each brief leads with the concrete subject.
 
-**A1-ART-01 · The world map.** A single-sheet Bellfaith relay map of a west-facing river basin,
+**A1-ART-01 · The world map.** A single-sheet Bellfaith road map of a west-facing river basin,
 drawn as a working document rather than a decorative one: ink on cream parchment, one accent colour
-(bell-bronze) reserved entirely for the relay towers and their sight-lines. A river runs from an ice
+(bell-bronze) reserved entirely for the roads and the six towns' own belfries. A river runs from an ice
 shelf across the top edge, south down the right-of-centre, then turns west and dissolves into a
 hatched tidal mire in the lower-left quadrant. A rock headland with a town sits at the mire's
 seaward mouth on the left edge, with open sea beyond and one arrow off-sheet marked with a season.
 Six town emblems mark six towns; a pale alkali flat occupies the upper middle with a hatched grave
-band across it, its northern end left as bare hatch. Roads are drawn as solid lines with day-counts
+band across it, its northern end left as bare hatch. Roads are drawn as solid lines with hour-counts
 lettered along them, and one dashed line runs north to a walled outline with no interior. No scale
 bar, no compass rose beyond a small north mark, no decorative sea monsters. The parchment ends at a
 hard edge along the top — the map does not pretend to know what is past the ice. **AMENDED
@@ -546,8 +543,8 @@ with part of the flock lifting at once. Palette rook-blue, tide-grey, new-thatch
 and hull-change gear dominate the foreground. A rook-in-flight-over-a-rising-tideline emblem is
 painted on the largest shed's gable.
 
-**A1-ART-07 · Cindervast.** A roofless walled city on an upland rock shoulder, seen from a day's walk
-below at dusk. **AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.** The street grid is completely legible because nothing has grown over it and there is
+**A1-ART-07 · Cindervast.** A roofless walled city on an upland rock shoulder, seen from below at
+dusk. The street grid is completely legible because nothing has grown over it and there is
 no rubble — the stone is bleached rather than charred, walls standing clean with mortar intact. On
 the north-facing walls, a faint violet afterglow. In the visible squares, undamaged statues of a
 crowned man holding a child stand upright among human-shaped shadows fused flat into the stone

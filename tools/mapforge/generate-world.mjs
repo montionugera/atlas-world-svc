@@ -41,7 +41,7 @@ import { anchorDungeons, anchorBoundEntrances, hopsToSettlement, MAX_HOPS } from
 import { buildRegionRings, buildCoastRings, buildTrunkRings, buildFabricFile, hashOf,
          fabricStringify, trunkRingCap, townFeatureId, townSlug, townFeatureIds } from "./lib/fabric.mjs";
 import { GENERATOR_VERSION } from "./lib/version.mjs";
-import { BIOMES, buildTree, placementArea } from "../../scripts/lib/spine.mjs";
+import { BIOMES, buildTree, placementArea, composeToRoot, resolveToRoot, TERRAIN_IMPLIES } from "../../scripts/lib/spine.mjs";
 import { canonicalNode, canonStringify, derivedSidecar } from "../../scripts/check_spine_emit.mjs";
 // Plan D Task 11 Step 4b: the draft carries the civil join, so a re-seed
 // promotes content/world/resolved/ in the SAME command — never behind a
@@ -395,7 +395,7 @@ export function runPasses({ manifest, premises,
   };
 
   const trunk = buildTrunk({ manifest, premises, grid, rings: waterTrunk, generator,
-                             settlements: settle.settlements, problems });
+                             settlements: settle.settlements, regions: part.regions, problems });
 
   timings.total = Object.values(timings).reduce((a, b) => a + b, 0);
   problems.push(...settle.problems, ...net.problems, ...dung.problems);
@@ -453,7 +453,57 @@ export function runPasses({ manifest, premises,
 // would mint n-wealdmarch, and promote's reconciliation would then delete
 // n-cluster1 as an n-atlas descendant absent from the draft — taking all of
 // that with it.
-export function buildTrunk({ manifest, premises, grid, rings, generator, settlements, problems = [] }) {
+// ── a landmass's own terrain kind ──────────────────────────────────────────
+//
+// STATE §28 defect (a): every generated continent carried `terrainKind: null`,
+// so `FILL_FOR` was unreachable from the atlas sheet's `patternFor` and
+// n-rimewall-cap — an ice cap 96.9% ice — lost the ice fill it had drawn since
+// F-043. The field is not authored anywhere for a generated landmass, so it is
+// DERIVED from the composition this run computed, through the SAME table
+// G-TERRAIN checks it against, read backwards.
+//
+// Single-biome kinds only. `headland` (rock + meadow), `river-country`
+// (river + meadow) and `fjordland` (rock + ice) each imply TWO biomes and are
+// not identifiable from one dominant share; leaving them out means this
+// derivation never names a terrain the composition does not carry on its own.
+// A meadow landmass gets null, because the vocabulary has no meadow kind —
+// that is a fact of TERRAIN_KINDS, not a choice made here.
+const KIND_FOR_BIOME = Object.freeze(Object.fromEntries(
+  Object.entries(TERRAIN_IMPLIES)
+    .filter(([, biomes]) => biomes.length === 1)
+    .map(([kind, biomes]) => [biomes[0], kind])));
+
+// G-TERRAIN (scripts/lib/spine.mjs) fails a node whose terrainKind implies a
+// biome under 15% of its composition. Deriving the kind from the DOMINANT
+// biome and refusing below the same 15% satisfies that rule by construction —
+// the gate can never red on a value this function produced.
+export const TERRAIN_DOMINANCE_FLOOR = 15;
+
+export function terrainKindOfComposition({ composition }) {
+  let best = null;
+  for (const [biome, share] of Object.entries(composition ?? {})) {
+    if (!Number.isFinite(share)) continue;
+    // Ties break on the biome name so the result never depends on key order.
+    if (best === null || share > best[1] || (share === best[1] && biome < best[0])) best = [biome, share];
+  }
+  if (best === null || best[1] < TERRAIN_DOMINANCE_FLOOR) return null;
+  return KIND_FOR_BIOME[best[0]] ?? null;
+}
+
+// The epistemic density a whole landmass may be hatched at. The gradient is a
+// REGION property (Plan C: `regions[].provenance` is "sworn"|"hearsay"|
+// "inferred"|null, and Plan B's pReportedSworn/Hearsay/Inferred read exactly
+// that field), so a landmass may only carry one when its reported regions
+// AGREE. Mixed ground gets none and hatches at the generic `pReported` — a
+// chart that hatched a whole coast "sworn" off four sworn regions out of
+// twelve would be claiming more than its own fabric supports.
+export function reportedAsOfRegions({ regions }) {
+  const densities = new Set(
+    regions.filter((r) => r?.survey === "reported").map((r) => r?.provenance).filter(Boolean));
+  return densities.size === 1 ? [...densities][0] : undefined;
+}
+
+export function buildTrunk({ manifest, premises, grid, rings, generator, settlements, regions = [], problems = [] }) {
   const nodes = [], edges = [];
   // Throws on a collision across the WHOLE world before a single node is built.
   // Minting them per continent below would let two landmasses agree on a slug
@@ -468,6 +518,8 @@ export function buildTrunk({ manifest, premises, grid, rings, generator, settlem
       throw new Error(`buildTrunk: manifest.landmasses has no nodeId for ${p.id} — ` +
         `the continent node id is authored in content/world/manifest.json, never derived from the title`);
     const mine = settlements.filter((s) => s.continent === p.id);
+    const myRegions = regions.filter((r) => r.continent === p.id);
+    const composition = compositionOfPlate({ grid, plate: k });
     nodes.push({
       id: lm.nodeId,
       tier: "continent", parentId: "n-atlas", title: p.title,
@@ -479,10 +531,13 @@ export function buildTrunk({ manifest, premises, grid, rings, generator, settlem
       seed: { value: namedNodeSeed({ manifest, name: p.id }), epoch: 0, why: null },
       placement: { shape: "polygon", points: r.ring, anchor: r.anchor },
       interior: { units: "km", perParentUnit: 1 },
-      composition: compositionOfPlate({ grid, plate: k }),
+      composition,
       interstitial: null, interstitialUnsurveyed: false,
       compositionTolerance: null, toleranceWhy: null,
-      terrainKind: null,
+      // DERIVED from the composition above, never null-by-default — see
+      // terrainKindOfComposition. This is what makes FILL_FOR reachable from
+      // a generated landmass at all.
+      terrainKind: terrainKindOfComposition({ composition }),
       // One point feature per settlement, in the settlement order the pass
       // produced (which is itself deterministic), so edge endpoints resolve.
       // `type: null` — a settlement is not a landform; Plan B's typed
@@ -517,7 +572,12 @@ export function buildTrunk({ manifest, premises, grid, rings, generator, settlem
       // landmass and it is the same number the partition produces — pinned in
       // generate-world.test.mjs against the emitted fabric, not against this
       // column, so the two cannot drift apart silently.
-      lore: { summary: p.structuralIdea, reported: lm.surveyed === 0 ? true : undefined },
+      // `lore.reportedAs` rides beside `lore.reported` in the same lore
+      // channel and carries the same weight: it is read by the chart, not by
+      // a reader. Its vocabulary is the fabric's own `regions[].provenance`.
+      lore: { summary: p.structuralIdea,
+              reported: lm.surveyed === 0 ? true : undefined,
+              reportedAs: lm.surveyed === 0 ? reportedAsOfRegions({ regions: myRegions }) : undefined },
       tags: [], levelBand: [...p.levelBand],
     });
   });
@@ -645,6 +705,19 @@ export function preservedChartNodes({ repoRoot, live }) {
   return ids;
 }
 
+// The civil pin a preserved chart node stands on. A preserved node is named
+// `n-<slug>` and the civil tier names the same place `c-town-<slug>` (a
+// settlement) or `c-lm-<slug>` (a landmark) — the SAME slug join Step 6g's
+// road-tip rule uses to read a road endpoint's anchor out of this table.
+// Exactly one row must match: zero means the node names a place the civil
+// tier never pinned, two means the slug is ambiguous, and both are reported
+// by the caller rather than resolved by picking one.
+export function pinForNodeId({ nodeId, rows = [] }) {
+  const slug = nodeId.replace(/^n-/, "");
+  const hits = rows.filter((r) => r?.id === `c-town-${slug}` || r?.id === `c-lm-${slug}`);
+  return hits.length === 1 && Array.isArray(hits[0].at) ? hits[0] : null;
+}
+
 // THE PLAN SAYS THEIR GEOMETRY SURVIVES VERBATIM (:6983). IT CANNOT.
 // All three sit in the retired 30 x 38 km cluster-1 frame — n-thornveil's
 // anchor is [24.4, 26], n-millcross's [17.2, 23.6] — and in the generated
@@ -722,6 +795,11 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [], 
   for (const rel of ["content/world/manifest.json", "content/world/budgets.json",
                      "content/spine/roots.json", "content/spine/load-budget.json",
                      "content/spine/coverage-budget.json", "content/spine/sheet.json",
+                     // The freeze authority travels with the draft so the draft
+                     // root can be gated on it: G-FROZEN's reverse arm reads
+                     // this file, and without it a draft that dropped the whole
+                     // freeze would gate green in its own directory.
+                     "content/spine/freeze-reasons.json",
                      "content/spine/sheet-atlas.json"]) {
     if (!existsSync(join(repoRoot, rel))) continue;
     write(rel, readFileSync(join(repoRoot, rel)));
@@ -752,14 +830,41 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [], 
   const stack = [...runtimeRoots];
   while (stack.length) { const id = stack.pop(); runtimeIds.add(id); for (const c of kids.get(id) ?? []) stack.push(c); }
 
-  // 2b. the three preserved chart anchors, RE-PARENTED onto the generated
-  //     continent their live lineage names and TRANSLATED by that continent's
-  //     anchor delta. Their ids, titles and lore survive verbatim, which is
-  //     what the two representsNodeId pointers and the one town-plan spineId
-  //     need; their coordinates cannot, because the old ones are open sea now.
+  // 2b. the preserved chart anchors, RE-PARENTED onto the generated continent
+  //     their live lineage names and RE-PLACED ON THEIR OWN PIN. Their ids,
+  //     titles and lore survive verbatim, which is what the two
+  //     representsNodeId pointers and the one town-plan spineId need; their
+  //     coordinates cannot, because the old ones are open sea now.
+  //
+  //     THE RULE (STATE §28, the generalisation of Task 6 Step 6e): a
+  //     preserved node's COMPOSED WORLD ANCHOR EQUALS ITS PIN'S `at`. Step 6e
+  //     applied it to the town host by hand; it applies to every preserved
+  //     node, because every one of them names a place the civil tier has
+  //     already pinned. It replaces the continent-anchor delta this block used
+  //     to translate by, which moved n-thornveil and n-northern-icefield onto
+  //     a DIFFERENT offset from the one Step 6e used for n-millcross and left
+  //     both sitting 20.80 km from their own pins with every gate green.
+  //
+  //     The local anchor is DERIVED by inverting the parent composition —
+  //     never retyped — and the rest of the placement rides along rigidly, so
+  //     the authored shape is preserved exactly and only its frame moves.
+  //     G-PIN-ANCHOR (check_content.mjs) is the machine that reads this rule.
   const preserved = preservedChartNodes({ repoRoot, live });
+  // The pin table. Absent (a fixture root with no civil layer) it is empty and
+  // every preserved node reports its missing pin — loudly, never silently
+  // falling back to a translation that puts the node somewhere else.
+  const rosterPath = join(repoRoot, "content/world/civil/pinned-roster.json");
+  const rosterRows = existsSync(rosterPath)
+    ? JSON.parse(readFileSync(rosterPath, "utf8")).rows ?? []
+    : [];
   const liveById = new Map(live.map(({ doc }) => [doc.id, doc]));
   const byGeneratedId = new Map(run.trunk.map((n) => [n.id, n]));
+  // n-atlas is read here rather than at step 3 because the composition a
+  // preserved node is inverted through runs all the way to the root.
+  const atlas = JSON.parse(readFileSync(join(liveNodesDir, "n-atlas.json"), "utf8"));
+  // composeToRoot() reads `tree.byId` only — handing it the draft's own map is
+  // the gate's arithmetic, not a second copy of it.
+  const draftTree = { byId: new Map([[atlas.id, atlas], ...run.trunk.map((n) => [n.id, n])]) };
   const carried = [];
   for (const id of [...preserved].sort()) {
     const doc = liveById.get(id);
@@ -773,16 +878,52 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [], 
         `G-ALIAS or T1 will go red on it`);
       continue;
     }
-    const dx = host.placement.anchor[0] - ancestor.placement.anchor[0];
-    const dy = host.placement.anchor[1] - ancestor.placement.anchor[1];
+    const pin = pinForNodeId({ nodeId: id, rows: rosterRows });
+    if (!pin) {
+      run.problems.push(`preserved chart node ${id}: content/world/civil/pinned-roster.json holds ` +
+        `no single row named "c-town-${id.slice(2)}" or "c-lm-${id.slice(2)}" — a preserved node is ` +
+        `re-placed on its own pin, so there is nothing to place it on`);
+      continue;
+    }
+    // Invert the parent composition: solve resolveToRoot(host, anchor) = pin.at
+    // for `anchor`, then move the whole placement by the difference. `scale`
+    // is 1 and `origin` [0, 0] on today's km-per-1 continents; the arithmetic
+    // is written out anyway so a unit-changing frame between here and the root
+    // does not silently break the rule.
+    const { origin, scale } = composeToRoot({ tree: draftTree, id: host.id });
+    if (origin === null || !scale) {
+      run.problems.push(`preserved chart node ${id}: ${host.id} does not compose to the draft root`);
+      continue;
+    }
+    const want = [(pin.at[0] - origin[0]) / scale, (pin.at[1] - origin[1]) / scale];
+    const dx = want[0] - doc.placement.anchor[0];
+    const dy = want[1] - doc.placement.anchor[1];
     const placement = translatePlacement({ placement: doc.placement, dx, dy });
     if (!placementInside({ placement, ring: host.placement.points }))
-      run.problems.push(`preserved chart node ${id}: translated by [${q(dx)}, ${q(dy)}] onto ` +
-        `${host.id} and still not inside its ring — G-CONTAIN will red it; Plan E's redraw must re-pin it`);
+      run.problems.push(`preserved chart node ${id}: re-placed on ${pin.id} [${pin.at.join(", ")}] ` +
+        `by [${q(dx)}, ${q(dy)}] onto ${host.id} and still not inside its ring — G-CONTAIN will red it`);
     // `derived` and `absoluteAnchor` are DROPPED, not overwritten: the sidecar
     // is regenerated for the whole draft tree, and G-FROZEN is directional —
-    // an unfrozen node still carrying absoluteAnchor fails too.
+    // an unfrozen node still carrying absoluteAnchor fails too. The pre-redraw
+    // anchor is meaningless in the new geometry, so dropping it is right; step
+    // 4b RE-DERIVES one from the regenerated composition for whatever
+    // freeze-reasons.json says is frozen, which is why `frozen: false` below is
+    // a starting state and no longer the last word.
     const { derived: _d, absoluteAnchor: _a, ...rest } = doc;
+    // `lore.labelAt` RIDES ALONG. It is authored in the SAME frame as
+    // `placement` — on both preserved regions the committed value is byte-equal
+    // to `placement.anchor` — so moving the placement and leaving the label
+    // behind splits one frame in two. That is exactly the defect G-PIN-ANCHOR
+    // was written for, one field over: n-thornveil and n-northern-icefield came
+    // out of the redraw with world-km placements and basin-local labels
+    // ([24.4, 26] and [22.4, 3.6]) and every gate stayed green. G-LABEL-FRAME
+    // (check_content.mjs, beside G-ANCHOR) is the machine that reads this.
+    // Nothing else in the doc is parent-frame: `features[].at/points` are in
+    // the node's OWN interior frame and must NOT move, and `interior` is
+    // rebuilt below.
+    if (Array.isArray(rest.lore?.labelAt) && rest.lore.labelAt.length === 2)
+      rest.lore = { ...rest.lore,
+                    labelAt: [q(rest.lore.labelAt[0] + dx), q(rest.lore.labelAt[1] + dy)] };
     carried.push({ ...rest, parentId: host.id, frozen: false, placement,
                    interior: { units: doc.interior?.units ?? "km",
                                perParentUnit: doc.interior?.perParentUnit ?? 1,
@@ -790,8 +931,8 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [], 
                                  ? { anchorInInterior: doc.interior.anchorInInterior } : {}) } });
   }
 
-  // 3. n-atlas, carried over with its frozen frame intact
-  const atlas = JSON.parse(readFileSync(join(liveNodesDir, "n-atlas.json"), "utf8"));
+  // 3. n-atlas, carried over with its frozen frame intact (read at 2b, where
+  //    the preserved nodes' composition to the root needs it)
   delete atlas.derived;
   atlas.interstitial = { ocean: 100 };
   atlas.interstitialUnsurveyed = false;
@@ -826,8 +967,81 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [], 
   for (const n of run.trunk) if (adopted.has(n.id)) n.interstitial = { ...n.composition };
 
   const allNodes = [atlas, ...generated, ...runtimeDocs];
-  const tree = buildTree({ nodes: allNodes.map((n) => ({ ...n, file: `${n.id}.json` })), rootIds: roots });
+  let tree = buildTree({ nodes: allNodes.map((n) => ({ ...n, file: `${n.id}.json` })), rootIds: roots });
   if (tree.errors.length) throw new Error(`generate-world: draft tree is invalid: ${tree.errors.join("; ")}`);
+
+  // ── 4b. THE COMMITTED FREEZE TRAVELS WITH THE REDRAW ──────────────────────
+  //
+  // Until this pass every node this generator wrote was unfrozen — the
+  // continents by mint (`frozen: false` on the trunk nodes above) and the
+  // preserved chart nodes by the carry, which hard-coded the same `false` and
+  // dropped `absoluteAnchor` with `derived`. So a regeneration took the trunk
+  // from 10 frozen to 1 and left the freeze to be re-applied BY HAND, once per
+  // redraw, with nothing in Gate 1 saying so. G-FROZEN's new reverse arm
+  // (check_content.mjs) is what makes that loss loud; this pass is what makes
+  // it not happen.
+  //
+  // WHY NOT JUST CARRY `doc.frozen` ON THE PRESERVED NODES. Measured, not
+  // argued (2026-08-28): carrying the flag alone clears the three
+  // `G-CANON-LEG ... endpoint n-millcross is not frozen` work orders and
+  // replaces them with SIX G-FROZEN failures on the draft — each of
+  // n-millcross / n-thornveil / n-northern-icefield "frozen but ancestor
+  // n-cluster1 is not" AND "frozen without absoluteAnchor". Neither is a stale
+  // anchor: one says the freeze must be ANCESTOR-CLOSED and the preserved
+  // node's new parent is a freshly minted continent with nothing to inherit
+  // from; the other says a freeze is a flag AND a composed anchor, and the
+  // carry drops the anchor because the pre-redraw one is meaningless in the
+  // new geometry. A freeze is therefore a property of a SET, not of a document
+  // — which is exactly what content/spine/freeze-reasons.json already commits,
+  // one written sentence per node. So the generator reads that file as the
+  // authority too, and the same artefact answers "what is frozen" for the
+  // generator and for the gate.
+  //
+  // WHY HERE AND NOT IN promote-world.mjs. Promotion verifies every file it
+  // copies against the run manifest's hash map (promote-world.mjs, "an unhashed
+  // file cannot be verified and will not be promoted") — re-applying a freeze
+  // there would mean editing node bytes AFTER they were hashed, which is the
+  // stale-rider hazard that guard exists for. And the draft is gated in its own
+  // right: generate-world.test.mjs runs check_content against it, and
+  // edgeWorkOrder below reads `n.frozen` to decide whether a canon leg still
+  // has an unfrozen endpoint. A draft frozen only at promotion time is a draft
+  // that lies to both.
+  //
+  // The anchor is COMPOSED FROM THE REGENERATED GEOMETRY, never copied: the
+  // same arithmetic composedAnchor() uses in the gate, resolved through the
+  // parent's frame. Ordering does not matter — freezing is a write, and the
+  // composition it reads is the placement, which no freeze touches — so the
+  // root-first discipline a hand refreeze needs (G-FROZEN reds an intermediate
+  // commit whose ancestor is not yet frozen) does not apply to one atomic pass.
+  const freezePath = join(repoRoot, "content/spine/freeze-reasons.json");
+  if (existsSync(freezePath)) {
+    const reasons = JSON.parse(readFileSync(freezePath, "utf8")).reasons ?? {};
+    const draftById = new Map(allNodes.map((n) => [n.id, n]));
+    for (const id of Object.keys(reasons).sort()) {
+      const node = draftById.get(id);
+      if (!node) {
+        // LOUD, never silent: a reason with no node is a freeze this run would
+        // drop. G-FROZEN says the same thing after promotion; saying it here
+        // names the run that did it.
+        run.problems.push(`freeze: content/spine/freeze-reasons.json holds a written reason for ` +
+          `${id}, which this draft does not carry — the redraw would drop that freeze; retire the ` +
+          `reason or keep the node`);
+        continue;
+      }
+      node.frozen = true;
+      node.absoluteAnchor = node.parentId === null
+        ? node.placement.anchor
+        : resolveToRoot({ tree, id: node.parentId, point: node.placement.anchor });
+    }
+    // Rebuilt so the tree the nodes are WRITTEN from is the tree they now are.
+    // deriveNode composes `absoluteAnchorRoot` off `placement.anchor` and never
+    // reads `frozen`, so the sidecar is unmoved by this pass — but a tree that
+    // disagrees with the bytes beside it is the shape every frame defect in
+    // this programme has taken, and it costs one pass to not have one.
+    tree = buildTree({ nodes: allNodes.map((n) => ({ ...n, file: `${n.id}.json` })), rootIds: roots });
+    if (tree.errors.length) throw new Error(`generate-world: draft tree is invalid after the freeze pass: ${tree.errors.join("; ")}`);
+  }
+
   for (const node of allNodes) {
     const r = canonicalNode({ node: { ...node, file: `${node.id}.json` }, tree, plans: [] });
     if (r.error) throw new Error(`generate-world: ${r.error}`);
@@ -1036,10 +1250,12 @@ export function edgeWorkOrder({ edges, nodes }) {
                        `which the redraw moved` });
       });
     }
-    // G-CANON-LEG: a leg endpoint that DOES resolve must be frozen, and every
-    // node this generator writes is unfrozen — n-millcross included, because
-    // G-FROZEN refuses a frozen node under an unfrozen parent and its parent is
-    // now a generated continent.
+    // G-CANON-LEG: a leg endpoint that DOES resolve must be frozen. This used
+    // to fire on all three Millcross legs every run, because every node this
+    // generator wrote was unfrozen; step 4b now applies the committed freeze
+    // (freeze-reasons.json, flag AND composed anchor, continents included) to
+    // the draft, so a leg whose endpoint is in that set resolves clean here and
+    // a leg whose endpoint is NOT in it still earns its order.
     if (e.kind === "leg")
       for (const ref of [e.from, e.to]) {
         const n = ref?.node && nodeById.get(ref.node);

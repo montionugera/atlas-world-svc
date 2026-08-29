@@ -454,29 +454,85 @@ test("buildBBoxIndex: a duplicate id keeps EVERY bbox registered under it", () =
 // and that is the correct direction of change but it must be seen first.
 import { join, dirname, resolve as pathResolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { TRUNK_NODES } from "./helpers/census.mjs";
 import {
   loadSpine, buildTree, gridIntersectionArea, placementArea,
   SPINE_CELL_KM, SPINE_CELL_U,
 } from "../lib/spine.mjs";
+import { hashNodesDir, LOCK_REL } from "../check_geometry_lock.mjs";
 
 const REPO = pathResolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
-// Review fix (MINOR, two reviewers): the three assertions below used to walk
-// the real spine — and therefore re-run the RETIRED O(area) lattice sampler
-// over all 133 pairs — once each. Measured on this box before the fix: 63 ms +
-// 3082 ms + 2996 ms + 2840 ms = 8.98 s of the 9.30 s file, inside every
-// `npm test --prefix scripts`, therefore inside Gate 2 and CI. Plan A's goal is
-// to make the map lane AFFORDABLE, so the scan is now memoised: the spine loads
-// once, each kernel runs ONCE per pair, and the timings come from that same
-// single interleaved pass. The assertions are unchanged in strength.
+// Task 2 (F-051 completion plan, G-GEOMETRY-LOCK): the redraw took this scan's
+// gridIntersectionArea calls from 1.20e8 to 2.118e10 edge tests — 492.6 s of a
+// suite that otherwise runs in seconds, almost all of it inside 40 of the 138
+// sibling pairs (one alone, n-galereach ∩ n-keelbreak, 110.6 s). That cost
+// is a function of world geometry, not of this test file, so it regrows on
+// every future redraw — see task-2-brief.md for the three cheaper options
+// measured and rejected (coarsening the cell makes every overlap 0, a
+// scanline reference fails the 20x floor, splitting the file saves nothing).
+//
+// The fix: gridIntersectionArea's result for every committed pair is now a
+// baked, committed LOCK (content/spine/geometry-lock.json, written by
+// `node scripts/check_geometry_lock.mjs --write`) keyed to a hash of
+// content/spine/nodes. This scan reads the lock instead of recomputing it —
+// but ONLY for pairs outside TIMED_PAIR_KEYS below, which still run
+// gridIntersectionArea live so the 20x timing floor keeps proving something.
+// exactIntersectionArea stays LIVE for every pair, exactly as before: it is
+// cheap (106.5 ms total, pre-lock) and is the side of every equivalence
+// assertion that must never be allowed to go stale, or a real regression in
+// it would stop reddening 133 of 138 pairs.
+//
+// A stale lock (content/spine/nodes changed without --write) or a fixed pair
+// no longer existing (a future redraw renamed/removed a timed node) throws
+// here rather than silently comparing against last redraw's world — the
+// separate CI step `node scripts/check_geometry_lock.mjs --check` (like
+// check_render_lock.mjs / check_spine_emit.mjs) is what re-derives the whole
+// lock at the cost this scan is built to avoid paying on every run.
+const LOCK_PATH = join(REPO, LOCK_REL);
+
+// A small, FIXED subset of real sibling pairs, chosen by estimated grid cost
+// (bbox-overlap-area / cell^2, computed with no grid calls) to sit well below
+// the 40 heavy pairs while still doing real lattice work — not the "bboxOverlap:
+// 0" pairs that return in a few nanoseconds and would make the ratio noise-
+// dominated. Picked 2026-08-29 on commit e1540f3 (task-2-report.md ranks all
+// 138 by estimated cost). MEASURED live on this box: tGrid 1240 ms, tExact
+// 11 ms — a 112x ratio, comfortably inside the 20x floor with real margin,
+// and small enough (~1.2s added to a suite that used to spend 492.6s here)
+// that reinstating it does not reopen the O(n^2) problem this task closes.
+// All five happen to clip to exactly 0 (their true overlap is a sub-cell
+// sliver even the lattice sampler's own bbox stage rejects) — irrelevant to
+// what this subset proves, which is TIMING, not the pairwise verdict; the
+// verdict-equivalence assertions below stay live on the FULL 138 pairs via
+// the lock instead. A future redraw that removes any of these ids fails LOUD
+// (see below) rather than silently timing zero pairs.
+const TIMED_PAIR_KEYS = [
+  "n-gildmark-roads::n-peatrun-shallows",
+  "n-brightfall::n-coldreach",
+  "n-reedstrand::n-thirstwold",
+  "n-coldreach::n-keelbreak",
+  "n-ashen-spar::n-thirstwold",
+];
+
 let SCAN = null;
 function equivalenceScan() {
   if (SCAN) return SCAN;
   const spine = loadSpine({ contentRoot: join(REPO, "content") });
   const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
+
+  const lock = JSON.parse(readFileSync(LOCK_PATH, "utf8"));
+  const currentHash = hashNodesDir({ repoRoot: REPO });
+  if (lock.nodesHash !== currentHash) {
+    throw new Error(
+      `content/spine/geometry-lock.json is stale: nodesHash ${lock.nodesHash} != ${currentHash} — ` +
+      "content/spine/nodes changed without a re-baseline; run `node scripts/check_geometry_lock.mjs --write`",
+    );
+  }
+
   const pairs = [];
   const parents = [];
+  const timedSeen = new Set();
   let tGrid = 0, tExact = 0;
   for (const parent of tree.byId.values()) {
     const kids = (tree.childrenOf.get(parent.id) ?? [])
@@ -487,13 +543,29 @@ function equivalenceScan() {
     for (let i = 0; i < kids.length; i++)
       for (let j = i + 1; j < kids.length; j++) {
         const a = kids[i], b = kids[j];
-        const t0 = process.hrtime.bigint();
-        const grid = gridIntersectionArea({ a: a.placement, b: b.placement, cell });
-        const t1 = process.hrtime.bigint();
-        const exact = exactIntersectionArea({ a: a.placement, b: b.placement });
-        const t2 = process.hrtime.bigint();
-        tGrid += Number(t1 - t0);
-        tExact += Number(t2 - t1);
+        const key = `${a.id}::${b.id}`;
+        const timed = TIMED_PAIR_KEYS.includes(key);
+        let grid;
+        if (timed) {
+          timedSeen.add(key);
+          const t0 = process.hrtime.bigint();
+          grid = gridIntersectionArea({ a: a.placement, b: b.placement, cell });
+          const t1 = process.hrtime.bigint();
+          tGrid += Number(t1 - t0);
+        } else {
+          if (!(key in lock.pairs))
+            throw new Error(`content/spine/geometry-lock.json has no row for sibling pair ${key} — re-baseline with --write`);
+          grid = lock.pairs[key];
+        }
+        let exact;
+        if (timed) {
+          const te0 = process.hrtime.bigint();
+          exact = exactIntersectionArea({ a: a.placement, b: b.placement });
+          const te1 = process.hrtime.bigint();
+          tExact += Number(te1 - te0);
+        } else {
+          exact = exactIntersectionArea({ a: a.placement, b: b.placement });
+        }
         gridPairSum += grid;
         exactPairSum += exact;
         const limit = 0.005 * Math.min(
@@ -515,12 +587,41 @@ function equivalenceScan() {
         gridPairSum, exactPairSum,
       });
   }
+  const missingTimed = TIMED_PAIR_KEYS.filter((k) => !timedSeen.has(k));
+  if (missingTimed.length)
+    throw new Error(
+      `TIMED_PAIR_KEYS names pairs that are no longer real sibling pairs on the committed spine: ` +
+      `${missingTimed.join(", ")} — this redraw needs a freshly picked timed pair-set (see task-2-report.md)`,
+    );
   SCAN = { pairs, parents, tGrid, tExact };
   return SCAN;
 }
 
-test("equivalence: exactly 133 sibling pairs exist on the committed spine", () => {
-  assert.equal(equivalenceScan().pairs.length, 133);
+// COUNT AUTHORITY: content/spine/trunk-census.json (Plan E, E-C4). The literal
+// `133` that stood here was the PRE-redraw pair count, and swapping it for the
+// post-redraw one would be the same defect with a newer number — the next
+// redraw would have to hunt it down again. What the assertion is actually for
+// is that the scan covers the WHOLE spine rather than silently going empty, so
+// it now recomputes the expected number from the committed node FILES (an
+// independent path from buildTree, which is the thing under test) and pins the
+// node total against the census.
+test("equivalence: the scan covers every non-point sibling pair on the committed spine", () => {
+  const dir = join(REPO, "content/spine/nodes");
+  const nodes = readdirSync(dir)
+    .filter((f) => f.endsWith(".json"))
+    .map((f) => JSON.parse(readFileSync(join(dir, f), "utf8")));
+  assert.equal(nodes.length, TRUNK_NODES,
+    `content/spine/nodes holds ${nodes.length}; content/spine/trunk-census.json says ${TRUNK_NODES}`);
+  const kids = new Map();
+  for (const n of nodes) {
+    if (n.placement?.shape === "point" || !n.parentId) continue;
+    kids.set(n.parentId, (kids.get(n.parentId) ?? 0) + 1);
+  }
+  let want = 0;
+  for (const c of kids.values()) want += (c * (c - 1)) / 2;
+  assert.ok(want > 0, "the committed spine has no sibling pairs at all — the scan would prove nothing");
+  assert.equal(equivalenceScan().pairs.length, want,
+    "buildTree's sibling pairs disagree with the committed node files");
 });
 
 test("equivalence: exact clipping agrees with grid sampling on every PAIRWISE G-OVERLAP verdict", () => {
@@ -552,11 +653,14 @@ test("equivalence: the largest numeric deviation stays under 0.01 km\u00b2", () 
   assert.ok(maxDev < 0.01, `max deviation ${maxDev} at ${worst}`);
 });
 
-test("equivalence: exact clipping is at least 20x faster on the same 133 pairs", () => {
-  // Timings come from the single interleaved pass in equivalenceScan(), so this
-  // assertion costs nothing beyond the scan the tests above already paid for.
-  // 20x is the floor a slower CI box must still clear; below it, the O(n\u00b2)
-  // problem is not actually solved.
+test("equivalence: exact clipping is at least 20x faster, live, on the fixed TIMED_PAIR_KEYS subset", () => {
+  // Task 2: this no longer times the full 138-pair scan (that was the 492.6 s
+  // problem this task exists to remove \u2014 see equivalenceScan()'s header
+  // comment). tGrid/tExact are now accumulated ONLY over TIMED_PAIR_KEYS,
+  // where both kernels still run live on every test invocation. 20x is the
+  // floor a slower CI box must still clear; below it, gridIntersectionArea is
+  // not meaningfully more expensive than exactIntersectionArea and the lock
+  // this task adds would be locking a distinction that no longer exists.
   const { tGrid, tExact } = equivalenceScan();
   assert.ok(tGrid / tExact > 20, `only ${(tGrid / tExact).toFixed(1)}x (grid ${tGrid / 1e6}ms exact ${tExact / 1e6}ms)`);
 });

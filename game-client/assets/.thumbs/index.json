@@ -617,40 +617,124 @@
       "h": 256,
       "srcHash": "fea7f29dd3798296"
     },
+    "maps/ashen-spar.png": {
+      "thumb": "cbefe847bca2d14c.webp",
+      "bytes": 40564,
+      "w": 256,
+      "h": 152,
+      "srcHash": "c49e3953968a507d"
+    },
     "maps/atlas-world.png": {
       "thumb": "8de7e6c8ad855c16.webp",
-      "bytes": 60599,
+      "bytes": 100521,
       "w": 230,
       "h": 256,
-      "srcHash": "97f33bf1824a79b0"
+      "srcHash": "ee5475988d834068"
     },
-    "maps/cluster1-world.png": {
-      "thumb": "d0571e8e5c96aef6.webp",
-      "bytes": 151896,
+    "maps/brightfall.png": {
+      "thumb": "fec749174bbfada6.webp",
+      "bytes": 89210,
+      "w": 174,
+      "h": 256,
+      "srcHash": "ed8b5a204a9852ee"
+    },
+    "maps/coldreach.png": {
+      "thumb": "d0a1c33c5222bd46.webp",
+      "bytes": 101995,
+      "w": 255,
+      "h": 256,
+      "srcHash": "f28e2839b2b5f416"
+    },
+    "maps/driftholt.png": {
+      "thumb": "b86b29aa6af2672d.webp",
+      "bytes": 107345,
       "w": 256,
-      "h": 222,
-      "srcHash": "cac7467cded0546b"
+      "h": 253,
+      "srcHash": "20269195ca3bf87b"
+    },
+    "maps/loamspit.png": {
+      "thumb": "5c24a63808150473.webp",
+      "bytes": 39156,
+      "w": 256,
+      "h": 169,
+      "srcHash": "8cafbc9e8daaa44c"
+    },
+    "maps/quillreef.png": {
+      "thumb": "8608bfc21a8c398a.webp",
+      "bytes": 67567,
+      "w": 223,
+      "h": 256,
+      "srcHash": "6ae87900523af99b"
+    },
+    "maps/reedstrand.png": {
+      "thumb": "97ba69b66b671d3c.webp",
+      "bytes": 82965,
+      "w": 256,
+      "h": 204,
+      "srcHash": "f9008e8c379712ee"
+    },
+    "maps/rimewall-cap.png": {
+      "thumb": "ab627db96690296a.webp",
+      "bytes": 38847,
+      "w": 256,
+      "h": 122,
+      "srcHash": "432489b9d128638c"
+    },
+    "maps/skerryfast.png": {
+      "thumb": "b43c67a049e114e4.webp",
+      "bytes": 38543,
+      "w": 256,
+      "h": 203,
+      "srcHash": "beb5a4dcd79ff1d4"
+    },
+    "maps/stonemoor.png": {
+      "thumb": "b6b7e2c1391701f8.webp",
+      "bytes": 141059,
+      "w": 214,
+      "h": 256,
+      "srcHash": "fe9180e08dee011c"
     },
     "maps/synthetic-density.png": {
       "thumb": "8350f6799f8ce7b8.webp",
-      "bytes": 312224,
+      "bytes": 312805,
       "w": 246,
       "h": 256,
-      "srcHash": "bababe0470145470"
+      "srcHash": "543d2e5c292e3287"
+    },
+    "maps/thirstwold.png": {
+      "thumb": "ec1d8808c957b548.webp",
+      "bytes": 87621,
+      "w": 256,
+      "h": 249,
+      "srcHash": "31f4e50a0864f8bb"
+    },
+    "maps/wealdmarch.png": {
+      "thumb": "647bac382928943f.webp",
+      "bytes": 99003,
+      "w": 256,
+      "h": 201,
+      "srcHash": "fffae33dc3c4ca70"
     },
     "maps/world-fabric.png": {
       "thumb": "89639182ed9da91f.webp",
-      "bytes": 93835,
+      "bytes": 92176,
       "w": 256,
       "h": 256,
-      "srcHash": "51794d5a754aec71"
+      "srcHash": "cb3f9d217b878f82"
     },
     "maps/world-overlay.png": {
       "thumb": "193f9af1782c5c13.webp",
-      "bytes": 93586,
+      "bytes": 91009,
       "w": 256,
       "h": 256,
-      "srcHash": "928efd52ddae21a1"
+      "srcHash": "4c44ff1761ddb5e5"
+    },
+    "maps/wracklow.png": {
+      "thumb": "f81abedaff097727.webp",
+      "bytes": 61493,
+      "w": 256,
+      "h": 200,
+      "srcHash": "d59c69ee166eefb7"
     },
     "res://assets/characters/4gtn_forgotten.glb": {
       "thumb": "94672f24b8fad226.webp",

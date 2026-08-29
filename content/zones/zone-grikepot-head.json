@@ -1,0 +1,54 @@
+{
+  "zone": "grikepot-head",
+  "region": "c04/r01",
+  "survey": "surveyed",
+  "reasonToGo": "Three things come off the head and all three walk out the same way: grain off the silt the river lays down behind the estuary, grazing and greens off the shell-grass behind the raised beach, and ore broken out of the cave country inland. It is the last settled ground on the western road, so everything it makes goes back through the junction and two more villages before it reaches the coast the ships use.",
+  "hazards": [
+    {
+      "id": "the-turning-flat",
+      "name": "The turning flat",
+      "description": "The mudflats between the river and the sea change hands twice a day, and the grooves in the rock behind them fill before the open flat does. A party working the low water finds the way back already under before the water reaches its feet.",
+      "effect": "damage"
+    },
+    {
+      "id": "the-rising-passage",
+      "name": "The rising passage",
+      "description": "The passages the ore comes out of drain to the same water the shaft on the pavement stands in, so rain that fell inland yesterday arrives in them today under a clear sky. It comes up the passage, not down it, and it comes to the chest before anyone hears it.",
+      "effect": "damage"
+    }
+  ],
+  "resources": [
+    {
+      "id": "flat-grain",
+      "name": "Flat grain",
+      "kind": "crop",
+      "description": "Grown on the silt fans behind the estuary, on ground the river re-lays every spring and nobody has to manure. The crop is small and the ploughing is easy, which is the trade the head has always made."
+    },
+    {
+      "id": "shell-grass-greens",
+      "name": "Shell-grass greens",
+      "kind": "forage",
+      "description": "Taken off the blown shell sand that has gone to grass behind the beach — thyme, sorrel and wild pea growing untended in sand sweeter than anything the moor behind it will hold."
+    },
+    {
+      "id": "passage-ore",
+      "name": "Passage ore",
+      "kind": "ore",
+      "description": "Broken off the walls of the cave passages where the water left the metal behind, and brought up in baskets on a line, because nothing wheeled has ever been got down there."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "paverake-fenster",
+      "name": "Paverake Fenster",
+      "description": "A shaft open in the bare rock and flooded to the level the water stands at under the whole head, so a carrier looking down it is looking at what the ore passages inland are standing in.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "geo-under-dolinflow",
+      "name": "Geo under Dolinflow",
+      "description": "A slot cut back into the cliff along a weak seam, narrow enough to bridge with a plank and loud with water at the far end of it. Carrying parties use it to know where they are in fog, because it can be heard when nothing can be seen.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

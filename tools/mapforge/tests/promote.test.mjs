@@ -20,22 +20,72 @@ const nodesOf = (repo) => readdirSync(join(repo, "content/spine/nodes")).sort();
 const shaOf = (p) => createHash("sha256").update(readFileSync(p)).digest("hex");
 const snap = (d) => readdirSync(d).sort().map((f) => `${f}:${readFileSync(join(d, f), "utf8")}`).join("\n");
 
-// A live n-atlas descendant that the 36-file trunk census does NOT keep.
-// NOT n-galereach, which the plan's own test names: n-galereach is a
-// GENERATED ocean node — it exists only in the draft, so asserting the
-// promoted root lacks it is vacuously true and proves no reconciliation.
-// n-gildmark is a committed cluster-1 town the redraw deletes.
-const STALE_LIVE_NODE = "n-gildmark.json";
+// A live n-atlas descendant that the draft does NOT carry.
+//
+// It used to be `n-gildmark.json`, a committed cluster-1 town the redraw
+// deletes. Once the redraw is COMMITTED, the live trunk IS the draft's node
+// set — that is exactly what content/spine/trunk-census.json now pins — so no
+// committed node is stale any more and every reconciliation assertion in this
+// file went vacuous at once: no deletions to report, nothing for step 2 to
+// remove, and a sidecar the derive-writer had no reason to rewrite. Re-pointing
+// the constant at some other committed node id would be the same defect with a
+// newer name, and it would go vacuous again on the next redraw.
+//
+// So the stale node is PLANTED instead. `plantStaleNode` writes one n-atlas
+// descendant the draft cannot contain (its id is not in the manifest, so the
+// generator never mints it), which is precisely the condition reconciliation
+// exists to handle. It is a `point` placement so it claims no area and cannot
+// perturb G-OVERLAP, and it is deleted in step 2 — before promoteWorld runs
+// check_content at all — so it never reaches a gate.
+const STALE_LIVE_NODE = "n-stale-probe.json";
+function plantStaleNode(repo) {
+  const doc = {
+    id: "n-stale-probe", tier: "town", parentId: "n-cluster1",
+    title: "Stale Probe",
+    provenance: { authored: "hand", generator: null, source: "tools/mapforge/tests/promote.test.mjs" },
+    frozen: false,
+    seed: { value: "00112233445566aa", epoch: 0, why: null },
+    placement: { shape: "point", at: [98.2, 152.6] },
+    interior: null,
+    composition: { meadow: 100 },
+    interstitial: null, interstitialUnsurveyed: false,
+    compositionTolerance: null, toleranceWhy: null,
+    features: [], bands: [], runtime: null, representsNodeId: null,
+    lore: { summary: "planted by promote.test.mjs so reconciliation has a subject" },
+    tags: [], levelBand: null,
+  };
+  writeFileSync(join(repo, "content/spine/nodes", STALE_LIVE_NODE),
+    JSON.stringify(doc, null, 2) + "\n");
+  // …and its sidecar entry, because content/spine/derived.json is codegen that
+  // mirrors the node set. Without it the probe's deletion leaves the sidecar
+  // byte-identical, and "the sidecar was rewritten" stops being evidence that
+  // the derive-writer ran. The values are placeholders; the derive-writer
+  // overwrites the whole file, and the only thing asserted about them is that
+  // the entry disappears with its node.
+  const sidecar = join(repo, "content/spine/derived.json");
+  const derived = JSON.parse(readFileSync(sidecar, "utf8"));
+  derived[doc.id] = {
+    areaParentUnits2: 0, childAreaParentUnits2: 0, coveragePct: 0, unclaimedPct: 100,
+    computedComposition: {}, rollupVerdict: "ASSERTED", absoluteAnchorRoot: doc.placement.at,
+    resolvedSeedStreams: {}, digest: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  };
+  writeFileSync(sidecar, JSON.stringify(derived, null, 2) + "\n");
+  return repo;
+}
 
 test("the fixture repo links node_modules rather than copying 25 MB of them", T, () => {
-  const repo = scratchRepo();
+  const repo = plantStaleNode(scratchRepo());
   assert.ok(scriptsAreLinked(repo), "the scratch repo cannot resolve ajv — check_content will not run in it");
-  assert.ok(existsSync(join(repo, STALE_LIVE_NODE.replace(/^/, "content/spine/nodes/"))),
+  assert.ok(existsSync(join(repo, "content/spine/nodes", STALE_LIVE_NODE)),
     "the scratch repo does not carry the live node the reconciliation tests delete");
+  // …and the draft genuinely cannot contain it, which is what makes its
+  // deletion evidence of reconciliation rather than of a coincidence.
+  assert.equal(existsSync(join(sharedRun(), "content/spine/nodes", STALE_LIVE_NODE)), false,
+    "the planted probe exists in the draft too — it proves nothing about reconciliation");
 });
 
 test("promote --dry-run writes nothing and lists what it would do", T, () => {
-  const repo = scratchRepo(), run = sharedRun();
+  const repo = plantStaleNode(scratchRepo()), run = sharedRun();
   const before = nodesOf(repo);
   const emitBefore = readFileSync(join(repo, "colyseus-server/src/config/generated/mapDimensions.ts"), "utf8");
   const r = promoteWorld({ repoRoot: repo, runDir: run, dryRun: true });
@@ -50,7 +100,7 @@ test("promote --dry-run writes nothing and lists what it would do", T, () => {
 });
 
 test("promote RECONCILES: every n-atlas descendant absent from the draft is DELETED", T, () => {
-  const repo = scratchRepo(), run = sharedRun();
+  const repo = plantStaleNode(scratchRepo()), run = sharedRun();
   assert.ok(nodesOf(repo).includes(STALE_LIVE_NODE), "the fixture no longer carries the stale node");
   const r = promoteWorld({ repoRoot: repo, runDir: run });
   const after = new Set(nodesOf(repo));
@@ -119,7 +169,10 @@ test("promote PRESERVES the runtime subtree and its edges, byte for byte", T, ()
 // 47 files and not 46). Asserting the old shape would red on correct content;
 // asserting the sidecar is the same claim about the same emitter.
 test("promote runs the derive-writer, so every promoted node is derived in the sidecar", T, () => {
-  const repo = scratchRepo(), run = sharedRun();
+  // Planted for the same reason as above: with the redraw committed, promoting
+  // an unchanged tree gives the derive-writer nothing to change, and
+  // "the sidecar was rewritten" stops being evidence that it ran.
+  const repo = plantStaleNode(scratchRepo()), run = sharedRun();
   const sidecar = join(repo, "content/spine/derived.json");
   const before = readFileSync(sidecar, "utf8");
   const r = promoteWorld({ repoRoot: repo, runDir: run });
@@ -127,6 +180,8 @@ test("promote runs the derive-writer, so every promoted node is derived in the s
   assert.ok(r.notes.some((n) => /^promote: spine-emit: write clean, \d+ files$/.test(n)), r.notes.join("\n"));
   const after = JSON.parse(readFileSync(sidecar, "utf8"));
   assert.notEqual(readFileSync(sidecar, "utf8"), before, "the sidecar was not rewritten — the derive-writer no-opped over a changed tree");
+  assert.equal(after["n-stale-probe"], undefined,
+    "the planted probe's sidecar entry outlived its node file");
   for (const f of nodesOf(repo)) {
     const id = f.replace(/\.json$/, "");
     assert.ok(after[id] && typeof after[id].digest === "string", `${id} has no entry in content/spine/derived.json`);
@@ -493,7 +548,12 @@ test("the COMMITTED declaration names the 36-file census and at least one integr
   assert.deepEqual(d.errors, []);
   assert.equal(d.minTrunkNodes, 36,
     "the committed floor is not the 36-file trunk census Plan E's trunk-census.json restates");
-  assert.deepEqual(Object.keys(d.gateRules).sort(), ["G-ALIAS", "G-PARENT", "G-TOWN-FRAME"]);
+  // G-FROZEN joined the three on 2026-08-28, with the measurement the
+  // declaration itself carries: before generate-world applied the committed
+  // freeze to the draft, a regeneration promoted a trunk that came back 10
+  // frozen to 1 and promote-world printed OK at exit 0. It is the same class as
+  // the other three — a thing only the promotion can drop.
+  assert.deepEqual(Object.keys(d.gateRules).sort(), ["G-ALIAS", "G-FROZEN", "G-PARENT", "G-TOWN-FRAME"]);
   for (const [id, why] of Object.entries(d.gateRules))
     assert.ok(why.length > 40, `${id}'s reason is a label, not a reason`);
 });
@@ -549,19 +609,45 @@ const FAITHFUL_GATE_FAILS = [
   'FAIL  spine: G-CANON-LEG e-leg-millcross-gildmark: no such node',
   'FAIL  spine-alias: story/regions.json#region-gildmark: no such node',
 ];
+// …and these are the REAL ones a promotion that DROPPED THE FREEZE leaves
+// behind, captured 2026-08-28 off two live runs on feat/F-051: the first four
+// from a plain regeneration promoted before generate-world applied
+// content/spine/freeze-reasons.json to the draft (the trunk came back 10 frozen
+// to 1 and promote-world printed OK at exit 0), the last two from the variant
+// that carried the flag without an ancestor-closed set or a recomputed anchor.
+// G-FROZEN is in the declared set because of these, so it is armed here on the
+// lines that earned it and not on an invented shape.
+const DROPPED_FREEZE_GATE_FAILS = [
+  'FAIL  spine: G-FROZEN n-cluster1: content/spine/freeze-reasons.json holds a written reason for this node but it is NOT frozen — a regeneration drops the freeze silently, and this is where that is caught',
+  'FAIL  spine: G-FROZEN n-millcross: content/spine/freeze-reasons.json holds a written reason for this node but it is NOT frozen — a regeneration drops the freeze silently, and this is where that is caught',
+  'FAIL  spine: G-FROZEN n-millcross: frozen but ancestor n-cluster1 is not',
+  'FAIL  spine: G-FROZEN n-millcross: frozen without absoluteAnchor',
+];
 
 test("step 5 ERRORS on a gate failure that names an integrity rule, and is silent on carried canon", () => {
   const rules = readPromotionDeclaration({ repoRoot: ROOT }).gateRules;
   const clean = [];
   assert.deepEqual(gateIntegrityErrors({ out: FAITHFUL_GATE_FAILS.join("\n"), rules, notes: clean }), [],
     "the carried-canon debt Plan E clears was read as a promotion defect");
-  assert.match(clean[0], /gate integrity rules clean — G-ALIAS, G-PARENT, G-TOWN-FRAME over 3 failure line\(s\)/);
+  assert.match(clean[0], /gate integrity rules clean — G-ALIAS, G-FROZEN, G-PARENT, G-TOWN-FRAME over 3 failure line\(s\)/);
 
   const red = [];
   const errs = gateIntegrityErrors({ out: [...FAITHFUL_GATE_FAILS, ...AMPUTATED_GATE_FAILS].join("\n"), rules, notes: red });
   assert.deepEqual(errs.map((e) => e.match(/reports (\d+) (G-[A-Z-]+)/).slice(1, 3)),
     [["2", "G-ALIAS"], ["1", "G-PARENT"], ["1", "G-TOWN-FRAME"]]);
   assert.match(red[0], /gate integrity rules RED/);
+
+  // G-FROZEN, on the lines that earned its declaration. Both shapes of the
+  // failure are in the input — a freeze that vanished, and a freeze carried
+  // without an ancestor-closed set or a recomputed anchor — and one error is
+  // raised naming all four.
+  const frozenRed = [];
+  const frozenErrs = gateIntegrityErrors({
+    out: [...FAITHFUL_GATE_FAILS, ...DROPPED_FREEZE_GATE_FAILS].join("\n"), rules, notes: frozenRed });
+  assert.deepEqual(frozenErrs.map((e) => e.match(/reports (\d+) (G-[A-Z-]+)/).slice(1, 3)),
+    [["4", "G-FROZEN"]],
+    "a promotion that dropped the committed freeze must be a promotion ERROR, not a note");
+  assert.match(frozenRed[0], /gate integrity rules RED/);
 
   // The rule id is matched as a WHOLE token: a longer id that merely starts
   // with a declared one is a different rule and must not be claimed.
@@ -587,7 +673,7 @@ test("a FAITHFUL promotion of the committed draft leaves every integrity rule gr
   const repo = scratchRepo(), run = sharedRun();
   const r = promoteWorld({ repoRoot: repo, runDir: run });
   assert.deepEqual(r.errors, [], "a faithful promotion reported an error");
-  assert.ok(r.notes.some((n) => /gate integrity rules clean — G-ALIAS, G-PARENT, G-TOWN-FRAME over \d+ failure line\(s\)/.test(n)),
+  assert.ok(r.notes.some((n) => /gate integrity rules clean — G-ALIAS, G-FROZEN, G-PARENT, G-TOWN-FRAME over \d+ failure line\(s\)/.test(n)),
     r.notes.join("\n"));
 });
 

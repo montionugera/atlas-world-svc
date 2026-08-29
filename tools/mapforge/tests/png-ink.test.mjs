@@ -18,8 +18,17 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { decodePng, inkStats } from "../lib/png-ink.mjs";
 import { encodePng } from "../lib/texture-bake.mjs";
+import { SHEETS } from "../render-sheet.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+
+// Plan E ruling 8 retired the cluster1 sheet and its committed thumb, and both
+// scans below named "cluster1-world" as a hard literal — so a retirement that
+// was correct everywhere else landed here as two ENOENTs. They are DERIVED
+// from the registry now, which is the authority the storybook parity gate and
+// the render lock already key off, so the next roster change (Task 8 adds 13)
+// widens the coverage instead of breaking it.
+const COMMITTED_THUMBS = Object.values(SHEETS).map((s) => join(ROOT, s.outPng));
 const MAPS = join(ROOT, "game-client/assets/art/maps");
 
 // ── fixture builders ───────────────────────────────────────────────────────
@@ -102,9 +111,10 @@ const drawingPng = (w = 64, h = 64) =>
 
 // ── decode ─────────────────────────────────────────────────────────────────
 
-test("decodePng reads the three committed thumbs", () => {
-  for (const f of ["atlas-world", "cluster1-world", "synthetic-density"]) {
-    const img = decodePng(readFileSync(join(MAPS, `${f}.png`)));
+test("decodePng reads every committed thumb", () => {
+  assert.ok(COMMITTED_THUMBS.length >= 4, `only ${COMMITTED_THUMBS.length} thumbs — this scan has gone dark`);
+  for (const f of COMMITTED_THUMBS) {
+    const img = decodePng(readFileSync(f));
     assert.equal(img.error, undefined, `${f}: ${img.error}`);
     assert.equal(img.width, 512, f);
     assert.equal(img.rgb.length, img.width * img.height * 3, f);
@@ -201,11 +211,12 @@ test("a real drawing scores far above the floor the budget sets", () => {
   assert.ok(st.distinct > budgets.sheets.minThumbDistinctColours, `${st.distinct}`);
 });
 
-test("the three committed thumbs clear every floor, with the margin the budget claims", () => {
+test("every committed thumb clears every floor, with the margin the budget claims", () => {
   const budgets = JSON.parse(readFileSync(join(ROOT, "content/world/budgets.json"), "utf8"));
   const { minThumbInkFraction, minThumbInkRowFraction, minThumbDistinctColours } = budgets.sheets;
-  for (const f of ["atlas-world", "cluster1-world", "synthetic-density"]) {
-    const st = inkStats(readFileSync(join(MAPS, `${f}.png`)));
+  assert.ok(COMMITTED_THUMBS.length >= 4, `only ${COMMITTED_THUMBS.length} thumbs — this scan has gone dark`);
+  for (const f of COMMITTED_THUMBS) {
+    const st = inkStats(readFileSync(f));
     assert.equal(st.error, undefined, `${f}: ${st.error}`);
     assert.ok(st.inkFraction >= minThumbInkFraction, `${f} ink ${st.inkFraction}`);
     assert.ok(st.inkRowFraction >= minThumbInkRowFraction, `${f} rows ${st.inkRowFraction}`);

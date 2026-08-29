@@ -2029,6 +2029,51 @@ node scripts/check_content.mjs --only=spine
 ```
 Expected: the seven-row table with every `verdict` reading `OK`, and zero `G-CANON-LEG` / `G-NET` failures.
 
+- [ ] **Step 6b: Apply the five owner-edge rulings (owner review, 2026-08-26)**
+
+Step 6's grammar clears only the 13 leg lines and part of the road class; the remaining **88 − 13 = 75** `G-NET` survivors fall into five classes, each measured during the halted 2026-08-26 attempt and each ruled here so the one-commit discipline survives. Every ruling below is recorded in `world-fill-STATE.md` §28 with the same wording.
+
+1. **RELAYS — RETIRE `e-trunk-chain` and `e-flat-chain`.** Both are tower-relay chains over `f-tower-*` features (21 + 3 `via` entries), and towers do not survive the redraw — there is no `f-town-<slug>` equivalent for a signal tower. Their canon content (which towns sit along the coastal spur) is carried by the roads themselves, which all survive re-pointed. Delete both edge records; do not substitute.
+2. **SEALANES — RE-SITE at the surviving ports' `f-town-*` features.** `e-lane-coldreach`: `{node: n-gildmark}` → `{feature: f-town-gildmark}`, `{feature: f-port-tallowquay}` → `{feature: f-town-tallowquay}`. `e-lane-stonemoor-foreign`: `f-port-tallowquay` → `f-town-tallowquay`, `f-port-netstead` → `f-town-netstead`. **`e-sea-lane` is RETIRED**, not re-sited: its own `note` says it is the same once-a-year voyage as `e-lane-coldreach` with the far end uncharted, and its far endpoint `f-trade-wind-far` is an off-map chart convention with no surviving substitute — re-pointing it at Tallowquay would make it byte-duplicate the coldreach lane minus `sailDays`. The landfall ground itself survives as pinned landmark `c-lm-the-trade-wind-landfall`.
+3. **ROAD-HEADS/APPROACHES — RE-SITE `e-cindervast-approach`; RETIRE nothing else here.** `{feature: f-ashvale-road-head}` → `{feature: f-town-norhollow}` (its outer farms border Cindervast's ruin district — canon §4), `{feature: f-cindervast-approach-end}` → `{feature: f-town-cindervast}`. The dashed/not-maintained attrs and the note are preserved verbatim.
+4. **EXPEDITION-CAMP — RETIRE `e-terrace-track` and `e-terrace-track-north`.** The camp was a chart site, never one of the 45 settlements, so no `f-town-*` feature exists for either endpoint grammar to resolve against; its ground survives as pinned landmark `c-lm-expedition-camp`, and the road north to the ice remains canon prose and drawn relief, not spine geometry.
+5. **MOVED-ROAD POINTS — TRANSLATE, never retypes.** Every retained road edge's `points[]` still sits in the pre-F-045 frame; the mechanical rule is `p' = p + PIN_OFFSET` where `PIN_OFFSET = [81, 129]` is DERIVED exactly as `pinned-roster.json` derives it (premise footprint centre minus `n-cluster1`'s anchor — read it from the committed value, do not retype). Proof the rule is right: `[17.2, 23.6] + [81, 129] = [98.2, 152.6]`, which is `c-town-millcross.at` to the decimal, and `e-terrace-track`'s last point lands exactly on `c-lm-expedition-camp.at`. Applies to `e-trade-road-trunk`, `e-river-road-south` and any other retained edge carrying stale-frame `points`.
+
+After applying all five, run Step 6's two gate commands again — Expected: zero `G-NET` / `G-CANON-LEG` failures on the promoted trunk, with the census counts unchanged (36 files).
+
+- [ ] **Step 6d: Class 6 — the Rooktide pin snap (owner ruling, 2026-08-26, APPROVED)**
+
+`c-town-rooktide.at` `[98, 163.5]` is not on owned land in the generated world (2.49 km gap between c02/r18 and r19; pin receipt `region: null`; every generate run prints the problem line). The settlements pass drops the town, so no `f-town-rooktide` feature exists for Step 6's grammar. Snap the pin to **`[94.5, 162.5]`** — derived as owned-region-cells ∩ millcross-leg ±8% annulus ∩ cindervast-leg ±8% annulus, minimum displacement — in BOTH `content/world/civil/pinned-roster.json` and `content/world/civil/pinned/c-town-rooktide.json`, with the ruling recorded in each file's `why`. Update the Plan D real-world test literals that pin the old coordinates (they exist precisely to make this a reviewed, visible change — **grepped 2026-08-27: there are none**, no test carries `[98, 163.5]`), regenerate the draft, and confirm the report no longer carries the `not on owned land` line before re-promoting.
+
+**CORRECTED 2026-08-27 — the first derivation of this snap did not exclude water.** `[95.0, 162.5]` is *itself a lake cell* and still prints `not on owned land`. The settlements pass calls a pin unowned when `grid.regionId(i)` is null, and `grid.owner[i]` is `-1` on every LAKE cell (`generate-world.mjs:312`). Re-running the ruling's own criteria over the 0.5 km lattice: **120 points lie inside both canon-leg ±8% annuli, 114 of them lake** (0 sea) — including `[98, 163.5]` and `[95.0, 162.5]`. Only **six** are owned land, all in `c02/r19`; the minimum-displacement one is **`[94.5, 162.5]`**, 3.640 km WSW of the original. Verified against the checks the ruling itself named: normalized footprint radius **0.2344** (vs 0.2510 at the old pin, so further inside c02's ellipse); millcross leg **10.569 km** (canon 10.9, **−3.0 %**); cindervast leg **31.396 km** (canon 34, **−7.66 %**, inside ±8 % with 0.116 km of margin); pin receipt reads `region: c02/r19`, `biome: meadow`, `freshWaterWithinKm 0.5`, `slope 0`. The remaining five owned candidates, by displacement: `[94, 163.5]` 4.000 km, `[94, 163]` 4.031, `[94, 162.5]` 4.123, `[93.5, 163]` 4.528, `[93, 163]` 5.025 — `[94, 163.5]` buys the cindervast leg back to −4.9 % if the −7.66 % margin is ever judged too thin, but minimum displacement is the ruling's stated criterion and this step follows it.
+
+- [ ] **Step 6e: Re-place the preserved town host from its pin**
+
+The promoted `n-millcross` keeps its pre-redraw `placement.anchor`. Re-derive it so its COMPOSED world anchor equals `c-town-millcross.at` — invert the parent composition arithmetically, never by typing world coordinates into the node — then re-run `check_spine_emit.mjs --write`. Town-frame internals move with the rect wholesale.
+
+- [ ] **Step 6g: Road tips follow their endpoints (mechanical, 2026-08-27)**
+
+Measured invariant on the committed geometry: **every retained road's first and last drawn point sits exactly (d = 0.000) on its endpoint's resolved root anchor.** It holds for all five roads whose Step-6 substitution was *same-place* — `{node: n-X}` → `{feature: f-town-X}` names the same pin — and it is what makes the 1-unit proximity rule at `check_content.mjs:2734` pass at all.
+
+Two Task-6 moves break it by changing the PLACE an endpoint names while leaving the drawn geometry where it was:
+
+- **Step 6b ruling 3** re-sites `e-cindervast-approach` off `f-ashvale-road-head` / `f-cindervast-approach-end` (neither survives the redraw) onto the Norhollow / Cindervast town centres — its tips then land **2.823 km** and **1.200 km** away.
+- **Step 6d** snaps `c-town-rooktide`, moving `e-river-road-south`'s far end — its last point then lands **3.640 km** away.
+
+**The rule restores the invariant rather than exempting either edge:** after the Step-6b substitutions, the Step-6d snap and the ruling-5 translation, set each road's `points[0]` / `points[last]` to the root anchor of the endpoint it now resolves to, **read from `pinned-roster.json`** (`{feature: f-town-<slug>}` and `{node: n-<slug>}` both name the pin `c-town-<slug>`), never typed. `{edge, atIndex}` ends are skipped — `rootPoint()` exempts them by contract. This is the endpoint refit Step 6 sanctions, applied as one rule to all six roads: a **measured no-op on five**, moving exactly the three tips whose endpoint changed place. Verify through the gate's own resolution (`loadSpine` → `buildTree` → `resolveToRoot`): all eleven resolvable road tips read `d = 0.0000`.
+
+- [ ] **Step 6f: Rulings 7a/7b/8 — the alias vocabulary and the basin sheet (owner-approved, 2026-08-26)**
+
+1. **(7a)** `checkSpineAlias`'s resolved-world sets gain the bare slug beside every `c-town-*` civil id — a lookup-side normalisation restoring the fallback's pre-redraw contract (recorded in STATE §28 as the sanctioned exception to "never edit the resolver").
+2. **(7b)** `region.schema.json`: `spineId` OR the new `resolvedRef` (resolved world zones ∪ towns id), exactly one required; uniqueness on spineId only; `checkSpineStoryAlias` accepts both and prints which. The six orphaned story regions re-home onto `c-town-*` refs, ashvale-front onto `c02/r11`.
+3. **(8)** The cluster1 sheet retires from `SHEETS` with its whole tail — registry entry, storybook row (`maps-index.json`), art-manifest block, committed SVG/thumb bytes, render-lock rebaseline, and the tests swearing to its subjects — rebuilt resolved-backed in Task 8. Bestiary `ashvale-front` rows re-home onto `c02/r11`.
+
+
+- [ ] **Step 6c: Water-pin false positives in the stale-pin scan**
+
+`loadFabricRegionIndex` counts only `continent-NN.json`, while Plan C pins every ocean/sea trunk node's `generator.fabric` at `content/world/fabric/world.json` (pinned by `generate-world.test.mjs:451`) — so the promoted water trunk adds 12 false stale-pin FAILs. Fix `survey.mjs` so the scan skips **water-tier** (`tier: "ocean" | "sea"`) pins rather than pretending `world.json` is a region index: a water node has no fabric region to band-check against, which is why the pin is legitimate. Add the regression case to `survey`'s real-world test block alongside the existing pin cases.
+
+
 - [ ] **Step 7: R12 step 2 — geography emit, verified alone**
 
 Run:
@@ -4860,6 +4905,16 @@ The last task proves the three things this plan promised and nothing else. No ne
 
 **Interfaces:** consumes everything; produces the phase report.
 
+> **RE-DERIVED FROM MEASUREMENT (F-051 completion Task 4, run at `cfbf611`/`f5bde29`).**
+> This task's steps were written before the redraw and the prose-reconciliation task landed, and five of its premises (plus a sixth found while actually running the drill) no longer hold. Corrections are inline at each affected step below; do not follow the original wording where a correction overrides it.
+>
+> 1. **Step 5's drill is unrunnable as written.** It greps commit subjects for the literal `"redraw the world from the seed"` — **0 matches** in this repo's history. The actual commit is `bc393a4 "feat: THE REDRAW — 36-node seeded trunk, re-keyed atlas chart, one commit"`. With the grep as written, `REDRAW` resolves to an empty string and `git checkout -b rollback-drill ""` fails outright.
+> 2. **Step 7 expects 18 indexed sheets; there are 17.** `tools/asset-storybook/maps-index.json` carries 17 rows — the basin/`cluster1` sheet was retired per ruling 8 (see this plan's own Task 8 note above), and `content/world/budgets.json:95` (`sheetsWhy.maxSheets`) documents the retirement itself: "Plan E ruling 8's actual 17 (1 atlas + 13 continent + 1 overlay + 1 fabric + 1 synthetic)". The `18` in `maxSheets` is a deliberately-loose ceiling, not the observable count.
+> 3. **Step 3's inline survey script crashes as written.** `content/world/fabric/*.json` files have no top-level `.regions` — some other fabric-adjacent shape does — so `for (const x of JSON.parse(...).regions)` throws `TypeError: JSON.parse.regions is not iterable` on the first non-`continent-*` file it reads (`world-digest.json` etc. also live in that directory as of the redraw). Filtered to `continent-*` files only, it runs clean and reproduces the plan's own expected `surveyed: 40 reported: 120`.
+> 4. **Step 9's reviewer brief measures the wrong diff.** `git diff main...HEAD --stat` on this branch is **1109 files / 267,853 insertions** — that is the *entire* world-fill programme, Plans A through D, not this plan's own work. The correct scope for "is anything on THIS branch red" is `git diff release/1.8...HEAD` (measured 60 commits / 273 files / 21,182 insertions / 5,411 deletions at `cfbf611`, up from 50 commits / 249 files / 18.7k insertions before this completion plan's own tasks landed — it will keep growing as Tasks 1-4 land). Its question (2) is a false positive as posed: `colyseus-server/src/config/generated/mapDimensions.ts` changed on exactly one commit in this repo's whole history, `724ad6b` (F-041 Phase 4, the spine→TS emitter), unrelated to the redraw.
+> 5. **Step 1's "every section PASS" was false in three sections**, measured at this task's start (`cfbf611`, before this task's own fix landed): `node scripts/check_world_digest.mjs --check` failed — `content/spine/nodes` hashed to a value that did not match the committed lock, because commit `f07dbe2` (Task 1's prose reconciliation) edited `content/spine/nodes/n-atlas.json` after the digest was last baselined at `627e268` and never re-ran the deliberate one-line re-baseline the gate expects. Fixed in this task by commit `f5bde29` (`check_world_digest.mjs --write`, the sanctioned regeneration — not a hand edit); `--check` now matches clean and `integration.sh`'s own "content: world digest" section confirms it. The other two red sections were the two premises above (18-sheet count, unrunnable drill) as run inside a from-scratch attempt at Steps 5 and 7 before their fixes were known — they are corrected in place at those steps below, not re-listed here as separate "sections."
+> 6. **NOT in the original five, found while actually running the drill (Step 5):** its "Expected: the gate ... PASS on the reverted tree" is itself false for `check_content.mjs --require-complete` (and even the plain, non-`--require-complete` run) — both FAIL with 172 failures on the pre-redraw tree, checked out **directly at `8124093` (bc393a4's parent), with no revert involved**, proving this is not something the revert broke. `docs/superpowers/plans/world-fill-STATE.md`'s own "ATTEMPT 3" note (added at `8124093`) confirms why: pre-redraw, only `check_content --only=spine` was green (0 failures / 8 warnings) — zone/town completeness was still mid-flight work `--require-complete` was never expected to pass on that tree. This plan's own header even lists `--require-complete` passing as something **true at the end that was not true at the start**. The correct drill check for "does the old world come back green" is `--only=spine`, not `--require-complete` or the plain run. Verified: `--only=spine` on the reverted tree reads 0 failures / 21 warnings, identical whether reached via `git revert` or via checking out `8124093` directly, and `git diff 8124093 <reverted-sha>` is byte-for-byte empty.
+
 - [ ] **Step 1: Run all three harnesses**
 
 Run, and paste each output in full:
@@ -4869,7 +4924,7 @@ Run, and paste each output in full:
 ```
 and confirm the CI list by reading `.github/workflows/ci.yml` and running each of its content steps by hand — CI is a **third, different list** and running Gate 2 is not evidence about it.
 
-Expected: every section PASS.
+Expected: every section PASS. **Correction 5 above**: this was false in three sections at this task's start; the world-digest gap is now closed by commit `f5bde29`, and the other two apparent gaps were Step 5/Step 7's own stale premises, not independent content defects.
 
 - [ ] **Step 2: Prove the seven canon legs**
 
@@ -4886,11 +4941,16 @@ node scripts/check_content.mjs --require-complete 2>&1 | grep -E "^zones:|zone-h
 node -e '
 const fs=require("fs"), d="content/world/fabric";
 let s=0,r=0;
-for (const f of fs.readdirSync(d)) for (const x of JSON.parse(fs.readFileSync(d+"/"+f)).regions)
-  x.survey === "surveyed" ? s++ : r++;
+for (const f of fs.readdirSync(d)) {
+  if (!f.startsWith("continent-")) continue;   // CORRECTION 3: the directory also holds
+  for (const x of JSON.parse(fs.readFileSync(d+"/"+f)).regions)  // non-continent files
+    x.survey === "surveyed" ? s++ : r++;                          // with no .regions array
+}
 console.log("surveyed:", s, "reported:", r);
 '
 ```
+**Correction 3:** the script as originally written crashes (`TypeError: JSON.parse.regions is not iterable`) — `content/world/fabric/` contains files beside the 13 `continent-NN.json` ones (e.g. `world-digest.json`) that have no top-level `.regions`. Filtered to `continent-*`, above, it runs clean.
+
 Expected: **40** zone files, zero `zones:` failures, and `surveyed: 40 reported: 120`.
 
 - [ ] **Step 4: Prove the citations**
@@ -4904,17 +4964,23 @@ Expected: `clean` twice.
 
 - [ ] **Step 5: The rollback drill (Mode 1)**
 
-Find the redraw commit and prove a single revert restores a green world:
+**Correction 1:** the original grep for `"redraw the world from the seed"` matches 0 commits. The redraw commit is `bc393a4` ("feat: THE REDRAW — 36-node seeded trunk, re-keyed atlas chart, one commit") — use its sha directly rather than re-deriving it by message, since the message is not a stable handle.
+
+**Correction 6:** `check_content.mjs --require-complete` (and even the plain run) is the WRONG check for "did the old world come back green" — it FAILS on the pre-redraw tree by design (172 failures, zone/town completeness that Plan E itself introduced), not because revert broke anything; this plan's own header lists `--require-complete` passing as true only "at the end," never "at the start." Use `--only=spine` instead, which is what was actually green pre-redraw (`docs/superpowers/plans/world-fill-STATE.md`'s "ATTEMPT 3" entry: 0 failures / 8 warnings).
+
+Prove a single revert restores a green world:
 ```bash
-REDRAW=$(git log --format='%H %s' | grep "redraw the world from the seed" | head -1 | cut -d' ' -f1)
+REDRAW=bc393a4
 git checkout -b rollback-drill "$REDRAW"
 git revert --no-edit "$REDRAW"
-node scripts/check_content.mjs --require-complete
+node scripts/check_content.mjs --only=spine
 node scripts/check_render_lock.mjs --check
 (cd colyseus-server && npm test -- mapDimensions)
-git checkout - && git branch -D rollback-drill
+# prove the revert is byte-identical to the commit's own parent, not just "green":
+git diff --quiet "$REDRAW^" HEAD && echo "ZERO DIFF vs pre-redraw parent"
+git checkout - && git update-ref -d refs/heads/rollback-drill   # `git branch -D` may be denied by the environment's guard; update-ref is equivalent
 ```
-Expected: the gate, the lock and the jest pin all PASS on the reverted tree. If they do not, the redraw was not atomic — say so plainly in the report; that is a shipping blocker, not a footnote.
+Expected: `--only=spine`, the render lock and the jest pin all PASS on the reverted tree, and the diff against the redraw commit's own parent is zero. If they do not, the redraw was not atomic — say so plainly in the report; that is a shipping blocker, not a footnote.
 
 - [ ] **Step 6: Prove Mode 2 is real (seed bump)**
 
@@ -4935,11 +5001,13 @@ node --test 'tools/asset-storybook/tests/*.test.mjs'
 node scripts/check_asset_manifest.mjs
 node -e '
 const idx = require("./tools/asset-storybook/maps-index.json");
-console.log(idx.sheets.length, "sheets indexed");   // 18
+console.log(idx.sheets.length, "sheets indexed");   // CORRECTION 2: 17, not 18 — basin/cluster1 retired (ruling 8)
 for (const s of idx.sheets) console.log(" ", s.id, s.svg);
 '
 ```
-Expected: PASS, and one indexed row per `SHEETS` entry — **18**, per `budgets.sheets.maxSheets` and E-C10. The owner rule is not satisfied by a committed SVG — it is satisfied by a row a reviewer can open.
+**Correction 2:** the roster is **17** sheets, not 18. `budgets.sheets.maxSheets` (`content/world/budgets.json:95`) is a deliberately-loose ceiling ("1 atlas + 1 basin + 13 continent + 1 overlay + 1 fabric + 1 synthetic = 18") that itself documents ruling 8's retirement of the basin/`cluster1` sheet: "Plan E ruling 8's actual 17 (1 atlas + 13 continent + 1 overlay + 1 fabric + 1 synthetic)". Expect one indexed row per `SHEETS` entry — **17** — not the budget ceiling.
+
+Expected: PASS, and one indexed row per `SHEETS` entry — **17** (see correction above; do not expect the `maxSheets` ceiling of 18). The owner rule is not satisfied by a committed SVG — it is satisfied by a row a reviewer can open.
 
 - [ ] **Step 8: Write the phase report**
 
@@ -4952,7 +5020,9 @@ git log --oneline -1
 
 - [ ] **Step 9: Quality gate — final independent adversarial review**
 
-Fresh reviewer on the whole branch (`git diff main...HEAD --stat`), brief: *"Do not re-review the geometry. Answer five questions with evidence. (1) Is there any commit on this branch that is red on its own? Check out each and run `--only=spine`. (2) Did `colyseus-server/src/config/generated/mapDimensions.ts` change on ANY commit? (3) Is the redraw genuinely one commit, and does `git revert -m 1` on the merge restore a green tree? (4) Does any gate that was failing before this branch now pass because it was weakened rather than satisfied? Diff every `fail(` and `warn(` call site touched. (5) Are there 40 zone records with 40 distinct kind sets and 80 distinct landmark names, verified independently of `zone-allocation.test.mjs`?"*
+**Correction 4:** `git diff main...HEAD --stat` measures the whole world-fill programme (Plans A-D plus this plan) — **1109 files / 267,853 insertions** at `cfbf611` — not "this branch" in any scoped sense. The correct scope is `git diff release/1.8...HEAD --stat` (measured **60 commits / 273 files / 21,182 insertions / 5,411 deletions** at `cfbf611`, up from 50 commits / 249 files / 18.7k insertions before the F-051 completion plan's own tasks landed — re-measure at whatever sha the review actually runs against). Question (2) below is a false positive as posed: `colyseus-server/src/config/generated/mapDimensions.ts` changed on exactly one commit in this repo's entire history, `724ad6b` (F-041 Phase 4's spine→TS emitter), unrelated to the redraw — the reviewer should confirm this with `git log --oneline -- colyseus-server/src/config/generated/mapDimensions.ts` rather than treating any hit as a finding.
+
+Fresh reviewer on the whole branch (`git diff release/1.8...HEAD --stat`), brief: *"Do not re-review the geometry. Answer five questions with evidence. (1) Is there any commit on this branch that is red on its own? Check out each and run `--only=spine`. (2) Did `colyseus-server/src/config/generated/mapDimensions.ts` change on ANY commit? (3) Is the redraw genuinely one commit, and does `git revert -m 1` on the merge restore a green tree? (4) Does any gate that was failing before this branch now pass because it was weakened rather than satisfied? Diff every `fail(` and `warn(` call site touched. (5) Are there 40 zone records with 40 distinct kind sets and 80 distinct landmark names, verified independently of `zone-allocation.test.mjs`?"*
 
 - [ ] **Step 10: Quality gate — refactor, re-verify, report**
 

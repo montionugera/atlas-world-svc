@@ -141,6 +141,15 @@ combat_lab() {
 # out of the full content sweep (~1 s).
 content_spine() { node "$REPO_ROOT/scripts/check_content.mjs" --only=spine; }
 
+# Plan E / spec §9.3: the whole-world digest — what replaces the freeze once
+# coordinates are generated. Already gated in Gate 2 and CI; belongs here too
+# (~0.19 s) because a stale digest is a repo-wide invariant, not a per-feature
+# one, and Gate 1 is the check that runs on EVERY ship. commit f07dbe2 edited
+# content/spine/nodes/n-atlas.json without re-baselining the digest, and that
+# failing gate passed five consecutive review gates before being caught at
+# final-green — none of them ran repo-wide invariants.
+world_digest() { node "$REPO_ROOT/scripts/check_world_digest.mjs" --check; }
+
 art_forge_tests() {
   ( cd "$REPO_ROOT/tools/art-forge" && node --test tests/*.test.mjs )
 }
@@ -165,6 +174,7 @@ run_section "art-forge: node --test suite"  art_forge_tests
 run_section "asset-storybook: node --test suite" storybook_tests
 run_section "combat-lab: model gates"       combat_lab
 run_section "content: spine gates (--only=spine)" content_spine
+run_section "world digest (G-WORLD-DIGEST)" world_digest
 
 # --- Summary -----------------------------------------------------------------
 echo ""

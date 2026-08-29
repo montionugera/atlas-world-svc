@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolveWorld } from "../lib/places.mjs";
+import { loadPlaces } from "../lib/places.mjs";
 import { loadSpine, buildTree } from "../lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -189,22 +189,37 @@ import { existsSync, mkdtempSync, mkdirSync, rmSync } from "node:fs";
 // than one test.
 //
 // Plan D Task 11: loadPlaces() now reads the GENERATED world from
-// content/world/resolved/, whose zone ids are the new region ids. This file's
-// subject is still the live BASIN (the ten legacy zone slugs), so the world
-// comes from resolveWorld() — the basin document's own resolver, the same one
-// the sheet builders draw from.
+// content/world/resolved/, whose zone ids are the new region ids.
+//
+// PLAN E RULING 8 (Task 6): this used to come from resolveWorld() — the basin
+// document's own resolver — because this file's subject was the live BASIN and
+// its ten legacy zone slugs. That subject is gone: the redrawn 36-node trunk
+// hosts no basin, ruling 8 retired the cluster1 sheet, and its tail retired the
+// three dead subject keys from content/spine/sheet.json, so resolveWorld can no
+// longer return a document at all on the real root (pinned in places.test.mjs).
+//
+// REAL_WORLD is used here for exactly two things — a list of real zone ids to
+// stamp synthetic records for, and a real zones/towns pair to wrap in a fixture
+// geography — and the RESOLVED world supplies both. So the assertion below
+// stays what it always was, on the document that actually survives: the world
+// the gate itself reads must load with zero problems, or every fixture built
+// from it is built on sand.
 const REAL_WORLD = (() => {
-  const spine = loadSpine({ contentRoot: join(ROOT, "content") });
-  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
-  const { doc, problems } = resolveWorld({ spine, tree });
-  assert.deepEqual(problems, [], "the real spine must resolve a world");
+  const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
+  assert.deepEqual(problems, [], "the resolved world must load");
   return doc;
 })();
 const GEOGRAPHY_ZONE_IDS = REAL_WORLD.zones.map((z) => z.id);
 
-/** A Z3-complete record: two hazards, two resources, two landmarks, a reason. */
-const completeRecord = (zone) => ({
+/** A Z3-complete record: two hazards, two resources, two landmarks, a reason.
+ *  Plan E Task 9 added the two JOIN keys (`region`, `survey`) to
+ *  zone-content.schema.json's `required`, so a record without them is
+ *  schema-invalid and never reaches the Z-rules or the count. `region` matters
+ *  only to the gate test below; MEASURES.zones never reads it. */
+const completeRecord = (zone, region = "c02/r01") => ({
   zone,
+  region,
+  survey: "surveyed",
   reasonToGo: `why anyone walks into ${zone}`,
   hazards: [{ id: "h-one" }, { id: "h-two" }],
   resources: [{ id: "r-one" }, { id: "r-two" }],
@@ -337,6 +352,18 @@ test("the gate and the zones measure agree on which filenames are records", () =
       instances: [], relay: null, distances: null, seaLane: null, sheet: null,
     }));
 
+    // Plan E Task 9: Z2's authority is the FABRIC, so the root needs one — and
+    // writing any fabric file arms G-POI, whose floor is 12 points of interest
+    // on surveyed ground (scripts/lib/world.mjs:626). One surveyed region, the
+    // one the record joins to, with twelve instances on it.
+    mkdirSync(join(root, "content/world/fabric"), { recursive: true });
+    writeFileSync(join(root, "content/world/fabric/continent-02.json"), JSON.stringify({
+      continent: "c02",
+      regions: [{ id: GEOGRAPHY_ZONE_IDS[0], survey: "surveyed" }],
+      instances: Array.from({ length: 12 },
+        (_, i) => ({ id: `poi-${i}`, region: GEOGRAPHY_ZONE_IDS[0] })),
+    }));
+
     // Hermeticity, exactly as Task 4's fixture()/runGate() do it. parseArgs in
     // check_content.mjs defaults --keys, --manifest, --mob-types and
     // --spawn-areas to the LIVE repo artifacts (colyseus-server/generated/*,
@@ -354,7 +381,16 @@ test("the gate and the zones measure agree on which filenames are records", () =
     // `zone-emberdown.json` is the ONLY record. The other three sit one
     // character off the pattern on three different sides: no hyphen, a plural
     // stem, and no `zone` stem at all.
-    const record = completeRecord("emberdown");
+    // PLAN E TASK 9 CORRECTION. This comment used to say the record's `zone`
+    // becomes the resolved region id, citing Task 11's shape as `"zone":
+    // "c02/r21"`. Read on the plan: Task 11's record is `"zone":
+    // "tallowquay-roads", "region": "c03/r01"` — the slug stayed a NAME and the
+    // region id became a separate JOIN key, which is the key Z1 and Z2 both
+    // read. So the slug goes back to being a slug and `region` carries the
+    // first real resolved zone id; get that wrong and Z1 orphans the record and
+    // checkZoneContent's `N zones` count — the very number this test reads —
+    // drops to 0.
+    const record = completeRecord("emberdown", GEOGRAPHY_ZONE_IDS[0]);
     record.hazards = [{ id: "h-one", name: "H one", description: "d", effect: "burn" },
                       { id: "h-two", name: "H two", description: "d", effect: "poison" }];
     record.resources = [{ id: "r-one", name: "R one", kind: "fuel", description: "d" },
@@ -396,17 +432,29 @@ test("the gate and the zones measure agree on which filenames are records", () =
   }
 });
 
-test("the report's zones row reads 10/10 met once all ten records clear the floors", () => {
+test("the report's zones row reads target/target met once that many records clear the floors", () => {
+  // PLAN E RULING 8 (Task 6): the ids used to be the ten legacy basin slugs,
+  // and the filename was `zone-<id>.json` because in that world the two were
+  // the same string. On the redrawn trunk a zone id is `cNN/rNN` — a slash,
+  // which cannot be a filename — and the shipped convention (Plan E Task 11:
+  // `zone-tallowquay-roads.json` holding `"zone": "c02/r21"`) already separates
+  // the file's slug from the record's id. The fixture mirrors that, and takes
+  // as many REAL zone ids as the budget line asks for rather than a literal 10,
+  // so the row is proven to read target/target for whatever the target is.
+  const target = budget.lines.find((l) => l.id === "zones").target;
+  const ids = GEOGRAPHY_ZONE_IDS.slice(0, target);
+  assert.equal(ids.length, target,
+    `the resolved world declares ${GEOGRAPHY_ZONE_IDS.length} zones, fewer than the budget's ${target}`);
   const root = zoneRoot(
-    Object.fromEntries(GEOGRAPHY_ZONE_IDS.map((id) => [`zone-${id}.json`, completeRecord(id)])),
+    Object.fromEntries(ids.map((id, i) => [`zone-fixture-${i}.json`, completeRecord(id)])),
   );
   try {
     const row = buildRows(budget, root).find((r) => r.id === "zones");
-    assert.equal(row.actual, 10);
+    assert.equal(row.actual, target);
     assert.equal(row.note, "met");
     assert.equal(
       renderTable([row]).split("\n").at(-1),
-      "zones                     10      10      met",
+      `zones                     ${target}      ${target}      met`,
     );
   } finally {
     rmSync(root, { recursive: true, force: true });

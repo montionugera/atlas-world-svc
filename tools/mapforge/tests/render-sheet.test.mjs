@@ -6,33 +6,13 @@ import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildCluster1Sheet, SHEETS, parseArgs } from "../render-sheet.mjs";
+import { SHEETS, parseArgs } from "../render-sheet.mjs";
 import { inkStats } from "../lib/png-ink.mjs";
+import { acquireHeavyLock, releaseHeavyLock } from "./helpers/suite-lock.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../../..");
 const LOCK = join(ROOT, "content/world/render-lock.json");
-const LOCKED_ARTIFACT = "game-client/assets/art/maps/cluster1-world.svg";
-
-// Plan A Task 12: was a byte comparison against fixtures/basin-baseline.svg,
-// a 47,020-byte duplicate of the committed sheet. The lock carries the same
-// guarantee in one hash, so the fixture and its three consumers are retired.
-test("the spine-driven cluster1 sheet matches the committed render lock", () => {
-  const { svg, problems } = buildCluster1Sheet({ repoRoot: ROOT });
-  assert.deepEqual(problems, []);
-  const expected = JSON.parse(readFileSync(LOCK, "utf8")).artifacts[
-    LOCKED_ARTIFACT
-  ];
-  assert.equal(
-    typeof expected,
-    "string",
-    `render-lock.json has no row for ${LOCKED_ARTIFACT} — the assertion below would compare against undefined`,
-  );
-  assert.equal(
-    "sha256:" + createHash("sha256").update(svg, "utf8").digest("hex"),
-    expected,
-  );
-});
 
 // Seam-4 review B, survivors 7 and 8: `atlas-sheet.mjs`'s drawn letter-spacing
 // could be replaced by a constant, and `patternFor` reduced to the old ice
@@ -66,10 +46,14 @@ test("EVERY sheet in the registry matches the committed render lock", () => {
   }
 });
 
+// Plan E ruling 8 retired the cluster1 sheet, which is the one this used to
+// build. Determinism is a property of the registry, not of that sheet, so it
+// re-points at the atlas — the sheet the redraw actually re-keyed, and the one
+// whose bytes the lock holds.
 test("building twice is deterministic", () => {
   assert.equal(
-    buildCluster1Sheet({ repoRoot: ROOT }).svg,
-    buildCluster1Sheet({ repoRoot: ROOT }).svg,
+    SHEETS.atlas.build({ repoRoot: ROOT }).svg,
+    SHEETS.atlas.build({ repoRoot: ROOT }).svg,
   );
 });
 
@@ -80,12 +64,28 @@ test("SHEETS entries declare title, outSvg, outPng and maxLabelRank", () => {
   // stop the registry going dark must not be able to go dark itself, so the
   // key set is asserted first. Plan B extends this roster; updating this line
   // is the deliberate acknowledgement that the roster changed.
+  // Plan E ruling 8: cluster1 retired here, 5 -> 4. Task 8's 13 continent
+  // sheets took the roster to 17, inside budgets.sheets.maxSheets = 18 — and
+  // the basin ground came back with them, as `wealdmarch`, rather than as a
+  // fourteenth entry.
   assert.deepEqual(Object.keys(SHEETS).sort(), [
+    "ashen-spar",
     "atlas",
-    "cluster1",
+    "brightfall",
+    "coldreach",
+    "driftholt",
     "fabric",
+    "loamspit",
     "overlay",
+    "quillreef",
+    "reedstrand",
+    "rimewall-cap",
+    "skerryfast",
+    "stonemoor",
     "synthetic",
+    "thirstwold",
+    "wealdmarch",
+    "wracklow",
   ]);
   for (const [id, sheet] of Object.entries(SHEETS)) {
     assert.equal(typeof sheet.title, "string", `${id}.title`);
@@ -108,23 +108,30 @@ test("SHEETS entries declare title, outSvg, outPng and maxLabelRank", () => {
 // Seam-4 review A, finding 6, second half — VERIFIED, and recorded rather than
 // papered over. The test above asserts every sheet DECLARES a maxLabelRank; it
 // does not and cannot assert that anything reads one. basin-sheet.mjs never
-// calls placeLabels, so `SHEETS.cluster1.maxLabelRank: 10` is inert, and a
-// reader who saw only the assertion above would reasonably conclude otherwise.
+// calls placeLabels, so the maxLabelRank on its row was inert — and a reader
+// who saw only the assertion above would reasonably conclude otherwise. Plan E
+// ruling 8 has since retired that row entirely.
 //
 // This pins WHICH sheets run a declutter pass, from the source rather than
-// from a comment. Wiring the basin sheet into placeLabels would re-ink
-// cluster1-world.svg — a redraw, which belongs to Plan E and not to a fix
-// pass. When Plan E does it, this list changes, and the change is deliberate.
+// from a comment. Task 8 changed the answer: continent-sheet.mjs decluttes at
+// the rank-8 tier on all thirteen of its sheets, so `maxLabelRank` is LIVE on
+// thirteen of the seventeen rows. basin-sheet.mjs stays dormant and unread —
+// Task 8 built a successor rather than repairing it (see
+// scripts/tests/places.test.mjs's ruling-8 test), so a declutter appearing
+// there would mean somebody revived the spine-backed path.
 test("which sheets actually RUN a label declutter — the registry field is not proof", () => {
   const consumes = (file) =>
     /placeLabels\(/.test(readFileSync(join(ROOT, "tools/mapforge/lib", file), "utf8"));
   assert.equal(consumes("atlas-sheet.mjs"), true, "the atlas stopped decluttering");
   assert.equal(consumes("synthetic-sheet.mjs"), true, "the canary stopped decluttering");
+  assert.equal(consumes("continent-sheet.mjs"), true, "the continent tier stopped decluttering");
+  assert.equal(consumes("fabric-sheet.mjs"), false, "the fabric sheet's maxLabelRank is documented INERT");
+  assert.equal(consumes("overlay-sheet.mjs"), false, "the overlay sheet's maxLabelRank is documented INERT");
   assert.equal(
     consumes("basin-sheet.mjs"),
     false,
-    "basin-sheet.mjs now calls placeLabels — SHEETS.cluster1.maxLabelRank is no longer " +
-      "inert, so update the note on that row and re-baseline the render lock deliberately",
+    "basin-sheet.mjs now calls placeLabels — the spine-backed basin path was revived; " +
+      "re-add its SHEETS row with a live maxLabelRank and re-baseline the render lock deliberately",
   );
 });
 
@@ -162,12 +169,12 @@ test("the default png width is the committed-thumb width, not the ship width", (
   );
 });
 
-test("--no-png stays accepted as a no-op, so CI's three --no-png lines still run", () => {
-  const p = parseArgs(["--sheet", "cluster1", "--no-png", "--check"]);
+test("--no-png stays accepted as a no-op, so CI's --no-png lines still run", () => {
+  const p = parseArgs(["--sheet", "fabric", "--no-png", "--check"]);
   assert.equal(p.error, undefined);
   assert.equal(p.wantPng, false);
   assert.equal(p.checkOnly, true);
-  assert.equal(p.sheetId, "cluster1");
+  assert.equal(p.sheetId, "fabric");
 });
 
 test("bad arguments answer in-band, never by throwing", () => {
@@ -197,8 +204,8 @@ test("bad arguments answer in-band, never by throwing", () => {
 // Takes the BEST of three runs. `node --test` runs files in parallel and this
 // suite shares a machine with a dozen others; a performance floor is a claim
 // about what the renderer can do, not about what a contended box happened to
-// do on one pass. The margin it is asserting is large (cluster1 1.08 s against
-// a 2 s cap), so this is not a way of squeezing under the number.
+// do on one pass. The margin it is asserting is large, so this is not a way of
+// squeezing under the number.
 const rsvg = (args) => spawnSync("rsvg-convert", args, { stdio: "pipe", maxBuffer: 1 << 26 });
 
 test("BUDGET: every committed sheet rasterises inside maxRasterSeconds at rasterWidthPx", (t) => {
@@ -212,6 +219,20 @@ test("BUDGET: every committed sheet rasterises inside maxRasterSeconds at raster
   const cap = budgets.sheets.maxRasterSeconds;
   const dir = mkdtempSync(join(tmpdir(), "sheet-raster-"));
   const slow = [];
+  // The budget is a claim about the RENDERER, not about what a box this suite
+  // is loading on purpose happened to manage. raster.test.mjs spawns a second
+  // full mapforge suite by design; this waits it out. Measured: `synthetic`
+  // reads 0.708 s alone and 2.10-2.64 s alongside that child, against a 2 s
+  // cap — a 1-in-8 flake at four sheets that became every-run at seventeen.
+  // The cap is untouched and every sheet is still measured on its committed
+  // bytes at the ship width, best of three.
+  //
+  // The CHILD must never take this lock: raster.test.mjs holds it while it
+  // waits for that child, so a child that waited for it would deadlock the
+  // suite. Measured the hard way — the first draft hung both files past two
+  // minutes. The child does not assert the budget anyway.
+  const isChild = !!process.env.MAPFORGE_TRACKED_TREE_CHILD;
+  if (!isChild) acquireHeavyLock();
   for (const [id, sheet] of Object.entries(SHEETS)) {
     const out = join(dir, `${id}.png`);
     let best = Infinity;
@@ -228,7 +249,7 @@ test("BUDGET: every committed sheet rasterises inside maxRasterSeconds at raster
     // This WAS `statSync(out).size > 10000`, and that could not do the job it
     // claimed: a BLANK 2000 px raster measures 14,079-18,074 B depending on the
     // librsvg build, comfortably over its own floor. Reviewer B proved it in
-    // situ — blanking the committed cluster1 sheet left this suite 8/0 green.
+    // situ — blanking a committed sheet left this suite 8/0 green.
     // Compressed size is a function of the width as much as of the content, so
     // no byte floor can separate a big blank page from a small drawn one. This
     // reads the PIXELS, against the same budget floors the committed thumbs
@@ -251,10 +272,11 @@ test("BUDGET: every committed sheet rasterises inside maxRasterSeconds at raster
   // The child exists to detect writes into the tracked maps directory, not to
   // measure performance, and timing there is what made review A's 1-in-8 red
   // possible. Everything above still runs; only the CLAIM is withheld.
-  if (process.env.MAPFORGE_TRACKED_TREE_CHILD) {
+  if (isChild) {
     t.diagnostic(`G-RASTER-BUDGET not asserted in the nested child run: ${slow.length} over cap`);
     return;
   }
+  releaseHeavyLock();
   assert.deepEqual(slow, [], `G-RASTER-BUDGET: over ${cap} s at ${width} px: ${slow.join(", ")}`);
 });
 
@@ -269,7 +291,14 @@ test("CI's sheet self-check covers EVERY id in the registry, not a subset", () =
   // here instead of going quietly uncovered.
   const yml = readFileSync(join(ROOT, ".github/workflows/ci.yml"), "utf8");
   const step = yml.slice(yml.indexOf("- name: Sheet self-check"));
-  const checked = [...step.slice(0, step.indexOf("\n\n")).matchAll(/--sheet (\w+) --no-png --check/g)].map((m) => m[1]);
+  // `[\w-]+`, not `\w+`: TWO of the thirteen continent sheet ids carry a
+  // hyphen — `rimewall-cap` and `ashen-spar` — and `\w` stops at one. Measured
+  // rather than assumed: the old pattern does not mis-capture "rimewall", it
+  // fails to match the line AT ALL, so those two sheets would have been
+  // silently missing from `checked` and the registry comparison would have
+  // reported a mismatch that was really a regex bug. Found by adding the
+  // sheets, which is the only way this kind of scan defect ever surfaces.
+  const checked = [...step.slice(0, step.indexOf("\n\n")).matchAll(/--sheet ([\w-]+) --no-png --check/g)].map((m) => m[1]);
   assert.ok(checked.length > 0, "the self-check step no longer matches — this scan has gone dark");
   assert.deepEqual(checked.slice().sort(), Object.keys(SHEETS).sort(),
     "ci.yml's sheet self-check is not the SHEETS registry");

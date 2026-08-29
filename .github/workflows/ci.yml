@@ -90,7 +90,20 @@ jobs:
       # and stay linked to real asset keys / manifest tiers. Coverage gaps
       # (character keys with no sheet) are warnings until roadmap #1 flips
       # --require-complete. Also runs the gate's own unit tests (plus the shared scripts/tests suite).
+      # Task 3 (F-051 completion plan): `npm test --prefix scripts` had NO
+      # timeout anywhere, so a genuine wedge burned GitHub's 360-minute
+      # default. `npm test` now runs `node --test --test-reporter=tap`
+      # (scripts/package.json) rather than the default reporter, which
+      # DISCARDS `signal:` — under tap, a killed run is distinguishable from
+      # a failed one (see scripts/classify-test-run.mjs). Timeout set from
+      # Task 2's measured result: this step's suite dropped from 486.19 s to
+      # 47.21 s wall-clock (commit e1540f3 -> the Task 2 commit, this box);
+      # 8 minutes is ~10x that 47.21 s, with room left over for `npm ci` and
+      # `check_content.mjs`'s own run, and for a CI runner slower/less
+      # parallel than this one — while still cutting off a genuine wedge in
+      # minutes, not GitHub's 360-minute default.
       - name: Content gate (sheets ↔ schema ↔ keys ↔ manifest)
+        timeout-minutes: 8
         run: |
           npm ci --prefix scripts
           npm test --prefix scripts
@@ -119,6 +132,18 @@ jobs:
       # committed artifact is stale relative to content/story/*.json.
       - name: Story graph drift-gate (docs/story/story-graph.md)
         run: node scripts/gen_story_graph.mjs --check
+
+      # Plan E / spec §9.4: the seven canon walking distances measured against
+      # the hand-placed Tier-1 pins, BEFORE the generator. Fails the build if
+      # any leg is outside ±8% of straightKm or an endpoint fails to resolve.
+      - name: canon-leg pre-flight
+        run: node scripts/check_canon_legs.mjs
+
+      # Plan E / spec §9.3: the whole-world digest — what replaces the freeze
+      # once coordinates are generated. Fails if any of fabric / resolved /
+      # trunk changed without a deliberate one-line re-baseline.
+      - name: world digest
+        run: node scripts/check_world_digest.mjs --check
 
       # Spine emit drift-gate (F-041 G-EMIT-DRIFT): every content/spine/nodes/
       # *.json `derived` block and the two surviving mirrors are emitted from
@@ -152,6 +177,24 @@ jobs:
       - name: Render lock (G-RENDER-LOCK)
         run: node scripts/check_render_lock.mjs --check
 
+      # Geometry lock (Task 2 fix round 1, F-051 completion plan,
+      # G-GEOMETRY-LOCK): content/spine/geometry-lock.json commits every real
+      # sibling pair's gridIntersectionArea result so
+      # scripts/tests/geometry-exact.test.mjs's equivalenceScan() doesn't have
+      # to re-walk all 138 pairs on every `npm test` (that cost 492.6 s before
+      # the lock). The fast suite only READS the lock; this step is what
+      # actually proves the lock is still TRUE — it recomputes
+      # gridIntersectionArea for every pair from scratch and diffs against the
+      # committed file (no nodesHash short-circuit: a short-circuit would
+      # re-open the exact "trust it without checking" gap this step closes).
+      # ~536 s single-threaded measured (task-2-report.md) — hence its own
+      # step with its own timeout, run once here rather than inside the fast
+      # Content gate step above. scripts/ deps are already installed by the
+      # Content gate step above (npm ci --prefix scripts).
+      - name: Geometry lock (G-GEOMETRY-LOCK)
+        timeout-minutes: 20
+        run: node scripts/check_geometry_lock.mjs --check
+
       # X6: CI ran NEITHER the mapforge tests NOR render-sheet --check, so five
       # of six byte comparisons were Gate-2-only (local). That is the wrong
       # place for them once the map lane is the feature under active
@@ -180,11 +223,23 @@ jobs:
       # reds rather than going quietly uncovered.
       - name: Sheet self-check (render-sheet --check)
         run: |
+          node tools/mapforge/render-sheet.mjs --sheet ashen-spar --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet atlas --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet cluster1 --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet brightfall --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet coldreach --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet driftholt --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet fabric --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet loamspit --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet overlay --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet quillreef --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet reedstrand --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet rimewall-cap --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet skerryfast --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet stonemoor --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet synthetic --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet thirstwold --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet wealdmarch --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet wracklow --no-png --check
 
       # Story explorer (F-012 Task 6): graph.mjs is the pure buildGraph()
       # shared by tools/story-explorer/index.html and this smoke test — every

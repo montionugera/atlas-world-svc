@@ -1,9 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Atlas story node: region",
-  "description": "One entry of content/story/regions.json. Part of the F-012 per-kind story graph (see docs/superpowers/specs/2026-07-22-epic-story-pipeline-design.md). F-041: spineId is the foreign key into content/spine/nodes/ — resolution, uniqueness and tier printing are G-ALIAS (story half) in scripts/check_content.mjs.",
+  "description": "One entry of content/story/regions.json. Part of the F-012 per-kind story graph (see docs/superpowers/specs/2026-07-22-epic-story-pipeline-design.md). F-041: spineId is the foreign key into content/spine/nodes/. Plan E ruling 7b (owner, 2026-08-26; STATE §28): after the redraw retires most town-tier nodes, a region may instead carry resolvedRef — an id from the resolved world's zones ∪ towns — with exactly one of the two present. Resolution, uniqueness and tier printing remain G-ALIAS (story half) in scripts/check_content.mjs.",
   "type": "object",
-  "required": ["id", "title", "kind", "summary", "links", "dangerTier", "spineId"],
+  "anyOf": [
+    { "required": ["id", "title", "kind", "summary", "links", "dangerTier", "spineId"] },
+    { "required": ["id", "title", "kind", "summary", "links", "dangerTier", "resolvedRef"] }
+  ],
   "additionalProperties": false,
   "properties": {
     "id": { "type": "string", "pattern": "^region-[a-z0-9]+(-[a-z0-9]+)*$" },
@@ -15,6 +18,13 @@
       "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }
     },
     "dangerTier": { "enum": ["safe", "low", "mid", "high"] },
-    "spineId": { "type": "string", "pattern": "^n-[a-z0-9]+(-[a-z0-9]+)*$" }
+    "spineId": { "type": "string", "pattern": "^n-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "resolvedRef": {
+      "type": "string",
+      "anyOf": [
+        { "pattern": "^c-town-[a-z0-9]+(-[a-z0-9]+)*$" },
+        { "pattern": "^c[0-9]{2}/r[0-9]+$" }
+      ]
+    }
   }
 }

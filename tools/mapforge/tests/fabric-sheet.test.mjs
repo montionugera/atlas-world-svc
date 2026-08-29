@@ -109,26 +109,47 @@ test("the overlay sheet carries a per-continent area-delta table with BOTH sides
   assert.match(svg, /area delta/i);
   assert.ok((svg.match(/<text/g) ?? []).length >= 14, "no per-continent delta rows");
   // The join that makes it a comparison rather than a list: a continent's
-  // baseline polygon is found through manifest.landmasses[].nodeId. Seven of
-  // the thirteen have one; six are NEW.
-  assert.match(svg, /c02 {2}1040\.7 {2}-&gt; {2}12101\.3 km² {3}x11\.63/,
+  // baseline polygon is found through manifest.landmasses[].nodeId.
+  //
+  // RE-PINNED by Plan E's redraw. Every literal below moved, and what the
+  // SHEET means moved with them: before the redraw the committed trunk was the
+  // seven-polygon basin chart, so six of the thirteen generated landmasses had
+  // no baseline at all (NEW) and c02 read 1040.7 -> 12101.3 (x11.63) against a
+  // total of 6243.5 -> 65599.5 (x10.51). The redraw promotes the generated
+  // trunk, so the baseline this sheet reads IS drawn from the same fabric: all
+  // thirteen have a polygon, NOTHING is NEW, and the factors collapse to ~1.00.
+  // The sheet is now a DRIFT CHECK between the trunk and the fabric behind it,
+  // not a before/after of two worlds — which is worth keeping, because a
+  // non-1.00 row here is a trunk that has stopped matching its own fabric.
+  // These are the numbers the sheet prints; the review surfaces quote the same
+  // ones (tools/asset-storybook/maps-index.json, art-manifest.json).
+  assert.match(svg, /c02 {2}12099\.3 {2}-&gt; {2}12101\.3 km² {3}x1\.00/,
     "c02 is n-cluster1, the one landmass whose node id survives the redraw, so its row is the join " +
     "working end to end: the committed polygon on the left, the generated gross land on the right");
-  assert.equal((svg.match(/NEW<\/text>/g) ?? []).length, 6,
-    "six of the thirteen landmasses have no committed polygon at all");
-  assert.match(svg, /TOTAL 6243\.5 {2}-&gt; {2}65599\.5 km² {3}x10\.51/);
-  assert.ok(notes.some((n) => /gross land 6243\.5 -> 65599\.5 km²/.test(n)), notes.join("; "));
+  assert.equal((svg.match(/NEW<\/text>/g) ?? []).length, 0,
+    "after the redraw every one of the thirteen landmasses has a committed polygon");
+  assert.match(svg, /TOTAL 65498\.4 {2}-&gt; {2}65599\.5 km² {3}x1\.00/);
+  assert.ok(notes.some((n) => /gross land 65498\.4 -> 65599\.5 km²/.test(n)), notes.join("; "));
 });
 
-test("the overlay's baseline total is the 6,243.5 km² every other document quotes", () => {
+test("the trunk's own gross land is the number the overlay sheet prints", () => {
   // Measured off the committed trunk, so the sheet and STATE cannot drift.
+  //
+  // RE-PINNED by Plan E's redraw, 2026-08-27. This literal was 6243.5 — the
+  // pre-redraw chart's seven polygons, the number every document quoted, and
+  // the numerator of the 24.63 : 1 sea:land ratio THE WHOLE WORLD-FILL
+  // PROGRAMME EXISTS TO DELETE. It is not a fixture: the loop reads the LIVE
+  // content/spine/nodes, so the redraw moves it by construction. Authority for
+  // the new value is the redrawn trunk itself (13 continent polygons) and it
+  // is the number `G-SEALAND: trunk … (trunk land 65498.4 km²)` prints on
+  // every check_content run, so the two cannot diverge silently.
   const dir = join(ROOT, "content/spine/nodes");
   let total = 0;
   for (const f of readdirSync(dir).filter((x) => x.endsWith(".json"))) {
     const n = JSON.parse(readFileSync(join(dir, f), "utf8"));
     if (n.tier === "continent" && n.placement?.shape === "polygon") total += shoelace(n.placement.points);
   }
-  assert.equal(Number(total.toFixed(1)), 6243.5);
+  assert.equal(Number(total.toFixed(1)), 65498.4);
 });
 
 test("the sea:land ratio the REVIEW SURFACES publish is the one the gate measures", () => {
@@ -150,7 +171,22 @@ test("the sea:land ratio the REVIEW SURFACES publish is the one the gate measure
   }
   const frame = readJson("content/world/manifest.json").frame.areaKm2;
   const ratio = ((frame - land) / land).toFixed(2);
-  assert.equal(ratio, "24.63", "the committed trunk's sea:land ratio moved — re-derive both review surfaces");
+  // RE-PINNED by Plan E's redraw, 2026-08-27: 24.63 -> 1.44. The old literal
+  // pinned the DEFECT — the sea:land ratio the world-fill programme was
+  // convened to remove — against a trunk this loop reads LIVE, so it was
+  // always going to move on the redraw and was never a hermetic fixture.
+  //
+  // The pin is kept AND given a principled companion, because a bare literal
+  // is the thing that rots. The band is not this test's invention: it is the
+  // one scripts/lib/world.mjs's G-SEALAND prints two lines above its own
+  // divergence note ("band 1.20-1.80"), in the same unit, and that comment
+  // says in as many words that the trunk ratio exists to be read against it.
+  // So the world is asserted to be INSIDE its target, and the literal only
+  // says where inside — a drift of 0.01 still speaks, and a drift out of the
+  // band says which rule was broken.
+  assert.ok(Number(ratio) >= 1.2 && Number(ratio) <= 1.8,
+    `the redrawn trunk measures ${ratio} : 1, outside G-SEALAND's committed 1.20-1.80 target band`);
+  assert.equal(ratio, "1.44", "the committed trunk's sea:land ratio moved — re-derive both review surfaces");
   for (const rel of ["tools/asset-storybook/maps-index.json", "game-client/assets/art/art-manifest.json"]) {
     const text = readFileSync(join(ROOT, rel), "utf8");
     const quoted = [...text.matchAll(/sea[- ]to[- ]land ratio going (\d+\.\d+) : 1|sea:land (\d+\.\d+) : 1/g)]
@@ -176,7 +212,16 @@ test("the render lock covers the committed fabric and handle files too", () => {
   for (const fam of ["content/world/fabric", "content/world/handles"])
     for (const f of readdirSync(join(ROOT, fam)))
       assert.ok(lock[`${fam}/${f}`], `${fam}/${f} is committed but not locked — a hand edit would be silent`);
-  assert.equal(Object.keys(lock).length, 5 + 14 + 13);
+  // 17 sheets + 14 fabric files + 13 handles. The sheet term was 5 before Plan
+  // E ruling 8 (STATE §28) retired the cluster1 basin sheet, 4 after it, and
+  // 17 since Task 8 added the thirteen continent sheets — which brought the
+  // basin's ground back as `wealdmarch` rather than as a fourteenth entry. The
+  // lock's own `--check` catches an ORPHAN row ("locked but nothing builds it
+  // any more"), so this literal is the other direction: it catches a row
+  // silently dropped. Derived from the registry rather than retyped, so the
+  // sheet term cannot drift from the thing it is counting.
+  assert.equal(Object.keys(lock).length, Object.keys(SHEETS).length + 14 + 13);
+  assert.equal(Object.keys(SHEETS).length, 17, "the roster moved — was that deliberate?");
 });
 
 test("both sheets degrade in-band on a root with no fabric — they never throw", () => {

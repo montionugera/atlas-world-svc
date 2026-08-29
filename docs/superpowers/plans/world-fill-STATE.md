@@ -3221,3 +3221,1649 @@ documented with its full accounting as §26 erratum 1. This is the designed
 loud failure, not debt silently carried.
 
 **Art re-render** (Task 10's generator integration) is owner-ratified in §25.
+
+## 28. Plan E errata
+
+- canon-legs.json's per-endpoint `feature` field has no code reader — a within-±8% feature swap passes both gates; geometry beyond 8% still reds. Filed as accepted residual.
+- **Task 6 Step 6 cannot reach Step 14's full green as written** (measured 2026-08-26, Task 6 attempt stopped before commit; tree restored). The promoted edges.json carries 20 edges and Step 6 sanctions f-town substitutions only for the 7 legs + roads with vanished `{node}` endpoints. Measured survivors after a literal Step 6: **88 G-NET failures**, of which Step 6's grammar clears only the 13 leg lines and part of the road class. Unreachable classes, each named by generate-world's own work orders with no remedy inside Task 6: (a) `e-trunk-chain`/`e-flat-chain` (2 relays, 56 failures) — tower features `f-tower-*` do not survive the redraw and "there is no f-town-<slug> equivalent"; (b) `e-sea-lane`, `e-lane-coldreach`, `e-lane-stonemoor-foreign` (3 sealanes, 6 failures) — port/trade-wind features gone, sealane loss from a node endpoint is "DIAGNOSIS ONLY" in Plan C; (c) `e-cindervast-approach` and the north end of `e-terrace-track-north` — road-head/port feature endpoints with no substitute; (d) `e-terrace-track`/`e-terrace-track-north`'s `n-expedition-camp` endpoint — expedition-camp was a chart site, not one of the 45 settlements, so no `f-town-*` feature exists for it; (e) `e-trade-road-trunk`, `e-river-road-south`, `e-terrace-track` — their drawn points sit 146.90 km from the moved `n-millcross` anchor ("re-route the road's own points"), which is authored geometry no tool regenerates. Also: `loadFabricRegionIndex` counts only `continent-NN.json` while Plan C pins every ocean/sea node's `generator.fabric` at `content/world/fabric/world.json` (pinned by generate-world.test.mjs:451), so the promoted water trunk adds 12 false stale-pin FAILs until survey.mjs skips water-tier pins or world.json is counted. Resolution needed before the redraw is re-attempted: an owner ruling per class — retire vs re-site for relays/sealanes/road-heads/expedition-camp, a mechanical rule for moved-road points, and a water-pin fix in survey.mjs — written into Task 6 as steps, so the one-commit discipline survives.
+
+### OWNER RULINGS FILED (2026-08-26, approved by owner; written into Task 6 Steps 6b/6c)
+
+1. **Relays (a): RETIRE** `e-trunk-chain` and `e-flat-chain` — tower features do not survive the redraw; the roads themselves carry the canon content.
+2. **Sealanes (b): RE-SITE at surviving ports' `f-town-*`** (`f-town-gildmark`, `f-town-tallowquay`, `f-town-netstead`) — EXCEPT `e-sea-lane`, **RETIRED**: its own note declares it the uncharted duplicate of `e-lane-coldreach`, and `f-trade-wind-far` is an off-map chart convention with no substitute (the landfall ground survives as pinned landmark `c-lm-the-trade-wind-landfall`). Re-pointing it would byte-duplicate the coldreach lane.
+3. **Approach (c): RE-SITE** `e-cindervast-approach` at `f-town-norhollow` → `f-town-cindervast` (canon §4: Norhollow's outer farms border Cindervast's ruin district); attrs and note preserved verbatim.
+4. **Expedition-camp (d): RETIRE** `e-terrace-track` and `e-terrace-track-north` — the camp was a chart site, never a settlement, so neither endpoint grammar resolves; ground survives as pinned landmark `c-lm-expedition-camp`; the road north remains prose/relief, not spine geometry.
+5. **Moved-road points (e): TRANSLATE by `PIN_OFFSET [81,129]`**, read from `pinned-roster.json`'s committed derivation, never retyped. Proof: `[17.2,23.6]+[81,129] = [98.2,152.6]` = `c-town-millcross.at` exactly, and the terrace track's last point lands on `c-lm-expedition-camp.at`. The 146.90 km discrepancy is pure stale-frame, not authored drift.
+6. **Water-pin scan (mechanical):** `survey.mjs` skips water-tier (`ocean|sea`) pins instead of counting `world.json` as a region index — a water node has no fabric region to band-check, which is why the pin is legitimate. Regression case goes beside survey's existing pin cases.
+
+### TASK 6 ATTEMPT 2 (2026-08-26) — two findings beyond the five classes
+
+Measured on feat/F-051 after rulings 1–6 were applied and the redraw re-run. Both found by running code, never by reading it.
+
+**Class 6 — `f-town-rooktide` never mints: the pin is not on owned land (owner ruling filed and APPROVED 2026-08-26).** The seeded geography leaves `c-town-rooktide.at` `[98, 163.5]` in a 2.49 km gap between reported regions c02/r18 and c02/r19 — the pin receipt itself reads `"region": null`, and every run since Plan C has printed `settlements: pinned c-town-rooktide at [98,163.5] is not on owned land` without anyone consuming the consequence. The settlements pass drops the town, so `f-town-rooktide` does not exist and `e-leg-millcross-rooktide` / `e-river-road-south` have nothing legal to resolve against — Step 6's sanctioned grammar fails for reasons no edge edit can fix. **Ruling: snap the pin 3.16 km WSW to `[95.0, 162.5]`**, derived mechanically as (owned region cells) ∩ (millcross-leg ±8% annulus around 10.9 km) ∩ (cindervast-leg ±8% annulus around 34 km), minimum displacement — seven candidates exist, this is the closest. Verified before approval: inside c02's premise footprint ellipse (normalized r 0.234 vs 0.251 today); both canon legs stay inside ±8%; lands in c02/r19 beside Embervale and Gildmark. Alternatives measured and rejected: a premise change redraws the entire world and voids every pinned golden; retiring Rooktide's edges deletes a canon §4 town the war road and river road both name.
+
+**The preserved town host keeps its stale anchor.** Promotion copies `n-millcross` verbatim (Plan C's "re-parented not deleted"), so its `placement.anchor` stays `[77.95, 157.35]` — authored against the pre-redraw basin. Composed through the moved `n-cluster1`, the node sits ~6.1 km from Gildmark's feature where canon says 17, and ~20.8 km from the translated trade-road tip. **Mechanical rule, no ruling needed: the preserved town host's composed world anchor equals its pin's `at`.** The local `placement.anchor` is re-derived by inverting the parent composition (the same derive-don't-retypes discipline as Task 7's refreeze steps); town-frame internals (`interior.*`) move with the rect wholesale and are not recomputed by hand.
+
+### TASK 6 ATTEMPT 2 HALTED AT STEP 8 — two further findings (2026-08-26)
+
+State at halt: promotion verified green through Step 7 (36 nodes · census 5/5 · **zero G-NET / G-CANON-LEG, 7/7 legs inside ±8% after rulings 1–6 + the class-6 snap + the town-host re-placement** · spine-emit clean 39 files · mapDimensions byte-identical · atlas-frontier.md unchanged · resolved regenerated). Steps 8+ blocked below. Tree restored to `feat/F-051` HEAD per the one-commit discipline; nothing half-promoted is left behind.
+
+**Class 7 — the alias vocabulary cannot go green inside movement 2 as written.** After Step 12's sanctioned re-homing starts, two structural conflicts surface, both measured:
+1. **art-manifest keys can never resolve.** The fixed `art:town-<slug>` keys extract BARE slugs (`rooktide`), and the resolver's only fallback reads the resolved world's towns set — whose ids are the CIVIL ids (`c-town-rooktide`). Changing the writer to emit bare slugs breaks Plan D Task 8's authored relations, which join on `c-town-*` and are pinned by tests; changing the manifest keys breaks the `art:town-*` convention. One of the three (writer shape / key convention / resolver normalisation) must give, and each choice touches a different plan's artefact.
+2. **story/regions.json is over-subscribed on hosts.** `region.schema.json` REQUIRES `spineId` matching `^n-…`, unique per node, and G-ALIAS resolves against spine nodes ONLY (no resolved-world fallback). Six orphaned story regions (embervale, norhollow, gildmark, rooktide, ashvale-front, cindervast) compete for FOUR surviving c02 hosts (`n-cluster1`, `n-thornveil`, `n-northern-icefield`, `n-millcross`). No assignment exists without a schema evolution (resolved-keyed alias column, or spineId optional) or new host nodes — which the trunk census forbids. This is movement-3-shaped with an owner ruling attached.
+Bestiary rows themselves re-home cleanly once decided: town-slug rows → their `c-town-*` resolved id, `ashvale-front` rows → inheriting fabric region `c02/r11` (its own pin receipt names it).
+
+**Class 8 — the basin sheet's subject world died with the old trunk.** `content/spine/sheet.json`'s subjects (`featureIds.coast → f-west-coast`, `river → f-the-meltwash`, `iceEdge → f-northern-ice-edge`, `mireIds → n-saltmire`, `terrainPatchIds → n-eastern-hills`, plus `zoneRoot` region children carrying `lore.order` and town nodes UNDER those regions) are all retired by the census the redraw commits. `resolveWorldFromSpine` therefore returns 5 unresolvable-subject PROBLEMS and the cluster1 sheet cannot render — Step 8's "empty PROBLEMS" expectation is unreachable as written. The resolved world already carries the same subjects under different keys (`coastline`, `river`, `saltmire`, `iceEdge`, `terrainPatches` — written by `check_resolved.mjs`), so the two candidate resolutions are: (a) the cluster1 sheet retires from `SHEETS` in the redraw commit and is rebuilt resolved-backed as part of Task 8's builder work, or (b) `resolveWorld` grows a resolved-backed branch inside Task 6. Either is a real commit-sized decision, not a refit.
+Also measured at halt: `generate-world.test.mjs` carries three goldens that legitimately move INSIDE the redraw commit once rulings 1–6 land — the carried-canon failure count (91 → 3 with retired edges gone from committed edges.json), the authored-edge id literal set (20 → 15), and the preserved-anchor translation case. They re-pin in the Step 14 commit, not before.
+
+### RULINGS 7a / 7b / 8 FILED AND APPROVED (owner, 2026-08-26) — attempt 3 unblocked
+
+**7a — the resolver normalises `c-town-*` on LOOKUP.** `checkSpineAlias`'s resolved-world sets gain the bare slug beside every civil id: a towns entry `c-town-rooktide` also resolves `"rooktide"`. This is a GATE-side vocabulary bridge, sanctioned here as an explicit exception to Step 12's "re-home the record — never the resolver": the resolver's fallback was built for the pre-redraw world where bare slugs WERE the ids, so normalising lookup is restoring its contract, not weakening it. Consequence: bestiary town-slug rows and every `art:town-*` key resolve WITHOUT any record or key edit. Zones (`c02/rNN`) need no normalisation — their generated ids are already what records will cite.
+
+**7b — story regions gain a resolved-keyed reference.** `region.schema.json` keeps `spineId` for node-hosted regions but allows an alternative `resolvedRef` (string, must resolve against the resolved world's zones ∪ towns); exactly one of the two is required, uniqueness applies to spineId only. The six orphaned c02 story regions re-home onto resolved refs: five towns → `c-town-*`, ashvale-front → `c02/r11` (the fabric region its own pin receipt names). Gate-side: `checkSpineStoryAlias` accepts either form and prints which.
+
+**8 — the cluster1 sheet retires from `SHEETS` in the redraw commit**, rebuilt resolved-backed as part of Task 8's builder work (its subject keys survive in the resolved doc: `coastline`, `river`, `saltmire`, `iceEdge`, `terrainPatches`). The retirement carries its whole tail in the same single commit: registry entry, storybook row, art-manifest block, committed SVG/thumbnail bytes, render-lock rebaseline (the redraw commit is the sanctioned re-baseline point), and the basin-sheet/places tests that swear to its subjects. Arithmetic: `SHEETS` runs 5 → 4 now; Task 8's 13 continent sheets bring the roster to 17, inside `budgets.sheets.maxSheets` = 18 — which E-C10 derived counting a basin sheet that this ruling retires, so 18 stays as the committed ceiling and Task 16 checks against it unchanged.
+
+### ATTEMPT 3 (2026-08-26) — --only=spine GREEN on the redrawn trunk; halted at Step 8 on class 9
+
+With rulings 1–8 applied in the correct order (retire edges + re-place the town host BEFORE generation, so the draft's routed roads and preserved nodes inherit them), the full pipeline ran clean: **`check_content --only=spine` = 0 failures / 8 warnings on the 36-node trunk**, 7/7 canon legs inside ±8%, census 5/5, spine-emit clean. Rulings 7a/7b shipped as code (`bef6b89`): bare-slug lookup normalisation with a leak-test-caught cache fix, `resolvedRef` schema column, six story regions + 26 bestiary rows re-homed.
+
+**Class 9 — the ATLAS sheet is class 8's sibling.** Retiring cluster1 left four registered sheets, but the atlas mariners' chart itself cannot re-render: its descriptor (`content/spine/sheet-atlas.json`) names retired subjects (`seaIds: n-westsea`, `featureIds.coast/river → f-west-coast/f-the-meltwash`), and its builder grammar assumes sealanes run `{node} → offSheet feature` while the redrawn edges run `f-town-* → f-town-*`. The sheet's world-drawing half (13 continents, 3 oceans via `worldChildren`) survives untouched — only the basin-subject and sealane-endpoint halves need re-keying onto the new trunk/resolved vocabulary. That is Task-8-scale builder work (~atlas-sheet.mjs + sheet-atlas.json + atlas-sheet.test.mjs), not a refit, and it is the LAST blocker between attempt 3 and Step 14's one commit. Everything behind it is measured green.
+
+### ATTEMPT 4 (2026-08-27) — the attempt-3 baseline REBUILT green; two attempt-3 defects corrected
+
+Reproducing attempt 3 from a clean tree reported **5** `--only=spine` failures, not 0. Two independent causes, both measured, both now fixed inside the repro sequence; the baseline is back to **0 failures / 8 warnings**, 7/7 canon legs inside ±8%, 36-node census intact, and class 9 (the atlas sheet) is again the only blocker.
+
+**D1 — the approved class-6 Rooktide snap `[95.0, 162.5]` is itself a lake cell.** The ruling's stated premise ("a 2.49 km gap between c02/r18 and c02/r19") is REFUTED: the obstruction is a lake inside r19's own ring, and the first derivation did not exclude water from the candidate set. The settlements pass calls a pin unowned when `grid.regionId(i)` is null, and `grid.owner[i]` is `-1` on every LAKE cell. Re-run over the 0.5 km lattice with that exclusion: **120 points inside both canon-leg ±8% annuli, 114 of them lake, 0 sea, 6 owned land** (all `c02/r19`). Minimum displacement wins **`[94.5, 162.5]`**, 3.640 km WSW of `[98, 163.5]` — normalized footprint radius 0.2344 (old 0.2510), millcross leg 10.569 km (−3.0%), cindervast leg 31.396 km (−7.66%), receipt `region c02/r19`, `biome meadow`. `f-town-rooktide` now mints and the `not on owned land` line is gone from the report. Detail, alternates and the margin caveat: Task 6 Step 6d.
+
+**D2 — rulings 3 and 5 collide on `e-cindervast-approach`, and Step 6d's snap collides with `e-river-road-south`.** Both are the same defect: an endpoint was re-pointed at a DIFFERENT PLACE while its drawn geometry stayed put. The measured invariant on the committed roads is that **every road tip sits exactly (d = 0.000) on its endpoint's resolved root anchor** — true for all five roads whose Step-6 substitution was same-place (`{node: n-X}` → `{feature: f-town-X}` names the same pin). The rule, now Task 6 **Step 6g**: after the substitutions, the snap and the ruling-5 translation, a road's terminal point IS its endpoint's anchor, read from `pinned-roster.json`, never typed; `{edge, atIndex}` ends skipped. It is a measured **no-op on five of six roads** and moves exactly three tips — `e-cindervast-approach` 2.823 km / 1.200 km and `e-river-road-south` 3.640 km. Retiring the approach was rejected: ruling 3 is owner-approved and the edge carries canon §7.1 / §2 content; loosening the 1-unit tolerance at `check_content.mjs:2734` was rejected as weakening a general contract to absorb one edge.
+
+**Two record corrections.** (a) `scripts/tests/trunk-census.test.mjs` **did not exist** at the time of writing — Task 6 Step 1 had not run — so attempt 3's "census 5/5" was unbacked. **SUPERSEDED 2026-08-28:** Step 1 has since run and the file IS committed, created by `bc393a4`; it holds 8 tests (9 with the `bands` tripwire this review adds) and is the machine that reads `content/spine/trunk-census.json`. The repro script's inline composition assert stays — two independent readings of the same arithmetic — but the sentence above must not be quoted as live. The repro now asserts E-C4's composition directly (1 world + 13 continent + 3 ocean + 9 sea + 2 region + 1 town + 7 runtime = 36, edges 6 road / 7 leg / 2 sealane). (b) Step 6d's "update the Plan D real-world test literals that pin the old coordinates" is a **no-op**: grepped 2026-08-27, no test carries `[98, 163.5]`.
+
+### CLASS 9 CLEARED (2026-08-27) — the atlas sheet re-keyed onto the redrawn trunk
+
+`node tools/mapforge/render-sheet.mjs --sheet atlas --no-png` prints an **empty PROBLEMS block and exits 0**; `node --test tools/mapforge/tests/atlas-sheet.test.mjs` is **28/28**; `check_content --only=spine` is unchanged at **0 failures / 8 warnings / 36 nodes**. The chart now letters **32 labels against ATLAS_LABEL_BUDGET = 32** (32 asked · 32 placed · 0 dropped · 0 above rank 8) and draws **47 settlement marks — one per `f-town-*` feature** on the thirteen drawn landmasses. The budget was NOT raised: the ninth sea landed the count exactly on the committed ceiling.
+
+What moved, and why: the legacy single-sealane block (`laneFrom`/`laneFar`) was deleted wholesale — its only consumer was a `checkFrame` the F-043 per-lane loop already does; the retired basin subjects (`featureIds.coast/river/iceEdge`, `mireIds`, `terrainPatchIds`) left the descriptor with their draw paths (the drawn west coast and the Meltwash return on Task 8's wealdmarch sheet, per ruling 8); `seaIds` re-keyed to **all nine** marginal seas, whose points now go through `resolveToRoot` because a sea nests inside its ocean and was being drawn raw into root km; the town-dot block retired (tier `town` matches only `n-millcross` now) and the surveyed ground joined the region/feature loops instead, which is what restored `class="region-bound"` (0 before, 2 now) and the rank-4 names Thornveil / Northern Icefield; and the port predicate `attrs.role === "port"` — unreachable since `role` became settlement rank — became **"this feature id is an endpoint of a `kind:"sealane"` edge"**, derived from `spine.edges`, which is what lets Gildmark, Tallowquay and Netstead letter again.
+
+One thing was found by rendering, not by reading: **the survey note was the only `class="lbl"` text on the sheet that never went through the placement pass**, and the redraw put it squarely on top of the trade-wind lane's own label with every gate green. It goes through `placeLabels` now, at the lowest rank on the sheet, so the collision check can see it. That is the 32nd label.
+
+**Four Plan B/C defects FILED here, not fixed (Task 6 Step 8's rule):**
+
+1. `tools/mapforge/generate-world.mjs` writes `terrainKind: null` on **every** generated continent, so `FILL_FOR` (`tools/mapforge/lib/draft.mjs:68`) is unreachable from `patternFor` (`tools/mapforge/lib/atlas-sheet.mjs:48`) and `n-rimewall-cap` lost the ice fill it had. The G-BIOME-INK canary at `tools/mapforge/tests/atlas-sheet.test.mjs:524` had become a one-pattern test because of it; it is re-armed on an injected clone.
+2. `patternFor` (`tools/mapforge/lib/atlas-sheet.mjs:48`) passes `n.provenance` — now an OBJECT, not a string — into `frontierPattern` (`tools/mapforge/lib/ink.mjs:25-28`), which keys a string, so `pReportedSworn` / `pReportedHearsay` / `pReportedInferred` are all unreachable and every reported coast draws the same generic hatch. The comment at `atlas-sheet.mjs:42-47` ("no committed node carries `provenance` at all") is stale — all 36 do.
+3. Only **4 of 13** continents carry `lore.reported` (`n-loamspit`, `n-quillreef`, `n-rimewall-cap`, `n-skerryfast`) while **12** draw the reported hatch — the flag the chart's grammar claims to read is written on a third of the nodes it applies to. `content/spine/nodes/*.json`, written by `generate-world.mjs`'s continent pass.
+4. Ocean node titles are bare — `n-keelbreak.json` `"title": "Keelbreak"`, likewise `n-galereach`, `n-tarnmark` — so the chart letters an ocean exactly like a landmass, with no "Sea"/"Ocean" word to tell the reader which is water. Pre-redraw these read "The Keelbreak Sea"; `tools/mapforge/tests/atlas-sheet.test.mjs:78-82` was re-keyed onto the bare titles rather than left swearing to strings nothing writes.
+
+**Still open behind this (not class 9):** `check_render_lock` bails on **cluster1**, whose descriptor still names the same retired basin subjects — that is ruling 8's retirement tail, and the atlas sheet's own lock hash re-baselines with it in the Step-14 commit. `tools/mapforge/tests/labels.test.mjs`'s corpus scan reds on `"é"` in `n-skerryfast.json`'s generated `lore.summary` ("roche moutonnée") — a generator/advance-width gap, unrelated to this sheet.
+
+### CLASS-9 RE-KEY REVIEW — four findings acted on (2026-08-27, refactor step of the quality gate)
+
+An adversarial review of the class-9 re-key returned four findings. All four are fixed; nothing else on the sheet moved. Re-verified after: `render-sheet --sheet atlas --no-png` **empty PROBLEMS, exit 0**; `node --test tools/mapforge/tests/atlas-sheet.test.mjs` **30/30** (was 28 — finding 4 added two); `check_content --only=spine` unchanged at **0 failures / 8 warnings / 36 nodes**; labels still **32 asked · 32 placed · 0 dropped** against `ATLAS_LABEL_BUDGET = 32`; 47 settlement marks, 3 of them harbours.
+
+1. **The budget assertion was verifying nothing** (`tools/mapforge/tests/atlas-sheet.test.mjs`, in "G-LABEL's budget is armed on this sheet"). It read `assert.ok(ATLAS_LABEL_BUDGET >= 26, ...)` — the PRE-redraw count — so it passed with six to spare while the sheet had already reached 32 placed against a budget of 32, i.e. exactly the zero-headroom state its own message claimed to check. Swapping `26` for `32` would be the same defect with a newer number, so the literal is gone entirely: the test now parses the placed count out of a **real build's** label census note and asserts the budget covers THAT (`placed.length` is the number `checkLabels` compares against `budget`, so it is the budget's actual subject). The failure message prints both numbers. **Proven red-then-green**: with the export temporarily stubbed to 31 the test fails with `ATLAS_LABEL_BUDGET is 31 but the sheet places 32 labels — the committed budget is below the sheet's own label count`; restored to 32, green.
+2. **The budget comment narrated headroom that no longer exists** (`tools/mapforge/lib/atlas-sheet.mjs`). It still described "26 labels ... 32 is that count plus a quarter". Rewritten to state what is true now: the chart sits **exactly on its own ceiling**, so one more named thing — a region title, a line feature's name, a harbour (any town a new sea-lane ends at), another marginal sea — is 33 against 32 and reds G-LABEL on the next render, which is the gate saying that name belongs on a continent sheet. The value **stays 32**; raising it is a content decision with its own evidence. The comment deliberately transcribes no count, and points at the test that measures one.
+3. **The `hand` and `surveyNote` prose asserted work the chart no longer shows** (`content/spine/sheet-atlas.json`). Both still swore the surveyed basin ground was "walked and sounded", but the coast and river draw paths were retired from this sheet (ruling 8) and the successor basin sheet does not exist yet. Under the approved **ruling E** (re-voice only the sentences the redraw made false; the rest of the prose is Task 15's), the `hand` now reads that the surveyed ground is the Bellfaith's own work but "at this scale only its bound is set down — the coast and channel it was walked and sounded for are not drawn here", and `surveyNote` reads `surveyed ground · bound only at this scale`. Kept true and intact: "a hatched coast is reported, never vouched" and "masters' logs sworn at Gildmark harbour". **No pointer to a sheet that does not exist** was invented. The longer note still places and still clears the overlap check (32/32, 0 dropped).
+4. **Nothing tested the harbour predicate itself.** The rule — a harbour is a town a `kind:"sealane"` edge ENDS at, derived from the edge list because the closed attrs schema spends `role` on settlement rank — was only ever observed through the live chart's three harbours, which any predicate picking those three ids would satisfy. Two synthetic-fixture tests added (`harbourTree()`, same clone-and-inject pattern as `landformTree`/`terrainTree`, so the numbers are the fixture's and not world density): the first hangs three probe towns on a reported continent and replaces the WHOLE edge list with one sealane plus one **road** between the laneless town and a lane end, then asserts **exactly two** `r="2"` harbour marks, both lane ends lettered by name — and pins the semantics that matter, that a **coastal town with no lane is not a harbour here** (plain dot, no label) and that a non-sealane edge between two towns does not promote either. The second re-points the lane at the previously laneless town and asserts the harbours move with it. **Both armed**: deleting the `kind === "sealane"` filter reds the first with `3 harbour marks, expected the 2 lane ends`; the filter was restored byte-identical.
+
+**Not touched, deliberately:** the sheet's `subtitle` ("Bellfaith survey where the ground is walked") carries the same voice as the re-voiced `hand`, but the review scoped ruling E to the two named strings and the rest of the prose is Task 15's. `content/world/render-lock.json` is **not** re-baselined here — that is Step 13, and it happens last.
+
+### TASK 6 STEPS 10/11/13 CLOSED (2026-08-28) — the stale label frame, the two review surfaces, the two locks
+
+The last lane before Step 14's single commit. `check_content --only=spine` is **0 failures / 8 warnings / 36 nodes**, canon legs **7/7**, `check_spine_emit --check` clean at 39 files, `check_render_lock --check` **exit 0**, `npm test --prefix scripts` **1225/1225**, the mapforge suite **747 pass / 1 fail** (the raster flake filed below), the storybook suite **86/86**, `check_asset_manifest` PASS, and the emitter output (`content/maps/atlas-frontier.md`, `colyseus-server/src/config/generated/`) **byte-unchanged**.
+
+**The stale label frame, fixed at source and now gated.** `lore.labelAt` on `n-thornveil` (`[24.4, 26]`) and `n-northern-icefield` (`[22.4, 3.6]`) was still the pre-translation basin-local frame while `placement.anchor` had moved to world km — the same family as the preserved-anchor defect G-PIN-ANCHOR was written for, one field over. On both nodes the committed `labelAt` is byte-equal to the pre-redraw `placement.anchor`, so the field is authored in the **parent frame** and must ride along with the placement. `generate-world.mjs`'s preserved-node block now translates it by the same `(dx, dy)` it moves the placement by; nothing else in a carried doc is parent-frame (`features[].at/points` are in the node's own interior frame and must not move, `interior` is rebuilt). Both now read `[105.4, 155]` and `[103.4, 132.6]` — their own pins.
+
+**G-LABEL-FRAME**, a companion to G-PIN-ANCHOR, is the machine that reads it (`scripts/check_content.mjs`, beside G-ANCHOR in `gSpineGeometry`): a node's `lore.labelAt` sits **inside the node's own placement**. Containment, not equality — a label may legitimately sit off-centre inside its footprint; what it cannot do is land outside it, which is a frame disagreement and the only thing this rule is for. `point`-shaped placements are out of scope by shape (no footprint, and a label legitimately sits off a pin). **Proven red then green**: red on the LIVE corpus before the fix, naming both nodes and their stale coordinates; green after the regeneration. Two hermetic cases added beside the G-PIN-ANCHOR ones in `scripts/tests/spine-gates.test.mjs` — a red at `[5, 5]` against the fixture's `[20,20]..[40,40]` square that also asserts G-ANCHOR and G-CONTAIN stay silent (which is exactly why nothing caught the real one), and a green at both the centre and an off-centre point.
+
+**The repro script now resets the WHOLE trunk, not four files.** The fix would not have taken otherwise: `generate-world.mjs` places a preserved node by inverting its parent composition onto its pin, so read from an already-redrawn working tree the delta is **zero** and the pass is a no-op — any parent-frame field left behind on an earlier run stays behind for ever. The reset is the directory and not the three preserved files because `liveContinentAncestor` walks the LIVE parent chain and `n-millcross`'s committed parent is `n-millcross-ford`, a node the redraw retires; resetting the three alone left the draft one node under `promotion.minTrunkNodes` and it refused. Re-running is idempotent, and OVERALL is PASS.
+
+**Steps 10 and 11 — every number in the two review surfaces re-measured.** Both still published the pre-redraw world. Corrected, each figure measured off the artifact and not copied from the plan: the overlay row's `24.63 : 1 → 1.50 : 1` and `6,243.5 → 65,600.0 km² (x10.51)` are now **13 baseline polygons against 13 generated, 65,498.4 → 65,599.5 km² at x1.00**, per-continent between x0.99 and x1.05, and **sea:land 1.44 : 1** — the TRUNK figure `G-SEALAND` measures, which is what `fabric-sheet.test.mjs`'s citation-rot scan requires the surfaces to quote (the sheet's own footer prints the fabric layer's 1.5; both are true, of different subjects, and only one may be published). `art:map-fabric` read 45 settlements / 38 roads / 2,413 vertices / "as few as 16"; measured, they are **47 / 40 / 2,431 / 12**. `art:map-atlas` promised "thirteen landmasses in their biome inks" when only **four** take a fill — the chart's grammar is *only reported ground is filled*, and of the four reported landmasses two draw the ice pattern and two the frontier hatch while the nine surveyed draw as outline. `art:map-fabric`'s note justified the sheet by "the committed trunk still says something else", which the redraw ended; it now says the independence from the spine is what makes any trunk-vs-fabric disagreement visible at all. Both surfaces cited a "Plan E ruling B" that does not exist (it is **ruling 8**) and pointed at a wealdmarch continent sheet as though it existed; both now say Task 8 draws it and that it does not exist yet.
+
+**What the overlay sheet has become, said out loud.** Since the redraw promotes the generated trunk, the sheet's baseline IS drawn from the fabric it is compared against: nothing is NEW, every factor is ~1.00, and it is a **drift check between the trunk and its own fabric**, not a before/after of two worlds. Worth keeping — a non-1.00 row is a trunk that has stopped matching its fabric — but it is no longer the sheet its prose described. `fabric-sheet.test.mjs`'s three literals moved with it, in this commit, with the reasoning written where the numbers are.
+
+**Step 13 — both locks re-baselined last, through their own `--write` CLIs.** `render-lock.json`: **6 hashes moved** (`atlas-world.svg`, `world-fabric.svg`, `world-overlay.svg`, `fabric/continent-02/04/05.json`) and the orphan `cluster1-world.svg` row deleted — locked but nothing builds it since ruling 8. `synthetic-density.svg` is unmoved, correctly: it is drawn from a committed fixture, not from the world. Row count 32 → 31 (4 sheets + 14 fabric + 13 handles), re-pinned in `fabric-sheet.test.mjs`. `world-digest.json`: all three input hashes and the digest moved. Both `--check`s exit 0.
+
+**RE-BASELINE LEDGER CORRECTED — there have been FOUR prior re-baselines of `content/world/render-lock.json`, not one.** The handoff premise ("Plan B Task 12 was the first, under a recorded carve-out; a third would mean something re-inked a sheet outside its licence") is **refuted by measurement**. Classified by diffing the `artifacts` map at each of the seven commits that touch the file — a *re-baseline* is an existing row whose hash changed, as distinct from a row added:
+
+| commit | existing hashes re-baselined | rows added |
+| --- | --- | --- |
+| `eb34bca` G-RENDER-LOCK checksum lock | — (file created) | — |
+| `ced5a92` target-density canary sheet | 0 | 1 |
+| `2f866a2` bound each pattern fill to its own clip | **1** (`cluster1-world.svg`) | 0 |
+| `f343e9f` re-ink the live sheets with declutter, glyphs and a legend | **2** (`atlas-world.svg`, `cluster1-world.svg`) | 0 |
+| `dea01cc` commit the generated fabric, add the fabric and overlay sheets | 0 | 29 |
+| `cb94c24` pin landform proximity, frontier reservations | **15** | 0 |
+| `4f83695` pin-aware generation … re-baselines art | **19** | 0 |
+
+This is a **record defect, not an unlicensed re-ink**: each of the four is a commit whose own subject declares the work that moved the bytes (a re-ink pass, two fabric regenerations, an art re-baseline), so each was inside its own plan's licence — the programme simply never counted them. The tripwire as written ("a third prior re-baseline means something re-inked a sheet outside its licence") therefore cannot do its job: it counts commits touching a file, which conflates *adding a row for a new artifact* with *changing the hash of an existing one*. **Reported, not acted on** — whether this lock's re-baseline is still sanctioned is an owner call, and the classification above is the evidence for it. Today's is the FIFTH.
+
+**FILED, NOT FIXED (two):**
+
+1. **`iceEdge` is `null` on all thirteen resolved continents** — `content/world/resolved/continent-*.json` — so no ice-edge feature is emitted anywhere in the world, including the two ice caps (`n-rimewall-cap`, `n-skerryfast`) whose own `terrainKind` is `ice`. It is pinned as `null` rather than absent, so the pin reds the moment one appears; today it certifies an emptiness nobody has decided is right. Ruling 8 names `iceEdge` as one of the resolved subject keys the retired basin sheet's successor is meant to draw from, so Task 8 is where this bites.
+2. **The raster budget flakes on `synthetic` under concurrent load** — `tools/mapforge/tests/render-sheet.test.mjs:190`. Run alone the file is 10/10 and `rsvg-convert -w 2000` on the committed `synthetic-density.svg` measures **0.706 s** against the 2 s cap (atlas 0.527, fabric 0.327, overlay 0.323 — the whole roster is inside, best of three). Under `node --test 'tools/mapforge/tests/*.test.mjs'`, sharing a machine with the tracked-tree guard's own child suite, the same sheet measures **2.04–2.08 s** and reds. The SVG is byte-unchanged, so this is contention, not drift. Best-of-three already exists in the test and is not enough when the contention is a sibling `node --test` process; the fix (measure serially, or exclude the meta-test's child run from the same wall clock) is a test-harness decision, not a sheet one.
+
+**Record correction:** the four Plan B/C defects filed under CLASS 9 CLEARED are no longer all open. (1) `terrainKind: null on every generated continent` — closed: `generate-world.mjs` derives it from composition (`terrainKindOfComposition`, with the STATE reference in its own comment) and 7 of 13 continents now carry a kind. (2) and (3) — closed together by `patternFor`'s re-key onto `lore.reportedAs` plus the survey verdict, which is what makes "only reported ground is filled" true of the drawing: measured on the committed chart, **4 landmasses carry `lore.reported` and exactly 4 take a fill**, where 12 of 13 hatched before. (4) bare ocean titles stands.
+
+### REVIEW OF `bc393a4` — ten findings acted on, one follow-up commit (2026-08-28)
+
+Three adversarial reviews of the Step-14 commit found that it had fixed a real lie (12 landmasses drawn as
+"reported" off 4 flags) and shipped its **mirror image in prose**. The core defect: **the survey vocabulary was
+over-voiced**. Every number below was re-measured for this pass, not copied.
+
+**The root, and the ruling.** `scripts/lib/survey.mjs`'s `surveyOf()` returned **"surveyed" as the DEFAULT**
+when nothing said reported — and **no trunk node carries a `survey` field at all** (measured: 0 of 36). So the
+two review surfaces published "the **nine surveyed** landmasses" as vouched ground, on the strength of an
+answer the function invented for the absence of an answer. **The default is now `"unknown"`.** Decided on
+evidence, and the evidence is that it changes nothing and buys correctness: all three production readers
+compare against `"reported"` and only `"reported"` — `patternFor` and the `coast-reported` class in
+`atlas-sheet.mjs`, and G-SPINE-COMPLETE's childless downgrade in `spine.mjs` — so `"unknown"` travels the
+identical branch, the chart is byte-identical and **no gate changes verdict**. That is not asserted in a
+comment: `scripts/tests/survey.test.mjs` now greps those two source files and reds if any `surveyOf()`
+comparison is ever written against a string other than `"reported"`, which is the day someone must decide what
+an evidence-free node means. Nothing TRUE was lost — the positive knowledge lives in the fabric, which carries
+**40 surveyed regions of 160** across the nine unflagged landmasses (1 on Ashen Spar and Brightfall, up to 10 on
+Wealdmarch), and `lore.reported` is still written iff a landmass's fabric declares zero surveyed regions.
+
+**WEALDMARCH IS ON THE CHART.** `worldLand` excludes `landIds`, so the one landmass the sheet is built around —
+16 of the 47 towns, **both** of the sheet's region bounds — was the only one of the thirteen drawn anonymous,
+and its name was never even *asked* for, which is how "thirty-two asked, thirty-two placed, none dropped" read
+as complete naming with the principal name missing from the question. **What yielded:** the 32nd label, the
+chrome survey note, retired from the sheet **and from the descriptor with it** (`surveyNote` had no other
+reader, and it said "surveyed ground · bound only at this scale" against an unfilled outline — which the `hand`
+already says in full). **The budget was not raised.** Measured after: **32 asked · 32 placed · 0 dropped**, and
+all thirteen landmasses lettered — pinned by a new assertion that counts the upper-case names on the built
+sheet.
+
+**The nine, measured honestly.** Not "with their regions and towns on them": **towns fall on seven** of the
+thirteen (Wealdmarch 16, Coldreach 12, Stonemoor 11, Thirstwold 5, Brightfall / Driftholt / Reedstrand 1 each),
+**Ashen Spar and Wracklow carry nothing at all**, and the chart's **two** region bounds are both on Wealdmarch.
+Not "two ice caps": **only Rimewall Cap is an ice cap** (`class: "cap"`, composition ice 96.9); `n-skerryfast`
+is premise c12, `class: "chain"`, `coastClass: "fjordland"`, and takes `pIce` because its composition is **75%
+ice** — the terrain inference was independently reviewed and found SOUND, so this was a prose fix, not a
+generator one.
+
+**The legend now says what it draws.** The hand's rule held one way only — "a hatched coast is reported, never
+vouched" while **2 of the 4** reported coasts draw as ICE and nothing told the reader ice meant reported. The
+`hand` now reads *"A FILLED coast is reported, never vouched — the hatch and the ice pattern alike; only a bare
+outline is ours"*, and `withheld[1]` moved from the singular "the ice-cap's edge" to "the ice edges". The key
+advertised **four** reported densities while the world rolls **every** reported landmass up to `hearsay`
+(measured on the chart: `pIce` ×2 and `pReportedHearsay` ×2 painted on ground; `pReported`, `pReportedSworn`,
+`pReportedInferred` appear as legend swatches and **nowhere else**). The rows are NOT deleted — the fabric
+carries all three densities at region level (19 sworn, 77 hearsay, 24 inferred over 160 regions) and
+G-BIOME-INK requires one legend row per reachable pattern in both directions. Instead the band's heading is
+**derived from what the draw pass actually fills** and re-derives on every render: *"FILLS · SURVEYED AND
+REPORTED · THIS CHART DRAWS ONLY: ice shelf, reported — hearsay"*. Two tests keep it derived, and the first is
+mutation-proven: replacing the derivation with the literal it currently prints plus one extra density reds it.
+
+**Fixed at source, then regenerated — never hand-edited on the generated node.** `n-cluster1`'s
+`lore.summary` read *"An inland sea fed by the Meltwash with no ocean outlet"*, copied verbatim from the
+premise's `structuralIdea` and published as a **continent's** lore; `content/world/premises/continent-02.json`
+now describes the landmass, not the sea. `n-thirstwold` shipped the generation-budget word *"**cheap** reported
+sand"* and a figure nobody had checked; `continent-05.json` drops the word and the figure is re-measured off
+the fabric — **9,879 km² reported**, published as "some 9,900 km²". Both nodes were regenerated through
+`generate-world` → `promote-world`, not touched.
+
+**The rest.** `content/spine/edges.json`'s `e-lane-coldreach` note still cited **`e-sea-lane`**, which ruling 2
+retires in the same commit — citation rot, **sixth** occurrence; the fact it carried (one voyage, not two) is
+kept and the dead id is gone. `overlay-sheet.mjs`'s panel line and `world.mjs`'s G-SEALAND note both still said
+the trunk "is redrawn in Plan E, **not here**" — future tense on a sheet whose baseline **is** the redrawn
+trunk; both now say what they measure, and `world-gates.test.mjs`'s pin moved with them.
+
+**G-BANDS, the tripwire on the exhaustiveness claim.** `generate-world.mjs`'s preserved-node pass spreads
+`...rest` and asserts **in a comment** that "nothing else in the doc is parent-frame" — the licence on which
+`lore.labelAt` was singled out. `bands` is inside that spread, is declared `{ "type": "array" }` with no item
+shape, is read by nothing in `scripts/` or `tools/`, and is `[]` on all 36 nodes: the claim is safe only
+because the field is empty. A band that ever carries coordinates is very likely parent-frame and would be
+carried across a re-placement untranslated — exactly how `labelAt` failed, with every gate green.
+`scripts/tests/trunk-census.test.mjs` now reds the moment `bands` is populated, with a message that sends the
+reader back to the frame classification. Mutation-proven red, then restored.
+
+**FILED, NOT FIXED (this review):**
+
+1. `content/zones/zone-meltwash-terrace.json:37` cites `content/maps/cluster1-geography.json`, **a file that
+   does not exist** (pre-existing, unrelated to the redraw).
+2. `canon.md:186-231,308-334` still asserts six towns, a 27-tower relay chain and the Ashvale/Cindervast basin
+   against a 47-town, zero-tower world — scoped to **Task 15** by ruling E.
+3. **The POI enforcement gap.** `content/world/budgets.json`'s `poi.supplyLimitedSurveyedRegions` downgrades
+   five G-POI floor shortfalls to WARN, including **c05/r06 at 0 POIs against a floor of 12**, and the only
+   tripwire on ADDING a declaration is the exact `"8 warnings"` literal in
+   `scripts/tests/edges-schema.test.mjs:379` — which a silencing commit would update in the same diff.
+4. **The load-sensitive raster gate**, `tools/mapforge/tests/render-sheet.test.mjs:190` — sole live reader of
+   `maxRasterSeconds`, Gate-2-only, wall-clock based. The classic profile of a gate that gets muted rather than
+   fixed.
+5. **Five weak-but-live assertions:** `scripts/tests/trunk-census.test.mjs:75` (36 ≤ 96, 62% headroom);
+   `scripts/tests/world-budget.test.mjs:592` (derives the expected ink with the same stats the gate uses);
+   `scripts/tests/zone-content.test.mjs` (no positive lower bound on target — a budget of 0 passes with zero
+   records); `scripts/tests/resolve.test.mjs:263` (a global census counted as a basin-local bound — a town on
+   another continent reds it falsely); `tools/mapforge/tests/generate-world.test.mjs`'s translation-equality
+   (self-declared unarmed on an idempotent run).
+6. `content/spine/sheet-atlas.json`'s **`scaleBarNote` has no reader** — `basin-sheet.mjs` reads `sheet.json`'s,
+   not this one. Pre-existing dead field; `surveyNote` was removed above only because THIS diff retired its
+   reader.
+
+
+### TASK 7 SHIPPED (2026-08-28) — the shrunken freeze, root-first, in three commits
+
+`55a9b5e` (depth 1: `n-cluster1`, `n-coldreach`, `n-stonemoor`, `n-galereach`, `n-keelbreak`,
+`n-tarnmark`) · `6413867` (depth 2-3: `n-thornveil`, `n-northern-icefield`, `n-millcross`, plus
+`content/spine/freeze-reasons.json` and `scripts/tests/freeze-reasons.test.mjs`) · `627e268`
+(G-FROZEN requires a written reason, digest re-baseline) · `1328bfc` (the review fix). The freeze
+went **1 → 10**: only `n-atlas` survived Task 5, and Task 5's unfreeze had also stripped
+`absoluteAnchor` from all nine, so there was **nothing to copy** — checked at `bc393a4~1` and at
+`e5600ce`, every one of the nine reads `frozen: false` with no anchor. Under the `per=1` identity
+frame `composeToRoot` never translates, so each composed anchor equals its own `placement.anchor`;
+that is the frame convention, not a transcription. Both arms of G-FROZEN proven live before the
+first commit (a 0.01 km anchor mutation, and unfreezing `n-atlas`), and neither intermediate commit
+was red (0 failures / 8 warnings at both).
+
+**THE THREE CARRIED-CANON ITEMS ARE NOT CLEARED BY THE REFREEZE — the record above is REFUTED.**
+`tools/mapforge/generate-world.mjs:918` writes `frozen: false` on every preserved chart node and
+mints the continents unfrozen, so a draft can never inherit a committed freeze; the three
+`G-CANON-LEG ... endpoint n-millcross is not frozen` lines survive Task 7 untouched and
+`tools/mapforge/tests/generate-world.test.mjs:219-221` still pins them, green, at 34/34. Probed by
+mutation rather than argued: carrying `doc.frozen` through instead clears all three and **replaces
+them with six G-FROZEN failures** — `n-millcross`/`n-thornveil`/`n-northern-icefield` each "frozen
+but ancestor n-cluster1 is not" and "frozen without absoluteAnchor" — which is exactly what the
+generator's own comment at `:1171-1173` says the hard-coded `false` is for. Clearing them is not a
+refreeze at all: it is teaching generation to emit the freeze (flag **and** anchor, continents
+first), which is a commit of its own with the census and promotion goldens attached.
+
+**A REGENERATION SILENTLY DROPS THE WHOLE FREEZE, AND ONLY A TEST SEES IT.** Measured by running
+the repro script on top of Task 7: the trunk comes back **10 frozen → 1** (`n-atlas` alone) and
+`check_content --only=spine` reports **0 FAIL**, because G-FROZEN's new rule is one-directional — it
+fails a freeze with no reason, and cannot fail a reason with no freeze. The only tripwire is
+`scripts/tests/freeze-reasons.test.mjs`'s set equality (2 of 4 red, naming the nine), and that suite
+runs in **Gate 2** (`scripts/integration.sh:113`), not Gate 1 (`scripts/precheck.sh`). So any future
+redraw must re-run Task 7 by hand, and a feature that regenerates and ships will not learn otherwise
+until promotion.
+
+**REVIEWER A (the code pass) — five MAJOR findings, all acted on, and the sharpest was about the
+SUITE rather than the builder.**
+
+- **M1 — the fabric join, the single most consequential decision in this builder, had NOT ONE
+  assertion.** Reviewer A reverted the builder to the resolved-only sheet the join exists to
+  prevent — all 40 roads and 39 of the 47 settlements gone — and the suite stayed **25/25 green**.
+  The only red was the byte-comparison against an artifact the same builder generates, and a
+  staleness check says "the file matches the code", never "the code is right". Three JOIN tests now
+  read the drawn markup: settlement dots per sheet == the fabric's settlements, road pairs ==
+  the fabric's roads, roster totals 47 and 40, names from the resolved layer, and all three branches
+  of the derived road weight exercised ({trunk 6, spur 14, track 20}). Mutation-proven: dropping the
+  roads reds 3, reverting the settlements reds 2.
+  - Writing that test found a second bug in the test itself: an unqualified `<circle>` count read
+    **8 settlements on Rimewall Cap, which has none** — the pFlat and pAsh pattern tiles draw dots
+    as circles. The settlement layer now carries `class="town"` so it is nameable.
+- **M2 — four gate arms had no firing case, and the suite header claimed they all did.** Deleting
+  `checkLabels`, `checkGlyphSizes`, `checkGlyphCoverage` or the `hatchFallback` counter each left the
+  suite green. The `checkLabels` one was the sharpest because the comment directly above it says
+  "without them a name can vanish with the gate green". All four have firing cases now, each watched
+  red then green. `checkGlyphSizes` needed a `glyphSizePx` override to be demonstrable at all — the
+  same discipline as `legendTier` and `contentRoot`, and nothing on the shipped path passes one.
+- **M3 — G-BIOME-INK's per-sheet check is circular in one direction, and the comment claimed it was
+  not.** The legend loop draws a swatch for every row it emits, so `emitted ⊆ painted` by
+  construction and "every legend row is a texture the canvas carries" can never fail. Proven on an
+  empty-zones fixture: zero regions on the canvas, 25 rows emitted, gate silent. The comment now
+  names which half is live (`referenced → emitted`, plus the tier half — both mutation-proven) and
+  which is inherited decoration.
+- **M4 — BAKING THE HATCH HAD CHANGED THE DRAWING, and this is the finding worth carrying forward.**
+  `texture-bake.mjs`'s `put()` CLIPPED any tile pixel at `x >= w` or `y >= h`. A tile is the unit
+  cell of a REPEATING pattern, so the pixel at `x === w` is the next tile's `x === 0` — which is what
+  the vector `<pattern>` draws there. Clipping it left a gap at every tile join: measured, the
+  diagonal hatches lost **25% of pReportedSworn's ink, 17% of pReportedHearsay's, 12.5% of
+  pReportedInferred's** — most from the densest and least from the sparsest, compressing exactly the
+  sworn > hearsay > inferred register the three densities exist to encode, and the field read as
+  dashes beside a legend swatch (still a live `<pattern>`) drawing unbroken diagonals. `put()` now
+  WRAPS. Measured effect: 8 of the 25 tile recipes gain their seam pixel (pIce, pRim, pRock, pKarst
+  and all four reported hatches); the other 17 are byte-identical. **This is the one part of the task
+  that re-baselines existing lock hashes** — 14 rows, exactly the baked sheets (13 continents +
+  `synthetic-density`), with atlas/fabric/overlay untouched because they do not bake.
+- **M5 — "103 landform marks drawn" was published with no denominator.** 72% of the resolved
+  instances and 46% of the named landforms carry `at: null` and can never be placed; on Wealdmarch
+  266 of 382 candidates have no position. `dropped 0` was true and "nothing vanished" was not, because
+  the filter sits UPSTREAM of the accounting `dropped` belongs to. The note is now a census that
+  ACCOUNTS — drawn + no position + no glyph family = every candidate, asserted on all thirteen — and
+  the storybook card carries the denominator too. A related upstream hole was closed while there: a
+  surveyed region whose `labelAt` is unusable was filtered out before `placeLabels` saw it, landing in
+  none of checkLabels' three buckets; it is a reported problem now.
+- **m1 — twelve of the thirteen art-manifest blocks said "this sheet is the basin's resolved-backed
+  successor".** Only Wealdmarch is. Quillreef is not.
+- **m2 — corrupt geometry was discarded in silence** while a missing `FILL_FOR` entry was a loud
+  problem: an `Infinity` in a ring drew the polygon one point short at zero problems, and 48 KB of
+  roads vanished from a sheet with nothing reported. Both report now.
+- **m3 — an unknown provenance collapsed to the generic hatch silently.** 0 of 120 take it today; the
+  day one does, the sheet is red rather than quietly flattening the honest-frontier gradient.
+- Nits: `MIN_MAP_PX` is dead on today's thirteen (smallest map edge 644 px) and now says so instead
+  of reading as a proven bound; a `17 <= 18` assertion that followed two lines pinning both numbers
+  was replaced by the fact worth pinning (the ceiling did not move); and an `A || B` river assertion
+  became the single condition it meant.
+
+**What reviewer A CONFIRMED, each with its own measurement**: the scale rule is honest (Quillreef
+draws at the 24 px/km cap into a sheet that shrinks around it — 93.8% linear, 88.1% by area; worst in
+the roster 86.0%); the never-throw contract holds across **18** constructed degenerate documents and
+arguments; 302 placed labels, **0** non-numeric `data-rank`, and deleting the builder-side guard was
+correct because the 516 label ids contain no duplicates; the roster is 17 against a ceiling of 18;
+**0 of 120** reported regions take the hatch fallback; the raster claim reproduces independently
+(driftholt 0.655 s baked vs **2.289 s** live, 71.4% of the cost); and the fabric join draws exactly
+47 settlements and 40 roads with nothing double-drawn or dropped.
+
+**FILED, NOT FIXED (this task):**
+
+1. `repro-attempt3.sh`'s `e-lane-coldreach` block was **stale at `e5600ce`**, so the handoff premise
+   "the redraw reproduces from a clean tree" was already false before Task 7 touched anything: the
+   prose delta it re-applied is committed at `e5600ce`, and its own `startsWith` guard threw before
+   the pipeline could run. Corrected in the scratchpad script to an assertion, the same treatment
+   the rulings-1-5 replay already had. OVERALL is **PASS** after that, with 36 nodes, census 5/5,
+   7/7 legs, 0 spine failures, every preserved node and every road tip at d = 0.0000.
+2. `check_content --require-complete` was **already 172 failures at `e5600ce`** — the failure sets
+   diff to **zero lines** against the post-Task-7 tree, so Step 7's "Everything else PASS" premise
+   is false and Task 7 added none of them. They are the zone-record and resolved-join debt scoped to
+   Task 15 (160 `zones: geography zone "cNN/rNN" has no record`, 10 `zone … not in
+   content/world/resolved#zones`, plus `town-millcross` and `placement-thornveil`).
+3. Nothing verifies a freeze reason is **TRUE** — only that it is present and sentence-shaped. That
+   is a reviewer's job, and it is named in the test rather than faked by a check.
+4. Three plan literals corrected by measurement, not transcribed: (a) `n-cluster1`'s reason said
+   "five of the seven canon-leg endpoints" — measured, **all seven legs have both endpoints on
+   Wealdmarch** (five `f-town-*` features on the node plus `n-millcross`, its own child); (b) the
+   G-ALIAS citation for `representsNodeId` is `scripts/lib/spine.mjs:918-920`, not `:875-877`, which
+   is G-SPAWN-ID-STABLE; (c) Steps 4 and 5 both `git add content/spine/derived.json`, which the
+   freeze changes by **zero bytes** — the sidecar carries no frozen flag.
+5. The plan's `why.length >= 40` check, named "every reason is a sentence, not a label", was
+   **theatre**: `"x".repeat(45)` passed it. Found by the adversarial review, fixed in `1328bfc`
+   (>= 40 chars AND >= 8 words AND a full stop, all three arms watched red). Worth carrying forward
+   as a pattern — the plan wrote the assertion's NAME for what it wanted and its BODY for what was
+   easy, and only a mutation told them apart.
+
+### THE FREEZE SURVIVES THE REDRAW (2026-08-29) — one authority, read by three machines
+
+Task 7 shipped a freeze that a regeneration silently destroyed. Both halves of that are closed, in
+three commits: `c707dee` (the gate reads the authority in both directions) · `dff5f06` (the
+generator applies it to the draft) · `3a5a165` (a promotion that drops it is a promotion error).
+`content/spine/freeze-reasons.json` is now the single authority for the freeze SET, read by
+`gSpineFrozen`, by `generate-world.mjs` and by `promote-world.mjs`'s step-5 baseline — the
+constraint lives where the machines read it instead of in one Gate-2 test.
+
+**A — the loss is a Gate-1 failure now.** G-FROZEN's rule was one-directional: it could fail a
+freeze PRESENT without a written reason and could not fail a reason whose freeze had VANISHED.
+Re-measured before the fix: regenerate and the trunk comes back **10 frozen → 1**, with
+`check_content --only=spine` at **0 failures**; the only tripwire was
+`scripts/tests/freeze-reasons.test.mjs`'s set equality, which runs in Gate 2
+(`scripts/integration.sh`), not Gate 1 (`scripts/precheck.sh`). The reverse arm
+(`scripts/check_content.mjs`, end of `gSpineFrozen`) reads every id in the reasons file and fails
+the ones that are not frozen, or that the spine does not carry at all. **Proven red then green on
+the live corpus**: after a regeneration it names all nine nodes whose freeze the redraw dropped
+(`n-atlas` is the one that survives, hence nine and not ten); restored, 0 failures / 8 warnings /
+36 nodes. Two hermetic cases added beside the existing three in `scripts/tests/spine-gates.test.mjs`
+(**122**, was 120), both mutation-proven red with the arm stubbed out. The soft-skip is unchanged
+and load-bearing: no fixture root under `scripts/tests/fixtures/spine` carries a reasons file, so
+the arm is a no-op on all of them.
+
+**B — the six G-FROZEN failures, diagnosed before choosing.** Carrying `doc.frozen` on the
+preserved nodes (`tools/mapforge/generate-world.mjs:918`) does clear the three
+`G-CANON-LEG … endpoint n-millcross is not frozen` items, and produces exactly six failures on the
+draft — measured, not predicted: `n-millcross`, `n-thornveil` and `n-northern-icefield` each
+**"frozen but ancestor n-cluster1 is not"** AND **"frozen without absoluteAnchor"**. *Neither is a
+stale anchor.* One says the freeze must be **ancestor-closed** and a preserved node's new parent is
+a freshly minted continent with nothing to inherit from; the other says a freeze is a flag **and** a
+composed anchor, and the carry drops the anchor because the pre-redraw one is meaningless in the new
+geometry. So the answer is neither of the handoff's two options as stated: a freeze is a property of
+a **SET**, not of a document, and the set is what `freeze-reasons.json` already commits. The
+generator applies it (new step 4b, after the draft tree is built): the flag plus an
+`absoluteAnchor` composed from the **regenerated** geometry, continents included — which is what
+makes the set ancestor-closed — and a reason naming a node the draft does not carry is a loud
+`run.problems` line, proven live by adding a ghost id to the authority. **Not** done in
+`promote-world.mjs` (the handoff's option ii): promotion verifies every file it copies against the
+run manifest's hash map, so re-applying a freeze there would edit node bytes after they were hashed,
+which is the stale-rider hazard that guard exists for — and the draft is gated in its own right.
+
+**What that bought, measured.** The freeze survives regeneration at **10/10**; the promoted node
+bytes are **byte-identical to the ten Task 7 froze by hand**, so the generator derives the same
+anchors; the draft root gates at **0 failures** (was 3) and carries **0 edge work orders** (was 3),
+so **the three carried-canon items ARE cleared** — at their source, not by re-pointing. Ordering is
+a non-issue for one atomic pass: freezing is a write and the composition it reads is the placement,
+so the root-first discipline a hand refreeze needs does not apply.
+
+**Three goldens moved in `tools/mapforge/tests/generate-world.test.mjs`, and one was a proxy.**
+`assert.ok(fails.length > 0, "if this ever reads zero the edges have stopped being carried")` read a
+FAILURE COUNT to police a fact about EDGES; it would have red on the fix. Replaced by the fact it
+was named for — the draft's own `edges.json` census, `{road: 6, leg: 7, sealane: 2}`. The
+carried-canon golden went `[…3 lines…] → []` and the preserved-node block's
+`assert.equal(n.frozen, false)` became an authority-driven loop (everything the file names is frozen
+with an anchor, everything it does not name is unfrozen without one, and every id it names exists).
+All three mutation-proven: stubbing step 4b reds them (**31 of 34**), restored **34/34**.
+
+**The promotion gap the review found (MEDIUM, fixed in `3a5a165`).** `budgets.json`'s
+`promotion.gateRulesThatMustBeGreen` listed only G-ALIAS / G-PARENT / G-TOWN-FRAME, so a promotion
+that wrote a broken freeze logged the gate's red as a NOTE and **exited 0** — the next Gate-1 run
+was the only backstop. G-FROZEN added **with its measurement**, which is what that file's own policy
+requires. Proven red then green END TO END: with step 4b stubbed, generate+promote prints
+`gate integrity rules RED — G-ALIAS, G-FROZEN, G-PARENT, G-TOWN-FRAME over 9 failure line(s)` and
+refuses; restored, `clean … over 0 failure line(s)`. The unit test is armed on the REAL captured
+lines from both failing runs, and the declaration is mutation-proven (deleting the row reds three
+tests). `promote.test.mjs` **42/42**.
+
+**FILED, NOT FIXED (this task):**
+
+1. Neither `gSpineFrozen` (`scripts/check_content.mjs`, both arms) nor `generate-world.mjs`'s step 4b
+   checks that `freezeReasons.reasons` is a plain OBJECT before `Object.keys()` — a committed file
+   whose `reasons` is an array or a string would misbehave rather than fail cleanly. Pre-existing in
+   the forward arm, so not a regression; the schema-shaped fix is one guard beside the load in
+   `checkSpine`.
+2. `scripts/tests/fixtures/world-d/base/world/budgets.json` has drifted from
+   `content/world/budgets.json` independently of this change, and unlike
+   `scripts/tests/fixtures/world/base/world/budgets.json` nothing pins it — `world-gates.test.mjs`'s
+   parity test covers only the `world` fixture.
+3. Step 4b does not itself enforce that the authority's set is ANCESTOR-CLOSED; it trusts the file
+   and lets G-FROZEN's forward arm say so on the draft. True today (`n-atlas` → `n-cluster1` → the
+   three preserved children; the oceans hang off `n-atlas`), and the failure is loud rather than
+   silent, but the set's closure is an unwritten precondition of the file.
+
+### TASK 8 SHIPPED (2026-08-29) — the continent zoom tier, and ruling 8 discharged
+
+`SHEETS` 4 → **17** (`budgets.sheets.maxSheets` = 18 unchanged, one row of headroom).
+`tools/mapforge/lib/continent-sheet.mjs` is one builder for all thirteen landmasses; the registry
+entries are generated from `CONTINENT_SHEETS`, so a fourteenth is one row. Every number below was
+measured on this tree, not carried from the plan.
+
+**RULING 8 IS DISCHARGED, AND NOT THE WAY THE PLAN'S TEST DRAFT ASSUMED.** The retired `cluster1`
+basin sheet does NOT come back as an 18th entry: the basin IS Wealdmarch, so its ground is drawn by
+the `wealdmarch` continent sheet, from the resolved doc, at 4 + 13 = **17**. The plan's Step 1 test
+literal ("the roster closes at 18 — 1 atlas + 1 basin + 13 continent + 1 overlay + 1 fabric + 1
+synthetic") is therefore wrong and was corrected to 17 with the ceiling asserted separately, which
+is ruling 8's own arithmetic. Of the five surviving subject keys, **four are drawn** (`coastline`,
+`river`, `saltmire`, `terrainPatches` — asserted on the built wealdmarch SVG) and `iceEdge` is
+`null` on all thirteen resolved continents, so nothing is drawn anywhere; the sheet's note SAYS
+`iceEdge none in the resolved doc` rather than passing over it, and the draw path is proven live
+through an injected content root so it is dormant for want of DATA, not because the code is dead.
+That is filed-not-fixed item 1 biting exactly where STATE said it would.
+
+**`basin-sheet.mjs` and `resolveWorld` were NOT consumed.** Ruling 8 left them on disk as this
+task's raw material; the successor reads `content/world/resolved/` directly, which is what
+"resolved-backed" describes, so both stay dormant and `places.test.mjs`'s arm-3 assertion (no
+production path calls them) is unchanged and still true. The pin was updated honestly rather than
+deleted: its roster half moved 4 → 17, its message moved from "dormant until Task 8" to "dormant
+permanently", and the real coverage it asked for now lives in `continent-sheet.test.mjs`'s RULING 8
+test. **Their permanent dormancy is a dead-code question for an owner — filed below, not decided here.**
+
+**FOUR PLAN PREMISES FALSIFIED BY MEASUREMENT, each fixed at the generator:**
+
+1. **`roads` is EMPTY on all thirteen resolved continents and `towns` carries only the 8 civil-pinned
+   towns.** The plan drew both from the resolved doc. The 47 settlements and 40 roads live in the
+   FABRIC (already a declared input of this sheet), and the resolved town ids are a strict subset of
+   the fabric settlement ids — verified, zero resolved towns absent from the fabric. The builder now
+   takes ids and positions from the fabric and NAMES from the resolved doc where it has one. Drawing
+   the plan's way would have shipped Wealdmarch with 6 of its 16 settlements and none of its 15 roads.
+   Fabric road records carry no class field, so `ROAD_W` is keyed by a stated derivation — a road
+   touching a capital is trunk, a hub is spur, else track — rather than by an invented column.
+2. **`bakedUnderlay` returns `{svg, problems, notes}`, not a string.** The plan interpolated the
+   object straight into the markup. It also sizes its raster from the ABSOLUTE maximum of the rings
+   it is handed, so world km would allocate a frame reaching back to km 0 — 3,576 px wide for Ashen
+   Spar, of which 2,304 px is empty. Rings are shifted into a local frame and translated back.
+3. **`checkGlyphCoverage({emittedIds})` requires a `<symbol>` for every glyph family in the WHOLE
+   170-row catalogue (40 of them).** A continent draws between **1** (Loamspit) and **10**
+   (Wealdmarch), so the plan's `emittedIds: usedGlyphs` would have reported 30-39 phantom problems
+   per sheet. The catalogue half is called as `atlas-sheet.mjs` calls it (no `emittedIds`); the real
+   per-sheet invariant — a `<use>` whose `<symbol>` is missing renders NOTHING — is checked here in
+   both directions off the markup the sheet produced, and is mutation-proven.
+4. **The plan's `checkLabels` call omitted `aboveTier` and `asked`**, which switches off the
+   accounting rule those arguments exist for. Both are passed. Measured on the committed sheets:
+   **0 dropped on all thirteen**, with 10 above-tier on Wealdmarch and 9 on Coldreach — village names
+   (rank 9) sitting above the rank-8 continent tier, counted rather than lost.
+
+**THE SQUARE FRAME WAS WRONG, AND THREE THUMBS PROVED IT.** At the plan's fixed 1400×1400 map area,
+Rimewall Cap (162.5 × 55.5 km), Ashen Spar (53 × 24.5 km) and Loamspit (49 × 25 km) drew ink on
+**35.0%, 41.2% and 42.1%** of their thumbs' scanlines against `budgets.json`'s 50%
+`minThumbInkRowFraction` — a 3:1 landmass on a square canvas is half empty by construction. The
+floor is right and the frame was wrong: the long edge takes 1400 px, the short edge follows the
+landmass's own aspect at ONE uniform scale, plus a 28 px neatline margin. After: the drawn extent is
+**86.0%-92.2%** of its map area on every sheet, smallest chains included, and every thumb clears all
+three ink floors (rows 76.5%-89.9%). The neatline margin is not cosmetic — without it Stonemoor red
+G-LABEL with 2 leader lines crossing a name, because a coastal label with the neatline hard against
+it loses half the declutter's candidate directions.
+
+**THE REPORTED HATCH IS BAKED, AND THE CAP WAS NOT RAISED.** Drawn as live `<pattern>` fills, three
+continents breached `maxRasterSeconds` = 2 at `rasterWidthPx` = 2000 — Coldreach **2.153 s**,
+Stonemoor **2.215 s**, Driftholt **2.219 s**, best of three, run serially. Profiled before
+concluding, exactly as the F-042/F-047 lesson requires: stripping the reported hatch took Driftholt
+to **0.599 s** and Coldreach to **0.475 s**, so the hatch was **72-78%** of the cost — the same
+single-live-hatch class that once made the basin sheet 11.31 s. Merging same-provenance regions into
+one fill was measured too and does nothing (2.143 s): the cost is AREA, not fill count.
+`texture-bake.mjs` grew one optional door — a region may name its tile by an explicit `fill` pattern
+id instead of by biome, validated against the same recipe table — and the frontier hatches go
+through the same raster the biome ink already does. After: **every one of the seventeen sheets is
+inside the cap, worst 0.667 s (Driftholt)**, and the whole roster runs 0.277-0.701 s. The `<pattern>`
+defs stay because the legend swatches still draw them.
+
+**SIX GATE ARMS, EACH WATCHED RED THEN GREEN.** Mutation runs against the new suite: deleting the
+`<use>`/`<symbol>` integrity arm (24 → 23), restoring the plan's `?? "pRock"` terrain-kind fallback
+(23), restoring its `?? "meadow"` biome fallback (23), returning the reported hatch to a live fill
+(23), removing the never-throw catch (23), and reading only `BIOME_FILL` in G-BIOME-INK's referenced
+set (23). **The last one is the one worth remembering:** it left the suite GREEN at first, because the
+tier-1 firing test only asserted `problems.length > 0` — the three frontier hatches had gone dark and
+6 of 12 problems vanished with nobody watching. The assertion now NAMES them.
+
+**A RULE THAT COULD NOT FAIL, DELETED RATHER THAN KEPT.** A draft of the builder pushed a problem when
+a placed label resolved to no rank. `placeLabels`' placed ids are a subset of the ids it was handed and
+`rankOfLabel` is built from that same array, so no input can make it fire — it survived mutation
+untouched. It is gone, and the property is checked where it can be observed instead: the suite reads
+`data-rank` back out of all thirteen BUILT sheets and reds on anything that is not a number.
+
+**Answers to the reviewer's five questions, all measured.** (a) The drawn extent fills 86.0%-92.2% of
+its map area; Quillreef 852×864 px in a 908×920 frame (88.1%), Loamspit 1176×600 in 1232×656 (87.3%).
+(b) `buildContinentSheet` does not throw on an empty `zones`, a two-point polygon, a null `labelAt`, a
+landmark with no glyph or `at`, a null coastline, NaN in a ring, or a doc with no river/mire/patches/
+towns — seven constructed cases, each asserted. The one input that gets past every in-band guard is a
+non-string `contentRoot` (`join` throws before a file is read), which is what arms the outer catch.
+(c) Zero `data-rank="undefined"` across all thirteen sheets. (d) 17 sheets against a ceiling of 18;
+`world-budget: sheets 17 files, 256264 bytes largest (world-fabric.svg) (budget 18, 524288)`; all 13
+thumbs inside `maxThumbBytes` at exactly 512 px. (e) **Zero** reported regions take the `pReported`
+fallback — all 120 carry a real provenance (77 hearsay, 24 inferred, 19 sworn), and a test now says so
+in both directions.
+
+**Two incidental corrections, both real defects the new ids exposed.** `render-sheet.test.mjs`'s CI
+self-check scan matched `--sheet (\w+)`, and `\w` stops at a hyphen — eleven of the thirteen new ids
+carry one, so the scan would have collected "rimewall" and reported a registry mismatch that was
+really a regex bug. And `game-client/assets/.thumbs` held a **stale thumb for `maps/atlas-world.png`**
+(srcHash drifted at Task 7's atlas re-render and was never re-baked); `bake_thumbnails --only maps`
+reported 15 stale of 17 and corrected it.
+
+**Render lock: additions only.** 31 → **44** rows, **13 added, zero changed, zero removed** —
+`git diff` on `content/world/render-lock.json` shows 13 insertions and 0 deletions. The plan expected
+26 (13 SVGs + 13 PNGs); the lock has never hashed PNGs, so 13 is the correct number.
+
+**THE REVIEW PASS — two independent reviewers, ten findings acted on in one follow-up commit.**
+Reviewer B recomputed all ~160 published figures in the 13 storybook rows and 13 art-manifest
+entries against the resolved and fabric docs AND against the committed SVGs: **zero arithmetic
+mismatches**. Every defect it found was in prose or in a cross-reference — which is exactly this
+programme's recorded failure mode. Acted on:
+
+- **M1 — `places.test.mjs` claimed all FIVE ruling-8 subject keys are "asserted as DRAWN".**
+  `iceEdge` is null on all thirteen and the cited test asserts the opposite for it. The comment now
+  says four drawn, one measured-null. Publishing absence as a positive fact, inside the one file
+  whose job is keeping ruling 8 honest.
+- **M2 — that same comment cited a STATE §28 filing that did not exist.** Rule 11: prose that points
+  at a decision nobody recorded is decoration. The filing is now real — items 1-4 below.
+- **M3 — all 13 art-manifest entries carried the tag `"spine"`** while their `gen.input` is the
+  resolved + fabric layers and ruling 8 retired the spine-backed path this sheet replaces. Thirteen
+  searchable tags asserting a lineage the change had just retired. Now `"review-sheet"`, matching
+  `art:map-fabric` and `art:map-overlay`; `art:map-atlas` keeps `"spine"` because its input IS the spine.
+- **m4 — "eleven of the thirteen ids carry a hyphen" was wrong (TWO do)** and the stated mechanism was
+  wrong too: `--sheet (\w+)` does not mis-capture "rimewall", it fails to match the line at all, so
+  the two sheets would have gone silently uncovered. Both corrected by measurement.
+- **m5 — "CI's three `--no-png` lines"** was true until this diff made it 17. Fixed in the test name
+  and in both `render-sheet.mjs` comments.
+- **m6 — the village-label sentence was pasted onto all 26 surfaces**, including six sheets with ZERO
+  settlements, where it asserted a property of an empty set. It also read as reassurance that village
+  names are present when the measured `data-rank="9"` count is 0 on every sheet.
+- **m7 — the ice-edge disclosure was asymmetric**: only the six riverless sheets mentioned it, so
+  Skerryfast — whose own subtitle says "the fjord skerries" and which STATE names as an ice-bearing
+  landmass — was the one sheet silent about it. All thirteen now state it, and a mutation-proven test
+  reds if any card drops the clause or claims an ice edge.
+- **m8 — inventory figures read as sheet contents.** Wealdmarch published "113 named landforms" while
+  the sheet letters 52 of them. Every count is now "N in the world, M lettered here", read back off
+  the committed SVG's own `data-rank` attributes rather than predicted.
+- **The authored one-line shapes were replaced by each premise's own `structuralIdea`** — derive, not
+  invent. "the polar ice divide at the top of the world" was my paraphrase; the premise says "one ice
+  divide shedding outlet glaciers to every quarter; no rivers".
+- **Self-found, and proven by running it: a `null` fabric doc produced
+  `unexpected throw: Cannot read properties of null` from the outer catch** instead of a named shape
+  problem — a real diagnosis replaced by a generic one. Guarded, and the fix is mutation-proven. The
+  test fixture that first covered it passed a HEALTHY doc, because `fabric ?? committed` cannot tell
+  "not supplied" from "supplied as null"; the helper now uses an explicit ABSENT sentinel.
+
+Reviewer B's verdict on the three edited test files, independently checked: the `places.test.mjs`
+tripwire is structurally intact (all three legs unchanged, two assertions added); the roster pin and
+the declutter test are NET STRONGER; the CI-scan regex widening is a fix, not a weakening, because
+the binding `deepEqual` is untouched; and `fabric-sheet.test.mjs`'s literal-to-derivation change is
+acceptable ONLY because of the companion line that re-pins the roster at 17 — the derivation alone
+would be a rule that can no longer fail.
+
+**FILED, NOT FIXED (this task):**
+
+1. **`basin-sheet.mjs` (30.3 KB) and `scripts/lib/places.mjs#resolveWorld` are now permanently dead
+   production code.** Ruling 8 kept them as Task 8's raw material; Task 8 did not need them, and
+   `content/spine/sheet.json`'s descriptor still cannot resolve. Deleting them retires their tests
+   too, which is an owner call, not a refit.
+2. **G-BIOME-INK's per-sheet half is degenerate at the committed legend tier 3**, on the continent
+   sheets exactly as `synthetic-sheet.mjs` already records for itself: every legend row draws a
+   swatch, so `referenced` ⊇ `emitted` by construction and the arm can only fire at a lower tier.
+   The `legendTier` parameter is what makes it demonstrable at all; nothing on the shipped path
+   passes one.
+3. ~~**`maxRasterSeconds` now covers 17 sheets × 3 runs**~~ — **FIXED, not filed.** It went from a
+   1-in-8 flake to an EVERY-RUN red: 51 rasterisations instead of 12, overlapping
+   `raster.test.mjs`'s deliberate full-suite child for the whole of their combined duration.
+   Measured both ways: `synthetic-density` rasterises in **0.708 s** alone and **2.10-2.64 s**
+   alongside that child, against the 2 s cap — and 0.708 s is byte-for-byte the 0.706 s this
+   document already recorded before Task 8, so the bake change is NOT the cause. The cap was not
+   touched and no sheet was excluded: `tools/mapforge/tests/helpers/suite-lock.mjs` is one atomic
+   `mkdir` lock held by the tracked-tree guard across its child run and by the budget test across
+   its measurement, so the wall clock is never read while this harness is deliberately loading the
+   box. The child never takes it (it would deadlock against its own parent — measured the hard way,
+   the first draft hung both files past two minutes) and does not assert the budget anyway.
+   Everything else in both files still runs in parallel. Both files together: **15/15**.
+4. **The baked underlay paints its whole bounding box opaque `parchmentDeep`**, so the sea inside a
+   continent's bbox is a slightly different shade from the sea in the neatline margin. Pre-existing
+   `bakedUnderlay` behaviour, visible on `synthetic-density.svg` too; it reads as a map field rather
+   than as an error, but it is a deliberate-looking edge nobody decided on.
+5. **`pReported` and `pReportedSworn` are byte-identical live patterns** (`draft.mjs` — both 7x7,
+   `M0,7 L7,0`, stroke 0.45, opacity 0.5), so the legend carries two rows a reader cannot tell apart;
+   and `TILE_RECIPES.pReported`'s opacity is **0.35** where the vector uses 0.5 — the two
+   transcriptions have already drifted on one entry. No committed sheet is affected, because
+   `pReported` is the fallback and 0 of 120 regions take it. Pre-existing; found by reviewer A.
+6. **The spec's third zoom tier has nowhere to go.** The design declares "world 3, continent 8,
+   region 10", but `RANKS.village` is 9, no sheet in the roster declares `maxLabelRank: 10`, and all
+   **32** village names land in `aboveTier` on every sheet — named places on no chart in the roster.
+   With `maxSheets` at 18 against a roster of 17 there is one slot, so a per-continent region tier is
+   structurally unbuildable under the committed ceiling. The storybook cards disclose the deferral
+   per sheet; nothing records the tier itself as open. Found by reviewer A.
+
+### TASK 9 SHIPPED (2026-08-29) — Z2 in both directions, and the pairing nobody could derive
+
+`check_content.mjs`'s `checkZoneContent` now reads **two** authorities over the same subject: `Z1`
+against the drawn world (`content/world/resolved/`) and `Z2` against the fabric
+(`content/world/fabric/continent-NN.json`), which is the authority on which ground exists and
+whether anyone walked it. `check_content --require-complete` goes **172 failures -> 32**: the 160
+`geography zone "cNN/rNN" has no record` lines collapse to **30** `surveyed region "..." has no
+record` (40 surveyed regions minus the 10 now joined), all **10** zone-record orphans clear, and the
+2 survivors are `towns/town-millcross.json` and `bestiary/placement-thornveil.json`, which still
+swear to legacy slugs and belong to Tasks 14/15.
+
+**Five plan premises measured false, each acted on rather than worked around.**
+
+1. **Z1's subject had to move from `doc.zone` to `doc.region`.** The plan's Step 4 leaves it on
+   `doc.zone` ("a record must name a zone the renderer knows"). Measured: **0 of 160** resolved zone
+   ids is a slug — all are `cNN/rNN` — so on the plan's literal all ten committed records stay
+   orphaned for ever, contradicting Task 11 Step 1's own acceptance criterion (`grep -vE "surveyed
+   region"` must print empty) and Task 11's own record shape (`"zone": "tallowquay-roads", "region":
+   "c03/r01"`). The slug stays the human name and keeps its duplicate rule; `region` is the join key
+   both Z1 and Z2 read.
+2. **Step 1's fifth test can never fail as written.** `assert.doesNotMatch(out, /^zones: /m)` — every
+   gate line is printed as `FAIL  zones: …`, so the line-anchored form matches nothing on any input.
+   Replaced with an explicit sweep of all five Z2 message families.
+3. **Step 5's example literal is wrong ground.** It pairs `thornveil` with `c02/r04`; the fabric
+   marks `c02/r04` **reported**, which the new Z2 fails outright. The surveyed set on Wealdmarch is
+   `c02/{r01,r02,r08,r10,r14,r16,r21,r24,r28,r30}`.
+4. **NO DERIVABLE ZONE -> REGION PAIRING EXISTS, and this is the finding that matters.** Step 5 takes
+   the `region` column from Task 10's allocation table, which is unwritten. Measured on the redrawn
+   world: all **6** named cluster-1 towns (`c-town-cindervast/embervale/gildmark/millcross/norhollow/
+   rooktide`) and all **13** pinned cluster-1 landmarks sit on **reported** regions (one, `c-lm-thornveil`, on none at all) — `c02/r11`,
+   `r12`, `r18`, `r19` — while c02's ten **surveyed** regions carry only unnamed generated villages
+   `c02/s01`…`s10` (`content/world/fabric/continent-02.json#pinReceipts,settlements`). Nearest-region
+   is false precision too: the closest surveyed region to `c-town-millcross` is 41.5 km away. The ten
+   slugs are therefore paired **alphabetically against ascending region id** — reproducible, stated
+   in `scripts/tests/zone-content.test.mjs`, and carrying no geographic claim. `ashvale-front`→`r01`,
+   `cindervast`→`r02`, `emberdown`→`r08`, `gildmark-head`→`r10`, `hollowmarch`→`r14`,
+   `meltwash-terrace`→`r16`, `millcross-ford`→`r21`, `northern-icefield`→`r24`,
+   `rooktide-reach`→`r28`, `thornveil`→`r30`. **Task 11 Step 1 cannot "verify the join" — there is
+   nothing to verify it against; it can only verify the prose.** No committed prose byte changed
+   (10 files, +20 lines, -0).
+5. **Step 4's Z2 body silently tolerates two records on one region** (`coveredRegions.set(region, r)`
+   overwrites). Added the duplicate-**region** rule beside the existing duplicate-**zone** one, on
+   `findDuplicateGroups` so a third claimant is named too; without it the 40:1 bijection Tasks 10-14
+   build is unenforced.
+
+**Two defects found in existing surfaces, not introduced by this task.**
+
+- `scripts/tests/places.test.mjs:305` asserted `/zone "thornveil" not in …#zones/` **unqualified**,
+  and `bestiary/placement-thornveil.json` emits the identical sentence from a different gate — so
+  after the re-homing the test kept passing while the thing it is named for had been fixed. Both
+  assertions are file-qualified now, and the zone half is inverted to `doesNotMatch`.
+- `scripts/tests/season1.test.mjs`'s filename-filter comment claimed Task 11's shape is
+  `"zone": "c02/r21"`. The plan's own literal is `"zone": "tallowquay-roads"` with a separate
+  `region`. Corrected in place.
+
+**The memo, and the leak it would have caused.** `loadFabricRegionIndex` had one reader (`checkSpine`)
+and now has two, so a full sweep would have printed every fabric problem twice. It is memoised per
+content root with a *counter* of how many of its problems have been failed — a counter and not a
+boolean, because `fabricRegionCountsFor` appends stale-pin problems after `checkZoneContent` has
+already drained the array. `runSpineGateInProcess` resets both (its enumeration is **eight** bindings
+now, not six); un-reset, run two of an unreadable fabric printed **zero** fabric FAILs and exited 0.
+Pinned by a new leak test beside the `townPlansCache` / `placesByRoot` pair, mutation-checked.
+
+**Filed, not chased.**
+
+- Writing **any** file into `content/world/fabric/` arms `G-POI` (`scripts/lib/world.mjs:626`) and its
+  12-POI floor, so every zone-gate fixture must now carry 12 synthetic instances per surveyed region
+  or fail on a rule unrelated to the Z-rules. Fixture-cost coupling; three suites pay it.
+- `content/bestiary/placement-thornveil.json` (G1) and `content/towns/town-millcross.json` (T-rules)
+  are the last two legacy-slug joins on the real root — the 2 residual `--require-complete` failures.
+- `content/zones/*.json`'s `spineId` is still optional and unset on all ten; `G-ALIAS` checks it only
+  when present, so the fabric join and the spine join remain unrelated keys.
+
+### TASK 9 REVIEW — two MAJOR findings acted on (2026-08-29, refactor step of the quality gate)
+
+An independent adversarial reviewer re-derived every claim above by construction and mutation. The
+pairing claim (4) held under an independent point-in-polygon test of each pinned civil coordinate
+against the fabric's own region `rings`: **all 9 resolvable pins land in reported regions**, and
+`c-lm-thornveil`'s lands in none — no committed artifact joins a legacy slug to surveyed ground. All
+six named rules were independently mutation-killed. Two MAJOR defects were found, both mine, both
+fixed in the follow-up commit.
+
+1. **The blanket soft-skip took the intra-record rules down with the join rules.** Both the plan's
+   `if (!zones) return 0` and its `if (!zones.size && !fabric.byRegionId.size) return 0` return from
+   the WHOLE function, so `Z3`/`Z4`/`Z5`/`Z7` — which need no authority, being intra-record — went
+   dark too. The reviewer built the tree: a resolved continent declaring `"zones": []` and no
+   `content/world/fabric/`, which is what a partially-generated or WIP root genuinely looks like. A
+   record with a duplicate hazard id, a non-kebab id AND an invalid resource kind printed **`0
+   zones`, zero failures, exit 0**. Each rule now bails on its own missing authority and nothing
+   else. Two consequences pinned as tests: an EMPTY drawn world reports **no** orphans (an absence of
+   data must not be published as a verdict — the old code printed ten "not in
+   content/world/resolved#zones" FAILs claiming it had looked), and a drawn world that has merely
+   fallen BEHIND the fabric still names both disagreements.
+2. **`zone` had lost every format check.** Moving Z1's join subject to `doc.region` left the slug
+   validated by exact-string duplicate detection alone, while it remains the name every Z3/Z5/Z6
+   message and every duplicate group is keyed on — measured, a fully-joined record carrying
+   `"zone": "GARBAGE_NOT_KEBAB!! "` passed with 0 failures and 0 warnings. Added **Z0**: the slug is
+   kebab-case, the same rule its item ids have had since I-060. Deliberately NOT "slug equals
+   filename": `zone-emberdown-copy.json` holding `"zone": "emberdown"` is the fixture that reaches
+   the duplicate-zone rule, so binding the two would make that rule unreachable dead code.
+
+**Accepted and filed, not fixed here.**
+
+- When `content/world/resolved/` is stale against a fabric that has moved on, the same root cause
+  prints two differently-worded FAILs and the Z1 one blames "not in the resolved world" for what is
+  really a resolved-join that has not been re-run (`scripts/check_content.mjs`, Z1's message). Nothing
+  hides — exit 1 either way, and the reviewer could construct no silent disagreement class — so the
+  wording is left alone rather than churn ~10 fixture regexes.
+- `checkZoneContent` reporting the fabric index's problems before `checkSpine` adds its stale-pin
+  ones is an **implicit ordering dependency** between two functions ~1,200 lines apart, enforced by
+  `main()`'s call order and by nothing else. Correct today on both paths (full sweep and
+  `--only=spine`); fragile.
+- `survey` on a record is informationally redundant once Z2 passes (only `"surveyed"` can survive),
+  but the drift check is live and mutation-killed. Ruling: a verified declaration, like a checksum —
+  not rot.
+
+### TASK 10 SHIPPED (2026-08-29) — the allocation is derived; the ten legacy joins still are not
+
+`docs/worldbuilding/A4-zone-allocation.md` is a **generated** 40-row table.
+`scripts/lib/zone-allocation.mjs` derives it from `content/world/fabric/continent-NN.json`,
+`content/world/premises/continent-NN.json`, `content/world/names/*.json` and the ten committed
+records; `scripts/derive_zone_allocation.mjs --write|--check` renders it; the 19 tests in
+`scripts/tests/zone-allocation.test.mjs` re-derive every claim and fail on drift. Nothing in the
+table is retyped from the plan.
+
+**What the allocation keys on, and it is not geography.** Three mechanical steps. (1) The ground,
+measured: `terrainKind`, `biomeShares`, the region's `instances[].type` landforms, and its dominant
+landform **group** read off the instance handles (`c06/coastal/h-...`), ties alphabetical; `c05/r06`
+has no instances at all so its group falls back to biome. (2) A **licence**: an affordance table from
+each of the eight kinds to the measured evidence that would let a person carry it out — `LICENCE` in
+the lib, one predicate per kind, authored once and never tuned per region. **A derived zone may only
+be given kinds its own region licenses**, which is what lets Tasks 11-14 justify a kind in prose
+without contradicting the ground. (3) A deterministic packing: licensed 2-subsets first, then
+3-subsets, then 1-subsets; fewest-candidates-first, ties by ascending region id, backtracking.
+Measured composition: **28 two-element, 11 three-element, 1 one-element** (`c05/r06`, whose ground
+licenses only `{stone, salvage}` and whose one pair is spent by `gildmark-head`). A one-element kind
+set is legal — Z3 floors `resources` at two ENTRIES, Z6 compares KINDS as a deduped set.
+
+**The plan's own fixed kind-set column was authored against an imagined geography and is refuted.**
+Measured against the redrawn fabric, Thirstwold's `timber` (twice) and `fuel` are licensed by no c05
+region — 0% forest, no swamp-forest, no peat, no ash. The 40 sets are kept as a **packing** (all
+distinct, cheap space spent first) but their assignment to regions is re-derived. **Six of the plan's
+30 zone slugs also had to go**: `tallowquay-roads`, `coldreach-shelf`, `peatrun-mouth`,
+`netstead-bight`, `drowned-pavement`, `slateflow-sink` each re-mint a name in `reserved.json` onto
+ground that canon name does not stand on — exactly the failure that file exists to prevent.
+
+**THE RULING THAT IS STILL OPEN — the ten committed Wealdmarch records.** Task 9's finding holds and
+this task measured it a second, independent way, so it is now refuted in two dimensions, not one.
+*Position:* of the 40 hand-pinned canon places in the resolved world, **39 stand on reported ground,
+`c-lm-thornveil` stands on no owned region, and exactly one stands on surveyed ground** —
+`c-lm-brightfall-leap` in `c09/r03`, on Brightfall, not Wealdmarch. Cluster 1's own six towns and
+twelve resolvable landmarks are all on `c02/r11`, `r12`, `r18`, `r19`, all reported. *Economy:*
+`hollowmarch`'s committed `ore` is licensed by **no c02 surveyed region at all** — c02 carries no
+rock, upland, scree, badland or karst biome and no ore-bearing landform — so there is not even a
+licence-respecting permutation of the ten committed sets onto Wealdmarch's surveyed ground. Under
+Task 9's alphabetical join, **five of the ten rows are licensed and five are not** (`ashvale-front`,
+`cindervast`, `hollowmarch`, `millcross-ford`, `thornveil`). Those ten rows are therefore marked
+`PLACEHOLDER`, exempt from the licence rule, and **preserved byte for byte** — no record was touched.
+A4 §2 carries the four alternatives (keep the placeholder / join the reported ground / re-survey the
+canon ground / decouple) with their costs; **an owner ruling is wanted before Task 11 writes a
+Wealdmarch sentence that leans on the join.** Task 11 can proceed on the 30 derived rows regardless.
+
+**Inheritance beats minting.** Because one canon pin does stand on surveyed ground, a derived zone
+whose region already holds a hand-pinned canon place takes that place's name as a landmark instead of
+minting a second name for the same ground: `c09/r03` inherits **Brightfall Leap**. The zone slot is
+never inherited — a zone is the whole region, not the one thing standing in it.
+
+**Names.** 30 zone names and 59 landmark names minted through the Plan D generator
+(`tools/mapforge/lib/name-gen.mjs`), so the landmass's register is the only vocabulary in play and
+`reserved.json` is a hard exclusion by construction. Classifier comes from the landform GROUP and
+**rotates by the region's ordinal on its landmass**, or six fluvial Coldreach regions all come out
+`<stem> Ford`. A candidate is redrawn on a triple letter, on the classifier appearing inside the
+stem ("Pumicreach Reach"), and on its **stem** coming within 3 phonemes of another stem on the same
+landmass — judged on `titleStem()`, not the whole title, because whole-title comparison let
+"Grykestone Fenster" and "Stair below Grikestone" both through. `G-NAME-*` sweeps resolved **place**
+documents, not zone landmarks, so no gate elsewhere was claiming to enforce this.
+
+**One defect found in this task's own work and fixed before commit.** `packKindSets` had no search
+budget. An INFEASIBLE instance is where an exhaustive backtracker costs the most, and it is
+reachable: mutating the `ore` predicate to `() => false` made the gate **hang past two minutes**
+instead of going red — worse than a wrong answer. The real instance solves inside **50** nodes
+(measured at budgets 50/200/1000/5000, all solve, all under 35 ms), so the budget is 2000 and
+exhausting it returns null, which every caller already reports as "no licensed packing exists".
+
+**Twenty mutations, all killed** (`M1` dropped column · `M2` kind outside the enum · `M3` duplicate
+kind set · `M4` duplicate landmark · `M5` non-kebab slug · `M6` region not surveyed · `M7` two rows
+on one region · `M8` terrain-column rot · `M9` distribution moved · `M10` unlicensed kind ·
+`M11` a fresh row claiming exemption · `M12` committed kind set rewritten · `M13` c09/r03 unsurveyed ·
+`M14` a canon pin landing on surveyed ground · `M15` Wealdmarch licensing ore · `M16` slug reusing a
+reserved name · `M17` out-of-register stem · `M18` hand edit vs derivation · `M19` ore predicate
+always false · `M20` every licence predicate always true). `M20` is the widen-to-pass hole and it is
+closed by A4 §2 part 2, which fails the moment Wealdmarch licenses ore.
+
+**Filed, not chased.**
+
+- `content/world/premises/continent-11.json` declares `"register": "reedspeech"` while
+  `content/world/names/registers.json`'s `continentRegister` says `moorstone` for `c11`. Quillreef has
+  zero surveyed regions so nothing in this task reads it; nothing reconciles the two sources either.
+- `Brightfall Leap` (`c-lm-brightfall-leap`) is a hand-authored canon landmark that is **not** in
+  `content/world/names/reserved.json`, so a re-seed could re-mint it onto other ground — the exact
+  failure that file exists to prevent. A4 keeps it by inheritance; `reserved.json` does not.
+- `content/zones/*.json` still has no `region`-vs-`spineId` relationship, and A4 adds none: the
+  fabric join and the spine join remain unrelated keys (carried forward from Task 9).
+
+### TASK 10 REVIEW — two independent adversarial passes, eleven findings acted on (2026-08-29)
+
+Two reviewers ran in parallel on `36028be`: one on the gate code, one on the allocation as content.
+Both confirmed the central claim by independent construction — reviewer B re-derived every pinned
+civil coordinate with its own point-in-polygon against the fabric's `rings`/`holes` and got the same
+41 / 39 reported / 1 surveyed / 1 unplaced — and both found real defects. Eleven were fixed; the
+fixes land in a second commit with **eight new mutations, all killed**.
+
+**MAJOR 1 — the licence could be widened to pass and the gate stayed green.** Setting `stone` or
+`salvage` to `() => true` re-rendered A4 and the suite still printed **19/19**; the STATE claim that
+"`M20` is the widen-to-pass hole and it is closed by A4 §2 part 2" was **false for seven of the eight
+kinds**. The one negative fact the gate asserted (Wealdmarch yields no ore) is not reachable from
+most predicates. Closed with two rules: **no predicate may fire on all 40 surveyed regions or on
+none** (measured spread: crop 33, timber 11, ore 17, fuel 13, stone 32, water 34, forage 26, salvage
+30), and the **per-landmass negatives are asserted outright** — c02 no ore, c03 no fuel, c04 no
+timber/fuel, c05 no timber/fuel/forage, c06 no ore, c07 none, c08 no timber/ore, c09 no
+crop/fuel/forage, c10 no crop/timber/water/forage/salvage. `stone := true` and `salvage := true` now
+both go red.
+
+**MAJOR 2 — the licence was WRONG on one predicate, not merely loose.** `water` was licensed by
+`wadi` and `playa` — a dry watercourse and a dry lake bed, features named for the water that is not
+there — which put drinkable water in a 92.8%-desert region (`c05/r21`). Removed; the fix is the
+predicate, not the row, and a regression case pins both directions (dry features license nothing, an
+oasis spring still licenses water). The packing was re-run.
+
+**MAJOR 3 — A4 published something false about the ten placeholder rows.** The `terrain` column was
+join-derived and rendered identically on every row, so the table printed "northern-icefield …
+cloud-forest" and "hollowmarch … cloud-forest" — statements the records' own prose denies. Placeholder
+rows now publish **no** terrain (`—`) and the gate asserts it. The related claim that the placeholder
+is inert was also wrong and is corrected in A4: nothing *renders* a zone's region, but `doc.region`
+is `Z1`'s join subject and `Z2`'s bijection key, so it is load-bearing inside the gate.
+
+**MAJOR 4 — §2 presented the ruling as forced when two strictly better placeholders exist.** Maximum
+bipartite matching of the ten committed records against c02's ten surveyed regions under this file's
+own licence scores **9 of 10** (only `hollowmarch` is impossible) against the shipped alphabetical
+join's **5 of 10**, and it costs no content — ten `region` fields, no prose. A `requires`-respecting
+join is a third option: **7 of 10** zones have a surveyed region carrying the landform their own pin
+declares, and the shipped join satisfies **4 of those 7**. Both are now in A4's alternatives table
+with their measured scores, A′ is named as the one to take if a ruling is wanted with no further
+work, and the reason it was not simply taken is stated: it is better on a checkable criterion but
+still a choice, and it would make the table look more principled than the world without a ruling.
+**Every score in that table is asserted by the gate**, so the owner rules on numbers still true when
+they read them.
+
+**MAJOR 5 — a third measurement, which is not about the join at all.** The reported regions the canon
+pins actually stand in — `c02/r11`, `r12`, `r18`, `r19` — **do not license `ore` either**.
+Hollowmarch's committed ore is unlicensed on its *own* ground. The redraw invalidated committed prose
+independently of any zone join. Recorded in A4 §2.3 and filed; it is bigger than this task.
+
+**MAJOR 6 — rule 4's stated purpose was refuted by the table it justified.** "Two-element sets are
+spent before three so the cheap space stays legible for the deferred town-plan zones" — measured, all
+**28** two-element sets are spent and **0** remain; free space is 7 singletons, 45 triples and every
+set of four or more, 215 of 255. The rule text now says what is true, and a test publishes the census
+so the sentence cannot rot back into a promise.
+
+**MAJOR 7 — §1's "none of which is a matter of taste" was false, and the licence's boundary is
+load-bearing.** Step 2 is authored judgement; A4 now says so. And the boundary is published because
+it moves the ruling: `canyon`, `slot-canyon`, `knickpoint-gorge` and `natural-bridge` sit on `c02/r01`
+and are in **no** predicate at all — **if `ore` counted them, c02/r01 would license ore and §2's
+second pillar would have to be re-run.** A test asserts they license nothing today, so the note stays
+honest.
+
+**MAJOR 8 — two places wore one name, and landmasses read as one word repeated.** `used` barred whole
+NAMES, so "Race of the Searwaste" (c05/r20) and "Tube under Searwaste" (c10/r01) both minted. Stems
+are now globally unique — **90 minted names, 90 distinct stems** — and no minted stem may shadow a
+canon one. Separately, morpheme reuse within a landmass ran to five (`barchan` x5, `waste` x5 on
+Thirstwold; `sink` x5, `stone` x5 on Stonemoor); a ceiling that relaxes only when the register runs
+out of room brings the measured maximum to **2**.
+
+**MINOR, all fixed.** The census was self-contradictory (39 + 1 + 1 = 41, published as "of the 40")
+— the code keyed on `zone` and dropped the unplaced pin from the denominator while keeping it in the
+numerators; `canonPinsByRegion` now keys unplaced pins under `UNPLACED` and the gate asserts
+41/39/1/1. "The nearest surveyed region to Millcross is 41.5 km" (inherited from Task 9) matches no
+region under any metric: measured, `c02/r21` is **34.64 km to its boundary and 42.36 km to its
+centroid**. "The 60 new landmark names" was 59 minted plus 1 inherited. The committed-records test
+passed with `content/zones/` deleted (empty loop, zero assertions) and now floors at ten. The
+`used.delete` for inherited pins un-barred more names than the row could seat. Dead: a comment
+pointing at a `LEGACY_EXEMPT` that does not exist, an unreachable `&& steps <= budget`, and unused
+row fields; `unlicensed` was kept and is now what the gate reads to assert the "five of ten" figure.
+
+**Confirmed clean by reviewer A, not changed:** the table parser fails (never silently drops) on all
+12 malformations tried; no dead landform vocabulary — all 75 cited tokens occur in the fabric and in
+at least one surveyed region; output byte-identical over 5 runs and with every fabric array reversed;
+the budget bounds an infeasible instance to 355 ms; `mintForRegion` cannot return a filter-violating
+name; and zero collisions between the 30 derived slugs and spine node ids, landform types, `region-*`
+story ids, town ids or the committed landmark names.
+
+**Filed, not chased.**
+
+- `Brightfall Leap` is a hand-authored canon landmark absent from `content/world/names/reserved.json`,
+  so a re-seed could re-mint it elsewhere. A4 keeps it by inheritance; `reserved.json` does not.
+- A4 §4 says an inherited name is judged by the register it was authored in; nothing enforces that.
+- Cross-landmass morpheme repetition is unruled — `withybar-roads` (c08) beside `Withyshallow Saddle`
+  (c07) — the ceiling is per-landmass, matching `G-NAME-SOUND`'s own scope.
+- Reserving two-element sets for the seven deferred E-C9 town-plan zones needs a re-pack that pushes
+  triples onto the licence-rich karst and volcanic regions.
+- Reviewer B saw two cold runs go red (once with `--check` reporting drift and `git status` showing an
+  empty-diff modification to `content/world/resolved/continent-02.json`) and could not reproduce it in
+  eleven further runs; a concurrent session in this worktree is the likeliest cause. Re-run here 5x
+  clean. Unattributed.
+
+### TASK 11 SHIPPED (2026-08-29) — sixteen records, and two ways the table could not tell a derived row from a placeholder
+
+`content/zones/` holds **16** records: Wealdmarch's ten unchanged and Coldreach's six written.
+`check_content --require-complete` goes **32 failures -> 26** — the 30 `surveyed region "..." has no
+record` lines become **24**, and the 2 survivors are still `towns/town-millcross.json` and
+`bestiary/placement-thornveil.json` (Tasks 14/15). **No `Z0`-`Z7` failure exists on any of the 16.**
+
+**THE WEALDMARCH TEN, under the owner's ruling.** Alternative A′ is REJECTED; the ten keep Task 9's
+alphabetical join, byte for byte. Task 11 Step 1 asks for `check_content --require-complete | grep
+-vE "surveyed region ... has no record"` to print **empty**, and it does — measured **before** this
+task's first edit as well as after, so the step passes on a tree Task 11 had not touched. **That is
+the whole of what Step 1 can measure.** The step's own remedy ("fix the join first; only re-voice
+prose if the ground changed") assumes a join there is something to verify against, and A4 §2 and Task
+9 both record that there is not: no canon pin stands on Wealdmarch's surveyed ground, so no ground
+underneath those ten rows can have "changed" in a way prose could be checked against. **Zero prose
+bytes changed in the ten, and none should have.** The one Wealdmarch claim the redraw genuinely did
+falsify — `hollowmarch`'s `ore`, unlicensed by any c02 region surveyed *or* reported — is Task 15's,
+untouched here.
+
+**COLDREACH'S SIX, and every kind traced to the ground that licenses it.**
+`fastholt-ford` c03/r06 forage (tundra 97%) + stone (`marine-terrace`) · `snowfast-race` c03/r10 crop
++ water (river 4.1%, `ford`, `plunge-pool`) · `galeness-reach` c03/r12 forage (meadow 90.9%) + timber
+(forest 3.3%, the licence floor) · `driftway-confluence` c03/r15 crop + forage (meadow 70.3%, tundra
+20.8%, `ford` x2) · `snowness-ford` c03/r18 crop + forage + water (meadow 79.1%, `ford` x3,
+`plunge-pool` x3) · `lodereach-race` c03/r22 crop + timber (forest 23.3%, `floodplain-levee` x3).
+Identity comes from the **road tree**, which is measured and not invented: all six hang off
+`c-town-tallowquay` in `c03/r21`, west through r15 to r22 and east through r18 — the junction where
+every eastern road meets — to r12 and r10 and out to r06, the far terminus. One claim checked before writing holds — `c03/r18` is the only region three
+roads meet in (`rd05`, `rd06`, `rd10`). **The other was false and the review caught it; see below.**
+Three hazards are **absence** hazards carrying the D3 `note` (no fuel on the steppe, no side off the
+canyon, the crossing that ceases); the unmapped-effect ratio goes 13/23 -> **16/35**, i.e. down from
+57% to 46%.
+
+**DEFECT 1 — the PLACEHOLDER exemption keyed on "a file exists", so writing a derived record flipped
+its own row.** `allocate()` read `committedRecords()` — every file in `content/zones/` — and any
+region with one became `derived: false`: kinds transcribed instead of derived, `terrain` blanked, and
+the row published as "a join no geography supports" over ground the table had itself derived. The
+criterion is now **derived, not listed**: a record is legacy iff its zone slug is a **reserved canon
+name** (`legacyPlaceholderRecords`), which is exactly A4 §2's ten, and which stays correct for Tasks
+12-14 because `reserved.json` is a hard exclusion inside `mintForRegion`. Three further tests were
+reading `committedRecords` where they meant the legacy ten — A′, A″ and the canon-stem exclusion, the
+last of which made every minted stem shadow **itself**. Reverting `allocate` alone takes **7** tests
+red. A new test, mutation-killed twice, makes A4 the authority Task 11's plan says it is: a record on
+a derived row must agree with the table on slug, region, kind set and landmark names — *fix the
+record, never A4*.
+
+**DEFECT 2 — `used` was never seeded from the world's own drawn names, and five zones were minted
+onto a name another place already wore.** `used` carried `reserved.json`, the committed records and
+the hand-pinned canon places, but not the **377** names the resolved continents render on their own
+sheets. Measured: `wracksound-race` (c03/r10) against the delta **Wracksound Race** in `c03/r15`;
+`lodespar-confluence` (c03/r15) against the levee **Lodespar Confluence** in `c03/r18`; plus
+`grykestone-fenster`, `flagsink-stair` and `siroccwold-waste` — two places, one name, on one
+landmass, which is the failure A4 §4's stem rules exist to prevent, escaping through the one name
+source nothing seeded. Fixed at the seed (`drawnPlaceNames`), which re-minted **26 of 40** rows'
+names and changed **no** row's region, terrain, kind set or join. **Whole names are barred, not
+stems** — and the first draft of that comment justified it with a capacity claim that was false when
+measured: the drawn stems occupy 68/110/66/60/52 of each register's 16x12 = 192, so there is room.
+The real reason is scope, and the occupancy figures are now asserted so the corrected comment cannot
+rot back into the wrong one.
+
+**Filed, not chased.**
+
+- **`A2-wider-world.md` §1 and the fabric disagree about whether Coldreach has been walked.** A2
+  swears "Nobody from the basin has walked any of this" and "No crew claims to have gone inland past
+  the spine", while `content/world/fabric/continent-03.json` declares **6 surveyed regions** on c03 —
+  and spec §9.5 defines `surveyed` as ground that carries full ink and a hard-required prose record.
+  The six records are written impersonally, from the ground and the people on it, and **not one of
+  them cites A2 or frames itself as a basin expedition**; that keeps them from asserting the thing A2
+  denies, but it does not reconcile the two documents. Task 15.
+- **A zone landmark and a drawn landmark can describe the same feature under two names.** A4 §4
+  inherits only from *hand-pinned* canon places, so the 45 generated `c-lm-c03-*` landmarks standing
+  on the surveyed six were minted around, not reused. Each of the twelve landmarks written here was
+  deliberately grounded on a landform instance the drawn world has **not** already named (checked
+  region by region), so no collision exists today — but nothing enforces that, and Tasks 12-14 have
+  the same trap with a denser drawn corpus.
+- **One classifier in the six has no instance behind it.** `Haulholt Geo` (c03/r22) carries a coastal
+  classifier and `c03/r22` declares no `geo`; A4 §4's own warning covers this (the classifier names
+  the landform GROUP), and the record describes the tidal gut it actually stands on rather than a
+  geo. Worth a rule if the pattern recurs across Tasks 12-14.
+- `content/zones/*.json`'s `spineId` is still unset on all sixteen; the fabric join and the spine join
+  remain unrelated keys (carried forward from Tasks 9 and 10).
+
+### TASK 11 REVIEW — two independent adversarial passes, eight findings acted on (2026-08-29)
+
+One reviewer read the six as an **editor and fact-checker**, one read the diff as an **engineer**;
+both ran on `a2508de` and both found real defects. The content pass mattered most, which is the point
+of running it separately — the code was green through every prose defect below.
+
+**CONTENT MAJOR 1 — "the only standing wood on the eastern road" was FALSE, and it is the
+absence-as-fact defect again.** Re-measured independently by point-in-polygon of every eastern road
+point against c03's region rings: the road crosses **eleven** regions, and `c03/r19` (forest 4.7%),
+`c03/r20` (**8.7%**) and `c03/r21` (5.2%) all carry more wood than `galeness-reach`'s `c03/r12`
+(3.3%). All three are **reported**, so they carry no survey record — and the first version of the
+paragraph above, written by me, compared only the four surveyed regions and published "3.3% against
+0.2 / 0 / 0". **An absence of a survey record was published as an absence of wood**, which is exactly
+the "nine surveyed landmasses" failure named in the task brief. The superlative is gone; the record
+now says what the drowned valley does to anyone carrying a log, which is what the ground supports.
+
+**CONTENT MAJOR 2 — all twelve landmarks cited a file that does not carry their names.** They cited
+`content/world/resolved/continent-03.json`, which owns the GROUND; `grep` returns **0** for all
+twelve names. The document that mints and publishes them is `A4-zone-allocation.md` §5, and that is
+what they cite now (verified: 12 of 12 present). **Nothing in `check_content.mjs` reads `source` at
+all**, so a new test owns it — and measuring the whole corpus turned up the bigger half: **the legacy
+ten carry 14 broken citations**, 12 names their doc does not contain plus 2 pointing at
+`content/maps/cluster1-geography.json`, *a file the redraw retired*. Those are canon and preserved
+byte for byte, so they are **pinned as a number that fails in both directions** rather than fixed
+here — growing the debt is a defect, shrinking it means Task 15 landed. Three mutations killed.
+
+**CONTENT MAJOR 3 — `lodereach-race` routed the west's whole export past the continent's only port.**
+`c03/r22` is 36.9 km of road from `c-town-tallowquay` (`rd03` + `rd01`), and A2 §2 makes Tallowquay
+the trade-wind lane's terminus. Re-voiced: the gut is how wood and grain reach the beach, and the
+road takes them up to Tallowquay.
+
+**CONTENT MINOR, all acted on** — three competing anchorage-uniqueness claims scoped to their own
+shores; "its own gravel" in four records and two near-identical ford sentences rewritten;
+"one channel instead of twelve" regrounded on the delta and anabranch the region actually declares;
+`galeness-reach` no longer reads `c03/r12` as unpeopled (it holds two villages); `snowness-ford`'s
+reasonToGo now names what is carried out rather than a service. **Accepted, not changed:** `damage`
+is 6 of 9 mapped effects — six different bodily harms, and it is the runtime's general-injury bucket.
+
+**CODE MAJOR — `drawnPlaceNames` read `landmarks` and `towns` only and missed the 60 named
+`dungeons`.** Proven by renaming a dungeon onto `Halehaven Roads`: the suite stayed **33 pass / 0
+fail**; the same name onto `landmarks` red. It enumerates **every array** in a resolved continent
+now and takes any `name` — the class, not the instance, because a hand-listed source set breaks again
+the day the drawn world grows an array. The gate re-derives the source set from the files and asserts
+the name-bearing arrays are exactly `dungeons, landmarks, towns, zones`. No live collision existed,
+so **A4 did not move** (`--check` clean, table byte-identical).
+
+**CODE MINOR, all acted on** — the derived-agreement test had **no floor**: moving all six records
+out of `content/zones/` left it 33 pass / 0 fail with `--check` still green, so the task's whole
+payload could vanish inside its own gate; it floors at 6 now, mutation-proven. An `assert.equal(row.join,
+"derived")` that could not fail (by construction `written` excludes every PLACEHOLDER row) is deleted
+rather than left reading as cover. `drawnPlaceNames`' soft-skip on a missing resolved directory is
+documented as the trade it is. A4's opening line still said the table derives from "the ten committed
+records" when the directory holds sixteen.
+
+**Confirmed clean by the code reviewer, not changed:** all three `committedRecords` ->
+`legacyPlaceholderRecords` re-points are corrections and none was weakened (each mutation-killed);
+`--write` five times is byte-identical (md5 `ab21dee5…`) and independent of array order — reversing
+every array in a copied tree changed **0 of 40** rows; the name re-mint moved `zone` in 19 cells and
+`landmarks` in 22 and left `continent`, `region`, `terrain`, `kinds` and `join` identical on every
+row, so the commit message's claim holds; a 7th record not listed in `COLDREACH_ZONE_IDS` reds three
+tests rather than going unchecked; `reserved.json` emptied reports rather than silently re-deriving
+the canon ten.
+
+**Filed, not chased.**
+
+- **Nothing binds a zone landmark to the landform instance it stands on.** Four of the twelve name a
+  feature of a type whose region also holds a drawn-named sibling (`c03/r15` ford 2 of which 1 named,
+  `c03/r06` braided-channel 2/1, `c03/r18` plunge-pool 3/1, `c03/r22` delta 2/1). A free instance
+  exists in every case so no defect is provable — but neither is the negative, because neither
+  `instances[]` nor `landmarks[]` carries an instance→landmark id. Tasks 12-14 meet this on a denser
+  corpus.
+- The plan's Task 12 text tells its author to cite `content/world/resolved/continent-04.json` for a
+  fabric-placed landmark. Under MAJOR 2's rule that is a citation to a file that will not carry the
+  name; Task 12 should cite A4 §5 as Task 11 now does, or the new gate reds.
+
+### TASK 11 — the third defect, found only by the FULL suite (2026-08-29)
+
+The two directly-affected suites were green and every gate passed while
+`scripts/tests/places.test.mjs` was red. **Running only the suites you touched is not
+verification** — the count that broke is in a file Task 11 never edited.
+
+`places.test.mjs`'s Risk A2 test (the null-document case) pinned `content-gate: … 10 zones, 0 towns`
+as an exact literal. Six new records made it 16 and the test went red. The literal described the
+CORPUS; the property it exists to guard is that `checkZoneContent` does **not** bail on a null
+document and zero its count (Task 9 review MAJOR 1). It is derived from `content/zones/` now,
+computed independently of the gate's own output, so the anti-bail property survives — a re-bail
+returns 0, and 0 never equals the number of files on disk — and no per-record edit is needed by
+Tasks 12-14. **Two mutations killed**: the whole-function bail re-introduced, and the corpus shrunk
+by one record.
+
+**FINAL VERIFICATION, all on the committed tree.** spine gate **0 failures / 8 warnings / 36 nodes**
+(exit 0) · `check_content --require-complete` **26 failures** = 24 `surveyed region … has no record`
++ `town-millcross` + `placement-thornveil`, **0** other zone-gate lines, **16 zones** · canon legs
+**7/7 inside ±8%** · spine-emit **clean, 39 files** · world-digest **matches** · render-lock **clean,
+44 artifacts** · A4 `--check` **40 rows, matches** · scripts suite **1286/1286** · mapforge
+**786/786** · storybook **86/86** · repro **6/6** · `precheck.sh --no-install` **GATE 1 PASS**.
+
+### TASK 12 — Stonemoor's seven, and the four ways the plan's own text was stale (2026-08-29)
+
+**The plan's Task 12 is not the authority and measurement says so in four places.** A4 §5 is, and the
+Task 11 agreement test fails the record rather than the table. Measured, not assumed:
+
+1. **The regions.** The plan writes rows `c04/r01`–`c04/r07`. Stonemoor's surveyed seven are
+   `r01, r07, r12, r15, r19, r25, r28` — **not contiguous**; `r02`–`r06` are reported.
+2. **The slugs.** All seven of the plan's (`netstead-bight`, `drowned-pavement`, `slateflow-sink`,
+   `fenster-clints`, `polje-lake`, `cenote-stair`, `pavement-edge`) are invented. A4 mints
+   `grikepot-head, shalegill-fenster, tarnmoor-stair, grykefell-stack, limepot-sink,
+   clintlack-fenster, flaggrike-geo`.
+3. **The kinds.** Five of the plan's seven records take `fuel` or `timber`. A4 §1's licence gate
+   **asserts outright that Stonemoor licenses neither**, and per-region measurement agrees: the seven
+   license at most `{crop, ore, stone, water, forage, salvage}` and never those two. `crop` is
+   licensed by river biome (4.1 / 7.7 / 2.7 / 7.0 % on r01/r12/r25/r28) and by nothing else here;
+   `forage` on r01 and r15 only, off `machair`; `ore` and `stone` off 92.3–100 % karst everywhere.
+4. **The citations — STATE §28's prediction, now measured.** The plan routes landmark `source` at
+   `A2-wider-world.md#3` and at `content/world/resolved/continent-04.json`. Neither carries a single
+   one of the 14 names. Watched red: mutating one source to `A2#3` gives *`limepot-sink: landmark
+   "Shalesink Mere" cites docs/worldbuilding/A2-wider-world.md#3, which does not carry the name`*.
+   All 14 cite `A4-zone-allocation.md#5` (verified present, 14/14).
+
+**Three canon pins on c04 — `Slateflow Sink` (r17), `Stonemoor Shore` (r16), `The Drowned Pavement`
+(r22) — are all on REPORTED ground and none is claimed by the seven.** The plan's Step 3 tells its
+author to write the Slateflow's sink; that region is not in the surveyed set at all.
+
+**THE ROAD TRAP, fourth occurrence, caught by the content review and confirmed independently.** Four
+records asserted road facts the fabric's own polylines refute. Point-in-polygon of all 10 c04 roads
+against all 28 region rings, **surveyed AND reported**:
+
+```
+rd01 netstead->s05 : r21(rep) > r16(rep) > r15(SURVEYED) > r16(rep) > r12
+rd07 netstead->s02 : r21(rep) > r26(rep) > r27(rep) > r28
+rd05 s09->s07      : r07 > r09(rep) > r03(rep) > r04(rep) > r01
+```
+
+`grykefell-stack` was written on "no road reaches it" and built a boat-only economy on it — **rd01
+crosses it, 11 of 54 points, the north-east corner**, while the region's placed sea-cave and spit sit
+at x≈249.8, 8–12 km west of the nearest road point. `tarnmoor-stair` and `flaggrike-geo` each claimed
+"the first ground" their road reaches; both are the first **settled** ground, with reported regions
+ahead of them. This is *absence of survey published as absence of the thing* one more time, in its
+road form. `shalegill-fenster` claimed the western moor's whole traffic — the route table refutes it
+(`r12`'s two villages reach the port on rd02+rd01 without touching r07) and the funnel is **Tarnmoor**,
+where all four western villages do converge.
+
+**Superlatives published, each with the whole-fabric number behind it.** Four more were deleted as
+false or uncloseable: `flaggrike`'s "the one water on this coast" (r28 carries **6** surface waters);
+`clintlack`'s "the last open water on the road east" (r25 carries **6**, incl. a 30.28 km enclosed
+basin its own `reasonToGo` names); `clintlack`'s "as high as Stonemoor goes" — **`elevationM` exists
+on 0 of 28 regions**, the only 4 readings on c04 are in `pinReceipts`, and the highest is in **r17**;
+and `limepot`'s "biggest sheet of bare split rock", which is *true* (8.15 km, largest of **15**
+pavement instances on c04) but **uncloseable**, because the two hand-pinned canon pavements carry
+`sizeKm: null` and are silently excluded. Two survive and are stated: **`c04/s09` is the only
+degree-3 settlement on Stonemoor** (degrees over all 11 settlements incl. the reported-ground capital:
+3,2,2,2,2,2,2,2,1,1,1) and **`c04/r19` is the only surveyed region with neither a village nor a road**
+(12 regions have neither; the other 11 are all reported).
+
+**CODE — the citation rule read a hand-list, so narrowing the list exempted records from it.**
+Reproduced at **77 pass / 0 fail** with all seven Stonemoor records dropped out of the rule and the
+corpus left whole. The rule now iterates a set **derived** the way `zone-allocation.test.mjs` derives
+it (committed minus reserved-canon-slug), with the hand-list cross-checked against it and kept purely
+as the corpus ratchet — deriving the ratchet too would make its own directory `deepEqual` circular.
+Both mutations watched: narrowing the list reds the cross-check (76/1); **stubbing the cross-check
+AND the floor still reds** (76/1), because the rule no longer reads the list at all.
+
+`covered.size === 23` is **deleted**: it could not fail, being arithmetically forced by a name-level
+`deepEqual` 15 lines above it (stubbed + two records on one region → still 2 red; stubbed + a record
+deleted → still 7 red). `files.length` is derived from `COMMITTED_ZONE_IDS` rather than being a fourth
+copy of the number. Confirmed clean by the code review and not changed: the legacy ten's broken-citation
+debt is still **14** and fails in both directions; an eighth record cannot slip past the citation rule;
+all five wrongness mutations red the gate with a specific message; JSON hygiene byte-matches the
+Coldreach six.
+
+**FILED, NOT CHASED.**
+
+- **`ore` carries zero discriminating information on Stonemoor.** The predicate is `BIOME(karst) > 0`
+  and every c04 region is 92.3–100 % karst, so all seven records license `ore` and every difference
+  between them is authorial. `scripts/lib/zone-allocation.mjs:131`. Tasks 13–14 meet the same shape on
+  Thirstwold, where `salvage` fires off `BIOME(desert) > 0`.
+- **A2 §3 vs the interior records is strictly worse than the Coldreach case already filed for Task 15.**
+  A2 calls Stonemoor's interior *"not even rumor"*, and **two of the seven — `c04/r12` and `c04/r19` —
+  carry zero coastal instances**, so confident daily-life prose is now written for ground canon says
+  nobody has reported. Coldreach's six are all on the charted shore. Task 15's scope should say so.
+- **A zone landmark and a drawn landmark can still describe one feature under two names** (carried
+  forward from Task 11). All 14 were grounded on instances with `named: false`, checked region by
+  region, but nothing enforces it: neither `instances[]` nor `landmarks[]` carries an
+  instance→landmark id.
+- **`clintlack`'s "enclosed water the sea does not reach" is the fabric's `inland-sea-basin`, 1 of 306
+  instances on c04** — while the design's Stonemoor row assigns its 300 km² of interior water to
+  "flooded dolines and a polje lake" and gives the inland sea to Wealdmarch
+  (`docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md:450`). The
+  fabric wins and the prose is scoped to avoid the word "sea", but the two documents disagree.
+- **`content/zones/*.json`'s `spineId` is still unset on all twenty-three** (carried forward from
+  Tasks 9–11).
+
+**FINAL VERIFICATION, all on the committed tree at `e6ab142`.** spine gate **0 failures / 8 warnings /
+36 nodes** · `check_content --require-complete` **19 failures** = 17 `surveyed region … has no record`
++ `town-millcross` + `placement-thornveil`, **0** other zone-gate lines, **23 zones** (was 26 / 16) ·
+hazard ratio **18 of 49** unmapped, down from 16 of 35 · canon legs **7/7 inside ±8%** · spine-emit
+**clean, 39 files** · world-digest **matches** · render-lock **clean, 44 artifacts** · A4 `--check`
+**40 rows, matches** · scripts suite **1286/1286** · mapforge **786/786** · storybook **86/86** ·
+zone-content **77/77** · zone-allocation **33/33** · repro **OVERALL PASS** · `precheck.sh
+--no-install` **GATE 1 PASS**, 12 of 12 sections.
+
+### TASK 13 — Thirstwold's seven, and the plan's four stale literals a second time (2026-08-29)
+
+Seven records for the rain-shadow erg on A4's rows: `thirstreach-pan` (c05/r06),
+`charwaste-race` (r15), `siroccvent-reach` (r17), `yardburn-confluence` (r20),
+`thirstvent-pan` (r21), `regflat-waste` (r23), `barchanburn-reach` (r28).
+`content/zones/` **23 → 30**; `check_content --require-complete` **19 → 12 failures**, the seven
+`surveyed region … has no record` lines gone and the remaining twelve unchanged in kind (10 for
+Task 14's unwritten regions, plus `town-millcross` and `placement-thornveil`).
+
+**THE PLAN'S TASK 13 TEXT IS STALE IN THE SAME FOUR WAYS TASK 12's WAS**, measured, not assumed.
+(a) It names rows `c05/r01`–`r07`; the surveyed seven on Thirstwold are r06, r15, r17, r20, r21, r23
+and r28, and `r01`–`r05` and `r07` are **reported**, which Z2 fails outright. (b) Its seven slugs are
+invented; A4 mints different ones, and one of the plan's — `one-wet-strip` — re-mints the reserved
+canon name **The One Wet Strip**, which stands on `c05/r10`, itself reported. (c) Five of its records
+take `timber`, `fuel` or `forage`, and the licence gate asserts outright that Thirstwold licenses
+**none of the three**; measured per region the seven license `{crop, ore, stone, water, salvage}` at
+most. (d) It routes every landmark citation at `content/world/resolved/continent-05.json`, which
+carries the ground but **not the names** — grep returns 0 for all fourteen, and all fourteen appear in
+`docs/worldbuilding/A4-zone-allocation.md` §5 and nowhere else. The plan was right that A2 must not be
+cited: **A2-wider-world.md never mentions Thirstwold at all.**
+
+**THE LICENCE, PER REGION, MEASURED.** r06 `{stone, salvage}` off 100 % desert and nothing else — no
+instances at all; r15 `{crop, stone, water, salvage}` off river 3.9 % + two fords + a spring; r17 adds
+`ore` off badland 38.3 %; r20 `{crop, stone, water, salvage}` with its water off a ford and a
+plunge-pool and **no river biome whatever**; r21 and r23 `{ore, stone, salvage}` off badland and
+desert with not one water-licensing landform between them; r28 `{crop, ore, stone, water, salvage}`
+off its spring and its ford. Every record's kind set is A4's exactly.
+
+**SUPERLATIVES PUBLISHED, each with its whole-fabric number.** `c05/r06` is **the only one of the 40
+surveyed regions carrying no landform at all** (5 of 160 regions are empty; r06 is the only surveyed
+one) and **no road point on Thirstwold falls in it or in either region it touches**; all **7** desert
+springs (`oasis-spring`) charted anywhere are on Thirstwold, **3** of them on surveyed ground;
+`c05/s04` is **the only settlement on the landmass with three roads** (degrees 3, 2, 1, 1, 1);
+`c05/r20` is **the only surveyed region on Thirstwold ending against another landmass** (3 of 28 c05
+regions touch `c08/r02`; the other two are reported, and the rings share vertices exactly at
+`[226, 322]`); r21's wadi at **15.72 km is the largest of the world's 8**, all 8 on Thirstwold, and the
+region carries **five water-shaped marks and no water**; r23's ridge-spine at **34.18 km is the longest
+of the world's 13**, and **3 of the world's 8 zeugen ridges** stand on it, all 8 on Thirstwold; r28
+carries **2 of the landmass's 5 settlements** — the only region that carries two — the world's
+**largest sand sea at 46.52 km of 11**, and the **only canyon on c05**, 1 of 7 in the world.
+
+**SIX CLAIMS DELETED OR RESCOPED BY THE CONTENT REVIEW, four of them false as written.**
+`thirstreach-pan`'s "every other ground **on the landmass**" was the absence trap inverted — an
+exclusivity reaching over the 21 reported regions nobody has walked, and `c05/r12` is empty too;
+rescoped to the surveyed set. `yardburn-confluence`'s "the east end of the landmass" is **fourth**
+by easting (r18 238, r12 237, r06 231.5 — its own sibling — r20 227); deleted. `barchanburn-reach`'s
+sand sea "on the west" has its centre **east** of the region centroid (155.25 vs 153.91); direction
+deleted. `regflat-waste`'s salt floor and stone pavement "through the middle" are both in the
+**east** (x[132.5,138] and x[128.5,138] against a region spanning x[121,136]); the three-part geography
+was rewritten to rock-west / sand-and-salt-east. Two were true but unclosable and went: "the only
+work on the landmass a person can do standing in one place all season" (refuted by this batch's own
+levee grain and bench barley) and "the only thing at this end of the road that pays to cart the whole
+sixty-three kilometres" (the same buyer has an identically-described cobble **28.3 km** away). Fixed
+by measurement: seven springs are seven **desert** springs (7 `spring-mire` exist on c02/c06/c07); the
+road degrees read s04=3, s03=2, s01=s02=s05=1; 45.50 of 63.36 km is **better than** two thirds, not
+two thirds; and the three zeugen ridges at [133.8,326.3], [126.3,325.3] and [128.8,334.8] **do not
+stand in a line**.
+
+**ONE DESERT SEVEN TIMES — caught and fixed.** `yardburn`'s flood hazard was `thirstvent`'s wadi
+flood a second time down to "nobody standing in it can see" and "bank to bank"; its scroll-plain
+landmark was `barchanburn`'s a second time; its cobble was `barchanburn`'s a third variant — all three
+off the generator's own glyph notes, which is where near-duplicate prose comes from on this
+programme. r20 now carries what only r20 has: the delta the channel gives up into, and stone that
+comes out of the well holes.
+
+**CODE — no MAJOR. 82 mutations run, zero stayed green.** The four moved literals each red in the
+direction they exist to catch (delete a record → content 70/7 and allocation 32/1; a stray eighth →
+73/4 and 32/1; a citation pointed at `continent-05.json` → 76/1 naming record, landmark and file). The
+citation rule's derived scope holds: with the hand-list narrowed **and** the cross-check stubbed it
+still covers all 20 derived records at `checked == 40` and still reds a broken citation. The 70-cell
+Z0–Z7 matrix (7 records × 10 rule breaks) reds every cell naming its record; the A4 agreement rule
+reds on region, kind set and landmark name; all 30 records byte-match
+`JSON.stringify(JSON.parse(raw), null, 2) + "\n"`. MINOR acted on: three unrelated `40`s had come to
+sit within one screen, so `SURVEYED_REGIONS` and `POST_REDRAW_LANDMARKS` now name the two in
+`zone-content.test.mjs` — both watched red first at 41 and 39 (76 pass / 1 fail each).
+
+**FILED, NOT CHASED.**
+
+- **A2 never mentions Thirstwold at all** — strictly worse than the Stonemoor case filed for Task 15.
+  Seven records of confident daily life now stand on a landmass the mariners' chart does not carry,
+  and none of them can cite it. `docs/worldbuilding/A2-wider-world.md:44` (§4 lists Driftholt,
+  Reedstrand and Brightfall and stops).
+- **Minted zone-landmark names are confusable with DRAWN landmark names in the same region.**
+  "Ford past Sabkhpan" (c05/r17) stands beside the drawn "Ford beyond Sabkhcone"; "Ford past
+  Fumewold" (c05/r28) beside the drawn "Ford under Dunesea" and "Emberwaste Confluence". `G-NAME-SOUND`
+  compares minted names against minted names; nothing compares them against the resolved world's own
+  `landmarks[].name`. `tools/mapforge/lib/name-gen.mjs`.
+- **The kind-set pool is shrinking and nothing prices it.** 30 records now hold pairwise-distinct sets
+  from an 8-kind enum, and `thirstreach-pan` took the first one-element set. Task 14's ten come out of
+  what is left. `scripts/check_content.mjs:1391` (the Z6 "Compared as a SET" block).
+- **`c05/r12` is a second 100 %-desert, zero-instance region.** It is reported, so no record is owed,
+  but `content/world/budgets.json`'s `poi.supplyLimitedSurveyedRegions` declaration covers only r06 —
+  if the survey ever reaches r12 the same G-POI floor fails with no declaration behind it.
+- **Dungeon names cross the landmass they sit on.** `dungeon-coldreach-arete-shelters` (c05/r17),
+  `dungeon-stonemoor-ponor-throat` (c05/r20) and `dungeon-meltwash-ice-caves` (c05/r15) carry other
+  landmasses' names on Thirstwold ground. `content/world/resolved/continent-05.json#dungeons`.
+- **`content/zones/*.json`'s `spineId` is still unset on all thirty** (carried forward from Tasks
+  9–12).
+- **`scripts/tests/geometry-exact.test.mjs` takes 460 s on its own** — 51 tests, all green
+  standalone, but it is most of the scripts suite's 488 s wall time and it reads nothing this
+  programme's content tasks touch. Worse, on this machine a whole-directory `node --test tests/*` run
+  **wedged twice with geometry-exact as the last live worker** and never wrote its summary (the
+  isolated workers all exited; the parent never finished). The suite completed normally once, at
+  1286/1286. Verification for this task was therefore taken as the 8 tests that read `content/zones`
+  (545/545) plus geometry-exact standalone (51/51). Worth a look before the suite grows again.
+
+### TASK 14 SHIPPED (2026-08-29) — the last ten, Z2 closed, and a closure that could not fail
+
+`content/zones/` **30 → 40**. `check_content --require-complete` **12 failures → 1**. The ten
+`surveyed region … has no record` lines are gone, `town-millcross` is re-homed, and the single
+survivor is `bestiary/placement-thornveil.json`.
+
+**THE PLAN'S TASK 14 TEXT IS STALE IN THE SAME FOUR WAYS TASKS 12 AND 13 EACH MEASURED**, and A4 §5
+is the authority in all four. (a) It names rows c06/r01-r03, c07/r01-r03, c08/r01-r02, c09/r01 and
+c10/r01; **only the last is surveyed** and the other nine are reported ground Z2 fails outright. The
+surveyed ten are c06/r06-r08, c07/r01, r03, r06, c08/r06, r08, c09/r03, c10/r01. (b) All ten of its
+zone slugs are invented; A4 mints ten different ones. (c) Its kind sets are unlicensed in eight of
+ten rows — sharpest on Ashen Spar, where it takes `salvage` and `timber` while the licence grants
+c10/r01 only {ore, fuel, stone}. (d) It routes six landmark citations at `A2-wider-world.md#4`,
+which names the three CHAINS but carries none of the twenty names, and four more at resolved
+continent-08/-10, which carry the ground but not the names. Nineteen of twenty now cite A4 §5; the
+twentieth is Brightfall Leap, inherited canon, cited at its own pinned civil record.
+
+**THE CLOSURE THAT COULD NOT FAIL — the defect worth remembering.** Z2 closing means its five
+message families go silent on the real root, which is the perfect hiding place for a rule that can
+no longer fail. The first fix was an `assert.deepEqual(covered, surveyed)` added at the END of the
+existing join test — and it was **entailed by three assertions above it**: 40 files, `surveyed.size`
+40, and every record's region ∈ surveyed with no duplicates force set equality by pigeonhole. A real
+fabric/corpus disagreement redded on one of those and never reached it. My own mutation had "proved"
+the line by stubbing the very assertions that entailed it, which proves nothing about the code as
+written. It now stands as its own test where nothing constrains either side first, and it names the
+offending regions. **Proven by the mutation no ratchet can catch**: swap which two c02 regions are
+surveyed with the count held at 40 → the closure reds with `extra: ['c02/r01'], missing: ['c02/r11']`.
+
+**THE LEGACY JOINS SPLIT ON MEASUREMENT, not on which task the plan named.** `town-millcross` was a
+one-line re-home to `c-town-millcross` (T1 joins `resolved#towns`, which is keyed by `id`).
+`placement-thornveil` is **not re-homable by a content edit at all**: `bestiary-placement.schema.json`
+pins `zone` to `^[a-z0-9]+(-[a-z0-9]+)*$` and **0 of 160** resolved zone ids match that pattern. It
+needs a schema change, a ruling on the c02/r30 join (Task 9's alphabetical pairing, carrying no
+geographic claim) and a G8 conflict (routeBand [15,28] vs that region's levelBand [8,20]). Task 15's.
+
+**TWO CORRECTIONS TO MY OWN COMMIT MESSAGES, both found by review.** (1) `b8cc910` claims the
+re-home turned T2-T7 on. **False** — `check_content.mjs:1518-1654` runs T2-T7 unconditionally;
+only membership in `records` (the count) is gated by T1. The rules were never dark; what changed is
+`0 towns → 1` and T1's own orphan clearing. (2) The re-home broke Gate 1: `drawTitle` in
+`tools/art-forge/generate/townplan.mjs` title-cases `plan.town` straight into the SVG and rendered
+"C-town-millcross — town plan". The field serves two masters — an id for T1's join, a display name
+for the renderer — and the prefix is now derived away at the point of display.
+
+**THE ABSENCE TRAP, SIXTH OCCURRENCE, and the register that produced it.** Both content reviewers
+converged on one cause: a **continental register asserted from a 160 km² sliver**. Four landmass
+superlatives were measured and **all four were false** — "the largest continuous sowing on the delta"
+(134 km² against c06/r05's 476), "the widest meadow on the landmass" (94.8, refuted by the 95.2 in
+its own sentence and correctly claimed by a sibling record in the same commit), "the one place on the
+island where stone lies in beds" (marine-terrace is also on c08/r05), "more fuel than any other on
+Wracklow" (c08/r07 carries 72.7 km² against 70.2). The sixth trap proper: "the only lava tube drawn
+anywhere in the world" is true of the fabric's one landform and **false of the drawn world's nine
+"Lava tube" dungeons**, none of them on c10/r01 — a fabric-vs-drawn-world split no previous
+occurrence had. 46 prose corrections in all; 11 claims deleted as unmeasurable or false.
+
+**FILED, NOT CHASED.**
+- **A concurrent session in this worktree destroyed uncommitted work twice**, and an adversarial
+  reviewer independently found live whole-directory `node --test` processes rewriting
+  `content/zones/*.json` and `content/world/fabric/*.json` on disk mid-review. One combined suite run
+  showed 4 phantom failures that all passed alone and passed 566/566 on re-run. Same class as the
+  F-037 `_release` worktree hazard. Uncommitted state is not durable here.
+- Minted zone-landmark names remain confusable with DRAWN names in the same region, now measured on
+  five more landmasses: "Head between Bitternstrand" vs drawn "Head between Osierbar" (c06/r08, same
+  classifier AND preposition), "Withyshallow Saddle" vs "Reedholm Saddle" (c07/r01), "Siltbar Rake"
+  vs "Sedgerun Rake" (c07/r06), "Quillfall Reach" vs "Marramstrand Reach" (c06/r07), "Marramlow Carr"
+  vs "Marrameyot Carr" (c06/r08). `drawnPlaceNames` bars whole names only, by design.
+  `tools/mapforge/lib/name-gen.mjs`.
+- Nine dungeons named "Lava tube 1-8" / "Ashen Spar Lava Tubes" stand on c02/c04/c05/c07/c09 while
+  the fabric draws exactly ONE `lava-tube` landform, on c10/r01. Nothing compares dungeon names to
+  the fabric. `content/world/resolved/continent-0*.json#dungeons`.
+- `content/zones/*.json`'s `spineId` is still unset on all forty (carried from Tasks 9-13).
+- `scripts/tests/geometry-exact.test.mjs` still runs ~460 s and still wedges whole-directory
+  `node --test` runs; another lane owns the fix.
+
+### TASK 15 (F-051 completion Task 1) — prose reconciled to the redrawn world, two no-ops confirmed, one new ruling needed
+
+**Re-measured before touching anything, at `54c2ee6` (tree clean).** Step 1's exact commands matched
+the plan's premise precisely: 22 `AMENDED-PENDING` markers (canon 5, edges.json 5, n-atlas.json 1, A1
+7, A0 3, A2-zones 1) and 24 case-insensitive tower/relay occurrences in `content/story/*.json` (lore
+12, quests 9, events 2, dialogue 1). Both now measure zero.
+
+**TWO NO-OPS VERIFIED, NOT PERFORMED.**
+1. **The `canon.md:<digits>` citation repair (plan Step 6).** `grep -rn "canon\.md:[0-9]" content
+   docs/worldbuilding` returns zero hits. `scripts/lib/citations.mjs`'s G-CITE already enforces the
+   section-citation form corpus-wide and its own live-corpus test
+   (`scripts/tests/citations.test.mjs:98`) is green. Nothing to do.
+2. **G-MEANING (plan Step 7).** `scripts/lib/resolve.mjs:586 gMeaning` is real code, not dead code —
+   it re-derives every authored relation against the resolved world and fails on drift. It is
+   *structurally* blind to towers/town-count because no authored relation encodes either: the corpus
+   holds **31 relations total** (`content/world/relations/c0*.json`, summed: c01 2, c02 21, c03 3,
+   c04 2, c05 0, c06 1, c07 1, c08 0, c09 1, c10-c13 0 — **21 of 31 on one continent, six continents
+   at zero**), and every one of the 31 is a geometric/compositional claim (bearing, distance,
+   containment), never a settlement-count or infrastructure claim. There is no G-MEANING work this
+   task could add; the gap is in what got AUTHORED as a relation, not in the gate.
+
+**THE 22 MARKERS, RE-VOICED WITH MEASURED HOUR FIGURES, NOT INVENTED ONES.** Every distance quoted
+below comes from `content/spine/edges.json`'s own `hours`/`roadKm` fields (the F-045 rescale's
+output), never a fresh guess: Embervale↔Norhollow 0.5 h, Millcross↔Rooktide 1 h, Millcross↔Embervale
+1 h, Embervale↔Gildmark 1.5 h, Millcross↔Gildmark 2.5 h, Norhollow↔Gildmark 1.5 h,
+Cindervast↔Rooktide 3.5 h (the longest committed leg — "the Cindervast haul" every marker's own hint
+text names), Coldreach 1.5 days' sail, Stonemoor 1 day's sail (both `sailDays` on their `sealane`
+edges, distinct from the road legs). Two markers had no measured figure to re-voice against — A1
+§2.1's icefield-to-Cindervast "day's walk" and §9's Cindervast approach distance — and both were
+**deleted rather than replaced with an invented hour count**, per the "delete a claim you cannot
+close with a measurement" constraint. Removing all five `edges.json` `amendedPending` fields left
+`content/schemas/spine-edge.schema.json`'s own declaration of that property unreachable — caught by
+`scripts/tests/edges-schema.test.mjs`'s "every attrs key ... is declared in the schema" test, which
+checks the union closed BOTH ways (nothing declared that no edge uses); the schema property was
+removed in the same commit rather than left as dead surface.
+
+**THE SIX-TOWNS / TOWER-CHAIN CLAIM, the one the markers don't cover.** `canon.md` §4's "Fast
+signals" bullet (`:303-306` pre-edit) asserted "Bellfaith relay towers strung along the ridgelines...
+a signal reaches all six towns" — the OLD world's literal 27-tower relay chain (`docs/worldbuilding
+/A1-geography-cluster1.md` §5.2 derived it explicitly: "~190 km of ridge-line... 21-24 relay towers,
+plus one tower in each of the six towns"). The redrawn world has **36 spine nodes, 47 settlements,
+zero tower nodes** (`content/spine/trunk-census.json`: no `tower` tier, no relay edges — the STATE
+§21 ruling that retired `e-trunk-chain`/`e-flat-chain` already said "the roads themselves carry the
+canon content"). Fix, minimal: the fast signal now travels **town to town along the roads, relayed
+by each town's own bell** (canon already establishes every town has one, §5 "every town has one") —
+no freestanding infrastructure, no exhaustive count. Same fix threaded through `A0-current-world.md`
+(which quotes canon.md's old text as evidence in its own §5.1 list — both had to move together or
+one would cite the other's now-false wording) and `A1-geography-cluster1.md` §5.2, retitled from
+"given a tower count" to "given no towers to count." Two per-town uses of "tower" survive deliberately
+(canon.md's "town's tower verifies the seal" and A1's civic bell-tower flavor) — unfalsifiable either
+way, since spine data tracks landmasses and settlements, never buildings inside a town.
+
+**THE 24 TOWER/RELAY JSON ENCODINGS — all in Gildmark's political plot and two Norhollow-front lore
+threads, none of them the retired spine infrastructure.** Renamed rather than deleted, since the
+underlying content (Mirelle held in a Bellfaith quarter; wartime mail moving under postal cover) is
+unrelated to the redrawn geography: `tower`/`bell tower`/`tower district` → `belfry`/`belfry quarter`
+throughout (`lore.json`, `quests.json`, `events.json`, `dialogue.json`); `relay post`/`relay
+road`/`relay rider` → `post house`/`post road`/`post rider` (mail-system vocabulary, distinct from
+the retired inter-town relay chain); two lore ids renamed (`lore-the-millcross-relay` ->
+`lore-the-millcross-post`, `lore-the-tower-that-doesnt-answer` -> `lore-the-belfry-that-doesnt-
+answer`) — neither had an inbound reference anywhere in the corpus, checked before renaming.
+`docs/story/story-graph.md` regenerated (`node scripts/gen_story_graph.mjs --write`) since the
+renamed ids and re-worded summaries are graph nodes.
+
+**THE LEGACY TEN'S CITATION DEBT, 14 -> 0 — and a stricter test already existed that my own first
+pass would have satisfied wrongly.** `scripts/tests/zone-content.test.mjs` already pinned this debt
+as a NUMBER (14: 12 name-absent, 2 pointing at the retired `content/maps/cluster1-geography.json`) —
+written by an earlier task specifically so Task 15 couldn't claim victory by loosening the check.
+Its rule is a literal whole-name substring test (`text.toLowerCase().includes(name.trim()
+.toLowerCase())`), and most of the 12 "name-absent" citations were **not semantic gaps but
+typographic ones**: a table cell missing the article ("...gravel bars, willow scrub" instead of
+"...the gravel bars..."), a markdown `**bold**` span opening one word after "the" instead of before
+it (`the **mirror tower**` does not contain the substring "the mirror tower"; `**the mirror
+tower**` does), a possessive standing in for the article ("Cindervast's dead gate" vs "the dead
+gate"). Fixed by inserting the missing article or moving the bold span — zero new facts, same
+citation target, `docs/worldbuilding/A1-geography-cluster1.md`. Two of the 14 pointed at the retired
+maps file and were re-pointed at A1 (which independently discusses both: the expedition camp at §2,
+Cindervast's dead gate at §2.1). One (`ashvale-front`'s "the abandoned cut lines") had no home in A1
+at all — the phrase lives only in `content/bestiary/bestiary.json`'s `mob-trench-gnawer` lore ("It
+works the cut lines both towns dug and then abandoned") — so A1 §4.2's own row for that zone gained
+one clause ("scored by the abandoned cut lines neither side ever filled back in") rather than
+re-pointing the citation at a design-roster file whose lore text itself doesn't contain the phrase in
+that word order either. `scripts/lib/prose-audit.mjs`'s new `checkLegacyLandmarkCitations` (G-LM-CITE,
+wired into `check_content.mjs`) runs the identical whole-name rule as a live gate, so this specific
+class of drift reds before it ships next time; the zone-content.test.mjs debt counter is updated to
+0, not deleted, matching its own "shrinking it means Task 15 landed" instruction.
+
+**A2-wider-world.md's basin-blindness, reconciled without erasing the document's own epistemology.**
+§1's "nobody from the basin has walked any of this" and "unnamed marks stay unnamed" were written
+when Coldreach/Stonemoor/the three island chains were sparse chart marks; Tasks 9-14 have since
+surveyed and named real ground on several of them (Coldreach's six Task-11 zones with roads and a
+town; Reedstrand/Driftholt/Brightfall each carry surveyed zones with landmark names). Both bullets
+now say what they still honestly can: a Gildmark-compiled chart only names what a Gildmark log
+names, and ground behind it turning out to be surveyed — by the people living there, not a basin
+expedition — doesn't make it something a Gildmark sailor has walked. This does not touch §3/§4's own
+per-continent prose, which was already careful never to claim a basin expedition (STATE Task 11's own
+filed note: "not one of them cites A2 or frames itself as a basin expedition").
+
+**HOLLOWMARCH'S `ore` — INVESTIGATED, NOT FIXED, and this is a NEW ruling item, filed alongside
+Step 5's.** Measured: c02 (Wealdmarch) has zero regions, surveyed or reported, that license `ore`
+(no rock/upland/scree/badland/karst biome, no ore-bearing landform, checked across all 30). Swapping
+hollowmarch's committed kind set from `{ore, timber}` to any ground c02/r14 actually licenses
+(`{crop, timber, forage}`, the only three the region's forest+meadow biomes support) frees
+`ore,timber` back into `packKindSets`'s candidate pool — and the packer is a deterministic
+backtracking search, not a lookup, so freeing one committed combination **reshuffled the kind-set
+assignment of four already-shipped derived zones** when `derive_zone_allocation.mjs --write` was
+re-run: `galeness-reach` (forage,timber -> stone,timber), `sedgebar-roads` (salvage,timber ->
+forage,timber), `wrackeyot-geo` (crop,fuel,timber -> salvage,timber — **losing its own `reasonToGo`'s
+entire premise**, "the one lobe anyone has walked that carries all three things Reedstrand lives on
+at once"), `alderlow-head` (stone,timber -> ore,timber). Reconciling those four would mean rewriting
+their `reasonToGo`, hazards and resource prose to match invented replacement kinds — new invented
+detail on FOUR shipped, reviewed records, to fix a false claim on a FIFTH that is already flagged
+`PLACEHOLDER` and exempt from the licence rule for exactly this reason (A4 §2: "five of ten rows are
+licensed and five are not," hollowmarch already one of the five). Reverted both files
+(`content/zones/zone-hollowmarch.json`, `docs/worldbuilding/A4-zone-allocation.md`) rather than ship
+that ripple under my own judgment. **Three options, an owner ruling wanted:**
+(a) leave hollowmarch's `ore` as-is, PLACEHOLDER-exempt like the other four unlicensed legacy rows —
+cheapest, but the one row A4 §2 itself calls "genuinely" falsified rather than merely un-joined;
+(b) accept the ripple and rewrite `galeness-reach`/`sedgebar-roads`/`wrackeyot-geo`/`alderlow-head`
+alongside hollowmarch in one reviewed pass — correct but a 5-record content task, not a 1-record one;
+(c) pin the four derived rows' CURRENT kind sets as additional `taken` inputs to `packKindSets`
+(freeze what's already shipped, let only hollowmarch's own row change) — needs a code change to
+`allocate()`'s exemption logic and a test proving the freeze doesn't reintroduce the DEFECT-1 class
+Task 11 already fixed once (a listed record silently exempted from derivation). Filed, not decided.
+
+**FILED, NOT CHASED.**
+- **"Gildmark. The only vertical town in the world."** (`A1-geography-cluster1.md` §6.) A candidate
+  absence-trap: unverified against the other 46 settlements. Out of this task's named scope
+  (towers/relay/six-towns, the 22 markers, the citation debt, hollowmarch) — not touched, not
+  measured, flagged for whoever's holding the absence-trap sweep.
+- **`canon.md` §4's "Slow detail (days)" label.** `A0-current-world.md`'s own (now-fixed) marker
+  named this exact phrase as pre-F-045-stale, but canon.md carries no `AMENDED-PENDING` on it — every
+  committed road leg is now ≤2 h except the Cindervast haul, so "days" as the slow tier's own name is
+  a residual mismatch the corpus tolerates rather than asserts (the fast/slow distinction is now
+  about DETAIL, not raw speed — the body text says so, the label doesn't). A rename, not a
+  correction; out of the marker-scoped edit budget.
+- **A `**bold**`-vs-article citation trap, generalizable.** Three of the twelve name-absent legacy
+  citations broke on the exact same shape: markdown emphasis opening between "the" and the noun it
+  modifies. `checkLegacyLandmarkCitations`'s whole-name substring rule will catch a recurrence but
+  will not explain it; worth a comment at the call site if this class shows up in the derived thirty.
+
+### TASK 15 FIX ROUND 1 OF 5 (F-051 completion Task 1, 2026-08-29) — two owner rulings implemented, ten review findings closed
+
+Two independent reviewers ran on `f07dbe2`; both verdicts were CHANGES NEEDED. The owner ruled on
+both items Task 15 had stopped for rather than let them stay open through a second round.
+
+**R-A — hollowmarch's `ore`: option (a) implemented, no partial state left standing.** The prior
+commit had half-shipped the direct fix: `zone-hollowmarch.json` was correctly reverted to its
+`{ore, timber}` baseline, but `A1-geography-cluster1.md`'s §4.2 table row still carried the invented
+replacement text ("the hanging meadow", licensed nowhere, was never reverted alongside the JSON). Both
+reviewers caught the same defect from different angles — a partial application is strictly worse than
+either endpoint, since it leaves the corpus internally contradicting itself (one file says ore, one
+says meadow) with no owner-approved state backing either half. Fully reverted: the table row now
+matches the pre-Task-15 baseline word for word except for the one unrelated citation fix ("palisade
+line" → "the palisade line") that belongs to a different, already-closed defect. `zone-content.test.mjs`'s
+re-pin comment corrected (M2): it had claimed the resource was "corrected alongside" the citation,
+which was never true even in the half-shipped state — a false comment on a shipped test is exactly the
+kind of thing that misleads whoever reads it next into believing a decision was made when none was.
+The `ore` claim now stands, unchanged, filed for backlog triage as a real defect the redraw exposed —
+not one this task created and not one it is authorized to silently fix given the four-record ripple
+Task 15's own report already measured.
+
+**R-B — placement-thornveil: option B implemented, schema untouched.** New committed file
+`content/bestiary/region-exemptions.json`, same shape as `content/spine/freeze-reasons.json`
+(`{version, why, reasons: {slug: "one sentence"}}`). `check_content.mjs`'s `checkBestiaryPlacement`
+now checks G1's zone lookup against this file before failing: an exempted zone WARNS instead of
+FAILing and G8 (the route-band comparison) is skipped for it, since there is no geography band left
+to compare a voided join against. The bijection is enforced BOTH ways, the same discipline G-FROZEN
+already keeps for freeze-reasons.json — proven by mutation, not asserted: (1) emptying `reasons` makes
+`thornveil` FAIL again (the exemption is load-bearing, not a permanent carve-out); (2) adding an unused
+key FAILs with "no placement file's zone needed it" (a stale exemption cannot rot silently); (3) a
+shape-invalid exemptions file is one FAIL and exemptions are read as empty — fails CLOSED, not open.
+Five new fixture tests in `bestiary-placement.test.mjs` (27/27 pass) exercise all of this, plus one
+proving a placement whose zone genuinely resolves is NOT silently granted the exemption (the "stale
+exemption" bijection direction). `bestiary/placement-thornveil.json` itself: untouched. The content
+gate on the real tree: **0 failures** (was 1), **34 warnings** (was 33 — the one new WARN is the ruled
+exemption itself, printed, not hidden). Three pre-existing tests (`places.test.mjs`,
+`story-migration.test.mjs`, `story-seed.test.mjs` ×2) hardcoded "exactly 1 failure, and it's
+thornveil" as their pinned expectation; all four rewritten to assert 0 failures with the WARN line
+matched positively, so the exemption's actual text is still under test, not just its absence from FAIL.
+
+**M1 (= F4) — see R-A above; the same defect, named twice by the two reviews.**
+
+**I1 — `A2-wider-world.md`'s lane table used pre-rescale sail-days.** `e-lane-coldreach`/
+`e-lane-stonemoor-foreign` read `sailDays` 1.5/1 in `edges.json`; the table said "6 days"/"4 days".
+Fixed to the measured figures. Two more instances of the same staleness found while fixing this one
+(not cited by either reviewer, found by re-reading the same document): §3's Coldreach/Stonemoor prose
+quotes ("Six days out on the trade wind...", "...four days along a foreign lane...") — re-voiced to
+"a day and a half out" / "a day along".
+
+**I2 — no non-empty-sweep floor on G-AMENDED/G-TOWER-RELAY (the tenth rule-that-cannot-fail class this
+week).** `amendedFiles()`/`towerRelayFiles()` returning `[]` (a missing/renamed `content/`,
+`docs/worldbuilding/`, or `content/story/`) makes `checkAmendedPending`/`checkTowerRelayAssertions`
+report zero problems — indistinguishable from a genuinely swept, clean corpus. Fixed: both live-corpus
+tests now assert a floor before asserting zero problems (`amendedFiles` > 100, matching G-LM-CITE's
+own `=== 10` discipline; `towerRelayFiles` pinned at exactly 9, content/story's current *.json count).
+Proven by mutation, not asserted in the abstract: two new tests point both sweeps at a scratch root
+with neither `content/` nor `docs/worldbuilding/`/`content/story/`, confirm the sweep genuinely
+returns `[]`, confirm `checkAmendedPending`/`checkTowerRelayAssertions` report zero problems on that
+empty sweep (the vacuous-green state, reproduced), THEN show the floor assertion (extracted as
+`assertSweepFloor`, the identical predicate the live tests run) throwing on that same `files.length`.
+
+**F1 — the corpus-wide half of the tower/relay reconciliation had no gate at all,** and manual re-
+reading found real drift beyond what either review cited by line number: `A1-geography-cluster1.md`
+§7 ("The map's own legend") and its §9 art brief were still built entirely around "a Bellfaith RELAY
+map" whose "actual subject" is "every tower on the ridgelines" — six more sentences across the section
+and its Theologian/withheld-items lists, all contradicting the same file's own §5.2 ("zero tower
+nodes"). Re-framed as a Bellfaith ROAD map whose accent colour is reserved for roads and the six
+towns' own belfries; "Relay towers" the table row → "Town bells"; "day-counts"/"days" lettered on the
+map → "hour-counts" (3 instances). The SAME stale subtitle/hand text was ALSO found, independently, in
+`content/spine/sheet.json` — a THIRD copy of the identical sentence, in a file neither review named.
+Confirmed dead data before touching it: `tools/mapforge/render-sheet.mjs`'s own header comment records
+PLAN E RULING 8 (2026-08-26) retiring the whole `cluster1` sheet render path — "nothing in this file
+reaches them any more" — so the fix has zero rendering consequence, but the stale sentence was still
+worth correcting since it is exactly the kind of copy-pasted drift a future reader could lift from
+without knowing it was already retired. `tools/mapforge/README.md` carries the same stale schema
+description (a `relay: {..., towers[], ...}` field, "day-counts" fields) for the same retired sheet —
+FILED, not fixed: it is the identical defect class `.claude/idea_backlog/I-098-stale-references-to-
+the-deleted-cluster1` already tracks for this exact retired path, filed separately, out of scope here.
+
+**Root cause, and why the fix is a phrase list, not a widened blanket sweep.** `checkTowerRelayAssertions`
+is a zero-tolerance word sweep, correct only where EVERY occurrence of "tower"/"relay" is a violation —
+true of `content/story/*.json` (24 of 24 were), false of `docs/worldbuilding/` and `content/spine/`,
+which carry legitimate per-town belfry flavor this task deliberately kept ("the mirror tower", "a
+single tolling tower", "27-tower chain" as history). Literally widening the same word-level rule to
+that wider corpus would immediately red on ~10 legitimate sentences, forcing either their deletion
+(destroying real content) or a rule permanently red (the opposite failure mode from I2's vacuous
+sweep, but still a rule that cannot do its job). New export `checkRetiredTowerPhrases` (G-RETIRED-
+CLAIMS) sweeps the SAME AMENDED_SCOPE corpus (`content/` + `docs/worldbuilding/`) for an explicit list
+of four phrases — `"relay towers"`, `"bellfaith relay map"`, `"tower district"`, `"given a tower
+count"` — each picked because it is unambiguous even inside a historical/explanatory sentence.
+Deliberately NOT on the list: `"27-tower chain"` and `"reaching six towns"`, both of which this
+task's OWN corrected prose still quotes verbatim as history (A1 §5.2's "down from an earlier 27-tower
+chain"; its opening sentence quoting A0's retired framing, "reaching six towns in hours") — banning
+either would fail this task's own explanatory writing. A fixture test proves exactly that boundary:
+the historical quote passes, the bare phrase fails. Wired into `check_content.mjs` with the same floor
++ mutation-proof discipline as I2. Live-corpus result: 0 matches, same as G-TOWER-RELAY.
+
+**Covering tests, all re-run after every fix in this round** (not once at the end): `prose-audit.test.mjs`
+19/19, `zone-content.test.mjs` 78/78, `zone-allocation.test.mjs`, `citations.test.mjs`,
+`bestiary-placement.test.mjs` 27/27, `places.test.mjs` 20/20, `edges-schema.test.mjs` 39/39,
+`story-migration.test.mjs`, `story-seed.test.mjs` (both rewritten for R-B's 0-failures reality),
+render-lock/spine-gates/town-millcross/season1 206/206. Full whole-directory suite re-run once, alone,
+TAP reporter: see the fix report in `.superpowers/sdd/plan/task-1-report.md` for the exact count.

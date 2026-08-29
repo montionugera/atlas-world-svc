@@ -1,15 +1,22 @@
 #!/usr/bin/env node
 // mapforge — spine-driven sheet builder (F-042 Task 4).
 //
-// The drawn-from-data contract render-map.mjs used to carry, with the data
-// coming from the spine (content/spine/) instead of a committed mirror JSON:
-//   loadSpine -> buildTree -> resolveWorld (scripts/lib/places.mjs)
-//   -> drawBasinSheet. That equivalence was proved before the switch: the
-//   mirror was itself byte-emitted from this same join by check_spine_emit.mjs,
-//   so this path produced a byte-identical SVG to the mirror-driven one.
-//   Plan A Task 6 dropped the intermediate emitGeography serialise/parse, and
-//   Task 12 deleted both the mirror and render-map.mjs — this is now the only
-//   sheet builder, and G-RENDER-LOCK is what holds its bytes.
+// Every sheet is drawn from data in content/ — no committed mirror JSON. Plan A
+// Task 12 deleted the last mirror and render-map.mjs; G-RENDER-LOCK holds the
+// built bytes.
+//
+// PLAN E RULING 8 (STATE §28, owner-approved 2026-08-26) — the `cluster1`
+// basin sheet is RETIRED from SHEETS in the redraw commit. Its descriptor
+// (content/spine/sheet.json) names subjects the redrawn 36-node trunk no
+// longer hosts (f-west-coast, f-the-meltwash, f-northern-ice-edge, n-saltmire,
+// n-eastern-hills, and ten basin regions under n-cluster1), so
+// resolveWorld() returns five unresolvable-subject PROBLEMS and the sheet
+// cannot render at all. The same ground survives in the RESOLVED world under
+// different keys (coastline, river, saltmire, iceEdge, terrainPatches), which
+// is why the ruling rebuilds this sheet resolved-backed in Plan E Task 8
+// rather than repairing the spine-backed builder here. tools/mapforge/lib/
+// basin-sheet.mjs and scripts/lib/places.mjs#resolveWorld are left on disk as
+// that rebuild's raw material; nothing in this file reaches them any more.
 //
 // Usage:
 //   node tools/mapforge/render-sheet.mjs --sheet <id> [--png] [--png-width <n>] [--check]
@@ -18,7 +25,8 @@
 //            is the ship raster, produced on demand and NEVER committed.
 //   --no-png: accepted and now a no-op, because not writing a PNG is the
 //            default. Kept so every existing invocation and doc line — CI's
-//            three `--no-png --check` lines included — keeps working.
+//            `--no-png --check` lines, one per registered sheet, included —
+//            keeps working.
 //   --check: build, print problems, exit 1 if any OR if the built svg
 //            differs from the committed outSvg; writes nothing.
 
@@ -27,19 +35,16 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pathToFileURL } from "node:url";
 import { C } from "./lib/draft.mjs";
-import { drawBasinSheet } from "./lib/basin-sheet.mjs";
 import { buildAtlasSheet, ATLAS_MAX_LABEL_RANK } from "./lib/atlas-sheet.mjs";
 import { buildSyntheticSheet } from "./lib/synthetic-sheet.mjs";
 import { buildFabricSheet } from "./lib/fabric-sheet.mjs";
 import { buildOverlaySheet } from "./lib/overlay-sheet.mjs";
+import {
+  CONTINENT_SHEETS,
+  CONTINENT_MAX_LABEL_RANK,
+  buildContinentSheet,
+} from "./lib/continent-sheet.mjs";
 import { rasterize } from "./lib/raster.mjs";
-import { loadSpine, buildTree } from "../../scripts/lib/spine.mjs";
-// Plan A Task 6: the sheet reads the world document from the join authority
-// directly. It used to import emitGeography from check_spine_emit.mjs and
-// JSON.parse its output — the round-trip through a string was pure overhead:
-// the mirror FILE was never read here (that was render-map.mjs), so this is
-// a pure import swap with no byte consequence, proved by render-sheet.test.mjs.
-import { resolveWorld } from "../../scripts/lib/places.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, "../..");
@@ -53,37 +58,17 @@ const REPO_ROOT = resolve(HERE, "../..");
 // tools/asset-storybook/tests/maps-index.test.mjs is what makes them agree.
 const THUMB_WIDTH = 512;
 
-export function buildCluster1Sheet({ repoRoot }) {
-  const spine = loadSpine({ contentRoot: join(repoRoot, "content") });
-  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
-  const { doc, problems } = resolveWorld({ spine, tree });
-  if (problems.length) return { svg: "", notes: [], problems };
-  return drawBasinSheet({ doc });
-}
-
 export const SHEETS = {
-  cluster1: {
-    // `title` mirrors tools/asset-storybook/maps-index.json's row title —
-    // the storybook parity gate (X8) checks paths today and Plan B extends it
-    // to the title.
-    //
-    // `maxLabelRank` on THIS row is INERT, and saying so is the point (seam-4
-    // review A, finding 6, verified): basin-sheet.mjs never calls placeLabels
-    // at all — it draws its names directly — so nothing reads this number. It
-    // stays because the roster is a contract every sheet answers the same
-    // shape for, and because Plan E's redraw is where the basin sheet gets a
-    // declutter pass; it is NOT a claim that the sheet declutters today. The
-    // "which sheets actually RUN a label declutter" test in
-    // tests/render-sheet.test.mjs pins that from the source, so this comment
-    // cannot quietly stop being true. A world sheet was described here as
-    // stopping at rank 3 — see the atlas row below for why that was wrong
-    // about the sheet the repo actually ships.
-    title: "Cluster 1 — Basin Survey",
-    outSvg: "game-client/assets/art/maps/cluster1-world.svg",
-    outPng: "game-client/assets/art/maps/cluster1-world.png",
-    maxLabelRank: 10,
-    build: buildCluster1Sheet,
-  },
+  // RETIRED (Plan E ruling 8): `cluster1` — the basin survey. Its subject
+  // world died with the old trunk; see the header for the full reasoning and
+  // for where it comes back. The storybook row, the art:map-cluster1 manifest
+  // block and the committed cluster1-world.svg/.png bytes retire in the SAME
+  // commit as this entry, because tools/asset-storybook/tests/
+  // maps-index.test.mjs asserts the SHEETS <-> index correspondence in BOTH
+  // directions and runs in Gate 1 AND CI — a stale row reds as hard as a
+  // missing one. Roster arithmetic from the ruling: 5 -> 4 here; Task 8's 13
+  // continent sheets take it to 17, inside budgets.sheets.maxSheets = 18,
+  // which stays as the committed ceiling.
   atlas: {
     title: "The Atlas World — Mariners' Chart",
     outSvg: "game-client/assets/art/maps/atlas-world.svg",
@@ -144,6 +129,31 @@ export const SHEETS = {
   },
 };
 
+// PLAN E TASK 8 / spec §7.4 — the continent zoom tier, and ruling 8's tail.
+// One builder, thirteen entries, GENERATED from the roster: thirteen
+// hand-written blocks would be thirteen chances for a typo and thirteen places
+// for a divergence to hide, and a fourteenth landmass is then one row in
+// continent-sheet.mjs rather than a block here.
+//
+// This is also where the retired `cluster1` basin sheet comes back. Ruling 8
+// named its five surviving subject keys (coastline, river, saltmire, iceEdge,
+// terrainPatches) in the RESOLVED world, and the basin ground is Wealdmarch —
+// so the successor is the `wealdmarch` row below, drawn from
+// content/world/resolved/continent-02.json, not a fourteenth registry entry.
+// Roster arithmetic, from the ruling: 4 here + 13 = 17, inside
+// budgets.sheets.maxSheets = 18, which stays as the committed ceiling.
+for (const s of CONTINENT_SHEETS) {
+  if (SHEETS[s.id])
+    throw new Error(`render-sheet: sheet id "${s.id}" is already registered`);
+  SHEETS[s.id] = {
+    title: s.title,
+    outSvg: `game-client/assets/art/maps/${s.id}.svg`,
+    outPng: `game-client/assets/art/maps/${s.id}.png`,
+    maxLabelRank: CONTINENT_MAX_LABEL_RANK,
+    build: ({ repoRoot }) => buildContinentSheet({ repoRoot, continent: s.continent }),
+  };
+}
+
 /**
  * The CLI contract, as a pure function — no process, no fs, no exit.
  *
@@ -171,7 +181,7 @@ export function parseArgs(argv) {
     else if (
       argv[i] === "--png" ||
       // --no-png is a LEGACY NO-OP: not writing a PNG is the default now. It
-      // stays accepted because CI's three `--no-png --check` lines and the
+      // stays accepted because CI's per-sheet `--no-png --check` lines and the
       // README's examples would otherwise exit 2 on an unknown arg.
       argv[i] === "--no-png" ||
       argv[i] === "--check"

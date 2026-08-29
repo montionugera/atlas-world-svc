@@ -522,7 +522,7 @@ export function gWorldSeaLandTrunk({ world, manifest, trunkLandKm2, note }) {
   const fabricRatio = (frame - netLandKm2) / netLandKm2;
   note(`G-SEALAND: trunk ${trunkRatio.toFixed(2)} : 1 vs fabric ${fabricRatio.toFixed(2)} : 1 ` +
        `(trunk land ${trunkLandKm2.toFixed(1)} km², fabric net land ${netLandKm2.toFixed(1)} km²) ` +
-       `— the trunk is redrawn in Plan E, not here`);
+       `— trunk and fabric are two measurements of the SAME redrawn world`);
 }
 
 // ── G-TRUNK-AREA ───────────────────────────────────────────────────────────

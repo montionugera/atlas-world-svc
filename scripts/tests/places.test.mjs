@@ -1,97 +1,138 @@
 // Plan A Task 5 — scripts/lib/places.mjs.
 //
-// The ONE assertion that matters is byte-identity: canonStringify over
-// resolveWorld's doc must equal, EXACTLY, the bytes the retired
-// content/maps/cluster1-geography.json held. Everything downstream (three gate
-// joins, two sheet builders) is only safe to re-point because of it, and key
-// ORDER is half of it — canonStringify walks Object.keys() in insertion order.
-// Task 12 deleted that file; the comparison now runs against the committed
-// sha256 of its bytes (RESOLVED_WORLD_SHA256 below), not a re-baseline.
+// PLAN E RULING 8 (STATE §28) RETIRED THIS FILE'S OTHER HALF. Until the
+// redraw, the assertion that mattered here was byte-identity: canonStringify
+// over resolveWorld's doc had to equal, EXACTLY, the bytes the retired
+// content/maps/cluster1-geography.json held. That proof, and the twelve tests
+// that resolved the LIVE spine into a basin document, are gone — not because
+// they were weak but because their SUBJECT is gone. The redrawn 36-node trunk
+// does not host f-west-coast, f-the-meltwash, f-northern-ice-edge, n-saltmire
+// or n-eastern-hills, so resolveWorld() cannot return a doc at all and every
+// one of those assertions was unreachable.
+//
+// Two of them were worse than unreachable: they still PASSED, vacuously.
+// "REPORTS a missing subject node" deleted n-saltmire from the tree and
+// "REPORTS a missing subject feature" filtered out f-west-coast — mutations
+// that are now no-ops, because both subjects are already absent. They went
+// green while proving nothing, which is the exact failure mode this repo has
+// a standing rule about, so they retired with the rest rather than being left
+// as green decoration.
+//
+// What SURVIVES here is the live path: loadPlaces reads
+// content/world/resolved/*.json (the Plan D Task 11 cutover) and has nothing
+// to do with the basin descriptor, so its tests and the three gate-join
+// tests are untouched. resolveWorld's shape-, tree- and no-throw guards also
+// stay: they fire before subject resolution, so they still assert something
+// real. The retirement itself is pinned by the first test below.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, cpSync } from "node:fs";
+import { readFileSync, readdirSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, cpSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadSpine, buildTree } from "../lib/spine.mjs";
-import { canonStringify } from "../check_spine_emit.mjs";
 import { WORLD_DOC_KEYS, resolveWorld, loadPlaces } from "../lib/places.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const CONTENT = join(ROOT, "content");
-// Plan A Task 12: content/maps/cluster1-geography.json is DELETED, so the
-// byte-identity proof below has no file to point at. The proof is not weakened
-// — it is re-anchored on a committed sha256 of the EXACT bytes that file held,
-// the same instrument the sheets moved to in content/world/render-lock.json.
-// This hash is NOT a re-baseline: it was taken from the deleted blob
-// (`git show <proof-commit>:content/maps/cluster1-geography.json | shasum -a 256`)
-// and independently from a fresh resolveWorld() run, and the two agreed. Only
-// Plan E's redraw commit may ever move it.
-const RESOLVED_WORLD_SHA256 =
-  "ce60b7841e7a0a2626df4cad599d0f51ddbe69b6c82e19336c09c4dd2070bd2f";
-
-/** Assert a resolved doc serialises to the exact bytes the retired mirror held. */
-function assertResolvedBytes(doc, what) {
-  const bytes = canonStringify(doc) + "\n";
-  // Buffer.byteLength, NOT String.length. The world document's prose carries
-  // 84 non-ASCII characters (39 §, 25 —, 9 →, 8 –, 2 ·, 1 ÷), which cost
-  // exactly 126 extra UTF-8 bytes, so the two counts disagree: the retired blob
-  // was 26,547 BYTES and 26,421 UTF-16 code units. Printing the string length
-  // under the word "bytes" is how commit 9cd227c's body came to record 26,421
-  // for a 26,547-byte file. The sha256 above hashes the same UTF-8 encoding
-  // this now counts, so the two numbers finally describe one thing.
-  assert.equal(
-    createHash("sha256").update(bytes, "utf8").digest("hex"),
-    RESOLVED_WORLD_SHA256,
-    `${what}: serialised world drifted from the retired mirror's bytes (${Buffer.byteLength(bytes, "utf8")} bytes)`,
-  );
-}
-
 function realTree() {
   const spine = loadSpine({ contentRoot: CONTENT });
   return { spine, tree: buildTree({ nodes: spine.nodes, rootIds: spine.roots }) };
 }
 
-test("resolveWorld reproduces the committed mirror BYTE for BYTE", () => {
+// ---------------------------------------------------------------------------
+// THE RETIREMENT, PINNED — AND NOW DISCHARGED. Plan E ruling 8 is a decision,
+// and a decision that lives only in a plan document is decoration, so this
+// asserts the facts that MAKE the basin sheet retired.
+//
+// It was written to go RED when Task 8 landed, and it did: the roster
+// assertion below read the four standing sheets, and Task 8 took it to
+// seventeen. Updating it rather than deleting it is the whole point of the
+// tripwire. What CHANGED is the roster; what did NOT change is the other two
+// halves, and that is the honest report of what Task 8 actually did:
+//
+//   - the spine-backed basin descriptor is STILL dead. Task 8 did not repair
+//     resolveWorld; it built a successor that reads content/world/resolved/
+//     directly, which is what ruling 8's phrase "rebuilt resolved-backed"
+//     describes. So the call below still returns null.
+//   - production STILL does not reach the two dormant functions. Their
+//     dormancy is therefore PERMANENT rather than "until Task 8" — which
+//     makes them a dead-code question for an owner, filed to STATE §28's
+//     Task 8 "FILED, NOT FIXED" list, not something this test should settle
+//     by deleting them.
+//
+// The real coverage the pin asked for lives where it can be observed, in
+// tools/mapforge/tests/continent-sheet.test.mjs's "RULING 8" test — and it is
+// FOUR of the five subject keys, not five. `coastline`, `river`, `saltmire`
+// and `terrainPatches` are asserted as DRAWN on the wealdmarch continent
+// sheet; `iceEdge` is asserted as ABSENT FROM THE DATA, because it is null on
+// all thirteen resolved continents. Writing "five drawn" here would be this
+// programme's own named failure — publishing absence as a positive fact — in
+// the one file whose job is to keep ruling 8 honest.
+// ---------------------------------------------------------------------------
+test("RULING 8: the basin sheet's spine path stays dead; its ground came back as `wealdmarch`", async () => {
+  // (1) The descriptor no longer names a basin. Ruling 8 retired the cluster1
+  // SHEET "with its whole tail ... in the same single commit", and
+  // content/spine/sheet.json's `subjects` block IS that sheet's data, so its
+  // three dead subject keys (mireIds, terrainPatchIds, featureIds — five ids,
+  // none of which the redrawn 36-node trunk hosts) retired with it. What is
+  // left is the four keys that still resolve, and the shape guard therefore
+  // reports an INCOMPLETE descriptor rather than five dead ids.
+  //
+  // Asserted as an EXACT set for the same reason as before: a subject key
+  // quietly coming back is as visible as one leaving. The five retired ids
+  // themselves live on in RETIRED_BASIN_SUBJECTS below. Task 8 did NOT read
+  // them from there in the end: the same ground is keyed differently in the
+  // resolved doc (coastline, river, saltmire, iceEdge, terrainPatches), and
+  // the successor sheet reads that — so these five ids are now only a record
+  // of what the dead descriptor used to name.
   const { spine, tree } = realTree();
   const { doc, problems } = resolveWorld({ spine, tree });
-  assert.deepEqual(problems, []);
-  assertResolvedBytes(doc, "resolveWorld");
-});
+  assert.equal(doc, null, "the spine-backed basin descriptor resolved again — decide what owns this ground");
+  assert.deepEqual(problems.slice().sort(), [
+    "resolveWorld: descriptor.featureIds is missing or not an object",
+    "resolveWorld: descriptor.mireIds is missing or empty",
+    "resolveWorld: descriptor.terrainPatchIds is missing or empty",
+  ].sort());
 
-test("resolveWorld builds the doc in the pinned key order", () => {
-  const { spine, tree } = realTree();
-  const { doc } = resolveWorld({ spine, tree });
-  assert.deepEqual(Object.keys(doc), WORLD_DOC_KEYS);
-  assert.equal(WORLD_DOC_KEYS.length, 19);
-});
-
-test("resolveWorld REPORTS a missing subject node, never throws (the C2 TypeError)", () => {
-  const { spine, tree } = realTree();
-  tree.byId.delete("n-saltmire");
-  const { doc, problems } = resolveWorld({ spine, tree });
-  assert.equal(doc, null);
-  assert.ok(
-    problems.some((p) => p.includes("n-saltmire")),
-    `expected a problem naming n-saltmire, got ${JSON.stringify(problems)}`,
+  // (2) `cluster1` is out of the sheet registry. This is the half that the
+  // storybook parity gate and check_render_lock both key off: leaving the
+  // entry while the sheet cannot build is what made check_render_lock BAIL.
+  const { SHEETS } = await import("../../tools/mapforge/render-sheet.mjs");
+  assert.equal(SHEETS.cluster1, undefined, "cluster1 is back in SHEETS as a separate entry — ruling 8 says it is wealdmarch");
+  assert.deepEqual(
+    Object.keys(SHEETS),
+    ["atlas", "synthetic", "fabric", "overlay",
+     "rimewall-cap", "wealdmarch", "coldreach", "stonemoor", "thirstwold", "reedstrand",
+     "driftholt", "wracklow", "brightfall", "ashen-spar", "quillreef", "skerryfast", "loamspit"],
+    "ruling 8's arithmetic: SHEETS ran 5 -> 4 at the redraw, and Task 8's 13 continent sheets take it to 17",
   );
-});
+  assert.ok(SHEETS.wealdmarch, "the basin ground has no successor sheet at all");
+  assert.equal(SHEETS.wealdmarch.outSvg, "game-client/assets/art/maps/wealdmarch.svg");
 
-test("resolveWorld REPORTS a missing subject feature, never throws", () => {
-  const { spine, tree } = realTree();
-  const cluster = tree.byId.get("n-cluster1");
-  tree.byId.set("n-cluster1", { ...cluster, features: cluster.features.filter((f) => f.id !== "f-west-coast") });
-  const { doc, problems } = resolveWorld({ spine, tree });
-  assert.equal(doc, null);
-  assert.ok(problems.some((p) => p.includes("f-west-coast")), JSON.stringify(problems));
+  // (3) Nothing in PRODUCTION reaches the dormant builders. Without this, the
+  // two functions look live because their tests import them. Ruling 8 left
+  // them on disk as Task 8's raw material; Task 8 did not need them, so this
+  // assertion now records a permanent state rather than a temporary one.
+  const srcs = ["scripts/check_content.mjs", "tools/mapforge/render-sheet.mjs"];
+  for (const rel of srcs) {
+    const src = readFileSync(join(ROOT, rel), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, " ")
+      .replace(/(^|[^:])\/\/.*$/gm, "$1");
+    for (const fn of ["resolveWorld", "drawBasinSheet"])
+      assert.ok(!src.includes(fn), `${rel} calls ${fn} — the spine-backed basin path is dormant permanently; the successor reads content/world/resolved/ directly`);
+  }
 });
 
 test("resolveWorld REPORTS a missing zoneRoot without a cascade of feature problems", () => {
   const { spine, tree } = realTree();
   tree.byId.delete("n-cluster1");
-  const { doc, problems } = resolveWorld({ spine, tree });
+  // RETIRED_BASIN_SUBJECTS, not the committed descriptor: the no-cascade
+  // behaviour under test lives past the shape guard (ruling 8's tail retired
+  // the three keys that guard requires), and this test's subject is the
+  // zoneRoot branch, not the shape branch.
+  const { doc, problems } = resolveWorld({ spine, tree, descriptor: RETIRED_BASIN_SUBJECTS });
   assert.equal(doc, null);
   assert.ok(problems.some((p) => p.includes("n-cluster1")), JSON.stringify(problems));
 });
@@ -124,17 +165,6 @@ test("resolveWorld REPORTS a spine whose sheet carries no `subjects` descriptor"
   assert.deepEqual(problems, [
     "sheet: content/spine/sheet.json has no `subjects` descriptor — the sheet's subject ids are DATA, not code",
   ]);
-});
-
-test("resolveWorld never returns a doc alongside problems (the seaLane late-push path)", () => {
-  // seaLane is the ONLY subject resolved during doc construction, i.e. after
-  // the early return. A half-built doc escaping with problems attached would
-  // be re-pointed straight into two sheet builders in Task 6.
-  const { spine, tree } = realTree();
-  const noLane = { ...spine, edges: spine.edges.filter((e) => e.kind !== "sealane") };
-  const { doc, problems } = resolveWorld({ spine: noLane, tree });
-  assert.equal(doc, null);
-  assert.ok(problems.some((p) => p.includes("sealane")), JSON.stringify(problems));
 });
 
 // Plan D Task 11 cutover: loadPlaces reads content/world/resolved/ and
@@ -182,38 +212,6 @@ test("loadPlaces on an empty root returns doc null and one problem, never throws
   }
 });
 
-test("resolveWorld REPORTS a zoneRoot whose lore.relay / lore.distances retired", () => {
-  // THE SILENT LOSS THIS GUARD EXISTS FOR. `doc.relay` and `doc.distances`
-  // spread `C.lore.relay` and `C.lore.distances`, and `{ ...undefined }` is
-  // `{}` — no throw, no key, no signal. Plan C regenerates n-cluster1's node
-  // body, so both objects retire with it (they are where its two
-  // AMENDED-PENDING markers live, which the plan's handoff says must NOT
-  // survive the promotion). Measured before this guard: the sheet still
-  // rendered, and its walking-table footnote read "a travel-hour is about
-  // undefined km of road" while the relay panel lost its note, spacing, owner,
-  // derivation and withheld prose.
-  //
-  // Carrying the two objects forward was considered and REJECTED: their prose
-  // describes the retired cluster-1 world (a 190 km ridge-line, 27 towers, and
-  // the Gildmark -> Embervale -> Millcross -> Rooktide spine, three of whose
-  // four towns the redraw deletes), so re-asserting it on the generated node
-  // would be a fresh canon contradiction as well as a smuggled marker. The
-  // loss is correct; only its silence was not.
-  //
-  // Plan D Task 11: exercised through resolveWorld directly now — loadPlaces
-  // no longer reads a spine, so a spine-copy fixture root cannot reach this
-  // path through it any more.
-  const { spine, tree } = realTree();
-  tree.byId.set("n-cluster1", { ...tree.byId.get("n-cluster1"),
-                                lore: { summary: "a generated structural idea" } });
-  const { doc, problems } = resolveWorld({ spine, tree });
-  assert.equal(doc, null, "a doc must never be returned alongside problems");
-  assert.equal(problems.length, 2, problems.join("\n"));
-  assert.match(problems[0], /no lore\.relay/);
-  assert.match(problems[1], /no lore\.distances/);
-  for (const p of problems) assert.match(p, /SILENTLY/);
-});
-
 // ── the three branches of the descriptor discriminator, pinned separately ──
 // Task 7 moved loadPlaces's spine/mirror discriminator from a hard-coded
 // zoneRoot onto `spine.sheet.subjects`. That turned ONE condition into three
@@ -223,46 +221,6 @@ test("resolveWorld REPORTS a zoneRoot whose lore.relay / lore.distances retired"
 // spine at all — so the two "falls back" branches below were deleted with it.
 // The unresolvable-zoneRoot REPORT (the corruption case) stays pinned from
 // resolveWorld's side further down this file.
-
-test("the emitted document's subject ids FOLLOW the descriptor — they are not literals", () => {
-  // Acceptance criterion 12, the half the source-grep above cannot see. The
-  // grep matches QUOTED `n-`/`f-` ids; five ids lived in this file in their
-  // STRIPPED form ("west-coast", "the-meltwash", "the-saltmire",
-  // "northern-ice-edge", "eastern-hills") and were invisible to it, so the
-  // descriptor could be re-pointed at another node and the document would
-  // still carry the old subject's id. Behavioural pin: swap the mire subject
-  // and the emitted id must move with it.
-  const { spine, tree } = realTree();
-  const S = spine.sheet.subjects;
-  // Every one of the five is re-pointed, so every one of the five assertions
-  // below fails if its literal comes back. Swapping (rather than inventing an
-  // id) keeps the same node/feature set, so the zone list stays 10 and nothing
-  // else in the document moves.
-  const swapped = {
-    ...S,
-    mireIds: [...S.terrainPatchIds],
-    terrainPatchIds: [...S.mireIds],
-    // a 3-CYCLE, not a pairwise swap: with only two of the three moved, the
-    // third id would still equal its literal and that literal would survive
-    // the mutation test. Verified by mutation — all five go red.
-    featureIds: { coast: S.featureIds.river, river: S.featureIds.iceEdge, iceEdge: S.featureIds.coast },
-  };
-  const { doc, problems } = resolveWorld({ spine, tree, descriptor: swapped });
-  assert.deepEqual(problems, []);
-  const stripId = (id) => tree.byId.get(id).lore?.geoId ?? id.slice(2);
-  assert.equal(doc.saltmire.id, stripId(swapped.mireIds[0]));
-  assert.equal(doc.terrainPatches[0].id, stripId(swapped.terrainPatchIds[0]));
-  assert.equal(doc.coastline.id, swapped.featureIds.coast.slice(2));
-  assert.equal(doc.river.id, swapped.featureIds.river.slice(2));
-  assert.equal(doc.iceEdge.id, swapped.featureIds.iceEdge.slice(2));
-  // and none of them kept the id the un-swapped descriptor would have given
-  assert.notEqual(doc.saltmire.id, stripId(S.mireIds[0]));
-  assert.notEqual(doc.terrainPatches[0].id, stripId(S.terrainPatchIds[0]));
-  assert.notEqual(doc.coastline.id, S.featureIds.coast.slice(2));
-  assert.notEqual(doc.river.id, S.featureIds.river.slice(2));
-  assert.notEqual(doc.iceEdge.id, S.featureIds.iceEdge.slice(2));
-  assert.equal(doc.zones.length, 10);
-});
 
 test("resolveWorld REPORTS an array descriptor by shape, not by array index", () => {
   // `typeof [] === "object"`, so an array used to slip past the shape guard
@@ -297,31 +255,6 @@ test("loadPlaces REPORTS a resolved file that parses to a non-object — never s
       rmSync(dir, { recursive: true, force: true });
     }
   }
-});
-
-test("resolveWorld REPORTS a partial descriptor, never throws (the Task 7 sheet.json path)", () => {
-  const { spine, tree } = realTree();
-  const full = {
-    rootId: "n-atlas", zoneRoot: "n-cluster1", landIds: ["n-cluster1"], seaIds: ["n-westsea"],
-    terrainPatchIds: ["n-eastern-hills"], mireIds: ["n-saltmire"],
-    featureIds: { coast: "f-west-coast", river: "f-the-meltwash", iceEdge: "f-northern-ice-edge" },
-  };
-  // The full descriptor must still resolve — the guard may not reject the
-  // shape Task 7 is about to commit into content/spine/sheet.json.
-  const ok = resolveWorld({ spine, tree, descriptor: full });
-  assert.deepEqual(ok.problems, []);
-  assertResolvedBytes(ok.doc, "resolveWorld");
-
-  for (const key of ["zoneRoot", "featureIds", "mireIds", "terrainPatchIds"]) {
-    const partial = { ...full };
-    delete partial[key];
-    const { doc, problems } = resolveWorld({ spine, tree, descriptor: partial });
-    assert.equal(doc, null, `descriptor without ${key} produced a doc`);
-    assert.ok(problems.some((p) => p.includes(key)), `${key}: ${JSON.stringify(problems)}`);
-  }
-  const { doc, problems } = resolveWorld({ spine, tree, descriptor: { ...full, featureIds: { coast: "f-west-coast" } } });
-  assert.equal(doc, null);
-  assert.ok(problems.some((p) => p.includes("featureIds.river")), JSON.stringify(problems));
 });
 
 test("resolveWorld REPORTS a non-array spine.edges, never throws", () => {
@@ -369,11 +302,29 @@ function runFullGate(contentRoot) {
 // scripts/tests/{zone-content,town-plan,bestiary-placement}.test.mjs, whose
 // fixture roots now carry their geography in the resolved shape and whose
 // gates still count.
-test("gate joins: the real content root FAILS LOUDLY on the not-yet-rehomed legacy records", () => {
+test("gate joins: the real content root is clean — the one remaining legacy join is a ruled exemption, not a silent zero", () => {
   const r = runFullGate(CONTENT);
-  assert.equal(r.code, 1);
-  assert.match(r.out, /zone "thornveil" not in content\/world\/resolved#zones/);
-  assert.match(r.out, /town "millcross" not in content\/world\/resolved#towns/);
+  // PLAN E TASK 9 re-homed the ten content/zones records onto fabric region
+  // ids, so the ZONE half of this pin is the join claim: the records join.
+  // PLAN E TASK 14 re-homed town-millcross.json onto the pinned civil town id
+  // `c-town-millcross`. R-B (owner ruling, 2026-08-29; Task 15/F-051
+  // completion Task 1) closed the last one: bestiary/placement-thornveil.json
+  // cannot be re-homed by any content edit (bestiary-placement.schema.json
+  // pins `zone` to ^[a-z0-9]+(-[a-z0-9]+)*$, which no `cNN/rNN` region id can
+  // match), so the join is ruled VOID for bestiary purposes instead — a
+  // committed, reasoned exemption (content/bestiary/region-exemptions.json),
+  // not a loosened schema and not a silenced check. The gate now exits 0.
+  //
+  // The assertions are FILE-QUALIFIED for a reason found here: the old
+  // unqualified /zone "thornveil" not in …#zones/ once matched two different
+  // gates at once (the zone-content join AND the bestiary placement join), so
+  // a narrower fix to one could leave the assertion green for the wrong
+  // reason. Kept file-qualified so a regression in either gate is unambiguous.
+  assert.equal(r.code, 0, r.out);
+  assert.doesNotMatch(r.out, /^FAIL\s+zones\/zone-.*not in content\/world\/resolved#zones/m);
+  assert.doesNotMatch(r.out, /^FAIL\s+bestiary\/placement-thornveil\.json/m);
+  assert.match(r.out, /^WARN {2}bestiary\/placement-thornveil\.json: zone "thornveil" not in content\/world\/resolved#zones — ruled void by content\/bestiary\/region-exemptions\.json \(R-B\)/m);
+  assert.doesNotMatch(r.out, /towns\/town-millcross\.json: town ".*" not in content\/world\/resolved#towns/);
   // finish() ran — the summary is printed, nothing went dark.
   assert.match(r.out, /content-gate: .* failures/, r.out);
 });
@@ -384,16 +335,6 @@ test("gate joins: the real content root FAILS LOUDLY on the not-yet-rehomed lega
 // nothing guarded — so `resolveWorld` threw a raw TypeError on a node that
 // loadSpine accepts. From Task 6 that throw lands inside check_content.mjs and
 // skips finish(), taking every FAIL and the summary line with it.
-
-test("resolveWorld REPORTS a node missing an optional block, never throws", () => {
-  const { spine, tree } = realTree();
-  // n-saltmire loads clean without `lore`; the assembly reads salt.lore.note.
-  tree.byId.set("n-saltmire", { ...tree.byId.get("n-saltmire"), lore: undefined });
-  const { doc, problems } = resolveWorld({ spine, tree });
-  assert.equal(doc, null);
-  assert.equal(problems.length, 1, JSON.stringify(problems));
-  assert.match(problems[0], /^resolveWorld: threw while assembling the world document/, problems[0]);
-});
 
 test("the gate REPORTS a corrupt resolved file instead of dying without printing", () => {
   // The whole point: a throw here is not just an ugly failure, it is a gate
@@ -432,8 +373,29 @@ test("the gate FAILS rather than zeroing its counts when the document is null (R
     const r = runFullGate(join(dir, "content"));
     assert.equal(r.code, 1, r.out);
     assert.match(r.out, /FAIL {2}geography: places: .*world\/resolved\/ holds no continent files/, r.out);
-    // finish() still ran — the counts are zeroed, but loudly, not silently.
-    assert.match(r.out, /content-gate: .* 0 zones, 0 towns, .* [1-9]\d* failures/, r.out);
+    // finish() still ran — loudly, not silently. The risk this pins is a null
+    // document that zeroes every count while the gate LOOKS GREEN, so the
+    // load-bearing halves are the exit code above and the non-zero failure
+    // count here; the individual zeros are evidence, not the contract.
+    assert.match(r.out, /content-gate: .* [1-9]\d* failures/, r.out);
+    // The town join really did go dark on the null document.
+    assert.match(r.out, /content-gate: .* 0 towns,/, r.out);
+    // PLAN E TASK 9 REVIEW (MAJOR 1): the ZONE count is NON-ZERO here, and that
+    // is the fix rather than a regression. checkZoneContent used to return 0
+    // from the WHOLE function on a null document, which took Z3/Z4/Z5/Z7 —
+    // intra-record rules needing no geography at all — down with the two join
+    // rules; a defective record on this very root printed nothing. Every record
+    // is read and checked now, and only Z1/Z2 go dark.
+    //
+    // TASK 11: this was an exact literal `10 zones`, and Task 11 writing six
+    // more records turned it red — a count literal describing the corpus rather
+    // than the rule. It is DERIVED from the directory now, which keeps the whole
+    // anti-bail property (a re-bail returns 0, and 0 never equals the number of
+    // files on disk) while not needing an edit per record. Not a widening: the
+    // expected number is computed independently of the gate's own output.
+    const onDisk = readdirSync(join(dir, "content/zones")).filter((f) => /^zone-.+\.json$/.test(f)).length;
+    assert.ok(onDisk >= 16, `only ${onDisk} zone records — the corpus shrank`);
+    assert.match(r.out, new RegExp(`content-gate: .* ${onDisk} zones, 0 towns,`), r.out);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -446,6 +408,24 @@ test("the gate FAILS rather than zeroing its counts when the document is null (R
 // literally. Scaled to 160 regions, the first is how a region ceases to exist
 // with every gate green.
 
+// The descriptor the basin sheet was drawn from BEFORE ruling 8, kept here
+// rather than in committed data. Its five subject ids name nothing the redrawn
+// trunk hosts, so leaving them in content/spine/sheet.json would have been a
+// descriptor that reads as live and resolves to nothing — and resolveWorld's
+// per-subject diagnoses (the two tests below) are the only thing that still
+// needs them. Task 8 rebuilds the sheet resolved-backed and re-authors the
+// descriptor from the resolved doc's own keys (coastline, river, saltmire,
+// iceEdge, terrainPatches); this constant is the record of what it replaces.
+const RETIRED_BASIN_SUBJECTS = Object.freeze({
+  rootId: "n-atlas",
+  zoneRoot: "n-cluster1",
+  landIds: ["n-cluster1"],
+  seaIds: ["n-westsea"],
+  terrainPatchIds: ["n-eastern-hills"],
+  mireIds: ["n-saltmire"],
+  featureIds: { coast: "f-west-coast", river: "f-the-meltwash", iceEdge: "f-northern-ice-edge" },
+});
+
 test("the subject descriptor lives in content/spine/sheet.json, not in code", () => {
   const sheet = JSON.parse(readFileSync(join(CONTENT, "spine/sheet.json"), "utf8"));
   assert.ok(sheet.subjects, "content/spine/sheet.json has no `subjects` block");
@@ -453,23 +433,21 @@ test("the subject descriptor lives in content/spine/sheet.json, not in code", ()
   assert.equal(sheet.subjects.zoneRoot, "n-cluster1");
   assert.deepEqual(sheet.subjects.landIds, ["n-cluster1"]);
   assert.deepEqual(sheet.subjects.seaIds, ["n-westsea"]);
-  assert.deepEqual(sheet.subjects.terrainPatchIds, ["n-eastern-hills"]);
-  assert.deepEqual(sheet.subjects.mireIds, ["n-saltmire"]);
-  assert.deepEqual(sheet.subjects.featureIds, {
-    coast: "f-west-coast", river: "f-the-meltwash", iceEdge: "f-northern-ice-edge",
-  });
-});
-
-test("resolveWorld reads subjects from the descriptor and still reproduces the mirror", () => {
-  const { spine, tree } = realTree();
-  const { doc, problems } = resolveWorld({ spine, tree, descriptor: spine.sheet.subjects });
-  assert.deepEqual(problems, []);
-  assertResolvedBytes(doc, "resolveWorld");
+  // RULING 8's tail: the three basin-subject keys are RETIRED from the
+  // committed descriptor, not merely stale. Pinned as absent so re-adding one
+  // has to come through this test — which is the point at which Task 8 owes
+  // real coverage, not a dead id.
+  for (const k of ["terrainPatchIds", "mireIds", "featureIds"])
+    assert.equal(sheet.subjects[k], undefined,
+      `subjects.${k} is back in content/spine/sheet.json — ruling 8 retired it; has Task 8 landed?`);
 });
 
 test("resolveWorld with a descriptor naming a node that does not exist REPORTS with the pinned message", () => {
   const { spine, tree } = realTree();
-  const bad = { ...spine.sheet.subjects, mireIds: ["n-not-a-node"] };
+  // Spreads the RETIRED descriptor, not the committed one: the diagnosis under
+  // test lives past the shape guard, and the committed descriptor no longer
+  // carries the three keys that guard requires.
+  const bad = { ...RETIRED_BASIN_SUBJECTS, mireIds: ["n-not-a-node"] };
   const { doc, problems } = resolveWorld({ spine, tree, descriptor: bad });
   assert.equal(doc, null);
   assert.ok(problems.includes('sheet: subject "mireIds[0]" -> "n-not-a-node" does not resolve'), JSON.stringify(problems));
@@ -477,57 +455,10 @@ test("resolveWorld with a descriptor naming a node that does not exist REPORTS w
 
 test("resolveWorld with a descriptor naming a feature that does not exist REPORTS", () => {
   const { spine, tree } = realTree();
-  const bad = { ...spine.sheet.subjects, featureIds: { ...spine.sheet.subjects.featureIds, river: "f-nope" } };
+  const bad = { ...RETIRED_BASIN_SUBJECTS,
+    featureIds: { ...RETIRED_BASIN_SUBJECTS.featureIds, river: "f-nope" } };
   const { problems } = resolveWorld({ spine, tree, descriptor: bad });
   assert.ok(problems.includes('sheet: subject "river" -> "f-nope" does not resolve'), JSON.stringify(problems));
-});
-
-test("R3: a region under zoneRoot with NO lore.order now FAILS instead of vanishing", () => {
-  const { spine, tree } = realTree();
-  // The mire and the terrain patch are region-tier children that are NOT
-  // zones, and neither carries a lore.order — so the rule is scoped by the
-  // descriptor's own exclusion, not by a null check. Pick a victim that IS a
-  // zone.
-  const S = spine.sheet.subjects;
-  const notAZone = new Set([...S.mireIds, ...S.terrainPatchIds]);
-  const victim = (tree.childrenOf.get(S.zoneRoot) ?? [])
-    .map((i) => tree.byId.get(i))
-    .find((n) => n.tier === "region" && !notAZone.has(n.id));
-  assert.ok(victim, "no eligible region found in the committed spine");
-  tree.byId.set(victim.id, { ...victim, lore: { ...victim.lore, order: undefined } });
-  const { doc, problems } = resolveWorld({ spine, tree, descriptor: S });
-  assert.equal(doc, null);
-  assert.ok(
-    problems.some((p) => p.includes(victim.id) && p.includes("lore.order")),
-    `expected a lore.order problem naming ${victim.id}, got ${JSON.stringify(problems)}`,
-  );
-});
-
-test("R3 is scoped: the descriptor's own mire and terrain patch are exempt", () => {
-  // The counterpart of the test above, and the one that keeps the rule honest:
-  // n-saltmire and n-eastern-hills are region-tier children of the zoneRoot
-  // that carry NO lore.order in the committed spine. A rule that demanded one
-  // from every region child would go red on content that is correct.
-  const { spine, tree } = realTree();
-  const S = spine.sheet.subjects;
-  for (const id of [...S.mireIds, ...S.terrainPatchIds]) {
-    const n = tree.byId.get(id);
-    assert.equal(n.tier, "region", `${id} is not a region child — the exemption is testing nothing`);
-    assert.equal(n.lore?.order, undefined, `${id} now carries a lore.order — the exemption is testing nothing`);
-  }
-  const { problems } = resolveWorld({ spine, tree, descriptor: S });
-  assert.deepEqual(problems, []);
-});
-
-test("the emitted zones array is exactly the region children minus the descriptor's non-zones", () => {
-  const { spine, tree } = realTree();
-  const S = spine.sheet.subjects;
-  const kids = (tree.childrenOf.get(S.zoneRoot) ?? []).map((i) => tree.byId.get(i));
-  const regionKids = kids.filter((n) => n.tier === "region");
-  const { doc } = resolveWorld({ spine, tree, descriptor: S });
-  assert.equal(regionKids.length, 12);
-  assert.equal(doc.zones.length, regionKids.length - S.mireIds.length - S.terrainPatchIds.length);
-  assert.equal(doc.zones.length, 10);
 });
 
 test("the DEFAULT_SUBJECTS constant is gone — the descriptor is the only source", async () => {
@@ -589,12 +520,13 @@ const MIRROR_NAMERS = new Set([
   // Comments and verbatim gate messages only — no path is opened.
   "scripts/check_content.mjs",             // "…not in cluster1-geography.json#zones"
   "scripts/lib/season1.mjs",
-  // basin-sheet.mjs names the mirror in the sheet's own <desc> and footer —
-  // those strings are DRAWN BYTES inside the committed SVG, so correcting them
-  // would move pixels and red the render lock. They belong to Plan B Task 12,
-  // the one commit permitted to re-baseline the lock and the two sheets.
+  // basin-sheet.mjs names the mirror in the sheet's own <desc> and footer.
+  // Those strings used to be DRAWN BYTES inside a committed SVG, which is why
+  // correcting them was deferred; Plan E ruling 8 retired that sheet and its
+  // bytes, so the lib is now dormant source awaiting Task 8's resolved-backed
+  // rebuild and the strings draw nothing. Its test file was deleted with the
+  // sheet — this allowlist test is what caught the stale entry.
   "tools/mapforge/lib/basin-sheet.mjs",
-  "tools/mapforge/tests/basin-sheet.test.mjs",
   "scripts/tests/spine-gates.test.mjs",
   "scripts/tests/town-millcross.test.mjs", // canon provenance in comments
   // Plan D Task 11: the cutover's own test file — its comments and the

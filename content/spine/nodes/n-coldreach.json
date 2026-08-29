@@ -4,111 +4,251 @@
   "parentId": "n-atlas",
   "title": "Coldreach",
   "provenance": {
-    "authored": "hand",
+    "authored": "generated",
     "generator": {
-      "name": "gen-world",
-      "version": "1"
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/continent-03.json"
     },
-    "source": "tools/mapforge/gen-world.mjs"
+    "source": "content/world/premises/continent-03.json"
   },
-  "frozen": false,
+  "frozen": true,
+  "absoluteAnchor": [290.75, 110.25],
   "seed": {
-    "value": "a6105f8765a90fc4",
+    "value": "5a5007767447be19",
     "epoch": 0,
     "why": null
   },
   "placement": {
     "shape": "polygon",
     "points": [
-      [219.8, 148.4],
-      [210.5, 152.6],
-      [214.3, 161.3],
-      [205.2, 159.2],
-      [201.3, 161.3],
-      [195.6, 167.5],
-      [189.1, 165.6],
-      [183.5, 161.4],
-      [183.9, 153.9],
-      [187.3, 148.4],
-      [179.3, 141.2],
-      [188, 139.2],
-      [188.9, 130.8],
-      [195.7, 129.5],
-      [201.7, 133],
-      [206.8, 134.9],
-      [210.7, 138.6],
-      [216.5, 142]
+      [226, 131],
+      [223, 122],
+      [221, 119.5],
+      [221, 114.5],
+      [224, 100.5],
+      [227, 92.5],
+      [232.5, 83],
+      [240.5, 74.5],
+      [241.5, 74.5],
+      [244.5, 71.5],
+      [248.5, 69],
+      [258.5, 68],
+      [271.5, 63.5],
+      [285.5, 55.5],
+      [292, 49.5],
+      [307.5, 54],
+      [314.5, 57.5],
+      [319, 60.5],
+      [320, 66],
+      [320, 67.5],
+      [320, 68],
+      [320.5, 68],
+      [321, 71],
+      [321.5, 71],
+      [322, 73],
+      [323, 73.5],
+      [323, 74.5],
+      [324, 75],
+      [324, 76],
+      [324.5, 76],
+      [328, 80],
+      [329, 80],
+      [329.5, 81],
+      [330.5, 81],
+      [331, 82],
+      [332, 82],
+      [332, 82.5],
+      [332.5, 82.5],
+      [333, 82.5],
+      [339.5, 84.5],
+      [341.5, 87.5],
+      [346, 97.5],
+      [348.5, 107],
+      [350, 109],
+      [350, 111],
+      [346, 124],
+      [341, 134.5],
+      [341, 136],
+      [332.5, 150],
+      [325.5, 157],
+      [324.5, 157],
+      [319, 161.5],
+      [310.5, 165.5],
+      [300, 168.5],
+      [283.5, 169.5],
+      [271.5, 168.5],
+      [262.5, 163.5],
+      [261, 163.5],
+      [244, 156],
+      [240, 152.5],
+      [239, 152.5],
+      [236.5, 149.5],
+      [235.5, 149.5],
+      [234.5, 147.5],
+      [233, 147.5],
+      [233.5, 146.5],
+      [229, 140]
     ],
-    "anchor": [198.8, 148.3]
+    "anchor": [290.75, 110.25]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [40.5, 38],
-    "originInParent": [179.3, 129.5]
+    "size": [129, 120],
+    "originInParent": [221, 49.5]
   },
   "composition": {
-    "rock": 55,
-    "upland": 20,
-    "forest": 15,
-    "meadow": 10
+    "tundra": 66.6,
+    "meadow": 29.4,
+    "river": 2.3,
+    "forest": 1.7
   },
   "interstitial": null,
   "interstitialUnsurveyed": false,
   "compositionTolerance": null,
   "toleranceWhy": null,
+  "terrainKind": "tundra-steppe",
   "features": [
     {
-      "id": "f-coldreach-ridge",
-      "kind": "line",
-      "points": [
-        [219.8, 148.4],
-        [187.3, 148.4]
-      ],
-      "attrs": {
-        "note": "A ridge logged from open water as one unbroken skyline, end to end.",
-        "name": "the Coldreach Spine"
-      }
-    },
-    {
-      "id": "f-coldreach-river-mouth",
-      "kind": "line",
-      "points": [
-        [199, 148.4],
-        [201.3, 161.3],
-        [195.6, 167.5]
-      ],
-      "attrs": {
-        "note": "A river known only by its mouth and the peat-dark stain it pushes to sea.",
-        "name": "the Peatrun"
-      }
-    },
-    {
-      "id": "f-port-tallowquay",
+      "id": "f-town-tallowquay",
       "kind": "point",
-      "at": [179.3, 141.2],
+      "at": [252, 128],
       "attrs": {
-        "role": "port",
         "name": "Tallowquay",
-        "note": "The one foreign quay Gildmark hulls have tied at, named by crews for the tallow-smoke over its anchorage; past the waterline, hearsay."
-      }
+        "role": "capital",
+        "town": "c-town-tallowquay"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c03-s01",
+      "kind": "point",
+      "at": [343.75, 92.75],
+      "attrs": {
+        "name": null,
+        "role": "hub",
+        "town": "c03/s01"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c03-s02",
+      "kind": "point",
+      "at": [235.25, 145.25],
+      "attrs": {
+        "name": null,
+        "role": "hub",
+        "town": "c03/s02"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c03-s03",
+      "kind": "point",
+      "at": [348.25, 108.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c03/s03"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c03-s04",
+      "kind": "point",
+      "at": [346.25, 117.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c03/s04"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c03-s05",
+      "kind": "point",
+      "at": [244.75, 148.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c03/s05"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c03-s06",
+      "kind": "point",
+      "at": [238.75, 124.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c03/s06"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c03-s07",
+      "kind": "point",
+      "at": [241.25, 115.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c03/s07"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c03-s08",
+      "kind": "point",
+      "at": [327.75, 108.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c03/s08"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c03-s09",
+      "kind": "point",
+      "at": [332.75, 125.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c03/s09"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c03-s10",
+      "kind": "point",
+      "at": [317.75, 108.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c03/s10"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c03-s11",
+      "kind": "point",
+      "at": [323.25, 125.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c03/s11"
+      },
+      "type": null
     }
   ],
   "bands": [],
-  "runtime": {
-    "mapIds": [],
-    "originU": null,
-    "spawnAreas": [],
-    "mobSettings": null,
-    "seedDemoNPCs": false,
-    "collision": "none"
-  },
+  "runtime": null,
   "representsNodeId": null,
   "lore": {
-    "reported": true,
-    "summary": "Six days out on the trade wind, masters log a cold grey coast under one long spine of rock; no log claims what stands behind it.",
-    "amendedPending": "AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred."
+    "summary": "one unbroken spine ridge end to end, casting a hard rain shadow that dries the lee third"
   },
   "tags": [],
-  "levelBand": null
+  "levelBand": [24, 64]
 }

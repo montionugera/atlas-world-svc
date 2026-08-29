@@ -522,8 +522,20 @@ function tileFor(patternId) {
     rgba[i * 4 + 2] = bb;
     rgba[i * 4 + 3] = 255;
   }
-  const put = (x, y) => {
-    if (x < 0 || y < 0 || x >= r.w || y >= r.h) return;
+  // WRAP, never clip. A tile is the unit cell of a REPEATING pattern, so a
+  // segment endpoint at x === w is the next tile's x === 0, and that is the
+  // pixel the vector <pattern> actually draws there. Clipping it instead left
+  // a 2 px gap at EVERY tile join, which the adversarial review measured on
+  // the frontier hatches: 8 segment pixels, 6 inside the tile, 2 discarded on
+  // pReported and pReportedSworn; 12/10 on pReportedHearsay; 16/14 on
+  // pReportedInferred. That is 25% / 17% / 12.5% of the ink — MOST from the
+  // densest hatch and least from the sparsest, so the clip was compressing
+  // exactly the sworn > hearsay > inferred register the three densities exist
+  // to encode, and the baked field read as dashes beside a legend swatch (a
+  // live <pattern>) drawing unbroken diagonals.
+  const put = (rawX, rawY) => {
+    const x = ((rawX % r.w) + r.w) % r.w;
+    const y = ((rawY % r.h) + r.h) % r.h;
     const i = (y * r.w + x) * 4,
       a = r.opacity;
     rgba[i] = br + (ir - br) * a;
@@ -535,6 +547,29 @@ function tileFor(patternId) {
 }
 
 /** The one place a biome is turned into a pattern id, so both bakes agree. */
+/**
+ * A region may name its tile EITHER by biome (the original contract:
+ * BIOME_FILL maps a biome to a pattern) or by giving the pattern id outright
+ * as `fill`. The second door exists for ink that is not a biome at all — the
+ * provenance-keyed frontier hatches, which key off a region's survey record
+ * rather than its ground. Plan E Task 8 measured why it has to be baked like
+ * everything else: drawn as live <pattern> fills, the reported hatch was
+ * 72-78% of a continent sheet's raster cost (Driftholt 2.179 s full vs 0.599 s
+ * with the hatch removed, against budgets.json's 2 s maxRasterSeconds), which
+ * is the same single-live-hatch cost that once made the basin sheet 11.31 s.
+ * `fill` wins when both are present; it is validated against the same recipe
+ * table, so an unbaked pattern is still a reported problem and never a crash.
+ */
+const tileIdOf = (r) => (typeof r.fill === "string" ? r.fill : fillOf(r.biome));
+
+function tileProblem(r) {
+  if (typeof r.fill === "string")
+    return recipeOf(r.fill) ? null : `G-BIOME-INK: pattern "${r.fill}" has no tile recipe`;
+  if (r.fill !== undefined && r.fill !== null)
+    return `G-BIOME-INK: region "${r.id}" has a non-string fill`;
+  return recipeProblem(r.biome);
+}
+
 function recipeProblem(biome) {
   const patternId = fillOf(biome);
   if (!patternId) return `G-BIOME-INK: biome "${biome}" has no BIOME_FILL entry`;
@@ -577,8 +612,8 @@ const insideAt = (crossings, px) => {
 };
 
 /**
- * ONE <image> for the whole texture layer. `regions` is [{ id, biome, ring }]
- * in km; input order does not matter — regions are composited in ascending
+ * ONE <image> for the whole texture layer. `regions` is
+ * [{ id, biome | fill, ring }] in km; input order does not matter — regions are composited in ascending
  * `id`, so an overlap resolves the same way whatever order the caller passes.
  *
  * Returns `{ svg, problems, notes }` and never throws. `svg` is "" whenever
@@ -606,7 +641,7 @@ export function bakedUnderlay({ regions, pxPerKm, maxHrefBytes = XML_MAX_ATTR_BY
     }
     const bad = r.ring.some((p) => !Array.isArray(p) || !Number.isFinite(p[0]) || !Number.isFinite(p[1]));
     if (bad) problems.push(`bakedUnderlay: region "${r.id}" has a ring point that is not a finite [x, y]`);
-    const problem = recipeProblem(r.biome);
+    const problem = tileProblem(r);
     if (problem) problems.push(problem);
   }
   if (problems.length) return { svg: "", problems, notes: null };
@@ -634,7 +669,7 @@ export function bakedUnderlay({ regions, pxPerKm, maxHrefBytes = XML_MAX_ATTR_BY
   }
   const crossings = [];
   for (const r of [...regions].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))) {
-    const t = tileFor(fillOf(r.biome));
+    const t = tileFor(tileIdOf(r));
     let lo = Infinity,
       hi = -Infinity,
       top = Infinity,

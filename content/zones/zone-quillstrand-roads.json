@@ -1,0 +1,48 @@
+{
+  "zone": "quillstrand-roads",
+  "region": "c07/r03",
+  "survey": "surveyed",
+  "reasonToGo": "The only forest anybody has walked on Driftholt. Three more stands are drawn on the island and every one of them is reported ground; this is the one a crew can put an axe into. Under the wood the bogs go three deep, so the same ground gives the timber and the fuel to season it — and the island's single village stands here, which is why the wood comes out of this region and no other.",
+  "hazards": [
+    {
+      "id": "nothing-dries",
+      "name": "Nothing dries",
+      "description": "The slope above the village runs with water in any weather and the canopy holds what the ground does not. A party soaked on the first morning is soaked on the fourth, and cold gets through wet cloth in conditions that would trouble nobody dry.",
+      "effect": "freeze"
+    },
+    {
+      "id": "the-apron",
+      "name": "The apron",
+      "description": "The rockfall apron below the summit is loose the whole way down and re-loaded every winter by whatever comes off the face above it. Walking on it is safe until something upslope moves, and nothing upslope gives notice.",
+      "effect": "damage"
+    }
+  ],
+  "resources": [
+    {
+      "id": "slope-billets",
+      "name": "Slope billets",
+      "kind": "fuel",
+      "description": "Peat off the raised bog and the quaking bog above the village, and resinous heartwood split out of what the wood drops. In air this wet the peat is the reliable half: it is cut in the one dry month and it is what dries the timber that pays for the cutting."
+    },
+    {
+      "id": "wet-stand-timber",
+      "name": "Wet-stand timber",
+      "kind": "timber",
+      "description": "Felled out of the only forest on Driftholt that anyone has set foot in — the three other stands the island draws are reported and none has been walked. It is worked green because it will not season standing, and it goes out through the village and off the strand."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "reedmere-horn",
+      "name": "Reedmere Horn",
+      "description": "The peak above the wood — one of three summits drawn on Driftholt, and the one the forest climbs to. Everything below it — the bogs, the wood, the village and the strand — is laid out on one slope, and the horn is what a crew takes its line off when the fog is down and it usually is.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "stack-at-alderrun",
+      "name": "Stack at Alderrun",
+      "description": "The shoulder where the foothill belt meets the shore and the hogback runs out into the tidal flat. There is no rock standing offshore here; the mark is the shoulder itself, which is the last thing visible from the water when the slope behind it has gone into cloud.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

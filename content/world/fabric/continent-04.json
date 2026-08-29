@@ -393,7 +393,7 @@
     {"id":"c04/s01","title":null,"rank":"hub","atKm":[287.25,185.25],"cell":[574,370],"region":"c04/r01","continent":"c04","score":0.8},
     {"id":"c04/s02","title":null,"rank":"hub","atKm":[312.25,309.75],"cell":[624,619],"region":"c04/r28","continent":"c04","score":0.79},
     {"id":"c04/s03","title":null,"rank":"hub","atKm":[252.25,219.75],"cell":[504,439],"region":"c04/r07","continent":"c04","score":0.79},
-    {"id":"c04/s04","title":null,"rank":"hub","atKm":[339.75,298.25],"cell":[679,596],"region":"c04/r25","continent":"c04","score":0.79},
+    {"id":"c04/s04","title":null,"rank":"village","atKm":[339.75,298.25],"cell":[679,596],"region":"c04/r25","continent":"c04","score":0.79},
     {"id":"c04/s05","title":null,"rank":"village","atKm":[249.25,235.75],"cell":[498,471],"region":"c04/r12","continent":"c04","score":0.78},
     {"id":"c04/s06","title":null,"rank":"village","atKm":[319.75,304.75],"cell":[639,609],"region":"c04/r28","continent":"c04","score":0.74},
     {"id":"c04/s07","title":null,"rank":"village","atKm":[287.25,197.25],"cell":[574,394],"region":"c04/r01","continent":"c04","score":0.68},

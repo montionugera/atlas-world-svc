@@ -14122,10 +14122,10 @@
       "id": "c-town-rooktide",
       "name": "Rooktide",
       "at": [
-        98,
-        163.5
+        94.5,
+        162.5
       ],
-      "zone": null,
+      "zone": "c02/r19",
       "properties": [],
       "coasts": [],
       "settlementRank": "hub",

@@ -22,6 +22,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import {
   readFileSync,
+  readdirSync,
   writeFileSync,
   mkdtempSync,
   mkdirSync,
@@ -30,6 +31,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { inkStats } from "../../tools/mapforge/lib/png-ink.mjs";
 import { fileURLToPath } from "node:url";
 import { BIOMES, TERRAIN_KINDS, TERRAIN_IMPLIES } from "../lib/spine.mjs";
 import { encodePng } from "../../tools/mapforge/lib/texture-bake.mjs";
@@ -75,9 +77,51 @@ function emptyWorldLayer(contentRoot) {
   // authored claims re-derived against the RESOLVED world — a root stripped
   // of fabric but still carrying them is 13 continents of "no resolved
   // world" failures, not a stub.
+  // Plan E's redraw added one more member to exactly this family: the trunk is
+  // GENERATED now, and every continent/ocean/sea node pins the fabric file its
+  // outline was simplified from (E-C3 — that pin is also G-TRUNK-AREA's
+  // activation key). A root stripped of world/fabric but still carrying those
+  // 25 pins is not "an empty world with one stub", it is 25 dangling pointers:
+  // 13 `fabric: ... but no such fabric file was counted` FAILs plus their
+  // G-TRUNK-AREA twins, drowning the one G-LANDFORM claim each test below
+  // exists to make. So the pins go with the fabric they point at.
   for (const fam of ["world/fabric", "world/handles", "world/civil/bound", "dungeons", "world/relations"])
     rmSync(join(contentRoot, fam), { recursive: true, force: true });
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  // Nulling the pin alone is not enough and would be its own lie: G-PROVENANCE
+  // requires a GENERATED node to carry one ("polygon and fabric can disagree"),
+  // so a pinless generated trunk trades 13 dangling-pin FAILs for 25
+  // G-PROVENANCE FAILs. The stub root is therefore made honestly hand-authored
+  // — no generator, no pin, nothing to dangle — which is exactly what this
+  // root claims to be: a spine with no world layer behind it.
+  handAuthorTrunk(contentRoot);
+}
+// Nulling the pin alone is not enough and would be its own lie: G-PROVENANCE
+// requires a GENERATED node to carry one ("polygon and fabric can disagree"),
+// so a pinless generated trunk trades 13 dangling-pin FAILs for 25
+// G-PROVENANCE FAILs. A stub root is therefore made honestly hand-authored —
+// no generator, no pin, nothing to dangle — which is exactly what these roots
+// claim to be: a spine with no world layer behind it.
+function handAuthorTrunk(contentRoot) {
+  const nodeDir = join(contentRoot, "spine/nodes");
+  for (const f of readdirSync(nodeDir).filter((x) => x.endsWith(".json"))) {
+    const p = join(nodeDir, f);
+    const doc = JSON.parse(readFileSync(p, "utf8"));
+    if (doc.provenance?.authored !== "generated") continue;
+    doc.provenance = { ...doc.provenance, authored: "hand", generator: null };
+    // …and a continent with neither children nor a fabric pin is REPORTED
+    // ground, not incomplete ground. E-C3 settles a childless continent
+    // through its pin; with the pin gone, the only honest remaining state is
+    // F-043's "reported, not surveyed", which is precisely what a spine with
+    // no world layer behind it describes. Without this the stub root reds
+    // G-SPINE-COMPLETE under --require-complete for the 8 committed continents
+    // that carry no `lore.reported` of their own — a real gap in the generated
+    // trunk (STATE §28, class-9 defect 3: the flag is written on 4 of the 13
+    // continents that draw the reported hatch), but a gap about the WORLD
+    // layer, which is exactly what this root has removed.
+    if (doc.tier === "continent") doc.lore = { ...(doc.lore ?? {}), reported: true };
+    writeFileSync(p, JSON.stringify(doc, null, 2) + "\n");
+  }
 }
 function runGate(contentRoot, ...extra) {
   return runSpineGateInProcess({
@@ -534,10 +578,24 @@ test("G-SHEET-BUDGET: a REAL committed thumb passes the same floor", () => {
   const { base, contentRoot, drop } = tmpRoot();
   const maps = join(base, "game-client/assets/art/maps");
   mkdirSync(maps, { recursive: true });
-  cpSync(join(ROOT, "game-client/assets/art/maps/atlas-world.png"), join(maps, "atlas-world.png"));
+  const thumb = join(ROOT, "game-client/assets/art/maps/atlas-world.png");
+  cpSync(thumb, join(maps, "atlas-world.png"));
   const r = runGate(contentRoot);
   assert.equal(r.code, 0, r.out);
-  assert.match(r.out, /^world-budget: thumb ink 5\.\d\d% least \(atlas-world\.png\) of 1 thumb\(s\) \(floor 2\.00%\)$/m);
+  // The percentage was a hand-typed `5.\d\d%` literal, and Plan E's redraw
+  // moved it to 29.99% — thirteen ink-filled landmasses where there had been
+  // one small basin miniature on mostly empty parchment. Retyping the new
+  // number would just re-arm the same trap (citation rot, sixth occurrence in
+  // this repo), so it is DERIVED from the very file the test copies in, using
+  // the same measure the gate itself uses. The shape of the line stays pinned,
+  // so the assertion cannot go dark either.
+  const pct = (inkStats(readFileSync(thumb)).inkFraction * 100).toFixed(2);
+  assert.ok(Number(pct) >= 2.0, `the committed atlas thumb is at ${pct}% ink, under the 2.00% floor`);
+  assert.match(
+    r.out,
+    new RegExp(`^world-budget: thumb ink ${pct}% least \\(atlas-world\\.png\\) of 1 thumb\\(s\\) \\(floor 2\\.00%\\)$`, "m"),
+    r.out,
+  );
   drop();
 });
 
@@ -713,9 +771,19 @@ test("G-LANDFORM red: a spine feature cites a type that is not in the lexicon", 
 });
 
 test("G-LANDFORM red: a feature's kind contradicts its lexicon geometry", () => {
+  // PLAN E: the redrawn trunk carries 54 features and every one of them is a
+  // POINT — the 10 hand-drawn basin line features (coasts, the Meltwash, the
+  // ice edge) are retired ground. `features.find(kind === "line")` therefore
+  // returns undefined and this test crashed rather than measuring anything.
+  // The RULE is untouched and still live, so the fixture supplies the line the
+  // corpus no longer does — the same move the retired-relay case makes in
+  // edges-schema.test.mjs. Injecting it is what keeps the kind-vs-geometry
+  // branch armed instead of quietly unreachable.
   const { contentRoot, drop } = tmpRoot();
   const doc = readNode(contentRoot, "n-cluster1");
-  const line = doc.features.find((f) => f.kind === "line");
+  const line = { id: "f-fixture-line", kind: "line",
+                 points: [[0, 0], [1, 1]], attrs: {} };
+  doc.features.push(line);
   line.type = "karst-cenote"; // lexicon geometry is "point"
   writeNode(contentRoot, "n-cluster1", doc);
   const r = runGate(contentRoot);
@@ -1190,6 +1258,45 @@ test("G-SHEET-BUDGET counts .svg only", () => {
 test("soft-skip: a content root with no content/world/ is still green", () => {
   const { contentRoot, drop } = tmpRoot();
   rmSync(join(contentRoot, "world"), { recursive: true, force: true });
+  // Plan E: the redrawn trunk is GENERATED and pins its fabric, so a root with
+  // world/ removed carries 13 pins to files it does not have. See
+  // handAuthorTrunk's header — the pin goes with the fabric it points at.
+  handAuthorTrunk(contentRoot);
+  // Ruling 7b (Plan E Task 6f): a region record carrying resolvedRef NAMES the
+  // world document, so a root without world/ can no longer be green while one
+  // exists — the story sweep would demand a doc that isn't there. This test's
+  // intent is that the STRUCTURAL gates stay quiet without world/, so the copy
+  // drops the resolved refs (spineId stays where a node still hosts it; on the
+  // post-redraw trunk these six records have no spineId to restore, which is
+  // exactly why they carry resolvedRef in the first place).
+  const regionsPath = join(contentRoot, "story/regions.json");
+  const regions = JSON.parse(readFileSync(regionsPath, "utf8"));
+  // The six movement-2 re-homes carry NO spineId (their hosts are retired by
+  // the redraw), so dropping their resolvedRef leaves them keyless — they are
+  // dropped here rather than faked back onto nodes that will not exist.
+  const keyless = new Set();
+  for (const r of regions) {
+    if (r.resolvedRef) { delete r.resolvedRef; if (!r.spineId) keyless.add(r.id); }
+  }
+  writeFileSync(regionsPath, JSON.stringify(regions.filter((r) => !keyless.has(r.id)), null, 2));
+  // Same for the bestiary half of ruling 7b's re-homes: rows citing a
+  // GENERATED region id (c02/r11) name the world document too. Re-point them
+  // at "thornveil", an alias anchor whose spine node exists both pre- and
+  // post-redraw, so the fixture cites nothing outside its own spine.
+  // …and the same for ruling 7a's bare-slug rows (cindervast, embervale,
+  // gildmark, norhollow, rooktide): those towns are RESOLVED-world pins on the
+  // post-redraw trunk, so they too name the world document this root removed.
+  // Every row that does not resolve against the spine alone is re-pointed at
+  // "thornveil" for the same reason the c02/r11 rows are.
+  const bestiaryPath = join(contentRoot, "bestiary/bestiary.json");
+  const beasts = JSON.parse(readFileSync(bestiaryPath, "utf8"));
+  const spineHosted = new Set(["thornveil", "northern-icefield", "millcross", "spawn-meadow"]);
+  for (const b of beasts)
+    if (b && b.region && !spineHosted.has(b.region)) b.region = "thornveil";
+  writeFileSync(bestiaryPath, JSON.stringify(beasts, null, 2));
+  const edgesPath = join(contentRoot, "spine/edges.json");
+  const edges = JSON.parse(readFileSync(edgesPath, "utf8"));
+  writeFileSync(edgesPath, JSON.stringify(edges.filter((e) => e.kind !== "leg"), null, 2));
   const r = runGate(contentRoot);
   assert.equal(r.code, 0, r.out);
   assert.doesNotMatch(r.out, /G-LANDFORM|G-SHEET-BUDGET|world-budget/);

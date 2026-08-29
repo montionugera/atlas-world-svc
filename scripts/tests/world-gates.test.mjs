@@ -407,6 +407,11 @@ test("checkWorld cannot change the exit code of a pre-existing spine fixture", (
   const roots = readdirSync(spineFix, { withFileTypes: true }).filter((e) => e.isDirectory());
   assert.ok(roots.length > 0, "no spine fixtures found — this test would pass vacuously");
   for (const e of roots) {
+    // Plan E (E-C3) fabric overlays carry a world/ dir on purpose — the
+    // "no world/" premise below is exactly what they exist to break. Skip
+    // only roots that actually carry one: e-water-childless has none and
+    // must keep proving that a world-less root stays silent.
+    if (existsSync(join(spineFix, e.name, "world"))) continue;
     const r = runSpineGateInProcess({ argv: ["--only=spine", "--content-root", join(spineFix, e.name)] });
     assert.ok(!/world-budget:|G-WORLD-BUDGET|FAIL\s+world:/.test(r.out),
       `${e.name}: world gates spoke on a root with no world/: ${r.out}`);
@@ -902,7 +907,7 @@ test("G-SEALAND prints the TRUNK DIVERGENCE whenever there is a trunk to diverge
   // THE RATIOS FIRST, in the same unit as the band two lines above. n-c is an
   // 80x80 km polygon on a 160,000 km² frame, so the trunk reads 24.00 : 1 —
   // the shape of the committed chart's 24.63 : 1 — against the fabric's 1.50.
-  assert.match(r.out, /G-SEALAND: trunk 24\.00 : 1 vs fabric 1\.50 : 1 \(trunk land 6400\.0 km², fabric net land 64000\.0 km²\) — the trunk is redrawn in Plan E, not here/);
+  assert.match(r.out, /G-SEALAND: trunk 24\.00 : 1 vs fabric 1\.50 : 1 \(trunk land 6400\.0 km², fabric net land 64000\.0 km²\) — trunk and fabric are two measurements of the SAME redrawn world/);
 });
 
 test("…and OMITS it, rather than printing null, on a root with a fabric and no spine", () => {
@@ -999,13 +1004,24 @@ test("G-PROVENANCE's fabric pin is CONTINENT-only and does not fire on a hand-au
     node.provenance = { authored: "hand", generator: null, source: "fixture" };
   } });
   assert.doesNotMatch(runWorld(dir).out, /G-PROVENANCE: n-c/);
-  // …and the committed 44-node root has no `generated` node at all, which is
-  // why this rule is dormant there. If that ever stops being true the assertion
-  // below is what says so.
+  // The second half USED to assert that the committed root held no `generated`
+  // node at all — i.e. that this rule was dormant on the real tree. Plan E's
+  // redraw generated the trunk from the seed, so that premise is dead: the rule
+  // is LIVE on the real root now. Swapping the 0 for a 25 would pin a number
+  // and prove nothing, so what is asserted instead is the property the rule
+  // exists to enforce — every committed generated node carries the fabric pin
+  // that is G-TRUNK-AREA's activation key. That is strictly stronger than the
+  // dormancy claim it replaces, and it reds the moment a generated node ships
+  // without a pin (which is the failure the test above stages by hand).
   const nodes = readdirSync(join(ROOT, "content/spine/nodes"))
     .map((f) => JSON.parse(readFileSync(join(ROOT, "content/spine/nodes", f), "utf8")));
-  assert.equal(nodes.filter((n) => n.provenance?.authored === "generated").length, 0,
-    "a committed generated node would make G-PROVENANCE's fabric pin live on the real root");
+  const generated = nodes.filter((n) => n.provenance?.authored === "generated");
+  assert.ok(generated.length > 0,
+    "the committed trunk is generated since Plan E — if it is not, this rule went dormant again");
+  assert.deepEqual(
+    generated.filter((n) => !n.provenance?.generator?.fabric).map((n) => n.id), [],
+    "a committed generated node with no generator.fabric leaves G-TRUNK-AREA dormant on it",
+  );
 });
 
 // ── G-POI ──────────────────────────────────────────────────────────────────
@@ -1390,6 +1406,11 @@ test("NOT ONE of the five new gates speaks on a content root with no world/", ()
   const roots = readdirSync(spineFix, { withFileTypes: true }).filter((e) => e.isDirectory());
   assert.ok(roots.length > 0, "no spine fixtures found — this test would pass vacuously");
   for (const e of roots) {
+    // Plan E (E-C3) fabric overlays carry a world/ dir on purpose — the
+    // "no world/" premise below is exactly what they exist to break. Skip
+    // only roots that actually carry one: e-water-childless has none and
+    // must keep proving that a world-less root stays silent.
+    if (existsSync(join(spineFix, e.name, "world"))) continue;
     const r = runSpineGateInProcess({ argv: ["--only=spine", "--content-root", join(spineFix, e.name)] });
     assert.ok(!/G-SEALAND|G-TRUNK-AREA|G-POI:|G-ORDER:|G-POLY: \d+ area/.test(r.out),
       `${e.name}: a world gate spoke on a root with no world/: ${r.out}`);

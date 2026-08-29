@@ -682,7 +682,10 @@ test("G-ALIAS playspace half: region-<slug> resolves to n-site-<slug> and prints
 });
 
 test("G-SPINE-COMPLETE: childless trunk tiers fail; childless region/sea/ocean only warn (Gate 2 must stay green)", () => {
-  assert.deepEqual([...TRUNK_TIERS].sort(), ["continent", "playroot", "playspace", "world"]);
+  // Plan E (E-C2): ocean and sea join TRUNK_TIERS, paired with the WATER_TIERS
+  // skip inside checkSpineComplete — a childless water node is complete.
+  assert.deepEqual([...TRUNK_TIERS].sort(),
+    ["continent", "ocean", "playroot", "playspace", "sea", "world"]);
   // childless playspace -> error
   const t1 = runtimeTree((ns) => { ns.splice(2, 1); }); // drop the site: n-shelf is now childless
   const r1 = checkSpineComplete({ tree: t1 });

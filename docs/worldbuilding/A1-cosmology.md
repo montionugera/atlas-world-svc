@@ -98,11 +98,11 @@ before this document existed.
 | --- | --- |
 | **C1** | The Last King took an **ancient weapon** from the palace vault (`core-story.md:40`). Ancient *to whom*, and made *by whom*, had no answer. Now it does. |
 | **C2** | Why exactly one class of weapon like this exists, with no rival, no second example and no industry around it. |
-| **C3** | `canon.md:400` — *"War-scar monsters are Void-line"* — and `A0:278`, where void is the most-used element in the whole corpus and is **concentrated on the war ground**. Void was already behaving like a by-product of battle. This names the mechanism it was already obeying. |
+| **C3** | `canon.md §5 "The elements"` — *"War-scar monsters are Void-line"* — and `A0:278`, where void is the most-used element in the whole corpus and is **concentrated on the war ground**. Void was already behaving like a by-product of battle. This names the mechanism it was already obeying. |
 | **C4** | `A0` **G2** — the world's memory is about a hundred years deep and nothing older is mentioned anywhere. The shallowness stops being an oversight and becomes the scar. |
 | **C5** | `canon.md` §4 — the Bellfaith owns the news, the proclamation and the seal. Its authority now has a **history**: it did not become powerful by being holy. It became powerful by being first to write things down and vouch for them. |
 | **C6** | Act 4's entire stake. The relic sale is the most consequential transaction in the world because supply is fixed at whatever survived — `event-relic-deal-struck`, `event-relic-sale-stopped`. |
-| **C7** | `canon.md:346` — magic is cheap, ordinary, no shortage, no black market. Left exactly as it was. |
+| **C7** | `canon.md §5 "The magic model"` — magic is cheap, ordinary, no shortage, no black market. Left exactly as it was. |
 
 ---
 
@@ -140,7 +140,7 @@ This is a line item, and it is argued over in council alongside the walls.
 he leaves on the road is what he fights next year. Gravedigging is a paid trade with a wartime
 surge price, and the first thing a town short of coin tries to cut.
 
-**Ashvale Front is the one thing the two towns cooperate on.** `canon.md:188-189` already says
+**Ashvale Front is the one thing the two towns cooperate on.** `canon.md §4 "Geography & trade logic"` already says
 *"neither town claims it, both bury their dead in it."* That was read as a truce gesture. It is
 not. It is <mark>both towns paying into the same defence</mark>, and neither has ever said so out
 loud.
@@ -180,7 +180,7 @@ something valuable and do not know it — they think they are keeping a habit.
   how it works, and §8 forbids answering that. Naming a weakness here to satisfy the cost rule
   would trade a soft note for a hard self-contradiction. The cost is stated instead in what using
   one destroys.
-- **Void cannot be cured, only answered.** Holy counters it (`canon.md:428`); burial prevents it.
+- **Void cannot be cured, only answered.** Holy counters it (`canon.md §5 "The elements"`); burial prevents it.
   Neither undoes it. Ground that has held unburied dead stays Void-line, and stays that way.
 - **The Bellfaith's authority has an expiry it cannot admit.** The count began when somebody chose
   to start writing. It is arbitrary. The tower knows the first sealed record is not the first

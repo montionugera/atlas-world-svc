@@ -2,438 +2,327 @@
   "id": "n-cluster1",
   "tier": "continent",
   "parentId": "n-atlas",
-  "title": "Cluster 1 — the Meltwash basin",
+  "title": "Wealdmarch",
   "provenance": {
-    "authored": "hand",
-    "generator": null,
-    "source": "content/maps/cluster1-geography.json"
+    "authored": "generated",
+    "generator": {
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/continent-02.json"
+    },
+    "source": "content/world/premises/continent-02.json"
   },
   "frozen": true,
-  "absoluteAnchor": [15, 19],
+  "absoluteAnchor": [75.75, 152.75],
   "seed": {
-    "value": "3f8a1c5d9e2b7406",
+    "value": "1b3b95ff748b6142",
     "epoch": 0,
     "why": null
   },
   "placement": {
     "shape": "polygon",
     "points": [
-      [30, 0],
-      [30, 38],
-      [13.2, 38],
-      [10.4, 37.8],
-      [7.6, 37.2],
-      [4.8, 36.4],
-      [2.8, 35.4],
-      [0, 34.6],
-      [0, 28],
-      [2.4, 28],
-      [2.8, 26],
-      [2.6, 23.6],
-      [2.4, 20.8],
-      [2.4, 17.6],
-      [2.6, 14.4],
-      [2.8, 11.2],
-      [3, 8],
-      [3.4, 4.8],
-      [4, 2],
-      [4.8, 0]
+      [7, 154],
+      [8.5, 144],
+      [9, 144],
+      [9.5, 141],
+      [10, 141],
+      [10, 140],
+      [10.5, 140],
+      [10.5, 138.5],
+      [11, 138.5],
+      [12, 135.5],
+      [13, 135],
+      [13, 134],
+      [13.5, 134],
+      [13.5, 133],
+      [15, 132],
+      [15, 131],
+      [16.5, 130],
+      [16.5, 129],
+      [17, 129],
+      [17, 128.5],
+      [20.5, 125.5],
+      [20.5, 124.5],
+      [21, 124.5],
+      [22.5, 122.5],
+      [23.5, 122.5],
+      [27, 118.5],
+      [28.5, 118.5],
+      [28.5, 119],
+      [30, 119],
+      [30, 119.5],
+      [32.5, 119.5],
+      [32.5, 120],
+      [41, 120.5],
+      [41, 120],
+      [48, 119.5],
+      [48, 119],
+      [50, 119],
+      [50, 118.5],
+      [54.5, 117.5],
+      [54.5, 117],
+      [55.5, 117],
+      [55.5, 116.5],
+      [56.5, 116.5],
+      [56.5, 116],
+      [57.5, 116],
+      [57.5, 115.5],
+      [60.5, 114.5],
+      [61, 113.5],
+      [62, 113.5],
+      [62.5, 112.5],
+      [63.5, 112.5],
+      [65, 110.5],
+      [66, 110.5],
+      [66, 110],
+      [73, 103.5],
+      [73, 102.5],
+      [73.5, 102.5],
+      [73.5, 102],
+      [74.5, 101.5],
+      [74.5, 100.5],
+      [75, 100.5],
+      [84, 100.5],
+      [100, 103],
+      [112.5, 103.5],
+      [131.5, 109],
+      [149.5, 120],
+      [162, 138],
+      [163.5, 142],
+      [164.5, 152.5],
+      [161, 161],
+      [144, 175.5],
+      [128.5, 184],
+      [124.5, 185],
+      [119.5, 188],
+      [116, 188.5],
+      [116, 189],
+      [114.5, 189],
+      [114.5, 189.5],
+      [113, 189.5],
+      [97, 197],
+      [93, 200.5],
+      [93, 202],
+      [91.5, 202.5],
+      [79, 204],
+      [58.5, 208.5],
+      [47.5, 208.5],
+      [41.5, 207],
+      [33, 202],
+      [19, 188],
+      [13, 174]
     ],
-    "anchor": [15, 19]
+    "anchor": [75.75, 152.75]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [30, 38],
-    "originInParent": [0, 0]
+    "size": [157.5, 108],
+    "originInParent": [7, 100.5]
   },
   "composition": {
-    "meadow": 25,
-    "forest": 13.7,
-    "rock": 13.1,
-    "upland": 11.6,
-    "marsh": 10.4,
-    "river": 6.5,
-    "ice": 6.3,
-    "bramble": 5.9,
-    "alkali": 3,
-    "ash": 1.9,
-    "built": 1.4,
-    "ocean": 1.3
+    "meadow": 78.6,
+    "forest": 9.9,
+    "lake": 9.1,
+    "river": 1.9,
+    "marsh": 0.5
   },
   "interstitial": {
-    "meadow": 34,
-    "forest": 20,
-    "marsh": 12,
-    "rock": 12,
-    "upland": 10,
-    "river": 6,
-    "bramble": 6
+    "meadow": 78.6,
+    "forest": 9.9,
+    "lake": 9.1,
+    "river": 1.9,
+    "marsh": 0.5
   },
   "interstitialUnsurveyed": false,
   "compositionTolerance": null,
   "toleranceWhy": null,
+  "terrainKind": null,
   "features": [
     {
-      "id": "f-west-coast",
-      "kind": "line",
-      "points": [
-        [4.8, 0],
-        [4, 2],
-        [3.4, 4.8],
-        [3, 8],
-        [2.8, 11.2],
-        [2.6, 14.4],
-        [2.4, 17.6],
-        [2.4, 20.8],
-        [2.6, 23.6],
-        [2.8, 26],
-        [2.4, 28],
-        [1.8, 29.6],
-        [1.2, 31],
-        [1, 32.6],
-        [1.6, 34.2],
-        [2.8, 35.4],
-        [4.8, 36.4],
-        [7.6, 37.2],
-        [10.4, 37.8],
-        [13.2, 38]
-      ],
+      "id": "f-town-cindervast",
+      "kind": "point",
+      "at": [90.2, 131.4],
       "attrs": {
-        "note": "A1 §1: the basin silts its whole coast except one rock headland. The sea lies WEST of this line; the line runs north to south and then turns east along the Saltmire's seaward bar."
-      }
+        "name": "Cindervast",
+        "role": "hub",
+        "town": "c-town-cindervast"
+      },
+      "type": null
     },
     {
-      "id": "f-the-meltwash",
-      "kind": "line",
-      "points": [
-        [20.8, 6.8],
-        [20.4, 8.4],
-        [20, 10],
-        [19.6, 12],
-        [19.2, 14],
-        [18.8, 16.4],
-        [18.4, 18.8],
-        [18, 21.2],
-        [17.2, 23.6],
-        [17.6, 25.6],
-        [17.8, 28],
-        [17.6, 30.4],
-        [17.2, 32.6],
-        [16.8, 34.8],
-        [14.8, 35.2],
-        [12, 35.4],
-        [9.2, 35.2],
-        [6.4, 35],
-        [4, 34.8],
-        [1.8, 34.4]
-      ],
+      "id": "f-town-embervale",
+      "kind": "point",
+      "at": [89.7, 147.9],
       "attrs": {
-        "name": "the Meltwash",
-        "note": "A1 §3.1, four reaches. Rises under the icefield's south lip, runs south down the right-of-centre, then turns west at Rooktide and dies in the Saltmire.",
-        "reaches": [
-          {
-            "id": "the-heads",
-            "label": "the heads",
-            "character": "meltwater braids over gravel, milk-grey with rock flour",
-            "fromIndex": 0,
-            "toIndex": 2
-          },
-          {
-            "id": "upper-meltwash",
-            "label": "the upper Meltwash",
-            "character": "gravel-bedded; fordable by cart in exactly one place",
-            "fromIndex": 2,
-            "toIndex": 8
-          },
-          {
-            "id": "tidal-reach",
-            "label": "the tidal reach",
-            "character": "slows, widens, silts; the sea pushes up as far as Rooktide",
-            "fromIndex": 8,
-            "toIndex": 13
-          },
-          {
-            "id": "into-the-mire",
-            "label": "into the Saltmire",
-            "character": "the river stops being a river",
-            "fromIndex": 13,
-            "toIndex": 19
-          }
-        ],
-        "labelAt": [20.2, 11.6],
-        "tidalLimit": {
-          "at": [16.8, 34.8],
-          "label": "head of tide",
-          "note": "A1 §3.1 / §4.2 zone 3: the sea reaches Rooktide's landing and no further."
-        },
-        "ford": {
-          "at": [17.2, 23.6],
-          "label": "the ford",
-          "note": "A1 §7.1: the crossing is drawn as a ROAD symbol, not a town symbol — on a relay map it is infrastructure."
-        }
-      }
+        "name": "Embervale",
+        "role": "hub",
+        "town": "c-town-embervale"
+      },
+      "type": null
     },
     {
-      "id": "f-northern-ice-edge",
-      "kind": "line",
-      "points": [
-        [12.4, 5.2],
-        [15.2, 6],
-        [18.4, 6.6],
-        [21.6, 7.2],
-        [24.8, 6.4],
-        [27.6, 5.6],
-        [29.6, 4.4]
-      ],
+      "id": "f-town-gildmark",
+      "kind": "point",
+      "at": [83.2, 160.4],
       "attrs": {
-        "note": "A1 §7.2 / A1-ART-01: the parchment ends at a hard edge along the top. The map does not pretend to know what lies past the ice; this is a sheet boundary, not a coastline.",
-        "hardEdgeAtY": 0
-      }
+        "name": "Gildmark",
+        "role": "capital",
+        "town": "c-town-gildmark"
+      },
+      "type": null
     },
     {
-      "id": "f-tower-01",
+      "id": "f-town-millcross",
       "kind": "point",
-      "at": [2.2, 31.4],
+      "at": [98.2, 152.6],
       "attrs": {
-        "town": "gildmark"
-      }
+        "name": "Millcross",
+        "role": "hub",
+        "town": "c-town-millcross"
+      },
+      "type": null
     },
     {
-      "id": "f-tower-02",
+      "id": "f-town-norhollow",
       "kind": "point",
-      "at": [3.2, 30.2],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-03",
-      "kind": "point",
-      "at": [3.9, 28.8],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-04",
-      "kind": "point",
-      "at": [4.6, 27.3],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-05",
-      "kind": "point",
-      "at": [5.5, 26],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-06",
-      "kind": "point",
-      "at": [5.9, 24.4],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-07",
-      "kind": "point",
-      "at": [6.7, 23.1],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-08",
-      "kind": "point",
-      "at": [7.4, 21.7],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-09",
-      "kind": "point",
-      "at": [7.9, 20.2],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-10",
-      "kind": "point",
-      "at": [8.8, 18.8],
+      "at": [96.8, 147.7],
       "attrs": {
-        "town": "embervale"
-      }
+        "name": "Norhollow",
+        "role": "hub",
+        "town": "c-town-norhollow"
+      },
+      "type": null
     },
     {
-      "id": "f-tower-11",
+      "id": "f-town-rooktide",
       "kind": "point",
-      "at": [10.3, 19.4],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-12",
-      "kind": "point",
-      "at": [11.8, 20.1],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-13",
-      "kind": "point",
-      "at": [13.2, 20.9],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-14",
-      "kind": "point",
-      "at": [14.4, 22],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-15",
-      "kind": "point",
-      "at": [15.9, 22.6],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-16",
-      "kind": "point",
-      "at": [17.2, 23.6],
+      "at": [94.5, 162.5],
       "attrs": {
-        "town": "millcross"
-      }
+        "name": "Rooktide",
+        "role": "hub",
+        "town": "c-town-rooktide"
+      },
+      "type": null
     },
     {
-      "id": "f-tower-17",
+      "id": "f-town-c02-s01",
       "kind": "point",
-      "at": [18.1, 25],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-18",
-      "kind": "point",
-      "at": [18.6, 26.6],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-19",
-      "kind": "point",
-      "at": [18.7, 28.3],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-20",
-      "kind": "point",
-      "at": [18.6, 30],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-21",
-      "kind": "point",
-      "at": [18.2, 31.7],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-22",
-      "kind": "point",
-      "at": [17.6, 33.3],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-23",
-      "kind": "point",
-      "at": [16.8, 34.8],
+      "at": [9.25, 160.25],
       "attrs": {
-        "town": "rooktide"
-      }
+        "name": null,
+        "role": "village",
+        "town": "c02/s01"
+      },
+      "type": null
     },
     {
-      "id": "f-tower-24",
+      "id": "f-town-c02-s02",
       "kind": "point",
-      "at": [10.3, 18.2],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-25",
-      "kind": "point",
-      "at": [11.8, 18],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-26",
-      "kind": "point",
-      "at": [13.4, 18.2],
-      "attrs": {}
-    },
-    {
-      "id": "f-tower-27",
-      "kind": "point",
-      "at": [14.8, 18.8],
+      "at": [10.75, 151.25],
       "attrs": {
-        "town": "norhollow"
-      }
+        "name": null,
+        "role": "village",
+        "town": "c02/s02"
+      },
+      "type": null
     },
     {
-      "id": "f-tower-cindervast",
+      "id": "f-town-c02-s03",
       "kind": "point",
-      "at": [9.2, 2.4],
+      "at": [84.75, 201.25],
       "attrs": {
-        "town": "cindervast",
-        "detached": true,
-        "note": "A1 §7.2: the Bellfaith has no tower at Cindervast and will not draw a city it does not ring — the six-town count is towns, not standing towers. Drawn hollow, unjoined."
-      }
+        "name": null,
+        "role": "village",
+        "town": "c02/s03"
+      },
+      "type": null
     },
     {
-      "id": "f-ashvale-road-head",
+      "id": "f-town-c02-s04",
       "kind": "point",
-      "at": [13.2, 17.6],
+      "at": [148.25, 125.75],
       "attrs": {
-        "role": "road-head"
-      }
+        "name": null,
+        "role": "village",
+        "town": "c02/s04"
+      },
+      "type": null
     },
     {
-      "id": "f-cindervast-approach-end",
+      "id": "f-town-c02-s05",
       "kind": "point",
-      "at": [9.2, 3.6],
+      "at": [83.25, 104.75],
       "attrs": {
-        "role": "road-head"
-      }
+        "name": null,
+        "role": "village",
+        "town": "c02/s05"
+      },
+      "type": null
     },
     {
-      "id": "f-ice-road-head",
+      "id": "f-town-c02-s06",
       "kind": "point",
-      "at": [21.4, 7.2],
+      "at": [139.75, 122.75],
       "attrs": {
-        "role": "road-head"
-      }
+        "name": null,
+        "role": "village",
+        "town": "c02/s06"
+      },
+      "type": null
     },
     {
-      "id": "f-trade-wind-far",
+      "id": "f-town-c02-s07",
       "kind": "point",
-      "at": [-1.2, 29.6],
-      "offSheet": true,
+      "at": [83.25, 114.25],
       "attrs": {
-        "role": "sea-lane-far-end"
-      }
+        "name": null,
+        "role": "village",
+        "town": "c02/s07"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c02-s08",
+      "kind": "point",
+      "at": [70.75, 111.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c02/s08"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c02-s09",
+      "kind": "point",
+      "at": [81.25, 192.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c02/s09"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c02-s10",
+      "kind": "point",
+      "at": [68.25, 181.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c02/s10"
+      },
+      "type": null
     }
   ],
   "bands": [],
-  "runtime": {
-    "mapIds": [],
-    "originU": null,
-    "spawnAreas": [],
-    "mobSettings": null,
-    "seedDemoNPCs": false,
-    "collision": "none"
-  },
+  "runtime": null,
   "representsNodeId": null,
   "lore": {
-    "relay": {
-      "note": "A1 §5.2: ~190 km of ridge-line and road, towers sited for line of sight at 8–10 km spacing → 21–24 relay towers, plus one tower in each of the six towns. A1 §7.1 calls the tower chain the map's actual subject, so it carries the sheet's single accent colour (bell-bronze).",
-      "spacingKm": 8,
-      "owner": "the Bellfaith",
-      "derivation": "Towers were sampled at even intervals along the spine (Gildmark → Embervale → Millcross → Rooktide, 182 km — A1's '~190 km of ridge-line and road') and along the flat crossing, then frozen here as explicit coordinates. Sight-line spans are 7.8–8.4 km, inside A1 §5.2's 8–10 km line-of-sight budget. 27 towers are drawn: 22 on the ridgelines and roads (A1 says 21–24) plus 5 town towers. Cindervast has none — A1 §7.2: the Bellfaith will not draw a city it does not ring.",
-      "withheld": "A1 §7.2: the far-mirror stations sit on these same ridgelines and are deliberately NOT drawn — a Bellfaith map will not publish a Gildmark monopoly it cannot regulate.",
-      "amendedPending": "AMENDED-PENDING (I-095): note/derivation above cite pre-F-045 absolute km (190 km ridge-line, 8–10 km tower spacing, 182 km spine, 7.8–8.4 km sight-line spans) — the actual tower coordinates already sit on the rescaled 400 km world; this prose re-voice is deferred."
-    },
-    "distances": {
-      "paceKmPerDay": 30,
-      "paceKmPerHour": 11,
-      "drawnRoadsAreCentrelines": "roads[].points is a simplified centre-line, so its measured length runs 0–15% short of roads[].roadKm (A1 §5.1's surveyed figure). The day-counts lettered on the sheet come from roadKm/days, never from the drawn length.",
-      "note": "A1 §5.1. `straightKm` is the Cartographer's figure; `computedKm` is what this file's own coordinates give, and `deltaPct` is the residual. A1 §5.3: the world preserves topology, not metric distance.",
-      "amendedPending": "AMENDED-PENDING (I-095): paceKmPerDay, drawnRoadsAreCentrelines and note above describe the pre-F-045 day-count travel model — distances are now hour-scale on the 400 km world (paceKmPerHour: 11). Prose re-voice deferred."
-    }
+    "summary": "a landmass built around an inland sea — the Meltwash feeds it and no channel carries it out to the ocean; the surveyed basin sits on its shore."
   },
   "tags": [],
-  "levelBand": null
+  "levelBand": [1, 40]
 }

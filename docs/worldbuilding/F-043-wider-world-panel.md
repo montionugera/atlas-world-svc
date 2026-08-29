@@ -68,7 +68,7 @@ Every final name was checked against style.md §2 (terse two-noun compound, no t
 | 1 | `e-lane-coldreach` drops the "once a year" frequency | label/note must state SAME once-a-year voyage, not a second service | **applied-here** — edge label/note rewritten |
 | 2 | pass shut by a dead city — no candidate touches it | no amendment | **applied-here** (no-op, confirmed) |
 | 3 | V8 "sister towns have neither ships nor ports" | V8 row stays untouched; canon.md gains a bullet | **routed-to-Task-7** (canon.md edit) |
-| 4 | canon.md:212 "only deepwater port on this coast" | none, wording survives | **applied-here** (no-op, confirmed — foreign ports are on other coasts) |
+| 4 | `canon.md §4 "Geography & trade logic"` "only deepwater port on this coast" | none, wording survives | **applied-here** (no-op, confirmed — foreign ports are on other coasts) |
 | 5 | A0:402 G18 "nothing is named..." | G18 row gains PARTIALLY RESOLVED marker | **routed-to-Task-7** (A0-current-world.md edit) |
 | 6 | A0:464 "nothing beyond that sentence has been spent" | append marker + clarifier line | **routed-to-Task-7** (A0-current-world.md edit) |
 | 7 | A1:445-446 "map ends where the ice starts moving" | trailing clarifier on A1 | **routed-to-Task-7** (A1-geography-cluster1.md edit) |

@@ -1,0 +1,56 @@
+{
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "fixture"
+  },
+  "frozen": false,
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": true,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {},
+  "tags": [],
+  "levelBand": null,
+  "id": "n-w",
+  "tier": "world",
+  "parentId": null,
+  "title": "W",
+  "seed": {
+    "value": "70e11e3d1b50810c",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "rect",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "w": 100,
+      "h": 100
+    },
+    "anchor": [
+      50,
+      50
+    ]
+  },
+  "composition": {
+    "ocean": 98.0,
+    "built": 2.0
+  }
+}

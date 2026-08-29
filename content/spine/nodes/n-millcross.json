@@ -1,7 +1,7 @@
 {
   "id": "n-millcross",
   "tier": "town",
-  "parentId": "n-millcross-ford",
+  "parentId": "n-cluster1",
   "title": "Millcross",
   "provenance": {
     "authored": "hand",
@@ -9,7 +9,7 @@
     "source": "content/maps/cluster1-geography.json"
   },
   "frozen": true,
-  "absoluteAnchor": [17.2, 23.6],
+  "absoluteAnchor": [98.2, 152.6],
   "seed": {
     "value": "dbcf5119861b0417",
     "epoch": 0,
@@ -18,18 +18,18 @@
   "placement": {
     "shape": "rect",
     "rect": {
-      "x": 16.1,
-      "y": 22.8,
+      "x": 97.1,
+      "y": 151.8,
       "w": 2.2,
       "h": 1.6
     },
-    "anchor": [17.2, 23.6]
+    "anchor": [98.2, 152.6]
   },
   "interior": {
     "units": "u",
     "perParentUnit": 100,
     "size": [220, 160],
-    "originInParent": [16.099999999999998, 22.8],
+    "originInParent": [97.10000000000001, 151.79999999999998],
     "anchorInInterior": [110, 80]
   },
   "composition": {

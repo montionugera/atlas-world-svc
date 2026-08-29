@@ -1,0 +1,48 @@
+{
+  "zone": "alderlow-head",
+  "region": "c09/r03",
+  "survey": "surveyed",
+  "reasonToGo": "The only ground on Brightfall anyone has walked, and the only surveyed region in the whole world with a hand-pinned canon place standing on it — one of forty. The Leap is why hulls know the isle at all. What a party comes ashore for is behind it: the cloud forest, which is the majority of this region and the only forest on the isle that is not overtopped by bare rock, and the broken rock the massif drops down the talus into reach.",
+  "hazards": [
+    {
+      "id": "the-cloud-on-the-slope",
+      "name": "The cloud on the slope",
+      "description": "The forest sits in cloud most days and the cloud sits on the ground, not above it. Visibility on the slope goes to a few paces without warning and comes back the same way, and the fall is a short walk from the working faces.",
+      "effect": "stun"
+    },
+    {
+      "id": "the-talus",
+      "name": "The talus",
+      "description": "The cone below the massif is loose the whole way up and it is also the easiest line to the exposures, so it is climbed anyway. What is standing on it at any moment is what has not yet gone down it.",
+      "effect": "damage"
+    }
+  ],
+  "resources": [
+    {
+      "id": "cloud-forest-timber",
+      "name": "Cloud-forest timber",
+      "kind": "timber",
+      "description": "Felled in the wet wood that covers over half this region — the only ground on Brightfall where forest is the majority, the isle's other two regions being four-fifths and half bare rock. It is heavy with water when it is cut and it is worked where it falls, because the ground below the wood is talus and nothing is dragged down it."
+    },
+    {
+      "id": "talus-stone",
+      "name": "Talus stone",
+      "kind": "stone",
+      "description": "Taken off the cone rather than cut out of the massif above it: near a third of this region is bare rock and the mountain sheds enough of itself each winter to keep a crew supplied without anybody putting a tool to the face. It is squared on the spot and carried down in loads a man can lift."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "brightfall-leap",
+      "name": "Brightfall Leap",
+      "description": "White water leaving the rock clear of the face and reaching the sea without touching it. The chain is named off it, and every account of it that reached a chart came by fog-sight or wreck-report; this is the first ground under it anyone has stood on. It is the only canon place in the world that stands on ground the survey has walked.",
+      "source": "content/world/civil/pinned/c-lm-brightfall-leap.json"
+    },
+    {
+      "id": "geo-between-sedgestrand",
+      "name": "Geo between Sedgestrand",
+      "description": "The cleft below the wood, with the lagoon inside the bar behind it and the drowned valley running in past the one stack. It is the landing. Everything cut on this region goes out through it, down off the talus and onto the water in one carry.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}
