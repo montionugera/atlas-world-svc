@@ -293,16 +293,21 @@ test("A1 §6: 'one tall thing, the mill-wheel housing over the race'", () => {
   }
 });
 
-test("A1 §6: the tents that grew plank walls are on the EAST bank", () => {
+test("A1 §6 (amended 2026-08-29): no tent quarter — the east bank carries solid buildings", () => {
   const river = water("the-meltwash");
   const eastOfRiver = Math.max(...river.poly.map(([x]) => x));
   const tents = PLAN.footprints.filter((f) => f.kind === "tent");
-  assert.ok(tents.length > 0, "the plank-and-tent quarter is missing");
-  for (const t of tents) {
-    assert.ok(
-      Math.min(t.rect[0], t.rect[2]) > eastOfRiver,
-      `${t.id} is not on the east bank (river reaches x=${eastOfRiver})`
-    );
+  assert.equal(
+    tents.length,
+    0,
+    "the tent quarter was removed from town truth (owner decision 2026-08-29)"
+  );
+  const eastBank = PLAN.footprints.filter(
+    (f) => Math.min(f.rect[0], f.rect[2]) > eastOfRiver
+  );
+  assert.ok(eastBank.length > 0, "the east bank carries no buildings at all");
+  for (const b of eastBank) {
+    assert.notEqual(b.kind, "tent", `${b.id} is a tent`);
   }
 });
 

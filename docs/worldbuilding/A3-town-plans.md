@@ -313,7 +313,7 @@ gameConfig.ts:14:  worldHeight: 1000,
 | `footprints[].rect` shorter side | **≥ 6** | a building narrower than a mob is standing next to reads as a prop, not a mass. |
 
 Millcross sits **above** every floor, deliberately: cart roads at **14, 14, 12, 12**; foot roads at
-**6, 6**; extent **220 × 160**.
+**6**; extent **220 × 160**.
 
 ### 1.3 The counter-intuitive fact, stated plainly
 
@@ -414,8 +414,8 @@ of the file is authored, and this is the honest half of the table:
 | `anchor.geographyAt` | `[86, 118]` | **CANON** — copied from `towns[millcross].at` |
 | `water[].poly` | 2 polygons, **8 vertices** total | INVENTED |
 | `roads[].points` | 5 polylines, **17 vertices** total | INVENTED |
-| `roads[].width` | cart `14, 14, 12, 12` · foot `6, 6` | INVENTED — the **floors** (12 / 4) are design §3; every value above them is chosen |
-| `roads[].kind` | 4 `cart`, 2 `foot` | INVENTED (the enum is schema; the assignment is authored) |
+| `roads[].width` | cart `14, 14, 12, 12` · foot `6` | INVENTED — the **floors** (12 / 4) are design §3; every value above them is chosen |
+| `roads[].kind` | 4 `cart`, 1 `foot` | INVENTED (the enum is schema; the assignment is authored) |
 | `footprints[].rect` | **11** rects | INVENTED |
 | `footprints[].kind` | `mill`, `store`, `stable`, `dwelling` in use | mostly INVENTED; `mill` is canon-forced by §2; `tent` was removed from the schema enum and this plan with the quarter (owner decision 2026-08-29) |
 | `footprints[].storeys` | `2` on `mill-house`; `1` on the other **10** | **canon-forced values, authored fields** — A1 §6 says "everything else a single storey"; writing the number down is authoring |

@@ -24,7 +24,7 @@ function compile() {
 // Design §2's closed enums. NO T-rule owns either one, which is exactly why they
 // belong in the schema rather than in the gate.
 const ROAD_KINDS = ["cart", "foot"];
-const FOOTPRINT_KINDS = ["mill", "dwelling", "store", "stable", "shrine", "gate", "tent", "ruin"];
+const FOOTPRINT_KINDS = ["mill", "dwelling", "store", "stable", "shrine", "gate", "ruin"];
 
 // A plan that satisfies the SHAPE and nothing more. Its numbers are deliberately
 // NOT scale-contract-clean (see the shape-only tests below) — proving the floors
