@@ -79,6 +79,7 @@ import {
   checkTowerRelayAssertions,
   checkRetiredTowerPhrases,
   checkLegacyLandmarkCitations,
+  amendedFiles,
 } from "./lib/prose-audit.mjs";
 import { legacyPlaceholderRecords } from "./lib/zone-allocation.mjs";
 
@@ -446,13 +447,17 @@ function main() {
     // at all) must not have the LIVE repo's corpus leaking into what is
     // supposed to be a hermetic run, the same failure class the "Hermeticity"
     // comment on that fixture's own runGate() already guards against.
-    for (const p of checkAmendedPending({ repoRoot: ROOT })) fail(p);
+    // G-AMENDED and G-RETIRED-CLAIMS sweep the identical scope (content/ +
+    // docs/worldbuilding/, via amendedFiles()); computed once here so the two
+    // checks don't each re-walk the same few-hundred-file tree.
+    const proseScopeFiles = amendedFiles({ repoRoot: ROOT });
+    for (const p of checkAmendedPending({ repoRoot: ROOT, files: proseScopeFiles })) fail(p);
     for (const p of checkTowerRelayAssertions({ repoRoot: ROOT })) fail(p);
     // F1 (review, 2026-08-29): the corpus-wide half of the tower/relay
     // reconciliation — an explicit phrase list, not a bare word sweep (see
     // the comment on checkRetiredTowerPhrases for why a blanket sweep here
     // would force deleting legitimate per-town belfry prose).
-    for (const p of checkRetiredTowerPhrases({ repoRoot: ROOT })) fail(p);
+    for (const p of checkRetiredTowerPhrases({ repoRoot: ROOT, files: proseScopeFiles })) fail(p);
     // Scoped to the legacy ten (A4 §2's PLACEHOLDER set): the other derived
     // records all cite the generated A4-zone-allocation.md#5, which is
     // minted from the same landmark names and cannot drift from them the way
@@ -1132,12 +1137,14 @@ function checkBestiaryPlacement(opts) {
     // runs, exempt or not.
     const zone = zones.get(doc.zone);
     const exemptionReason = exemptions.get(doc.zone);
-    if (!zone && exemptionReason !== undefined) {
-      exemptionsUsed.add(doc.zone);
-      warn(`${label}: zone "${doc.zone}" not in content/world/resolved#zones — ruled void by content/bestiary/region-exemptions.json (R-B): ${exemptionReason}`);
-    } else if (!zone) {
-      fail(`${label}: zone "${doc.zone}" not in content/world/resolved#zones`);
-      continue; // every remaining rule is relative to the zone
+    if (!zone) {
+      if (exemptionReason !== undefined) {
+        exemptionsUsed.add(doc.zone);
+        warn(`${label}: zone "${doc.zone}" not in content/world/resolved#zones — ruled void by content/bestiary/region-exemptions.json (R-B): ${exemptionReason}`);
+      } else {
+        fail(`${label}: zone "${doc.zone}" not in content/world/resolved#zones`);
+        continue; // every remaining rule is relative to the zone
+      }
     } else {
       // G8 — the route band is the geography's band, asserted across files
       // rather than retyped from prose. Only meaningful when G1 resolved.

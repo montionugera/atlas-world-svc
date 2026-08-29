@@ -23,34 +23,16 @@
 //    landmark names by construction and cannot drift from them the way a
 //    hand-authored citation can.
 
-import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
-import { join, relative, dirname } from "node:path";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { join } from "node:path";
+// citations.mjs's CITE_SCOPE/citeFiles already walk this exact scope
+// (content/ + docs/worldbuilding/, repo-relative and sorted) for G-CITE —
+// reused rather than re-implemented so this module can't drift from that
+// walk's semantics (node_modules/dotfile skip, .md/.json extensions).
+import { CITE_SCOPE, citeFiles } from "./citations.mjs";
 
-const SWEEP_EXT = new Set([".md", ".json"]);
-
-function walk(dir, out) {
-  for (const name of readdirSync(dir).sort()) {
-    if (name === "node_modules" || name.startsWith(".")) continue;
-    const full = join(dir, name);
-    if (statSync(full).isDirectory()) walk(full, out);
-    else if (SWEEP_EXT.has(name.slice(name.lastIndexOf(".")))) out.push(full);
-  }
-  return out;
-}
-
-// Same scope Step 1's re-measurement command swept: content/ and
-// docs/worldbuilding/, repo-relative and sorted.
-export const AMENDED_SCOPE = Object.freeze(["content/", "docs/worldbuilding/"]);
-
-export function amendedFiles({ repoRoot }) {
-  const out = [];
-  for (const prefix of AMENDED_SCOPE) {
-    const dir = join(repoRoot, prefix);
-    if (!existsSync(dir)) continue; // soft-skip: fixture roots carry neither
-    walk(dir, out);
-  }
-  return out.map((f) => relative(repoRoot, f)).sort();
-}
+export const AMENDED_SCOPE = CITE_SCOPE;
+export const amendedFiles = citeFiles;
 
 /**
  * G-AMENDED. `files` null = sweep AMENDED_SCOPE under repoRoot. Pure text
