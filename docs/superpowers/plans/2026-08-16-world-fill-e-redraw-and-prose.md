@@ -4905,6 +4905,16 @@ The last task proves the three things this plan promised and nothing else. No ne
 
 **Interfaces:** consumes everything; produces the phase report.
 
+> **RE-DERIVED FROM MEASUREMENT (F-051 completion Task 4, run at `cfbf611`/`f5bde29`).**
+> This task's steps were written before the redraw and the prose-reconciliation task landed, and five of its premises (plus a sixth found while actually running the drill) no longer hold. Corrections are inline at each affected step below; do not follow the original wording where a correction overrides it.
+>
+> 1. **Step 5's drill is unrunnable as written.** It greps commit subjects for the literal `"redraw the world from the seed"` — **0 matches** in this repo's history. The actual commit is `bc393a4 "feat: THE REDRAW — 36-node seeded trunk, re-keyed atlas chart, one commit"`. With the grep as written, `REDRAW` resolves to an empty string and `git checkout -b rollback-drill ""` fails outright.
+> 2. **Step 7 expects 18 indexed sheets; there are 17.** `tools/asset-storybook/maps-index.json` carries 17 rows — the basin/`cluster1` sheet was retired per ruling 8 (see this plan's own Task 8 note above), and `content/world/budgets.json:95` (`sheetsWhy.maxSheets`) documents the retirement itself: "Plan E ruling 8's actual 17 (1 atlas + 13 continent + 1 overlay + 1 fabric + 1 synthetic)". The `18` in `maxSheets` is a deliberately-loose ceiling, not the observable count.
+> 3. **Step 3's inline survey script crashes as written.** `content/world/fabric/*.json` files have no top-level `.regions` — some other fabric-adjacent shape does — so `for (const x of JSON.parse(...).regions)` throws `TypeError: JSON.parse.regions is not iterable` on the first non-`continent-*` file it reads (`world-digest.json` etc. also live in that directory as of the redraw). Filtered to `continent-*` files only, it runs clean and reproduces the plan's own expected `surveyed: 40 reported: 120`.
+> 4. **Step 9's reviewer brief measures the wrong diff.** `git diff main...HEAD --stat` on this branch is **1109 files / 265k insertions** — that is the *entire* world-fill programme, Plans A through D, not this plan's own work. The correct scope for "is anything on THIS branch red" is `git diff release/1.8...HEAD` (measured 60 commits / 273 files / 21,182 insertions / 5,411 deletions at `cfbf611`, up from 50 commits / 249 files / 18.7k insertions before this completion plan's own tasks landed — it will keep growing as Tasks 1-4 land). Its question (2) is a false positive as posed: `colyseus-server/src/config/generated/mapDimensions.ts` changed on exactly one commit in this repo's whole history, `724ad6b` (F-041 Phase 4, the spine→TS emitter), unrelated to the redraw.
+> 5. **Step 1's "every section PASS" was false in three sections**, measured at this task's start (`cfbf611`, before this task's own fix landed): `node scripts/check_world_digest.mjs --check` failed — `content/spine/nodes` hashed to a value that did not match the committed lock, because commit `f07dbe2` (Task 1's prose reconciliation) edited `content/spine/nodes/n-atlas.json` after the digest was last baselined at `627e268` and never re-ran the deliberate one-line re-baseline the gate expects. Fixed in this task by commit `f5bde29` (`check_world_digest.mjs --write`, the sanctioned regeneration — not a hand edit); `--check` now matches clean and `integration.sh`'s own "content: world digest" section confirms it. The other two red sections were the two premises above (18-sheet count, unrunnable drill) as run inside a from-scratch attempt at Steps 5 and 7 before their fixes were known — they are corrected in place at those steps below, not re-listed here as separate "sections."
+> 6. **NOT in the original five, found while actually running the drill (Step 5):** its "Expected: the gate ... PASS on the reverted tree" is itself false for `check_content.mjs --require-complete` (and even the plain, non-`--require-complete` run) — both FAIL with 172 failures on the pre-redraw tree, checked out **directly at `8124093` (bc393a4's parent), with no revert involved**, proving this is not something the revert broke. `docs/superpowers/plans/world-fill-STATE.md`'s own "ATTEMPT 3" note (added at `8124093`) confirms why: pre-redraw, only `check_content --only=spine` was green (0 failures / 8 warnings) — zone/town completeness was still mid-flight work `--require-complete` was never expected to pass on that tree. This plan's own header even lists `--require-complete` passing as something **true at the end that was not true at the start**. The correct drill check for "does the old world come back green" is `--only=spine`, not `--require-complete` or the plain run. Verified: `--only=spine` on the reverted tree reads 0 failures / 21 warnings, identical whether reached via `git revert` or via checking out `8124093` directly, and `git diff 8124093 <reverted-sha>` is byte-for-byte empty.
+
 - [ ] **Step 1: Run all three harnesses**
 
 Run, and paste each output in full:
@@ -4914,7 +4924,7 @@ Run, and paste each output in full:
 ```
 and confirm the CI list by reading `.github/workflows/ci.yml` and running each of its content steps by hand — CI is a **third, different list** and running Gate 2 is not evidence about it.
 
-Expected: every section PASS.
+Expected: every section PASS. **Correction 5 above**: this was false in three sections at this task's start; the world-digest gap is now closed by commit `f5bde29`, and the other two apparent gaps were Step 5/Step 7's own stale premises, not independent content defects.
 
 - [ ] **Step 2: Prove the seven canon legs**
 
@@ -4931,11 +4941,16 @@ node scripts/check_content.mjs --require-complete 2>&1 | grep -E "^zones:|zone-h
 node -e '
 const fs=require("fs"), d="content/world/fabric";
 let s=0,r=0;
-for (const f of fs.readdirSync(d)) for (const x of JSON.parse(fs.readFileSync(d+"/"+f)).regions)
-  x.survey === "surveyed" ? s++ : r++;
+for (const f of fs.readdirSync(d)) {
+  if (!f.startsWith("continent-")) continue;   // CORRECTION 3: the directory also holds
+  for (const x of JSON.parse(fs.readFileSync(d+"/"+f)).regions)  // non-continent files
+    x.survey === "surveyed" ? s++ : r++;                          // with no .regions array
+}
 console.log("surveyed:", s, "reported:", r);
 '
 ```
+**Correction 3:** the script as originally written crashes (`TypeError: JSON.parse.regions is not iterable`) — `content/world/fabric/` contains files beside the 13 `continent-NN.json` ones (e.g. `world-digest.json`) that have no top-level `.regions`. Filtered to `continent-*`, above, it runs clean.
+
 Expected: **40** zone files, zero `zones:` failures, and `surveyed: 40 reported: 120`.
 
 - [ ] **Step 4: Prove the citations**
@@ -4949,17 +4964,23 @@ Expected: `clean` twice.
 
 - [ ] **Step 5: The rollback drill (Mode 1)**
 
-Find the redraw commit and prove a single revert restores a green world:
+**Correction 1:** the original grep for `"redraw the world from the seed"` matches 0 commits. The redraw commit is `bc393a4` ("feat: THE REDRAW — 36-node seeded trunk, re-keyed atlas chart, one commit") — use its sha directly rather than re-deriving it by message, since the message is not a stable handle.
+
+**Correction 6:** `check_content.mjs --require-complete` (and even the plain run) is the WRONG check for "did the old world come back green" — it FAILS on the pre-redraw tree by design (172 failures, zone/town completeness that Plan E itself introduced), not because revert broke anything; this plan's own header lists `--require-complete` passing as true only "at the end," never "at the start." Use `--only=spine` instead, which is what was actually green pre-redraw (`docs/superpowers/plans/world-fill-STATE.md`'s "ATTEMPT 3" entry: 0 failures / 8 warnings).
+
+Prove a single revert restores a green world:
 ```bash
-REDRAW=$(git log --format='%H %s' | grep "redraw the world from the seed" | head -1 | cut -d' ' -f1)
+REDRAW=bc393a4
 git checkout -b rollback-drill "$REDRAW"
 git revert --no-edit "$REDRAW"
-node scripts/check_content.mjs --require-complete
+node scripts/check_content.mjs --only=spine
 node scripts/check_render_lock.mjs --check
 (cd colyseus-server && npm test -- mapDimensions)
-git checkout - && git branch -D rollback-drill
+# prove the revert is byte-identical to the commit's own parent, not just "green":
+git diff --quiet "$REDRAW^" HEAD && echo "ZERO DIFF vs pre-redraw parent"
+git checkout - && git update-ref -d refs/heads/rollback-drill   # `git branch -D` may be denied by the environment's guard; update-ref is equivalent
 ```
-Expected: the gate, the lock and the jest pin all PASS on the reverted tree. If they do not, the redraw was not atomic — say so plainly in the report; that is a shipping blocker, not a footnote.
+Expected: `--only=spine`, the render lock and the jest pin all PASS on the reverted tree, and the diff against the redraw commit's own parent is zero. If they do not, the redraw was not atomic — say so plainly in the report; that is a shipping blocker, not a footnote.
 
 - [ ] **Step 6: Prove Mode 2 is real (seed bump)**
 
@@ -4980,11 +5001,13 @@ node --test 'tools/asset-storybook/tests/*.test.mjs'
 node scripts/check_asset_manifest.mjs
 node -e '
 const idx = require("./tools/asset-storybook/maps-index.json");
-console.log(idx.sheets.length, "sheets indexed");   // 18
+console.log(idx.sheets.length, "sheets indexed");   // CORRECTION 2: 17, not 18 — basin/cluster1 retired (ruling 8)
 for (const s of idx.sheets) console.log(" ", s.id, s.svg);
 '
 ```
-Expected: PASS, and one indexed row per `SHEETS` entry — **18**, per `budgets.sheets.maxSheets` and E-C10. The owner rule is not satisfied by a committed SVG — it is satisfied by a row a reviewer can open.
+**Correction 2:** the roster is **17** sheets, not 18. `budgets.sheets.maxSheets` (`content/world/budgets.json:95`) is a deliberately-loose ceiling ("1 atlas + 1 basin + 13 continent + 1 overlay + 1 fabric + 1 synthetic = 18") that itself documents ruling 8's retirement of the basin/`cluster1` sheet: "Plan E ruling 8's actual 17 (1 atlas + 13 continent + 1 overlay + 1 fabric + 1 synthetic)". Expect one indexed row per `SHEETS` entry — **17** — not the budget ceiling.
+
+Expected: PASS, and one indexed row per `SHEETS` entry — **17** (see correction above; do not expect the `maxSheets` ceiling of 18). The owner rule is not satisfied by a committed SVG — it is satisfied by a row a reviewer can open.
 
 - [ ] **Step 8: Write the phase report**
 
@@ -4997,7 +5020,9 @@ git log --oneline -1
 
 - [ ] **Step 9: Quality gate — final independent adversarial review**
 
-Fresh reviewer on the whole branch (`git diff main...HEAD --stat`), brief: *"Do not re-review the geometry. Answer five questions with evidence. (1) Is there any commit on this branch that is red on its own? Check out each and run `--only=spine`. (2) Did `colyseus-server/src/config/generated/mapDimensions.ts` change on ANY commit? (3) Is the redraw genuinely one commit, and does `git revert -m 1` on the merge restore a green tree? (4) Does any gate that was failing before this branch now pass because it was weakened rather than satisfied? Diff every `fail(` and `warn(` call site touched. (5) Are there 40 zone records with 40 distinct kind sets and 80 distinct landmark names, verified independently of `zone-allocation.test.mjs`?"*
+**Correction 4:** `git diff main...HEAD --stat` measures the whole world-fill programme (Plans A-D plus this plan) — **1109 files / 265k insertions** at `cfbf611` — not "this branch" in any scoped sense. The correct scope is `git diff release/1.8...HEAD --stat` (measured **60 commits / 273 files / 21,182 insertions / 5,411 deletions** at `cfbf611`, up from 50 commits / 249 files / 18.7k insertions before the F-051 completion plan's own tasks landed — re-measure at whatever sha the review actually runs against). Question (2) below is a false positive as posed: `colyseus-server/src/config/generated/mapDimensions.ts` changed on exactly one commit in this repo's entire history, `724ad6b` (F-041 Phase 4's spine→TS emitter), unrelated to the redraw — the reviewer should confirm this with `git log --oneline -- colyseus-server/src/config/generated/mapDimensions.ts` rather than treating any hit as a finding.
+
+Fresh reviewer on the whole branch (`git diff release/1.8...HEAD --stat`), brief: *"Do not re-review the geometry. Answer five questions with evidence. (1) Is there any commit on this branch that is red on its own? Check out each and run `--only=spine`. (2) Did `colyseus-server/src/config/generated/mapDimensions.ts` change on ANY commit? (3) Is the redraw genuinely one commit, and does `git revert -m 1` on the merge restore a green tree? (4) Does any gate that was failing before this branch now pass because it was weakened rather than satisfied? Diff every `fail(` and `warn(` call site touched. (5) Are there 40 zone records with 40 distinct kind sets and 80 distinct landmark names, verified independently of `zone-allocation.test.mjs`?"*
 
 - [ ] **Step 10: Quality gate — refactor, re-verify, report**
 
