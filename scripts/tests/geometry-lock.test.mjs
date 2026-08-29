@@ -13,7 +13,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { execFileSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -21,11 +21,12 @@ import {
   collectSiblingPairs,
   computeGeometryLock,
   checkGeometryLock,
+  LOCK_REL,
 } from "../check_geometry_lock.mjs";
+import { runCli as runCliOn } from "./helpers/run-cli.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const CLI = join(ROOT, "scripts/check_geometry_lock.mjs");
-const LOCK_REL = "content/spine/geometry-lock.json";
 
 // A minimal three-region fixture: n-r/n-r2 overlap by exactly 100 (a 10x10
 // square, aligned to the 0.05 grid so the grid sampler's count is exact, not
@@ -256,14 +257,8 @@ test("checkGeometryLock: a new sibling with no lock row is reported, a removed o
   }
 });
 
-// ── CLI smoke test, same shape as render-lock.test.mjs's runCli ────────────
-const runCli = (args) => {
-  try {
-    return { failed: false, out: execFileSync(process.execPath, [CLI, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }) };
-  } catch (e) {
-    return { failed: true, out: `${e.stdout ?? ""}${e.stderr ?? ""}` };
-  }
-};
+// ── CLI smoke test, shares its runner with render-lock.test.mjs's runCli ───
+const runCli = (args) => runCliOn(CLI, args);
 
 test("CLI: --write then --check on a fixture repo-root is clean; --check on an unwritten one fails", () => {
   const repo = makeFixtureRepo();
@@ -289,13 +284,10 @@ test("CLI: misuse (--bogus, --repo-root with no value) exits 2, not 0 or a throw
   assert.equal(run(["--repo-root"]).status, 2);
 });
 
-test("check_geometry_lock.mjs never calls process.exit() from main()", () => {
-  const src = readFileSync(CLI, "utf8");
-  const at = src.search(/^function main\(/m);
-  assert.ok(at >= 0, "no main() found");
-  const body = src.slice(at).replace(/\/\/[^\n]*/g, "");
-  assert.doesNotMatch(body, /process\.exit\(/);
-});
+// check_geometry_lock.mjs's own "never calls process.exit()" coverage lives in
+// scripts/tests/render-lock.test.mjs's GATE_CLIS sweep, which this diff added
+// this file to — a second standalone copy here would just re-run the same
+// regex over the same file for no new assertion.
 
 // ── the real committed lock, read-only ─────────────────────────────────────
 // The one place this file touches the REAL repo root: proves the committed

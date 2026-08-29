@@ -43,7 +43,11 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { loadSpine, buildTree, gridIntersectionArea, SPINE_CELL_KM, SPINE_CELL_U } from "./lib/spine.mjs";
 
 const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const LOCK_REL = "content/spine/geometry-lock.json";
+// Exported so scripts/tests/geometry-exact.test.mjs and
+// scripts/tests/geometry-lock.test.mjs read the committed lock's path from
+// here instead of each re-typing the literal — one string, one place it can
+// go stale.
+export const LOCK_REL = "content/spine/geometry-lock.json";
 const GENERATOR = { name: "geometry-lock", version: 1 };
 
 // Hash of every committed node FILE (name + bytes) PLUS content/spine/roots.json,

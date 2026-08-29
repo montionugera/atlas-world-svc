@@ -460,7 +460,7 @@ import {
   loadSpine, buildTree, gridIntersectionArea, placementArea,
   SPINE_CELL_KM, SPINE_CELL_U,
 } from "../lib/spine.mjs";
-import { hashNodesDir } from "../check_geometry_lock.mjs";
+import { hashNodesDir, LOCK_REL } from "../check_geometry_lock.mjs";
 
 const REPO = pathResolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -490,7 +490,7 @@ const REPO = pathResolve(dirname(fileURLToPath(import.meta.url)), "../..");
 // separate CI step `node scripts/check_geometry_lock.mjs --check` (like
 // check_render_lock.mjs / check_spine_emit.mjs) is what re-derives the whole
 // lock at the cost this scan is built to avoid paying on every run.
-const LOCK_PATH = join(REPO, "content/spine/geometry-lock.json");
+const LOCK_PATH = join(REPO, LOCK_REL);
 
 // A small, FIXED subset of real sibling pairs, chosen by estimated grid cost
 // (bbox-overlap-area / cell^2, computed with no grid calls) to sit well below
@@ -557,10 +557,15 @@ function equivalenceScan() {
             throw new Error(`content/spine/geometry-lock.json has no row for sibling pair ${key} — re-baseline with --write`);
           grid = lock.pairs[key];
         }
-        const te0 = process.hrtime.bigint();
-        const exact = exactIntersectionArea({ a: a.placement, b: b.placement });
-        const te1 = process.hrtime.bigint();
-        if (timed) tExact += Number(te1 - te0);
+        let exact;
+        if (timed) {
+          const te0 = process.hrtime.bigint();
+          exact = exactIntersectionArea({ a: a.placement, b: b.placement });
+          const te1 = process.hrtime.bigint();
+          tExact += Number(te1 - te0);
+        } else {
+          exact = exactIntersectionArea({ a: a.placement, b: b.placement });
+        }
         gridPairSum += grid;
         exactPairSum += exact;
         const limit = 0.005 * Math.min(

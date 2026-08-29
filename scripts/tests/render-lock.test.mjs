@@ -20,6 +20,7 @@ import {
 } from "../lib/render-lock.mjs";
 import { SHEETS } from "../../tools/mapforge/render-sheet.mjs";
 import { makeTempRepo } from "./helpers/temp-repo.mjs";
+import { runCli as runCliOn } from "./helpers/run-cli.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const LOCK_PATH = join(ROOT, "content/world/render-lock.json");
@@ -231,19 +232,7 @@ test("unifiedDiff survives an empty side, a strict prefix and a missing trailing
 // Only the read-only smoke test below still touches the real root.
 // ---------------------------------------------------------------------------
 
-const runCli = (args) => {
-  try {
-    return {
-      failed: false,
-      out: execFileSync(process.execPath, [CLI, ...args], {
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "pipe"],
-      }),
-    };
-  } catch (e) {
-    return { failed: true, out: `${e.stdout ?? ""}${e.stderr ?? ""}` };
-  }
-};
+const runCli = (args) => runCliOn(CLI, args);
 
 test("the CLI --check exits 0 on the committed tree", () => {
   execFileSync(process.execPath, [CLI, "--check"], { encoding: "utf8" }); // throws on non-zero
