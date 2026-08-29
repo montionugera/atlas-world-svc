@@ -1,0 +1,48 @@
+{
+  "zone": "emberburn-cone",
+  "region": "c10/r01",
+  "survey": "surveyed",
+  "reasonToGo": "The one region of the arc anybody walks, and the reason is in the shares: 55.9 per cent ash against 48.6 and 48.7 on the two reported regions, and 16.9 per cent lava against 22.9 and 20.3. Ash is a depositional plain a loaded party crosses at a walk. Lava is a broken flow field that is not crossed at any pace. This region carries the most of the first and the least of the second, and it is the only ground in the world where the cinder cone, the ash plain, the tube and the pahoehoe field are drawn at all — one instance of each, all of them here.",
+  "hazards": [
+    {
+      "id": "the-flow-fields",
+      "name": "The flow fields",
+      "description": "The two lava fields between the ash plains are not slow going, they are no going: broken block that turns an ankle every third step and opens boot leather in a morning. A sixth of this region is under them and a route that touches one is a route that has failed.",
+      "effect": "damage"
+    },
+    {
+      "id": "the-vent-air",
+      "name": "The vent air",
+      "description": "The fumarole and the fissure breathe out gas that pools in the hollows and the deflation basin without smell or colour. A body walking into it is down before anything about the air has registered, and the ground it pools on is the flat easy ground a loaded party chooses.",
+      "effect": "poison"
+    }
+  ],
+  "resources": [
+    {
+      "id": "vent-brimstone",
+      "name": "Vent brimstone",
+      "kind": "fuel",
+      "description": "Yellow crust scraped off the rims of the fumarole and the rift fissure, which is the only thing on the arc that will take a light: no wood grows on this ground, no peat forms on it and no thorn will hold in ash. It is worked upwind, in short spells, and it is the arc's one export."
+    },
+    {
+      "id": "plug-ore",
+      "name": "Plug ore",
+      "kind": "ore",
+      "description": "Broken out of the volcanic plug and the inselberg standing through the ash, and gathered off the scree they have already shed — a fifth of this region is bare rock and a fourteenth is scree, so most of the work is picking rather than cutting. Nothing is dug: the ash fills a hole faster than a crew can empty it."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "searflat-cleft",
+      "name": "Searflat Cleft",
+      "description": "The rift split across the ash plain, straight for its whole length and breathing along the whole of it. It is the arc's one reliable line — a party that keeps it on the same hand is on ash and not on lava — and it is the reason the routes across this region run the way they do rather than the short way.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "tube-within-regspar",
+      "name": "Tube within Regspar",
+      "description": "The open mouth of the only lava tube drawn anywhere in the world, walked in for as far as the roof holds and no further by anyone who has come back. It is out of the wind and out of the gas, which is why it is used, and it is under the flow field, which is why it is not trusted.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

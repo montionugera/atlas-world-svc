@@ -217,9 +217,14 @@ test("a record written for a DERIVED row must agree with the table, not replace 
   // fail and `--check` still printing "A4 matches the fabric". The whole payload
   // of the task could vanish and its own gate would stay green. Task 12 raised it
   // to 13 (Stonemoor's seven, re-proven by the same mutation), Task 13 to 20
-  // (Thirstwold's seven); Task 14 raises it again, the same way the record count
-  // in zone-content.test.mjs does.
-  assert.equal(written.length, 20,
+  // (Thirstwold's seven), and Task 14 to 30 (the ten minor-continent and chain
+  // rows), the same way the record count in zone-content.test.mjs does.
+  //
+  // 30 is also the last move this floor makes: 30 derived rows plus the ten
+  // PLACEHOLDER rows is A4's whole table, so with Z2 closed in both directions
+  // the only way this number changes again is a new surveyed region in the
+  // fabric — which would red Z2 first.
+  assert.equal(written.length, 30,
     "the number of records written for derived rows moved — say so here, or an empty loop reports success");
   for (const c of written) {
     const row = byZone.get(c.zone);

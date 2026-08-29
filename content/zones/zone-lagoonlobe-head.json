@@ -1,0 +1,48 @@
+{
+  "zone": "lagoonlobe-head",
+  "region": "c08/r06",
+  "survey": "surveyed",
+  "reasonToGo": "Thorn and the shallows, which on Wracklow is the whole economy. Bramble grows in all eight of this landmass's regions and nowhere else in the world; here it is 37 per cent of the ground, cut for burning because nothing else on the island will burn. The rest is meadow and reef, and the lagoon behind the bar is calm enough to work at any state of tide.",
+  "hazards": [
+    {
+      "id": "the-skerry-line",
+      "name": "The skerry line",
+      "description": "The rocks off this shore are awash rather than standing — four skerries are drawn on Wracklow and every one of them is on this landmass, two of them here. They are invisible at half tide and they are exactly where the run into the lagoon goes.",
+      "effect": "damage"
+    },
+    {
+      "id": "no-water-that-runs",
+      "name": "No water that runs",
+      "description": "Not one of Wracklow's eight regions carries any river at all. Every drop drunk on this ground is caught off a roof or carried in by boat, and a crew that plans a long cut on the thorn without carrying its own water plans a short one.",
+      "note": "Absence hazard: the harm is the missing watercourse. Nothing in the runtime enum expresses a landmass with no running water on it."
+    }
+  ],
+  "resources": [
+    {
+      "id": "machair-forage",
+      "name": "Machair forage",
+      "kind": "forage",
+      "description": "Gathered off the shell sand behind the beach and out of the reef at low water, the two things this region grows without anybody tending them. The machair strip is narrow and it is grazed as well as gathered, so the two uses are argued over every season."
+    },
+    {
+      "id": "thorn-faggots",
+      "name": "Thorn faggots",
+      "kind": "fuel",
+      "description": "Bramble cut on the lobe and dried in bound bundles on the raised beach. It burns fierce and short and it is the only fuel on Wracklow: there is no peat drawn on this landmass, no wood, and no coal."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "reedfall-eyot",
+      "name": "Reedfall Eyot",
+      "description": "The low island inside the lagoon, cut off at every high water and joined at every low one. The cutting crews stack on it because whatever is stacked there is out of reach of the animals that work the thorn on the main shore.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "geo-between-siltreef",
+      "name": "Geo between Siltreef",
+      "description": "The gap in the reef the boats come through, between the cay on one hand and the skerries on the other. There is no cleft in this shore to shelter in — the mark is the gap itself, taken on a transit off the eyot, and a boat that misses it waits outside for the tide.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

@@ -65,7 +65,22 @@ const THIRSTWOLD_ZONE_IDS = [
  * the rule while the corpus stays whole. Measured by the code review — seven
  * records dropped out of the citation rule at 77 pass / 0 fail.
  */
-const POST_REDRAW_ZONE_IDS = [...COLDREACH_ZONE_IDS, ...STONEMOOR_ZONE_IDS, ...THIRSTWOLD_ZONE_IDS];
+// PLAN E TASK 14. The five minor landmasses and chains, on the same terms
+// again — Reedstrand 3, Driftholt 3, Wracklow 2, Brightfall 1, Ashen Spar 1.
+// These close Z2 in both directions: with them the fabric's 40 surveyed
+// regions and content/zones/ are a bijection, and the count assertion below is
+// what proves it rather than the absence of a FAIL line.
+const MINOR_CONTINENT_ZONE_IDS = [
+  "siltrun-head", "sedgebar-roads", "wrackeyot-geo",
+  "osierspit-head", "quillstrand-roads", "brightreef-geo",
+  "lagoonlobe-head", "withybar-roads",
+  "alderlow-head", "emberburn-cone",
+];
+
+const POST_REDRAW_ZONE_IDS = [
+  ...COLDREACH_ZONE_IDS, ...STONEMOOR_ZONE_IDS, ...THIRSTWOLD_ZONE_IDS,
+  ...MINOR_CONTINENT_ZONE_IDS,
+];
 
 /**
  * The post-redraw records DERIVED from the data: every committed record whose
@@ -90,7 +105,7 @@ const COMMITTED_ZONE_IDS = [...ZONE_IDS, ...POST_REDRAW_ZONE_IDS];
 /** Surveyed regions the fabric declares, across all 13 continents. */
 const SURVEYED_REGIONS = 40;
 /** Landmarks carried by the records written for derived A4 rows, 2 apiece. */
-const POST_REDRAW_LANDMARKS = 40;
+const POST_REDRAW_LANDMARKS = 60;
 
 // Real levelBands from content/maps/cluster1-geography.json#zones. No Z-rule
 // reads them, but the fixture geography must be shaped like the real one.
@@ -1376,6 +1391,17 @@ test("every committed record joins to a SURVEYED fabric region, one apiece", () 
   // alphabetically against ascending region id — reproducible, stated, and
   // carrying no geographic claim. Task 11 Step 1 verifies the prose against the
   // new ground and owns any re-voicing.
+  // PLAN E TASK 14 — Z2 CLOSED, stated rather than implied. The literal list
+  // below is the corpus RATCHET: it fails when the corpus moves without a
+  // deliberate edit. This line is the CLOSURE: both sides are derived — the
+  // left from content/zones/, the right fresh from content/world/fabric/ — so
+  // it fails when the corpus and the ground DISAGREE, whatever the literal
+  // says. The two failure modes are different and neither subsumes the other
+  // once either half is edited, which is the whole reason a closure asserted
+  // only by the absence of a FAIL line is not asserted at all.
+  assert.deepEqual([...seen.keys()].sort(), [...surveyed].sort(),
+    "Z2 is not closed: the surveyed ground and the written records are not the same set");
+
   assert.deepEqual([...seen.keys()].sort(),
     ["c02/r01", "c02/r02", "c02/r08", "c02/r10", "c02/r14",
      "c02/r16", "c02/r21", "c02/r24", "c02/r28", "c02/r30",
@@ -1408,7 +1434,30 @@ test("every committed record joins to a SURVEYED fabric region, one apiece", () 
      // and (d) it routes every landmark citation to content/world/resolved/
      // continent-05.json, which carries the GROUND but not the NAMES — grep
      // returns 0 for all fourteen, and the citation rule below reds on it.
-     "c05/r06", "c05/r15", "c05/r17", "c05/r20", "c05/r21", "c05/r23", "c05/r28"]);
+     "c05/r06", "c05/r15", "c05/r17", "c05/r20", "c05/r21", "c05/r23", "c05/r28",
+     // TASK 14. The last ten, on A4 rows c06/r06-r08, c07/r01, r03, r06,
+     // c08/r06, r08, c09/r03 and c10/r01 — and the four ways the plan's Task 14
+     // text is stale are the SAME four Tasks 12 and 13 each measured:
+     // (a) it names rows c06/r01-r03, c07/r01-r03, c08/r01-r02, c09/r01 and
+     // c10/r01, and only the last of those ten is a surveyed region — the other
+     // nine are reported ground Z2 fails outright; (b) all ten of its zone slugs
+     // are invented (`reed-lobes`, `lagoon-crescent`, `birdsfoot-mouth`,
+     // `fogforest-slope`, `drip-terraces`, `windward-crown`, `stack-coast`,
+     // `blowhole-shelf`, `cliffhang-falls`, `cone-line`) and A4 mints ten
+     // different ones; (c) its kind sets are unlicensed in eight of the ten
+     // rows — most sharply on Ashen Spar, where it takes `salvage` and `timber`
+     // and the licence gate grants c10/r01 only {ore, fuel, stone}; and (d) it
+     // routes six landmark citations at docs/worldbuilding/A2-wider-world.md#4,
+     // which names the three CHAINS but carries none of the twenty landmark
+     // names, and four more at content/world/resolved/continent-08.json and
+     // continent-10.json, which carry the ground but not the names either.
+     // Nineteen of the twenty cite A4 section 5; the twentieth is Brightfall
+     // Leap, inherited canon, cited at its own pinned civil record.
+     "c06/r06", "c06/r07", "c06/r08",
+     "c07/r01", "c07/r03", "c07/r06",
+     "c08/r06", "c08/r08",
+     "c09/r03",
+     "c10/r01"]);
 });
 
 // ─── the two findings of the adversarial review of c4d59c7 ─────────────────
