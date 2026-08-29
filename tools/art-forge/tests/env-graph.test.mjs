@@ -234,6 +234,58 @@ test("generateEnv (dry-run, end to end) keeps depth's embedded filename bare —
   );
 });
 
+/* ---------------------- freehand (--control none) ---------------------- */
+
+test("resolveControl accepts none with no config block and no renderer — freehand needs neither", () => {
+  const r = resolveControl({ forge, control: "none" });
+  assert.equal(r.control, "none");
+  assert.equal(r.block, null);
+  assert.equal(r.render, null);
+});
+
+test("freehand graph drops every ControlNet node and conditions straight from the text encodes", () => {
+  const g = buildEnvGraph({
+    brief: { positive: "a crossing town", id: "A1-ART-02-none" },
+    seed: 12345,
+    depthImage: null,
+    forge,
+    strength: null,
+    controlNet: null,
+  });
+  const classes = Object.values(g).map((n) => n.class_type);
+  assert.equal(classes.includes("ControlNetLoader"), false, "no control net to load");
+  assert.equal(classes.includes("SetUnionControlNetType"), false);
+  assert.equal(classes.includes("LoadImage"), false, "no control image to load");
+  assert.equal(classes.includes("ControlNetApplyAdvanced"), false);
+  const ks = Object.values(g).find((n) => n.class_type === "KSampler");
+  assert.deepEqual(ks.inputs.positive, [ENV_NODE.POS, 0], "sampler conditions from raw text encode");
+  assert.deepEqual(ks.inputs.negative, [ENV_NODE.NEG, 0]);
+});
+
+test("none output ids carry no strength suffix — there is no strength to sweep", () => {
+  assert.equal(
+    controlOutputId({ briefId: "A1-ART-02", control: "none", seed: 12345, strength: null }),
+    "A1-ART-02-none-seed12345",
+  );
+});
+
+test("resolveStrength is a no-op for none — a freehand run has no strength to measure", () => {
+  assert.equal(resolveStrength({ control: "none", block: null, override: undefined }), null);
+});
+
+test("generateEnv (dry-run, end to end) stages no control image for freehand and names the output -none-", async () => {
+  const graph = await generateEnv(
+    { brief: "A1-ART-02", seed: 12345, control: "none", "dry-run": true },
+    forge,
+  );
+  const classes = Object.values(graph).map((n) => n.class_type);
+  assert.equal(classes.includes("LoadImage"), false, "freehand must not load a control image");
+  assert.equal(
+    graph[ENV_NODE.SAVE].inputs.filename_prefix,
+    "art-forge/env/A1-ART-02-none-seed12345",
+  );
+});
+
 /* --------------------------- hires graph --------------------------- */
 
 const hiresGraph = buildEnvHiresGraph({

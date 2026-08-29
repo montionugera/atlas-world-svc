@@ -63,6 +63,14 @@
  *        --positive "<string>" (replace the FULLY COMPOSED positive prompt
  *          entirely — bypasses buildEnvPositive, so style vocabulary is
  *          NOT auto-appended; CLI wins over the brief)
+ *        --control depth|segment|none — which control signal steers the
+ *          graph. Default stays `depth` until a segment strength is measured,
+ *          and `--control depth` reproduces F-026's exact behaviour from
+ *          committed code forever. `segment` feeds the zone-label map
+ *          (measured NEGATIVE for Millcross — see
+ *          docs/worldbuilding/ABP-segment-control.md). `none` is freehand
+ *          txt2img: no control image, no ControlNet nodes 20-23, no strength
+ *          — the prose (plus house style vocabulary) is the only steering.
  *        --strength N (override forge.config.json's profiles.environment
  *          .controlNet.strength; CLI wins over config. Neither half of the
  *          published 0.30/0.40 replication matrix was reproducible from
@@ -287,11 +295,18 @@ export function resolveControl({ forge, control }) {
   if (control === true) {
     throw new Error("--control requires a value, got a bare flag");
   }
+  if (control === "none") {
+    // Freehand: no control image, no config block, no renderer — and no
+    // strength (see resolveStrength). The F-039 segment-control negative
+    // result's follow-up: composition comes from the prose, not a zone map.
+    return { control, block: null, render: null };
+  }
   const key = control ?? forge.profile.control ?? "depth";
   const blockKey = CONTROL_BLOCK[key];
   if (!blockKey) {
     throw new Error(
-      `unknown --control "${key}" — expected one of ${Object.keys(CONTROL_BLOCK).join(", ")}`,
+      `unknown --control "${key}" — expected one of ` +
+        `${[...Object.keys(CONTROL_BLOCK), "none"].join(", ")}`,
     );
   }
   const block = forge.profile[blockKey];
@@ -315,6 +330,10 @@ export function resolveControl({ forge, control }) {
  * an unmeasured strength must fail loudly, not silently default.
  */
 export function resolveStrength({ control, block, override }) {
+  if (control === "none") {
+    // Freehand has no strength dial — there is nothing to measure or sweep.
+    return null;
+  }
   const strength = parseNumericOverride("strength", override, block.strength);
   if (strength === null || strength === undefined) {
     throw new Error(
@@ -328,9 +347,12 @@ export function resolveStrength({ control, block, override }) {
 /**
  * Output id for one cell. Depth keeps F-026's exact naming
  * (`<id>-seed<n>-s<x>`) so the replication record's filenames still resolve;
- * any other control inserts its key (`<id>-<control>-seed<n>-s<x>`).
+ * any other control inserts its key (`<id>-<control>-seed<n>-s<x>`); none
+ * (freehand) carries no strength suffix — there is no strength to sweep
+ * (`<id>-none-seed<n>`).
  */
 export function controlOutputId({ briefId, control, seed, strength }) {
+  if (control === "none") return `${briefId}-none-seed${seed}`;
   const suffix = `-seed${seed}-s${formatStrength(strength)}`;
   return control === "depth" ? `${briefId}${suffix}` : `${briefId}-${control}${suffix}`;
 }
@@ -364,7 +386,16 @@ export function buildEnvGraph({
   controlNet = forge.profile.controlNet,
 }) {
   const { models, sampler, latent } = forge.profile;
-  const outputId = `${brief.id ?? "subject"}-seed${seed}-s${formatStrength(strength)}`;
+  // Freehand (generateEnv passes controlNet: null for --control none): the
+  // ControlNet nodes 20-23 are dropped entirely and the sampler conditions
+  // straight from the text encodes. The output id carries no strength —
+  // there is none to sweep. With a control, construction order is unchanged
+  // so the frozen depth path stays byte-identical to F-026.
+  const hasControl = controlNet != null;
+  const outputId =
+    `${brief.id ?? "subject"}-seed${seed}${hasControl ? `-s${formatStrength(strength)}` : ""}`;
+  const positiveFrom = hasControl ? [ENV_NODE.CN_APPLY, 0] : [ENV_NODE.POS, 0];
+  const negativeFrom = hasControl ? [ENV_NODE.CN_APPLY, 1] : [ENV_NODE.NEG, 0];
   return {
     [ENV_NODE.CKPT]: {
       class_type: "CheckpointLoaderSimple",
@@ -378,31 +409,35 @@ export function buildEnvGraph({
       class_type: "CLIPTextEncode",
       inputs: { clip: [ENV_NODE.CKPT, 1], text: brief.negative ?? "" },
     },
-    [ENV_NODE.CN_LOAD]: {
-      class_type: "ControlNetLoader",
-      inputs: { control_net_name: models.controlNet },
-    },
-    [ENV_NODE.CN_TYPE]: {
-      class_type: "SetUnionControlNetType",
-      inputs: { control_net: [ENV_NODE.CN_LOAD, 0], type: controlNet.type },
-    },
-    [ENV_NODE.CN_IMAGE]: {
-      class_type: "LoadImage",
-      inputs: { image: depthImage },
-    },
-    [ENV_NODE.CN_APPLY]: {
-      class_type: "ControlNetApplyAdvanced",
-      inputs: {
-        positive: [ENV_NODE.POS, 0],
-        negative: [ENV_NODE.NEG, 0],
-        control_net: [ENV_NODE.CN_TYPE, 0],
-        image: [ENV_NODE.CN_IMAGE, 0],
-        strength,
-        start_percent: controlNet.startPercent,
-        end_percent: controlNet.endPercent,
-        vae: [ENV_NODE.CKPT, 2],
-      },
-    },
+    ...(hasControl
+      ? {
+          [ENV_NODE.CN_LOAD]: {
+            class_type: "ControlNetLoader",
+            inputs: { control_net_name: models.controlNet },
+          },
+          [ENV_NODE.CN_TYPE]: {
+            class_type: "SetUnionControlNetType",
+            inputs: { control_net: [ENV_NODE.CN_LOAD, 0], type: controlNet.type },
+          },
+          [ENV_NODE.CN_IMAGE]: {
+            class_type: "LoadImage",
+            inputs: { image: depthImage },
+          },
+          [ENV_NODE.CN_APPLY]: {
+            class_type: "ControlNetApplyAdvanced",
+            inputs: {
+              positive: [ENV_NODE.POS, 0],
+              negative: [ENV_NODE.NEG, 0],
+              control_net: [ENV_NODE.CN_TYPE, 0],
+              image: [ENV_NODE.CN_IMAGE, 0],
+              strength,
+              start_percent: controlNet.startPercent,
+              end_percent: controlNet.endPercent,
+              vae: [ENV_NODE.CKPT, 2],
+            },
+          },
+        }
+      : {}),
     [ENV_NODE.LATENT]: {
       class_type: "EmptySD3LatentImage",
       inputs: { width: latent.width, height: latent.height, batch_size: 1 },
@@ -411,8 +446,8 @@ export function buildEnvGraph({
       class_type: "KSampler",
       inputs: {
         model: [ENV_NODE.CKPT, 0],
-        positive: [ENV_NODE.CN_APPLY, 0],
-        negative: [ENV_NODE.CN_APPLY, 1],
+        positive: positiveFrom,
+        negative: negativeFrom,
         latent_image: [ENV_NODE.LATENT, 0],
         seed,
         steps: sampler.steps,
@@ -585,6 +620,7 @@ export async function uploadControlImage({
  * Generate one environment subject end to end: render the depth control PNG
  * from the brief's block-in masses (Task 5's blockin.mjs), upload it to the
  * ComfyUI box's input directory, queue the graph, download the result.
+ * (`--control none` skips the render/upload entirely — freehand txt2img.)
  *
  * With `--hires`, a SECOND job runs after the base pass completes: the just-
  * downloaded base PNG is re-uploaded and refined through
@@ -609,19 +645,24 @@ export async function generateEnv(
   const strength = resolveStrength({ control, block, override: args.strength });
   const { width, height } = forge.profile.latent;
 
-  // Per-control local path AND per-control uploaded basename. Both matter:
-  // uploadControlImage sends path.basename(localPath) with overwrite=true, so
-  // a shared "A1-ART-02.png" would let a segment run clobber the depth map
-  // already sitting in ComfyUI's input dir (and vice versa).
-  const controlLocalPath = path.join(forge.outDir, "control", control, `${briefId}-${control}.png`);
-  await render({ brief: rawBrief, width, height, outPath: controlLocalPath });
-
   const base = comfyBaseUrl(forge, args);
-  // dry-run must not touch the network — the control PNG still renders
-  // locally above so a --dry-run graph carries a realistic LoadImage name.
-  const controlImage = args["dry-run"]
-    ? `art-forge/${briefId}-${control}.png`
-    : await uploadControlImage({ base, localPath: controlLocalPath, subfolder: "art-forge" });
+  // --control none stages no control image at all: nothing is rendered or
+  // uploaded, and the queued graph carries no LoadImage (dry-run included).
+  let controlImage = null;
+  if (control !== "none") {
+    // Per-control local path AND per-control uploaded basename. Both matter:
+    // uploadControlImage sends path.basename(localPath) with overwrite=true, so
+    // a shared "A1-ART-02.png" would let a segment run clobber the depth map
+    // already sitting in ComfyUI's input dir (and vice versa).
+    const controlLocalPath = path.join(forge.outDir, "control", control, `${briefId}-${control}.png`);
+    await render({ brief: rawBrief, width, height, outPath: controlLocalPath });
+
+    // dry-run must not touch the network — the control PNG still renders
+    // locally above so a --dry-run graph carries a realistic LoadImage name.
+    controlImage = args["dry-run"]
+      ? `art-forge/${briefId}-${control}.png`
+      : await uploadControlImage({ base, localPath: controlLocalPath, subfolder: "art-forge" });
+  }
 
   // --positive replaces the composed prompt entirely (CLI wins over
   // composed), matching charsheet.mjs/i2i.mjs's --positive convention. When
@@ -659,7 +700,10 @@ export async function generateEnv(
     args,
     graph,
     name: `env/${outputId}`,
-    label: `env ${briefId} seed=${seed} control=${control} strength=${formatStrength(strength)} image=${controlImage}`,
+    label:
+      `env ${briefId} seed=${seed} control=${control}` +
+      (control === "none" ? "" : ` strength=${formatStrength(strength)}`) +
+      (controlImage ? ` image=${controlImage}` : ""),
   });
 
   if (!args.hires) {
