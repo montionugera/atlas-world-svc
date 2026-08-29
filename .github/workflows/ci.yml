@@ -177,6 +177,24 @@ jobs:
       - name: Render lock (G-RENDER-LOCK)
         run: node scripts/check_render_lock.mjs --check
 
+      # Geometry lock (Task 2 fix round 1, F-051 completion plan,
+      # G-GEOMETRY-LOCK): content/spine/geometry-lock.json commits every real
+      # sibling pair's gridIntersectionArea result so
+      # scripts/tests/geometry-exact.test.mjs's equivalenceScan() doesn't have
+      # to re-walk all 138 pairs on every `npm test` (that cost 492.6 s before
+      # the lock). The fast suite only READS the lock; this step is what
+      # actually proves the lock is still TRUE — it recomputes
+      # gridIntersectionArea for every pair from scratch and diffs against the
+      # committed file (no nodesHash short-circuit: a short-circuit would
+      # re-open the exact "trust it without checking" gap this step closes).
+      # ~536 s single-threaded measured (task-2-report.md) — hence its own
+      # step with its own timeout, run once here rather than inside the fast
+      # Content gate step above. scripts/ deps are already installed by the
+      # Content gate step above (npm ci --prefix scripts).
+      - name: Geometry lock (G-GEOMETRY-LOCK)
+        timeout-minutes: 20
+        run: node scripts/check_geometry_lock.mjs --check
+
       # X6: CI ran NEITHER the mapforge tests NOR render-sheet --check, so five
       # of six byte comparisons were Gate-2-only (local). That is the wrong
       # place for them once the map lane is the feature under active

@@ -46,11 +46,16 @@ const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const LOCK_REL = "content/spine/geometry-lock.json";
 const GENERATOR = { name: "geometry-lock", version: 1 };
 
-// Hash of every committed node FILE (name + bytes), so a hand-edited ring, an
-// added node, or a removed node all move the hash — the same "the lock's
-// hash must not match a mutated content/spine/nodes" contract Step 1 pins.
-// Sorted filenames: never rely on readdir order (same discipline as
-// loadSpine() itself).
+// Hash of every committed node FILE (name + bytes) PLUS content/spine/roots.json,
+// so a hand-edited ring, an added/removed node, or a change to which nodes are
+// roots all move the hash — the same "the lock's hash must not match a
+// mutated content/spine/nodes" contract Step 1 pins. roots.json belt-and-braces
+// (fix round 1): collectSiblingPairs's traversal starts from buildTree, which
+// reads roots.json too, so a roots-only edit that changes the tree shape
+// (without touching any node file) would otherwise move the sibling-pair set
+// with no hash movement to catch it — exactly the silent-drift shape this
+// lock exists to close. Sorted filenames: never rely on readdir order (same
+// discipline as loadSpine() itself).
 export function hashNodesDir({ repoRoot }) {
   const dir = join(repoRoot, "content/spine/nodes");
   const h = createHash("sha256");
@@ -60,6 +65,11 @@ export function hashNodesDir({ repoRoot }) {
       h.update("\0");
       h.update(readFileSync(join(dir, f))); // BYTES, not "utf8" — see render-lock.mjs's sha256
     }
+  }
+  const rootsPath = join(repoRoot, "content/spine/roots.json");
+  if (existsSync(rootsPath)) {
+    h.update("\0roots.json\0");
+    h.update(readFileSync(rootsPath));
   }
   return "sha256:" + h.digest("hex");
 }
@@ -86,9 +96,29 @@ export function collectSiblingPairs({ repoRoot }) {
   return pairs;
 }
 
+// Fix round 1 (MEDIUM, both reviewers): a typo'd --repo-root used to mkdir
+// content/spine/ in the wrong tree and write an empty "ok" lock at exit 0 —
+// collectSiblingPairs's loadSpine soft-skips a missing spine/ dir (present:
+// false, no errors) and an empty node set trivially has zero sibling pairs,
+// so computeGeometryLock saw nothing WRONG, only nothing AT ALL. Matches
+// check_spine_emit.mjs's collectOutputs: a missing spine/ dir is a `skip`
+// (CLI misuse, exit 2, refuses --write too — a self-certifying empty lock is
+// worse than no lock), and content/spine/*.json validation errors are
+// `errors` (CLI reports and exits 1, --write also refuses — baking a lock
+// from partially-broken node data would commit corrupted state).
+function spineRootProblem({ repoRoot }) {
+  const spine = loadSpine({ contentRoot: join(repoRoot, "content") });
+  if (!spine.present) return { skip: true, messages: [`no content/spine/ directory under repo root ${repoRoot}`] };
+  if (spine.errors.length) return { skip: false, messages: spine.errors };
+  return null;
+}
+
 // The expensive half: runs gridIntersectionArea once per committed sibling
 // pair. This is the 492 s cost — callers decide when that is affordable
 // (--write, --check, or a small fixture repo in tests), never the fast suite.
+// Caller MUST check spineRootProblem() first — this assumes a present, valid
+// spine and will simply compute over whatever (possibly empty) pair set
+// collectSiblingPairs finds otherwise.
 export function computeGeometryLock({ repoRoot }) {
   const pairs = collectSiblingPairs({ repoRoot });
   const areas = {};
@@ -97,33 +127,49 @@ export function computeGeometryLock({ repoRoot }) {
   return { version: 1, generator: GENERATOR, nodesHash: hashNodesDir({ repoRoot }), pairs: areas };
 }
 
-// checkGeometryLock({repoRoot, write}) -> {ok, drifted[]}. write:true baselines
-// unconditionally (mirrors check_render_lock.mjs's --write, which does not
-// diff first); write:false (or omitted) diffs the committed lock against a
-// fresh recompute and reports every disagreement — version, generator,
-// nodesHash, and each pair's area, both directions (locked-but-gone and
-// built-but-unlocked), same three-way shape as check_render_lock.mjs's
-// drift/missing/extra.
+// checkGeometryLock({repoRoot, write}) -> {ok, drifted[], skip}. `skip: true`
+// means the ROOT itself is the problem (misuse, e.g. a typo'd --repo-root) —
+// distinct from `skip: false` with a nonempty `drifted`, which means the root
+// is real but its content (spine errors, or a genuine lock/pair disagreement)
+// is not. write:true baselines unconditionally once the root is confirmed
+// good (mirrors check_render_lock.mjs's --write, which does not diff first);
+// write:false (or omitted) diffs the committed lock against a fresh recompute
+// and reports every disagreement — version, generator, nodesHash, and each
+// pair's area, both directions (locked-but-gone and built-but-unlocked), same
+// three-way shape as check_render_lock.mjs's drift/missing/extra.
 export function checkGeometryLock({ repoRoot, write = false }) {
+  const problem = spineRootProblem({ repoRoot });
+  if (problem) return { ok: false, drifted: problem.messages, skip: problem.skip };
+
   const lockPath = join(repoRoot, LOCK_REL);
   const computed = computeGeometryLock({ repoRoot });
 
   if (write) {
     mkdirSync(dirname(lockPath), { recursive: true });
     writeFileSync(lockPath, JSON.stringify(computed, null, 2) + "\n");
-    return { ok: true, drifted: [] };
+    return { ok: true, drifted: [], skip: false };
   }
 
+  // Fix round 1 (LOW): a lock that exists but fails to PARSE (corrupted
+  // JSON) used to be reported identically to a MISSING lock — different
+  // problems, different fixes (a merge conflict left in the file vs. never
+  // baselined at all). readFileSync's ENOENT is "missing"; anything else
+  // thrown by readFileSync/JSON.parse is "exists but broken".
   let committed = null;
+  let readError = null;
   try {
     committed = JSON.parse(readFileSync(lockPath, "utf8"));
-  } catch {
-    /* missing or unparsable = drift */
+  } catch (e) {
+    readError = e;
   }
   const drifted = [];
   if (!committed) {
-    drifted.push(`${LOCK_REL} is missing — baseline it with --write`);
-    return { ok: false, drifted };
+    drifted.push(
+      readError && readError.code !== "ENOENT"
+        ? `${LOCK_REL} exists but could not be read/parsed (${readError.message}) — re-baseline with --write`
+        : `${LOCK_REL} is missing — baseline it with --write`,
+    );
+    return { ok: false, drifted, skip: false };
   }
   if (committed.version !== computed.version)
     drifted.push(`lock version ${JSON.stringify(committed.version)} != ${computed.version} — re-baseline with --write`);
@@ -136,6 +182,18 @@ export function checkGeometryLock({ repoRoot, write = false }) {
     drifted.push(`nodesHash ${JSON.stringify(committed.nodesHash ?? null)} != ${computed.nodesHash} — content/spine/nodes changed, re-baseline with --write`);
 
   const committedPairs = committed.pairs ?? {};
+  // Exact `!==`, deliberately never a tolerance (fix round 1, JS reviewer):
+  // both sides are the SAME deterministic computation — gridIntersectionArea
+  // does only +, -, *, comparisons and Math.ceil over finite inputs (no
+  // transcendentals, no accumulated iterative error), and the committed side
+  // is that same IEEE-754 double round-tripped losslessly through
+  // JSON.stringify/JSON.parse (doubles are exactly representable in JSON's
+  // decimal grammar — no float ever loses precision crossing that boundary).
+  // A tolerance here would let the exact in-tolerance drift this lock exists
+  // to catch (0 -> 0.004, still under G-OVERLAP's own 0.005-of-area floor)
+  // slide through unnoticed. NaN/-0 fail safe: NaN !== NaN is always true
+  // (drifts, never silently "matches" a corrupt computation), and -0 !== 0
+  // is false in JS (same numeric value, correctly treated as unchanged).
   for (const k of Object.keys(committedPairs).sort()) {
     if (!(k in computed.pairs)) drifted.push(`${k}: locked but is no longer a sibling pair`);
     else if (committedPairs[k] !== computed.pairs[k])
@@ -144,7 +202,7 @@ export function checkGeometryLock({ repoRoot, write = false }) {
   for (const k of Object.keys(computed.pairs).sort())
     if (!(k in committedPairs)) drifted.push(`${k}: is a sibling pair but has no lock row — baseline it with --write`);
 
-  return { ok: drifted.length === 0, drifted };
+  return { ok: drifted.length === 0, drifted, skip: false };
 }
 
 function main() {
@@ -170,16 +228,23 @@ function main() {
     }
   }
 
-  const { ok, drifted } = checkGeometryLock({ repoRoot: root, write: mode === "write" });
+  const { ok, drifted, skip } = checkGeometryLock({ repoRoot: root, write: mode === "write" });
 
-  if (mode === "write") {
-    console.log(`check-geometry-lock: wrote geometry-lock.json to ${LOCK_REL}`);
+  // A bad ROOT (missing content/spine/) is misuse, not drift — exit 2, same
+  // as --repo-root with no value above, and refuses --write too (fix round 1
+  // MEDIUM: a typo'd root must never silently bake an empty "ok" lock).
+  if (skip) {
+    for (const d of drifted) console.error(`check-geometry-lock: ${d}`);
+    process.exitCode = 2;
     return;
   }
-
   if (!ok) {
     for (const d of drifted) console.error(`G-GEOMETRY-LOCK: ${d}`);
     process.exitCode = 1;
+    return;
+  }
+  if (mode === "write") {
+    console.log(`check-geometry-lock: wrote geometry-lock.json to ${LOCK_REL}`);
     return;
   }
   console.log("check-geometry-lock: check clean");

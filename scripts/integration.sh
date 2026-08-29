@@ -122,6 +122,24 @@ art_forge_tests() { (cd "$REPO_ROOT" && node --test tools/art-forge/tests/*.test
 # unified diff printed on mismatch.
 render_lock() { node "$REPO_ROOT/scripts/check_render_lock.mjs" --check; }
 
+# Task 2 fix round 1 (F-051 completion plan): G-GEOMETRY-LOCK was committed
+# with NOTHING checking it — `scripts/tests/geometry-exact.test.mjs` only
+# READS content/spine/geometry-lock.json (fast, trusts it); nothing ever
+# recomputed gridIntersectionArea against the committed lock to prove it is
+# still true. That gap made a gridIntersectionArea regression invisible (the
+# 5 live TIMED pairs all clip to 0, so the kernel's correctness on real
+# nonzero geometry was never re-exercised), let in-tolerance drift accumulate
+# forever under the 0.01 km² deviation floor, and made a post-redraw --write
+# self-certifying. --check RECOMPUTES every one of the 138 real sibling
+# pairs from scratch every run — same ~536 s single-threaded cost as the
+# original --write bake (see task-2-report.md); there is no nodesHash
+# short-circuit, because a short-circuit is exactly the "trust the lock
+# without checking it" gap this section exists to close. That cost is why
+# this lives in Gate 2 (once per release, not once per commit) and gets its
+# own CI step with its own generous timeout — never inside the fast
+# per-commit content-gate step.
+geometry_lock() { node "$REPO_ROOT/scripts/check_geometry_lock.mjs" --check; }
+
 # F-042 + world-fill Plan C: mapforge's own unit + parity suite (basin-sheet,
 # atlas-sheet, raster, render-sheet) AND G-REPRO's three idempotence properties
 # (tools/mapforge/tests/repro.test.mjs) plus the promotion suite
@@ -148,6 +166,7 @@ run_section "content: spine emit drift (G-EMIT-DRIFT)" spine_emit_drift
 run_section "content: resolved join (G-SLOT-STABLE)" resolved_drift
 run_section "content: relation coverage (report)" relation_coverage
 run_section "content: render lock (G-RENDER-LOCK)" render_lock
+run_section "content: geometry lock (G-GEOMETRY-LOCK)" geometry_lock
 run_section "content: mapforge test suite (incl. G-REPRO)" mapforge_tests
 run_section "content: gate test suite"     content_tests
 run_section "content: story-explorer smoke" explorer_smoke

@@ -143,6 +143,49 @@ not ok 2 - slow.test.mjs
 # duration_ms 8947.613709
 `;
 
+// Fix round 1 (both reviewers, confirmed defect — the classifier had the
+// INVERSE of the bug it fixes): a genuine assertion failure whose message
+// happens to quote captured TAP text is a LIVE path in this repo — several
+// tests here and in render-lock.test.mjs assert `assert.ok(cond, capturedOut)`
+// where capturedOut can itself be a child-kill dump, and Node's real
+// `error: |-` block scalar indents that embedded content at 4 spaces (one
+// level deeper than the 2-space top-level diagnostic keys — see the FAILED
+// fixture above's real captured "    Expected values..." line). Built by
+// explicit line join (not a template literal) so the adversarial lines land
+// at that REAL 4-space content indent, not the 2-space column the
+// synthesized `exitCode:`/`signal:` fields always occupy — the original
+// `/\n\s*signal: '.../` matched this regardless of indent; the fixed
+// column-anchored + co-occurring-exitCode regex must not.
+const FAILED_WITH_EMBEDDED_SIGNAL_TEXT = [
+  "TAP version 13",
+  "# Subtest: assert on a captured killed-run fixture",
+  "not ok 1 - assert on a captured killed-run fixture",
+  "  ---",
+  "  duration_ms: 3.1",
+  "  type: 'test'",
+  "  location: '/repo/scripts/tests/example.test.mjs:10:1'",
+  "  failureType: 'testCodeFailure'",
+  "  error: |-",
+  "    Expected the run to be classified CLEAN. Captured tap text:",
+  "    TAP version 13",
+  "    exitCode: ~",
+  "    signal: 'SIGTERM'",
+  "    1..0",
+  "  code: 'ERR_ASSERTION'",
+  "  name: 'AssertionError'",
+  "  ...",
+  "1..1",
+  "# tests 1",
+  "# suites 0",
+  "# pass 0",
+  "# fail 1",
+  "# cancelled 0",
+  "# skipped 0",
+  "# todo 0",
+  "# duration_ms 12.3",
+  "",
+].join("\n");
+
 // Parent-kill: the whole `node --test` process was signalled (a CI job
 // cancellation, or an operator killing the process group). It dies before
 // printing a final summary at all — only Node's own in-flight marker for
@@ -167,6 +210,12 @@ test("classifyTestRun: a genuine assertion failure is FAILED", () => {
 
 test("classifyTestRun: a whole file crashing (exitCode, unquoted signal: ~) is FAILED, not KILLED", () => {
   assert.equal(classifyTestRun(FAILED_FILE_CRASH), "FAILED");
+});
+
+// THE fix-round-1 regression test: a genuine failure must never read as
+// KILLED just because its own error message quotes signal-shaped text.
+test("classifyTestRun: a genuine failure whose message QUOTES a signal line is FAILED, not KILLED", () => {
+  assert.equal(classifyTestRun(FAILED_WITH_EMBEDDED_SIGNAL_TEXT), "FAILED");
 });
 
 test("classifyTestRun: a child (isolated test-file) process SIGTERM'd is KILLED, not FAILED", () => {
@@ -228,6 +277,18 @@ test("CLI: a missing file argument exits 2 (misuse), not a throw", () => {
   const r = spawnSync(process.execPath, [CLI, "/definitely/not/a/real/file.tap"], { encoding: "utf8" });
   assert.equal(r.status, 2);
   assert.match(r.stdout + r.stderr, /could not read/);
+});
+
+// Fix round 1 (LOW): an unknown flag used to fall through to reading stdin —
+// harmless here (stdin is closed/empty under spawnSync with no `input`), but
+// a real hang on an interactive TTY. Must be rejected before ever touching
+// stdin, so this also proves it never gets there: no `input` is passed, and
+// the assertion is the exit code + message, not "did it eventually exit".
+test("CLI: an unknown flag exits 2 (misuse) and never falls through to reading stdin", () => {
+  const r = spawnSync(process.execPath, [CLI, "--bogus"], { encoding: "utf8", timeout: 5000 });
+  assert.equal(r.signal, null, "the process did not exit on its own — it fell through to a stdin read");
+  assert.equal(r.status, 2);
+  assert.match(r.stdout + r.stderr, /unknown arg --bogus/);
 });
 
 test("classify-test-run.mjs never calls process.exit() from main()", () => {

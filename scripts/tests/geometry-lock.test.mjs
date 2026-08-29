@@ -11,7 +11,7 @@
 // which reads content/spine/geometry-lock.json instead of recomputing it.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { execFileSync, spawnSync } from "node:child_process";
 import { join, dirname, resolve } from "node:path";
@@ -67,6 +67,19 @@ test("hashNodesDir: changes when a node ring moves, is stable when nothing does"
   }
 });
 
+// Fix round 1 (LOW, belt-and-braces): roots.json feeds buildTree's traversal
+// just as much as the node files do, so it must move the hash too.
+test("hashNodesDir: changes when roots.json changes, even with every node file untouched", () => {
+  const repo = makeFixtureRepo();
+  try {
+    const h0 = hashNodesDir({ repoRoot: repo.root });
+    writeFileSync(join(repo.root, "content/spine/roots.json"), JSON.stringify(["n-w", "n-extra"]));
+    assert.notEqual(hashNodesDir({ repoRoot: repo.root }), h0, "editing roots.json did not move the hash");
+  } finally {
+    repo.cleanup();
+  }
+});
+
 test("collectSiblingPairs + computeGeometryLock: exactly the 3 non-point pairs under n-c, areas match a fresh recompute", () => {
   const repo = makeFixtureRepo();
   try {
@@ -90,8 +103,8 @@ test("collectSiblingPairs + computeGeometryLock: exactly the 3 non-point pairs u
 test("checkGeometryLock: --write then --check on the same tree is clean", () => {
   const repo = makeFixtureRepo();
   try {
-    assert.deepEqual(checkGeometryLock({ repoRoot: repo.root, write: true }), { ok: true, drifted: [] });
-    assert.deepEqual(checkGeometryLock({ repoRoot: repo.root }), { ok: true, drifted: [] });
+    assert.deepEqual(checkGeometryLock({ repoRoot: repo.root, write: true }), { ok: true, drifted: [], skip: false });
+    assert.deepEqual(checkGeometryLock({ repoRoot: repo.root }), { ok: true, drifted: [], skip: false });
   } finally {
     repo.cleanup();
   }
@@ -102,7 +115,88 @@ test("checkGeometryLock: --check on a missing lock reports drift, not a throw", 
   try {
     const r = checkGeometryLock({ repoRoot: repo.root });
     assert.equal(r.ok, false);
+    assert.equal(r.skip, false);
     assert.match(r.drifted[0], /geometry-lock\.json is missing/);
+  } finally {
+    repo.cleanup();
+  }
+});
+
+// Fix round 1 (MEDIUM, both reviewers): a typo'd --repo-root used to mkdir
+// content/spine/ in the wrong (empty) tree and write a self-certifying "ok"
+// lock (zero pairs, exit 0) — indistinguishable from a legitimately empty
+// world. A missing content/spine/ must be reported as ROOT misuse (`skip:
+// true`), and --write must refuse it exactly like --check does.
+test("checkGeometryLock: a bad root (no content/spine/ at all) is `skip: true` misuse, and --write refuses it too", () => {
+  const badRoot = mkdtempSync(join(tmpdir(), "geometry-lock-bad-root-"));
+  try {
+    const checked = checkGeometryLock({ repoRoot: badRoot });
+    assert.equal(checked.ok, false);
+    assert.equal(checked.skip, true);
+    assert.match(checked.drifted[0], /no content\/spine\/ directory/);
+
+    const written = checkGeometryLock({ repoRoot: badRoot, write: true });
+    assert.equal(written.ok, false);
+    assert.equal(written.skip, true);
+    assert.ok(
+      !existsSync(join(badRoot, "content/spine/geometry-lock.json")),
+      "a bad root must never self-certify an empty lock",
+    );
+  } finally {
+    rmSync(badRoot, { recursive: true, force: true });
+  }
+});
+
+// A root whose spine/ EXISTS but fails its own validation (unparsable node
+// JSON) is a different problem from a missing root — reported (`skip:
+// false`) rather than treated as misuse, and --write refuses it too rather
+// than baking a lock from partially-broken node data.
+test("checkGeometryLock: a spine with real validation errors is reported (skip: false), and --write refuses it", () => {
+  const repo = makeFixtureRepo();
+  try {
+    writeFileSync(join(repo.root, "content/spine/nodes/n-broken.json"), "{ not valid json");
+    const checked = checkGeometryLock({ repoRoot: repo.root });
+    assert.equal(checked.ok, false);
+    assert.equal(checked.skip, false);
+    assert.ok(checked.drifted.some((d) => /n-broken\.json/.test(d)), checked.drifted.join("; "));
+
+    const written = checkGeometryLock({ repoRoot: repo.root, write: true });
+    assert.equal(written.ok, false);
+    assert.equal(written.skip, false);
+    assert.ok(
+      !existsSync(join(repo.root, "content/spine/geometry-lock.json")),
+      "a spine with validation errors must never bake a lock",
+    );
+  } finally {
+    repo.cleanup();
+  }
+});
+
+// The CLI-level proof of the same MEDIUM fix: --repo-root pointed at an empty
+// directory exits 2 (misuse), not 0.
+test("CLI: --write against a bad --repo-root exits 2 and writes nothing", () => {
+  const badRoot = mkdtempSync(join(tmpdir(), "geometry-lock-bad-root-cli-"));
+  try {
+    const r = runCli(["--write", "--repo-root", badRoot]);
+    assert.ok(r.failed, r.out);
+    assert.match(r.out, /no content\/spine\/ directory/);
+    assert.ok(!existsSync(join(badRoot, "content/spine/geometry-lock.json")));
+  } finally {
+    rmSync(badRoot, { recursive: true, force: true });
+  }
+});
+
+// Fix round 1 (LOW): a lock that exists but fails to PARSE must be reported
+// differently from one that is simply absent — different fixes.
+test("checkGeometryLock: an unparsable (corrupted) lock is reported distinctly from a missing one", () => {
+  const repo = makeFixtureRepo();
+  try {
+    checkGeometryLock({ repoRoot: repo.root, write: true });
+    writeFileSync(join(repo.root, LOCK_REL), "{ this is not json");
+    const r = checkGeometryLock({ repoRoot: repo.root });
+    assert.equal(r.ok, false);
+    assert.match(r.drifted[0], /exists but could not be read\/parsed/);
+    assert.doesNotMatch(r.drifted[0], /is missing/);
   } finally {
     repo.cleanup();
   }
@@ -216,4 +310,37 @@ test("the committed content/spine/geometry-lock.json exists and has the expected
   const keys = Object.keys(doc.pairs);
   assert.ok(keys.length > 0, "the committed lock has no pairs at all");
   for (const k of keys) assert.equal(typeof doc.pairs[k], "number", `${k}: area is not a number`);
+});
+
+// ── fix round 1 BLOCKING: the lock must be wired into something ────────────
+// A lock nobody checks is decoration (workspace rule: "if nothing reads it,
+// it is decoration"). Pinned as source assertions — like
+// scripts/tests/node-pin.test.mjs's ci.yml checks — because the failure mode
+// is a MISSING line, which only a text search can catch, and because this is
+// exactly the class of gap ("wired into nothing") that slipped through
+// review once already.
+test("scripts/integration.sh runs check_geometry_lock.mjs --check as its own Gate 2 section", () => {
+  const sh = readFileSync(join(ROOT, "scripts/integration.sh"), "utf8");
+  assert.match(sh, /check_geometry_lock\.mjs["']?\s+--check/, "integration.sh never calls check_geometry_lock.mjs --check");
+  assert.match(sh, /run_section\s+"[^"]*geometry lock[^"]*"\s+geometry_lock/i,
+    "geometry_lock has no run_section line — it's defined but never invoked");
+});
+
+test(".github/workflows/ci.yml runs Geometry lock (G-GEOMETRY-LOCK) as ITS OWN step, with its own generous timeout, never inside the Content gate step", () => {
+  const ci = readFileSync(join(ROOT, ".github/workflows/ci.yml"), "utf8");
+  const at = ci.indexOf("name: Geometry lock");
+  assert.ok(at >= 0, "no 'Geometry lock' CI step found");
+  const step = ci.slice(at, ci.indexOf("\n\n", at));
+  assert.match(step, /check_geometry_lock\.mjs\s+--check/, "this step does not run check_geometry_lock.mjs --check");
+  const m = step.match(/timeout-minutes:\s*(\d+)/);
+  assert.ok(m, `Geometry lock step has no timeout-minutes:\n${step}`);
+  const minutes = Number(m[1]);
+  // Must be its own step (never folded into the 8-minute Content gate step,
+  // which check_geometry_lock.mjs --check's ~536 s single-threaded cost would
+  // wedge) and generous enough for that measured cost with headroom.
+  assert.ok(minutes >= 15, `timeout-minutes ${minutes} is too tight for a ~536s single-threaded recompute`);
+  const contentGateAt = ci.indexOf("name: Content gate");
+  assert.ok(contentGateAt >= 0 && contentGateAt < at, "Geometry lock step must come after, and be separate from, Content gate");
+  const contentGateStep = ci.slice(contentGateAt, ci.indexOf("\n\n", contentGateAt));
+  assert.doesNotMatch(contentGateStep, /check_geometry_lock/, "check_geometry_lock must not be folded into the Content gate step");
 });
