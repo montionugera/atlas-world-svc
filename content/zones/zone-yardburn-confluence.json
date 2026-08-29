@@ -2,13 +2,13 @@
   "zone": "yardburn-confluence",
   "region": "c05/r20",
   "survey": "surveyed",
-  "reasonToGo": "The east end of the road and the east end of the landmass. Sixty-three kilometres of track from the junction, two thirds of it laid across ground no survey has been over, and at the end of it the only settlement out here. It feeds itself off the bank and the bed — barley on the levee, water dug out of the gravel rather than lifted off it — and sells stone to the trains that came the long way for it.",
+  "reasonToGo": "The east end of the road. Sixty-three kilometres of track from the junction, better than two thirds of it laid across ground no survey has been over, and at the end of it the only settlement out here. It feeds itself off the bank and the bed — barley on the levee, water dug out of the gravel rather than lifted off it — and sells stone to the trains that came the long way for it.",
   "hazards": [
     {
-      "id": "the-bed-that-fills",
-      "name": "The bed that fills",
-      "description": "The channel through this ground is dry for most of the year and then carries the whole of a storm nobody standing in it can see. The noise arrives a few seconds before the water, and the water arrives bank to bank.",
-      "effect": "damage"
+      "id": "the-soft-fan",
+      "name": "The soft fan",
+      "description": "The channel comes onto this ground and gives up, splitting into a fan of shallow threads laid over silt. For weeks after it has run, that fan reads as firm floor in every direction and is a crust over wet sand in half of them, and a laden animal goes through it to the belly a long way from anything that could pull it out.",
+      "effect": "stun"
     },
     {
       "id": "the-eastern-line",
@@ -34,14 +34,14 @@
       "id": "bed-cobble",
       "name": "Bed cobble",
       "kind": "stone",
-      "description": "Rounded stone the floods sorted by size along the channel and left in runs, so a barrow comes up all one grade and needs no breaking. It is the only thing at this end of the road that pays to cart the whole sixty-three kilometres."
+      "description": "Lifted out of the same holes the wells are sunk in. The bed here is stone under a foot of sand, so a party digging for water brings its building material up first and its water up second, and both come out of the one hole."
     }
   ],
   "landmarks": [
     {
       "id": "cindersea-pan",
       "name": "Cindersea Pan",
-      "description": "Ten kilometres of flat ground ribbed with the ghosts of bends the water has abandoned. The barley is on the ribs and the carts run in the hollows between them, so the fields out here are long and narrow and nobody has ever squared one off.",
+      "description": "Ten kilometres of flat pale ground where the channel used to run and does not now. It is dust to the ankle for most of the year and it takes a plough for a few weeks after the bed has filled, and those few weeks are the whole of this region's farming year.",
       "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     },
     {

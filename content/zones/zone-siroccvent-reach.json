@@ -2,7 +2,7 @@
   "zone": "siroccvent-reach",
   "region": "c05/r17",
   "survey": "surveyed",
-  "reasonToGo": "Three of Thirstwold's four roads meet at the village on this ground, and it is the only settlement on the landmass with three roads to it — the other four have two between them and one apiece. What holds the junction together is the silt: the floods lay a levee down below the spring, and the grain grown on it is sold to everybody who has to pass through here to get anywhere. Behind the village the cut ground gives ore, and the sand on the far side gives back what it took off the old line of the road.",
+  "reasonToGo": "Three of Thirstwold's four roads meet at the village on this ground, and it is the only settlement on the landmass with three roads to it: of the other four, one has two and three have one apiece. What holds the junction together is the silt — the floods lay a levee down below the spring, and the grain grown on it is sold to everybody who has to pass through here to get anywhere. Behind the village the cut ground gives ore, and the sand on the far side gives back what it took off the old line of the road.",
   "hazards": [
     {
       "id": "the-cut-ground",

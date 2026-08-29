@@ -80,6 +80,18 @@ const postRedrawRecords = () => {
 /** Every record content/zones/ is supposed to hold today. Task 14 raises it. */
 const COMMITTED_ZONE_IDS = [...ZONE_IDS, ...POST_REDRAW_ZONE_IDS];
 
+// CODE REVIEW (Task 13, MINOR 2): three unrelated `40`s came to sit within one
+// screen of each other — the fabric's surveyed regions, the post-redraw records'
+// landmarks, and A4's row count in zone-allocation.test.mjs. Same value, three
+// different meanings, and a future ratchet move can be applied to the wrong one.
+// They are named here so the assertion says which `40` it is asserting.
+// Deliberately LITERALS and not derivations: each is the deliberate edit that
+// lets the corpus grow, exactly as COMMITTED_ZONE_IDS is.
+/** Surveyed regions the fabric declares, across all 13 continents. */
+const SURVEYED_REGIONS = 40;
+/** Landmarks carried by the records written for derived A4 rows, 2 apiece. */
+const POST_REDRAW_LANDMARKS = 40;
+
 // Real levelBands from content/maps/cluster1-geography.json#zones. No Z-rule
 // reads them, but the fixture geography must be shaped like the real one.
 const ZONE_BANDS = {
@@ -1340,7 +1352,8 @@ test("every committed record joins to a SURVEYED fabric region, one apiece", () 
   for (const f of readdirSync(fabricDir).filter((n) => /^continent-\d+\.json$/.test(n)))
     for (const region of JSON.parse(readFileSync(join(fabricDir, f), "utf8")).regions)
       if (region.survey === "surveyed") surveyed.add(region.id);
-  assert.equal(surveyed.size, 40, "the fabric declares 40 surveyed regions");
+  assert.equal(surveyed.size, SURVEYED_REGIONS,
+    `the fabric declares ${SURVEYED_REGIONS} surveyed regions`);
 
   const seen = new Map();
   for (const f of files) {
@@ -1493,7 +1506,8 @@ test("every landmark source is a real file, and for records written after the re
       checked++;
     }
   }
-  assert.equal(checked, 40, "the post-redraw record set moved — this floor must move with it");
+  assert.equal(checked, POST_REDRAW_LANDMARKS,
+    "the post-redraw record set moved — this floor must move with it");
 
   // The legacy ten: measured debt, in both directions.
   const broken = [];

@@ -2,12 +2,12 @@
   "zone": "barchanburn-reach",
   "region": "c05/r28",
   "survey": "surveyed",
-  "reasonToGo": "The only ground on Thirstwold carrying two settlements: the landmass has five, they stand on four regions, and two of them are here twelve kilometres of road apart. Both are here for the same two things — the one spring on this ground and a crossing that can be walked — and the work is wheat between them, cobble off the gravel fans, and salvage off the sand sea on the west, which at forty-six kilometres is the largest drawn anywhere in the world.",
+  "reasonToGo": "The only ground on Thirstwold carrying two settlements: the landmass has five, they stand on four regions, and two of them are here, twelve kilometres of road apart. One sits at the one spring on this ground and the other within reach of the crossing, and between them the work is wheat on the old river floor, cobble off the gravel fans, and salvage off the sand sea, which at forty-six kilometres is the largest drawn anywhere in the world.",
   "hazards": [
     {
       "id": "the-canyon",
       "name": "The canyon",
-      "description": "The only canyon on the landmass runs eleven kilometres through this region with walls a party cannot get out of quickly. It is the short way between the two settlements and it is the wrong place to be standing when rain that fell somewhere else arrives.",
+      "description": "The only canyon on the landmass runs eleven kilometres through this region and comes out beside the southern settlement. Its walls are not something a party gets out of quickly, and it is the wrong place to be standing when rain that fell somewhere else arrives.",
       "effect": "damage"
     },
     {
@@ -22,13 +22,13 @@
       "id": "spring-wheat",
       "name": "Spring wheat",
       "kind": "crop",
-      "description": "Hard wheat on the strip between the spring and the crossing, watered by hand a row at a time. It is the only work on the landmass a person can do standing in one place all season, and both settlements are built on the strength of it."
+      "description": "Hard wheat on the old river floor between the two settlements, watered by hand a row at a time from the spring. Both settlements are built on the strength of it."
     },
     {
       "id": "fan-cobble",
       "name": "Fan cobble",
       "kind": "stone",
-      "description": "Lifted off the gravel fans where the steep streams hit the flat and drop what they were carrying. The water graded it on the way down, so a load comes up one size and goes onto a cart without being broken."
+      "description": "Prised off the surface of the gravel fans where the steep streams come out of the scarp and drop what they were carrying. Nobody digs a fan: two spades down is the same fan, and there is no reason to lift the same stone twice."
     },
     {
       "id": "sand-sea-salvage",
@@ -47,7 +47,7 @@
     {
       "id": "ford-past-fumewold",
       "name": "Ford past Fumewold",
-      "description": "Five kilometres of flat ground below the crossing, ribbed with the ghosts of bends the water gave up. The wheat is on it, and the ribs are why the fields between the two settlements are long and narrow rather than square.",
+      "description": "Five kilometres of old river floor between the two settlements, left in shallow curved steps by water that does not run in it now. The wheat is on the steps, and a cart coming up the region climbs one low bank after another to get through it.",
       "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     }
   ]

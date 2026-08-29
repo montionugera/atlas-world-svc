@@ -13,7 +13,7 @@
     {
       "id": "nothing-to-steer-by",
       "name": "Nothing to steer by",
-      "description": "Every other ground on the landmass gives a party something to take a line off — a ridge, a scarp, a bed, a dune front. This one gives nothing, in any direction, and a party that is off its line has no way of learning that it is off its line until it runs out of days.",
+      "description": "Every other ground the survey has walked gives a party something to take a line off — a ridge, a scarp, a bed, a dune front. This one gives nothing, in any direction, and a party that is off its line has no way of learning that it is off its line until it runs out of days.",
       "note": "Absence hazard: the harm is the landmark that is not there. Nothing in the runtime enum expresses ground with no feature in it."
     }
   ],
@@ -22,7 +22,7 @@
       "id": "lag-gravel",
       "name": "Lag gravel",
       "kind": "stone",
-      "description": "The stone floor the wind leaves behind when it takes the sand off it. It comes up already sorted and already graded, so it is shovelled into sacks and carried whole, and no part of the work is quarrying."
+      "description": "There is no pavement on the sheet here and no seam under it. What a party carries out is the coarse stuff the wind leaves standing when it takes the fine sand off a patch of floor — shovelled where it has collected, never quarried, and collected somewhere different every year, because the floor it gathers on moves."
     },
     {
       "id": "faceted-cobble",

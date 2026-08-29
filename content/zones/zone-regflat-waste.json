@@ -2,18 +2,18 @@
   "zone": "regflat-waste",
   "region": "c05/r23",
   "survey": "surveyed",
-  "reasonToGo": "Three grounds in one region: broken rock along the western foot, a salt floor and a stone pavement through the middle, and a single ridge of sand nearly twenty kilometres long lying across the east. No road comes onto it and nobody lives on it, so everything is carried in and everything is carried out, and a party picks one of the three and leaves the other two alone for the season.",
+  "reasonToGo": "Broken rock down the whole western side of this region and sand over the rest of it. The longest rock spine drawn anywhere runs the west; the east carries a salt floor, a stone pavement and a single ridge of sand nearly twenty kilometres long, lying over one another. No road comes onto it and nobody lives on it, so everything is carried in and everything is carried out, and a party works one side or the other and leaves the rest alone for the season.",
   "hazards": [
     {
       "id": "the-long-ridge",
       "name": "The long ridge",
-      "description": "The sand ridge lies with the wind rather than across it, which means it runs nearly twenty kilometres in the direction nobody wants to go and cannot be walked round inside a day. The lee face stands at the steepest angle sand will hold, and a party that digs at the foot of it brings the face down.",
+      "description": "The sand ridge lies with the wind rather than across it, which means it runs nearly twenty kilometres end to end and cannot be walked round inside a day. The lee face stands at the steepest angle sand will hold, and a party that digs at the foot of it brings the face down.",
       "effect": "damage"
     },
     {
       "id": "the-white-floor",
       "name": "The white floor",
-      "description": "The salt crust and the stone pavement together are most of the middle of this region: flat, pale, and with nothing on them to break the light. The glare off them at midday burns a face from underneath, and there is no shade between the rock and the sand to sit it out in.",
+      "description": "The salt crust and the stone pavement lie across the east of this region together: flat, pale, and with nothing on either of them to break the light. The glare off them at midday burns a face from underneath, and there is no shade between the rock and the sand to sit it out in.",
       "effect": "burn"
     }
   ],
@@ -47,7 +47,7 @@
     {
       "id": "yardang-across-emberwater",
       "name": "Yardang across Emberwater",
-      "description": "One of three wind-cut rock ridges standing in a line here, two and a half kilometres of it, cut to an edge on the side the wind comes from and undercut on the other. Eight are charted in the world and all eight are on Thirstwold.",
+      "description": "One of three wind-cut rock ridges standing on this ground, two and a half kilometres of it, cut to an edge on the side the wind comes from and undercut on the other. Eight are charted in the world and all eight are on Thirstwold.",
       "source": "docs/worldbuilding/A4-zone-allocation.md#5"
     }
   ]
