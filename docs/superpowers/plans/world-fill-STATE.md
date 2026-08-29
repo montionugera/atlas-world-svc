@@ -4339,3 +4339,107 @@ by one record.
 **7/7 inside ±8%** · spine-emit **clean, 39 files** · world-digest **matches** · render-lock **clean,
 44 artifacts** · A4 `--check` **40 rows, matches** · scripts suite **1286/1286** · mapforge
 **786/786** · storybook **86/86** · repro **6/6** · `precheck.sh --no-install` **GATE 1 PASS**.
+
+### TASK 12 — Stonemoor's seven, and the four ways the plan's own text was stale (2026-08-29)
+
+**The plan's Task 12 is not the authority and measurement says so in four places.** A4 §5 is, and the
+Task 11 agreement test fails the record rather than the table. Measured, not assumed:
+
+1. **The regions.** The plan writes rows `c04/r01`–`c04/r07`. Stonemoor's surveyed seven are
+   `r01, r07, r12, r15, r19, r25, r28` — **not contiguous**; `r02`–`r06` are reported.
+2. **The slugs.** All seven of the plan's (`netstead-bight`, `drowned-pavement`, `slateflow-sink`,
+   `fenster-clints`, `polje-lake`, `cenote-stair`, `pavement-edge`) are invented. A4 mints
+   `grikepot-head, shalegill-fenster, tarnmoor-stair, grykefell-stack, limepot-sink,
+   clintlack-fenster, flaggrike-geo`.
+3. **The kinds.** Five of the plan's seven records take `fuel` or `timber`. A4 §1's licence gate
+   **asserts outright that Stonemoor licenses neither**, and per-region measurement agrees: the seven
+   license at most `{crop, ore, stone, water, forage, salvage}` and never those two. `crop` is
+   licensed by river biome (4.1 / 7.7 / 2.7 / 7.0 % on r01/r12/r25/r28) and by nothing else here;
+   `forage` on r01 and r15 only, off `machair`; `ore` and `stone` off 92.3–100 % karst everywhere.
+4. **The citations — STATE §28's prediction, now measured.** The plan routes landmark `source` at
+   `A2-wider-world.md#3` and at `content/world/resolved/continent-04.json`. Neither carries a single
+   one of the 14 names. Watched red: mutating one source to `A2#3` gives *`limepot-sink: landmark
+   "Shalesink Mere" cites docs/worldbuilding/A2-wider-world.md#3, which does not carry the name`*.
+   All 14 cite `A4-zone-allocation.md#5` (verified present, 14/14).
+
+**Three canon pins on c04 — `Slateflow Sink` (r17), `Stonemoor Shore` (r16), `The Drowned Pavement`
+(r22) — are all on REPORTED ground and none is claimed by the seven.** The plan's Step 3 tells its
+author to write the Slateflow's sink; that region is not in the surveyed set at all.
+
+**THE ROAD TRAP, fourth occurrence, caught by the content review and confirmed independently.** Four
+records asserted road facts the fabric's own polylines refute. Point-in-polygon of all 10 c04 roads
+against all 28 region rings, **surveyed AND reported**:
+
+```
+rd01 netstead->s05 : r21(rep) > r16(rep) > r15(SURVEYED) > r16(rep) > r12
+rd07 netstead->s02 : r21(rep) > r26(rep) > r27(rep) > r28
+rd05 s09->s07      : r07 > r09(rep) > r03(rep) > r04(rep) > r01
+```
+
+`grykefell-stack` was written on "no road reaches it" and built a boat-only economy on it — **rd01
+crosses it, 11 of 54 points, the north-east corner**, while the region's placed sea-cave and spit sit
+at x≈249.8, 8–12 km west of the nearest road point. `tarnmoor-stair` and `flaggrike-geo` each claimed
+"the first ground" their road reaches; both are the first **settled** ground, with reported regions
+ahead of them. This is *absence of survey published as absence of the thing* one more time, in its
+road form. `shalegill-fenster` claimed the western moor's whole traffic — the route table refutes it
+(`r12`'s two villages reach the port on rd02+rd01 without touching r07) and the funnel is **Tarnmoor**,
+where all four western villages do converge.
+
+**Superlatives published, each with the whole-fabric number behind it.** Four more were deleted as
+false or uncloseable: `flaggrike`'s "the one water on this coast" (r28 carries **6** surface waters);
+`clintlack`'s "the last open water on the road east" (r25 carries **6**, incl. a 30.28 km enclosed
+basin its own `reasonToGo` names); `clintlack`'s "as high as Stonemoor goes" — **`elevationM` exists
+on 0 of 28 regions**, the only 4 readings on c04 are in `pinReceipts`, and the highest is in **r17**;
+and `limepot`'s "biggest sheet of bare split rock", which is *true* (8.15 km, largest of **15**
+pavement instances on c04) but **uncloseable**, because the two hand-pinned canon pavements carry
+`sizeKm: null` and are silently excluded. Two survive and are stated: **`c04/s09` is the only
+degree-3 settlement on Stonemoor** (degrees over all 11 settlements incl. the reported-ground capital:
+3,2,2,2,2,2,2,2,1,1,1) and **`c04/r19` is the only surveyed region with neither a village nor a road**
+(12 regions have neither; the other 11 are all reported).
+
+**CODE — the citation rule read a hand-list, so narrowing the list exempted records from it.**
+Reproduced at **77 pass / 0 fail** with all seven Stonemoor records dropped out of the rule and the
+corpus left whole. The rule now iterates a set **derived** the way `zone-allocation.test.mjs` derives
+it (committed minus reserved-canon-slug), with the hand-list cross-checked against it and kept purely
+as the corpus ratchet — deriving the ratchet too would make its own directory `deepEqual` circular.
+Both mutations watched: narrowing the list reds the cross-check (76/1); **stubbing the cross-check
+AND the floor still reds** (76/1), because the rule no longer reads the list at all.
+
+`covered.size === 23` is **deleted**: it could not fail, being arithmetically forced by a name-level
+`deepEqual` 15 lines above it (stubbed + two records on one region → still 2 red; stubbed + a record
+deleted → still 7 red). `files.length` is derived from `COMMITTED_ZONE_IDS` rather than being a fourth
+copy of the number. Confirmed clean by the code review and not changed: the legacy ten's broken-citation
+debt is still **14** and fails in both directions; an eighth record cannot slip past the citation rule;
+all five wrongness mutations red the gate with a specific message; JSON hygiene byte-matches the
+Coldreach six.
+
+**FILED, NOT CHASED.**
+
+- **`ore` carries zero discriminating information on Stonemoor.** The predicate is `BIOME(karst) > 0`
+  and every c04 region is 92.3–100 % karst, so all seven records license `ore` and every difference
+  between them is authorial. `scripts/lib/zone-allocation.mjs:131`. Tasks 13–14 meet the same shape on
+  Thirstwold, where `salvage` fires off `BIOME(desert) > 0`.
+- **A2 §3 vs the interior records is strictly worse than the Coldreach case already filed for Task 15.**
+  A2 calls Stonemoor's interior *"not even rumor"*, and **two of the seven — `c04/r12` and `c04/r19` —
+  carry zero coastal instances**, so confident daily-life prose is now written for ground canon says
+  nobody has reported. Coldreach's six are all on the charted shore. Task 15's scope should say so.
+- **A zone landmark and a drawn landmark can still describe one feature under two names** (carried
+  forward from Task 11). All 14 were grounded on instances with `named: false`, checked region by
+  region, but nothing enforces it: neither `instances[]` nor `landmarks[]` carries an
+  instance→landmark id.
+- **`clintlack`'s "enclosed water the sea does not reach" is the fabric's `inland-sea-basin`, 1 of 306
+  instances on c04** — while the design's Stonemoor row assigns its 300 km² of interior water to
+  "flooded dolines and a polje lake" and gives the inland sea to Wealdmarch
+  (`docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md:450`). The
+  fabric wins and the prose is scoped to avoid the word "sea", but the two documents disagree.
+- **`content/zones/*.json`'s `spineId` is still unset on all twenty-three** (carried forward from
+  Tasks 9–11).
+
+**FINAL VERIFICATION, all on the committed tree at `e6ab142`.** spine gate **0 failures / 8 warnings /
+36 nodes** · `check_content --require-complete` **19 failures** = 17 `surveyed region … has no record`
++ `town-millcross` + `placement-thornveil`, **0** other zone-gate lines, **23 zones** (was 26 / 16) ·
+hazard ratio **18 of 49** unmapped, down from 16 of 35 · canon legs **7/7 inside ±8%** · spine-emit
+**clean, 39 files** · world-digest **matches** · render-lock **clean, 44 artifacts** · A4 `--check`
+**40 rows, matches** · scripts suite **1286/1286** · mapforge **786/786** · storybook **86/86** ·
+zone-content **77/77** · zone-allocation **33/33** · repro **OVERALL PASS** · `precheck.sh
+--no-install` **GATE 1 PASS**, 12 of 12 sections.
