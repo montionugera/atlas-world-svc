@@ -9,6 +9,20 @@
 // same sha256 truncated to 16 hex. The parity test at the bottom enforces it.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { webcrypto } from "node:crypto";
+
+// Environment shim, not a source-code change: staleness.mjs is browser-
+// targeted and correctly reads the global `crypto` (real browsers always
+// have it). Node only made that global unflagged/unconditional in v19+; on
+// CI's pinned Node 18 it is undefined, so ReferenceError: crypto is not
+// defined fires before digestHex ever runs. Polyfilling the global here
+// (Node's own WebCrypto implementation, standards-identical to a browser's)
+// makes the test host match what a browser already provides, without
+// touching the module under test or its browser codepath.
+if (typeof globalThis.crypto === "undefined") {
+  globalThis.crypto = webcrypto;
+}
+
 import { canonicalBriefString, digestHex, markStale, parseLedgerText } from "../js/forge/staleness.mjs";
 
 test("canonicalBriefString sorts keys and drops _note", () => {
