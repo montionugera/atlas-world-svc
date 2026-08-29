@@ -652,5 +652,11 @@
     "title": "Design spec and fabric disagree on which continent owns the inland sea",
     "created_at": "2026-08-29T09:19:12.565950+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-110",
+    "title": "G-POI floor downgrades are guarded only by a hardcoded warning count",
+    "created_at": "2026-08-29T09:19:13.092220+00:00",
+    "promoted_to": null
   }
 ]
