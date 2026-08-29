@@ -27,11 +27,15 @@ the whole epistemology, so it is stated before any name is:
   a charted coast is not known, not named beyond the chart's own region words, and not peopled.
 - **Reported ≠ surveyed.** Every mark here is another crew's word. Where the marks disagree, the
   chart keeps the hatching and the doubt.
-- **Unnamed marks stay unnamed.** The outlying isles of the three chains carry no names
-  (`attrs.name: null` on their features) — they exist only by mariners' report, and an unnamed
-  mark on a chart is the honest register for that.
+- **Unnamed marks stay unnamed on THIS chart.** The outlying isles of the three chains still carry
+  no names on it (`attrs.name: null` on their features) — a Gildmark-compiled chart only names what
+  a Gildmark log names. Ground behind some of these coasts has since been surveyed and written up in
+  its own right (`content/zones/`, `A4-zone-allocation.md`), with names of its own; that record does
+  not feed back onto this sheet, which stays exactly what a wharf-side chart can honestly show.
 - **Nobody from the basin has walked any of this.** The one harbor on this sheet any reporting
-  master has actually tied up in is Tallowquay; everything else is wharf-talk and log-lines.
+  master has actually tied up in is Tallowquay; everything else is wharf-talk and log-lines. That a
+  coast has since turned out to have people of its own living on it — surveyed, not by a basin
+  expedition — does not make it something a Gildmark sailor has walked.
 
 ## 2. The two lanes
 

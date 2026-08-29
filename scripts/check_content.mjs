@@ -69,6 +69,17 @@ import { checkWorldCivil } from "./lib/resolve.mjs";
 // Plan E Task 1: G-CITE. Line citations to canon.md rot on insert; the section
 // form is checked for resolution. Full sweep only — never --only=spine.
 import { checkCitations } from "./lib/citations.mjs";
+// Plan E Task 15 (F-051 completion Task 1) — reconciling prose to the
+// redrawn world. G-AMENDED/G-TOWER-RELAY/G-LM-CITE are the machine half of
+// that reconciliation, so a future edit that reintroduces a stale marker, a
+// tower/relay assertion, or a broken legacy-landmark citation reds the gate
+// instead of waiting for the next human content review. Full sweep only.
+import {
+  checkAmendedPending,
+  checkTowerRelayAssertions,
+  checkLegacyLandmarkCitations,
+} from "./lib/prose-audit.mjs";
+import { legacyPlaceholderRecords } from "./lib/zone-allocation.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -422,9 +433,28 @@ function main() {
   // spine gate set. Soft-skips a content root without content/story/canon.md,
   // the same discipline loadSpine() uses for a missing spine dir.
   const canonPath = join(opts.contentRoot, "story/canon.md");
-  if (existsSync(canonPath))
+  if (existsSync(canonPath)) {
     for (const p of checkCitations({ repoRoot: ROOT, canonText: readFileSync(canonPath, "utf8") }))
       fail(p);
+    // Plan E Task 15 (F-051 completion Task 1). Same full-sweep-only
+    // discipline as G-CITE just above, INCLUDING its soft-skip: these three
+    // also read the prose corpus at the real repo root rather than the
+    // fixture-able content root, so they are gated on the same
+    // content/story/canon.md existence check G-CITE uses — a content root
+    // built for the Z-rule fixtures (zone-content.test.mjs, no content/story
+    // at all) must not have the LIVE repo's corpus leaking into what is
+    // supposed to be a hermetic run, the same failure class the "Hermeticity"
+    // comment on that fixture's own runGate() already guards against.
+    for (const p of checkAmendedPending({ repoRoot: ROOT })) fail(p);
+    for (const p of checkTowerRelayAssertions({ repoRoot: ROOT })) fail(p);
+    // Scoped to the legacy ten (A4 §2's PLACEHOLDER set): the other derived
+    // records all cite the generated A4-zone-allocation.md#5, which is
+    // minted from the same landmark names and cannot drift from them the way
+    // a hand-authored citation can.
+    const legacyZones = legacyPlaceholderRecords({ root: ROOT }).map((r) => r.zone);
+    for (const p of checkLegacyLandmarkCitations({ repoRoot: ROOT, contentRoot: opts.contentRoot, legacyZones }))
+      fail(p);
+  }
   const nodeCount = checkSpine(opts, mobTypes);
   return finish(sheetCount, mapCount, story.count, placementCount, zoneCount, townCount, nodeCount);
 }

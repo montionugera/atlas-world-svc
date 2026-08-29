@@ -42,7 +42,7 @@
       "id": "the-dead-gate",
       "name": "The dead gate",
       "description": "The city's own gate, held now from the outside, with the wall standing clean on either side of it.",
-      "source": "content/maps/cluster1-geography.json#towns[cindervast].wallsOnly.gateAt"
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#2.1"
     }
   ]
 }

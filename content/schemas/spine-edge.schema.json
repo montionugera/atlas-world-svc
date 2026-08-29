@@ -84,8 +84,7 @@
         "geoFrom": { "type": "string" },
         "geoTo": { "type": "string" },
         "sailDays": { "type": "number" },
-        "season": { "type": "string" },
-        "amendedPending": { "type": "string" }
+        "season": { "type": "string" }
       }
     }
   },

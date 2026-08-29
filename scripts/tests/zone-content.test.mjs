@@ -1558,12 +1558,21 @@ test("Z0: every committed record's zone slug is kebab-case", () => {
 // covers it — so this is the only thing standing between a citation and rot,
 // which is the fifth time this programme has had that conversation (spec 9.6).
 //
-// The LEGACY TEN are measured, not fixed. They are canon and preserved byte for
-// byte under the owner's ruling, and they carry 14 broken citations of their
-// own: 12 names their cited doc does not contain, and 2 pointing at
-// content/maps/cluster1-geography.json, a file the redraw retired. That is Task
-// 15's prose reconciliation. It is pinned as a NUMBER here so it cannot grow
-// quietly and cannot be quietly declared fixed.
+// The LEGACY TEN are canon and preserved byte for byte under the owner's
+// ruling EXCEPT for `source` — Task 15 (F-051 completion Task 1) reconciled
+// every citation without touching a kind, region or description: the 2
+// pointing at content/maps/cluster1-geography.json (a file the redraw
+// retired) were re-pointed at docs/worldbuilding/A1-geography-cluster1.md,
+// and the 12 name-absent ones were closed by making the cited section carry
+// the landmark's exact name — mostly a stray "the" (a table cell or a
+// markdown `**bold**` split had broken the contiguous phrase), and Hollowmarch's
+// "ore heads" row text was also corrected once, alongside the resource
+// itself, since it was the same false claim as the JSON. Debt: 14 -> 0.
+// Was pinned as a NUMBER so it could not grow quietly or be quietly declared
+// fixed; now pinned at 0 for the same reason a regression here is silent
+// otherwise. `scripts/lib/prose-audit.mjs`'s `checkLegacyLandmarkCitations`
+// (G-LM-CITE, wired into check_content.mjs) runs the SAME whole-name
+// substring rule as a live gate, so a future edit reds before it ships.
 // ---------------------------------------------------------------------------
 test("every landmark source is a real file, and for records written after the redraw it carries the name", () => {
   const carries = (source, name) => {
@@ -1598,7 +1607,7 @@ test("every landmark source is a real file, and for records written after the re
     for (const l of doc.landmarks)
       if (l.source && carries(l.source, l.name) !== "ok") broken.push(`${id}/${l.name}`);
   }
-  assert.equal(broken.length, 14,
-    `the legacy ten's broken-citation debt moved to ${broken.length} (was 14). Growing it is a defect; `
-    + "shrinking it means Task 15 landed and this number should be updated, not deleted");
+  assert.equal(broken.length, 0,
+    `the legacy ten's broken-citation debt moved to ${broken.length} (was 0, after Task 15). `
+    + "Any regrowth here is a defect, not a stale pin.");
 });

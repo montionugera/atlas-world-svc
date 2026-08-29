@@ -57,14 +57,12 @@ Known only from prose. `regions.json` carries **no coordinates, no bounds, no ad
 
 - **Millcross** is "the literal hub — every road elsewhere passes through or near it" (`canon.md §4 "Geography & trade logic"`).
 - The **Northern Icefield** lies "further north past Millcross's expedition camp"; **Thornveil**'s bramble forest lies "east of Millcross" (`canon.md §4 "Geography & trade logic"`).
-- **Embervale** and **Norhollow** sit on either side of the **Ashvale plain**, "roughly a day's ride apart in peacetime"; **Ashvale Front** is the contested middle, "neither town claims it, both bury their dead in it" (`canon.md §4 "Geography & trade logic"`).
-- **Gildmark** sits on the coast: 4–5 days from Millcross by the old trade road, ~3 days from the war towns by a coastal spur. Its harbour is "the only deepwater port on this coast" (`canon.md §4 "Geography & trade logic"`).
-- **Rooktide** is inland, south of Millcross, about 2 days, off the war road entirely (`canon.md §4 "Geography & trade logic"`).
+- **Embervale** and **Norhollow** sit on either side of the **Ashvale plain**, "half an hour's ride apart in peacetime"; **Ashvale Front** is the contested middle, "neither town claims it, both bury their dead in it" (`canon.md §4 "Geography & trade logic"`).
+- **Gildmark** sits on the coast: 2.5 h from Millcross by the old trade road, 1.5 h from the war towns by a coastal spur. Its harbour is "the only deepwater port on this coast" (`canon.md §4 "Geography & trade logic"`).
+- **Rooktide** is inland, south of Millcross, 1 h, off the war road entirely (`canon.md §4 "Geography & trade logic"`).
 - **Cindervast** lies "beyond Ashvale Front to the north-west" (`canon.md §4 "Geography & trade logic"`).
 
-The entire land is therefore crossable in under a week. This is the only travel-time data in the corpus; nothing in the JSON encodes it.
-
-**AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.** (the day-count bullets above and "crossable in under a week" are the pre-F-045 model; all committed road legs are now ≤2 h except the Cindervast haul, per `docs/superpowers/specs/2026-08-15-world-rescale-design.md` §1.)
+The entire land is therefore crossable in a few hours — every committed road leg is ≤2 h except the Cindervast haul, per `docs/superpowers/specs/2026-08-15-world-rescale-design.md` §1. This is the only travel-time data in the corpus; nothing in the JSON encodes it.
 
 **(b) The shipped illustrated map**, a hand-authored inline SVG at `docs/story/undertow/novel-illustrated-edition.html:348` (viewBox `760×600`), labelled `แผนที่แผ่นดิน` ("map of the land"). Positions, read from the SVG's own text coordinates:
 
@@ -227,11 +225,9 @@ Three layers, two speeds — the world's single most developed system.
 2. **Bell-wardens proclaim.** The detail is read aloud beneath the tower; people trust it because the sacred toll summoned them.
 3. **The bell-seal certifies provenance, not truth.** Inter-town proclamations carry weight only when stamped, but what the stamp attests is that a statement was given to the Bellfaith and recorded — never that it is accurate (F-035). "An unsealed proclamation is just a rumor with good staging"; a sealed one is a rumor somebody put their name to. The seal is state news agency and notary in one, and the notary half is literal. Forging it is possible and worthless.
 
-**Fast signals (hours)** — relay towers along ridgelines pass layer-1 codes to all six towns within hours. **Slow detail (days)** — the sealed proclamation travels by bell-rider or message-bird at road pace.
+**Fast signals (hours)** — each town's own bell relays layer-1 codes to the next town's along the trade roads, reaching every town on the network within hours. **Slow detail** — the sealed proclamation travels the same roads by bell-rider or message-bird, at the same pace as any other road traffic (every committed road leg is now ≤2 h except the Cindervast haul).
 
-**The exploit:** the gap between hours and days is where truth is decided; whoever's version of the detail arrives first is the version that sticks. The Broker's riders always ride it faster, and riders carrying inconvenient proclamations get robbed "unusually often" (`canon.md §4 "How news travels (the Bellfaith, three layers, two speeds)"`).
-
-**AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.** ("Slow detail (days)" above and the road-pace figure it implies are the pre-F-045 model; every committed road leg is now ≤2 h except the Cindervast haul.)
+**The exploit:** the gap between a bare category and the full sealed detail is where truth is decided; whoever's version of the detail arrives first is the version that sticks. The Broker's riders always ride it faster, and riders carrying inconvenient proclamations get robbed "unusually often" (`canon.md §4 "How news travels (the Bellfaith, three layers, two speeds)"`).
 
 **Gildmark's edge:** the **far-mirrors**, a Gildmark monopoly, are the one channel faster than the fast signal — a private line outside the relay chain entirely (`canon.md §4 "How news travels (the Bellfaith, three layers, two speeds)"`). One harbour ledger line values them above the entire fleet (`lore-the-second-harbor-entry`).
 
@@ -451,8 +447,8 @@ The charter (§1) already records "World scale: **Large**, comparable to a major
 2. **"This is a war of towns, not of a kingdom, so every corpse has a name, and every name has a family."** Forces are "หลักร้อยถึงพัน ไม่ใช่หมื่น" — hundreds to a thousand, not tens of thousands (`core-story.md:59`).
 3. **No standing armies existed before the war** — only town guards numbering in the dozens, because after Cindervast the land feared armies as much as central power (`core-story.md:59`).
 4. **Nothing exists between the towns** — no federation, no common law, no central court; only two cross-border institutions, both destroyed in act 1 (`core-story.md:57`).
-5. **The whole land is crossable in under a week.** Embervale to Norhollow is a day's ride; Millcross to Gildmark 4–5 days; the war towns to Gildmark ~3; Millcross to Rooktide ~2 (`canon.md §4 "Geography & trade logic"`). **AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.**
-6. **A single bell relay chain reaches all six towns within hours** of the first tower ringing (`canon.md §4 "How news travels (the Bellfaith, three layers, two speeds)"`). The Broker's entire method is the hours-versus-days gap this produces.
+5. **The whole land is crossable in a few hours.** Embervale to Norhollow is half an hour's ride; Millcross to Gildmark 2.5 h; the war towns to Gildmark 1.5 h; Millcross to Rooktide 1 h (`canon.md §4 "Geography & trade logic"`).
+6. **A single bell relay chain reaches every town on the network within hours** of the first bell ringing (`canon.md §4 "How news travels (the Bellfaith, three layers, two speeds)"`). The Broker's entire method is the gap between a bare category and the full sealed detail this produces.
 7. **Millcross is "the literal hub — every road elsewhere passes through or near it"** (`canon.md §4 "Geography & trade logic"`).
 8. **Gildmark is the only deepwater port on the coast and the land's only door to the outside world** (`canon.md §4 "Geography & trade logic"`; `core-story.md:26`).
 9. **One man's horses cover the whole land.** The Broker's riders "always ride that gap faster than anyone else's" on every road (`canon.md §4 "How news travels (the Bellfaith, three layers, two speeds)"`).

@@ -36,7 +36,7 @@
       "id": "the-expedition-camp",
       "name": "The expedition camp",
       "description": "Tents, picket lines and a stove that is never let out, set back from the highest braid.",
-      "source": "content/maps/cluster1-geography.json#camps[expedition-camp]"
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#2"
     },
     {
       "id": "the-gravel-bars",

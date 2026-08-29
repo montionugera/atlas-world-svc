@@ -23,8 +23,7 @@
       "name": "the trade road",
       "roadKm": 11,
       "labelAtIndex": 1,
-      "note": "A1 §5.1: north-west off the ford, around the mire's head. canon.md §4 does not state this leg; A1 derives 2 days.",
-      "amendedPending": "AMENDED-PENDING (I-095): note above cites the pre-F-045 day-count derivation (A1's '2 days') — this leg is now 11 km / 1 h on the rescaled world.",
+      "note": "A1 §5.1: north-west off the ford, around the mire's head. canon.md §4 does not state this leg; on the rescaled world it is 11 km / 1 h.",
       "hours": 1,
       "hoursLabel": "1 h"
     }
@@ -55,8 +54,7 @@
       "name": "the coastal spur",
       "roadKm": 17,
       "labelAtIndex": 5,
-      "note": "canon.md §4: Gildmark is about 3 days from both war towns by a coastal spur. Already past the mire when it starts.",
-      "amendedPending": "AMENDED-PENDING (I-095): note above cites the pre-F-045 day-count claim ('about 3 days') — this leg is now 17 km / 1.5 h on the rescaled world.",
+      "note": "canon.md §4: Gildmark is a coastal spur from both war towns. Already past the mire when it starts; on the rescaled world this leg is 17 km / 1.5 h.",
       "hours": 1.5,
       "hoursLabel": "1.5 h"
     }
@@ -91,8 +89,7 @@
         "hours": 1.5
       },
       "labelAtIndex": 2,
-      "note": "A1 §5.1: the east-rim track joins the spur near Emberdown; the 3-day count is for the whole Norhollow → Gildmark run (~95 km), of which this leg is the eastern ~43 km.",
-      "amendedPending": "AMENDED-PENDING (I-095): note above cites pre-F-045 absolute km (~95 km whole run, ~43 km eastern leg) and the day-count derivation — this leg is now 8.6 km / 1 h (throughRoute to Gildmark: 19 km / 1.5 h) on the rescaled world.",
+      "note": "A1 §5.1: the east-rim track joins the spur near Emberdown, the eastern leg of the whole Norhollow → Gildmark run. On the rescaled world this leg is 8.6 km / 1 h (throughRoute to Gildmark: 19 km / 1.5 h).",
       "hours": 1,
       "hoursLabel": "1 h"
     }
@@ -119,8 +116,7 @@
       "name": "the crossing of the flat",
       "roadKm": 6,
       "labelAtIndex": 2,
-      "note": "canon.md §4: sister towns roughly a day's ride apart; wartime crossing is under a day, which is exactly why the front is so lethal.",
-      "amendedPending": "AMENDED-PENDING (I-095): note above cites the pre-F-045 day-count claim ('a day's ride') — this leg is now 6 km / 0.5 h on the rescaled world.",
+      "note": "canon.md §4: sister towns close enough that wartime crossing is faster than peacetime traffic, which is exactly why the front is so lethal. On the rescaled world this leg is 6 km / 0.5 h.",
       "hours": 0.5,
       "hoursLabel": "0.5 h"
     }
@@ -148,8 +144,7 @@
       "name": "the river road",
       "roadKm": 12,
       "labelAtIndex": 2,
-      "note": "canon.md §4: Rooktide sits inland, south of Millcross, about 2 days. Follows the river's south bank.",
-      "amendedPending": "AMENDED-PENDING (I-095): note above cites the pre-F-045 day-count claim ('about 2 days') — this leg is now 12 km / 1 h on the rescaled world.",
+      "note": "canon.md §4: Rooktide sits inland, south of Millcross, off the war road entirely. Follows the river's south bank; on the rescaled world this leg is 12 km / 1 h.",
       "hours": 1,
       "hoursLabel": "1 h"
     }

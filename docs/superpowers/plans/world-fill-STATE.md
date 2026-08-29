@@ -4622,3 +4622,144 @@ occurrence had. 46 prose corrections in all; 11 claims deleted as unmeasurable o
 - `content/zones/*.json`'s `spineId` is still unset on all forty (carried from Tasks 9-13).
 - `scripts/tests/geometry-exact.test.mjs` still runs ~460 s and still wedges whole-directory
   `node --test` runs; another lane owns the fix.
+
+### TASK 15 (F-051 completion Task 1) — prose reconciled to the redrawn world, two no-ops confirmed, one new ruling needed
+
+**Re-measured before touching anything, at `54c2ee6` (tree clean).** Step 1's exact commands matched
+the plan's premise precisely: 22 `AMENDED-PENDING` markers (canon 5, edges.json 5, n-atlas.json 1, A1
+7, A0 3, A2-zones 1) and 24 case-insensitive tower/relay occurrences in `content/story/*.json` (lore
+12, quests 9, events 2, dialogue 1). Both now measure zero.
+
+**TWO NO-OPS VERIFIED, NOT PERFORMED.**
+1. **The `canon.md:<digits>` citation repair (plan Step 6).** `grep -rn "canon\.md:[0-9]" content
+   docs/worldbuilding` returns zero hits. `scripts/lib/citations.mjs`'s G-CITE already enforces the
+   section-citation form corpus-wide and its own live-corpus test
+   (`scripts/tests/citations.test.mjs:98`) is green. Nothing to do.
+2. **G-MEANING (plan Step 7).** `scripts/lib/resolve.mjs:586 gMeaning` is real code, not dead code —
+   it re-derives every authored relation against the resolved world and fails on drift. It is
+   *structurally* blind to towers/town-count because no authored relation encodes either: the corpus
+   holds **31 relations total** (`content/world/relations/c0*.json`, summed: c01 2, c02 21, c03 3,
+   c04 2, c05 0, c06 1, c07 1, c08 0, c09 1, c10-c13 0 — **21 of 31 on one continent, six continents
+   at zero**), and every one of the 31 is a geometric/compositional claim (bearing, distance,
+   containment), never a settlement-count or infrastructure claim. There is no G-MEANING work this
+   task could add; the gap is in what got AUTHORED as a relation, not in the gate.
+
+**THE 22 MARKERS, RE-VOICED WITH MEASURED HOUR FIGURES, NOT INVENTED ONES.** Every distance quoted
+below comes from `content/spine/edges.json`'s own `hours`/`roadKm` fields (the F-045 rescale's
+output), never a fresh guess: Embervale↔Norhollow 0.5 h, Millcross↔Rooktide 1 h, Millcross↔Embervale
+1 h, Embervale↔Gildmark 1.5 h, Millcross↔Gildmark 2.5 h, Norhollow↔Gildmark 1.5 h,
+Cindervast↔Rooktide 3.5 h (the longest committed leg — "the Cindervast haul" every marker's own hint
+text names), Coldreach 1.5 days' sail, Stonemoor 1 day's sail (both `sailDays` on their `sealane`
+edges, distinct from the road legs). Two markers had no measured figure to re-voice against — A1
+§2.1's icefield-to-Cindervast "day's walk" and §9's Cindervast approach distance — and both were
+**deleted rather than replaced with an invented hour count**, per the "delete a claim you cannot
+close with a measurement" constraint. Removing all five `edges.json` `amendedPending` fields left
+`content/schemas/spine-edge.schema.json`'s own declaration of that property unreachable — caught by
+`scripts/tests/edges-schema.test.mjs`'s "every attrs key ... is declared in the schema" test, which
+checks the union closed BOTH ways (nothing declared that no edge uses); the schema property was
+removed in the same commit rather than left as dead surface.
+
+**THE SIX-TOWNS / TOWER-CHAIN CLAIM, the one the markers don't cover.** `canon.md` §4's "Fast
+signals" bullet (`:303-306` pre-edit) asserted "Bellfaith relay towers strung along the ridgelines...
+a signal reaches all six towns" — the OLD world's literal 27-tower relay chain (`docs/worldbuilding
+/A1-geography-cluster1.md` §5.2 derived it explicitly: "~190 km of ridge-line... 21-24 relay towers,
+plus one tower in each of the six towns"). The redrawn world has **36 spine nodes, 47 settlements,
+zero tower nodes** (`content/spine/trunk-census.json`: no `tower` tier, no relay edges — the STATE
+§21 ruling that retired `e-trunk-chain`/`e-flat-chain` already said "the roads themselves carry the
+canon content"). Fix, minimal: the fast signal now travels **town to town along the roads, relayed
+by each town's own bell** (canon already establishes every town has one, §5 "every town has one") —
+no freestanding infrastructure, no exhaustive count. Same fix threaded through `A0-current-world.md`
+(which quotes canon.md's old text as evidence in its own §5.1 list — both had to move together or
+one would cite the other's now-false wording) and `A1-geography-cluster1.md` §5.2, retitled from
+"given a tower count" to "given no towers to count." Two per-town uses of "tower" survive deliberately
+(canon.md's "town's tower verifies the seal" and A1's civic bell-tower flavor) — unfalsifiable either
+way, since spine data tracks landmasses and settlements, never buildings inside a town.
+
+**THE 24 TOWER/RELAY JSON ENCODINGS — all in Gildmark's political plot and two Norhollow-front lore
+threads, none of them the retired spine infrastructure.** Renamed rather than deleted, since the
+underlying content (Mirelle held in a Bellfaith quarter; wartime mail moving under postal cover) is
+unrelated to the redrawn geography: `tower`/`bell tower`/`tower district` → `belfry`/`belfry quarter`
+throughout (`lore.json`, `quests.json`, `events.json`, `dialogue.json`); `relay post`/`relay
+road`/`relay rider` → `post house`/`post road`/`post rider` (mail-system vocabulary, distinct from
+the retired inter-town relay chain); two lore ids renamed (`lore-the-millcross-relay` ->
+`lore-the-millcross-post`, `lore-the-tower-that-doesnt-answer` -> `lore-the-belfry-that-doesnt-
+answer`) — neither had an inbound reference anywhere in the corpus, checked before renaming.
+`docs/story/story-graph.md` regenerated (`node scripts/gen_story_graph.mjs --write`) since the
+renamed ids and re-worded summaries are graph nodes.
+
+**THE LEGACY TEN'S CITATION DEBT, 14 -> 0 — and a stricter test already existed that my own first
+pass would have satisfied wrongly.** `scripts/tests/zone-content.test.mjs` already pinned this debt
+as a NUMBER (14: 12 name-absent, 2 pointing at the retired `content/maps/cluster1-geography.json`) —
+written by an earlier task specifically so Task 15 couldn't claim victory by loosening the check.
+Its rule is a literal whole-name substring test (`text.toLowerCase().includes(name.trim()
+.toLowerCase())`), and most of the 12 "name-absent" citations were **not semantic gaps but
+typographic ones**: a table cell missing the article ("...gravel bars, willow scrub" instead of
+"...the gravel bars..."), a markdown `**bold**` span opening one word after "the" instead of before
+it (`the **mirror tower**` does not contain the substring "the mirror tower"; `**the mirror
+tower**` does), a possessive standing in for the article ("Cindervast's dead gate" vs "the dead
+gate"). Fixed by inserting the missing article or moving the bold span — zero new facts, same
+citation target, `docs/worldbuilding/A1-geography-cluster1.md`. Two of the 14 pointed at the retired
+maps file and were re-pointed at A1 (which independently discusses both: the expedition camp at §2,
+Cindervast's dead gate at §2.1). One (`ashvale-front`'s "the abandoned cut lines") had no home in A1
+at all — the phrase lives only in `content/bestiary/bestiary.json`'s `mob-trench-gnawer` lore ("It
+works the cut lines both towns dug and then abandoned") — so A1 §4.2's own row for that zone gained
+one clause ("scored by the abandoned cut lines neither side ever filled back in") rather than
+re-pointing the citation at a design-roster file whose lore text itself doesn't contain the phrase in
+that word order either. `scripts/lib/prose-audit.mjs`'s new `checkLegacyLandmarkCitations` (G-LM-CITE,
+wired into `check_content.mjs`) runs the identical whole-name rule as a live gate, so this specific
+class of drift reds before it ships next time; the zone-content.test.mjs debt counter is updated to
+0, not deleted, matching its own "shrinking it means Task 15 landed" instruction.
+
+**A2-wider-world.md's basin-blindness, reconciled without erasing the document's own epistemology.**
+§1's "nobody from the basin has walked any of this" and "unnamed marks stay unnamed" were written
+when Coldreach/Stonemoor/the three island chains were sparse chart marks; Tasks 9-14 have since
+surveyed and named real ground on several of them (Coldreach's six Task-11 zones with roads and a
+town; Reedstrand/Driftholt/Brightfall each carry surveyed zones with landmark names). Both bullets
+now say what they still honestly can: a Gildmark-compiled chart only names what a Gildmark log
+names, and ground behind it turning out to be surveyed — by the people living there, not a basin
+expedition — doesn't make it something a Gildmark sailor has walked. This does not touch §3/§4's own
+per-continent prose, which was already careful never to claim a basin expedition (STATE Task 11's own
+filed note: "not one of them cites A2 or frames itself as a basin expedition").
+
+**HOLLOWMARCH'S `ore` — INVESTIGATED, NOT FIXED, and this is a NEW ruling item, filed alongside
+Step 5's.** Measured: c02 (Wealdmarch) has zero regions, surveyed or reported, that license `ore`
+(no rock/upland/scree/badland/karst biome, no ore-bearing landform, checked across all 30). Swapping
+hollowmarch's committed kind set from `{ore, timber}` to any ground c02/r14 actually licenses
+(`{crop, timber, forage}`, the only three the region's forest+meadow biomes support) frees
+`ore,timber` back into `packKindSets`'s candidate pool — and the packer is a deterministic
+backtracking search, not a lookup, so freeing one committed combination **reshuffled the kind-set
+assignment of four already-shipped derived zones** when `derive_zone_allocation.mjs --write` was
+re-run: `galeness-reach` (forage,timber -> stone,timber), `sedgebar-roads` (salvage,timber ->
+forage,timber), `wrackeyot-geo` (crop,fuel,timber -> salvage,timber — **losing its own `reasonToGo`'s
+entire premise**, "the one lobe anyone has walked that carries all three things Reedstrand lives on
+at once"), `alderlow-head` (stone,timber -> ore,timber). Reconciling those four would mean rewriting
+their `reasonToGo`, hazards and resource prose to match invented replacement kinds — new invented
+detail on FOUR shipped, reviewed records, to fix a false claim on a FIFTH that is already flagged
+`PLACEHOLDER` and exempt from the licence rule for exactly this reason (A4 §2: "five of ten rows are
+licensed and five are not," hollowmarch already one of the five). Reverted both files
+(`content/zones/zone-hollowmarch.json`, `docs/worldbuilding/A4-zone-allocation.md`) rather than ship
+that ripple under my own judgment. **Three options, an owner ruling wanted:**
+(a) leave hollowmarch's `ore` as-is, PLACEHOLDER-exempt like the other four unlicensed legacy rows —
+cheapest, but the one row A4 §2 itself calls "genuinely" falsified rather than merely un-joined;
+(b) accept the ripple and rewrite `galeness-reach`/`sedgebar-roads`/`wrackeyot-geo`/`alderlow-head`
+alongside hollowmarch in one reviewed pass — correct but a 5-record content task, not a 1-record one;
+(c) pin the four derived rows' CURRENT kind sets as additional `taken` inputs to `packKindSets`
+(freeze what's already shipped, let only hollowmarch's own row change) — needs a code change to
+`allocate()`'s exemption logic and a test proving the freeze doesn't reintroduce the DEFECT-1 class
+Task 11 already fixed once (a listed record silently exempted from derivation). Filed, not decided.
+
+**FILED, NOT CHASED.**
+- **"Gildmark. The only vertical town in the world."** (`A1-geography-cluster1.md` §6.) A candidate
+  absence-trap: unverified against the other 46 settlements. Out of this task's named scope
+  (towers/relay/six-towns, the 22 markers, the citation debt, hollowmarch) — not touched, not
+  measured, flagged for whoever's holding the absence-trap sweep.
+- **`canon.md` §4's "Slow detail (days)" label.** `A0-current-world.md`'s own (now-fixed) marker
+  named this exact phrase as pre-F-045-stale, but canon.md carries no `AMENDED-PENDING` on it — every
+  committed road leg is now ≤2 h except the Cindervast haul, so "days" as the slow tier's own name is
+  a residual mismatch the corpus tolerates rather than asserts (the fast/slow distinction is now
+  about DETAIL, not raw speed — the body text says so, the label doesn't). A rename, not a
+  correction; out of the marker-scoped edit budget.
+- **A `**bold**`-vs-article citation trap, generalizable.** Three of the twelve name-absent legacy
+  citations broke on the exact same shape: markdown emphasis opening between "the" and the noun it
+  modifies. `checkLegacyLandmarkCitations`'s whole-name substring rule will catch a recurrence but
+  will not explain it; worth a comment at the call site if this class shows up in the derived thirty.
