@@ -409,6 +409,9 @@ test("no gate CLI calls process.exit() from main() — reports on a pipe are los
     "scripts/check_spine_emit.mjs",
     "scripts/check_asset_manifest.mjs",
     "scripts/gen_story_graph.mjs",
+    // Task 2 (F-051 completion plan): check_geometry_lock.mjs follows this
+    // family's shape exactly and belongs in the same sweep.
+    "scripts/check_geometry_lock.mjs",
   ];
   const offenders = [];
   for (const rel of GATE_CLIS) {
@@ -427,6 +430,14 @@ test("the five gate CLIs keep their exit codes after the exitCode conversion", (
   // The conversion is only safe if the status is unchanged, so the status is
   // what is asserted — clean 0, drift 1, misuse 2 — through a PIPE, which is
   // the venue the class lives in.
+  //
+  // check_geometry_lock.mjs is DELIBERATELY not exercised here with a real
+  // `--check` against the committed repo the way the other four are: its
+  // --check recomputes gridIntersectionArea for all 138 real sibling pairs —
+  // the 492.6 s cost Task 2 exists to keep OUT of `npm test --prefix
+  // scripts`. Its exit-code and misuse behavior is proven instead in
+  // scripts/tests/geometry-lock.test.mjs's CLI tests, against a tiny fixture
+  // repo-root, exactly to avoid reopening that cost here.
   const run = (args, opts = {}) => {
     const r = spawnSync(process.execPath, args, { cwd: ROOT, encoding: "utf8", ...opts });
     return { status: r.status, out: `${r.stdout ?? ""}${r.stderr ?? ""}` };
