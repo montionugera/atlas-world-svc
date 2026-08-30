@@ -73,7 +73,7 @@ test("composed prompt carries the style clause and a non-empty negative — a ba
   });
   assert.equal(composed[ENV_NODE.POS].inputs.text, positive);
   assert.equal(composed[ENV_NODE.NEG].inputs.text, negative);
-  assert.ok(positive.includes(forge.styleLaws.styleClause[0]), "positive must carry the styleClause");
+  assert.ok(positive.includes(forge.profile.styleGuard.medium), "positive must lead with the medium clause");
   assert.notEqual(negative, "", "negative prompt must not be empty");
   assert.ok(!negative.includes("fur"), "fur is character-specific and must not leak into environment negatives");
   assert.ok(
@@ -85,6 +85,16 @@ test("composed prompt carries the style clause and a non-empty negative — a ba
   // string again — writing "no power lines" there delivers `power lines`.
   assert.ok(!positive.includes("power lines"), "forbidden tokens must not appear in the positive prompt");
   assert.ok(positive.includes(forge.profile.styleGuard.era), "positive must carry the era assertion");
+  // Register ruling 2026-08-30 (anchor verdict rail 5, option a): the house
+  // styleLaws vocabulary is character data and must not reach env prompts —
+  // the cel register measurably beat the medium clause 2/3 cells in-prompt.
+  for (const banned of ["anime", "cel-shaded", "ink linework", "genshin"]) {
+    assert.ok(!positive.toLowerCase().includes(banned), `character vocabulary "${banned}" must not reach the env positive`);
+  }
+  assert.ok(
+    !positive.includes(forge.styleLaws.styleClause[0]),
+    "the character styleClause is not environment register — env positives compose from styleGuard only",
+  );
 });
 
 test("mustCompose: the composed positive carries every clause the styleGuard lists — the A8 medium clause shipped unguarded once (3944eba)", () => {

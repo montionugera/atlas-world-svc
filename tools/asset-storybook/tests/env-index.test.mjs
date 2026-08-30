@@ -189,9 +189,13 @@ test("review links are verdict-sheet paths, and reviewed renders carry a note", 
 
 test("the A1-ART-02 dev rolls are wired to their verdict sheets", () => {
   // The acceptance criterion of the reviewer's ask, pinned: the dev roll the
-  // 2026-08-30 verdict judged, and the s0.40 re-roll it ordered, must both be
-  // observable here. The s040 sheet does not exist yet; referencing it by
-  // filename ahead of time is deliberate so the next roll cannot land unwired.
+  // 2026-08-30 verdict judged must be observable here, and so must the CURRENT
+  // roll lineage's verdict. The s040/v3/v4 pins retired 2026-08-30: those
+  // depth-path cells were superseded by the colour-anchor path and their files
+  // left disk (the parity gate then required their rows dropped) — the sheets
+  // stay committed in docs/worldbuilding/reviews/ and the run ledger holds the
+  // provenance chain. The live anchor lineage's sheet is pinned in their place
+  // so the next roll cannot land unwired.
   const reviewed = new Set(rows.flatMap((r) => r.reviews));
   assert.ok(
     reviewed.has(
@@ -201,9 +205,9 @@ test("the A1-ART-02 dev rolls are wired to their verdict sheets", () => {
   );
   assert.ok(
     reviewed.has(
-      "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-roll-verdict.md",
+      "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-v6-roll-verdict.md",
     ),
-    "no render row links the pending 2026-08-30-millcross-dev-s040-roll-verdict.md verdict",
+    "no render row links the pending 2026-08-30-millcross-anchor-v6-roll-verdict.md verdict",
   );
   const dev030 = rows.filter((r) => r.roll === "dev-0.30");
   assert.equal(

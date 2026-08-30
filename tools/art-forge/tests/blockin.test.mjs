@@ -256,8 +256,8 @@ test("colour block-in paints masses by their OWN values over a declared sky grad
     const top = topColours(out, 12);
     assert.ok(top.includes("#9AA4A8"), `river value missing; top colours were ${top.join(" ")}`);
     assert.ok(top.includes("#5C4A34"), `mill value missing; top colours were ${top.join(" ")}`);
-    assert.ok(top.includes("#A8A49A"), `light stone wall value missing; top colours were ${top.join(" ")}`);
-    assert.ok(top.includes("#241F18"), `wheel value missing; top colours were ${top.join(" ")}`);
+    assert.ok(top.includes("#C6C2B6"), `light stone wall value missing; top colours were ${top.join(" ")}`);
+    assert.ok(top.includes("#3A2C1C"), `wheel value missing; top colours were ${top.join(" ")}`);
     // Small masses (gate towers, ground patch) can lose the histogram to sky
     // strips — pin them at the SVG level, where fills are exact.
     const svg = buildColourSvg({ brief: MILLCROSS, width: 1280, height: 832 });

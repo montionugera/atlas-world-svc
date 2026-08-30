@@ -177,94 +177,46 @@
       "note": "OVERWRITTEN 2026-08-30 15:21-15:25Z by the colour-anchor roll's base pass (invoked without --strength, defaulted to 0.30) — the file on disk is a colour-anchor-era brief render at strength 0.30, not the reviewed v2-era cell this row originally indexed (briefHash 47928a1704220c52, REJECT per the dev-roll verdict; provenance chain in runs/A1-ART-02.json). Rail for the next anchor run: pass --strength explicitly so the base pass cannot clobber reviewed filenames."
     },
     {
-      "id": "A1-ART-02-dev-seed12345-s0.40",
-      "file": "tools/art-forge/out/env/A1-ART-02-dev-seed12345-s0.40.png",
-      "roll": "dev-0.40",
-      "seed": 12345,
-      "control": "depth",
-      "strength": 0.4,
-      "briefHash": "3703d78a3d4eab68",
-      "provenance": "run-log",
-      "reviews": [
-        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-roll-verdict.md",
-        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v3-roll-verdict.md",
-        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v4-roll-verdict.md"
-      ],
-      "note": "OVERWRITTEN 2026-08-30 15:32-15:35Z by the colour-anchor roll's base pass at strength 0.40 — the file on disk is a colour-anchor-era brief render, not the v4 cell this row indexed (provenance chain in runs/A1-ART-02.json)."
-    },
-    {
-      "id": "A1-ART-02-dev-seed42424-s0.40",
-      "file": "tools/art-forge/out/env/A1-ART-02-dev-seed42424-s0.40.png",
-      "roll": "dev-0.40",
-      "seed": 42424,
-      "control": "depth",
-      "strength": 0.4,
-      "briefHash": "3703d78a3d4eab68",
-      "provenance": "run-log",
-      "reviews": [
-        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-roll-verdict.md",
-        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v3-roll-verdict.md",
-        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v4-roll-verdict.md"
-      ],
-      "note": "OVERWRITTEN 2026-08-30 15:32-15:35Z by the colour-anchor roll's base pass at strength 0.40 — the file on disk is a colour-anchor-era brief render, not the v4 cell this row indexed (provenance chain in runs/A1-ART-02.json)."
-    },
-    {
-      "id": "A1-ART-02-dev-seed10001-s0.40",
-      "file": "tools/art-forge/out/env/A1-ART-02-dev-seed10001-s0.40.png",
-      "roll": "dev-0.40",
-      "seed": 10001,
-      "control": "depth",
-      "strength": 0.4,
-      "briefHash": "3703d78a3d4eab68",
-      "provenance": "run-log",
-      "reviews": [
-        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-roll-verdict.md",
-        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v3-roll-verdict.md",
-        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v4-roll-verdict.md"
-      ],
-      "note": "OVERWRITTEN 2026-08-30 15:32-15:35Z by the colour-anchor roll's base pass at strength 0.40 — the file on disk is a colour-anchor-era brief render, not the v4 cell this row indexed (provenance chain in runs/A1-ART-02.json)."
-    },
-    {
       "id": "A1-ART-02-dev-anchor-seed10001",
       "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-seed10001.png",
       "roll": "anchor-probe",
       "seed": 10001,
-      "control": "depth",
+      "control": "anchor-colour",
       "strength": null,
-      "briefHash": "3703d78a3d4eab68",
+      "briefHash": "9a49bb0146173126",
       "provenance": "run-log",
       "reviews": [
-        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-roll-verdict.md"
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-v6-roll-verdict.md"
       ],
-      "note": "Colour-anchor roll (fix): the parked night-poster failure was the depth map used as the img2img base (dark=far read as content); the base is now the colour block-in over the declared sky gradient, per the ABP measured recipe. Awaiting verdict."
+      "note": "v6 colour-anchor roll: change set applied (light stone wall flanks #a8a49a, gate towers #6b5a40, drawn mill wheel disc, ground patch) + register fix (character styleLaws removed from env positives, medium clause leads). Awaiting verdict."
     },
     {
       "id": "A1-ART-02-dev-anchor-seed12345",
       "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-seed12345.png",
       "roll": "anchor-probe",
       "seed": 12345,
-      "control": "depth",
+      "control": "anchor-colour",
       "strength": null,
-      "briefHash": "3703d78a3d4eab68",
+      "briefHash": "9a49bb0146173126",
       "provenance": "run-log",
       "reviews": [
-        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-roll-verdict.md"
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-v6-roll-verdict.md"
       ],
-      "note": "Colour-anchor roll (fix): the parked night-poster failure was the depth map used as the img2img base (dark=far read as content); the base is now the colour block-in over the declared sky gradient, per the ABP measured recipe. Awaiting verdict."
+      "note": "v6 colour-anchor roll: change set applied (light stone wall flanks #a8a49a, gate towers #6b5a40, drawn mill wheel disc, ground patch) + register fix (character styleLaws removed from env positives, medium clause leads). Awaiting verdict."
     },
     {
       "id": "A1-ART-02-dev-anchor-seed42424",
       "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-seed42424.png",
       "roll": "anchor-probe",
       "seed": 42424,
-      "control": "depth",
+      "control": "anchor-colour",
       "strength": null,
-      "briefHash": "3703d78a3d4eab68",
+      "briefHash": "9a49bb0146173126",
       "provenance": "run-log",
       "reviews": [
-        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-roll-verdict.md"
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-v6-roll-verdict.md"
       ],
-      "note": "Colour-anchor roll (fix): the parked night-poster failure was the depth map used as the img2img base (dark=far read as content); the base is now the colour block-in over the declared sky gradient, per the ABP measured recipe. Awaiting verdict."
+      "note": "v6 colour-anchor roll: change set applied (light stone wall flanks #a8a49a, gate towers #6b5a40, drawn mill wheel disc, ground patch) + register fix (character styleLaws removed from env positives, medium clause leads). Awaiting verdict."
     },
     {
       "id": "A1-ART-02-eratest-segment-seed12345-s0.00",
@@ -387,6 +339,84 @@
       "provenance": "run-log",
       "reviews": [],
       "note": "Control-map validation render: change-set v3 brief on the default schnell model (run without --model dev; kept as a same-brief cross-model data point, not part of the dev roll under review)."
+    },
+    {
+      "id": "A1-ART-02-dev-anchorbase-seed12345-s0.40",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchorbase-seed12345-s0.40.png",
+      "roll": "dev-anchorbase-0.40",
+      "seed": 12345,
+      "control": "depth",
+      "strength": 0.4,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [],
+      "note": "Un-consumed depth base pass of the colour-anchor runs (rail 6: own filename + anchorBase ledger flag). Comparison cell only, not part of any roll under review; re-written by each anchor run — current file is the anchor-r3 era, briefHash b7658d8607bbbe70."
+    },
+    {
+      "id": "A1-ART-02-dev-anchorbase-seed42424-s0.40",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchorbase-seed42424-s0.40.png",
+      "roll": "dev-anchorbase-0.40",
+      "seed": 42424,
+      "control": "depth",
+      "strength": 0.4,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [],
+      "note": "Un-consumed depth base pass of the colour-anchor runs (rail 6: own filename + anchorBase ledger flag). Comparison cell only, not part of any roll under review; re-written by each anchor run — current file is the anchor-r3 era, briefHash b7658d8607bbbe70."
+    },
+    {
+      "id": "A1-ART-02-dev-anchorbase-seed10001-s0.40",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchorbase-seed10001-s0.40.png",
+      "roll": "dev-anchorbase-0.40",
+      "seed": 10001,
+      "control": "depth",
+      "strength": 0.4,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [],
+      "note": "Un-consumed depth base pass of the colour-anchor runs (rail 6: own filename + anchorBase ledger flag). Comparison cell only, not part of any roll under review; re-written by each anchor run — current file is the anchor-r3 era, briefHash b7658d8607bbbe70."
+    },
+    {
+      "id": "A1-ART-02-dev-anchor-anchor-r3-seed12345",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-anchor-r3-seed12345.png",
+      "roll": "dev-anchor-r3",
+      "seed": 12345,
+      "control": "anchor-colour",
+      "strength": null,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-r3-roll-verdict.md"
+      ],
+      "note": "v7 colour-anchor roll (rail-7 rolltag — v6 cells left untouched): corrected base per the v6 verdict (queue-occluded left flank dropped, right flank #c6c2b6, wheel re-valued #3a2c1c re-centred clear of the queue, towers moved apart) + register fix. Awaiting verdict."
+    },
+    {
+      "id": "A1-ART-02-dev-anchor-anchor-r3-seed42424",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-anchor-r3-seed42424.png",
+      "roll": "dev-anchor-r3",
+      "seed": 42424,
+      "control": "anchor-colour",
+      "strength": null,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-r3-roll-verdict.md"
+      ],
+      "note": "v7 colour-anchor roll (rail-7 rolltag — v6 cells left untouched): corrected base per the v6 verdict (queue-occluded left flank dropped, right flank #c6c2b6, wheel re-valued #3a2c1c re-centred clear of the queue, towers moved apart) + register fix. Awaiting verdict."
+    },
+    {
+      "id": "A1-ART-02-dev-anchor-anchor-r3-seed10001",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-anchor-r3-seed10001.png",
+      "roll": "dev-anchor-r3",
+      "seed": 10001,
+      "control": "anchor-colour",
+      "strength": null,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-r3-roll-verdict.md"
+      ],
+      "note": "v7 colour-anchor roll (rail-7 rolltag — v6 cells left untouched): corrected base per the v6 verdict (queue-occluded left flank dropped, right flank #c6c2b6, wheel re-valued #3a2c1c re-centred clear of the queue, towers moved apart) + register fix. Awaiting verdict."
     }
   ]
 }

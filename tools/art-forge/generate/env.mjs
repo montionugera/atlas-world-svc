@@ -252,29 +252,6 @@ export function promptScaleGuard(forge) {
 }
 
 /**
- * Compose the environment positive prompt, entirely out of assertions of
- * what IS present: the brief's own scene prose, the house style vocabulary
- * (`style-laws.json` `positive` + `renderAssertion`), the shared era block
- * (`styleGuard.era`), then `styleClause` last.
- *
- * `styleGuard.era` sits in exactly the slot the old `styleGuard.negative`
- * list occupied. That list ("no cars", "no power lines", "no modern city
- * skyline", ...) was the contamination source, not the cure: a text encoder
- * attends to tokens, so each phrase delivered its own subject. Millcross
- * 2026-08-08 showed pylons and painted road markings in every cell across
- * ControlNet strengths 0.00/0.30/0.45/0.60 — including with the control
- * signal fully OFF — while a positive-only rewrite came back clean. See
- * forge.config.json `styleGuard._note` for the full evidence chain.
- *
- * The result is linted before it is returned, so a negation reaching the
- * positive prompt (from config, from a brief, from anywhere) throws here
- * rather than ~218 s of GPU later. `styleGuard.mustCompose` names clauses
- * (`era`, `medium`) that must survive composition: each clause text is
- * asserted present in the composed string through the same R4 mechanism
- * that enforces a brief's `mustAssert`, so a refactor that drops one fails
- * at composition, not after the render queue.
- */
-/**
  * Forbidden-token union from the town-canon-reviewer's criteria file
  * (content/world/town-criteria.json): per-town brief forbidden phrases +
  * the shared anti-cliché vocabulary. Data the reviewer owns; this loader
@@ -296,17 +273,33 @@ export function townCriteriaForbiddenTokens(contentRoot = path.join(FORGE_DIR, "
   }
 }
 
+/**
+ * Compose the environment positive prompt. Register ruling 2026-08-30 (anchor
+ * verdict rail 5, owner-approved option a): the house styleLaws vocabulary is
+ * CHARACTER data — "crisp flat 2D anime illustration, hand-drawn 2D cel-shaded
+ * artwork, clean ink linework over painted flat colour" demonstrably fought the
+ * medium clause in-prompt and won 2 of 3 anchor cells — so environments compose
+ * from their OWN register only: the medium clause FIRST (primacy in the prompt),
+ * then the brief prose, then the era block. The styleLaws positive/render
+ * assertion/styleClause splices are gone from this path; the negative side
+ * (environmentNegativeWords) still reads styleLaws.negative, which is inert at
+ * cfg 1 and is not the register mechanism.
+ *
+ * `styleGuard.mustCompose` names clauses (`era`, `medium`) that must survive
+ * composition: each clause text is asserted present in the composed string
+ * through the same R4 mechanism that enforces a brief's `mustAssert`, so a
+ * refactor that drops one fails at composition, not after the render queue.
+ * The result is linted before it is returned, so a negation reaching the
+ * positive prompt throws here rather than ~218 s of GPU later.
+ */
 export function buildEnvPositive(promptText, forge, { requiredAssertions = [], extraForbiddenTokens = [] } = {}) {
   const guard = forge.profile.styleGuard ?? {};
   const era = guard.era;
   const medium = guard.medium;
   const composed = [
-    promptText,
-    ...forge.styleLaws.positive,
-    ...forge.styleLaws.renderAssertion,
-    ...(era ? [era] : []),
     ...(medium ? [medium] : []),
-    ...forge.styleLaws.styleClause,
+    promptText,
+    ...(era ? [era] : []),
   ].join(", ");
   const composeAssertions = (guard.mustCompose ?? []).map((key) => {
     const clause = guard[key];
@@ -906,7 +899,22 @@ export async function generateEnv(
 
   // Run-ledger entry (F-050): the base PNG is downloaded — record the render
   // attempt. Dry-run downloads nothing, so it records nothing.
+  //
+  // Anchor runs (rail 6, anchor verdict): the base pass is a byproduct the
+  // anchor graph never consumes, and writing it to the plain
+  // `<brief>-dev-seed<N>-s<S>.png` name overwrote reviewed render files twice
+  // on 2026-08-30. In anchor mode the download is renamed to
+  // `<brief>-dev-anchorbase-seed<N>.png` BEFORE the ledger entry, and the
+  // entry carries `anchorBase: true` so the index can tell the two apart.
   if (baseResult.dest) {
+    if (args.anchor) {
+      const anchorBaseDest = path.join(
+        path.dirname(baseResult.dest),
+        `${briefId}-dev-anchorbase-seed${seed}-s${formatStrength(strength)}.png`,
+      );
+      fs.renameSync(baseResult.dest, anchorBaseDest);
+      baseResult.dest = anchorBaseDest;
+    }
     // Ledger failure must NOT fail the run after the PNG was produced —
     // warn and continue (same policy as artifact-gate.mjs).
     try {
@@ -914,6 +922,7 @@ export async function generateEnv(
         type: "render",
         seed,
         hires: false,
+        ...(args.anchor ? { anchorBase: true } : {}),
         control,
         strength: control === "none" ? null : strength,
         briefHash: briefHash(rawBrief),
@@ -984,7 +993,17 @@ export async function generateEnv(
           return uploadControlImage({ base, localPath: grainedPath, subfolder: "art-forge" });
         });
     const anchorGraph = buildEnvAnchorGraph({ brief, seed, anchorImage: anchorSource, forge });
-    const anchorOutputId = `${briefId}-dev-anchor-seed${seed}`;
+    // Rail 7 (v6 anchor verdict): the anchor output previously wrote straight
+    // to `<brief>-dev-anchor-seed<N>.png`, so every re-roll overwrote the
+    // cells the previous verdict had reviewed — the v5 evidence pixels are
+    // unrecoverable. A `--rolltag <tag>` (e.g. `anchor-r3`) namespaces the
+    // output per roll; without one the historical name is kept.
+    const rolltag = typeof args.rolltag === "string" && args.rolltag.trim() !== ""
+      ? args.rolltag.trim()
+      : null;
+    const anchorOutputId = rolltag
+      ? `${briefId}-dev-anchor-${rolltag}-seed${seed}`
+      : `${briefId}-dev-anchor-seed${seed}`;
     const anchorResult = await runGraph({
       forge,
       args,
@@ -1003,7 +1022,7 @@ export async function generateEnv(
           seed,
           hires: false,
           anchor: true,
-          control,
+          control: "anchor-colour",
           strength: null,
           briefHash: briefHash(rawBrief),
           out: path.relative(FORGE_DIR, anchorResult.dest),
