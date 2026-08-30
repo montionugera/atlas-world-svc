@@ -308,3 +308,115 @@ export async function renderSegmentPng({ brief, width, height, outPath }) {
   }
   return outPath;
 }
+
+/**
+ * Colour block-in — the composition anchor's img2img BASE, restored to the
+ * recipe the measurement actually used.
+ *
+ * ABP-flux-dev-and-anchor.md's anchored arm loaded `blockin-<subject>-colour.png`:
+ * masses painted in their own content colours over a sky GRADIENT. When the
+ * anchor was wired into env.mjs (424c8f5) the base was pointed at the DEPTH
+ * map instead, and the parked Millcross anchor renders show exactly why that
+ * is wrong: img2img reads the base as CONTENT, so the depth path's
+ * "dark = far" semantics (black sky, three flat greys) came back as a flat
+ * black-and-white night poster with a flat-vector register — Finding 1's
+ * hijack, via semantics rather than missing grain. The layout itself held
+ * (wall ring, gate tower, water channel all render), so the anchor mechanism
+ * was never the problem; the base image's meaning was.
+ *
+ * Sky comes from `brief.anchor.sky` {top, bottom} and is REQUIRED: an
+ * undeclared sky would silently fall back to a flat canvas fill — the same
+ * hijack under another name. Blur and grain are deliberately NOT applied
+ * here: the anchor flow's magick pass (-blur 0x6 -attenuate N +noise
+ * Gaussian) is the measured chain, and blurring here would double-blur.
+ */
+export function colourMassesFromBrief({ brief, width, height }) {
+  const planes = { bg: [], mg: [], fg: [] };
+  for (const mass of brief.masses ?? []) {
+    if (!Object.hasOwn(planes, mass.plane)) {
+      throw new Error(
+        `mass "${mass.name}" has plane "${mass.plane}" — must be one of: ${PLANE_ORDER.join(", ")}`,
+      );
+    }
+    parseHexColour(mass.value, mass.name); // validate before it reaches the SVG
+    planes[mass.plane].push({
+      name: mass.name,
+      points: massToPoints({ mass, width, height }),
+      fill: mass.value,
+    });
+  }
+  return { planes };
+}
+
+export function buildColourSvg({ brief, width, height }) {
+  const sky = brief.anchor?.sky;
+  if (typeof sky?.top !== "string" || typeof sky?.bottom !== "string") {
+    throw new Error(
+      "brief.anchor.sky { top, bottom } is required for a colour block-in — an undeclared sky " +
+        "would render as a flat black canvas, which is the flat-poster hijack the anchor exists to fix",
+    );
+  }
+  // The gradient is painted as interpolated horizontal STRIPS, not an SVG
+  // <linearGradient>: ImageMagick's SVG rasteriser does not resolve
+  // url(#id) paint references and silently filled the sky black — the exact
+  // hijack this renderer exists to prevent, one layer down. 64 strips blur
+  // into a smooth gradient under the anchor flow's -blur 0x6 pass.
+  const SKY_STRIPS = 64;
+  const top = parseHexColour(sky.top, "anchor.sky.top");
+  const bottom = parseHexColour(sky.bottom, "anchor.sky.bottom");
+  const lerp = (k) =>
+    "#" + top.map((c, i) => Math.round(c + (bottom[i] - c) * k).toString(16).padStart(2, "0")).join("");
+  const stripHeight = height / SKY_STRIPS;
+  const strips = Array.from({ length: SKY_STRIPS }, (_, i) => {
+    const y0 = Math.round(i * stripHeight);
+    const y1 = Math.round((i + 1) * stripHeight);
+    return `  <rect x="0" y="${y0}" width="${width}" height="${y1 - y0}" fill="${lerp(i / (SKY_STRIPS - 1))}"/>`;
+  }).join("\n");
+  const { planes } = colourMassesFromBrief({ brief, width, height });
+  const body = PLANE_ORDER.flatMap((plane) =>
+    planes[plane].map((poly) => `<polygon points="${poly.points}" fill="${poly.fill}"/>`),
+  ).join("\n  ");
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
+    strips,
+    `  ${body}`,
+    `</svg>`,
+  ].join("\n");
+}
+
+/**
+ * Render the colour block-in PNG for one brief to `outPath`, rasterised via
+ * `magick` like the depth/segment renderers but WITHOUT the blur pass —
+ * see the colour renderer's doc comment for why.
+ */
+export async function renderColourPng({ brief, width, height, outPath }) {
+  const svg = buildColourSvg({ brief, width, height });
+  await mkdir(path.dirname(outPath), { recursive: true });
+  const svgPath = `${outPath}.svg`;
+  await writeFile(svgPath, svg, "utf8");
+  try {
+    await execFileAsync("magick", [
+      svgPath,
+      "-alpha",
+      "off",
+      "-colorspace",
+      "sRGB",
+      "-depth",
+      "8",
+      outPath,
+    ]);
+  } catch (err) {
+    if (err.code === "ENOENT") {
+      throw new Error(
+        'renderColourPng needs the "magick" binary (ImageMagick) on PATH to rasterise the ' +
+          "colour SVG, and it was not found. Install it — e.g. `brew install imagemagick` on " +
+          "macOS — then retry.",
+        { cause: err },
+      );
+    }
+    throw err;
+  } finally {
+    await unlink(svgPath).catch(() => {});
+  }
+  return outPath;
+}

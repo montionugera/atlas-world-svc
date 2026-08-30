@@ -14,8 +14,15 @@
     0.58,
     0.42
   ],
+  "anchor": {
+    "sky": {
+      "top": "#71787f",
+      "bottom": "#cdc3ac"
+    },
+    "_note": "Colour block-in sky gradient (required by buildColourSvg): ash-grey zenith into a tallow-warm horizon haze, per the palette law (style.md §3 C7) and the brief's overcast late-afternoon light. Content values for the anchor's img2img base — the depth map's black-canvas sky is depth semantics, not content, and rendered the parked anchor as a flat night poster."
+  },
   "_promptNote": "F-039 (2026-08-08): the phrase \"laid out with no plan along the roads\" was restated as an assertion. A diffusion text encoder attends to tokens and has no operator for negation, so the old wording delivered `plan` into the conditioning. generate/prompt-lint.mjs now refuses to queue a positive prompt containing negation. F-039 (2026-08-25): \"sprawling\"/\"sprawled\" carried no extent bound and every strength-ladder cell tiled shanties to the horizon — the prompt now bounds the count and asserts the town edge, both declared via `mustAssert`, enforced by prompt-lint R3/R4. F-039 (2026-08-29, owner decision): the tent quarter was removed from world truth (A1 §6 amended, schema kind enum tightened); the brief counts \"a dozen structures\". The `refugee-tents-midground` mass below is retained ONLY as a frozen depth-control fixture for the F-026 replication record — it no longer represents world truth and must not be read as one. `masses`, horizon, focal, width and height are otherwise untouched.",
-  "_note": "Newly authored to the recovered block-in schema (ABP-flux-dev-and-anchor.md) for this subject — the ABPs only ever block-in'd Gildmark and Norhollow. Revised for task 6b: the original draft placed the mg town rows ABOVE (smaller y than) the bg far-bank/river band — inverted depth, since farther things must sit higher in frame, not lower. Also raised land-region coverage (was ~1/3 of the non-sky frame) by widening the town rows to near-full width and adding a mudflat/tent bridge across the former centre gap; sky above the horizon (0.62) is left black on purpose. Composition unchanged in kind: far bank/river on bg right at the horizon, single-storey plank rows + the one taller mill-wheel housing on mg (asymmetric — right bank denser, matching 'longer than the town is wide'), cart queue + led animals occluding the foreground. Still authored, not measured. F-039 (2026-08-30, s040 verdict control-map finding): the four plan-grid wall rects (wall-north/south/west/east, values up to 128) sat outside the normalised 0..1 contract blockin.mjs actually reads and were clipped off-canvas in every served depth map — replaced with wall-flank-left/right in frame space (gate gap x 0.45-0.55 over the road), the mill housing narrowed to x 0.46-0.53 so the open race channel reads at x 0.53-0.58, and the cart-queue poly extended across the river band (y 0.63-0.70) at the ford; the positive prompt asserts \"the gravel ford is the only crossing\" (mustAssert-guarded). F-039 (2026-08-30, v3 verdict change set): wall flanks thickened to y 0.82-0.93 so the band survives the block-in blur and queue occlusion, and the race became an explicit bg-plane mass (race-channel, x 0.53-0.58, y 0.55-0.90) instead of an absence-shaped gap — a depth map speaks in masses, not gaps; note the depth renderer paints by plane bucket, so darkness/distinctness comes from plane membership (river-dark channel between the mg column and the right row), not from the per-mass value (that is segment-render data only).",
+  "_note": "Newly authored to the recovered block-in schema (ABP-flux-dev-and-anchor.md) for this subject — the ABPs only ever block-in'd Gildmark and Norhollow. Revised for task 6b: the original draft placed the mg town rows ABOVE (smaller y than) the bg far-bank/river band — inverted depth, since farther things must sit higher in frame, not lower. Also raised land-region coverage (was ~1/3 of the non-sky frame) by widening the town rows to near-full width and adding a mudflat/tent bridge across the former centre gap; sky above the horizon (0.62) is left black on purpose. Composition unchanged in kind: far bank/river on bg right at the horizon, single-storey plank rows + the one taller mill-wheel housing on mg (asymmetric — right bank denser, matching 'longer than the town is wide'), cart queue + led animals occluding the foreground. Still authored, not measured. F-039 (2026-08-30, s040 verdict control-map finding): the four plan-grid wall rects (wall-north/south/west/east, values up to 128) sat outside the normalised 0..1 contract blockin.mjs actually reads and were clipped off-canvas in every served depth map — replaced with wall-flank-left/right in frame space (gate gap x 0.45-0.55 over the road), the mill housing narrowed to x 0.46-0.53 so the open race channel reads at x 0.53-0.58, and the cart-queue poly extended across the river band (y 0.63-0.70) at the ford; the positive prompt asserts \"the gravel ford is the only crossing\" (mustAssert-guarded). F-039 (2026-08-30, v3 verdict change set): wall flanks thickened to y 0.82-0.93 so the band survives the block-in blur and queue occlusion, and the race became an explicit bg-plane mass (race-channel, x 0.53-0.58, y 0.55-0.90) instead of an absence-shaped gap — a depth map speaks in masses, not gaps; note the depth renderer paints by plane bucket, so darkness/distinctness comes from plane membership (river-dark channel between the mg column and the right row), not from the per-mass value (that is segment-render data only). F-039 (2026-08-30, anchor verdict change set): wall flanks re-valued as light ash-stone (#a8a49a, lighter than the rows — value is content on the colour-anchor path); gate towers drawn flanking the passage (0.42-0.46 / 0.54-0.58, y 0.62-0.92); the wheel drawn at last (dark-timber disc, centre 0.575/0.68, r 0.10, over the race); unpainted bottom-right ground patched. Prompt byte-identical — the roll isolates the base edit.",
   "masses": [
     {
       "name": "far-bank",
@@ -88,6 +95,18 @@
         0.9
       ],
       "value": "#9aa4a8"
+    },
+    {
+      "name": "ground-right",
+      "plane": "fg",
+      "shape": "rect",
+      "rect": [
+        0.56,
+        0.93,
+        1.0,
+        1.0
+      ],
+      "value": "#8a8070"
     },
     {
       "name": "cart-queue",
@@ -175,7 +194,7 @@
         0.45,
         0.93
       ],
-      "value": "#3a352c"
+      "value": "#a8a49a"
     },
     {
       "name": "wall-flank-right",
@@ -187,7 +206,87 @@
         0.99,
         0.93
       ],
-      "value": "#3a352c"
+      "value": "#a8a49a"
+    },
+    {
+      "name": "gate-tower-west-n",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [
+        0.42,
+        0.62,
+        0.46,
+        0.92
+      ],
+      "value": "#6b5a40"
+    },
+    {
+      "name": "gate-tower-west-s",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [
+        0.54,
+        0.62,
+        0.58,
+        0.92
+      ],
+      "value": "#6b5a40"
+    },
+    {
+      "name": "mill-wheel",
+      "plane": "mg",
+      "shape": "poly",
+      "points": [
+        [
+          0.675,
+          0.68
+        ],
+        [
+          0.6616,
+          0.73
+        ],
+        [
+          0.625,
+          0.7666
+        ],
+        [
+          0.575,
+          0.78
+        ],
+        [
+          0.525,
+          0.7666
+        ],
+        [
+          0.4884,
+          0.73
+        ],
+        [
+          0.475,
+          0.68
+        ],
+        [
+          0.4884,
+          0.63
+        ],
+        [
+          0.525,
+          0.5934
+        ],
+        [
+          0.575,
+          0.58
+        ],
+        [
+          0.625,
+          0.5934
+        ],
+        [
+          0.6616,
+          0.63
+        ]
+      ],
+      "value": "#241f18"
     }
   ]
 }

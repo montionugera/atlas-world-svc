@@ -141,12 +141,12 @@
       "seed": 12345,
       "control": "depth",
       "strength": 0.3,
-      "briefHash": "47928a1704220c52",
+      "briefHash": "3703d78a3d4eab68",
       "provenance": "run-log",
       "reviews": [
         "docs/worldbuilding/reviews/2026-08-30-millcross-dev-roll-verdict.md"
       ],
-      "note": "REJECT per the dev-roll verdict — no wall ring (picket fence instead), ford not waded, bright-midday palette and tile-drift material miss. Strongest cell of the roll: least canon damage (no main-river bridge), best venue street and cart queue, register closest to usable concept art."
+      "note": "OVERWRITTEN 2026-08-30 15:21-15:25Z by the colour-anchor roll's base pass (invoked without --strength, defaulted to 0.30) — the file on disk is a colour-anchor-era brief render at strength 0.30, not the reviewed v2-era cell this row originally indexed (briefHash 47928a1704220c52, REJECT per the dev-roll verdict; provenance chain in runs/A1-ART-02.json). Rail for the next anchor run: pass --strength explicitly so the base pass cannot clobber reviewed filenames."
     },
     {
       "id": "A1-ART-02-dev-seed42424-s0.30",
@@ -155,12 +155,12 @@
       "seed": 42424,
       "control": "depth",
       "strength": 0.3,
-      "briefHash": "47928a1704220c52",
+      "briefHash": "3703d78a3d4eab68",
       "provenance": "run-log",
       "reviews": [
         "docs/worldbuilding/reviews/2026-08-30-millcross-dev-roll-verdict.md"
       ],
-      "note": "REJECT per the dev-roll verdict — stone arch bridge over the main river is a second cart-capable crossing, the hardest canon contradiction in the roll; weakest cell."
+      "note": "OVERWRITTEN 2026-08-30 15:21-15:25Z by the colour-anchor roll's base pass (invoked without --strength, defaulted to 0.30) — the file on disk is a colour-anchor-era brief render at strength 0.30, not the reviewed v2-era cell this row originally indexed (briefHash 47928a1704220c52, REJECT per the dev-roll verdict; provenance chain in runs/A1-ART-02.json). Rail for the next anchor run: pass --strength explicitly so the base pass cannot clobber reviewed filenames."
     },
     {
       "id": "A1-ART-02-dev-seed10001-s0.30",
@@ -169,12 +169,12 @@
       "seed": 10001,
       "control": "depth",
       "strength": 0.3,
-      "briefHash": "47928a1704220c52",
+      "briefHash": "3703d78a3d4eab68",
       "provenance": "run-log",
       "reviews": [
         "docs/worldbuilding/reviews/2026-08-30-millcross-dev-roll-verdict.md"
       ],
-      "note": "REJECT per the dev-roll verdict — worst register (flat poster/vector) and palette, but its mill wheel is the only one in the roll worth carrying forward as a visual target."
+      "note": "OVERWRITTEN 2026-08-30 15:21-15:25Z by the colour-anchor roll's base pass (invoked without --strength, defaulted to 0.30) — the file on disk is a colour-anchor-era brief render at strength 0.30, not the reviewed v2-era cell this row originally indexed (briefHash 47928a1704220c52, REJECT per the dev-roll verdict; provenance chain in runs/A1-ART-02.json). Rail for the next anchor run: pass --strength explicitly so the base pass cannot clobber reviewed filenames."
     },
     {
       "id": "A1-ART-02-dev-seed12345-s0.40",
@@ -183,14 +183,14 @@
       "seed": 12345,
       "control": "depth",
       "strength": 0.4,
-      "briefHash": "3a66b22d4960cc77",
+      "briefHash": "3703d78a3d4eab68",
       "provenance": "run-log",
       "reviews": [
         "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-roll-verdict.md",
         "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v3-roll-verdict.md",
         "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v4-roll-verdict.md"
       ],
-      "note": "Awaiting verdict: Change-set v4 roll (wall flanks thickened to y 0.82-0.93; race as an explicit bg-plane mass instead of an absence-shaped gap) at depth 0.40, model dev. Same filename supersedes the v3 cell; provenance chain in runs/A1-ART-02.json."
+      "note": "OVERWRITTEN 2026-08-30 15:32-15:35Z by the colour-anchor roll's base pass at strength 0.40 — the file on disk is a colour-anchor-era brief render, not the v4 cell this row indexed (provenance chain in runs/A1-ART-02.json)."
     },
     {
       "id": "A1-ART-02-dev-seed42424-s0.40",
@@ -199,14 +199,14 @@
       "seed": 42424,
       "control": "depth",
       "strength": 0.4,
-      "briefHash": "3a66b22d4960cc77",
+      "briefHash": "3703d78a3d4eab68",
       "provenance": "run-log",
       "reviews": [
         "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-roll-verdict.md",
         "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v3-roll-verdict.md",
         "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v4-roll-verdict.md"
       ],
-      "note": "Awaiting verdict: Change-set v4 roll (wall flanks thickened to y 0.82-0.93; race as an explicit bg-plane mass instead of an absence-shaped gap) at depth 0.40, model dev. Same filename supersedes the v3 cell; provenance chain in runs/A1-ART-02.json."
+      "note": "OVERWRITTEN 2026-08-30 15:32-15:35Z by the colour-anchor roll's base pass at strength 0.40 — the file on disk is a colour-anchor-era brief render, not the v4 cell this row indexed (provenance chain in runs/A1-ART-02.json)."
     },
     {
       "id": "A1-ART-02-dev-seed10001-s0.40",
@@ -215,47 +215,56 @@
       "seed": 10001,
       "control": "depth",
       "strength": 0.4,
-      "briefHash": "3a66b22d4960cc77",
+      "briefHash": "3703d78a3d4eab68",
       "provenance": "run-log",
       "reviews": [
         "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-roll-verdict.md",
         "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v3-roll-verdict.md",
         "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v4-roll-verdict.md"
       ],
-      "note": "Awaiting verdict: Change-set v4 roll (wall flanks thickened to y 0.82-0.93; race as an explicit bg-plane mass instead of an absence-shaped gap) at depth 0.40, model dev. Same filename supersedes the v3 cell; provenance chain in runs/A1-ART-02.json."
+      "note": "OVERWRITTEN 2026-08-30 15:32-15:35Z by the colour-anchor roll's base pass at strength 0.40 — the file on disk is a colour-anchor-era brief render, not the v4 cell this row indexed (provenance chain in runs/A1-ART-02.json)."
     },
     {
       "id": "A1-ART-02-dev-anchor-seed10001",
       "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-seed10001.png",
       "roll": "anchor-probe",
       "seed": 10001,
-      "control": "anchor",
+      "control": "depth",
       "strength": null,
-      "briefHash": null,
-      "provenance": "filename",
-      "reviews": []
+      "briefHash": "3703d78a3d4eab68",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-roll-verdict.md"
+      ],
+      "note": "Colour-anchor roll (fix): the parked night-poster failure was the depth map used as the img2img base (dark=far read as content); the base is now the colour block-in over the declared sky gradient, per the ABP measured recipe. Awaiting verdict."
     },
     {
       "id": "A1-ART-02-dev-anchor-seed12345",
       "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-seed12345.png",
       "roll": "anchor-probe",
       "seed": 12345,
-      "control": "anchor",
+      "control": "depth",
       "strength": null,
-      "briefHash": null,
-      "provenance": "filename",
-      "reviews": []
+      "briefHash": "3703d78a3d4eab68",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-roll-verdict.md"
+      ],
+      "note": "Colour-anchor roll (fix): the parked night-poster failure was the depth map used as the img2img base (dark=far read as content); the base is now the colour block-in over the declared sky gradient, per the ABP measured recipe. Awaiting verdict."
     },
     {
       "id": "A1-ART-02-dev-anchor-seed42424",
       "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-seed42424.png",
       "roll": "anchor-probe",
       "seed": 42424,
-      "control": "anchor",
+      "control": "depth",
       "strength": null,
-      "briefHash": null,
-      "provenance": "filename",
-      "reviews": []
+      "briefHash": "3703d78a3d4eab68",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-roll-verdict.md"
+      ],
+      "note": "Colour-anchor roll (fix): the parked night-poster failure was the depth map used as the img2img base (dark=far read as content); the base is now the colour block-in over the declared sky gradient, per the ABP measured recipe. Awaiting verdict."
     },
     {
       "id": "A1-ART-02-eratest-segment-seed12345-s0.00",

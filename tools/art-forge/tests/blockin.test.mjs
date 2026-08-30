@@ -7,9 +7,11 @@ import path from "node:path";
 import {
   PLANE_DEPTH,
   SEGMENT_MIN_SEPARATION,
+  buildColourSvg,
   buildDepthSvg,
   buildSegmentSvg,
   depthPlanesFromBrief,
+  renderColourPng,
   renderDepthPng,
   renderSegmentPng,
   segmentMassesFromBrief,
@@ -244,4 +246,51 @@ test("GUARD: every mass rect in the real Millcross brief is normalised 0..1 — 
       );
     }
   }
+});
+
+test("colour block-in paints masses by their OWN values over a declared sky gradient — the anchor's img2img base reads content, not depth", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "blockin-colour-"));
+  try {
+    const out = path.join(dir, "colour.png");
+    await renderColourPng({ brief: MILLCROSS, width: 1280, height: 832, outPath: out });
+    const top = topColours(out, 12);
+    assert.ok(top.includes("#9AA4A8"), `river value missing; top colours were ${top.join(" ")}`);
+    assert.ok(top.includes("#5C4A34"), `mill value missing; top colours were ${top.join(" ")}`);
+    assert.ok(top.includes("#A8A49A"), `light stone wall value missing; top colours were ${top.join(" ")}`);
+    assert.ok(top.includes("#241F18"), `wheel value missing; top colours were ${top.join(" ")}`);
+    // Small masses (gate towers, ground patch) can lose the histogram to sky
+    // strips — pin them at the SVG level, where fills are exact.
+    const svg = buildColourSvg({ brief: MILLCROSS, width: 1280, height: 832 });
+    assert.ok(svg.includes('fill="#6b5a40"'), "gate tower fill missing from the colour SVG");
+    assert.ok(svg.includes('fill="#8a8070"'), "ground-patch fill missing from the colour SVG");
+    assert.ok(!svg.includes("url(#"), "sky must be painted as strips — ImageMagick cannot resolve url(#id) gradients");
+    // The sky gradient's endpoint colours must survive rasterisation — the parked anchor
+    // failure was a flat BLACK sky inherited from the depth map's canvas fill.
+    assert.ok(
+      top.some((c) => c.startsWith("#7") || c.startsWith("#C")),
+      `no sky-gradient colour in the top colours (was the gradient dropped?): ${top.join(" ")}`,
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("colour block-in refuses a brief with no declared sky — an undeclared sky would fall back to the flat black canvas, the exact flat-poster hijack the anchor fixes", () => {
+  const noSky = { ...MILLCROSS, anchor: undefined };
+  assert.throws(
+    () => buildColourSvg({ brief: noSky, width: 1280, height: 832 }),
+    /brief\.anchor\.sky \{ top, bottom \} is required/,
+  );
+});
+
+test("colourMassesFromBrief rejects an unknown plane by name, same as the depth and segment paths", () => {
+  assert.throws(
+    () =>
+      buildColourSvg({
+        brief: { masses: [{ name: "typo-mass", plane: "midground", shape: "rect", rect: [0, 0, 1, 1], value: "#112233" }], anchor: { sky: { top: "#71787f", bottom: "#cdc3ac" } } },
+        width: 1280,
+        height: 832,
+      }),
+    /typo-mass.*midground.*bg, mg, fg/s,
+  );
 });

@@ -173,7 +173,7 @@
         "guidance": 5.0,
         "denoise": 0.75,
         "grainAttenuate": 0.55,
-        "_note": "ABP-flux-dev-and-anchor.md D-anchored arm: img2img on the grained block-in (blur 0x6 then +noise Gaussian attenuate 0.55 — grain creates the denoise window; flat block-ins hijack style into flat vector). Window 0.70-0.78 measured; 0.75 chosen. Watermark hallucination in bottom corners is a known anchored-render defect — artifact gate territory (I-055)."
+        "_note": "ABP-flux-dev-and-anchor.md D-anchored arm: img2img on the grained COLOUR block-in (blur 0x6 then +noise Gaussian attenuate 0.55 — grain creates the denoise window; flat block-ins hijack style into flat vector). Window 0.70-0.78 measured; 0.75 chosen. FIX 2026-08-30: the base was the depth map, whose dark=far semantics (flat black sky, three flat greys) img2img reads as content — the parked Millcross anchor renders came back as flat black-and-white night posters (layout held; register and sky did not). The base is now the colour block-in (renderColourPng: content colours over the brief.anchor.sky gradient; blur+grain applied by the anchor flow). Watermark hallucination in bottom corners is a known anchored-render defect — artifact gate territory (I-055)."
       }
     }
   }

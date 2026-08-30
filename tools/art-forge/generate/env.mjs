@@ -101,7 +101,7 @@ import {
   promptForbiddenTokens,
   runGraph,
 } from "./charsheet.mjs";
-import { renderDepthPng, renderSegmentPng } from "./blockin.mjs";
+import { renderColourPng, renderDepthPng, renderSegmentPng } from "./blockin.mjs";
 import { assertPositivePromptClean } from "./prompt-lint.mjs";
 import { briefHash } from "../lib/brief-hash.mjs";
 import { appendAttempt } from "../lib/run-ledger.mjs";
@@ -929,10 +929,18 @@ export async function generateEnv(
   }
 
   // --anchor (dev only): the composition anchor pass from
-  // ABP-flux-dev-and-anchor.md — the rendered control PNG is grained
-  // (blur 0x6, then +noise Gaussian at anchor.grainAttenuate — grain creates
-  // the denoise window; flat grey shapes hijack style into flat vector),
-  // re-uploaded, and refined img2img at denoise 0.75 over 27 steps.
+  // ABP-flux-dev-and-anchor.md — the COLOUR block-in (content colours over a
+  // declared sky gradient) is grained (blur 0x6, then +noise Gaussian at
+  // anchor.grainAttenuate — grain creates the denoise window; flat shapes
+  // hijack style into flat vector), re-uploaded, and refined img2img at
+  // denoise 0.75 over 27 steps.
+  //
+  // The base is the COLOUR block-in, not the depth map (fix, 2026-08-30):
+  // img2img reads its base as content, so the depth path's "dark = far"
+  // semantics rendered the parked anchor as a flat black-and-white night
+  // poster — the black canvas kept as a black sky, flat tones as a flat
+  // vector medium. The ABP's measured anchor base was always the colour
+  // block-in; the depth map is for the ControlNet base pass only.
   if (args.anchor && model !== "dev") {
     throw new Error(
       "--anchor is a dev-model pass (ABP-flux-dev-and-anchor.md) — schnell has no anchor recipe; run --model dev",
@@ -943,17 +951,27 @@ export async function generateEnv(
   }
   if (args.anchor) {
     const anchorCfg = forge.profile.anchor;
-    const controlSourceLocal = path.join(forge.outDir, "control", control, `${briefId}-${control}.png`);
+    const colourSourceLocal = path.join(forge.outDir, "control", "colour", `${briefId}-colour.png`);
+    await renderColourPng({ brief: rawBrief, width, height, outPath: colourSourceLocal });
+    try {
+      appendAttempt(RUNS_DIR, briefId, {
+        type: "blockin",
+        briefHash: briefHash(rawBrief),
+        out: path.relative(FORGE_DIR, colourSourceLocal),
+      });
+    } catch (err) {
+      console.error(`env.mjs: WARNING: ledger append failed: ${err.message}`);
+    }
     const grainedPath = path.join(
       forge.outDir,
       "control",
-      control,
-      `${briefId}-${control}-grained.png`,
+      "colour",
+      `${briefId}-colour-grained.png`,
     );
     const anchorSource = args["dry-run"]
-      ? `art-forge/${briefId}-${control}-grained.png`
+      ? `art-forge/${briefId}-colour-grained.png`
       : await execFile("magick", [
-          controlSourceLocal,
+          colourSourceLocal,
           "-blur",
           "0x6",
           "-attenuate",
@@ -962,7 +980,7 @@ export async function generateEnv(
           "Gaussian",
           grainedPath,
         ]).then(() => {
-          console.error(`[art-forge] anchor: grained block-in -> ${grainedPath}`);
+          console.error(`[art-forge] anchor: grained colour block-in -> ${grainedPath}`);
           return uploadControlImage({ base, localPath: grainedPath, subfolder: "art-forge" });
         });
     const anchorGraph = buildEnvAnchorGraph({ brief, seed, anchorImage: anchorSource, forge });
@@ -974,6 +992,26 @@ export async function generateEnv(
       name: `env/${anchorOutputId}`,
       label: `env anchor ${briefId} seed=${seed} source=${anchorSource} denoise=${anchorCfg.denoise}`,
     });
+    if (anchorResult.dest) {
+      // Same ledger policy as the base and hires passes — the anchor render
+      // is a real artifact and its provenance (no ControlNet strength: the
+      // anchor graph conditions from the grained colour block-in alone) must
+      // be recoverable from the ledger, not from filenames.
+      try {
+        appendAttempt(RUNS_DIR, briefId, {
+          type: "render",
+          seed,
+          hires: false,
+          anchor: true,
+          control,
+          strength: null,
+          briefHash: briefHash(rawBrief),
+          out: path.relative(FORGE_DIR, anchorResult.dest),
+        });
+      } catch (err) {
+        console.error(`env.mjs: WARNING: ledger append failed: ${err.message}`);
+      }
+    }
     return { base: baseResult, anchor: anchorResult };
   }
 
