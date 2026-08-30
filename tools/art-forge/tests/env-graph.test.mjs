@@ -15,6 +15,7 @@ import {
   generateEnv,
   resolveControl,
   resolveStrength,
+  townCriteriaForbiddenTokens,
   validateBrief,
 } from "../generate/env.mjs";
 
@@ -235,6 +236,16 @@ test("generateEnv (dry-run, end to end) keeps depth's embedded filename bare —
 });
 
 /* ---------------------- freehand (--control none) ---------------------- */
+
+test("town criteria vocabulary merges into the lint — a cliché token in a town brief throws R2", () => {
+  const tokens = townCriteriaForbiddenTokens();
+  assert.ok(tokens.includes("storybook"), "the reviewer's anti-cliché vocabulary is loaded");
+  assert.ok(tokens.includes("tidy rows"), "the reviewer's forbidden phrases are loaded");
+  assert.throws(
+    () => buildEnvPositive("a storybook village of neat houses", forge, { extraForbiddenTokens: tokens }),
+    /R2-forbidden-token/,
+  );
+});
 
 test("resolveControl accepts none with no config block and no renderer — freehand needs neither", () => {
   const r = resolveControl({ forge, control: "none" });

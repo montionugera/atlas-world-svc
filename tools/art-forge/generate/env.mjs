@@ -250,7 +250,29 @@ export function promptScaleGuard(forge) {
  * positive prompt (from config, from a brief, from anywhere) throws here
  * rather than ~218 s of GPU later.
  */
-export function buildEnvPositive(promptText, forge, { requiredAssertions = [] } = {}) {
+/**
+ * Forbidden-token union from the town-canon-reviewer's criteria file
+ * (content/world/town-criteria.json): per-town brief forbidden phrases +
+ * the shared anti-cliché vocabulary. Data the reviewer owns; this loader
+ * only reads it. Missing/corrupt file degrades to [] — the base forge
+ * forbiddenTokens still apply — so non-town briefs never see town rules.
+ */
+export function townCriteriaForbiddenTokens(contentRoot = path.join(FORGE_DIR, "..", "..", "content")) {
+  const p = path.join(contentRoot, "world", "town-criteria.json");
+  if (!fs.existsSync(p)) return [];
+  try {
+    const c = JSON.parse(fs.readFileSync(p, "utf8"));
+    const phrases = Object.values(c.towns ?? {}).flatMap(
+      (t) => t.briefs?.forbiddenPhrases?.value ?? [],
+    );
+    const vocab = c.antiCliche?.forbiddenVocabulary?.value ?? [];
+    return [...new Set([...phrases, ...vocab])];
+  } catch {
+    return [];
+  }
+}
+
+export function buildEnvPositive(promptText, forge, { requiredAssertions = [], extraForbiddenTokens = [] } = {}) {
   const era = forge.profile.styleGuard?.era;
   return assertPositivePromptClean(
     [
@@ -261,7 +283,7 @@ export function buildEnvPositive(promptText, forge, { requiredAssertions = [] } 
       ...forge.styleLaws.styleClause,
     ].join(", "),
     {
-      forbiddenTokens: promptForbiddenTokens(forge),
+      forbiddenTokens: [...promptForbiddenTokens(forge), ...extraForbiddenTokens],
       ...promptScaleGuard(forge),
       requiredAssertions,
     },
@@ -683,14 +705,20 @@ export async function generateEnv(
   const brief = {
     // The composed path lints inside buildEnvPositive(); a --positive
     // override bypasses composition, so it is linted here instead.
+    // Both paths lint against the town-canon-reviewer's criteria vocabulary
+    // on top of the forge's own forbiddenTokens.
     positive: positiveOverride
       ? assertPositivePromptClean(positiveOverride, {
-          forbiddenTokens: promptForbiddenTokens(forge),
+          forbiddenTokens: [
+            ...promptForbiddenTokens(forge),
+            ...townCriteriaForbiddenTokens(),
+          ],
           ...promptScaleGuard(forge),
           requiredAssertions: rawBrief.mustAssert ?? [],
         })
       : buildEnvPositive(rawBrief.prompt, forge, {
           requiredAssertions: rawBrief.mustAssert ?? [],
+          extraForbiddenTokens: townCriteriaForbiddenTokens(),
         }),
     negative: buildEnvNegative(forge),
     id: control === "depth" ? rawBrief.id : `${rawBrief.id}-${control}`,
