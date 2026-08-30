@@ -156,7 +156,7 @@
           88
         ],
         [
-          162,
+          220,
           88
         ]
       ]
@@ -294,6 +294,167 @@
       ],
       "storeys": 1,
       "entranceOn": "terrace-track"
+    },
+    {
+      "id": "inn",
+      "kind": "inn",
+      "rect": [
+        28,
+        67,
+        34,
+        81
+      ],
+      "storeys": 2,
+      "entranceOn": "trade-road-trunk"
+    },
+    {
+      "id": "weapon-smithy",
+      "kind": "store",
+      "rect": [
+        28,
+        95,
+        34,
+        107
+      ],
+      "storeys": 1,
+      "entranceOn": "trade-road-trunk"
+    },
+    {
+      "id": "general-store",
+      "kind": "store",
+      "rect": [
+        161,
+        76,
+        177,
+        85
+      ],
+      "storeys": 1,
+      "entranceOn": "bank-lane"
+    },
+    {
+      "id": "bakehouse",
+      "kind": "store",
+      "rect": [
+        179,
+        76,
+        195,
+        85
+      ],
+      "storeys": 1,
+      "entranceOn": "bank-lane"
+    },
+    {
+      "id": "herbalist",
+      "kind": "store",
+      "rect": [
+        197,
+        76,
+        213,
+        85
+      ],
+      "storeys": 1,
+      "entranceOn": "bank-lane"
+    },
+    {
+      "id": "adventurer-guild",
+      "kind": "guild",
+      "rect": [
+        179,
+        91,
+        195,
+        102
+      ],
+      "storeys": 2,
+      "entranceOn": "bank-lane"
+    },
+    {
+      "id": "west-wall-n",
+      "kind": "wall",
+      "rect": [
+        2,
+        52,
+        8,
+        73
+      ],
+      "storeys": 1
+    },
+    {
+      "id": "west-gate-n",
+      "kind": "gate",
+      "rect": [
+        2,
+        73,
+        8,
+        80
+      ],
+      "storeys": 1
+    },
+    {
+      "id": "west-gate-s",
+      "kind": "gate",
+      "rect": [
+        2,
+        96,
+        8,
+        103
+      ],
+      "storeys": 1
+    },
+    {
+      "id": "west-wall-s",
+      "kind": "wall",
+      "rect": [
+        2,
+        103,
+        8,
+        122
+      ],
+      "storeys": 1
+    },
+    {
+      "id": "north-wall",
+      "kind": "wall",
+      "rect": [
+        2,
+        46,
+        62,
+        52
+      ],
+      "storeys": 1
+    },
+    {
+      "id": "north-gate",
+      "kind": "gate",
+      "rect": [
+        76,
+        48,
+        82,
+        54
+      ],
+      "storeys": 1
+    },
+    {
+      "id": "south-wall",
+      "kind": "wall",
+      "rect": [
+        2,
+        122,
+        94,
+        128
+      ],
+      "storeys": 1
+    },
+    {
+      "id": "provisioner",
+      "kind": "store",
+      "rect": [
+        213,
+        76,
+        219,
+        85
+      ],
+      "storeys": 1,
+      "entranceOn": "bank-lane"
     }
   ],
   "plazas": [

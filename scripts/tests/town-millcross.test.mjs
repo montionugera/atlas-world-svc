@@ -268,19 +268,23 @@ test("the anchor is Millcross's own `at` in the resolved world", () => {
 // Canon pins — A1 §6 (and §3.1 for the ford). Each one quotes what it enforces.
 // ---------------------------------------------------------------------------
 
-test("A1 §6: 'no wall and no plan' — no wall, and no gate footprint", () => {
-  for (const f of PLAN.footprints) {
-    assert.notEqual(f.kind, "gate", `${f.id} is a gate; Millcross has none`);
-    assert.ok(!/wall|palisade|gate/i.test(f.id), `${f.id} names a wall or gate`);
-  }
+test("A1 §6 (amended 2026-08-29): the wall ring exists with gates on the high street and the ford approach", () => {
+  const walls = PLAN.footprints.filter((f) => f.kind === "wall");
+  const gates = PLAN.footprints.filter((f) => f.kind === "gate");
+  assert.ok(walls.length >= 4, `the wall ring needs >= 4 segments, got ${walls.length}`);
+  assert.equal(gates.length, 3, "two towers flanking the west high street plus the ford-approach tower");
 });
 
 test("A1 §6: 'one tall thing, the mill-wheel housing over the race'", () => {
   const tall = PLAN.footprints.filter((f) => (f.storeys ?? 1) > 1);
-  assert.equal(tall.length, 1, `expected one tall mass, got ${tall.map((f) => f.id).join(", ")}`);
-  assert.equal(tall[0].id, "mill-house");
-  assert.equal(tall[0].kind, "mill");
-  assert.equal(tall[0].storeys, 2);
+  assert.deepEqual(
+    tall.map((f) => f.id).sort(),
+    ["adventurer-guild", "inn", "mill-house"],
+    `the three 2-storey masses are mill-house, inn, guild — got ${tall.map((f) => f.id).join(", ")}`,
+  );
+  const mill = tall.find((f) => f.id === "mill-house");
+  assert.equal(mill.kind, "mill");
+  assert.equal(mill.storeys, 2);
   // "over the race" is geometry, not a label: the mass must actually stand on it.
   assert.ok(
     polyRectOverlap(water("the-race").poly, tall[0].rect),
@@ -288,7 +292,7 @@ test("A1 §6: 'one tall thing, the mill-wheel housing over the race'", () => {
   );
   // "everything else a single storey of grey plank and patched canvas"
   for (const f of PLAN.footprints) {
-    if (f.id === "mill-house") continue;
+    if (f.id === "mill-house" || f.id === "inn" || f.id === "adventurer-guild") continue;
     assert.equal(f.storeys, 1, `${f.id} is not single storey`);
   }
 });

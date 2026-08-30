@@ -57,18 +57,23 @@ test("measured floors hold on the committed plan: cart >= 12, foot >= 4, footpri
   assert.ok(plan.extent.height >= band[0] && plan.extent.height <= band[1]);
 });
 
-test("ratified structural rules hold: wall-less, no tent, exactly one 2-storey (the mill)", () => {
+test("ratified structural rules hold: walled core, no tent, exactly three 2-storey venues", () => {
   const kinds = plan.footprints.map((f) => f.kind);
-  for (const banned of ["wall", "gate", "tent"]) {
+  for (const banned of ["tent"]) {
     assert.equal(
       kinds.includes(banned),
       false,
       `kind "${banned}" reappeared in the plan — world truth drifted or the enum loosened`,
     );
   }
+  assert.ok(kinds.includes("wall"), "the walled-core rule needs wall footprints");
+  assert.ok(kinds.includes("gate"), "the walled-core rule needs gate footprints");
   const twoStorey = plan.footprints.filter((f) => (f.storeys ?? 1) >= 2);
-  assert.equal(twoStorey.length, 1, "exactly one 2-storey mass is canon-forced");
-  assert.equal(twoStorey[0].kind, "mill", "the 2-storey mass is the mill-house");
+  assert.deepEqual(
+    twoStorey.map((f) => f.id).sort(),
+    ["adventurer-guild", "inn", "mill-house"],
+    "the three 2-storey masses are canon-forced (mill, inn, guild)",
+  );
 });
 
 test("authored values are pinned: extent 220x160, road-width multisets per kind", () => {
@@ -82,14 +87,18 @@ test("authored values are pinned: extent 220x160, road-width multisets per kind"
   }
 });
 
-test("brief count phrase matches the plan within the reviewer's band", () => {
+test("brief count phrase matches the venue count within the reviewer's band (longest phrase wins)", () => {
   const band = criteria.towns.millcross.briefs.countBand;
-  const phrase = Object.keys(band.phraseToNumber).find((p) => brief.prompt.includes(p));
+  const venueCount = plan.footprints.filter(
+    (f) => f.kind !== "wall" && f.kind !== "gate",
+  ).length;
+  const phrases = Object.keys(band.phraseToNumber).sort((a, b) => b.length - a.length);
+  const phrase = phrases.find((p) => brief.prompt.includes(p));
   assert.ok(phrase, "brief prompt carries no count phrase — R4 would be blind");
   const declared = band.phraseToNumber[phrase];
   assert.ok(
-    Math.abs(declared - plan.footprints.length) <= band.tolerance,
-    `count phrase "${phrase}" (${declared}) vs ${plan.footprints.length} footprints exceeds ±${band.tolerance}`,
+    Math.abs(declared - venueCount) <= band.tolerance,
+    `count phrase "${phrase}" (${declared}) vs ${venueCount} venues exceeds ±${band.tolerance}`,
   );
 });
 
@@ -120,8 +129,9 @@ test("brief carries the ratified palette and the structural material register", 
       `palette word "${word}" missing from the brief prompt`,
     );
   }
-  assert.ok(brief.prompt.includes("timber-framed"), "structural material register missing");
-  assert.ok(brief.prompt.includes("stone footings"), "structural material register missing");
+  const promptLower = brief.prompt.toLowerCase();
+  assert.ok(promptLower.includes("timber-framed"), "structural material register missing");
+  assert.ok(promptLower.includes("stone footings"), "structural material register missing");
 });
 
 test("criteria's knownOpenItems stay open — nothing here silently closes a G5-class contradiction", () => {

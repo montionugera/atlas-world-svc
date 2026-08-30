@@ -352,18 +352,21 @@ Written to drive concept art: silhouette first, then material, then colour, then
 traveller sees before anything else, then what the place does for a living. Palettes, emblems and
 costume motifs are taken unchanged from `style.md` §3 (commitment C7) — they are not re-invented here.
 
-**Millcross.** A town with no wall and no plan, built along both banks of a river crossing and
-spilling a quarter-mile up each road out of it. The silhouette is horizontal and low: one tall
-thing, the mill-wheel housing over the race, and everything else a single storey, solidly built —
-timber frames on stone footings, plastered walls, steep shingled roofs, real chimneys. Material is
-local — mill timber, river stone, split shingle — and the palette is
-ash-grey, rope-brown and tallow-yellow, the colour of unpainted wood and cheap light. **First thing
-a traveller sees: the cart queue.** It starts before the town does, sometimes a mile out, because
-one crossing serves an entire land. Millcross lives on the ford — tolls it refuses to formalise,
-stabling, ferrying at high water, and feeding whoever is waiting. After the war it is the only town
-that grew: the refugee camps that once ringed the east bank came down when the timber rows went up,
-and the displaced still arrive — those on the road camp under canvas at the crossroads and move on.
-Its emblem, crossed roads over an empty bowl, is chalked on awnings, not carved.
+**Millcross.** A walled crossing town built along both banks of a river crossing, its roads
+spilling a quarter-mile out of the gates. Inside the timber-and-earth wall — thrown up after the
+war, when the raids came down the roads — a high street of timber-framed houses on stone footings
+runs from the west gate to the ford: the guild hall and the inn rise a second storey, a bakehouse,
+a provisioner, a herbalist and a weapon-smithy front the street, and the cart yard waits by the
+water. The silhouette stays horizontal and low: the mill-wheel housing over the race is taller
+than the wall, and nothing else competes with it. Material is local — mill timber, river stone,
+split shingle — and the palette is ash-grey, rope-brown and tallow-yellow, the colour of unpainted
+wood and cheap light. **First thing a traveller sees: the cart queue.** It starts before the town
+does, sometimes a mile out, because one crossing serves an entire land. Millcross lives on the
+ford — the wall guards the crossing, and the town still refuses to formalise the tolls; stabling,
+ferrying at high water, and feeding whoever is waiting pay for the wall's upkeep. Beyond the gates
+the roads keep spilling: the east bank's terrace rows never stopped growing, and the displaced
+still arrive — those on the road camp under canvas at the crossroads and move on. Its emblem,
+crossed roads over an empty bowl, is chalked on awnings, not carved.
 
 **Embervale.** A hill town on the west rim, stacked up the terraced ledges — six or seven of them — above its own
 fields, so the silhouette is a stair of slate roofs with smoke standing off each ledge. Material is
@@ -504,7 +507,7 @@ hard edge along the top — the map does not pretend to know what is past the ic
 2026-08-15 (F-043, DR-006 option 3).** This brief describes the basin survey and is unchanged —
 the hard edge stays; the wider chart is a separate artifact, the atlas sheet (`A2-wider-world.md`).
 
-**A1-ART-02 · Millcross.** A small, wall-less crossing town on both banks of a grey river,
+**A1-ART-02 · Millcross.** A small walled crossing town on both banks of a grey river,
 viewed from the road at cart height, late afternoon. One mill-wheel housing is the only structure
 above one storey; everything else is a single storey, solidly built — timber frames on stone
 footings, plastered walls, steep shingled roofs — strung with no plan along the roads. A queue of

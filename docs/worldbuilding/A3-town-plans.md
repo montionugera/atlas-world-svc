@@ -347,8 +347,8 @@ forces in `content/towns/town-millcross.json`.
 
 | A1 §6, verbatim | what it forces in the plan |
 | --- | --- |
-| "A town with no wall and no plan, built along both banks of a river crossing and spilling a quarter-mile up each road out of it." | **No wall, no gate footprint, no bounded core.** `footprints[].kind` never takes a wall or gate value in this file. Buildings are strung **along the roads out of the crossing** (ribbon sprawl) rather than packed round a centre, and both banks carry building. |
-| "The silhouette is horizontal and low: one tall thing, the mill-wheel housing over the race, and everything else a single storey, solidly built — timber frames on stone footings, plastered walls, steep shingled roofs, real chimneys." *(amended 2026-08-29 with the materials upgrade and tent removal)* | **Exactly one `storeys: 2` mass** — `mill-house` — and it sits **at the race**. All 10 other footprints are `storeys: 1`. A second two-storey building anywhere in the file contradicts canon. |
+| "A walled crossing town built along both banks of a river crossing, its roads spilling a quarter-mile out of the gates." *(amended 2026-08-29 evening — owner decision)* | **A timber-and-earth wall ring around the west-bank core, gates on the high street and the ford approach; the east-bank growth stays unwalled sprawl.** Buildings still string **along the roads out of the gates** (ribbon sprawl) rather than packed round a centre, and both banks carry building. |
+| "The silhouette stays horizontal and low: the mill-wheel housing over the race is taller than the wall, and nothing else competes with it — the guild hall and the inn rise a second storey inside the wall." *(amended 2026-08-29 evening: walled town + venues)* | **Exactly three `storeys: 2` masses** — `mill-house` (at the race, tallest), `inn`, `adventurer-guild`. A second two-storey building beyond those three contradicts canon. The wall ring is `storeys: 1` by authoring. |
 | "**First thing a traveller sees: the cart queue.** It starts before the town does, sometimes a mile out, because one crossing serves an entire land." | `landmarks[].firstSight: true` belongs to **`cart-queue`** and nothing else, and it is placed **out along the trunk road, west of the town proper** — "before the town does". |
 | "Millcross lives on the ford — tolls it refuses to formalise, stabling, ferrying at high water, and feeding whoever is waiting." | Four of the trades appear as buildings: **`ford-stable`** (stabling), **`ferry-shed`** (ferrying), **`victual-shed`** (feeding whoever is waiting). Tolls have no building by design — canon says they are *refused formalisation*, so a toll-house would contradict it. |
 | "After the war it is the only town that grew: the refugee camps that once ringed the east bank came down when the timber rows went up, and the displaced still arrive — those on the road camp under canvas at the crossroads and move on." *(amended 2026-08-29, owner decision: the permanent tent quarter is removed from town truth; refugees' tents are a temporary road-side state, not a built quarter)* | **No tent rows.** `footprints[].kind` never takes `tent` — the value was removed from the schema enum and the renderer map in the same commit. The quarter's former foot lanes are gone with it; temporary camps in the story (`quests.json`, the Quartermaster's act) are canvas on the road, outside the built plan. |
@@ -372,7 +372,7 @@ Three classes are used:
 - **CANON-THING** — A1 §6 (or §3.1) names the *thing*; the id string is authored.
 - **INVENTED** — no canon referent at all; design-open.
 
-### 3.1 The 22 ids in `content/towns/town-millcross.json`
+### 3.1 The 38 ids in `content/towns/town-millcross.json`
 
 > **Citation note (2026-08-29):** rows below citing `cluster1-geography.json` are historical — the
 > geography mirror retired on `release/1.8` (9cd227c). The live authority is the resolved-world join
@@ -398,13 +398,18 @@ Three classes are used:
 | `terrace-row-a` — `footprints[7]` | INVENTED | *(pattern only: "spilling a quarter-mile up each road out of it")* | the dwelling itself, id, `rect`, siting on the terrace road |
 | `terrace-row-b` — `footprints[8]` | INVENTED | *(pattern only, as above)* | as above |
 | `terrace-row-c` — `footprints[9]` | INVENTED | *(pattern only, as above)* | as above |
+| `west-wall-n` … `south-wall` — 6 wall footprints | OWNER-DECISION | owner 2026-08-29 evening: "we do want wall and more building so we have places for quest and shop" — A1 §6 amended same commit: "a timber-and-earth wall — thrown up after the war, when the raids came down the roads" | ids; `rect` ring around the west-bank core; `kind: "wall"`; 6u thickness (meets the footprint floor) |
+| `west-gate`, `north-gate`, `ford-gate` — 3 gate footprints | OWNER-DECISION | as above | ids; `rect` on the trunk road and mill-lane; `kind: "gate"`; `entranceOn` the guarded road |
+| `inn` — 2 storeys | OWNER-DECISION | A1 §6 amended: "the guild hall and the inn rise a second storey inside it" | id; `rect` on the high street; `kind: "inn"` |
+| `adventurer-guild` — 2 storeys | OWNER-DECISION | as above (the owner's "adventurer guild" venue for quests) | id; `rect` on the high street; `kind: "guild"` |
+| `provisioner`, `herbalist`, `weapon-smithy`, `bakehouse`, `general-store` | OWNER-DECISION | A1 §6 amended: consumables, ingredients, weapons, food and dry goods front the high street and the ford approach | ids; `rects`; `kind: "store"` with trade-specific ids |
 | `terrace-row-d` — `footprints[10]` | INVENTED | *(pattern only, as above)* | as above |
 | `cart-yard` — `plazas[0]` | CANON-THING | A1 §6: "It starts before the town does, sometimes a mile out, because one crossing serves an entire land." — the queue is canon; **the yard it stands in is design §6's derivation, not a canon noun** | id string; `rect`; the `why` sentence; siting west of the ford |
 | `cart-queue` — `landmarks[0]` | CANON-THING | A1 §6: "**First thing a traveller sees: the cart queue.**" | id string; `at: [24, 88]`. `firstSight: true` is canon-forced. |
 | `the-ford` — `landmarks[1]` | CANON-THING | `cluster1-geography.json` `river.ford.label: "the ford"`; A1 §3.1 "in **exactly one** by cart — that place is Millcross" | id string `the-ford`; `at: [110, 80]` in local space |
 | `mill-wheel` — `landmarks[2]` | CANON-THING | A1 §6: "the mill-wheel housing over the race" | id string; `at: [86, 41]` |
 
-**Counts: 4 CANON-ID · 9 CANON-THING · 9 INVENTED = 22.** Two further identifiers sit outside the
+**Counts: 4 CANON-ID · 9 CANON-THING · 9 INVENTED · 16 OWNER-DECISION = 38.** Two further identifiers sit outside the
 `id` fields and are both **CANON-ID**: `town: "millcross"` (`spineId`) and `anchor.geographyAt:
 [98.2, 152.6]` (resolved-world join, re-derived 2026-08-29).
 
@@ -421,10 +426,10 @@ of the file is authored, and this is the honest half of the table:
 | `roads[].points` | 5 polylines, **17 vertices** total | INVENTED |
 | `roads[].width` | cart `14, 14, 12, 12` · foot `6` | INVENTED — the **floors** (12 / 4) are design §3; every value above them is chosen |
 | `roads[].kind` | 4 `cart`, 1 `foot` | INVENTED (the enum is schema; the assignment is authored) |
-| `footprints[].rect` | **11** rects | INVENTED |
-| `footprints[].kind` | `mill`, `store`, `stable`, `dwelling` in use | mostly INVENTED; `mill` is canon-forced by §2; `tent` was removed from the schema enum and this plan with the quarter (owner decision 2026-08-29) |
-| `footprints[].storeys` | `2` on `mill-house`; `1` on the other **10** | **canon-forced values, authored fields** — A1 §6 says "everything else a single storey"; writing the number down is authoring |
-| `footprints[].entranceOn` | 11 assignments across 5 roads | INVENTED |
+| `footprints[].rect` | **27** rects | INVENTED |
+| `footprints[].kind` | `mill`, `store`, `stable`, `dwelling`, `wall`, `gate`, `inn`, `guild` in use | mostly INVENTED; `mill` is canon-forced by §2; `wall`/`gate`/the venues are owner-decision 2026-08-29 evening; `tent` was removed from the schema enum and this plan the same day |
+| `footprints[].storeys` | `2` on `mill-house`, `inn`, `adventurer-guild`; `1` on the other **24** | **canon-forced values, authored fields** — A1 §6 amended; writing the number down is authoring |
+| `footprints[].entranceOn` | 24 assignments across 5 roads | INVENTED |
 | `plazas[].rect` + `why` | 1 rect, 1 sentence | INVENTED |
 | `landmarks[].at` | 3 points | INVENTED |
 | `landmarks[].firstSight` | 1 (`cart-queue`) | **canon-forced** — A1 §6 names the cart queue |

@@ -86,7 +86,7 @@
           "id": { "type": "string", "minLength": 1 },
           "kind": {
             "type": "string",
-            "enum": ["mill", "dwelling", "store", "stable", "shrine", "gate", "ruin"]
+            "enum": ["mill", "dwelling", "store", "stable", "shrine", "gate", "wall", "inn", "guild", "ruin"]
           },
           "rect": {
             "type": "array",

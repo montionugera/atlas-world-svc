@@ -70,11 +70,11 @@
       "plan": "content/towns/town-millcross.json",
       "ratified": [
         {
-          "id": "wall-less",
+          "id": "walled-core",
           "kind": "structural",
-          "value": "no wall, no gate footprint, no bounded core; footprints[].kind never takes a wall or gate value",
-          "source": "canon:A1 — \"A town with no wall and no plan\"; enforced by schema enum (town-plan.schema.json footprints[].kind)",
-          "check": "footprints[].kind intersect {wall, gate} == empty; no closed ring of footprints around a core"
+          "value": "a timber-and-earth town wall encloses the west-bank core with gates on the high street (west) and the ford approach; the east-bank growth stays unwalled sprawl",
+          "source": "owner-decision:OWNER-2026-08-29-evening — 'we do want wall and more building so we have places for quest and shop' (inn, guild hall, provisioner, herbalist, weapon-smithy, bakehouse, general store); amends canon:A1 founding sentence in the same commit",
+          "check": ">=1 kind 'wall' footprint and >=1 kind 'gate' footprint; gates sit ON a road (entranceOn); no footprint kind 'tent'"
         },
         {
           "id": "no-tent-quarter",
@@ -86,9 +86,9 @@
         {
           "id": "exactly-one-two-storey",
           "kind": "structural",
-          "value": "exactly one storeys:2 mass — mill-house — and it sits at the race; all other footprints storeys:1",
-          "source": "canon:A1 — \"one tall thing, the mill-wheel housing over the race, and everything else a single storey\"",
-          "check": "count(footprints[].storeys == 2) === 1 && that footprint.kind == 'mill' && adjacent to water kind 'race'"
+          "value": "exactly three storeys:2 masses — mill-house at the race (tallest), the inn on the high street, the guild hall; all other footprints storeys:1",
+          "source": "canon:A1 amended 2026-08-29 (owner decision: quest/shop venues) — 'one tall thing, the mill-wheel housing over the race' holds; the guild hall and the inn rise a second storey inside the wall",
+          "check": "count(footprints[].storeys == 2) === 3 && ids == {mill-house, inn, adventurer-guild} && mill-house adjacent to water kind 'race'"
         },
         {
           "id": "road-widths-authored",
@@ -114,9 +114,9 @@
         {
           "id": "layout-ribbon-sprawl",
           "kind": "structural",
-          "value": "buildings strung along the roads out of the crossing (no plan, no market square centre), both banks carry building",
-          "source": "canon:A1 — \"built along both banks ... spilling ... up each road out of it\"",
-          "check": "every footprint's entranceOn road runs to the town edge (touches extent border) or the ford; no footprint cluster enclosing a plaza centre"
+          "value": "inside the wall the high street lines the trunk road; outside the gates buildings stay strung along the roads out of the crossing (no planned estates), both banks carry building",
+          "source": "canon:A1 — 'spilling a quarter-mile up each road out of it', amended 2026-08-29 for the walled core",
+          "check": "every footprint's entranceOn road runs to the town edge, a gate, or the ford; no footprint cluster enclosing a plaza centre outside the wall"
         },
         {
           "id": "one-cart-crossing",
@@ -160,11 +160,12 @@
           "id": "brief-count-band",
           "kind": "countBand",
           "appliesTo": "tools/art-forge/briefs/*.json prompt + mustAssert",
-          "phraseToNumber": { "a dozen": 12, "a few dozen": 36, "handful": 5, "scores": 60 },
+          "phraseToNumber": { "a dozen and a half": 18, "a dozen": 12, "a few dozen": 36, "handful": 5, "scores": 60 },
           "tolerance": 2,
-          "currentCount": 11,
-          "source": "reviewer:REVIEWER — makes the owner-set \"a dozen structures\" wording (briefs/A1-ART-02.json, commit 6894e97) machine-checkable; |12 − 11| = 1 <= tolerance, so the wording PASSES as a bounded approximation, and any future footprint change must re-derive the phrase",
-          "check": "for each count phrase in a brief prompt: |phraseNumber − footprints.length| <= tolerance"
+          "currentCount": 18,
+          "countWhat": "footprints EXCLUDING kind 'wall' and 'gate' — the wall ring and its gates are structure, not venues",
+          "source": "reviewer:REVIEWER v1.1 — makes count phrases machine-checkable; 2026-08-29 evening re-derivation for the walled amendment: 27 footprints − 9 wall/gate = 18 venues-and-homes, and the brief asserts 'a dozen and a half structures' (|18 − 18| = 0). Match the LONGEST phrase first — 'a dozen and a half' contains 'a dozen'.",
+          "check": "for each count phrase in a brief prompt (longest match wins): |phraseNumber − venueCount| <= tolerance"
         }
       }
     }
@@ -233,10 +234,6 @@
         "castle",
         "citadel",
         "keep",
-        "rampart",
-        "ramparts",
-        "bastion",
-        "palisade",
         "string lanterns",
         "paper lanterns",
         "lantern glow",
@@ -248,7 +245,7 @@
         "fantasy village",
         "medieval village"
       ],
-      "source": "reviewer:REVIEWER (Pass 3), each token grounded: storybook/quaint/gingerbread/fachwerk = storybook half-timbered-everything register; cobblestone = era law says rutted earth roads (ERA) + A1 'hard-packed earth roads'; windmill = canon water mill (ABP mustNotShow); castle/citadel/keep/rampart/bastion/palisade = wall-less Millcross and other towns' silhouettes; lanterns/glow/tavern sign/bunting = generic-fantasy defaults that erase the 'cheap light' register; fantasy/medieval village = the generic label that pastes over the specific town",
+      "source": "reviewer:REVIEWER (Pass 3, v1.1), each token grounded: storybook/quaint/gingerbread/fachwerk = storybook half-timbered-everything register; cobblestone = era law says hard-packed earth roads (ERA) + A1; windmill = canon water mill (ABP mustNotShow); castle/citadel/keep = the fortress register — a TOWN wall is legal since 2026-08-29 evening (rampart/palisade removed from this list then, they are wall synonyms the walled brief may need), a CASTLE never is; lanterns/glow/tavern sign/bunting = generic-fantasy defaults that erase the 'cheap light' register; fantasy/medieval village = the generic label that pastes over the specific town",
       "note": "a cliché is a RECOMMENDATION unless it breaks a style law; these tokens are style-law breaks (era, palette, wall-less canon) or the owner's explicit not-cliché direction, which is why they are lint data and not advice",
       "check": "prompt-lint R2 throws when any token appears in a composed positive prompt"
     },
@@ -264,7 +261,7 @@
           "a real approach road that composes the frame"
         ],
         "forbiddenCharacteristics": [
-          "their walls, towers and gates (Millcross is wall-less)",
+          "castle-scale towers, citadel keeps and fantasy-brochure battlements (Millcross is a working town wall, not a fortress)",
           "their windmills (canon water mill)",
           "storybook pastels and glow (palette is ash-grey/rope-brown/tallow, cheap light)",
           "clean fantasy-brochure weathering (era law: unpainted wood, mud, wear)"
@@ -283,7 +280,7 @@
     },
     {
       "id": "gate-quest-contradiction",
-      "note": "quest-the-road-of-strangers 'Meet the road at the gate' contradicts wall-less Millcross — G5-class, open before this review, NOT closed silently by the tent removal (the removal only re-scoped the tents as temporary road-side state, which that quest's canvas wording can live inside)",
+      "note": "quest-the-road-of-strangers 'Meet the road at the gate' — written when Millcross was wall-less; the 2026-08-29 evening wall amendment makes the gate REAL, so this contradiction CLOSES as resolved-by-amendment (the quest line now lands on the west gate). Kept here one release for traceability.",
       "source": "reviewer:REVIEWER per town-canon-reviewer mandate"
     }
   ]

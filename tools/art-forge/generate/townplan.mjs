@@ -167,6 +167,9 @@ export const KIND_FILL = Object.freeze({
   stable: "#ab7048",
   shrine: "#b98a63",
   gate: "#9c7a55",
+  wall: "#9a948a",
+  inn: "#b08a5a",
+  guild: "#8f7f5e",
   ruin: "#9d968a",
 });
 
@@ -978,11 +981,13 @@ function drawLegend(plan) {
       [boxSwatch(PALETTE.roadCart, PALETTE.roadCasing), "cart road"],
       [boxSwatch(PALETTE.roadFoot, PALETTE.roadCasing), "foot road"],
       [boxSwatch(PALETTE.plaza, PALETTE.plazaEdge), "plaza"],
-      [boxSwatch(PALETTE.ground, PALETTE.extentLine), "plan extent — no wall (A1 §6)"],
+      [boxSwatch(PALETTE.ground, PALETTE.extentLine), "plan extent — walled 2026-08-29 (A1 §6)"],
     ],
     [
       [boxSwatch(KIND_FILL.dwelling, PALETTE.footprintEdge), "dwelling / store / stable"],
-      [boxSwatch(MULTI_STOREY_FILL, PALETTE.footprintEdge), "2 storeys — the mill-house"],
+      [boxSwatch(KIND_FILL.wall, PALETTE.footprintEdge), "town wall"],
+      [boxSwatch(KIND_FILL.inn, PALETTE.footprintEdge), "inn / guild"],
+      [boxSwatch(MULTI_STOREY_FILL, PALETTE.footprintEdge), "2 storeys — mill, inn, guild"],
       [(x, y) => `<circle cx="${u(x + 2.5)}" cy="${u(y + 2)}" r="${u(2)}" fill="${PALETTE.ink}"/>`, "landmark"],
       [(x, y) => `<path d="${starPath(x + 2.5, y + 2, 2.8)}" fill="${PALETTE.gold}"/>`, "first sight"],
     ],

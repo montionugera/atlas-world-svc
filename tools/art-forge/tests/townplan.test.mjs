@@ -295,9 +295,9 @@ test("the 2-storey mill-house is tonally distinct from every single-storey kind"
   assert.ok(luminance(MULTI_STOREY_FILL) < darkest, "the 2-storey tone must be the darkest mass");
 });
 
-test("Millcross has exactly one 2-storey mass and it is the mill-house (A1 §6)", () => {
+test("Millcross has exactly three 2-storey masses — mill-house, inn, guild hall (A1 §6, amended 2026-08-29)", () => {
   const multi = millcross.footprints.filter((f) => (f.storeys ?? 1) >= 2);
-  assert.deepEqual(multi.map((f) => f.id), ["mill-house"]);
+  assert.deepEqual(multi.map((f) => f.id).sort(), ["adventurer-guild", "inn", "mill-house"]);
 });
 
 test("water and plazas are drawn, keyed by id", () => {
@@ -521,8 +521,8 @@ test("the title names the town and states the extent", () => {
   assert.ok(svg.includes(`${millcross.extent.width} × ${millcross.extent.height}`));
 });
 
-test("the legend says the extent is a plan bound, not a wall", () => {
-  assert.match(buildTownPlanSvg({ plan: millcross }), /no wall/);
+test("the legend states the extent is a plan bound (walled 2026-08-29, A1 §6)", () => {
+  assert.match(buildTownPlanSvg({ plan: millcross }), /walled 2026-08-29/);
 });
 
 /* --------------------- the rasteriser's own constraints -------------------- */
