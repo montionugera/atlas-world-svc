@@ -85,6 +85,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFile as execFileCb } from "node:child_process";
+import { promisify } from "node:util";
+
+const execFile = promisify(execFileCb);
 
 import {
   FORGE_DIR,
@@ -117,6 +121,22 @@ export const ENV_NODE = Object.freeze({
   CN_TYPE: "21",
   CN_IMAGE: "22",
   CN_APPLY: "23",
+  GUID: "30",
+  ZERO: "31",
+});
+
+/** Node ids for the dev anchor pass (img2img on the grained block-in). */
+export const ANCHOR_NODE = Object.freeze({
+  CKPT: "40",
+  POS: "41",
+  NEG: "42",
+  LOAD: "43",
+  ENCODE: "44",
+  GUID: "45",
+  ZERO: "46",
+  KSAMPLER: "47",
+  DECODE: "48",
+  SAVE: "49",
 });
 
 /**
@@ -311,6 +331,36 @@ export const CONTROL_BLOCK = Object.freeze({ depth: "controlNet", segment: "segm
 /** control key -> the blockin.mjs renderer that produces its control PNG. */
 export const CONTROL_RENDERER = Object.freeze({ depth: renderDepthPng, segment: renderSegmentPng });
 
+/** model key -> the forge.config.json models key holding its checkpoint. */
+export const MODEL_CHECKPOINT = Object.freeze({ schnell: "checkpoint", dev: "dev" });
+
+/**
+ * Pick the model. Precedence: --model > "schnell" (the F-026 frozen default).
+ * dev uses `models.dev.checkpoint` + the measured `samplerDev` settings
+ * (ABP-flux-dev-and-anchor.md); schnell stays byte-identical to F-026.
+ * @returns {{ model: string, checkpoint: string, sampler: object }}
+ */
+export function resolveModel({ forge, model }) {
+  if (model === true) {
+    throw new Error("--model requires a value, got a bare flag");
+  }
+  const key = model ?? "schnell";
+  const checkpointKey = MODEL_CHECKPOINT[key];
+  if (!checkpointKey) {
+    throw new Error(
+      `unknown --model "${key}" — expected one of ${Object.keys(MODEL_CHECKPOINT).join(", ")}`,
+    );
+  }
+  const checkpoint = forge.profile.models[checkpointKey];
+  if (key === "dev") {
+    if (!checkpoint) {
+      throw new Error('model "dev" has no "dev" entry in forge.config.json profiles.environment.models');
+    }
+    return { model: key, checkpoint, sampler: forge.profile.samplerDev };
+  }
+  return { model: key, checkpoint, sampler: forge.profile.sampler };
+}
+
 /**
  * Pick the active control. Precedence: --control > profile.control > "depth".
  * Throws by name on an unknown key, and on a block whose `type` does not equal
@@ -377,10 +427,18 @@ export function resolveStrength({ control, block, override }) {
  * (freehand) carries no strength suffix — there is no strength to sweep
  * (`<id>-none-seed<n>`).
  */
-export function controlOutputId({ briefId, control, seed, strength }) {
-  if (control === "none") return `${briefId}-none-seed${seed}`;
+export function controlOutputId({ briefId, control, seed, strength, model = "schnell" }) {
+  const modelInfix = model === "dev" ? "-dev" : "";
+  if (control === "none") return `${briefId}-none${modelInfix}-seed${seed}`;
   const suffix = `-seed${seed}-s${formatStrength(strength)}`;
-  return control === "depth" ? `${briefId}${suffix}` : `${briefId}-${control}${suffix}`;
+  return control === "depth" ? `${briefId}${modelInfix}${suffix}` : `${briefId}-${control}${suffix}`;
+}
+
+/** brief.id: control-qualified (except depth, for F-026 byte-diffability) + model-qualified. */
+function composeBriefId(baseId, control, model) {
+  const controlInfix = control !== "depth" ? `-${control}` : "";
+  const modelInfix = model === "dev" ? "-dev" : "";
+  return `${baseId}${controlInfix}${modelInfix}`;
 }
 
 /**
@@ -410,6 +468,7 @@ export function buildEnvGraph({
   forge,
   strength = forge.profile.controlNet.strength,
   controlNet = forge.profile.controlNet,
+  model = "schnell",
 }) {
   const { models, sampler, latent } = forge.profile;
   // Freehand (generateEnv passes controlNet: null for --control none): the
@@ -418,6 +477,16 @@ export function buildEnvGraph({
   // there is none to sweep. With a control, construction order is unchanged
   // so the frozen depth path stays byte-identical to F-026.
   const hasControl = controlNet != null;
+  // dev (ABP-flux-dev-and-anchor.md): the all-in-one dev checkpoint, an
+  // explicit FluxGuidance node (ComfyUI defaults guidance to 3.5 when unset —
+  // 5.0 is the measured standard), and the template's ConditioningZeroOut
+  // negative. schnell's frozen path gains nothing and loses nothing.
+  const isDev = model === "dev";
+  const devSampler = forge.profile.samplerDev;
+  const checkpoint = isDev ? models.dev.checkpoint : models.checkpoint;
+  const steps = isDev ? devSampler.steps : sampler.steps;
+  const cfg = isDev ? devSampler.cfg : sampler.cfg;
+  const denoise = isDev ? devSampler.denoise : sampler.denoise;
   const outputId =
     `${brief.id ?? "subject"}-seed${seed}${hasControl ? `-s${formatStrength(strength)}` : ""}`;
   const positiveFrom = hasControl ? [ENV_NODE.CN_APPLY, 0] : [ENV_NODE.POS, 0];
@@ -425,7 +494,7 @@ export function buildEnvGraph({
   return {
     [ENV_NODE.CKPT]: {
       class_type: "CheckpointLoaderSimple",
-      inputs: { ckpt_name: models.checkpoint },
+      inputs: { ckpt_name: checkpoint },
     },
     [ENV_NODE.POS]: {
       class_type: "CLIPTextEncode",
@@ -435,6 +504,18 @@ export function buildEnvGraph({
       class_type: "CLIPTextEncode",
       inputs: { clip: [ENV_NODE.CKPT, 1], text: brief.negative ?? "" },
     },
+    ...(isDev
+      ? {
+          [ENV_NODE.GUID]: {
+            class_type: "FluxGuidance",
+            inputs: { conditioning: [ENV_NODE.POS, 0], guidance: devSampler.guidance },
+          },
+          [ENV_NODE.ZERO]: {
+            class_type: "ConditioningZeroOut",
+            inputs: { conditioning: [ENV_NODE.NEG, 0] },
+          },
+        }
+      : {}),
     ...(hasControl
       ? {
           [ENV_NODE.CN_LOAD]: {
@@ -452,8 +533,8 @@ export function buildEnvGraph({
           [ENV_NODE.CN_APPLY]: {
             class_type: "ControlNetApplyAdvanced",
             inputs: {
-              positive: [ENV_NODE.POS, 0],
-              negative: [ENV_NODE.NEG, 0],
+              positive: isDev ? [ENV_NODE.GUID, 0] : [ENV_NODE.POS, 0],
+              negative: isDev ? [ENV_NODE.ZERO, 0] : [ENV_NODE.NEG, 0],
               control_net: [ENV_NODE.CN_TYPE, 0],
               image: [ENV_NODE.CN_IMAGE, 0],
               strength,
@@ -472,15 +553,15 @@ export function buildEnvGraph({
       class_type: "KSampler",
       inputs: {
         model: [ENV_NODE.CKPT, 0],
-        positive: positiveFrom,
-        negative: negativeFrom,
+        positive: isDev && !hasControl ? [ENV_NODE.GUID, 0] : positiveFrom,
+        negative: isDev && !hasControl ? [ENV_NODE.ZERO, 0] : negativeFrom,
         latent_image: [ENV_NODE.LATENT, 0],
         seed,
-        steps: sampler.steps,
-        cfg: sampler.cfg,
+        steps,
+        cfg,
         sampler_name: sampler.samplerName,
         scheduler: sampler.scheduler,
-        denoise: sampler.denoise,
+        denoise,
       },
     },
     [ENV_NODE.DECODE]: {
@@ -539,6 +620,76 @@ export function buildEnvGraph({
  * that structure. If this is later found to lose composition fidelity,
  * re-run the base pass's ControlNet nodes into this graph instead.
  */
+/**
+ * Build the dev ANCHOR graph — img2img on the grained block-in
+ * (ABP-flux-dev-and-anchor.md, D-anchored arm: 27 steps, cfg 1, guidance 5.0,
+ * denoise 0.75 — window 0.70-0.78, only functional when the block-in carries
+ * Gaussian grain; flat grey shapes hijack style into flat vector poster art).
+ * `anchorImage` is the UPLOADED grained block-in filename (ComfyUI input dir),
+ * produced by generateEnv's `--anchor` flow: renderDepthPng -> blur 0x6 ->
+ * +noise Gaussian at `profiles.environment.anchor.grainAttenuate`.
+ */
+export function buildEnvAnchorGraph({ brief, seed, anchorImage, forge }) {
+  const { models, sampler, anchor } = forge.profile;
+  const outputId = `${brief.id ?? "subject"}-anchor-seed${seed}`;
+  return {
+    [ANCHOR_NODE.CKPT]: {
+      class_type: "CheckpointLoaderSimple",
+      inputs: { ckpt_name: models.dev.checkpoint },
+    },
+    [ANCHOR_NODE.POS]: {
+      class_type: "CLIPTextEncode",
+      inputs: { clip: [ANCHOR_NODE.CKPT, 1], text: brief.positive },
+    },
+    [ANCHOR_NODE.NEG]: {
+      class_type: "CLIPTextEncode",
+      inputs: { clip: [ANCHOR_NODE.CKPT, 1], text: brief.negative ?? "" },
+    },
+    [ANCHOR_NODE.GUID]: {
+      class_type: "FluxGuidance",
+      inputs: { conditioning: [ANCHOR_NODE.POS, 0], guidance: anchor.guidance },
+    },
+    [ANCHOR_NODE.ZERO]: {
+      class_type: "ConditioningZeroOut",
+      inputs: { conditioning: [ANCHOR_NODE.NEG, 0] },
+    },
+    [ANCHOR_NODE.LOAD]: {
+      class_type: "LoadImage",
+      inputs: { image: anchorImage },
+    },
+    [ANCHOR_NODE.ENCODE]: {
+      class_type: "VAEEncode",
+      inputs: { pixels: [ANCHOR_NODE.LOAD, 0], vae: [ANCHOR_NODE.CKPT, 2] },
+    },
+    [ANCHOR_NODE.KSAMPLER]: {
+      class_type: "KSampler",
+      inputs: {
+        model: [ANCHOR_NODE.CKPT, 0],
+        positive: [ANCHOR_NODE.GUID, 0],
+        negative: [ANCHOR_NODE.ZERO, 0],
+        latent_image: [ANCHOR_NODE.ENCODE, 0],
+        seed,
+        steps: anchor.steps,
+        cfg: anchor.cfg,
+        sampler_name: sampler.samplerName,
+        scheduler: sampler.scheduler,
+        denoise: anchor.denoise,
+      },
+    },
+    [ANCHOR_NODE.DECODE]: {
+      class_type: "VAEDecode",
+      inputs: { samples: [ANCHOR_NODE.KSAMPLER, 0], vae: [ANCHOR_NODE.CKPT, 2] },
+    },
+    [ANCHOR_NODE.SAVE]: {
+      class_type: "SaveImage",
+      inputs: {
+        images: [ANCHOR_NODE.DECODE, 0],
+        filename_prefix: `art-forge/env/${outputId}`,
+      },
+    },
+  };
+}
+
 export function buildEnvHiresGraph({ brief, seed, baseImage, forge }) {
   const { models, sampler, hires } = forge.profile;
   const outputId = `${brief.id ?? "subject"}-seed${seed}-hires`;
@@ -668,6 +819,7 @@ export async function generateEnv(
   const positiveOverride = parsePromptOverride("positive", args.positive);
 
   const { control, block, render } = resolveControl({ forge, control: args.control });
+  const { model } = resolveModel({ forge, model: args.model });
   const strength = resolveStrength({ control, block, override: args.strength });
   const { width, height } = forge.profile.latent;
 
@@ -721,11 +873,11 @@ export async function generateEnv(
           extraForbiddenTokens: townCriteriaForbiddenTokens(),
         }),
     negative: buildEnvNegative(forge),
-    id: control === "depth" ? rawBrief.id : `${rawBrief.id}-${control}`,
+    id: composeBriefId(rawBrief.id, control, model),
   };
 
-  const outputId = controlOutputId({ briefId, control, seed, strength });
-  const graph = buildEnvGraph({ brief, seed, depthImage: controlImage, forge, strength, controlNet: block });
+  const outputId = controlOutputId({ briefId, control, seed, strength, model });
+  const graph = buildEnvGraph({ brief, seed, depthImage: controlImage, forge, strength, controlNet: block, model });
 
   const baseResult = await runGraph({
     forge,
@@ -758,8 +910,57 @@ export async function generateEnv(
     }
   }
 
-  if (!args.hires) {
+  if (!args.hires && !args.anchor) {
     return baseResult;
+  }
+
+  // --anchor (dev only): the composition anchor pass from
+  // ABP-flux-dev-and-anchor.md — the rendered control PNG is grained
+  // (blur 0x6, then +noise Gaussian at anchor.grainAttenuate — grain creates
+  // the denoise window; flat grey shapes hijack style into flat vector),
+  // re-uploaded, and refined img2img at denoise 0.75 over 27 steps.
+  if (args.anchor && model !== "dev") {
+    throw new Error(
+      "--anchor is a dev-model pass (ABP-flux-dev-and-anchor.md) — schnell has no anchor recipe; run --model dev",
+    );
+  }
+  if (args.anchor && !controlImage) {
+    throw new Error("--anchor needs a control image to anchor on — control none stages nothing");
+  }
+  if (args.anchor) {
+    const anchorCfg = forge.profile.anchor;
+    const controlSourceLocal = path.join(forge.outDir, "control", control, `${briefId}-${control}.png`);
+    const grainedPath = path.join(
+      forge.outDir,
+      "control",
+      control,
+      `${briefId}-${control}-grained.png`,
+    );
+    const anchorSource = args["dry-run"]
+      ? `art-forge/${briefId}-${control}-grained.png`
+      : await execFile("magick", [
+          controlSourceLocal,
+          "-blur",
+          "0x6",
+          "-attenuate",
+          String(anchorCfg.grainAttenuate),
+          "+noise",
+          "Gaussian",
+          grainedPath,
+        ]).then(() => {
+          console.error(`[art-forge] anchor: grained block-in -> ${grainedPath}`);
+          return uploadControlImage({ base, localPath: grainedPath, subfolder: "art-forge" });
+        });
+    const anchorGraph = buildEnvAnchorGraph({ brief, seed, anchorImage: anchorSource, forge });
+    const anchorOutputId = `${briefId}-dev-anchor-seed${seed}`;
+    const anchorResult = await runGraph({
+      forge,
+      args,
+      graph: anchorGraph,
+      name: `env/${anchorOutputId}`,
+      label: `env anchor ${briefId} seed=${seed} source=${anchorSource} denoise=${anchorCfg.denoise}`,
+    });
+    return { base: baseResult, anchor: anchorResult };
   }
 
   const hiresOutputId = `${briefId}-seed${seed}-hires`;

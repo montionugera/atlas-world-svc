@@ -6,6 +6,7 @@ import {
   CONTROL_RENDERER,
   ENV_NODE,
   HIRES_NODE,
+  buildEnvAnchorGraph,
   buildEnvGraph,
   buildEnvHiresGraph,
   buildEnvNegative,
@@ -14,6 +15,7 @@ import {
   formatStrength,
   generateEnv,
   resolveControl,
+  resolveModel,
   resolveStrength,
   townCriteriaForbiddenTokens,
   validateBrief,
@@ -233,6 +235,73 @@ test("generateEnv (dry-run, end to end) keeps depth's embedded filename bare —
     graph[ENV_NODE.SAVE].inputs.filename_prefix,
     "art-forge/env/A1-ART-02-seed12345-s0.30",
   );
+});
+
+/* ------------------------ dev model (--model dev) ------------------------ */
+
+test("resolveModel defaults to schnell and rejects unknown models by name", () => {
+  assert.equal(resolveModel({ forge, model: undefined }).model, "schnell");
+  assert.equal(resolveModel({ forge, model: "dev" }).model, "dev");
+  assert.throws(() => resolveModel({ forge, model: "schnelll" }), /schnelll.*schnell, dev/s);
+});
+
+test("dev graph swaps to the dev checkpoint, adds FluxGuidance 5.0 and ConditioningZeroOut, and uses the measured dev sampler", () => {
+  const g = buildEnvGraph({
+    brief: { positive: "a crossing town", id: "A1-ART-02-dev" },
+    seed: 12345,
+    depthImage: "cntest/control-depth-A1-ART-02.png",
+    forge,
+    model: "dev",
+  });
+  assert.equal(g[ENV_NODE.CKPT].inputs.ckpt_name, "flux1-dev-fp8.safetensors");
+  const guid = Object.values(g).find((n) => n.class_type === "FluxGuidance");
+  assert.equal(guid.inputs.guidance, 5.0, "guidance 5.0 is the measured standard (ABP-flux-dev-and-anchor)");
+  const zero = Object.values(g).find((n) => n.class_type === "ConditioningZeroOut");
+  assert.ok(zero, "dev follows the authoritative template's ZeroOut negative");
+  const apply = Object.values(g).find((n) => n.class_type === "ControlNetApplyAdvanced");
+  assert.deepEqual(apply.inputs.positive, [Object.entries(g).find(([, n]) => n.class_type === "FluxGuidance")[0], 0]);
+  assert.deepEqual(apply.inputs.negative, [Object.entries(g).find(([, n]) => n.class_type === "ConditioningZeroOut")[0], 0]);
+  const ks = Object.values(g).find((n) => n.class_type === "KSampler");
+  assert.equal(ks.inputs.steps, 20);
+  assert.equal(ks.inputs.cfg, 1);
+  assert.equal(ks.inputs.denoise, 1.0);
+});
+
+test("schnell graph stays untouched by the dev path — no FluxGuidance, frozen checkpoint", () => {
+  const classes = Object.values(graph).map((n) => n.class_type);
+  assert.equal(classes.includes("FluxGuidance"), false);
+  assert.equal(classes.includes("ConditioningZeroOut"), false);
+  assert.equal(graph[ENV_NODE.CKPT].inputs.ckpt_name, "flux1-schnell-fp8.safetensors");
+});
+
+test("dev freehand output ids carry -dev- so a dev roll never overwrites a schnell roll", () => {
+  assert.equal(
+    controlOutputId({ briefId: "A1-ART-02", control: "none", seed: 12345, strength: null, model: "dev" }),
+    "A1-ART-02-none-dev-seed12345",
+  );
+  assert.equal(
+    controlOutputId({ briefId: "A1-ART-02", control: "depth", seed: 12345, strength: 0.3, model: "dev" }),
+    "A1-ART-02-dev-seed12345-s0.30",
+  );
+});
+
+test("anchor graph is a dev img2img: grained block-in -> VAEEncode -> KSampler denoise 0.75 over 27 steps", () => {
+  const g = buildEnvAnchorGraph({
+    brief: { positive: "a crossing town", id: "A1-ART-02-dev" },
+    seed: 12345,
+    anchorImage: "art-forge/A1-ART-02-depth-grained.png",
+    forge,
+  });
+  const load = Object.values(g).find((n) => n.class_type === "LoadImage");
+  assert.equal(load.inputs.image, "art-forge/A1-ART-02-depth-grained.png");
+  const ks = Object.values(g).find((n) => n.class_type === "KSampler");
+  assert.deepEqual(ks.inputs.latent_image, [Object.entries(g).find(([, n]) => n.class_type === "VAEEncode")[0], 0]);
+  assert.equal(ks.inputs.steps, 27);
+  assert.equal(ks.inputs.denoise, 0.75);
+  const guid = Object.values(g).find((n) => n.class_type === "FluxGuidance");
+  assert.equal(guid.inputs.guidance, 5.0);
+  const save = Object.values(g).find((n) => n.class_type === "SaveImage");
+  assert.equal(save.inputs.filename_prefix, "art-forge/env/A1-ART-02-dev-anchor-seed12345");
 });
 
 /* ---------------------- freehand (--control none) ---------------------- */

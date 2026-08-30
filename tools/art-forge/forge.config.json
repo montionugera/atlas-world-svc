@@ -62,7 +62,10 @@
     "environment": {
       "models": {
         "checkpoint": "flux1-schnell-fp8.safetensors",
-        "controlNet": "flux-controlnet-union-pro-2.0.safetensors"
+        "controlNet": "flux-controlnet-union-pro-2.0.safetensors",
+        "dev": {
+          "checkpoint": "flux1-dev-fp8.safetensors"
+        }
       },
       "sampler": {
         "denoise": 1.0,
@@ -148,7 +151,24 @@
           "the last of (them|it)"
         ]
       },
-      "_note": "Measured in docs/worldbuilding/ABP-controlnet-rescue.md (Gildmark, Norhollow) and REPLICATED 2026-08-03 in docs/worldbuilding/ABP-controlnet-replication.md across the four remaining L1 towns (Millcross, Embervale, Rooktide, Cindervast), two seeds (12345, 741852), both ends of the strength window (0.30, 0.40) — 16/16 generations completed, 0 OOMs. strength 0.30 is NOT a typo: the usable window is 0.30-0.40 and the conventional 0.8-1.0 collapses schnell into flat vector art (-88% detail). Steps and strength interact — 8 steps at strength >= 0.50 produced a cutout halo. Do not reach for end_percent to fix flatness; reach for lower strength. THE STRENGTH/PAINT-QUALITY CLAIM HOLDS: all 16 replication cells stayed painted, 0 flat-vector collapses, across four new subjects — that part of the recipe is now evidenced on six subjects; two seeds on four of them, not two subjects, one seed. THE PROFILE AS A WHOLE DOES NOT YET CLEAR AN UNATTENDED-BATCH BAR, but not because of Embervale: rendering and viewing Embervale's own depth control map directly (docs/worldbuilding/ABP-controlnet-replication.md, re-attributed section) shows it is itself a symmetric, centred, stepped pyramid, and the 4/4 generations matched that shape faithfully. This is CONFIRMED as a block-in composition-authoring defect, not a recipe or strength defect, and is now read as evidence of HIGH depth-adherence, not an open question — see the ABP's new Authoring-law section (symmetric, centred stacks of steps render as one monument; terraced settlements need asymmetric, off-centre, broken masses). What still blocks unattended-batch use is a separate, unrelated axis: content control (hallucinated text/emblems, modern contamination, the rubble/wall-condition miss on Cindervast) remains unsuppressed in nearly a third of cells. See styleGuard._note above for what the replication found about modern-contamination and lattice-pylon recurrence. Still unswept: steps=16 on any subject, and strengths 0.40-0.60 on the four newly-tested subjects (only 0.30/0.40 were run). Checkpoint filename flux1-schnell-fp8.safetensors and ControlNet filename flux-controlnet-union-pro-2.0.safetensors were both VERIFIED to exist on the live ComfyUI server (v0.24.1) on 2026-08-02 via GET /object_info/CheckpointLoaderSimple and GET /object_info/ControlNetLoader respectively — this confirms the filenames are installed, and the 2026-08-03 replication confirms 16/16 real generations against them completed without error."
+      "_note": "Measured in docs/worldbuilding/ABP-controlnet-rescue.md (Gildmark, Norhollow) and REPLICATED 2026-08-03 in docs/worldbuilding/ABP-controlnet-replication.md across the four remaining L1 towns (Millcross, Embervale, Rooktide, Cindervast), two seeds (12345, 741852), both ends of the strength window (0.30, 0.40) — 16/16 generations completed, 0 OOMs. strength 0.30 is NOT a typo: the usable window is 0.30-0.40 and the conventional 0.8-1.0 collapses schnell into flat vector art (-88% detail). Steps and strength interact — 8 steps at strength >= 0.50 produced a cutout halo. Do not reach for end_percent to fix flatness; reach for lower strength. THE STRENGTH/PAINT-QUALITY CLAIM HOLDS: all 16 replication cells stayed painted, 0 flat-vector collapses, across four new subjects — that part of the recipe is now evidenced on six subjects; two seeds on four of them, not two subjects, one seed. THE PROFILE AS A WHOLE DOES NOT YET CLEAR AN UNATTENDED-BATCH BAR, but not because of Embervale: rendering and viewing Embervale's own depth control map directly (docs/worldbuilding/ABP-controlnet-replication.md, re-attributed section) shows it is itself a symmetric, centred, stepped pyramid, and the 4/4 generations matched that shape faithfully. This is CONFIRMED as a block-in composition-authoring defect, not a recipe or strength defect, and is now read as evidence of HIGH depth-adherence, not an open question — see the ABP's new Authoring-law section (symmetric, centred stacks of steps render as one monument; terraced settlements need asymmetric, off-centre, broken masses). What still blocks unattended-batch use is a separate, unrelated axis: content control (hallucinated text/emblems, modern contamination, the rubble/wall-condition miss on Cindervast) remains unsuppressed in nearly a third of cells. See styleGuard._note above for what the replication found about modern-contamination and lattice-pylon recurrence. Still unswept: steps=16 on any subject, and strengths 0.40-0.60 on the four newly-tested subjects (only 0.30/0.40 were run). Checkpoint filename flux1-schnell-fp8.safetensors and ControlNet filename flux-controlnet-union-pro-2.0.safetensors were both VERIFIED to exist on the live ComfyUI server (v0.24.1) on 2026-08-02 via GET /object_info/CheckpointLoaderSimple and GET /object_info/ControlNetLoader respectively — this confirms the filenames are installed, and the 2026-08-03 replication confirms 16/16 real generations against them completed without error.",
+      "samplerDev": {
+        "steps": 20,
+        "cfg": 1,
+        "guidance": 5.0,
+        "samplerName": "euler",
+        "scheduler": "simple",
+        "denoise": 1.0,
+        "_note": "ABP-flux-dev-and-anchor.md D-base arm: 20 steps, cfg 1, euler/simple, denoise 1.0, guidance 5.0 chosen as the standard compromise (guidance is subject-dependent — 7.0 buys structure, costs atmosphere). All values measured, none guessed."
+      },
+      "anchor": {
+        "steps": 27,
+        "cfg": 1,
+        "guidance": 5.0,
+        "denoise": 0.75,
+        "grainAttenuate": 0.55,
+        "_note": "ABP-flux-dev-and-anchor.md D-anchored arm: img2img on the grained block-in (blur 0x6 then +noise Gaussian attenuate 0.55 — grain creates the denoise window; flat block-ins hijack style into flat vector). Window 0.70-0.78 measured; 0.75 chosen. Watermark hallucination in bottom corners is a known anchored-render defect — artifact gate territory (I-055)."
+      }
     }
   }
 }
