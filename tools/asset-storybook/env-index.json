@@ -1,0 +1,383 @@
+{
+  "version": 1,
+  "note": "One row per PNG under tools/art-forge/out/env/ — art-forge's environment concept renders (the A1-ART-02 Millcross roll batch). The storybook's OWN registry for this artifact type, exactly as maps-index.json registers mapforge sheets and world-index.json registers the civil layer: the 2026-08-15 owner rule (every produced artifact must be observable in a review surface) made mechanical for env renders by tests/env-index.test.mjs, closing the gap the town-canon reviewer flagged in docs/worldbuilding/reviews/2026-08-30-millcross-dev-roll-verdict.md (open question 2: \"Wire art-forge env renders into the storybook before the next roll\"). seed/control/strength/briefHash are transcribed from tools/art-forge/runs/A1-ART-02.json render entries matched by output path (provenance \"run-log\"); rows the run log does not record carry provenance \"filename\" and briefHash null, with seed/strength taken from the filename itself. The renders are gitignored (tools/art-forge/.gitignore ignores out/), so the gate is existence-based: it enforces full parity wherever the renders exist and passes vacuously in a checkout without them. `reviews` links the verdict sheet that judged a render; an empty array is honest for the un-reviewed engineering probes (baseline sweeps, guard probes, anchor/segment experiments).",
+  "renders": [
+    {
+      "id": "A1-ART-02-none-seed12345",
+      "file": "tools/art-forge/out/env/A1-ART-02-none-seed12345.png",
+      "roll": "none-baseline",
+      "seed": 12345,
+      "control": "none",
+      "strength": null,
+      "briefHash": "207feb8d8438ccdf",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-none-seed777",
+      "file": "tools/art-forge/out/env/A1-ART-02-none-seed777.png",
+      "roll": "none-baseline",
+      "seed": 777,
+      "control": "none",
+      "strength": null,
+      "briefHash": "207feb8d8438ccdf",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-none-seed31337",
+      "file": "tools/art-forge/out/env/A1-ART-02-none-seed31337.png",
+      "roll": "none-baseline",
+      "seed": 31337,
+      "control": "none",
+      "strength": null,
+      "briefHash": "207feb8d8438ccdf",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed12345-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed12345-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 12345,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "def7756ea00475b0",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed777-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed777-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 777,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "def7756ea00475b0",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed31337-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed31337-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 31337,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "def7756ea00475b0",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed42424-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed42424-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 42424,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "3623c1009f1eb5b9",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed90210-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed90210-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 90210,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "3623c1009f1eb5b9",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed555001-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed555001-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 555001,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "3623c1009f1eb5b9",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed10001-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed10001-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 10001,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "47928a1704220c52",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed20002-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed20002-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 20002,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "47928a1704220c52",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed30003-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed30003-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 30003,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "47928a1704220c52",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-dev-seed12345-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-seed12345-s0.30.png",
+      "roll": "dev-0.30",
+      "seed": 12345,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "47928a1704220c52",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-roll-verdict.md"
+      ],
+      "note": "REJECT per the dev-roll verdict — no wall ring (picket fence instead), ford not waded, bright-midday palette and tile-drift material miss. Strongest cell of the roll: least canon damage (no main-river bridge), best venue street and cart queue, register closest to usable concept art."
+    },
+    {
+      "id": "A1-ART-02-dev-seed42424-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-seed42424-s0.30.png",
+      "roll": "dev-0.30",
+      "seed": 42424,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "47928a1704220c52",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-roll-verdict.md"
+      ],
+      "note": "REJECT per the dev-roll verdict — stone arch bridge over the main river is a second cart-capable crossing, the hardest canon contradiction in the roll; weakest cell."
+    },
+    {
+      "id": "A1-ART-02-dev-seed10001-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-seed10001-s0.30.png",
+      "roll": "dev-0.30",
+      "seed": 10001,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "47928a1704220c52",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-roll-verdict.md"
+      ],
+      "note": "REJECT per the dev-roll verdict — worst register (flat poster/vector) and palette, but its mill wheel is the only one in the roll worth carrying forward as a visual target."
+    },
+    {
+      "id": "A1-ART-02-dev-seed12345-s0.40",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-seed12345-s0.40.png",
+      "roll": "dev-0.40",
+      "seed": 12345,
+      "control": "depth",
+      "strength": 0.4,
+      "briefHash": "3a66b22d4960cc77",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-roll-verdict.md",
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v3-roll-verdict.md",
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v4-roll-verdict.md"
+      ],
+      "note": "Awaiting verdict: Change-set v4 roll (wall flanks thickened to y 0.82-0.93; race as an explicit bg-plane mass instead of an absence-shaped gap) at depth 0.40, model dev. Same filename supersedes the v3 cell; provenance chain in runs/A1-ART-02.json."
+    },
+    {
+      "id": "A1-ART-02-dev-seed42424-s0.40",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-seed42424-s0.40.png",
+      "roll": "dev-0.40",
+      "seed": 42424,
+      "control": "depth",
+      "strength": 0.4,
+      "briefHash": "3a66b22d4960cc77",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-roll-verdict.md",
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v3-roll-verdict.md",
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v4-roll-verdict.md"
+      ],
+      "note": "Awaiting verdict: Change-set v4 roll (wall flanks thickened to y 0.82-0.93; race as an explicit bg-plane mass instead of an absence-shaped gap) at depth 0.40, model dev. Same filename supersedes the v3 cell; provenance chain in runs/A1-ART-02.json."
+    },
+    {
+      "id": "A1-ART-02-dev-seed10001-s0.40",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-seed10001-s0.40.png",
+      "roll": "dev-0.40",
+      "seed": 10001,
+      "control": "depth",
+      "strength": 0.4,
+      "briefHash": "3a66b22d4960cc77",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-roll-verdict.md",
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v3-roll-verdict.md",
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-s040-v4-roll-verdict.md"
+      ],
+      "note": "Awaiting verdict: Change-set v4 roll (wall flanks thickened to y 0.82-0.93; race as an explicit bg-plane mass instead of an absence-shaped gap) at depth 0.40, model dev. Same filename supersedes the v3 cell; provenance chain in runs/A1-ART-02.json."
+    },
+    {
+      "id": "A1-ART-02-dev-anchor-seed10001",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-seed10001.png",
+      "roll": "anchor-probe",
+      "seed": 10001,
+      "control": "anchor",
+      "strength": null,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-dev-anchor-seed12345",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-seed12345.png",
+      "roll": "anchor-probe",
+      "seed": 12345,
+      "control": "anchor",
+      "strength": null,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-dev-anchor-seed42424",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-seed42424.png",
+      "roll": "anchor-probe",
+      "seed": 42424,
+      "control": "anchor",
+      "strength": null,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-eratest-segment-seed12345-s0.00",
+      "file": "tools/art-forge/out/env/A1-ART-02-eratest-segment-seed12345-s0.00.png",
+      "roll": "guard-probe",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-postest-segment-seed12345-s0.00",
+      "file": "tools/art-forge/out/env/A1-ART-02-postest-segment-seed12345-s0.00.png",
+      "roll": "guard-probe",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-segment-seed12345-s0.00",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed12345-s0.00.png",
+      "roll": "segment-sweep",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-segment-seed12345-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed12345-s0.30.png",
+      "roll": "segment-sweep",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.3,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-segment-seed12345-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed12345-s0.45.png",
+      "roll": "segment-sweep",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-segment-seed12345-s0.60",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed12345-s0.60.png",
+      "roll": "segment-sweep",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.6,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-segment-seed12345-s0.75",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed12345-s0.75.png",
+      "roll": "segment-sweep",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.75,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-segment-seed12345-s0.90",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed12345-s0.90.png",
+      "roll": "segment-sweep",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.9,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-segment-seed246810-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed246810-s0.45.png",
+      "roll": "segment-sweep",
+      "seed": 246810,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-segment-seed741852-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed741852-s0.45.png",
+      "roll": "segment-sweep",
+      "seed": 741852,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed12345-s0.40",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed12345-s0.40.png",
+      "roll": "schnell-0.40",
+      "seed": 12345,
+      "control": "depth",
+      "strength": 0.4,
+      "briefHash": "354813a7745b1c2b",
+      "provenance": "run-log",
+      "reviews": [],
+      "note": "Control-map validation render: change-set v3 brief on the default schnell model (run without --model dev; kept as a same-brief cross-model data point, not part of the dev roll under review)."
+    }
+  ]
+}

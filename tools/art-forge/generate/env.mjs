@@ -268,7 +268,11 @@ export function promptScaleGuard(forge) {
  *
  * The result is linted before it is returned, so a negation reaching the
  * positive prompt (from config, from a brief, from anywhere) throws here
- * rather than ~218 s of GPU later.
+ * rather than ~218 s of GPU later. `styleGuard.mustCompose` names clauses
+ * (`era`, `medium`) that must survive composition: each clause text is
+ * asserted present in the composed string through the same R4 mechanism
+ * that enforces a brief's `mustAssert`, so a refactor that drops one fails
+ * at composition, not after the render queue.
  */
 /**
  * Forbidden-token union from the town-canon-reviewer's criteria file
@@ -293,23 +297,31 @@ export function townCriteriaForbiddenTokens(contentRoot = path.join(FORGE_DIR, "
 }
 
 export function buildEnvPositive(promptText, forge, { requiredAssertions = [], extraForbiddenTokens = [] } = {}) {
-  const era = forge.profile.styleGuard?.era;
-  const medium = forge.profile.styleGuard?.medium;
-  return assertPositivePromptClean(
-    [
-      promptText,
-      ...forge.styleLaws.positive,
-      ...forge.styleLaws.renderAssertion,
-      ...(era ? [era] : []),
-      ...(medium ? [medium] : []),
-      ...forge.styleLaws.styleClause,
-    ].join(", "),
-    {
-      forbiddenTokens: [...promptForbiddenTokens(forge), ...extraForbiddenTokens],
-      ...promptScaleGuard(forge),
-      requiredAssertions,
-    },
-  );
+  const guard = forge.profile.styleGuard ?? {};
+  const era = guard.era;
+  const medium = guard.medium;
+  const composed = [
+    promptText,
+    ...forge.styleLaws.positive,
+    ...forge.styleLaws.renderAssertion,
+    ...(era ? [era] : []),
+    ...(medium ? [medium] : []),
+    ...forge.styleLaws.styleClause,
+  ].join(", ");
+  const composeAssertions = (guard.mustCompose ?? []).map((key) => {
+    const clause = guard[key];
+    if (typeof clause !== "string" || clause.trim() === "") {
+      throw new Error(
+        `styleGuard.mustCompose lists "${key}" but styleGuard.${key} is missing or empty — the rail would compose nothing`,
+      );
+    }
+    return clause;
+  });
+  return assertPositivePromptClean(composed, {
+    forbiddenTokens: [...promptForbiddenTokens(forge), ...extraForbiddenTokens],
+    ...promptScaleGuard(forge),
+    requiredAssertions: [...composeAssertions, ...requiredAssertions],
+  });
 }
 
 export function buildEnvNegative(forge) {

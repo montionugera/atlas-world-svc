@@ -1,10 +1,11 @@
 {
   "id": "A1-ART-02",
   "subject": "Millcross",
-  "prompt": "A small walled crossing town of a dozen and a half structures on both banks of a grey river, viewed from the road at cart height, late afternoon. Timber-framed houses with whitewashed plaster on stone footings and steep wood-shingle roofs in ash-grey and rope-brown stand inside a timber-and-earth town wall; the west gate tower is plain oak with an open cart passage and black iron hinge straps, and painted emblem boards — the crossed roads over an empty bowl — hang on wrought-iron brackets along the high street. A queue of wooden ox-carts loaded with sacks, and led pack animals, fills the well-worn earth road from the foreground to the ford, the nearest carts wading the shallow gravel-bed river, wet wheel ruts drying on the stones, longer than the town is wide. One mill-wheel housing stands beside the sluice at the crossing, the great wooden wheel turning in the open race, taller than the wall or any rooftop; the guild hall and the inn rise a second storey inside the wall. Beyond the gates the last house stands in open plain — beyond the town edge only the two earth roads, the ford and low farmland remain. Palette ash-grey, rope-brown, tallow-yellow; awnings along the high street chalked with a circle crossed by two strokes.",
+  "prompt": "A small walled crossing town of a dozen and a half structures on both banks of a grey river, viewed from the road at cart height, late afternoon. Timber-framed houses with whitewashed plaster on stone footings and steep wood-shingle roofs in ash-grey and rope-brown stand inside a timber-and-earth town wall; the west gate tower is plain oak with an open cart passage and black iron hinge straps, and painted emblem boards — the crossed roads over an empty bowl — hang on wrought-iron brackets along the high street. A queue of wooden ox-carts loaded with sacks, and led pack animals, fills the well-worn earth road from the foreground to the ford, the gravel ford is the only crossing, the nearest carts stand mid-stream in the shallows with water at the wheel hubs, wet wheel ruts drying on the stones, the queue longer than the town is wide. One mill-wheel housing stands beside the sluice at the crossing, the great wooden wheel turning in the open race, taller than the wall or any rooftop; the guild hall and the inn rise a second storey inside the wall. Beyond the gates the last house stands in open plain — beyond the town edge only the two earth roads, the ford and low farmland remain. Palette ash-grey, rope-brown, tallow-yellow; awnings along the high street chalked with a circle crossed by two strokes.",
   "mustAssert": [
     "a dozen and a half structures",
-    "beyond the town edge"
+    "beyond the town edge",
+    "the only crossing"
   ],
   "width": 1280,
   "height": 832,
@@ -14,7 +15,7 @@
     0.42
   ],
   "_promptNote": "F-039 (2026-08-08): the phrase \"laid out with no plan along the roads\" was restated as an assertion. A diffusion text encoder attends to tokens and has no operator for negation, so the old wording delivered `plan` into the conditioning. generate/prompt-lint.mjs now refuses to queue a positive prompt containing negation. F-039 (2026-08-25): \"sprawling\"/\"sprawled\" carried no extent bound and every strength-ladder cell tiled shanties to the horizon — the prompt now bounds the count and asserts the town edge, both declared via `mustAssert`, enforced by prompt-lint R3/R4. F-039 (2026-08-29, owner decision): the tent quarter was removed from world truth (A1 §6 amended, schema kind enum tightened); the brief counts \"a dozen structures\". The `refugee-tents-midground` mass below is retained ONLY as a frozen depth-control fixture for the F-026 replication record — it no longer represents world truth and must not be read as one. `masses`, horizon, focal, width and height are otherwise untouched.",
-  "_note": "Newly authored to the recovered block-in schema (ABP-flux-dev-and-anchor.md) for this subject — the ABPs only ever block-in'd Gildmark and Norhollow. Revised for task 6b: the original draft placed the mg town rows ABOVE (smaller y than) the bg far-bank/river band — inverted depth, since farther things must sit higher in frame, not lower. Also raised land-region coverage (was ~1/3 of the non-sky frame) by widening the town rows to near-full width and adding a mudflat/tent bridge across the former centre gap; sky above the horizon (0.62) is left black on purpose. Composition unchanged in kind: far bank/river on bg right at the horizon, single-storey plank rows + the one taller mill-wheel housing on mg (asymmetric — right bank denser, matching 'longer than the town is wide'), cart queue + led animals occluding the foreground. Still authored, not measured.",
+  "_note": "Newly authored to the recovered block-in schema (ABP-flux-dev-and-anchor.md) for this subject — the ABPs only ever block-in'd Gildmark and Norhollow. Revised for task 6b: the original draft placed the mg town rows ABOVE (smaller y than) the bg far-bank/river band — inverted depth, since farther things must sit higher in frame, not lower. Also raised land-region coverage (was ~1/3 of the non-sky frame) by widening the town rows to near-full width and adding a mudflat/tent bridge across the former centre gap; sky above the horizon (0.62) is left black on purpose. Composition unchanged in kind: far bank/river on bg right at the horizon, single-storey plank rows + the one taller mill-wheel housing on mg (asymmetric — right bank denser, matching 'longer than the town is wide'), cart queue + led animals occluding the foreground. Still authored, not measured. F-039 (2026-08-30, s040 verdict control-map finding): the four plan-grid wall rects (wall-north/south/west/east, values up to 128) sat outside the normalised 0..1 contract blockin.mjs actually reads and were clipped off-canvas in every served depth map — replaced with wall-flank-left/right in frame space (gate gap x 0.45-0.55 over the road), the mill housing narrowed to x 0.46-0.53 so the open race channel reads at x 0.53-0.58, and the cart-queue poly extended across the river band (y 0.63-0.70) at the ford; the positive prompt asserts \"the gravel ford is the only crossing\" (mustAssert-guarded). F-039 (2026-08-30, v3 verdict change set): wall flanks thickened to y 0.82-0.93 so the band survives the block-in blur and queue occlusion, and the race became an explicit bg-plane mass (race-channel, x 0.53-0.58, y 0.55-0.90) instead of an absence-shaped gap — a depth map speaks in masses, not gaps; note the depth renderer paints by plane bucket, so darkness/distinctness comes from plane membership (river-dark channel between the mg column and the right row), not from the per-mass value (that is segment-render data only).",
   "masses": [
     {
       "name": "far-bank",
@@ -71,10 +72,22 @@
       "rect": [
         0.46,
         0.36,
-        0.58,
+        0.53,
         0.9
       ],
       "value": "#5c4a34"
+    },
+    {
+      "name": "race-channel",
+      "plane": "bg",
+      "shape": "rect",
+      "rect": [
+        0.53,
+        0.55,
+        0.58,
+        0.9
+      ],
+      "value": "#9aa4a8"
     },
     {
       "name": "cart-queue",
@@ -94,7 +107,27 @@
           0.82
         ],
         [
-          0.42,
+          0.4,
+          0.88
+        ],
+        [
+          0.45,
+          0.74
+        ],
+        [
+          0.45,
+          0.64
+        ],
+        [
+          0.53,
+          0.64
+        ],
+        [
+          0.53,
+          0.74
+        ],
+        [
+          0.56,
           0.88
         ],
         [
@@ -133,50 +166,26 @@
       "value": "#1c1712"
     },
     {
-      "name": "wall-north",
+      "name": "wall-flank-left",
       "plane": "mg",
       "shape": "rect",
       "rect": [
-        2,
-        46,
-        94,
-        52
+        0.02,
+        0.82,
+        0.45,
+        0.93
       ],
       "value": "#3a352c"
     },
     {
-      "name": "wall-south",
+      "name": "wall-flank-right",
       "plane": "mg",
       "shape": "rect",
       "rect": [
-        2,
-        122,
-        94,
-        128
-      ],
-      "value": "#3a352c"
-    },
-    {
-      "name": "wall-west",
-      "plane": "mg",
-      "shape": "rect",
-      "rect": [
-        2,
-        52,
-        8,
-        128
-      ],
-      "value": "#3a352c"
-    },
-    {
-      "name": "wall-east",
-      "plane": "mg",
-      "shape": "rect",
-      "rect": [
-        88,
-        52,
-        94,
-        128
+        0.55,
+        0.82,
+        0.99,
+        0.93
       ],
       "value": "#3a352c"
     }

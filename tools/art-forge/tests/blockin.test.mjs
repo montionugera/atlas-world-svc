@@ -169,9 +169,13 @@ test("GUARD: Millcross's real near-threshold pairs (town rows, cart-queue/animal
     console.warn = original;
   }
   const joined = warnings.join(" | ");
-  assert.match(joined, /town-row-left.*town-row-right/s);
-  assert.match(joined, /cart-queue.*led-animals-foreground/s);
-  assert.doesNotMatch(joined, /far-bank.*river/s, "river vs far-bank is 34 apart — must NOT warn");
+  assert.match(joined, /"town-row-left" and "town-row-right"/);
+  assert.match(joined, /"cart-queue" and "led-animals-foreground"/);
+  assert.doesNotMatch(
+    joined,
+    /"far-bank" and "river"/,
+    "river vs far-bank is 34 apart — must NOT warn",
+  );
 });
 
 test("segmentMassesFromBrief rejects an unknown plane by name, same as the depth path", () => {
@@ -227,5 +231,17 @@ test("renderSegmentPng emits the per-mass values — the river and the far bank 
     assert.ok(top.includes("#5C4A34"), `mill-wheel housing colour missing; top colours were ${top.join(" ")}`);
   } finally {
     rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("GUARD: every mass rect in the real Millcross brief is normalised 0..1 — plan-grid coordinates clip off-canvas silently (s040 verdict control-map finding)", () => {
+  for (const mass of MILLCROSS.masses) {
+    if (mass.shape !== "rect") continue;
+    for (const v of mass.rect) {
+      assert.ok(
+        v >= 0 && v <= 1,
+        `mass "${mass.name}" rect [${mass.rect}] leaves 0..1 — blockin.mjs multiplies by pixel width/height, so the mass clips to nothing and the depth control never carries it (the wall ring was invisible for three rolls this way)`,
+      );
+    }
   }
 });

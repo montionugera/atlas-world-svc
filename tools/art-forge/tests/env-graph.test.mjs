@@ -87,6 +87,24 @@ test("composed prompt carries the style clause and a non-empty negative — a ba
   assert.ok(positive.includes(forge.profile.styleGuard.era), "positive must carry the era assertion");
 });
 
+test("mustCompose: the composed positive carries every clause the styleGuard lists — the A8 medium clause shipped unguarded once (3944eba)", () => {
+  const positive = buildEnvPositive("a harbour town", forge);
+  for (const key of forge.profile.styleGuard.mustCompose ?? []) {
+    const clause = forge.profile.styleGuard[key];
+    assert.ok(typeof clause === "string" && clause.length > 0, `styleGuard.${key} must be a non-empty clause`);
+    assert.ok(positive.includes(clause), `composed positive omits styleGuard.${key}`);
+  }
+});
+
+test("mustCompose: a styleGuard listing a clause it does not carry fails at composition, not after the render queue", () => {
+  const broken = structuredClone(forge);
+  delete broken.profile.styleGuard.medium;
+  assert.throws(
+    () => buildEnvPositive("a harbour town", broken),
+    /mustCompose lists "medium" but styleGuard\.medium is missing or empty/,
+  );
+});
+
 test("output filename carries the seed and strength — a 2-seed x 2-strength sweep must not overwrite itself", () => {
   const g1 = buildEnvGraph({
     brief: { positive: "a harbour town", id: "A1-ART-02" },

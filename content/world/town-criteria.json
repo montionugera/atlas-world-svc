@@ -152,8 +152,8 @@
           "id": "millcross-brief-forbidden-phrases",
           "kind": "forbiddenTokens",
           "appliesTo": "tools/art-forge/briefs/A1-ART-02.json prompt and any future Millcross brief",
-          "value": ["tidy rows", "neat rows", "planned streets", "town square", "market square", "grid of streets"],
-          "source": "reviewer:REVIEWER — canon:A1 \"no plan ... strung with no plan along the roads\"; the committed prompt's \"ranged in tidy rows\" (VETOED 2026-08-29, reviews/2026-08-29-millcross-tent-removal-and-criteria.md §V-1) is the planned-village register the canon sentence forbids, and prompt-lint's negation ban means the fix must be a positive no-plan wording, not \"not tidy\"",
+          "value": ["tidy rows", "neat rows", "planned streets", "town square", "market square", "grid of streets", "pantile", "half-timbered", "red tile"],
+          "source": "reviewer:REVIEWER — canon:A1 \"no plan ... strung with no plan along the roads\"; the committed prompt's \"ranged in tidy rows\" (VETOED 2026-08-29, reviews/2026-08-29-millcross-tent-removal-and-criteria.md §V-1) is the planned-village register the canon sentence forbids, and prompt-lint's negation ban means the fix must be a positive no-plan wording, not \"not tidy\". REVIEWER v1.2 (2026-08-30, s040 verdict rail 2): += pantile / half-timbered / red tile — pantile is Embervale's material (A1 §6:372-374) and decorative fachwerk contradicts structure-not-decoration; 6 of 6 dev cells drifted despite the material nouns, and the ban is per-town (pantile stays legal in Embervale's own brief)",
           "check": "prompt-lint R2 throws when any phrase appears in a Millcross positive prompt"
         },
         "countBand": {
