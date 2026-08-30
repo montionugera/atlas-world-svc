@@ -294,12 +294,14 @@ export function townCriteriaForbiddenTokens(contentRoot = path.join(FORGE_DIR, "
 
 export function buildEnvPositive(promptText, forge, { requiredAssertions = [], extraForbiddenTokens = [] } = {}) {
   const era = forge.profile.styleGuard?.era;
+  const medium = forge.profile.styleGuard?.medium;
   return assertPositivePromptClean(
     [
       promptText,
       ...forge.styleLaws.positive,
       ...forge.styleLaws.renderAssertion,
       ...(era ? [era] : []),
+      ...(medium ? [medium] : []),
       ...forge.styleLaws.styleClause,
     ].join(", "),
     {
