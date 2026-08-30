@@ -88,10 +88,10 @@
       "control": "depth",
       "segment": {
         "type": "segment",
-        "strength": null,
+        "strength": 0.45,
         "startPercent": 0.0,
         "endPercent": 1.0,
-        "_note": "Segment control over the per-mass `value` colours every brief already carries — added because the depth path renders only FOUR levels (measured 2026-08-08: 0 sky 54.5%, 51 all-bg 5.1%, 140 all-mg 18.4%, 180 all-fg 7.5%), so a river and its far bank are the same pixel and no ControlNet strength can separate them. `segment` is a valid SetUnionControlNetType option on this install (verified 2026-08-08 via GET /object_info/SetUnionControlNetType: auto, openpose, depth, hed/pidi/scribble/ted, canny/lineart/anime_lineart/mlsd, normal, segment, tile, repaint). strength is NULL ON PURPOSE and env.mjs refuses to run without --strength: F-026's 0.30-0.40 window was measured for DEPTH and does not transfer to a label map. Task 3 of the segment-control plan measures it and replaces this null."
+        "_note": "Segment control over the per-mass `value` colours every brief already carries — added because the depth path renders only FOUR levels (measured 2026-08-08: 0 sky 54.5%, 51 all-bg 5.1%, 140 all-mg 18.4%, 180 all-fg 7.5%), so a river and its far bank are the same pixel and no ControlNet strength can separate them. `segment` is a valid SetUnionControlNetType option on this install (verified 2026-08-08 via GET /object_info/SetUnionControlNetType: auto, openpose, depth, hed/pidi/scribble/ted, canny/lineart/anime_lineart/mlsd, normal, segment, tile, repaint). strength is NULL ON PURPOSE and env.mjs refuses to run without --strength: F-026's 0.30-0.40 window was measured for DEPTH and does not transfer to a label map. Task 3 of the segment-control plan measures it and replaces this null. MEASURED 2026-08-30 (segment-unpark ladder, seed 12345, briefHash b7658d8607bbbe70): usable window 0.30-0.45; 0.45 OPERATING (loop-first wall-as-wall + timber gate tower over the road, best register matte gouache-adjacent); 0.60 degrades to poster-flat; >=0.50 unmeasured. The 2026-08-29 negative result is overturned as a mechanism result — it ran on the novelistic prose brief; the map-accurate brief + colour-base geometry composes queue/wall/gate/river 3/3. Verdict: reviews/2026-08-30-millcross-segment-unpark-ladder-verdict.md."
       },
       "hires": {
         "upscaler": "4x-UltraSharp.pth",
@@ -107,7 +107,7 @@
           "medium"
         ],
         "_mustComposeNote": "F-039 (2026-08-30, s040 verdict rail 1): every env positive must carry each clause listed here, asserted at composition time by buildEnvPositive via prompt-lint R4 — the A8 medium clause shipped unguarded once already (3944eba composed it but nothing failed if a refactor dropped it).",
-    "medium": "Painted concept art in gouache on toned paper, visible brushwork, muted overcast late-afternoon light, ash-grey sky.",
+        "medium": "Painted concept art in gouache on toned paper, visible brushwork, muted overcast late-afternoon light, ash-grey sky.",
         "era": "Pre-industrial and pre-electric throughout. Roads are rutted dirt tracks of bare earth and cart ruts. Every vehicle is a wooden ox-drawn cart or a handcart. Every structure is built from timber, canvas, thatch, daub, fired brick and dressed stone, lit by daylight and open flame.",
         "forbiddenTokens": [
           "car",

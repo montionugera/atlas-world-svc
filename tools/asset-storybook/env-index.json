@@ -258,9 +258,12 @@
       "seed": 12345,
       "control": "segment",
       "strength": 0.3,
-      "briefHash": null,
-      "provenance": "filename",
-      "reviews": []
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-segment-unpark-ladder-verdict.md"
+      ],
+      "note": "OVERWRITTEN by the segment-unpark ladder (2026-08-30): same filename, new brief (colour-anchor era geometry) at the ladder strength. The 08-29 negative-result cells these rows indexed are superseded; their provenance lives in the run ledger and ABP-segment-control.md. Awaiting ladder verdict."
     },
     {
       "id": "A1-ART-02-segment-seed12345-s0.45",
@@ -269,9 +272,12 @@
       "seed": 12345,
       "control": "segment",
       "strength": 0.45,
-      "briefHash": null,
-      "provenance": "filename",
-      "reviews": []
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-segment-unpark-ladder-verdict.md"
+      ],
+      "note": "OVERWRITTEN by the segment-unpark ladder (2026-08-30): same filename, new brief (colour-anchor era geometry) at the ladder strength. The 08-29 negative-result cells these rows indexed are superseded; their provenance lives in the run ledger and ABP-segment-control.md. Awaiting ladder verdict."
     },
     {
       "id": "A1-ART-02-segment-seed12345-s0.60",
@@ -280,9 +286,12 @@
       "seed": 12345,
       "control": "segment",
       "strength": 0.6,
-      "briefHash": null,
-      "provenance": "filename",
-      "reviews": []
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-segment-unpark-ladder-verdict.md"
+      ],
+      "note": "OVERWRITTEN by the segment-unpark ladder (2026-08-30): same filename, new brief (colour-anchor era geometry) at the ladder strength. The 08-29 negative-result cells these rows indexed are superseded; their provenance lives in the run ledger and ABP-segment-control.md. Awaiting ladder verdict."
     },
     {
       "id": "A1-ART-02-segment-seed12345-s0.75",
@@ -417,6 +426,34 @@
         "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-r3-roll-verdict.md"
       ],
       "note": "v7 colour-anchor roll (rail-7 rolltag — v6 cells left untouched): corrected base per the v6 verdict (queue-occluded left flank dropped, right flank #c6c2b6, wheel re-valued #3a2c1c re-centred clear of the queue, towers moved apart) + register fix. Awaiting verdict."
+    },
+    {
+      "id": "A1-ART-02-segment-seed42424-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed42424-s0.45.png",
+      "roll": "segment-0.45-confirmation",
+      "seed": 42424,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-segment-confirmation-verdict.md"
+      ],
+      "note": "Confirmation roll at the measured operating strength 0.45 (ladder verdict GO). Awaiting verdict."
+    },
+    {
+      "id": "A1-ART-02-segment-seed10001-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed10001-s0.45.png",
+      "roll": "segment-0.45-confirmation",
+      "seed": 10001,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-segment-confirmation-verdict.md"
+      ],
+      "note": "Confirmation roll at the measured operating strength 0.45 (ladder verdict GO). Awaiting verdict."
     }
   ]
 }
