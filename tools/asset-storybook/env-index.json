@@ -457,7 +457,7 @@
     },
     {
       "id": "A1-ART-02-segment-materials-probe-seed12345-s0.45",
-      "file": "tools/art-forge/out/control/depth/A1-ART-02-depth.png",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-materials-probe-seed12345-s0.45.png",
       "roll": "segment-0.45-materials-probe",
       "seed": 12345,
       "control": "segment",
