@@ -454,6 +454,20 @@
         "docs/worldbuilding/reviews/2026-08-30-millcross-segment-confirmation-verdict.md"
       ],
       "note": "Confirmation roll at the measured operating strength 0.45 (ladder verdict GO). Awaiting verdict."
+    },
+    {
+      "id": "A1-ART-02-segment-materials-probe-seed12345-s0.45",
+      "file": "tools/art-forge/out/control/depth/A1-ART-02-depth.png",
+      "roll": "segment-0.45-materials-probe",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": "a03e1e72adf937a5",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-materials-probe-verdict.md"
+      ],
+      "note": "Materials probe (owner-approved, one cell): positive-only plaster/shingle rewording, rolltag-isolated per rail 7 — the confirmed cell was not overwritten. REJECT per the probe verdict: the reword did not land; fachwerk/slate persist (sampler-side drift measured)."
     }
   ]
 }

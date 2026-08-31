@@ -432,13 +432,18 @@ export function resolveStrength({ control, block, override }) {
  * (`<id>-seed<n>-s<x>`) so the replication record's filenames still resolve;
  * any other control inserts its key (`<id>-<control>-seed<n>-s<x>`); none
  * (freehand) carries no strength suffix — there is no strength to sweep
- * (`<id>-none-seed<n>`).
+ * (`<id>-none-seed<n>`). An optional `rolltag` (rail 7, generalised from the
+ * anchor path) namespaces a probe/re-roll era so a new measurement can never
+ * overwrite the cells a previous verdict reviewed: `<id>[-<control>][-dev][-<rolltag>]-seed<n>-s<x>`.
  */
-export function controlOutputId({ briefId, control, seed, strength, model = "schnell" }) {
+export function controlOutputId({ briefId, control, seed, strength, model = "schnell", rolltag = null }) {
   const modelInfix = model === "dev" ? "-dev" : "";
-  if (control === "none") return `${briefId}-none${modelInfix}-seed${seed}`;
+  const tagInfix = typeof rolltag === "string" && rolltag.trim() !== "" ? `-${rolltag.trim()}` : "";
+  if (control === "none") return `${briefId}-none${modelInfix}${tagInfix}-seed${seed}`;
   const suffix = `-seed${seed}-s${formatStrength(strength)}`;
-  return control === "depth" ? `${briefId}${modelInfix}${suffix}` : `${briefId}-${control}${suffix}`;
+  return control === "depth"
+    ? `${briefId}${modelInfix}${tagInfix}${suffix}`
+    : `${briefId}-${control}${tagInfix}${suffix}`;
 }
 
 /** brief.id: control-qualified (except depth, for F-026 byte-diffability) + model-qualified. */
@@ -883,7 +888,13 @@ export async function generateEnv(
     id: composeBriefId(rawBrief.id, control, model),
   };
 
-  const outputId = controlOutputId({ briefId, control, seed, strength, model });
+  // Rail 7: an optional --rolltag namespaces a probe/re-roll era so a new
+  // measurement never overwrites the cells a previous verdict reviewed.
+  const rolltag = typeof args.rolltag === "string" && args.rolltag.trim() !== ""
+    ? args.rolltag.trim()
+    : null;
+
+  const outputId = controlOutputId({ briefId, control, seed, strength, model, rolltag });
   const graph = buildEnvGraph({ brief, seed, depthImage: controlImage, forge, strength, controlNet: block, model });
 
   const baseResult = await runGraph({
@@ -998,9 +1009,6 @@ export async function generateEnv(
     // cells the previous verdict had reviewed — the v5 evidence pixels are
     // unrecoverable. A `--rolltag <tag>` (e.g. `anchor-r3`) namespaces the
     // output per roll; without one the historical name is kept.
-    const rolltag = typeof args.rolltag === "string" && args.rolltag.trim() !== ""
-      ? args.rolltag.trim()
-      : null;
     const anchorOutputId = rolltag
       ? `${briefId}-dev-anchor-${rolltag}-seed${seed}`
       : `${briefId}-dev-anchor-seed${seed}`;

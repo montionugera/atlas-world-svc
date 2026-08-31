@@ -196,8 +196,13 @@ test("resolveControl names an unknown control instead of silently generating wit
 
 test("an unmeasured strength fails loudly rather than defaulting — a null that reached the graph would queue strength:null", () => {
   const { block } = resolveControl({ forge, control: "segment" });
+  assert.equal(
+    block.strength,
+    0.45,
+    "the segment block carries the measured operating strength (unpark ladder 2026-08-30: window 0.30-0.45)",
+  );
   assert.throws(
-    () => resolveStrength({ control: "segment", block, override: undefined }),
+    () => resolveStrength({ control: "segment", block: { ...block, strength: null }, override: undefined }),
     /segment.*unmeasured.*--strength/s,
   );
   assert.equal(resolveStrength({ control: "segment", block, override: "0.45" }), 0.45);
