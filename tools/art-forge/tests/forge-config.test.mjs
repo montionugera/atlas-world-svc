@@ -49,11 +49,11 @@ test("comfy stays shared at top level — it describes the machine, not the reci
   assert.equal(forge.config.version, 2);
 });
 
-test("environment profile carries a segment control block whose strength is explicitly UNMEASURED", () => {
+test("environment profile carries a segment control block pinned to the MEASURED operating strength 0.45", () => {
   const forge = loadForge({ profile: "environment" });
   assert.equal(forge.profile.segment.type, "segment");
-  assert.equal(forge.profile.segment.strength, null,
-    "F-026's 0.30-0.40 window was depth-measured and does not transfer — Task 3 measures this");
+  assert.equal(forge.profile.segment.strength, 0.45,
+    "measured by the segment-unpark ladder (window 0.30-0.45, 0.45 the only on-law lane) and confirmed at 0.45 across three seeds — the confirmation verdict ruled the pin survives review; F-026's depth window does not transfer");
   assert.equal(forge.profile.segment.startPercent, 0.0);
   assert.equal(forge.profile.segment.endPercent, 1.0);
 });

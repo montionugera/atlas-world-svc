@@ -80,6 +80,11 @@
  *          the `profiles.environment.hires` upscale+refine pass measured in
  *          docs/worldbuilding/ABP-flux-eval.md/-anchor-model-choice.md/
  *          -controlnet-rescue.md. Off by default — see above.)
+ *        --refine <png> (dev only; img2img materials refine over an EXISTING
+ *          reviewed cell using the anchor recipe — no base pass runs, no
+ *          grain step: the source is already a textured render. REQUIRES
+ *          --rolltag <tag> (rail 7: a refine never overwrites a reviewed
+ *          cell). See the subject-probe verdict's open question 1.)
  */
 
 import fs from "node:fs";
@@ -454,6 +459,28 @@ function composeBriefId(baseId, control, model) {
 }
 
 /**
+ * Rail 3 (carried nine rolls): the render ledger must be self-documenting —
+ * record the sampler fields the graph actually ran with, at write time, so
+ * provenance comes from data rather than filenames or config archaeology
+ * (the v3-window schnell misroute is the standing argument). `resolved` is
+ * the recipe block the graph read (`samplerDev` for dev, `sampler` for
+ * schnell, `anchor` for the anchor/refine passes); `override` carries the
+ * effective value when a CLI flag superseded the block (refine `--denoise`).
+ * schnell's frozen path has no FluxGuidance node, so guidance is recorded
+ * only when the recipe defines one.
+ */
+export function ledgerSamplerFields(resolved, model, override = {}) {
+  const guidance = override.guidance ?? resolved.guidance;
+  return {
+    model,
+    steps: override.steps ?? resolved.steps,
+    cfg: override.cfg ?? resolved.cfg,
+    ...(guidance != null ? { guidance } : {}),
+    denoise: override.denoise ?? resolved.denoise,
+  };
+}
+
+/**
  * Build the environment graph. `depthImage` is the filename LoadImage
  * resolves against the ComfyUI server's own input directory (which is a
  * remote Windows path on mont-pc — see uploadControlImage below); it is
@@ -641,7 +668,7 @@ export function buildEnvGraph({
  * produced by generateEnv's `--anchor` flow: renderDepthPng -> blur 0x6 ->
  * +noise Gaussian at `profiles.environment.anchor.grainAttenuate`.
  */
-export function buildEnvAnchorGraph({ brief, seed, anchorImage, forge }) {
+export function buildEnvAnchorGraph({ brief, seed, anchorImage, forge, denoise = forge.profile.anchor.denoise }) {
   const { models, sampler, anchor } = forge.profile;
   const outputId = `${brief.id ?? "subject"}-anchor-seed${seed}`;
   return {
@@ -685,7 +712,7 @@ export function buildEnvAnchorGraph({ brief, seed, anchorImage, forge }) {
         cfg: anchor.cfg,
         sampler_name: sampler.samplerName,
         scheduler: sampler.scheduler,
-        denoise: anchor.denoise,
+        denoise,
       },
     },
     [ANCHOR_NODE.DECODE]: {
@@ -839,7 +866,7 @@ export async function generateEnv(
   // --control none stages no control image at all: nothing is rendered or
   // uploaded, and the queued graph carries no LoadImage (dry-run included).
   let controlImage = null;
-  if (control !== "none") {
+  if (control !== "none" && !args.refine) {
     // Per-control local path AND per-control uploaded basename. Both matter:
     // uploadControlImage sends path.basename(localPath) with overwrite=true, so
     // a shared "A1-ART-02.png" would let a segment run clobber the depth map
@@ -894,6 +921,79 @@ export async function generateEnv(
     ? args.rolltag.trim()
     : null;
 
+  // --denoise is the refine's re-measure knob (subject-probe verdict open
+  // question 1 (a)): the anchor window's 0.75 is measured HARMFUL on a
+  // finished cell, so a re-measure must name its own denoise explicitly.
+  // Refuse it anywhere else — anchor and base passes have no such knob.
+  if (args.denoise != null && !args.refine) {
+    throw new Error("--denoise is a --refine-only flag");
+  }
+
+  // --refine <png>: the materials refine pass (subject-probe verdict open
+  // question 1 (a)) — img2img on an EXISTING reviewed cell using the anchor
+  // recipe (dev, `profiles.environment.anchor` steps/cfg/guidance/denoise).
+  // No base pass runs and no grain/blur step is applied: the source is
+  // already a textured painterly render, not a flat block-in. Rail 7:
+  // --rolltag is REQUIRED — the output lands on a rolltag-isolated name so a
+  // refine can never overwrite a reviewed cell.
+  if (args.refine) {
+    if (typeof args.refine !== "string" || args.refine.trim() === "") {
+      throw new Error("--refine needs the source PNG path, got a bare flag");
+    }
+    if (model !== "dev") {
+      throw new Error(
+        "--refine is a dev-model pass (anchor recipe) — schnell has no anchor recipe; run --model dev",
+      );
+    }
+    if (!rolltag) {
+      throw new Error(
+        "--refine requires --rolltag <tag> (rail 7: a refine must never overwrite a reviewed cell)",
+      );
+    }
+    // --denoise is the refine's re-measure knob (subject-probe verdict open
+    // question 1 (a)): the anchor window's 0.75 is measured HARMFUL on a
+    // finished cell, so a re-measure must name its own denoise explicitly.
+    const refineDenoise = args.denoise != null ? Number(args.denoise) : forge.profile.anchor.denoise;
+    if (!(refineDenoise > 0 && refineDenoise < 1)) {
+      throw new Error(`--denoise must be a number strictly between 0 and 1, got ${JSON.stringify(args.denoise)}`);
+    }
+    const refineSourceLocal = path.resolve(args.refine.trim());
+    const refineSource = args["dry-run"]
+      ? `art-forge/${path.basename(refineSourceLocal)}`
+      : await uploadControlImage({ base, localPath: refineSourceLocal, subfolder: "art-forge" });
+    const refineGraph = buildEnvAnchorGraph({ brief, seed, anchorImage: refineSource, forge, denoise: refineDenoise });
+    const refineOutputId = `${briefId}-dev-refine-${rolltag}-seed${seed}`;
+    const refineResult = await runGraph({
+      forge,
+      args,
+      graph: refineGraph,
+      name: `env/${refineOutputId}`,
+      label: `env refine ${briefId} seed=${seed} source=${refineSource} denoise=${refineDenoise}`,
+    });
+    if (refineResult.dest) {
+      // Same ledger policy as the base and anchor passes — the refine render
+      // is a real artifact and its provenance (which cell it refined, at what
+      // denoise) must be recoverable. `refineSource` names the input cell;
+      // strength is null (no ControlNet in the anchor recipe the reuses).
+      try {
+        appendAttempt(RUNS_DIR, briefId, {
+          type: "render",
+          seed,
+          hires: false,
+          control: "refine",
+          strength: null,
+          refineSource: path.relative(process.cwd(), refineSourceLocal),
+          ...ledgerSamplerFields(forge.profile.anchor, "dev", { denoise: refineDenoise }),
+          briefHash: briefHash(rawBrief),
+          out: path.relative(FORGE_DIR, refineResult.dest),
+        });
+      } catch (err) {
+        console.error(`env.mjs: WARNING: ledger append failed: ${err.message}`);
+      }
+    }
+    return refineResult;
+  }
+
   const outputId = controlOutputId({ briefId, control, seed, strength, model, rolltag });
   const graph = buildEnvGraph({ brief, seed, depthImage: controlImage, forge, strength, controlNet: block, model });
 
@@ -936,6 +1036,7 @@ export async function generateEnv(
         ...(args.anchor ? { anchorBase: true } : {}),
         control,
         strength: control === "none" ? null : strength,
+        ...ledgerSamplerFields(model === "dev" ? forge.profile.samplerDev : forge.profile.sampler, model),
         briefHash: briefHash(rawBrief),
         out: path.relative(FORGE_DIR, baseResult.dest),
       });
@@ -1032,6 +1133,7 @@ export async function generateEnv(
           anchor: true,
           control: "anchor-colour",
           strength: null,
+          ...ledgerSamplerFields(anchorCfg, "dev"),
           briefHash: briefHash(rawBrief),
           out: path.relative(FORGE_DIR, anchorResult.dest),
         });

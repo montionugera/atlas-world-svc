@@ -14,6 +14,7 @@ import {
   controlOutputId,
   formatStrength,
   generateEnv,
+  ledgerSamplerFields,
   resolveControl,
   resolveModel,
   resolveStrength,
@@ -335,6 +336,116 @@ test("anchor graph is a dev img2img: grained block-in -> VAEEncode -> KSampler d
   assert.equal(guid.inputs.guidance, 5.0);
   const save = Object.values(g).find((n) => n.class_type === "SaveImage");
   assert.equal(save.inputs.filename_prefix, "art-forge/env/A1-ART-02-dev-anchor-seed12345");
+});
+
+/* --------------------- materials refine (--refine) --------------------- */
+
+test("--refine is the anchor recipe img2img on an existing reviewed cell — dev checkpoint, VAEEncode, denoise 0.75 over 27 steps, source uploaded as-is (no grain step)", async () => {
+  const g = await generateEnv(
+    {
+      brief: "A1-ART-02",
+      seed: 12345,
+      model: "dev",
+      refine: "out/env/A1-ART-02-segment-subject-probe-seed12345-s0.45.png",
+      rolltag: "refine-r1",
+      "dry-run": true,
+    },
+    forge,
+  );
+  const load = Object.values(g).find((n) => n.class_type === "LoadImage");
+  assert.equal(
+    load.inputs.image,
+    "art-forge/A1-ART-02-segment-subject-probe-seed12345-s0.45.png",
+    "the refine source uploads under its own basename — not the grained colour block-in",
+  );
+  const ks = Object.values(g).find((n) => n.class_type === "KSampler");
+  assert.deepEqual(ks.inputs.latent_image, [Object.entries(g).find(([, n]) => n.class_type === "VAEEncode")[0], 0]);
+  assert.equal(ks.inputs.steps, 27, "the anchor recipe's measured step count");
+  assert.equal(ks.inputs.cfg, 1);
+  assert.equal(ks.inputs.denoise, 0.75, "the anchor window's operating denoise (ABP-flux-dev-and-anchor.md)");
+});
+
+test("--refine refuses schnell and refuses to run without a rolltag (rail 7: a refine must never overwrite a reviewed cell)", async () => {
+  await assert.rejects(
+    () =>
+      generateEnv(
+        {
+          brief: "A1-ART-02",
+          seed: 12345,
+          refine: "out/env/x.png",
+          rolltag: "refine-r1",
+          "dry-run": true,
+        },
+        forge,
+      ),
+    /--refine is a dev-model pass/,
+  );
+  await assert.rejects(
+    () =>
+      generateEnv(
+        {
+          brief: "A1-ART-02",
+          seed: 12345,
+          model: "dev",
+          refine: "out/env/x.png",
+          "dry-run": true,
+        },
+        forge,
+      ),
+    /--refine requires --rolltag/,
+  );
+});
+
+test("--refine honours --denoise (the low-denoise re-measure) and --denoise without --refine is refused", async () => {
+  const g = await generateEnv(
+    {
+      brief: "A1-ART-02",
+      seed: 12345,
+      model: "dev",
+      refine: "out/env/A1-ART-02-segment-subject-probe-seed12345-s0.45.png",
+      rolltag: "materials-r2",
+      denoise: "0.45",
+      "dry-run": true,
+    },
+    forge,
+  );
+  const ks = Object.values(g).find((n) => n.class_type === "KSampler");
+  assert.equal(
+    ks.inputs.denoise,
+    0.45,
+    "the low-denoise re-measure runs the reviewer's prescribed window top, not the anchor's 0.75",
+  );
+  await assert.rejects(
+    () =>
+      generateEnv(
+        { brief: "A1-ART-02", seed: 12345, control: "segment", strength: "0.45", denoise: "0.45", "dry-run": true },
+        forge,
+      ),
+    /--denoise is a --refine-only flag/,
+  );
+});
+
+test("ledgerSamplerFields records what the graph ran — dev carries guidance, schnell does not, overrides win", () => {
+  assert.deepEqual(ledgerSamplerFields(forge.profile.samplerDev, "dev"), {
+    model: "dev",
+    steps: 20,
+    cfg: 1,
+    guidance: 5.0,
+    denoise: 1.0,
+  });
+  assert.deepEqual(ledgerSamplerFields(forge.profile.sampler, "schnell"), {
+    model: "schnell",
+    steps: 8,
+    cfg: 1,
+    denoise: 1.0,
+  });
+  assert.deepEqual(ledgerSamplerFields(forge.profile.anchor, "dev", { denoise: 0.45 }), {
+    model: "dev",
+    steps: 27,
+    cfg: 1,
+    guidance: 5.0,
+    denoise: 0.45,
+  });
 });
 
 /* ---------------------- freehand (--control none) ---------------------- */
