@@ -468,6 +468,48 @@
         "docs/worldbuilding/reviews/2026-08-30-millcross-materials-probe-verdict.md"
       ],
       "note": "Materials probe (owner-approved, one cell): positive-only plaster/shingle rewording, rolltag-isolated per rail 7 — the confirmed cell was not overwritten. REJECT per the probe verdict: the reword did not land; fachwerk/slate persist (sampler-side drift measured)."
+    },
+    {
+      "id": "A1-ART-02-segment-subject-probe-seed12345-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-subject-probe-seed12345-s0.45.png",
+      "roll": "segment-0.45-subject-probe",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": "c0ef116c7e149adf",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-09-01-millcross-subject-probe-verdict.md"
+      ],
+      "note": "Subject-position probe (materials-probe verdict open question 1 (a), owner-approved continuation): plaster plane promoted to sentence subject, positive-only; masses/horizon/focal/mustAssert untouched, rolltag-isolated per rail 7 — the confirmed cell was not overwritten. ACCEPT-WITH-REFINEMENT per the subject-probe verdict (#12, the loop's first non-REJECT): fachwerk cleared on all three surfaces, plaster measurably the frame's subject, belfry competitor gone; slate/brick/mill/ford/watermark/lamp-post stand. Cell of record."
+    },
+    {
+      "id": "A1-ART-02-dev-refine-materials-r1-seed12345",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-refine-materials-r1-seed12345.png",
+      "roll": "refine-materials-r1",
+      "seed": 12345,
+      "control": "refine",
+      "strength": null,
+      "briefHash": "c0ef116c7e149adf",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-09-01-millcross-materials-refine-verdict.md"
+      ],
+      "note": "Materials refine (subject-probe verdict open question 1 (a), owner-approved continuation): anchor-recipe img2img (dev, denoise 0.75) over the subject-probe cell, rolltag-isolated per rail 7 — refineSource names the input cell in the ledger row. REJECT per the materials-refine verdict (#13): register flipped to flat vector and decorative fachwerk returned (both VETO-class); no targeted fail moved. The 0.75 operating point is measured harmful on a finished cell; the refine lineage terminated here."
+    },
+    {
+      "id": "A1-ART-02-dev-refine-materials-r2-seed12345",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-refine-materials-r2-seed12345.png",
+      "roll": "refine-materials-r2",
+      "seed": 12345,
+      "control": "refine",
+      "strength": null,
+      "briefHash": "c0ef116c7e149adf",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-09-01-millcross-materials-refine-r2-verdict.md"
+      ],
+      "note": "Low-denoise refine re-measure (materials-refine verdict open question 1 (a), owner-approved, one cell): anchor-recipe img2img at denoise 0.45 over the subject-probe cell — the 0.75 operating point was measured harmful on a finished cell, the window re-measured low first. Ledger row records model/steps/cfg/guidance/denoise (rail 3 retired). REJECT per the materials-refine-r2 verdict (#14): zero targeted materials moved, built-surface register drifted toward flat vector, and modern car-like vehicles surfaced in the gate queue (VETO) — the img2img materials-refine lever is measured DEAD at both window ends; the subject-probe cell stands as cell of record."
     }
   ]
 }
