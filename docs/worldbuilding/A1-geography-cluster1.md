@@ -509,10 +509,16 @@ the hard edge stays; the wider chart is a separate artifact, the atlas sheet (`A
 
 **A1-ART-02 · Millcross.** A small walled crossing town on both banks of a grey river,
 viewed from the road at cart height, late afternoon. One mill-wheel housing is the only structure
-above one storey; everything else is a single storey, solidly built — timber frames on stone
+above one storey — a heavy, plain mass of dark weathered timber on stone footings, read as one
+solid block rather than a framed building, its great wheel turning in the open race beside it;
+everything else is a single storey, solidly built — timber frames on stone
 footings, whitewashed plaster walls, steep slate roofs, brick chimney stacks and brick plinths
 (the slate and fired brick come down from upstream quarries and kilns as barge ballast, landed at
-the ford and carted into the town) — strung with no plan along the roads. A queue of
+the ford and carted into the town) — strung with no plan along the roads. **AMENDED 2026-09-01
+(F-039, owner option b, verdicts #15–#17).** The materials register (slate roofs, brick stacks and
+plinths) and the mill housing register are canon as measured: three render paths and two seeds
+could not produce fine timber articulation on the housing at the measured operating point, so
+canon asserts the mass and the wheel, not the joinery. A queue of
 loaded carts and led animals stretches from the foreground toward the ford, longer than the town is
 wide. Palette ash-grey, rope-brown, tallow-yellow, with chalked crossed-roads-over-an-empty-bowl
 marks on the leading awnings.
