@@ -63,6 +63,14 @@
       "value": "the 12u floor clears mob radius <= 5 only; doubleAttacker (8) and thorncrownDrake (9) exceed it and are not routed through towns — design §10 q3 open, recorded not resolved",
       "source": "measured:A3 §1.2 corrections + §6 q3",
       "check": null
+    },
+    {
+      "id": "millcross-materials-lever-ledger",
+      "kind": "record",
+      "appliesTo": "tools/art-forge/briefs/A1-ART-02.json render loop (verdicts #11-#14)",
+      "value": "Positive-only rewording at the confirmed cell (materials probe, briefHash a03e1e72adf937a5) is MEASURED INERT for fachwerk/slate/brick; subject-position rewording (subject probe, briefHash c0ef116c7e149adf) MOVED fachwerk — cleared on all three surfaces, plaster plane brightened ~28 RGB steps — and is INERT for slate/brick; brick is sampler prior (not in prompt). img2img anchor-recipe refine (denoise 0.75) on the finished subject-probe cell: slate/brick/mill fails did not move; register broke to flat vector and decorative fachwerk returned — the materials-refine lever at the anchor operating point is measured HARMFUL on a finished cell. Low-denoise refine re-measure (denoise 0.45, verdict #14): materials did not move; built-surface register drifted toward flat vector (brick S72→S112, roof hue warm→cool), the watermark sharpened, and modern car-like vehicles surfaced in the gate queue — the img2img materials-refine lever is measured DEAD at both ends of its plausible window (0.75 harmful #13, 0.45 inert-and-regressing #14). Remaining levers: seed change (prior LOW), control-map emphasis for the mill, deliberate canon amendment.",
+      "source": "reviewer:REVIEWER citing tools/art-forge/runs/A1-ART-02.json rows and reviews/2026-08-30-millcross-materials-probe-verdict.md, 2026-09-01-millcross-subject-probe-verdict.md, 2026-09-01-millcross-materials-refine-verdict.md",
+      "check": "each remaining lever requires owner approval before spending a cell; a deliberate canon amendment is the owner's call, never a loop outcome"
     }
   ],
   "towns": {
@@ -264,7 +272,9 @@
           "castle-scale towers, citadel keeps and fantasy-brochure battlements (Millcross is a working town wall, not a fortress)",
           "their windmills (canon water mill)",
           "storybook pastels and glow (palette is ash-grey/rope-brown/tallow, cheap light)",
-          "clean fantasy-brochure weathering (era law: unpainted wood, mud, wear)"
+          "clean fantasy-brochure weathering (era law: unpainted wood, mud, wear)",
+          "church spires, belfry towers and cupola halls (no church is ratified in Millcross's venue list; A1 §6: nothing else competes with the mill housing)",
+          "roof pinnacles and finials (ornament classes adjacent to the banned battlements)"
         ],
         "neverPromptText": true
       },

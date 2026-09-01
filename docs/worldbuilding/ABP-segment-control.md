@@ -19,6 +19,16 @@ this document.
 
 </div>
 
+> **SUPERSEDED (2026-08-30).** The 2026-08-30 segment-unpark ladder overturned this negative as a
+> *mechanism* result: the 08-29 failure was the unconverged block-in's own register, not the segment
+> mechanism — at the re-derived block-in, the strength window 0.30–0.45 measured clean and s0.45 rendered
+> the loop's first wall-as-wall cell. `environment.segment.strength` is pinned at 0.45 and the segment pass
+> is the Millcross concept-pass carrier. Evidence chain:
+> `reviews/2026-08-30-millcross-segment-unpark-ladder-verdict.md` →
+> `reviews/2026-08-30-millcross-segment-confirmation-verdict.md` →
+> `reviews/2026-09-01-millcross-subject-probe-verdict.md` (cell of record). The verdict-up-front below
+> stands as the 08-29 record.
+
 ## The problem, restated from measurement
 
 The depth control path renders only FOUR luminance levels (measured 2026-08-08: sky 54.5%,

@@ -72,7 +72,7 @@ Write a verdict sheet to `docs/worldbuilding/reviews/<YYYY-MM-DD>-<subject>.md` 
 - A row per criterion: **PASS / STRONG OBJECTION / VETO / UNVERIFIED**, the citation or command output
   behind it, and one sentence of comment.
 - A "rail changes" section: any criterion that should become a machine check (schema enum, gate rule,
-  prompt-lint rule, `content/towns/town-criteria.json` entry), written as a concrete data diff proposal.
+  prompt-lint rule, `content/world/town-criteria.json` entry), written as a concrete data diff proposal.
 - An "open questions for the owner" section: decisions only a human can make, each with your recommendation.
 
 Then return a summary of at most 15 lines: verdict, the VETO/OBJECTION list, the sheet path, and what

@@ -130,8 +130,12 @@ test("brief carries the ratified palette and the structural material register", 
     );
   }
   const promptLower = brief.prompt.toLowerCase();
-  assert.ok(promptLower.includes("timber-framed"), "structural material register missing");
-  assert.ok(promptLower.includes("stone footings"), "structural material register missing");
+  // Subject-position reword (verdict #12, the loop's first landing wording
+  // lever): the plaster plane is the sentence subject and "Timber-framed
+  // houses ... stone footings" was deliberately replaced — the structural
+  // register now lives in these substrings.
+  assert.ok(promptLower.includes("plaster-and-stone"), "structural material register missing");
+  assert.ok(promptLower.includes("timber frames"), "structural material register missing");
 });
 
 test("criteria's knownOpenItems stay open — nothing here silently closes a G5-class contradiction", () => {
