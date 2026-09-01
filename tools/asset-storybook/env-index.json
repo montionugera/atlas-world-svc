@@ -510,6 +510,20 @@
         "docs/worldbuilding/reviews/2026-09-01-millcross-materials-refine-r2-verdict.md"
       ],
       "note": "Low-denoise refine re-measure (materials-refine verdict open question 1 (a), owner-approved, one cell): anchor-recipe img2img at denoise 0.45 over the subject-probe cell — the 0.75 operating point was measured harmful on a finished cell, the window re-measured low first. Ledger row records model/steps/cfg/guidance/denoise (rail 3 retired). REJECT per the materials-refine-r2 verdict (#14): zero targeted materials moved, built-surface register drifted toward flat vector, and modern car-like vehicles surfaced in the gate queue (VETO) — the img2img materials-refine lever is measured DEAD at both window ends; the subject-probe cell stands as cell of record."
+    },
+    {
+      "id": "A1-ART-02-mill-emphasis-seed12345-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-mill-emphasis-seed12345-s0.45.png",
+      "roll": "mill-emphasis",
+      "seed": 12345,
+      "control": "depth",
+      "strength": 0.45,
+      "briefHash": "60a4ce93c66997bf",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-09-01-millcross-mill-emphasis-verdict.md"
+      ],
+      "note": "Mill control-map emphasis (owner decisions 2026-09-01: canon amendment option b + one mill-emphasis cell): the mill mass edits landed in the amended brief (briefHash 60a4ce93c66997bf) and the cell rolled on the DEPTH path — materialization deviation from the prescribed segment path, disclosed in the verdict sheet header. REJECT per the mill-emphasis verdict (#15, one VETO): mill-wheel finally rendered (first in 16 rolls, over the race), housing taller/left-extended but rendered light stone not timber-dark; race-channel distinct-dark not delivered; NEW VETO red modern pickup at the right edge; decorative fachwerk regressed, cart queue absent, crenellated castle-register tower; watermark persists. Crenellation referencePolicy rail proposed (owner open). Cell of record remains the subject-probe cell."
     }
   ]
 }
