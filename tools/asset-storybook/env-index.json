@@ -524,6 +524,20 @@
         "docs/worldbuilding/reviews/2026-09-01-millcross-mill-emphasis-verdict.md"
       ],
       "note": "Mill control-map emphasis (owner decisions 2026-09-01: canon amendment option b + one mill-emphasis cell): the mill mass edits landed in the amended brief (briefHash 60a4ce93c66997bf) and the cell rolled on the DEPTH path — materialization deviation from the prescribed segment path, disclosed in the verdict sheet header. REJECT per the mill-emphasis verdict (#15, one VETO): mill-wheel finally rendered (first in 16 rolls, over the race), housing taller/left-extended but rendered light stone not timber-dark; race-channel distinct-dark not delivered; NEW VETO red modern pickup at the right edge; decorative fachwerk regressed, cart queue absent, crenellated castle-register tower; watermark persists. Crenellation referencePolicy rail proposed (owner open). Cell of record remains the subject-probe cell."
+    },
+    {
+      "id": "A1-ART-02-segment-mill-emphasis-r2-seed12345-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-mill-emphasis-r2-seed12345-s0.45.png",
+      "roll": "segment-0.45-mill-emphasis-r2",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": "9c10d497b9ca3d0a",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-09-01-millcross-mill-emphasis-r2-verdict.md"
+      ],
+      "note": "Mill control-map re-roll on the prescribed segment path (owner-approved 2026-09-01 after verdict #15; race-channel lifted to mg plane per the represcription verdict after pre-roll verify found the bg-plane band structurally overpainted — visible sliver 0.63%). REJECT per the mill-emphasis-r2 verdict (#16, no VETO — era clean): race slot legible for the first time in 17 rolls, ox-cart queue restored, right-edge era check clean; wheel present but arch-mounted ornament not over the race, housing flipped to tan stone again (sampler 0-for-2 across both paths — values measured exhausted), storybook fachwerk braces persist on the right row, crenellated crown (now-banned class), watermark chronic. Subject-probe cell remains cell of record; this cell stands as mill-geometry evidence. Next: owner decision on one-variable seed-change cell (mill-emphasis-r3, seed 42424, identical brief)."
     }
   ]
 }
