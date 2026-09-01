@@ -1,16 +1,23 @@
 {
   "positive": ["crisp flat 2D anime illustration"],
-  "negative": ["NOT 3D render", "NOT CGI", "NOT clay", "no fur"],
+  "renderAssertion": [
+    "hand-drawn 2D cel-shaded artwork",
+    "clean ink linework over painted flat colour"
+  ],
+  "negative": ["3D render", "CGI", "clay", "fur"],
+  "forbiddenTokens": ["3D render", "CGI", "clay"],
   "styleClause": [
     "RO proportion",
     "Genshin-detail",
     "soft painterly shading",
     "richly detailed rendering"
   ],
-  "_note": "styleClause is the F-024 calibration campaign's validated style-word clause. 'RO proportion x Genshin-detail' was recovered from the `note` field ('RO-proportion x Genshin-detail class artwork') that is identical across all 64 art:class-* entries in game-client/assets/art/art-manifest.json; 'soft painterly shading, richly detailed rendering' came from the same costume-sweep calibration (tools/art-forge/out/costumesweep/W2-costume-style.png) as job-costume.json's mage clause. buildPrompt() (generate/charsheet.mjs) appends styleClause LAST — after the job costume clause, not inside the opening `positive` array — to reproduce the validated ogre-mage prompt string verbatim.",
+  "_note": "styleClause is the F-024 calibration campaign's validated style-word clause. 'RO proportion x Genshin-detail' was recovered from the `note` field ('RO-proportion x Genshin-detail class artwork') that is identical across all 64 art:class-* entries in game-client/assets/art/art-manifest.json; 'soft painterly shading, richly detailed rendering' came from the same costume-sweep calibration (tools/art-forge/out/costumesweep/W2-costume-style.png) as job-costume.json's mage clause. buildPrompt() (generate/charsheet.mjs) appends styleClause LAST — after the job costume clause, not inside the opening `positive` array — to reproduce the validated ogre-mage prompt string verbatim. CORRECTED 2026-08-08 (F-039): this file used to carry `negative: [\"NOT 3D render\", \"NOT CGI\", \"NOT clay\", \"no fur\"]` and BOTH prompt builders appended that list into the POSITIVE string, on the reasoning that cfg 1 leaves KSampler's negative branch unevaluated so the words 'belong inside the positive prompt'. The cfg fact is right and the conclusion was backwards: a text encoder attends to tokens and has no operator for negation, so the positive prompt was handing the model `3D render`, `CGI`, `clay` and `fur` as subjects. `renderAssertion` replaces those four with what the art IS, and sits in exactly the slot `negative` used to occupy in both builders so the rest of the validated string is unperturbed. The validated ogre-mage string is therefore NO LONGER reproduced verbatim — that is deliberate and is the fix, not drift. `negative` survives as plain nouns for the real CLIPTextEncode negative node only (inert at cfg 1, correct if cfg is ever raised); generate/prompt-lint.mjs enforces that it can never re-enter a positive prompt.",
+  "_forbiddenTokensNote": "Subjects that must not be NAMED in a POSITIVE prompt at all, even to forbid them (generate/prompt-lint.mjs R2). This is deliberately a SUBSET of `negative`: 'fur' is excluded because fur is legitimate positive content — job-costume.json's archer wears 'a fur-lined hood' and its summoner wears 'layered nomad furs'. A blanket 'fur' token would fire on both. The beastkin KEMONOMIMI failure that 'no fur' guarded is now asserted positively in race-identity.json instead.",
   "laws": [
     "Text alone CANNOT hold head-body ratio — always anchor with an image. The owner caught drift twice on text-only attempts.",
-    "The words 'raccoon', 'goggles' and 'dwarf' drag the model toward 3D-furry/Pixar. Counter with 'KEMONOMIMI, HUMAN face, no fur'.",
-    "QC per row on a contact sheet, then reroll only failing cells with a new seed plus reinforced identity words."
+    "The words 'raccoon', 'goggles' and 'dwarf' drag the model toward 3D-furry/Pixar. Counter with 'KEMONOMIMI, HUMAN face, smooth bare human skin' — assert the skin, do not write 'no fur': the model receives 'fur' either way.",
+    "QC per row on a contact sheet, then reroll only failing cells with a new seed plus reinforced identity words.",
+    "NEVER write a negation into a positive prompt. Diffusion attends to tokens; 'no cars' delivers `cars`. Measured on Millcross 2026-08-08 at ControlNet strengths 0.00/0.30/0.45/0.60: pylons and painted road markings appeared in every cell INCLUDING with the control signal fully off, while a positive-only rewrite of the same subject came back clean. Assert what IS present. generate/prompt-lint.mjs enforces this at composition time."
   ]
 }

@@ -42,10 +42,12 @@ import {
   parseDenoiseOverride,
   parsePromptOverride,
   parseSeed,
+  promptForbiddenTokens,
   requireCell,
   resolveSampler,
   runGraph,
 } from "./charsheet.mjs";
+import { assertPositivePromptClean } from "./prompt-lint.mjs";
 
 /**
  * ComfyUI resolves LoadImage names relative to its own input dir, so we pass
@@ -74,7 +76,13 @@ export function buildI2iGraph({
     );
   }
   return buildBaseGraph({
-    positive: positiveOverride ?? buildPrompt({ race, job }, forge),
+    // A --positive override bypasses buildPrompt()'s own lint, so lint it
+    // here — see generate/prompt-lint.mjs.
+    positive: positiveOverride
+      ? assertPositivePromptClean(positiveOverride, {
+          forbiddenTokens: promptForbiddenTokens(forge),
+        })
+      : buildPrompt({ race, job }, forge),
     negative: negativeOverride ?? negativePrompt(forge),
     seed,
     denoise,
@@ -160,9 +168,14 @@ export async function generateCreature(
   );
   const sil = `${forge.profile.silhouettes.prefix}${entry.silhouette.replace(/^sil-/, "")}.png`;
   const graph = buildBaseGraph({
-    positive:
-      parsePromptOverride("positive", args.positive) ??
-      buildCreaturePrompt(designId, forge),
+    positive: (() => {
+      const override = parsePromptOverride("positive", args.positive);
+      return override
+        ? assertPositivePromptClean(override, {
+            forbiddenTokens: promptForbiddenTokens(forge),
+          })
+        : buildCreaturePrompt(designId, forge);
+    })(),
     negative:
       parsePromptOverride("negative", args.negative) ?? negativePrompt(forge),
     seed,

@@ -135,16 +135,40 @@ this recipe is safe for unattended batch use.
 
 ## Prompt laws
 
-See `prompts/style-laws.json` for the machine-readable positive/negative
-lists. The hard-won rules behind them:
+See `prompts/style-laws.json` for the machine-readable lists. The
+hard-won rules behind them:
 
 - **Text alone CANNOT hold head-body ratio.** Always anchor with an
   image (the silhouette). The owner caught drift twice on text-only
   attempts.
-- **Anti-3D counter-prompts.** The words "raccoon", "goggles" and
-  "dwarf" drag the model toward 3D-furry/Pixar. Counter with
-  `KEMONOMIMI, HUMAN face, no fur` and `crisp flat 2D anime
-illustration, NOT 3D render, NOT CGI, NOT clay`.
+- **NEVER write a negation into a positive prompt.** A diffusion text
+  encoder attends to tokens; it has no operator for "no". `no cars`
+  delivers `cars`. This file used to instruct the opposite — that
+  because cfg 1 leaves the negative branch unevaluated, counter-words
+  "belong inside the positive prompt". The cfg fact is right and the
+  conclusion was backwards; it is why
+  `docs/worldbuilding/ABP-controlnet-replication.md` found pylons and
+  modern vehicles *despite* `no modern vehicles` being in the guard
+  list, and why Cindervast rendered rubble on a brief whose own prose
+  said "there is no rubble". Millcross re-run 2026-08-08 at ControlNet
+  strength 0.00/0.30/0.45/0.60 showed pylons and painted road markings
+  in every cell, control signal fully off included; a positive-only
+  rewrite came back clean.
+- **Assert what IS present.** `generate/prompt-lint.mjs` enforces this
+  and throws at prompt-composition time, before a job is queued
+  (~218 s of GPU per bad cell). Its forbidden-subject vocabulary comes
+  from config (`style-laws.json` `forbiddenTokens`,
+  `forge.config.json` `<profile>.styleGuard.forbiddenTokens`), never
+  from the module.
+- **Anti-3D assertions.** The words "raccoon", "goggles" and "dwarf"
+  drag the model toward 3D-furry/Pixar. Counter with
+  `KEMONOMIMI, HUMAN face, smooth bare human skin` and
+  `crisp flat 2D anime illustration, hand-drawn 2D cel-shaded artwork,
+clean ink linework over painted flat colour`.
+- **The negative node still exists.** `style-laws.json` `negative` and
+  `styleGuard.forbiddenTokens` feed a real `CLIPTextEncode` negative
+  conditioning (inert at cfg 1, correct if cfg is raised). What is
+  forbidden is that vocabulary entering the POSITIVE string.
 
 ## Stage: QC
 
@@ -242,8 +266,12 @@ Re-runs are human-executed at the keyboard (same access path as
   `profiles.character` and `profiles.environment` (model, sampler,
   silhouette/ControlNet, and muscle-gradient axes per profile). No
   default profile — see "Config shape" above.
-- `prompts/style-laws.json` — positive/negative prompt fragments and the
-  prompt laws above.
+- `prompts/style-laws.json` — positive prompt fragments (`positive`,
+  `renderAssertion`, `styleClause`), the negative-conditioning nouns
+  (`negative`), the R2 `forbiddenTokens`, and the prompt laws above.
+- `generate/prompt-lint.mjs` — pure positive-prompt guard (R1 negation,
+  R2 forbidden tokens). No I/O, no built-in vocabulary; callers pass the
+  tokens from config.
 - `prompts/race-identity.json` — per-race identity markers and muscle
   score, locked canon (see `content/story/canon.md` §5).
 - `generate/` — the character ComfyUI job scripts (`charsheet.mjs`,

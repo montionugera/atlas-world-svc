@@ -1,4 +1,5 @@
 {
+  "_note": "F-039 (2026-08-08): three identity clauses were rewritten from negation into assertion — 'halo is a ring of LIGHT, not bells' -> 'a smooth unbroken ring of pure LIGHT'; beastkin 'no fur' -> 'smooth bare human skin'; human 'balanced, no lean' -> 'balanced, even upright stance'. A diffusion text encoder attends to tokens and has no operator for negation, so the old clauses were delivering `bells`, `fur` and `lean` into the positive conditioning — the exact 3D-furry pull style-laws.json law #2 was trying to counter. Enforced by generate/prompt-lint.mjs at composition time. These three clauses are unproven at the pixel level: the F-024 contact sheets were generated with the old wording, so re-QC the beastkin row in particular before trusting it.",
   "ogre": {
     "identity": [
       "moss-green skin",
@@ -9,7 +10,7 @@
     "muscle": 8.5
   },
   "immortal": {
-    "identity": ["halo is a ring of LIGHT, not bells"],
+    "identity": ["halo is a smooth unbroken ring of pure LIGHT"],
     "muscle": 6.8
   },
   "dragon": {
@@ -21,12 +22,12 @@
       "HUMAN face",
       "animal ears and tail only",
       "KEMONOMIMI",
-      "no fur"
+      "smooth bare human skin"
     ],
     "muscle": 6.4
   },
   "elf": { "identity": ["slender", "mana-bright"], "muscle": 6.0 },
   "dwarf": { "identity": ["stocky", "artisan"], "muscle": 7.8 },
   "demon": { "identity": ["void affinity"], "muscle": 7.0 },
-  "human": { "identity": ["balanced, no lean"], "muscle": 7.0 }
+  "human": { "identity": ["balanced, even upright stance"], "muscle": 7.0 }
 }

@@ -1,0 +1,557 @@
+{
+  "version": 1,
+  "note": "One row per PNG under tools/art-forge/out/env/ — art-forge's environment concept renders (the A1-ART-02 Millcross roll batch). The storybook's OWN registry for this artifact type, exactly as maps-index.json registers mapforge sheets and world-index.json registers the civil layer: the 2026-08-15 owner rule (every produced artifact must be observable in a review surface) made mechanical for env renders by tests/env-index.test.mjs, closing the gap the town-canon reviewer flagged in docs/worldbuilding/reviews/2026-08-30-millcross-dev-roll-verdict.md (open question 2: \"Wire art-forge env renders into the storybook before the next roll\"). seed/control/strength/briefHash are transcribed from tools/art-forge/runs/A1-ART-02.json render entries matched by output path (provenance \"run-log\"); rows the run log does not record carry provenance \"filename\" and briefHash null, with seed/strength taken from the filename itself. The renders are gitignored (tools/art-forge/.gitignore ignores out/), so the gate is existence-based: it enforces full parity wherever the renders exist and passes vacuously in a checkout without them. `reviews` links the verdict sheet that judged a render; an empty array is honest for the un-reviewed engineering probes (baseline sweeps, guard probes, anchor/segment experiments).",
+  "renders": [
+    {
+      "id": "A1-ART-02-none-seed12345",
+      "file": "tools/art-forge/out/env/A1-ART-02-none-seed12345.png",
+      "roll": "none-baseline",
+      "seed": 12345,
+      "control": "none",
+      "strength": null,
+      "briefHash": "207feb8d8438ccdf",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-none-seed777",
+      "file": "tools/art-forge/out/env/A1-ART-02-none-seed777.png",
+      "roll": "none-baseline",
+      "seed": 777,
+      "control": "none",
+      "strength": null,
+      "briefHash": "207feb8d8438ccdf",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-none-seed31337",
+      "file": "tools/art-forge/out/env/A1-ART-02-none-seed31337.png",
+      "roll": "none-baseline",
+      "seed": 31337,
+      "control": "none",
+      "strength": null,
+      "briefHash": "207feb8d8438ccdf",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed12345-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed12345-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 12345,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "def7756ea00475b0",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed777-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed777-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 777,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "def7756ea00475b0",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed31337-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed31337-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 31337,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "def7756ea00475b0",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed42424-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed42424-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 42424,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "3623c1009f1eb5b9",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed90210-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed90210-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 90210,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "3623c1009f1eb5b9",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed555001-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed555001-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 555001,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "3623c1009f1eb5b9",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed10001-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed10001-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 10001,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "47928a1704220c52",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed20002-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed20002-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 20002,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "47928a1704220c52",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed30003-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed30003-s0.30.png",
+      "roll": "depth-0.30",
+      "seed": 30003,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "47928a1704220c52",
+      "provenance": "run-log",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-dev-seed12345-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-seed12345-s0.30.png",
+      "roll": "dev-0.30",
+      "seed": 12345,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "3703d78a3d4eab68",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-roll-verdict.md"
+      ],
+      "note": "OVERWRITTEN 2026-08-30 15:21-15:25Z by the colour-anchor roll's base pass (invoked without --strength, defaulted to 0.30) — the file on disk is a colour-anchor-era brief render at strength 0.30, not the reviewed v2-era cell this row originally indexed (briefHash 47928a1704220c52, REJECT per the dev-roll verdict; provenance chain in runs/A1-ART-02.json). Rail for the next anchor run: pass --strength explicitly so the base pass cannot clobber reviewed filenames."
+    },
+    {
+      "id": "A1-ART-02-dev-seed42424-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-seed42424-s0.30.png",
+      "roll": "dev-0.30",
+      "seed": 42424,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "3703d78a3d4eab68",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-roll-verdict.md"
+      ],
+      "note": "OVERWRITTEN 2026-08-30 15:21-15:25Z by the colour-anchor roll's base pass (invoked without --strength, defaulted to 0.30) — the file on disk is a colour-anchor-era brief render at strength 0.30, not the reviewed v2-era cell this row originally indexed (briefHash 47928a1704220c52, REJECT per the dev-roll verdict; provenance chain in runs/A1-ART-02.json). Rail for the next anchor run: pass --strength explicitly so the base pass cannot clobber reviewed filenames."
+    },
+    {
+      "id": "A1-ART-02-dev-seed10001-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-seed10001-s0.30.png",
+      "roll": "dev-0.30",
+      "seed": 10001,
+      "control": "depth",
+      "strength": 0.3,
+      "briefHash": "3703d78a3d4eab68",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-dev-roll-verdict.md"
+      ],
+      "note": "OVERWRITTEN 2026-08-30 15:21-15:25Z by the colour-anchor roll's base pass (invoked without --strength, defaulted to 0.30) — the file on disk is a colour-anchor-era brief render at strength 0.30, not the reviewed v2-era cell this row originally indexed (briefHash 47928a1704220c52, REJECT per the dev-roll verdict; provenance chain in runs/A1-ART-02.json). Rail for the next anchor run: pass --strength explicitly so the base pass cannot clobber reviewed filenames."
+    },
+    {
+      "id": "A1-ART-02-dev-anchor-seed10001",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-seed10001.png",
+      "roll": "anchor-probe",
+      "seed": 10001,
+      "control": "anchor-colour",
+      "strength": null,
+      "briefHash": "9a49bb0146173126",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-v6-roll-verdict.md"
+      ],
+      "note": "v6 colour-anchor roll: change set applied (light stone wall flanks #a8a49a, gate towers #6b5a40, drawn mill wheel disc, ground patch) + register fix (character styleLaws removed from env positives, medium clause leads). Awaiting verdict."
+    },
+    {
+      "id": "A1-ART-02-dev-anchor-seed12345",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-seed12345.png",
+      "roll": "anchor-probe",
+      "seed": 12345,
+      "control": "anchor-colour",
+      "strength": null,
+      "briefHash": "9a49bb0146173126",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-v6-roll-verdict.md"
+      ],
+      "note": "v6 colour-anchor roll: change set applied (light stone wall flanks #a8a49a, gate towers #6b5a40, drawn mill wheel disc, ground patch) + register fix (character styleLaws removed from env positives, medium clause leads). Awaiting verdict."
+    },
+    {
+      "id": "A1-ART-02-dev-anchor-seed42424",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-seed42424.png",
+      "roll": "anchor-probe",
+      "seed": 42424,
+      "control": "anchor-colour",
+      "strength": null,
+      "briefHash": "9a49bb0146173126",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-v6-roll-verdict.md"
+      ],
+      "note": "v6 colour-anchor roll: change set applied (light stone wall flanks #a8a49a, gate towers #6b5a40, drawn mill wheel disc, ground patch) + register fix (character styleLaws removed from env positives, medium clause leads). Awaiting verdict."
+    },
+    {
+      "id": "A1-ART-02-eratest-segment-seed12345-s0.00",
+      "file": "tools/art-forge/out/env/A1-ART-02-eratest-segment-seed12345-s0.00.png",
+      "roll": "guard-probe",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-postest-segment-seed12345-s0.00",
+      "file": "tools/art-forge/out/env/A1-ART-02-postest-segment-seed12345-s0.00.png",
+      "roll": "guard-probe",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-segment-seed12345-s0.00",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed12345-s0.00.png",
+      "roll": "segment-sweep",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-segment-seed12345-s0.30",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed12345-s0.30.png",
+      "roll": "segment-sweep",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.3,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-segment-unpark-ladder-verdict.md"
+      ],
+      "note": "OVERWRITTEN by the segment-unpark ladder (2026-08-30): same filename, new brief (colour-anchor era geometry) at the ladder strength. The 08-29 negative-result cells these rows indexed are superseded; their provenance lives in the run ledger and ABP-segment-control.md. Awaiting ladder verdict."
+    },
+    {
+      "id": "A1-ART-02-segment-seed12345-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed12345-s0.45.png",
+      "roll": "segment-sweep",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-segment-unpark-ladder-verdict.md"
+      ],
+      "note": "OVERWRITTEN by the segment-unpark ladder (2026-08-30): same filename, new brief (colour-anchor era geometry) at the ladder strength. The 08-29 negative-result cells these rows indexed are superseded; their provenance lives in the run ledger and ABP-segment-control.md. Awaiting ladder verdict."
+    },
+    {
+      "id": "A1-ART-02-segment-seed12345-s0.60",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed12345-s0.60.png",
+      "roll": "segment-sweep",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.6,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-segment-unpark-ladder-verdict.md"
+      ],
+      "note": "OVERWRITTEN by the segment-unpark ladder (2026-08-30): same filename, new brief (colour-anchor era geometry) at the ladder strength. The 08-29 negative-result cells these rows indexed are superseded; their provenance lives in the run ledger and ABP-segment-control.md. Awaiting ladder verdict."
+    },
+    {
+      "id": "A1-ART-02-segment-seed12345-s0.75",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed12345-s0.75.png",
+      "roll": "segment-sweep",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.75,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-segment-seed12345-s0.90",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed12345-s0.90.png",
+      "roll": "segment-sweep",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.9,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-segment-seed246810-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed246810-s0.45.png",
+      "roll": "segment-sweep",
+      "seed": 246810,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-segment-seed741852-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed741852-s0.45.png",
+      "roll": "segment-sweep",
+      "seed": 741852,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": null,
+      "provenance": "filename",
+      "reviews": []
+    },
+    {
+      "id": "A1-ART-02-seed12345-s0.40",
+      "file": "tools/art-forge/out/env/A1-ART-02-seed12345-s0.40.png",
+      "roll": "schnell-0.40",
+      "seed": 12345,
+      "control": "depth",
+      "strength": 0.4,
+      "briefHash": "354813a7745b1c2b",
+      "provenance": "run-log",
+      "reviews": [],
+      "note": "Control-map validation render: change-set v3 brief on the default schnell model (run without --model dev; kept as a same-brief cross-model data point, not part of the dev roll under review)."
+    },
+    {
+      "id": "A1-ART-02-dev-anchorbase-seed12345-s0.40",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchorbase-seed12345-s0.40.png",
+      "roll": "dev-anchorbase-0.40",
+      "seed": 12345,
+      "control": "depth",
+      "strength": 0.4,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [],
+      "note": "Un-consumed depth base pass of the colour-anchor runs (rail 6: own filename + anchorBase ledger flag). Comparison cell only, not part of any roll under review; re-written by each anchor run — current file is the anchor-r3 era, briefHash b7658d8607bbbe70."
+    },
+    {
+      "id": "A1-ART-02-dev-anchorbase-seed42424-s0.40",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchorbase-seed42424-s0.40.png",
+      "roll": "dev-anchorbase-0.40",
+      "seed": 42424,
+      "control": "depth",
+      "strength": 0.4,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [],
+      "note": "Un-consumed depth base pass of the colour-anchor runs (rail 6: own filename + anchorBase ledger flag). Comparison cell only, not part of any roll under review; re-written by each anchor run — current file is the anchor-r3 era, briefHash b7658d8607bbbe70."
+    },
+    {
+      "id": "A1-ART-02-dev-anchorbase-seed10001-s0.40",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchorbase-seed10001-s0.40.png",
+      "roll": "dev-anchorbase-0.40",
+      "seed": 10001,
+      "control": "depth",
+      "strength": 0.4,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [],
+      "note": "Un-consumed depth base pass of the colour-anchor runs (rail 6: own filename + anchorBase ledger flag). Comparison cell only, not part of any roll under review; re-written by each anchor run — current file is the anchor-r3 era, briefHash b7658d8607bbbe70."
+    },
+    {
+      "id": "A1-ART-02-dev-anchor-anchor-r3-seed12345",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-anchor-r3-seed12345.png",
+      "roll": "dev-anchor-r3",
+      "seed": 12345,
+      "control": "anchor-colour",
+      "strength": null,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-r3-roll-verdict.md"
+      ],
+      "note": "v7 colour-anchor roll (rail-7 rolltag — v6 cells left untouched): corrected base per the v6 verdict (queue-occluded left flank dropped, right flank #c6c2b6, wheel re-valued #3a2c1c re-centred clear of the queue, towers moved apart) + register fix. Awaiting verdict."
+    },
+    {
+      "id": "A1-ART-02-dev-anchor-anchor-r3-seed42424",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-anchor-r3-seed42424.png",
+      "roll": "dev-anchor-r3",
+      "seed": 42424,
+      "control": "anchor-colour",
+      "strength": null,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-r3-roll-verdict.md"
+      ],
+      "note": "v7 colour-anchor roll (rail-7 rolltag — v6 cells left untouched): corrected base per the v6 verdict (queue-occluded left flank dropped, right flank #c6c2b6, wheel re-valued #3a2c1c re-centred clear of the queue, towers moved apart) + register fix. Awaiting verdict."
+    },
+    {
+      "id": "A1-ART-02-dev-anchor-anchor-r3-seed10001",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-anchor-anchor-r3-seed10001.png",
+      "roll": "dev-anchor-r3",
+      "seed": 10001,
+      "control": "anchor-colour",
+      "strength": null,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-anchor-r3-roll-verdict.md"
+      ],
+      "note": "v7 colour-anchor roll (rail-7 rolltag — v6 cells left untouched): corrected base per the v6 verdict (queue-occluded left flank dropped, right flank #c6c2b6, wheel re-valued #3a2c1c re-centred clear of the queue, towers moved apart) + register fix. Awaiting verdict."
+    },
+    {
+      "id": "A1-ART-02-segment-seed42424-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed42424-s0.45.png",
+      "roll": "segment-0.45-confirmation",
+      "seed": 42424,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-segment-confirmation-verdict.md"
+      ],
+      "note": "Confirmation roll at the measured operating strength 0.45 (ladder verdict GO). Awaiting verdict."
+    },
+    {
+      "id": "A1-ART-02-segment-seed10001-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-seed10001-s0.45.png",
+      "roll": "segment-0.45-confirmation",
+      "seed": 10001,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": "b7658d8607bbbe70",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-segment-confirmation-verdict.md"
+      ],
+      "note": "Confirmation roll at the measured operating strength 0.45 (ladder verdict GO). Awaiting verdict."
+    },
+    {
+      "id": "A1-ART-02-segment-materials-probe-seed12345-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-materials-probe-seed12345-s0.45.png",
+      "roll": "segment-0.45-materials-probe",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": "a03e1e72adf937a5",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-08-30-millcross-materials-probe-verdict.md"
+      ],
+      "note": "Materials probe (owner-approved, one cell): positive-only plaster/shingle rewording, rolltag-isolated per rail 7 — the confirmed cell was not overwritten. REJECT per the probe verdict: the reword did not land; fachwerk/slate persist (sampler-side drift measured)."
+    },
+    {
+      "id": "A1-ART-02-segment-subject-probe-seed12345-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-subject-probe-seed12345-s0.45.png",
+      "roll": "segment-0.45-subject-probe",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": "c0ef116c7e149adf",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-09-01-millcross-subject-probe-verdict.md"
+      ],
+      "note": "SHIPPED cell of record (verdict #18, 2026-09-01): subject-probe seed 12345 s0.45, briefHash c0ef116c7e149adf — ACCEPT-AS-SHIP-CELL under the AMENDED canon (materials option b; mill housing register mass-and-wheel, wheel-over-race best-effort); named remainder carried: ford legibility, watermark, lamp-post, mill weak-presence; fachwerk-clean reference. Final sheet: docs/worldbuilding/reviews/2026-09-01-millcross-final-cell-verdict.md."
+    },
+    {
+      "id": "A1-ART-02-dev-refine-materials-r1-seed12345",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-refine-materials-r1-seed12345.png",
+      "roll": "refine-materials-r1",
+      "seed": 12345,
+      "control": "refine",
+      "strength": null,
+      "briefHash": "c0ef116c7e149adf",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-09-01-millcross-materials-refine-verdict.md"
+      ],
+      "note": "Materials refine (subject-probe verdict open question 1 (a), owner-approved continuation): anchor-recipe img2img (dev, denoise 0.75) over the subject-probe cell, rolltag-isolated per rail 7 — refineSource names the input cell in the ledger row. REJECT per the materials-refine verdict (#13): register flipped to flat vector and decorative fachwerk returned (both VETO-class); no targeted fail moved. The 0.75 operating point is measured harmful on a finished cell; the refine lineage terminated here."
+    },
+    {
+      "id": "A1-ART-02-dev-refine-materials-r2-seed12345",
+      "file": "tools/art-forge/out/env/A1-ART-02-dev-refine-materials-r2-seed12345.png",
+      "roll": "refine-materials-r2",
+      "seed": 12345,
+      "control": "refine",
+      "strength": null,
+      "briefHash": "c0ef116c7e149adf",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-09-01-millcross-materials-refine-r2-verdict.md"
+      ],
+      "note": "Low-denoise refine re-measure (materials-refine verdict open question 1 (a), owner-approved, one cell): anchor-recipe img2img at denoise 0.45 over the subject-probe cell — the 0.75 operating point was measured harmful on a finished cell, the window re-measured low first. Ledger row records model/steps/cfg/guidance/denoise (rail 3 retired). REJECT per the materials-refine-r2 verdict (#14): zero targeted materials moved, built-surface register drifted toward flat vector, and modern car-like vehicles surfaced in the gate queue (VETO) — the img2img materials-refine lever is measured DEAD at both window ends; the subject-probe cell stands as cell of record."
+    },
+    {
+      "id": "A1-ART-02-mill-emphasis-seed12345-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-mill-emphasis-seed12345-s0.45.png",
+      "roll": "mill-emphasis",
+      "seed": 12345,
+      "control": "depth",
+      "strength": 0.45,
+      "briefHash": "60a4ce93c66997bf",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-09-01-millcross-mill-emphasis-verdict.md"
+      ],
+      "note": "Mill control-map emphasis (owner decisions 2026-09-01: canon amendment option b + one mill-emphasis cell): the mill mass edits landed in the amended brief (briefHash 60a4ce93c66997bf) and the cell rolled on the DEPTH path — materialization deviation from the prescribed segment path, disclosed in the verdict sheet header. REJECT per the mill-emphasis verdict (#15, one VETO): mill-wheel finally rendered (first in 16 rolls, over the race), housing taller/left-extended but rendered light stone not timber-dark; race-channel distinct-dark not delivered; NEW VETO red modern pickup at the right edge; decorative fachwerk regressed, cart queue absent, crenellated castle-register tower; watermark persists. Crenellation referencePolicy rail proposed (owner open). Cell of record remains the subject-probe cell."
+    },
+    {
+      "id": "A1-ART-02-segment-mill-emphasis-r2-seed12345-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-mill-emphasis-r2-seed12345-s0.45.png",
+      "roll": "segment-0.45-mill-emphasis-r2",
+      "seed": 12345,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": "9c10d497b9ca3d0a",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-09-01-millcross-mill-emphasis-r2-verdict.md"
+      ],
+      "note": "Mill control-map re-roll on the prescribed segment path (owner-approved 2026-09-01 after verdict #15; race-channel lifted to mg plane per the represcription verdict after pre-roll verify found the bg-plane band structurally overpainted — visible sliver 0.63%). REJECT per the mill-emphasis-r2 verdict (#16, no VETO — era clean): race slot legible for the first time in 17 rolls, ox-cart queue restored, right-edge era check clean; wheel present but arch-mounted ornament not over the race, housing flipped to tan stone again (sampler 0-for-2 across both paths — values measured exhausted), storybook fachwerk braces persist on the right row, crenellated crown (now-banned class), watermark chronic. Subject-probe cell remains cell of record; this cell stands as mill-geometry evidence. Next: owner decision on one-variable seed-change cell (mill-emphasis-r3, seed 42424, identical brief)."
+    },
+    {
+      "id": "A1-ART-02-segment-mill-emphasis-r3-seed42424-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-mill-emphasis-r3-seed42424-s0.45.png",
+      "roll": "segment-0.45-mill-emphasis-r3",
+      "seed": 42424,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": "9c10d497b9ca3d0a",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-09-01-millcross-mill-emphasis-r3-verdict.md"
+      ],
+      "note": "One-variable seed change (verdict #16 recommendation, owner-approved): seed 42424, identical brief (briefHash 9c10d497b9ca3d0a). REJECT per the mill-emphasis-r3 verdict (#17): housing tan stone cleared (seed-locked) but renders flat charcoal slab — timber register SYSTEMATIC 0-for-3 paths; storybook fachwerk braces returned (briefHash-dependent: subject-probe hash clean, amended hash regresses); wheel absent entirely (pale disc reads moon-orb) — wheel-over-race SYSTEMATIC across two seeds; prescribed race slot occluded by sign+parapet, race re-rendered as white weir cascade (race legibility seed-fragile: r2 MET, r3 FAIL). Crown cleared; queue + era edges MET. Subject-probe cell remains cell of record. Seed lever SPENT/INERT per the reviewer rail."
+    }
+  ]
+}

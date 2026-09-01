@@ -1,71 +1,146 @@
 {
   "id": "A1-ART-02",
   "subject": "Millcross",
-  "prompt": "A sprawling, wall-less crossing town on both banks of a grey river, viewed from the road at cart height, late afternoon. One mill-wheel housing is the only structure above one storey; everything else is single-height grey plank, patched canvas and roped tarpaulin, laid out with no plan along the roads. A queue of loaded carts and led animals stretches from the foreground toward the ford, longer than the town is wide. Palette ash-grey, rope-brown, tallow-yellow, with chalked crossed-roads-over-an-empty-bowl marks on tarpaulins. In the middle distance, former refugee tents that have grown plank walls and real doorframes — the seams between canvas and timber clearly visible.",
+  "prompt": "A small walled crossing town of a dozen and a half structures on both banks of a grey river, viewed from the road at cart height, late afternoon. Whitewashed plaster-and-stone houses, their timber frames visible only at corners and doorheads, stand inside a timber-and-earth town wall under steep slate roofs, with brick chimney stacks and brick plinths at their feet; the west gate tower is plain oak with an open cart passage and black iron hinge straps, and painted emblem boards — the crossed roads over an empty bowl — hang on wrought-iron brackets along the high street. A queue of wooden ox-carts loaded with sacks, and led pack animals, fills the well-worn earth road from the foreground to the ford, the gravel ford is the only crossing, the nearest carts stand mid-stream in the shallows with water at the wheel hubs, wet wheel ruts drying on the stones, the queue longer than the town is wide. One timber mill-wheel housing stands beside the sluice at the crossing, the great wooden wheel turning in the open race, taller than the wall or any rooftop; the guild hall and the inn rise a second storey inside the wall. Beyond the gates the last house stands in open plain — beyond the town edge only the two earth roads, the ford and low farmland remain. Palette ash-grey, rope-brown, tallow-yellow; awnings along the high street chalked with a circle crossed by two strokes.",
+  "mustAssert": [
+    "a dozen and a half structures",
+    "beyond the town edge",
+    "the only crossing"
+  ],
   "width": 1280,
   "height": 832,
   "horizon": 0.62,
-  "focal": [0.58, 0.42],
-  "_note": "Newly authored to the recovered block-in schema (ABP-flux-dev-and-anchor.md) for this subject — the ABPs only ever block-in'd Gildmark and Norhollow. Revised for task 6b: the original draft placed the mg town rows ABOVE (smaller y than) the bg far-bank/river band — inverted depth, since farther things must sit higher in frame, not lower. Also raised land-region coverage (was ~1/3 of the non-sky frame) by widening the town rows to near-full width and adding a mudflat/tent bridge across the former centre gap; sky above the horizon (0.62) is left black on purpose. Composition unchanged in kind: far bank/river on bg right at the horizon, single-storey plank rows + the one taller mill-wheel housing on mg (asymmetric — right bank denser, matching 'longer than the town is wide'), cart queue + led animals occluding the foreground. Still authored, not measured.",
+  "focal": [
+    0.58,
+    0.42
+  ],
+  "anchor": {
+    "sky": {
+      "top": "#71787f",
+      "bottom": "#cdc3ac"
+    },
+    "_note": "Colour block-in sky gradient (required by buildColourSvg): ash-grey zenith into a tallow-warm horizon haze, per the palette law (style.md §3 C7) and the brief's overcast late-afternoon light. Content values for the anchor's img2img base — the depth map's black-canvas sky is depth semantics, not content, and rendered the parked anchor as a flat night poster."
+  },
+  "_promptNote": "F-039 (2026-08-08): the phrase \"laid out with no plan along the roads\" was restated as an assertion. A diffusion text encoder attends to tokens and has no operator for negation, so the old wording delivered `plan` into the conditioning. generate/prompt-lint.mjs now refuses to queue a positive prompt containing negation. F-039 (2026-08-25): \"sprawling\"/\"sprawled\" carried no extent bound and every strength-ladder cell tiled shanties to the horizon — the prompt now bounds the count and asserts the town edge, both declared via `mustAssert`, enforced by prompt-lint R3/R4. F-039 (2026-08-29, owner decision): the tent quarter was removed from world truth (A1 §6 amended, schema kind enum tightened); the brief counts \"a dozen structures\". The `refugee-tents-midground` mass below is retained ONLY as a frozen depth-control fixture for the F-026 replication record — it no longer represents world truth and must not be read as one. `masses`, horizon, focal, width and height are otherwise untouched.",
+  "_note": "Newly authored to the recovered block-in schema (ABP-flux-dev-and-anchor.md) for this subject — the ABPs only ever block-in'd Gildmark and Norhollow. Revised for task 6b: the original draft placed the mg town rows ABOVE (smaller y than) the bg far-bank/river band — inverted depth, since farther things must sit higher in frame, not lower. Also raised land-region coverage (was ~1/3 of the non-sky frame) by widening the town rows to near-full width and adding a mudflat/tent bridge across the former centre gap; sky above the horizon (0.62) is left black on purpose. Composition unchanged in kind: far bank/river on bg right at the horizon, single-storey plank rows + the one taller mill-wheel housing on mg (asymmetric — right bank denser, matching 'longer than the town is wide'), cart queue + led animals occluding the foreground. Still authored, not measured. F-039 (2026-08-30, s040 verdict control-map finding): the four plan-grid wall rects (wall-north/south/west/east, values up to 128) sat outside the normalised 0..1 contract blockin.mjs actually reads and were clipped off-canvas in every served depth map — replaced with wall-flank-left/right in frame space (gate gap x 0.45-0.55 over the road), the mill housing narrowed to x 0.46-0.53 so the open race channel reads at x 0.53-0.58, and the cart-queue poly extended across the river band (y 0.63-0.70) at the ford; the positive prompt asserts \"the gravel ford is the only crossing\" (mustAssert-guarded). F-039 (2026-08-30, v3 verdict change set): wall flanks thickened to y 0.82-0.93 so the band survives the block-in blur and queue occlusion, and the race became an explicit bg-plane mass (race-channel, x 0.53-0.58, y 0.55-0.90) instead of an absence-shaped gap — a depth map speaks in masses, not gaps; note the depth renderer paints by plane bucket, so darkness/distinctness comes from plane membership (river-dark channel between the mg column and the right row), not from the per-mass value (that is segment-render data only). F-039 (2026-08-30, anchor verdict change set): wall flanks re-valued as light ash-stone (#a8a49a, lighter than the rows — value is content on the colour-anchor path); gate towers drawn flanking the passage (0.42-0.46 / 0.54-0.58, y 0.62-0.92); the wheel drawn at last (dark-timber disc, centre 0.575/0.68, r 0.10, over the race); unpainted bottom-right ground patched. Prompt byte-identical — the roll isolates the base edit. F-039 (2026-08-30, v6 anchor verdict change set, base geometry only): queue-occluded left flank dropped; right flank #c6c2b6 (>=25 RGB steps over the rows); wheel re-valued #3a2c1c and re-centred [0.615,0.615] r 0.085 so its silhouette clears the queue wedge; towers to x 0.38-0.43 / 0.58-0.63 so the column stands between them. Prompt byte-identical. F-039 (2026-08-30, confirmation verdict materials probe, owner-approved): positive-only rewording — plaster wall plane foregrounded (\"walls of smooth whitewashed plaster… frames visible only at corners and doorheads\"), roofs named without the slate-co-occurring colour adjectives (palette still asserted in the palette sentence). One probe cell, seed 12345, segment 0.45, rolltag materials-probe. F-039 (2026-09-01, materials-probe verdict open question 1 (a), owner-approved continuation): subject-position probe — the plaster plane promoted to sentence subject (\"Whitewashed plaster-and-stone houses, their timber frames visible only at corners and doorheads, stand inside…\"), positive-only; masses, horizon, focal, mustAssert untouched. One probe cell, seed 12345, segment 0.45, rolltag subject-probe. F-039 (2026-09-01, canon amendment, owner option b): materials register amended to match the cell of record — prompt roofs clause now \"steep slate roofs, with brick chimney stacks and brick plinths at their feet\" (grounded: slate and fired brick arrive as barge ballast on the river trade, landed at the ford — A1 §6 + companion economy sentence + roof-climate-coherence amended same-commit). Mass edits per reviewer mill-emphasis prescription (verdict #14 named the lever): millwheel-housing rect [0.46,0.36,0.53,0.90]→[0.45,0.28,0.54,0.90] value #5c4a34→#4a3a28; race-channel value #9aa4a8→#707c84 (dark channel, not river extension); mill-wheel disc re-centred [0.615,0.615]→[0.555,0.585], r 0.085→0.105, value #3a2c1c unchanged. All other masses byte-identical. Next roll: rolltag mill-emphasis, seed 12345, segment 0.45. F-039 (2026-09-01, mill-emphasis verdict #15 rails, owner-approved re-roll): prompt mill sentence named timber (\"One timber mill-wheel housing…\") so the stone/belfry attractor loses the slot; race-channel widened x 0.53-0.58→0.52-0.60 (value re-measured #707c84→#56616b: #707c84 sat 13 max-channel steps from far-bank — below the tool’s own SEGMENT_MIN_SEPARATION=24 for different-substance masses that share a boundary (the same merge risk that failed the slot in verdict #15); #56616b clears ≥24 against all 12 neighbouring masses, still darker than the river #9aa4a8, per the reviewer’s darker-than-river intent — loop-applied value under that intent, reviewer to ratify or override in verdict #16). Era-guard note extended in forge.config.json (frame edges, not just gate/queue). Crenellation class added to referencePolicy (owner-approved). Next roll: rolltag mill-emphasis-r2, seed 12345, control segment, strength 0.45 — queue-mass block-in verification before the roll (verdict #15 rail d). F-039 (2026-09-01, race-channel re-prescription, verdict #15 rail-b found structurally undeliverable by pre-roll verify): race-channel lifted bg→mg (the block-in paints plane-ordered — mg over bg — and town-row-right [0.55,0.66,0.99,0.90] + the wheel covered the widened bg band; visible area was a 0.63% sliver), rect [0.52,0.55,0.60,0.90]→[0.53,0.63,0.60,0.90] (left 0.53 laps the housing waterline, top 0.63 the river-band top), array position after gate-tower-west-s immediately before mill-wheel; value #56616b RATIFIED by reviewer (clears ≥24 Chebyshev vs all masses, 68 darker than the river). millwheel-housing lightened #4a3a28→#53412b per reviewer (25 steps vs wheel, 25 vs towers — housing↔wheel pair was 16 < SEGMENT_MIN_SEPARATION); wheel↔queue 22-apart confirmed intentional (fg queue occludes the wheel lower rim). Next roll: rolltag mill-emphasis-r2, seed 12345, control segment, strength 0.45. F-039 (2026-09-01, canon amendment on the mill register, owner option b, verdicts #15-#17): the housing register is canon as measured — A1 §6 amended to assert the mass and the wheel, not the joinery (three render paths + two seeds could not produce fine timber articulation at the operating point). The prompt's \"timber mill-wheel housing\" wording STAYS as prompt-side aspiration (it moved colour to charcoal in r3 and keeps the stone attractor contested); wheel-over-race is best-effort, not a PASS bar; no further mill cell this cycle. Cell of record for shipping: the subject-probe cell (segment-subject-probe, seed 12345, briefHash c0ef116c7e149adf).",
   "masses": [
     {
       "name": "far-bank",
       "plane": "bg",
       "shape": "rect",
-      "rect": [0, 0.58, 1, 0.63],
+      "rect": [
+        0,
+        0.58,
+        1,
+        0.63
+      ],
       "value": "#7d8288"
     },
     {
       "name": "river",
       "plane": "bg",
       "shape": "rect",
-      "rect": [0, 0.63, 1, 0.7],
-      "value": "#9aa4a8"
-    },
-    {
-      "name": "refugee-tents-midground",
-      "plane": "mg",
-      "shape": "poly",
-      "points": [
-        [0.16, 0.78],
-        [0.2, 0.68],
-        [0.48, 0.68],
-        [0.48, 0.76],
-        [0.16, 0.78]
+      "rect": [
+        0,
+        0.63,
+        1,
+        0.7
       ],
-      "value": "#a89a78"
+      "value": "#9aa4a8"
     },
     {
       "name": "town-row-left",
       "plane": "mg",
       "shape": "rect",
-      "rect": [0.02, 0.7, 0.44, 0.88],
+      "rect": [
+        0.02,
+        0.7,
+        0.44,
+        0.88
+      ],
       "value": "#8f8a82"
     },
     {
       "name": "town-row-right",
       "plane": "mg",
       "shape": "rect",
-      "rect": [0.55, 0.66, 0.99, 0.9],
+      "rect": [
+        0.55,
+        0.66,
+        0.99,
+        0.9
+      ],
       "value": "#948e84"
     },
     {
       "name": "millwheel-housing",
       "plane": "mg",
       "shape": "rect",
-      "rect": [0.46, 0.36, 0.58, 0.9],
-      "value": "#5c4a34"
+      "rect": [
+        0.45,
+        0.28,
+        0.54,
+        0.9
+      ],
+      "value": "#53412b"
+    },
+    {
+      "name": "ground-right",
+      "plane": "fg",
+      "shape": "rect",
+      "rect": [
+        0.56,
+        0.93,
+        1,
+        1
+      ],
+      "value": "#8a8070"
     },
     {
       "name": "cart-queue",
       "plane": "fg",
       "shape": "poly",
       "points": [
-        [-0.02, 1.04],
-        [-0.02, 0.88],
-        [0.18, 0.82],
-        [0.42, 0.88],
-        [0.62, 1.04]
+        [
+          -0.02,
+          1.04
+        ],
+        [
+          -0.02,
+          0.88
+        ],
+        [
+          0.18,
+          0.82
+        ],
+        [
+          0.4,
+          0.88
+        ],
+        [
+          0.45,
+          0.74
+        ],
+        [
+          0.45,
+          0.64
+        ],
+        [
+          0.53,
+          0.64
+        ],
+        [
+          0.53,
+          0.74
+        ],
+        [
+          0.56,
+          0.88
+        ],
+        [
+          0.62,
+          1.04
+        ]
       ],
       "value": "#241f18"
     },
@@ -74,13 +149,132 @@
       "plane": "fg",
       "shape": "poly",
       "points": [
-        [0.6, 1.04],
-        [0.72, 0.92],
-        [0.86, 0.92],
-        [1.02, 1.02],
-        [1.02, 1.04]
+        [
+          0.6,
+          1.04
+        ],
+        [
+          0.72,
+          0.92
+        ],
+        [
+          0.86,
+          0.92
+        ],
+        [
+          1.02,
+          1.02
+        ],
+        [
+          1.02,
+          1.04
+        ]
       ],
       "value": "#1c1712"
+    },
+    {
+      "name": "wall-flank-right",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [
+        0.55,
+        0.82,
+        0.99,
+        0.93
+      ],
+      "value": "#c6c2b6"
+    },
+    {
+      "name": "gate-tower-west-n",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [
+        0.38,
+        0.62,
+        0.43,
+        0.92
+      ],
+      "value": "#6b5a40"
+    },
+    {
+      "name": "gate-tower-west-s",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [
+        0.58,
+        0.62,
+        0.63,
+        0.92
+      ],
+      "value": "#6b5a40"
+    },
+    {
+      "name": "race-channel",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [
+        0.53,
+        0.63,
+        0.6,
+        0.9
+      ],
+      "value": "#56616b"
+    },
+    {
+      "name": "mill-wheel",
+      "plane": "mg",
+      "shape": "poly",
+      "points": [
+        [
+          0.66,
+          0.585
+        ],
+        [
+          0.6459,
+          0.6375
+        ],
+        [
+          0.6075,
+          0.6759
+        ],
+        [
+          0.555,
+          0.69
+        ],
+        [
+          0.5025,
+          0.6759
+        ],
+        [
+          0.4641,
+          0.6375
+        ],
+        [
+          0.45,
+          0.585
+        ],
+        [
+          0.4641,
+          0.5325
+        ],
+        [
+          0.5025,
+          0.4941
+        ],
+        [
+          0.555,
+          0.48
+        ],
+        [
+          0.6075,
+          0.4941
+        ],
+        [
+          0.6459,
+          0.5325
+        ]
+      ],
+      "value": "#3a2c1c"
     }
   ]
 }
