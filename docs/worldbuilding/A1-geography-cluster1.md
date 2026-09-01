@@ -358,9 +358,9 @@ war, when the raids came down the roads — a high street of timber-framed house
 runs from the west gate to the ford: the guild hall and the inn rise a second storey, a bakehouse,
 a provisioner, a herbalist and a weapon-smithy front the street, and the cart yard waits by the
 water. The silhouette stays horizontal and low: the mill-wheel housing over the race is taller
-than the wall, and nothing else competes with it. Material is local — mill timber, river stone,
-split shingle — and the palette is ash-grey, rope-brown and tallow-yellow, the colour of unpainted
-wood and cheap light. **First thing a traveller sees: the cart queue.** It starts before the town
+than the wall, and nothing else competes with it. Material is local where it can be — mill timber, river stone, valley clay-and-lime whitewash;
+slate and fired brick arrive as barge ballast landed at the ford — and the palette is ash-grey,
+rope-brown and tallow-yellow, the colour of unpainted wood and cheap light. **First thing a traveller sees: the cart queue.** It starts before the town
 does, sometimes a mile out, because one crossing serves an entire land. Millcross lives on the
 ford — the wall guards the crossing, and the town still refuses to formalise the tolls; stabling,
 ferrying at high water, and feeding whoever is waiting pay for the wall's upkeep. Beyond the gates
@@ -510,7 +510,9 @@ the hard edge stays; the wider chart is a separate artifact, the atlas sheet (`A
 **A1-ART-02 · Millcross.** A small walled crossing town on both banks of a grey river,
 viewed from the road at cart height, late afternoon. One mill-wheel housing is the only structure
 above one storey; everything else is a single storey, solidly built — timber frames on stone
-footings, plastered walls, steep shingled roofs — strung with no plan along the roads. A queue of
+footings, whitewashed plaster walls, steep slate roofs, brick chimney stacks and brick plinths
+(the slate and fired brick come down from upstream quarries and kilns as barge ballast, landed at
+the ford and carted into the town) — strung with no plan along the roads. A queue of
 loaded carts and led animals stretches from the foreground toward the ford, longer than the town is
 wide. Palette ash-grey, rope-brown, tallow-yellow, with chalked crossed-roads-over-an-empty-bowl
 marks on the leading awnings.
