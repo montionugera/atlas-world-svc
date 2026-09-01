@@ -538,6 +538,20 @@
         "docs/worldbuilding/reviews/2026-09-01-millcross-mill-emphasis-r2-verdict.md"
       ],
       "note": "Mill control-map re-roll on the prescribed segment path (owner-approved 2026-09-01 after verdict #15; race-channel lifted to mg plane per the represcription verdict after pre-roll verify found the bg-plane band structurally overpainted — visible sliver 0.63%). REJECT per the mill-emphasis-r2 verdict (#16, no VETO — era clean): race slot legible for the first time in 17 rolls, ox-cart queue restored, right-edge era check clean; wheel present but arch-mounted ornament not over the race, housing flipped to tan stone again (sampler 0-for-2 across both paths — values measured exhausted), storybook fachwerk braces persist on the right row, crenellated crown (now-banned class), watermark chronic. Subject-probe cell remains cell of record; this cell stands as mill-geometry evidence. Next: owner decision on one-variable seed-change cell (mill-emphasis-r3, seed 42424, identical brief)."
+    },
+    {
+      "id": "A1-ART-02-segment-mill-emphasis-r3-seed42424-s0.45",
+      "file": "tools/art-forge/out/env/A1-ART-02-segment-mill-emphasis-r3-seed42424-s0.45.png",
+      "roll": "segment-0.45-mill-emphasis-r3",
+      "seed": 42424,
+      "control": "segment",
+      "strength": 0.45,
+      "briefHash": "9c10d497b9ca3d0a",
+      "provenance": "run-log",
+      "reviews": [
+        "docs/worldbuilding/reviews/2026-09-01-millcross-mill-emphasis-r3-verdict.md"
+      ],
+      "note": "One-variable seed change (verdict #16 recommendation, owner-approved): seed 42424, identical brief (briefHash 9c10d497b9ca3d0a). REJECT per the mill-emphasis-r3 verdict (#17): housing tan stone cleared (seed-locked) but renders flat charcoal slab — timber register SYSTEMATIC 0-for-3 paths; storybook fachwerk braces returned (briefHash-dependent: subject-probe hash clean, amended hash regresses); wheel absent entirely (pale disc reads moon-orb) — wheel-over-race SYSTEMATIC across two seeds; prescribed race slot occluded by sign+parapet, race re-rendered as white weir cascade (race legibility seed-fragile: r2 MET, r3 FAIL). Crown cleared; queue + era edges MET. Subject-probe cell remains cell of record. Seed lever SPENT/INERT per the reviewer rail."
     }
   ]
 }
