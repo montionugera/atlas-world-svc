@@ -274,11 +274,12 @@
           "storybook pastels and glow (palette is ash-grey/rope-brown/tallow, cheap light)",
           "clean fantasy-brochure weathering (era law: unpainted wood, mud, wear)",
           "church spires, belfry towers and cupola halls (no church is ratified in Millcross's venue list; A1 §6: nothing else competes with the mill housing)",
-          "roof pinnacles and finials (ornament classes adjacent to the banned battlements)"
+          "roof pinnacles and finials (ornament classes adjacent to the banned battlements)",
+          "crenellations, battlements and machicolations on non-military structures (verdict #15 rail, owner-approved 2026-09-01: the class, not just the scale — a crenellated town tower is still fortress register)"
         ],
         "neverPromptText": true
       },
-      "source": "owner-decision:OWNER-2026-08-29 (named as characteristics only, never as prompt text) + REVIEWER split of allowed vs forbidden characteristics",
+      "source": "owner-decision:OWNER-2026-08-29 (named as characteristics only, never as prompt text) + REVIEWER split of allowed vs forbidden characteristics; crenellation class extended 2026-09-01, owner-approved, verdict #15 rail",
       "check": "no proper noun from the references may appear in a prompt (prompt-lint R2 data); renders are reviewed against the allowed/forbidden characteristic lists, not token-matched"
     }
   },

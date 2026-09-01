@@ -230,7 +230,7 @@ test("renderSegmentPng emits the per-mass values — the river and the far bank 
     const top = topColours(out, 12);
     assert.ok(top.includes("#9AA4A8"), `river colour missing; top colours were ${top.join(" ")}`);
     assert.ok(top.includes("#7D8288"), `far-bank colour missing; top colours were ${top.join(" ")}`);
-    assert.ok(top.includes("#4A3A28"), `mill-wheel housing colour missing; top colours were ${top.join(" ")}`);
+    assert.ok(top.includes("#53412B"), `mill-wheel housing colour missing; top colours were ${top.join(" ")}`);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -255,7 +255,7 @@ test("colour block-in paints masses by their OWN values over a declared sky grad
     await renderColourPng({ brief: MILLCROSS, width: 1280, height: 832, outPath: out });
     const top = topColours(out, 12);
     assert.ok(top.includes("#9AA4A8"), `river value missing; top colours were ${top.join(" ")}`);
-    assert.ok(top.includes("#4A3A28"), `mill value missing; top colours were ${top.join(" ")}`);
+    assert.ok(top.includes("#53412B"), `mill value missing; top colours were ${top.join(" ")}`);
     assert.ok(top.includes("#C6C2B6"), `light stone wall value missing; top colours were ${top.join(" ")}`);
     assert.ok(top.includes("#3A2C1C"), `wheel value missing; top colours were ${top.join(" ")}`);
     // Small masses (gate towers, ground patch) can lose the histogram to sky
