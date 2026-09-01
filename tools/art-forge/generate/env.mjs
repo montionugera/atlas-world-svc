@@ -668,9 +668,10 @@ export function buildEnvGraph({
  * produced by generateEnv's `--anchor` flow: renderDepthPng -> blur 0x6 ->
  * +noise Gaussian at `profiles.environment.anchor.grainAttenuate`.
  */
-export function buildEnvAnchorGraph({ brief, seed, anchorImage, forge, denoise = forge.profile.anchor.denoise }) {
+export function buildEnvAnchorGraph({ brief, seed, anchorImage, forge, denoise, outputId }) {
   const { models, sampler, anchor } = forge.profile;
-  const outputId = `${brief.id ?? "subject"}-anchor-seed${seed}`;
+  const out = outputId ?? `${brief.id ?? "subject"}-anchor-seed${seed}`;
+  const effectiveDenoise = denoise ?? anchor.denoise;
   return {
     [ANCHOR_NODE.CKPT]: {
       class_type: "CheckpointLoaderSimple",
@@ -712,7 +713,7 @@ export function buildEnvAnchorGraph({ brief, seed, anchorImage, forge, denoise =
         cfg: anchor.cfg,
         sampler_name: sampler.samplerName,
         scheduler: sampler.scheduler,
-        denoise,
+        denoise: effectiveDenoise,
       },
     },
     [ANCHOR_NODE.DECODE]: {
@@ -723,7 +724,7 @@ export function buildEnvAnchorGraph({ brief, seed, anchorImage, forge, denoise =
       class_type: "SaveImage",
       inputs: {
         images: [ANCHOR_NODE.DECODE, 0],
-        filename_prefix: `art-forge/env/${outputId}`,
+        filename_prefix: `art-forge/env/${out}`,
       },
     },
   };
@@ -862,6 +863,15 @@ export async function generateEnv(
   const strength = resolveStrength({ control, block, override: args.strength });
   const { width, height } = forge.profile.latent;
 
+  // --denoise is the refine's re-measure knob (subject-probe verdict open
+  // question 1 (a)): the anchor window's 0.75 is measured HARMFUL on a
+  // finished cell, so a re-measure must name its own denoise explicitly.
+  // Guard BEFORE any control staging so a stray flag cannot render and
+  // re-upload a control map (overwrite semantics) before failing.
+  if (args.denoise != null && !args.refine) {
+    throw new Error("--denoise is a --refine-only flag");
+  }
+
   const base = comfyBaseUrl(forge, args);
   // --control none stages no control image at all: nothing is rendered or
   // uploaded, and the queued graph carries no LoadImage (dry-run included).
@@ -921,21 +931,13 @@ export async function generateEnv(
     ? args.rolltag.trim()
     : null;
 
-  // --denoise is the refine's re-measure knob (subject-probe verdict open
-  // question 1 (a)): the anchor window's 0.75 is measured HARMFUL on a
-  // finished cell, so a re-measure must name its own denoise explicitly.
-  // Refuse it anywhere else — anchor and base passes have no such knob.
-  if (args.denoise != null && !args.refine) {
-    throw new Error("--denoise is a --refine-only flag");
-  }
-
   // --refine <png>: the materials refine pass (subject-probe verdict open
   // question 1 (a)) — img2img on an EXISTING reviewed cell using the anchor
-  // recipe (dev, `profiles.environment.anchor` steps/cfg/guidance/denoise).
-  // No base pass runs and no grain/blur step is applied: the source is
-  // already a textured painterly render, not a flat block-in. Rail 7:
-  // --rolltag is REQUIRED — the output lands on a rolltag-isolated name so a
-  // refine can never overwrite a reviewed cell.
+  // recipe (dev, `profiles.environment.anchor` steps/cfg/guidance). No base
+  // pass runs and no grain/blur step is applied: the source is already a
+  // textured painterly render, not a flat block-in. Rail 7: --rolltag is
+  // REQUIRED — the output lands on a rolltag-isolated name so a refine can
+  // never overwrite a reviewed cell.
   if (args.refine) {
     if (typeof args.refine !== "string" || args.refine.trim() === "") {
       throw new Error("--refine needs the source PNG path, got a bare flag");
@@ -950,10 +952,15 @@ export async function generateEnv(
         "--refine requires --rolltag <tag> (rail 7: a refine must never overwrite a reviewed cell)",
       );
     }
-    // --denoise is the refine's re-measure knob (subject-probe verdict open
-    // question 1 (a)): the anchor window's 0.75 is measured HARMFUL on a
-    // finished cell, so a re-measure must name its own denoise explicitly.
-    const refineDenoise = args.denoise != null ? Number(args.denoise) : forge.profile.anchor.denoise;
+    // The anchor window's 0.75 default is measured HARMFUL on a finished
+    // cell (verdict #13) — the same loud-fail law as resolveStrength: an
+    // unmeasured operating point must be named, never inherited silently.
+    if (args.denoise == null) {
+      throw new Error(
+        "--refine requires --denoise <0..1> — the anchor default 0.75 is measured harmful on a finished cell (verdict #13); name the denoise explicitly",
+      );
+    }
+    const refineDenoise = Number(args.denoise);
     if (!(refineDenoise > 0 && refineDenoise < 1)) {
       throw new Error(`--denoise must be a number strictly between 0 and 1, got ${JSON.stringify(args.denoise)}`);
     }
@@ -961,7 +968,14 @@ export async function generateEnv(
     const refineSource = args["dry-run"]
       ? `art-forge/${path.basename(refineSourceLocal)}`
       : await uploadControlImage({ base, localPath: refineSourceLocal, subfolder: "art-forge" });
-    const refineGraph = buildEnvAnchorGraph({ brief, seed, anchorImage: refineSource, forge, denoise: refineDenoise });
+    const refineGraph = buildEnvAnchorGraph({
+      brief,
+      seed,
+      anchorImage: refineSource,
+      forge,
+      denoise: refineDenoise,
+      outputId: `${briefId}-dev-refine-${rolltag}-seed${seed}`,
+    });
     const refineOutputId = `${briefId}-dev-refine-${rolltag}-seed${seed}`;
     const refineResult = await runGraph({
       forge,
@@ -982,7 +996,7 @@ export async function generateEnv(
           hires: false,
           control: "refine",
           strength: null,
-          refineSource: path.relative(process.cwd(), refineSourceLocal),
+          refineSource: path.relative(FORGE_DIR, refineSourceLocal),
           ...ledgerSamplerFields(forge.profile.anchor, "dev", { denoise: refineDenoise }),
           briefHash: briefHash(rawBrief),
           out: path.relative(FORGE_DIR, refineResult.dest),

@@ -340,7 +340,7 @@ test("anchor graph is a dev img2img: grained block-in -> VAEEncode -> KSampler d
 
 /* --------------------- materials refine (--refine) --------------------- */
 
-test("--refine is the anchor recipe img2img on an existing reviewed cell — dev checkpoint, VAEEncode, denoise 0.75 over 27 steps, source uploaded as-is (no grain step)", async () => {
+test("--refine is the anchor recipe img2img on an existing reviewed cell — dev checkpoint, VAEEncode, denoise from the explicit --denoise, source uploaded as-is (no grain step)", async () => {
   const g = await generateEnv(
     {
       brief: "A1-ART-02",
@@ -348,6 +348,7 @@ test("--refine is the anchor recipe img2img on an existing reviewed cell — dev
       model: "dev",
       refine: "out/env/A1-ART-02-segment-subject-probe-seed12345-s0.45.png",
       rolltag: "refine-r1",
+      denoise: "0.45",
       "dry-run": true,
     },
     forge,
@@ -362,10 +363,16 @@ test("--refine is the anchor recipe img2img on an existing reviewed cell — dev
   assert.deepEqual(ks.inputs.latent_image, [Object.entries(g).find(([, n]) => n.class_type === "VAEEncode")[0], 0]);
   assert.equal(ks.inputs.steps, 27, "the anchor recipe's measured step count");
   assert.equal(ks.inputs.cfg, 1);
-  assert.equal(ks.inputs.denoise, 0.75, "the anchor window's operating denoise (ABP-flux-dev-and-anchor.md)");
+  assert.equal(ks.inputs.denoise, 0.45, "the explicitly named denoise — never a silently inherited default");
+  const save = Object.values(g).find((n) => n.class_type === "SaveImage");
+  assert.equal(
+    save.inputs.filename_prefix,
+    "art-forge/env/A1-ART-02-dev-refine-refine-r1-seed12345",
+    "the refine's server-side SaveImage prefix carries its own lineage — it never collides with an anchor run's",
+  );
 });
 
-test("--refine refuses schnell and refuses to run without a rolltag (rail 7: a refine must never overwrite a reviewed cell)", async () => {
+test("--refine refuses schnell, requires a rolltag, REQUIRES an explicit --denoise, and rejects values outside (0,1)", async () => {
   await assert.rejects(
     () =>
       generateEnv(
@@ -388,12 +395,47 @@ test("--refine refuses schnell and refuses to run without a rolltag (rail 7: a r
           seed: 12345,
           model: "dev",
           refine: "out/env/x.png",
+          rolltag: "refine-r1",
+          "dry-run": true,
+        },
+        forge,
+      ),
+    /--refine requires --denoise/,
+    "the anchor default 0.75 is measured HARMFUL on a finished cell (verdict #13) — a refine must name its denoise",
+  );
+  await assert.rejects(
+    () =>
+      generateEnv(
+        {
+          brief: "A1-ART-02",
+          seed: 12345,
+          model: "dev",
+          refine: "out/env/x.png",
+          denoise: "0.45",
           "dry-run": true,
         },
         forge,
       ),
     /--refine requires --rolltag/,
   );
+  for (const bad of ["0", "1", "1.5", "abc"]) {
+    await assert.rejects(
+      () =>
+        generateEnv(
+          {
+            brief: "A1-ART-02",
+            seed: 12345,
+            model: "dev",
+            refine: "out/env/x.png",
+            rolltag: "refine-r1",
+            denoise: bad,
+            "dry-run": true,
+          },
+          forge,
+        ),
+      /--denoise must be a number strictly between 0 and 1/,
+    );
+  }
 });
 
 test("--refine honours --denoise (the low-denoise re-measure) and --denoise without --refine is refused", async () => {
