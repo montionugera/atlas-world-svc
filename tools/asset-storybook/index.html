@@ -1092,6 +1092,113 @@
         cursor: default;
       }
 
+      /* F-039 — Forge gallery: render cards grouped by recipe version */
+      .forge-batch {
+        margin-bottom: 1.1rem;
+      }
+
+      .forge-batch-head {
+        display: flex;
+        align-items: baseline;
+        gap: 0.6ch;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--text-faint);
+        margin-bottom: 0.4rem;
+      }
+
+      .forge-batch-hash {
+        color: var(--text);
+        font-weight: 700;
+      }
+
+      .forge-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 0.55rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .forge-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        padding: 0.4rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: left;
+        font: inherit;
+        color: inherit;
+      }
+
+      .forge-card:hover,
+      .forge-card:focus-visible {
+        border-color: var(--border-hover, var(--border));
+        outline: none;
+      }
+
+      .forge-card img {
+        width: 100%;
+        aspect-ratio: 8 / 5;
+        object-fit: cover;
+        border-radius: 5px;
+        background: #0b0d12;
+      }
+
+      .forge-card-missing {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        aspect-ratio: 8 / 5;
+        padding: 0.4rem;
+        border: 1px dashed var(--border);
+        border-radius: 5px;
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        color: var(--text-faint);
+        text-align: center;
+      }
+
+      .forge-card-label {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--text-dim);
+        overflow-wrap: anywhere;
+      }
+
+      .forge-card-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+      }
+
+      .forge-card-badge {
+        font-family: var(--mono);
+        font-size: 0.6rem;
+        padding: 0.1rem 0.4rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--text-faint);
+      }
+
+      .forge-card-badge.is-stale {
+        border-color: #8a3535;
+        background: #2b1414;
+        color: #ff9d9d;
+      }
+
+      .forge-card-badge.is-flag {
+        border-color: #8a6d1f;
+        background: #2b2410;
+        color: #ffd76a;
+      }
+
+      .forge-card-badge.is-skip {
+        opacity: 0.75;
+      }
+
       .forge-detail-json {
         font-family: var(--mono);
         font-size: 0.72rem;
