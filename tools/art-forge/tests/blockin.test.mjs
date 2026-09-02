@@ -205,6 +205,14 @@ function topColours(png, n) {
     .map((c) => c.hex);
 }
 
+// Rasterised fills can drift ±1 LSB per channel between ImageMagick builds
+// (the CI runner quantizes #9AA4A8 to #99A3A7, #C6C2B6 to #C5C1B5). Assert
+// presence within a small per-channel tolerance instead of exact hex.
+function topIncludes(top, target, tol = 2) {
+  const ch = (h, i) => parseInt(h.replace("#", "").slice(i * 2, i * 2 + 2), 16);
+  return top.some((c) => [0, 1, 2].every((i) => Math.abs(ch(c, i) - ch(target, i)) <= tol));
+}
+
 const MILLCROSS = JSON.parse(readFileSync(new URL("../briefs/A1-ART-02.json", import.meta.url), "utf8"));
 
 test("GUARD: renderDepthPng still emits PLANE_DEPTH — the four measured levels 0/51/140/180, unchanged by segment control", async () => {
@@ -228,9 +236,9 @@ test("renderSegmentPng emits the per-mass values — the river and the far bank 
     const out = path.join(dir, "segment.png");
     await renderSegmentPng({ brief: MILLCROSS, width: 1280, height: 832, outPath: out });
     const top = topColours(out, 12);
-    assert.ok(top.includes("#9AA4A8"), `river colour missing; top colours were ${top.join(" ")}`);
-    assert.ok(top.includes("#7D8288"), `far-bank colour missing; top colours were ${top.join(" ")}`);
-    assert.ok(top.includes("#53412B"), `mill-wheel housing colour missing; top colours were ${top.join(" ")}`);
+    assert.ok(topIncludes(top, "#9AA4A8"), `river colour missing; top colours were ${top.join(" ")}`);
+    assert.ok(topIncludes(top, "#7D8288"), `far-bank colour missing; top colours were ${top.join(" ")}`);
+    assert.ok(topIncludes(top, "#53412B"), `mill-wheel housing colour missing; top colours were ${top.join(" ")}`);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -254,10 +262,10 @@ test("colour block-in paints masses by their OWN values over a declared sky grad
     const out = path.join(dir, "colour.png");
     await renderColourPng({ brief: MILLCROSS, width: 1280, height: 832, outPath: out });
     const top = topColours(out, 12);
-    assert.ok(top.includes("#9AA4A8"), `river value missing; top colours were ${top.join(" ")}`);
-    assert.ok(top.includes("#53412B"), `mill value missing; top colours were ${top.join(" ")}`);
-    assert.ok(top.includes("#C6C2B6"), `light stone wall value missing; top colours were ${top.join(" ")}`);
-    assert.ok(top.includes("#3A2C1C"), `wheel value missing; top colours were ${top.join(" ")}`);
+    assert.ok(topIncludes(top, "#9AA4A8"), `river value missing; top colours were ${top.join(" ")}`);
+    assert.ok(topIncludes(top, "#53412B"), `mill value missing; top colours were ${top.join(" ")}`);
+    assert.ok(topIncludes(top, "#C6C2B6"), `light stone wall value missing; top colours were ${top.join(" ")}`);
+    assert.ok(topIncludes(top, "#3A2C1C"), `wheel value missing; top colours were ${top.join(" ")}`);
     // Small masses (gate towers, ground patch) can lose the histogram to sky
     // strips — pin them at the SVG level, where fills are exact.
     const svg = buildColourSvg({ brief: MILLCROSS, width: 1280, height: 832 });
