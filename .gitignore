@@ -125,3 +125,6 @@ docs/research/**/*.html
 .claude/idea_backlog/**/*.html
 .claude/refined_backlog/**/*.html
 
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+graft/
