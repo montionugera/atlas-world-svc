@@ -295,9 +295,9 @@ test("the 2-storey mill-house is tonally distinct from every single-storey kind"
   assert.ok(luminance(MULTI_STOREY_FILL) < darkest, "the 2-storey tone must be the darkest mass");
 });
 
-test("Millcross has exactly one 2-storey mass and it is the mill-house (A1 §6)", () => {
+test("Millcross has exactly three 2-storey masses — mill-house, inn, guild hall (A1 §6, amended 2026-08-29)", () => {
   const multi = millcross.footprints.filter((f) => (f.storeys ?? 1) >= 2);
-  assert.deepEqual(multi.map((f) => f.id), ["mill-house"]);
+  assert.deepEqual(multi.map((f) => f.id).sort(), ["adventurer-guild", "inn", "mill-house"]);
 });
 
 test("water and plazas are drawn, keyed by id", () => {
@@ -395,19 +395,34 @@ test("placement is deterministic — the same plan renders the same map", () => 
 });
 
 test("a label that cannot fit inside its mass is moved out, not shrunk or clipped", () => {
-  // tent rects are 12 units wide and "tent-row-a" needs more, so its label must
-  // leave the mass entirely rather than overflow it.
-  const labels = planLabels(millcross);
-  const tent = labels.find((l) => l.id === "tent-row-a");
-  assert.equal(tent.inside, false);
-  assert.equal(tent.runs[0].size, planLabels(millcross).find((l) => l.id === "mill-house").runs[0].size);
+  // A 12-unit-wide mass is too narrow for its label, so the label must leave
+  // the mass entirely rather than overflow or shrink. Previously pinned on a
+  // tent row; the tent quarter is gone from town truth, so the geometry case
+  // is now synthetic — the behavior contract is the same.
+  const plan = {
+    town: "narrow",
+    extent: { width: 100, height: 100 },
+    anchor: { geographyAt: [0, 0] },
+    roads: [{ id: "cart", kind: "cart", width: 12, points: [[10, 10], [90, 10]] }],
+    footprints: [
+      { id: "wide-store", kind: "store", rect: [10, 30, 50, 50], storeys: 1 },
+      { id: "narrow-store", kind: "store", rect: [60, 30, 72, 40], storeys: 1 },
+    ],
+    landmarks: [],
+  };
+  const labels = planLabels(plan);
+  const wide = labels.find((l) => l.id === "wide-store");
+  const narrow = labels.find((l) => l.id === "narrow-store");
+  assert.equal(wide.inside, true);
+  assert.equal(narrow.inside, false);
+  assert.equal(narrow.runs[0].size, wide.runs[0].size);
 });
 
 test("label ink flips against the mass under it", () => {
-  // A dark label on the dark mill-house, or a pale one on a pale tent, is a
-  // label that is not there.
+  // A dark label on the dark mill-house, or a pale one on a pale dwelling
+  // fill, is a label that is not there.
   assert.ok(luminance(MULTI_STOREY_FILL) < 0.55, "mill-house takes pale ink");
-  assert.ok(luminance(KIND_FILL.tent) >= 0.55, "tents take dark ink");
+  assert.ok(luminance(KIND_FILL.dwelling) >= 0.55, "dwelling fills take dark ink");
 });
 
 /* ------------------------------- first sight ------------------------------ */
@@ -506,8 +521,8 @@ test("the title names the town and states the extent", () => {
   assert.ok(svg.includes(`${millcross.extent.width} × ${millcross.extent.height}`));
 });
 
-test("the legend says the extent is a plan bound, not a wall", () => {
-  assert.match(buildTownPlanSvg({ plan: millcross }), /no wall/);
+test("the legend states the extent is a plan bound (walled 2026-08-29, A1 §6)", () => {
+  assert.match(buildTownPlanSvg({ plan: millcross }), /walled 2026-08-29/);
 });
 
 /* --------------------- the rasteriser's own constraints -------------------- */

@@ -33,6 +33,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { assertPositivePromptClean } from "./prompt-lint.mjs";
+
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const FORGE_DIR = path.resolve(HERE, "..");
 
@@ -76,6 +78,29 @@ export function loadForge({ forgeDir = FORGE_DIR, profile } = {}) {
     creatures: readJson(path.join(forgeDir, "prompts", "creature-identity.json")),
     outDir: path.join(forgeDir, "out"),
   };
+}
+
+/**
+ * Subjects that must not be NAMED anywhere in a POSITIVE prompt, for the
+ * profile this bundle was loaded with: the house-wide list
+ * (`prompts/style-laws.json` `forbiddenTokens`) plus the profile's own
+ * (`forge.config.json` `<profile>.styleGuard.forbiddenTokens`).
+ *
+ * The vocabulary lives in config and is only ever passed to
+ * generate/prompt-lint.mjs, which holds no list of its own — see that file
+ * for why naming a subject at all, even in order to forbid it, biases the
+ * render toward it.
+ *
+ * This is deliberately NOT `styleLaws.negative`. That list feeds a real
+ * CLIPTextEncode negative node, where "fur" is a fine thing to subtract;
+ * this one gates the positive string, where a fur-lined hood is legitimate
+ * content (job-costume.json, archer).
+ */
+export function promptForbiddenTokens(forge) {
+  return [
+    ...(forge.styleLaws?.forbiddenTokens ?? []),
+    ...(forge.profile?.styleGuard?.forbiddenTokens ?? []),
+  ];
 }
 
 /* ------------------------------- CLI ------------------------------- */
@@ -258,34 +283,41 @@ export function muscleScore(race, job, forge) {
 /**
  * Assemble the positive prompt for a cell.
  *
- * Z-Image Turbo is a distilled model sampled at cfg 1, where the negative
- * branch is not evaluated at all. That is why style-laws.json phrases its
- * negatives as counter-prompt words ("NOT 3D render", "no fur") — per
- * README.md they belong INSIDE the positive prompt. They are also encoded
- * into a real negative conditioning (see buildBaseGraph) so the graph stays
- * correct if cfg is ever raised.
+ * F-039: this used to splice `styleLaws.negative` ("NOT 3D render", "NOT
+ * CGI", "NOT clay", "no fur") into the middle of the POSITIVE string, on the
+ * reasoning that Z-Image Turbo at cfg 1 never evaluates the negative branch
+ * so the counter-words "belong inside the positive prompt". The cfg fact is
+ * right; the conclusion was backwards. A text encoder attends to tokens and
+ * has no operator for negation, so that spliced list handed the model
+ * `3D render`, `CGI`, `clay` and `fur` as subjects to draw.
  *
- * The F-024 calibration campaign found the negatives-inside-positive
- * duplication makes no visual difference either way, so it stays exactly
- * where it always was — it is not worth moving now that cfg defaults to 3
- * (forge.config.json). Two more ingredients are appended AFTER it, in this
- * order, to reproduce the campaign's validated prompt string verbatim: the
- * job's costume/prop clause (prompts/job-costume.json), then the style
- * clause (style-laws.json `styleClause`).
+ * `styleLaws.renderAssertion` now occupies exactly that slot with the same
+ * intent stated positively (what the art IS), so everything around it —
+ * including the job costume clause and then styleClause LAST — keeps the
+ * order the F-024 calibration campaign validated. A real negative
+ * conditioning is still built from `styleLaws.negative` (see buildBaseGraph)
+ * so the graph stays correct if cfg is ever raised.
+ *
+ * The composed string is linted before it is returned: a negation or a
+ * forbidden subject token throws here, at composition time, rather than
+ * ~218 s of GPU later.
  */
 export function buildPrompt({ race, job }, forge) {
   const identity = forge.raceIdentity[race].identity;
   const score = muscleScore(race, job, forge);
-  return [
-    ...forge.styleLaws.positive,
-    `full body character sheet, ${race} ${job}`,
-    ...identity,
-    `muscle mass ${score.toFixed(1)} out of 10`,
-    "single character, plain background, front view",
-    ...forge.styleLaws.negative,
-    forge.jobCostume[job].clause,
-    ...forge.styleLaws.styleClause,
-  ].join(", ");
+  return assertPositivePromptClean(
+    [
+      ...forge.styleLaws.positive,
+      `full body character sheet, ${race} ${job}`,
+      ...identity,
+      `muscle mass ${score.toFixed(1)} out of 10`,
+      "single character, plain background, front view",
+      ...forge.styleLaws.renderAssertion,
+      forge.jobCostume[job].clause,
+      ...forge.styleLaws.styleClause,
+    ].join(", "),
+    { forbiddenTokens: promptForbiddenTokens(forge) },
+  );
 }
 
 /**
@@ -313,14 +345,17 @@ export function buildCreaturePrompt(designId, forge) {
         `a silhouette alone is not a prompt`,
     );
   }
-  return [
-    ...forge.styleLaws.positive,
-    "full body character sheet",
-    entry.clause,
-    "single creature, plain background, front view",
-    ...forge.styleLaws.negative,
-    ...forge.styleLaws.styleClause,
-  ].join(", ");
+  return assertPositivePromptClean(
+    [
+      ...forge.styleLaws.positive,
+      "full body character sheet",
+      entry.clause,
+      "single creature, plain background, front view",
+      ...forge.styleLaws.renderAssertion,
+      ...forge.styleLaws.styleClause,
+    ].join(", "),
+    { forbiddenTokens: promptForbiddenTokens(forge) },
+  );
 }
 
 export function negativePrompt(forge) {
@@ -618,7 +653,14 @@ export function buildCharsheetGraph({
   denoise,
 }) {
   return buildBaseGraph({
-    positive: positiveOverride ?? buildPrompt({ race, job }, forge),
+    // The composed path lints inside buildPrompt(); a --positive override
+    // bypasses composition entirely, so it is linted here instead. Neither
+    // path may queue a positive prompt containing negation.
+    positive: positiveOverride
+      ? assertPositivePromptClean(positiveOverride, {
+          forbiddenTokens: promptForbiddenTokens(forge),
+        })
+      : buildPrompt({ race, job }, forge),
     negative: negativeOverride ?? negativePrompt(forge),
     seed,
     // txt2img always denoises fully by default; forge.config's denoise is the

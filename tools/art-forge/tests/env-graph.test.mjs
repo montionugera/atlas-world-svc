@@ -1,14 +1,24 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { loadForge } from "../generate/charsheet.mjs";
+import { renderDepthPng, renderSegmentPng } from "../generate/blockin.mjs";
 import {
+  CONTROL_RENDERER,
   ENV_NODE,
   HIRES_NODE,
+  buildEnvAnchorGraph,
   buildEnvGraph,
   buildEnvHiresGraph,
   buildEnvNegative,
   buildEnvPositive,
+  controlOutputId,
   formatStrength,
+  generateEnv,
+  ledgerSamplerFields,
+  resolveControl,
+  resolveModel,
+  resolveStrength,
+  townCriteriaForbiddenTokens,
   validateBrief,
 } from "../generate/env.mjs";
 
@@ -64,12 +74,45 @@ test("composed prompt carries the style clause and a non-empty negative — a ba
   });
   assert.equal(composed[ENV_NODE.POS].inputs.text, positive);
   assert.equal(composed[ENV_NODE.NEG].inputs.text, negative);
-  assert.ok(positive.includes(forge.styleLaws.styleClause[0]), "positive must carry the styleClause");
+  assert.ok(positive.includes(forge.profile.styleGuard.medium), "positive must lead with the medium clause");
   assert.notEqual(negative, "", "negative prompt must not be empty");
-  assert.ok(!negative.includes("no fur"), "no fur is character-specific and must not leak into environment negatives");
+  assert.ok(!negative.includes("fur"), "fur is character-specific and must not leak into environment negatives");
   assert.ok(
-    negative.includes("no modern vehicles"),
-    "negative must carry the anti-modern-contamination guard from forge.config.json profiles.environment.styleGuard",
+    negative.includes("power lines"),
+    "the negative CONDITIONING node must still carry the modern-contamination vocabulary from forge.config.json profiles.environment.styleGuard.forbiddenTokens",
+  );
+  // F-039: that vocabulary is data for the negative node and for
+  // prompt-lint's R2 rule. It must never be spliced into the POSITIVE
+  // string again — writing "no power lines" there delivers `power lines`.
+  assert.ok(!positive.includes("power lines"), "forbidden tokens must not appear in the positive prompt");
+  assert.ok(positive.includes(forge.profile.styleGuard.era), "positive must carry the era assertion");
+  // Register ruling 2026-08-30 (anchor verdict rail 5, option a): the house
+  // styleLaws vocabulary is character data and must not reach env prompts —
+  // the cel register measurably beat the medium clause 2/3 cells in-prompt.
+  for (const banned of ["anime", "cel-shaded", "ink linework", "genshin"]) {
+    assert.ok(!positive.toLowerCase().includes(banned), `character vocabulary "${banned}" must not reach the env positive`);
+  }
+  assert.ok(
+    !positive.includes(forge.styleLaws.styleClause[0]),
+    "the character styleClause is not environment register — env positives compose from styleGuard only",
+  );
+});
+
+test("mustCompose: the composed positive carries every clause the styleGuard lists — the A8 medium clause shipped unguarded once (3944eba)", () => {
+  const positive = buildEnvPositive("a harbour town", forge);
+  for (const key of forge.profile.styleGuard.mustCompose ?? []) {
+    const clause = forge.profile.styleGuard[key];
+    assert.ok(typeof clause === "string" && clause.length > 0, `styleGuard.${key} must be a non-empty clause`);
+    assert.ok(positive.includes(clause), `composed positive omits styleGuard.${key}`);
+  }
+});
+
+test("mustCompose: a styleGuard listing a clause it does not carry fails at composition, not after the render queue", () => {
+  const broken = structuredClone(forge);
+  delete broken.profile.styleGuard.medium;
+  assert.throws(
+    () => buildEnvPositive("a harbour town", broken),
+    /mustCompose lists "medium" but styleGuard\.medium is missing or empty/,
   );
 });
 
@@ -138,6 +181,375 @@ test("validateBrief rejects an empty/missing masses — depthPlanesFromBrief wou
 test("validateBrief accepts a well-formed brief and returns it unchanged", () => {
   const brief = { prompt: "a town", masses: [{ name: "x" }] };
   assert.equal(validateBrief(brief, "A1-ART-99", "/fake/A1-ART-99.json"), brief);
+});
+
+/* --------------------------- control selection --------------------------- */
+
+test("resolveControl defaults to depth and maps it to the frozen controlNet block", () => {
+  const r = resolveControl({ forge, control: undefined });
+  assert.equal(r.control, "depth");
+  assert.equal(r.block.strength, 0.3);
+});
+
+test("resolveControl names an unknown control instead of silently generating with the wrong one", () => {
+  assert.throws(() => resolveControl({ forge, control: "sgement" }), /sgement.*depth, segment/s);
+});
+
+test("an unmeasured strength fails loudly rather than defaulting — a null that reached the graph would queue strength:null", () => {
+  const { block } = resolveControl({ forge, control: "segment" });
+  assert.equal(
+    block.strength,
+    0.45,
+    "the segment block carries the measured operating strength (unpark ladder 2026-08-30: window 0.30-0.45)",
+  );
+  assert.throws(
+    () => resolveStrength({ control: "segment", block: { ...block, strength: null }, override: undefined }),
+    /segment.*unmeasured.*--strength/s,
+  );
+  assert.equal(resolveStrength({ control: "segment", block, override: "0.45" }), 0.45);
+});
+
+test("depth output ids keep F-026's exact naming; segment ids carry their control so the two never collide", () => {
+  assert.equal(
+    controlOutputId({ briefId: "A1-ART-02", control: "depth", seed: 12345, strength: 0.3 }),
+    "A1-ART-02-seed12345-s0.30",
+  );
+  assert.equal(
+    controlOutputId({ briefId: "A1-ART-02", control: "segment", seed: 12345, strength: 0.3 }),
+    "A1-ART-02-segment-seed12345-s0.30",
+  );
+});
+
+test("resolveControl wires each control key to its OWN renderer — a depth/segment mixup would render the wrong control image while every other assertion (type/strength/block) stays green", () => {
+  assert.equal(
+    CONTROL_RENDERER.depth,
+    renderDepthPng,
+    "CONTROL_RENDERER.depth must be renderDepthPng, not renderSegmentPng or anything else",
+  );
+  assert.equal(
+    CONTROL_RENDERER.segment,
+    renderSegmentPng,
+    "CONTROL_RENDERER.segment must be renderSegmentPng — if this were renderDepthPng, a " +
+      "--control segment run would silently stage a DEPTH png under the segment filename, " +
+      "defeating the whole feature while every other assertion here stays green",
+  );
+  assert.equal(resolveControl({ forge, control: "depth" }).render, renderDepthPng);
+  assert.equal(resolveControl({ forge, control: "segment" }).render, renderSegmentPng);
+});
+
+test("the graph sends the control block's own union type, not a hardcoded 'depth'", () => {
+  const { block } = resolveControl({ forge, control: "segment" });
+  const g = buildEnvGraph({
+    brief: { positive: "a crossing town", id: "A1-ART-02" },
+    seed: 12345, depthImage: "art-forge/A1-ART-02-segment.png", forge,
+    strength: 0.45, controlNet: block,
+  });
+  assert.equal(g[ENV_NODE.CN_TYPE].inputs.type, "segment");
+  assert.equal(g[ENV_NODE.CN_APPLY].inputs.strength, 0.45);
+});
+
+test("generateEnv (dry-run, end to end) embeds the control-qualified filename in the queued graph — buildEnvGraph alone can't catch this: generateEnv builds brief.id itself before calling it, and a bug there (e.g. leaving brief.id bare) would let a segment run's SaveImage.filename_prefix collide with depth's on the ComfyUI server", async () => {
+  const graph = await generateEnv(
+    { brief: "A1-ART-02", seed: 12345, control: "segment", strength: "0.45", "dry-run": true },
+    forge,
+  );
+  assert.equal(
+    graph[ENV_NODE.SAVE].inputs.filename_prefix,
+    "art-forge/env/A1-ART-02-segment-seed12345-s0.45",
+    "a segment run's embedded output filename must carry -segment- so it never collides with a depth run's",
+  );
+});
+
+test("generateEnv (dry-run, end to end) keeps depth's embedded filename bare — F-026 byte-for-byte", async () => {
+  const graph = await generateEnv(
+    { brief: "A1-ART-02", seed: 12345, "dry-run": true },
+    forge,
+  );
+  assert.equal(
+    graph[ENV_NODE.SAVE].inputs.filename_prefix,
+    "art-forge/env/A1-ART-02-seed12345-s0.30",
+  );
+});
+
+/* ------------------------ dev model (--model dev) ------------------------ */
+
+test("resolveModel defaults to schnell and rejects unknown models by name", () => {
+  assert.equal(resolveModel({ forge, model: undefined }).model, "schnell");
+  assert.equal(resolveModel({ forge, model: "dev" }).model, "dev");
+  assert.throws(() => resolveModel({ forge, model: "schnelll" }), /schnelll.*schnell, dev/s);
+});
+
+test("dev graph swaps to the dev checkpoint, adds FluxGuidance 5.0 and ConditioningZeroOut, and uses the measured dev sampler", () => {
+  const g = buildEnvGraph({
+    brief: { positive: "a crossing town", id: "A1-ART-02-dev" },
+    seed: 12345,
+    depthImage: "cntest/control-depth-A1-ART-02.png",
+    forge,
+    model: "dev",
+  });
+  assert.equal(g[ENV_NODE.CKPT].inputs.ckpt_name, "flux1-dev-fp8.safetensors");
+  const guid = Object.values(g).find((n) => n.class_type === "FluxGuidance");
+  assert.equal(guid.inputs.guidance, 5.0, "guidance 5.0 is the measured standard (ABP-flux-dev-and-anchor)");
+  const zero = Object.values(g).find((n) => n.class_type === "ConditioningZeroOut");
+  assert.ok(zero, "dev follows the authoritative template's ZeroOut negative");
+  const apply = Object.values(g).find((n) => n.class_type === "ControlNetApplyAdvanced");
+  assert.deepEqual(apply.inputs.positive, [Object.entries(g).find(([, n]) => n.class_type === "FluxGuidance")[0], 0]);
+  assert.deepEqual(apply.inputs.negative, [Object.entries(g).find(([, n]) => n.class_type === "ConditioningZeroOut")[0], 0]);
+  const ks = Object.values(g).find((n) => n.class_type === "KSampler");
+  assert.equal(ks.inputs.steps, 20);
+  assert.equal(ks.inputs.cfg, 1);
+  assert.equal(ks.inputs.denoise, 1.0);
+});
+
+test("schnell graph stays untouched by the dev path — no FluxGuidance, frozen checkpoint", () => {
+  const classes = Object.values(graph).map((n) => n.class_type);
+  assert.equal(classes.includes("FluxGuidance"), false);
+  assert.equal(classes.includes("ConditioningZeroOut"), false);
+  assert.equal(graph[ENV_NODE.CKPT].inputs.ckpt_name, "flux1-schnell-fp8.safetensors");
+});
+
+test("dev freehand output ids carry -dev- so a dev roll never overwrites a schnell roll", () => {
+  assert.equal(
+    controlOutputId({ briefId: "A1-ART-02", control: "none", seed: 12345, strength: null, model: "dev" }),
+    "A1-ART-02-none-dev-seed12345",
+  );
+  assert.equal(
+    controlOutputId({ briefId: "A1-ART-02", control: "depth", seed: 12345, strength: 0.3, model: "dev" }),
+    "A1-ART-02-dev-seed12345-s0.30",
+  );
+});
+
+test("anchor graph is a dev img2img: grained block-in -> VAEEncode -> KSampler denoise 0.75 over 27 steps", () => {
+  const g = buildEnvAnchorGraph({
+    brief: { positive: "a crossing town", id: "A1-ART-02-dev" },
+    seed: 12345,
+    anchorImage: "art-forge/A1-ART-02-depth-grained.png",
+    forge,
+  });
+  const load = Object.values(g).find((n) => n.class_type === "LoadImage");
+  assert.equal(load.inputs.image, "art-forge/A1-ART-02-depth-grained.png");
+  const ks = Object.values(g).find((n) => n.class_type === "KSampler");
+  assert.deepEqual(ks.inputs.latent_image, [Object.entries(g).find(([, n]) => n.class_type === "VAEEncode")[0], 0]);
+  assert.equal(ks.inputs.steps, 27);
+  assert.equal(ks.inputs.denoise, 0.75);
+  const guid = Object.values(g).find((n) => n.class_type === "FluxGuidance");
+  assert.equal(guid.inputs.guidance, 5.0);
+  const save = Object.values(g).find((n) => n.class_type === "SaveImage");
+  assert.equal(save.inputs.filename_prefix, "art-forge/env/A1-ART-02-dev-anchor-seed12345");
+});
+
+/* --------------------- materials refine (--refine) --------------------- */
+
+test("--refine is the anchor recipe img2img on an existing reviewed cell — dev checkpoint, VAEEncode, denoise from the explicit --denoise, source uploaded as-is (no grain step)", async () => {
+  const g = await generateEnv(
+    {
+      brief: "A1-ART-02",
+      seed: 12345,
+      model: "dev",
+      refine: "out/env/A1-ART-02-segment-subject-probe-seed12345-s0.45.png",
+      rolltag: "refine-r1",
+      denoise: "0.45",
+      "dry-run": true,
+    },
+    forge,
+  );
+  const load = Object.values(g).find((n) => n.class_type === "LoadImage");
+  assert.equal(
+    load.inputs.image,
+    "art-forge/A1-ART-02-segment-subject-probe-seed12345-s0.45.png",
+    "the refine source uploads under its own basename — not the grained colour block-in",
+  );
+  const ks = Object.values(g).find((n) => n.class_type === "KSampler");
+  assert.deepEqual(ks.inputs.latent_image, [Object.entries(g).find(([, n]) => n.class_type === "VAEEncode")[0], 0]);
+  assert.equal(ks.inputs.steps, 27, "the anchor recipe's measured step count");
+  assert.equal(ks.inputs.cfg, 1);
+  assert.equal(ks.inputs.denoise, 0.45, "the explicitly named denoise — never a silently inherited default");
+  const save = Object.values(g).find((n) => n.class_type === "SaveImage");
+  assert.equal(
+    save.inputs.filename_prefix,
+    "art-forge/env/A1-ART-02-dev-refine-refine-r1-seed12345",
+    "the refine's server-side SaveImage prefix carries its own lineage — it never collides with an anchor run's",
+  );
+});
+
+test("--refine refuses schnell, requires a rolltag, REQUIRES an explicit --denoise, and rejects values outside (0,1)", async () => {
+  await assert.rejects(
+    () =>
+      generateEnv(
+        {
+          brief: "A1-ART-02",
+          seed: 12345,
+          refine: "out/env/x.png",
+          rolltag: "refine-r1",
+          "dry-run": true,
+        },
+        forge,
+      ),
+    /--refine is a dev-model pass/,
+  );
+  await assert.rejects(
+    () =>
+      generateEnv(
+        {
+          brief: "A1-ART-02",
+          seed: 12345,
+          model: "dev",
+          refine: "out/env/x.png",
+          rolltag: "refine-r1",
+          "dry-run": true,
+        },
+        forge,
+      ),
+    /--refine requires --denoise/,
+    "the anchor default 0.75 is measured HARMFUL on a finished cell (verdict #13) — a refine must name its denoise",
+  );
+  await assert.rejects(
+    () =>
+      generateEnv(
+        {
+          brief: "A1-ART-02",
+          seed: 12345,
+          model: "dev",
+          refine: "out/env/x.png",
+          denoise: "0.45",
+          "dry-run": true,
+        },
+        forge,
+      ),
+    /--refine requires --rolltag/,
+  );
+  for (const bad of ["0", "1", "1.5", "abc"]) {
+    await assert.rejects(
+      () =>
+        generateEnv(
+          {
+            brief: "A1-ART-02",
+            seed: 12345,
+            model: "dev",
+            refine: "out/env/x.png",
+            rolltag: "refine-r1",
+            denoise: bad,
+            "dry-run": true,
+          },
+          forge,
+        ),
+      /--denoise must be a number strictly between 0 and 1/,
+    );
+  }
+});
+
+test("--refine honours --denoise (the low-denoise re-measure) and --denoise without --refine is refused", async () => {
+  const g = await generateEnv(
+    {
+      brief: "A1-ART-02",
+      seed: 12345,
+      model: "dev",
+      refine: "out/env/A1-ART-02-segment-subject-probe-seed12345-s0.45.png",
+      rolltag: "materials-r2",
+      denoise: "0.45",
+      "dry-run": true,
+    },
+    forge,
+  );
+  const ks = Object.values(g).find((n) => n.class_type === "KSampler");
+  assert.equal(
+    ks.inputs.denoise,
+    0.45,
+    "the low-denoise re-measure runs the reviewer's prescribed window top, not the anchor's 0.75",
+  );
+  await assert.rejects(
+    () =>
+      generateEnv(
+        { brief: "A1-ART-02", seed: 12345, control: "segment", strength: "0.45", denoise: "0.45", "dry-run": true },
+        forge,
+      ),
+    /--denoise is a --refine-only flag/,
+  );
+});
+
+test("ledgerSamplerFields records what the graph ran — dev carries guidance, schnell does not, overrides win", () => {
+  assert.deepEqual(ledgerSamplerFields(forge.profile.samplerDev, "dev"), {
+    model: "dev",
+    steps: 20,
+    cfg: 1,
+    guidance: 5.0,
+    denoise: 1.0,
+  });
+  assert.deepEqual(ledgerSamplerFields(forge.profile.sampler, "schnell"), {
+    model: "schnell",
+    steps: 8,
+    cfg: 1,
+    denoise: 1.0,
+  });
+  assert.deepEqual(ledgerSamplerFields(forge.profile.anchor, "dev", { denoise: 0.45 }), {
+    model: "dev",
+    steps: 27,
+    cfg: 1,
+    guidance: 5.0,
+    denoise: 0.45,
+  });
+});
+
+/* ---------------------- freehand (--control none) ---------------------- */
+
+test("town criteria vocabulary merges into the lint — a cliché token in a town brief throws R2", () => {
+  const tokens = townCriteriaForbiddenTokens();
+  assert.ok(tokens.includes("storybook"), "the reviewer's anti-cliché vocabulary is loaded");
+  assert.ok(tokens.includes("tidy rows"), "the reviewer's forbidden phrases are loaded");
+  assert.throws(
+    () => buildEnvPositive("a storybook village of neat houses", forge, { extraForbiddenTokens: tokens }),
+    /R2-forbidden-token/,
+  );
+});
+
+test("resolveControl accepts none with no config block and no renderer — freehand needs neither", () => {
+  const r = resolveControl({ forge, control: "none" });
+  assert.equal(r.control, "none");
+  assert.equal(r.block, null);
+  assert.equal(r.render, null);
+});
+
+test("freehand graph drops every ControlNet node and conditions straight from the text encodes", () => {
+  const g = buildEnvGraph({
+    brief: { positive: "a crossing town", id: "A1-ART-02-none" },
+    seed: 12345,
+    depthImage: null,
+    forge,
+    strength: null,
+    controlNet: null,
+  });
+  const classes = Object.values(g).map((n) => n.class_type);
+  assert.equal(classes.includes("ControlNetLoader"), false, "no control net to load");
+  assert.equal(classes.includes("SetUnionControlNetType"), false);
+  assert.equal(classes.includes("LoadImage"), false, "no control image to load");
+  assert.equal(classes.includes("ControlNetApplyAdvanced"), false);
+  const ks = Object.values(g).find((n) => n.class_type === "KSampler");
+  assert.deepEqual(ks.inputs.positive, [ENV_NODE.POS, 0], "sampler conditions from raw text encode");
+  assert.deepEqual(ks.inputs.negative, [ENV_NODE.NEG, 0]);
+});
+
+test("none output ids carry no strength suffix — there is no strength to sweep", () => {
+  assert.equal(
+    controlOutputId({ briefId: "A1-ART-02", control: "none", seed: 12345, strength: null }),
+    "A1-ART-02-none-seed12345",
+  );
+});
+
+test("resolveStrength is a no-op for none — a freehand run has no strength to measure", () => {
+  assert.equal(resolveStrength({ control: "none", block: null, override: undefined }), null);
+});
+
+test("generateEnv (dry-run, end to end) stages no control image for freehand and names the output -none-", async () => {
+  const graph = await generateEnv(
+    { brief: "A1-ART-02", seed: 12345, control: "none", "dry-run": true },
+    forge,
+  );
+  const classes = Object.values(graph).map((n) => n.class_type);
+  assert.equal(classes.includes("LoadImage"), false, "freehand must not load a control image");
+  assert.equal(
+    graph[ENV_NODE.SAVE].inputs.filename_prefix,
+    "art-forge/env/A1-ART-02-none-seed12345",
+  );
 });
 
 /* --------------------------- hires graph --------------------------- */

@@ -21,7 +21,7 @@ import {
   markStale,
   parseLedgerText,
 } from "./staleness.mjs";
-import { buildPipelineRow } from "./pipeline.mjs";
+import { buildForgeGallery } from "./gallery.mjs";
 import { openInfoDetail } from "../view/DetailOverlay.mjs";
 import { getStore } from "../review/ui.mjs";
 import {
@@ -105,18 +105,105 @@ function detailContentFor(entry) {
   return box;
 }
 
-function wireRow(row, briefId, attempts) {
-  row.querySelectorAll(".forge-cell[data-entry-index]").forEach((cell) => {
-    const entry = attempts[Number(cell.dataset.entryIndex)];
-    cell.addEventListener("click", () => {
-      openInfoDetail({
-        title: briefId + " · " + cellLabel(entry),
-        subtitle: entry.ts || "",
-        content: detailContentFor(entry),
-      });
-    });
-    attachRerunAffordance(row, cell, briefId, entry);
+function forgeBadge(cls, text) {
+  const b = document.createElement("span");
+  b.className = "forge-card-badge " + cls;
+  b.textContent = text;
+  return b;
+}
+
+function buildForgeCard(briefId, card) {
+  const { entry } = card;
+  const cardEl = document.createElement("div");
+  cardEl.className = "forge-card";
+  cardEl.tabIndex = 0;
+  cardEl.setAttribute("role", "button");
+
+  const img = document.createElement("img");
+  img.src = ART_FORGE_ROOT_URL + entry.out;
+  img.alt = cellLabel(entry);
+  img.loading = "lazy";
+  img.decoding = "async";
+  img.addEventListener("error", () => {
+    // Ledger is committed truth; out/ PNGs are local-only artifacts. A
+    // missing file is LOUD, never a broken-image icon (mirrors Card.mjs).
+    const missing = document.createElement("div");
+    missing.className = "forge-card-missing";
+    missing.textContent = "png missing — render exists only in the rolling checkout";
+    img.replaceWith(missing);
   });
+  cardEl.appendChild(img);
+
+  const label = document.createElement("div");
+  label.className = "forge-card-label";
+  label.textContent =
+    [
+      entry.seed ?? "—",
+      entry.control ?? "—",
+      entry.strength == null ? "—" : entry.strength,
+      card.isDev ? "dev" : null,
+    ]
+      .filter((part) => part !== null)
+      .join(" · ");
+  cardEl.appendChild(label);
+
+  const badges = document.createElement("div");
+  badges.className = "forge-card-badges";
+  if (card.stale) badges.appendChild(forgeBadge("is-stale", "stale"));
+  if (card.gate && card.gate.state === "flag")
+    badges.appendChild(forgeBadge("is-flag", "gate flag"));
+  if (card.gate && card.gate.state === "skipped")
+    badges.appendChild(forgeBadge("is-skip", "gate ⤼skip"));
+  cardEl.appendChild(badges);
+
+  const openDetail = () => {
+    openInfoDetail({
+      title: briefId + " · " + cellLabel(entry),
+      subtitle: entry.ts || "",
+      content: detailContentFor(entry),
+    });
+  };
+  cardEl.addEventListener("click", openDetail);
+  cardEl.addEventListener("keydown", (e) => {
+    if (e.target !== cardEl) return; // nested re-run button handles itself
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      openDetail();
+    }
+  });
+  attachRerunAffordance(cardEl, badges, briefId, entry);
+  return cardEl;
+}
+
+function appendGallery(rowsHost, briefId, batches) {
+  for (const batch of batches) {
+    const batchEl = document.createElement("div");
+    batchEl.className = "forge-batch";
+
+    const head = document.createElement("div");
+    head.className = "forge-batch-head";
+    const hashEl = document.createElement("span");
+    hashEl.className = "forge-batch-hash";
+    hashEl.textContent = batch.briefHash.slice(0, 8);
+    hashEl.title = batch.briefHash;
+    const meta = document.createElement("span");
+    const newest = batch.cards[0].entry.ts;
+    meta.textContent =
+      "· " +
+      batch.cards.length +
+      (batch.cards.length === 1 ? " render" : " renders") +
+      (newest ? " · " + String(newest).slice(0, 10) : "");
+    head.append(hashEl, meta);
+    batchEl.appendChild(head);
+
+    const grid = document.createElement("div");
+    grid.className = "forge-card-grid";
+    for (const card of batch.cards) {
+      grid.appendChild(buildForgeCard(briefId, card));
+    }
+    batchEl.appendChild(grid);
+    rowsHost.appendChild(batchEl);
+  }
 }
 
 // ---------- Task 9: per-cell re-run → work order (download-only) ----------
@@ -145,7 +232,8 @@ function attachRerunAffordance(row, cell, briefId, entry) {
   btn.title = "Issue a re-run work order for " + cellLabel(entry);
   row.insertBefore(btn, cell.nextSibling);
 
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation(); // the card underneath opens the detail overlay
     const existing = row.parentNode.querySelector(".forge-order-form");
     if (existing) existing.remove();
     openOrderForm(row, btn, { briefId, cell: woCell, seed: entry.seed });
@@ -293,9 +381,7 @@ async function loadRows(rowsHost) {
         staleFlags = attempts.map(() => false);
       }
 
-      const row = buildPipelineRow({ briefId, attempts, staleFlags });
-      wireRow(row, briefId, attempts);
-      rowsHost.appendChild(row);
+      appendGallery(rowsHost, briefId, buildForgeGallery(attempts, staleFlags));
     } catch (err) {
       // One bad brief must not abort the remaining rows.
       console.error(
@@ -473,9 +559,10 @@ export async function mountForge(main) {
   note.style.cssText =
     "color:#9aa1b2;font-size:13px;margin:0 0 12px;max-width:70ch";
   note.textContent =
-    "One row per brief, from the committed run ledgers (tools/art-forge/runs/). " +
-    "Cells go left→right: blockin → render → gate → intake; amber = gate flag, " +
-    "red = stale against the current brief hash. Click a cell for its entry; " +
+    "One card per render, grouped by recipe version (briefHash), newest " +
+    "batches first, from the committed run ledgers (tools/art-forge/runs/). " +
+    "Supporting stages fold into badges: amber = gate flag, red = stale " +
+    "against the current brief hash. Click a card for its full ledger entry; " +
     "re-runs are issued as work orders you export and commit — nothing auto-runs.";
   section.appendChild(note);
 

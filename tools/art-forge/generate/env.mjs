@@ -63,6 +63,14 @@
  *        --positive "<string>" (replace the FULLY COMPOSED positive prompt
  *          entirely — bypasses buildEnvPositive, so style vocabulary is
  *          NOT auto-appended; CLI wins over the brief)
+ *        --control depth|segment|none — which control signal steers the
+ *          graph. Default stays `depth` until a segment strength is measured,
+ *          and `--control depth` reproduces F-026's exact behaviour from
+ *          committed code forever. `segment` feeds the zone-label map
+ *          (measured NEGATIVE for Millcross — see
+ *          docs/worldbuilding/ABP-segment-control.md). `none` is freehand
+ *          txt2img: no control image, no ControlNet nodes 20-23, no strength
+ *          — the prose (plus house style vocabulary) is the only steering.
  *        --strength N (override forge.config.json's profiles.environment
  *          .controlNet.strength; CLI wins over config. Neither half of the
  *          published 0.30/0.40 replication matrix was reproducible from
@@ -72,11 +80,20 @@
  *          the `profiles.environment.hires` upscale+refine pass measured in
  *          docs/worldbuilding/ABP-flux-eval.md/-anchor-model-choice.md/
  *          -controlnet-rescue.md. Off by default — see above.)
+ *        --refine <png> (dev only; img2img materials refine over an EXISTING
+ *          reviewed cell using the anchor recipe — no base pass runs, no
+ *          grain step: the source is already a textured render. REQUIRES
+ *          --rolltag <tag> (rail 7: a refine never overwrites a reviewed
+ *          cell). See the subject-probe verdict's open question 1.)
  */
 
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFile as execFileCb } from "node:child_process";
+import { promisify } from "node:util";
+
+const execFile = promisify(execFileCb);
 
 import {
   FORGE_DIR,
@@ -86,9 +103,11 @@ import {
   parseNumericOverride,
   parsePromptOverride,
   parseSeed,
+  promptForbiddenTokens,
   runGraph,
 } from "./charsheet.mjs";
-import { renderDepthPng } from "./blockin.mjs";
+import { renderColourPng, renderDepthPng, renderSegmentPng } from "./blockin.mjs";
+import { assertPositivePromptClean } from "./prompt-lint.mjs";
 import { briefHash } from "../lib/brief-hash.mjs";
 import { appendAttempt } from "../lib/run-ledger.mjs";
 
@@ -107,6 +126,22 @@ export const ENV_NODE = Object.freeze({
   CN_TYPE: "21",
   CN_IMAGE: "22",
   CN_APPLY: "23",
+  GUID: "30",
+  ZERO: "31",
+});
+
+/** Node ids for the dev anchor pass (img2img on the grained block-in). */
+export const ANCHOR_NODE = Object.freeze({
+  CKPT: "40",
+  POS: "41",
+  NEG: "42",
+  LOAD: "43",
+  ENCODE: "44",
+  GUID: "45",
+  ZERO: "46",
+  KSAMPLER: "47",
+  DECODE: "48",
+  SAVE: "49",
 });
 
 /**
@@ -185,50 +220,106 @@ function readBrief(id) {
 
 /**
  * Shared style-laws.json negative words that do NOT apply to environments.
- * "no fur" guards a character-specific failure mode (creature/costume fur
+ * "fur" guards a character-specific failure mode (creature/costume fur
  * rendering, see style-laws.json's `laws`) with no environment analogue.
- * The other three ("NOT 3D render", "NOT CGI", "NOT clay") are generic
- * render-style guards and apply unchanged.
+ * The other three ("3D render", "CGI", "clay") are generic render-style
+ * guards and apply unchanged.
  */
-const ENV_NEGATIVE_EXCLUDE = new Set(["no fur"]);
+const ENV_NEGATIVE_EXCLUDE = new Set(["fur"]);
 
 /**
- * The negative word list for one environment render: the shared house-style
- * guard (prompts/style-laws.json `negative`, minus the character-only
- * exclusions above) plus `styleGuard.negative`
- * (forge.config.json `profiles.environment`) — anti-modern-contamination
- * words measured directly from this recipe's first real generation
- * (A1-ART-02 "Millcross" rendered as a photoreal MODERN settlement: pickup
- * trucks, an SUV, a contemporary skyline). Read from config, never
- * hardcoded here.
+ * The negative CONDITIONING words for one environment render — the string
+ * that goes into the real CLIPTextEncode negative node (`buildEnvNegative`),
+ * and nowhere else. `profiles.environment.sampler.cfg` is 1, so KSampler
+ * never evaluates that branch; the node is built anyway so the graph stays
+ * correct if cfg is ever raised.
+ *
+ * This is the ONLY place negation-flavoured vocabulary is allowed. It must
+ * never be spliced into the positive prompt — that is the F-039 defect, see
+ * generate/prompt-lint.mjs.
  */
 export function environmentNegativeWords(forge) {
   const shared = forge.styleLaws.negative.filter((w) => !ENV_NEGATIVE_EXCLUDE.has(w));
-  const guard = forge.profile.styleGuard?.negative ?? [];
-  return [...shared, ...guard];
+  return [...shared, ...(forge.profile.styleGuard?.forbiddenTokens ?? [])];
 }
 
 /**
- * Compose the environment positive prompt: the brief's own scene prose, the
- * house style vocabulary (`style-laws.json` `positive` + `styleClause`), and
- * the negative words repeated as literal counter-prompt phrasing.
- *
- * `profiles.environment.sampler.cfg` is 1 — same as the character profile —
- * so KSampler's negative conditioning branch is not evaluated (the CFG
- * formula collapses to the conditional prediction alone at cfg=1). That is
- * exactly why `buildPrompt()` (charsheet.mjs) also repeats its negatives
- * inside the positive string as literal counter-prompt words instead of
- * relying on the negative branch; this mirrors that same reasoning. A real
- * CLIPTextEncode negative node is still built (see `buildEnvNegative`) so
- * the graph stays correct if cfg is ever raised.
+ * Scale guard vocabulary, from `profiles.<profile>.styleGuard`:
+ * `scaleTokens` (extent words) + `boundMarkers` (phrases that bound an
+ * extent within a sentence). See generate/prompt-lint.mjs R3.
  */
-export function buildEnvPositive(promptText, forge) {
-  return [
+export function promptScaleGuard(forge) {
+  const guard = forge.profile.styleGuard ?? {};
+  return {
+    scaleTokens: guard.scaleTokens ?? [],
+    boundMarkers: guard.boundMarkers ?? [],
+  };
+}
+
+/**
+ * Forbidden-token union from the town-canon-reviewer's criteria file
+ * (content/world/town-criteria.json): per-town brief forbidden phrases +
+ * the shared anti-cliché vocabulary. Data the reviewer owns; this loader
+ * only reads it. Missing/corrupt file degrades to [] — the base forge
+ * forbiddenTokens still apply — so non-town briefs never see town rules.
+ */
+export function townCriteriaForbiddenTokens(contentRoot = path.join(FORGE_DIR, "..", "..", "content")) {
+  const p = path.join(contentRoot, "world", "town-criteria.json");
+  if (!fs.existsSync(p)) return [];
+  try {
+    const c = JSON.parse(fs.readFileSync(p, "utf8"));
+    const phrases = Object.values(c.towns ?? {}).flatMap(
+      (t) => t.briefs?.forbiddenPhrases?.value ?? [],
+    );
+    const vocab = c.antiCliche?.forbiddenVocabulary?.value ?? [];
+    return [...new Set([...phrases, ...vocab])];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Compose the environment positive prompt. Register ruling 2026-08-30 (anchor
+ * verdict rail 5, owner-approved option a): the house styleLaws vocabulary is
+ * CHARACTER data — "crisp flat 2D anime illustration, hand-drawn 2D cel-shaded
+ * artwork, clean ink linework over painted flat colour" demonstrably fought the
+ * medium clause in-prompt and won 2 of 3 anchor cells — so environments compose
+ * from their OWN register only: the medium clause FIRST (primacy in the prompt),
+ * then the brief prose, then the era block. The styleLaws positive/render
+ * assertion/styleClause splices are gone from this path; the negative side
+ * (environmentNegativeWords) still reads styleLaws.negative, which is inert at
+ * cfg 1 and is not the register mechanism.
+ *
+ * `styleGuard.mustCompose` names clauses (`era`, `medium`) that must survive
+ * composition: each clause text is asserted present in the composed string
+ * through the same R4 mechanism that enforces a brief's `mustAssert`, so a
+ * refactor that drops one fails at composition, not after the render queue.
+ * The result is linted before it is returned, so a negation reaching the
+ * positive prompt throws here rather than ~218 s of GPU later.
+ */
+export function buildEnvPositive(promptText, forge, { requiredAssertions = [], extraForbiddenTokens = [] } = {}) {
+  const guard = forge.profile.styleGuard ?? {};
+  const era = guard.era;
+  const medium = guard.medium;
+  const composed = [
+    ...(medium ? [medium] : []),
     promptText,
-    ...forge.styleLaws.positive,
-    ...environmentNegativeWords(forge),
-    ...forge.styleLaws.styleClause,
+    ...(era ? [era] : []),
   ].join(", ");
+  const composeAssertions = (guard.mustCompose ?? []).map((key) => {
+    const clause = guard[key];
+    if (typeof clause !== "string" || clause.trim() === "") {
+      throw new Error(
+        `styleGuard.mustCompose lists "${key}" but styleGuard.${key} is missing or empty — the rail would compose nothing`,
+      );
+    }
+    return clause;
+  });
+  return assertPositivePromptClean(composed, {
+    forbiddenTokens: [...promptForbiddenTokens(forge), ...extraForbiddenTokens],
+    ...promptScaleGuard(forge),
+    requiredAssertions: [...composeAssertions, ...requiredAssertions],
+  });
 }
 
 export function buildEnvNegative(forge) {
@@ -244,17 +335,170 @@ export function formatStrength(strength) {
   return Number(strength).toFixed(2);
 }
 
+/* --------------------------- control selection --------------------------- */
+
+/** control key -> the forge.config.json profile key holding its block. */
+export const CONTROL_BLOCK = Object.freeze({ depth: "controlNet", segment: "segment" });
+
+/** control key -> the blockin.mjs renderer that produces its control PNG. */
+export const CONTROL_RENDERER = Object.freeze({ depth: renderDepthPng, segment: renderSegmentPng });
+
+/** model key -> the forge.config.json models key holding its checkpoint. */
+export const MODEL_CHECKPOINT = Object.freeze({ schnell: "checkpoint", dev: "dev" });
+
+/**
+ * Pick the model. Precedence: --model > "schnell" (the F-026 frozen default).
+ * dev uses `models.dev.checkpoint` + the measured `samplerDev` settings
+ * (ABP-flux-dev-and-anchor.md); schnell stays byte-identical to F-026.
+ * @returns {{ model: string, checkpoint: string, sampler: object }}
+ */
+export function resolveModel({ forge, model }) {
+  if (model === true) {
+    throw new Error("--model requires a value, got a bare flag");
+  }
+  const key = model ?? "schnell";
+  const checkpointKey = MODEL_CHECKPOINT[key];
+  if (!checkpointKey) {
+    throw new Error(
+      `unknown --model "${key}" — expected one of ${Object.keys(MODEL_CHECKPOINT).join(", ")}`,
+    );
+  }
+  const checkpoint = forge.profile.models[checkpointKey];
+  if (key === "dev") {
+    if (!checkpoint) {
+      throw new Error('model "dev" has no "dev" entry in forge.config.json profiles.environment.models');
+    }
+    return { model: key, checkpoint, sampler: forge.profile.samplerDev };
+  }
+  return { model: key, checkpoint, sampler: forge.profile.sampler };
+}
+
+/**
+ * Pick the active control. Precedence: --control > profile.control > "depth".
+ * Throws by name on an unknown key, and on a block whose `type` does not equal
+ * its key (a typo there silently sends the wrong SetUnionControlNetType).
+ * @returns {{ control: string, block: object, render: Function }}
+ */
+export function resolveControl({ forge, control }) {
+  if (control === true) {
+    throw new Error("--control requires a value, got a bare flag");
+  }
+  if (control === "none") {
+    // Freehand: no control image, no config block, no renderer — and no
+    // strength (see resolveStrength). The F-039 segment-control negative
+    // result's follow-up: composition comes from the prose, not a zone map.
+    return { control, block: null, render: null };
+  }
+  const key = control ?? forge.profile.control ?? "depth";
+  const blockKey = CONTROL_BLOCK[key];
+  if (!blockKey) {
+    throw new Error(
+      `unknown --control "${key}" — expected one of ` +
+        `${[...Object.keys(CONTROL_BLOCK), "none"].join(", ")}`,
+    );
+  }
+  const block = forge.profile[blockKey];
+  if (!block) {
+    throw new Error(
+      `control "${key}" has no "${blockKey}" block in forge.config.json profiles.environment`,
+    );
+  }
+  if (block.type !== key) {
+    throw new Error(
+      `control "${key}"'s block has type "${block.type}" in forge.config.json — expected ` +
+        `"${key}" (a typo there would silently send the wrong SetUnionControlNetType)`,
+    );
+  }
+  return { control: key, block, render: CONTROL_RENDERER[key] };
+}
+
+/**
+ * Resolve the strength for one control. `--strength` wins over the block's
+ * value. Throws if the block's strength is null AND no override was given —
+ * an unmeasured strength must fail loudly, not silently default.
+ */
+export function resolveStrength({ control, block, override }) {
+  if (control === "none") {
+    // Freehand has no strength dial — there is nothing to measure or sweep.
+    return null;
+  }
+  const strength = parseNumericOverride("strength", override, block.strength);
+  if (strength === null || strength === undefined) {
+    throw new Error(
+      `control "${control}" has an unmeasured strength (null in forge.config.json) — pass ` +
+        "--strength to override; an unmeasured strength must fail loudly, not silently reach the graph",
+    );
+  }
+  return strength;
+}
+
+/**
+ * Output id for one cell. Depth keeps F-026's exact naming
+ * (`<id>-seed<n>-s<x>`) so the replication record's filenames still resolve;
+ * any other control inserts its key (`<id>-<control>-seed<n>-s<x>`); none
+ * (freehand) carries no strength suffix — there is no strength to sweep
+ * (`<id>-none-seed<n>`). An optional `rolltag` (rail 7, generalised from the
+ * anchor path) namespaces a probe/re-roll era so a new measurement can never
+ * overwrite the cells a previous verdict reviewed: `<id>[-<control>][-dev][-<rolltag>]-seed<n>-s<x>`.
+ */
+export function controlOutputId({ briefId, control, seed, strength, model = "schnell", rolltag = null }) {
+  const modelInfix = model === "dev" ? "-dev" : "";
+  const tagInfix = typeof rolltag === "string" && rolltag.trim() !== "" ? `-${rolltag.trim()}` : "";
+  if (control === "none") return `${briefId}-none${modelInfix}${tagInfix}-seed${seed}`;
+  const suffix = `-seed${seed}-s${formatStrength(strength)}`;
+  return control === "depth"
+    ? `${briefId}${modelInfix}${tagInfix}${suffix}`
+    : `${briefId}-${control}${tagInfix}${suffix}`;
+}
+
+/** brief.id: control-qualified (except depth, for F-026 byte-diffability) + model-qualified. */
+function composeBriefId(baseId, control, model) {
+  const controlInfix = control !== "depth" ? `-${control}` : "";
+  const modelInfix = model === "dev" ? "-dev" : "";
+  return `${baseId}${controlInfix}${modelInfix}`;
+}
+
+/**
+ * Rail 3 (carried nine rolls): the render ledger must be self-documenting —
+ * record the sampler fields the graph actually ran with, at write time, so
+ * provenance comes from data rather than filenames or config archaeology
+ * (the v3-window schnell misroute is the standing argument). `resolved` is
+ * the recipe block the graph read (`samplerDev` for dev, `sampler` for
+ * schnell, `anchor` for the anchor/refine passes); `override` carries the
+ * effective value when a CLI flag superseded the block (refine `--denoise`).
+ * schnell's frozen path has no FluxGuidance node, so guidance is recorded
+ * only when the recipe defines one.
+ */
+export function ledgerSamplerFields(resolved, model, override = {}) {
+  const guidance = override.guidance ?? resolved.guidance;
+  return {
+    model,
+    steps: override.steps ?? resolved.steps,
+    cfg: override.cfg ?? resolved.cfg,
+    ...(guidance != null ? { guidance } : {}),
+    denoise: override.denoise ?? resolved.denoise,
+  };
+}
+
 /**
  * Build the environment graph. `depthImage` is the filename LoadImage
  * resolves against the ComfyUI server's own input directory (which is a
  * remote Windows path on mont-pc — see uploadControlImage below); it is
- * never a local filesystem path.
+ * never a local filesystem path. Despite the name (kept for F-026 diffability
+ * and because every existing call/test site already names it this way), it
+ * carries the control image for WHICHEVER control is active — `resolveControl`
+ * picks the renderer, this just forwards its uploaded/staged filename.
  *
  * `strength` defaults to the config value but can be overridden (see
  * `generateEnv`'s `--strength` flag) — it also drives the output filename
  * below, since running the documented seed x strength sweep with a filename
  * that carries neither would leave only one surviving PNG per subject, each
  * later run silently overwriting the last.
+ *
+ * `controlNet` defaults to `forge.profile.controlNet` (the frozen depth
+ * block) so every existing call site that omits it keeps today's behaviour;
+ * `generateEnv` passes the block `resolveControl` picked instead, so the
+ * union type and percents come from whichever control is actually active.
  */
 export function buildEnvGraph({
   brief,
@@ -262,13 +506,34 @@ export function buildEnvGraph({
   depthImage,
   forge,
   strength = forge.profile.controlNet.strength,
+  controlNet = forge.profile.controlNet,
+  model = "schnell",
 }) {
-  const { models, sampler, latent, controlNet } = forge.profile;
-  const outputId = `${brief.id ?? "subject"}-seed${seed}-s${formatStrength(strength)}`;
+  const { models, sampler, latent } = forge.profile;
+  // Freehand (generateEnv passes controlNet: null for --control none): the
+  // ControlNet nodes 20-23 are dropped entirely and the sampler conditions
+  // straight from the text encodes. The output id carries no strength —
+  // there is none to sweep. With a control, construction order is unchanged
+  // so the frozen depth path stays byte-identical to F-026.
+  const hasControl = controlNet != null;
+  // dev (ABP-flux-dev-and-anchor.md): the all-in-one dev checkpoint, an
+  // explicit FluxGuidance node (ComfyUI defaults guidance to 3.5 when unset —
+  // 5.0 is the measured standard), and the template's ConditioningZeroOut
+  // negative. schnell's frozen path gains nothing and loses nothing.
+  const isDev = model === "dev";
+  const devSampler = forge.profile.samplerDev;
+  const checkpoint = isDev ? models.dev.checkpoint : models.checkpoint;
+  const steps = isDev ? devSampler.steps : sampler.steps;
+  const cfg = isDev ? devSampler.cfg : sampler.cfg;
+  const denoise = isDev ? devSampler.denoise : sampler.denoise;
+  const outputId =
+    `${brief.id ?? "subject"}-seed${seed}${hasControl ? `-s${formatStrength(strength)}` : ""}`;
+  const positiveFrom = hasControl ? [ENV_NODE.CN_APPLY, 0] : [ENV_NODE.POS, 0];
+  const negativeFrom = hasControl ? [ENV_NODE.CN_APPLY, 1] : [ENV_NODE.NEG, 0];
   return {
     [ENV_NODE.CKPT]: {
       class_type: "CheckpointLoaderSimple",
-      inputs: { ckpt_name: models.checkpoint },
+      inputs: { ckpt_name: checkpoint },
     },
     [ENV_NODE.POS]: {
       class_type: "CLIPTextEncode",
@@ -278,31 +543,47 @@ export function buildEnvGraph({
       class_type: "CLIPTextEncode",
       inputs: { clip: [ENV_NODE.CKPT, 1], text: brief.negative ?? "" },
     },
-    [ENV_NODE.CN_LOAD]: {
-      class_type: "ControlNetLoader",
-      inputs: { control_net_name: models.controlNet },
-    },
-    [ENV_NODE.CN_TYPE]: {
-      class_type: "SetUnionControlNetType",
-      inputs: { control_net: [ENV_NODE.CN_LOAD, 0], type: controlNet.type },
-    },
-    [ENV_NODE.CN_IMAGE]: {
-      class_type: "LoadImage",
-      inputs: { image: depthImage },
-    },
-    [ENV_NODE.CN_APPLY]: {
-      class_type: "ControlNetApplyAdvanced",
-      inputs: {
-        positive: [ENV_NODE.POS, 0],
-        negative: [ENV_NODE.NEG, 0],
-        control_net: [ENV_NODE.CN_TYPE, 0],
-        image: [ENV_NODE.CN_IMAGE, 0],
-        strength,
-        start_percent: controlNet.startPercent,
-        end_percent: controlNet.endPercent,
-        vae: [ENV_NODE.CKPT, 2],
-      },
-    },
+    ...(isDev
+      ? {
+          [ENV_NODE.GUID]: {
+            class_type: "FluxGuidance",
+            inputs: { conditioning: [ENV_NODE.POS, 0], guidance: devSampler.guidance },
+          },
+          [ENV_NODE.ZERO]: {
+            class_type: "ConditioningZeroOut",
+            inputs: { conditioning: [ENV_NODE.NEG, 0] },
+          },
+        }
+      : {}),
+    ...(hasControl
+      ? {
+          [ENV_NODE.CN_LOAD]: {
+            class_type: "ControlNetLoader",
+            inputs: { control_net_name: models.controlNet },
+          },
+          [ENV_NODE.CN_TYPE]: {
+            class_type: "SetUnionControlNetType",
+            inputs: { control_net: [ENV_NODE.CN_LOAD, 0], type: controlNet.type },
+          },
+          [ENV_NODE.CN_IMAGE]: {
+            class_type: "LoadImage",
+            inputs: { image: depthImage },
+          },
+          [ENV_NODE.CN_APPLY]: {
+            class_type: "ControlNetApplyAdvanced",
+            inputs: {
+              positive: isDev ? [ENV_NODE.GUID, 0] : [ENV_NODE.POS, 0],
+              negative: isDev ? [ENV_NODE.ZERO, 0] : [ENV_NODE.NEG, 0],
+              control_net: [ENV_NODE.CN_TYPE, 0],
+              image: [ENV_NODE.CN_IMAGE, 0],
+              strength,
+              start_percent: controlNet.startPercent,
+              end_percent: controlNet.endPercent,
+              vae: [ENV_NODE.CKPT, 2],
+            },
+          },
+        }
+      : {}),
     [ENV_NODE.LATENT]: {
       class_type: "EmptySD3LatentImage",
       inputs: { width: latent.width, height: latent.height, batch_size: 1 },
@@ -311,15 +592,15 @@ export function buildEnvGraph({
       class_type: "KSampler",
       inputs: {
         model: [ENV_NODE.CKPT, 0],
-        positive: [ENV_NODE.CN_APPLY, 0],
-        negative: [ENV_NODE.CN_APPLY, 1],
+        positive: isDev && !hasControl ? [ENV_NODE.GUID, 0] : positiveFrom,
+        negative: isDev && !hasControl ? [ENV_NODE.ZERO, 0] : negativeFrom,
         latent_image: [ENV_NODE.LATENT, 0],
         seed,
-        steps: sampler.steps,
-        cfg: sampler.cfg,
+        steps,
+        cfg,
         sampler_name: sampler.samplerName,
         scheduler: sampler.scheduler,
-        denoise: sampler.denoise,
+        denoise,
       },
     },
     [ENV_NODE.DECODE]: {
@@ -378,6 +659,77 @@ export function buildEnvGraph({
  * that structure. If this is later found to lose composition fidelity,
  * re-run the base pass's ControlNet nodes into this graph instead.
  */
+/**
+ * Build the dev ANCHOR graph — img2img on the grained block-in
+ * (ABP-flux-dev-and-anchor.md, D-anchored arm: 27 steps, cfg 1, guidance 5.0,
+ * denoise 0.75 — window 0.70-0.78, only functional when the block-in carries
+ * Gaussian grain; flat grey shapes hijack style into flat vector poster art).
+ * `anchorImage` is the UPLOADED grained block-in filename (ComfyUI input dir),
+ * produced by generateEnv's `--anchor` flow: renderDepthPng -> blur 0x6 ->
+ * +noise Gaussian at `profiles.environment.anchor.grainAttenuate`.
+ */
+export function buildEnvAnchorGraph({ brief, seed, anchorImage, forge, denoise, outputId }) {
+  const { models, sampler, anchor } = forge.profile;
+  const out = outputId ?? `${brief.id ?? "subject"}-anchor-seed${seed}`;
+  const effectiveDenoise = denoise ?? anchor.denoise;
+  return {
+    [ANCHOR_NODE.CKPT]: {
+      class_type: "CheckpointLoaderSimple",
+      inputs: { ckpt_name: models.dev.checkpoint },
+    },
+    [ANCHOR_NODE.POS]: {
+      class_type: "CLIPTextEncode",
+      inputs: { clip: [ANCHOR_NODE.CKPT, 1], text: brief.positive },
+    },
+    [ANCHOR_NODE.NEG]: {
+      class_type: "CLIPTextEncode",
+      inputs: { clip: [ANCHOR_NODE.CKPT, 1], text: brief.negative ?? "" },
+    },
+    [ANCHOR_NODE.GUID]: {
+      class_type: "FluxGuidance",
+      inputs: { conditioning: [ANCHOR_NODE.POS, 0], guidance: anchor.guidance },
+    },
+    [ANCHOR_NODE.ZERO]: {
+      class_type: "ConditioningZeroOut",
+      inputs: { conditioning: [ANCHOR_NODE.NEG, 0] },
+    },
+    [ANCHOR_NODE.LOAD]: {
+      class_type: "LoadImage",
+      inputs: { image: anchorImage },
+    },
+    [ANCHOR_NODE.ENCODE]: {
+      class_type: "VAEEncode",
+      inputs: { pixels: [ANCHOR_NODE.LOAD, 0], vae: [ANCHOR_NODE.CKPT, 2] },
+    },
+    [ANCHOR_NODE.KSAMPLER]: {
+      class_type: "KSampler",
+      inputs: {
+        model: [ANCHOR_NODE.CKPT, 0],
+        positive: [ANCHOR_NODE.GUID, 0],
+        negative: [ANCHOR_NODE.ZERO, 0],
+        latent_image: [ANCHOR_NODE.ENCODE, 0],
+        seed,
+        steps: anchor.steps,
+        cfg: anchor.cfg,
+        sampler_name: sampler.samplerName,
+        scheduler: sampler.scheduler,
+        denoise: effectiveDenoise,
+      },
+    },
+    [ANCHOR_NODE.DECODE]: {
+      class_type: "VAEDecode",
+      inputs: { samples: [ANCHOR_NODE.KSAMPLER, 0], vae: [ANCHOR_NODE.CKPT, 2] },
+    },
+    [ANCHOR_NODE.SAVE]: {
+      class_type: "SaveImage",
+      inputs: {
+        images: [ANCHOR_NODE.DECODE, 0],
+        filename_prefix: `art-forge/env/${out}`,
+      },
+    },
+  };
+}
+
 export function buildEnvHiresGraph({ brief, seed, baseImage, forge }) {
   const { models, sampler, hires } = forge.profile;
   const outputId = `${brief.id ?? "subject"}-seed${seed}-hires`;
@@ -485,6 +837,7 @@ export async function uploadControlImage({
  * Generate one environment subject end to end: render the depth control PNG
  * from the brief's block-in masses (Task 5's blockin.mjs), upload it to the
  * ComfyUI box's input directory, queue the graph, download the result.
+ * (`--control none` skips the render/upload entirely — freehand txt2img.)
  *
  * With `--hires`, a SECOND job runs after the base pass completes: the just-
  * downloaded base PNG is re-uploaded and refined through
@@ -504,47 +857,189 @@ export async function generateEnv(
   const rawBrief = readBrief(briefId);
   const seed = parseSeed(args.seed);
   const positiveOverride = parsePromptOverride("positive", args.positive);
-  const strength = parseNumericOverride(
-    "strength",
-    args.strength,
-    forge.profile.controlNet.strength,
-  );
+
+  const { control, block, render } = resolveControl({ forge, control: args.control });
+  const { model } = resolveModel({ forge, model: args.model });
+  const strength = resolveStrength({ control, block, override: args.strength });
   const { width, height } = forge.profile.latent;
 
-  const depthLocalPath = path.join(forge.outDir, "depth", `${briefId}.png`);
-  await renderDepthPng({ brief: rawBrief, width, height, outPath: depthLocalPath });
+  // --denoise is the refine's re-measure knob (subject-probe verdict open
+  // question 1 (a)): the anchor window's 0.75 is measured HARMFUL on a
+  // finished cell, so a re-measure must name its own denoise explicitly.
+  // Guard BEFORE any control staging so a stray flag cannot render and
+  // re-upload a control map (overwrite semantics) before failing.
+  if (args.denoise != null && !args.refine) {
+    throw new Error("--denoise is a --refine-only flag");
+  }
 
   const base = comfyBaseUrl(forge, args);
-  // dry-run must not touch the network — the depth PNG still renders locally
-  // above so a --dry-run graph carries a realistic LoadImage name.
-  const depthImage = args["dry-run"]
-    ? `art-forge/${briefId}.png`
-    : await uploadControlImage({ base, localPath: depthLocalPath, subfolder: "art-forge" });
+  // --control none stages no control image at all: nothing is rendered or
+  // uploaded, and the queued graph carries no LoadImage (dry-run included).
+  let controlImage = null;
+  if (control !== "none" && !args.refine) {
+    // Per-control local path AND per-control uploaded basename. Both matter:
+    // uploadControlImage sends path.basename(localPath) with overwrite=true, so
+    // a shared "A1-ART-02.png" would let a segment run clobber the depth map
+    // already sitting in ComfyUI's input dir (and vice versa).
+    const controlLocalPath = path.join(forge.outDir, "control", control, `${briefId}-${control}.png`);
+    await render({ brief: rawBrief, width, height, outPath: controlLocalPath });
+
+    // dry-run must not touch the network — the control PNG still renders
+    // locally above so a --dry-run graph carries a realistic LoadImage name.
+    controlImage = args["dry-run"]
+      ? `art-forge/${briefId}-${control}.png`
+      : await uploadControlImage({ base, localPath: controlLocalPath, subfolder: "art-forge" });
+  }
 
   // --positive replaces the composed prompt entirely (CLI wins over
   // composed), matching charsheet.mjs/i2i.mjs's --positive convention. When
   // not given, the positive is the brief prose PLUS the house style
   // vocabulary — a bare brief prompt is exactly what produced the modern-
   // contamination failure this composition exists to prevent.
+  //
+  // brief.id is qualified with the control (matching controlOutputId's own
+  // naming) so buildEnvGraph's internal SaveImage filename_prefix — which it
+  // derives from brief.id, not from the outer outputId below — lands on the
+  // SAME control-qualified name instead of silently dropping the control
+  // suffix for non-depth controls. depth's id stays bare on purpose: that is
+  // what keeps its embedded filename_prefix byte-identical to F-026.
   const brief = {
-    positive: positiveOverride ?? buildEnvPositive(rawBrief.prompt, forge),
+    // The composed path lints inside buildEnvPositive(); a --positive
+    // override bypasses composition, so it is linted here instead.
+    // Both paths lint against the town-canon-reviewer's criteria vocabulary
+    // on top of the forge's own forbiddenTokens.
+    positive: positiveOverride
+      ? assertPositivePromptClean(positiveOverride, {
+          forbiddenTokens: [
+            ...promptForbiddenTokens(forge),
+            ...townCriteriaForbiddenTokens(),
+          ],
+          ...promptScaleGuard(forge),
+          requiredAssertions: rawBrief.mustAssert ?? [],
+        })
+      : buildEnvPositive(rawBrief.prompt, forge, {
+          requiredAssertions: rawBrief.mustAssert ?? [],
+          extraForbiddenTokens: townCriteriaForbiddenTokens(),
+        }),
     negative: buildEnvNegative(forge),
-    id: rawBrief.id,
+    id: composeBriefId(rawBrief.id, control, model),
   };
-  const graph = buildEnvGraph({ brief, seed, depthImage, forge, strength });
 
-  const outputId = `${briefId}-seed${seed}-s${formatStrength(strength)}`;
+  // Rail 7: an optional --rolltag namespaces a probe/re-roll era so a new
+  // measurement never overwrites the cells a previous verdict reviewed.
+  const rolltag = typeof args.rolltag === "string" && args.rolltag.trim() !== ""
+    ? args.rolltag.trim()
+    : null;
+
+  // --refine <png>: the materials refine pass (subject-probe verdict open
+  // question 1 (a)) — img2img on an EXISTING reviewed cell using the anchor
+  // recipe (dev, `profiles.environment.anchor` steps/cfg/guidance). No base
+  // pass runs and no grain/blur step is applied: the source is already a
+  // textured painterly render, not a flat block-in. Rail 7: --rolltag is
+  // REQUIRED — the output lands on a rolltag-isolated name so a refine can
+  // never overwrite a reviewed cell.
+  if (args.refine) {
+    if (typeof args.refine !== "string" || args.refine.trim() === "") {
+      throw new Error("--refine needs the source PNG path, got a bare flag");
+    }
+    if (model !== "dev") {
+      throw new Error(
+        "--refine is a dev-model pass (anchor recipe) — schnell has no anchor recipe; run --model dev",
+      );
+    }
+    if (!rolltag) {
+      throw new Error(
+        "--refine requires --rolltag <tag> (rail 7: a refine must never overwrite a reviewed cell)",
+      );
+    }
+    // The anchor window's 0.75 default is measured HARMFUL on a finished
+    // cell (verdict #13) — the same loud-fail law as resolveStrength: an
+    // unmeasured operating point must be named, never inherited silently.
+    if (args.denoise == null) {
+      throw new Error(
+        "--refine requires --denoise <0..1> — the anchor default 0.75 is measured harmful on a finished cell (verdict #13); name the denoise explicitly",
+      );
+    }
+    const refineDenoise = Number(args.denoise);
+    if (!(refineDenoise > 0 && refineDenoise < 1)) {
+      throw new Error(`--denoise must be a number strictly between 0 and 1, got ${JSON.stringify(args.denoise)}`);
+    }
+    const refineSourceLocal = path.resolve(args.refine.trim());
+    const refineSource = args["dry-run"]
+      ? `art-forge/${path.basename(refineSourceLocal)}`
+      : await uploadControlImage({ base, localPath: refineSourceLocal, subfolder: "art-forge" });
+    const refineGraph = buildEnvAnchorGraph({
+      brief,
+      seed,
+      anchorImage: refineSource,
+      forge,
+      denoise: refineDenoise,
+      outputId: `${briefId}-dev-refine-${rolltag}-seed${seed}`,
+    });
+    const refineOutputId = `${briefId}-dev-refine-${rolltag}-seed${seed}`;
+    const refineResult = await runGraph({
+      forge,
+      args,
+      graph: refineGraph,
+      name: `env/${refineOutputId}`,
+      label: `env refine ${briefId} seed=${seed} source=${refineSource} denoise=${refineDenoise}`,
+    });
+    if (refineResult.dest) {
+      // Same ledger policy as the base and anchor passes — the refine render
+      // is a real artifact and its provenance (which cell it refined, at what
+      // denoise) must be recoverable. `refineSource` names the input cell;
+      // strength is null (no ControlNet in the anchor recipe the reuses).
+      try {
+        appendAttempt(RUNS_DIR, briefId, {
+          type: "render",
+          seed,
+          hires: false,
+          control: "refine",
+          strength: null,
+          refineSource: path.relative(FORGE_DIR, refineSourceLocal),
+          ...ledgerSamplerFields(forge.profile.anchor, "dev", { denoise: refineDenoise }),
+          briefHash: briefHash(rawBrief),
+          out: path.relative(FORGE_DIR, refineResult.dest),
+        });
+      } catch (err) {
+        console.error(`env.mjs: WARNING: ledger append failed: ${err.message}`);
+      }
+    }
+    return refineResult;
+  }
+
+  const outputId = controlOutputId({ briefId, control, seed, strength, model, rolltag });
+  const graph = buildEnvGraph({ brief, seed, depthImage: controlImage, forge, strength, controlNet: block, model });
+
   const baseResult = await runGraph({
     forge,
     args,
     graph,
     name: `env/${outputId}`,
-    label: `env ${briefId} seed=${seed} strength=${formatStrength(strength)} depth=${depthImage}`,
+    label:
+      `env ${briefId} seed=${seed} control=${control}` +
+      (control === "none" ? "" : ` strength=${formatStrength(strength)}`) +
+      (controlImage ? ` image=${controlImage}` : ""),
   });
 
   // Run-ledger entry (F-050): the base PNG is downloaded — record the render
   // attempt. Dry-run downloads nothing, so it records nothing.
+  //
+  // Anchor runs (rail 6, anchor verdict): the base pass is a byproduct the
+  // anchor graph never consumes, and writing it to the plain
+  // `<brief>-dev-seed<N>-s<S>.png` name overwrote reviewed render files twice
+  // on 2026-08-30. In anchor mode the download is renamed to
+  // `<brief>-dev-anchorbase-seed<N>.png` BEFORE the ledger entry, and the
+  // entry carries `anchorBase: true` so the index can tell the two apart.
   if (baseResult.dest) {
+    if (args.anchor) {
+      const anchorBaseDest = path.join(
+        path.dirname(baseResult.dest),
+        `${briefId}-dev-anchorbase-seed${seed}-s${formatStrength(strength)}.png`,
+      );
+      fs.renameSync(baseResult.dest, anchorBaseDest);
+      baseResult.dest = anchorBaseDest;
+    }
     // Ledger failure must NOT fail the run after the PNG was produced —
     // warn and continue (same policy as artifact-gate.mjs).
     try {
@@ -552,6 +1047,10 @@ export async function generateEnv(
         type: "render",
         seed,
         hires: false,
+        ...(args.anchor ? { anchorBase: true } : {}),
+        control,
+        strength: control === "none" ? null : strength,
+        ...ledgerSamplerFields(model === "dev" ? forge.profile.samplerDev : forge.profile.sampler, model),
         briefHash: briefHash(rawBrief),
         out: path.relative(FORGE_DIR, baseResult.dest),
       });
@@ -560,8 +1059,103 @@ export async function generateEnv(
     }
   }
 
-  if (!args.hires) {
+  if (!args.hires && !args.anchor) {
     return baseResult;
+  }
+
+  // --anchor (dev only): the composition anchor pass from
+  // ABP-flux-dev-and-anchor.md — the COLOUR block-in (content colours over a
+  // declared sky gradient) is grained (blur 0x6, then +noise Gaussian at
+  // anchor.grainAttenuate — grain creates the denoise window; flat shapes
+  // hijack style into flat vector), re-uploaded, and refined img2img at
+  // denoise 0.75 over 27 steps.
+  //
+  // The base is the COLOUR block-in, not the depth map (fix, 2026-08-30):
+  // img2img reads its base as content, so the depth path's "dark = far"
+  // semantics rendered the parked anchor as a flat black-and-white night
+  // poster — the black canvas kept as a black sky, flat tones as a flat
+  // vector medium. The ABP's measured anchor base was always the colour
+  // block-in; the depth map is for the ControlNet base pass only.
+  if (args.anchor && model !== "dev") {
+    throw new Error(
+      "--anchor is a dev-model pass (ABP-flux-dev-and-anchor.md) — schnell has no anchor recipe; run --model dev",
+    );
+  }
+  if (args.anchor && !controlImage) {
+    throw new Error("--anchor needs a control image to anchor on — control none stages nothing");
+  }
+  if (args.anchor) {
+    const anchorCfg = forge.profile.anchor;
+    const colourSourceLocal = path.join(forge.outDir, "control", "colour", `${briefId}-colour.png`);
+    await renderColourPng({ brief: rawBrief, width, height, outPath: colourSourceLocal });
+    try {
+      appendAttempt(RUNS_DIR, briefId, {
+        type: "blockin",
+        briefHash: briefHash(rawBrief),
+        out: path.relative(FORGE_DIR, colourSourceLocal),
+      });
+    } catch (err) {
+      console.error(`env.mjs: WARNING: ledger append failed: ${err.message}`);
+    }
+    const grainedPath = path.join(
+      forge.outDir,
+      "control",
+      "colour",
+      `${briefId}-colour-grained.png`,
+    );
+    const anchorSource = args["dry-run"]
+      ? `art-forge/${briefId}-colour-grained.png`
+      : await execFile("magick", [
+          colourSourceLocal,
+          "-blur",
+          "0x6",
+          "-attenuate",
+          String(anchorCfg.grainAttenuate),
+          "+noise",
+          "Gaussian",
+          grainedPath,
+        ]).then(() => {
+          console.error(`[art-forge] anchor: grained colour block-in -> ${grainedPath}`);
+          return uploadControlImage({ base, localPath: grainedPath, subfolder: "art-forge" });
+        });
+    const anchorGraph = buildEnvAnchorGraph({ brief, seed, anchorImage: anchorSource, forge });
+    // Rail 7 (v6 anchor verdict): the anchor output previously wrote straight
+    // to `<brief>-dev-anchor-seed<N>.png`, so every re-roll overwrote the
+    // cells the previous verdict had reviewed — the v5 evidence pixels are
+    // unrecoverable. A `--rolltag <tag>` (e.g. `anchor-r3`) namespaces the
+    // output per roll; without one the historical name is kept.
+    const anchorOutputId = rolltag
+      ? `${briefId}-dev-anchor-${rolltag}-seed${seed}`
+      : `${briefId}-dev-anchor-seed${seed}`;
+    const anchorResult = await runGraph({
+      forge,
+      args,
+      graph: anchorGraph,
+      name: `env/${anchorOutputId}`,
+      label: `env anchor ${briefId} seed=${seed} source=${anchorSource} denoise=${anchorCfg.denoise}`,
+    });
+    if (anchorResult.dest) {
+      // Same ledger policy as the base and hires passes — the anchor render
+      // is a real artifact and its provenance (no ControlNet strength: the
+      // anchor graph conditions from the grained colour block-in alone) must
+      // be recoverable from the ledger, not from filenames.
+      try {
+        appendAttempt(RUNS_DIR, briefId, {
+          type: "render",
+          seed,
+          hires: false,
+          anchor: true,
+          control: "anchor-colour",
+          strength: null,
+          ...ledgerSamplerFields(anchorCfg, "dev"),
+          briefHash: briefHash(rawBrief),
+          out: path.relative(FORGE_DIR, anchorResult.dest),
+        });
+      } catch (err) {
+        console.error(`env.mjs: WARNING: ledger append failed: ${err.message}`);
+      }
+    }
+    return { base: baseResult, anchor: anchorResult };
   }
 
   const hiresOutputId = `${briefId}-seed${seed}-hires`;
@@ -586,6 +1180,8 @@ export async function generateEnv(
         type: "render",
         seed,
         hires: true,
+        control,
+        strength: control === "none" ? null : strength,
         briefHash: briefHash(rawBrief),
         out: path.relative(FORGE_DIR, hiresResult.dest),
       });

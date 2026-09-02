@@ -1,11 +1,11 @@
 {
-  "version": "1.8",
+  "version": "1.9",
   "in_progress": false,
   "nodeMajor": 18,
   "runtimeNodeMajor": 22,
   "nodeMajorWhy": "nodeMajor is the DETERMINISM PIN (world-fill Plan C, R5): the Node major that runs the map tooling and the byte gates, and therefore the one .github/workflows/ci.yml sets up. runtimeNodeMajor is a DIFFERENT number for a different job \u2014 the game-server deployment image in colyseus-server/Dockerfile, which has been node:22-alpine since release 1.2 and never runs mapforge. The plan asserted the two were one number and that ci.yml:33's 18 'matches colyseus-server/Dockerfile'; the tree says otherwise, so both are recorded here and scripts/tests/node-pin.test.mjs joins each to its own consumer. Determinism is a version-pinned contract, not a portability claim.",
-  "started_at": "2026-08-09T09:49:12.721973+00:00",
+  "started_at": "2026-09-01T17:44:27.327893+00:00",
   "started_by": "claude-a6c35399",
-  "last_promoted_at": "2026-08-29T14:19:04.584519+00:00",
-  "last_promoted_version": "1.8"
+  "last_promoted_at": "2026-09-02T13:09:25.401541+00:00",
+  "last_promoted_version": "1.9"
 }
