@@ -2,7 +2,7 @@
  * F-018 Phase 5 / Task 5.3 — the parity test: the closed form vs the real fight.
  *
  * This closes the largest stated gap in the model: NO SIMULATION HAS EVER RUN.
- * Every number in `tools/combat-lab/` is closed form, with no crits, no misses, no
+ * Every number in `atelier/combat-lab/` is closed form, with no crits, no misses, no
  * kiting, no movement and no line of sight. Here the model's own `mob(L, rank)` and
  * `player(L, 'max')` stats are stamped onto real entities, the fight is run through
  * the real `GameSimulationSystem` pass, and the model's two headline outputs are

@@ -182,11 +182,11 @@ test("the row schema is CLOSED — at the root and on requires", () => {
 // has never once executed read as covered. node:test's own skip option is the
 // honest form (the sibling instance test already uses it), and it makes the
 // dark cross-check visible in the summary line.
-const MATCHES_REQUIRES = join(ROOT, "tools/mapforge/lib/passes/landforms.mjs");
+const MATCHES_REQUIRES = join(ROOT, "atelier/mapforge/lib/passes/landforms.mjs");
 test("every requires key is handled by Plan C's matchesRequires — the cross-check", {
   skip: existsSync(MATCHES_REQUIRES)
     ? false
-    : "tools/mapforge/lib/passes/landforms.mjs is not present yet (Plan C)",
+    : "atelier/mapforge/lib/passes/landforms.mjs is not present yet (Plan C)",
 }, () => {
   const impl = MATCHES_REQUIRES;
   const src = readFileSync(impl, "utf8");

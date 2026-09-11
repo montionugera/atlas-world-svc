@@ -124,6 +124,6 @@ test("no committed node populates `bands` — the frame claim depends on it", ()
       "nothing but `lore.labelAt` is parent-frame. `bands` is schema-unconstrained, unread, and " +
       "empty on every node, which is the only reason that claim is safe. It is no longer empty:\n" +
       bad.join("\n") +
-      "\nGo re-classify the field's frame in tools/mapforge/generate-world.mjs before shipping it.",
+      "\nGo re-classify the field's frame in atelier/mapforge/generate-world.mjs before shipping it.",
   );
 });

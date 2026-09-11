@@ -30,7 +30,7 @@
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { mintName, phonemeDistance, titleStem } from "../../tools/mapforge/lib/name-gen.mjs";
+import { mintName, phonemeDistance, titleStem } from "../../atelier/mapforge/lib/name-gen.mjs";
 
 /** Landmark slots a zone row carries. The zone slot is never inherited. */
 export const LANDMARK_SLOTS = 2;

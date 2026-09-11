@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Thumbnail bake (F-038).
 //
-// tools/asset-storybook renders EVERY card from a baked thumbnail — that is
+// atelier/asset-storybook renders EVERY card from a baked thumbnail — that is
 // what makes 742 heterogeneous assets uniformly reviewable and uniformly
 // cheap. Before this, the page mounted 643 <model-viewer> elements and pulled
 // 16.4 MB at rest; a thumbnail spine replaces both with one small image per
@@ -275,7 +275,7 @@ async function main() {
       unlinkSync(jobFile);
 
       // Blender does NOT exit non-zero on an unhandled Python exception
-      // (documented in tools/asset-forge/bake.sh). Count the result lines
+      // (documented in atelier/asset-forge/bake.sh). Count the result lines
       // instead of trusting the exit code.
       const out = (proc.stdout || "") + (proc.stderr || "");
       for (const line of out.split("\n")) {

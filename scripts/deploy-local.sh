@@ -116,7 +116,7 @@ if [ "$DO_STORYBOOK" -eq 1 ]; then
   echo "▶ Building storybook image ($STORYBOOK_IMAGE)..."
   echo "  (~261 MB of assets — the first build is slow; later ones reuse the layer)"
   docker build -t "$STORYBOOK_IMAGE" \
-    -f "$REPO_ROOT/tools/asset-storybook/Dockerfile" "$REPO_ROOT"
+    -f "$REPO_ROOT/atelier/asset-storybook/Dockerfile" "$REPO_ROOT"
   echo "  ✓ built"
 fi
 

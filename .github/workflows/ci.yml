@@ -171,7 +171,7 @@ jobs:
         run: node scripts/report_relation_coverage.mjs
 
       # Render lock (Plan A G-RENDER-LOCK): every sheet in
-      # tools/mapforge/render-sheet.mjs's SHEETS registry is rebuilt from the
+      # atelier/mapforge/render-sheet.mjs's SHEETS registry is rebuilt from the
       # live spine, hashed, and compared against content/world/render-lock.json
       # AND against the committed SVG on disk. Replaces G-MAP-DRIFT.
       - name: Render lock (G-RENDER-LOCK)
@@ -208,52 +208,52 @@ jobs:
       # caught by — scripts/tests/node-pin.test.mjs is where the number lives
       # and is joined to its consumer.) Quoting
       # here would hand Node 18 the literal string
-      # "tools/mapforge/tests/*.test.mjs" as a path: the step would either error
+      # "atelier/mapforge/tests/*.test.mjs" as a path: the step would either error
       # on a nonexistent file or, worse, run zero tests and go green while
       # proving nothing. The working form is the one scripts/integration.sh and
       # scripts/package.json already use — let the shell expand it.
       - name: Mapforge test suite
-        run: node --test tools/mapforge/tests/*.test.mjs
+        run: node --test atelier/mapforge/tests/*.test.mjs
 
       # EVERY id in the SHEETS registry, not a subset. `fabric` and `overlay`
       # were covered only through G-RENDER-LOCK when they landed; the lock
       # compares hashes and this compares the drawing to the committed file,
-      # which are different claims. tools/mapforge/tests/render-sheet.test.mjs
+      # which are different claims. atelier/mapforge/tests/render-sheet.test.mjs
       # asserts this list IS the registry, so a sheet added without a line here
       # reds rather than going quietly uncovered.
       - name: Sheet self-check (render-sheet --check)
         run: |
-          node tools/mapforge/render-sheet.mjs --sheet ashen-spar --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet atlas --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet brightfall --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet coldreach --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet driftholt --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet fabric --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet loamspit --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet overlay --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet quillreef --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet reedstrand --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet rimewall-cap --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet skerryfast --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet stonemoor --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet synthetic --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet thirstwold --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet wealdmarch --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet wracklow --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet ashen-spar --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet atlas --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet brightfall --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet coldreach --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet driftholt --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet fabric --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet loamspit --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet overlay --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet quillreef --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet reedstrand --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet rimewall-cap --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet skerryfast --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet stonemoor --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet synthetic --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet thirstwold --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet wealdmarch --no-png --check
+          node atelier/mapforge/render-sheet.mjs --sheet wracklow --no-png --check
 
       # Story explorer (F-012 Task 6): graph.mjs is the pure buildGraph()
-      # shared by tools/story-explorer/index.html and this smoke test — every
+      # shared by atelier/story-explorer/index.html and this smoke test — every
       # real story file resolves, no dangling edges, no prereq cycle, and a
       # synthetic fixture covers the event/dialogue edge kinds real content
       # doesn't exercise yet.
       - name: Story explorer smoke test
-        run: node --test tools/story-explorer/tests/*.test.mjs
+        run: node --test atelier/story-explorer/tests/*.test.mjs
 
       # Asset storybook (F-038): the pure data layer — taxonomy resolution,
       # thumb-index join, verdict store. No DOM, so node --test covers it.
       # Without this step the storybook's tests only ever ran on a laptop.
       - name: Asset storybook data-layer tests
-        run: node --test tools/asset-storybook/tests/*.test.mjs
+        run: node --test atelier/asset-storybook/tests/*.test.mjs
 
       # System-level (non-npm) binaries: scripts/system-deps.json is the ONE
       # declared source of truth (see its header) — this installs whatever it
@@ -271,7 +271,7 @@ jobs:
       # per-tool binaries (convert, identify, ...), reproducing IM7's own
       # dispatch rule. rsvg-convert (librsvg) is declared in the same
       # manifest but marked `required: false` and deliberately NOT installed
-      # here — tools/mapforge/tests/*.test.mjs self-skip without it, and
+      # here — atelier/mapforge/tests/*.test.mjs self-skip without it, and
       # installing it in CI was considered and REJECTED (world-fill-STATE.md):
       # it turns a skip into a wall-clock perf assertion on a shared,
       # contended runner, which is what produced a documented flaky red.
@@ -282,7 +282,7 @@ jobs:
       # Same Node 18 as above; the shell expands the glob (node:test accepts
       # explicit file paths). Without this step these tests only ran locally.
       - name: Art forge unit tests
-        run: node --test tools/art-forge/tests/*.test.mjs
+        run: node --test atelier/art-forge/tests/*.test.mjs
 
       # Asset forge (F-003): structural + game-rule validation for every
       # manifest entry whose glb exists on disk. Bespoke-tier failures are
@@ -290,5 +290,5 @@ jobs:
       # tracked as an F-002 follow-up) so this stays green today.
       - name: Asset forge — validate manifest glbs
         run: |
-          npm ci --prefix tools/asset-forge
-          node tools/asset-forge/validate.mjs --manifest game-client/assets/manifest.json
+          npm ci --prefix atelier/asset-forge
+          node atelier/asset-forge/validate.mjs --manifest game-client/assets/manifest.json

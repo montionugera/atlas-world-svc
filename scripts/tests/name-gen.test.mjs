@@ -10,7 +10,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   REGISTERS, NAME_FORMS, mintName, phonemeDistance, prosody, syllableCount, registerOf, titleStem,
-} from "../../tools/mapforge/lib/name-gen.mjs";
+} from "../../atelier/mapforge/lib/name-gen.mjs";
 import { gNames } from "../../scripts/lib/resolve.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");

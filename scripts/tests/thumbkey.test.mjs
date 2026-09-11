@@ -1,7 +1,7 @@
 // F-038 — the thumbnail key shared by three consumers:
 //   scripts/bake_thumbnails.mjs   (writes .thumbs/<key>.webp)
 //   scripts/check_asset_manifest.mjs guard (U)  (asserts freshness)
-//   tools/asset-storybook/js/data/thumbs.mjs    (renders the card)
+//   atelier/asset-storybook/js/data/thumbs.mjs    (renders the card)
 //
 // All three must agree byte-for-byte on the filename or the gate passes while
 // the page shows nothing. Keying on the SOURCE PATH rather than source bytes

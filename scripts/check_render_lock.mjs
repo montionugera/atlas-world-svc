@@ -7,7 +7,7 @@
 //          second catches a stale committed sheet — which is what
 //          scripts/check_map_render.mjs used to do and this absorbs.
 // --write  re-baseline the lock. Does NOT write the SVGs: re-rendering is
-//          `node tools/mapforge/render-sheet.mjs --sheet <id>`, and keeping
+//          `node atelier/mapforge/render-sheet.mjs --sheet <id>`, and keeping
 //          the two commands separate is what makes a re-baseline a decision.
 //
 // Both modes refuse to run when ANY sheet reports build problems. That is
@@ -44,7 +44,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { SHEETS } from "../tools/mapforge/render-sheet.mjs";
+import { SHEETS } from "../atelier/mapforge/render-sheet.mjs";
 import { computeLock, checkLock, unifiedDiff, lockExtraPaths } from "./lib/render-lock.mjs";
 
 const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -186,7 +186,7 @@ function main() {
     }
     if (onDisk === svg) continue;
     console.error(
-      `G-RENDER-LOCK: ${path} on disk is not the artifact it builds to — re-render with \`node tools/mapforge/render-sheet.mjs --sheet <id>\``,
+      `G-RENDER-LOCK: ${path} on disk is not the artifact it builds to — re-render with \`node atelier/mapforge/render-sheet.mjs --sheet <id>\``,
     );
     const d = unifiedDiff({ a: onDisk ?? "", b: svg });
     if (d) console.error(d);

@@ -5,14 +5,14 @@ import { weaponOffence, GEAR_REFERENCE } from "./weaponStats";
 import { ITEMS } from "./catalogs";
 
 /**
- * The combat lab (tools/combat-lab) is what solved the rank ladder, TTK table
+ * The combat lab (atelier/combat-lab) is what solved the rank ladder, TTK table
  * and difficulty curve. If the game's magnitude ceiling drifts away from the
  * lab's, every number in that model stops describing the game — silently.
  * These are the gates that make such a drift fail loudly.
  */
 const model = JSON.parse(
   readFileSync(
-    join(__dirname, "../../../tools/combat-lab/combat-model.json"),
+    join(__dirname, "../../../atelier/combat-lab/combat-model.json"),
     "utf8",
   ),
 ) as {

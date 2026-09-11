@@ -18,7 +18,7 @@ import {
   GENERATOR_VERSION,
   lockExtraPaths,
 } from "../lib/render-lock.mjs";
-import { SHEETS } from "../../tools/mapforge/render-sheet.mjs";
+import { SHEETS } from "../../atelier/mapforge/render-sheet.mjs";
 import { makeTempRepo } from "./helpers/temp-repo.mjs";
 import { runCli as runCliOn } from "./helpers/run-cli.mjs";
 

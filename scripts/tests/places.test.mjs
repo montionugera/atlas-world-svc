@@ -63,7 +63,7 @@ function realTree() {
 //     by deleting them.
 //
 // The real coverage the pin asked for lives where it can be observed, in
-// tools/mapforge/tests/continent-sheet.test.mjs's "RULING 8" test — and it is
+// atelier/mapforge/tests/continent-sheet.test.mjs's "RULING 8" test — and it is
 // FOUR of the five subject keys, not five. `coastline`, `river`, `saltmire`
 // and `terrainPatches` are asserted as DRAWN on the wealdmarch continent
 // sheet; `iceEdge` is asserted as ABSENT FROM THE DATA, because it is null on
@@ -99,7 +99,7 @@ test("RULING 8: the basin sheet's spine path stays dead; its ground came back as
   // (2) `cluster1` is out of the sheet registry. This is the half that the
   // storybook parity gate and check_render_lock both key off: leaving the
   // entry while the sheet cannot build is what made check_render_lock BAIL.
-  const { SHEETS } = await import("../../tools/mapforge/render-sheet.mjs");
+  const { SHEETS } = await import("../../atelier/mapforge/render-sheet.mjs");
   assert.equal(SHEETS.cluster1, undefined, "cluster1 is back in SHEETS as a separate entry — ruling 8 says it is wealdmarch");
   assert.deepEqual(
     Object.keys(SHEETS),
@@ -115,7 +115,7 @@ test("RULING 8: the basin sheet's spine path stays dead; its ground came back as
   // two functions look live because their tests import them. Ruling 8 left
   // them on disk as Task 8's raw material; Task 8 did not need them, so this
   // assertion now records a permanent state rather than a temporary one.
-  const srcs = ["scripts/check_content.mjs", "tools/mapforge/render-sheet.mjs"];
+  const srcs = ["scripts/check_content.mjs", "atelier/mapforge/render-sheet.mjs"];
   for (const rel of srcs) {
     const src = readFileSync(join(ROOT, rel), "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, " ")
@@ -181,7 +181,7 @@ test("loadPlaces on the real content root reads the resolved world", () => {
   // ERRATUM vs plan Task 11 Step 1 ("expected >= 45 towns"): the committed
   // resolved world carries EIGHT towns — the 6 basin pins plus Tallowquay and
   // Netstead; the roster's other pins are landmarks, not settlements. Pinned
-  // as an EXACT golden count (the repo convention, cf. tools/mapforge/tests/
+  // as an EXACT golden count (the repo convention, cf. atelier/mapforge/tests/
   // generate-world.test.mjs's pinned lengths) so even ONE lost settlement
   // reds here — a >= floor would swallow it. Only Plan E's redraw may move
   // this number, in the same commit that re-baselines it deliberately.
@@ -526,7 +526,7 @@ const MIRROR_NAMERS = new Set([
   // bytes, so the lib is now dormant source awaiting Task 8's resolved-backed
   // rebuild and the strings draw nothing. Its test file was deleted with the
   // sheet — this allowlist test is what caught the stale entry.
-  "tools/mapforge/lib/basin-sheet.mjs",
+  "atelier/mapforge/lib/basin-sheet.mjs",
   "scripts/tests/spine-gates.test.mjs",
   "scripts/tests/town-millcross.test.mjs", // canon provenance in comments
   // Plan D Task 11: the cutover's own test file — its comments and the

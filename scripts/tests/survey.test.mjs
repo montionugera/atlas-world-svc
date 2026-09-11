@@ -37,7 +37,7 @@ test("the unknown default travels the same branch surveyed did — no reader fli
   // against the string "reported"; none tests for "surveyed". If one ever
   // does, it must decide what an evidence-free node means, and this reds.
   const files = [
-    "tools/mapforge/lib/atlas-sheet.mjs",
+    "atelier/mapforge/lib/atlas-sheet.mjs",
     "scripts/lib/spine.mjs",
   ];
   const root = new URL("../..", import.meta.url);

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1504" height="1672" viewBox="0 0 1504 1672" role="img" aria-label="THE ATLAS WORLD — Bellfaith survey where the ground is walked; mariners' report beyond">
 <title>THE ATLAS WORLD — Bellfaith survey where the ground is walked; mariners' report beyond</title>
-<desc>Authored vector map drawn from content/spine/ (nodes + sheet-atlas.json) by tools/mapforge/render-sheet.mjs. Not a generated image.</desc>
+<desc>Authored vector map drawn from content/spine/ (nodes + sheet-atlas.json) by atelier/mapforge/render-sheet.mjs. Not a generated image.</desc>
 <defs>
 <pattern id="pBramble" width="9" height="9" patternUnits="userSpaceOnUse"><path d="M0,9 l9,-9 M0,0 l9,9" stroke="#8a7f6c" stroke-width="0.65" fill="none"/></pattern>
 <pattern id="pFlat" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="3" cy="4" r="0.8" fill="#8a7f6c"/><circle cx="11" cy="9" r="0.8" fill="#8a7f6c"/><circle cx="6" cy="13" r="0.7" fill="#8a7f6c"/></pattern>

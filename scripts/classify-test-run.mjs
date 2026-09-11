@@ -4,7 +4,7 @@
 // THE MEASURED DEFECT: the default `node --test` reporter DISCARDS `signal:`
 // entirely — a killed run's TAP-equivalent output ("✔ slow test (60003ms)")
 // is byte-for-byte indistinguishable from one that actually finished. This
-// already cost this programme directly: three tools/mapforge/tests/ files
+// already cost this programme directly: three atelier/mapforge/tests/ files
 // (promote, raster, render-sheet — all blocking in spawnSync) were reported
 // as real failures when an operator had SIGTERM'd them, and promote.test.mjs
 // is 42/42 standalone (i.e. it was never actually broken).

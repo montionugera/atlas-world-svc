@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Generates tools/combat-lab/combat-model.json — the input data for the combat
-// balance lab (tools/combat-lab/index.html).
+// Generates atelier/combat-lab/combat-model.json — the input data for the combat
+// balance lab (atelier/combat-lab/index.html).
 //
 // This file is the I-028 combat model and NOTHING ELSE. It deliberately does not
 // read, import or scrape anything from the game.
@@ -822,7 +822,7 @@ function main() {
   // is precisely what stops `git status` from answering "did the MODEL change?".
   // Git already records when the file changed, and more honestly.
   const out = { version: 3, proposed };
-  const dir = join(ROOT, "tools/combat-lab");
+  const dir = join(ROOT, "atelier/combat-lab");
   mkdirSync(dir, { recursive: true });
   const dest = join(dir, "combat-model.json");
   writeFileSync(dest, JSON.stringify(out, null, 2) + "\n");

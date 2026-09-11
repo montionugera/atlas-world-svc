@@ -1,0 +1,1793 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>atlas-world-svc — Asset Storybook</title>
+    <script
+      type="module"
+      src="https://unpkg.com/@google/model-viewer@4.3.1/dist/model-viewer.min.js"
+    ></script>
+    <style>
+      :root {
+        --bg: #0b0d12;
+        --bg-elev: #12151d;
+        --bg-card: #171b26;
+        --border: #262c3a;
+        --border-hover: #3a4256;
+        --text: #e7e9ee;
+        --text-dim: #9aa1b2;
+        --text-faint: #656d80;
+        --accent: #7c9eff;
+        --accent-dim: #3a4a7a;
+        --tier-seed: #f2b84b;
+        --ok: #7ee787;
+        --err: #ff7b72;
+        --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        --sans:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+          sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+      }
+
+      body {
+        display: flex;
+        align-items: flex-start;
+        min-height: 100vh;
+        background: radial-gradient(
+          1200px 600px at 15% -10%,
+          #1a2036 0%,
+          var(--bg) 55%
+        );
+      }
+
+      /* ---------- sidebar ---------- */
+
+      .sidebar {
+        flex: 0 0 240px;
+        width: 240px;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        background: var(--bg-elev);
+        border-right: 1px solid var(--border);
+        padding: 1.25rem 0 2rem;
+      }
+
+      .sidebar-brand {
+        padding: 0 1.1rem 1.1rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 0.75rem;
+      }
+
+      .sidebar-brand .eyebrow {
+        font-family: var(--mono);
+        font-size: 0.66rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 0.35rem;
+      }
+
+      .sidebar-brand strong {
+        display: block;
+        font-size: 0.95rem;
+        font-weight: 650;
+      }
+
+      .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        padding: 0 0.6rem;
+      }
+
+      .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        width: 100%;
+        text-align: left;
+        font-family: var(--sans);
+        font-size: 0.84rem;
+        font-weight: 500;
+        color: var(--text-dim);
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        padding: 0.5rem 0.6rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .sidebar-item:hover {
+        background: var(--bg-card);
+        color: var(--text);
+      }
+
+      .sidebar-item.active {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: #dce4ff;
+      }
+
+      .sidebar-item .label {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-transform: capitalize;
+      }
+
+      .sidebar-item .count {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--text-faint);
+      }
+
+      .sidebar-item.active .count {
+        color: #b9c6ff;
+      }
+
+      .health-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex: 0 0 7px;
+        background: var(--text-faint);
+      }
+
+      .health-dot.ok {
+        background: var(--ok);
+      }
+      .health-dot.err {
+        background: var(--err);
+      }
+
+      .sidebar-hint {
+        margin: 1rem 0.6rem 0;
+        padding-top: 0.9rem;
+        border-top: 1px solid var(--border);
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        line-height: 1.5;
+        color: var(--text-faint);
+      }
+
+      /* ---------- content ---------- */
+
+      .content {
+        flex: 1;
+        min-width: 0;
+      }
+
+      header {
+        padding: 2.5rem 2rem 1.75rem;
+        max-width: 1280px;
+        margin: 0 auto;
+      }
+
+      header .eyebrow {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 0.6rem;
+      }
+
+      header h1 {
+        margin: 0 0 0.6rem;
+        font-size: 1.9rem;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+      }
+
+      header p {
+        margin: 0;
+        max-width: 60ch;
+        color: var(--text-dim);
+        font-size: 0.95rem;
+        line-height: 1.55;
+      }
+
+      .stat-row {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 1.25rem;
+        flex-wrap: wrap;
+      }
+
+      .stat {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--text-faint);
+      }
+
+      .stat b {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      main {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 2rem 4rem;
+      }
+
+      section.kind-section {
+        margin-bottom: 2.5rem;
+        scroll-margin-top: 1.5rem;
+      }
+
+      section.kind-section h2 {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-faint);
+        font-weight: 600;
+        margin: 0 0 1rem;
+        padding-bottom: 0.6rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.1rem;
+      }
+
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition:
+          border-color 0.15s ease,
+          transform 0.15s ease;
+      }
+
+      .card:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-2px);
+      }
+
+      .card .viewport {
+        aspect-ratio: 1 / 1;
+        width: 100%;
+        background: radial-gradient(circle at 50% 30%, #1e2434 0%, #0f121a 75%);
+        position: relative;
+      }
+
+      model-viewer {
+        width: 100%;
+        height: 100%;
+        --poster-color: transparent;
+      }
+
+      .load-state {
+        position: absolute;
+        inset: auto 0.6rem 0.6rem auto;
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 5px;
+        background: rgba(0, 0, 0, 0.55);
+        color: var(--text-faint);
+        pointer-events: none;
+      }
+
+      .load-state.ok {
+        color: var(--ok);
+      }
+      .load-state.err {
+        color: var(--err);
+      }
+
+      .anim-picker {
+        position: absolute;
+        inset: 0.6rem auto auto 0.6rem;
+        max-width: calc(100% - 1.2rem);
+      }
+
+      .anim-picker select {
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        color: var(--text);
+        background: rgba(10, 12, 18, 0.72);
+        border: 1px solid var(--border-hover);
+        border-radius: 6px;
+        padding: 0.22rem 0.4rem;
+        max-width: 100%;
+        cursor: pointer;
+      }
+
+      .anim-picker select:disabled {
+        color: var(--text-faint);
+        cursor: default;
+      }
+
+      .card .meta {
+        padding: 0.9rem 1rem 1rem;
+        border-top: 1px solid var(--border);
+      }
+
+      .card .key {
+        font-family: var(--mono);
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: var(--text);
+        margin: 0 0 0.35rem;
+        word-break: break-all;
+      }
+
+      .card .filename {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--text-faint);
+        margin: 0 0 0.55rem;
+        word-break: break-all;
+      }
+      .card .filesize {
+        color: var(--text-dim);
+      }
+
+      .badges {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+      }
+
+      .badge {
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        padding: 0.18rem 0.55rem;
+        border-radius: 5px;
+        border: 1px solid var(--border);
+        color: var(--text-dim);
+      }
+
+      .badge.tier-seed {
+        color: var(--tier-seed);
+        border-color: #5c4a22;
+        background: rgba(242, 184, 75, 0.08);
+      }
+
+      .badge.license {
+        color: var(--text-faint);
+      }
+
+      .badge.event-key {
+        color: var(--accent);
+        border-color: var(--accent-dim);
+        background: rgba(124, 158, 255, 0.1);
+        font-family: var(--mono);
+      }
+
+      .empty-state {
+        color: var(--text-faint);
+        font-size: 0.9rem;
+        padding: 2rem 0;
+        text-align: center;
+      }
+
+      /* ---------- image renderer (2D icons/sprites) ---------- */
+
+      .viewport.image-viewport {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-image:
+          linear-gradient(45deg, #1c2130 25%, transparent 25%),
+          linear-gradient(-45deg, #1c2130 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #1c2130 75%),
+          linear-gradient(-45deg, transparent 75%, #1c2130 75%);
+        background-size: 16px 16px;
+        background-position:
+          0 0,
+          0 8px,
+          8px -8px,
+          -8px 0px;
+        background-color: #12151d;
+      }
+
+      .viewport.image-viewport img {
+        max-width: 60%;
+        max-height: 60%;
+        /* Seed pack is low-res pixel art — never let the browser smooth it. */
+        image-rendering: pixelated;
+      }
+
+      /* ---------- spritesheet / ninepatch renderers (Canvas2D) ---------- */
+      /* Both reuse .image-viewport's checkerboard background+centering; only
+         the canvas itself needs pixelated scaling since the seed frames/
+         panels are tiny source images stretched up for visibility. */
+
+      .viewport canvas {
+        image-rendering: pixelated;
+        border-radius: 4px;
+      }
+
+      /* Static label (theme's ".tres — baked preview" note) — same top-left
+         anchor as .anim-picker but a plain badge, not a <select>. */
+      .static-preview-note {
+        position: absolute;
+        inset: 0.6rem auto auto 0.6rem;
+        max-width: calc(100% - 1.2rem);
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        color: var(--text-dim);
+        background: rgba(10, 12, 18, 0.72);
+        border: 1px solid var(--border-hover);
+        border-radius: 6px;
+        padding: 0.22rem 0.4rem;
+      }
+
+      /* ---------- __unknown renderer (LOUD failure card) ---------- */
+
+      .viewport.unknown-viewport {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 123, 114, 0.12);
+      }
+
+      .unknown-msg {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--err);
+        text-align: center;
+        padding: 0 1rem;
+      }
+
+      .card.missing-entry {
+        border-color: rgba(255, 123, 114, 0.4);
+      }
+
+      /* ---------- soundboard (hover-to-play grid) ---------- */
+
+      .soundboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 0.7rem;
+      }
+
+      .sound-tile {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        min-height: 96px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0.75rem 0.8rem 0.7rem;
+        cursor: pointer;
+        user-select: none;
+        outline: none;
+        transition:
+          border-color 0.15s ease,
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      .sound-tile:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-2px);
+      }
+
+      .sound-tile.mapped {
+        border-color: var(--accent-dim);
+        background: linear-gradient(
+          160deg,
+          rgba(124, 158, 255, 0.08),
+          transparent 65%
+        );
+      }
+
+      .sound-tile.playing {
+        border-color: var(--accent);
+        box-shadow:
+          0 0 0 1px var(--accent),
+          0 6px 22px rgba(124, 158, 255, 0.22);
+      }
+
+      .sound-tile.pinned {
+        border-color: var(--ok);
+        box-shadow:
+          0 0 0 1px var(--ok),
+          0 6px 22px rgba(126, 231, 135, 0.18);
+      }
+
+      .sound-tile .tile-top {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+      }
+
+      .sound-tile .wave {
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+        height: 16px;
+        flex: 0 0 auto;
+      }
+
+      .sound-tile .wave span {
+        width: 3px;
+        height: 5px;
+        border-radius: 2px;
+        background: var(--text-faint);
+        transition: background 0.15s ease;
+      }
+
+      .sound-tile.playing .wave span {
+        background: var(--accent);
+        animation: eq 0.9s ease-in-out infinite;
+      }
+
+      .sound-tile.pinned .wave span {
+        background: var(--ok);
+        animation: eq 0.9s ease-in-out infinite;
+      }
+
+      .sound-tile .wave span:nth-child(1) {
+        animation-delay: 0s;
+      }
+      .sound-tile .wave span:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .sound-tile .wave span:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .sound-tile .wave span:nth-child(4) {
+        animation-delay: 0.45s;
+      }
+
+      @keyframes eq {
+        0%,
+        100% {
+          height: 5px;
+        }
+        50% {
+          height: 15px;
+        }
+      }
+
+      .sound-tile .sound-state {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--text-faint);
+        margin-left: auto;
+        flex: 0 0 7px;
+      }
+
+      .sound-tile .sound-state.ok {
+        background: var(--ok);
+      }
+      .sound-tile .sound-state.err {
+        background: var(--err);
+      }
+
+      .sound-tile .sound-name {
+        font-family: var(--mono);
+        font-size: 0.74rem;
+        color: var(--text);
+        line-height: 1.35;
+        word-break: break-all;
+      }
+
+      .sound-tile .tile-bot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.4rem;
+        margin-top: auto;
+      }
+
+      .sound-tile .sound-size {
+        font-family: var(--mono);
+        font-size: 0.66rem;
+        color: var(--text-faint);
+        flex: 0 0 auto;
+      }
+
+      .sound-tile .event-key {
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        color: var(--accent);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 62%;
+        text-align: right;
+      }
+
+      /* ---------- concept art (Cast / Races reference sheets) ---------- */
+
+      /* Classes subgroup: one race-labelled sub-row per race, each its own
+         h4 + grid — 64 cards is too many to dump in one flat grid, so this
+         keeps the Genshin/RO class art scannable by race. */
+      .art-race-row {
+        margin: 0 0 1.25rem;
+      }
+
+      .art-race-row:last-child {
+        margin-bottom: 0;
+      }
+
+      .art-race-row h4 {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-dim);
+        font-weight: 600;
+        margin: 0 0 0.6rem;
+        padding-left: 0.1rem;
+      }
+
+      .viewport.art-viewport {
+        aspect-ratio: auto;
+        height: 320px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0f121a;
+        padding: 0.6rem;
+      }
+
+      .viewport.art-viewport img {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: 4px;
+      }
+
+      /* Rich concept-art metadata (F-024): description / tags / gen params /
+         source, all optional — inserted between .key and .filename so the
+         filename+note provenance line stays last, per the existing card
+         layout. */
+
+      .card .art-description {
+        font-size: 0.8rem;
+        line-height: 1.45;
+        color: var(--text-dim);
+        margin: 0 0 0.6rem;
+      }
+
+      .card .art-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin: 0 0 0.6rem;
+      }
+
+      .card .tag-chip {
+        font-size: 0.66rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        padding: 0.16rem 0.55rem;
+        border-radius: 999px;
+        border: 1px solid var(--accent-dim);
+        background: rgba(124, 158, 255, 0.1);
+        color: var(--accent);
+      }
+
+      .card .art-gen {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--text-faint);
+        margin: 0 0 0.4rem;
+        word-break: break-word;
+      }
+
+      .card .art-source {
+        font-size: 0.68rem;
+        color: var(--text-faint);
+        font-style: italic;
+        margin: 0 0 0.55rem;
+        word-break: break-word;
+      }
+
+      /* ---------- concept-art tab bar + filter (Task 8) ---------- */
+      /* Sits above the per-group art sections so the "Concept Art" view
+         switches one group at a time instead of stacking every group as one
+         long scroll. Purely presentational — see applyArtTabFilter(). */
+
+      .art-filter-row {
+        margin-bottom: 0.75rem;
+      }
+
+      .art-filter-input {
+        width: 100%;
+        max-width: 360px;
+        font-family: var(--sans);
+        font-size: 0.85rem;
+        color: var(--text);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+      }
+
+      .art-filter-input:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+
+      .art-filter-input::placeholder {
+        color: var(--text-faint);
+      }
+
+      .art-tabbar-row,
+      .story-tabbar-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 0.9rem;
+      }
+
+      .art-tab,
+      .story-tab {
+        font-family: var(--sans);
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-dim);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.4rem 0.9rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .art-tab:hover,
+      .story-tab:hover {
+        border-color: var(--border-hover);
+        color: var(--text);
+      }
+
+      .art-tab.active,
+      .story-tab.active {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: #dce4ff;
+      }
+
+      /* I-085 — the story reading overlay. The inline 80vh frame it replaces
+         showed 2.3% of a 29,298px document while the page scrolled behind it. */
+      .story-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9000;
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .story-overlay[hidden] {
+        display: none;
+      }
+
+      .story-overlay-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        padding: 0.55rem 0.9rem;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-card);
+        flex-shrink: 0;
+      }
+
+      .story-overlay-spacer {
+        flex: 1;
+      }
+
+      .story-overlay-frame {
+        flex: 1;
+        width: 100%;
+        border: 0;
+        background: #0b0d12;
+        display: block;
+      }
+
+      .story-launcher-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 0.9rem;
+      }
+
+      /* The sidebar jump lands flush against the viewport edge without this. */
+      #section-story {
+        scroll-margin-top: 1.25rem;
+      }
+
+      .art-tabbar-hint {
+        margin: 0 0 1.25rem;
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--text-faint);
+      }
+
+      /* ---------- F-044: Maps tab (mapforge sheets) ---------- */
+
+      .maps-card {
+        cursor: pointer;
+      }
+
+      .viewport.maps-thumb-viewport {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e9e1cf; /* parchment — mapforge's C.parchment fill, so the thumbnail's own background doesn't clash with the checkerboard */
+        padding: 0.5rem;
+      }
+
+      .viewport.maps-thumb-viewport img {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+      }
+
+      .maps-png-link {
+        display: inline-block;
+        margin-top: 0.3rem;
+      }
+
+      /* Plan B Task 11 — the map vocabulary panel. Collapsed by default: it is
+         a reference, not the subject of the tab, and expanding it mounts 65
+         inline SVGs. */
+      .maps-ref {
+        margin: 1.4rem 0 0.4rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg-elev);
+      }
+
+      .maps-ref > summary {
+        cursor: pointer;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.86rem;
+        font-weight: 650;
+        color: var(--text);
+        user-select: none;
+      }
+
+      .maps-ref > summary:hover {
+        background: var(--bg-card);
+      }
+
+      .maps-ref-body {
+        padding: 0 0.8rem 1rem;
+      }
+
+      .maps-vocab-stats {
+        padding: 0 0 0.8rem !important;
+        font-size: 0.8rem;
+      }
+
+      .maps-vocab-subhead {
+        margin: 1rem 0 0.6rem;
+        font-size: 0.78rem;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+      }
+
+      /* Denser than the sheet grid: these are swatches, not artifacts. */
+      .maps-vocab-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      }
+
+      .maps-vocab-grid.maps-vocab-marks {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      }
+
+      .maps-vocab-card {
+        padding: 0.55rem;
+        margin: 0;
+        text-align: center;
+      }
+
+      .maps-vocab-card .key,
+      .maps-vocab-card .filename {
+        text-align: center;
+        word-break: break-word;
+      }
+
+      /* The swatch and the mark carry mapforge's own parchment ground so the
+         ink reads the way it reads on a sheet, in either page theme. */
+      .maps-vocab-swatch,
+      .maps-vocab-mark {
+        display: block;
+        margin: 0 auto 0.4rem;
+        max-width: 100%;
+        border-radius: 3px;
+      }
+
+      .maps-vocab-mark {
+        background: #e9e1cf;
+        padding: 2px;
+      }
+
+      /* A glyph family bound to no landform type is drawn and unused — worth
+         seeing, not worth failing on. */
+      .maps-vocab-card.maps-vocab-warn {
+        outline: 1px solid #b4762f;
+      }
+
+      /* ── the fabric census (world-fill Plan C Task 13) ────────────────
+         A DATA artifact's review surface is its numbers. The two sheets above
+         show the world's shape; nobody can see from a drawing that c05 carries
+         a surveyed region with nothing in it, or that c10 has no settlement at
+         all. Monospace and right-aligned because every column but the first is
+         a quantity being compared down the column. */
+      .maps-fabric {
+        margin-top: 1.4rem;
+      }
+
+      .maps-fabric h3 {
+        margin: 0 0 0.4rem;
+        font-size: 0.78rem;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+      }
+
+      .maps-fabric-headline {
+        margin: 0 0 0.7rem;
+        font-size: 0.84rem;
+      }
+
+      .maps-fabric-table {
+        border-collapse: collapse;
+        font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+        font-size: 0.78rem;
+      }
+
+      .maps-fabric-table th,
+      .maps-fabric-table td {
+        padding: 0.16rem 0.9rem 0.16rem 0;
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .maps-fabric-table th:first-child,
+      .maps-fabric-table td:first-child {
+        text-align: left;
+      }
+
+      .maps-fabric-table th {
+        border-bottom: 1px solid var(--line, #3a3a3a);
+        color: var(--text-dim);
+        font-weight: 600;
+      }
+
+      .maps-fabric-table .maps-fabric-total td {
+        border-top: 1px solid var(--line, #3a3a3a);
+        font-weight: 650;
+      }
+
+      .maps-fabric-note {
+        margin: 0.7rem 0 0;
+        font-size: 0.76rem;
+        color: var(--text-dim);
+        max-width: 62ch;
+      }
+
+      /* The overlay reuses .story-overlay's chrome (header/backdrop/exit) —
+         only the stage differs: an SVG under a CSS transform instead of an
+         iframe. */
+      .maps-overlay-title {
+        font-size: 0.86rem;
+        font-weight: 650;
+        color: var(--text);
+        padding: 0 0.4rem;
+      }
+
+      .maps-overlay-stage {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+        overflow: hidden;
+        background: #12151d;
+        touch-action: none; /* pointer events drive pan/zoom directly; don't let the browser also scroll/zoom the page */
+      }
+
+      .maps-overlay-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        max-width: none;
+        transform-origin: 0 0;
+        user-select: none;
+        pointer-events: none; /* the stage, not the img, owns wheel/pointer handling */
+      /* ---------- F-050: forge pipeline dashboard ---------- */
+
+      .forge-rows {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .forge-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        padding: 0.4rem 0.55rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+
+      .forge-brief-id {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-right: 0.5rem;
+        min-width: 9ch;
+      }
+
+      .forge-cell {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        padding: 0.22rem 0.6rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #16202e;
+        color: var(--text-dim);
+        cursor: pointer;
+      }
+
+      .forge-cell.is-done {
+        border-color: #2f6b46;
+        color: #8fe3b0;
+      }
+
+      .forge-cell.is-flag {
+        border-color: #8a6d1f;
+        background: #2b2410;
+        color: #ffd76a;
+      }
+
+      .forge-cell.is-stale {
+        border-color: #8a3535;
+        background: #2b1414;
+        color: #ff9d9d;
+      }
+
+      .forge-cell.is-notrun {
+        opacity: 0.38;
+        cursor: default;
+      }
+
+      /* F-039 — Forge gallery: render cards grouped by recipe version */
+      .forge-batch {
+        margin-bottom: 1.1rem;
+      }
+
+      .forge-batch-head {
+        display: flex;
+        align-items: baseline;
+        gap: 0.6ch;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--text-faint);
+        margin-bottom: 0.4rem;
+      }
+
+      .forge-batch-hash {
+        color: var(--text);
+        font-weight: 700;
+      }
+
+      .forge-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 0.55rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .forge-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        padding: 0.4rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: left;
+        font: inherit;
+        color: inherit;
+      }
+
+      .forge-card:hover,
+      .forge-card:focus-visible {
+        border-color: var(--border-hover, var(--border));
+        outline: none;
+      }
+
+      .forge-card img {
+        width: 100%;
+        aspect-ratio: 8 / 5;
+        object-fit: cover;
+        border-radius: 5px;
+        background: #0b0d12;
+      }
+
+      .forge-card-missing {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        aspect-ratio: 8 / 5;
+        padding: 0.4rem;
+        border: 1px dashed var(--border);
+        border-radius: 5px;
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        color: var(--text-faint);
+        text-align: center;
+      }
+
+      .forge-card-label {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--text-dim);
+        overflow-wrap: anywhere;
+      }
+
+      .forge-card-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+      }
+
+      .forge-card-badge {
+        font-family: var(--mono);
+        font-size: 0.6rem;
+        padding: 0.1rem 0.4rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--text-faint);
+      }
+
+      .forge-card-badge.is-stale {
+        border-color: #8a3535;
+        background: #2b1414;
+        color: #ff9d9d;
+      }
+
+      .forge-card-badge.is-flag {
+        border-color: #8a6d1f;
+        background: #2b2410;
+        color: #ffd76a;
+      }
+
+      .forge-card-badge.is-skip {
+        opacity: 0.75;
+      }
+
+      .forge-detail-json {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        background: #0b0d12;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.6rem 0.75rem;
+        overflow-x: auto;
+      }
+
+      .forge-orders {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .forge-order {
+        font-size: 0.78rem;
+        color: var(--text-dim);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-left: 3px solid #b0842a;
+        border-radius: 6px;
+        padding: 0.35rem 0.6rem;
+      }
+
+      .forge-order.is-done {
+        border-left-color: #2f6b46;
+        opacity: 0.65;
+      }
+
+      .forge-order.is-done strong {
+        color: #8fe3b0;
+      }
+
+      .forge-order-meta {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--text-faint);
+        margin-top: 0.15rem;
+      }
+
+      .forge-export-btn {
+        font-family: var(--sans);
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #dce4ff;
+        background: var(--accent-dim);
+        border: 1px solid var(--accent);
+        border-radius: 999px;
+        padding: 0.4rem 0.95rem;
+        cursor: pointer;
+      }
+
+      /* F-050 Task 9 — per-cell re-run affordance + inline order form */
+      .forge-rerun {
+        font-size: 0.72rem;
+        line-height: 1;
+        padding: 0.18rem 0.42rem;
+        border-radius: 999px;
+        border: 1px dashed var(--border);
+        background: transparent;
+        color: var(--text-faint);
+        cursor: pointer;
+      }
+
+      .forge-rerun:hover {
+        border-color: var(--accent);
+        color: #dce4ff;
+      }
+
+      .forge-rerun:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      .forge-order-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin: 0.1rem 0 0.45rem 2ch;
+        padding: 0.5rem 0.6rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-hover, var(--border));
+        border-radius: 8px;
+      }
+
+      .forge-order-reason,
+      .forge-order-seed {
+        font-family: var(--sans);
+        font-size: 0.78rem;
+        color: var(--text);
+        background: #0b0d12;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.35rem 0.5rem;
+      }
+
+      .forge-order-seed {
+        max-width: 14ch;
+        font-family: var(--mono);
+      }
+
+      .forge-order-error {
+        margin: 0;
+        font-size: 0.72rem;
+        color: #ff9d9d;
+      }
+
+      .forge-order-actions {
+        display: flex;
+        gap: 0.4rem;
+      }
+
+      .forge-order-submit,
+      .forge-order-cancel {
+        font-size: 0.74rem;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 0.28rem 0.8rem;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-dim);
+      }
+
+      .forge-order-submit {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: #dce4ff;
+      }
+
+      /* ---------- F-038: thumbnail cards + virtual grid ---------- */
+
+      .vgrid {
+        width: 100%;
+      }
+
+      /* A virtualized card is absolutely positioned by VirtualGrid, so the
+         card itself lives inside a padded wrapper and fills it. */
+      .thumb-card {
+        cursor: pointer;
+        height: calc(340px - 1.1rem);
+      }
+
+      .viewport.thumb-viewport {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 50% 30%, #1e2434 0%, #0f121a 75%);
+      }
+
+      .viewport.thumb-viewport img {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+      }
+
+      /* ---------- F-038 Phase 4: verdicts, export bar, compare tray ------- */
+
+      .thumb-card {
+        position: relative;
+      }
+
+      .verdict-bar {
+        display: flex;
+        gap: 0.3rem;
+        padding: 0 1rem 0.85rem;
+      }
+
+      .verdict-btn {
+        font-family: var(--sans);
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: var(--text-dim);
+        background: var(--bg-elev);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.25rem 0.55rem;
+        cursor: pointer;
+      }
+
+      .verdict-btn:hover {
+        color: var(--text);
+        border-color: var(--border-hover);
+      }
+
+      .verdict-btn-reject:hover {
+        border-color: var(--err);
+        color: var(--err);
+      }
+      .verdict-btn-rebuild:hover {
+        border-color: var(--tier-seed);
+        color: var(--tier-seed);
+      }
+
+      .card.verdict-reject {
+        border-color: var(--err);
+        box-shadow: 0 0 0 1px rgba(255, 123, 114, 0.35);
+      }
+      .card.verdict-rebuild {
+        border-color: var(--tier-seed);
+        box-shadow: 0 0 0 1px rgba(242, 184, 75, 0.3);
+      }
+
+      .verdict-badge {
+        position: absolute;
+        inset: 0.55rem 0.55rem auto auto;
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 0.15rem 0.45rem;
+        border-radius: 5px;
+        background: rgba(10, 12, 18, 0.82);
+        color: var(--text);
+        pointer-events: none;
+      }
+
+      .card.verdict-reject .verdict-badge {
+        color: var(--err);
+      }
+      .card.verdict-rebuild .verdict-badge {
+        color: var(--tier-seed);
+      }
+
+      .verdict-editor {
+        position: absolute;
+        inset: auto 0.5rem 0.5rem 0.5rem;
+        z-index: 5;
+        background: rgba(10, 12, 18, 0.97);
+        border: 1px solid var(--accent);
+        border-radius: 10px;
+        padding: 0.5rem;
+      }
+
+      .verdict-note {
+        width: 100%;
+        font-family: var(--sans);
+        font-size: 0.72rem;
+        color: var(--text);
+        background: var(--bg-card);
+        border: 1px solid var(--border-hover);
+        border-radius: 6px;
+        padding: 0.35rem 0.5rem;
+      }
+
+      .verdict-note:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+
+      .verdict-error {
+        margin: 0.35rem 0 0;
+        font-size: 0.66rem;
+        line-height: 1.35;
+        color: var(--err);
+      }
+
+      .verdict-error[hidden] {
+        display: none;
+      }
+
+      .verdict-editor-row {
+        display: flex;
+        gap: 0.3rem;
+        margin-top: 0.4rem;
+      }
+
+      .verdict-btn-save {
+        color: #dce4ff;
+        background: var(--accent-dim);
+        border-color: var(--accent);
+      }
+
+      .review-bar {
+        position: fixed;
+        inset: auto auto 1rem 50%;
+        transform: translateX(-50%);
+        z-index: 900;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        padding: 0.6rem 0.9rem;
+        background: var(--bg-elev);
+        border: 1px solid var(--accent);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      }
+
+      .review-bar[hidden] {
+        display: none;
+      }
+
+      .review-count {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--text);
+      }
+
+      .review-btn {
+        font-family: var(--sans);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #dce4ff;
+        background: var(--accent-dim);
+        border: 1px solid var(--accent);
+        border-radius: 8px;
+        padding: 0.35rem 0.7rem;
+        cursor: pointer;
+      }
+
+      .compare-tray {
+        position: fixed;
+        inset: auto 0 0 240px;
+        z-index: 880;
+        background: rgba(10, 12, 18, 0.95);
+        border-top: 1px solid var(--border-hover);
+        padding: 0.6rem 1rem 0.8rem;
+      }
+
+      .compare-tray[hidden] {
+        display: none;
+      }
+
+      .tray-count {
+        font-family: var(--mono);
+        font-size: 0.66rem;
+        color: var(--text-faint);
+        margin-bottom: 0.45rem;
+      }
+
+      .tray-strip {
+        display: flex;
+        gap: 0.6rem;
+        overflow-x: auto;
+      }
+
+      .tray-cell {
+        flex: 0 0 auto;
+        width: 130px;
+        cursor: pointer;
+        text-align: center;
+      }
+
+      .tray-cell img {
+        width: 130px;
+        height: 130px;
+        object-fit: contain;
+        background: #12151d;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+
+      .tray-cell span {
+        display: block;
+        font-family: var(--mono);
+        font-size: 0.6rem;
+        color: var(--text-faint);
+        margin-top: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* ---------- F-038: detail overlay (the ONE live renderer) ---------- */
+
+      .detail-overlay[hidden] {
+        display: none;
+      }
+
+      .detail-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .detail-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(4, 6, 11, 0.82);
+      }
+
+      .detail-panel {
+        position: relative;
+        width: min(1100px, 92vw);
+        height: min(860px, 90vh);
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-card);
+        border: 1px solid var(--border-hover);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      .detail-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .detail-key {
+        margin: 0 0 0.2rem;
+        font-family: var(--mono);
+        font-size: 1rem;
+        font-weight: 650;
+      }
+
+      .detail-sub {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--text-faint);
+      }
+
+      .detail-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        flex: 0 0 auto;
+      }
+
+      .detail-pos {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--text-faint);
+        min-width: 5.5em;
+        text-align: center;
+      }
+
+      .detail-btn {
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        color: var(--text);
+        background: var(--bg-elev);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.35rem 0.7rem;
+        cursor: pointer;
+      }
+
+      .detail-btn:hover {
+        border-color: var(--accent);
+      }
+
+      .detail-stage {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+      }
+
+      /* The overlay reuses the per-render-type builders, whose viewports are
+         card-sized by default — override to fill the stage. */
+      .detail-stage .viewport {
+        position: absolute;
+        inset: 0;
+        aspect-ratio: auto;
+        height: 100%;
+      }
+
+      .detail-meta {
+        max-height: 30%;
+        overflow-y: auto;
+        padding: 0.9rem 1.25rem 1.1rem;
+        border-top: 1px solid var(--border);
+      }
+
+      .detail-meta dl {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 0.25rem 1rem;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+      }
+
+      .detail-meta dt {
+        color: var(--text-faint);
+      }
+
+      .detail-meta dd {
+        margin: 0;
+        color: var(--text-dim);
+        word-break: break-all;
+      }
+
+      footer {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 2rem 3rem;
+        color: var(--text-faint);
+        font-size: 0.75rem;
+        font-family: var(--mono);
+      }
+
+      a {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <p class="eyebrow">atlas-world-svc</p>
+        <strong>Asset Classes</strong>
+      </div>
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+      <p class="sidebar-hint">
+        Classes are read from manifest.json <code>kind</code>s and the audio
+        manifest at load time — nothing here is hardcoded.
+      </p>
+    </aside>
+
+    <div class="content">
+      <header>
+        <p class="eyebrow">asset storybook</p>
+        <h1>Seed Asset Gallery</h1>
+        <p>
+          Live preview of the game's baked seed-tier assets, rendered
+          client-side by a pluggable render-type registry — today
+          <code>&lt;model-viewer&gt;</code> (3D), native
+          <code>&lt;img&gt;</code> (2D icons),
+          <code>&lt;canvas&gt;</code> flipbooks (animated SpriteFrames sprites)
+          and 9-slice panels (UI kits), baked-preview
+          <code>&lt;img&gt;</code> (Godot Theme resources), and WebAudio (SFX +
+          Music) — straight from <code>game-client/assets/</code> and
+          <code>art-source/</code>. Entries, keys, and render-type rules are
+          read from the manifests and <code>render-spec.json</code> at load time
+          — this page never hand-invents the mapping. Drag a model to orbit,
+          scroll to zoom, pick a clip from the animation dropdown to preview it;
+          sprite and nine-patch cards get their own dropdown to switch
+          clip/demo-size.
+        </p>
+        <div class="stat-row">
+          <div class="stat">
+            manifest version: <b id="stat-version">&hellip;</b>
+          </div>
+          <div class="stat">
+            visual entries: <b id="stat-total">&hellip;</b>
+          </div>
+          <div class="stat">
+            characters rendered: <b id="stat-characters">&hellip;</b>
+          </div>
+          <div class="stat">
+            icons rendered: <b id="stat-icons">&hellip;</b>
+          </div>
+          <div class="stat">seed sounds: <b id="stat-sounds">&hellip;</b></div>
+        </div>
+      </header>
+
+      <main id="main">
+        <div class="empty-state" id="loading">Loading manifests&hellip;</div>
+      </main>
+
+      <footer>
+        Sources:
+        <a href="../../game-client/assets/manifest.json">manifest.json</a>,
+        <a href="../../game-client/assets/catalog-manifest.json"
+          >catalog-manifest.json</a
+        >,
+        <a href="../../game-client/assets/audio-manifest.json"
+          >audio-manifest.json</a
+        >,
+        <a href="../../game-client/assets/render-spec.json">render-spec.json</a>
+        (render-type contract, shared with
+        <code>scripts/check_asset_manifest.mjs</code>),
+        <a href="../../colyseus-server/generated/asset-keys.json"
+          >asset-keys.json</a
+        >
+        (Coverage panel),
+        <a href="./audio-index.json">audio-index.json</a> (generated by
+        <code>scripts/gen_audio_index.mjs</code> from
+        <code>game-client/assets/audio/</code>),
+        <a href="./env-index.json">env-index.json</a>
+        (art-forge environment renders, transcribed from
+        <code>atelier/art-forge/runs/</code>; parity-gated by
+        <code>tests/env-index.test.mjs</code>) &middot; served locally, not
+        sandboxed &middot; model-viewer via unpkg CDN, pinned @4.3.1
+      </footer>
+    </div>
+
+    <script type="module" src="./js/main.mjs"></script>
+  </body>
+</html>

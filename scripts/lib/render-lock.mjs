@@ -21,9 +21,9 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 
-// The generator version has ONE home: tools/mapforge/lib/version.mjs. This is
-// the only scripts/ -> tools/mapforge/ import in the repo (every other edge
-// runs the other way, tools/mapforge -> scripts/lib/spine.mjs). It is
+// The generator version has ONE home: atelier/mapforge/lib/version.mjs. This is
+// the only scripts/ -> atelier/mapforge/ import in the repo (every other edge
+// runs the other way, atelier/mapforge -> scripts/lib/spine.mjs). It is
 // deliberate: the version belongs to the generator, version.mjs imports
 // nothing, so no cycle is possible. The re-export keeps every existing
 // importer of render-lock.mjs — including scripts/tests/render-lock.test.mjs,
@@ -32,8 +32,8 @@ import { join } from "node:path";
 // The named `import` alongside the `export … from` is required: computeLock
 // reads the constant in its own body, and a re-export alone creates no local
 // binding. Bump the constant THERE, not here.
-export { GENERATOR_VERSION } from "../../tools/mapforge/lib/version.mjs";
-import { GENERATOR_VERSION } from "../../tools/mapforge/lib/version.mjs";
+export { GENERATOR_VERSION } from "../../atelier/mapforge/lib/version.mjs";
+import { GENERATOR_VERSION } from "../../atelier/mapforge/lib/version.mjs";
 
 // A sheet's bytes arrive as a JS string (hashed as UTF-8, which is what the
 // renderer will write) and an extraPath's arrive as a Buffer (hashed as-is).

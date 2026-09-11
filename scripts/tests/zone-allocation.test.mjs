@@ -16,7 +16,7 @@ import {
   canonPinsByRegion, UNPLACED, legacyPlaceholderRecords, drawnPlaceNames, zoneSlug,
 } from "../lib/zone-allocation.mjs";
 import { renderTable, splice, BEGIN, END } from "../derive_zone_allocation.mjs";
-import { titleStem } from "../../tools/mapforge/lib/name-gen.mjs";
+import { titleStem } from "../../atelier/mapforge/lib/name-gen.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const TABLE = join(ROOT, "docs/worldbuilding/A4-zone-allocation.md");

@@ -456,7 +456,7 @@ test("a content root with no edges.json is still green (soft-skip)", (t) => {
 // The plan's Step 4 text says a MISSING schema file should be one clean `fail`.
 // That is wrong against this tree and was corrected: two live callers build a
 // content root that has edges.json and copies only spine-node.schema.json —
-// spine-gates.test.mjs's p4FixtureRoot and tools/mapforge/gen-world.mjs — and
+// spine-gates.test.mjs's p4FixtureRoot and atelier/mapforge/gen-world.mjs — and
 // failing on the absent file reds both. Pinned as a test so the "correct" the
 // plan asks for cannot be reapplied without seeing what it costs.
 test("a content root with edges but no edge schema soft-skips (plan Step 4 corrected)", (t) => {

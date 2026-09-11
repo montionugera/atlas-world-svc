@@ -3,14 +3,14 @@
   "version": 1,
   "updated": "2026-08-29",
   "ownedBy": "town-canon-reviewer (see .claude/agents/town-canon-reviewer.md — Pass 1 canon, Pass 2 realism, Pass 3 anti-cliché)",
-  "purpose": "Machine-readable town criteria, authored from the 2026-08-29 Millcross tent-removal review (docs/worldbuilding/reviews/2026-08-29-millcross-tent-removal-and-criteria.md). Three consumers, all data-driven: (1) a future consistency test asserts plan files against `measured` + `towns.*.ratified`; (2) tools/art-forge/generate/prompt-lint.mjs merges `antiCliche.forbiddenVocabulary` into its token data (R2-style) and `towns.*.briefs.countBand` into its R4 count checks; (3) tools/art-forge/forge.config.json styleGuard merges the same vocabulary at generation time. Nothing in this file is prompt text; everything is lint/check data.",
+  "purpose": "Machine-readable town criteria, authored from the 2026-08-29 Millcross tent-removal review (docs/worldbuilding/reviews/2026-08-29-millcross-tent-removal-and-criteria.md). Three consumers, all data-driven: (1) a future consistency test asserts plan files against `measured` + `towns.*.ratified`; (2) atelier/art-forge/generate/prompt-lint.mjs merges `antiCliche.forbiddenVocabulary` into its token data (R2-style) and `towns.*.briefs.countBand` into its R4 count checks; (3) atelier/art-forge/forge.config.json styleGuard merges the same vocabulary at generation time. Nothing in this file is prompt text; everything is lint/check data.",
   "honestyRule": "Every rule carries `source`. Values tagged `canon:` or `measured:` cite their file and section; values tagged `owner-decision:` cite the date and the decision; values tagged `reviewer:` are authored by the town-canon-reviewer in this file and claim NO canon force — an INVENTED value claiming canon force is a VETO under the role's veto policy. Amend canon in canon files (A0/A1/A3, style.md), never here.",
   "sourceKeys": {
     "A1": "docs/worldbuilding/A1-geography-cluster1.md §6 (amended 2026-08-29, commit 6894e97)",
     "A1-31": "docs/worldbuilding/A1-geography-cluster1.md §3.1 (exactly one cart ford)",
     "A3": "docs/worldbuilding/A3-town-plans.md §1.1–§1.3 (measured floors, derivations shown)",
     "STYLE": "content/story/style.md §3 (palettes, commitment C7)",
-    "ERA": "tools/art-forge/forge.config.json environment.styleGuard.era",
+    "ERA": "atelier/art-forge/forge.config.json environment.styleGuard.era",
     "ABP": "docs/worldbuilding/ABP-segment-control.md (mustNotShow, measured 2026-08-29)",
     "OWNER-2026-08-29": "owner decisions of 2026-08-29: tent quarter removed from world truth (commit 6894e97); concept image derived from the town map — solid buildings, real roads, realistic-but-fantasy, not cliché; references Mondstadt/Genshin and Gludio/Lineage 2 as characteristics only, never as prompt text",
     "REVIEWER": "town-canon-reviewer, authored 2026-08-29 with the criteria file (v1)"
@@ -70,9 +70,9 @@
     {
       "id": "millcross-materials-lever-ledger",
       "kind": "record",
-      "appliesTo": "tools/art-forge/briefs/A1-ART-02.json render loop (verdicts #11-#14)",
+      "appliesTo": "atelier/art-forge/briefs/A1-ART-02.json render loop (verdicts #11-#14)",
       "value": "Positive-only rewording at the confirmed cell (materials probe, briefHash a03e1e72adf937a5) is MEASURED INERT for fachwerk/slate/brick; subject-position rewording (subject probe, briefHash c0ef116c7e149adf) MOVED fachwerk — cleared on all three surfaces, plaster plane brightened ~28 RGB steps — and is INERT for slate/brick; brick is sampler prior (not in prompt). img2img anchor-recipe refine (denoise 0.75) on the finished subject-probe cell: slate/brick/mill fails did not move; register broke to flat vector and decorative fachwerk returned — the materials-refine lever at the anchor operating point is measured HARMFUL on a finished cell. Low-denoise refine re-measure (denoise 0.45, verdict #14): materials did not move; built-surface register drifted toward flat vector (brick S72→S112, roof hue warm→cool), the watermark sharpened, and modern car-like vehicles surfaced in the gate queue — the img2img materials-refine lever is measured DEAD at both ends of its plausible window (0.75 harmful #13, 0.45 inert-and-regressing #14). Remaining levers: seed change (prior LOW), control-map emphasis for the mill, deliberate canon amendment. OWNER DECISIONS 2026-09-01: canon amendment APPROVED (option b — the cell-of-record slate-roof/brick-chimney register adopted as Millcross canon; A1 §6 + companion economy sentence + roof-climate-coherence + this local set amended same-commit); mill control-map emphasis cell APPROVED (rolltag mill-emphasis, seed 12345, segment 0.45, mass edits per reviewer prescription). Seed change SPENT 2026-09-01 (mill-emphasis-r3, seed 42424, owner-approved): tan-stone colour seed-locked (moved) but timber register SYSTEMATIC 0-for-3 paths; wheel-over-race systematic across two seeds; race legibility seed-fragile (r2 met, r3 failed) — seed lever measured INERT for the register class. VERDICTS #15-#17: race slot legible on the mg-plane lift (r2 MET), queue + era-edge surfaces movable; housing timber register + wheel-over-race remain systematic fails. Cell of record: subject-probe. OWNER FORK RESOLVED 2026-09-01 (canon amendment, option b): the mill housing register is canon as measured — a heavy, plain dark timber-on-stone mass read as one solid block, not a framed building (A1 §6 amended same-commit); wheel-over-race demoted to best-effort (systematic across two seeds); fachwerk braces on the amended hash accepted as the amended register's known cost, subject-probe the fachwerk-clean reference. No further cell spend on the mill this cycle.",
-      "source": "reviewer:REVIEWER citing tools/art-forge/runs/A1-ART-02.json rows and reviews/2026-08-30-millcross-materials-probe-verdict.md, 2026-09-01-millcross-subject-probe-verdict.md, 2026-09-01-millcross-materials-refine-verdict.md, 2026-09-01-millcross-mill-emphasis-verdict.md, 2026-09-01-millcross-race-channel-represcription-verdict.md, 2026-09-01-millcross-mill-emphasis-r2-verdict.md, 2026-09-01-millcross-mill-emphasis-r3-verdict.md",
+      "source": "reviewer:REVIEWER citing atelier/art-forge/runs/A1-ART-02.json rows and reviews/2026-08-30-millcross-materials-probe-verdict.md, 2026-09-01-millcross-subject-probe-verdict.md, 2026-09-01-millcross-materials-refine-verdict.md, 2026-09-01-millcross-mill-emphasis-verdict.md, 2026-09-01-millcross-race-channel-represcription-verdict.md, 2026-09-01-millcross-mill-emphasis-r2-verdict.md, 2026-09-01-millcross-mill-emphasis-r3-verdict.md",
       "check": "each remaining lever requires owner approval before spending a cell; a deliberate canon amendment is the owner's call, never a loop outcome"
     }
   ],
@@ -179,7 +179,7 @@
         "forbiddenPhrases": {
           "id": "millcross-brief-forbidden-phrases",
           "kind": "forbiddenTokens",
-          "appliesTo": "tools/art-forge/briefs/A1-ART-02.json prompt and any future Millcross brief",
+          "appliesTo": "atelier/art-forge/briefs/A1-ART-02.json prompt and any future Millcross brief",
           "value": [
             "tidy rows",
             "neat rows",
@@ -197,7 +197,7 @@
         "countBand": {
           "id": "brief-count-band",
           "kind": "countBand",
-          "appliesTo": "tools/art-forge/briefs/*.json prompt + mustAssert",
+          "appliesTo": "atelier/art-forge/briefs/*.json prompt + mustAssert",
           "phraseToNumber": {
             "a dozen and a half": 18,
             "a dozen": 12,

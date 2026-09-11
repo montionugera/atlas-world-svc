@@ -4,7 +4,7 @@
  * Two halves:
  *
  *   1. `loadCombatModel()` reads the CLOSED-FORM model straight out of
- *      `tools/combat-lab/index.html`, exactly the way `tools/combat-lab/verify.mjs`
+ *      `atelier/combat-lab/index.html`, exactly the way `atelier/combat-lab/verify.mjs`
  *      does (slice the model region between two markers, evaluate it with the
  *      committed `combat-model.json` as DATA). The tests therefore compare against
  *      the live model rather than hand-copied numbers, and they go red the moment
@@ -65,7 +65,7 @@ import { SimClock } from '../time/SimClock'
 
 // ───────────────────────────────────────────────────────── the closed form ───
 
-const LAB_ROOT = join(__dirname, '../../../tools/combat-lab')
+const LAB_ROOT = join(__dirname, '../../../atelier/combat-lab')
 const MODEL_START = 'const grow = (L)'
 const MODEL_END = '// ============================================================= render =='
 

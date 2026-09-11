@@ -112,9 +112,9 @@ relation_coverage() { node "$REPO_ROOT/scripts/report_relation_coverage.mjs"; }
 
 content_tests() { (cd "$REPO_ROOT/scripts" && npm test); }
 
-explorer_smoke() { (cd "$REPO_ROOT" && node --test tools/story-explorer/tests/*.test.mjs); }
+explorer_smoke() { (cd "$REPO_ROOT" && node --test atelier/story-explorer/tests/*.test.mjs); }
 
-art_forge_tests() { (cd "$REPO_ROOT" && node --test tools/art-forge/tests/*.test.mjs); }
+art_forge_tests() { (cd "$REPO_ROOT" && node --test atelier/art-forge/tests/*.test.mjs); }
 
 # Plan A: G-RENDER-LOCK replaces both `render-map.mjs --check` (which was
 # never a byte comparison — it only ran the problems[] self-check) and
@@ -142,7 +142,7 @@ geometry_lock() { node "$REPO_ROOT/scripts/check_geometry_lock.mjs" --check; }
 
 # F-042 + world-fill Plan C: mapforge's own unit + parity suite (basin-sheet,
 # atlas-sheet, raster, render-sheet) AND G-REPRO's three idempotence properties
-# (tools/mapforge/tests/repro.test.mjs) plus the promotion suite
+# (atelier/mapforge/tests/repro.test.mjs) plus the promotion suite
 # (tests/promote.test.mjs). No separate section: this glob already matches both
 # files, and a duplicate section would pay G-REPRO's generations twice for a
 # cosmetic row. The world gates (G-SEALAND, G-TRUNK-AREA, G-POI, G-ORDER,
@@ -151,7 +151,7 @@ geometry_lock() { node "$REPO_ROOT/scripts/check_geometry_lock.mjs" --check; }
 # Task 12 deleted parity.test.mjs and moved that comparison to the render_lock
 # section above. Glob form, not a directory arg — `node --test <directory>`
 # fails on newer Node (ledger ruling, Task 1).
-mapforge_tests() { node --test "$REPO_ROOT"/tools/mapforge/tests/*.test.mjs; }
+mapforge_tests() { node --test "$REPO_ROOT"/atelier/mapforge/tests/*.test.mjs; }
 
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace + content-gate + contracts build" deps_install

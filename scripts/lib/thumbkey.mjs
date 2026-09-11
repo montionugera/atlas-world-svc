@@ -1,7 +1,7 @@
 // The thumbnail filename, shared by every consumer so they cannot disagree:
 //   scripts/bake_thumbnails.mjs                 writes .thumbs/<key>.webp
 //   scripts/check_asset_manifest.mjs guard (U)  asserts it exists + is fresh
-//   tools/asset-storybook/js/data/thumbs.mjs    reads it via .thumbs/index.json
+//   atelier/asset-storybook/js/data/thumbs.mjs    reads it via .thumbs/index.json
 //
 // The FILENAME is addressed by SOURCE PATH, not source bytes, so it stays
 // stable when the asset changes — a content-addressed filename would rename

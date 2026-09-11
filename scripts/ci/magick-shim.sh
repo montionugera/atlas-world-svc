@@ -18,7 +18,7 @@
 # already established (F-040, 2026-08-09) that `magick` silently drops every
 # stroke when the librsvg delegate is absent, on real IM7 as much as on this
 # shim. SVG rasterization goes through `rsvg-convert`, always — see
-# tools/mapforge/lib/raster.mjs.
+# atelier/mapforge/lib/raster.mjs.
 set -euo pipefail
 
 case "${1:-}" in

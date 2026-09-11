@@ -12,7 +12,7 @@
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { phonemeDistance, prosody, syllableCount, registerOf, titleStem } from "../../tools/mapforge/lib/name-gen.mjs";
+import { phonemeDistance, prosody, syllableCount, registerOf, titleStem } from "../../atelier/mapforge/lib/name-gen.mjs";
 import { loadDungeons, gDungeonReach, dungeonDensityLines } from "./dungeons.mjs";
 import { deriveRelation } from "./relations.mjs";
 
@@ -373,7 +373,7 @@ export function checkWorldCivil({ opts, fail, warn }) {
 // Object.keys() in insertion order, so a reordered build changes bytes for no
 // semantic reason and reds G-SLOT-STABLE on a no-op commit.
 //
-// The five GEOGRAPHIC keys are not decoration. `tools/mapforge/lib/basin-sheet.mjs`
+// The five GEOGRAPHIC keys are not decoration. `atelier/mapforge/lib/basin-sheet.mjs`
 // dereferences `geo.coastline.points` and `geo.saltmire.polygon` UNCONDITIONALLY
 // and iterates `geo.terrainPatches`. Emitting them as null/[] reintroduces
 // exactly the `TypeError: Cannot read properties of undefined` that Plan A Task 5

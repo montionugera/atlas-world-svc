@@ -1,7 +1,7 @@
 // F-038 — guard (U): every manifest entry must have a thumbnail, and that
 // thumbnail must have been baked from the source bytes now on disk.
 //
-// tools/asset-storybook renders every card from a baked thumbnail, so a
+// atelier/asset-storybook renders every card from a baked thumbnail, so a
 // thumbnail that does not match its source is a card that LIES about what the
 // asset looks like — the reviewer judges a stale image and files a verdict
 // against it.

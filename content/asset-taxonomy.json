@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_comment": "Section naming for tools/asset-storybook. Every `kind` used by game-client/assets/manifest.json or catalog-manifest.json MUST appear in some section's `kinds` array — guard (H) in scripts/check_asset_manifest.mjs fails the build otherwise. This registry exists because a hand-maintained label lookup in js/sidebar.mjs silently fell through and rendered 283 dungeon assets as 'Model3d:dungeons'.",
+  "_comment": "Section naming for atelier/asset-storybook. Every `kind` used by game-client/assets/manifest.json or catalog-manifest.json MUST appear in some section's `kinds` array — guard (H) in scripts/check_asset_manifest.mjs fails the build otherwise. This registry exists because a hand-maintained label lookup in js/sidebar.mjs silently fell through and rendered 283 dungeon assets as 'Model3d:dungeons'.",
   "sections": [
     {
       "id": "character",

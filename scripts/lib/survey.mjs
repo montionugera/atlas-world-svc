@@ -40,13 +40,13 @@ import { join } from "node:path";
  *
  * NO GATE FLIPS, and this was checked rather than assumed. Every production
  * reader compares against "reported" and only "reported":
- *   tools/mapforge/lib/atlas-sheet.mjs  patternFor      === "reported"
- *   tools/mapforge/lib/atlas-sheet.mjs  coast-reported  === "reported"
+ *   atelier/mapforge/lib/atlas-sheet.mjs  patternFor      === "reported"
+ *   atelier/mapforge/lib/atlas-sheet.mjs  coast-reported  === "reported"
  *   scripts/lib/spine.mjs               G-SPINE-COMPLETE childless downgrade
  *                                                       === "reported"
  * so "unknown" travels the identical branch "surveyed" did — the chart is
  * byte-identical and no gate changes verdict. (The `surveyOf` names in
- * tools/mapforge/lib/passes/landforms.mjs and its tests are LOCAL Maps over
+ * atelier/mapforge/lib/passes/landforms.mjs and its tests are LOCAL Maps over
  * fabric `regions[].survey`, a different vocabulary that is never routed
  * through this function.) The change buys a future reader the ability to be
  * correct: `=== "surveyed"` now means walked, and no longer silently answers

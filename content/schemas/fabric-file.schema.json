@@ -128,7 +128,7 @@
     },
     "pinReceipts": {
       "type": "array",
-      "description": "ARMED (Plan D Task 10, 2026-08-25): the generator writes one receipt per pinned record at its committed seed point — 41 total, every continent carrying at least one. The per-continent counts are pinned by tools/mapforge/tests/generate-world.test.mjs and G-PIN-SAT FAILS on any pinned record whose receipt is missing; no schema minItems is set because miniature fixture worlds legitimately carry an empty array while their gates are soft-armed.",
+      "description": "ARMED (Plan D Task 10, 2026-08-25): the generator writes one receipt per pinned record at its committed seed point — 41 total, every continent carrying at least one. The per-continent counts are pinned by atelier/mapforge/tests/generate-world.test.mjs and G-PIN-SAT FAILS on any pinned record whose receipt is missing; no schema minItems is set because miniature fixture worlds legitimately carry an empty array while their gates are soft-armed.",
       "items": {
         "type": "object", "additionalProperties": false,
         "required": ["id", "at", "cell", "continent", "region", "measured"],

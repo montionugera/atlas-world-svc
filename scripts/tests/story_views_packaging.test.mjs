@@ -1,6 +1,6 @@
 // Guards the storybook's story registry against its Docker packaging.
 //
-// tools/asset-storybook/Dockerfile.dockerignore is a `*`-then-allowlist, and
+// atelier/asset-storybook/Dockerfile.dockerignore is a `*`-then-allowlist, and
 // its own header says to keep it in sync with the Dockerfile's COPY lines. A
 // registry entry pointing at a path that is copied but not allowlisted (or
 // neither) still works in local dev — which serves the repo root directly —
@@ -13,7 +13,7 @@ import { join, dirname, resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const STORYBOOK_DIR = join(ROOT, "tools/asset-storybook");
+const STORYBOOK_DIR = join(ROOT, "atelier/asset-storybook");
 const REGISTRY = join(STORYBOOK_DIR, "story-views.json");
 const DOCKERFILE = join(STORYBOOK_DIR, "Dockerfile");
 const DOCKERIGNORE = join(STORYBOOK_DIR, "Dockerfile.dockerignore");
@@ -60,18 +60,18 @@ test("every story-views.json src is packaged into the storybook image", () => {
     const repoRel = relative(ROOT, resolve(STORYBOOK_DIR, view.src));
     assert.ok(
       coveredBy(copies, repoRel),
-      `story view "${view.id}" (${repoRel}) has no COPY line in tools/asset-storybook/Dockerfile`,
+      `story view "${view.id}" (${repoRel}) has no COPY line in atelier/asset-storybook/Dockerfile`,
     );
     assert.ok(
       coveredBy(allowed, repoRel),
-      `story view "${view.id}" (${repoRel}) has no "!" allowlist line in tools/asset-storybook/Dockerfile.dockerignore`,
+      `story view "${view.id}" (${repoRel}) has no "!" allowlist line in atelier/asset-storybook/Dockerfile.dockerignore`,
     );
   }
 });
 
 // content/story/*.json is not a registry `src` — it's a runtime data dependency
 // that the "reader" and "graph" registry entries fetch after they load (see
-// tools/story-explorer/reader.html and index.html, both of which
+// atelier/story-explorer/reader.html and index.html, both of which
 // `fetch("../../content/story/${filename}")`). The walk above only ever checks
 // registry `src` paths, so it can never catch a dropped `content/story` COPY or
 // allowlist line — that class of break stays green in this suite while the
@@ -81,10 +81,10 @@ test("content/story (the reader/graph pages' runtime data fetch) is packaged int
   const allowed = allowlistPaths();
   assert.ok(
     coveredBy(copies, "content/story"),
-    'content/story has no COPY line in tools/asset-storybook/Dockerfile — the "reader" and "graph" views fetch content/story/*.json at runtime and would render empty',
+    'content/story has no COPY line in atelier/asset-storybook/Dockerfile — the "reader" and "graph" views fetch content/story/*.json at runtime and would render empty',
   );
   assert.ok(
     coveredBy(allowed, "content/story"),
-    'content/story has no "!" allowlist line in tools/asset-storybook/Dockerfile.dockerignore — the "reader" and "graph" views fetch content/story/*.json at runtime and would render empty',
+    'content/story has no "!" allowlist line in atelier/asset-storybook/Dockerfile.dockerignore — the "reader" and "graph" views fetch content/story/*.json at runtime and would render empty',
   );
 });

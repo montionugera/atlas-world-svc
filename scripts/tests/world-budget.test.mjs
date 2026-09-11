@@ -31,10 +31,10 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { inkStats } from "../../tools/mapforge/lib/png-ink.mjs";
+import { inkStats } from "../../atelier/mapforge/lib/png-ink.mjs";
 import { fileURLToPath } from "node:url";
 import { BIOMES, TERRAIN_KINDS, TERRAIN_IMPLIES } from "../lib/spine.mjs";
-import { encodePng } from "../../tools/mapforge/lib/texture-bake.mjs";
+import { encodePng } from "../../atelier/mapforge/lib/texture-bake.mjs";
 import { runSpineGateInProcess } from "../check_content.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");

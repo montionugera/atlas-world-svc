@@ -16,7 +16,7 @@
 //   - game-client/assets/catalog-manifest.json   curated,        driftGated:false
 //   - res:// scene/stream paths resolve against game-client/ (the Godot project root).
 //
-// Render-type resolution (mirrors tools/asset-storybook/js/renderers.mjs exactly —
+// Render-type resolution (mirrors atelier/asset-storybook/js/renderers.mjs exactly —
 // see docs/superpowers/specs/2026-07-14-universal-asset-previewer-design.md §4.1):
 //   1. entry.render, if present — authoritative
 //   2. spec.kindDefaultRender[entry.kind], if entry.kind has an unambiguous default
@@ -58,7 +58,7 @@
 //       source bytes on disk — the storybook renders every card from one, so a
 //       stale thumbnail is a card that lies about the asset (F-038).
 //   (T) every manifest `kind` must have a section in
-//       content/asset-taxonomy.json, so tools/asset-storybook can never fall
+//       content/asset-taxonomy.json, so atelier/asset-storybook can never fall
 //       back to a munged label like "Model3d:dungeons" (F-038). Letters L/M
 //       are taken by the art-rule lettering below, hence T.
 //
@@ -184,7 +184,7 @@ function isEmptyField(v) {
 }
 
 // §4.1 — render-type resolution. Mirrored byte-for-byte in
-// tools/asset-storybook/js/renderers.mjs so the gate and the storybook can
+// atelier/asset-storybook/js/renderers.mjs so the gate and the storybook can
 // never disagree on what a given entry renders as. Enforced by the
 // "resolveRender mirror" test in scripts/tests/resolve_render_mirror.test.mjs
 // — that test reads both copies and diffs them, so a drift here fails CI
@@ -562,7 +562,7 @@ function validateEntry(id, entry, source, gameClient, spec, failures) {
 // (U) thumbnail freshness — every manifest entry must have a baked thumbnail
 // in game-client/assets/.thumbs/, baked from the source bytes now on disk.
 //
-// tools/asset-storybook renders EVERY card from a baked thumbnail (F-038), so
+// atelier/asset-storybook renders EVERY card from a baked thumbnail (F-038), so
 // a thumbnail that does not match its source is a card that lies about what
 // the asset looks like — and the reviewer files a reject/rebuild verdict
 // against a stale image.
@@ -652,7 +652,7 @@ function assertThumbFreshness(sourcesEntries, gameClient, failures) {
 // (T) taxonomy coverage — every manifest `kind` must have a section in
 // content/asset-taxonomy.json.
 //
-// tools/asset-storybook groups and labels its sections by `kind` through that
+// atelier/asset-storybook groups and labels its sections by `kind` through that
 // registry. Before this guard the storybook carried a hand-maintained label
 // lookup that fell through to a generic capitalize-and-append-s branch on a
 // miss, so an unregistered kind produced a section headed "Model3d:dungeons

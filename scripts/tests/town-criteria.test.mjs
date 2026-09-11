@@ -16,7 +16,7 @@ const read = (p) => JSON.parse(fs.readFileSync(path.join(ROOT, p), "utf8"));
 
 const criteria = read("content/world/town-criteria.json");
 const plan = read(criteria.towns.millcross.plan);
-const brief = read("tools/art-forge/briefs/A1-ART-02.json");
+const brief = read("atelier/art-forge/briefs/A1-ART-02.json");
 
 const byId = (rules, id) => rules.find((r) => r.id === id);
 const multiset = (arr) => [...arr].sort((a, b) => a - b).join(",");

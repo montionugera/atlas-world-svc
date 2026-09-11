@@ -646,7 +646,7 @@ test("the base fixture's manifest IS the committed one, so a red case fails on i
 // than spawned: identical checkSpine() over identical opts, ~0.3 s against
 // ~0.8 s a spawn, and this file adds forty of them.
 import { createHash } from "node:crypto";
-import { orderHandles, orderDigestOf } from "../../tools/mapforge/lib/passes/landforms.mjs";
+import { orderHandles, orderDigestOf } from "../../atelier/mapforge/lib/passes/landforms.mjs";
 
 const SPINE_FIX = join(ROOT, "scripts/tests/fixtures/spine");
 const clone = (v) => JSON.parse(JSON.stringify(v));
@@ -1464,7 +1464,7 @@ test("G-POLY's too-few-points rule is REACHABLE — the schema is not always the
   // `minItems: 3` on an area ring means the schema normally speaks first, and
   // checkSpine CONTINUES past a schema-invalid document, so both venues run.
   // A content root without the fabric schema is not hypothetical:
-  // tools/mapforge/gen-world.mjs copies only spine-node.schema.json into the
+  // atelier/mapforge/gen-world.mjs copies only spine-node.schema.json into the
   // root it writes, and checkWorld skips a schema file it cannot find. Remove
   // it and the gate rule is the only thing left standing.
   const bad = clone(FABRIC_OK);

@@ -128,11 +128,11 @@ client_tests() {
 # The combat balance model gates itself (G1-G12) and fails on spec staleness.
 # Skipped cleanly on branches predating the combat lab rather than failing them.
 combat_lab() {
-  if [ ! -f "$REPO_ROOT/tools/combat-lab/verify.mjs" ]; then
-    echo "no tools/combat-lab on this branch — skipping"
+  if [ ! -f "$REPO_ROOT/atelier/combat-lab/verify.mjs" ]; then
+    echo "no atelier/combat-lab on this branch — skipping"
     return 0
   fi
-  node "$REPO_ROOT/tools/combat-lab/verify.mjs"
+  node "$REPO_ROOT/atelier/combat-lab/verify.mjs"
 }
 
 # F-041: the tier-spine structural gates (cycles, orphans, depth skips) are
@@ -161,13 +161,13 @@ world_digest() { node "$REPO_ROOT/scripts/check_world_digest.mjs" --check; }
 system_deps_check() { node "$REPO_ROOT/scripts/check-system-deps.mjs"; }
 
 art_forge_tests() {
-  ( cd "$REPO_ROOT/tools/art-forge" && node --test tests/*.test.mjs )
+  ( cd "$REPO_ROOT/atelier/art-forge" && node --test tests/*.test.mjs )
 }
 
 storybook_tests() {
   # F-038: taxonomy resolution, thumb-index join, verdict store. Pure modules,
   # so they run here with no browser and no Blender.
-  ( cd "$REPO_ROOT" && node --test tools/asset-storybook/tests/*.test.mjs )
+  ( cd "$REPO_ROOT" && node --test atelier/asset-storybook/tests/*.test.mjs )
 }
 
 # --- Execute -----------------------------------------------------------------

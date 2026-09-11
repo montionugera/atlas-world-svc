@@ -6,7 +6,7 @@
 // written reason on every line, plus the post-redraw edge shape.
 //
 // Before the redraw, ~20 fixtures across scripts/tests/ and
-// tools/mapforge/tests/ each carried their own copy of the number — `44`,
+// atelier/mapforge/tests/ each carried their own copy of the number — `44`,
 // `20 edges`, `58 features`, `133 sibling pairs`. Re-pinning those literals to
 // fresher literals is the same defect with a newer number: the NEXT redraw has
 // to hunt them all down again. So every count that is DERIVED from the trunk's

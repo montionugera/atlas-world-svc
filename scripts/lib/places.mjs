@@ -209,7 +209,7 @@ function resolveWorldFromSpine({ spine, tree, descriptor = null }) {
   // What must not happen is the loss arriving as a BLANK: without these two
   // checks `paceKmPerHour`, `spacingKm`, `owner`, the relay
   // note/derivation/withheld prose and `drawnRoadsAreCentrelines` all vanish
-  // with no error, and tools/mapforge/lib/basin-sheet.mjs renders the footnote
+  // with no error, and atelier/mapforge/lib/basin-sheet.mjs renders the footnote
   // "a travel-hour is about undefined km of road" under a full walking table.
   //
   // Same rule and same reason as the `lore.order` refusal above: a sheet that

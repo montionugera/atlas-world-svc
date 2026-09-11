@@ -36,13 +36,13 @@ import {
 // so importing either runs no main().
 import { derivedSidecar } from "./check_spine_emit.mjs";
 // F-047 seam-4 fix: the ink floor. Decodes committed PNG bytes; no rendering
-// library, so it runs in CI, which has none. See tools/mapforge/lib/png-ink.mjs
+// library, so it runs in CI, which has none. See atelier/mapforge/lib/png-ink.mjs
 // for why node:zlib is allowed on a DECOMPRESS path and banned on the
 // committed-byte COMPRESS path.
-import { inkStats } from "../tools/mapforge/lib/png-ink.mjs";
+import { inkStats } from "../atelier/mapforge/lib/png-ink.mjs";
 // The same superset-bounds reader the sheet builders use, so the gate's idea
 // of "the shape this fill is clipped to" cannot drift from the emitter's.
-import { pathBounds } from "../tools/mapforge/lib/draft.mjs";
+import { pathBounds } from "../atelier/mapforge/lib/draft.mjs";
 // Plan C: the content/world/ layer. Same lib/ discipline as spine.mjs — all
 // pure logic lives there, so it can be unit-tested without the CLI's argv and
 // process.exit. (An earlier version of this line said "this file is not
@@ -53,13 +53,13 @@ import { loadFabric, gWorldBudget, gWorldSeaLand, gWorldSeaLandTrunk, gWorldTrun
          gWorldPoi, gWorldOrder, gWorldInstanceGeometry } from "./lib/world.mjs";
 // The handle ordering rule lives with the GENERATOR that mints it, so the gate
 // and the writer can never drift apart — two enumerations of one ordering is
-// exactly how a ledger comes to disagree with its own digest. tools/mapforge is
+// exactly how a ledger comes to disagree with its own digest. atelier/mapforge is
 // dependency-free ESM (no package.json by design) and scripts/ already imports
-// across that boundary in the other direction (tools/mapforge/lib/world-gen.mjs
+// across that boundary in the other direction (atelier/mapforge/lib/world-gen.mjs
 // imports scripts/lib/spine.mjs). Relative ESM specifiers resolve from the
 // importing module's own path, so this works under `npm test --prefix scripts`,
 // which runs with a different cwd, and in CI.
-import { orderHandles, orderDigestOf } from "../tools/mapforge/lib/passes/landforms.mjs";
+import { orderHandles, orderDigestOf } from "../atelier/mapforge/lib/passes/landforms.mjs";
 import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, WATER_TIERS, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 import { loadFabricRegionIndex, fabricRegionCountsFor } from "./lib/survey.mjs";
 // Plan D: the pinned/bound/relation gates. Pure logic in lib/resolve.mjs, per
@@ -2195,7 +2195,7 @@ function checkSpine(opts, mobTypes) {
   //     here: two live callers build a content root that HAS edges.json and
   //     copies only spine-node.schema.json — spine-gates.test.mjs's
   //     p4FixtureRoot (:803, cpSync of the whole content/spine) and
-  //     tools/mapforge/gen-world.mjs (:158 writes edges.json, :118 copies just
+  //     atelier/mapforge/gen-world.mjs (:158 writes edges.json, :118 copies just
   //     the node schema). Failing on the absent file reds both, and neither is
   //     this task's to edit. So an absent schema skips, exactly as checkSpine's
   //     own header skips before compiling on a missing spine/ dir. The real
@@ -2715,7 +2715,7 @@ function gSpineGeometry({ nodes, tree, fail }) {
 // two lists together — a tier scored there and unpinned here is a half of the
 // gate that can be switched off by deleting a field.
 //
-// It cannot red the RETIRED tools/mapforge/gen-world.mjs that Task 13 deletes:
+// It cannot red the RETIRED atelier/mapforge/gen-world.mjs that Task 13 deletes:
 // that tool assembles its candidates in a temp root carrying spine/ and
 // schemas/ and no world/ at all, so `fabricPresent` is false there and the pin
 // is dormant whatever the tier.
@@ -2792,7 +2792,7 @@ function gSpineFrames({ nodes, tree, plans, fail, fabricPresent = false }) {
     // something to join TO, so a content root with no content/world/fabric/ has
     // nothing to demand a citation of. Two roots depend on it. The committed
     // 44-node root carries no `generated` node at all (measured), so the rule
-    // is doubly dormant there. The RETIRED tools/mapforge/gen-world.mjs — which
+    // is doubly dormant there. The RETIRED atelier/mapforge/gen-world.mjs — which
     // Task 13 deletes, two tasks after this one — writes six `generated`
     // continent candidates from `{name: "gen-world", version: "1"}` into a
     // gitignored dir with no world/ beside it; arming the pin on tier alone
@@ -3724,7 +3724,7 @@ function patternRectAreaRatio(svg) {
 // in the gate and not only in a test — and it is measured from the COMMITTED
 // BYTES, which is why it can live here at all: no rsvg-convert, no librsvg,
 // deterministic on every box. The same three floors are asserted against the
-// sheet ROSTER in tools/asset-storybook/tests/maps-index.test.mjs (Gate 1 and
+// sheet ROSTER in atelier/asset-storybook/tests/maps-index.test.mjs (Gate 1 and
 // CI); this one arms on whatever PNGs are on disk, which is what catches a
 // file nobody remembered to index.
 //

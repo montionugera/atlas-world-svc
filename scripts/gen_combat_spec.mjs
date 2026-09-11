@@ -27,8 +27,8 @@ import { dirname, resolve, join } from "node:path";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SPEC = join(ROOT, "docs/superpowers/specs/2026-07-30-combat-stat-model-design.md");
-const LAB = join(ROOT, "tools/combat-lab/index.html");
-const MODEL = join(ROOT, "tools/combat-lab/combat-model.json");
+const LAB = join(ROOT, "atelier/combat-lab/index.html");
+const MODEL = join(ROOT, "atelier/combat-lab/combat-model.json");
 
 const html = readFileSync(LAB, "utf8");
 const data = JSON.parse(readFileSync(MODEL, "utf8"));
@@ -247,7 +247,7 @@ const blocks = {
 
 // Counting gates by running verify.mjs would be circular (verify runs this in
 // --check mode), so count the PASS lines from a plain source scan instead.
-const verifySrc = readFileSync(join(ROOT, "tools/combat-lab/verify.mjs"), "utf8");
+const verifySrc = readFileSync(join(ROOT, "atelier/combat-lab/verify.mjs"), "utf8");
 const gateCalls = (verifySrc.match(/\bgate\(/g) || []).length;
 const checkCalls = (verifySrc.match(/\bcheck\(/g) || []).length;
 blocks.gatecount = () => `${gateCalls + checkCalls} assertion sites`;

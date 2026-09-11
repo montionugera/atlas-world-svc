@@ -1,6 +1,6 @@
 // §4.1's render-type resolution is intentionally duplicated in two places —
 // scripts/check_asset_manifest.mjs (the drift-gate) and
-// tools/asset-storybook/js/renderers.mjs (the storybook) — so the gate and
+// atelier/asset-storybook/js/renderers.mjs (the storybook) — so the gate and
 // the page can never disagree on what a given manifest entry renders as.
 // Both files say so in a comment, but until this test existed nothing
 // actually checked it: the comment WAS the enforcement mechanism, which
@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE_FILE = join(ROOT, "scripts/check_asset_manifest.mjs");
-const STORYBOOK_FILE = join(ROOT, "tools/asset-storybook/js/renderers.mjs");
+const STORYBOOK_FILE = join(ROOT, "atelier/asset-storybook/js/renderers.mjs");
 
 // Matches from `function primaryPath(entry) {` through the closing `}` of
 // resolveRender, tolerating an optional `export ` prefix on resolveRender
@@ -49,7 +49,7 @@ test("resolveRender mirror: check_asset_manifest.mjs and js/renderers.mjs agree 
   assert.equal(
     gateBlock,
     storybookBlock,
-    "\n\nscripts/check_asset_manifest.mjs and tools/asset-storybook/js/renderers.mjs " +
+    "\n\nscripts/check_asset_manifest.mjs and atelier/asset-storybook/js/renderers.mjs " +
       "have drifted: their primaryPath/resolveRender render-type resolution logic " +
       "no longer matches byte-for-byte. §4.1 requires these to be mirrored exactly " +
       "so the drift-gate and the storybook can never disagree on what a manifest " +

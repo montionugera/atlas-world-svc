@@ -21,7 +21,7 @@
  *     all four, the table stays empty, and selection falls back to distance —
  *     leaving the measurement unchanged. Gates that need threat seed it explicitly.
  *   - The model's `÷n` even-spread branch is the NO-HEALER reading
- *     (tools/combat-lab/CHECKLIST.md:291-295). Under the trinity roles this game
+ *     (atelier/combat-lab/CHECKLIST.md:291-295). Under the trinity roles this game
  *     targets, CHECKLIST.md:129's sustain equation governs instead.
  *
  * The even-spread assertion is therefore DELETED rather than inverted, and replaced
