@@ -158,7 +158,7 @@ export function copyRun() {
 export function scratchRepo() {
   const dir = tmp("mf-repo-");
   cpSync(join(ROOT, "content"), join(dir, "content"), { recursive: true });
-  cpSync(join(ROOT, "tools"), join(dir, "tools"), { recursive: true });
+  cpSync(join(ROOT, "atelier"), join(dir, "atelier"), { recursive: true });
   cpSync(join(ROOT, "scripts"), join(dir, "scripts"), {
     recursive: true,
     filter: (src) => !src.endsWith("/node_modules"),

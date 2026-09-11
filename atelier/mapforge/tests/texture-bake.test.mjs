@@ -58,7 +58,7 @@ const ATLAS_KM = 400;
 // also the wrong instrument — it is blind to an untracked second definition,
 // which is exactly the state this file is written in. A filesystem walk sees
 // what the module resolver sees.
-const SOURCE_ROOTS = ["scripts", "tools"];
+const SOURCE_ROOTS = ["scripts", "atelier"];
 const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "build", "coverage"]);
 function sourceFiles(dir, rel, out) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
@@ -212,7 +212,7 @@ test("GENERATOR_VERSION has exactly ONE definition in the repo", () => {
 
 test("scripts/lib/render-lock.mjs re-exports the constant rather than redefining it", () => {
   const src = readFileSync(join(ROOT, "scripts/lib/render-lock.mjs"), "utf8");
-  assert.match(src, /from "\.\.\/\.\.\/tools\/mapforge\/lib\/version\.mjs"/);
+  assert.match(src, /from "\.\.\/\.\.\/atelier\/mapforge\/lib\/version\.mjs"/);
   assert.doesNotMatch(src, /^export const GENERATOR_VERSION/m);
 });
 

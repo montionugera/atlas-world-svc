@@ -82,7 +82,7 @@ test("checkBiomeInk() names the file for a missing FILL_FOR entry", () => {
   assert.equal(problems.length, 1);
   assert.match(
     problems[0],
-    /^G-BIOME-INK: terrain kind "karst-plateau" .* has no entry in FILL_FOR \(tools\/mapforge\/lib\/draft\.mjs\) — it will render as blank parchment$/,
+    /^G-BIOME-INK: terrain kind "karst-plateau" .* has no entry in FILL_FOR \(atelier\/mapforge\/lib\/draft\.mjs\) — it will render as blank parchment$/,
   );
 });
 
