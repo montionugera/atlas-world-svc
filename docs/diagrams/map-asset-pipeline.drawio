@@ -1,0 +1,98 @@
+<mxfile host="app.diagrams.net" agent="Claude Code" version="24.0.0">
+  <diagram name="Map Asset Pipeline" id="map-asset-pipeline">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="500" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="atlas-world-svc — Map Asset Pipeline (generate → freeze → render → verify → view)" style="text;html=1;align=left;verticalAlign=middle;fontSize=20;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="1000" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- 1. Seed -->
+        <mxCell id="n1" value="1. Seed&#10;n-atlas.json&#10;seed.value (16-hex)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="170" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="n1note" value="deterministic — same seed always produces the same world" style="text;html=1;align=center;fontSize=10;fontColor=#666666;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="40" y="170" width="170" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- 2. Generate -->
+        <mxCell id="n2" value="2. Generate&#10;atelier/mapforge/&#10;generate-world.mjs&#10;--seed &lt;hex&gt; --out build/..." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="80" width="190" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- 3. Draft output -->
+        <mxCell id="n3" value="3. Draft output (gitignored)&#10;build/mapforge/&lt;runId&gt;/&#10;content/world/fabric/&#10;continent-NN.json (x10)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="80" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- 4. Freeze into spine -->
+        <mxCell id="n4" value="4. Freeze into Spine&#10;content/spine/nodes/*.json&#10;(source of truth)&#10;records provenance.generator.fabric" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="780" y="80" width="210" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="n4note" value="deliberate, human-reviewed step — not automatic" style="text;html=1;align=center;fontSize=10;fontColor=#666666;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="780" y="170" width="210" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- 5. Derive -->
+        <mxCell id="n5" value="5. Derive&#10;scripts/check_spine_emit.mjs&#10;--write&#10;→ content/spine/derived.json" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="80" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- 6. Render -->
+        <mxCell id="n6" value="6. Render&#10;atelier/mapforge/&#10;render-sheet.mjs&#10;--sheet cluster1|atlas --png" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1290" y="80" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="n6out" value="game-client/assets/art/maps/&#10;{cluster1-world,atlas-world}.{svg,png}&#10;(PNG via rsvg-convert, not ImageMagick)" style="text;html=1;align=center;fontSize=10;fontColor=#666666;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1290" y="170" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- 7. Verify -->
+        <mxCell id="n7" value="7. Verify (gate)&#10;scripts/check_render_lock.mjs&#10;G-RENDER-LOCK&#10;rebuild-from-spine vs. committed hash" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1550" y="80" width="210" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- 8. View -->
+        <mxCell id="n8" value="8. View&#10;asset-storybook Maps tab&#10;atelier/asset-storybook/js/maps.mjs&#10;pan/zoom PNG viewer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1810" y="80" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n1" target="n2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n2" target="n3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n3" target="n4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n4" target="n5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n5" target="n6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n6" target="n7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n7" target="n8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Separate pipeline note -->
+        <mxCell id="artforge" value="NOT this pipeline: atelier/art-forge/ (F-050 dashboard)&#10;ComfyUI / diffusion-based concept art + character/environment generation.&#10;Unrelated to procedural map drafting above." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;dashed=1;fontSize=11;fontColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="780" y="300" width="440" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Open question note -->
+        <mxCell id="openq" value="Open question: which generate-world.mjs run (seed value) produced today's&#10;committed spine/maps was not traced — provenance fields point to a fabric&#10;file but the specific run wasn't confirmed." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9e6;strokeColor=#d6b656;dashed=1;fontSize=11;fontColor=#7a6000;" vertex="1" parent="1">
+          <mxGeometry x="1290" y="300" width="470" height="70" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
