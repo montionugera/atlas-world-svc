@@ -149,7 +149,7 @@ Re-run: `POST /api/jobs/:id/rerun` clones `kind`, `seed`, `reason` into a new jo
 | `GET /health` | `{ ok, version, pid, repoRoot, branch }` — the tab's live/read-only switch |
 | `GET /world` | current seed, sea:land + allowed band, sheet count + lock state, branch, dirty world files (warning), last publish |
 | `GET /jobs?kind=&status=&seed=&limit=` | history, newest first |
-| `POST /jobs` | `{ kind:"draft", seed, reason, count }` → enqueues `count` jobs (count ≥ 2 = same seed? no: the Start form's "Drafts at once" spawns `count` jobs with **distinct random seeds** unless the user typed one, in which case count is forced to 1) |
+| `POST /jobs` | `{ kind:"draft", seed, reason, count }` → enqueues `count` draft jobs. With no seed given, each job gets a distinct random seed; with a typed seed, `count` is forced to 1 (a re-run of the same seed is a separate action, §3) |
 | `GET /jobs/:id` · `GET /jobs/:id/log` | record; raw log (text/plain, supports `?tail=200`) |
 | `POST /jobs/:id/cancel` · `POST /jobs/:id/rerun` · `DELETE /jobs/:id` | as §3; DELETE also removes the draft dir, never a snapshot |
 | `GET /drafts/:jobId/review` | review payload (§6) |
