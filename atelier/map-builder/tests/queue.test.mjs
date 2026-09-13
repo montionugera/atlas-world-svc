@@ -57,3 +57,64 @@ test("failed draft keeps the tool's error and exit code", async () => {
   const j = q.enqueue({ kind: "draft", seed: seed(2) }); await q.onIdle(); const done = q.store.get(j.id);
   assert.equal(done.status, "failed"); assert.equal(done.exitCode, 1); assert.match(done.error, /LOOP BUDGET/); s.cleanup();
 });
+
+// I2: a throw anywhere inside runJob must not wedge the queue — no dangling
+// active slot, no stuck `running` record, `onIdle()` must still resolve.
+test("commandsFor throwing marks the job failed instead of wedging the queue", async () => {
+  const s = setup();
+  const q = createJobQueue({ ...s.queue.options, commandsFor: () => { throw new Error("commandsFor boom"); } });
+  const j = q.enqueue({ kind: "draft", seed: seed(3) });
+  await q.onIdle();
+  const done = q.store.get(j.id);
+  assert.equal(done.status, "failed");
+  assert.match(done.error, /commandsFor boom/);
+  assert.equal(q.running(), 0);
+  s.cleanup();
+});
+
+// I2 (continued): onLine fires inside readline's 'line' handler (runner.mjs)
+// via store.appendLog — a throw there must be swallowed, not crash the run.
+test("a throwing onLine side effect (e.g. appendLog) does not crash the job", async () => {
+  const s = setup({ sleepMs: 10 });
+  const throwingStore = { ...s.queue.store, appendLog: () => { throw new Error("disk full"); } };
+  const q = createJobQueue({ ...s.queue.options, store: throwingStore,
+    commandsFor: () => [{ label: "generate", argv: [process.execPath, "-e", "console.log('stage: P1 premise-masks 1 ms')"] }] });
+  const j = q.enqueue({ kind: "draft", seed: seed(4) });
+  await q.onIdle();
+  const done = q.store.get(j.id);
+  assert.equal(done.status, "succeeded");
+  assert.equal(q.running(), 0);
+  s.cleanup();
+});
+
+// I3: close() must settle onIdle() waiters and give dropped pending jobs a
+// terminal status instead of leaving them "queued" on disk forever.
+test("close() settles onIdle and marks dropped pending jobs interrupted", async () => {
+  const s = setup({ concurrency: 1, sleepMs: 300 });
+  const a = s.queue.enqueue({ kind: "draft", seed: seed(5) });
+  const b = s.queue.enqueue({ kind: "draft", seed: seed(6) });
+  await new Promise((r) => setTimeout(r, 50));
+  assert.equal(s.queue.store.get(a.id).status, "running");
+  assert.equal(s.queue.store.get(b.id).status, "queued");
+  s.queue.close();
+  await s.queue.onIdle();
+  assert.equal(s.queue.store.get(b.id).status, "interrupted");
+  assert.equal(s.queue.store.get(a.id).status, "succeeded");
+  s.cleanup();
+});
+
+// I4: a stale report.json from a previous run in the same (deterministic)
+// out dir must never be attributed to a job that didn't produce it.
+test("stale report.json in the out dir does not leak into a failed job's metrics", async () => {
+  const s = setup();
+  const out = join(s.dir, "build/mapforge/7f81c0aa-3.0.0"); mkdirSync(out, { recursive: true });
+  writeFileSync(join(out, "report.json"), JSON.stringify({ seaToLandRatio: 9.9, landKm2: 999, totals: { settlements: 9, landformInstances: 9, regions: 9 } }));
+  const q = createJobQueue({ ...s.queue.options,
+    commandsFor: () => [{ label: "generate", argv: [process.execPath, "-e", "console.error('generate-world: LOOP BUDGET generate 13000 ms'); process.exitCode = 1"] }] });
+  const j = q.enqueue({ kind: "draft", seed: seed(7) });
+  await q.onIdle();
+  const done = q.store.get(j.id);
+  assert.equal(done.status, "failed");
+  assert.equal(done.metrics, null);
+  s.cleanup();
+});
