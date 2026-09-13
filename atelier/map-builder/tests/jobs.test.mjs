@@ -43,7 +43,8 @@ test("recoverInterrupted marks queued/running as interrupted", () => {
   assert.equal(s.get(d.id).status, "succeeded"); assert.equal(s.get(r.id).status, "interrupted");
   rmSync(dir, { recursive: true, force: true });
 });
-test("get rejects a malformed id without touching the filesystem", () => {
-  const s = createJobStore({ dir: tmp() });
+test("get rejects a malformed id without touching the filesystem", (t) => {
+  const dir = tmp(); t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const s = createJobStore({ dir });
   assert.throws(() => s.get("../etc/passwd"), /invalid job id/);
 });
