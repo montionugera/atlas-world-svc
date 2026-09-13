@@ -10,20 +10,20 @@ export function parseStageLine(line) {
 }
 
 export function createStageTracker({ stageCount }) {
-  const order = []; const byName = new Map(); let budget = null;
+  // Map iterates in insertion order, so it doubles as the step order — no separate array needed.
+  const byName = new Map(); let budget = null;
   return {
     push(line) {
       const p = parseStageLine(line);
       if (p.kind === "budget") { budget = { ...(budget ?? {}), [p.stage]: p }; return { type: "job.budget", budget: p }; }
       if (p.kind !== "step") return null;
       let s = byName.get(p.name);
-      if (!s) { s = { name: p.name, label: p.label, ms: 0, runs: 0, status: "done" }; byName.set(p.name, s); order.push(p.name); }
+      if (!s) { s = { name: p.name, label: p.label, ms: 0, runs: 0, status: "done" }; byName.set(p.name, s); }
       s.ms += p.ms; s.runs += 1;
-      return { type: "job.step", step: { ...s }, stepIndex: order.length, stepCount: stageCount };
+      return { type: "job.step", step: { ...s }, stepIndex: byName.size, stepCount: stageCount };
     },
-    steps() { return order.map((n) => ({ ...byName.get(n) })); },
-    current() { return order.length ? { ...byName.get(order[order.length - 1]) } : null; },
-    stepIndex() { return order.length; },
+    steps() { return [...byName.values()].map((s) => ({ ...s })); },
+    stepIndex() { return byName.size; },
     budget() { return budget; },
   };
 }

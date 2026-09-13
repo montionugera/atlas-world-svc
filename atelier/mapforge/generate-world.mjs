@@ -1302,6 +1302,14 @@ export function atlasComposition({ atlas, children }) {
   return normaliseComposition(derived);
 }
 
+// Shared by renderReport's markdown table and jsonReport's `continents` array so the cell-area
+// formula (0.25 km2/cell) and the field list have one source of truth. `landKm2` is left
+// unrounded here; each caller formats it the way its own output needs.
+function continentCensus(f) {
+  return { id: f.continent, landKm2: (f.cellCensus.land + f.cellCensus.lake) * 0.25,
+    regions: f.regions.length, settlements: f.settlements.length, instances: f.instances.length };
+}
+
 function renderReport({ run }) {
   const lines = [
     `# mapforge run ${run.runManifest.seed} / ${run.runManifest.version}`, "",
@@ -1311,7 +1319,8 @@ function renderReport({ run }) {
     `landform types placed: ${run.coverage.placed} / ${run.coverage.total}`, "",
     "| continent | gross land km2 | regions | settlements | instances |",
     "| --- | ---: | ---: | ---: | ---: |",
-    ...run.fabric.map((f) => `| ${f.continent} | ${((f.cellCensus.land + f.cellCensus.lake) * 0.25).toFixed(1)} | ${f.regions.length} | ${f.settlements.length} | ${f.instances.length} |`),
+    ...run.fabric.map((f) => { const c = continentCensus(f);
+      return `| ${c.id} | ${c.landKm2.toFixed(1)} | ${c.regions} | ${c.settlements} | ${c.instances} |`; }),
     "", "## stage timings", "",
     ...Object.entries(run.timings).map(([k, v]) => `- ${k}: ${v} ms`),
   ];
@@ -1445,13 +1454,16 @@ export function loopBudget({ timings, budgets }) {
 // fixture already exists.
 export function jsonReport({ run }) {
   const m = run.runManifest;
-  const continents = run.fabric.map((f) => ({
-    id: f.continent, landKm2: Number(((f.cellCensus.land + f.cellCensus.lake) * 0.25).toFixed(1)),
-    regions: f.regions.length, settlements: f.settlements.length, instances: f.instances.length }));
-  const sum = (k) => continents.reduce((s, c) => s + c[k], 0);
+  const continents = run.fabric.map((f) => {
+    const c = continentCensus(f);
+    return { ...c, landKm2: Number(c.landKm2.toFixed(1)) };
+  });
+  const totals = continents.reduce((t, c) => ({
+    regions: t.regions + c.regions, settlements: t.settlements + c.settlements, instances: t.instances + c.instances,
+  }), { regions: 0, settlements: 0, instances: 0 });
   return { seed: m.seed, version: m.version, seaLevel: m.seaLevel, rank: m.rank, landKm2: m.landKm2, waterKm2: m.waterKm2,
     seaToLandRatio: m.seaToLandRatio, interstitialKm2: m.interstitialKm2,
-    totals: { continents: continents.length, regions: sum("regions"), settlements: sum("settlements"), landformInstances: sum("instances") },
+    totals: { continents: continents.length, regions: totals.regions, settlements: totals.settlements, landformInstances: totals.instances },
     continents, coverage: { placed: run.coverage.placed, total: run.coverage.total }, timings: run.timings, problems: run.problems };
 }
 

@@ -34,9 +34,11 @@ export function createRepo({ repoRoot, git = (cmd, args) => execFileSync(cmd, ar
     draft: 2 * (row("generate").failMs + row("sheets").failMs),
     publish: 2 * budgets.loop.reduce((s, r) => s + r.failMs, 0),
   };
-  const generatorVersion = GENERATOR_VERSION; // audit 2026-09-13: manifest.json has NO generatorVersion (its `version: 1` is a schema number) and fabric/world.json nests it at generator.version — import the constant, never read JSON for it
   return {
-    repoRoot, budgets, timeouts, generatorVersion,
+    repoRoot, budgets, timeouts,
+    // generatorVersion is a constant, not read from JSON: manifest.json's "version" is a schema
+    // number, and fabric/world.json nests it at generator.version.
+    generatorVersion: GENERATOR_VERSION,
     branch() {
       const name = git("git", ["rev-parse", "--abbrev-ref", "HEAD"]).trim();
       return name === "HEAD" ? { name: null, detached: true } : { name, detached: false };
