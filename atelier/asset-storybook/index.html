@@ -1891,15 +1891,25 @@
         gap: 1rem;
         margin-bottom: 1.2rem;
       }
-      /* Fix round 2, D4: el.hidden sets the `hidden` attribute, which only
-         hides via the UA stylesheet's `[hidden] { display: none }` — any
-         author rule that sets `display` (this file's own `.grid` at :247,
-         and `.mb-checklist` above) beats that UA rule regardless of
-         specificity, so `.hidden = true` was a no-op on these two. Same
-         trap the repo already has explicit fixes for elsewhere
-         (`.story-overlay[hidden]` and its siblings). */
+      /* Fix round 2 (D4 + addendum): el.hidden sets the `hidden` attribute,
+         which only hides via the UA stylesheet's `[hidden] { display: none }`
+         — any author rule that sets `display` beats that UA rule regardless
+         of specificity, so `.hidden = true` is a no-op on any element whose
+         own class sets `display`. Same trap the repo already has explicit
+         fixes for elsewhere (`.story-overlay[hidden]` and its siblings).
+         Every `.mb-` class this module toggles via `.hidden` was swept for
+         this: `.mb-jobs-table` (`.grid`, index.html:247) and `.mb-checklist`
+         both set `display: grid` (D4); `.mb-mode-fields` sets `display: flex`
+         (addendum — same defect, found while filing D4, controller ruled
+         in-scope). Every other toggled class (`.mb-screen`/
+         `.mb-start-screen`/`.mb-build-screen`, `.empty-state`,
+         `.mb-build-title`, `.mb-build-status`, `.mb-build-error`,
+         `.mb-progress`, `.mb-stop-btn`) has no competing `display` rule, so
+         `.hidden` already works correctly there — verified by reading each
+         one, not assumed. */
       .mb-jobs-table[hidden],
-      .mb-checklist[hidden] {
+      .mb-checklist[hidden],
+      .mb-mode-fields[hidden] {
         display: none;
       }
       .mb-checklist-group-label {
