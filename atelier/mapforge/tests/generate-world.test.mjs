@@ -34,10 +34,10 @@ const rj = (p) => JSON.parse(readFileSync(p, "utf8"));
 // in three on a developer box. So a LOOP BUDGET exit is accepted here and the
 // number is REPORTED; what is asserted is a ceiling four times the fail
 // threshold, which a real regression still trips.
-function generate(out) {
+function generate(out, { seed = SEED, extraArgs = [] } = {}) {
   try {
     return execFileSync(process.execPath,
-      [CLI, "--seed", SEED, "--out", out, "--no-png", "--stage-report"],
+      [CLI, "--seed", seed, "--out", out, "--no-png", ...extraArgs],
       { encoding: "utf8", cwd: ROOT, maxBuffer: 64 * 1024 * 1024 });
   } catch (e) {
     const stdout = e.stdout ?? "";
@@ -51,7 +51,7 @@ let RUN = null;
 function run() {
   if (RUN) return RUN;
   const out = mkdtempSync(join(tmpdir(), "genw-"));
-  const log = generate(out);
+  const log = generate(out, { extraArgs: ["--stage-report"] });
   const nodesDir = join(out, "content/spine/nodes");
   const nodes = readdirSync(nodesDir).filter((f) => f.endsWith(".json")).map((f) => rj(join(nodesDir, f)));
   RUN = { out, log, nodes, nodesDir,
@@ -328,12 +328,7 @@ test("--seed is HONOURED, not merely accepted", { timeout: 240000 }, () => {
   const other = "0123456789abcdef";
   assert.notEqual(other, committed, "pick a seed the manifest does not already carry");
   const out = mkdtempSync(join(tmpdir(), "genw-seed-"));
-  try {
-    execFileSync(process.execPath, [CLI, "--seed", other, "--out", out, "--no-png"],
-      { encoding: "utf8", cwd: ROOT, maxBuffer: 64 * 1024 * 1024 });
-  } catch (e) {
-    if (!/LOOP BUDGET/.test(e.stderr ?? "")) throw e;
-  }
+  generate(out, { seed: other });
   assert.equal(rj(join(out, "content/world/fabric/world.json")).seed, other);
   assert.equal(rj(join(out, "manifest.json")).seed, other);
   rmSync(out, { recursive: true, force: true });
@@ -439,16 +434,8 @@ test("--json-report writes report.json with per-continent totals; flag is opt-in
   // test: `report.json` is written by `main()` BEFORE the loop-budget check
   // runs, so a slow box (Gate 2 fans out 32 test files concurrently — see
   // budgets.json's cpuFailMsWhy) still produces the file this test inspects.
-  const generateJson = (args) => {
-    try {
-      return execFileSync(process.execPath, args, { encoding: "utf8" });
-    } catch (e) {
-      if (!/LOOP BUDGET/.test(e.stderr ?? "")) throw e;
-      return e.stdout ?? "";
-    }
-  };
   const out = mkdtempSync(join(tmpdir(), "mb-json-"));
-  generateJson([CLI, "--seed", "7c9e4a2f8b1d6e03", "--out", out, "--no-png", "--json-report"]);
+  generate(out, { extraArgs: ["--json-report"] });
   const rep = JSON.parse(readFileSync(join(out, "report.json"), "utf8"));
   assert.equal(rep.seed, "7c9e4a2f8b1d6e03");
   assert.ok(rep.totals.settlements > 0 && rep.totals.regions > 0 && rep.continents.length > 0);
@@ -456,7 +443,7 @@ test("--json-report writes report.json with per-continent totals; flag is opt-in
   assert.equal(rep.totals.settlements, rep.continents.reduce((s, c) => s + c.settlements, 0));
   assert.ok(Object.keys(rep.timings).includes("P1"));
   const out2 = mkdtempSync(join(tmpdir(), "mb-json-"));
-  generateJson([CLI, "--seed", "7c9e4a2f8b1d6e03", "--out", out2, "--no-png"]);
+  generate(out2);
   assert.equal(existsSync(join(out2, "report.json")), false, "report.json is opt-in");
   rmSync(out, { recursive: true, force: true }); rmSync(out2, { recursive: true, force: true });
 });
@@ -1110,7 +1097,7 @@ test("REPRODUCIBLE: a second run of the CLI writes byte-identical content", { ti
   const first = run();
   const out = mkdtempSync(join(tmpdir(), "genw-repro-"));
   try {
-    generate(out);
+    generate(out, { extraArgs: ["--stage-report"] });
     const b = rj(join(out, "manifest.json"));
     // The hash map covers every written file, so comparing it compares the
     // whole content root — and `timings` is deliberately NOT compared.
