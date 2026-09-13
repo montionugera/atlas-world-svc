@@ -1,6 +1,6 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync, readFileSync, existsSync, cpSync } from "node:fs";
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync, readFileSync, existsSync, cpSync, symlinkSync, lstatSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
@@ -187,6 +187,52 @@ test("a corrupt snapshot.json surfaces via list() as { id, corrupt: true }, prun
   const removed = store.prune();
   assert.ok(removed.includes(bad.id), "prune() did not remove the corrupt snapshot");
   assert.equal(existsSync(join(snapDir, bad.id)), false, "corrupt snapshot dir was not removed from disk");
+});
+
+test("an orphan snapshot dir with no snapshot.json (create() died mid-copy) is treated as corrupt and prune()d (Batch F rereview R1)", (t) => {
+  const snapDir = mkdtempSync(join(tmpdir(), "mb-snap-orphan-"));
+  t.after(() => rmSync(snapDir, { recursive: true, force: true }));
+  const store = createSnapshots({ repoRoot: MINI, dir: snapDir, keep: 3 });
+  const good = store.create({ seed: "goodgoodgoodgood" });
+
+  // Simulate create() dying after copying files but before writing
+  // snapshot.json (the realistic trigger is disk-full) — a bare directory
+  // under the store with no meta at all.
+  const orphanId = "2020-01-01T00-00-00.000Z-orphan";
+  mkdirSync(join(snapDir, orphanId), { recursive: true });
+  writeFileSync(join(snapDir, orphanId, "some-copied-file.json"), "{}");
+
+  const rows = store.list();
+  assert.deepEqual(rows.find((r) => r.id === orphanId), { id: orphanId, corrupt: true },
+    "orphan dir did not surface via list() as corrupt");
+  assert.ok(rows.find((r) => r.id === good.id && !r.corrupt), "the good snapshot should still list normally");
+
+  const removed = store.prune();
+  assert.ok(removed.includes(orphanId), "prune() did not remove the orphan dir");
+  assert.equal(existsSync(join(snapDir, orphanId)), false, "orphan snapshot dir was not removed from disk");
+});
+
+test("restore unlinks a DANGLING symlink at dst before copying, instead of writing the target outside the repo (Batch F rereview R2)", (t) => {
+  const snapDir = mkdtempSync(join(tmpdir(), "mb-snap-dangling-"));
+  t.after(() => rmSync(snapDir, { recursive: true, force: true }));
+  const store = createSnapshots({ repoRoot: MINI, dir: snapDir, keep: 3 });
+  const snap = store.create({ seed: "dangledangledang" });
+
+  const victimRel = snap.files[0].path;
+  const dst = join(MINI, victimRel);
+  const outsideDir = mkdtempSync(join(tmpdir(), "mb-snap-outside-"));
+  t.after(() => rmSync(outsideDir, { recursive: true, force: true }));
+  const outsideTarget = join(outsideDir, "target.txt");
+  rmSync(dst); // remove the real file so a symlink can take its place
+  symlinkSync(outsideTarget, dst); // dangling: outsideTarget does not exist
+  assert.equal(existsSync(dst), false, "precondition: existsSync must report false for a dangling symlink");
+  assert.ok(lstatSync(dst).isSymbolicLink(), "precondition: dst must be a symlink before restore");
+
+  store.restore({ id: snap.id });
+
+  assert.equal(existsSync(outsideTarget), false, "restore wrote the dangling symlink's target outside the repo");
+  assert.equal(lstatSync(dst).isSymbolicLink(), false, "dst is still a symlink after restore");
+  assert.equal(sha256Hex(readFileSync(dst)), snap.files[0].sha256, "restored file content mismatch");
 });
 
 test("create() throws when content/spine/roots.json is missing, instead of silently shrinking the snapshot set (I1/finding B)", (t) => {

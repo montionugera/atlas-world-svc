@@ -90,8 +90,16 @@ export function createSnapshots({ repoRoot, dir, keep = 3 }) {
     try { return JSON.parse(raw); }
     catch (e) { throw new Error(`snapshots: snapshot ${id} is corrupt (unreadable snapshot.json): ${e.message}`); }
   };
+  // list()/prune() only ever call this with an id from listIds() — a
+  // directory that actually exists. For those, `readMeta` returning `null`
+  // means the dir has no snapshot.json at all: an ORPHAN left by a create()
+  // that died mid-copy (disk full is the realistic trigger), not an
+  // "unknown id" — that meaning only applies to restore()/get(), which are
+  // handed an arbitrary caller-supplied id. Treat it the same as corrupt
+  // (R1): dead weight nobody can restore from, so list() surfaces it and
+  // prune() removes it either way.
   const readMetaOrMark = (id) => {
-    try { return readMeta(id); }
+    try { return readMeta(id) ?? { id, corrupt: true }; }
     catch { return { id, corrupt: true }; }
   };
   const listIds = () =>
@@ -183,9 +191,12 @@ export function createSnapshots({ repoRoot, dir, keep = 3 }) {
         // Never write THROUGH a symlink at dst — a foreign symlink surviving
         // the delete pass (its own name is in keepSet, or it lives outside
         // SNAPSHOT_DIRS) would otherwise let copyFileSync follow it and
-        // write outside the repo. Unlink it first so the copy lands as a
-        // real file.
-        if (existsSync(dst) && lstatSync(dst).isSymbolicLink()) rmSync(dst);
+        // write outside the repo. lstatSync (not existsSync, which follows
+        // the link and reports `false` for a DANGLING one — R2) sees the
+        // link itself regardless of whether its target exists, so both a
+        // live and a dangling symlink at dst get unlinked before the copy.
+        const dstLink = lstatSync(dst, { throwIfNoEntry: false });
+        if (dstLink?.isSymbolicLink()) rmSync(dst);
         copyFileSync(src, dst);
         restored++;
       }
@@ -204,13 +215,13 @@ export function createSnapshots({ repoRoot, dir, keep = 3 }) {
       return { restored, deleted };
     },
 
-    // A corrupt snapshot.json surfaces as `{ id, corrupt: true }` instead of
-    // being silently dropped — prune() below can then remove it even though
-    // it is not a normal, readable, keep-N-newest snapshot.
+    // A corrupt snapshot.json, or an orphan dir with none at all (R1),
+    // surfaces as `{ id, corrupt: true }` instead of being silently dropped
+    // — prune() below can then remove it even though it is not a normal,
+    // readable, keep-N-newest snapshot.
     list() {
       return listIds()
         .map(readMetaOrMark)
-        .filter(Boolean)
         .sort((a, b) => {
           if (a.corrupt || b.corrupt) return a.corrupt === b.corrupt ? 0 : a.corrupt ? 1 : -1;
           return a.at < b.at ? 1 : a.at > b.at ? -1 : 0;
