@@ -255,6 +255,10 @@ jobs:
       - name: Asset storybook data-layer tests
         run: node --test atelier/asset-storybook/tests/*.test.mjs
 
+      # Map builder (F-052): the ONLY Node 18 run of this suite — Gate 1/2
+      # (scripts/precheck.sh) run it locally on whatever Node the dev has.
+      # Without this step it would never be checked against the pinned
+      # runtime CI actually deploys with.
       - name: Map builder tests
         run: node --test atelier/map-builder/tests/*.test.mjs
 
