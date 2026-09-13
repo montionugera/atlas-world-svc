@@ -27,8 +27,8 @@ const defaultCommandsFor = ({ kind, job, repo }) =>
 
 export function createJobQueue(options) {
   const { store, runner, repo, concurrency, stageCount, commandsFor = defaultCommandsFor, events } = options;
-  const pending = []; // [{ job, commands, outDir }]
-  const active = new Map(); // jobId -> { job, commands, outDir }
+  const pending = []; // [{ job, outDir }]
+  const active = new Map(); // jobId -> { job, outDir }
   let idleWaiters = [];
   let closed = false;
 
@@ -42,7 +42,8 @@ export function createJobQueue(options) {
   };
 
   async function runJob(entry) {
-    const { job: createdJob, commands, outDir } = entry;
+    const { job: createdJob, outDir } = entry;
+    const commands = commandsFor({ kind: createdJob.kind, job: createdJob, repo });
     store.update(createdJob.id, { status: "running", startedAt: new Date().toISOString() });
     events.emit("job.started", { job: store.get(createdJob.id) });
     const tracker = createStageTracker({ stageCount });
@@ -91,8 +92,7 @@ export function createJobQueue(options) {
       const outDir = outDirFor({ seed, version: repo.generatorVersion });
       if (activeOutDirs().has(outDir)) throw new ConflictError(`another job is active for out dir ${outDir}`);
       const job = store.create({ kind, seed, reason: reason ?? null, rerunOf: rerunOf ?? null, outDir });
-      const commands = commandsFor({ kind, job, repo });
-      pending.push({ job, commands, outDir });
+      pending.push({ job, outDir });
       events.emit("job.created", { job });
       pump();
       return job;
