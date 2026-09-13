@@ -1705,6 +1705,236 @@
       a {
         color: var(--accent);
       }
+
+      /* ---------- Map Builder (F-052 Task 10) ---------- */
+
+      .mb-readonly {
+        color: var(--text-faint);
+        font-size: 0.9rem;
+        padding: 1.2rem 0;
+      }
+      .mb-readonly code {
+        font-family: var(--mono);
+        color: var(--text-dim);
+      }
+
+      .mb-error {
+        color: var(--err);
+        font-size: 0.82rem;
+        min-height: 1.1em;
+        margin: 0 0 0.8rem;
+      }
+      .mb-error:empty {
+        display: none;
+      }
+
+      .mb-screen-tabs {
+        display: flex;
+        gap: 0.4rem;
+        margin-bottom: 1rem;
+      }
+
+      .mb-header-card {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.2rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.8rem 1.1rem;
+        margin-bottom: 1.2rem;
+        font-size: 0.84rem;
+        color: var(--text-dim);
+      }
+      .mb-header-stat code {
+        font-family: var(--mono);
+        color: var(--text);
+      }
+
+      .mb-form {
+        margin-bottom: 1.4rem;
+      }
+
+      .mb-mode-tabs {
+        display: flex;
+        gap: 0.4rem;
+        margin-bottom: 0.8rem;
+      }
+
+      .mb-mode-fields {
+        display: flex;
+        align-items: baseline;
+        gap: 0.6rem;
+        margin-bottom: 0.8rem;
+      }
+
+      .mb-field {
+        font-size: 0.82rem;
+        color: var(--text-dim);
+      }
+      .mb-field select,
+      .mb-field input {
+        font-family: var(--mono);
+        font-size: 0.82rem;
+        color: var(--text);
+        background: var(--bg-elev);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.32rem 0.5rem;
+        margin-left: 0.4rem;
+      }
+
+      .mb-seed-msg {
+        color: var(--err);
+        font-size: 0.78rem;
+        margin: 0.3rem 0 0;
+        min-height: 1.1em;
+      }
+
+      .mb-build-btn {
+        font-family: var(--sans);
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #0b0d12;
+        background: var(--ok);
+        border: none;
+        border-radius: 999px;
+        padding: 0.5rem 1.1rem;
+        cursor: pointer;
+      }
+      .mb-build-btn:disabled {
+        background: var(--border);
+        color: var(--text-faint);
+        cursor: default;
+      }
+
+      .mb-jobs-table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 0.82rem;
+      }
+      .mb-jobs-table th,
+      .mb-jobs-table td {
+        text-align: left;
+        padding: 0.45rem 0.8rem 0.45rem 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .mb-jobs-table th {
+        color: var(--text-dim);
+        font-weight: 600;
+      }
+      .mb-cell-seed code {
+        font-family: var(--mono);
+      }
+      .mb-row-action {
+        font-family: var(--sans);
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: var(--text-dim);
+        background: var(--bg-elev);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.24rem 0.6rem;
+        margin: 0 0.3rem 0.3rem 0;
+        cursor: pointer;
+      }
+      .mb-row-action:hover {
+        border-color: var(--border-hover);
+        color: var(--text);
+      }
+
+      .mb-build-title code {
+        font-family: var(--mono);
+      }
+      .mb-build-status {
+        color: var(--text-dim);
+        font-size: 0.88rem;
+        margin: 0 0 1rem;
+      }
+      .mb-build-error {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--err);
+      }
+
+      .mb-progress {
+        position: relative;
+        height: 10px;
+        background: var(--bg-elev);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        margin-bottom: 1.2rem;
+        overflow: hidden;
+      }
+      .mb-progress-fill {
+        height: 100%;
+        background: var(--ok);
+        transition: width 0.3s ease;
+      }
+      .mb-progress-fill.mb-over-target {
+        background: var(--tier-seed);
+      }
+      .mb-progress-fill.mb-over-fail {
+        background: var(--err);
+      }
+      .mb-progress-target {
+        position: absolute;
+        top: -2px;
+        bottom: -2px;
+        width: 2px;
+        background: var(--text);
+      }
+
+      .mb-checklist {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.2rem;
+      }
+      .mb-checklist-group-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-faint);
+        margin: 0 0 0.4rem;
+      }
+      .mb-checklist-stages {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        font-size: 0.82rem;
+      }
+      .mb-stage {
+        padding: 0.15rem 0;
+        color: var(--text-faint);
+      }
+      .mb-stage::before {
+        content: "○ ";
+      }
+      .mb-stage-done {
+        color: var(--ok);
+      }
+      .mb-stage-done::before {
+        content: "✓ ";
+      }
+      .mb-stage-current {
+        color: var(--tier-seed);
+      }
+      .mb-stage-current::before {
+        content: "● ";
+      }
+
+      .mb-stop-btn {
+        font-family: var(--sans);
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--err);
+        background: var(--bg-elev);
+        border: 1px solid var(--err);
+        border-radius: 999px;
+        padding: 0.45rem 1rem;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>

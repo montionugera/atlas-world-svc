@@ -130,6 +130,13 @@ export const STORY_VIEWS_FALLBACK = [
 // renderer, no per-view health; its data is the committed run ledgers.
 export const FORGE_CLASS = "forge";
 
+// F-052: synthetic class for the Map Builder tab — start/watch world-generation
+// draft jobs against the local atelier/map-builder service. Like FORGE_CLASS
+// it is not an asset; its "health" is whether the service answers /api/health,
+// and its sidebar count is the number of succeeded drafts awaiting review
+// (map-builder-model.mjs badgeCount).
+export const MAP_BUILDER_CLASS = "map-builder";
+
 // health[kind] = { total, ok, err } — updated as models/audio finish loading,
 // sidebar badges re-render on every update.
 export const health = {};
