@@ -7,12 +7,19 @@
 //   - a per-continent fabric file's shape is { continent: "c01", ...,
 //     cellKm: 0.5, cellCensus: { land, lake, unowned }, regions: [...12 items],
 //     settlements: [...0 items], ... }. There is no committed landKm2 field at
-//     this level (content/world/manifest.json's landmasses[].netKm2 is a
-//     WORLD-level, budget-derived number and does not agree with the fabric
-//     file's own cell census — 6000 vs cellCensus.land*cellKm^2 = 5997.25 on
-//     c01 — so landKm2 here is DERIVED from the fabric file itself:
-//     Math.round(cellCensus.land * cellKm * cellKm), the same "cells * cellKm^2"
-//     shape promote-world/generate-world use for land area everywhere else).
+//     this level, and content/world/manifest.json's landmasses[].netKm2 is a
+//     WORLD-level, budget-derived number that does not agree with the fabric
+//     file's own cell census (6000 vs cellCensus.land*cellKm^2 = 5997.25 on
+//     c01) — so landKm2 here is DERIVED from the fabric file itself.
+//     FIX (Batch F round 1, finding D/I4): the derivation must be the
+//     GENERATOR'S OWN formula, not a re-guess of it — a land-only Math.round
+//     disagreed with generate-world.mjs's continentCensus() (:1310,
+//     `(cellCensus.land + cellCensus.lake) * 0.25`, LAND+LAKE) by up to 7.5%
+//     on the same draft, which would show two different "land km2" numbers
+//     for one continent on the Build screen vs the Review screen. Fixed by
+//     importing continentCensus (exported for exactly this) instead of
+//     reimplementing it, and formatting the way jsonReport() does
+//     (`Number(landKm2.toFixed(1))`) so the two screens agree to the decimal.
 //     `regions`/`settlements` are the counts of those two arrays.
 //   - content/world/fabric/world.json carries the CURRENT root's measured
 //     seaToLandRatio (currentSeed() already reads this same file for `seed`).
@@ -31,7 +38,8 @@
 //     which is the deviation from spec §11.5 the brief already flags; this
 //     comment is the audit trail for it, the spec text is unchanged.
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, resolve, posix } from "node:path";
+import { continentCensus } from "../../mapforge/generate-world.mjs";
 
 const readJson = (p) => JSON.parse(readFileSync(p, "utf8"));
 
@@ -43,12 +51,13 @@ export function continentMetrics({ fabricDir }) {
   const files = readdirSync(fabricDir).filter((f) => /^continent-\d+\.json$/.test(f)).sort();
   return files.map((f) => {
     const doc = readJson(join(fabricDir, f));
-    return {
-      id: doc.continent,
-      landKm2: Math.round(doc.cellCensus.land * doc.cellKm * doc.cellKm),
-      regions: doc.regions.length,
-      settlements: doc.settlements.length,
-    };
+    if (!doc.cellCensus || typeof doc.cellCensus.land !== "number" || typeof doc.cellCensus.lake !== "number")
+      throw new Error(`review: ${f} is missing cellCensus.land/lake — cannot compute landKm2`);
+    // continentCensus is generate-world.mjs's OWN formula (see header) —
+    // reused here, not re-derived, so this screen and the Build screen can
+    // never disagree on what "land km2" means for the same continent.
+    const c = continentCensus(doc);
+    return { id: c.id, landKm2: Number(c.landKm2.toFixed(1)), regions: c.regions, settlements: c.settlements };
   });
 }
 
@@ -84,7 +93,11 @@ export function buildReview({ repo, job, sheets }) {
   const sheetRows = Object.keys(sheets).sort().map((id) => {
     const sheet = sheets[id];
     const draftRel = DRAFT_SHEET_IDS.has(id) ? `sheets/${id}.svg` : null;
-    const draftSvg = draftRel && existsSync(join(outDirAbs, draftRel)) ? `/${job.outDir}/${draftRel}` : null;
+    // path.posix.join (not template-literal concatenation) so an ABSOLUTE
+    // job.outDir doesn't produce a protocol-relative "//..." URL — m4/minor,
+    // Batch F round 1: `/${job.outDir}/${draftRel}` yielded `//tmp/.../fabric.svg`
+    // whenever outDir was absolute (the test's own case).
+    const draftSvg = draftRel && existsSync(join(outDirAbs, draftRel)) ? posix.join("/", job.outDir, draftRel) : null;
     return { id, title: sheet.title, draftSvg, currentSvg: `/${sheet.outSvg}` };
   });
 

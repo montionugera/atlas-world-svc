@@ -1,9 +1,9 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import path, { join } from "node:path";
+import path, { join, posix } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRepo } from "../lib/repo.mjs";
 import { continentMetrics, buildReview } from "../lib/review.mjs";
@@ -86,8 +86,45 @@ test("buildReview: sheets.length === 17, only fabric+overlay carry a draftSvg, e
   assert.equal(review.sheets.length, 17);
   const withDraft = review.sheets.filter((s) => s.draftSvg !== null).map((s) => s.id).sort();
   assert.deepEqual(withDraft, ["fabric", "overlay"]);
-  for (const s of review.sheets) if (s.draftSvg === null) assert.equal(s.draftSvg, null);
   assert.ok(existsSync(join(OUT, "sheets/fabric.svg")));
   assert.ok(existsSync(join(OUT, "sheets/overlay.svg")));
   for (const s of review.sheets) assert.ok(existsSync(join(REPO, s.currentSvg.slice(1))), `${s.currentSvg} missing on disk`);
+
+  // m4 (Batch F round 1): OUT is an ABSOLUTE outDir (mkdtemp, outside the
+  // repo) — `/${job.outDir}/${draftRel}` used to yield a protocol-relative
+  // "//tmp/.../fabric.svg" URL here. Assert the exact, single-leading-slash
+  // string posix.join now produces.
+  const fabric = review.sheets.find((s) => s.id === "fabric");
+  assert.equal(fabric.draftSvg, posix.join("/", OUT, "sheets/fabric.svg"));
+  assert.ok(!fabric.draftSvg.startsWith("//"), `draftSvg is protocol-relative: ${fabric.draftSvg}`);
+});
+
+test("continentMetrics.landKm2 agrees with generate-world's own --json-report for the same draft (I4)", () => {
+  const reportPath = join(OUT, "report.json");
+  assert.ok(existsSync(reportPath), "before() ran --json-report; report.json should exist");
+  const report = JSON.parse(readFileSync(reportPath, "utf8"));
+
+  const rows = continentMetrics({ fabricDir: join(OUT, "content/world/fabric") });
+  assert.ok(rows.length >= 1);
+  const byId = new Map(report.continents.map((c) => [c.id, c]));
+  for (const r of rows) {
+    const rc = byId.get(r.id);
+    assert.ok(rc, `report.json has no continent ${r.id}`);
+    // Same source of truth (generate-world.mjs's continentCensus, imported —
+    // not re-derived) and the same `.toFixed(1)` formatting jsonReport uses,
+    // so these must be EXACTLY equal, not merely close.
+    assert.equal(r.landKm2, rc.landKm2, `${r.id}: review landKm2 disagrees with report.json`);
+  }
+});
+
+test("continentMetrics throws a clear error when cellCensus is missing (no silent NaN)", () => {
+  const badDir = mkdtempSync(join(tmpdir(), "mb-review-badfixture-"));
+  try {
+    mkdirSync(badDir, { recursive: true });
+    writeFileSync(join(badDir, "continent-01.json"),
+      JSON.stringify({ continent: "c01", regions: [], settlements: [] })); // no cellCensus/cellKm
+    assert.throws(() => continentMetrics({ fabricDir: badDir }), /cellCensus/);
+  } finally {
+    rmSync(badDir, { recursive: true, force: true });
+  }
 });

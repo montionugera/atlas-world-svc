@@ -1302,10 +1302,12 @@ export function atlasComposition({ atlas, children }) {
   return normaliseComposition(derived);
 }
 
-// Shared by renderReport's markdown table and jsonReport's `continents` array so the cell-area
-// formula (0.25 km2/cell) and the field list have one source of truth. `landKm2` is left
-// unrounded here; each caller formats it the way its own output needs.
-function continentCensus(f) {
+// Shared by renderReport's markdown table, jsonReport's `continents` array, AND
+// map-builder's review.mjs (Task 13) so the cell-area formula (0.25 km2/cell,
+// LAND + LAKE — see review.mjs's header for why lake is included) and the
+// field list have exactly one source of truth. `landKm2` is left unrounded
+// here; each caller formats it the way its own output needs.
+export function continentCensus(f) {
   return { id: f.continent, landKm2: (f.cellCensus.land + f.cellCensus.lake) * 0.25,
     regions: f.regions.length, settlements: f.settlements.length, instances: f.instances.length };
 }
