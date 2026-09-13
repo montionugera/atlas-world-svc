@@ -9,6 +9,8 @@ import {
   validateSeed,
   badgeCount,
   reduce,
+  reduceConnection,
+  INITIAL_CONNECTION_STATUS,
 } from "./map-builder-model.mjs";
 
 /**
@@ -287,19 +289,67 @@ export async function mountMapBuilder(main) {
   });
 
   // ---------- Start screen: drafts table ----------
+  //
+  // Fix round 1, D3: the table itself, its header row, and the empty-state
+  // paragraph are created ONCE here and never replaced — syncTable() below
+  // only creates/removes/reorders per-job <tr>s and patches their cells in
+  // place, so a keyboard user's focus on a row's action button survives
+  // every job.step frame that doesn't change that job's status (the common
+  // case: ~21 step frames per build, only 1-2 status transitions).
 
-  const tableHost = el("div", { className: "mb-table-host" });
-  startScreen.appendChild(tableHost);
+  const tableEmpty = el("p", { className: "empty-state", text: "No draft builds yet." });
+  const table = el("table", { className: "grid mb-jobs-table" });
+  const tableHeadRow = el("tr", null, [
+    el("th", { scope: "col", text: "Seed" }),
+    el("th", { scope: "col", text: "Status" }),
+    el("th", { scope: "col", text: "Started" }),
+    el("th", { scope: "col", text: "Actions" }),
+  ]);
+  table.appendChild(tableHeadRow);
+  startScreen.appendChild(tableEmpty);
+  startScreen.appendChild(table);
+
+  // jobId -> { tr, seedCode, statusCell, startedCell, actionsCell, lastStatus }
+  const tableRows = new Map();
 
   // ---------- Build screen ----------
+  //
+  // Same rationale as the table: every element below is created once and
+  // patched in place by patchBuildScreen(), so the "Stop this draft" button
+  // (the one focusable control in this screen) is never destroyed by a
+  // job.step frame while a keyboard user is on it, and the aria-live status
+  // paragraph is a genuine live-region MUTATION (text change on an existing
+  // node), not a freshly-inserted node screen readers won't announce.
 
-  const buildHost = el("div", { className: "mb-build-host" });
+  const buildEmpty = el("p", { className: "empty-state", text: "Pick a draft from Start to watch its build." });
+  const buildTitleCode = el("code");
+  const buildTitle = el("h3", { className: "mb-build-title" }, [document.createTextNode("Seed "), buildTitleCode]);
+  const buildStatus = el("p", { className: "mb-build-status", "aria-live": "polite" });
+  const buildErrorP = el("p", { className: "mb-build-error" });
+  const progressFill = el("div", { className: "mb-progress-fill" });
+  const progressTarget = el("div", { className: "mb-progress-target" });
+  const progressBar = el("div", { className: "mb-progress" }, [progressFill, progressTarget]);
+  const checklistHost = el("div", { className: "mb-checklist" });
+  const stopBtn = el("button", { type: "button", className: "mb-stop-btn", text: "Stop this draft" });
+  stopBtn.addEventListener("click", () => {
+    if (selectedJobId) runAction("cancel", selectedJobId);
+  });
+
+  const buildHost = el("div", { className: "mb-build-host" }, [
+    buildEmpty,
+    buildTitle,
+    buildStatus,
+    progressBar,
+    buildErrorP,
+    checklistHost,
+    stopBtn,
+  ]);
   buildScreen.appendChild(buildHost);
 
   function openBuildScreen(jobId) {
     selectedJobId = jobId;
     setScreen("build");
-    renderBuildScreen();
+    patchBuildScreen();
   }
 
   async function runAction(actionId, jobId) {
@@ -357,98 +407,133 @@ export async function mountMapBuilder(main) {
     return [...state.jobs.values()].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   }
 
-  function renderTable() {
-    const jobs = jobsSortedNewestFirst();
-    if (jobs.length === 0) {
-      tableHost.replaceChildren(el("p", { className: "empty-state", text: "No draft builds yet." }));
-      return;
-    }
-    const table = el("table", { className: "grid mb-jobs-table" });
-    const head = el("tr", null, [
-      el("th", { scope: "col", text: "Seed" }),
-      el("th", { scope: "col", text: "Status" }),
-      el("th", { scope: "col", text: "Started" }),
-      el("th", { scope: "col", text: "Actions" }),
-    ]);
-    table.appendChild(head);
-    for (const job of jobs) {
-      const row = el("tr", null, [
-        el("td", { className: "mb-cell-seed" }, [el("code", { text: job.seed })]),
-        el(
-          "td",
-          { className: "mb-cell-status", "aria-live": "polite" },
-          [document.createTextNode(statusText(job, { stageCount: state.world.stageCount }))],
-        ),
-        el("td", { text: job.startedAt ?? "—" }),
-      ]);
-      const actionsCell = el("td", { className: "mb-cell-actions" });
-      for (const action of rowActions(job)) {
-        const btn = el("button", { type: "button", className: "mb-row-action", text: action.label });
-        btn.addEventListener("click", () => runAction(action.id, job.id));
-        actionsCell.appendChild(btn);
-      }
-      row.appendChild(actionsCell);
-      table.appendChild(row);
-    }
-    tableHost.replaceChildren(table);
+  // Fix round 1, D3 — keyed row diff: creates a row only the first time a
+  // job id is seen, removes rows for jobs no longer in state, reorders an
+  // existing row only when its position actually changed (`.after()` is a
+  // no-op if the row is already right after `prevTr`), and only rebuilds
+  // the Actions cell's buttons when `job.status` actually transitioned —
+  // NOT on every job.step frame, which is what previously stole focus from
+  // whatever action button a keyboard user had just pressed.
+  function createTableRow(job) {
+    const seedCode = el("code");
+    const statusCell = el("td", { className: "mb-cell-status", "aria-live": "polite" });
+    const startedCell = el("td");
+    const actionsCell = el("td", { className: "mb-cell-actions" });
+    const tr = el("tr", null, [el("td", { className: "mb-cell-seed" }, [seedCode]), statusCell, startedCell, actionsCell]);
+    tr.dataset.jobId = job.id;
+    return { tr, seedCode, statusCell, startedCell, actionsCell, lastStatus: null };
   }
 
-  function renderBuildScreen() {
+  function patchTableRow(entry, job) {
+    if (entry.seedCode.textContent !== job.seed) entry.seedCode.textContent = job.seed;
+    const statusStr = statusText(job, { stageCount: state.world.stageCount });
+    if (entry.statusCell.textContent !== statusStr) entry.statusCell.textContent = statusStr;
+    const startedStr = job.startedAt ?? "—";
+    if (entry.startedCell.textContent !== startedStr) entry.startedCell.textContent = startedStr;
+
+    if (entry.lastStatus !== job.status) {
+      entry.lastStatus = job.status;
+      const buttons = rowActions(job).map((action) => {
+        const btn = el("button", { type: "button", className: "mb-row-action", text: action.label });
+        btn.addEventListener("click", () => runAction(action.id, job.id));
+        return btn;
+      });
+      entry.actionsCell.replaceChildren(...buttons);
+    }
+  }
+
+  function syncTable() {
+    const jobs = jobsSortedNewestFirst();
+    table.hidden = jobs.length === 0;
+    tableEmpty.hidden = jobs.length !== 0;
+
+    const seen = new Set();
+    let prevTr = tableHeadRow;
+    for (const job of jobs) {
+      seen.add(job.id);
+      let entry = tableRows.get(job.id);
+      if (!entry) {
+        entry = createTableRow(job);
+        tableRows.set(job.id, entry);
+      }
+      patchTableRow(entry, job);
+      if (prevTr.nextElementSibling !== entry.tr) prevTr.after(entry.tr);
+      prevTr = entry.tr;
+    }
+    for (const [id, entry] of tableRows) {
+      if (!seen.has(id)) {
+        entry.tr.remove();
+        tableRows.delete(id);
+      }
+    }
+  }
+
+  // Fix round 1, D3 — patch, don't rebuild: every element here is created
+  // once (above, alongside buildHost) and only its text/attributes/children
+  // are mutated, so `stopBtn` (the only focusable control on this screen)
+  // and `buildStatus` (an aria-live region) are the SAME nodes across every
+  // job.step frame, not freshly inserted ones.
+  function patchBuildScreen() {
     const job = selectedJobId ? state.jobs.get(selectedJobId) : null;
-    if (!job) {
-      buildHost.replaceChildren(
-        el("p", { className: "empty-state", text: "Pick a draft from Start to watch its build." }),
-      );
+    const has = Boolean(job);
+    buildEmpty.hidden = has;
+    buildTitle.hidden = !has;
+    buildStatus.hidden = !has;
+    checklistHost.hidden = !has;
+    if (!has) {
+      progressBar.hidden = true;
+      buildErrorP.hidden = true;
+      stopBtn.hidden = true;
       return;
     }
-    const running = job.status === "queued" || job.status === "running";
-    const nodes = [
-      el("h3", { className: "mb-build-title" }, [document.createTextNode("Seed "), el("code", { text: job.seed })]),
-      el("p", { className: "mb-build-status", "aria-live": "polite", text: statusText(job, { stageCount: state.world.stageCount }) }),
-    ];
+
+    if (buildTitleCode.textContent !== job.seed) buildTitleCode.textContent = job.seed;
+    const statusStr = statusText(job, { stageCount: state.world.stageCount });
+    if (buildStatus.textContent !== statusStr) buildStatus.textContent = statusStr;
 
     if (job.status === "running") {
       const p = progress(job, { targetMs: GENERATE_TARGET_MS, failMs: GENERATE_FAIL_MS });
-      const bar = el("div", { className: "mb-progress" });
-      const fill = el("div", { className: "mb-progress-fill mb-over-" + p.over });
-      fill.style.width = p.pct + "%";
-      const target = el("div", { className: "mb-progress-target" });
-      target.style.left = p.targetPct + "%";
-      bar.appendChild(fill);
-      bar.appendChild(target);
-      nodes.push(bar);
+      progressBar.hidden = false;
+      progressFill.className = "mb-progress-fill mb-over-" + p.over;
+      progressFill.style.width = p.pct + "%";
+      progressTarget.style.left = p.targetPct + "%";
+    } else {
+      progressBar.hidden = true;
     }
 
     if (job.status === "failed" && job.error) {
-      nodes.push(el("p", { className: "mb-build-error", text: job.error.split("\n")[0] }));
+      buildErrorP.hidden = false;
+      const firstLine = job.error.split("\n")[0];
+      if (buildErrorP.textContent !== firstLine) buildErrorP.textContent = firstLine;
+    } else {
+      buildErrorP.hidden = true;
     }
 
-    const checklist = el("div", { className: "mb-checklist" });
-    for (const group of groupSteps({ steps: job.steps, stepsJson, running: job.status === "running" })) {
-      const groupEl = el("div", { className: "mb-checklist-group" });
-      groupEl.appendChild(el("p", { className: "mb-checklist-group-label", text: group.label }));
-      const list = el("ul", { className: "mb-checklist-stages" });
-      for (const stage of group.stages) {
-        list.appendChild(el("li", { className: "mb-stage mb-stage-" + stage.status, text: stage.label }));
-      }
-      groupEl.appendChild(list);
-      checklist.appendChild(groupEl);
-    }
-    nodes.push(checklist);
+    // The checklist has no focusable controls (plain <li> text), so a full
+    // rebuild here is safe — nothing to lose focus on, unlike the table
+    // rows and the Stop button above.
+    const groups = groupSteps({ steps: job.steps, stepsJson, running: job.status === "running" });
+    checklistHost.replaceChildren(
+      ...groups.map((group) => {
+        const list = el(
+          "ul",
+          { className: "mb-checklist-stages" },
+          group.stages.map((stage) => el("li", { className: "mb-stage mb-stage-" + stage.status, text: stage.label })),
+        );
+        return el("div", { className: "mb-checklist-group" }, [
+          el("p", { className: "mb-checklist-group-label", text: group.label }),
+          list,
+        ]);
+      }),
+    );
 
-    if (running) {
-      const stopBtn = el("button", { type: "button", className: "mb-stop-btn", text: "Stop this draft" });
-      stopBtn.addEventListener("click", () => runAction("cancel", job.id));
-      nodes.push(stopBtn);
-    }
-
-    buildHost.replaceChildren(...nodes);
+    stopBtn.hidden = !(job.status === "queued" || job.status === "running");
   }
 
   function renderAll() {
     renderHeaderCard();
-    renderTable();
-    renderBuildScreen();
+    syncTable();
+    patchBuildScreen();
     updateBadge([...state.jobs.values()]);
   }
 
@@ -462,10 +547,14 @@ export async function mountMapBuilder(main) {
     renderAll();
   }
 
+  // Fix round 1, D1: pollTimer must be cleared on every SSE reconnect, not
+  // just guarded against double-starting — a browser EventSource
+  // auto-reconnects after a transient error, and without this the poll
+  // interval outlives the reconnect and runs forever alongside SSE, double-
+  // applying every job event for the rest of the page's life.
   let pollTimer = null;
   function startPolling() {
     if (pollTimer) return;
-    apply({ type: "disconnected" });
     pollTimer = setInterval(async () => {
       try {
         const page = await fetchJson(apiBase + "/jobs?kind=draft&limit=50", "map-builder jobs poll");
@@ -475,11 +564,41 @@ export async function mountMapBuilder(main) {
       }
     }, POLL_MS);
   }
+  function stopPolling() {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  }
+
+  // Fix round 1, D2: the /api/jobs?kind=draft&limit=50 snapshot above is
+  // fetched before the EventSource ever opens, so anything the service
+  // emitted in that gap (or during any later reconnect gap) is otherwise
+  // lost until a manual reload. Resyncing on every "open" — not just the
+  // first one — closes both the initial-load race and every reconnect gap
+  // with the same one call.
+  async function resyncJobs() {
+    try {
+      const page = await fetchJson(apiBase + "/jobs?kind=draft&limit=50", "map-builder jobs resync");
+      apply({ type: "jobs.synced", jobs: page.jobs ?? [] });
+    } catch (err) {
+      console.warn("[asset-storybook] map-builder resync-on-open failed:", err);
+    }
+  }
+
+  // Drives reduceConnection (map-builder-model.mjs) — see its docstring for
+  // why this is a pure three-state machine rather than ad-hoc booleans here.
+  let connectionStatus = INITIAL_CONNECTION_STATUS;
 
   const JOB_EVENT_TYPES = ["job.created", "job.started", "job.step", "job.done"];
   try {
     const source = new EventSource(apiBase + "/events");
-    source.addEventListener("open", () => apply({ type: "connected" }));
+    source.addEventListener("open", () => {
+      connectionStatus = reduceConnection(connectionStatus, "sse.open");
+      stopPolling();
+      apply({ type: "connected" });
+      resyncJobs();
+    });
     for (const type of JOB_EVENT_TYPES) {
       source.addEventListener(type, (ev) => {
         try {
@@ -498,9 +617,15 @@ export async function mountMapBuilder(main) {
         console.warn("[asset-storybook] map-builder malformed SSE frame:", err);
       }
     });
-    source.onerror = () => startPolling();
+    source.onerror = () => {
+      connectionStatus = reduceConnection(connectionStatus, "sse.error");
+      apply({ type: "disconnected" });
+      startPolling();
+    };
   } catch (err) {
     console.warn("[asset-storybook] EventSource unavailable, falling back to polling:", err);
+    connectionStatus = reduceConnection(connectionStatus, "sse.error");
+    apply({ type: "disconnected" });
     startPolling();
   }
 }

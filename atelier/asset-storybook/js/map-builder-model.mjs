@@ -146,6 +146,28 @@ export function badgeCount(jobs) {
   ).length;
 }
 
+// Fix round 1, D1/D2: the initial state before the EventSource has ever
+// fired an "open" — deliberately NOT "polling", so the tab doesn't start
+// polling before SSE has had a chance to connect at all.
+export const INITIAL_CONNECTION_STATUS = "connecting";
+
+/**
+ * Connection lifecycle reducer for the SSE + polling-fallback pair (fix
+ * round 1 D1/D2). Pure three-state machine so the on/off decision D1 got
+ * wrong — "SSE reconnects after one transient error, but nothing ever
+ * clears the poll timer, so SSE and polling both run forever" — is covered
+ * by node --test without mocking EventSource/setInterval. The DOM layer
+ * calls stopPolling()/startPolling() whenever this output is "live"/
+ * "polling" respectively (idempotent either way), and resyncs /api/jobs on
+ * every "sse.open" transition — both the initial connect and every
+ * reconnect (D2) — rather than deciding any of that itself.
+ */
+export function reduceConnection(status, eventType) {
+  if (eventType === "sse.open") return "live";
+  if (eventType === "sse.error") return "polling";
+  return status;
+}
+
 /**
  * The tab's state machine over `{ jobs: Map, world, connected }`. The DOM
  * layer adapts whatever the wire sends (SSE frames, polled /api/jobs pages)
