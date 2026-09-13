@@ -51,6 +51,7 @@ export function createJobQueue(options) {
       const tracker = createStageTracker({ stageCount });
       const timeoutMs = repo.timeouts?.[createdJob.kind] ?? repo.timeouts?.draft ?? 40000;
       const reportPath = join(repo.repoRoot, outDir, "report.json");
+      const isDraft = createdJob.kind === "draft";
       // The out dir is deterministic per seed+version, so a report.json left
       // over from an EARLIER run in the same dir must never be attributed to
       // THIS one (finding I4). Clear it before the command runs — it is one
@@ -62,7 +63,14 @@ export function createJobQueue(options) {
       // written by this run (or wasn't written at all), so its metrics are
       // read regardless of outcome; a cancelled run killed before it wrote
       // a complete file simply yields metrics: null via the parse failing.
-      try { rmSync(reportPath, { force: true }); } catch { /* best-effort */ }
+      //
+      // Only a "draft" job (the one that runs generate-world.mjs) owns this
+      // report.json. Other kinds (dry-run today; publish/undo in Phase 2)
+      // reuse the SAME deterministic out dir as the draft they operate on —
+      // clearing or reading report.json for them would erase or misattribute
+      // the draft's own metrics (re-review round 3, Minor m1). They neither
+      // touch the file nor derive metrics from it.
+      if (isDraft) { try { rmSync(reportPath, { force: true }); } catch { /* best-effort */ } }
       const result = await runner.run({
         job: createdJob, commands, cwd: repo.repoRoot, timeoutMs,
         onLine: ({ label, stream, line }) => {
@@ -83,8 +91,10 @@ export function createJobQueue(options) {
       // report.json at this path can only be from THIS run (see the rmSync
       // above) — read it regardless of outcome so a loop-budget failure that
       // wrote a fresh report before exiting still surfaces its metrics.
+      // Non-draft kinds don't own this file (see the isDraft gate above), so
+      // their metrics stay null — the brief only defines metrics for drafts.
       let metrics = null;
-      try { metrics = readMetrics(reportPath); } catch { metrics = null; }
+      if (isDraft) { try { metrics = readMetrics(reportPath); } catch { metrics = null; } }
       const dryRun = parseDryRun(result.captured["dry-run"] ?? []);
       const job = store.update(id, {
         status, endedAt: new Date().toISOString(), durationMs: Date.now() - t0,

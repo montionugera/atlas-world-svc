@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createJobStore } from "../lib/jobs.mjs";
@@ -143,5 +143,32 @@ test("failed run that writes a fresh report.json keeps its own metrics", async (
   assert.equal(done.status, "failed");
   assert.match(done.error, /LOOP BUDGET/);
   assert.deepEqual(done.metrics, { seaLand: 1.2, landKm2: 200, settlements: 6, landforms: 7, regions: 8 });
+  s.cleanup();
+});
+
+// m1 (re-review round 3): a non-draft job (dry-run today; publish/undo in
+// Phase 2) shares the draft's deterministic out dir. It must not clear or
+// read that draft's report.json — doing so would erase the metrics Task 7's
+// review payload (spec.md ~line 103) builds from it.
+test("a draft's report.json survives a later non-draft job on the same out dir", async () => {
+  const s = setup();
+  const out = join(s.dir, "build/mapforge/9f81c0aa-3.0.0"); mkdirSync(out, { recursive: true });
+  const reportObj = { seaToLandRatio: 1.7, landKm2: 300, totals: { settlements: 1, landformInstances: 2, regions: 3 } };
+  const reportPath = JSON.stringify(join(out, "report.json"));
+  const reportJson = JSON.stringify(JSON.stringify(reportObj));
+  const q = createJobQueue({ ...s.queue.options, commandsFor: ({ job }) => job.kind === "draft"
+    ? [{ label: "generate", argv: [process.execPath, "-e", `require('fs').writeFileSync(${reportPath}, ${reportJson})`] }]
+    : [{ label: "dry-run", argv: [process.execPath, "-e", "console.log('promote-world: DRY RUN — 0 written, 0 deleted')"] }] });
+
+  const draft = q.enqueue({ kind: "draft", seed: seed(9) });
+  await q.onIdle();
+  assert.deepEqual(q.store.get(draft.id).metrics, { seaLand: 1.7, landKm2: 300, settlements: 1, landforms: 2, regions: 3 });
+
+  const dryRun = q.enqueue({ kind: "dry-run", seed: seed(9) });
+  await q.onIdle();
+  const done = q.store.get(dryRun.id);
+  assert.equal(done.status, "succeeded");
+  assert.equal(done.metrics, null);
+  assert.deepEqual(JSON.parse(readFileSync(join(out, "report.json"), "utf8")), reportObj);
   s.cleanup();
 });
