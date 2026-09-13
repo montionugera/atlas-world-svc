@@ -484,6 +484,13 @@ export async function mountMapBuilder(main) {
       progressBar.hidden = true;
       buildErrorP.hidden = true;
       stopBtn.hidden = true;
+      // Fix round 2, D4: checklistHost has `display: grid` in its own CSS
+      // rule, which beats `.hidden` regardless of specificity (see the
+      // index.html comment beside `.mb-checklist[hidden]`) — clear its
+      // content here too, not just hide it, so a deleted/no-longer-selected
+      // job's stale checklist can never be visible even if hiding ever
+      // fails again for some other reason.
+      checklistHost.replaceChildren();
       return;
     }
 
