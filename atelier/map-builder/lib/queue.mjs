@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { createStageTracker } from "./stage-parser.mjs";
 import { draftCommands, dryRunCommands, outDirFor } from "./commands.mjs";
@@ -51,6 +51,18 @@ export function createJobQueue(options) {
       const tracker = createStageTracker({ stageCount });
       const timeoutMs = repo.timeouts?.[createdJob.kind] ?? repo.timeouts?.draft ?? 40000;
       const reportPath = join(repo.repoRoot, outDir, "report.json");
+      // The out dir is deterministic per seed+version, so a report.json left
+      // over from an EARLIER run in the same dir must never be attributed to
+      // THIS one (finding I4). Clear it before the command runs — it is one
+      // of generate-world.mjs's own RUN_ENTRIES, so removing it up front is
+      // exactly what a fresh run would do to it anyway and cannot trip
+      // clearRun's foreign-entry refusal (verified against
+      // generate-world.mjs's RUN_ENTRIES / clearRun). Whatever report.json
+      // exists after the run — success, failure, or cancellation — was
+      // written by this run (or wasn't written at all), so its metrics are
+      // read regardless of outcome; a cancelled run killed before it wrote
+      // a complete file simply yields metrics: null via the parse failing.
+      try { rmSync(reportPath, { force: true }); } catch { /* best-effort */ }
       const result = await runner.run({
         job: createdJob, commands, cwd: repo.repoRoot, timeoutMs,
         onLine: ({ label, stream, line }) => {
@@ -68,11 +80,11 @@ export function createJobQueue(options) {
         },
       });
       const status = result.cancelled ? "cancelled" : result.ok ? "succeeded" : "failed";
-      // Only a successful run's report.json is trustworthy — a failed or
-      // cancelled job in a re-used out dir (deterministic per seed+version)
-      // must never surface a PREVIOUS run's metrics as its own (finding I4).
+      // report.json at this path can only be from THIS run (see the rmSync
+      // above) — read it regardless of outcome so a loop-budget failure that
+      // wrote a fresh report before exiting still surfaces its metrics.
       let metrics = null;
-      if (result.ok) { try { metrics = readMetrics(reportPath); } catch { metrics = null; } }
+      try { metrics = readMetrics(reportPath); } catch { metrics = null; }
       const dryRun = parseDryRun(result.captured["dry-run"] ?? []);
       const job = store.update(id, {
         status, endedAt: new Date().toISOString(), durationMs: Date.now() - t0,

@@ -40,8 +40,13 @@ test("cancel queued removes it; cancel running kills it", async () => {
 test("succeeded draft records steps, durationMs, metrics from report.json and dryRun from stdout", async () => {
   const s = setup({ sleepMs: 10 });
   const out = join(s.dir, "build/mapforge/1f81c0aa-3.0.0"); mkdirSync(out, { recursive: true });
-  writeFileSync(join(out, "report.json"), JSON.stringify({ seaToLandRatio: 1.5, landKm2: 100, totals: { settlements: 3, landformInstances: 4, regions: 5 } }));
-  const q = createJobQueue({ ...s.queue.options, commandsFor: () => [{ label: "generate", argv: [process.execPath, "-e", "console.log('stage: P1 premise-masks 1 ms')"] },
+  // report.json is written DURING the run (as the real generator would,
+  // before it exits) — not pre-seeded before enqueue() — so this fixture
+  // can't be confused with a stale file left over from an earlier run.
+  const reportPath = JSON.stringify(join(out, "report.json"));
+  const report = JSON.stringify(JSON.stringify({ seaToLandRatio: 1.5, landKm2: 100, totals: { settlements: 3, landformInstances: 4, regions: 5 } }));
+  const q = createJobQueue({ ...s.queue.options, commandsFor: () => [{ label: "generate", argv: [process.execPath, "-e",
+    `console.log('stage: P1 premise-masks 1 ms'); require('fs').writeFileSync(${reportPath}, ${report})`] },
     { label: "dry-run", argv: [process.execPath, "-e", "console.log('promote-world: DRY RUN — 2 written, 1 deleted'); console.log('promote-world: ratio 1.5 (land 100 km²)'); console.log('  DELETE a'); console.log('  WRITE  b'); console.log('  WRITE  c')"] }] });
   const j = q.enqueue({ kind: "draft", seed: seed(1) }); await q.onIdle(); const done = q.store.get(j.id);
   assert.equal(done.status, "succeeded"); assert.equal(done.steps.length, 1); assert.ok(done.durationMs >= 0);
@@ -103,8 +108,10 @@ test("close() settles onIdle and marks dropped pending jobs interrupted", async 
   s.cleanup();
 });
 
-// I4: a stale report.json from a previous run in the same (deterministic)
-// out dir must never be attributed to a job that didn't produce it.
+// I4 (round 1): a stale report.json left over from an EARLIER run in the
+// same (deterministic) out dir must never be attributed to a job that
+// didn't produce it — the failing command here writes no report.json of
+// its own, so the pre-seeded stale one must be cleared, not read.
 test("stale report.json in the out dir does not leak into a failed job's metrics", async () => {
   const s = setup();
   const out = join(s.dir, "build/mapforge/7f81c0aa-3.0.0"); mkdirSync(out, { recursive: true });
@@ -116,5 +123,25 @@ test("stale report.json in the out dir does not leak into a failed job's metrics
   const done = q.store.get(j.id);
   assert.equal(done.status, "failed");
   assert.equal(done.metrics, null);
+  s.cleanup();
+});
+
+// I4 (round 2): a failing run that writes its OWN fresh report.json before
+// exiting (e.g. a loop-budget failure caught after the generator already
+// wrote the report) must keep those metrics — round 1 over-corrected by
+// gating metrics on result.ok, which discarded exactly this case.
+test("failed run that writes a fresh report.json keeps its own metrics", async () => {
+  const s = setup();
+  const out = join(s.dir, "build/mapforge/8f81c0aa-3.0.0"); mkdirSync(out, { recursive: true });
+  const reportPath = JSON.stringify(join(out, "report.json"));
+  const report = JSON.stringify(JSON.stringify({ seaToLandRatio: 1.2, landKm2: 200, totals: { settlements: 6, landformInstances: 7, regions: 8 } }));
+  const q = createJobQueue({ ...s.queue.options, commandsFor: () => [{ label: "generate", argv: [process.execPath, "-e",
+    `require('fs').writeFileSync(${reportPath}, ${report}); console.error('generate-world: LOOP BUDGET generate 13000 ms'); process.exitCode = 1`] }] });
+  const j = q.enqueue({ kind: "draft", seed: seed(8) });
+  await q.onIdle();
+  const done = q.store.get(j.id);
+  assert.equal(done.status, "failed");
+  assert.match(done.error, /LOOP BUDGET/);
+  assert.deepEqual(done.metrics, { seaLand: 1.2, landKm2: 200, settlements: 6, landforms: 7, regions: 8 });
   s.cleanup();
 });
