@@ -9,8 +9,6 @@ import {
   validateSeed,
   badgeCount,
   reduce,
-  reduceConnection,
-  INITIAL_CONNECTION_STATUS,
 } from "./map-builder-model.mjs";
 
 /**
@@ -33,6 +31,9 @@ import {
  */
 
 const apiBase = "/api";
+// Draft jobs page, fetched identically on initial mount, poll fallback, and
+// every SSE "open" resync — the query never varies, only who's asking.
+const JOBS_URL = apiBase + "/jobs?kind=draft&limit=50";
 const HEALTH_TIMEOUT_MS = 2000;
 // config.json's pollMs is a server-side value — this module runs in the
 // browser and has no route to read it, so the interval is hard-coded here.
@@ -144,7 +145,7 @@ export async function mountMapBuilder(main) {
     [world, stepsJson, jobsPage] = await Promise.all([
       fetchJson(apiBase + "/world", "map-builder world"),
       fetchJson(apiBase + "/steps", "map-builder steps"),
-      fetchJson(apiBase + "/jobs?kind=draft&limit=50", "map-builder jobs"),
+      fetchJson(JOBS_URL, "map-builder jobs"),
     ]);
   } catch (err) {
     console.warn("[asset-storybook] map-builder service answered /api/health but a follow-up fetch failed:", err);
@@ -554,6 +555,18 @@ export async function mountMapBuilder(main) {
     renderAll();
   }
 
+  // Shared by the poll fallback and every SSE "open" resync (D2 below) —
+  // both just want the current draft-jobs page upserted into state; only the
+  // fetchJson context label and console.warn wording differ per caller.
+  async function syncJobsPage(fetchLabel, warnLabel) {
+    try {
+      const page = await fetchJson(JOBS_URL, fetchLabel);
+      apply({ type: "jobs.synced", jobs: page.jobs ?? [] });
+    } catch (err) {
+      console.warn(`[asset-storybook] map-builder ${warnLabel} failed:`, err);
+    }
+  }
+
   // Fix round 1, D1: pollTimer must be cleared on every SSE reconnect, not
   // just guarded against double-starting — a browser EventSource
   // auto-reconnects after a transient error, and without this the poll
@@ -562,14 +575,7 @@ export async function mountMapBuilder(main) {
   let pollTimer = null;
   function startPolling() {
     if (pollTimer) return;
-    pollTimer = setInterval(async () => {
-      try {
-        const page = await fetchJson(apiBase + "/jobs?kind=draft&limit=50", "map-builder jobs poll");
-        apply({ type: "jobs.synced", jobs: page.jobs ?? [] });
-      } catch (err) {
-        console.warn("[asset-storybook] map-builder poll failed:", err);
-      }
-    }, POLL_MS);
+    pollTimer = setInterval(() => syncJobsPage("map-builder jobs poll", "poll"), POLL_MS);
   }
   function stopPolling() {
     if (pollTimer) {
@@ -578,60 +584,46 @@ export async function mountMapBuilder(main) {
     }
   }
 
-  // Fix round 1, D2: the /api/jobs?kind=draft&limit=50 snapshot above is
-  // fetched before the EventSource ever opens, so anything the service
-  // emitted in that gap (or during any later reconnect gap) is otherwise
-  // lost until a manual reload. Resyncing on every "open" — not just the
-  // first one — closes both the initial-load race and every reconnect gap
-  // with the same one call.
-  async function resyncJobs() {
-    try {
-      const page = await fetchJson(apiBase + "/jobs?kind=draft&limit=50", "map-builder jobs resync");
-      apply({ type: "jobs.synced", jobs: page.jobs ?? [] });
-    } catch (err) {
-      console.warn("[asset-storybook] map-builder resync-on-open failed:", err);
-    }
+  // Fix round 1, D2: the JOBS_URL snapshot above is fetched before the
+  // EventSource ever opens, so anything the service emitted in that gap (or
+  // during any later reconnect gap) is otherwise lost until a manual reload.
+  // Resyncing on every "open" — not just the first one — closes both the
+  // initial-load race and every reconnect gap with the same one call.
+  function resyncJobs() {
+    return syncJobsPage("map-builder jobs resync", "resync-on-open");
   }
 
-  // Drives reduceConnection (map-builder-model.mjs) — see its docstring for
-  // why this is a pure three-state machine rather than ad-hoc booleans here.
-  let connectionStatus = INITIAL_CONNECTION_STATUS;
+  // Shared by every SSE listener below: parse the frame's JSON payload and
+  // hand it to `apply`, warning (not throwing) on a malformed frame so one
+  // bad frame can't take down the listener.
+  function onSseFrame(source, type, toEvent) {
+    source.addEventListener(type, (ev) => {
+      try {
+        apply(toEvent(JSON.parse(ev.data)));
+      } catch (err) {
+        console.warn("[asset-storybook] map-builder malformed SSE frame:", err);
+      }
+    });
+  }
 
   const JOB_EVENT_TYPES = ["job.created", "job.started", "job.step", "job.done"];
   try {
     const source = new EventSource(apiBase + "/events");
     source.addEventListener("open", () => {
-      connectionStatus = reduceConnection(connectionStatus, "sse.open");
       stopPolling();
       apply({ type: "connected" });
       resyncJobs();
     });
     for (const type of JOB_EVENT_TYPES) {
-      source.addEventListener(type, (ev) => {
-        try {
-          const payload = JSON.parse(ev.data);
-          apply({ type, job: payload.job });
-        } catch (err) {
-          console.warn("[asset-storybook] map-builder malformed SSE frame:", err);
-        }
-      });
+      onSseFrame(source, type, (payload) => ({ type, job: payload.job }));
     }
-    source.addEventListener("world.changed", (ev) => {
-      try {
-        const payload = JSON.parse(ev.data);
-        apply({ type: "world.changed", world: payload.world });
-      } catch (err) {
-        console.warn("[asset-storybook] map-builder malformed SSE frame:", err);
-      }
-    });
+    onSseFrame(source, "world.changed", (payload) => ({ type: "world.changed", world: payload.world }));
     source.onerror = () => {
-      connectionStatus = reduceConnection(connectionStatus, "sse.error");
       apply({ type: "disconnected" });
       startPolling();
     };
   } catch (err) {
     console.warn("[asset-storybook] EventSource unavailable, falling back to polling:", err);
-    connectionStatus = reduceConnection(connectionStatus, "sse.error");
     apply({ type: "disconnected" });
     startPolling();
   }

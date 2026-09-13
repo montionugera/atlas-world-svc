@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { statusText, groupSteps, progress, rowActions, validateSeed, badgeCount, reduce, reduceConnection, INITIAL_CONNECTION_STATUS } from "../js/map-builder-model.mjs";
+import { statusText, groupSteps, progress, rowActions, validateSeed, badgeCount, reduce } from "../js/map-builder-model.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const STEPS = JSON.parse(readFileSync(path.resolve(HERE, "../../map-builder/steps.json"), "utf8"));
@@ -66,20 +66,4 @@ test("connected/disconnected toggle state.connected", () => {
   assert.equal(s.connected, true);
   s = reduce(s, { type: "disconnected" });
   assert.equal(s.connected, false);
-});
-
-// Fix round 1, D1: after one transient SSE error the browser auto-reconnects
-// and fires "open" again — reduceConnection must settle back to "live" (so
-// the DOM layer stops polling) rather than getting stuck "polling" forever,
-// and a lone reconnect with no prior error must not start polling at all.
-test("reduceConnection: sse.error moves to polling, sse.open always settles to live", () => {
-  assert.equal(reduceConnection(INITIAL_CONNECTION_STATUS, "sse.open"), "live");
-  let c = reduceConnection(INITIAL_CONNECTION_STATUS, "sse.error");
-  assert.equal(c, "polling");
-  c = reduceConnection(c, "sse.open"); // reconnect after the error
-  assert.equal(c, "live");
-  c = reduceConnection(c, "sse.error"); // a second, later error
-  assert.equal(c, "polling");
-  c = reduceConnection(c, "sse.open");
-  assert.equal(c, "live");
 });
