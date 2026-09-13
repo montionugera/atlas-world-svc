@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
-import { mkdtempSync, rmSync, mkdirSync, existsSync } from "node:fs";
+import { mkdtempSync, rmSync, mkdirSync, existsSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import path from "node:path";
@@ -56,10 +56,15 @@ const withApp = async (fn) => {
   }
 };
 
-const api = (port, method, urlPath, body) => new Promise((resolve, reject) => {
+// POST/DELETE always carry Content-Type: application/json, even with no body
+// (cancel, rerun) — app.mjs now requires it on every POST/DELETE (fix round
+// 1, F7), so every existing client of this helper must send it.
+const api = (port, method, urlPath, body, extraHeaders = {}) => new Promise((resolve, reject) => {
   const data = body === undefined ? null : JSON.stringify(body);
-  const req = http.request({ host: "127.0.0.1", port, method, path: urlPath,
-    headers: data ? { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(data) } : {} }, (res) => {
+  const headers = { ...extraHeaders };
+  if (method === "POST" || method === "DELETE") headers["Content-Type"] = "application/json";
+  if (data) headers["Content-Length"] = Buffer.byteLength(data);
+  const req = http.request({ host: "127.0.0.1", port, method, path: urlPath, headers }, (res) => {
     const chunks = [];
     res.on("data", (c) => chunks.push(c));
     res.on("end", () => {
@@ -202,7 +207,84 @@ test("GET /api/events receives job.created for a new POST", async () => {
     assert.ok(dataLine, buf);
     const payload = JSON.parse(dataLine.slice("data: ".length));
     assert.equal(payload.job.id, created.body.jobs[0].id);
+    // Fix round 1, F3: the SSE payload carries the raw store record unless
+    // the emit sites sanitise it — assert the leak is closed.
+    assert.equal(payload.job._seq, undefined);
     await queue.onIdle();
+  });
+});
+
+test("world.lastPublish strips _seq from the raw store record (fix round 1, F3)", async () => {
+  await withApp(async ({ store, repo }) => {
+    const job = store.create({ kind: "publish", seed: "abcdefabcdefabcd", outDir: "build/mapforge/x" });
+    const world = createWorldReader({ repo, store });
+    const read = world.read();
+    assert.equal(read.lastPublish.id, job.id);
+    assert.equal(read.lastPublish._seq, undefined);
+  });
+});
+
+test("DELETE refuses when a rerun of the same seed is still active (fix round 1, F2)", async () => {
+  await withApp(async ({ port, queue }) => {
+    const s = "a1a1a1a1a1a1a1a1";
+    const created = await api(port, "POST", "/api/jobs", { kind: "draft", seed: s });
+    const id = created.body.jobs[0].id;
+    await queue.onIdle();
+    const rerun = await api(port, "POST", `/api/jobs/${id}/rerun`);
+    assert.equal(rerun.status, 201);
+    // The rerun is queued/running on the same out dir as the now-finished
+    // original — deleting the original must not touch it mid-generation.
+    const del = await api(port, "DELETE", `/api/jobs/${id}`);
+    assert.equal(del.status, 409);
+    await queue.onIdle();
+  });
+});
+
+test("DELETE removes only the record when a finished rerun still shares the out dir, keeping the directory (fix round 1, F2)", async () => {
+  await withApp(async ({ port, queue, repo }) => {
+    const s = "b2b2b2b2b2b2b2b2";
+    const created = await api(port, "POST", "/api/jobs", { kind: "draft", seed: s });
+    const originalId = created.body.jobs[0].id;
+    const outDirFull = join(repo.repoRoot, created.body.jobs[0].outDir);
+    mkdirSync(outDirFull, { recursive: true });
+    writeFileSync(join(outDirFull, "marker.txt"), "keep me");
+    await queue.onIdle();
+    const rerun = await api(port, "POST", `/api/jobs/${originalId}/rerun`);
+    const rerunId = rerun.body.job.id;
+    await queue.onIdle();
+    try {
+      const del = await api(port, "DELETE", `/api/jobs/${originalId}`);
+      assert.equal(del.status, 204);
+      assert.equal(existsSync(outDirFull), true, "shared out dir must survive while the rerun's record still references it");
+      const rerunGet = await api(port, "GET", `/api/jobs/${rerunId}`);
+      assert.equal(rerunGet.status, 200);
+    } finally {
+      rmSync(outDirFull, { recursive: true, force: true });
+    }
+  });
+});
+
+test("POST with a non-JSON Content-Type is rejected with 400 (fix round 1, F7)", async () => {
+  await withApp(async ({ port }) => {
+    const body = JSON.stringify({ kind: "draft", count: 1 });
+    const res = await new Promise((resolve, reject) => {
+      const req = http.request({ host: "127.0.0.1", port, method: "POST", path: "/api/jobs",
+        headers: { "Content-Type": "text/plain", "Content-Length": Buffer.byteLength(body) } }, (res) => {
+        res.resume();
+        res.on("end", () => resolve({ status: res.statusCode }));
+      });
+      req.on("error", reject);
+      req.write(body);
+      req.end();
+    });
+    assert.equal(res.status, 400);
+  });
+});
+
+test("a request with a disallowed Host header is refused with 403 (fix round 1, F7)", async () => {
+  await withApp(async ({ port }) => {
+    const res = await api(port, "GET", "/api/health", undefined, { Host: "evil.example" });
+    assert.equal(res.status, 403);
   });
 });
 

@@ -11,6 +11,13 @@ export function newJobId(now = new Date(), rand = crypto) {
 }
 const assertId = (id) => { if (!JOB_ID.test(id)) throw new Error(`invalid job id: ${id}`); return id; };
 
+// _seq is the store's internal sort tie-breaker (see the comment above) — real
+// on disk, but not part of a job's public shape. Every surface that hands a
+// job record to a client (JSON routes, SSE frames, world.lastPublish) must
+// strip it through this one sanitiser (fix round 1, F3) instead of each
+// reimplementing the same destructure.
+export const publicJob = (job) => { if (!job) return job; const { _seq, ...rest } = job; return rest; };
+
 export function createJobStore({ dir }) {
   mkdirSync(dir, { recursive: true });
   const recPath = (id) => join(dir, `${assertId(id)}.json`);

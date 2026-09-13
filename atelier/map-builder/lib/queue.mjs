@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { createStageTracker } from "./stage-parser.mjs";
 import { draftCommands, dryRunCommands, outDirFor } from "./commands.mjs";
 import { SEED_GRAMMAR } from "../../mapforge/generate-world.mjs";
+import { publicJob } from "./jobs.mjs";
 
 export class ConflictError extends Error { constructor(msg) { super(msg); this.code = 409; } }
 
@@ -47,7 +48,7 @@ export function createJobQueue(options) {
     try {
       const commands = commandsFor({ kind: createdJob.kind, job: createdJob, repo });
       store.update(id, { status: "running", startedAt: new Date().toISOString() });
-      events.emit("job.started", { job: store.get(id) });
+      events.emit("job.started", { job: publicJob(store.get(id)) });
       const tracker = createStageTracker({ stageCount });
       const timeoutMs = repo.timeouts?.[createdJob.kind] ?? repo.timeouts?.draft ?? 40000;
       const reportPath = join(repo.repoRoot, outDir, "report.json");
@@ -82,7 +83,7 @@ export function createJobQueue(options) {
             const ev = tracker.push(line);
             if (ev && ev.type === "job.step") {
               const job = store.update(id, { steps: tracker.steps() });
-              events.emit("job.step", { job, step: ev.step, stepIndex: ev.stepIndex, stepCount: ev.stepCount });
+              events.emit("job.step", { job: publicJob(job), step: ev.step, stepIndex: ev.stepIndex, stepCount: ev.stepCount });
             }
           } catch { /* logged nowhere yet; must not crash the process */ }
         },
@@ -100,13 +101,13 @@ export function createJobQueue(options) {
         status, endedAt: new Date().toISOString(), durationMs: Date.now() - t0,
         exitCode: result.exitCode, error: result.error, steps: tracker.steps(), metrics, dryRun,
       });
-      events.emit("job.done", { job });
+      events.emit("job.done", { job: publicJob(job) });
     } catch (e) {
       const job = store.update(id, {
         status: "failed", endedAt: new Date().toISOString(), durationMs: Date.now() - t0,
         error: String(e?.message ?? e),
       });
-      events.emit("job.done", { job });
+      events.emit("job.done", { job: publicJob(job) });
     } finally {
       active.delete(id);
       pump();
@@ -132,7 +133,7 @@ export function createJobQueue(options) {
       if (activeOutDirs().has(outDir)) throw new ConflictError(`another job is active for out dir ${outDir}`);
       const job = store.create({ kind, seed, reason: reason ?? null, rerunOf: rerunOf ?? null, outDir });
       pending.push({ job, outDir });
-      events.emit("job.created", { job });
+      events.emit("job.created", { job: publicJob(job) });
       pump();
       return job;
     },
@@ -141,7 +142,7 @@ export function createJobQueue(options) {
       if (pendingIndex !== -1) {
         pending.splice(pendingIndex, 1);
         const job = store.update(id, { status: "cancelled", endedAt: new Date().toISOString() });
-        events.emit("job.done", { job });
+        events.emit("job.done", { job: publicJob(job) });
         settleIdleIfDone();
         return job;
       }
@@ -163,7 +164,7 @@ export function createJobQueue(options) {
         // disk until the next boot's recoverInterrupted() (re-review m2).
         try {
           const job = store.update(dead.job.id, { status: "interrupted", endedAt: new Date().toISOString() });
-          events.emit("job.done", { job });
+          events.emit("job.done", { job: publicJob(job) });
         } catch { /* best-effort; this record recovers on next boot */ }
       }
       settleIdleIfDone();

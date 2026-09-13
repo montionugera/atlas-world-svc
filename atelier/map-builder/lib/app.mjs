@@ -3,14 +3,31 @@ import { resolve, sep } from "node:path";
 import crypto from "node:crypto";
 import { SEED_GRAMMAR } from "../../mapforge/generate-world.mjs";
 import { ConflictError } from "./queue.mjs";
+import { publicJob } from "./jobs.mjs";
 
 const httpError = (status, message) => Object.assign(new Error(message), { status });
 const badRequest = (message) => httpError(400, message);
 const notFound = (message = "not found") => httpError(404, message);
 
-// _seq is JobStore's internal sort tie-breaker (see jobs.mjs) — real, but
-// not part of the job's public shape, so the API never exposes it.
-const sanitizeJob = (job) => { if (!job) return job; const { _seq, ...rest } = job; return rest; };
+// localhost/127.0.0.1/::1 are always allowed regardless of the configured
+// bind (loopback-only service, spoofable Host header on a rebinding attack
+// otherwise); the configured bind host is added on top so a deliberate
+// non-loopback --bind still works (fix round 1, F7).
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+
+// Parses both a bare `Host:` header value ("127.0.0.1:6016") and a full
+// `Origin:` header value ("http://127.0.0.1:6016") into a bracket-free
+// hostname, using the same WHATWG URL parser for both instead of two
+// hand-rolled parsers.
+function hostnameOf(raw) {
+  if (!raw) return null;
+  try {
+    const u = new URL(raw.includes("://") ? raw : `http://${raw}`);
+    return u.hostname.replace(/^\[|\]$/g, "");
+  } catch { return null; }
+}
+
+const JSON_CONTENT_TYPE = /^application\/json(?:\s*;.*)?$/i;
 
 function sendJson(res, status, body) {
   res.writeHead(status, { "Content-Type": "application/json" });
@@ -36,7 +53,10 @@ function seedsForCreate(body) {
   return Array.from({ length: n }, () => crypto.randomBytes(8).toString("hex"));
 }
 
-export function createApp({ repo, store, queue, events, world, staticHandler, steps, version }) {
+export function createApp({ repo, store, queue, events, world, staticHandler, steps, version, bind }) {
+  const allowedHosts = new Set(LOOPBACK_HOSTS);
+  if (bind && bind !== "0.0.0.0" && bind !== "::") allowedHosts.add(bind);
+
   // Deletes a job's on-disk record + log the same way jobs.mjs names them
   // (`<id>.json` beside `<id>.log`) without reaching into its private
   // recPath — jobs.mjs only exposes logPath(id), which is enough to derive
@@ -66,7 +86,7 @@ export function createApp({ repo, store, queue, events, world, staticHandler, st
       if (q.has("status")) opts.status = q.get("status");
       if (q.has("seed")) opts.seed = q.get("seed");
       if (q.has("limit")) opts.limit = Number(q.get("limit"));
-      sendJson(ctx.res, 200, { jobs: store.list(opts).map(sanitizeJob) });
+      sendJson(ctx.res, 200, { jobs: store.list(opts).map(publicJob) });
     }],
 
     ["POST", /^\/api\/jobs$/, async (ctx) => {
@@ -75,13 +95,13 @@ export function createApp({ repo, store, queue, events, world, staticHandler, st
       if (kind !== "draft" && kind !== "dry-run") throw badRequest(`invalid kind: ${kind}`);
       const seeds = seedsForCreate(body);
       const jobs = seeds.map((seed) => queue.enqueue({ kind, seed, reason: reason ?? null }));
-      sendJson(ctx.res, 201, { jobs: jobs.map(sanitizeJob) });
+      sendJson(ctx.res, 201, { jobs: jobs.map(publicJob) });
     }],
 
     ["GET", /^\/api\/jobs\/([^/]+)$/, (ctx) => {
       const job = store.get(ctx.params[0]);
       if (!job) throw notFound();
-      sendJson(ctx.res, 200, sanitizeJob(job));
+      sendJson(ctx.res, 200, publicJob(job));
     }],
 
     ["GET", /^\/api\/jobs\/([^/]+)\/log$/, (ctx) => {
@@ -96,7 +116,7 @@ export function createApp({ repo, store, queue, events, world, staticHandler, st
     ["POST", /^\/api\/jobs\/([^/]+)\/cancel$/, (ctx) => {
       const id = ctx.params[0];
       if (!store.get(id)) throw notFound();
-      sendJson(ctx.res, 200, sanitizeJob(queue.cancel(id)));
+      sendJson(ctx.res, 200, publicJob(queue.cancel(id)));
     }],
 
     ["POST", /^\/api\/jobs\/([^/]+)\/rerun$/, async (ctx) => {
@@ -105,7 +125,7 @@ export function createApp({ repo, store, queue, events, world, staticHandler, st
       if (!original) throw notFound();
       const body = await readJsonBody(ctx.req);
       const job = queue.enqueue({ kind: original.kind, seed: original.seed, reason: body?.reason ?? `rerun of ${id}`, rerunOf: id });
-      sendJson(ctx.res, 201, { job: sanitizeJob(job) });
+      sendJson(ctx.res, 201, { job: publicJob(job) });
     }],
 
     ["DELETE", /^\/api\/jobs\/([^/]+)$/, (ctx) => {
@@ -113,8 +133,14 @@ export function createApp({ repo, store, queue, events, world, staticHandler, st
       const job = store.get(id);
       if (!job) throw notFound();
       if (job.status === "queued" || job.status === "running") throw httpError(409, "job is active");
+      // outDir is deterministic per seed+version (runIdOf), so a rerun of this
+      // seed shares it (fix round 1, F2). Refuse if another job still active
+      // on it; if another finished job still references it, drop only this
+      // job's own record/log and leave the shared directory in place.
+      const sharing = store.list({}).filter((j) => j.id !== id && j.outDir === job.outDir);
+      if (sharing.some((j) => j.status === "queued" || j.status === "running")) throw httpError(409, "out dir is in use by another job");
       removeJobFiles(id);
-      removeOutDir(job.outDir);
+      if (sharing.length === 0) removeOutDir(job.outDir);
       ctx.res.writeHead(204);
       ctx.res.end();
     }],
@@ -123,9 +149,21 @@ export function createApp({ repo, store, queue, events, world, staticHandler, st
   ];
 
   return function handler(req, res) {
+    // Cross-site protection (fix round 1, F7): a loopback service with no
+    // CORS headers is still reachable from any page via a simple-request
+    // POST (text/plain, no preflight) and from a DNS-rebinding page that
+    // becomes same-origin by spoofing Host. Both are checked before routing,
+    // for /api AND static (rebinding can read files under the repo root too).
+    if (!allowedHosts.has(hostnameOf(req.headers.host))) { sendError(res, 403, "host not allowed"); return; }
+    if (req.headers.origin && !allowedHosts.has(hostnameOf(req.headers.origin))) { sendError(res, 403, "origin not allowed"); return; }
+
     const url = new URL(req.url, "http://internal");
     if (!url.pathname.startsWith("/api")) {
       if (!staticHandler(req, res)) { res.writeHead(404); res.end(); }
+      return;
+    }
+    if ((req.method === "POST" || req.method === "DELETE") && !JSON_CONTENT_TYPE.test(req.headers["content-type"] ?? "")) {
+      sendError(res, 400, "Content-Type must be application/json");
       return;
     }
     for (const [method, pattern, fn] of routes) {

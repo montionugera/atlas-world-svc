@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join, delimiter } from "node:path";
 import { SHEETS } from "../../mapforge/render-sheet.mjs";
+import { publicJob } from "./jobs.mjs";
 
 const readJson = (p) => JSON.parse(readFileSync(p, "utf8"));
 
@@ -38,7 +39,9 @@ export function createWorldReader({ repo, snapshots = null, store }) {
         publishReason,
         pngTool: hasRsvgConvert(),
         contentGateDeps,
-        lastPublish: store.list({ kind: "publish", limit: 1 })[0] ?? null,
+        // Sanitised the same way as the JSON job routes (fix round 1, F3) —
+        // this was returning the raw stored record, leaking _seq.
+        lastPublish: publicJob(store.list({ kind: "publish", limit: 1 })[0] ?? null),
         generatorVersion: repo.generatorVersion,
         stageCount: repo.stageCount ?? null,
       };
