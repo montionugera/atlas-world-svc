@@ -15,6 +15,7 @@ import { lockExtraPaths } from "../../../scripts/lib/render-lock.mjs";
 import { collectOutputs } from "../../../scripts/check_spine_emit.mjs";
 
 const sha256Hex = (buf) => createHash("sha256").update(buf).digest("hex");
+const fileSha256 = (path) => sha256Hex(readFileSync(path));
 
 const addIfExists = (set, repoRoot, rel) => {
   if (existsSync(join(repoRoot, rel))) set.add(rel);
@@ -154,7 +155,7 @@ export function createSnapshots({ repoRoot, dir, keep = 3 }) {
           preflightErrors.push(`${f.path}: missing from the snapshot store`);
           continue;
         }
-        const got = sha256Hex(readFileSync(src));
+        const got = fileSha256(src);
         if (got !== f.sha256)
           preflightErrors.push(`${f.path}: snapshot store is corrupt — expected sha256 ${f.sha256}, got ${got}`);
       }
@@ -206,7 +207,7 @@ export function createSnapshots({ repoRoot, dir, keep = 3 }) {
       // a second check rather than the only one.
       const mismatches = [];
       for (const f of meta.files) {
-        const got = sha256Hex(readFileSync(join(repoRoot, f.path)));
+        const got = fileSha256(join(repoRoot, f.path));
         if (got !== f.sha256) mismatches.push(`${f.path}: expected sha256 ${f.sha256}, got ${got}`);
       }
       if (mismatches.length)
