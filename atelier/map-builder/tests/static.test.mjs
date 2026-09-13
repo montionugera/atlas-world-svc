@@ -3,13 +3,16 @@ import assert from "node:assert/strict";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { mkdtempSync, mkdirSync, writeFileSync, chmodSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { createStaticHandler } from "../lib/static.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..", "..", "..");
 
-const withServer = async (fn) => {
-  const handler = createStaticHandler({ root: REPO });
+const withServer = async (fn, { root = REPO } = {}) => {
+  const handler = createStaticHandler({ root });
   const server = http.createServer((req, res) => { if (!handler(req, res)) { res.writeHead(404); res.end(); } });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const { port } = server.address();
@@ -88,4 +91,36 @@ test("a directory path is 404, not a listing", async () => {
     const res = await get(port, "/atelier/");
     assert.equal(res.status, 404);
   });
+});
+
+// Fix round 1, F1/I3: a file that stats fine but can't be opened (mode 000)
+// must 404 instead of taking the whole service down with an uncaught 'error'
+// event on the read stream — and the server must still answer afterwards.
+test("a file that cannot be opened returns 404 and the server survives the next request", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "mb-static-unreadable-"));
+  const filePath = join(dir, "secret.txt");
+  writeFileSync(filePath, "shh");
+  chmodSync(filePath, 0o000);
+  try {
+    await withServer(async (port) => {
+      const bad = await get(port, "/secret.txt");
+      assert.equal(bad.status, 404);
+      const next = await get(port, "/healthz");
+      assert.equal(next.status, 200);
+      assert.equal(next.body, "ok");
+    }, { root: dir });
+  } finally {
+    chmodSync(filePath, 0o644);
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+// Fix round 1, F5/I4: --repo-root with a trailing slash (shell
+// tab-completion appends one) must not blank the whole storybook.
+test("a root with a trailing slash still serves files", async () => {
+  await withServer(async (port) => {
+    const res = await get(port, "/atelier/asset-storybook/index.html");
+    assert.equal(res.status, 200);
+    assert.equal(res.headers["content-type"], "text/html");
+  }, { root: REPO + "/" });
 });
