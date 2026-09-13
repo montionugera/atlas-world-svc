@@ -72,6 +72,9 @@ export function createJobQueue(options) {
     const { job: createdJob, outDir } = entry;
     const id = createdJob.id;
     const t0 = Date.now();
+    // Every terminal store.update() below shares these two fields — computed
+    // once per call so `durationMs` isn't skewed across the three call sites.
+    const terminalFields = (extra) => ({ endedAt: new Date().toISOString(), durationMs: Date.now() - t0, ...extra });
     // The live job object composite commands record onto (publish's snapshot
     // step sets snapshotId here; it is persisted after that step ends).
     const liveJob = { ...createdJob };
@@ -133,10 +136,10 @@ export function createJobQueue(options) {
       const status = result.cancelled ? "cancelled" : result.ok ? "succeeded" : "failed";
       if (composite) {
         const outcome = result.ok ? {} : autoRestore(id, liveJob);
-        const job = store.update(id, {
-          status, endedAt: new Date().toISOString(), durationMs: Date.now() - t0, exitCode: result.exitCode, error: result.error,
+        const job = store.update(id, terminalFields({
+          status, exitCode: result.exitCode, error: result.error,
           steps: cSteps.steps(), snapshotId: liveJob.snapshotId ?? null, ...outcome,
-        });
+        }));
         if (result.ok && createdJob.kind === "publish") {
           try { store.update(createdJob.draftJobId, { publishedBy: id }); } catch { /* draft record gone — publish itself succeeded */ }
           try { snapshots.prune(); } catch (e) { try { store.appendLog(id, `[prune] ${e?.message ?? e}\n`); } catch { /* best-effort */ } }
@@ -157,16 +160,15 @@ export function createJobQueue(options) {
       let metrics = null;
       if (isDraft) { try { metrics = readMetrics(reportPath); } catch { /* leave null */ } }
       const dryRun = parseDryRun(result.captured["dry-run"] ?? []);
-      const job = store.update(id, {
-        status, endedAt: new Date().toISOString(), durationMs: Date.now() - t0,
-        exitCode: result.exitCode, error: result.error, steps: tracker.steps(), metrics, dryRun,
-      });
+      const job = store.update(id, terminalFields({
+        status, exitCode: result.exitCode, error: result.error, steps: tracker.steps(), metrics, dryRun,
+      }));
       events.emit("job.done", { job: publicJob(job) });
     } catch (e) {
-      const job = store.update(id, {
-        status: "failed", endedAt: new Date().toISOString(), durationMs: Date.now() - t0,
+      const job = store.update(id, terminalFields({
+        status: "failed",
         error: String(e?.message ?? e), ...(isCompositeKind(createdJob.kind) ? { snapshotId: liveJob.snapshotId ?? null, ...autoRestore(id, liveJob) } : {}),
-      });
+      }));
       events.emit("job.done", { job: publicJob(job) });
       if (isCompositeKind(createdJob.kind)) emitWorldChanged();
     } finally {
@@ -177,10 +179,12 @@ export function createJobQueue(options) {
 
   function pump() {
     if (closed) { settleIdleIfDone(); return; }
+    // No composite/active-mix guard here: enqueue()'s refusals (idle-queue
+    // check for publish/undo, compositeQueuedOrRunning() for drafts/dry-runs)
+    // already make it impossible for `pending` to hold a composite while
+    // `active` is non-empty, or for anything to join `pending` while a
+    // composite is active — confirmed dead, same as n2 above.
     while (active.size < concurrency && pending.length > 0) {
-      // Defence in depth for the enqueue refusals below: a composite starts
-      // only on an idle queue, and nothing starts beside a running composite.
-      if (active.size > 0 && (isCompositeKind(pending[0].job.kind) || [...active.values()].some((e) => isCompositeKind(e.job.kind)))) break;
       const entry = pending.shift();
       active.set(entry.job.id, entry);
       runJob(entry).catch(() => {});
@@ -207,7 +211,7 @@ export function createJobQueue(options) {
         if (kind === "publish") {
           const draft = store.get(draftJobId);
           if (!draft || draft.kind !== "draft" || draft.status !== "succeeded") throw httpError(404, `no succeeded draft ${draftJobId}`);
-          if (activeOutDirs().has(draft.outDir)) throw new ConflictError(`another job is active for out dir ${draft.outDir}`);
+          // No out-dir check here — the idle-queue throw above (n2) already guarantees activeOutDirs() is empty.
           fields = { kind, seed: draft.seed, draftJobId, outDir: draft.outDir, snapshotId: null, restored: false };
         } else {
           let meta;

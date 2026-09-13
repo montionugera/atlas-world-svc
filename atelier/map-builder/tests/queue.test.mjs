@@ -287,3 +287,21 @@ test("cancelRunningForShutdown reports a throwing cancel as an error, never as a
     await s.queue.onIdle();
   } finally { s.cleanup(); }
 });
+
+// n1 (re-review): the runJob catch path emits world.changed for a composite
+// too — a throw inside queue code itself (not the runner) must still refresh
+// the UI's publishAllowed/undoAvailable state, same as any other terminal.
+test("a composite whose queue code throws before running still emits world.changed", async () => {
+  const s = compositeSetup();
+  try {
+    const events = [];
+    const q = createJobQueue({ ...s.queue.options, events: { emit: (type) => events.push(type) },
+      commandsFor: () => { throw new Error("commandsFor boom"); } });
+    const job = q.enqueue({ kind: "publish", draftJobId: s.draft.id });
+    await q.onIdle();
+    const done = q.store.get(job.id);
+    assert.equal(done.status, "failed");
+    assert.match(done.error, /commandsFor boom/);
+    assert.equal(events.filter((t) => t === "world.changed").length, 1);
+  } finally { s.cleanup(); }
+});
