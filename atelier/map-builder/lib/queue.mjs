@@ -94,7 +94,7 @@ export function createJobQueue(options) {
       // Non-draft kinds don't own this file (see the isDraft gate above), so
       // their metrics stay null — the brief only defines metrics for drafts.
       let metrics = null;
-      if (isDraft) { try { metrics = readMetrics(reportPath); } catch { metrics = null; } }
+      if (isDraft) { try { metrics = readMetrics(reportPath); } catch { /* leave null */ } }
       const dryRun = parseDryRun(result.captured["dry-run"] ?? []);
       const job = store.update(id, {
         status, endedAt: new Date().toISOString(), durationMs: Date.now() - t0,
@@ -158,8 +158,13 @@ export function createJobQueue(options) {
       closed = true;
       const dropped = pending.splice(0, pending.length);
       for (const dead of dropped) {
-        const job = store.update(dead.job.id, { status: "interrupted", endedAt: new Date().toISOString() });
-        events.emit("job.done", { job });
+        // Per-record: one store.update throw (e.g. a disk error) must not
+        // abort the loop and leave the rest of `dropped` stuck `queued` on
+        // disk until the next boot's recoverInterrupted() (re-review m2).
+        try {
+          const job = store.update(dead.job.id, { status: "interrupted", endedAt: new Date().toISOString() });
+          events.emit("job.done", { job });
+        } catch { /* best-effort; this record recovers on next boot */ }
       }
       settleIdleIfDone();
     },

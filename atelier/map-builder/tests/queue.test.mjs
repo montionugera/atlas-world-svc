@@ -16,6 +16,9 @@ const setup = ({ concurrency = 2, sleepMs = 300 } = {}) => {
   return { dir, events, queue, cleanup: () => rmSync(dir, { recursive: true, force: true }) };
 };
 const seed = (i) => `${i}f81c0aa9d2e5b17`;
+// Splices a synchronous report.json write into a `node -e` fixture script,
+// the same way the real generator writes it before exiting.
+const writeReportSrc = (path, obj) => `require('fs').writeFileSync(${JSON.stringify(path)}, ${JSON.stringify(JSON.stringify(obj))})`;
 
 test("FIFO with at most `concurrency` running", async () => {
   const s = setup(); const jobs = [1, 2, 3].map((i) => s.queue.enqueue({ kind: "draft", seed: seed(i) }));
@@ -43,10 +46,9 @@ test("succeeded draft records steps, durationMs, metrics from report.json and dr
   // report.json is written DURING the run (as the real generator would,
   // before it exits) — not pre-seeded before enqueue() — so this fixture
   // can't be confused with a stale file left over from an earlier run.
-  const reportPath = JSON.stringify(join(out, "report.json"));
-  const report = JSON.stringify(JSON.stringify({ seaToLandRatio: 1.5, landKm2: 100, totals: { settlements: 3, landformInstances: 4, regions: 5 } }));
+  const reportSrc = writeReportSrc(join(out, "report.json"), { seaToLandRatio: 1.5, landKm2: 100, totals: { settlements: 3, landformInstances: 4, regions: 5 } });
   const q = createJobQueue({ ...s.queue.options, commandsFor: () => [{ label: "generate", argv: [process.execPath, "-e",
-    `console.log('stage: P1 premise-masks 1 ms'); require('fs').writeFileSync(${reportPath}, ${report})`] },
+    `console.log('stage: P1 premise-masks 1 ms'); ${reportSrc}`] },
     { label: "dry-run", argv: [process.execPath, "-e", "console.log('promote-world: DRY RUN — 2 written, 1 deleted'); console.log('promote-world: ratio 1.5 (land 100 km²)'); console.log('  DELETE a'); console.log('  WRITE  b'); console.log('  WRITE  c')"] }] });
   const j = q.enqueue({ kind: "draft", seed: seed(1) }); await q.onIdle(); const done = q.store.get(j.id);
   assert.equal(done.status, "succeeded"); assert.equal(done.steps.length, 1); assert.ok(done.durationMs >= 0);
@@ -133,10 +135,9 @@ test("stale report.json in the out dir does not leak into a failed job's metrics
 test("failed run that writes a fresh report.json keeps its own metrics", async () => {
   const s = setup();
   const out = join(s.dir, "build/mapforge/8f81c0aa-3.0.0"); mkdirSync(out, { recursive: true });
-  const reportPath = JSON.stringify(join(out, "report.json"));
-  const report = JSON.stringify(JSON.stringify({ seaToLandRatio: 1.2, landKm2: 200, totals: { settlements: 6, landformInstances: 7, regions: 8 } }));
+  const reportSrc = writeReportSrc(join(out, "report.json"), { seaToLandRatio: 1.2, landKm2: 200, totals: { settlements: 6, landformInstances: 7, regions: 8 } });
   const q = createJobQueue({ ...s.queue.options, commandsFor: () => [{ label: "generate", argv: [process.execPath, "-e",
-    `require('fs').writeFileSync(${reportPath}, ${report}); console.error('generate-world: LOOP BUDGET generate 13000 ms'); process.exitCode = 1`] }] });
+    `${reportSrc}; console.error('generate-world: LOOP BUDGET generate 13000 ms'); process.exitCode = 1`] }] });
   const j = q.enqueue({ kind: "draft", seed: seed(8) });
   await q.onIdle();
   const done = q.store.get(j.id);
@@ -154,10 +155,9 @@ test("a draft's report.json survives a later non-draft job on the same out dir",
   const s = setup();
   const out = join(s.dir, "build/mapforge/9f81c0aa-3.0.0"); mkdirSync(out, { recursive: true });
   const reportObj = { seaToLandRatio: 1.7, landKm2: 300, totals: { settlements: 1, landformInstances: 2, regions: 3 } };
-  const reportPath = JSON.stringify(join(out, "report.json"));
-  const reportJson = JSON.stringify(JSON.stringify(reportObj));
+  const reportSrc = writeReportSrc(join(out, "report.json"), reportObj);
   const q = createJobQueue({ ...s.queue.options, commandsFor: ({ job }) => job.kind === "draft"
-    ? [{ label: "generate", argv: [process.execPath, "-e", `require('fs').writeFileSync(${reportPath}, ${reportJson})`] }]
+    ? [{ label: "generate", argv: [process.execPath, "-e", reportSrc] }]
     : [{ label: "dry-run", argv: [process.execPath, "-e", "console.log('promote-world: DRY RUN — 0 written, 0 deleted')"] }] });
 
   const draft = q.enqueue({ kind: "draft", seed: seed(9) });

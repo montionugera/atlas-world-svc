@@ -38,7 +38,7 @@ export function createJobStore({ dir }) {
       if (kind) jobs = jobs.filter((j) => j.kind === kind);
       if (status) jobs = jobs.filter((j) => j.status === status);
       if (seed) jobs = jobs.filter((j) => j.seed === seed);
-      jobs.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : (b._seq ?? 0) - (a._seq ?? 0)));
+      jobs.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : b._seq - a._seq));
       return limit ? jobs.slice(0, limit) : jobs;
     },
     appendLog(id, text) { appendFileSync(logPath(id), text); },
