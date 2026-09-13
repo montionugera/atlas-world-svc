@@ -16,14 +16,14 @@
 ## Global Constraints
 
 - **No new runtime dependency** in any `package.json` (spec §11.10). `atelier/map-builder/` gets a 4-line `package.json` like `atelier/art-forge/package.json` (`{"name","private":true,"type":"module","scripts":{"test":"node --test tests/*.test.mjs"}}`) — no `dependencies` key.
-- **Node 18 compatible** source (CI pin). Verify with `node --test` locally; do not use APIs added after 18.
+- **Node 18 compatible** source (CI pin). Local runs are on Node 26, so the ONLY binding check is the CI step Task 11 adds to `.github/workflows/ci.yml` (audit 2026-09-13: nothing else runs this suite on 18; Gate 1/2 are local). Do not use APIs added after 18; `node:test` `before()` needs ≥ 18.8 (CI resolves latest 18.x).
 - **Bind `127.0.0.1`, port `6016`**, no silent fallback: busy port → exit non-zero with a message; `--port <n>` overrides; `--port 0` (tests/Gate 2) picks an ephemeral port; the bound URL is printed on start.
 - **Start command:** `node atelier/map-builder/server.mjs` from the repo root (no root `package.json`, no pnpm script).
-- **Static layout mirrors `k8s/local/storybook-nginx.conf`:** document root = repo root; `GET /` → `302 /atelier/asset-storybook/index.html`; `GET /healthz` → `200 ok`; `.json`/`.mjs` → `Cache-Control: no-store`; reject any path containing `..`; directory → 404 (no autoindex needed).
+- **Static layout mirrors `k8s/local/storybook-nginx.conf`:** document root = repo root; `GET /` → `302 /atelier/asset-storybook/index.html`; `GET /healthz` → `200 ok`; `.json`/`.mjs` → `Cache-Control: no-store`; reject any path containing `..`; directory → 404 (**deliberate deviation**, audit 2026-09-13: the nginx conf has `autoindex on`; the builder never lists directories).
 - **Seed grammar:** `^[0-9a-f]{16}$` (import `SEED_GRAMMAR` from `atelier/mapforge/generate-world.mjs`; its `main()` is guarded by the `import.meta.url === pathToFileURL(process.argv[1]).href` check at `generate-world.mjs:1556`, so importing is side-effect free). Random seed = `crypto.randomBytes(8).toString("hex")`.
 - **Out dir:** `build/mapforge/<seed8>-<GENERATOR_VERSION>` via `runIdOf({ seed, version })` (`generate-world.mjs:56`). One active job per out dir (409 otherwise).
 - **Generator flags (verified):** `--seed <s> --out <dir> --no-png --stage-report --json-report`. `--no-png` is **required** (raster is unimplemented in the generator; omitting it exits 2).
-- **Stage line grammar:** `stage: <name> <label> <ms> ms` (18 distinct names: `P1 P2 P2b P3 P5 P6 P7 P8 P9 P10 P7b P11p P11 P11b P12 P13 P14 P14w`; `P11`/`P11b` re-emit in a loop), plus two budget lines that are NOT steps: `stage: generate TOTAL <ms> ms (budget <b>, fail <f>)` and `stage: sheets <ms> ms (budget <b>, fail <f>)`.
+- **Stage line grammar:** `stage: <name> <label> <ms> ms` (18 distinct names: `P1 P2 P2b P3 P5 P6 P7 P8 P9 P10 P7b P11p P11 P11b P12 P13 P14 P14w`; `P11` has 2 and `P11b` 3 separate `time()` call sites, so those names repeat — 18 + 3 = 21 stage lines), plus two budget lines that are NOT steps: `stage: generate TOTAL <ms> ms (budget <b>, fail <f>)` and `stage: sheets <ms> ms (budget <b>, fail <f>)`.
 - **Timeouts:** service backstop only. `draft` = 2 × (generate `failMs` 12000 + sheets `failMs` 8000) = **40000 ms**; `publish` = 2 × Σ all six `loop` rows' `failMs` (119000) = **238000 ms**. Values are computed from `content/world/budgets.json` at boot, never hard-coded. SIGTERM, then SIGKILL after 5 s; job `failed`, `error: "hung"`.
 - **Concurrency:** default 2, hard cap 2 (`config.json`; a higher value is clamped with a logged warning).
 - **Publish/undo refused (409) on `main` or detached HEAD**; serialised (409 while another publish/undo is queued/running). Git is never written.
@@ -222,6 +222,7 @@ names/labels must match `generate-world.mjs` `time("<name>", "<label>", …)` ca
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
+import { GENERATOR_VERSION } from "../../mapforge/lib/version.mjs";
 
 const WORLD_PATHS = ["content/world", "content/spine", "content/maps", "game-client/assets/art/maps",
   "colyseus-server/src/config/generated", "atelier/asset-storybook/maps-index.json"];
@@ -254,8 +255,7 @@ export function createRepo({ repoRoot, git = (cmd, args) => execFileSync(cmd, ar
     draft: 2 * (row("generate").failMs + row("sheets").failMs),
     publish: 2 * budgets.loop.reduce((s, r) => s + r.failMs, 0),
   };
-  const generatorVersion = readJson(join(repoRoot, "content/world/manifest.json")).generatorVersion
-    ?? readJson(join(repoRoot, "content/world/fabric/world.json")).version;
+  const generatorVersion = GENERATOR_VERSION; // audit 2026-09-13: manifest.json has NO generatorVersion (its `version: 1` is a schema number) and fabric/world.json nests it at generator.version — import the constant, never read JSON for it
   return {
     repoRoot, budgets, timeouts, generatorVersion,
     branch() {
@@ -268,10 +268,11 @@ export function createRepo({ repoRoot, git = (cmd, args) => execFileSync(cmd, ar
     currentSeed() { return readJson(join(repoRoot, "content/world/fabric/world.json")).seed; },
     ratioBand() { const r = readJson(join(repoRoot, "content/world/manifest.json")).ratio; return { min: r.min, max: r.max, target: r.target }; },
     promotionGates() { return Object.keys(budgets.promotion.gateRulesThatMustBeGreen); },
+    contentGateDeps() { return existsSync(join(repoRoot, "scripts/node_modules/js-yaml")); },
   };
 }
 ```
-Verify `generatorVersion` source in step 3 before relying on it: `grep -n '"version"\|generatorVersion' content/world/manifest.json content/world/fabric/world.json | head`. Use whichever field carries `GENERATOR_VERSION` (the `runIdOf` suffix, e.g. `3.0.0`); if neither does, import `GENERATOR_VERSION` from `generate-world.mjs` instead and delete the fallback.
+`GENERATOR_VERSION` is settled (audit 2026-09-13): `repo.mjs` imports it from `../../mapforge/lib/version.mjs` (`version.mjs:14`; `generate-world.mjs:43` only imports it and does not re-export). `contentGateDeps()` exists because `promote-world.mjs:438` runs `scripts/check_content.mjs --only=spine`, which needs `scripts/node_modules` (`js-yaml`, `ajv`, `sharp` — `scripts/package.json:9-11`); a repo without it fails every publish at step 2.
 
 - [ ] **Step 4: Run tests** — `node --test atelier/map-builder/tests/repo.test.mjs` → PASS (6 tests).
 
@@ -394,7 +395,7 @@ Exported pure helper `export function jsonReport({ run })` so the test can asser
 ```js
 test("--json-report writes report.json with per-continent totals; flag is opt-in", () => {
   const out = mkdtempSync(join(tmpdir(), "mb-json-"));
-  execFileSync(process.execPath, [GEN, "--seed", "7c9e4a2f8b1d6e03", "--out", out, "--no-png", "--json-report"], { encoding: "utf8" });
+  execFileSync(process.execPath, [CLI, "--seed", "7c9e4a2f8b1d6e03", "--out", out, "--no-png", "--json-report"], { encoding: "utf8" });
   const rep = JSON.parse(readFileSync(join(out, "report.json"), "utf8"));
   assert.equal(rep.seed, "7c9e4a2f8b1d6e03");
   assert.ok(rep.totals.settlements > 0 && rep.totals.regions > 0 && rep.continents.length > 0);
@@ -402,7 +403,7 @@ test("--json-report writes report.json with per-continent totals; flag is opt-in
   assert.equal(rep.totals.settlements, rep.continents.reduce((s, c) => s + c.settlements, 0));
   assert.ok(Object.keys(rep.timings).includes("P1"));
   const out2 = mkdtempSync(join(tmpdir(), "mb-json-"));
-  execFileSync(process.execPath, [GEN, "--seed", "7c9e4a2f8b1d6e03", "--out", out2, "--no-png"], { encoding: "utf8" });
+  execFileSync(process.execPath, [CLI, "--seed", "7c9e4a2f8b1d6e03", "--out", out2, "--no-png"], { encoding: "utf8" });
   assert.equal(existsSync(join(out2, "report.json")), false, "report.json is opt-in");
   rmSync(out, { recursive: true, force: true }); rmSync(out2, { recursive: true, force: true });
 });
@@ -803,9 +804,10 @@ export class ConflictError extends Error { constructor(msg) { super(msg); this.c
 ```jsonc
 { "seed", "ratio": { "value", "min", "max", "target" }, "sheets": { "count", "locked": bool },
   "branch": { "name", "detached" }, "dirtyFiles": [], "publishAllowed": bool, "publishReason": string|null,
-  "pngTool": bool /* rsvg-convert on PATH */, "lastPublish": job|null, "generatorVersion", "stageCount" }
+  "pngTool": bool /* rsvg-convert on PATH */, "contentGateDeps": bool /* repo.contentGateDeps(): scripts/node_modules/js-yaml exists — publish refuses when false */,
+  "lastPublish": job|null, "generatorVersion", "stageCount" }
 ```
-  `ratio.value` from `fabric/world.json` `seaToLandRatio`; `sheets.count = Object.keys(SHEETS).length` (import from `render-sheet.mjs`); `sheets.locked` = `content/world/render-lock.json` exists and `--check` is not run here (cheap: report `lockedAt` from the file's own timestamp field if present, else file mtime). `publishAllowed = false` with reason `"on main"` / `"detached HEAD"` / `"a publish or undo is already running"`.
+  `ratio.value` from `fabric/world.json` `seaToLandRatio`; `sheets.count = Object.keys(SHEETS).length` (import from `render-sheet.mjs`); `sheets.locked` = `content/world/render-lock.json` exists and `--check` is not run here (cheap: report `lockedAt` from the file mtime — `render-lock.json` has no timestamp field). `publishAllowed = false` with reason `"on main"` / `"detached HEAD"` / `"a publish or undo is already running"` / `"scripts deps missing — run: npm ci --prefix scripts"` (the last from `repo.contentGateDeps() === false`; the Publish button shows the command).
 - Produces (`app.mjs`): `createApp({ repo, store, queue, events, world, staticHandler, steps, version })` → `handler(req, res)`. Routes (Phase 1): `GET /api/health`, `GET /api/world`, `GET /api/steps` (serves `steps.json`), `GET /api/jobs`, `POST /api/jobs`, `GET /api/jobs/:id`, `GET /api/jobs/:id/log?tail=`, `POST /api/jobs/:id/cancel`, `POST /api/jobs/:id/rerun`, `DELETE /api/jobs/:id`, `GET /api/events`; anything else under `/api` → 404 JSON; non-`/api` → `staticHandler`. Errors `{ error: { code, message } }`. `POST /jobs` body `{ kind:"draft"|"dry-run", seed?, reason?, count? }`: seed must match `SEED_GRAMMAR` (400), `count` 1–4 (400), typed seed forces `count=1`, missing seed → `count` random seeds; response `201 { jobs:[…] }`. `DELETE` refuses (409) while active; removes the record, log and `<outDir>` (only if it is under `build/mapforge/` — assert before `rmSync`). `rerun` → `queue.enqueue({ kind, seed, reason, rerunOf:id })`, 409 propagates from the queue.
 
 - [ ] **Step 1: Tests** (`api.test.mjs`): build the app with a temp data dir, the real `createRepo({ repoRoot: REPO })`, and a fake `commandsFor` (`node -e` sleepers as in Task 6); helper `api(method, path, body)` using `http.request`. Cases: health `{ok:true}` + `branch`; world has `seed` 16-hex, `ratio.min<ratio.max`, `sheets.count === 17`; `POST /jobs` invalid seed → 400; `count:3` no seed → 3 jobs with distinct seeds; typed seed + count 3 → 1 job; `GET /jobs?status=queued`; `GET /jobs/:id/log?tail=1`; cancel queued → `cancelled`; second job same seed while active → 409; DELETE active → 409, DELETE finished → 204 and `GET` → 404; `GET /api/events` receives `job.created` for a new POST; unknown `/api/x` → 404 JSON; `GET /` → 302 (static passthrough).
@@ -897,10 +899,10 @@ test("reduce applies SSE events", () => {
 
 ### Task 11: Gate 1 wiring, AGENTS.md row, phase gate
 
-**Files:** Modify `scripts/precheck.sh` (after line 171 add `map_builder_tests() { ( cd "$REPO_ROOT" && node --test atelier/map-builder/tests/*.test.mjs ) }`; after line 185 add `run_section "map-builder: node --test suite" map_builder_tests`), `atelier/AGENTS.md` (tools table: `| \`map-builder/\` | Local builder service + storybook Map Builder tab: seed → draft → review → publish/undo, jobs persisted under \`build/map-builder/\` | \`node --test map-builder/tests/*.test.mjs\` |`; quick commands: `node atelier/map-builder/server.mjs   # storybook + /api on http://127.0.0.1:6016/`).
+**Files:** Modify `scripts/precheck.sh` (after line 171 add `map_builder_tests() { ( cd "$REPO_ROOT" && node --test atelier/map-builder/tests/*.test.mjs ) }`; after line 185 add `run_section "map-builder: node --test suite" map_builder_tests`), `.github/workflows/ci.yml` (R1 — CI config; right after the "Asset storybook data-layer tests" step at line 255-256 add `- name: Map builder tests` / `run: node --test atelier/map-builder/tests/*.test.mjs` — this is the Node 18 enforcement, see Global Constraints), `atelier/AGENTS.md` (tools table: `| \`map-builder/\` | Local builder service + storybook Map Builder tab: seed → draft → review → publish/undo, jobs persisted under \`build/map-builder/\` | \`node --test map-builder/tests/*.test.mjs\` |`; quick commands: `node atelier/map-builder/server.mjs   # storybook + /api on http://127.0.0.1:6016/`).
 
-- [ ] **Step 1:** Edit both files. **Step 2: Verify** — `bash scripts/precheck.sh 2>&1 | grep -E "map-builder|PASS|FAIL" | head -n 20` → the new section prints PASS and the overall exit is 0 (`echo $?` right after — not after a pipe).
-- [ ] **Step 3: Commit** — `git add scripts/precheck.sh atelier/AGENTS.md && git commit -m "chore(gates): run map-builder suite in Gate 1; list the package in atelier/AGENTS.md"`
+- [ ] **Step 1:** Edit all three files. **Step 2: Verify** — `bash scripts/precheck.sh 2>&1 | grep -E "map-builder|PASS|FAIL" | head -n 20` → the new section prints PASS and the overall exit is 0 (`echo $?` right after — not after a pipe); `grep -n "map-builder" .github/workflows/ci.yml` shows the new step; `python3 -c 'import yaml,sys;yaml.safe_load(open(".github/workflows/ci.yml"))'` (or `npx -y yaml-lint`) parses. The Node-18 proof itself lands when the feature PR's CI runs — check that run is green before ship.
+- [ ] **Step 3: Commit** — `git add scripts/precheck.sh .github/workflows/ci.yml atelier/AGENTS.md && git commit -m "chore(gates): run map-builder suite in Gate 1 and CI (Node 18); list the package in atelier/AGENTS.md"`
 - [ ] **Step 4: Phase gate (Tasks 10–11)** — storybook + map-builder suites; `code-reviewer` + `typescript-reviewer` on the storybook diff (ask explicitly: XSS via `innerHTML` with job/error text — must use `textContent`); `/simplify`; re-run; re-do the Chrome check if the DOM module changed.
 - [ ] **Step 5: Phase 1 acceptance check** against spec §11 items 1, 2, 3, 4 (cancel + took-too-long + hung), 9, 10 — list each with the command/observation that proves it in the final task report. Then `ps-release-workflow-ship` (Gate 1) from the feature worktree.
 
@@ -936,8 +938,8 @@ and undone. Gate 2 gains the real end-to-end.
   "knownTodos": [ "…" ],   // <outDir>/manifest.json `problems` (the draft's carried debt); G-NET/G-CANON-LEG counts need a gate run and are out of scope here
   "sheets": [ { "id", "title", "draftSvg": "/<outDir>/sheets/<file>", "currentSvg": "/game-client/assets/art/maps/<id>.svg" } ] }
 ```
-- [ ] **Step 1: Verify shapes before writing tests** (record findings as comments at the top of `review.mjs`): `ls content/world/fabric/ | head; node -e 'const j=require("./content/world/fabric/"+process.argv[1]);console.log(Object.keys(j))' <one continent file>`; and the draft sheet file names: run one draft (`node atelier/mapforge/generate-world.mjs --seed 7c9e4a2f8b1d6e03 --out build/mapforge/mb-probe --no-png` then `ls build/mapforge/mb-probe/sheets`; `rm -rf build/mapforge/mb-probe`). Map draft sheet files to `SHEETS` ids by file stem; sheets with no draft file get `draftSvg: null` (the UI shows "not drawn in drafts").
-- [ ] **Step 2: Tests** — use the probe out dir produced in a `before()` hook (real generator, ~6 s, one run for the file) and the real repo as "current": `continentMetrics` returns ≥ 1 continent with numeric fields for both; `buildReview` deltas sorted by |Δ|; `band` equals manifest; `gatesAtPublish` equals `Object.keys(budgets.promotion.gateRulesThatMustBeGreen)`; `sheets.length === 17` with `currentSvg` paths that exist on disk.
+- [ ] **Step 1: Verify shapes before writing tests** (record findings as comments at the top of `review.mjs`): `ls content/world/fabric/ | head; node -e 'const j=require("./content/world/fabric/"+process.argv[1]);console.log(Object.keys(j))' <one continent file>`; the draft sheet file names are settled (audit 2026-09-13): the generator writes only `sheets/fabric.svg` and `sheets/overlay.svg` (`generate-world.mjs:1515` draft list, `:1117` write) — the other 15 `SHEETS` ids get `draftSvg: null` (the UI shows "not drawn in drafts"); no probe run needed.
+- [ ] **Step 2: Tests** — use the probe out dir produced in a `before()` hook (real generator, ~6 s, one run for the file) and the real repo as "current": `continentMetrics` returns ≥ 1 continent with numeric fields for both; `buildReview` deltas sorted by |Δ|; `band` equals manifest; `gatesAtPublish` equals `Object.keys(budgets.promotion.gateRulesThatMustBeGreen)`; `sheets.length === 17`; exactly `fabric` and `overlay` carry a non-null `draftSvg` (both files exist under the probe out dir), the other 15 have `draftSvg: null`; all 17 `currentSvg` paths exist on disk. (Deviation from spec §11.5, which reads as if every sheet has a draft — recorded here, spec text unchanged.)
 - [ ] **Step 3: Implement. Step 4: Run** → PASS. **Step 5: Commit** — `feat(map-builder): review payload — draft vs current metrics, deltas, dry-run and publish-time gates`
 
 ### Task 14: Publish + undo as composite jobs
@@ -955,11 +957,11 @@ and undone. Gate 2 gains the real end-to-end.
   6. `verify` — spawn `node scripts/check_render_lock.mjs --check`, spawn `node scripts/check_spine_emit.mjs --check --content-root content`, `fn`: assert `repo.currentSeed() === draftJob.seed`.
   Steps are grouped in the job as `steps:[{ name:"snapshot"|"promote"|"render"|"parity"|"lock"|"verify", label, ms, status }]` (the 17 render spawns roll up into one `render` step with `runs`).
 - `undoCommands({ repo, job, snapshots })` → `restore` (`fn`), `check` (spawn `check_render_lock.mjs --check`).
-- Queue: `enqueue({ kind:"publish", draftJobId })` → 409 if `store.list({status:"queued"})`/running contains publish/undo, 409 if `repo.branch()` is `main` or detached (message `"publish is refused on main / detached HEAD — check out a feature or release branch"`), 404 if the draft is not `succeeded`. On failure at step ≥ 2: run `snapshots.restore({ id: job.snapshotId })` automatically, append `[restore] …` to the log, set `error` to the failing step's error and `restored: true`. On success: `store.update(draftJobId, { publishedBy: job.id })`, `snapshots.prune()`, `events.emit("world.changed", { world: world.read() })`. Undo success also emits `world.changed`.
+- Queue: `enqueue({ kind:"publish", draftJobId })` → 409 if `store.list({status:"queued"})`/running contains publish/undo, 409 if `repo.branch()` is `main` or detached (message `"publish is refused on main / detached HEAD — check out a feature or release branch"`), 409 if `!repo.contentGateDeps()` (message `"scripts deps missing — run: npm ci --prefix scripts"`; checked BEFORE the snapshot is taken), 404 if the draft is not `succeeded`. On failure at step ≥ 2: run `snapshots.restore({ id: job.snapshotId })` automatically, append `[restore] …` to the log, set `error` to the failing step's error and `restored: true`. On success: `store.update(draftJobId, { publishedBy: job.id })`, `snapshots.prune()`, `events.emit("world.changed", { world: world.read() })`. Undo success also emits `world.changed`.
 
 - [ ] **Step 1: Tests** — `publish.test.mjs` with a **fake repo fixture** (temp dir with the snapshot-set files copied, as Task 12) and fake spawns: `commandsFor` for publish is built by `publishCommands` but the test injects `tools` overrides (`{ promote: argv, render: (id) => argv, parity: argv, lock: argv, check: argv, spineCheck: argv }`) so each spawn is a `node -e` that either mutates a fabric file (promote), prints a skip line (render), or exits 1 (to test auto-restore). Cases: happy path → `steps` has six names, `publishedBy` set on the draft, `world.changed` emitted, snapshot count pruned to `keep`; failure at `lock` → status `failed`, `restored: true`, fabric file bytes equal the pre-publish bytes; branch `main` → 409 at enqueue and no snapshot created; second publish while one queued → 409; undo of that snapshot restores and emits `world.changed`; render skip line → `warning` recorded, job still `succeeded`. `runner.test.mjs` gains: `fn` step success/throw. `queue.test.mjs` gains: cancel refused with 409 once publish passed step 2.
 - [ ] **Step 2: Run** → FAIL. **Step 3: Implement. Step 4: Run** `node --test atelier/map-builder/tests/*.test.mjs` → PASS. **Step 5: Commit** — `feat(map-builder): publish and undo as composite jobs with snapshot auto-restore and branch refusal`
-- [ ] **Step 6: Phase gate (Tasks 12–14)** — this is the risky surface (world replace, file deletion): reviewers must check the delete-then-copy restore path and the `rmSync` guards; `/simplify`; re-verify.
+- [ ] **Step 6: Phase gate (Tasks 12–14)** — this is the risky surface (world replace, file deletion; R1 — publish rewrites tracked world files in the live checkout, including the 17 LFS PNG thumbs per `.gitattributes:29`, and the snapshot is the only undo): reviewers must check that the snapshot set covers every file publish rewrites (thumbs included), the delete-then-copy restore path and the `rmSync` guards; `/simplify`; re-verify.
 
 ### Task 15: Phase 2 API routes
 
@@ -986,7 +988,7 @@ and undone. Gate 2 gains the real end-to-end.
 **Files:** Modify `scripts/integration.sh` (new section after line 173), `docs/diagrams/map-asset-pipeline.drawio`; Create `atelier/map-builder/tests/e2e/publish-undo.sh`.
 
 - [ ] **Step 1: Write `tests/e2e/publish-undo.sh`** (bash, `set -uo pipefail`, called by integration.sh with `REPO_ROOT`):
-  1. `tmp=$(mktemp -d)`; `git -C "$REPO_ROOT" worktree add --detach "$tmp/wt" HEAD` — **then** `git -C "$tmp/wt" checkout -b "tmp/map-builder-e2e-$$"` (publish refuses detached HEAD, so the branch is required; assert `branch != main`). Symlink `scripts/node_modules` and `colyseus-server/node_modules` into the worktree if they exist (`check_content.mjs` may need them — verify in step 2 and drop the symlink if not).
+  1. `tmp=$(mktemp -d)`; `git -C "$REPO_ROOT" worktree add --detach "$tmp/wt" HEAD` — **then** `git -C "$tmp/wt" checkout -b "tmp/map-builder-e2e-$$"` (publish refuses detached HEAD, so the branch is required; assert `branch != main`). **Deps are required, not optional** (audit 2026-09-13: `promote-world.mjs:438` runs `scripts/check_content.mjs --only=spine`, which imports `js-yaml`/`ajv`/`sharp` from `scripts/package.json`; without `scripts/node_modules` every publish fails at step 2 with `ERR_MODULE_NOT_FOUND` and auto-restores — the "symlink if present" hedge would reproduce that silently). At script start: `git -C "$REPO_ROOT" worktree prune` and delete any stale `tmp/map-builder-e2e-*` branches (a SIGKILL skips the `trap`); then `test -d "$REPO_ROOT/scripts/node_modules/js-yaml" || { echo "e2e: FAIL — run: npm ci --prefix scripts"; exit 1; }`; then `ln -s "$REPO_ROOT/scripts/node_modules" "$tmp/wt/scripts/node_modules"` (a fresh worktree has none; `integration.sh:72` runs `npm ci` only in its own deps section, never for `scripts/`).
   2. Start `node atelier/map-builder/server.mjs --port 0 --repo-root "$tmp/wt" --data-dir "$tmp/data"` in background (`cwd` = `$tmp/wt`), capture the port from stdout, `trap` kills the server, removes the worktree (`git worktree remove --force`) and deletes the branch.
   3. `POST /api/jobs {"kind":"draft","seed":"3f81c0aa9d2e5b17"}`; poll `GET /api/jobs/:id` until terminal (≤ 60 s); assert `succeeded`, `steps.length == 18`, `metrics.settlements > 0`.
   4. `GET /api/drafts/:id/review` → assert `dryRun.written > 0` and `deltas.length > 0` (`node -e` JSON asserts).
@@ -994,7 +996,7 @@ and undone. Gate 2 gains the real end-to-end.
   6. `POST /api/publish {"draftJobId":…,"confirm":true}` → poll → `succeeded`; assert `content/world/fabric/world.json` seed == `3f81c0aa9d2e5b17`; `node scripts/check_render_lock.mjs --check` exit 0; `node scripts/check_spine_emit.mjs --check --content-root content` exit 0; **changed files ⊆ snapshot set**: `git -C $tmp/wt status --porcelain | awk '{print $2}' | sort > $tmp/changed.txt; comm -23 $tmp/changed.txt <(sort $tmp/set.txt)` must be empty (print offenders otherwise).
   7. `GET /api/snapshots` → take newest id; `POST /api/undo` → poll → `succeeded`; assert seed is back to the pre-publish seed, `git -C $tmp/wt status --porcelain` is empty (byte-for-byte restore ⇒ clean tree), both `--check` commands exit 0.
   Print `e2e: OK` and exit 0; any assertion failure prints the failing step and exits 1.
-- [ ] **Step 2: Run it directly** — `REPO_ROOT=$PWD bash atelier/map-builder/tests/e2e/publish-undo.sh; echo exit=$?` → `e2e: OK`, exit 0. Fix whatever it finds (this is where `check_content` deps, rsvg presence and worktree paths get proven).
+- [ ] **Step 2: Run it directly** — `REPO_ROOT=$PWD bash atelier/map-builder/tests/e2e/publish-undo.sh; echo exit=$?` → `e2e: OK`, exit 0. If it stops at the deps check, run `npm ci --prefix scripts` once (this worktree has no `scripts/node_modules` today) and re-run. Fix whatever else it finds (rsvg presence, worktree paths).
 - [ ] **Step 3: Wire Gate 2** — in `scripts/integration.sh` add `map_builder_e2e() { REPO_ROOT="$REPO_ROOT" bash "$REPO_ROOT/atelier/map-builder/tests/e2e/publish-undo.sh"; }` and `run_section "map-builder: draft → publish → undo end-to-end" map_builder_e2e` after line 173. Run `bash scripts/integration.sh 2>&1 | grep -E "map-builder|PASS|FAIL" | head -n 30` → PASS.
 - [ ] **Step 4: Diagram** — open `docs/diagrams/map-asset-pipeline.drawio`, add a box "0 Map Builder (atelier/map-builder/ — storybook tab + /api; runs steps 2→7 as tracked jobs, snapshot/undo)" with edges to box 2 (Generate) and box 8 (View), and change the "Open question" note if it asks who runs the freeze (read it first). Keep it hand-edited XML; validate with `xmllint --noout docs/diagrams/map-asset-pipeline.drawio`.
 - [ ] **Step 5: Commit** — `git add scripts/integration.sh atelier/map-builder/tests/e2e docs/diagrams && git commit -m "test(map-builder): Gate 2 draft→publish→undo end-to-end; diagram shows the builder"`
@@ -1058,3 +1060,4 @@ the determinism badge, interrupted-job recovery in the UI, draft cleanup, docs.
 ## Audit trail
 
 - 2026-09-13 plan written from spec 580d0e7 + three fact sheets (mapforge scripts, storybook, gates); 20 tasks in 3 phases; self-review above.
+- 2026-09-13 self-grill-audit (adversarial subagent, verified on disk at fa4e234): verdict **safe-with-fixes**. Corrected: (H1) T1 `generatorVersion` — no such field in `manifest.json`, fabric nests it at `generator.version`; now imported from `mapforge/lib/version.mjs:14`. (H2) T13 — only `fabric`/`overlay` drafts exist (`generate-world.mjs:1515`), so 15 of 17 `draftSvg` are null; test assertion rewritten. (H3) T11 — Node 18 was enforced by nothing; CI step added to `ci.yml` (rule 11). (H4) T17/T8/T14 — `check_content.mjs` needs `scripts/node_modules` (absent here); e2e fails fast, `/api/world` reports `contentGateDeps`, publish refuses before snapshotting. MEDIUM: nginx `autoindex on` recorded as a deliberate deviation; T3 uses the test file's `CLI` constant; T14 gate notes the LFS-thumb blast radius + stale e2e worktree/branch prune. LOW: P11/P11b are separate call sites not a loop; `render-lock.json` has no timestamp field. Confirmed unchanged: 18 stage names, SHEETS=17, Σ failMs=119000, side-effect-free CLI imports, `RUN_ENTRIES` needs `report.json`, maps-index parity 9/9, port 6016 free. Spec drift noted, spec left as-is: §3 `outDir` example uses the full seed (should be the 8-char prefix per `runIdOf`, `generate-world.mjs:56`); §11.5 implies every sheet has a draft. Open: none.
