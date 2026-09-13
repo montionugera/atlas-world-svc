@@ -2,6 +2,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { join, delimiter } from "node:path";
 import { SHEETS } from "../../mapforge/render-sheet.mjs";
 import { publicJob } from "./jobs.mjs";
+import { publishOrUndoActive } from "./publish.mjs";
 
 const readJson = (p) => JSON.parse(readFileSync(p, "utf8"));
 
@@ -9,8 +10,16 @@ const readJson = (p) => JSON.parse(readFileSync(p, "utf8"));
 const hasRsvgConvert = () =>
   (process.env.PATH ?? "").split(delimiter).some((dir) => { try { return existsSync(join(dir, "rsvg-convert")); } catch { return false; } });
 
-const publishOrUndoRunning = (store) =>
-  store.list({}).some((j) => (j.kind === "publish" || j.kind === "undo") && (j.status === "queued" || j.status === "running"));
+
+// True when a readable snapshot newer than the last SUCCESSFUL publish's
+// start exists — i.e. that publish's own pre-publish snapshot is still on
+// disk (publish takes it after startedAt). Corrupt rows carry no `at`.
+function undoAvailable({ store, snapshots }) {
+  if (!snapshots) return false;
+  const last = store.list({ kind: "publish", status: "succeeded", limit: 1 })[0];
+  if (!last?.startedAt) return false;
+  return snapshots.list().some((m) => !m.corrupt && m.at >= last.startedAt);
+}
 
 export function createWorldReader({ repo, snapshots = null, store }) {
   return {
@@ -26,7 +35,7 @@ export function createWorldReader({ repo, snapshots = null, store }) {
       let publishReason = null;
       if (branch.detached) { publishAllowed = false; publishReason = "detached HEAD"; }
       else if (branch.name === "main") { publishAllowed = false; publishReason = "on main"; }
-      else if (publishOrUndoRunning(store)) { publishAllowed = false; publishReason = "a publish or undo is already running"; }
+      else if (publishOrUndoActive(store)) { publishAllowed = false; publishReason = "a publish or undo is already running"; }
       else if (!contentGateDeps) { publishAllowed = false; publishReason = "scripts deps missing — run: npm ci --prefix scripts"; }
 
       return {
@@ -42,6 +51,7 @@ export function createWorldReader({ repo, snapshots = null, store }) {
         // Sanitised the same way as the JSON job routes (fix round 1, F3) —
         // this was returning the raw stored record, leaking _seq.
         lastPublish: publicJob(store.list({ kind: "publish", limit: 1 })[0] ?? null),
+        undoAvailable: undoAvailable({ store, snapshots }),
         generatorVersion: repo.generatorVersion,
         stageCount: repo.stageCount ?? null,
       };

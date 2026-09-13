@@ -3,7 +3,9 @@ import { resolve, sep } from "node:path";
 import crypto from "node:crypto";
 import { SEED_GRAMMAR } from "../../mapforge/generate-world.mjs";
 import { ConflictError } from "./queue.mjs";
-import { publicJob } from "./jobs.mjs";
+import { JOB_ID, publicJob } from "./jobs.mjs";
+import { buildReview } from "./review.mjs";
+import { SHEETS } from "../../mapforge/render-sheet.mjs";
 
 const httpError = (status, message) => Object.assign(new Error(message), { status });
 const badRequest = (message) => httpError(400, message);
@@ -53,7 +55,20 @@ function seedsForCreate(body) {
   return Array.from({ length: n }, () => crypto.randomBytes(8).toString("hex"));
 }
 
-export function createApp({ repo, store, queue, events, world, staticHandler, steps, version, bind }) {
+// Snapshot rows go to the client without `dir` (an absolute server path) or
+// the per-file hash list; a corrupt row is passed through as { id, corrupt }.
+const publicSnapshot = (m) => (m.corrupt ? { id: m.id, corrupt: true } : { id: m.id, at: m.at, seed: m.seed, fileCount: m.files.length });
+
+export function createApp({ repo, store, queue, events, world, snapshots = null, staticHandler, steps, version, bind }) {
+  // A draft the review/decision routes may act on: a well-formed id naming a
+  // succeeded draft. Anything else — malformed, unknown, not a draft, not
+  // succeeded — is the same 404 (store.get throws on a malformed id).
+  const succeededDraft = (id) => {
+    const job = JOB_ID.test(id) ? store.get(id) : null;
+    if (!job || job.kind !== "draft" || job.status !== "succeeded") throw notFound();
+    return job;
+  };
+
   const allowedHosts = new Set(LOOPBACK_HOSTS);
   if (bind && bind !== "0.0.0.0" && bind !== "::") allowedHosts.add(bind);
 
@@ -144,6 +159,34 @@ export function createApp({ repo, store, queue, events, world, staticHandler, st
       if (sharing.length === 0) removeOutDir(job.outDir);
       ctx.res.writeHead(204);
       ctx.res.end();
+    }],
+
+    ["GET", /^\/api\/drafts\/([^/]+)\/review$/, (ctx) => {
+      const job = succeededDraft(ctx.params[0]);
+      sendJson(ctx.res, 200, buildReview({ repo, job, sheets: SHEETS }));
+    }],
+
+    ["POST", /^\/api\/drafts\/([^/]+)\/decision$/, async (ctx) => {
+      const draft = succeededDraft(ctx.params[0]);
+      const { decision, reasons = [] } = (await readJsonBody(ctx.req)) ?? {};
+      if (decision !== "rejected" && decision !== "accepted") throw badRequest(`invalid decision: ${decision}`);
+      if (!Array.isArray(reasons) || !reasons.every((r) => typeof r === "string")) throw badRequest("reasons must be an array of strings");
+      const job = store.update(draft.id, { review: { decision, reasons, at: new Date().toISOString() } });
+      sendJson(ctx.res, 200, { job: publicJob(job) });
+    }],
+
+    ["POST", /^\/api\/publish$/, async (ctx) => {
+      const { draftJobId, confirm } = (await readJsonBody(ctx.req)) ?? {};
+      if (confirm !== true) throw badRequest("publish needs confirm: true");
+      sendJson(ctx.res, 201, { job: publicJob(queue.enqueue({ kind: "publish", draftJobId })) });
+    }],
+
+    ["GET", /^\/api\/snapshots$/, (ctx) => sendJson(ctx.res, 200, { snapshots: (snapshots?.list() ?? []).map(publicSnapshot) })],
+
+    ["POST", /^\/api\/undo$/, async (ctx) => {
+      const { snapshotId } = (await readJsonBody(ctx.req)) ?? {};
+      // Id shape (no / \ ..) is validated by queue.enqueue → 400, before any lookup.
+      sendJson(ctx.res, 201, { job: publicJob(queue.enqueue({ kind: "undo", snapshotId })) });
     }],
 
     ["GET", /^\/api\/events$/, (ctx) => events.handle(ctx.req, ctx.res)],

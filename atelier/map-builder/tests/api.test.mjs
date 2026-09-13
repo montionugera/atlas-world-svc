@@ -301,3 +301,136 @@ test("GET / passes through to the static handler's redirect", async () => {
     assert.equal(res.status, 302);
   });
 });
+
+// ── Phase 2 routes (Task 15) ────────────────────────────────────────────────
+// Everything below runs against a FAKE repo root (mkdtempSync, see
+// fake-repo.mjs) with fake tools — publish and undo rewrite and delete files,
+// so they must never be pointed at the real checkout.
+import { readFileSync as readFileSync2 } from "node:fs";
+import { createSnapshots } from "../lib/snapshots.mjs";
+import { makeFakeRepoRoot, makeFakeRepo, fakeTools } from "./fake-repo.mjs";
+
+const DRAFT_SEED = "0123456789abcdef";
+
+const withPhase2App = async (t, { branch = "feat/F-052" } = {}, fn) => {
+  const fake = makeFakeRepoRoot();
+  const data = mkdtempSync(path.join(tmpdir(), "mb-api2-"));
+  const events = createEventHub({ replay: 200 });
+  t.after(() => { events.close(); fake.cleanup(); rmSync(data, { recursive: true, force: true }); });
+  const state = { branch, deps: true };
+  const repo = makeFakeRepo({ root: fake.root, state });
+  const store = createJobStore({ dir: path.join(data, "jobs") });
+  const snapshots = createSnapshots({ repoRoot: fake.root, dir: path.join(data, "snapshots"), keep: 3 });
+  const world = createWorldReader({ repo, store, snapshots });
+  const queue = createJobQueue({ store, runner: createRunner({ killGraceMs: 100 }), repo, concurrency: 2, stageCount: 18, events,
+    snapshots, world, tools: fakeTools({ draftSeed: DRAFT_SEED }) });
+  const staticHandler = createStaticHandler({ root: fake.root });
+  const app = createApp({ repo, store, queue, events, world, snapshots, staticHandler, steps: loadSteps({ dir: PKG }), version: "test" });
+  const server = http.createServer(app);
+  // The draft's out dir IS the fake root (absolute outDir, as review.test.mjs
+  // does): a readable draft with the same fabric as the current world.
+  const draft = store.create({ kind: "draft", seed: DRAFT_SEED, outDir: fake.root, status: "succeeded", metrics: null, dryRun: { written: 2, deleted: 0, ratio: null, landKm2: null, files: [] } });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const { port } = server.address();
+  try {
+    await fn({ port, root: fake.root, data, state, repo, store, snapshots, queue, draft });
+  } finally {
+    await queue.onIdle().catch(() => {});
+    await new Promise((resolve) => server.close(resolve));
+  }
+};
+
+test("GET /api/drafts/:id/review → 200 for a succeeded draft, 404 otherwise", async (t) => {
+  await withPhase2App(t, {}, async ({ port, store, draft }) => {
+    const ok = await api(port, "GET", `/api/drafts/${draft.id}/review`);
+    assert.equal(ok.status, 200, JSON.stringify(ok.body));
+    assert.equal(ok.body.draft.seed, DRAFT_SEED);
+    assert.equal(ok.body.sheets.length, 17);
+    assert.equal(ok.body.dryRun.written, 2);
+    const failed = store.create({ kind: "draft", seed: "1123456789abcdef", outDir: "build/mapforge/x", status: "failed" });
+    assert.equal((await api(port, "GET", `/api/drafts/${failed.id}/review`)).status, 404);
+    assert.equal((await api(port, "GET", "/api/drafts/j_20260913_000000_deadbeef/review")).status, 404);
+    assert.equal((await api(port, "GET", "/api/drafts/not-a-job-id/review")).status, 404);
+  });
+});
+
+test("POST /api/drafts/:id/decision records review; 400 on other decisions or bad reasons; 404 unknown", async (t) => {
+  await withPhase2App(t, {}, async ({ port, store, draft }) => {
+    const rej = await api(port, "POST", `/api/drafts/${draft.id}/decision`, { decision: "rejected", reasons: ["too much sea"] });
+    assert.equal(rej.status, 200, JSON.stringify(rej.body));
+    assert.equal(store.get(draft.id).review.decision, "rejected");
+    assert.deepEqual(store.get(draft.id).review.reasons, ["too much sea"]);
+    assert.ok(store.get(draft.id).review.at);
+    assert.equal(rej.body.job._seq, undefined);
+    const acc = await api(port, "POST", `/api/drafts/${draft.id}/decision`, { decision: "accepted" });
+    assert.equal(acc.status, 200);
+    assert.deepEqual(store.get(draft.id).review.reasons, []);
+    assert.equal((await api(port, "POST", `/api/drafts/${draft.id}/decision`, { decision: "maybe", reasons: [] })).status, 400);
+    assert.equal((await api(port, "POST", `/api/drafts/${draft.id}/decision`, { decision: "rejected", reasons: "nope" })).status, 400);
+    assert.equal((await api(port, "POST", "/api/drafts/j_20260913_000000_deadbeef/decision", { decision: "accepted", reasons: [] })).status, 404);
+  });
+});
+
+test("POST /api/publish: 400 without confirm:true, 404 unknown draft, 201 + job, 409 while one is queued; then snapshots/world/undo", async (t) => {
+  await withPhase2App(t, {}, async ({ port, root, queue, draft }) => {
+    const worldBefore = readFileSync2(path.join(root, "content/world/fabric/world.json"));
+    let w = await api(port, "GET", "/api/world");
+    assert.equal(w.body.undoAvailable, false);
+    assert.equal(w.body.lastPublish, null);
+
+    assert.equal((await api(port, "POST", "/api/publish", { draftJobId: draft.id })).status, 400);
+    assert.equal((await api(port, "POST", "/api/publish", { draftJobId: draft.id, confirm: "yes" })).status, 400);
+    assert.equal((await api(port, "POST", "/api/publish", { draftJobId: "j_20260913_000000_deadbeef", confirm: true })).status, 404);
+    const pub = await api(port, "POST", "/api/publish", { draftJobId: draft.id, confirm: true });
+    assert.equal(pub.status, 201, JSON.stringify(pub.body));
+    assert.equal(pub.body.job.kind, "publish");
+    assert.equal(pub.body.job._seq, undefined);
+    const again = await api(port, "POST", "/api/publish", { draftJobId: draft.id, confirm: true });
+    assert.equal(again.status, 409);
+    await queue.onIdle();
+
+    w = await api(port, "GET", "/api/world");
+    assert.equal(w.body.seed, DRAFT_SEED);
+    assert.equal(w.body.lastPublish.id, pub.body.job.id);
+    assert.equal(w.body.lastPublish.status, "succeeded");
+    assert.equal(w.body.undoAvailable, true);
+
+    const snaps = await api(port, "GET", "/api/snapshots");
+    assert.equal(snaps.status, 200);
+    assert.equal(snaps.body.snapshots.length, 1);
+    const [snap] = snaps.body.snapshots;
+    assert.match(snap.seed, /^[0-9a-f]{16}$/);
+    assert.ok(snap.at && snap.fileCount > 0);
+    assert.equal(snap.dir, undefined, "no absolute paths leak to the client");
+    assert.equal(snap.files, undefined);
+
+    assert.equal((await api(port, "POST", "/api/undo", { snapshotId: "../../x" })).status, 400);
+    assert.equal((await api(port, "POST", "/api/undo", { snapshotId: "a\\b" })).status, 400);
+    assert.equal((await api(port, "POST", "/api/undo", {})).status, 400);
+    assert.equal((await api(port, "POST", "/api/undo", { snapshotId: "2026-01-01T00-00-00.000Z-aaaaaaaaaaaaaaaa" })).status, 404);
+    const undo = await api(port, "POST", "/api/undo", { snapshotId: snap.id });
+    assert.equal(undo.status, 201, JSON.stringify(undo.body));
+    assert.equal(undo.body.job.kind, "undo");
+    await queue.onIdle();
+    assert.deepEqual(readFileSync2(path.join(root, "content/world/fabric/world.json")), worldBefore);
+  });
+});
+
+test("GET /api/snapshots lists a corrupt snapshot as { id, corrupt: true }", async (t) => {
+  await withPhase2App(t, {}, async ({ port, data }) => {
+    mkdirSync(path.join(data, "snapshots", "2026-01-01T00-00-00.000Z-orphan"), { recursive: true });
+    const res = await api(port, "GET", "/api/snapshots");
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.body.snapshots, [{ id: "2026-01-01T00-00-00.000Z-orphan", corrupt: true }]);
+  });
+});
+
+test("POST /api/publish and /api/undo are refused with 409 on main", async (t) => {
+  await withPhase2App(t, { branch: "main" }, async ({ port, draft, snapshots }) => {
+    const pub = await api(port, "POST", "/api/publish", { draftJobId: draft.id, confirm: true });
+    assert.equal(pub.status, 409);
+    assert.match(pub.body.error.message, /refused on main/);
+    const snap = snapshots.create({ seed: "aaaaaaaaaaaaaaaa" });
+    assert.equal((await api(port, "POST", "/api/undo", { snapshotId: snap.id })).status, 409);
+  });
+});

@@ -78,7 +78,7 @@ function main() {
   const version = crypto.randomBytes(4).toString("hex");
   const bind = config.bind ?? "127.0.0.1";
   const port = config.port ?? 6016;
-  const app = createApp({ repo, store, queue, events, world, staticHandler, steps, version, bind });
+  const app = createApp({ repo, store, queue, events, world, snapshots, staticHandler, steps, version, bind });
 
   const server = http.createServer(app);
 
