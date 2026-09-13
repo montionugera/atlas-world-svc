@@ -109,14 +109,14 @@ function main() {
   async function shutdown() {
     if (shuttingDown) return;
     shuttingDown = true;
-    // A publish past its promote step refuses cancel (Task 14): killing it
-    // would leave a half-replaced world with no auto-restore. Wait for it
-    // instead, bounded by the publish backstop timeout.
-    let publishInFlight = false;
-    for (const job of store.list({ status: "running" })) {
-      try { queue.cancel(job.id); } catch { publishInFlight = true; }
-    }
-    if (publishInFlight) console.log("map-builder: waiting for the running publish to finish before exiting");
+    // A running publish/undo is never cancelled (Task 14, fix round 1 B):
+    // killing it would leave a half-replaced world with no auto-restore. The
+    // queue detects it by kind and cancels only drafts/dry-runs; wait for the
+    // composite instead, bounded by the publish backstop timeout.
+    const { compositeInFlight, errors } = queue.cancelRunningForShutdown();
+    for (const e of errors) console.error(`map-builder: cancel on shutdown failed for ${e}`);
+    const waitMs = (compositeInFlight ? repo.timeouts.publish : 0) + (config.killGraceMs ?? 5000) + 500;
+    if (compositeInFlight) console.log(`map-builder: waiting up to ${Math.ceil(waitMs / 1000)} s for the running publish/undo to finish before exiting`);
     queue.close(); // marks dropped-pending interrupted; does not touch actives (cancelled above)
     // Cancelling an active job only signals SIGTERM — the "cancelled" record
     // is written later, when the child actually exits. Exiting immediately
@@ -127,7 +127,7 @@ function main() {
     // Bound the wait by the same grace period the runner itself uses before
     // its SIGKILL backstop, plus slack for the record write — the idle case
     // (no actives) still resolves immediately, keeping the < 2s guarantee.
-    await Promise.race([queue.onIdle(), sleep((publishInFlight ? repo.timeouts.publish : 0) + (config.killGraceMs ?? 5000) + 500)]);
+    await Promise.race([queue.onIdle(), sleep(waitMs)]);
     events.close();
     server.close(() => process.exit(0));
     // server.close() waits for open keep-alive/SSE sockets to close on their

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, readFileSync, existsSync, readdirSync } from "node:fs";
+import { mkdtempSync, rmSync, readFileSync, existsSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createJobStore } from "../lib/jobs.mjs";
@@ -75,7 +75,60 @@ test("failure at lock auto-restores the snapshot: failed, restored, world bytes 
   assert.equal(existsSync(join(s.root, ADDED)), false);
   assert.match(s.store.readLog(job.id), /^\[restore\] /m);
   assert.equal(s.store.get(s.draft.id).publishedBy, undefined);
-  assert.equal(s.events.some((e) => e.type === "world.changed"), false);
+  // Emitted on every composite terminal state (fix round 1) — here the world
+  // is back to its old seed and publish is allowed again.
+  const changed = s.events.filter((e) => e.type === "world.changed");
+  assert.equal(changed.length, 1);
+  assert.equal(changed[0].world.seed, JSON.parse(before).seed);
+  assert.equal(changed[0].world.publishAllowed, true);
+  assert.equal(changed[0].world.undoAvailable, false, "an auto-restored publish leaves nothing to undo");
+});
+
+test("auto-restore failure: failed, restored:false, restoreError + 'undo by hand' log line, world.changed, undo still offered", async (t) => {
+  const s = setup(t, { toolOpts: { fail: "lock" } });
+  s.snapshots.restore = () => { throw new Error("snapshots: disk on fire"); };
+  const job = s.queue.enqueue({ kind: "publish", draftJobId: s.draft.id });
+  await s.queue.onIdle();
+  const done = s.store.get(job.id);
+  assert.equal(done.status, "failed");
+  assert.equal(done.restored, false);
+  assert.equal(done.restoreError, "snapshots: disk on fire");
+  assert.equal(done.error, "G-RENDER-LOCK: lock failed on purpose", "error stays the failing step's");
+  assert.ok(done.snapshotId);
+  assert.match(s.store.readLog(job.id), new RegExp(`^\\[restore\\] FAILED .*undo from snapshot ${done.snapshotId} by hand`, "m"));
+  const changed = s.events.filter((e) => e.type === "world.changed");
+  assert.equal(changed.length, 1, "the world may be half-published — the UI must refresh");
+  assert.equal(changed[0].world.seed, DRAFT_SEED, "promote ran and nothing put it back");
+  assert.equal(changed[0].world.undoAvailable, true);
+});
+
+test("undoAvailable: interrupted first publish → true; after its undo → false; a later publish → true", async (t) => {
+  const s = setup(t);
+  const world = createWorldReader({ repo: s.repo, store: s.store, snapshots: s.snapshots });
+  assert.equal(world.read().undoAvailable, false, "no snapshot at all");
+  // A crash mid-publish: the snapshot is on disk, recoverInterrupted() marked the job.
+  const snap = s.snapshots.create({ seed: s.repo.currentSeed() });
+  s.store.create({ kind: "publish", seed: DRAFT_SEED, draftJobId: s.draft.id, status: "interrupted", startedAt: snap.at, snapshotId: snap.id, restored: false, error: "service restarted" });
+  assert.equal(world.read().undoAvailable, true, "no publish ever succeeded, but the interrupted one's snapshot is restorable");
+  await new Promise((r) => setTimeout(r, 5)); // the undo must start strictly after the snapshot's `at`
+  const undo = s.queue.enqueue({ kind: "undo", snapshotId: snap.id });
+  await s.queue.onIdle();
+  assert.equal(s.store.get(undo.id).status, "succeeded", s.store.get(undo.id).error);
+  assert.equal(world.read().undoAvailable, false, "the undo already put that snapshot back");
+  await new Promise((r) => setTimeout(r, 5));
+  s.queue.enqueue({ kind: "publish", draftJobId: s.draft.id });
+  await s.queue.onIdle();
+  assert.equal(world.read().undoAvailable, true, "a new publish's snapshot is undoable again");
+});
+
+test("a draft queued or running disables publish in /api/world (mirrors the queue's idle-queue 409)", (t) => {
+  const s = setup(t);
+  const world = createWorldReader({ repo: s.repo, store: s.store, snapshots: s.snapshots });
+  assert.equal(world.read().publishAllowed, true);
+  s.store.create({ kind: "draft", seed: "2123456789abcdef", outDir: "build/mapforge/21234567-3.0.0", status: "running" });
+  const w = world.read();
+  assert.equal(w.publishAllowed, false);
+  assert.match(w.publishReason, /draft or dry-run is still queued or running/);
 });
 
 test("branch main or detached HEAD → 409 at enqueue, no snapshot taken, no job created", (t) => {
@@ -137,6 +190,14 @@ test("undo rejects unsafe ids (400) and unknown ids (404) before enqueueing", (t
   assert.throws(() => s.queue.enqueue({ kind: "undo", snapshotId: "2026-01-01T00-00-00.000Z-aaaaaaaaaaaaaaaa" }), (e) => e.status === 404);
   assert.equal(s.store.list({ kind: "undo" }).length, 0);
   assert.equal(readdirSync(join(s.data, "snapshots")).length, 0);
+});
+
+test("undo of a corrupt snapshot → 422 (not a 409 conflict), no job created", (t) => {
+  const s = setup(t);
+  const snap = s.snapshots.create({ seed: "aaaaaaaaaaaaaaaa" });
+  writeFileSync(join(s.data, "snapshots", snap.id, "snapshot.json"), "{not json");
+  assert.throws(() => s.queue.enqueue({ kind: "undo", snapshotId: snap.id }), (e) => !(e instanceof ConflictError) && e.status === 422 && /corrupt/.test(e.message));
+  assert.equal(s.store.list({ kind: "undo" }).length, 0);
 });
 
 test("render skip line records a PNG warning on the render step; the job still succeeds", async (t) => {

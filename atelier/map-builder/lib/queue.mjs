@@ -36,6 +36,9 @@ export function createJobQueue(options) {
   let closed = false;
 
   const activeOutDirs = () => new Set([...pending, ...active.values()].map((e) => e.outDir));
+  // Exclusivity (fix round 1, A): a publish/undo rewrites the live world that
+  // drafts and dry-runs read, so it never runs alongside ANY other job.
+  const compositeQueuedOrRunning = () => [...pending, ...active.values()].some((e) => isCompositeKind(e.job.kind));
 
   const settleIdleIfDone = () => {
     if (pending.length === 0 && active.size === 0) {
@@ -81,7 +84,6 @@ export function createJobQueue(options) {
       const tracker = createStageTracker({ stageCount });
       const cSteps = composite ? createCompositeSteps({ commands }) : null;
       const emitStep = (step) => {
-        entry.stepNo = cSteps.stepIndex(); // before the write: a store error must not re-open cancel
         const job = store.update(id, { steps: cSteps.steps(), ...(liveJob.snapshotId ? { snapshotId: liveJob.snapshotId } : {}) });
         events.emit("job.step", { job: publicJob(job), step, stepIndex: cSteps.stepIndex(), stepCount: cSteps.stepCount });
       };
@@ -140,7 +142,11 @@ export function createJobQueue(options) {
           try { snapshots.prune(); } catch (e) { try { store.appendLog(id, `[prune] ${e?.message ?? e}\n`); } catch { /* best-effort */ } }
         }
         events.emit("job.done", { job: publicJob(job) });
-        if (result.ok) emitWorldChanged();
+        // Every composite terminal state (fix round 1): a success changed the
+        // world, a failed restore or a failed undo `check` after its restore
+        // left it changed, and even an unchanged world flips publishAllowed
+        // back — the UI must refresh in all of these.
+        emitWorldChanged();
         return;
       }
       // report.json at this path can only be from THIS run (see the rmSync
@@ -162,6 +168,7 @@ export function createJobQueue(options) {
         error: String(e?.message ?? e), ...(isCompositeKind(createdJob.kind) ? { snapshotId: liveJob.snapshotId ?? null, ...autoRestore(id, liveJob) } : {}),
       });
       events.emit("job.done", { job: publicJob(job) });
+      if (isCompositeKind(createdJob.kind)) emitWorldChanged();
     } finally {
       active.delete(id);
       pump();
@@ -171,6 +178,9 @@ export function createJobQueue(options) {
   function pump() {
     if (closed) { settleIdleIfDone(); return; }
     while (active.size < concurrency && pending.length > 0) {
+      // Defence in depth for the enqueue refusals below: a composite starts
+      // only on an idle queue, and nothing starts beside a running composite.
+      if (active.size > 0 && (isCompositeKind(pending[0].job.kind) || [...active.values()].some((e) => isCompositeKind(e.job.kind)))) break;
       const entry = pending.shift();
       active.set(entry.job.id, entry);
       runJob(entry).catch(() => {});
@@ -189,6 +199,7 @@ export function createJobQueue(options) {
         if (kind === "publish" && (typeof draftJobId !== "string" || !JOB_ID.test(draftJobId))) throw httpError(400, `invalid draftJobId: ${draftJobId}`);
         if (kind === "undo" && !SAFE_SNAPSHOT_ID(snapshotId)) throw httpError(400, `invalid snapshotId: ${JSON.stringify(snapshotId)}`);
         if (publishOrUndoActive(store)) throw new ConflictError("another publish or undo is already queued or running");
+        if (pending.length > 0 || active.size > 0) throw new ConflictError(`${kind} needs an idle queue — wait for the queued or running drafts to finish (or cancel them), then retry`);
         const branch = repo.branch();
         if (branch.detached || branch.name === "main") throw new ConflictError(PUBLISH_REFUSED_ON_MAIN);
         if (!repo.contentGateDeps()) throw new ConflictError(SCRIPTS_DEPS_MISSING);
@@ -200,7 +211,9 @@ export function createJobQueue(options) {
           fields = { kind, seed: draft.seed, draftJobId, outDir: draft.outDir, snapshotId: null, restored: false };
         } else {
           let meta;
-          try { meta = snapshots.get(snapshotId); } catch (e) { throw new ConflictError(String(e?.message ?? e)); }
+          // A well-shaped id whose snapshot.json is unreadable is not a conflict
+          // (retrying never helps) nor a malformed request: 422, same message.
+          try { meta = snapshots.get(snapshotId); } catch (e) { throw httpError(422, String(e?.message ?? e)); }
           if (!meta) throw httpError(404, `unknown snapshot ${snapshotId}`);
           fields = { kind, seed: meta.seed ?? null, snapshotId, outDir: null };
         }
@@ -211,6 +224,7 @@ export function createJobQueue(options) {
         return job;
       }
       if (!SEED_GRAMMAR.test(seed)) throw new Error(`invalid seed: ${seed}`);
+      if (compositeQueuedOrRunning()) throw new ConflictError(`a publish or undo is queued or running — it is replacing the world a ${kind} reads; wait for it to finish, then retry`);
       const outDir = outDirFor({ seed, version: repo.generatorVersion });
       if (activeOutDirs().has(outDir)) throw new ConflictError(`another job is active for out dir ${outDir}`);
       const job = store.create({ kind, seed, reason: reason ?? null, rerunOf: rerunOf ?? null, outDir });
@@ -229,12 +243,27 @@ export function createJobQueue(options) {
         return job;
       }
       if (active.has(id)) {
-        const entry = active.get(id);
-        if (entry.job.kind === "publish" && (entry.stepNo ?? 0) >= 2)
-          throw new ConflictError("publish cannot be cancelled once promotion has started — let it finish (a failure restores the snapshot automatically), then undo");
+        // A running publish/undo is never cancellable, at any step (fix round
+        // 1, B): killing one mid-way leaves a half-replaced world. Refuse with
+        // 409 rather than a 200 that silently ignores the request.
+        if (isCompositeKind(active.get(id).job.kind))
+          throw new ConflictError(`a running ${active.get(id).job.kind} cannot be cancelled — let it finish (a failed publish restores its snapshot automatically), then undo`);
         runner.cancel(id); return store.get(id);
       }
       return store.get(id);
+    },
+    // Shutdown (server.mjs): cancels every running draft/dry-run and never a
+    // publish/undo. The in-flight composite is detected by KIND, not by a
+    // cancel throwing, and a failing cancel is reported, never mistaken for a
+    // composite (which would stretch the shutdown wait to the publish bound).
+    cancelRunningForShutdown() {
+      let compositeInFlight = false;
+      const errors = [];
+      for (const [id, entry] of active) {
+        if (isCompositeKind(entry.job.kind)) { compositeInFlight = true; continue; }
+        try { runner.cancel(id); } catch (e) { errors.push(`${id}: ${e?.message ?? e}`); }
+      }
+      return { compositeInFlight, errors };
     },
     activeOutDirs,
     running() { return active.size; },

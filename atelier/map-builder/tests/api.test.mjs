@@ -387,6 +387,13 @@ test("POST /api/publish: 400 without confirm:true, 404 unknown draft, 201 + job,
     assert.equal(pub.body.job._seq, undefined);
     const again = await api(port, "POST", "/api/publish", { draftJobId: draft.id, confirm: true });
     assert.equal(again.status, 409);
+    // Fix round 1, B: a running publish is never cancellable — 409, not a 200 that ignores it.
+    const cancel = await api(port, "POST", `/api/jobs/${pub.body.job.id}/cancel`);
+    assert.equal(cancel.status, 409, JSON.stringify(cancel.body));
+    assert.match(cancel.body.error.message, /cannot be cancelled/);
+    // Fix round 1, A: no draft starts while the publish rewrites the world.
+    const draftDuring = await api(port, "POST", "/api/jobs", { kind: "draft", seed: "4123456789abcdef" });
+    assert.equal(draftDuring.status, 409, JSON.stringify(draftDuring.body));
     await queue.onIdle();
 
     w = await api(port, "GET", "/api/world");
@@ -413,6 +420,17 @@ test("POST /api/publish: 400 without confirm:true, 404 unknown draft, 201 + job,
     assert.equal(undo.body.job.kind, "undo");
     await queue.onIdle();
     assert.deepEqual(readFileSync2(path.join(root, "content/world/fabric/world.json")), worldBefore);
+    assert.equal((await api(port, "GET", "/api/world")).body.undoAvailable, false, "nothing left to undo after the undo");
+  });
+});
+
+test("POST /api/undo of a corrupt snapshot → 422", async (t) => {
+  await withPhase2App(t, {}, async ({ port, data, snapshots }) => {
+    const snap = snapshots.create({ seed: "aaaaaaaaaaaaaaaa" });
+    writeFileSync(path.join(data, "snapshots", snap.id, "snapshot.json"), "{not json");
+    const res = await api(port, "POST", "/api/undo", { snapshotId: snap.id });
+    assert.equal(res.status, 422, JSON.stringify(res.body));
+    assert.match(res.body.error.message, /corrupt/);
   });
 });
 

@@ -173,31 +173,117 @@ test("a draft's report.json survives a later non-draft job on the same out dir",
   s.cleanup();
 });
 
-// Task 14: publish is not cancellable once promote (step 2) has started —
-// cancel during the in-process snapshot step is ignored by the runner, and
-// from step 2 on the queue refuses with a 409 instead of killing a half-written
-// world replace.
-test("cancel is refused with 409 once a publish has passed step 2", async () => {
+// Composite-job fixture (fix round 1, A + B): a publish whose snapshot step
+// waits on a gate the test releases, an undo, and a 300 ms draft — all fake,
+// no repo or snapshot store touched. Everything lives under one mkdtempSync dir.
+const compositeSetup = ({ runner = createRunner({ killGraceMs: 100 }) } = {}) => {
   const dir = mkdtempSync(join(tmpdir(), "mb-q-pub-"));
-  try {
-    const store = createJobStore({ dir: join(dir, "jobs") });
-    const repo = { repoRoot: dir, timeouts: { draft: 5000, publish: 5000 }, generatorVersion: "3.0.0",
-      branch: () => ({ name: "feat/x", detached: false }), contentGateDeps: () => true, currentSeed: () => "0123456789abcdef" };
-    let releaseSnapshot; const snapshotGate = new Promise((r) => { releaseSnapshot = r; });
-    const commandsFor = ({ kind }) => kind !== "publish" ? [] : [
+  const store = createJobStore({ dir: join(dir, "jobs") });
+  const repo = { repoRoot: dir, timeouts: { draft: 5000, publish: 5000 }, generatorVersion: "3.0.0",
+    branch: () => ({ name: "feat/x", detached: false }), contentGateDeps: () => true, currentSeed: () => "0123456789abcdef" };
+  let releaseSnapshot; const snapshotGate = new Promise((r) => { releaseSnapshot = r; });
+  const commandsFor = ({ kind }) => {
+    if (kind === "publish") return [
       { label: "snapshot", fn: async () => { await snapshotGate; } },
       { label: "promote", argv: [process.execPath, "-e", "setTimeout(() => {}, 400)"] },
     ];
-    const queue = createJobQueue({ store, runner: createRunner({ killGraceMs: 100 }), repo, concurrency: 2, stageCount: 18, commandsFor,
-      events: { emit: () => {} }, snapshots: { prune: () => [] }, world: { read: () => ({}) } });
-    const draft = store.create({ kind: "draft", seed: "0123456789abcdef", outDir: "build/mapforge/01234567-3.0.0", status: "succeeded" });
-    const job = queue.enqueue({ kind: "publish", draftJobId: draft.id });
-    await new Promise((r) => setTimeout(r, 50));
-    assert.equal(queue.cancel(job.id).status, "running", "cancel during step 1 (fn) is ignored, not refused");
-    releaseSnapshot();
-    await new Promise((r) => setTimeout(r, 100));
-    assert.throws(() => queue.cancel(job.id), (e) => e instanceof ConflictError && e.code === 409);
-    await queue.onIdle();
-    assert.equal(store.get(job.id).status, "succeeded");
-  } finally { rmSync(dir, { recursive: true, force: true }); }
+    if (kind === "undo") return [{ label: "restore", fn: async () => {} }, { label: "check", argv: [process.execPath, "-e", "setTimeout(() => {}, 300)"] }];
+    return [{ label: "generate", argv: [process.execPath, "-e", "setTimeout(() => {}, 300)"] }];
+  };
+  const queue = createJobQueue({ store, runner, repo, concurrency: 2, stageCount: 18, commandsFor,
+    events: { emit: () => {} }, snapshots: { prune: () => [], get: (id) => ({ id, seed: "0123456789abcdef" }) }, world: { read: () => ({}) } });
+  const draft = store.create({ kind: "draft", seed: "0123456789abcdef", outDir: "build/mapforge/01234567-3.0.0", status: "succeeded" });
+  const tick = (ms) => new Promise((r) => setTimeout(r, ms));
+  return { dir, store, queue, draft, releaseSnapshot, tick, cleanup: () => rmSync(dir, { recursive: true, force: true }) };
+};
+const isConflict = (re) => (e) => e instanceof ConflictError && e.code === 409 && re.test(e.message);
+
+test("a running publish or undo refuses cancel with 409 at every step, including the in-process snapshot step", async () => {
+  const s = compositeSetup();
+  try {
+    const job = s.queue.enqueue({ kind: "publish", draftJobId: s.draft.id });
+    await s.tick(50);
+    assert.equal(s.store.get(job.id).steps.at(-1).name, "snapshot");
+    assert.throws(() => s.queue.cancel(job.id), isConflict(/cannot be cancelled/), "cancel during step 1 (fn) is refused, not silently ignored");
+    s.releaseSnapshot();
+    await s.tick(100);
+    assert.throws(() => s.queue.cancel(job.id), isConflict(/cannot be cancelled/), "cancel during promote");
+    await s.queue.onIdle();
+    assert.equal(s.store.get(job.id).status, "succeeded");
+
+    const undo = s.queue.enqueue({ kind: "undo", snapshotId: "2026-01-01T00-00-00.000Z-0123456789abcdef" });
+    await s.tick(100);
+    assert.equal(s.store.get(undo.id).steps.at(-1).name, "check");
+    assert.throws(() => s.queue.cancel(undo.id), isConflict(/running undo cannot be cancelled/), "cancel during undo's check step, after restore");
+    await s.queue.onIdle();
+    assert.equal(s.store.get(undo.id).status, "succeeded");
+  } finally { s.cleanup(); }
+});
+
+test("a draft or dry-run enqueued while a publish is queued or running → 409, and nothing starts beside it", async () => {
+  const s = compositeSetup();
+  try {
+    const pub = s.queue.enqueue({ kind: "publish", draftJobId: s.draft.id });
+    for (const kind of ["draft", "dry-run"])
+      assert.throws(() => s.queue.enqueue({ kind, seed: seed(1) }), isConflict(/publish or undo is queued or running/), kind);
+    assert.equal(s.queue.running(), 1);
+    s.releaseSnapshot();
+    await s.queue.onIdle();
+    assert.equal(s.store.get(pub.id).status, "succeeded");
+    assert.equal(s.store.list({ kind: "draft" }).length, 1, "only the fixture draft — the refused ones were never created");
+    s.queue.enqueue({ kind: "draft", seed: seed(1) }); // idle again → accepted
+    await s.queue.onIdle();
+  } finally { s.cleanup(); }
+});
+
+test("a publish or undo enqueued while any draft is queued or running → 409", async () => {
+  const s = compositeSetup();
+  try {
+    s.releaseSnapshot();
+    const d = s.queue.enqueue({ kind: "draft", seed: seed(2) });
+    assert.throws(() => s.queue.enqueue({ kind: "publish", draftJobId: s.draft.id }), isConflict(/needs an idle queue/));
+    assert.throws(() => s.queue.enqueue({ kind: "undo", snapshotId: "2026-01-01T00-00-00.000Z-0123456789abcdef" }), isConflict(/needs an idle queue/));
+    await s.queue.onIdle();
+    assert.equal(s.store.get(d.id).status, "succeeded");
+    assert.equal(s.store.list({ kind: "publish" }).length + s.store.list({ kind: "undo" }).length, 0);
+    s.queue.enqueue({ kind: "publish", draftJobId: s.draft.id }); // idle again → accepted
+    await s.queue.onIdle();
+  } finally { s.cleanup(); }
+});
+
+test("cancelRunningForShutdown cancels a running draft and reports no composite", async () => {
+  const s = compositeSetup();
+  try {
+    const d = s.queue.enqueue({ kind: "draft", seed: seed(3) });
+    assert.deepEqual(s.queue.cancelRunningForShutdown(), { compositeInFlight: false, errors: [] });
+    await s.queue.onIdle();
+    assert.equal(s.store.get(d.id).status, "cancelled");
+  } finally { s.cleanup(); }
+});
+
+test("cancelRunningForShutdown detects a publish in its snapshot step by kind and leaves it running", async () => {
+  const s = compositeSetup();
+  try {
+    const job = s.queue.enqueue({ kind: "publish", draftJobId: s.draft.id });
+    await s.tick(50);
+    assert.deepEqual(s.queue.cancelRunningForShutdown(), { compositeInFlight: true, errors: [] });
+    s.releaseSnapshot();
+    await s.queue.onIdle();
+    assert.equal(s.store.get(job.id).status, "succeeded", "never cancelled");
+  } finally { s.cleanup(); }
+});
+
+test("cancelRunningForShutdown reports a throwing cancel as an error, never as a composite in flight", async () => {
+  let finish;
+  const runner = { cancel: () => { throw new Error("boom"); }, run: () => new Promise((r) => { finish = r; }) };
+  const s = compositeSetup({ runner });
+  try {
+    const d = s.queue.enqueue({ kind: "draft", seed: seed(4) });
+    await s.tick(10);
+    const r = s.queue.cancelRunningForShutdown();
+    assert.equal(r.compositeInFlight, false);
+    assert.deepEqual(r.errors, [`${d.id}: boom`]);
+    finish({ ok: true, exitCode: 0, error: null, cancelled: false, timedOut: false, captured: {} });
+    await s.queue.onIdle();
+  } finally { s.cleanup(); }
 });
