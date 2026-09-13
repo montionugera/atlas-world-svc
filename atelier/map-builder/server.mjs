@@ -31,10 +31,15 @@ function parseArgs(argv) {
   return args;
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  // Same pattern as render-sheet.mjs:49 — the package's grandparent is the repo root.
-  const repoRoot = args.repoRoot ?? resolve(PKG_DIR, "..", "..");
+  // Same pattern as render-sheet.mjs:49 — the package's grandparent is the
+  // repo root. resolve() (fix round 1, F5): a relative or trailing-slash
+  // --repo-root otherwise makes static.mjs's root-prefix check fail for
+  // every file while / and /healthz still answer.
+  const repoRoot = resolve(args.repoRoot ?? resolve(PKG_DIR, "..", ".."));
 
   try {
     assertRepoRoot({ repoRoot });
@@ -69,13 +74,10 @@ function main() {
   // a change means the service restarted, which is the "live/read-only
   // switch" the spec describes (a restart can drop in-memory queue state).
   const version = crypto.randomBytes(4).toString("hex");
-  const app = createApp({ repo, store, queue, events, world, staticHandler, steps, version });
-
-  const recovered = store.recoverInterrupted();
-  console.log(`map-builder: marked ${recovered.length} interrupted job(s)`);
-
   const bind = config.bind ?? "127.0.0.1";
   const port = config.port ?? 6016;
+  const app = createApp({ repo, store, queue, events, world, staticHandler, steps, version, bind });
+
   const server = http.createServer(app);
 
   server.on("error", (e) => {
@@ -88,16 +90,35 @@ function main() {
   });
 
   server.listen(port, bind, () => {
+    // Recovery must run only after this instance has actually won the port
+    // (fix round 1, F4). recoverInterrupted() rewrites every queued/running
+    // record to interrupted, and the JobStore is disk-backed and shared by
+    // data dir — running it before listen() meant a second instance, refused
+    // moments later by the busy-port check above, could still clobber a live
+    // instance's running job before it died. recoverInterrupted() is
+    // synchronous, so it fully completes before any request handler runs.
+    const recovered = store.recoverInterrupted();
+    console.log(`map-builder: marked ${recovered.length} interrupted job(s)`);
     const actualPort = server.address().port;
     console.log(`map-builder: listening on http://${bind}:${actualPort}/  (storybook: /atelier/asset-storybook/index.html, api: /api/health)`);
   });
 
   let shuttingDown = false;
-  function shutdown() {
+  async function shutdown() {
     if (shuttingDown) return;
     shuttingDown = true;
     for (const job of store.list({ status: "running" })) queue.cancel(job.id);
     queue.close(); // marks dropped-pending interrupted; does not touch actives (cancelled above)
+    // Cancelling an active job only signals SIGTERM — the "cancelled" record
+    // is written later, when the child actually exits. Exiting immediately
+    // (fix round 1, F6) left that write racing process.exit(0): the record
+    // stayed "running" on disk and the next boot's recoverInterrupted()
+    // relabelled it "Interrupted" instead of "Cancelled", and a
+    // SIGTERM-ignoring generator kept writing after the service was gone.
+    // Bound the wait by the same grace period the runner itself uses before
+    // its SIGKILL backstop, plus slack for the record write — the idle case
+    // (no actives) still resolves immediately, keeping the < 2s guarantee.
+    await Promise.race([queue.onIdle(), sleep((config.killGraceMs ?? 5000) + 500)]);
     events.close();
     server.close(() => process.exit(0));
     // server.close() waits for open keep-alive/SSE sockets to close on their
