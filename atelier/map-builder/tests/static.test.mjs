@@ -3,9 +3,8 @@ import assert from "node:assert/strict";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { mkdtempSync, mkdirSync, writeFileSync, chmodSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, chmodSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { createStaticHandler } from "../lib/static.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -97,8 +96,8 @@ test("a directory path is 404, not a listing", async () => {
 // must 404 instead of taking the whole service down with an uncaught 'error'
 // event on the read stream — and the server must still answer afterwards.
 test("a file that cannot be opened returns 404 and the server survives the next request", async () => {
-  const dir = mkdtempSync(join(tmpdir(), "mb-static-unreadable-"));
-  const filePath = join(dir, "secret.txt");
+  const dir = mkdtempSync(path.join(tmpdir(), "mb-static-unreadable-"));
+  const filePath = path.join(dir, "secret.txt");
   writeFileSync(filePath, "shh");
   chmodSync(filePath, 0o000);
   try {

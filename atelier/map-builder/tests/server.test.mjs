@@ -6,7 +6,6 @@ import http from "node:http";
 import readline from "node:readline";
 import { mkdtempSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createJobStore } from "../lib/jobs.mjs";
@@ -16,7 +15,7 @@ import { GENERATOR_VERSION } from "../../mapforge/lib/version.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PKG = path.resolve(HERE, "..");
 const REPO = path.resolve(PKG, "..", "..");
-const SERVER = join(PKG, "server.mjs");
+const SERVER = path.join(PKG, "server.mjs");
 
 const get = (port, urlPath) => new Promise((resolve, reject) => {
   const req = http.request({ host: "127.0.0.1", port, path: urlPath }, (res) => {
@@ -49,7 +48,7 @@ const waitForStdout = (child, pattern) => new Promise((resolve, reject) => {
 });
 
 test("boots, serves the API and the static passthrough, and shuts down cleanly on SIGTERM", async () => {
-  const dataDir = mkdtempSync(join(tmpdir(), "mb-server-"));
+  const dataDir = mkdtempSync(path.join(tmpdir(), "mb-server-"));
   const child = spawn(process.execPath, [SERVER, "--port", "0", "--data-dir", dataDir], { cwd: REPO });
   let stderr = "";
   child.stderr.on("data", (c) => { stderr += c.toString("utf8"); });
@@ -78,7 +77,7 @@ test("refuses to start on a busy port", async () => {
   const occupied = net.createServer();
   await new Promise((resolve) => occupied.listen(0, "127.0.0.1", resolve));
   const busyPort = occupied.address().port;
-  const dataDir = mkdtempSync(join(tmpdir(), "mb-server-busy-"));
+  const dataDir = mkdtempSync(path.join(tmpdir(), "mb-server-busy-"));
   const child = spawn(process.execPath, [SERVER, "--port", String(busyPort), "--data-dir", dataDir], { cwd: REPO });
   let stderr = "";
   child.stderr.on("data", (c) => { stderr += c.toString("utf8"); });
@@ -98,8 +97,8 @@ test("refuses to start on a busy port", async () => {
 // died. Pre-seed a "running" record directly and confirm the refused
 // instance never touches it.
 test("a busy-port refusal leaves an existing running job record untouched", async () => {
-  const dataDir = mkdtempSync(join(tmpdir(), "mb-server-recovery-"));
-  const store = createJobStore({ dir: join(dataDir, "jobs") });
+  const dataDir = mkdtempSync(path.join(tmpdir(), "mb-server-recovery-"));
+  const store = createJobStore({ dir: path.join(dataDir, "jobs") });
   const job = store.create({ kind: "draft", seed: "cccccccccccccccc", outDir: "build/mapforge/does-not-exist" });
   store.update(job.id, { status: "running", startedAt: new Date().toISOString() });
 
@@ -130,12 +129,12 @@ test("a busy-port refusal leaves an existing running job record untouched", asyn
 // immediately, and assert the record reads "cancelled" and the process
 // still exits promptly.
 test("SIGTERM cancels a running job and records it as cancelled before exit", async () => {
-  const dataDir = mkdtempSync(join(tmpdir(), "mb-server-shutdown-"));
+  const dataDir = mkdtempSync(path.join(tmpdir(), "mb-server-shutdown-"));
   const child = spawn(process.execPath, [SERVER, "--port", "0", "--data-dir", dataDir], { cwd: REPO });
   let stderr = "";
   child.stderr.on("data", (c) => { stderr += c.toString("utf8"); });
   const seed = "dddddddddddddddd";
-  const outDir = join(REPO, outDirFor({ seed, version: GENERATOR_VERSION }));
+  const outDir = path.join(REPO, outDirFor({ seed, version: GENERATOR_VERSION }));
   try {
     const line = await waitForStdout(child, /map-builder: listening on http:\/\/127\.0\.0\.1:(\d+)/);
     const port = Number(/:(\d+)\/?/.exec(line)[1]);
@@ -150,7 +149,7 @@ test("SIGTERM cancels a running job and records it as cancelled before exit", as
     assert.equal(code, 0);
     assert.ok(Date.now() - t0 < 6000, `shutdown took ${Date.now() - t0}ms`);
 
-    const record = JSON.parse(readFileSync(join(dataDir, "jobs", `${id}.json`), "utf8"));
+    const record = JSON.parse(readFileSync(path.join(dataDir, "jobs", `${id}.json`), "utf8"));
     assert.equal(record.status, "cancelled");
   } finally {
     if (child.exitCode === null) child.kill("SIGKILL");
@@ -160,8 +159,8 @@ test("SIGTERM cancels a running job and records it as cancelled before exit", as
 });
 
 test("refuses a repo root that isn't atlas-world-svc", async () => {
-  const notARepo = mkdtempSync(join(tmpdir(), "mb-server-notrepo-"));
-  const dataDir = mkdtempSync(join(tmpdir(), "mb-server-notrepo-data-"));
+  const notARepo = mkdtempSync(path.join(tmpdir(), "mb-server-notrepo-"));
+  const dataDir = mkdtempSync(path.join(tmpdir(), "mb-server-notrepo-data-"));
   const child = spawn(process.execPath, [SERVER, "--port", "0", "--repo-root", notARepo, "--data-dir", dataDir], { cwd: REPO });
   let stderr = "";
   child.stderr.on("data", (c) => { stderr += c.toString("utf8"); });

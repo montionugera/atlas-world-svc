@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import http from "node:http";
 import { mkdtempSync, rmSync, mkdirSync, existsSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRepo, loadSteps } from "../lib/repo.mjs";
@@ -25,8 +24,8 @@ const fakeCommandsFor = ({ job }) => [{ label: "generate", argv: [process.execPa
   `console.log('stage: P1 premise-masks 1 ms'); setTimeout(() => { console.log('stage: P2 elevation 2 ms'); }, 200)`] }];
 
 const setup = () => {
-  const dir = mkdtempSync(join(tmpdir(), "mb-api-"));
-  const store = createJobStore({ dir: join(dir, "jobs") });
+  const dir = mkdtempSync(path.join(tmpdir(), "mb-api-"));
+  const store = createJobStore({ dir: path.join(dir, "jobs") });
   const baseRepo = createRepo({ repoRoot: REPO });
   const steps = loadSteps({ dir: PKG });
   // The service composes stageCount onto the repo it hands to world.mjs and
@@ -245,9 +244,9 @@ test("DELETE removes only the record when a finished rerun still shares the out 
     const s = "b2b2b2b2b2b2b2b2";
     const created = await api(port, "POST", "/api/jobs", { kind: "draft", seed: s });
     const originalId = created.body.jobs[0].id;
-    const outDirFull = join(repo.repoRoot, created.body.jobs[0].outDir);
+    const outDirFull = path.join(repo.repoRoot, created.body.jobs[0].outDir);
     mkdirSync(outDirFull, { recursive: true });
-    writeFileSync(join(outDirFull, "marker.txt"), "keep me");
+    writeFileSync(path.join(outDirFull, "marker.txt"), "keep me");
     await queue.onIdle();
     const rerun = await api(port, "POST", `/api/jobs/${originalId}/rerun`);
     const rerunId = rerun.body.job.id;

@@ -7,7 +7,7 @@ import { publicJob } from "./jobs.mjs";
 
 const httpError = (status, message) => Object.assign(new Error(message), { status });
 const badRequest = (message) => httpError(400, message);
-const notFound = (message = "not found") => httpError(404, message);
+const notFound = () => httpError(404, "not found");
 
 // localhost/127.0.0.1/::1 are always allowed regardless of the configured
 // bind (loopback-only service, spoofable Host header on a rebinding attack
@@ -62,7 +62,8 @@ export function createApp({ repo, store, queue, events, world, staticHandler, st
   // recPath — jobs.mjs only exposes logPath(id), which is enough to derive
   // the record path by swapping the extension.
   const removeJobFiles = (id) => {
-    for (const p of [store.logPath(id), store.logPath(id).replace(/\.log$/, ".json")]) {
+    const logPath = store.logPath(id);
+    for (const p of [logPath, logPath.replace(/\.log$/, ".json")]) {
       try { rmSync(p, { force: true }); } catch { /* best-effort */ }
     }
   };
