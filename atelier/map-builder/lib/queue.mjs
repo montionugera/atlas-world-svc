@@ -1,11 +1,15 @@
 import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { createStageTracker } from "./stage-parser.mjs";
-import { draftCommands, dryRunCommands, outDirFor } from "./commands.mjs";
+import { commandsForKind, outDirFor } from "./commands.mjs";
 import { SEED_GRAMMAR } from "../../mapforge/generate-world.mjs";
-import { publicJob } from "./jobs.mjs";
+import { JOB_ID, publicJob } from "./jobs.mjs";
+import { createCompositeSteps, publishOrUndoActive, PNG_SKIP_LINE, PNG_WARNING, PUBLISH_REFUSED_ON_MAIN, SCRIPTS_DEPS_MISSING } from "./publish.mjs";
 
 export class ConflictError extends Error { constructor(msg) { super(msg); this.code = 409; } }
+const httpError = (status, message) => Object.assign(new Error(message), { status });
+const isCompositeKind = (kind) => kind === "publish" || kind === "undo";
+const SAFE_SNAPSHOT_ID = (id) => typeof id === "string" && id !== "" && !id.includes("/") && !id.includes("\\") && !id.includes("..");
 
 export function parseDryRun(lines) {
   const out = { written: 0, deleted: 0, ratio: null, landKm2: null, files: [] };
@@ -22,11 +26,10 @@ const readMetrics = (reportPath) => {
   return { seaLand: r.seaToLandRatio, landKm2: r.landKm2, settlements: r.totals.settlements, landforms: r.totals.landformInstances, regions: r.totals.regions };
 };
 
-const defaultCommandsFor = ({ kind, job, repo }) =>
-  kind === "dry-run" ? dryRunCommands({ job, version: repo.generatorVersion }) : draftCommands({ job, version: repo.generatorVersion });
-
 export function createJobQueue(options) {
-  const { store, runner, repo, concurrency, stageCount, commandsFor = defaultCommandsFor, events } = options;
+  // snapshots/world/tools are only used by publish and undo (Task 14);
+  // `tools` overrides individual tool argvs (tests only — see publish.mjs).
+  const { store, runner, repo, concurrency, stageCount, commandsFor = commandsForKind, events, snapshots = null, world = null, tools } = options;
   const pending = []; // [{ job, outDir }]
   const active = new Map(); // jobId -> { job, outDir }
   let idleWaiters = [];
@@ -41,18 +44,50 @@ export function createJobQueue(options) {
     }
   };
 
+  // Publish auto-restore (Task 14): once the snapshot step has recorded an
+  // id, ANY failure after it — a non-zero step, a hang, or a throw in this
+  // file — puts the snapshot back before the job goes terminal (so the
+  // single-flight guard still holds the world while the restore runs).
+  const autoRestore = (id, liveJob) => {
+    if (liveJob.kind !== "publish" || !liveJob.snapshotId) return { restored: false };
+    try {
+      const r = snapshots.restore({ id: liveJob.snapshotId });
+      store.appendLog(id, `[restore] restored ${r.restored} file(s), deleted ${r.deleted} added file(s) from snapshot ${liveJob.snapshotId}\n`);
+      return { restored: true };
+    } catch (e) {
+      const restoreError = String(e?.message ?? e);
+      try { store.appendLog(id, `[restore] FAILED — the world may be half-published; undo from snapshot ${liveJob.snapshotId} by hand: ${restoreError}\n`); } catch { /* best-effort */ }
+      return { restored: false, restoreError };
+    }
+  };
+
+  const emitWorldChanged = () => {
+    try { events.emit("world.changed", { world: world.read() }); } catch { /* a world read failure must not fail the job */ }
+  };
+
   async function runJob(entry) {
     const { job: createdJob, outDir } = entry;
     const id = createdJob.id;
     const t0 = Date.now();
+    // The live job object composite commands record onto (publish's snapshot
+    // step sets snapshotId here; it is persisted after that step ends).
+    const liveJob = { ...createdJob };
     try {
-      const commands = commandsFor({ kind: createdJob.kind, job: createdJob, repo });
+      const composite = isCompositeKind(createdJob.kind);
+      const draftJob = createdJob.kind === "publish" ? store.get(createdJob.draftJobId) : null;
+      const commands = commandsFor({ kind: createdJob.kind, job: liveJob, repo, snapshots, draftJob, tools });
       store.update(id, { status: "running", startedAt: new Date().toISOString() });
       events.emit("job.started", { job: publicJob(store.get(id)) });
       const tracker = createStageTracker({ stageCount });
-      const timeoutMs = repo.timeouts?.[createdJob.kind] ?? repo.timeouts?.draft ?? 40000;
-      const reportPath = join(repo.repoRoot, outDir, "report.json");
+      const cSteps = composite ? createCompositeSteps({ commands }) : null;
+      const emitStep = (step) => {
+        entry.stepNo = cSteps.stepIndex(); // before the write: a store error must not re-open cancel
+        const job = store.update(id, { steps: cSteps.steps(), ...(liveJob.snapshotId ? { snapshotId: liveJob.snapshotId } : {}) });
+        events.emit("job.step", { job: publicJob(job), step, stepIndex: cSteps.stepIndex(), stepCount: cSteps.stepCount });
+      };
+      const timeoutMs = repo.timeouts?.[createdJob.kind === "undo" ? "publish" : createdJob.kind] ?? repo.timeouts?.draft ?? 40000;
       const isDraft = createdJob.kind === "draft";
+      const reportPath = isDraft ? join(repo.repoRoot, outDir, "report.json") : null; // undo has no out dir
       // The out dir is deterministic per seed+version, so a report.json left
       // over from an EARLIER run in the same dir must never be attributed to
       // THIS one (finding I4). Clear it before the command runs — it is one
@@ -80,6 +115,7 @@ export function createJobQueue(options) {
           try {
             store.appendLog(id, `[${label}] ${line}\n`);
             if (stream !== "stdout") return;
+            if (composite) { if (label.startsWith("render:") && PNG_SKIP_LINE.test(line)) cSteps.warn(label, PNG_WARNING); return; }
             const ev = tracker.push(line);
             if (ev && ev.type === "job.step") {
               const job = store.update(id, { steps: tracker.steps() });
@@ -87,8 +123,26 @@ export function createJobQueue(options) {
             }
           } catch { /* logged nowhere yet; must not crash the process */ }
         },
+        ...(composite ? {
+          onCommandStart: (cmd) => { try { emitStep(cSteps.start(cmd.label)); } catch { /* must not crash the run */ } },
+          onCommandEnd: (cmd) => { try { emitStep(cSteps.end(cmd)); } catch { /* must not crash the run */ } },
+        } : {}),
       });
       const status = result.cancelled ? "cancelled" : result.ok ? "succeeded" : "failed";
+      if (composite) {
+        const outcome = result.ok ? {} : autoRestore(id, liveJob);
+        const job = store.update(id, {
+          status, endedAt: new Date().toISOString(), durationMs: Date.now() - t0, exitCode: result.exitCode, error: result.error,
+          steps: cSteps.steps(), snapshotId: liveJob.snapshotId ?? null, ...outcome,
+        });
+        if (result.ok && createdJob.kind === "publish") {
+          try { store.update(createdJob.draftJobId, { publishedBy: id }); } catch { /* draft record gone — publish itself succeeded */ }
+          try { snapshots.prune(); } catch (e) { try { store.appendLog(id, `[prune] ${e?.message ?? e}\n`); } catch { /* best-effort */ } }
+        }
+        events.emit("job.done", { job: publicJob(job) });
+        if (result.ok) emitWorldChanged();
+        return;
+      }
       // report.json at this path can only be from THIS run (see the rmSync
       // above) — read it regardless of outcome so a loop-budget failure that
       // wrote a fresh report before exiting still surfaces its metrics.
@@ -105,7 +159,7 @@ export function createJobQueue(options) {
     } catch (e) {
       const job = store.update(id, {
         status: "failed", endedAt: new Date().toISOString(), durationMs: Date.now() - t0,
-        error: String(e?.message ?? e),
+        error: String(e?.message ?? e), ...(isCompositeKind(createdJob.kind) ? { snapshotId: liveJob.snapshotId ?? null, ...autoRestore(id, liveJob) } : {}),
       });
       events.emit("job.done", { job: publicJob(job) });
     } finally {
@@ -127,7 +181,35 @@ export function createJobQueue(options) {
   return {
     store,
     options,
-    enqueue({ kind, seed, reason, rerunOf } = {}) {
+    enqueue({ kind, seed, reason, rerunOf, draftJobId, snapshotId } = {}) {
+      if (kind === "publish" || kind === "undo") {
+        // Order matters: shape (400) → single-flight / branch / deps (409) →
+        // existence (404). Every refusal happens here, synchronously, BEFORE
+        // a job record exists — so nothing (least of all the snapshot) runs.
+        if (kind === "publish" && (typeof draftJobId !== "string" || !JOB_ID.test(draftJobId))) throw httpError(400, `invalid draftJobId: ${draftJobId}`);
+        if (kind === "undo" && !SAFE_SNAPSHOT_ID(snapshotId)) throw httpError(400, `invalid snapshotId: ${JSON.stringify(snapshotId)}`);
+        if (publishOrUndoActive(store)) throw new ConflictError("another publish or undo is already queued or running");
+        const branch = repo.branch();
+        if (branch.detached || branch.name === "main") throw new ConflictError(PUBLISH_REFUSED_ON_MAIN);
+        if (!repo.contentGateDeps()) throw new ConflictError(SCRIPTS_DEPS_MISSING);
+        let fields;
+        if (kind === "publish") {
+          const draft = store.get(draftJobId);
+          if (!draft || draft.kind !== "draft" || draft.status !== "succeeded") throw httpError(404, `no succeeded draft ${draftJobId}`);
+          if (activeOutDirs().has(draft.outDir)) throw new ConflictError(`another job is active for out dir ${draft.outDir}`);
+          fields = { kind, seed: draft.seed, draftJobId, outDir: draft.outDir, snapshotId: null, restored: false };
+        } else {
+          let meta;
+          try { meta = snapshots.get(snapshotId); } catch (e) { throw new ConflictError(String(e?.message ?? e)); }
+          if (!meta) throw httpError(404, `unknown snapshot ${snapshotId}`);
+          fields = { kind, seed: meta.seed ?? null, snapshotId, outDir: null };
+        }
+        const job = store.create({ ...fields, reason: reason ?? null });
+        pending.push({ job, outDir: fields.outDir });
+        events.emit("job.created", { job: publicJob(job) });
+        pump();
+        return job;
+      }
       if (!SEED_GRAMMAR.test(seed)) throw new Error(`invalid seed: ${seed}`);
       const outDir = outDirFor({ seed, version: repo.generatorVersion });
       if (activeOutDirs().has(outDir)) throw new ConflictError(`another job is active for out dir ${outDir}`);
@@ -146,7 +228,12 @@ export function createJobQueue(options) {
         settleIdleIfDone();
         return job;
       }
-      if (active.has(id)) { runner.cancel(id); return store.get(id); }
+      if (active.has(id)) {
+        const entry = active.get(id);
+        if (entry.job.kind === "publish" && (entry.stepNo ?? 0) >= 2)
+          throw new ConflictError("publish cannot be cancelled once promotion has started — let it finish (a failure restores the snapshot automatically), then undo");
+        runner.cancel(id); return store.get(id);
+      }
       return store.get(id);
     },
     activeOutDirs,

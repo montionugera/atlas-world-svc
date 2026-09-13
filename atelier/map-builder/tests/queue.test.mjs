@@ -172,3 +172,32 @@ test("a draft's report.json survives a later non-draft job on the same out dir",
   assert.deepEqual(JSON.parse(readFileSync(join(out, "report.json"), "utf8")), reportObj);
   s.cleanup();
 });
+
+// Task 14: publish is not cancellable once promote (step 2) has started —
+// cancel during the in-process snapshot step is ignored by the runner, and
+// from step 2 on the queue refuses with a 409 instead of killing a half-written
+// world replace.
+test("cancel is refused with 409 once a publish has passed step 2", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "mb-q-pub-"));
+  try {
+    const store = createJobStore({ dir: join(dir, "jobs") });
+    const repo = { repoRoot: dir, timeouts: { draft: 5000, publish: 5000 }, generatorVersion: "3.0.0",
+      branch: () => ({ name: "feat/x", detached: false }), contentGateDeps: () => true, currentSeed: () => "0123456789abcdef" };
+    let releaseSnapshot; const snapshotGate = new Promise((r) => { releaseSnapshot = r; });
+    const commandsFor = ({ kind }) => kind !== "publish" ? [] : [
+      { label: "snapshot", fn: async () => { await snapshotGate; } },
+      { label: "promote", argv: [process.execPath, "-e", "setTimeout(() => {}, 400)"] },
+    ];
+    const queue = createJobQueue({ store, runner: createRunner({ killGraceMs: 100 }), repo, concurrency: 2, stageCount: 18, commandsFor,
+      events: { emit: () => {} }, snapshots: { prune: () => [] }, world: { read: () => ({}) } });
+    const draft = store.create({ kind: "draft", seed: "0123456789abcdef", outDir: "build/mapforge/01234567-3.0.0", status: "succeeded" });
+    const job = queue.enqueue({ kind: "publish", draftJobId: draft.id });
+    await new Promise((r) => setTimeout(r, 50));
+    assert.equal(queue.cancel(job.id).status, "running", "cancel during step 1 (fn) is ignored, not refused");
+    releaseSnapshot();
+    await new Promise((r) => setTimeout(r, 100));
+    assert.throws(() => queue.cancel(job.id), (e) => e instanceof ConflictError && e.code === 409);
+    await queue.onIdle();
+    assert.equal(store.get(job.id).status, "succeeded");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});

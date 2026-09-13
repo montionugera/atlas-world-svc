@@ -15,6 +15,7 @@ import { createEventHub } from "./lib/sse.mjs";
 import { createStaticHandler } from "./lib/static.mjs";
 import { createWorldReader } from "./lib/world.mjs";
 import { createApp } from "./lib/app.mjs";
+import { createSnapshots } from "./lib/snapshots.mjs";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
 
@@ -66,8 +67,9 @@ function main() {
   const store = createJobStore({ dir: join(dataDir, "jobs") });
   const runner = createRunner({ killGraceMs: config.killGraceMs });
   const events = createEventHub({ replay: 200 });
-  const queue = createJobQueue({ store, runner, repo, concurrency: config.concurrency, stageCount: steps.stageCount, events });
-  const world = createWorldReader({ repo, store });
+  const snapshots = createSnapshots({ repoRoot, dir: join(dataDir, "snapshots"), keep: config.snapshotKeep ?? 3 });
+  const world = createWorldReader({ repo, store, snapshots });
+  const queue = createJobQueue({ store, runner, repo, concurrency: config.concurrency, stageCount: steps.stageCount, events, snapshots, world });
   const staticHandler = createStaticHandler({ root: repoRoot });
   // A per-boot token, not a semver — package.json carries no version field.
   // The UI polls /api/health and compares this against what it saw on load;
@@ -107,7 +109,14 @@ function main() {
   async function shutdown() {
     if (shuttingDown) return;
     shuttingDown = true;
-    for (const job of store.list({ status: "running" })) queue.cancel(job.id);
+    // A publish past its promote step refuses cancel (Task 14): killing it
+    // would leave a half-replaced world with no auto-restore. Wait for it
+    // instead, bounded by the publish backstop timeout.
+    let publishInFlight = false;
+    for (const job of store.list({ status: "running" })) {
+      try { queue.cancel(job.id); } catch { publishInFlight = true; }
+    }
+    if (publishInFlight) console.log("map-builder: waiting for the running publish to finish before exiting");
     queue.close(); // marks dropped-pending interrupted; does not touch actives (cancelled above)
     // Cancelling an active job only signals SIGTERM — the "cancelled" record
     // is written later, when the child actually exits. Exiting immediately
@@ -118,7 +127,7 @@ function main() {
     // Bound the wait by the same grace period the runner itself uses before
     // its SIGKILL backstop, plus slack for the record write — the idle case
     // (no actives) still resolves immediately, keeping the < 2s guarantee.
-    await Promise.race([queue.onIdle(), sleep((config.killGraceMs ?? 5000) + 500)]);
+    await Promise.race([queue.onIdle(), sleep((publishInFlight ? repo.timeouts.publish : 0) + (config.killGraceMs ?? 5000) + 500)]);
     events.close();
     server.close(() => process.exit(0));
     // server.close() waits for open keep-alive/SSE sockets to close on their

@@ -52,3 +52,45 @@ test("cancel ends a running job as cancelled", async () => {
   const r = await p; assert.equal(r.cancelled, true); assert.equal(r.ok, false);
   assert.equal(runner.cancel("j4"), false);
 });
+
+test("an in-process fn step runs, logs through onLine, and participates in onCommandStart/End", async () => {
+  const lines = [], starts = [], ends = [];
+  const r = await createRunner({}).run({ job: { id: "j5" }, cwd: REPO, timeoutMs: 10000,
+    commands: [{ label: "snapshot", fn: async ({ log }) => { log("took snapshot s1"); } }, nodeE("after", "console.log('ran after')")],
+    onLine: (l) => lines.push(l), onCommandStart: (c) => starts.push(c.label), onCommandEnd: (c) => ends.push({ label: c.label, exitCode: c.exitCode, ms: c.ms }) });
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.captured.snapshot, ["took snapshot s1"]);
+  assert.deepEqual(r.captured.after, ["ran after"]);
+  assert.ok(lines.some((l) => l.label === "snapshot" && l.stream === "stdout" && l.line === "took snapshot s1"));
+  assert.deepEqual(starts, ["snapshot", "after"]);
+  assert.deepEqual(ends.map((e) => [e.label, e.exitCode]), [["snapshot", 0], ["after", 0]]);
+  assert.ok(ends.every((e) => typeof e.ms === "number" && e.ms >= 0));
+});
+
+test("a throwing fn step fails the run with the thrown message and stops the sequence", async () => {
+  let ranAfter = false; const ends = [];
+  const r = await createRunner({}).run({ job: { id: "j6" }, cwd: REPO, timeoutMs: 10000,
+    commands: [{ label: "verify:seed", fn: async () => { throw new Error("map-builder: committed seed aaaa != draft seed bbbb"); } }, nodeE("after", "console.log('x')")],
+    onLine: (l) => { if (l.label === "after") ranAfter = true; }, onCommandEnd: (c) => ends.push(c) });
+  assert.equal(r.ok, false); assert.equal(r.exitCode, 1); assert.equal(ranAfter, false);
+  assert.equal(r.error, "map-builder: committed seed aaaa != draft seed bbbb");
+  assert.equal(ends[0].exitCode, 1); assert.equal(ends[0].error, r.error);
+});
+
+test("cancel() during an fn step is ignored — the step completes and the next one runs", async () => {
+  const runner = createRunner({ killGraceMs: 200 });
+  let release; const gate = new Promise((res) => { release = res; });
+  const p = runner.run({ job: { id: "j7" }, cwd: REPO, timeoutMs: 10000,
+    commands: [{ label: "restore", fn: async () => { await gate; } }, nodeE("check", "console.log('checked')")] });
+  await new Promise((res) => setTimeout(res, 50));
+  assert.equal(runner.cancel("j7"), false);
+  release();
+  const r = await p;
+  assert.equal(r.ok, true); assert.equal(r.cancelled, false); assert.deepEqual(r.captured.check, ["checked"]);
+});
+
+test("a failing command's error comes from its OWN stderr, not an earlier step's", async () => {
+  const r = await createRunner({}).run({ job: { id: "j8" }, cwd: REPO, timeoutMs: 10000,
+    commands: [nodeE("promote", "console.error('promote-world: note — nothing to worry about')"), nodeE("lock", "console.error('G-RENDER-LOCK: atlas drifted'); process.exitCode = 1")] });
+  assert.equal(r.ok, false); assert.equal(r.error, "G-RENDER-LOCK: atlas drifted");
+});
