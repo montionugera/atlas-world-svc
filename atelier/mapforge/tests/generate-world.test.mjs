@@ -433,6 +433,34 @@ test("the loop budget is a DECISION, drivable at a breach rather than at this bo
     "a loop-budget breach must leave a non-zero exit code");
 });
 
+test("--json-report writes report.json with per-continent totals; flag is opt-in", () => {
+  // Like the other CLI-flag tests above (`--seed is HONOURED`, `generate()`),
+  // a LOOP BUDGET wall-clock breach is tolerated here rather than failing the
+  // test: `report.json` is written by `main()` BEFORE the loop-budget check
+  // runs, so a slow box (Gate 2 fans out 32 test files concurrently — see
+  // budgets.json's cpuFailMsWhy) still produces the file this test inspects.
+  const generateJson = (args) => {
+    try {
+      return execFileSync(process.execPath, args, { encoding: "utf8" });
+    } catch (e) {
+      if (!/LOOP BUDGET/.test(e.stderr ?? "")) throw e;
+      return e.stdout ?? "";
+    }
+  };
+  const out = mkdtempSync(join(tmpdir(), "mb-json-"));
+  generateJson([CLI, "--seed", "7c9e4a2f8b1d6e03", "--out", out, "--no-png", "--json-report"]);
+  const rep = JSON.parse(readFileSync(join(out, "report.json"), "utf8"));
+  assert.equal(rep.seed, "7c9e4a2f8b1d6e03");
+  assert.ok(rep.totals.settlements > 0 && rep.totals.regions > 0 && rep.continents.length > 0);
+  assert.equal(rep.totals.continents, rep.continents.length);
+  assert.equal(rep.totals.settlements, rep.continents.reduce((s, c) => s + c.settlements, 0));
+  assert.ok(Object.keys(rep.timings).includes("P1"));
+  const out2 = mkdtempSync(join(tmpdir(), "mb-json-"));
+  generateJson([CLI, "--seed", "7c9e4a2f8b1d6e03", "--out", out2, "--no-png"]);
+  assert.equal(existsSync(join(out2, "report.json")), false, "report.json is opt-in");
+  rmSync(out, { recursive: true, force: true }); rmSync(out2, { recursive: true, force: true });
+});
+
 
 test("the run manifest carries the seed, sea level, ratio and a hash per file", { timeout: 240000 }, () => {
   const { manifest } = run();
