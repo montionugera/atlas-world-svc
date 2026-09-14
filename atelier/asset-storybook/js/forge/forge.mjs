@@ -22,7 +22,7 @@ import {
   markStale,
   parseLedgerText,
 } from "./staleness.mjs";
-import { buildForgeGallery } from "./gallery.mjs";
+import { buildForgeGallery, missingNoticeText, PNG_MISSING_LEAD } from "./gallery.mjs";
 import { buildPipelineRow, forgeBriefIds, forgeSourceFailureText, pipelineRowModel } from "./pipeline.mjs";
 import { openInfoDetail } from "../view/DetailOverlay.mjs";
 import { getStore } from "../review/ui.mjs";
@@ -114,27 +114,33 @@ function forgeBadge(cls, text) {
   return b;
 }
 
-function buildForgeCard(briefId, card) {
+function buildForgeCard({ briefId, card, media }) {
   const { entry } = card;
   const cardEl = document.createElement("div");
   cardEl.className = "forge-card";
   cardEl.tabIndex = 0;
   cardEl.setAttribute("role", "button");
 
-  const img = document.createElement("img");
-  img.src = ART_FORGE_ROOT_URL + entry.out;
-  img.alt = cellLabel(entry);
-  img.loading = "lazy";
-  img.decoding = "async";
-  img.addEventListener("error", () => {
-    // Ledger is committed truth; out/ PNGs are local-only artifacts. A
-    // missing file is LOUD, never a broken-image icon (mirrors Card.mjs).
-    const missing = document.createElement("div");
-    missing.className = "forge-card-missing";
-    missing.textContent = "png missing — render exists only in the rolling checkout";
-    img.replaceWith(missing);
-  });
-  cardEl.appendChild(img);
+  if (media === "image") {
+    const img = document.createElement("img");
+    img.src = ART_FORGE_ROOT_URL + entry.out;
+    img.alt = cellLabel(entry);
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.addEventListener("error", () => {
+      // The per-card probe loaded this PNG, but the real load failed anyway
+      // (rare: the file was removed in between). Say so on this card.
+      const missing = document.createElement("div");
+      missing.className = "forge-card-missing";
+      missing.textContent = PNG_MISSING_LEAD;
+      img.replaceWith(missing);
+    });
+    cardEl.appendChild(img);
+  } else {
+    // No image slot at all: the batch notice already explains why. The card
+    // stays clickable (run detail) and keeps its ↻ work-order affordance.
+    cardEl.classList.add("is-imageless");
+  }
 
   const label = document.createElement("div");
   label.className = "forge-card-label";
@@ -177,8 +183,28 @@ function buildForgeCard(briefId, card) {
   return cardEl;
 }
 
-function appendGallery(rowsHost, briefId, batches) {
-  for (const batch of batches) {
+/** Resolves true when the PNG loads. An <img> probe, never fetch (read-only page). */
+function probeImage(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = src;
+  });
+}
+
+async function appendGallery(rowsHost, briefId, batches) {
+  // Probe EVERY card, not just the newest: out/ can be partly cleaned, and a
+  // PNG that is on disk must render even when a newer one in its batch is
+  // gone. Missing cards go image-less and the batch gets ONE notice counting
+  // only the missing ones. A loaded probe is in the browser cache, so the
+  // card's own <img> reuses it.
+  const present = await Promise.all(
+    batches.map((batch) =>
+      Promise.all(batch.cards.map((card) => probeImage(ART_FORGE_ROOT_URL + card.entry.out))),
+    ),
+  );
+  batches.forEach((batch, i) => {
     const batchEl = document.createElement("div");
     batchEl.className = "forge-batch";
 
@@ -198,14 +224,23 @@ function appendGallery(rowsHost, briefId, batches) {
     head.append(hashEl, meta);
     batchEl.appendChild(head);
 
+    const missingCount = present[i].filter((ok) => !ok).length;
+    if (missingCount > 0) {
+      const notice = document.createElement("p");
+      notice.className = "forge-batch-missing";
+      notice.dataset.pngMissing = "batch";
+      notice.textContent = missingNoticeText({ count: missingCount });
+      batchEl.appendChild(notice);
+    }
+
     const grid = document.createElement("div");
     grid.className = "forge-card-grid";
-    for (const card of batch.cards) {
-      grid.appendChild(buildForgeCard(briefId, card));
-    }
+    batch.cards.forEach((card, j) => {
+      grid.appendChild(buildForgeCard({ briefId, card, media: present[i][j] ? "image" : "none" }));
+    });
     batchEl.appendChild(grid);
     rowsHost.appendChild(batchEl);
-  }
+  });
 }
 
 // ---------- Task 9: per-cell re-run → work order (download-only) ----------
@@ -403,7 +438,7 @@ async function loadRows(rowsHost) {
       rowsHost.appendChild(
         buildPipelineRow(pipelineRowModel({ briefId, outcome: { kind: "ledger", attempts, staleFlags } })),
       );
-      appendGallery(rowsHost, briefId, buildForgeGallery(attempts, staleFlags));
+      await appendGallery(rowsHost, briefId, buildForgeGallery(attempts, staleFlags));
     } catch (error) {
       // One bad brief must not abort the remaining rows.
       console.warn("[asset-storybook] could not render pipeline row for " + briefId, error);
