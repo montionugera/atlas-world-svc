@@ -421,28 +421,33 @@ function textLine(className, text) {
 }
 
 async function loadRows(rowsHost) {
-  let runsIndex;
-  try {
-    runsIndex = await fetchJson(RUNS_INDEX_URL, "runs-index");
-  } catch (err) {
-    console.warn("[asset-storybook] runs/_index.json unavailable:", err);
+  // Both indexes are independent (neither's data feeds the other's fetch), so
+  // fetch concurrently instead of paying two sequential round-trips.
+  const [runsResult, briefsResult] = await Promise.allSettled([
+    fetchJson(RUNS_INDEX_URL, "runs-index"),
+    fetchJson(FORGE_BRIEFS_INDEX_URL, "forge-briefs-index"),
+  ]);
+
+  if (runsResult.status === "rejected") {
+    console.warn("[asset-storybook] runs/_index.json unavailable:", runsResult.reason);
     rowsHost.appendChild(
-      textLine("empty-state", forgeSourceFailureText({ path: "atelier/art-forge/runs/_index.json", error: err })),
+      textLine("empty-state", forgeSourceFailureText({ path: "atelier/art-forge/runs/_index.json", error: runsResult.reason })),
     );
     return;
   }
+  const runsIndex = runsResult.value;
 
   let briefsIndex = null;
-  try {
-    briefsIndex = await fetchJson(FORGE_BRIEFS_INDEX_URL, "forge-briefs-index");
-  } catch (err) {
+  if (briefsResult.status === "rejected") {
     // Degrade to ledgered briefs only, but say so: never silent.
     const line = textLine(
       "source-error",
-      forgeSourceFailureText({ path: "atelier/asset-storybook/forge-briefs-index.json", error: err }),
+      forgeSourceFailureText({ path: "atelier/asset-storybook/forge-briefs-index.json", error: briefsResult.reason }),
     );
     line.dataset.error = "briefs-index";
     rowsHost.appendChild(line);
+  } else {
+    briefsIndex = briefsResult.value;
   }
 
   const briefIds = forgeBriefIds({ briefsIndex, runsIndex });
@@ -528,9 +533,10 @@ function refreshOrders(listHost, countLabel, savedLabel) {
     orders.length === 0
       ? "none"
       : orders.length + (orders.length === 1 ? " order" : " orders");
+  const unsaved = sessionOrders.length > 0 && !bufferSaved;
   savedLabel.textContent =
-    sessionOrders.length === 0 ? "" : bufferSaved ? "saved in this browser" : "not saved — browser storage unavailable";
-  savedLabel.classList.toggle("is-unsaved", sessionOrders.length > 0 && !bufferSaved);
+    sessionOrders.length === 0 ? "" : unsaved ? "not saved — browser storage unavailable" : "saved in this browser";
+  savedLabel.classList.toggle("is-unsaved", unsaved);
 
   listHost.innerHTML = "";
   for (const order of orders) {
@@ -596,7 +602,8 @@ async function loadOrders(sectionEl) {
     );
   }
 
-  const buffer = readOrderBuffer({ storage: browserStorage() });
+  const storage = browserStorage();
+  const buffer = readOrderBuffer({ storage });
   // A remount (e.g. a tab switch) must never wipe orders issued earlier in
   // this session just because the buffer read failed — only adopt the
   // buffer when it read cleanly; otherwise keep re-deriving from whatever is
@@ -605,7 +612,7 @@ async function loadOrders(sectionEl) {
   bufferSaved = buffer.ok;
   // Orders that reached the committed file are dropped from the buffer.
   if (buffer.ok && sessionOrders.length !== buffer.orders.length) {
-    bufferSaved = writeOrderBuffer({ storage: browserStorage(), orders: sessionOrders });
+    bufferSaved = writeOrderBuffer({ storage, orders: sessionOrders });
   }
 
   const h3 = document.createElement("h3");
