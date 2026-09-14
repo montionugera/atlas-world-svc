@@ -41,3 +41,20 @@ export function pendingBufferedOrders({ committed, buffered }) {
   const committedIds = new Set((committed.workOrders || []).map((o) => o.id));
   return buffered.filter((o) => !committedIds.has(o.id));
 }
+
+/**
+ * What a (re)mount should adopt as the new in-memory session orders.
+ *
+ * A tab remount (e.g. switching away from and back to the Forge tab) calls
+ * this on every mount. When the buffer read failed — storage unavailable, a
+ * quota error on an earlier write, corrupt JSON — `buffer.orders` is `[]`,
+ * and blindly adopting it would silently wipe every order issued earlier in
+ * this same session. Only trust the buffer when it read cleanly; otherwise
+ * keep re-deriving from whatever is already in memory (`current`), so an
+ * in-memory-only session degrades gracefully instead of losing data.
+ *
+ * @param {{ committed: {workOrders?: object[]}, buffer: {orders: object[], ok: boolean}, current: object[] }} opts
+ */
+export function resolveSessionOrders({ committed, buffer, current }) {
+  return pendingBufferedOrders({ committed, buffered: buffer.ok ? buffer.orders : current });
+}

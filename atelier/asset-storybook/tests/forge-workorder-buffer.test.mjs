@@ -10,6 +10,7 @@ import {
   readOrderBuffer,
   writeOrderBuffer,
   pendingBufferedOrders,
+  resolveSessionOrders,
 } from "../js/review/workorder-buffer.mjs";
 
 const order = (id, over = {}) => ({
@@ -60,4 +61,43 @@ test("orders already in the committed queue are no longer pending in the buffer"
     ["wo-2"],
   );
   assert.deepEqual(pendingBufferedOrders({ committed: {}, buffered: [order("wo-3")] }).map((o) => o.id), ["wo-3"]);
+});
+
+// F-053 Batch B fix — a tab remount must never destroy work orders issued
+// earlier in this session just because the buffer read failed (storage
+// unavailable / corrupt JSON). resolveSessionOrders is the pure decision
+// forge.mjs's loadOrders delegates to: adopt the buffer only when it read
+// cleanly, otherwise keep re-filtering whatever is already in memory.
+test("resolveSessionOrders adopts the buffer's orders when the read succeeded", () => {
+  const committed = {};
+  const buffer = { orders: [order("wo-1")], ok: true };
+  assert.deepEqual(
+    resolveSessionOrders({ committed, buffer, current: [order("wo-2")] }).map((o) => o.id),
+    ["wo-1"],
+  );
+});
+
+test("resolveSessionOrders keeps the in-memory orders when the buffer read failed", () => {
+  const committed = {};
+  const buffer = { orders: [], ok: false };
+  assert.deepEqual(
+    resolveSessionOrders({ committed, buffer, current: [order("wo-2")] }).map((o) => o.id),
+    ["wo-2"],
+  );
+});
+
+test("resolveSessionOrders still filters out orders that reached the committed queue, on both paths", () => {
+  const committed = { workOrders: [order("wo-1")] };
+  assert.deepEqual(
+    resolveSessionOrders({ committed, buffer: { orders: [order("wo-1")], ok: true }, current: [] }),
+    [],
+  );
+  assert.deepEqual(
+    resolveSessionOrders({
+      committed,
+      buffer: { orders: [], ok: false },
+      current: [order("wo-1"), order("wo-2")],
+    }).map((o) => o.id),
+    ["wo-2"],
+  );
 });

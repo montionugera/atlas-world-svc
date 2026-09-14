@@ -32,7 +32,7 @@ import {
   serializeQueue,
   WORK_ORDER_CELLS,
 } from "../review/store.mjs";
-import { pendingBufferedOrders, readOrderBuffer, writeOrderBuffer } from "../review/workorder-buffer.mjs";
+import { readOrderBuffer, resolveSessionOrders, writeOrderBuffer } from "../review/workorder-buffer.mjs";
 
 const EMPTY_RUNS_TEXT = "No forge runs recorded yet";
 
@@ -194,63 +194,92 @@ function buildForgeCard({ briefId, card, media }) {
   return cardEl;
 }
 
+// A stalled request (no onload/onerror ever firing — e.g. a dropped
+// connection) must not hang the probe forever: that would hang the
+// Promise.all in fillBatch below, and with it the batch that stalled.
+const PROBE_TIMEOUT_MS = 3000;
+
 /** Resolves true when the PNG loads. An <img> probe, never fetch (read-only page). */
 function probeImage(src) {
   return new Promise((resolve) => {
+    let settled = false;
+    const finish = (ok) => {
+      if (settled) return; // never resolve twice (onload/onerror race with the timeout)
+      settled = true;
+      clearTimeout(timer);
+      resolve(ok);
+    };
+    const timer = setTimeout(() => finish(false), PROBE_TIMEOUT_MS);
     const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
+    img.onload = () => finish(true);
+    img.onerror = () => finish(false);
     img.src = src;
   });
 }
 
-async function appendGallery(rowsHost, briefId, batches) {
+/**
+ * Fills one already-appended batch element: builds the head, probes every
+ * card's PNG, then the one missing-count notice and the card grid. Runs
+ * without the caller awaiting it — see appendGallery.
+ */
+async function fillBatch(batchEl, briefId, batch) {
+  const head = document.createElement("div");
+  head.className = "forge-batch-head";
+  const hashEl = document.createElement("span");
+  hashEl.className = "forge-batch-hash";
+  hashEl.textContent = batch.briefHash.slice(0, 8);
+  hashEl.title = batch.briefHash;
+  const meta = document.createElement("span");
+  const newest = batch.cards[0].entry.ts;
+  meta.textContent =
+    "· " +
+    batch.cards.length +
+    (batch.cards.length === 1 ? " render" : " renders") +
+    (newest ? " · " + String(newest).slice(0, 10) : "");
+  head.append(hashEl, meta);
+  batchEl.appendChild(head);
+
   // Probe EVERY card, not just the newest: out/ can be partly cleaned, and a
   // PNG that is on disk must render even when a newer one in its batch is
   // gone. Missing cards go image-less and the batch gets ONE notice counting
   // only the missing ones. A loaded probe is in the browser cache, so the
   // card's own <img> reuses it.
   const present = await Promise.all(
-    batches.map((batch) =>
-      Promise.all(batch.cards.map((card) => probeImage(ART_FORGE_ROOT_URL + card.entry.out))),
-    ),
+    batch.cards.map((card) => probeImage(ART_FORGE_ROOT_URL + card.entry.out)),
   );
-  batches.forEach((batch, i) => {
+
+  const missingCount = present.filter((ok) => !ok).length;
+  if (missingCount > 0) {
+    const notice = document.createElement("p");
+    notice.className = "forge-batch-missing";
+    notice.dataset.pngMissing = "batch";
+    notice.textContent = missingNoticeText({ count: missingCount });
+    batchEl.appendChild(notice);
+  }
+
+  const grid = document.createElement("div");
+  grid.className = "forge-card-grid";
+  batch.cards.forEach((card, j) => {
+    grid.appendChild(buildForgeCard({ briefId, card, media: present[j] ? "image" : "none" }));
+  });
+  batchEl.appendChild(grid);
+}
+
+function appendGallery(rowsHost, briefId, batches) {
+  // Reserve each batch's position in rowsHost synchronously, directly under
+  // this brief's row, and fill it in the background. A stalled or slow PNG
+  // probe (even bounded by PROBE_TIMEOUT_MS) must never block loadRows from
+  // moving on to the next brief's row, nor delay the
+  // storybook:forge-attempts-loaded dispatch in mountForge (Batch B review,
+  // Important 2) — so this function does not return a promise the caller
+  // needs to await for correctness.
+  batches.forEach((batch) => {
     const batchEl = document.createElement("div");
     batchEl.className = "forge-batch";
-
-    const head = document.createElement("div");
-    head.className = "forge-batch-head";
-    const hashEl = document.createElement("span");
-    hashEl.className = "forge-batch-hash";
-    hashEl.textContent = batch.briefHash.slice(0, 8);
-    hashEl.title = batch.briefHash;
-    const meta = document.createElement("span");
-    const newest = batch.cards[0].entry.ts;
-    meta.textContent =
-      "· " +
-      batch.cards.length +
-      (batch.cards.length === 1 ? " render" : " renders") +
-      (newest ? " · " + String(newest).slice(0, 10) : "");
-    head.append(hashEl, meta);
-    batchEl.appendChild(head);
-
-    const missingCount = present[i].filter((ok) => !ok).length;
-    if (missingCount > 0) {
-      const notice = document.createElement("p");
-      notice.className = "forge-batch-missing";
-      notice.dataset.pngMissing = "batch";
-      notice.textContent = missingNoticeText({ count: missingCount });
-      batchEl.appendChild(notice);
-    }
-
-    const grid = document.createElement("div");
-    grid.className = "forge-card-grid";
-    batch.cards.forEach((card, j) => {
-      grid.appendChild(buildForgeCard({ briefId, card, media: present[i][j] ? "image" : "none" }));
-    });
-    batchEl.appendChild(grid);
     rowsHost.appendChild(batchEl);
+    fillBatch(batchEl, briefId, batch).catch((err) => {
+      console.warn("[asset-storybook] could not render gallery batch for " + briefId, err);
+    });
   });
 }
 
@@ -456,7 +485,7 @@ async function loadRows(rowsHost) {
       rowsHost.appendChild(
         buildPipelineRow(pipelineRowModel({ briefId, outcome: { kind: "ledger", attempts, staleFlags } })),
       );
-      await appendGallery(rowsHost, briefId, buildForgeGallery(attempts, staleFlags));
+      appendGallery(rowsHost, briefId, buildForgeGallery(attempts, staleFlags));
     } catch (error) {
       // One bad brief must not abort the remaining rows.
       console.warn("[asset-storybook] could not render pipeline row for " + briefId, error);
@@ -568,7 +597,11 @@ async function loadOrders(sectionEl) {
   }
 
   const buffer = readOrderBuffer({ storage: browserStorage() });
-  sessionOrders = pendingBufferedOrders({ committed: committedQueue, buffered: buffer.orders });
+  // A remount (e.g. a tab switch) must never wipe orders issued earlier in
+  // this session just because the buffer read failed — only adopt the
+  // buffer when it read cleanly; otherwise keep re-deriving from whatever is
+  // already in memory (Batch B review, Important 1 / Minor 1).
+  sessionOrders = resolveSessionOrders({ committed: committedQueue, buffer, current: sessionOrders });
   bufferSaved = buffer.ok;
   // Orders that reached the committed file are dropped from the buffer.
   if (buffer.ok && sessionOrders.length !== buffer.orders.length) {
