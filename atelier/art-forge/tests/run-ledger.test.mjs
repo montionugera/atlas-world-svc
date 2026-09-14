@@ -115,8 +115,15 @@ test("committed ledgers hold no test-sandbox entries (no absolute or ../ out pat
       .map((line, i) => ({ line, n: i + 1 }))
       .filter(({ line }) => line.trim() !== "")
       .filter(({ line }) => {
-        const out = JSON.parse(line).out;
-        return typeof out === "string" && (out.startsWith("/") || out.startsWith(".."));
+        let obj;
+        try {
+          obj = JSON.parse(line);
+        } catch {
+          return true; // malformed line — surface it via the existing assertion message
+        }
+        return Object.values(obj).some(
+          (v) => typeof v === "string" && (v.startsWith("/") || v.startsWith("..")),
+        );
       })
       .map(({ n }) => `${name}:${n}`);
     assert.deepEqual(bad, [], "test-written ledger entries (a test called a ledger writer without ART_FORGE_RUNS_DIR)");
