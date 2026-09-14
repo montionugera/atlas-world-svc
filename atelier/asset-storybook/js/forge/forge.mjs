@@ -32,14 +32,25 @@ import {
   serializeQueue,
   WORK_ORDER_CELLS,
 } from "../review/store.mjs";
+import { pendingBufferedOrders, readOrderBuffer, writeOrderBuffer } from "../review/workorder-buffer.mjs";
 
 const EMPTY_RUNS_TEXT = "No forge runs recorded yet";
 
-// Session state: orders appended since page load (the committed file is only
-// updated when the human exports + commits), plus the last parsed committed
-// queue. Module-level because export + order listing outlive one render pass.
+// Orders issued in this browser and not yet in the committed queue. Buffered
+// in localStorage (js/review/workorder-buffer.mjs) so a reload keeps them;
+// the committed file stays the source of truth.
 let committedQueue = parseQueue(JSON.stringify({ version: 1, verdicts: {} }));
-const sessionOrders = [];
+let sessionOrders = [];
+// Whether the last buffer write (or read) succeeded — drives the saved label.
+let bufferSaved = true;
+
+function browserStorage() {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
 // briefId -> ledger attempts, for marking orders done/not-done.
 const attemptsByBrief = new Map();
 // Set by loadOrders(); re-run submits call it to repaint done/pending.
@@ -318,6 +329,12 @@ function openOrderForm(row, rerunBtn, order) {
   }
 
   submit.addEventListener("click", () => {
+    if (reason.value.trim() === "") {
+      err.textContent = "reason required";
+      err.hidden = false;
+      reason.focus();
+      return;
+    }
     const payload = { briefId: order.briefId, cell: order.cell, reason: reason.value };
     if (seedInput && seedInput.value !== "") payload.seed = Number(seedInput.value);
     let appended;
@@ -325,6 +342,7 @@ function openOrderForm(row, rerunBtn, order) {
       const next = addWorkOrder(committedQueue, payload);
       appended = next.workOrders[next.workOrders.length - 1];
       sessionOrders.push(appended);
+      bufferSaved = writeOrderBuffer({ storage: browserStorage(), orders: sessionOrders });
     } catch (e) {
       err.textContent = String(e.message || e);
       err.hidden = false;
@@ -475,12 +493,15 @@ function allOrders() {
   return [...committedQueue.workOrders, ...sessionOrders];
 }
 
-function refreshOrders(listHost, countLabel) {
+function refreshOrders(listHost, countLabel, savedLabel) {
   const orders = allOrders();
   countLabel.textContent =
     orders.length === 0
       ? "none"
       : orders.length + (orders.length === 1 ? " order" : " orders");
+  savedLabel.textContent =
+    sessionOrders.length === 0 ? "" : bufferSaved ? "saved in this browser" : "not saved — browser storage unavailable";
+  savedLabel.classList.toggle("is-unsaved", sessionOrders.length > 0 && !bufferSaved);
 
   listHost.innerHTML = "";
   for (const order of orders) {
@@ -546,6 +567,14 @@ async function loadOrders(sectionEl) {
     );
   }
 
+  const buffer = readOrderBuffer({ storage: browserStorage() });
+  sessionOrders = pendingBufferedOrders({ committed: committedQueue, buffered: buffer.orders });
+  bufferSaved = buffer.ok;
+  // Orders that reached the committed file are dropped from the buffer.
+  if (buffer.ok && sessionOrders.length !== buffer.orders.length) {
+    bufferSaved = writeOrderBuffer({ storage: browserStorage(), orders: sessionOrders });
+  }
+
   const h3 = document.createElement("h3");
   h3.textContent = "Pending work orders";
   sectionEl.appendChild(h3);
@@ -553,6 +582,10 @@ async function loadOrders(sectionEl) {
   const countLabel = document.createElement("span");
   countLabel.className = "forge-orders-count";
   h3.appendChild(countLabel);
+
+  const savedLabel = document.createElement("span");
+  savedLabel.className = "forge-orders-saved";
+  h3.appendChild(savedLabel);
 
   const hint = document.createElement("p");
   hint.className = "art-tabbar-hint";
@@ -572,8 +605,8 @@ async function loadOrders(sectionEl) {
   exportBtn.addEventListener("click", downloadQueue);
   sectionEl.appendChild(exportBtn);
 
-  refreshOrders(listHost, countLabel);
-  refreshOrdersFn = () => refreshOrders(listHost, countLabel);
+  refreshOrders(listHost, countLabel, savedLabel);
+  refreshOrdersFn = () => refreshOrders(listHost, countLabel, savedLabel);
   // Re-evaluate done/pending once ledgers have loaded (loadRows may finish
   // after this point on a cold cache). Remove-before-add so remounting the
   // tab never stacks duplicate handlers.
@@ -583,7 +616,7 @@ async function loadOrders(sectionEl) {
       attemptsLoadedHandler,
     );
   }
-  attemptsLoadedHandler = () => refreshOrders(listHost, countLabel);
+  attemptsLoadedHandler = () => refreshOrders(listHost, countLabel, savedLabel);
   document.addEventListener(
     "storybook:forge-attempts-loaded",
     attemptsLoadedHandler,
