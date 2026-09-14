@@ -22,6 +22,7 @@ import {
   parseLedgerText,
 } from "./staleness.mjs";
 import { buildForgeGallery } from "./gallery.mjs";
+import { ledgerErrorText } from "./pipeline.mjs";
 import { openInfoDetail } from "../view/DetailOverlay.mjs";
 import { getStore } from "../review/ui.mjs";
 import {
@@ -365,6 +366,11 @@ async function loadRows(rowsHost) {
       ]);
     } catch (err) {
       console.warn("[asset-storybook] ledger unavailable for " + briefId, err);
+      const errLine = document.createElement("p");
+      errLine.className = "source-error";
+      errLine.dataset.error = "ledger";
+      errLine.textContent = ledgerErrorText({ briefId, error: err });
+      rowsHost.appendChild(errLine);
       continue;
     }
 

@@ -70,3 +70,14 @@ export function buildPipelineRow({ briefId, attempts, staleFlags }) {
   row.dataset.anyStale = String(anyStale);
   return row;
 }
+
+/**
+ * Visible text for a ledger that could not be read (fetch failure or a
+ * malformed line). Never silent: forge.mjs renders this as a row.
+ * @param {{ briefId: string, error: Error & { line?: number } }} opts
+ */
+export function ledgerErrorText({ briefId, error }) {
+  const where = Number.isInteger(error && error.line) ? ` (line ${error.line})` : "";
+  const message = error && error.message ? error.message : String(error);
+  return `ledger ${briefId}.json unreadable${where}: ${message}`;
+}
