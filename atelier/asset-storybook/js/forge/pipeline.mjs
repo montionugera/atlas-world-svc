@@ -1,10 +1,10 @@
-// F-050 Task 7 — pipeline row builder for the Forge tab.
+// F-050 Task 7, reshaped in F-053 Phase 1 — the Forge tab's pipeline strip.
 //
-// Pure DOM assembly: one row per brief = brief-id label + ordered cells
-// derived from that brief's run-ledger entries, plus trailing not-run
-// placeholders so every pipeline reads left→right through the same four
-// stages (blockin → render → gate → intake). Statuses are display-only;
-// staleness comes in precomputed from js/forge/staleness.mjs via staleFlags.
+// One row per brief: brief id, four stage pills (blockin → render → gate →
+// intake) with attempt counts, then a note: "N stale", "all fresh", "no ledger
+// yet", or a named ledger error. The old builder emitted one pill per ATTEMPT
+// (202 for A1-ART-02) and had no caller. Pure model functions are node-tested
+// (tests/forge-pipeline.test.mjs); buildPipelineRow is the thin DOM layer.
 
 export const CELL_STATUS = {
   done: "done",
@@ -13,61 +13,122 @@ export const CELL_STATUS = {
   notrun: "notrun",
 };
 
+export const STAGES = ["blockin", "render", "gate", "intake"];
+
+const stageOf = (attempt) => (attempt.type === "gate-skipped" ? "gate" : attempt.type);
+
 /**
- * @param {{ briefId: string, attempts: object[], staleFlags?: boolean[] }} opts
+ * @param {{ attempts: object[], staleFlags: boolean[] }} opts
+ * @returns {{ stages: {stage: string, count: number, status: string}[], staleCount: number }}
  */
-export function buildPipelineRow({ briefId, attempts, staleFlags }) {
+export function summarizePipeline({ attempts, staleFlags }) {
+  const stages = STAGES.map((stage) => {
+    let count = 0;
+    let latest = -1;
+    attempts.forEach((a, i) => {
+      if (stageOf(a) === stage) {
+        count++;
+        latest = i;
+      }
+    });
+    let status = CELL_STATUS.notrun;
+    if (latest >= 0) {
+      const a = attempts[latest];
+      if (staleFlags[latest]) status = CELL_STATUS.stale;
+      else if (a.type === "gate" && !a.ok) status = CELL_STATUS.flag;
+      else status = CELL_STATUS.done;
+    }
+    return { stage, count, status };
+  });
+  return { stages, staleCount: staleFlags.filter(Boolean).length };
+}
+
+const notRunCells = () =>
+  STAGES.map((stage) => ({ stage, text: stage, status: CELL_STATUS.notrun }));
+
+/**
+ * @param {{ briefId: string, outcome:
+ *   {kind:"ledger", attempts: object[], staleFlags: boolean[]} |
+ *   {kind:"no-ledger"} | {kind:"error", error: Error} }} opts
+ */
+export function pipelineRowModel({ briefId, outcome }) {
+  if (outcome.kind === "error") {
+    return {
+      briefId,
+      state: "error",
+      cells: [],
+      note: ledgerErrorText({ briefId, error: outcome.error }),
+      noteTone: "error",
+    };
+  }
+  if (outcome.kind === "no-ledger" || outcome.attempts.length === 0) {
+    return { briefId, state: "no-ledger", cells: notRunCells(), note: "no ledger yet", noteTone: "notrun" };
+  }
+  const { stages, staleCount } = summarizePipeline(outcome);
+  return {
+    briefId,
+    state: "ledger",
+    cells: stages.map((s) => ({
+      stage: s.stage,
+      text: s.count > 0 ? `${s.stage} ${s.count}` : s.stage,
+      status: s.status,
+    })),
+    note: staleCount > 0 ? `${staleCount} stale` : "all fresh",
+    noteTone: staleCount > 0 ? "stale" : "done",
+  };
+}
+
+/**
+ * Brief ids for the Forge tab: the brief index order first, then any
+ * ledgered brief the index does not list (never hide a ledger).
+ * @param {{ briefsIndex: {briefs:{id:string}[]} | null, runsIndex: {briefs:string[]} }} opts
+ */
+export function forgeBriefIds({ briefsIndex, runsIndex }) {
+  const ids = [];
+  const add = (id) => {
+    if (typeof id === "string" && !ids.includes(id)) ids.push(id);
+  };
+  if (briefsIndex && Array.isArray(briefsIndex.briefs)) briefsIndex.briefs.forEach((b) => add(b && b.id));
+  if (runsIndex && Array.isArray(runsIndex.briefs)) runsIndex.briefs.forEach(add);
+  return ids;
+}
+
+/**
+ * Empty-state text for a Forge data source that did not load.
+ * @param {{ path: string, error: Error }} opts
+ */
+export function forgeSourceFailureText({ path, error }) {
+  const message = error && error.message ? error.message : String(error);
+  return /HTTP 404\b/.test(message)
+    ? `not packaged in this image: ${path}`
+    : `source failed: ${path} — ${message}`;
+}
+
+/** DOM for one pipeline row. @param {ReturnType<typeof pipelineRowModel>} model */
+export function buildPipelineRow(model) {
   const row = document.createElement("div");
-  row.className = "forge-row";
+  row.className = "forge-row forge-pipeline-row";
+  row.dataset.brief = model.briefId;
+  row.dataset.state = model.state;
+  if (model.state === "error") row.dataset.error = "ledger";
+
   const label = document.createElement("span");
   label.className = "forge-brief-id";
-  label.textContent = briefId;
+  label.textContent = model.briefId;
   row.append(label);
 
-  let anyStale = false;
-  attempts.forEach((a, i) => {
-    const cell = document.createElement("button");
-    cell.type = "button";
-    cell.className = "forge-cell";
-    cell.dataset.entryIndex = String(i);
-    const labelTxt =
-      a.type === "blockin"
-        ? "blockin"
-        : a.type === "render"
-          ? `render s${a.seed}${a.hires ? " hi" : ""}`
-          : a.type === "gate"
-            ? "gate"
-            : a.type === "gate-skipped"
-              ? "gate ⤼skip"
-              : a.type === "intake"
-                ? "intake"
-                : a.type;
-    cell.textContent = labelTxt;
-    let status = CELL_STATUS.done;
-    if (a.type === "gate" && !a.ok) status = CELL_STATUS.flag;
-    if (staleFlags && staleFlags[i]) {
-      status = CELL_STATUS.stale;
-      anyStale = true;
-    }
-    cell.classList.add(`is-${status}`);
+  for (const c of model.cells) {
+    const cell = document.createElement("span");
+    cell.className = `forge-cell is-${c.status}`;
+    cell.dataset.stage = c.stage;
+    cell.textContent = c.text;
     row.append(cell);
-  });
-
-  // Trailing not-run placeholders so pipelines read left→right consistently.
-  // A gate-skipped entry means the gate stage WAS reached (it chose to skip),
-  // so it counts as "gate seen" — no duplicate trailing gate placeholder.
-  const seen = new Set(
-    attempts.map((a) => (a.type === "gate-skipped" ? "gate" : a.type)),
-  );
-  for (const stage of ["blockin", "render", "gate", "intake"]) {
-    if (!seen.has(stage)) {
-      const ph = document.createElement("span");
-      ph.className = "forge-cell is-notrun";
-      ph.textContent = stage;
-      row.append(ph);
-    }
   }
-  row.dataset.anyStale = String(anyStale);
+
+  const note = document.createElement("span");
+  note.className = `forge-row-note is-${model.noteTone}`;
+  note.textContent = model.note;
+  row.append(note);
   return row;
 }
 

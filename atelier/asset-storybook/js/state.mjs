@@ -32,6 +32,9 @@ export const REVIEW_QUEUE_URL = "../../content/review-queue.json";
 export const RUNS_INDEX_URL = "../../atelier/art-forge/runs/_index.json";
 export const RUNS_BASE_URL = "../../atelier/art-forge/runs/";
 export const BRIEFS_BASE_URL = "../../atelier/art-forge/briefs/";
+// F-053: every brief id, including briefs with no ledger yet (a static page
+// cannot list briefs/). Parity with briefs/*.json: tests/forge-briefs-index.test.mjs.
+export const FORGE_BRIEFS_INDEX_URL = "./forge-briefs-index.json";
 // F-050: root of the art-forge tree, for linking ledger `out` PNG paths.
 export const ART_FORGE_ROOT_URL = "../../atelier/art-forge/";
 // Synthetic sidebar classes for the verdict filters (F-038 Phase 4). Not asset

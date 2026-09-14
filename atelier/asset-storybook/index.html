@@ -1101,6 +1101,33 @@
         color: var(--err);
       }
 
+      .forge-pipeline-row .forge-cell {
+        cursor: default;
+      }
+
+      .forge-row[data-error] {
+        border-color: #8a3535;
+      }
+
+      .forge-row-note {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        color: var(--text-dim);
+      }
+
+      .forge-row-note.is-done {
+        color: #8fe3b0;
+      }
+
+      .forge-row-note.is-stale {
+        color: #ff9d9d;
+      }
+
+      .forge-row-note.is-error {
+        color: var(--err);
+      }
+
       /* F-039 — Forge gallery: render cards grouped by recipe version */
       .forge-batch {
         margin-bottom: 1.1rem;

@@ -11,6 +11,7 @@ import {
   RUNS_INDEX_URL,
   RUNS_BASE_URL,
   BRIEFS_BASE_URL,
+  FORGE_BRIEFS_INDEX_URL,
   REVIEW_QUEUE_URL,
   ART_FORGE_ROOT_URL,
   fetchJson,
@@ -22,7 +23,7 @@ import {
   parseLedgerText,
 } from "./staleness.mjs";
 import { buildForgeGallery } from "./gallery.mjs";
-import { ledgerErrorText } from "./pipeline.mjs";
+import { buildPipelineRow, forgeBriefIds, forgeSourceFailureText, pipelineRowModel } from "./pipeline.mjs";
 import { openInfoDetail } from "../view/DetailOverlay.mjs";
 import { getStore } from "../review/ui.mjs";
 import {
@@ -322,88 +323,91 @@ function openOrderForm(row, rerunBtn, order) {
   reason.focus();
 }
 
-/**
- * Run ledgers are NDJSON (header line + one entry per line — see
- * atelier/art-forge/lib/run-ledger.mjs), so `res.json()` would throw on every
- * real ledger. Fetch text and parse with parseLedgerText instead. _index.json
- * and briefs are single JSON docs and keep using fetchJson.
- */
+/** null when runs/<brief>.json does not exist (HTTP 404): that brief has no ledger yet. */
 async function fetchLedger(briefId) {
   const res = await fetch(RUNS_BASE_URL + briefId + ".json");
+  if (res.status === 404) return null;
   if (!res.ok) throw new Error("ledger " + briefId + ": HTTP " + res.status);
   return parseLedgerText(await res.text());
 }
 
+function textLine(className, text) {
+  const p = document.createElement("p");
+  p.className = className;
+  p.textContent = text;
+  return p;
+}
+
 async function loadRows(rowsHost) {
-  let index;
+  let runsIndex;
   try {
-    index = await fetchJson(RUNS_INDEX_URL, "runs-index");
+    runsIndex = await fetchJson(RUNS_INDEX_URL, "runs-index");
   } catch (err) {
-    console.warn(
-      "[asset-storybook] runs/_index.json unavailable — Forge shows no runs:",
-      err,
+    console.warn("[asset-storybook] runs/_index.json unavailable:", err);
+    rowsHost.appendChild(
+      textLine("empty-state", forgeSourceFailureText({ path: "atelier/art-forge/runs/_index.json", error: err })),
     );
-  }
-  if (!index || !Array.isArray(index.briefs) || index.briefs.length === 0) {
-    const empty = document.createElement("p");
-    empty.className = "empty-state";
-    empty.textContent = EMPTY_RUNS_TEXT;
-    rowsHost.appendChild(empty);
     return;
   }
 
-  for (const briefId of index.briefs) {
-    // Ledger is required for a row, brief is optional (absence just
-    // disables staleness for that row).
+  let briefsIndex = null;
+  try {
+    briefsIndex = await fetchJson(FORGE_BRIEFS_INDEX_URL, "forge-briefs-index");
+  } catch (err) {
+    // Degrade to ledgered briefs only, but say so: never silent.
+    const line = textLine(
+      "source-error",
+      forgeSourceFailureText({ path: "atelier/asset-storybook/forge-briefs-index.json", error: err }),
+    );
+    line.dataset.error = "briefs-index";
+    rowsHost.appendChild(line);
+  }
+
+  const briefIds = forgeBriefIds({ briefsIndex, runsIndex });
+  if (briefIds.length === 0) {
+    rowsHost.appendChild(textLine("empty-state", EMPTY_RUNS_TEXT));
+    return;
+  }
+  // "No ledger yet" comes from the ledger file itself (HTTP 404), NOT from
+  // runs/_index.json: that index is rebuilt only by hand (ledger-index.mjs),
+  // appendAttempt never updates it, and nothing checks it against runs/*.json,
+  // so a brief whose ledger exists but isn't indexed would be hidden. The
+  // index is still fetched above as the "is runs/ packaged at all?" probe.
+  for (const briefId of briefIds) {
+    // Brief is optional (absence just disables staleness for that row).
     let ledger = null;
     let brief = null;
     try {
       [ledger, brief] = await Promise.all([
         fetchLedger(briefId),
-        fetchJson(BRIEFS_BASE_URL + briefId + ".json", "brief " + briefId).catch(
-          () => null,
-        ),
+        fetchJson(BRIEFS_BASE_URL + briefId + ".json", "brief " + briefId).catch(() => null),
       ]);
-    } catch (err) {
-      console.warn("[asset-storybook] ledger unavailable for " + briefId, err);
-      const errLine = document.createElement("p");
-      errLine.className = "source-error";
-      errLine.dataset.error = "ledger";
-      errLine.textContent = ledgerErrorText({ briefId, error: err });
-      rowsHost.appendChild(errLine);
+    } catch (error) {
+      console.warn("[asset-storybook] ledger unreadable for " + briefId, error);
+      rowsHost.appendChild(buildPipelineRow(pipelineRowModel({ briefId, outcome: { kind: "error", error } })));
       continue;
     }
 
-    // An empty ledger file parses to null — nothing recorded yet.
-    const attempts = ledger && Array.isArray(ledger.attempts) ? ledger.attempts : [];
+    // 404 (fetchLedger → null) or an empty file (parses to null): nothing recorded yet.
+    if (ledger === null) {
+      rowsHost.appendChild(buildPipelineRow(pipelineRowModel({ briefId, outcome: { kind: "no-ledger" } })));
+      continue;
+    }
+    const attempts = Array.isArray(ledger.attempts) ? ledger.attempts : [];
     attemptsByBrief.set(briefId, attempts);
 
     try {
-      let staleFlags;
-      if (brief) {
-        const currentHash = await digestHex(canonicalBriefString(brief));
-        staleFlags = markStale(attempts, currentHash);
-      } else {
-        staleFlags = attempts.map(() => false);
-      }
-
-      appendGallery(rowsHost, briefId, buildForgeGallery(attempts, staleFlags));
-    } catch (err) {
-      // One bad brief must not abort the remaining rows.
-      console.error(
-        "[asset-storybook] could not render pipeline row for " + briefId + ":",
-        err,
+      const staleFlags = brief
+        ? markStale(attempts, await digestHex(canonicalBriefString(brief)))
+        : attempts.map(() => false);
+      rowsHost.appendChild(
+        buildPipelineRow(pipelineRowModel({ briefId, outcome: { kind: "ledger", attempts, staleFlags } })),
       );
-      const errRow = document.createElement("div");
-      errRow.className = "forge-row";
-      const errLabel = document.createElement("span");
-      errLabel.className = "forge-brief-id";
-      errLabel.textContent = briefId;
-      const errMsg = document.createElement("span");
-      errMsg.className = "forge-cell is-notrun";
-      errMsg.textContent = "render error — see console";
-      errRow.append(errLabel, errMsg);
-      rowsHost.appendChild(errRow);
+      appendGallery(rowsHost, briefId, buildForgeGallery(attempts, staleFlags));
+    } catch (error) {
+      // One bad brief must not abort the remaining rows.
+      console.warn("[asset-storybook] could not render pipeline row for " + briefId, error);
+      rowsHost.appendChild(buildPipelineRow(pipelineRowModel({ briefId, outcome: { kind: "error", error } })));
     }
   }
 }
