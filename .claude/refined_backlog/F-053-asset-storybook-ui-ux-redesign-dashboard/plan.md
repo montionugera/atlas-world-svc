@@ -22,6 +22,7 @@
 - UI copy, verbatim (from the owner's "Forge" component list): `no ledger yet`, `png missing (local only)`, `saved in this browser`, `reason required`, `not packaged in this image`, `source failed`, `all fresh`, `ledger <brief>.json unreadable (line N)`.
 - Commits: conventional subjects, one per task, **never `--amend`**, `git add` explicit paths only.
 - **Do not run `atelier/art-forge/tests/blockin.test.mjs` or `atelier/art-forge/tests/env-graph.test.mjs` before Task 2 Step 5 is committed.** Both append to the tracked ledger `atelier/art-forge/runs/A1-ART-02.json` today. If the art-forge suite has to run earlier, pass explicit file paths that leave those two out.
+- **Red on behaviour, not on import.** A test file that imports a name which doesn't exist yet fails as a whole at load time, which proves nothing about the assertions. Before every "Run and confirm failure" step that expects `does not provide an export named …` or `Cannot find module …`, first add **stub exports** with the final names (constants as `undefined` / `[]`, functions that `throw new Error("not implemented")`; for a new module, create the file with only those stubs). Then run the red step: the file must load and the **assertions** must fail. Commit the stubs together with the real implementation, not separately.
 - All commands run from the worktree root: `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-053-asset-storybook-ui-ux-redesign-dashboard`. **Suite** means `node --test atelier/asset-storybook/tests/*.test.mjs` (107 tests pass at `a5644cbd`).
 
 ---
@@ -35,18 +36,18 @@
 | 1c | The reader crashes on blank lines | `js/forge/staleness.mjs:76-80` `parseLedgerText` throws on the blank line, and `js/forge/forge.mjs:366-369` swallows it with `console.warn` + `continue`, so the brief silently disappears | **Correct** |
 | 2a | `run-ledger.mjs` appends `"\n"+entry` with no newline check | `atelier/art-forge/lib/run-ledger.mjs:28-31` does exactly that. `readLedger` (`:34-42`) `JSON.parse`s every line, blanks included | **Correct** |
 | 2b | `blockin.test.mjs:~219` writes tmp entries into the committed ledger, 9 of them | `blockin.test.mjs:218-231` calls `renderDepthPng` with a tmp `outPath`, and `generate/blockin.mjs:154` appends to the module constant `RUNS_DIR`. Nine entries with `var/folders/...` `out` paths sit at lines 187, 189, …, 203 | **Correct, but incomplete** |
-| 2b′ | (not given) | Each tmp entry is followed 0.19–0.42 s later by a `blockin` entry with the same `briefHash 9c10d497…` and `out: out/control/depth/A1-ART-02-depth.png` (lines 188, 190, …, 204). They come from `env-graph.test.mjs:263` (`generateEnv` `--dry-run` renders the depth control and appends at `generate/env.mjs:885` → `blockin.mjs:154`). **18 test-written entries in total, not 9.** Task 2 removes all 18 and isolates both test files | **Premise corrected** |
+| 2b′ | (not given) | Each tmp entry is followed 0.19–0.47 s later by a `blockin` entry with the same `briefHash 9c10d497…` and `out: out/control/depth/A1-ART-02-depth.png` (lines 188, 190, …, 204). They come from `env-graph.test.mjs:263` (`generateEnv` `--dry-run` renders the depth control and appends at `generate/env.mjs:885` → `blockin.mjs:154`). **At least 18 test-written entries, not 9.** 18 is a lower bound: the ledger holds 117 `blockin` entries with that default depth `out`, and older `env-graph` dry-run entries written before `blockin.test.mjs` existed have no tmp partner, so they can't be told apart from real block-ins. Task 2 removes the 18 identifiable ones and isolates both test files | **Premise corrected** |
 | 3 | `buildPipelineRow` has 0 callers | `git grep buildPipelineRow` finds only its definition, `js/forge/pipeline.mjs:19`. It also emits **one cell per attempt**, which would be 202 cells for A1-ART-02, so it is rebuilt around per-stage counts instead of just being wired in | **Correct, and the function needs reshaping** |
-| 3′ | Briefs A1-ART-03/06/07 have no ledger | `atelier/art-forge/briefs/` holds 02, 03, 06 and 07. `runs/_index.json` lists only A1-ART-02. A static page cannot list a directory, so Task 3 adds a hand-maintained `forge-briefs-index.json` with a parity test (spec §7.1). Spec §7.1 puts it at `sb/`, which **doesn't exist yet** (spec P1 creates it). This plan puts it next to `env-index.json` / `maps-index.json` at the storybook root, where the existing sibling indexes live | **Adjusted location** |
+| 3′ | Briefs A1-ART-03/06/07 have no ledger | `atelier/art-forge/briefs/` holds 02, 03, 06 and 07. `runs/_index.json` lists only A1-ART-02. A static page cannot list a directory, so Task 3 adds a hand-maintained `forge-briefs-index.json` with a parity test (spec §7.1). Spec §7.1 puts it at `sb/forge-briefs-index.json`; `spec.md:12` defines `sb/` as shorthand for `atelier/asset-storybook/`, not a new directory. So the file lives at `atelier/asset-storybook/forge-briefs-index.json`, next to `env-index.json` / `maps-index.json`, exactly where the spec wants it, and no later move is needed. `runs/_index.json` is rebuilt only by hand (`atelier/art-forge/ledger-index.mjs`; `appendAttempt` never updates it, and no test checks it against `runs/*.json`), so Task 3 does **not** use it to decide "no ledger yet" (see Task 3 Step 5) | **Correct (location as spec)** |
 | 4 | 58 of 59 PNGs are gitignored or local-only | The ledger has 59 `render` entries. **0 of 59** `out` PNGs are git-tracked (`atelier/art-forge/.gitignore`: `out/`, `*.png`), and the main checkout has 10 files in `out/env`. The page does **not** show broken-image icons today: `forge.mjs:127-134` swaps each failed `<img>` for a per-card "png missing — …" text, which repeats 59 times. Task 4 collapses that into one notice per batch **and keeps the cards clickable**, since run detail and ↻ work orders hang off the cards | **Count corrected, symptom restated** |
 | 5 | Work orders are lost on reload | `forge.mjs:40` `const sessionOrders = []` lives only in module memory | **Correct** |
 | 6 | Dockerfile + .dockerignore don't ship `atelier/art-forge` | `atelier/asset-storybook/Dockerfile:23-57` has no `atelier/art-forge` COPY. `atelier/asset-storybook/Dockerfile.dockerignore` is `*` plus a whitelist without art-forge. The storybook's `Dockerfile.dockerignore` (BuildKit's per-Dockerfile ignore) is the file that matters, not the root `.dockerignore` | **Correct (path: `atelier/asset-storybook/Dockerfile`)** |
 | 7a | CI workflow filename | `.github/workflows/ci.yml`: storybook step at `:255-256`, art-forge step at `:284-285`. `scripts/precheck.sh` `storybook_tests()` is at `:167-171` and `art_forge_tests()` at `:163-165` | **Verified** |
-| 7b | Existing headless tooling | No tracked `package.json` declares puppeteer or playwright. `puppeteer@14.4.1` exists only as a transitive dependency of `@asyncapi/html-template` (`pnpm-lock.yaml:4879`), is from 2022, and downloads its own Chromium, so it is not usable. System Chrome is present locally (`Google Chrome 152.0.7977.83`) and on `ubuntu-latest` (`google-chrome`). **Choice: a zero-dependency DevTools-protocol client over `--remote-debugging-pipe`.** The spec's `--dump-dom` + iframe harness (§9 "Smoke harness") cannot see console errors thrown by the storybook's own module scripts, and "no console errors" is an acceptance criterion here. The spec's other smoke contracts are kept: path `tests/smoke/run.mjs`, `$CHROME_BIN` exclusive, `SKIPPED: no Chrome` exit 0, `STORYBOOK_SMOKE_REQUIRED=1` exit 2, `SMOKE_BASE`, and server `fail`/`override` variants | **Deviation from spec, for the reason above** |
+| 7b | Existing headless tooling | No tracked `package.json` declares puppeteer or playwright. `puppeteer@14.4.1` exists only as a transitive dependency of `@asyncapi/html-template` (`pnpm-lock.yaml:3842` and `:9542`), is from 2022, and downloads its own Chromium, so it is not usable. System Chrome is present locally (`Google Chrome 152.0.7977.83`) and on `ubuntu-latest` (`google-chrome`). **Choice: a zero-dependency DevTools-protocol client over `--remote-debugging-pipe`.** The spec's `--dump-dom` + iframe harness (§9 "Smoke harness") cannot see console errors thrown by the storybook's own module scripts, and "no console errors" is an acceptance criterion here. The spec's other smoke contracts are kept: path `tests/smoke/run.mjs`, `$CHROME_BIN` exclusive, `SKIPPED: no Chrome` exit 0, `STORYBOOK_SMOKE_REQUIRED=1` exit 2, `SMOKE_BASE`, and server `fail`/`override` variants | **Deviation from spec, for the reason above** |
 | — | The owner's "Forge" component list (design reference) | Not in the repo (`git grep` finds none of the copy strings). The copy is taken verbatim from the coordinator's brief | **Noted** |
 
 **Filed, not fixed (out of scope):**
-- `generateEnv --dry-run` is not side-effect free. It writes `out/control/depth/*.png` and appends a real `blockin` ledger entry (`generate/env.mjs:885-889`). One-line idea for the backlog.
+- `generateEnv --dry-run` is not side-effect free. It writes `out/control/depth/*.png` and appends a real `blockin` ledger entry (`generate/env.mjs:885-889`). Filed as a one-line note in "Follow-ups (filed, not fixed)" at the end of this plan.
 - The two `env-index` cases are red on checkouts holding only part of `out/env` (spec §9 baseline, already known).
 
 ## File map
@@ -258,7 +259,7 @@ test("ledgerErrorText names the ledger file, the line when known, and the messag
 - [ ] **Step 6: Run and confirm failure**
 
 Run: `node --test atelier/asset-storybook/tests/forge-ledger-blank-lines.test.mjs`
-Expected: FAIL. The import error `does not provide an export named 'ledgerErrorText'` fails the whole file.
+Expected: FAIL. Without stubs the import error `does not provide an export named 'ledgerErrorText'` fails the whole file, so first add a stub `export function ledgerErrorText() { throw new Error("not implemented"); }` to `js/forge/pipeline.mjs` (Global Constraints, "Red on behaviour"). With the stub in place the file loads and the blank-line parser and error-text assertions fail.
 
 - [ ] **Step 7: Implement.** Replace the body of `parseLedgerText` in `atelier/asset-storybook/js/forge/staleness.mjs` (lines 56-82) with:
 
@@ -476,7 +477,14 @@ test("committed ledgers hold no test-sandbox entries (no absolute or ../ out pat
 - [ ] **Step 2: Run and confirm failure**
 
 Run: `node --test atelier/art-forge/tests/run-ledger.test.mjs`
-Expected: FAIL at import, `does not provide an export named 'resolveRunsDir'`.
+First add stubs to `atelier/art-forge/lib/run-ledger.mjs`: `export const RUNS_DIR_ENV = undefined;` and `export function resolveRunsDir() { throw new Error("not implemented"); }` (Global Constraints, "Red on behaviour"). Without them the file fails at import with `does not provide an export named 'resolveRunsDir'` and no assertion runs.
+Expected with the stubs: the file loads, and these fail **on behaviour** against the current writer/reader:
+- "adds no blank line when the file already ends with a newline": today's `appendAttempt` prepends `"\n"`, so the text holds a blank line.
+- "readLedger skips blank lines …": today's `readLedger` `JSON.parse`s the blank line and throws `SyntaxError`.
+- "`ART_FORGE_RUNS_DIR` overrides …": the stub throws.
+- "committed ledgers hold no test-sandbox entries": the 9 `../../…/var/folders/…` `out` paths are still in `A1-ART-02.json` until Step 6.
+
+"appendAttempt separates entries when the existing file has no trailing newline" **passes** on current code (the old `"\n" + entry` already separates). It is a regression guard for the new newline check, not a red test. Don't count it as proof of failure.
 
 - [ ] **Step 3: Implement the ledger library.** Replace `atelier/art-forge/lib/run-ledger.mjs` with:
 
@@ -641,7 +649,7 @@ test("ISOLATION: this suite left the committed A1-ART-02 ledger byte-identical",
 
 Before editing, run `grep -n "^import" atelier/art-forge/tests/env-graph.test.mjs`. If `node:fs`, `node:os` or `node:path` is already imported, merge into that line instead of duplicating.
 
-- [ ] **Step 6: Remove the 18 test-written entries.** Each removed pair is a `var/folders` entry plus the default-path `blockin` entry that follows it with the same `briefHash` less than 1 s later (the `env-graph` dry-run run; see Premise 2b′).
+- [ ] **Step 6: Remove the 18 identifiable test-written entries.** Each removed pair is a `var/folders` entry plus the default-path `blockin` entry that follows it with the same `briefHash` less than 1 s later (measured gaps 0.19–0.47 s; the `env-graph` dry-run run; see Premise 2b′). 18 is a lower bound: older `env-graph` dry-run `blockin` entries that have no tmp partner look exactly like real block-ins and are left in place.
 
 ```bash
 node -e '
@@ -675,7 +683,7 @@ Expected output: `removed 18 kept lines 185`. Then run `grep -c "var/folders" at
 - [ ] **Step 7: Run the tests.** Now that Steps 3–5 are in place, running the whole art-forge suite is safe.
 
 Run: `node --test atelier/art-forge/tests/run-ledger.test.mjs 2>&1 | grep -E "^ℹ (tests|pass|fail)"`
-Expected: `ℹ tests 8`, `ℹ pass 8`, `ℹ fail 0`.
+Expected: `ℹ tests 7`, `ℹ pass 7`, `ℹ fail 0` (2 existing + 5 appended in Step 1).
 Run: `shasum atelier/art-forge/runs/*.json > "$TMPDIR/runs-before.sha"; node --test atelier/art-forge/tests/*.test.mjs 2>&1 | grep -E "^ℹ (pass|fail)"; shasum atelier/art-forge/runs/*.json | diff "$TMPDIR/runs-before.sha" - && echo LEDGERS-UNTOUCHED`
 Expected: `ℹ fail 0` and `LEDGERS-UNTOUCHED`. This needs `magick` on PATH (`scripts/system-deps.json`). If it is missing, say so; don't claim green.
 Run: `node --test atelier/asset-storybook/tests/*.test.mjs 2>&1 | grep -E "^ℹ (tests|pass|fail)"`
@@ -840,7 +848,7 @@ test("forgeSourceFailureText says 'not packaged in this image' for a 404 and 'so
 - [ ] **Step 2: Run and confirm failure**
 
 Run: `node --test atelier/asset-storybook/tests/forge-briefs-index.test.mjs atelier/asset-storybook/tests/forge-pipeline.test.mjs`
-Expected: FAIL. `ENOENT … forge-briefs-index.json` and `does not provide an export named 'STAGES'`.
+Expected: FAIL. `ENOENT … forge-briefs-index.json` (a real behavioural red: the file is missing) and, without stubs, `does not provide an export named 'STAGES'`. So first add stubs for `STAGES`, `summarizePipeline`, `pipelineRowModel`, `forgeBriefIds` and `forgeSourceFailureText` to `js/forge/pipeline.mjs` (Global Constraints, "Red on behaviour"). Then `forge-pipeline.test.mjs` loads and its assertions fail.
 
 - [ ] **Step 3: Implement the data file and URL.** Create `atelier/asset-storybook/forge-briefs-index.json`:
 
@@ -852,7 +860,7 @@ Expected: FAIL. `ENOENT … forge-briefs-index.json` and `does not provide an ex
 }
 ```
 
-In `atelier/asset-storybook/js/state.mjs`, after line 35 (`BRIEFS_BASE_URL`), add:
+In `atelier/asset-storybook/js/state.mjs`, after line 34 (`BRIEFS_BASE_URL`), add:
 
 ```js
 // F-053: every brief id, including briefs with no ledger yet (a static page
@@ -1001,6 +1009,19 @@ export function buildPipelineRow(model) {
 - [ ] **Step 5: Wire it into `loadRows`.** In `atelier/asset-storybook/js/forge/forge.mjs`:
 - Add `FORGE_BRIEFS_INDEX_URL,` to the `../state.mjs` import (lines 9-17).
 - Change the Task 1 import to `import { buildPipelineRow, forgeBriefIds, forgeSourceFailureText, pipelineRowModel } from "./pipeline.mjs";`. `ledgerErrorText` is no longer used directly in this file.
+- Change `fetchLedger` (lines 330-334) so a missing ledger file is "no ledger yet", not an error:
+
+```js
+/** null when runs/<brief>.json does not exist (HTTP 404): that brief has no ledger yet. */
+async function fetchLedger(briefId) {
+  const res = await fetch(RUNS_BASE_URL + briefId + ".json");
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error("ledger " + briefId + ": HTTP " + res.status);
+  return parseLedgerText(await res.text());
+}
+```
+
+Why the ledger file and not a parity test on `runs/_index.json`: a parity test only catches drift at test time, and the page would still trust a second, hand-rebuilt source of truth between runs and in any checkout where the index was not rebuilt. Asking for the ledger itself has no second source that can drift. It costs one extra request per unledgered brief (3 today), and the smoke's console listener already ignores `Log.entryAdded` entries with `source: "network"` (Task 7), so the expected 404s are not counted as page errors.
 - Replace `loadRows` (lines 336-403) with:
 
 ```js
@@ -1041,16 +1062,13 @@ async function loadRows(rowsHost) {
     rowsHost.appendChild(textLine("empty-state", EMPTY_RUNS_TEXT));
     return;
   }
-  const ledgered = new Set(Array.isArray(runsIndex.briefs) ? runsIndex.briefs : []);
-
+  // "No ledger yet" comes from the ledger file itself (HTTP 404), NOT from
+  // runs/_index.json: that index is rebuilt only by hand (ledger-index.mjs),
+  // appendAttempt never updates it, and nothing checks it against runs/*.json,
+  // so a brief whose ledger exists but isn't indexed would be hidden. The
+  // index is still fetched above as the "is runs/ packaged at all?" probe.
   for (const briefId of briefIds) {
-    if (!ledgered.has(briefId)) {
-      rowsHost.appendChild(buildPipelineRow(pipelineRowModel({ briefId, outcome: { kind: "no-ledger" } })));
-      continue;
-    }
-
-    // Ledger is required for a row, brief is optional (absence just
-    // disables staleness for that row).
+    // Brief is optional (absence just disables staleness for that row).
     let ledger = null;
     let brief = null;
     try {
@@ -1064,8 +1082,12 @@ async function loadRows(rowsHost) {
       continue;
     }
 
-    // An empty ledger file parses to null — nothing recorded yet.
-    const attempts = ledger && Array.isArray(ledger.attempts) ? ledger.attempts : [];
+    // 404 (fetchLedger → null) or an empty file (parses to null): nothing recorded yet.
+    if (ledger === null) {
+      rowsHost.appendChild(buildPipelineRow(pipelineRowModel({ briefId, outcome: { kind: "no-ledger" } })));
+      continue;
+    }
+    const attempts = Array.isArray(ledger.attempts) ? ledger.attempts : [];
     attemptsByBrief.set(briefId, attempts);
 
     try {
@@ -1127,7 +1149,7 @@ Expected: `ℹ tests 123`, `ℹ fail 0` (114 + 9).
 Run: `git grep -n buildPipelineRow -- atelier/asset-storybook/js | wc -l`
 Expected: `3` or more (the definition plus the calls in `forge.mjs`).
 
-- [ ] **Step 8: Manual check.** Serve with `python3 -m http.server 6007` at the worktree root and open the Forge tab. Expected: four rows. `A1-ART-02` shows `blockin 125 · render 59 · gate · intake` and a stale count or `all fresh`. `A1-ART-03`, `A1-ART-06` and `A1-ART-07` each read `no ledger yet`. DevTools Console shows no red errors.
+- [ ] **Step 8: Manual check.** Serve with `python3 -m http.server 6007` at the worktree root and open the Forge tab. Expected: four rows. `A1-ART-02` shows `blockin 125 · render 59 · gate · intake` and a stale count or `all fresh`. 125 is the count left after Task 2 removes the 18 identifiable test entries (143 − 18); older untraceable dry-run entries stay in it (Premise 2b′). The stale count covers **all** attempts, `blockin` included, not only renders, so it can exceed 59. `A1-ART-03`, `A1-ART-06` and `A1-ART-07` each read `no ledger yet`. DevTools Console shows no red JavaScript errors. The three `GET …/runs/A1-ART-0{3,6,7}.json 404` network lines are expected: that 404 is how the page learns there is no ledger yet.
 
 - [ ] **Step 9: Commit**
 
@@ -1150,7 +1172,7 @@ git commit -m "feat(F-053): one Forge pipeline row per brief with stage counts a
 
 **Interfaces:**
 - Consumes: `buildForgeGallery` batches `{briefHash, cards:[{entry, stale, isDev, gate}]}` (existing).
-- Produces: `PNG_MISSING_LEAD = "png missing (local only)"`; `missingNoticeText({ count }) → string`; `buildForgeCard({ briefId, card, media: "image" | "none" })`.
+- Produces: `PNG_MISSING_LEAD = "png missing (local only)"`; `missingNoticeText({ count }) → string`, where `count` is the number of **missing** PNGs in the batch (every card is probed); `buildForgeCard({ briefId, card, media: "image" | "none" })`.
 
 - [ ] **Step 1: Write the failing test** `atelier/asset-storybook/tests/forge-missing-notice.test.mjs`
 
@@ -1178,7 +1200,8 @@ test("the notice counts renders with correct plurals and names the gitignored di
 - [ ] **Step 2: Run and confirm failure**
 
 Run: `node --test atelier/asset-storybook/tests/forge-missing-notice.test.mjs`
-Expected: FAIL, `does not provide an export named 'PNG_MISSING_LEAD'`.
+First add stubs `export const PNG_MISSING_LEAD = undefined;` and `export function missingNoticeText() { throw new Error("not implemented"); }` to `js/forge/gallery.mjs` (Global Constraints, "Red on behaviour"). Without them the file fails at import with `does not provide an export named 'PNG_MISSING_LEAD'`.
+Expected with the stubs: FAIL on both assertions (`undefined !== "png missing (local only)"`, and `not implemented`).
 
 - [ ] **Step 3: Implement the copy helper.** Append to `atelier/asset-storybook/js/forge/gallery.mjs`:
 
@@ -1186,7 +1209,10 @@ Expected: FAIL, `does not provide an export named 'PNG_MISSING_LEAD'`.
 /** F-053: exact lead copy for renders whose PNG is not in this checkout/image. */
 export const PNG_MISSING_LEAD = "png missing (local only)";
 
-/** One notice per batch instead of one per card. @param {{ count: number }} opts */
+/**
+ * One notice per batch instead of one per card.
+ * @param {{ count: number }} opts count = renders in this batch whose PNG is missing (not the batch size)
+ */
 export function missingNoticeText({ count }) {
   const noun = count === 1 ? "render" : "renders";
   return (
@@ -1208,8 +1234,8 @@ export function missingNoticeText({ count }) {
     img.loading = "lazy";
     img.decoding = "async";
     img.addEventListener("error", () => {
-      // The batch probe found the newest PNG, but this older one is gone —
-      // say so per card (rare: a partially cleaned out/).
+      // The per-card probe loaded this PNG, but the real load failed anyway
+      // (rare: the file was removed in between). Say so on this card.
       const missing = document.createElement("div");
       missing.className = "forge-card-missing";
       missing.textContent = PNG_MISSING_LEAD;
@@ -1237,10 +1263,15 @@ function probeImage(src) {
 }
 
 async function appendGallery(rowsHost, briefId, batches) {
-  // One request per batch: probe its newest render. Missing means the batch
-  // collapses to one notice + image-less cards instead of N broken images.
+  // Probe EVERY card, not just the newest: out/ can be partly cleaned, and a
+  // PNG that is on disk must render even when a newer one in its batch is
+  // gone. Missing cards go image-less and the batch gets ONE notice counting
+  // only the missing ones. A loaded probe is in the browser cache, so the
+  // card's own <img> reuses it.
   const present = await Promise.all(
-    batches.map((batch) => probeImage(ART_FORGE_ROOT_URL + batch.cards[0].entry.out)),
+    batches.map((batch) =>
+      Promise.all(batch.cards.map((card) => probeImage(ART_FORGE_ROOT_URL + card.entry.out))),
+    ),
   );
   batches.forEach((batch, i) => {
     const batchEl = document.createElement("div");
@@ -1262,19 +1293,20 @@ async function appendGallery(rowsHost, briefId, batches) {
     head.append(hashEl, meta);
     batchEl.appendChild(head);
 
-    if (!present[i]) {
+    const missingCount = present[i].filter((ok) => !ok).length;
+    if (missingCount > 0) {
       const notice = document.createElement("p");
       notice.className = "forge-batch-missing";
       notice.dataset.pngMissing = "batch";
-      notice.textContent = missingNoticeText({ count: batch.cards.length });
+      notice.textContent = missingNoticeText({ count: missingCount });
       batchEl.appendChild(notice);
     }
 
     const grid = document.createElement("div");
     grid.className = "forge-card-grid";
-    for (const card of batch.cards) {
-      grid.appendChild(buildForgeCard({ briefId, card, media: present[i] ? "image" : "none" }));
-    }
+    batch.cards.forEach((card, j) => {
+      grid.appendChild(buildForgeCard({ briefId, card, media: present[i][j] ? "image" : "none" }));
+    });
     batchEl.appendChild(grid);
     rowsHost.appendChild(batchEl);
   });
@@ -1308,7 +1340,7 @@ Expected: `ℹ tests 125`, `ℹ fail 0` (123 + 2).
 Run: `git grep -n -E -e "method\s*:" -e sendBeacon -e "<form" -e XMLHttpRequest -- atelier/asset-storybook/js ':!atelier/asset-storybook/js/map-builder*.mjs'; echo "exit=$?"`
 Expected: `exit=1`.
 
-- [ ] **Step 7: Manual check.** In this worktree `atelier/art-forge/out/` does not exist. Serve on 6007 and open Forge. Expected: each batch shows exactly one `png missing (local only) — N renders in this batch; …` line and no per-card "png missing" boxes. Clicking an image-less card opens the run-detail overlay, and ↻ is present on each card.
+- [ ] **Step 7: Manual check.** In this worktree `atelier/art-forge/out/` does not exist. Serve on 6007 and open Forge. Expected: each batch shows exactly one `png missing (local only) — N renders in this batch; …` line and no per-card "png missing" boxes. Clicking an image-less card opens the run-detail overlay, and ↻ is present on each card. Then check the partial case: copy one **older** (not the newest) PNG of one batch from the main checkout's `atelier/art-forge/out/` into this worktree's `out/` at its ledger `out` path, and reload. Expected: that card shows its image, the other cards stay image-less, and the notice count drops by exactly 1. Delete the copied file afterwards (`out/` is gitignored, so nothing gets committed).
 
 - [ ] **Step 8: Commit**
 
@@ -1407,7 +1439,8 @@ test("orders already in the committed queue are no longer pending in the buffer"
 - [ ] **Step 2: Run and confirm failure**
 
 Run: `node --test atelier/asset-storybook/tests/forge-workorder-buffer.test.mjs`
-Expected: FAIL, `Cannot find module … workorder-buffer.mjs`.
+First create `js/review/workorder-buffer.mjs` holding only stubs for the names the test imports (Global Constraints, "Red on behaviour"). Without it the file fails with `Cannot find module … workorder-buffer.mjs` and no assertion runs.
+Expected with the stubs: the file loads and all 5 tests FAIL on their assertions.
 
 - [ ] **Step 3: Implement** `atelier/asset-storybook/js/review/workorder-buffer.mjs`
 
@@ -1611,7 +1644,7 @@ Expected: FAIL, `Dockerfile lacks: COPY atelier/art-forge/runs atelier/art-forge
 ```dockerfile
 # F-053: the Forge tab fetches the run ledgers + briefs from atelier/art-forge/.
 # Without these the deployed storybook can only say "not packaged in this
-# image" for every brief. runs/ + briefs/ ONLY (~64 KB of committed JSON):
+# image" for every brief. runs/ + briefs/ ONLY (~54 KB of committed JSON):
 # out/ is gitignored local renders and the generators are build inputs.
 # Keep in sync with the "!" lines in ./Dockerfile.dockerignore.
 COPY atelier/art-forge/runs atelier/art-forge/runs
@@ -2086,7 +2119,9 @@ After the art-forge step (`run: node --test atelier/art-forge/tests/*.test.mjs`,
       # F-053: art-forge tests once appended 18 entries to the committed ledger.
       # A clean checkout must stay clean after the suite.
       - name: Art forge tests left the committed run ledgers untouched
-        run: git diff --exit-code -- atelier/art-forge/runs
+        # git status, not git diff: diff ignores untracked files, so a test that
+        # created a new runs/<brief>.json would slip past it.
+        run: test -z "$(git status --porcelain -- atelier/art-forge/runs)"
 ```
 
 - [ ] **Step 8: Verify the wiring locally**
@@ -2128,11 +2163,29 @@ git commit -m "test(F-053): headless Forge smoke and ledger-untouched guard in G
 ## Later phases (not planned here)
 
 - **Spec P0 remainder:** C0.4 grid geometry (`VirtualGrid` hidden-section collapse, card clipping), `data-boot`, and the `boot`/`detail-legacy`/`grid-geometry`/`nomanifest` smoke scenarios.
-- **Spec P1:** node-safe imports, the `sections.json` registry and `sb/` directory (the new `forge-briefs-index.json` moves there), shell/router/sidebar, the dashboard with its PIPELINES/TASKS/STATUS panels, and packaging of the catalogs + `.release.json`.
+- **Spec P1:** node-safe imports, the `sections.json` registry (`sb/` in the spec is shorthand for `atelier/asset-storybook/`, so `forge-briefs-index.json` is already where P1 expects it and does not move), shell/router/sidebar, the dashboard with its PIPELINES/TASKS/STATUS panels, and packaging of the catalogs + `.release.json`.
 - **Spec P2:** generic `ListView`/`RecordCard`/`DetailView`, the accept verdict, keyboard review loop, env renders reviewable with provenance, and DOM budgets.
 - **Spec P3:** Map Sheets/Forge/Story/Combat onto the shell (`forge-ledger` adapter, `js/review/workorder-form.mjs`, Forge export button removed), `#/s/pipelines` and `#/s/tasks`, and env-render thumbnails.
 - **Spec P4:** the status/progress index (`gen_status_index.mjs --check`).
 
+## Follow-ups (filed, not fixed)
+
+- [ ] **Step: file the out-of-scope idea.** Once Gate D passes, keep this line here as the backlog note (no `ps-release-workflow` idea command for it): `generateEnv --dry-run` is not side-effect free: it writes `out/control/depth/*.png` and appends a real `blockin` ledger entry (`atelier/art-forge/generate/env.mjs:885-889`); make dry-run write nothing, and then decide whether the older untraceable dry-run `blockin` entries in `runs/A1-ART-02.json` can be identified and removed.
+
 ## Audit trail
 
 - 2026-09-14: plan written against `a5644cbd` (feat/F-053 fast-forwarded to release/1.10). Premise corrections: 2b′ (18 test entries, not 9), 3 (builder reshaped, brief index location), 4 (0/59 tracked; the symptom was per-card text, not broken images), 7b (CDP pipe instead of the dump-dom harness). The CSS parse test moved from Task 7 into Task 1 as that task's failing test; it runs in the existing Suite, which CI and precheck already call.
+
+## Appendix — audit trail
+
+- 2026-09-14 self-grill-audit: verdict safe-with-fixes. Corrected:
+  - HIGH-1: Task 4 now probes every card instead of only the newest PNG per batch. PNGs that are present render; the notice counts only missing ones; a manual partial-`out/` check was added.
+  - HIGH-2: Task 3 decides "no ledger yet" from a 404 on `runs/<brief>.json` instead of `runs/_index.json`, which is rebuilt by hand and never parity-checked. Chosen over a parity test because it leaves no second source that can drift. The index stays only as the packaging probe.
+  - Task 2 Step 7 expects `tests 7` (2 existing + 5 new), not 8.
+  - The CI ledger guard uses `test -z "$(git status --porcelain -- atelier/art-forge/runs)"`, so untracked files are caught too.
+  - `sb/` is the spec's shorthand for `atelier/asset-storybook/` (`spec.md:12`). Premise 3′ and "Later phases" no longer imply a new directory or a move.
+  - "18 test-written entries" is now stated as a lower bound, and `blockin 125` as the post-cleanup count of identified entries, with the caveat.
+  - Every import-masked TDD red step now creates stub exports first. The run-ledger "no trailing newline" test is marked as a regression guard that passes on current code; the named reds fail on behaviour.
+  - Small facts: puppeteer at `pnpm-lock.yaml:3842`/`:9542`; `BRIEFS_BASE_URL` at `state.mjs:34`; pair gaps 0.19–0.47 s; runs + briefs ~54 KB; the stale count includes `blockin` attempts.
+  - The `generateEnv --dry-run` side-effect idea is filed as a one-line note under "Follow-ups (filed, not fixed)".
+- Open: none.
