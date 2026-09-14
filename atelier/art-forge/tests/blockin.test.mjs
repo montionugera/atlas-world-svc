@@ -17,6 +17,13 @@ import {
   segmentMassesFromBrief,
 } from "../generate/blockin.mjs";
 
+// F-053: renderDepthPng appends to the run ledger. Point every ledger write at
+// a sandbox so this suite never touches atelier/art-forge/runs/ (it had left 9
+// /var/folders entries in the committed A1-ART-02.json).
+const COMMITTED_LEDGER = new URL("../runs/A1-ART-02.json", import.meta.url);
+const committedLedgerBefore = readFileSync(COMMITTED_LEDGER, "utf8");
+process.env.ART_FORGE_RUNS_DIR = mkdtempSync(path.join(tmpdir(), "art-forge-runs-blockin-"));
+
 // The two masses the depth path collapsed: A1-ART-02's river and its far
 // bank are both plane "bg", so buildDepthSvg painted both #333333 and the
 // design's §1 histogram measured them as one 5.1% band. Under segment
@@ -300,5 +307,14 @@ test("colourMassesFromBrief rejects an unknown plane by name, same as the depth 
         height: 832,
       }),
     /typo-mass.*midground.*bg, mg, fg/s,
+  );
+});
+
+test("ISOLATION: this suite left the committed A1-ART-02 ledger byte-identical", () => {
+  rmSync(process.env.ART_FORGE_RUNS_DIR, { recursive: true, force: true });
+  assert.equal(
+    readFileSync(COMMITTED_LEDGER, "utf8"),
+    committedLedgerBefore,
+    "a blockin test appended to atelier/art-forge/runs/A1-ART-02.json",
   );
 });

@@ -1,5 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { loadForge } from "../generate/charsheet.mjs";
 import { renderDepthPng, renderSegmentPng } from "../generate/blockin.mjs";
 import {
@@ -21,6 +24,13 @@ import {
   townCriteriaForbiddenTokens,
   validateBrief,
 } from "../generate/env.mjs";
+
+// F-053: generateEnv --dry-run still renders the depth control and appends a
+// blockin entry (filed separately). Sandbox the ledger so this suite never
+// touches atelier/art-forge/runs/ (it had left 9 entries in A1-ART-02.json).
+const COMMITTED_LEDGER = new URL("../runs/A1-ART-02.json", import.meta.url);
+const committedLedgerBefore = readFileSync(COMMITTED_LEDGER, "utf8");
+process.env.ART_FORGE_RUNS_DIR = mkdtempSync(path.join(tmpdir(), "art-forge-runs-env-"));
 
 const forge = loadForge({ profile: "environment" });
 const graph = buildEnvGraph({
@@ -649,4 +659,13 @@ test("hires sampler conditions from plain CLIPTextEncode, not a ControlNetApplyA
 test("hires output filename is distinct from the base pass filename for the same seed", () => {
   const save = hiresGraph[HIRES_NODE.SAVE];
   assert.equal(save.inputs.filename_prefix, "art-forge/env/A1-ART-02-seed12345-hires");
+});
+
+test("ISOLATION: this suite left the committed A1-ART-02 ledger byte-identical", () => {
+  rmSync(process.env.ART_FORGE_RUNS_DIR, { recursive: true, force: true });
+  assert.equal(
+    readFileSync(COMMITTED_LEDGER, "utf8"),
+    committedLedgerBefore,
+    "an env-graph test appended to atelier/art-forge/runs/A1-ART-02.json",
+  );
 });
