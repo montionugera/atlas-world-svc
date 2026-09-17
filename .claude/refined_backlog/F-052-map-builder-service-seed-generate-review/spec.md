@@ -304,8 +304,8 @@ polling `GET /jobs` every 2 s if the stream drops.
 5. Review shows draft-vs-current sheets, per-continent deltas, sea:land vs the band from
    `manifest.json`, the WRITE/DELETE counts from the dry-run, and the named publish-time gates.
 6. Publish replaces the frozen world with the draft, redraws all `SHEETS`, rewrites the render
-   lock, and leaves `check_render_lock --check`, `check_content.mjs`, the SHEETS parity gate and
-   `node --test atelier/mapforge/tests/*.test.mjs` green; the seed in
+   lock, and leaves `check_render_lock --check`, `check_content.mjs --only=spine`, the
+   spine-emit drift check and the SHEETS parity gate green; the seed in
    `content/world/fabric/world.json` equals the draft's; a publish attempted on `main` is
    refused with 409 and changes nothing. Precision on "green" (final review I2): the
    builder itself keeps `check_render_lock --check`, `check_content.mjs --only=spine`, the
