@@ -2097,6 +2097,106 @@
       .mb-publish-failed h3 {
         margin: 0 0 0.6rem;
       }
+
+      /* ---------- Map Builder: History + log viewer (F-052 Task 19) ---------- */
+
+      .mb-history-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem 1.4rem;
+        margin-bottom: 1rem;
+        font-size: 0.8rem;
+      }
+      .mb-chip-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.3rem;
+      }
+      .mb-chip-label {
+        color: var(--text-dim);
+        margin-right: 0.2rem;
+      }
+      .mb-chip {
+        font-family: var(--sans);
+        font-size: 0.74rem;
+        color: var(--text-dim);
+        background: var(--bg-elev);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.2rem 0.6rem;
+        cursor: pointer;
+      }
+      .mb-chip[aria-pressed="true"] {
+        color: var(--text);
+        border-color: var(--accent);
+        font-weight: 600;
+      }
+      .mb-row-rerun .mb-cell-seed code {
+        padding-left: 1.2rem;
+        color: var(--text-dim);
+      }
+      .mb-cell-kind {
+        font-family: var(--mono);
+        color: var(--text-dim);
+      }
+      .mb-badge {
+        display: inline-block;
+        margin-left: 0.5rem;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text-dim);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.05rem 0.5rem;
+      }
+      .mb-badge[hidden] {
+        display: none;
+      }
+      .mb-cell-duration.mb-over {
+        color: var(--tier-seed);
+        font-weight: 600;
+      }
+      .mb-log-panel {
+        margin-top: 1.2rem;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--bg-card);
+      }
+      .mb-log-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.5rem 0.8rem;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.8rem;
+        color: var(--text-dim);
+      }
+      .mb-log-bar code {
+        font-family: var(--mono);
+        color: var(--text);
+      }
+      .mb-log-status {
+        flex: 1;
+      }
+      .mb-log-follow {
+        cursor: pointer;
+      }
+      .mb-log-open {
+        font-size: 0.78rem;
+      }
+      .mb-log-pre {
+        margin: 0;
+        padding: 0.6rem 0.8rem;
+        max-height: 24rem;
+        overflow: auto;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        line-height: 1.4;
+        color: var(--text);
+        white-space: pre;
+      }
     </style>
   </head>
   <body>

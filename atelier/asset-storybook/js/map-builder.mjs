@@ -15,6 +15,9 @@ import {
   decisionReasons,
   reviewDecided,
   publishFailure,
+  historyRows,
+  rerunChains,
+  logTailUrl,
 } from "./map-builder-model.mjs";
 
 /**
@@ -54,6 +57,17 @@ const POLL_MS = 2000;
 // bar disagreeing with reality — same risk POLL_MS already carries.
 const GENERATE_TARGET_MS = 6000;
 const GENERATE_FAIL_MS = 12000;
+// History (Task 19): every kind, not just drafts — the Start table's page
+// stays draft-only (Phase 1 contract), this wider page is fetched when the
+// History screen opens and on every resync while it is showing.
+const HISTORY_URL = apiBase + "/jobs?limit=200";
+// Only a draft has a documented duration target (budgets.json generate
+// row, see GENERATE_TARGET_MS); the other kinds show their plain duration.
+const HISTORY_TARGETS = { draft: GENERATE_TARGET_MS };
+const HISTORY_KINDS = ["draft", "dry-run", "publish", "undo"];
+const HISTORY_STATUSES = ["queued", "running", "succeeded", "failed", "cancelled", "interrupted"];
+const LOG_TAIL_LINES = 200;
+const LOG_POLL_MS = 1000;
 
 async function checkHealth() {
   try {
@@ -172,23 +186,30 @@ export async function mountMapBuilder(main) {
     connected: false,
   };
   let selectedJobId = null;
-  let activeScreen = "start"; // "start" | "build"
+  let activeScreen = "start"; // "start" | "build" | "history" | "review" | "publish"
 
-  // ---------- screen chrome: tab bar + two screens ----------
+  // ---------- screen chrome: tab bar + screens ----------
 
   const tabBar = el("div", { className: "mb-screen-tabs" });
   const startTab = el("button", { type: "button", className: "story-tab mb-screen-tab active", text: "Start" });
   const buildTab = el("button", { type: "button", className: "story-tab mb-screen-tab", text: "Build" });
-  tabBar.appendChild(startTab);
-  tabBar.appendChild(buildTab);
+  const historyTab = el("button", { type: "button", className: "story-tab mb-screen-tab", text: "History" });
+  const screenTabs = [
+    ["start", startTab],
+    ["build", buildTab],
+    ["history", historyTab],
+  ];
+  for (const [, tab] of screenTabs) tabBar.appendChild(tab);
   section.appendChild(tabBar);
 
   const startScreen = el("div", { className: "mb-screen mb-start-screen" });
   const buildScreen = el("div", { className: "mb-screen mb-build-screen", hidden: "" });
+  const historyScreen = el("div", { className: "mb-screen mb-history-screen", hidden: "" });
   const reviewScreen = el("div", { className: "mb-screen mb-review-screen", hidden: "" });
   const publishScreen = el("div", { className: "mb-screen mb-publish-screen", hidden: "" });
   section.appendChild(startScreen);
   section.appendChild(buildScreen);
+  section.appendChild(historyScreen);
   section.appendChild(reviewScreen);
   section.appendChild(publishScreen);
 
@@ -198,16 +219,21 @@ export async function mountMapBuilder(main) {
   // returns to Start.
   function setScreen(name) {
     activeScreen = name;
-    startTab.classList.toggle("active", name === "start");
-    buildTab.classList.toggle("active", name === "build");
+    for (const [id, tab] of screenTabs) {
+      tab.classList.toggle("active", name === id);
+      tab.setAttribute("aria-pressed", name === id ? "true" : "false");
+    }
     tabBar.hidden = name === "review" || name === "publish";
     startScreen.hidden = name !== "start";
     buildScreen.hidden = name !== "build";
+    historyScreen.hidden = name !== "history";
     reviewScreen.hidden = name !== "review";
     publishScreen.hidden = name !== "publish";
   }
   startTab.addEventListener("click", () => setScreen("start"));
   buildTab.addEventListener("click", () => setScreen("build"));
+  historyTab.addEventListener("click", () => openHistoryScreen());
+  setScreen("start");
 
   // ---------- Start screen: header card ----------
 
@@ -1047,10 +1073,274 @@ export async function mountMapBuilder(main) {
     publishHalfPublishedP.textContent = failure.halfPublished ? failure.halfPublished.text : "";
   }
 
+  // ---------- History screen (Task 19) ----------
+  //
+  // Every kind, newest first, re-runs indented under their original
+  // (rerunChains), duration vs target and the determinism badge
+  // (historyRows). Same keyed row-diff as the Start table (fix round 1, D3):
+  // rows are created once per job id, cells patched in place, the Actions
+  // cell rebuilt only on a status transition — a job.step frame from a
+  // running build must not steal focus from a row's Log/Re-run button.
+
+  let historyKind = null; // null = all
+  let historyStatus = null; // null = all
+
+  const historyFilters = el("div", { className: "mb-history-filters" });
+  // One chip group per filter: "All" plus one chip per value. aria-pressed
+  // carries the state (no colour-only signalling — spec §6 UX rules).
+  function chipGroup(label, values, get, set) {
+    const group = el("div", { className: "mb-chip-group" }, [el("span", { className: "mb-chip-label", text: label })]);
+    const chips = [null, ...values].map((value) => {
+      const chip = el("button", { type: "button", className: "mb-chip", text: value ?? "All" });
+      chip.addEventListener("click", () => {
+        set(value);
+        patchHistoryScreen();
+      });
+      group.appendChild(chip);
+      return { value, chip };
+    });
+    return {
+      group,
+      patch() {
+        const current = get();
+        for (const { value, chip } of chips) chip.setAttribute("aria-pressed", value === current ? "true" : "false");
+      },
+    };
+  }
+  const kindChips = chipGroup("Kind", HISTORY_KINDS, () => historyKind, (v) => { historyKind = v; });
+  const statusChips = chipGroup("Status", HISTORY_STATUSES, () => historyStatus, (v) => { historyStatus = v; });
+  historyFilters.appendChild(kindChips.group);
+  historyFilters.appendChild(statusChips.group);
+  historyScreen.appendChild(historyFilters);
+
+  const historyEmpty = el("p", { className: "empty-state", text: "No jobs match." });
+  const historyTable = el("table", { className: "grid mb-jobs-table mb-history-table" });
+  const historyHeadRow = el("tr", null, [
+    el("th", { scope: "col", text: "Seed" }),
+    el("th", { scope: "col", text: "Kind" }),
+    el("th", { scope: "col", text: "Status" }),
+    el("th", { scope: "col", text: "Duration" }),
+    el("th", { scope: "col", text: "Started" }),
+    el("th", { scope: "col", text: "Actions" }),
+  ]);
+  historyTable.appendChild(historyHeadRow);
+  historyScreen.appendChild(historyEmpty);
+  historyScreen.appendChild(historyTable);
+
+  // jobId -> { tr, seedCode, kindCell, statusSpan, badgeSpan, durationCell, startedCell, actionsCell, lastStatus }
+  const historyRowsById = new Map();
+
+  function createHistoryRow(row) {
+    const seedCode = el("code");
+    const kindCell = el("td", { className: "mb-cell-kind" });
+    const statusSpan = el("span");
+    const badgeSpan = el("span", { className: "mb-badge" });
+    const statusCell = el("td", { className: "mb-cell-status", "aria-live": "polite" }, [statusSpan, badgeSpan]);
+    const durationCell = el("td", { className: "mb-cell-duration" });
+    const startedCell = el("td");
+    const actionsCell = el("td", { className: "mb-cell-actions" });
+    const tr = el("tr", null, [el("td", { className: "mb-cell-seed" }, [seedCode]), kindCell, statusCell, durationCell, startedCell, actionsCell]);
+    tr.dataset.jobId = row.id;
+    return { tr, seedCode, kindCell, statusSpan, badgeSpan, durationCell, startedCell, actionsCell, lastStatus: null };
+  }
+
+  const setText = (node, text) => {
+    if (node.textContent !== text) node.textContent = text;
+  };
+
+  function patchHistoryRow(entry, row, indented) {
+    entry.tr.classList.toggle("mb-row-rerun", indented);
+    setText(entry.seedCode, indented ? "↳ " + row.seed : row.seed);
+    setText(entry.kindCell, row.kind);
+    setText(entry.statusSpan, row.statusText);
+    entry.badgeSpan.hidden = !row.rerunBadge;
+    setText(entry.badgeSpan, row.rerunBadge ?? "");
+    // The "differs" tooltip names the files whose hash changed (Task 18's rerunDiff).
+    const title = row.rerunBadge === "Re-run differs" && row.rerunDiff.length ? "Changed: " + row.rerunDiff.join(", ") : "";
+    if (entry.badgeSpan.getAttribute("title") !== title) {
+      if (title) entry.badgeSpan.setAttribute("title", title);
+      else entry.badgeSpan.removeAttribute("title");
+    }
+    setText(entry.durationCell, row.durationText);
+    entry.durationCell.classList.toggle("mb-over", row.over);
+    setText(entry.startedCell, row.startedText);
+
+    if (entry.lastStatus !== row.status) {
+      entry.lastStatus = row.status;
+      const job = state.jobs.get(row.id);
+      // History's own action set: Re-run / Delete (as rowActions allows for
+      // this status) plus Log for every job — cancel/watch/review stay on Start.
+      const buttons = rowActions(job)
+        .filter((a) => a.id === "rerun" || a.id === "delete")
+        .map((action) => {
+          const btn = el("button", { type: "button", className: "mb-row-action", text: action.label });
+          btn.addEventListener("click", () => runAction(action.id, row.id));
+          return btn;
+        });
+      const logBtn = el("button", { type: "button", className: "mb-row-action", text: "Log" });
+      logBtn.addEventListener("click", () => openLog(row.id));
+      entry.actionsCell.replaceChildren(...buttons, logBtn);
+    }
+  }
+
+  // Newest root first, each followed by its re-runs (oldest re-run first) —
+  // the order the table shows; the filter is applied AFTER flattening so a
+  // re-run stays indented even when its root is filtered out.
+  function historyOrder() {
+    const jobs = jobsSortedNewestFirst();
+    const chains = rerunChains(jobs);
+    const out = [];
+    for (const job of jobs) {
+      if (!chains.has(job.id)) continue; // a re-run — emitted under its root
+      out.push({ id: job.id, indented: false });
+      for (const childId of chains.get(job.id)) out.push({ id: childId, indented: true });
+    }
+    return out;
+  }
+
+  function patchHistoryScreen() {
+    kindChips.patch();
+    statusChips.patch();
+    const rowsById = new Map(
+      historyRows([...state.jobs.values()], { stageCount: state.world.stageCount, targets: HISTORY_TARGETS }).map((r) => [r.id, r]),
+    );
+    const visible = historyOrder().filter(({ id }) => {
+      const r = rowsById.get(id);
+      return (historyKind === null || r.kind === historyKind) && (historyStatus === null || r.status === historyStatus);
+    });
+    historyTable.hidden = visible.length === 0;
+    historyEmpty.hidden = visible.length !== 0;
+
+    const seen = new Set();
+    let prevTr = historyHeadRow;
+    for (const { id, indented } of visible) {
+      seen.add(id);
+      const row = rowsById.get(id);
+      let entry = historyRowsById.get(id);
+      if (!entry) {
+        entry = createHistoryRow(row);
+        historyRowsById.set(id, entry);
+      }
+      patchHistoryRow(entry, row, indented);
+      if (prevTr.nextElementSibling !== entry.tr) prevTr.after(entry.tr);
+      prevTr = entry.tr;
+    }
+    for (const [id, entry] of historyRowsById) {
+      if (!seen.has(id)) {
+        entry.tr.remove();
+        historyRowsById.delete(id);
+      }
+    }
+    patchLogPanel();
+  }
+
+  async function openHistoryScreen() {
+    setScreen("history");
+    patchHistoryScreen();
+    await syncJobsPage("map-builder history", "history fetch");
+  }
+
+  // ---------- Log viewer (Task 19) ----------
+  //
+  // A <pre> fed by GET /api/jobs/:id/log?tail=200, re-fetched every second
+  // while the job is queued/running and left alone once it is terminal
+  // (one last fetch after the terminal frame, then the timer stops).
+  // "Follow" pins the scroll to the bottom on each refresh; unticking it
+  // lets the reader scroll back without the next refresh yanking them down.
+
+  let logJobId = null;
+  let logTimer = null;
+
+  const logTitleCode = el("code");
+  const logFollow = el("input", { type: "checkbox", id: "mb-log-follow", checked: "" });
+  const logFollowLabel = el("label", { className: "mb-log-follow", for: "mb-log-follow" }, [logFollow, document.createTextNode(" Follow")]);
+  const logOpenLink = el("a", { className: "mb-log-open", target: "_blank", rel: "noopener", text: "Open full log" });
+  const logCloseBtn = el("button", { type: "button", className: "story-tab", text: "Close" });
+  logCloseBtn.addEventListener("click", () => closeLog());
+  const logStatus = el("span", { className: "mb-log-status" });
+  // tabindex so a keyboard user can scroll the tail (it has its own scrollbar).
+  const logPre = el("pre", { className: "mb-log-pre", tabindex: "0" });
+  const logPanel = el("div", { className: "mb-log-panel", hidden: "" }, [
+    el("div", { className: "mb-log-bar" }, [
+      el("span", null, [document.createTextNode("Log · "), logTitleCode]),
+      logStatus,
+      logFollowLabel,
+      logOpenLink,
+      logCloseBtn,
+    ]),
+    logPre,
+  ]);
+  historyScreen.appendChild(logPanel);
+
+  const logJobActive = () => {
+    const job = logJobId ? state.jobs.get(logJobId) : null;
+    return Boolean(job) && (job.status === "queued" || job.status === "running");
+  };
+
+  async function fetchLogTail() {
+    const id = logJobId;
+    if (!id) return;
+    let text;
+    try {
+      const res = await fetch(logTailUrl(id, LOG_TAIL_LINES));
+      text = res.ok ? await res.text() : "Log unavailable (HTTP " + res.status + ").";
+    } catch (err) {
+      text = "Log unavailable: " + err.message;
+    }
+    if (logJobId !== id) return; // the reader moved to another job mid-fetch
+    if (logPre.textContent !== text) {
+      logPre.textContent = text;
+      if (logFollow.checked) logPre.scrollTop = logPre.scrollHeight;
+    }
+  }
+
+  function stopLogTimer() {
+    if (logTimer) {
+      clearInterval(logTimer);
+      logTimer = null;
+    }
+  }
+
+  function openLog(jobId) {
+    logJobId = jobId;
+    logPanel.hidden = false;
+    logTitleCode.textContent = jobId;
+    logOpenLink.href = apiBase + "/jobs/" + jobId + "/log";
+    logPre.textContent = "";
+    stopLogTimer();
+    fetchLogTail();
+    if (logJobActive()) {
+      logTimer = setInterval(async () => {
+        await fetchLogTail();
+        // Fetched AFTER the check so the terminal frame's last lines land
+        // before the timer stops.
+        if (!logJobActive()) stopLogTimer();
+      }, LOG_POLL_MS);
+    }
+    patchLogPanel();
+  }
+
+  function closeLog() {
+    stopLogTimer();
+    logJobId = null;
+    logPanel.hidden = true;
+  }
+
+  function patchLogPanel() {
+    if (!logJobId) return;
+    const job = state.jobs.get(logJobId);
+    if (!job) {
+      closeLog();
+      return;
+    }
+    setText(logStatus, logTimer ? "following · " + statusText(job, { stageCount: state.world.stageCount }) : statusText(job, { stageCount: state.world.stageCount }));
+  }
+
   function renderAll() {
     renderHeaderCard();
     syncTable();
     patchBuildScreen();
+    patchHistoryScreen();
     patchReviewScreen();
     patchPublishScreen();
     updateBadge([...state.jobs.values()]);
@@ -1066,12 +1356,15 @@ export async function mountMapBuilder(main) {
     renderAll();
   }
 
-  // Shared by the poll fallback and every SSE "open" resync (D2 below) —
-  // both just want the current draft-jobs page upserted into state; only the
-  // fetchJson context label and console.warn wording differ per caller.
+  // Shared by the poll fallback, every SSE "open" resync (D2 below) and the
+  // History screen's open — all just want the current jobs page upserted
+  // into state; only the fetchJson context label and console.warn wording
+  // differ per caller. While History is showing, the page is the all-kinds
+  // one (Task 19) so its rows survive a resync; otherwise the draft-only
+  // page the Start table has always used.
   async function syncJobsPage(fetchLabel, warnLabel) {
     try {
-      const page = await fetchJson(JOBS_URL, fetchLabel);
+      const page = await fetchJson(activeScreen === "history" ? HISTORY_URL : JOBS_URL, fetchLabel);
       apply({ type: "jobs.synced", jobs: page.jobs ?? [] });
     } catch (err) {
       console.warn(`[asset-storybook] map-builder ${warnLabel} failed:`, err);

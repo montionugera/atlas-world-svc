@@ -271,6 +271,95 @@ export function publishStepsText() {
   return PUBLISH_STEPS.map((name) => PUBLISH_STEP_LABELS[name]);
 }
 
+// ---------- History screen (Task 19) ----------
+
+/** Milliseconds as "5.4 s" / "6 s" / "91 s" — one decimal below a minute (a
+ * draft's 6 s target and 12 s fail line need it), whole seconds above. */
+function secondsText(ms) {
+  const s = ms / 1000;
+  return (s < 60 ? s.toFixed(1).replace(/\.0$/, "") : String(Math.round(s))) + " s";
+}
+
+/**
+ * Elapsed ms for a job row: the recorded duration once terminal; elapsed
+ * so far while running; null while queued or if it never started (an
+ * interrupted record recovered at boot has no durationMs).
+ */
+function elapsedMs(job, now) {
+  if (job.durationMs != null) return job.durationMs;
+  if (!job.startedAt) return null;
+  const end = job.endedAt ? new Date(job.endedAt).getTime() : now;
+  return end - new Date(job.startedAt).getTime();
+}
+
+/**
+ * Rows for the History table (spec §6 "History"): every kind, duration vs
+ * the per-kind target (`targets[kind]` in ms — a kind without one shows the
+ * plain duration and is never "over"), and the re-run determinism badge
+ * from the server's `rerunMatch` (queue.mjs, Task 18). Same status strings
+ * as the Start table. Order is the caller's — see rerunChains for grouping.
+ */
+export function historyRows(jobs, { stageCount, targets = {}, now = Date.now() } = {}) {
+  return jobs.map((job) => {
+    const ms = elapsedMs(job, now);
+    const target = targets[job.kind];
+    const durationText =
+      ms == null ? "—" : target ? secondsText(ms) + " / " + secondsText(target) + " target" : secondsText(ms);
+    return {
+      id: job.id,
+      kind: job.kind,
+      seed: job.seed ?? "—",
+      status: job.status,
+      statusText: statusText(job, { stageCount }),
+      durationText,
+      over: ms != null && Boolean(target) && ms > target,
+      rerunOf: job.rerunOf ?? null,
+      rerunBadge:
+        job.rerunMatch === "identical" ? "Re-run identical" : job.rerunMatch === "differs" ? "Re-run differs" : null,
+      rerunDiff: job.rerunDiff ?? [],
+      startedText: job.startedAt ?? "—",
+    };
+  });
+}
+
+/**
+ * Re-run chains for indenting: Map<rootId, id[]> where a root is any job
+ * that is not itself a re-run of a job in the list (a re-run whose original
+ * was deleted is its own root), and the children are every job that
+ * descends from it through `rerunOf` — transitively, oldest first. A
+ * malformed cycle (never produced by the server) terminates as a root.
+ */
+export function rerunChains(jobs) {
+  const byId = new Map(jobs.map((j) => [j.id, j]));
+  const roots = new Map(); // id -> rootId, filled for every node on a walked path
+  const rootOf = (job) => {
+    const path = [];
+    let cur = job;
+    while (!roots.has(cur.id) && !path.includes(cur)) {
+      path.push(cur);
+      const parent = cur.rerunOf ? byId.get(cur.rerunOf) : null;
+      if (!parent) break;
+      cur = parent;
+    }
+    const root = roots.get(cur.id) ?? cur.id;
+    for (const node of path) roots.set(node.id, root);
+    return root;
+  };
+  const chains = new Map();
+  const ordered = [...jobs].sort((a, b) => ((a.createdAt ?? "") < (b.createdAt ?? "") ? -1 : 1));
+  for (const job of ordered) {
+    const root = rootOf(job);
+    if (!chains.has(root)) chains.set(root, []);
+    if (root !== job.id) chains.get(root).push(job.id);
+  }
+  return chains;
+}
+
+/** The log-tail route the log viewer polls (app.mjs `GET /api/jobs/:id/log?tail=`). */
+export function logTailUrl(id, n) {
+  return "/api/jobs/" + id + "/log?tail=" + n;
+}
+
 /** The fixed reject-reason set (spec §6 Review screen). */
 export const decisionReasons = Object.freeze([
   "too much sea",

@@ -16,6 +16,9 @@ import {
   decisionReasons,
   reviewDecided,
   publishFailure,
+  historyRows,
+  rerunChains,
+  logTailUrl,
   PUBLISH_STEPS,
 } from "../js/map-builder-model.mjs";
 // Drift guard (Task 16): the client cannot import server code (publish.mjs
@@ -201,6 +204,84 @@ test("publishStepsText returns the six publish step labels in order", () => {
 
 test("the client's duplicated PUBLISH_STEPS matches the server's (drift guard)", () => {
   assert.deepEqual(PUBLISH_STEPS, SERVER_PUBLISH_STEPS);
+});
+
+// Task 19 — History screen rows: duration against the per-kind target, the
+// over-target flag, the re-run determinism badge, and the status text the
+// Start table already uses.
+test("historyRows: duration vs target, over flag, badge text, interrupted status", () => {
+  const targets = { draft: 6000 };
+  const rows = historyRows(
+    [
+      job({ id: "j1", status: "succeeded", durationMs: 5400, startedAt: "2026-09-17T10:00:00.000Z" }),
+      job({ id: "j2", status: "failed", durationMs: 12600, error: "generate-world: LOOP BUDGET generate 13000 ms" }),
+      job({ id: "j3", status: "succeeded", durationMs: 5000, rerunOf: "j1", rerunMatch: "identical", rerunDiff: [] }),
+      job({ id: "j4", status: "succeeded", durationMs: 5100, rerunOf: "j1", rerunMatch: "differs", rerunDiff: ["manifest.json"] }),
+      job({ id: "j5", status: "interrupted", durationMs: null, startedAt: null }),
+      job({ id: "j6", kind: "publish", status: "succeeded", durationMs: 91000 }),
+      job({ id: "j7", status: "queued" }),
+    ],
+    { stageCount: 18, targets },
+  );
+  const byId = Object.fromEntries(rows.map((r) => [r.id, r]));
+  assert.equal(byId.j1.durationText, "5.4 s / 6 s target");
+  assert.equal(byId.j1.over, false);
+  assert.equal(byId.j1.statusText, "Ready to review");
+  assert.equal(byId.j1.startedText, "2026-09-17T10:00:00.000Z");
+  assert.equal(byId.j1.rerunBadge, null);
+  assert.equal(byId.j1.rerunOf, null);
+  assert.equal(byId.j2.durationText, "12.6 s / 6 s target");
+  assert.equal(byId.j2.over, true);
+  assert.equal(byId.j2.statusText, "Failed · took too long");
+  assert.equal(byId.j3.rerunBadge, "Re-run identical");
+  assert.equal(byId.j3.rerunOf, "j1");
+  assert.equal(byId.j4.rerunBadge, "Re-run differs");
+  assert.deepEqual(byId.j4.rerunDiff, ["manifest.json"]);
+  assert.equal(byId.j5.statusText, "Interrupted");
+  assert.equal(byId.j5.durationText, "—");
+  assert.equal(byId.j5.startedText, "—");
+  // A kind with no target shows the plain duration, never "over".
+  assert.equal(byId.j6.durationText, "91 s");
+  assert.equal(byId.j6.over, false);
+  assert.equal(byId.j6.kind, "publish");
+  assert.equal(byId.j7.durationText, "—");
+  assert.equal(rows.length, 7);
+});
+
+test("historyRows: a running job's duration is elapsed-so-far and the over flag tracks it", () => {
+  const rows = historyRows(
+    [job({ id: "j1", status: "running", startedAt: new Date(Date.now() - 7000).toISOString(), steps: new Array(3).fill({}) })],
+    { stageCount: 18, targets: { draft: 6000 } },
+  );
+  assert.match(rows[0].durationText, /^7(\.\d)? s \/ 6 s target$/);
+  assert.equal(rows[0].over, true);
+  assert.equal(rows[0].statusText, "Building · step 3 of 18");
+});
+
+// Re-run chains indent every re-run (including a re-run of a re-run) under
+// the root job it descends from, oldest re-run first; a re-run whose original
+// is no longer in the list is its own root.
+test("rerunChains groups re-runs under their root, transitively", () => {
+  const chains = rerunChains([
+    job({ id: "j1", createdAt: "2026-09-17T10:00:00.000Z" }),
+    job({ id: "j3", createdAt: "2026-09-17T10:02:00.000Z", rerunOf: "j2" }),
+    job({ id: "j2", createdAt: "2026-09-17T10:01:00.000Z", rerunOf: "j1" }),
+    job({ id: "j9", createdAt: "2026-09-17T10:03:00.000Z", rerunOf: "gone" }),
+    job({ id: "j5", createdAt: "2026-09-17T10:04:00.000Z" }),
+  ]);
+  assert.deepEqual([...chains.keys()].sort(), ["j1", "j5", "j9"]);
+  assert.deepEqual(chains.get("j1"), ["j2", "j3"]);
+  assert.deepEqual(chains.get("j5"), []);
+  assert.deepEqual(chains.get("j9"), []);
+});
+
+test("rerunChains never loops on a malformed cycle", () => {
+  const chains = rerunChains([job({ id: "a", rerunOf: "b" }), job({ id: "b", rerunOf: "a" })]);
+  assert.equal([...chains.keys()].length, 1);
+});
+
+test("logTailUrl points at the tail route", () => {
+  assert.equal(logTailUrl("j_20260917_100000_deadbeef", 200), "/api/jobs/j_20260917_100000_deadbeef/log?tail=200");
 });
 
 test("decisionReasons is the fixed five-reason set", () => {
