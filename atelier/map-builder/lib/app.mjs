@@ -90,6 +90,20 @@ export function createApp({ repo, store, queue, events, world, snapshots = null,
     if (full.startsWith(base)) rmSync(full, { recursive: true, force: true }); // never rm outside build/mapforge/
   };
 
+  // Drops one job's record + log, and its out dir only when no SURVIVING
+  // record still references it: outDir is deterministic per seed+version
+  // (runIdOf), so a re-run of the same seed shares it (fix round 1, F2).
+  const removeJob = (job, survivors) => {
+    removeJobFiles(job.id);
+    if (!survivors.some((j) => j.outDir === job.outDir)) removeOutDir(job.outDir);
+  };
+
+  // Bulk cleanup (Task 20) only ever touches these — a succeeded draft may be
+  // what the world was published from (publishedBy / world.lastPublish), and
+  // an active one is still writing. Snapshots live in their own store and
+  // are pruned by publish itself (snapshots.prune), never here.
+  const BULK_DELETABLE = new Set(["failed", "cancelled", "interrupted"]);
+
   const routes = [
     ["GET", /^\/api\/health$/, (ctx) => sendJson(ctx.res, 200, { ok: true, version, pid: process.pid, repoRoot: repo.repoRoot, branch: repo.branch() })],
     ["GET", /^\/api\/world$/, (ctx) => sendJson(ctx.res, 200, world.read())],
@@ -158,12 +172,32 @@ export function createApp({ repo, store, queue, events, world, snapshots = null,
       // seed shares it (fix round 1, F2). Refuse if another job still active
       // on it; if another finished job still references it, drop only this
       // job's own record/log and leave the shared directory in place.
-      const sharing = store.list({}).filter((j) => j.id !== id && j.outDir === job.outDir);
-      if (sharing.some((j) => j.status === "queued" || j.status === "running")) throw httpError(409, "out dir is in use by another job");
-      removeJobFiles(id);
-      if (sharing.length === 0) removeOutDir(job.outDir);
+      const others = store.list({}).filter((j) => j.id !== id);
+      if (others.some((j) => j.outDir === job.outDir && (j.status === "queued" || j.status === "running"))) throw httpError(409, "out dir is in use by another job");
+      removeJob(job, others);
       ctx.res.writeHead(204);
       ctx.res.end();
+    }],
+
+    ["DELETE", /^\/api\/jobs$/, (ctx) => {
+      const q = ctx.url.searchParams;
+      const statuses = (q.get("status") ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+      if (statuses.length === 0 || !statuses.every((s) => BULK_DELETABLE.has(s)))
+        throw badRequest("status must be one or more of failed, cancelled, interrupted (comma-separated)");
+      const days = Number(q.get("olderThanDays"));
+      if (!q.has("olderThanDays") || !Number.isFinite(days) || days < 0) throw badRequest("olderThanDays must be a number >= 0");
+      const cutoff = Date.now() - days * 86400000;
+      // An interrupted record recovered at boot may carry no endedAt (a
+      // killed service never wrote one) — its creation time is the age then.
+      const finishedAt = (j) => new Date(j.endedAt ?? j.createdAt).getTime();
+      const all = store.list({});
+      const victims = all.filter((j) => statuses.includes(j.status) && finishedAt(j) <= cutoff);
+      const victimIds = new Set(victims.map((j) => j.id));
+      const survivors = all.filter((j) => !victimIds.has(j.id));
+      for (const job of victims) removeJob(job, survivors);
+      // `ids` lets the client drop exactly these rows without a resync (a
+      // jobs page upsert cannot remove rows).
+      sendJson(ctx.res, 200, { deleted: victims.length, ids: victims.map((j) => j.id) });
     }],
 
     ["GET", /^\/api\/drafts\/([^/]+)\/review$/, (ctx) => {

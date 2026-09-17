@@ -263,6 +263,58 @@ test("DELETE removes only the record when a finished rerun still shares the out 
   });
 });
 
+// Task 20: bulk cleanup of finished drafts — matches by status AND age,
+// never an active job, never a succeeded one, and only removes an out dir
+// no remaining record still references. Snapshots are a different store
+// entirely (createSnapshots) and this route never sees it.
+test("DELETE /api/jobs?status=&olderThanDays= removes matching finished records, logs and draft dirs only", async () => {
+  await withApp(async ({ port, store, repo, queue }) => {
+    const daysAgo = (n) => new Date(Date.now() - n * 86400000).toISOString();
+    const mk = (fields) => store.create({ kind: "draft", seed: "d4d4d4d4d4d4d4d4", outDir: "build/mapforge/d4d4d4d4-3.0.0", ...fields });
+    const oldFailed = mk({ status: "failed", endedAt: daysAgo(10), error: "x" });
+    const oldCancelled = mk({ status: "cancelled", endedAt: daysAgo(9), outDir: "build/mapforge/d5d5d5d5-3.0.0" });
+    const oldInterrupted = mk({ status: "interrupted", createdAt: daysAgo(8), endedAt: null, outDir: "build/mapforge/d6d6d6d6-3.0.0" });
+    const freshFailed = mk({ status: "failed", endedAt: daysAgo(1), error: "x" });
+    const oldSucceeded = mk({ status: "succeeded", endedAt: daysAgo(30) });
+    const running = mk({ status: "running", startedAt: daysAgo(20), outDir: "build/mapforge/d7d7d7d7-3.0.0" });
+    for (const j of [oldFailed, oldCancelled, oldInterrupted]) store.appendLog(j.id, "log\n");
+    const dirOf = (rel) => path.join(repo.repoRoot, rel);
+    for (const rel of ["build/mapforge/d4d4d4d4-3.0.0", "build/mapforge/d5d5d5d5-3.0.0", "build/mapforge/d6d6d6d6-3.0.0"]) {
+      mkdirSync(dirOf(rel), { recursive: true }); writeFileSync(path.join(dirOf(rel), "marker.txt"), "x");
+    }
+    try {
+      // Shape: status is required and limited to the three finished-not-succeeded values.
+      assert.equal((await api(port, "DELETE", "/api/jobs?olderThanDays=7")).status, 400);
+      assert.equal((await api(port, "DELETE", "/api/jobs?status=succeeded&olderThanDays=7")).status, 400);
+      assert.equal((await api(port, "DELETE", "/api/jobs?status=failed&olderThanDays=-1")).status, 400);
+      assert.equal((await api(port, "DELETE", "/api/jobs?status=failed")).status, 400);
+
+      const res = await api(port, "DELETE", "/api/jobs?status=failed,cancelled,interrupted&olderThanDays=7");
+      assert.equal(res.status, 200);
+      assert.equal(res.body.deleted, 3);
+      assert.deepEqual(new Set(res.body.ids), new Set([oldFailed.id, oldCancelled.id, oldInterrupted.id]));
+      for (const j of [oldFailed, oldCancelled, oldInterrupted]) {
+        assert.equal(store.get(j.id), null, `${j.status} record removed`);
+        assert.equal(existsSync(store.logPath(j.id)), false, "log removed");
+      }
+      for (const j of [freshFailed, oldSucceeded, running]) assert.ok(store.get(j.id), `${j.status} kept`);
+      // d4 is still referenced by freshFailed + oldSucceeded → kept; d5/d6 had no other reference → removed.
+      assert.equal(existsSync(dirOf("build/mapforge/d4d4d4d4-3.0.0")), true);
+      assert.equal(existsSync(dirOf("build/mapforge/d5d5d5d5-3.0.0")), false);
+      assert.equal(existsSync(dirOf("build/mapforge/d6d6d6d6-3.0.0")), false);
+      // A second sweep finds nothing.
+      assert.deepEqual((await api(port, "DELETE", "/api/jobs?status=failed,cancelled,interrupted&olderThanDays=7")).body, { deleted: 0, ids: [] });
+      // olderThanDays=0 sweeps every finished-not-succeeded record regardless of age.
+      assert.deepEqual((await api(port, "DELETE", "/api/jobs?status=failed&olderThanDays=0")).body, { deleted: 1, ids: [freshFailed.id] });
+      assert.equal(store.get(freshFailed.id), null);
+    } finally {
+      for (const rel of ["build/mapforge/d4d4d4d4-3.0.0", "build/mapforge/d5d5d5d5-3.0.0", "build/mapforge/d6d6d6d6-3.0.0"]) rmSync(dirOf(rel), { recursive: true, force: true });
+      // `running` is a bare record with no process behind it — leave the queue idle.
+      await queue.onIdle();
+    }
+  });
+});
+
 // Task 18: an interrupted record (what recoverInterrupted leaves behind)
 // re-runs like any finished job; a publish/undo record does not.
 test("POST /api/jobs/:id/rerun accepts an interrupted draft and refuses a publish record with 400", async () => {

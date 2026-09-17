@@ -97,11 +97,10 @@ async function deleteJson(url) {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
   });
-  if (!res.ok && res.status !== 204) {
-    const text = await res.text();
-    const data = text ? JSON.parse(text) : null;
-    throw new Error(data?.error?.message ?? "HTTP " + res.status);
-  }
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok && res.status !== 204) throw new Error(data?.error?.message ?? "HTTP " + res.status);
+  return data; // null for a 204
 }
 
 function el(tag, props, children) {
@@ -957,11 +956,31 @@ export async function mountMapBuilder(main) {
   publishOpenMapsBtn.addEventListener("click", () => {
     document.querySelector('.sidebar-item[data-class="' + MAPS_CLASS + '"]')?.click();
   });
+  // "N snapshots kept" beside Undo (Task 20): publish prunes to snapshotKeep
+  // (config.json) after each success, so the count says how far back an undo
+  // can reach. Fetched once per world.changed frame while this crumb shows —
+  // state.world is a fresh object per frame, so its identity is the key.
+  const snapshotCountP = el("p", { className: "mb-snapshot-count", "aria-live": "polite" });
+  let snapshotCountFor = null;
+  async function refreshSnapshotCount() {
+    const forWorld = state.world;
+    snapshotCountFor = forWorld;
+    try {
+      const res = await fetchJson(apiBase + "/snapshots", "map-builder snapshots");
+      if (snapshotCountFor !== forWorld) return; // a newer frame already re-fetched
+      const n = (res.snapshots ?? []).filter((s) => !s.corrupt).length;
+      snapshotCountP.textContent = n + (n === 1 ? " snapshot kept" : " snapshots kept");
+    } catch (err) {
+      snapshotCountP.textContent = "";
+      console.warn("[asset-storybook] map-builder snapshots fetch failed:", err);
+    }
+  }
   const publishedHost = el("div", { className: "mb-publish-published" }, [
     el("h3", { text: "Published" }),
     el("p", null, [document.createTextNode("Seed "), publishedSeedCode]),
     el("p", { text: "Sheets redrawn." }),
     publishUndoBtn,
+    snapshotCountP,
     publishOpenMapsBtn,
     el("p", {
       className: "mb-readonly",
@@ -1061,6 +1080,7 @@ export async function mountMapBuilder(main) {
     if (phase === "published") {
       if (publishedSeedCode.textContent !== job.seed) publishedSeedCode.textContent = job.seed;
       publishUndoBtn.hidden = !state.world.undoAvailable;
+      if (snapshotCountFor !== state.world) refreshSnapshotCount();
       return;
     }
     // failed, cancelled or interrupted
@@ -1112,6 +1132,32 @@ export async function mountMapBuilder(main) {
   historyFilters.appendChild(kindChips.group);
   historyFilters.appendChild(statusChips.group);
   historyScreen.appendChild(historyFilters);
+
+  // Bulk cleanup (Task 20): DELETE /api/jobs?status=...&olderThanDays=7 —
+  // failed, cancelled and interrupted records only (the route refuses any
+  // other status), their logs and draft folders; snapshots are untouched.
+  const cleanupBtn = el("button", { type: "button", className: "mb-row-action", text: "Delete finished drafts older than 7 days" });
+  const cleanupHint = el("span", {
+    className: "mb-cleanup-hint",
+    text: "Removes failed, cancelled and interrupted records, their logs and draft folders. Snapshots are kept.",
+  });
+  cleanupBtn.addEventListener("click", async () => {
+    errorBanner.textContent = "";
+    cleanupBtn.disabled = true;
+    try {
+      const res = await deleteJson(apiBase + "/jobs?status=failed,cancelled,interrupted&olderThanDays=7");
+      const jobs = new Map(state.jobs);
+      for (const id of res?.ids ?? []) jobs.delete(id);
+      state = { ...state, jobs };
+      cleanupHint.textContent = "Deleted " + (res?.deleted ?? 0) + " record(s).";
+      renderAll();
+    } catch (err) {
+      errorBanner.textContent = "Cleanup failed: " + err.message;
+    } finally {
+      cleanupBtn.disabled = false;
+    }
+  });
+  historyScreen.appendChild(el("div", { className: "mb-history-cleanup" }, [cleanupBtn, cleanupHint]));
 
   const historyEmpty = el("p", { className: "empty-state", text: "No jobs match." });
   const historyTable = el("table", { className: "grid mb-jobs-table mb-history-table" });
