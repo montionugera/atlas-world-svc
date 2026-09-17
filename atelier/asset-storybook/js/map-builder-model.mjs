@@ -115,6 +115,22 @@ const ACTIONS = {
   why: { id: "why", label: "See why" },
 };
 
+// A publish/undo is driven by a draft/snapshot id, not a seed, so re-running
+// one makes no sense; app.mjs's /rerun route (Task 18) refuses (400) any
+// kind other than these two. Mirrored here so rowActions never offers an
+// action the server will always refuse (Batch J review I1).
+const RERUNNABLE_KINDS = new Set(["draft", "dry-run"]);
+
+/**
+ * The action set shared by every terminal (non-active) status: Re-run
+ * (gated on kind, see RERUNNABLE_KINDS) + Delete, plus whatever
+ * status-specific actions the caller prepends (e.g. Review, See why).
+ */
+function terminalActions(job, extra = []) {
+  const rerun = RERUNNABLE_KINDS.has(job.kind) ? [ACTIONS.rerun] : [];
+  return [...extra, ...rerun, ACTIONS.delete];
+}
+
 /**
  * Row actions per job status (spec §6). A running publish/undo gets no
  * Cancel: queue.mjs refuses to cancel a running composite job at every step
@@ -122,7 +138,8 @@ const ACTIONS = {
  * a Cancel button there could never do anything (carried finding, Batch G
  * re-review n3). Likewise only a succeeded DRAFT gets Review: the Review
  * screen fetches /api/drafts/:id/review, which 404s for every other kind
- * (Batch H review I1).
+ * (Batch H review I1). And only a draft/dry-run gets Re-run: the /rerun
+ * route 404/400s a publish/undo (Batch J review I1).
  */
 export function rowActions(job) {
   switch (job.status) {
@@ -133,14 +150,12 @@ export function rowActions(job) {
     case "queued":
       return [ACTIONS.cancel];
     case "succeeded":
-      return job.kind === "draft"
-        ? [ACTIONS.review, ACTIONS.rerun, ACTIONS.delete]
-        : [ACTIONS.rerun, ACTIONS.delete];
+      return terminalActions(job, job.kind === "draft" ? [ACTIONS.review] : []);
     case "failed":
-      return [ACTIONS.why, ACTIONS.rerun, ACTIONS.delete];
+      return terminalActions(job, [ACTIONS.why]);
     case "cancelled":
     case "interrupted":
-      return [ACTIONS.rerun, ACTIONS.delete];
+      return terminalActions(job);
     default:
       return [];
   }

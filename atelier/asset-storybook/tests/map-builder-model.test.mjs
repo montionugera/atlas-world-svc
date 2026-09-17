@@ -110,8 +110,29 @@ test("row actions: a running publish/undo has no Cancel (the server always refus
 test("row actions: only a succeeded draft offers Review (the review route 404s for other kinds)", () => {
   assert.deepEqual(rowActions({ status: "succeeded", kind: "draft" }).map((a) => a.id), ["review", "rerun", "delete"]);
   assert.deepEqual(rowActions({ status: "succeeded", kind: "dry-run" }).map((a) => a.id), ["rerun", "delete"]);
-  assert.deepEqual(rowActions({ status: "succeeded", kind: "publish" }).map((a) => a.id), ["rerun", "delete"]);
-  assert.deepEqual(rowActions({ status: "succeeded", kind: "undo" }).map((a) => a.id), ["rerun", "delete"]);
+  assert.deepEqual(rowActions({ status: "succeeded", kind: "publish" }).map((a) => a.id), ["delete"]);
+  assert.deepEqual(rowActions({ status: "succeeded", kind: "undo" }).map((a) => a.id), ["delete"]);
+});
+
+// Batch J review I1: app.mjs's /rerun route (Task 18) refuses (400) any kind
+// other than draft/dry-run — a publish/undo is driven by a draft/snapshot id,
+// not a seed, so cloning it makes no sense. History (Task 19) now lists
+// every kind, so a publish/undo row's Re-run always 400s unless rowActions
+// stops offering it for those two kinds, in every terminal branch (not just
+// succeeded) — same class as the n3/I1 fixes above.
+test("row actions: publish/undo never offer Re-run in any terminal status (the server always refuses it)", () => {
+  assert.deepEqual(rowActions({ status: "succeeded", kind: "publish" }).map((a) => a.id), ["delete"]);
+  assert.deepEqual(rowActions({ status: "succeeded", kind: "undo" }).map((a) => a.id), ["delete"]);
+  assert.deepEqual(rowActions({ status: "failed", kind: "publish" }).map((a) => a.id), ["why", "delete"]);
+  assert.deepEqual(rowActions({ status: "failed", kind: "undo" }).map((a) => a.id), ["why", "delete"]);
+  assert.deepEqual(rowActions({ status: "cancelled", kind: "publish" }).map((a) => a.id), ["delete"]);
+  assert.deepEqual(rowActions({ status: "cancelled", kind: "undo" }).map((a) => a.id), ["delete"]);
+  assert.deepEqual(rowActions({ status: "interrupted", kind: "publish" }).map((a) => a.id), ["delete"]);
+  assert.deepEqual(rowActions({ status: "interrupted", kind: "undo" }).map((a) => a.id), ["delete"]);
+  // draft/dry-run keep Re-run in every terminal branch (unaffected by this fix)
+  assert.deepEqual(rowActions({ status: "failed", kind: "draft" }).map((a) => a.id), ["why", "rerun", "delete"]);
+  assert.deepEqual(rowActions({ status: "cancelled", kind: "dry-run" }).map((a) => a.id), ["rerun", "delete"]);
+  assert.deepEqual(rowActions({ status: "interrupted", kind: "draft" }).map((a) => a.id), ["rerun", "delete"]);
 });
 
 // Batch H review I2: once a draft has been accepted (the publish enqueue
