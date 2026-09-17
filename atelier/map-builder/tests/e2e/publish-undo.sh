@@ -120,6 +120,9 @@ api_post() { curl -sS -H 'content-type: application/json' -X POST -d "$2" "$BASE
 # (no trailing newline, so $(...) captures are exact); a throw exits non-zero.
 jq_node()  { node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);const f=new Function("j",process.argv[1]);const r=f(j);process.stdout.write(r===undefined?"":String(r))})' "$1"; }
 
+# read_seed <path/to/world.json> — prints its committed `seed` field
+read_seed() { node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).seed)' "$1"; }
+
 # poll_job <id> <timeout-s> → prints final status; exits non-zero on timeout
 poll_job() {
   local id="$1" limit="$2" status="" i
@@ -160,7 +163,7 @@ wt_status="$(git -C "$WT" status --porcelain --untracked-files=all)" || fail "st
 before=0
 [ -z "$wt_status" ] || before="$(printf '%s\n' "$wt_status" | wc -l | tr -d ' ')"
 [ "$before" = "0" ] || fail "step 5: tree dirty before publish ($before entries)"
-PRE_SEED="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).seed)' "$WT/content/world/fabric/world.json")"
+PRE_SEED="$(read_seed "$WT/content/world/fabric/world.json")"
 [ "$PRE_SEED" != "$SEED" ] || fail "step 5: committed seed already equals the draft seed — the publish would be a no-op"
 (cd "$WT" && node -e 'import("./atelier/map-builder/lib/snapshots.mjs").then(m => console.log(m.snapshotSet({repoRoot: process.cwd()}).join("\n")))') \
   | sort > "$tmp/set.txt" || fail "step 5: snapshotSet"
@@ -172,11 +175,12 @@ PUB_ID="$(api_post /api/publish "{\"draftJobId\":\"$DRAFT_ID\",\"confirm\":true}
 [ -n "$PUB_ID" ] || fail "step 6: POST /api/publish returned no job id"
 st="$(poll_job "$PUB_ID" "$COMPOSITE_TIMEOUT_S")"
 [ "$st" = "succeeded" ] || { print_log "$PUB_ID"; fail "step 6: publish $PUB_ID ended '$st'"; }
-POST_SEED="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).seed)' "$WT/content/world/fabric/world.json")"
+POST_SEED="$(read_seed "$WT/content/world/fabric/world.json")"
 [ "$POST_SEED" = "$SEED" ] || fail "step 6: world.json seed is '$POST_SEED', expected $SEED"
 (cd "$WT" && node scripts/check_render_lock.mjs --check) || fail "step 6: check_render_lock --check after publish"
 (cd "$WT" && node scripts/check_spine_emit.mjs --check --content-root content) || fail "step 6: check_spine_emit --check after publish"
-git -C "$WT" status --porcelain --untracked-files=all | awk '{print $2}' | sort > "$tmp/changed.txt"
+git -C "$WT" status --porcelain --untracked-files=all | awk '{print $2}' | sort > "$tmp/changed.txt" \
+  || fail "step 6: git status failed"
 [ -s "$tmp/changed.txt" ] || fail "step 6: publish changed nothing"
 comm -23 "$tmp/changed.txt" "$tmp/set.txt" > "$tmp/offenders.txt"
 if [ -s "$tmp/offenders.txt" ]; then
@@ -192,7 +196,7 @@ UNDO_ID="$(api_post /api/undo "{\"snapshotId\":\"$SNAP_ID\"}" | jq_node 'return 
 [ -n "$UNDO_ID" ] || fail "step 7: POST /api/undo returned no job id"
 st="$(poll_job "$UNDO_ID" "$COMPOSITE_TIMEOUT_S")"
 [ "$st" = "succeeded" ] || { print_log "$UNDO_ID"; fail "step 7: undo $UNDO_ID ended '$st'"; }
-UNDO_SEED="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).seed)' "$WT/content/world/fabric/world.json")"
+UNDO_SEED="$(read_seed "$WT/content/world/fabric/world.json")"
 [ "$UNDO_SEED" = "$PRE_SEED" ] || fail "step 7: seed after undo is '$UNDO_SEED', expected $PRE_SEED"
 wt_status="$(git -C "$WT" status --porcelain --untracked-files=all)" || fail "step 7: git status failed"
 if [ -n "$wt_status" ]; then
