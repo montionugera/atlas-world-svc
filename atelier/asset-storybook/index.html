@@ -1030,6 +1030,8 @@
         transform-origin: 0 0;
         user-select: none;
         pointer-events: none; /* the stage, not the img, owns wheel/pointer handling */
+      }
+
       /* ---------- F-050: forge pipeline dashboard ---------- */
 
       .forge-rows {
@@ -1090,6 +1092,40 @@
       .forge-cell.is-notrun {
         opacity: 0.38;
         cursor: default;
+      }
+
+      .source-error {
+        margin: 0.25rem 0;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--err);
+      }
+
+      .forge-pipeline-row .forge-cell {
+        cursor: default;
+      }
+
+      .forge-row[data-error] {
+        border-color: #8a3535;
+      }
+
+      .forge-row-note {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        color: var(--text-dim);
+      }
+
+      .forge-row-note.is-done {
+        color: #8fe3b0;
+      }
+
+      .forge-row-note.is-stale {
+        color: #ff9d9d;
+      }
+
+      .forge-row-note.is-error {
+        color: var(--err);
       }
 
       /* F-039 — Forge gallery: render cards grouped by recipe version */
@@ -1161,6 +1197,20 @@
         text-align: center;
       }
 
+      .forge-batch-missing {
+        margin: 0.2rem 0 0.5rem;
+        padding: 0.35rem 0.55rem;
+        border: 1px dashed var(--border);
+        border-radius: 6px;
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--text-faint);
+      }
+
+      .forge-card.is-imageless {
+        min-height: 0;
+      }
+
       .forge-card-label {
         font-family: var(--mono);
         font-size: 0.68rem;
@@ -1214,6 +1264,18 @@
         flex-direction: column;
         gap: 0.35rem;
         margin-bottom: 0.75rem;
+      }
+
+      .forge-orders-saved {
+        margin-left: 0.6rem;
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        font-weight: 400;
+        color: var(--ok);
+      }
+
+      .forge-orders-saved.is-unsaved {
+        color: var(--err);
       }
 
       .forge-order {

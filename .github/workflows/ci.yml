@@ -255,6 +255,14 @@ jobs:
       - name: Asset storybook data-layer tests
         run: node --test atelier/asset-storybook/tests/*.test.mjs
 
+      # F-053: headless Forge smoke (system Chrome over the DevTools pipe, no
+      # npm deps). STORYBOOK_SMOKE_REQUIRED turns "no Chrome" into exit 2, so
+      # this step can never pass by skipping.
+      - name: Asset storybook headless smoke
+        env:
+          STORYBOOK_SMOKE_REQUIRED: "1"
+        run: node atelier/asset-storybook/tests/smoke/run.mjs
+
       # Map builder (F-052): the ONLY Node 18 run of this suite — Gate 1/2
       # (scripts/precheck.sh) run it locally on whatever Node the dev has.
       # Without this step it would never be checked against the pinned
@@ -290,6 +298,13 @@ jobs:
       # explicit file paths). Without this step these tests only ran locally.
       - name: Art forge unit tests
         run: node --test atelier/art-forge/tests/*.test.mjs
+
+      # F-053: art-forge tests once appended 18 entries to the committed ledger.
+      # A clean checkout must stay clean after the suite.
+      - name: Art forge tests left the committed run ledgers untouched
+        # git status, not git diff: diff ignores untracked files, so a test that
+        # created a new runs/<brief>.json would slip past it.
+        run: test -z "$(git status --porcelain -- atelier/art-forge/runs)"
 
       # Asset forge (F-003): structural + game-rule validation for every
       # manifest entry whose glb exists on disk. Bespoke-tier failures are

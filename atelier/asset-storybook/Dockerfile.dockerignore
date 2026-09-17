@@ -16,6 +16,8 @@
 !content/world/**
 !atelier/mapforge/lib/**
 !atelier/story-explorer/**
+!atelier/art-forge/runs/**
+!atelier/art-forge/briefs/**
 !docs/story/undertow/**
 !k8s/local/storybook-nginx.conf
 

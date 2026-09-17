@@ -50,6 +50,14 @@ COPY atelier/mapforge/lib atelier/mapforge/lib
 COPY atelier/story-explorer atelier/story-explorer
 COPY docs/story/undertow docs/story/undertow
 
+# F-053: the Forge tab fetches the run ledgers + briefs from atelier/art-forge/.
+# Without these the deployed storybook can only say "not packaged in this
+# image" for every brief. runs/ + briefs/ ONLY (~54 KB of committed JSON):
+# out/ is gitignored local renders and the generators are build inputs.
+# Keep in sync with the "!" lines in ./Dockerfile.dockerignore.
+COPY atelier/art-forge/runs atelier/art-forge/runs
+COPY atelier/art-forge/briefs atelier/art-forge/briefs
+
 # Small and frequently edited — these come last so they invalidate as little as
 # possible.
 COPY colyseus-server/generated/asset-keys.json colyseus-server/generated/asset-keys.json

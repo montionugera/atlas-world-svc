@@ -38,7 +38,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { appendAttempt } from "./lib/run-ledger.mjs";
+import { appendAttempt, resolveRunsDir } from "./lib/run-ledger.mjs";
 
 const FORGE_DIR = path.dirname(fileURLToPath(import.meta.url));
 const RUNS_DIR = path.join(FORGE_DIR, "runs");
@@ -710,7 +710,7 @@ function main() {
     // Ledger failure must NOT convert a legitimate FLAG exit (1) into an
     // IO-error exit (2) — warn and keep the gate's verdict.
     try {
-      appendAttempt(RUNS_DIR, ledgerBriefId, {
+      appendAttempt(resolveRunsDir({ defaultDir: RUNS_DIR }), ledgerBriefId, {
         type: "gate",
         png: path.relative(FORGE_DIR, src),
         ok: result.ok,
