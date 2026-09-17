@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Claude Code" version="24.0.0">
   <diagram name="Map Asset Pipeline" id="map-asset-pipeline">
-    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="500" math="0" shadow="0">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2100" pageHeight="500" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -32,7 +32,7 @@
         <mxCell id="n4" value="4. Freeze into Spine&#10;content/spine/nodes/*.json&#10;(source of truth)&#10;records provenance.generator.fabric" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="780" y="80" width="210" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="n4note" value="deliberate, human-reviewed step — not automatic" style="text;html=1;align=center;fontSize=10;fontColor=#666666;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="n4note" value="deliberate, human-reviewed step — never automatic (Map Builder needs confirm:true and snapshots first)" style="text;html=1;align=center;fontSize=10;fontColor=#666666;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="780" y="170" width="210" height="30" as="geometry" />
         </mxCell>
 
@@ -82,13 +82,36 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
+        <!-- 0. Map Builder (F-052) — the service that drives steps 2→7 as jobs -->
+        <mxCell id="n0" value="0. Map Builder&#10;atelier/map-builder/ — storybook tab + /api&#10;runs steps 2→7 as tracked jobs (draft = 2→3 + dry run;&#10;publish = 4→7 after confirm:true), snapshot/undo of the published set" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f2ff;strokeColor=#3b6ea5;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="270" width="450" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="n0note" value="Gate 2 proof: atelier/map-builder/tests/e2e/publish-undo.sh — a real draft → publish → undo in a throwaway git worktree; publish touches only the snapshot set, undo leaves a clean tree" style="text;html=1;align=center;fontSize=10;fontColor=#666666;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="270" y="360" width="450" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e0a" value="draft / publish jobs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;fontSize=10;" edge="1" parent="1" source="n0" target="n2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="365" y="230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e0b" value="Map Builder tab (review, publish, undo)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;fontSize=10;" edge="1" parent="1" source="n0" target="n8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="720" y="440" />
+              <mxPoint x="1910" y="440" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
         <!-- Separate pipeline note -->
         <mxCell id="artforge" value="NOT this pipeline: atelier/art-forge/ (F-050 dashboard)&#10;ComfyUI / diffusion-based concept art + character/environment generation.&#10;Unrelated to procedural map drafting above." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;dashed=1;fontSize=11;fontColor=#999999;" vertex="1" parent="1">
           <mxGeometry x="780" y="300" width="440" height="70" as="geometry" />
         </mxCell>
 
         <!-- Open question note -->
-        <mxCell id="openq" value="Open question: which generate-world.mjs run (seed value) produced today's&#10;committed spine/maps was not traced — provenance fields point to a fabric&#10;file but the specific run wasn't confirmed." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9e6;strokeColor=#d6b656;dashed=1;fontSize=11;fontColor=#7a6000;" vertex="1" parent="1">
+        <mxCell id="openq" value="Open question (historical): which generate-world.mjs run (seed value) produced&#10;today's committed spine/maps was not traced. Going forward the Map Builder&#10;records the seed per publish (content/world/fabric/world.json + snapshot meta)." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9e6;strokeColor=#d6b656;dashed=1;fontSize=11;fontColor=#7a6000;" vertex="1" parent="1">
           <mxGeometry x="1290" y="300" width="470" height="70" as="geometry" />
         </mxCell>
 
