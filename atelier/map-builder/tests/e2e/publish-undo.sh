@@ -61,7 +61,13 @@ BRANCH="tmp/map-builder-e2e-$$"
 SERVER_PID=""
 
 cleanup() {
-  local rc=$?
+  # $1, when passed, is the exit code to propagate (128+signum, from the
+  # INT/TERM traps below); the bare EXIT trap passes nothing, so this falls
+  # back to $? — the real exit status of the script at that point. Without
+  # this, a signal trap would read $? as whatever command happened to be
+  # running when the signal arrived (e.g. `sleep` in poll_job, which exits
+  # 0) and wrongly report success for an interrupted run.
+  local rc="${1:-$?}"
   if [ -n "$SERVER_PID" ] && kill -0 "$SERVER_PID" 2>/dev/null; then
     kill "$SERVER_PID" 2>/dev/null
     wait "$SERVER_PID" 2>/dev/null
@@ -75,7 +81,9 @@ cleanup() {
   rm -rf "$tmp"
   exit "$rc"
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'cleanup 130' INT
+trap 'cleanup 143' TERM
 
 git -C "$REPO_ROOT" worktree add --quiet --detach "$WT" HEAD || fail "step 1: git worktree add"
 git -C "$WT" checkout -q -b "$BRANCH" || fail "step 1: git checkout -b $BRANCH"
@@ -83,8 +91,9 @@ cur="$(git -C "$WT" branch --show-current)"
 [ "$cur" = "$BRANCH" ] || fail "step 1: expected branch $BRANCH, on '$cur'"
 [ "$cur" != "main" ] || fail "step 1: refusing to run on main"
 ln -s "$REPO_ROOT/scripts/node_modules" "$WT/scripts/node_modules" || fail "step 1: symlink scripts/node_modules"
-[ -z "$(git -C "$WT" status --porcelain --untracked-files=all)" ] || {
-  git -C "$WT" status --porcelain --untracked-files=all
+wt_status="$(git -C "$WT" status --porcelain --untracked-files=all)" || fail "step 1: git status failed"
+[ -z "$wt_status" ] || {
+  echo "$wt_status"
   fail "step 1: fresh worktree is not clean (see above)"
 }
 echo "e2e: throwaway worktree $WT on $BRANCH (source: $REPO_ROOT @ $(git -C "$WT" rev-parse --short HEAD))"
@@ -147,7 +156,9 @@ api_get "/api/drafts/$DRAFT_ID/review" | jq_node '
 echo "e2e: review shows a non-empty dry run"
 
 # --- 5. Pre-publish record ---------------------------------------------------
-before="$(git -C "$WT" status --porcelain --untracked-files=all | wc -l | tr -d ' ')"
+wt_status="$(git -C "$WT" status --porcelain --untracked-files=all)" || fail "step 5: git status failed"
+before=0
+[ -z "$wt_status" ] || before="$(printf '%s\n' "$wt_status" | wc -l | tr -d ' ')"
 [ "$before" = "0" ] || fail "step 5: tree dirty before publish ($before entries)"
 PRE_SEED="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).seed)' "$WT/content/world/fabric/world.json")"
 [ "$PRE_SEED" != "$SEED" ] || fail "step 5: committed seed already equals the draft seed — the publish would be a no-op"
@@ -183,8 +194,9 @@ st="$(poll_job "$UNDO_ID" "$COMPOSITE_TIMEOUT_S")"
 [ "$st" = "succeeded" ] || { print_log "$UNDO_ID"; fail "step 7: undo $UNDO_ID ended '$st'"; }
 UNDO_SEED="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).seed)' "$WT/content/world/fabric/world.json")"
 [ "$UNDO_SEED" = "$PRE_SEED" ] || fail "step 7: seed after undo is '$UNDO_SEED', expected $PRE_SEED"
-if [ -n "$(git -C "$WT" status --porcelain --untracked-files=all)" ]; then
-  git -C "$WT" status --porcelain --untracked-files=all
+wt_status="$(git -C "$WT" status --porcelain --untracked-files=all)" || fail "step 7: git status failed"
+if [ -n "$wt_status" ]; then
+  echo "$wt_status"
   fail "step 7: tree not clean after undo (restore is supposed to be byte-for-byte)"
 fi
 (cd "$WT" && node scripts/check_render_lock.mjs --check) || fail "step 7: check_render_lock --check after undo"
