@@ -307,7 +307,14 @@ polling `GET /jobs` every 2 s if the stream drops.
    lock, and leaves `check_render_lock --check`, `check_content.mjs`, the SHEETS parity gate and
    `node --test atelier/mapforge/tests/*.test.mjs` green; the seed in
    `content/world/fabric/world.json` equals the draft's; a publish attempted on `main` is
-   refused with 409 and changes nothing.
+   refused with 409 and changes nothing. Precision on "green" (final review I2): the
+   builder itself keeps `check_render_lock --check`, `check_content.mjs --only=spine`, the
+   spine-emit drift check and the SHEETS parity gate green after every publish; the bare
+   `check_content.mjs` run and the mapforge suite validate the CURRENTLY-COMMITTED seed's
+   specific values (its ratio, coastline vertex count, zone/spine bindings), so they
+   legitimately go red immediately after any real publish that changes the seed and return
+   green after undo — or stay green only if the new seed's own values happen to satisfy
+   them, which is not guaranteed and is downstream content work, not a publish defect.
 7. Undo restores every file in the snapshot byte-for-byte (sha256 match) and leaves the same
    gates green.
 8. Killing the service mid-draft and restarting marks the job `interrupted`; Re-run produces a
