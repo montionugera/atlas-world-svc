@@ -263,6 +263,13 @@ jobs:
           STORYBOOK_SMOKE_REQUIRED: "1"
         run: node atelier/asset-storybook/tests/smoke/run.mjs
 
+      # Map builder (F-052): the ONLY Node 18 run of this suite — Gate 1/2
+      # (scripts/precheck.sh) run it locally on whatever Node the dev has.
+      # Without this step it would never be checked against the pinned
+      # runtime CI actually deploys with.
+      - name: Map builder tests
+        run: node --test atelier/map-builder/tests/*.test.mjs
+
       # System-level (non-npm) binaries: scripts/system-deps.json is the ONE
       # declared source of truth (see its header) — this installs whatever it
       # marks `required: true` for the current OS and re-verifies, rather

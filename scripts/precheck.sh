@@ -178,6 +178,8 @@ storybook_tests() {
       && node atelier/asset-storybook/tests/smoke/run.mjs )
 }
 
+map_builder_tests() { ( cd "$REPO_ROOT" && node --test atelier/map-builder/tests/*.test.mjs ) }
+
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace install" deps_install
 run_section "contracts: tsc build"          contracts_build
@@ -191,6 +193,7 @@ run_section "client: react-client suite"    client_tests
 run_section "system deps: binary check (scripts/system-deps.json)" system_deps_check
 run_section "art-forge: node --test suite"  art_forge_tests
 run_section "asset-storybook: node --test suite" storybook_tests
+run_section "map-builder: node --test suite" map_builder_tests
 run_section "combat-lab: model gates"       combat_lab
 run_section "content: spine gates (--only=spine)" content_spine
 run_section "world digest (G-WORLD-DIGEST)" world_digest
