@@ -911,17 +911,22 @@ export async function mountMapBuilder(main) {
   const publishedSeedCode = el("code");
   const publishUndoBtn = el("button", { type: "button", className: "mb-stop-btn", text: "Undo this publish" });
   const publishOpenMapsBtn = el("button", { type: "button", className: "story-tab", text: "Open Map Sheets" });
-  publishUndoBtn.addEventListener("click", async () => {
-    const job = publishJobId ? state.jobs.get(publishJobId) : null;
-    if (!job?.snapshotId) return;
+  // Both undo buttons (Published, and Failed's half-published case) start the
+  // same job; they differ only in where the snapshotId comes from. The button
+  // stays disabled after a successful start — the job frames take over.
+  async function startUndo(btn, snapshotId) {
     errorBanner.textContent = "";
-    publishUndoBtn.disabled = true;
+    btn.disabled = true;
     try {
-      await postJson(apiBase + "/undo", { snapshotId: job.snapshotId });
+      await postJson(apiBase + "/undo", { snapshotId });
     } catch (err) {
       errorBanner.textContent = "Could not start the undo: " + err.message;
-      publishUndoBtn.disabled = false;
+      btn.disabled = false;
     }
+  }
+  publishUndoBtn.addEventListener("click", () => {
+    const job = publishJobId ? state.jobs.get(publishJobId) : null;
+    if (job?.snapshotId) startUndo(publishUndoBtn, job.snapshotId);
   });
   publishOpenMapsBtn.addEventListener("click", () => {
     document.querySelector('.sidebar-item[data-class="' + MAPS_CLASS + '"]')?.click();
@@ -949,18 +954,10 @@ export async function mountMapBuilder(main) {
   // case, so it cannot gate this button).
   const publishHalfPublishedP = el("p", { className: "mb-build-error" });
   const publishHalfUndoBtn = el("button", { type: "button", className: "mb-stop-btn", text: "Undo from snapshot" });
-  publishHalfUndoBtn.addEventListener("click", async () => {
+  publishHalfUndoBtn.addEventListener("click", () => {
     const job = publishJobId ? state.jobs.get(publishJobId) : null;
     const target = job ? publishFailure(job).halfPublished : null;
-    if (!target) return;
-    errorBanner.textContent = "";
-    publishHalfUndoBtn.disabled = true;
-    try {
-      await postJson(apiBase + "/undo", { snapshotId: target.snapshotId });
-    } catch (err) {
-      errorBanner.textContent = "Could not start the undo: " + err.message;
-      publishHalfUndoBtn.disabled = false;
-    }
+    if (target) startUndo(publishHalfUndoBtn, target.snapshotId);
   });
   const publishFailedHost = el("div", { className: "mb-publish-failed" }, [
     el("h3", { text: "Publish failed" }),

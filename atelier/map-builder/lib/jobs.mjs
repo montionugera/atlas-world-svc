@@ -18,6 +18,13 @@ const assertId = (id) => { if (!JOB_ID.test(id)) throw new Error(`invalid job id
 // reimplementing the same destructure.
 export const publicJob = (job) => { if (!job) return job; const { _seq, ...rest } = job; return rest; };
 
+// The one "not decided yet" review shape: a draft's default at create, and
+// what a non-ok publish (failed, cancelled, interrupted — at runtime in
+// queue.mjs's reopenDraft, at boot in recoverInterrupted below) resets the
+// draft to. A fresh object per call: records are spread and serialised, and
+// a shared frozen `reasons` array would break the first consumer that pushes.
+export const undecidedReview = () => ({ decision: null, reasons: [], at: null });
+
 export function createJobStore({ dir }) {
   mkdirSync(dir, { recursive: true });
   const recPath = (id) => join(dir, `${assertId(id)}.json`);
@@ -35,7 +42,7 @@ export function createJobStore({ dir }) {
     create(fields) {
       const job = { id: newJobId(), status: "queued", createdAt: new Date().toISOString(), startedAt: null, endedAt: null,
         durationMs: null, steps: [], exitCode: null, error: null, rerunOf: null, rerunMatch: null, metrics: null,
-        review: { decision: null, reasons: [], at: null }, ...fields, _seq: ++seq };
+        review: undecidedReview(), ...fields, _seq: ++seq };
       return write(job);
     },
     get: read,
@@ -67,7 +74,7 @@ export function createJobStore({ dir }) {
           // reopenDraft, applied at boot where no event bus exists yet.
           if (j.kind === "publish") {
             const draft = j.draftJobId ? read(j.draftJobId) : null;
-            if (draft && !draft.publishedBy) write({ ...draft, review: { decision: null, reasons: [], at: null } });
+            if (draft && !draft.publishedBy) write({ ...draft, review: undecidedReview() });
           }
           return j.id;
         });

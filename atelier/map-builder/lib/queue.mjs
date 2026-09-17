@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { createStageTracker } from "./stage-parser.mjs";
 import { commandsForKind, outDirFor } from "./commands.mjs";
 import { SEED_GRAMMAR } from "../../mapforge/generate-world.mjs";
-import { JOB_ID, publicJob } from "./jobs.mjs";
+import { JOB_ID, publicJob, undecidedReview } from "./jobs.mjs";
 import { createCompositeSteps, publishOrUndoActive, PNG_SKIP_LINE, PNG_WARNING, PUBLISH_REFUSED_ON_MAIN, SCRIPTS_DEPS_MISSING } from "./publish.mjs";
 
 export class ConflictError extends Error { constructor(msg) { super(msg); this.code = 409; } }
@@ -64,20 +64,22 @@ export function createJobQueue(options) {
     }
   };
 
-  // A publish that ends non-ok (failed, restore failed, interrupted) undoes the
-  // "accepted" its enqueue recorded on the draft (re-review I4): otherwise the
-  // draft is stuck — Review hides both buttons, the table says "Ready to
-  // review", the badge skips it. Symmetric with the enqueue-time set: same
-  // shape, same best-effort try/catch, same job.done frame for the draft
-  // (repeated job.done for one id is safe — every consumer upserts by id).
-  // A draft already published for real keeps its decision; publishedBy is
-  // the record of that. Emitted AFTER the publish's own terminal frame.
+  // Invariant: EVERY non-ok terminal transition of a publish (failed, restore
+  // failed, cancelled while queued, interrupted by close()) calls this — the
+  // boot-time twin is jobs.mjs's recoverInterrupted. It undoes the "accepted"
+  // its enqueue recorded on the draft (re-review I4): otherwise the draft is
+  // stuck — Review hides both buttons, the table says "Ready to review", the
+  // badge skips it. Symmetric with the enqueue-time set: same shape, same
+  // best-effort try/catch, same job.done frame for the draft (repeated
+  // job.done for one id is safe — every consumer upserts by id). A draft
+  // already published for real keeps its decision; publishedBy is the record
+  // of that. Emitted AFTER the publish's own terminal frame.
   const reopenDraft = (publishJob) => {
     if (publishJob.kind !== "publish") return;
     try {
       const draft = store.get(publishJob.draftJobId);
       if (!draft || draft.publishedBy) return;
-      events.emit("job.done", { job: publicJob(store.update(draft.id, { review: { decision: null, reasons: [], at: null } })) });
+      events.emit("job.done", { job: publicJob(store.update(draft.id, { review: undecidedReview() })) });
     } catch { /* draft record gone — nothing to reopen */ }
   };
 
@@ -274,6 +276,7 @@ export function createJobQueue(options) {
         pending.splice(pendingIndex, 1);
         const job = store.update(id, { status: "cancelled", endedAt: new Date().toISOString() });
         events.emit("job.done", { job: publicJob(job) });
+        reopenDraft(job);
         settleIdleIfDone();
         return job;
       }

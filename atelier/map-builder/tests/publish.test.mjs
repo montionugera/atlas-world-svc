@@ -189,6 +189,23 @@ test("a second publish (or an undo) while one is queued → 409", async (t) => {
   await s.queue.onIdle();
 });
 
+test("cancelling a queued publish reopens the draft (re-review m7: every non-ok publish terminal calls reopenDraft)", (t) => {
+  const s = setup(t);
+  // The only way a publish can sit in `pending`: enqueued after close(), where
+  // pump() early-returns. With concurrency >= 1 it is otherwise in `active`
+  // before enqueue() returns — a shutdown-window edge, pinned here so the
+  // invariant is real rather than "every reachable path".
+  s.queue.close();
+  const job = s.queue.enqueue({ kind: "publish", draftJobId: s.draft.id });
+  assert.equal(s.store.get(s.draft.id).review.decision, "accepted");
+  assert.equal(s.queue.cancel(job.id).status, "cancelled");
+  assert.deepEqual(s.store.get(s.draft.id).review, { decision: null, reasons: [], at: null });
+  const draftFrames = s.events.filter((e) => e.type === "job.done" && e.job?.id === s.draft.id);
+  assert.equal(draftFrames.at(-1).job.review.decision, null, "the last frame for the draft reopens it");
+  assert.ok(s.events.findIndex((e) => e === draftFrames.at(-1)) > s.events.findIndex((e) => e.type === "job.done" && e.job?.id === job.id),
+    "the draft's reopen frame follows the publish's cancelled frame");
+});
+
 test("undo of the publish's snapshot restores the world and emits world.changed", async (t) => {
   const s = setup(t);
   const before = s.bytes(WORLD);
