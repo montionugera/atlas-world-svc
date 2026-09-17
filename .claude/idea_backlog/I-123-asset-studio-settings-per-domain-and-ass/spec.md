@@ -12,7 +12,9 @@ status: idea
 - **Decision 1: settings stay as files in git.** Nothing moves into a database. The studio is an editing surface over the JSON/Markdown files that already live under `content/`, the pattern git-backed CMSs (Decap, TinaCMS), CastleDB, LDtk and Godot all use (research, §A).
 - **Decision 2: one local studio service.** A Node service on the owner's Mac serves the UI, a JSON API, the MCP endpoint and (slice 2) the art job queue. It grows out of the F-052 map-builder server (`atelier/map-builder/server.mjs`), which becomes one module of it.
 - **Decision 2b: SQLite as a rebuildable index, not the record.** The studio keeps a local SQLite database (built-in `node:sqlite`, full-text search via FTS5) that joins assets, settings, origin labels and later renders for fast search and filters. It is never committed and is rebuilt from the files. Deleting it loses nothing. This is the Unity `Library/` / Godot `.godot/` pattern. The studio runs on **Node ≥22.5**, separate from the repo's Node 18 determinism pin.
-- **Decision 3: build in three slices.** Slice 1: explore + settings + MCP. Slice 2: generate art from an asset. Slice 3: import hand-made assets, fold the map builder in, give combat a settings home. **This spec designs slice 1 in full and slices 2 and 3 in outline only.**
+- **Decision 3: a Mac app.** The owner double-clicks **Asset Studio.app** to start or continue work. It is an **Electron** app that carries its own Node runtime, the studio server, the SQLite index and the UI in one window. Only the data stays outside: the git worktree, git itself, and (slice 2) the ComfyUI GPU machine.
+- **Decision 4: screens designed in Claude Design.** The UI is designed in claude.ai/design first, reusing the existing "Atlas Asset Storybook" design-system project (tokens taken from today's storybook CSS), so the result is clean and user friendly. Code follows the approved screens rather than inventing layout.
+- **Decision 5: build in order.** Design (D) and slice 1 (headless studio: explore + settings + MCP) run in parallel. Slice 1b wraps it in the Mac app with the designed screens. Slice 2: generate art from an asset. Slice 3: import hand-made assets, fold the map builder in, give combat a settings home. **This spec designs slices 1 and 1b in full, D as a brief, and slices 2 and 3 in outline only.**
 - **What it replaces.** F-053 (storybook redesign) forbids a server and write endpoints (F-053 spec L16, L48, AC 25). This spec retires those three lines. F-053's information architecture (dashboard, `sections.json` registry, list view, detail view) stays and becomes the studio's UI plan.
 - **Assumed without asking.** The studio never commits on its own and writes only into its own worktree. MCP cannot delete asset binaries in slice 1. Only files that a schema covers are editable. Generated-vs-hand-made is derived from data that already exists, with no manifest schema change. Details in §9.
 
@@ -211,16 +213,56 @@ A **settings document** is one existing file under an allowed root, addressed by
 - Editable scope → **only schema-mapped, non-generated files** (default) — most world files and all dungeons are read-only in slice 1.
 - Where the studio writes → **its own `studio/edits` worktree** (default) — never main, never a claimed feature worktree.
 - Combat → **read-only in slice 1** (default) — its numbers live in script constants; moving them to `content/combat/` is its own change.
-- Dependencies → **ajv + MCP SDK (+ zod) only** (default).
+- Dependencies → **ajv + MCP SDK (+ zod) only** for the server (default); the app adds `electron`, `electron-builder` and `playwright` (Electron smoke test) as dev dependencies inside `atelier/studio/app/`.
+- Mac app → **Electron, built right after slice 1** (owner, 2026-09-17) — bundles Node, reuses the web UI, one language.
+- UI design → **Claude Design first, reusing the existing design-system project** (owner, 2026-09-17).
 - Database → **SQLite from slice 1, as a rebuildable index only** (owner, 2026-09-17) — fast search and filters for UI and MCP; files and run ledgers stay the record, so deleting the database loses nothing.
 - Studio Node version → **≥22.5 with its own CI job** (owner) — built-in `node:sqlite`, no native package; the Node 18 determinism pin is unchanged.
 
-## 10. Later slices (outline, designed in their own specs)
+## 10. Design phase D: screens in Claude Design
+
+- **Where:** claude.ai/design, project "Atlas Asset Storybook" (the design system already holds tokens from `atelier/asset-storybook/index.html` CSS and 11 component previews). Screens are designed there; the in-repo mockup canvas from I-122 is reference only.
+- **Brief (plain words):** a calm, clean tool for one art director. Every screen answers "what am I looking at, and what can I do next". No pipeline jargon on first view: seeds, hashes and strengths live behind a "details" disclosure.
+- **Screens to design:**
+  1. **Home**: what changed since last time, unsaved or uncommitted edits, assets missing settings, and later jobs running.
+  2. **Assets**: list and grid with search, kind and origin filters (generated, hand-made, marketplace, unknown), and empty states.
+  3. **Asset detail**: preview, origin with its evidence, files, and its **settings form** (description, look, references), with inline schema errors.
+  4. **Settings**: browse by domain (story, world, zones, dungeons, spine, combat), with a clear read-only reason badge where editing is off.
+  5. **Changes**: the files changed, a readable diff, and a commit message box.
+  6. **App chrome**: window sidebar, first-run "choose your atlas-world-svc folder", "server problem" and "offline/read-only" states.
+  7. **Generate** (slice 2, sketch only): pick settings, run, compare drafts, accept.
+- **Output:** the approved screen set plus a handoff bundle. The F-053 information architecture (registry-driven sidebar, list, detail) is the starting structure, not a constraint on visuals.
+- **Done when:** the owner approves the screens. Slice 1b implements them and a smoke screenshot of each screen is compared against the design by a reviewer.
+
+## 11. Slice 1b: the Mac app
+
+```mermaid
+flowchart LR
+  APP["Asset Studio.app<br/>(Electron main process)"] -->|starts in-process| SRV["studio server<br/>127.0.0.1:random port"]
+  APP -->|opens window| WIN["BrowserWindow<br/>designed UI"]
+  WIN -->|HTTP + token| SRV
+  AG["Claude / agents"] -->|MCP /mcp| SRV
+  SRV --> DB[("SQLite index<br/>~/Library/Application Support/Asset Studio")]
+  SRV --> WT[("studio worktree<br/>in the chosen repo")]
+```
+
+- **Runtime:** Electron's bundled Node. Verified 2026-09-17: Electron 44.4.1 ships Node 24.21.0, and `node:sqlite` with an FTS5 table works there. So the app needs no separate Node install, and the headless server (§4, Node ≥22.5) runs unchanged inside it.
+- **Double-click to start or continue.**
+  - First run asks for the `atlas-world-svc` folder once and remembers it.
+  - Every run: single-instance lock (a second double-click focuses the open window), create or reuse the `studio/edits` worktree, rebuild the index, restore the last screen, filters and selected asset, and show uncommitted edits on Home.
+  - Quitting with uncommitted edits warns but never discards them; they are files in the worktree.
+- **Where things live:** the app bundle holds code only. The SQLite index, window state and the token move to `~/Library/Application Support/Asset Studio/`, which replaces `atelier/studio/.cache/` and `.token` when running as the app. Drafts (slice 2) stay in the shared drafts folder.
+- **Agents and MCP:** the server listens on a fixed configurable port (default in `config.json`) so `.mcp.json` stays stable. The MCP endpoint is available while the app is open. Without the app, `node atelier/studio/server.mjs` gives the same endpoint headless (tests, CI, agents on their own).
+- **Electron safety:** `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`; the window loads only the studio's own origin; navigation and new windows to other origins open in the default browser; no remote content. The §7 Host/Origin/token checks still apply.
+- **Packaging:** `electron-builder` produces `Asset Studio.app` and a `.dmg` under `atelier/studio/app/dist/` (gitignored). Unsigned in this slice: first launch needs right-click → Open once. Signing and notarisation are out of scope.
+- **Tests:** the headless tests from §8 stay the main gate. The app adds a Playwright-for-Electron smoke run: launch, pick a fixture repo, see Home, open an asset, edit a setting, see it in Changes, quit and relaunch, and land on the same asset.
+
+## 12. Later slices (outline, designed in their own specs)
 
 - **Slice 2: generate art from an asset.** A "Generate" action on an asset with settings: builds or reuses an art-forge brief, queues a job that runs the existing CLI (`node atelier/art-forge/generate/env.mjs --brief … --seed …`) through the F-052 job queue, streams progress over SSE, writes drafts to one shared folder outside the worktrees (path in config), and "Accept" runs the existing intake (`intake-art.mjs`) so the accepted image is committed. Needs: a ComfyUI tunnel health check (127.0.0.1:8188; never 8189), and a decision on briefs vs asset settings.
 - **Slice 3: import + fold-in.** Import hand-made files (license required, via `scripts/lib/license-policy.mjs`), soft-delete assets, mount the map builder routes (after F-052 merges), and extract combat numbers into `content/combat/` with a schema.
 
-## 11. Changes to other specs
+## 13. Changes to other specs
 
 - **F-053 spec:** L16 and L48 ("no server, no write endpoint") and AC 25 (the read-only grep gate) are superseded when this idea is refined. The gate's exemption widens from `map-builder*.mjs` to `js/studio/**`. The rest of F-053 (registry, dashboard, list and detail views) is unchanged and is the studio's UI.
 - **F-052 spec:** unchanged for now. Slice 3 moves its server into `atelier/studio/`.
@@ -246,4 +288,5 @@ A **settings document** is one existing file under an allowed root, addressed by
 ## Appendix B. Audit trail
 
 - 2026-09-17 self-grill-audit: verdict safe-with-fixes. Corrected: (C) no reusable schema map exists, so added `lib/schema-map.mjs` + editable-only-if-mapped rule and marked dungeons/most world read-only; (C) origin rule rewritten per registry (ledgers are keyed by briefId; concept art uses `gen.generated`; source text contains "OpenGameArt"/"Kenney", not bare URLs), counts to be measured first; (H) checkout guard was misattributed to F-052 (which checks branch name, only on publish), so the studio now writes only into its own worktree; (H) the psrw guard does not see Node writes, so the studio refuses claimed worktrees; (H) localhost is not a security boundary, so added Host/Origin checks + bearer token; (H) excluded `promote-world` outputs (`world/fabric|handles|resolved`, `spine`) from writable roots; (M) F-052 exists only on its feature branch, so it is now a stated prerequisite; (M) MCP SDK transitive deps stated; (M) dockerignore allowlist gap added. Verified on disk before editing: ledger header line, art-manifest gen counts (23 of 106), hardcoded schema loads, `REPLACED_FAMILIES`, F-052 `world.mjs:43-44`. Open: none needing the owner.
+- 2026-09-17 owner follow-up: added Mac app (Electron, slice 1b, §11) and Claude Design phase (§10); Electron 44.4.1 / Node 24.21.0 `node:sqlite`+FTS5 verified by running it.
 - 2026-09-17 owner follow-up: added SQLite as a rebuildable index (§5.4, Decision 2b), studio Node ≥22.5 with its own CI job and `studioNodeMajor` pin row, and a delete-and-rebuild equality test.
