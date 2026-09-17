@@ -93,6 +93,15 @@ test("failure at lock auto-restores the snapshot: failed, restored, world bytes 
   assert.equal(changed[0].world.seed, JSON.parse(before).seed);
   assert.equal(changed[0].world.publishAllowed, true);
   assert.equal(changed[0].world.undoAvailable, false, "an auto-restored publish leaves nothing to undo");
+  // Re-review I4: the enqueue-time "accepted" must be undone when the publish
+  // fails, or the draft is stuck — Review hides both buttons, the table says
+  // "Ready to review", and the badge does not count it. Reset + a job.done
+  // frame for the draft so every client re-offers it without a resync.
+  assert.deepEqual(s.store.get(s.draft.id).review, { decision: null, reasons: [], at: null });
+  const draftFrames = s.events.filter((e) => e.type === "job.done" && e.job?.id === s.draft.id);
+  assert.equal(draftFrames.at(-1).job.review.decision, null, "the last frame for the draft reopens it");
+  assert.ok(s.events.findIndex((e) => e === draftFrames.at(-1)) > s.events.findIndex((e) => e.type === "job.done" && e.job?.id === job.id),
+    "the draft's reopen frame follows the publish's terminal frame");
 });
 
 test("auto-restore failure: failed, restored:false, restoreError + 'undo by hand' log line, world.changed, undo still offered", async (t) => {
@@ -111,6 +120,10 @@ test("auto-restore failure: failed, restored:false, restoreError + 'undo by hand
   assert.equal(changed.length, 1, "the world may be half-published — the UI must refresh");
   assert.equal(changed[0].world.seed, DRAFT_SEED, "promote ran and nothing put it back");
   assert.equal(changed[0].world.undoAvailable, true);
+  // Re-review I4: a restore failure is still a failed publish — the draft's
+  // enqueue-time "accepted" is reset so the owner can decide again.
+  assert.equal(s.store.get(s.draft.id).review.decision, null);
+  assert.equal(s.store.get(s.draft.id).publishedBy, undefined);
 });
 
 test("undoAvailable: interrupted first publish → true; after its undo → false; a later publish → true", async (t) => {

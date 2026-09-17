@@ -59,7 +59,18 @@ export function createJobStore({ dir }) {
     logPath,
     recoverInterrupted() {
       return this.list({}).filter((j) => j.status === "queued" || j.status === "running")
-        .map((j) => { write({ ...j, status: "interrupted", endedAt: new Date().toISOString(), error: "service restarted" }); return j.id; });
+        .map((j) => {
+          write({ ...j, status: "interrupted", endedAt: new Date().toISOString(), error: "service restarted" });
+          // An interrupted publish never set publishedBy, so the "accepted"
+          // its enqueue recorded on the draft must be undone or the draft is
+          // stuck undecidable (re-review I4) — same rule as queue.mjs's
+          // reopenDraft, applied at boot where no event bus exists yet.
+          if (j.kind === "publish") {
+            const draft = j.draftJobId ? read(j.draftJobId) : null;
+            if (draft && !draft.publishedBy) write({ ...draft, review: { decision: null, reasons: [], at: null } });
+          }
+          return j.id;
+        });
     },
   };
 }

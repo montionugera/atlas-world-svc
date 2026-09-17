@@ -43,6 +43,20 @@ test("recoverInterrupted marks queued/running as interrupted", () => {
   assert.equal(s.get(d.id).status, "succeeded"); assert.equal(s.get(r.id).status, "interrupted");
   rmSync(dir, { recursive: true, force: true });
 });
+test("recoverInterrupted reopens the draft an interrupted publish had accepted (re-review I4)", () => {
+  const dir = tmp(); let s = createJobStore({ dir });
+  const draft = s.create({ kind: "draft", seed: "3f81c0aa9d2e5b17", status: "succeeded", review: { decision: "accepted", reasons: [], at: "2026-09-17T00:00:00.000Z" } });
+  const publish = s.create({ kind: "publish", seed: "3f81c0aa9d2e5b17", draftJobId: draft.id, status: "running" });
+  // A draft published for real stays decided: publishedBy is the record of it.
+  const published = s.create({ kind: "draft", seed: "4f81c0aa9d2e5b17", status: "succeeded", publishedBy: "j-old", review: { decision: "accepted", reasons: [], at: "2026-09-17T00:00:00.000Z" } });
+  s = createJobStore({ dir });
+  assert.deepEqual(s.recoverInterrupted(), [publish.id]);
+  assert.equal(s.get(publish.id).status, "interrupted");
+  assert.deepEqual(s.get(draft.id).review, { decision: null, reasons: [], at: null });
+  assert.equal(s.get(draft.id).status, "succeeded", "only the review is touched");
+  assert.equal(s.get(published.id).review.decision, "accepted");
+  rmSync(dir, { recursive: true, force: true });
+});
 test("get rejects a malformed id without touching the filesystem", (t) => {
   const dir = tmp(); t.after(() => rmSync(dir, { recursive: true, force: true }));
   const s = createJobStore({ dir });

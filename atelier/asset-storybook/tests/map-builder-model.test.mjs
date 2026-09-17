@@ -122,6 +122,20 @@ test("reviewDecided: accepted, rejected or published drafts hide the decision co
   assert.equal(reviewDecided(job({ status: "succeeded", publishedBy: "j9" })), true);
   assert.equal(reviewDecided(job({ status: "succeeded", review: undefined })), false);
 });
+test("a draft reopened by a failed publish (re-review I4) is back to review on all three surfaces", () => {
+  // The server resets the draft's review to exactly this shape after a
+  // failed/interrupted publish (queue.mjs, jobs.mjs) — the draft's own status
+  // is still succeeded and publishedBy was never set, so badge, table and
+  // Review must all agree it is to review again.
+  const reopened = job({ status: "succeeded", review: { decision: null, reasons: [], at: null } });
+  assert.equal(badgeCount([reopened]), 1);
+  assert.equal(reviewDecided(reopened), false);
+  assert.equal(statusText(reopened), "Ready to review");
+  // A draft the same failed publish frame could NOT reopen: one published for real.
+  const published = job({ status: "succeeded", publishedBy: "j9", review: { decision: null, reasons: [], at: null } });
+  assert.equal(reviewDecided(published), true);
+  assert.equal(statusText(published), "Published");
+});
 
 // Batch H review I3: the Failed sub-view must say so when the world may be
 // half-published — a failed auto-restore, or a service restart mid-publish

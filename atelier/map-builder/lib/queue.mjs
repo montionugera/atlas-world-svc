@@ -64,6 +64,23 @@ export function createJobQueue(options) {
     }
   };
 
+  // A publish that ends non-ok (failed, restore failed, interrupted) undoes the
+  // "accepted" its enqueue recorded on the draft (re-review I4): otherwise the
+  // draft is stuck — Review hides both buttons, the table says "Ready to
+  // review", the badge skips it. Symmetric with the enqueue-time set: same
+  // shape, same best-effort try/catch, same job.done frame for the draft
+  // (repeated job.done for one id is safe — every consumer upserts by id).
+  // A draft already published for real keeps its decision; publishedBy is
+  // the record of that. Emitted AFTER the publish's own terminal frame.
+  const reopenDraft = (publishJob) => {
+    if (publishJob.kind !== "publish") return;
+    try {
+      const draft = store.get(publishJob.draftJobId);
+      if (!draft || draft.publishedBy) return;
+      events.emit("job.done", { job: publicJob(store.update(draft.id, { review: { decision: null, reasons: [], at: null } })) });
+    } catch { /* draft record gone — nothing to reopen */ }
+  };
+
   const emitWorldChanged = () => {
     try { events.emit("world.changed", { world: world.read() }); } catch { /* a world read failure must not fail the job */ }
   };
@@ -145,6 +162,7 @@ export function createJobQueue(options) {
           try { snapshots.prune(); } catch (e) { try { store.appendLog(id, `[prune] ${e?.message ?? e}\n`); } catch { /* best-effort */ } }
         }
         events.emit("job.done", { job: publicJob(job) });
+        if (!result.ok) reopenDraft(createdJob);
         // Every composite terminal state (fix round 1): a success changed the
         // world, a failed restore or a failed undo `check` after its restore
         // left it changed, and even an unchanged world flips publishAllowed
@@ -170,6 +188,7 @@ export function createJobQueue(options) {
         error: String(e?.message ?? e), ...(isCompositeKind(createdJob.kind) ? { snapshotId: liveJob.snapshotId ?? null, ...autoRestore(id, liveJob) } : {}),
       }));
       events.emit("job.done", { job: publicJob(job) });
+      reopenDraft(createdJob);
       if (isCompositeKind(createdJob.kind)) emitWorldChanged();
     } finally {
       active.delete(id);
@@ -297,6 +316,7 @@ export function createJobQueue(options) {
         try {
           const job = store.update(dead.job.id, { status: "interrupted", endedAt: new Date().toISOString() });
           events.emit("job.done", { job: publicJob(job) });
+          reopenDraft(dead.job);
         } catch { /* best-effort; this record recovers on next boot */ }
       }
       settleIdleIfDone();
