@@ -1956,6 +1956,147 @@
         padding: 0.45rem 1rem;
         cursor: pointer;
       }
+      .mb-stage-failed {
+        color: var(--err);
+      }
+      .mb-stage-failed::before {
+        content: "✕ ";
+      }
+
+      /* ---------- Map Builder: Review + Publish (F-052 Task 16) ---------- */
+      /* Same D4 trap as `.mb-jobs-table`/`.mb-checklist` above: `.mb-screen-tabs`
+         sets `display: flex`, so `[hidden]` needs an explicit override wherever
+         this file toggles it via `.hidden` (setScreen() hides it for the Review
+         and Publish screens). */
+      .mb-screen-tabs[hidden] {
+        display: none;
+      }
+
+      .mb-review-banner {
+        color: var(--text-dim);
+        font-size: 0.9rem;
+        margin: 0 0 1rem;
+      }
+
+      .mb-viewer-mode-tabs {
+        display: flex;
+        gap: 0.4rem;
+        margin-bottom: 0.6rem;
+      }
+
+      .mb-review-sheet-select {
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        color: var(--text);
+        background: var(--bg-elev);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.3rem 0.5rem;
+        margin-bottom: 0.8rem;
+      }
+
+      .mb-review-viewer {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        margin-bottom: 1.2rem;
+      }
+      .mb-review-pane {
+        flex: 1 1 320px;
+        min-width: 0;
+      }
+      .mb-review-pane-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-faint);
+        margin: 0 0 0.3rem;
+      }
+      .mb-review-stage {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        background: #12151d;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        touch-action: none;
+      }
+      .mb-review-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        max-width: none;
+        transform-origin: 0 0;
+        user-select: none;
+        pointer-events: none;
+      }
+
+      .mb-review-table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 0.8rem;
+        margin-bottom: 0.5rem;
+      }
+      .mb-review-table th,
+      .mb-review-table td {
+        text-align: left;
+        padding: 0.4rem 0.8rem 0.4rem 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .mb-review-table th {
+        color: var(--text-dim);
+        font-weight: 600;
+      }
+
+      .mb-review-metrics,
+      .mb-review-checks,
+      .mb-review-todos,
+      .mb-review-accept {
+        font-size: 0.84rem;
+        color: var(--text-dim);
+        margin: 1rem 0;
+      }
+      .mb-review-list {
+        margin: 0.3rem 0 0;
+        padding-left: 1.2rem;
+      }
+      .mb-review-list li {
+        margin-bottom: 0.2rem;
+      }
+      .mb-review-files summary {
+        cursor: pointer;
+        color: var(--accent);
+        font-size: 0.8rem;
+      }
+
+      .mb-review-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1.2rem;
+      }
+      .mb-review-reason {
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        color: var(--text);
+        background: var(--bg-elev);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.3rem 0.5rem;
+      }
+
+      .mb-publish-warning {
+        color: var(--tier-seed);
+        font-size: 0.82rem;
+        margin: 0.5rem 0;
+      }
+      .mb-publish-confirm h3,
+      .mb-publish-publishing h3,
+      .mb-publish-published h3,
+      .mb-publish-failed h3 {
+        margin: 0 0 0.6rem;
+      }
     </style>
   </head>
   <body>

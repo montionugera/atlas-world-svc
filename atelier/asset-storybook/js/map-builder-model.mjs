@@ -115,11 +115,19 @@ const ACTIONS = {
   why: { id: "why", label: "See why" },
 };
 
-/** Row actions per job status (spec §6). */
+/**
+ * Row actions per job status (spec §6). A running publish/undo gets no
+ * Cancel: queue.mjs refuses to cancel a running composite job at every step
+ * (409, always — killing one mid-way would leave a half-replaced world), so
+ * a Cancel button there could never do anything (carried finding, Batch G
+ * re-review n3).
+ */
 export function rowActions(job) {
   switch (job.status) {
     case "running":
-      return [ACTIONS.watch, ACTIONS.cancel];
+      return job.kind === "publish" || job.kind === "undo"
+        ? [ACTIONS.watch]
+        : [ACTIONS.watch, ACTIONS.cancel];
     case "queued":
       return [ACTIONS.cancel];
     case "succeeded":
@@ -179,3 +187,50 @@ export function reduce(state, event) {
       return state;
   }
 }
+
+/**
+ * Continent deltas for the Review screen, top-5 by |Δ landKm2| unless
+ * `showAll`. Re-sorts rather than trusting the server's own order (which
+ * happens to already be sorted this way in review.mjs's buildReview) so this
+ * function's contract holds regardless of what the caller hands it.
+ */
+export function reviewRows(review, { showAll = false } = {}) {
+  const rows = [...(review?.deltas ?? [])].sort(
+    (a, b) => Math.abs(b.landKm2.delta) - Math.abs(a.landKm2.delta),
+  );
+  return showAll ? rows : rows.slice(0, 5);
+}
+
+// Duplicated (not imported) from atelier/map-builder/lib/publish.mjs's
+// PUBLISH_STEPS/STEP_LABELS exports: that module pulls in Node-only fs +
+// mapforge machinery and can never be imported into the browser bundle. Kept
+// as its own pair of constants (not derived) so a drift between server and
+// client is a plain data mismatch a test can catch — see
+// tests/map-builder-model.test.mjs's "drift guard" test, which imports
+// publish.mjs's real PUBLISH_STEPS directly (safe there: that test runs
+// under node:test, not the browser) and asserts equality with PUBLISH_STEPS
+// below.
+export const PUBLISH_STEPS = Object.freeze(["snapshot", "promote", "render", "parity", "lock", "verify"]);
+
+const PUBLISH_STEP_LABELS = Object.freeze({
+  snapshot: "Save a snapshot of the current world",
+  promote: "Replace the world with the draft",
+  render: "Redraw every map sheet",
+  parity: "Check the Map Sheets index",
+  lock: "Re-baseline the render lock",
+  verify: "Verify the published world",
+});
+
+/** The six publish steps' human labels, in order (see PUBLISH_STEPS above). */
+export function publishStepsText() {
+  return PUBLISH_STEPS.map((name) => PUBLISH_STEP_LABELS[name]);
+}
+
+/** The fixed reject-reason set (spec §6 Review screen). */
+export const decisionReasons = Object.freeze([
+  "too much sea",
+  "too little sea",
+  "coastline too regular",
+  "settlements misplaced",
+  "other",
+]);

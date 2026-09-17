@@ -1,6 +1,7 @@
-import { MAP_BUILDER_CLASS, fetchJson } from "./state.mjs";
+import { MAP_BUILDER_CLASS, MAPS_CLASS, fetchJson } from "./state.mjs";
 import { initHealth, bumpHealth, renderSidebarBadge } from "./health.mjs";
 import { buildSidebarItem } from "./sidebar.mjs";
+import { createPanZoom, linkPanZoom } from "./panzoom.mjs";
 import {
   statusText,
   groupSteps,
@@ -9,6 +10,9 @@ import {
   validateSeed,
   badgeCount,
   reduce,
+  reviewRows,
+  publishStepsText,
+  decisionReasons,
 } from "./map-builder-model.mjs";
 
 /**
@@ -179,15 +183,26 @@ export async function mountMapBuilder(main) {
 
   const startScreen = el("div", { className: "mb-screen mb-start-screen" });
   const buildScreen = el("div", { className: "mb-screen mb-build-screen", hidden: "" });
+  const reviewScreen = el("div", { className: "mb-screen mb-review-screen", hidden: "" });
+  const publishScreen = el("div", { className: "mb-screen mb-publish-screen", hidden: "" });
   section.appendChild(startScreen);
   section.appendChild(buildScreen);
+  section.appendChild(reviewScreen);
+  section.appendChild(publishScreen);
 
+  // Review and Publish are reached from row/screen actions, not from the tab
+  // bar (there is nothing useful to show there without a draft already
+  // picked) — the tab bar itself is hidden while either is active, and Back
+  // returns to Start.
   function setScreen(name) {
     activeScreen = name;
     startTab.classList.toggle("active", name === "start");
     buildTab.classList.toggle("active", name === "build");
+    tabBar.hidden = name === "review" || name === "publish";
     startScreen.hidden = name !== "start";
     buildScreen.hidden = name !== "build";
+    reviewScreen.hidden = name !== "review";
+    publishScreen.hidden = name !== "publish";
   }
   startTab.addEventListener("click", () => setScreen("start"));
   buildTab.addEventListener("click", () => setScreen("build"));
@@ -356,8 +371,12 @@ export async function mountMapBuilder(main) {
   async function runAction(actionId, jobId) {
     errorBanner.textContent = "";
     try {
-      if (actionId === "watch" || actionId === "review" || actionId === "why") {
+      if (actionId === "watch" || actionId === "why") {
         openBuildScreen(jobId);
+        return;
+      }
+      if (actionId === "review") {
+        openReviewScreen(jobId);
         return;
       }
       if (actionId === "cancel") {
@@ -538,10 +557,465 @@ export async function mountMapBuilder(main) {
     stopBtn.hidden = !(job.status === "queued" || job.status === "running");
   }
 
+  // ---------- Review screen ----------
+  //
+  // reviewData is fetched once per openReviewScreen() call (GET .../review is
+  // a static snapshot of the draft — only the job's own `review.decision`
+  // changes afterward, and that arrives through the normal jobs state, not a
+  // re-fetch). Everything below is built once and patched in place, same
+  // rationale as the Build screen: patchReviewScreen() runs on every
+  // renderAll() (every SSE frame), and the reject-reason <select> is a
+  // focusable control that must not be recreated out from under a keyboard
+  // user.
+
+  let reviewJobId = null;
+  let reviewData = null;
+  let reviewShowAll = false;
+  let reviewViewerMode = "side-by-side"; // "side-by-side" | "draft-only" | "current-only"
+  let reviewSelectedSheetId = null;
+
+  const reviewEmpty = el("p", { className: "empty-state", text: "Pick a draft from Start to review it." });
+  const reviewBanner = el("p", { className: "mb-review-banner" });
+
+  const viewerModeBtn = (modeId, label) => {
+    const b = el("button", { type: "button", className: "story-tab mb-viewer-mode-tab", text: label });
+    b.dataset.mode = modeId;
+    return b;
+  };
+  const viewerModeSideBtn = viewerModeBtn("side-by-side", "Side-by-side");
+  const viewerModeDraftBtn = viewerModeBtn("draft-only", "Draft only");
+  const viewerModeCurrentBtn = viewerModeBtn("current-only", "Current only");
+  const viewerModeBar = el("div", { className: "mb-viewer-mode-tabs" }, [
+    viewerModeSideBtn,
+    viewerModeDraftBtn,
+    viewerModeCurrentBtn,
+  ]);
+  for (const btn of [viewerModeSideBtn, viewerModeDraftBtn, viewerModeCurrentBtn]) {
+    btn.addEventListener("click", () => {
+      reviewViewerMode = btn.dataset.mode;
+      patchReviewScreen();
+    });
+  }
+
+  // Only sheets the draft actually rendered (fabric/overlay — see
+  // review.mjs's header comment) are offered here: every other sheet's
+  // draftSvg is null, and setting an <img> src to null/empty would issue a
+  // request for the current document instead of degrading quietly.
+  const reviewSheetSelect = el("select", { className: "mb-review-sheet-select" });
+  reviewSheetSelect.addEventListener("change", () => {
+    reviewSelectedSheetId = reviewSheetSelect.value;
+    updateReviewViewerSrcs();
+  });
+
+  const draftStage = el("div", { className: "mb-review-stage" });
+  const draftImg = el("img", { className: "mb-review-img" });
+  draftStage.appendChild(draftImg);
+  const draftPane = el("div", { className: "mb-review-pane" }, [
+    el("p", { className: "mb-review-pane-label", text: "Draft" }),
+    draftStage,
+  ]);
+
+  const currentStage = el("div", { className: "mb-review-stage" });
+  const currentImg = el("img", { className: "mb-review-img" });
+  currentStage.appendChild(currentImg);
+  const currentPane = el("div", { className: "mb-review-pane" }, [
+    el("p", { className: "mb-review-pane-label", text: "Current" }),
+    currentStage,
+  ]);
+
+  const viewerHost = el("div", { className: "mb-review-viewer" }, [draftPane, currentPane]);
+
+  // Two independent instances sharing one transform (Task 16's whole reason
+  // for the panzoom.mjs extraction) — panning/zooming either pane moves both.
+  const draftPanZoom = createPanZoom({ stage: draftStage, img: draftImg });
+  const currentPanZoom = createPanZoom({ stage: currentStage, img: currentImg });
+  linkPanZoom(draftPanZoom, currentPanZoom);
+
+  function updateReviewViewerSrcs() {
+    const sheet = reviewData?.sheets.find((s) => s.id === reviewSelectedSheetId);
+    if (!sheet || !sheet.draftSvg) return;
+    draftPanZoom.setSrc(sheet.draftSvg);
+    currentPanZoom.setSrc(sheet.currentSvg);
+    draftPanZoom.reset();
+    currentPanZoom.reset();
+  }
+
+  const continentsTable = el("table", { className: "grid mb-review-table" });
+  const continentsShowAllBtn = el("button", { type: "button", className: "story-tab", text: "Show all" });
+  continentsShowAllBtn.addEventListener("click", () => {
+    reviewShowAll = !reviewShowAll;
+    patchReviewScreen();
+  });
+
+  const metricsHost = el("div", { className: "mb-review-metrics" });
+  const checksHost = el("div", { className: "mb-review-checks" });
+  const todosHost = el("div", { className: "mb-review-todos" });
+  const acceptSummaryHost = el("div", { className: "mb-review-accept" });
+
+  const reasonSelect = el("select", { className: "mb-review-reason" });
+  for (const reason of decisionReasons) reasonSelect.appendChild(el("option", { value: reason, text: reason }));
+
+  const reviewBackBtn = el("button", { type: "button", className: "story-tab", text: "Back" });
+  const rejectBtn = el("button", { type: "button", className: "story-tab", text: "Reject draft" });
+  const tryAnotherBtn = el("button", { type: "button", className: "story-tab", text: "Try another seed" });
+  const acceptDraftBtn = el("button", { type: "button", className: "mb-build-btn", text: "Accept draft…" });
+
+  reviewBackBtn.addEventListener("click", () => setScreen("start"));
+  tryAnotherBtn.addEventListener("click", () => {
+    setScreen("start");
+    setMode("specific");
+    seedInput.focus();
+  });
+  rejectBtn.addEventListener("click", async () => {
+    errorBanner.textContent = "";
+    try {
+      await postJson(apiBase + "/drafts/" + reviewJobId + "/decision", {
+        decision: "rejected",
+        reasons: [reasonSelect.value],
+      });
+      setScreen("start");
+    } catch (err) {
+      errorBanner.textContent = "Could not record the decision: " + err.message;
+    }
+  });
+  acceptDraftBtn.addEventListener("click", () => openPublishScreen(reviewJobId));
+
+  const reviewActions = el("div", { className: "mb-review-actions" }, [
+    reviewBackBtn,
+    rejectBtn,
+    reasonSelect,
+    tryAnotherBtn,
+    acceptDraftBtn,
+  ]);
+
+  const reviewBody = el("div", { className: "mb-review-body" }, [
+    viewerModeBar,
+    reviewSheetSelect,
+    viewerHost,
+    el("h3", { text: "Continents — draft vs current" }),
+    continentsTable,
+    continentsShowAllBtn,
+    metricsHost,
+    checksHost,
+    todosHost,
+    acceptSummaryHost,
+    reviewActions,
+  ]);
+
+  reviewScreen.appendChild(reviewEmpty);
+  reviewScreen.appendChild(reviewBanner);
+  reviewScreen.appendChild(reviewBody);
+
+  async function openReviewScreen(jobId) {
+    reviewJobId = jobId;
+    reviewData = null;
+    reviewShowAll = false;
+    reviewViewerMode = "side-by-side";
+    reviewSelectedSheetId = null;
+    setScreen("review");
+    patchReviewScreen();
+    try {
+      reviewData = await fetchJson(apiBase + "/drafts/" + jobId + "/review", "map-builder review");
+      const firstDraftSheet = reviewData.sheets.find((s) => s.draftSvg);
+      reviewSelectedSheetId = firstDraftSheet ? firstDraftSheet.id : null;
+      updateReviewViewerSrcs();
+    } catch (err) {
+      errorBanner.textContent = "Could not load the review: " + err.message;
+    }
+    patchReviewScreen();
+  }
+
+  const fmtDelta = (n) => (n > 0 ? "+" + n : String(n));
+
+  function patchReviewScreen() {
+    const job = reviewJobId ? state.jobs.get(reviewJobId) : null;
+    const loaded = Boolean(job) && Boolean(reviewData);
+    reviewEmpty.hidden = Boolean(reviewJobId);
+    reviewBanner.hidden = !reviewJobId;
+    reviewBody.hidden = !loaded;
+    if (!reviewJobId) return;
+
+    if (!job) {
+      reviewBanner.textContent = "This draft no longer exists.";
+      return;
+    }
+    const decision = job.review?.decision ?? null;
+    reviewBanner.textContent =
+      decision === "rejected"
+        ? "Rejected · " + (job.review.reasons ?? []).join(", ")
+        : decision === "accepted"
+          ? "Accepted"
+          : "Waiting for your decision";
+    if (!reviewData) return; // still loading — errorBanner carries a fetch failure, if any
+
+    viewerModeSideBtn.classList.toggle("active", reviewViewerMode === "side-by-side");
+    viewerModeDraftBtn.classList.toggle("active", reviewViewerMode === "draft-only");
+    viewerModeCurrentBtn.classList.toggle("active", reviewViewerMode === "current-only");
+    draftPane.hidden = reviewViewerMode === "current-only";
+    currentPane.hidden = reviewViewerMode === "draft-only";
+
+    if (reviewSheetSelect.dataset.loadedFor !== reviewJobId) {
+      reviewSheetSelect.dataset.loadedFor = reviewJobId;
+      const options = reviewData.sheets.filter((s) => s.draftSvg);
+      reviewSheetSelect.replaceChildren(...options.map((s) => el("option", { value: s.id, text: s.title })));
+    }
+    if (reviewSelectedSheetId) reviewSheetSelect.value = reviewSelectedSheetId;
+
+    const rows = reviewRows(reviewData, { showAll: reviewShowAll });
+    continentsTable.replaceChildren(
+      el("tr", null, [
+        el("th", { scope: "col", text: "Continent" }),
+        el("th", { scope: "col", text: "Land km² current → draft" }),
+        el("th", { scope: "col", text: "Δ land" }),
+        el("th", { scope: "col", text: "Δ regions" }),
+        el("th", { scope: "col", text: "Δ settlements" }),
+      ]),
+      ...rows.map((r) =>
+        el("tr", null, [
+          el("td", { text: r.id }),
+          el("td", { text: r.landKm2.current + " → " + r.landKm2.draft }),
+          el("td", { text: fmtDelta(r.landKm2.delta) }),
+          el("td", { text: fmtDelta(r.regions.delta) }),
+          el("td", { text: fmtDelta(r.settlements.delta) }),
+        ]),
+      ),
+    );
+    continentsShowAllBtn.textContent = reviewShowAll ? "Show top 5" : "Show all (" + reviewData.deltas.length + ")";
+
+    metricsHost.replaceChildren(
+      el("p", null, [
+        document.createTextNode(
+          "Sea:land — current " +
+            reviewData.current.ratio +
+            ", draft " +
+            (reviewData.draft.metrics?.seaLand ?? "—") +
+            " (band " +
+            reviewData.band.min +
+            "–" +
+            reviewData.band.max +
+            ", target " +
+            reviewData.band.target +
+            ")",
+        ),
+      ]),
+    );
+
+    checksHost.replaceChildren(
+      el("p", { className: "mb-checklist-group-label", text: "Checks — run when you accept" }),
+      el(
+        "ul",
+        { className: "mb-review-list" },
+        reviewData.gatesAtPublish.map((g) =>
+          el("li", { text: g + " — checked during publish; a failure restores the current world automatically" }),
+        ),
+      ),
+    );
+
+    todosHost.replaceChildren(
+      el("p", { className: "mb-checklist-group-label", text: "Known to-dos" }),
+      reviewData.knownTodos.length
+        ? el(
+            "ul",
+            { className: "mb-review-list" },
+            reviewData.knownTodos.map((t) => el("li", { text: t })),
+          )
+        : el("p", { className: "empty-state", text: "None carried by this draft." }),
+    );
+
+    const dr = reviewData.dryRun ?? { written: 0, deleted: 0, files: [] };
+    acceptSummaryHost.replaceChildren(
+      el("p", { className: "mb-checklist-group-label", text: "If you accept" }),
+      el("p", null, [document.createTextNode(dr.written + " file(s) written, " + dr.deleted + " deleted.")]),
+      el("details", { className: "mb-review-files" }, [
+        el("summary", { text: "See every file" }),
+        el(
+          "ul",
+          { className: "mb-review-list" },
+          dr.files.map((f) => el("li", { text: f.op + " " + f.path })),
+        ),
+      ]),
+    );
+  }
+
+  // ---------- Publish screen ----------
+  //
+  // One screen, four mutually-exclusive sub-views (Confirm / Publishing /
+  // Published / Failed) keyed off the publish job's status — same
+  // build-once-patch-in-place rule as everywhere else in this file.
+
+  let publishDraftJobId = null;
+  let publishJobId = null;
+
+  const publishEmpty = el("p", { className: "empty-state", text: "Accept a draft from Review to publish it." });
+  const publishBackBtn = el("button", { type: "button", className: "story-tab", text: "Back" });
+  publishBackBtn.addEventListener("click", () => setScreen("start"));
+
+  const publishStepsList = el(
+    "ol",
+    { className: "mb-review-list" },
+    publishStepsText().map((label) => el("li", { text: label })),
+  );
+  const publishReplaceWarning = el("p", {
+    className: "mb-publish-warning",
+    text: "This replaces the current world — the seed, sheets and render lock all change.",
+  });
+  const publishDirtyWarning = el("p", { className: "mb-publish-warning" });
+  const publishPngWarning = el("p", {
+    className: "mb-publish-warning",
+    text: "rsvg-convert not found on PATH — sheet PNGs will not be regenerated (SVGs still update).",
+  });
+  const publishConfirmBtn = el("button", { type: "button", className: "mb-build-btn", text: "Accept & publish" });
+  publishConfirmBtn.addEventListener("click", async () => {
+    errorBanner.textContent = "";
+    publishConfirmBtn.disabled = true;
+    try {
+      const res = await postJson(apiBase + "/publish", { draftJobId: publishDraftJobId, confirm: true });
+      publishJobId = res.job.id;
+      apply({ type: "job.created", job: res.job });
+    } catch (err) {
+      errorBanner.textContent = "Could not start the publish: " + err.message;
+      publishConfirmBtn.disabled = false;
+    }
+  });
+  const publishConfirmHost = el("div", { className: "mb-publish-confirm" }, [
+    el("h3", { text: "Confirm" }),
+    publishStepsList,
+    publishReplaceWarning,
+    publishDirtyWarning,
+    publishPngWarning,
+    publishConfirmBtn,
+  ]);
+
+  const publishingStepsHost = el("ul", { className: "mb-checklist-stages" });
+  const publishingHost = el("div", { className: "mb-publish-publishing" }, [
+    el("h3", { text: "Publishing" }),
+    publishingStepsHost,
+    el("p", { className: "mb-build-status", text: "You can leave this page." }),
+  ]);
+
+  const publishedSeedCode = el("code");
+  const publishUndoBtn = el("button", { type: "button", className: "mb-stop-btn", text: "Undo this publish" });
+  const publishOpenMapsBtn = el("button", { type: "button", className: "story-tab", text: "Open Map Sheets" });
+  publishUndoBtn.addEventListener("click", async () => {
+    const job = publishJobId ? state.jobs.get(publishJobId) : null;
+    if (!job?.snapshotId) return;
+    errorBanner.textContent = "";
+    publishUndoBtn.disabled = true;
+    try {
+      await postJson(apiBase + "/undo", { snapshotId: job.snapshotId });
+    } catch (err) {
+      errorBanner.textContent = "Could not start the undo: " + err.message;
+      publishUndoBtn.disabled = false;
+    }
+  });
+  publishOpenMapsBtn.addEventListener("click", () => {
+    document.querySelector('.sidebar-item[data-class="' + MAPS_CLASS + '"]')?.click();
+  });
+  const publishedHost = el("div", { className: "mb-publish-published" }, [
+    el("h3", { text: "Published" }),
+    el("p", null, [document.createTextNode("Seed "), publishedSeedCode]),
+    el("p", { text: "Sheets redrawn." }),
+    publishUndoBtn,
+    publishOpenMapsBtn,
+    el("p", {
+      className: "mb-readonly",
+      text:
+        "Commit content/world/, content/spine/ and game-client/assets/art/maps/ through your " +
+        "release workflow — this service never touches git.",
+    }),
+  ]);
+
+  const publishFailedStepP = el("p");
+  const publishFailedErrorP = el("p", { className: "mb-build-error" });
+  const publishRestoredP = el("p", { text: "Restored the previous world automatically." });
+  const publishFailedHost = el("div", { className: "mb-publish-failed" }, [
+    el("h3", { text: "Publish failed" }),
+    publishFailedStepP,
+    publishFailedErrorP,
+    publishRestoredP,
+  ]);
+
+  publishScreen.appendChild(publishEmpty);
+  publishScreen.appendChild(publishBackBtn);
+  publishScreen.appendChild(publishConfirmHost);
+  publishScreen.appendChild(publishingHost);
+  publishScreen.appendChild(publishedHost);
+  publishScreen.appendChild(publishFailedHost);
+
+  function openPublishScreen(draftJobId) {
+    publishDraftJobId = draftJobId;
+    publishJobId = null;
+    publishConfirmBtn.disabled = false;
+    publishUndoBtn.disabled = false;
+    setScreen("publish");
+    patchPublishScreen();
+  }
+
+  function patchPublishScreen() {
+    const hasTarget = Boolean(publishDraftJobId);
+    publishEmpty.hidden = hasTarget;
+    publishBackBtn.hidden = !hasTarget;
+    if (!hasTarget) {
+      publishConfirmHost.hidden = true;
+      publishingHost.hidden = true;
+      publishedHost.hidden = true;
+      publishFailedHost.hidden = true;
+      return;
+    }
+
+    const job = publishJobId ? state.jobs.get(publishJobId) : null;
+    const phase = !job
+      ? "confirm"
+      : job.status === "succeeded"
+        ? "published"
+        : job.status === "queued" || job.status === "running"
+          ? "publishing"
+          : "failed"; // failed, cancelled or interrupted
+
+    publishConfirmHost.hidden = phase !== "confirm";
+    publishingHost.hidden = phase !== "publishing";
+    publishedHost.hidden = phase !== "published";
+    publishFailedHost.hidden = phase !== "failed";
+
+    if (phase === "confirm") {
+      const dirty = state.world.dirtyFiles ?? [];
+      publishDirtyWarning.hidden = dirty.length === 0;
+      publishDirtyWarning.textContent = dirty.length
+        ? "Uncommitted changes will be overwritten: " + dirty.join(", ")
+        : "";
+      publishPngWarning.hidden = state.world.pngTool !== false;
+      return;
+    }
+    if (phase === "publishing") {
+      publishingStepsHost.replaceChildren(
+        ...(job.steps ?? []).map((s) =>
+          el("li", {
+            className:
+              "mb-stage mb-stage-" + (s.status === "done" ? "done" : s.status === "failed" ? "failed" : "current"),
+            text: s.label + (s.warning ? " — " + s.warning : ""),
+          }),
+        ),
+      );
+      return;
+    }
+    if (phase === "published") {
+      if (publishedSeedCode.textContent !== job.seed) publishedSeedCode.textContent = job.seed;
+      publishUndoBtn.hidden = !state.world.undoAvailable;
+      return;
+    }
+    // failed
+    const failingStep = (job.steps ?? []).find((s) => s.status === "failed");
+    publishFailedStepP.textContent = failingStep ? "Failed at: " + failingStep.label : "Publish did not complete.";
+    publishFailedErrorP.textContent = job.error ?? "";
+    publishRestoredP.hidden = !job.restored;
+  }
+
   function renderAll() {
     renderHeaderCard();
     syncTable();
     patchBuildScreen();
+    patchReviewScreen();
+    patchPublishScreen();
     updateBadge([...state.jobs.values()]);
   }
 
