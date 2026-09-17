@@ -333,7 +333,7 @@ const withPhase2App = async (t, { branch = "feat/F-052" } = {}, fn) => {
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const { port } = server.address();
   try {
-    await fn({ port, root: fake.root, data, state, repo, store, snapshots, queue, draft });
+    await fn({ port, root: fake.root, data, state, repo, store, snapshots, queue, draft, events });
   } finally {
     await queue.onIdle().catch(() => {});
     await new Promise((resolve) => server.close(resolve));
@@ -355,13 +355,23 @@ test("GET /api/drafts/:id/review → 200 for a succeeded draft, 404 otherwise", 
 });
 
 test("POST /api/drafts/:id/decision records review; 400 on other decisions or bad reasons; 404 unknown", async (t) => {
-  await withPhase2App(t, {}, async ({ port, store, draft }) => {
+  await withPhase2App(t, {}, async ({ port, store, draft, events }) => {
+    // Batch H stale-list root cause: this was the only job-store mutation
+    // that never emitted a frame, so other tabs (and the badge) only learned
+    // of a rejection on the next resync. Spy on the hub the app was built with.
+    const emitted = [];
+    const realEmit = events.emit;
+    events.emit = (type, payload) => { emitted.push({ type, payload }); return realEmit(type, payload); };
     const rej = await api(port, "POST", `/api/drafts/${draft.id}/decision`, { decision: "rejected", reasons: ["too much sea"] });
     assert.equal(rej.status, 200, JSON.stringify(rej.body));
     assert.equal(store.get(draft.id).review.decision, "rejected");
     assert.deepEqual(store.get(draft.id).review.reasons, ["too much sea"]);
     assert.ok(store.get(draft.id).review.at);
     assert.equal(rej.body.job._seq, undefined);
+    const frame = emitted.find((e) => e.payload?.job?.id === draft.id);
+    assert.ok(frame, "the decision route emits a job frame for the draft");
+    assert.equal(frame.payload.job.review.decision, "rejected");
+    assert.equal(frame.payload.job._seq, undefined);
     const acc = await api(port, "POST", `/api/drafts/${draft.id}/decision`, { decision: "accepted" });
     assert.equal(acc.status, 200);
     assert.deepEqual(store.get(draft.id).review.reasons, []);

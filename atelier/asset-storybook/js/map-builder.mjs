@@ -13,6 +13,8 @@ import {
   reviewRows,
   publishStepsText,
   decisionReasons,
+  reviewDecided,
+  publishFailure,
 } from "./map-builder-model.mjs";
 
 /**
@@ -650,7 +652,14 @@ export async function mountMapBuilder(main) {
   const metricsHost = el("div", { className: "mb-review-metrics" });
   const checksHost = el("div", { className: "mb-review-checks" });
   const todosHost = el("div", { className: "mb-review-todos" });
-  const acceptSummaryHost = el("div", { className: "mb-review-accept" });
+  const acceptSummaryP = el("p");
+  const acceptFilesList = el("ul", { className: "mb-review-list" });
+  const acceptSummaryHost = el("div", { className: "mb-review-accept" }, [
+    el("p", { className: "mb-checklist-group-label", text: "If you accept" }),
+    acceptSummaryP,
+    el("details", { className: "mb-review-files" }, [el("summary", { text: "See every file" }), acceptFilesList]),
+  ]);
+  let acceptFilesFor = null; // the reviewData the file list was last filled from
 
   const reasonSelect = el("select", { className: "mb-review-reason" });
   for (const reason of decisionReasons) reasonSelect.appendChild(el("option", { value: reason, text: reason }));
@@ -669,10 +678,13 @@ export async function mountMapBuilder(main) {
   rejectBtn.addEventListener("click", async () => {
     errorBanner.textContent = "";
     try {
-      await postJson(apiBase + "/drafts/" + reviewJobId + "/decision", {
+      const res = await postJson(apiBase + "/drafts/" + reviewJobId + "/decision", {
         decision: "rejected",
         reasons: [reasonSelect.value],
       });
+      // Apply the returned record now (Batch H stale-list fix) — the same
+      // upsert the SSE frame performs, so the table/badge don't wait for it.
+      apply({ type: "jobs.synced", jobs: [res.job] });
       setScreen("start");
     } catch (err) {
       errorBanner.textContent = "Could not record the decision: " + err.message;
@@ -746,6 +758,12 @@ export async function mountMapBuilder(main) {
         : decision === "accepted"
           ? "Accepted"
           : "Waiting for your decision";
+    // Once decided or published there is nothing left to decide (Batch H
+    // review I2) — the queue would not refuse a second publish of it.
+    const decided = reviewDecided(job);
+    rejectBtn.hidden = decided;
+    reasonSelect.hidden = decided;
+    acceptDraftBtn.hidden = decided;
     if (!reviewData) return; // still loading — errorBanner carries a fetch failure, if any
 
     viewerModeSideBtn.classList.toggle("active", reviewViewerMode === "side-by-side");
@@ -822,19 +840,16 @@ export async function mountMapBuilder(main) {
         : el("p", { className: "empty-state", text: "None carried by this draft." }),
     );
 
-    const dr = reviewData.dryRun ?? { written: 0, deleted: 0, files: [] };
-    acceptSummaryHost.replaceChildren(
-      el("p", { className: "mb-checklist-group-label", text: "If you accept" }),
-      el("p", null, [document.createTextNode(dr.written + " file(s) written, " + dr.deleted + " deleted.")]),
-      el("details", { className: "mb-review-files" }, [
-        el("summary", { text: "See every file" }),
-        el(
-          "ul",
-          { className: "mb-review-list" },
-          dr.files.map((f) => el("li", { text: f.op + " " + f.path })),
-        ),
-      ]),
-    );
+    // Built once, patched in place (Batch H review m1): rebuilding the
+    // <details> on every renderAll() — i.e. on every SSE frame from ANY job —
+    // snapped an opened file list shut. Only re-fill it when the review
+    // payload itself changed.
+    if (acceptFilesFor !== reviewData) {
+      acceptFilesFor = reviewData;
+      const dr = reviewData.dryRun ?? { written: 0, deleted: 0, files: [] };
+      acceptSummaryP.textContent = dr.written + " file(s) written, " + dr.deleted + " deleted.";
+      acceptFilesList.replaceChildren(...dr.files.map((f) => el("li", { text: f.op + " " + f.path })));
+    }
   }
 
   // ---------- Publish screen ----------
@@ -928,11 +943,32 @@ export async function mountMapBuilder(main) {
   const publishFailedStepP = el("p");
   const publishFailedErrorP = el("p", { className: "mb-build-error" });
   const publishRestoredP = el("p", { text: "Restored the previous world automatically." });
+  // Batch H review I3: a failed auto-restore or a restart mid-publish leaves
+  // the world possibly half-published — say so, and offer Undo keyed on the
+  // job's own snapshotId (world.undoAvailable is false in the interrupted
+  // case, so it cannot gate this button).
+  const publishHalfPublishedP = el("p", { className: "mb-build-error" });
+  const publishHalfUndoBtn = el("button", { type: "button", className: "mb-stop-btn", text: "Undo from snapshot" });
+  publishHalfUndoBtn.addEventListener("click", async () => {
+    const job = publishJobId ? state.jobs.get(publishJobId) : null;
+    const target = job ? publishFailure(job).halfPublished : null;
+    if (!target) return;
+    errorBanner.textContent = "";
+    publishHalfUndoBtn.disabled = true;
+    try {
+      await postJson(apiBase + "/undo", { snapshotId: target.snapshotId });
+    } catch (err) {
+      errorBanner.textContent = "Could not start the undo: " + err.message;
+      publishHalfUndoBtn.disabled = false;
+    }
+  });
   const publishFailedHost = el("div", { className: "mb-publish-failed" }, [
     el("h3", { text: "Publish failed" }),
     publishFailedStepP,
     publishFailedErrorP,
     publishRestoredP,
+    publishHalfPublishedP,
+    publishHalfUndoBtn,
   ]);
 
   publishScreen.appendChild(publishEmpty);
@@ -947,6 +983,7 @@ export async function mountMapBuilder(main) {
     publishJobId = null;
     publishConfirmBtn.disabled = false;
     publishUndoBtn.disabled = false;
+    publishHalfUndoBtn.disabled = false;
     setScreen("publish");
     patchPublishScreen();
   }
@@ -1003,11 +1040,14 @@ export async function mountMapBuilder(main) {
       publishUndoBtn.hidden = !state.world.undoAvailable;
       return;
     }
-    // failed
-    const failingStep = (job.steps ?? []).find((s) => s.status === "failed");
-    publishFailedStepP.textContent = failingStep ? "Failed at: " + failingStep.label : "Publish did not complete.";
-    publishFailedErrorP.textContent = job.error ?? "";
-    publishRestoredP.hidden = !job.restored;
+    // failed, cancelled or interrupted
+    const failure = publishFailure(job);
+    publishFailedStepP.textContent = failure.stepText;
+    publishFailedErrorP.textContent = failure.error;
+    publishRestoredP.hidden = !failure.restored;
+    publishHalfPublishedP.hidden = !failure.halfPublished;
+    publishHalfUndoBtn.hidden = !failure.halfPublished;
+    publishHalfPublishedP.textContent = failure.halfPublished ? failure.halfPublished.text : "";
   }
 
   function renderAll() {

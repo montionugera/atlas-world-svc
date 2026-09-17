@@ -172,6 +172,11 @@ export function createApp({ repo, store, queue, events, world, snapshots = null,
       if (decision !== "rejected" && decision !== "accepted") throw badRequest(`invalid decision: ${decision}`);
       if (!Array.isArray(reasons) || !reasons.every((r) => typeof r === "string")) throw badRequest("reasons must be an array of strings");
       const job = store.update(draft.id, { review: { decision, reasons, at: new Date().toISOString() } });
+      // Every other job-store mutation pushes a frame (queue.mjs); without
+      // this one the badge and other tabs only learned of a decision on the
+      // next resync (Batch H review, stale-list root cause). The draft is
+      // terminal, so job.done is the frame that carries its record.
+      events.emit("job.done", { job: publicJob(job) });
       sendJson(ctx.res, 200, { job: publicJob(job) });
     }],
 

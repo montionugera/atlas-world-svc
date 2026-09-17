@@ -224,6 +224,18 @@ export function createJobQueue(options) {
         const job = store.create({ ...fields, reason: reason ?? null });
         pending.push({ job, outDir: fields.outDir });
         events.emit("job.created", { job: publicJob(job) });
+        if (kind === "publish") {
+          // Enqueueing a publish IS the owner's "accepted" decision (Batch H
+          // review I2) — record it on the draft so the badge and Review banner
+          // stop counting it as "to review", and push the draft's record as a
+          // job frame (it is terminal, so job.done is its frame) so every
+          // client learns without a resync. Best-effort like publishedBy at
+          // the end of runJob: the publish itself must not fail on this.
+          try {
+            const draft = store.update(draftJobId, { review: { decision: "accepted", reasons: [], at: new Date().toISOString() } });
+            events.emit("job.done", { job: publicJob(draft) });
+          } catch { /* draft record gone — the publish job already exists */ }
+        }
         pump();
         return job;
       }

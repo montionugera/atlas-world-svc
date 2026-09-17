@@ -120,7 +120,9 @@ const ACTIONS = {
  * Cancel: queue.mjs refuses to cancel a running composite job at every step
  * (409, always — killing one mid-way would leave a half-replaced world), so
  * a Cancel button there could never do anything (carried finding, Batch G
- * re-review n3).
+ * re-review n3). Likewise only a succeeded DRAFT gets Review: the Review
+ * screen fetches /api/drafts/:id/review, which 404s for every other kind
+ * (Batch H review I1).
  */
 export function rowActions(job) {
   switch (job.status) {
@@ -131,7 +133,9 @@ export function rowActions(job) {
     case "queued":
       return [ACTIONS.cancel];
     case "succeeded":
-      return [ACTIONS.review, ACTIONS.rerun, ACTIONS.delete];
+      return job.kind === "draft"
+        ? [ACTIONS.review, ACTIONS.rerun, ACTIONS.delete]
+        : [ACTIONS.rerun, ACTIONS.delete];
     case "failed":
       return [ACTIONS.why, ACTIONS.rerun, ACTIONS.delete];
     case "cancelled":
@@ -145,6 +149,47 @@ export function rowActions(job) {
 export function validateSeed(s) {
   if (typeof s === "string" && SEED_GRAMMAR.test(s)) return { ok: true, message: "" };
   return { ok: false, message: "16 lowercase hex characters" };
+}
+
+/**
+ * Whether the Review screen's Accept/Reject controls should be gone: the
+ * owner already decided (accepting is recorded by the publish enqueue, see
+ * queue.mjs) or the draft was published outright (Batch H review I2).
+ */
+export function reviewDecided(job) {
+  return Boolean(job.publishedBy) || (job.review?.decision ?? null) !== null;
+}
+
+/**
+ * What the Publish screen's Failed sub-view says (Batch H review I3). The
+ * world may be half-published in two cases: the auto-restore itself failed
+ * (`restored: false` + `restoreError`), or the service restarted mid-publish
+ * (`status: "interrupted"`) — and only once the snapshot step had recorded
+ * an id, because before that nothing was replaced. `world.undoAvailable` is
+ * false in the interrupted case (Task-14 review), so the Undo offered here
+ * is keyed on the job's own snapshotId instead.
+ */
+export function publishFailure(job) {
+  const failingStep = (job.steps ?? []).find((s) => s.status === "failed");
+  const restoreFailed = job.restored === false && Boolean(job.restoreError);
+  const interrupted = job.status === "interrupted";
+  const halfPublished =
+    job.snapshotId && (restoreFailed || interrupted)
+      ? {
+          snapshotId: job.snapshotId,
+          text:
+            (restoreFailed ? "Automatic restore failed" : "Service restarted mid-publish") +
+            " — the world may be half-published. Undo from snapshot " +
+            job.snapshotId +
+            ".",
+        }
+      : null;
+  return {
+    stepText: failingStep ? "Failed at: " + failingStep.label : "Publish did not complete.",
+    error: job.error ?? "",
+    restored: job.restored === true,
+    halfPublished,
+  };
 }
 
 /** Drafts that are succeeded and not yet decided — what the sidebar badge counts. */

@@ -14,6 +14,8 @@ import {
   reviewRows,
   publishStepsText,
   decisionReasons,
+  reviewDecided,
+  publishFailure,
   PUBLISH_STEPS,
 } from "../js/map-builder-model.mjs";
 // Drift guard (Task 16): the client cannot import server code (publish.mjs
@@ -96,6 +98,61 @@ test("row actions: a running publish/undo has no Cancel (the server always refus
   assert.deepEqual(rowActions({ status: "running", kind: "undo" }).map((a) => a.id), ["watch"]);
   assert.deepEqual(rowActions({ status: "running", kind: "draft" }).map((a) => a.id), ["watch", "cancel"]);
   assert.deepEqual(rowActions({ status: "running", kind: "dry-run" }).map((a) => a.id), ["watch", "cancel"]);
+});
+
+// Batch H review I1: "Review" now opens the Review screen, whose
+// /api/drafts/:id/review route 404s for anything that is not a draft — so
+// only a succeeded DRAFT may offer it. Same four kinds as the n3 test above,
+// because that test only covered `running` and this gap slipped through.
+test("row actions: only a succeeded draft offers Review (the review route 404s for other kinds)", () => {
+  assert.deepEqual(rowActions({ status: "succeeded", kind: "draft" }).map((a) => a.id), ["review", "rerun", "delete"]);
+  assert.deepEqual(rowActions({ status: "succeeded", kind: "dry-run" }).map((a) => a.id), ["rerun", "delete"]);
+  assert.deepEqual(rowActions({ status: "succeeded", kind: "publish" }).map((a) => a.id), ["rerun", "delete"]);
+  assert.deepEqual(rowActions({ status: "succeeded", kind: "undo" }).map((a) => a.id), ["rerun", "delete"]);
+});
+
+// Batch H review I2: once a draft has been accepted (the publish enqueue
+// records the decision server-side) or published, the Review screen must
+// stop offering Accept/Reject — a second publish of the same draft is not
+// refused by the queue, and the badge/banner would keep saying "to review".
+test("reviewDecided: accepted, rejected or published drafts hide the decision controls", () => {
+  assert.equal(reviewDecided(job({ status: "succeeded" })), false);
+  assert.equal(reviewDecided(job({ status: "succeeded", review: { decision: "accepted", reasons: [] } })), true);
+  assert.equal(reviewDecided(job({ status: "succeeded", review: { decision: "rejected", reasons: ["other"] } })), true);
+  assert.equal(reviewDecided(job({ status: "succeeded", publishedBy: "j9" })), true);
+  assert.equal(reviewDecided(job({ status: "succeeded", review: undefined })), false);
+});
+
+// Batch H review I3: the Failed sub-view must say so when the world may be
+// half-published — a failed auto-restore, or a service restart mid-publish
+// (status "interrupted", which world.undoAvailable does NOT cover per the
+// Task-14 review) — and name the snapshot to undo from.
+test("publishFailure: restored / restore failed / interrupted pick the right copy and undo snapshot", () => {
+  const steps = [{ name: "promote", label: "Replace the world with the draft", status: "done" }, { name: "lock", label: "Re-baseline the render lock", status: "failed" }];
+  const ok = publishFailure({ status: "failed", steps, error: "lock failed", restored: true, snapshotId: "s1" });
+  assert.equal(ok.stepText, "Failed at: Re-baseline the render lock");
+  assert.equal(ok.error, "lock failed");
+  assert.equal(ok.restored, true);
+  assert.equal(ok.halfPublished, null);
+
+  const bad = publishFailure({ status: "failed", steps, error: "lock failed", restored: false, restoreError: "EACCES", snapshotId: "s2" });
+  assert.equal(bad.restored, false);
+  assert.equal(bad.halfPublished.snapshotId, "s2");
+  assert.match(bad.halfPublished.text, /^Automatic restore failed/);
+  assert.match(bad.halfPublished.text, /half-published/);
+  assert.match(bad.halfPublished.text, /snapshot s2/);
+
+  const cut = publishFailure({ status: "interrupted", steps: [], error: null, restored: false, snapshotId: "s3" });
+  assert.equal(cut.stepText, "Publish did not complete.");
+  assert.equal(cut.error, "");
+  assert.equal(cut.halfPublished.snapshotId, "s3");
+  assert.match(cut.halfPublished.text, /^Service restarted mid-publish/);
+  assert.match(cut.halfPublished.text, /snapshot s3/);
+
+  // Interrupted before the snapshot step ever ran: nothing was replaced, so
+  // there is nothing to undo from and no half-published warning.
+  const early = publishFailure({ status: "interrupted", steps: [], restored: false, snapshotId: null });
+  assert.equal(early.halfPublished, null);
 });
 
 test("reviewRows sorts by |Δ landKm2| desc and caps at 5 unless showAll", () => {

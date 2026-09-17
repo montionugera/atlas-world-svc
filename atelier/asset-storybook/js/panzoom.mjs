@@ -116,15 +116,6 @@ export function createPanZoom({ stage, img }) {
     changeListeners.push(fn);
   }
 
-  function destroy() {
-    stage.removeEventListener("wheel", onWheel);
-    stage.removeEventListener("pointerdown", onPointerDown);
-    stage.removeEventListener("pointermove", onPointerMove);
-    stage.removeEventListener("pointerup", onPointerUp);
-    stage.removeEventListener("pointercancel", onPointerUp);
-    changeListeners.length = 0;
-  }
-
   stage.style.cursor = "grab";
   stage.addEventListener("wheel", onWheel, { passive: false });
   stage.addEventListener("pointerdown", onPointerDown);
@@ -132,7 +123,9 @@ export function createPanZoom({ stage, img }) {
   stage.addEventListener("pointerup", onPointerUp);
   stage.addEventListener("pointercancel", onPointerUp);
 
-  return { setSrc, reset, getTransform, setTransform, on, destroy };
+  // No destroy(): both consumers (Map Sheets overlay, Review screen) keep
+  // their instances for the page's lifetime, so a teardown had no caller.
+  return { setSrc, reset, getTransform, setTransform, on };
 }
 
 /**

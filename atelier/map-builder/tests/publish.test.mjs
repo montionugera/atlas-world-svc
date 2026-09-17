@@ -50,6 +50,17 @@ test("happy path: six steps, publishedBy on the draft, world.changed emitted, sn
   assert.equal(done.steps.find((x) => x.name === "render").runs, 17);
   assert.equal(done.steps.find((x) => x.name === "verify").runs, 3);
   assert.equal(s.store.get(s.draft.id).publishedBy, job.id);
+  // Batch H review I2: enqueueing a publish IS the owner's "accepted"
+  // decision — recorded on the draft and pushed as a job frame so the
+  // badge/banner stop counting it as "to review" without a reload.
+  const decided = s.store.get(s.draft.id).review;
+  assert.equal(decided.decision, "accepted");
+  assert.deepEqual(decided.reasons, []);
+  assert.ok(decided.at);
+  const draftFrames = s.events.filter((e) => e.job?.id === s.draft.id);
+  assert.ok(draftFrames.length >= 1, "a job frame for the draft was emitted");
+  assert.equal(draftFrames[0].job.review.decision, "accepted");
+  assert.equal(draftFrames[0].job._seq, undefined);
   assert.ok(done.snapshotId, "snapshotId recorded");
   assert.equal(s.repo.currentSeed(), DRAFT_SEED);
   const changed = s.events.filter((e) => e.type === "world.changed");
