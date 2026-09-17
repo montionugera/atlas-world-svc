@@ -2,6 +2,17 @@ import { spawn } from "node:child_process";
 import readline from "node:readline";
 
 const FIRST_TOOL_ERR = /^(generate-world|promote-world|render-sheet|spine-emit|render-lock|check_content|map-builder): /;
+// An uncaught throw has no tool prefix: Node prints location, source line,
+// caret, `Error: …` (or `TypeError [ERR_X]: …`), frames, then a version
+// banner — so the `Error:` line is the message, and the LAST line is the one
+// line that never is (final review I3).
+const ERROR_LINE = /^\w*Error(?: \[\w+\])?: /;
+// A failed command's message, in order of preference: the tool's own
+// prefixed line, a thrown error's `Error:` line, else the first non-empty
+// stderr line (never the last — see ERROR_LINE), else the bare exit code.
+function errorMessage(own, code) {
+  return own.find((l) => FIRST_TOOL_ERR.test(l)) ?? own.find((l) => ERROR_LINE.test(l)) ?? own.find((l) => l.trim() !== "") ?? `exit ${code}`;
+}
 
 export function createRunner({ killGraceMs = 5000 } = {}) {
   const live = new Map(); // jobId -> { child, cancelled }
@@ -46,7 +57,7 @@ export function createRunner({ killGraceMs = 5000 } = {}) {
           });
           if (code !== 0 && !entry.cancelled && !timedOut) {
             const own = stderrLines.slice(errFrom);
-            const error = own.find((l) => FIRST_TOOL_ERR.test(l)) ?? own[own.length - 1] ?? `exit ${code}`;
+            const error = errorMessage(own, code);
             onCommandEnd({ ...cmd, exitCode: code, ms: Date.now() - t0, error });
             return { ok: false, exitCode: code, error, cancelled: false, timedOut: false, captured };
           }

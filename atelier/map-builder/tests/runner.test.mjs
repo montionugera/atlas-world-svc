@@ -94,3 +94,27 @@ test("a failing command's error comes from its OWN stderr, not an earlier step's
     commands: [nodeE("promote", "console.error('promote-world: note — nothing to worry about')"), nodeE("lock", "console.error('G-RENDER-LOCK: atlas drifted'); process.exitCode = 1")] });
   assert.equal(r.ok, false); assert.equal(r.error, "G-RENDER-LOCK: atlas drifted");
 });
+
+// Final review I3: an uncaught throw in the generator prints Node's stack
+// trace — location line, source line, caret, blank, `Error: …`, frames,
+// blank, `Node.js vX` — and none of it carries a tool prefix. The LAST line
+// (the version banner) is the least useful line on the whole stream; the
+// `Error: …` line is the one the owner needs to see.
+test("a real uncaught throw surfaces its `Error:` line, not Node's version banner", async () => {
+  const r = await createRunner({}).run({ job: { id: "j9" }, cwd: REPO, timeoutMs: 10000,
+    commands: [nodeE("gen", "throw new Error('placePinned: 1 pinned record(s) cannot be placed — c-lm-skerryfast-fjord at [254,44] is a water cell')")] });
+  assert.equal(r.ok, false);
+  assert.equal(r.error, "Error: placePinned: 1 pinned record(s) cannot be placed — c-lm-skerryfast-fjord at [254,44] is a water cell");
+});
+
+test("a tool-prefixed line still wins over an `Error:` line that follows it", async () => {
+  const r = await createRunner({}).run({ job: { id: "j10" }, cwd: REPO, timeoutMs: 10000,
+    commands: [nodeE("gen", "console.error('generate-world: LOOP BUDGET generate 13000 ms > fail 12000'); console.error('Error: wrapped'); process.exitCode = 1")] });
+  assert.equal(r.error, "generate-world: LOOP BUDGET generate 13000 ms > fail 12000");
+});
+
+test("with neither a tool prefix nor an `Error:` line, the FIRST non-empty stderr line surfaces", async () => {
+  const r = await createRunner({}).run({ job: { id: "j11" }, cwd: REPO, timeoutMs: 10000,
+    commands: [nodeE("gen", "console.error(''); console.error('boom: the real reason'); console.error('Node.js v0.0.0'); process.exitCode = 1")] });
+  assert.equal(r.error, "boom: the real reason");
+});
