@@ -123,11 +123,10 @@ flowchart LR
 - The app bundle contains code only. Rebuilding or replacing it touches nothing in the data home.
 - `config.json` stores the **main repo folder** (the one whose `.git` is a directory). The studio refuses any worktree path as the repo, so it can never point at `_release` or a feature worktree that promote deletes.
 - `worktree/` lives inside the data home, **not** under the repo's `.claude/worktrees/`. Promote cleanup only removes `<F-NNN>-*` worktrees and `_release` (`promote_release.py:440-442,464-467`), so it never touches this one.
-- **Cleanup-legacy hazard, handled twice.** `cleanup-legacy` lists every marker-less worktree and runs `git worktree remove --force` when the owner answers yes (`cleanup_legacy_worktrees.py:22-45,85`). Two defences:
-  1. The worktree carries a `.studio-worktree` marker file.
-  2. Every store write also copies the file to `history/<timestamp>/<path>`, keeping the last 200 writes, so even a forced removal loses no edit.
-  A follow-up for the release workflow is filed: skip worktrees with `.studio-worktree`.
-- **Art-forge drafts have one home.** In the studio worktree, `atelier/art-forge/out` is a symlink to `drafts/`, so existing `env-index.json` paths (`atelier/art-forge/out/env/*.png`) resolve with no path migration. Other checkouts may point their `out/` at the same folder.
+- **Worktree-loss hazard: `git worktree prune`.** `cleanup-legacy` scans only `.claude/worktrees/*` (`cleanup_legacy_worktrees.py:18-22`), so it never lists the studio worktree. The real risk is `git worktree prune` run while the data home is missing (for example an unmounted disk), which drops the worktree's registration. Defence: every store write also copies the file to `history/<timestamp>/<path>`, keeping the last 200 writes, and on start the studio re-adds a missing registration with `git worktree repair` before anything else.
+- **Art-forge drafts have one home.** In the studio worktree, `atelier/art-forge/out` is a symlink to `drafts/`, so existing `env-index.json` paths (`atelier/art-forge/out/env/*.png`) resolve with no path migration. Only the studio worktree has this symlink.
+  - `atelier/art-forge/.gitignore` changes `out/` to `out` (no trailing slash), because a slash rule does not match a symlink and would leave the worktree permanently dirty (reproduced). The root `.gitignore` already does this for `node_modules`.
+  - The art-forge corpus tests (`artifact-gate.test.mjs:40,501-506`) read a fixed corpus path or `ARTFORGE_CORPUS`, never `out/`, so Gate 1 results do not depend on local drafts.
 - **Data home layout changes** carry a `version` in `config.json`. The app migrates forward and refuses to open a newer layout with an older app. It never deletes.
 
 ### 5.2 How edits reach a release
@@ -142,12 +141,12 @@ flowchart LR
   M --> R["studio/edits fast-forwards<br/>to release/&lt;v&gt;"]
 ```
 
-- **Base.** `studio/edits` starts from the in-progress `release/<v>` (read from `.release.json`). With no release in progress, Publish is disabled with "start a release first (`psrw new-release`)". The studio never starts or promotes releases.
+- **Base.** `studio/edits` starts from the in-progress `release/<v>` (read from `_release/.release.json`, mirroring psrw's `read_release_state`, `backlog_paths.py:13-26`; main's `.release.json` only carries the last-promoted release). With no release in progress, Publish is disabled with "start a release first (`psrw new-release`)". The studio never starts or promotes releases.
 - **Publish is the owner's action.** It exists in REST and the UI, not in MCP. It is R1: it merges into a shared branch, undone by reverting the merge commit.
-- **Mechanics match `ship`:** Gate 1 in the source worktree, then a `--no-ff` merge in the `_release` worktree, with the commit subject `studio: publish <n> commits`. No catalog entry, because the catalog tracks features and studio edits are content. A follow-up for the release workflow is filed: name a "studio" lane in the release report.
-- **After a turnover.** On start, if `studio/edits`'s base release no longer exists, the studio moves it onto the new in-progress release, or onto `main` if none is in progress:
+- **Mechanics match `ship`, including its lock:** Publish holds the same exclusive lock ship holds on the `_release` worktree (`file_lock`, `lib/state.py`: flock on `$TMPDIR/ps-release-workflow-locks/<sha1 of the resolved _release path>.lock`), so a Publish and a ship can never interleave and ship's rollback (`reset --hard HEAD~1`, `ship_current_work_to_release.py:112-133`) can never remove a studio merge. Under the lock: Gate 1 in the studio worktree, a `--no-ff` merge in the `_release` worktree, Gate 1 again on the merged tree, and on failure a rollback to the exact pre-merge SHA it recorded (never `HEAD~1`), with the commit subject `studio: publish <n> commits`. No catalog entry, because the catalog tracks features and studio edits are content. A follow-up for the release workflow is filed: name a "studio" lane in the release report.
+- **After a turnover.** Every successful Publish records the merged SHA as `lastPublished` in `state.json`. Unpublished commits are `lastPublished..studio/edits`, never a comparison with the new base: promote squash-merges into `main` (`promote_release.py:131`), so the old release's commits never appear there by SHA. On start, if `studio/edits`'s base release no longer exists, the studio moves it onto the new in-progress release, or onto `main` if none is in progress:
   - no unpublished commits → reset onto the new base;
-  - unpublished commits → rebase onto the new base;
+  - unpublished commits → `git rebase --onto <new base> <lastPublished>` (only those commits are replayed);
   - a conflict → stop, show the files, keep everything. Nothing is ever discarded automatically.
 - **Promote gate.** The release report should show unpublished studio commits so the release manager can Publish before promoting. Until the follow-up lands, the studio's Home shows "N commits not yet in release/<v>".
 
@@ -291,7 +290,10 @@ Slice 1's first task is a script that applies these rules and prints counts per 
   - Publish fails on a red precheck and merges on a green one
   - after deleting the release branch, restart moves `studio/edits` to the new base with and without unpublished commits
   - a rebase conflict stops and keeps the files
-- **Survives cleanup:** run the real `cleanup_legacy_worktrees.py` removal on the studio worktree, then restart. Every edit is recovered from `history/`.
+- **Survives prune:** move the data home away, run `git worktree prune`, move it back, restart. The registration is repaired and every edit is present.
+- **Symlinked `out` stays clean:** in the studio worktree `git status --porcelain` is empty; mutation proof: restore `out/` in the ignore file and the test goes red.
+- **Publish lock:** with the `_release` lock held by another process, Publish waits; a red post-merge Gate 1 resets to the recorded pre-merge SHA, not `HEAD~1`.
+- **Turnover after a squash promote:** temp repo, squash the release into `main`, restart; zero unpublished commits means reset, and one extra commit means only that commit is replayed.
 - **Mutation proof:** remove the allowlist check, the validate call and the history copy in turn. The matching test must go red.
 - **Gate 1 and CI:** `scripts/precheck.sh` runs the studio tests when Node ≥22.5 and prints a skip line otherwise. `.github/workflows/ci.yml` gets a `studio` job on Node 22, and the Node 18 jobs are untouched.
 
@@ -344,11 +346,12 @@ Slice 1's first task is a script that applies these rules and prints counts per 
   - Quitting with uncommitted edits warns but discards nothing.
 - **Headless still works:** `node atelier/studio/server.mjs` uses the same data home, for agents without the app. Only one server runs at a time, enforced by a lock file in the data home.
 - **Electron safety:** `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`. The window loads only `http://127.0.0.1:6020`, and other origins open in the default browser.
-- **Auto-build on every ship and promote:**
-  - `scripts/deploy-local.sh` (the `deploy_local` hook that `ship` and `promote --deploy` already run, per the release lifecycle doc) gains a macOS-only step.
-  - That step runs `atelier/studio/app/build-and-install.sh` from the `_release` worktree after the merge.
-  - It builds with `electron-builder --dir`, quits the running app, and replaces `/Applications/Asset Studio.app`.
-  - Build output goes to a temp folder, never into a worktree. On non-macOS or a build failure it prints a skip or error line and the deploy continues. The app is a convenience, not a release gate.
+- **Auto-build when the release workflow deploys locally:**
+  - It runs when `ship` runs the `deploy_local` hook (skipped with `ship --no-deploy` or a "no" answer) and on `promote --deploy` (off by default). A plain `promote` does not rebuild the app.
+  - It is a separate, first step of `scripts/deploy-local.sh`, placed **before** the kubectl-context check and wrapped `( atelier/studio/app/build-and-install.sh ) || echo "studio app: build failed, skipped"`, so `set -e`, a down cluster or a non-local context never blocks it, and its failure never blocks ship or promote (under promote a failing hook raises `Gate2FailedError`, `promote_release.py:215-217`).
+  - The script installs its own deps (`pnpm install --filter atelier-studio-app`) because `precheck.sh:88-94` only installs the pnpm workspace and the React client.
+  - It builds with `electron-builder --dir` into a temp folder, never into a worktree, quits the running app and replaces `"/Applications/Asset Studio.app"` (always quoted). On non-macOS it prints a skip line. The app is a convenience, not a release gate.
+  - Paths with spaces: the data home lives under `~/Library/Application Support`. `scripts/tests/{spine,fabric-measure,absence-trap-census}.test.mjs` switch `new URL().pathname` to `fileURLToPath` so they pass when run from there.
 - **Unsigned:** the first launch needs right-click, then Open, once.
 - **Tests:**
   - A Playwright-for-Electron smoke run: first run, open an asset, edit, see it in Changes, quit, relaunch, land on the same asset.
@@ -373,7 +376,7 @@ Slice 1's first task is a script that applies these rules and prints counts per 
   - Retired rules from F-053 L16 and L48: no server, no write endpoint, no new npm dependency, no search index, no browser-triggered generation, no sections for content records.
   - AC 25's read-only grep gate is not wired into precheck, CI or tests (verified), so retiring it removes no enforcement.
 - **F-052 spec:** unchanged. Slice 3 moves its server into `atelier/studio/`.
-- **Follow-ups filed for the release workflow:** cleanup-legacy skips `.studio-worktree`; the release report shows unpublished studio commits.
+- **Follow-up filed for the release workflow:** the release report shows unpublished studio commits (a "studio" lane).
 - **Follow-up filed for content:** load schemas for dungeons, civil records, relations, names, lexicon and budgets so they become editable.
 
 ## Appendix A. Research: how other tools store settings (2026-09-17)
@@ -427,3 +430,13 @@ Slice 1's first task is a script that applies these rules and prints counts per 
   - L20 spine in dockerignore → added
   - Verified on disk before editing: `mob:aggressive` = character/seed, `intake-art.mjs` scope, `charsheet.mjs` exists, taxonomy `sections` (8), `hooks.deploy_local` runs in ship and `promote --deploy`, repo is public, release branches are not on origin.
   - Open: none needing the owner.
+- 2026-09-17 re-audit #3 (release-workflow mechanics; each critical/high finding verified on disk): 10 findings, 1 critical.
+  - C1 Publish could race ship's `HEAD~1` rollback → Publish takes ship's `_release` lock, re-runs Gate 1, rolls back to its recorded SHA (§5.2)
+  - H2 `out/` ignore rule misses a symlink → `out`, drafts symlink only in the studio worktree (§5.1)
+  - H3 turnover broke after a squash promote → `lastPublished` in `state.json` (§5.2)
+  - H4 release read from main's `.release.json` → `_release/.release.json` (§5.2)
+  - M5 auto-build claims and `set -e`/kubectl ordering → accurate triggers, guarded first step, own deps (§12)
+  - M6 cleanup-legacy never scans the data home → hazard replaced by `git worktree prune` + repair; its test and follow-up dropped
+  - M7 corpus tests read local drafts → fixed corpus path
+  - L8 `URL().pathname` breaks on spaces → `fileURLToPath`; app path quoted
+  - L9 non-feature merges cause no drift; L10 other citations accurate. No change.
