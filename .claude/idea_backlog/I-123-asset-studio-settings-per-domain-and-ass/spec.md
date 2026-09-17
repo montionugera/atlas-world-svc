@@ -309,7 +309,7 @@ Slice 1's first task is a script that applies these rules and prints counts per 
 - Data persistence → **one data home outside the app and outside workflow folders; auto-built app** (owner).
 - Auto-commit → **never**. Commit and Publish are owner actions (default).
 - Release path → **Publish = Gate 1 + merge into release/<v>, like `ship`** (default; audit C1).
-- Studio worktree → **inside the data home, with a marker and write history** (default; audit C2).
+- Studio worktree → **inside the data home, with write history and `git worktree repair` on start** (default; audit C2, re-audit M6).
 - MCP auth → **stdio shim reads the token from the data home** (default; audit H4).
 - App build → **local, from the ship/promote deploy hook** (default; audit H5). No cloud build: the repo is public, and CI would publish the app.
 - F-053 remaining phases → **absorbed into slice 1b** (default; audit H6).
