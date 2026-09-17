@@ -139,6 +139,11 @@ export function createApp({ repo, store, queue, events, world, snapshots = null,
       const id = ctx.params[0];
       const original = store.get(id);
       if (!original) throw notFound();
+      // Any finished status re-runs (failed, cancelled, interrupted included —
+      // spec §7 boot recovery); only the kind is limited: a publish/undo is
+      // driven by a draft/snapshot id, not a seed, so cloning it makes no
+      // sense and would only trip enqueue's 400 on the missing draftJobId.
+      if (original.kind !== "draft" && original.kind !== "dry-run") throw badRequest(`only draft and dry-run jobs can be re-run, not ${original.kind}`);
       const body = await readJsonBody(ctx.req);
       const job = queue.enqueue({ kind: original.kind, seed: original.seed, reason: body?.reason ?? `rerun of ${id}`, rerunOf: id });
       sendJson(ctx.res, 201, { job: publicJob(job) });

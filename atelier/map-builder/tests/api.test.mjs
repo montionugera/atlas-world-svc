@@ -263,6 +263,23 @@ test("DELETE removes only the record when a finished rerun still shares the out 
   });
 });
 
+// Task 18: an interrupted record (what recoverInterrupted leaves behind)
+// re-runs like any finished job; a publish/undo record does not.
+test("POST /api/jobs/:id/rerun accepts an interrupted draft and refuses a publish record with 400", async () => {
+  await withApp(async ({ port, store, queue }) => {
+    const cut = store.create({ kind: "draft", seed: "c3c3c3c3c3c3c3c3", outDir: "build/mapforge/c3c3c3c3-3.0.0", status: "interrupted", error: "service restarted" });
+    const rerun = await api(port, "POST", `/api/jobs/${cut.id}/rerun`);
+    assert.equal(rerun.status, 201);
+    assert.equal(rerun.body.job.rerunOf, cut.id);
+    assert.equal(rerun.body.job.kind, "draft");
+    const pub = store.create({ kind: "publish", seed: "c3c3c3c3c3c3c3c3", outDir: "build/mapforge/c3c3c3c3-3.0.0", status: "failed", draftJobId: cut.id });
+    const refused = await api(port, "POST", `/api/jobs/${pub.id}/rerun`);
+    assert.equal(refused.status, 400);
+    assert.match(refused.body.error.message, /only draft and dry-run/);
+    await queue.onIdle();
+  });
+});
+
 test("POST with a non-JSON Content-Type is rejected with 400 (fix round 1, F7)", async () => {
   await withApp(async ({ port }) => {
     const body = JSON.stringify({ kind: "draft", count: 1 });

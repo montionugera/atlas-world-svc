@@ -173,6 +173,64 @@ test("a draft's report.json survives a later non-draft job on the same out dir",
   s.cleanup();
 });
 
+// Task 18 — re-run determinism badge. The fake generator writes a
+// manifest.json { hashes } into the out dir the way the real one does
+// (writeRun); a succeeded draft records it, and a re-run compares its own
+// against the original's.
+const writeManifestSrc = (path, hashes) => `require('fs').writeFileSync(${JSON.stringify(path)}, ${JSON.stringify(JSON.stringify({ hashes }))})`;
+const manifestSetup = (hashesByRun) => {
+  const s = setup();
+  const out = join(s.dir, "build/mapforge/af81c0aa-3.0.0"); mkdirSync(out, { recursive: true });
+  let run = 0;
+  const q = createJobQueue({ ...s.queue.options, commandsFor: () => [{ label: "generate", argv: [process.execPath, "-e",
+    writeManifestSrc(join(out, "manifest.json"), hashesByRun[Math.min(run++, hashesByRun.length - 1)])] }] });
+  return { ...s, q };
+};
+test("a succeeded draft records manifest.json's hashes; a re-run with identical hashes → rerunMatch identical", async () => {
+  const s = manifestSetup([{ a: "1", b: "2" }, { a: "1", b: "2" }]);
+  const original = s.q.enqueue({ kind: "draft", seed: seed("a") }); await s.q.onIdle();
+  assert.deepEqual(s.q.store.get(original.id).manifestHashes, { a: "1", b: "2" });
+  assert.equal(s.q.store.get(original.id).rerunMatch, null, "an original is not a re-run");
+  const rerun = s.q.enqueue({ kind: "draft", seed: seed("a"), rerunOf: original.id }); await s.q.onIdle();
+  const done = s.q.store.get(rerun.id);
+  assert.equal(done.status, "succeeded");
+  assert.equal(done.rerunMatch, "identical");
+  assert.deepEqual(done.rerunDiff, []);
+  assert.deepEqual(done.manifestHashes, { a: "1", b: "2" });
+  s.cleanup();
+});
+test("a re-run whose hashes differ → rerunMatch differs, rerunDiff names the changed keys", async () => {
+  const s = manifestSetup([{ a: "1", b: "2" }, { a: "2", b: "2", c: "9" }]);
+  const original = s.q.enqueue({ kind: "draft", seed: seed("a") }); await s.q.onIdle();
+  const rerun = s.q.enqueue({ kind: "draft", seed: seed("a"), rerunOf: original.id }); await s.q.onIdle();
+  const done = s.q.store.get(rerun.id);
+  assert.equal(done.rerunMatch, "differs");
+  assert.deepEqual(done.rerunDiff, ["a", "c"], "a changed, c added; b unchanged");
+  s.cleanup();
+});
+test("a re-run of an interrupted record is accepted, and stays unbadged when the original recorded no hashes", async () => {
+  const s = manifestSetup([{ a: "1" }]);
+  // The way recoverInterrupted() leaves a record after a killed service — no manifestHashes ever recorded.
+  const interrupted = s.q.store.create({ kind: "draft", seed: seed("a"), outDir: "build/mapforge/af81c0aa-3.0.0", status: "interrupted", error: "service restarted" });
+  const rerun = s.q.enqueue({ kind: "draft", seed: seed("a"), rerunOf: interrupted.id }); await s.q.onIdle();
+  const done = s.q.store.get(rerun.id);
+  assert.equal(done.status, "succeeded");
+  assert.equal(done.rerunOf, interrupted.id);
+  assert.equal(done.rerunMatch, null);
+  assert.deepEqual(done.manifestHashes, { a: "1" });
+  s.cleanup();
+});
+test("a failed draft records no manifestHashes even if a manifest.json exists in the out dir", async () => {
+  const s = setup();
+  const out = join(s.dir, "build/mapforge/bf81c0aa-3.0.0"); mkdirSync(out, { recursive: true });
+  writeFileSync(join(out, "manifest.json"), JSON.stringify({ hashes: { stale: "x" } }));
+  const q = createJobQueue({ ...s.queue.options, commandsFor: () => [{ label: "generate", argv: [process.execPath, "-e", "process.exitCode = 1"] }] });
+  const j = q.enqueue({ kind: "draft", seed: seed("b") }); await q.onIdle();
+  assert.equal(q.store.get(j.id).status, "failed");
+  assert.equal(q.store.get(j.id).manifestHashes, null);
+  s.cleanup();
+});
+
 // Composite-job fixture (fix round 1, A + B): a publish whose snapshot step
 // waits on a gate the test releases, an undo, and a 300 ms draft — all fake,
 // no repo or snapshot store touched. Everything lives under one mkdtempSync dir.

@@ -26,6 +26,24 @@ const readMetrics = (reportPath) => {
   return { seaLand: r.seaToLandRatio, landKm2: r.landKm2, settlements: r.totals.settlements, landforms: r.totals.landformInstances, regions: r.totals.regions };
 };
 
+// The generator's manifest.json `hashes` (generate-world.mjs writeRun: rel
+// path → sha of every file it wrote). Only a flat string→string object is
+// accepted — anything else is treated as "no hashes" rather than stored.
+const readManifestHashes = (manifestPath) => {
+  const h = JSON.parse(readFileSync(manifestPath, "utf8")).hashes;
+  if (!h || typeof h !== "object" || Array.isArray(h)) return null;
+  return Object.fromEntries(Object.entries(h).filter(([, v]) => typeof v === "string"));
+};
+
+// Re-run determinism (Task 18, spec §3 "a live G-REPRO check"): the keys whose
+// hash differs between the original's recorded hashes and the re-run's —
+// added, removed or changed files all count. Sorted so the badge tooltip and
+// the record are stable.
+export function hashDiff(original, rerun) {
+  const keys = new Set([...Object.keys(original), ...Object.keys(rerun)]);
+  return [...keys].filter((k) => original[k] !== rerun[k]).sort();
+}
+
 export function createJobQueue(options) {
   // snapshots/world/tools are only used by publish and undo (Task 14);
   // `tools` overrides individual tool argvs (tests only — see publish.mjs).
@@ -180,8 +198,22 @@ export function createJobQueue(options) {
       let metrics = null;
       if (isDraft) { try { metrics = readMetrics(reportPath); } catch { /* leave null */ } }
       const dryRun = parseDryRun(result.captured["dry-run"] ?? []);
+      // Task 18: a SUCCEEDED draft records the generator's manifest hashes
+      // (a failed/cancelled run may have left a partial or stale manifest —
+      // never attribute one to this run). A re-run then compares its own
+      // against the original's; an original without hashes (interrupted,
+      // failed, or pre-Task-18) leaves the badge unset rather than wrong.
+      let manifestHashes = null, rerunMatch = null, rerunDiff = null;
+      if (isDraft && status === "succeeded") {
+        try { manifestHashes = readManifestHashes(join(repo.repoRoot, outDir, "manifest.json")); } catch { /* leave null */ }
+        const original = createdJob.rerunOf && manifestHashes ? store.get(createdJob.rerunOf) : null;
+        if (original?.manifestHashes) {
+          rerunDiff = hashDiff(original.manifestHashes, manifestHashes);
+          rerunMatch = rerunDiff.length === 0 ? "identical" : "differs";
+        }
+      }
       const job = store.update(id, terminalFields({
-        status, exitCode: result.exitCode, error: result.error, steps: tracker.steps(), metrics, dryRun,
+        status, exitCode: result.exitCode, error: result.error, steps: tracker.steps(), metrics, dryRun, manifestHashes, rerunMatch, rerunDiff,
       }));
       events.emit("job.done", { job: publicJob(job) });
     } catch (e) {

@@ -41,7 +41,7 @@ export function createJobStore({ dir }) {
   return {
     create(fields) {
       const job = { id: newJobId(), status: "queued", createdAt: new Date().toISOString(), startedAt: null, endedAt: null,
-        durationMs: null, steps: [], exitCode: null, error: null, rerunOf: null, rerunMatch: null, metrics: null,
+        durationMs: null, steps: [], exitCode: null, error: null, rerunOf: null, rerunMatch: null, rerunDiff: null, manifestHashes: null, metrics: null,
         review: undecidedReview(), ...fields, _seq: ++seq };
       return write(job);
     },
