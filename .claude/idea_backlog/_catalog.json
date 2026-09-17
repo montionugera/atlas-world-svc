@@ -730,5 +730,11 @@
     "title": "asset-storybook UI/UX redesign: dashboard, list view, detail view",
     "created_at": "2026-09-13T18:16:27.053454+00:00",
     "promoted_to": "F-053"
+  },
+  {
+    "id": "I-123",
+    "title": "Asset Studio: settings per domain and asset, explore, generate art, MCP CRUD",
+    "created_at": "2026-09-17T00:48:15.041798+00:00",
+    "promoted_to": null
   }
 ]
