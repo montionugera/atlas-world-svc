@@ -11,6 +11,7 @@ status: idea
 - **What this is.** The asset storybook (`atelier/asset-storybook/`) becomes the **Asset Studio**: one local tool where the owner (the art director) keeps the game's design settings, browses every asset, and later generates art from an asset. Agents do the same things through MCP tools.
 - **Decision 1: settings stay as files in git.** Nothing moves into a database. The studio is an editing surface over the JSON/Markdown files that already live under `content/`, the pattern git-backed CMSs (Decap, TinaCMS), CastleDB, LDtk and Godot all use (research, §A).
 - **Decision 2: one local studio service.** A Node service on the owner's Mac serves the UI, a JSON API, the MCP endpoint and (slice 2) the art job queue. It grows out of the F-052 map-builder server (`atelier/map-builder/server.mjs`), which becomes one module of it.
+- **Decision 2b: SQLite as a rebuildable index, not the record.** The studio keeps a local SQLite database (built-in `node:sqlite`, full-text search via FTS5) that joins assets, settings, origin labels and later renders for fast search and filters. It is never committed and is rebuilt from the files. Deleting it loses nothing. This is the Unity `Library/` / Godot `.godot/` pattern. The studio runs on **Node ≥22.5**, separate from the repo's Node 18 determinism pin.
 - **Decision 3: build in three slices.** Slice 1: explore + settings + MCP. Slice 2: generate art from an asset. Slice 3: import hand-made assets, fold the map builder in, give combat a settings home. **This spec designs slice 1 in full and slices 2 and 3 in outline only.**
 - **What it replaces.** F-053 (storybook redesign) forbids a server and write endpoints (F-053 spec L16, L48, AC 25). This spec retires those three lines. F-053's information architecture (dashboard, `sections.json` registry, list view, detail view) stays and becomes the studio's UI plan.
 - **Assumed without asking.** The studio never commits on its own and writes only into its own worktree. MCP cannot delete asset binaries in slice 1. Only files that a schema covers are editable. Generated-vs-hand-made is derived from data that already exists, with no manifest schema change. Details in §9.
@@ -31,7 +32,7 @@ status: idea
 3. Expose the same create/read/update/delete operations as **MCP tools**, going through the same code path as the UI.
 4. Show pending file changes so the owner can review and commit them.
 
-**Non-goals (slice 1).** Generating art (slice 2). Importing or deleting asset binaries (slice 3). Editing combat numbers (slice 3; shown read-only from `atelier/combat-lab/combat-model.json`). A database. Multi-user editing. Running inside k8s. Automatic commits.
+**Non-goals (slice 1).** Generating art (slice 2). Importing or deleting asset binaries (slice 3). Editing combat numbers (slice 3; shown read-only from `atelier/combat-lab/combat-model.json`). A database as the source of truth (SQLite is an index only, §5.4). Multi-user editing. Running inside k8s. Automatic commits.
 
 ## 3. Approaches considered
 
@@ -53,7 +54,7 @@ flowchart LR
     API["REST routes"] --> ST["store<br/>(the only writer)"]
     MCP["MCP endpoint /mcp"] --> ST
     ST --> V["validate<br/>(ajv + content/schemas)"]
-    IDX["asset index<br/>(join manifests + ledgers + thumbs)"]
+    IDX["index<br/>(SQLite, rebuilt from files)"]
     API --> IDX
     MCP --> IDX
   end
@@ -71,12 +72,14 @@ flowchart LR
 | checkout guard | `lib/checkout.mjs` | the studio writes only into **its own worktree** `.claude/worktrees/studio` on branch `studio/edits` (created on first start). It refuses to start if that worktree is on `main` or a detached HEAD, or carries a `working-feature.json` claim marker | git CLI (argv only) |
 | store | `lib/store.mjs` | list/get/create/update/delete a settings document; path allowlist; validate; atomic write (temp file + rename) | schema map, checkout |
 | schema map | `lib/schema-map.mjs` **(new table)** | explicit list: path pattern → schema file. Built by reading each hardcoded check in `scripts/check_content.mjs` (e.g. `:856` character, `:1268` zone-content, `:2080-2085` world) and `scripts/lib/story.mjs:31`; runs ajv | `ajv` |
-| asset index | `lib/asset-index.mjs` | builds the joined asset records (§5.2), in memory, rebuilt on file change | manifests, ledgers, `.thumbs/index.json` |
+| index | `lib/index-db.mjs` | builds the SQLite index (§5.4) from manifests, ledgers, `.thumbs/index.json` and settings files; full rebuild on start, per-file update on change; serves list/search/filter queries | `node:sqlite` (built in) |
 | changes | `lib/changes.mjs` | `git status --porcelain` + `git diff` for allowed roots; commit on explicit request | git CLI (argv only) |
-| mcp | `lib/mcp.mjs` | registers the MCP tools (§6) on top of store + asset index | `@modelcontextprotocol/sdk` |
+| mcp | `lib/mcp.mjs` | registers the MCP tools (§6) on top of store + index | `@modelcontextprotocol/sdk` |
 | UI | `atelier/asset-storybook/js/studio/*.mjs` | edit panel, changes panel, origin filter; hides edit controls when `/api/health` is unreachable | the API |
 
-**Dependency rule.** The studio gets its own `atelier/studio/package.json` with two direct dependencies: `ajv` (already used by the content gate) and `@modelcontextprotocol/sdk` plus its required peer `zod`. Be clear about the cost: SDK 1.30.0 needs Node ≥18 (fits the `nodeMajor` 18 pin) and pulls in express, hono, jose and about 13 more transitive direct deps. That is accepted over hand-rolling the protocol. The dependency stays inside `atelier/studio/` and never enters the nginx image.
+**Dependency rule.** The studio gets its own `atelier/studio/package.json` with two direct dependencies: `ajv` (already used by the content gate) and `@modelcontextprotocol/sdk` plus its required peer `zod`. Be clear about the cost: SDK 1.30.0 needs Node ≥18 and pulls in express, hono, jose and about 13 more transitive direct deps. That is accepted over hand-rolling the protocol. The dependency stays inside `atelier/studio/` and never enters the nginx image. SQLite adds **no** dependency: it is `node:sqlite`, built into Node ≥22.5 (verified on the owner's Node 26.5: `DatabaseSync` + an FTS5 virtual table both work).
+
+**Node version.** `atelier/studio/package.json` declares `engines.node >=22.5`, and `server.mjs` exits with a clear message on older Node. The repo's `nodeMajor: 18` (`.release.json`) is the determinism pin for map tooling and stays unchanged. The studio is a third Node consumer, so it is recorded in `.release.json` as `studioNodeMajor: 22` and joined to its consumer in `scripts/tests/node-pin.test.mjs`, the same way `runtimeNodeMajor` is.
 
 **F-052 prerequisite.** The map-builder server exists only on `feat/F-052` (1,570 lines with `lib/`), not on `release/1.10`. Slice 1 starts after F-052 merges into the release branch. If it has not merged when slice 1 is claimed, slice 1 copies only the 142-line `server.mjs` skeleton and the static handler, and slice 3 does the fold-in.
 
@@ -143,6 +146,14 @@ A **settings document** is one existing file under an allowed root, addressed by
 
 `generation.briefId` links to an existing art-forge brief. Slice 2 decides whether briefs are generated from asset settings or stay separate. Slice 1 does not merge them.
 
+### 5.4 The SQLite index
+
+- **File:** `atelier/studio/.cache/studio.db` (gitignored).
+- **Tables:** `assets` (one row per §5.2 record), `files`, `settings_docs` (domain, id, path, schema, editable, reason, etag), `renders` (slice 2), and `search` (FTS5 over asset title, key, description, `look` text and settings text).
+- **Truth rule:** every row is derivable from committed files, run ledgers or the drafts folder. A write goes schema check → atomic file write → index row update, in that order. If the index update fails, the file is still correct, and the next start rebuilds the index.
+- **Rebuild:** full on start (inputs are about 1,500 records), and per file on change via `fs.watch`. A `schemaVersion` row forces a full rebuild when the table layout changes.
+- **Not stored here:** anything that exists nowhere else. When slice 2 needs job state that must survive, it goes to the append-only run ledger first.
+
 ## 6. Interfaces
 
 ### 6.1 REST (all JSON, 127.0.0.1 only)
@@ -184,7 +195,9 @@ A **settings document** is one existing file under an allowed root, addressed by
 - **MCP contract:** an in-process SDK client lists the tools, runs create, update, get and delete on a temp checkout, and gets the same result as the REST route.
 - **Mutation proof:** delete the allowlist check and the validate call in turn; the matching tests must go red.
 - **Smoke:** extend the F-053 headless Chrome harness (`atelier/asset-storybook/tests/smoke/`) with one scenario: open an asset, edit its settings, see the change listed in the changes panel.
-- **Gate 1:** add the studio unit tests to `scripts/precheck.sh`.
+- **Index is rebuildable:** build the index, delete `studio.db`, rebuild it, and compare every table row for row; equal or the test fails. Mutation proof: make one write skip the file and update only the index, and this test must go red.
+- **Search:** FTS query by a word from an asset's `look.subject` returns that asset; origin and kind filters return the measured counts.
+- **Gate 1 and CI:** `scripts/precheck.sh` runs the studio tests when the local Node is ≥22.5 and prints a skip line otherwise. `.github/workflows/ci.yml` gets a separate `studio` job on Node 22, so the Node 18 jobs are untouched.
 
 ## 9. Decisions (batch-grill, 2026-09-17)
 
@@ -198,7 +211,9 @@ A **settings document** is one existing file under an allowed root, addressed by
 - Editable scope → **only schema-mapped, non-generated files** (default) — most world files and all dungeons are read-only in slice 1.
 - Where the studio writes → **its own `studio/edits` worktree** (default) — never main, never a claimed feature worktree.
 - Combat → **read-only in slice 1** (default) — its numbers live in script constants; moving them to `content/combat/` is its own change.
-- Dependencies → **ajv + MCP SDK only** (default).
+- Dependencies → **ajv + MCP SDK (+ zod) only** (default).
+- Database → **SQLite from slice 1, as a rebuildable index only** (owner, 2026-09-17) — fast search and filters for UI and MCP; files and run ledgers stay the record, so deleting the database loses nothing.
+- Studio Node version → **≥22.5 with its own CI job** (owner) — built-in `node:sqlite`, no native package; the Node 18 determinism pin is unchanged.
 
 ## 10. Later slices (outline, designed in their own specs)
 
@@ -231,3 +246,4 @@ A **settings document** is one existing file under an allowed root, addressed by
 ## Appendix B. Audit trail
 
 - 2026-09-17 self-grill-audit: verdict safe-with-fixes. Corrected: (C) no reusable schema map exists, so added `lib/schema-map.mjs` + editable-only-if-mapped rule and marked dungeons/most world read-only; (C) origin rule rewritten per registry (ledgers are keyed by briefId; concept art uses `gen.generated`; source text contains "OpenGameArt"/"Kenney", not bare URLs), counts to be measured first; (H) checkout guard was misattributed to F-052 (which checks branch name, only on publish), so the studio now writes only into its own worktree; (H) the psrw guard does not see Node writes, so the studio refuses claimed worktrees; (H) localhost is not a security boundary, so added Host/Origin checks + bearer token; (H) excluded `promote-world` outputs (`world/fabric|handles|resolved`, `spine`) from writable roots; (M) F-052 exists only on its feature branch, so it is now a stated prerequisite; (M) MCP SDK transitive deps stated; (M) dockerignore allowlist gap added. Verified on disk before editing: ledger header line, art-manifest gen counts (23 of 106), hardcoded schema loads, `REPLACED_FAMILIES`, F-052 `world.mjs:43-44`. Open: none needing the owner.
+- 2026-09-17 owner follow-up: added SQLite as a rebuildable index (§5.4, Decision 2b), studio Node ≥22.5 with its own CI job and `studioNodeMajor` pin row, and a delete-and-rebuild equality test.
