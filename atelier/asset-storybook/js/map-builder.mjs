@@ -118,6 +118,50 @@ function el(tag, props, children) {
   return node;
 }
 
+// Patch-don't-rebuild primitives shared by every screen (fix round 1, D3):
+// a text write only when the value changed, so aria-live regions do not
+// re-announce and focused nodes are never replaced on a no-op frame.
+function setText(node, text) {
+  if (node.textContent !== text) node.textContent = text;
+}
+
+function rowActionButton(label, onClick) {
+  const btn = el("button", { type: "button", className: "mb-row-action", text: label });
+  btn.addEventListener("click", onClick);
+  return btn;
+}
+
+/**
+ * Keyed row diff for a table (fix round 1, D3): creates a row only the
+ * first time a key is seen, removes rows whose key is gone, and reorders an
+ * existing row only when its position actually changed (`.after()` is a
+ * no-op if the row is already right after `prevTr`). `rowsById` is the
+ * caller's key -> entry map (an entry carries `tr`); `patch(entry, item)`
+ * decides what inside the row is worth touching.
+ */
+function syncKeyedRows(rowsById, headRow, items, { key, create, patch }) {
+  const seen = new Set();
+  let prevTr = headRow;
+  for (const item of items) {
+    const id = key(item);
+    seen.add(id);
+    let entry = rowsById.get(id);
+    if (!entry) {
+      entry = create(item);
+      rowsById.set(id, entry);
+    }
+    patch(entry, item);
+    if (prevTr.nextElementSibling !== entry.tr) prevTr.after(entry.tr);
+    prevTr = entry.tr;
+  }
+  for (const [id, entry] of rowsById) {
+    if (!seen.has(id)) {
+      entry.tr.remove();
+      rowsById.delete(id);
+    }
+  }
+}
+
 function renderReadOnly(section) {
   const p = el("p", { className: "mb-readonly" }, [
     document.createTextNode("Builder service not running — start it with "),
@@ -217,6 +261,11 @@ export async function mountMapBuilder(main) {
   // picked) — the tab bar itself is hidden while either is active, and Back
   // returns to Start.
   function setScreen(name) {
+    // Leaving History is the log viewer's teardown: its 1 s poll must not
+    // keep hitting /log from a hidden panel (Batch J review m2). Guarded on
+    // the OLD screen so the initial setScreen("start") below never reaches
+    // the log-viewer state declared further down.
+    if (activeScreen === "history" && name !== "history") closeLog();
     activeScreen = name;
     for (const [id, tab] of screenTabs) {
       tab.classList.toggle("active", name === id);
@@ -454,12 +503,9 @@ export async function mountMapBuilder(main) {
     return [...state.jobs.values()].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   }
 
-  // Fix round 1, D3 — keyed row diff: creates a row only the first time a
-  // job id is seen, removes rows for jobs no longer in state, reorders an
-  // existing row only when its position actually changed (`.after()` is a
-  // no-op if the row is already right after `prevTr`), and only rebuilds
-  // the Actions cell's buttons when `job.status` actually transitioned —
-  // NOT on every job.step frame, which is what previously stole focus from
+  // Fix round 1, D3 — keyed row diff (syncKeyedRows), and the Actions cell's
+  // buttons are only rebuilt when `job.status` actually transitioned — NOT
+  // on every job.step frame, which is what previously stole focus from
   // whatever action button a keyboard user had just pressed.
   function createTableRow(job) {
     const seedCode = el("code");
@@ -472,19 +518,13 @@ export async function mountMapBuilder(main) {
   }
 
   function patchTableRow(entry, job) {
-    if (entry.seedCode.textContent !== job.seed) entry.seedCode.textContent = job.seed;
-    const statusStr = statusText(job, { stageCount: state.world.stageCount });
-    if (entry.statusCell.textContent !== statusStr) entry.statusCell.textContent = statusStr;
-    const startedStr = job.startedAt ?? "—";
-    if (entry.startedCell.textContent !== startedStr) entry.startedCell.textContent = startedStr;
+    setText(entry.seedCode, job.seed);
+    setText(entry.statusCell, statusText(job, { stageCount: state.world.stageCount }));
+    setText(entry.startedCell, job.startedAt ?? "—");
 
     if (entry.lastStatus !== job.status) {
       entry.lastStatus = job.status;
-      const buttons = rowActions(job).map((action) => {
-        const btn = el("button", { type: "button", className: "mb-row-action", text: action.label });
-        btn.addEventListener("click", () => runAction(action.id, job.id));
-        return btn;
-      });
+      const buttons = rowActions(job).map((action) => rowActionButton(action.label, () => runAction(action.id, job.id)));
       entry.actionsCell.replaceChildren(...buttons);
     }
   }
@@ -493,26 +533,7 @@ export async function mountMapBuilder(main) {
     const jobs = jobsSortedNewestFirst();
     table.hidden = jobs.length === 0;
     tableEmpty.hidden = jobs.length !== 0;
-
-    const seen = new Set();
-    let prevTr = tableHeadRow;
-    for (const job of jobs) {
-      seen.add(job.id);
-      let entry = tableRows.get(job.id);
-      if (!entry) {
-        entry = createTableRow(job);
-        tableRows.set(job.id, entry);
-      }
-      patchTableRow(entry, job);
-      if (prevTr.nextElementSibling !== entry.tr) prevTr.after(entry.tr);
-      prevTr = entry.tr;
-    }
-    for (const [id, entry] of tableRows) {
-      if (!seen.has(id)) {
-        entry.tr.remove();
-        tableRows.delete(id);
-      }
-    }
+    syncKeyedRows(tableRows, tableHeadRow, jobs, { key: (job) => job.id, create: createTableRow, patch: patchTableRow });
   }
 
   // Fix round 1, D3 — patch, don't rebuild: every element here is created
@@ -541,9 +562,8 @@ export async function mountMapBuilder(main) {
       return;
     }
 
-    if (buildTitleCode.textContent !== job.seed) buildTitleCode.textContent = job.seed;
-    const statusStr = statusText(job, { stageCount: state.world.stageCount });
-    if (buildStatus.textContent !== statusStr) buildStatus.textContent = statusStr;
+    setText(buildTitleCode, job.seed);
+    setText(buildStatus, statusText(job, { stageCount: state.world.stageCount }));
 
     if (job.status === "running") {
       const p = progress(job, { targetMs: GENERATE_TARGET_MS, failMs: GENERATE_FAIL_MS });
@@ -557,8 +577,7 @@ export async function mountMapBuilder(main) {
 
     if (job.status === "failed" && job.error) {
       buildErrorP.hidden = false;
-      const firstLine = job.error.split("\n")[0];
-      if (buildErrorP.textContent !== firstLine) buildErrorP.textContent = firstLine;
+      setText(buildErrorP, job.error.split("\n")[0]);
     } else {
       buildErrorP.hidden = true;
     }
@@ -1078,7 +1097,7 @@ export async function mountMapBuilder(main) {
       return;
     }
     if (phase === "published") {
-      if (publishedSeedCode.textContent !== job.seed) publishedSeedCode.textContent = job.seed;
+      setText(publishedSeedCode, job.seed);
       publishUndoBtn.hidden = !state.world.undoAvailable;
       if (snapshotCountFor !== state.world) refreshSnapshotCount();
       return;
@@ -1190,10 +1209,6 @@ export async function mountMapBuilder(main) {
     return { tr, seedCode, kindCell, statusSpan, badgeSpan, durationCell, startedCell, actionsCell, lastStatus: null };
   }
 
-  const setText = (node, text) => {
-    if (node.textContent !== text) node.textContent = text;
-  };
-
   function patchHistoryRow(entry, row, indented) {
     entry.tr.classList.toggle("mb-row-rerun", indented);
     setText(entry.seedCode, indented ? "↳ " + row.seed : row.seed);
@@ -1218,14 +1233,8 @@ export async function mountMapBuilder(main) {
       // this status) plus Log for every job — cancel/watch/review stay on Start.
       const buttons = rowActions(job)
         .filter((a) => a.id === "rerun" || a.id === "delete")
-        .map((action) => {
-          const btn = el("button", { type: "button", className: "mb-row-action", text: action.label });
-          btn.addEventListener("click", () => runAction(action.id, row.id));
-          return btn;
-        });
-      const logBtn = el("button", { type: "button", className: "mb-row-action", text: "Log" });
-      logBtn.addEventListener("click", () => openLog(row.id));
-      entry.actionsCell.replaceChildren(...buttons, logBtn);
+        .map((action) => rowActionButton(action.label, () => runAction(action.id, row.id)));
+      entry.actionsCell.replaceChildren(...buttons, rowActionButton("Log", () => openLog(row.id)));
     }
   }
 
@@ -1256,27 +1265,11 @@ export async function mountMapBuilder(main) {
     });
     historyTable.hidden = visible.length === 0;
     historyEmpty.hidden = visible.length !== 0;
-
-    const seen = new Set();
-    let prevTr = historyHeadRow;
-    for (const { id, indented } of visible) {
-      seen.add(id);
-      const row = rowsById.get(id);
-      let entry = historyRowsById.get(id);
-      if (!entry) {
-        entry = createHistoryRow(row);
-        historyRowsById.set(id, entry);
-      }
-      patchHistoryRow(entry, row, indented);
-      if (prevTr.nextElementSibling !== entry.tr) prevTr.after(entry.tr);
-      prevTr = entry.tr;
-    }
-    for (const [id, entry] of historyRowsById) {
-      if (!seen.has(id)) {
-        entry.tr.remove();
-        historyRowsById.delete(id);
-      }
-    }
+    syncKeyedRows(historyRowsById, historyHeadRow, visible, {
+      key: ({ id }) => id,
+      create: ({ id }) => createHistoryRow(rowsById.get(id)),
+      patch: (entry, { id, indented }) => patchHistoryRow(entry, rowsById.get(id), indented),
+    });
     patchLogPanel();
   }
 
@@ -1379,7 +1372,7 @@ export async function mountMapBuilder(main) {
       closeLog();
       return;
     }
-    setText(logStatus, logTimer ? "following · " + statusText(job, { stageCount: state.world.stageCount }) : statusText(job, { stageCount: state.world.stageCount }));
+    setText(logStatus, (logTimer ? "following · " : "") + statusText(job, { stageCount: state.world.stageCount }));
   }
 
   function renderAll() {
