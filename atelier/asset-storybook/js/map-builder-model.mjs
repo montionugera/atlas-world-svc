@@ -180,9 +180,11 @@ export function reviewDecided(job) {
  * world may be half-published in two cases: the auto-restore itself failed
  * (`restored: false` + `restoreError`), or the service restarted mid-publish
  * (`status: "interrupted"`) — and only once the snapshot step had recorded
- * an id, because before that nothing was replaced. `world.undoAvailable` is
- * false in the interrupted case (Task-14 review), so the Undo offered here
- * is keyed on the job's own snapshotId instead.
+ * an id, because before that nothing was replaced. `world.undoAvailable`
+ * does count an interrupted (or restore-failed) publish's snapshot
+ * (world.mjs undoAvailable), but it answers "is there anything to undo", not
+ * "undo THIS publish" — so the Undo offered here is keyed on the job's own
+ * snapshotId, which is the one the owner is looking at.
  */
 export function publishFailure(job) {
   const failingStep = (job.steps ?? []).find((s) => s.status === "failed");
@@ -205,6 +207,22 @@ export function publishFailure(job) {
     restored: job.restored === true,
     halfPublished,
   };
+}
+
+/**
+ * Jobs the client still believes are in flight that a synced page did not
+ * cover — re-fetched by id after the page (final review I4). The Start
+ * table's page is draft-only, so a publish/undo/dry-run that was `running`
+ * when the service restarted is never corrected by a page; `recoverInterrupted`
+ * marks it `interrupted` before any SSE bus exists, so no `job.done` frame
+ * ever arrives for it either. Kind-agnostic on purpose: whatever is
+ * non-terminal in state and absent from the page gets asked about.
+ */
+export function staleInFlightIds(jobs, page) {
+  const covered = new Set(page.map((j) => j.id));
+  return [...jobs.values()]
+    .filter((j) => (j.status === "queued" || j.status === "running") && !covered.has(j.id))
+    .map((j) => j.id);
 }
 
 /** Drafts that are succeeded and not yet decided — what the sidebar badge counts. */

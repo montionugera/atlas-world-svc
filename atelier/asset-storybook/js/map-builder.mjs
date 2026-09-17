@@ -15,6 +15,7 @@ import {
   decisionReasons,
   reviewDecided,
   publishFailure,
+  staleInFlightIds,
   historyRows,
   rerunChains,
   logTailUrl,
@@ -1014,8 +1015,8 @@ export async function mountMapBuilder(main) {
   const publishRestoredP = el("p", { text: "Restored the previous world automatically." });
   // Batch H review I3: a failed auto-restore or a restart mid-publish leaves
   // the world possibly half-published — say so, and offer Undo keyed on the
-  // job's own snapshotId (world.undoAvailable is false in the interrupted
-  // case, so it cannot gate this button).
+  // job's own snapshotId (world.undoAvailable only says "something is
+  // undoable", not that THIS publish is, so it does not gate this button).
   const publishHalfPublishedP = el("p", { className: "mb-build-error" });
   const publishHalfUndoBtn = el("button", { type: "button", className: "mb-stop-btn", text: "Undo from snapshot" });
   publishHalfUndoBtn.addEventListener("click", () => {
@@ -1401,10 +1402,30 @@ export async function mountMapBuilder(main) {
   // differ per caller. While History is showing, the page is the all-kinds
   // one (Task 19) so its rows survive a resync; otherwise the draft-only
   // page the Start table has always used.
+  //
+  // Final review I4: the draft-only page cannot correct a publish, undo or
+  // dry-run the client still shows as in flight — and after a service
+  // restart nothing else will either: recoverInterrupted marks it
+  // `interrupted` before any SSE bus exists, so no job.done frame is ever
+  // emitted for it, and the Publish screen would sit on "Publishing…"
+  // forever. So every sync also re-fetches, by id, whatever is still
+  // non-terminal in state and absent from the page — kind-agnostic. A 404
+  // (deleted meanwhile) is logged and skipped, not fatal to the sync.
   async function syncJobsPage(fetchLabel, warnLabel) {
     try {
       const page = await fetchJson(activeScreen === "history" ? HISTORY_URL : JOBS_URL, fetchLabel);
-      apply({ type: "jobs.synced", jobs: page.jobs ?? [] });
+      const jobs = page.jobs ?? [];
+      apply({ type: "jobs.synced", jobs });
+      const stale = await Promise.all(
+        staleInFlightIds(state.jobs, jobs).map((id) =>
+          fetchJson(apiBase + "/jobs/" + encodeURIComponent(id), fetchLabel + " (in-flight " + id + ")").catch((err) => {
+            console.warn(`[asset-storybook] map-builder ${warnLabel} of in-flight job ${id} failed:`, err);
+            return null;
+          }),
+        ),
+      );
+      const refreshed = stale.filter((j) => j && j.id);
+      if (refreshed.length) apply({ type: "jobs.synced", jobs: refreshed });
     } catch (err) {
       console.warn(`[asset-storybook] map-builder ${warnLabel} failed:`, err);
     }

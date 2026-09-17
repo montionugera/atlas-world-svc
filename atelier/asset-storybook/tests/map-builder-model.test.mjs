@@ -19,6 +19,7 @@ import {
   historyRows,
   rerunChains,
   logTailUrl,
+  staleInFlightIds,
   PUBLISH_STEPS,
 } from "../js/map-builder-model.mjs";
 // Drift guard (Task 16): the client cannot import server code (publish.mjs
@@ -313,4 +314,26 @@ test("decisionReasons is the fixed five-reason set", () => {
     "settlements misplaced",
     "other",
   ]);
+});
+
+// Final review I4: the resync page is draft-only (Phase 1 contract), so a
+// publish/undo/dry-run the client still believes is in flight is never
+// corrected by a page — after a service restart it would sit on "running"
+// forever (and the Publish screen on "Publishing…"). Those rows are re-fetched
+// by id; this picks them, kind-agnostically: whatever is non-terminal in
+// state and absent from the page.
+test("staleInFlightIds: non-terminal jobs the synced page did not cover, any kind", () => {
+  const jobs = new Map(
+    [
+      job({ id: "d-run", kind: "draft", status: "running" }),
+      job({ id: "d-done", kind: "draft", status: "succeeded" }),
+      job({ id: "p-run", kind: "publish", status: "running" }),
+      job({ id: "u-queued", kind: "undo", status: "queued" }),
+      job({ id: "dry-run", kind: "dry-run", status: "running" }),
+      job({ id: "p-old", kind: "publish", status: "interrupted" }),
+    ].map((j) => [j.id, j]),
+  );
+  const page = [job({ id: "d-run", status: "succeeded" }), job({ id: "d-done", status: "succeeded" })];
+  assert.deepEqual(staleInFlightIds(jobs, page), ["p-run", "u-queued", "dry-run"]);
+  assert.deepEqual(staleInFlightIds(new Map(), page), []);
 });
