@@ -87,6 +87,9 @@ importers:
 
   contracts:
     dependencies:
+      flatbuffers:
+        specifier: ^24.3.0
+        version: 24.12.23
       zod:
         specifier: ^3.23.8
         version: 3.25.76
@@ -2497,6 +2500,9 @@ packages:
   find-up@4.1.0:
     resolution: {integrity: sha512-PpOwAdQ/YlXQ2vj8a3h8IipDuYRi3wceVQQGYWxNINccq40Anw7BlsEXCMbt1Zt+OLA6Fq9suIpIWD0OsnISlw==}
     engines: {node: '>=8'}
+
+  flatbuffers@24.12.23:
+    resolution: {integrity: sha512-dLVCAISd5mhls514keQzmEG6QHmUUsNuWsb4tFafIUwvvgDjXhtfAYSKOzt5SWOy+qByV5pbsDZ+Vb7HUOBEdA==}
 
   for-each@0.3.5:
     resolution: {integrity: sha512-dKx12eRCVIzqCxFGplyFKJMPvLEWgmNtUrpTiJIR5u97zEhRG8ySrtboPHZXx7daLxQVrl643cTzbab2tkQjxg==}
@@ -5863,7 +5869,7 @@ snapshots:
   '@colyseus/core@0.16.21(@colyseus/schema@4.0.27(typescript@5.9.2))(@pm2/io@6.1.0)':
     dependencies:
       '@colyseus/greeting-banner': 2.0.6
-      '@colyseus/msgpackr': 1.11.2
+      '@colyseus/msgpackr': 1.11.3
       '@colyseus/schema': 4.0.27(typescript@5.9.2)
       '@colyseus/timer': 1.0.1
       '@pm2/io': 6.1.0
@@ -7932,6 +7938,8 @@ snapshots:
       locate-path: 5.0.0
       path-exists: 4.0.0
 
+  flatbuffers@24.12.23: {}
+
   for-each@0.3.5:
     dependencies:
       is-callable: 1.2.7
@@ -8076,7 +8084,7 @@ snapshots:
 
   grant@5.4.24:
     dependencies:
-      qs: 6.14.0
+      qs: 6.15.3
       request-compose: 2.1.7
       request-oauth: 1.0.1
     optionalDependencies:
@@ -9563,7 +9571,7 @@ snapshots:
 
   qs@6.13.0:
     dependencies:
-      side-channel: 1.1.0
+      side-channel: 1.1.1
 
   qs@6.14.0:
     dependencies:
@@ -9702,7 +9710,7 @@ snapshots:
   request-oauth@1.0.1:
     dependencies:
       oauth-sign: 0.9.0
-      qs: 6.14.0
+      qs: 6.15.3
       uuid: 8.3.2
 
   require-directory@2.1.1: {}
