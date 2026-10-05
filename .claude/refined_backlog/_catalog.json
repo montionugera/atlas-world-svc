@@ -742,9 +742,10 @@
     "title": "Bestiary catalog ingestion, mob AI states, threat table, and respawn lifecycle in server-rs",
     "from_idea": "I-133",
     "created_at": "2026-10-05T16:02:10.467900+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-002"
+    "epic": "E-002",
+    "claimed_at": "2026-10-05T16:02:20.872325+00:00"
   }
 ]
