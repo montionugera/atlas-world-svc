@@ -1,43 +1,36 @@
-# Implementation Plan: F-054 AI separation and targeting query the existing spatial grid
+# Implementation Plan: F-055 (E-001 Slice 1) TypeScript Baseline & Golden Deterministic Trace
 
-**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-054-ai-separation-and-targeting-query-the-ex`  
-**Branch:** `feat/F-054`  
-**Goal:** Eliminate the $O(N^2)$ all-pairs loops in mob AI by pointing separation and targeting at the existing `SpatialHash`, bringing 300 players $\times$ 1,000 mobs p95 under the 50 ms budget.
+**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-055-1`  
+**Branch:** `feat/F-055`  
+**Goal:** Establish an authoritative 1,000-tick deterministic simulation trace (`golden_sim_trace_1000.json`) driven by `SimClock` and seeded PRNG as the immutable behavioral test oracle for the Rust `server-rs` port.
 
 ---
 
-## Task 1: Spatial Grid Management in AIWorldInterface
-- **File:** `colyseus-server/src/ai/AIWorldInterface.ts`
+## Task 1: Seeded PRNG and Deterministic Simulation Harness
+- **File:** `colyseus-server/src/tests/harness/DeterministicSimHarness.ts`
 - **Action:**
-  - Import `SpatialHash` and `SpatialEntity` from `../interest/SpatialHash`.
-  - Maintain a `SpatialHash<AISpatialEntity>` with `cellSize = 50`.
-  - Add `rebuildSpatialGrid(tick: number)` method that clears and indexes all alive players, npcs, and mobs once per tick. Guard with `lastRebuildTick`.
-  - Expose helper query methods: `queryRadius(x, y, radius)`.
-- **Verify:** TypeScript compiles cleanly: `cd colyseus-server && npm run typecheck`.
+  - Implemented Mulberry32 PRNG with fixed seed `0x1337C0DE`.
+  - Built test environment with `SimClock` (fixed 50 ms step per tick).
+  - Mocked `Date.now()` and `performance.now()` clamped to `SimClock` so all AI and combat sub-systems execute with 100% determinism.
+  - Setup 10 synthetic player bots and 50 mobs at deterministic spawn positions.
+  - Steered bots deterministically with margin avoidance.
+- **Verify:** ✅ Passes 1,000 ticks without NaN or unhandled errors.
 
-## Task 2: Refactor calculateSeparation to Use Spatial Grid
-- **File:** `colyseus-server/src/ai/AIModule.ts`
+## Task 2: Golden Simulation Trace Generator & JSON Fixture
+- **File:** `colyseus-server/src/tests/fixtures/golden_sim_trace_1000.json` & generator script
 - **Action:**
-  - In `calculateSeparation(agent: IAgent)`, replace the `for (const { agent: other } of this.agents.values())` loop with a localized query against the spatial grid within `maxSeparationRadius` (~25–30 units).
-  - Preserve identical separation force math, normalization, and team filtering.
-- **Verify:** `cd colyseus-server && npx jest src/tests/boundary-avoidance.test.ts`.
+  - Captured tick-level state snapshots at tick intervals (0, 100, 200, ..., 1000) and consecutive ticks (990–1000).
+  - For each recorded entity, recorded `id`, `type`, `x`, `y`, `vx`, `vy`, `health`, `isAlive`, `behavior`, `targetId`.
+  - Saved to `colyseus-server/src/tests/fixtures/golden_sim_trace_1000.json` (176.4 KB, 21 snapshots).
+- **Verify:** ✅ Fixture generated and verified with 1,000 ticks of simulation data.
 
-## Task 3: Refactor pickTarget and getNearestMob to Use Spatial Grid
-- **File:** `colyseus-server/src/ai/AIWorldInterface.ts`
+## Task 3: Deterministic Parity Regression Suite
+- **File:** `colyseus-server/src/tests/sim-trace-determinism.test.ts`
 - **Action:**
-  - In `pickTarget(agent, position, myTeamId, perceptionRange)`, query `spatialHash.queryRadius` using `perceptionRange` (default 50 or agent's configured range).
-  - In `getNearestMob(position, excludeId, searchRadius)`, query `spatialHash.queryRadius` using `searchRadius` (~100 units).
-  - Invariant preservation: if the threat table has an active taunt or threat targets, guarantee those targets are included in candidate list even if beyond base perception range.
-- **Verify:** `cd colyseus-server && npx jest src/tests/ai-mob-decision.test.ts src/tests/ai-npc-targeting.test.ts`.
+  - Authored Jest test that re-executes the harness from seed `0x1337C0DE`.
+  - Asserts that every recorded tick in `golden_sim_trace_1000.json` matches the freshly simulated state with zero divergence.
+- **Verify:** ✅ `PASS src/tests/sim-trace-determinism.test.ts` (100% pass across all 21 snapshots, exact bit-level parity).
 
-## Task 4: Unit Test Suite Verification
-- **Action:** Run all existing AI tests to prove zero behavioral regressions.
-- **Verify:** `cd colyseus-server && npx jest src/tests/ai-*.test.ts src/tests/bot-mode.test.ts`.
-
-## Task 5: Load Harness Capacity Benchmark
-- **Action:** Run `roomLoad.harness.ts` to verify capacity targets.
-- **Verify:** `cd colyseus-server && npm run load 2>&1 | grep -E "^(OK|OVER|Capacity)"` confirms 300 players $\times$ 1,000 mobs passes with p95 $< 50\text{ ms}$.
-
-## Task 6: Linter & Precheck
-- **Action:** Run formatting and precheck.
-- **Verify:** `cd colyseus-server && npm run lint && npm run typecheck`.
+## Task 4: Full Quality Gate Verification & Documentation
+- **Action:** Updated `README.md` with testing quality gates and deterministic simulation oracle details. Ran `./scripts/precheck.sh --no-install`.
+- **Verify:** ✅ GATE 1 PASS — all contracts, tests, linter, formatting, and content gates clean.
