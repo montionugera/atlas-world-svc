@@ -783,5 +783,40 @@
     "created_at": "2026-10-05T08:11:01.803733+00:00",
     "promoted_to": "F-059",
     "epic": "E-001"
+  },
+  {
+    "id": "I-131",
+    "title": "Client input binding and player avatar entity control in Bevy ECS",
+    "created_at": "2026-10-05T14:53:31.696472+00:00",
+    "promoted_to": null,
+    "epic": "E-002"
+  },
+  {
+    "id": "I-132",
+    "title": "Elemental combat system, skill execution, and projectile kinematics in server-rs",
+    "created_at": "2026-10-05T14:53:31.697659+00:00",
+    "promoted_to": null,
+    "epic": "E-002"
+  },
+  {
+    "id": "I-133",
+    "title": "Bestiary catalog ingestion, mob AI states, threat table, and respawn lifecycle in server-rs",
+    "created_at": "2026-10-05T14:53:31.698428+00:00",
+    "promoted_to": null,
+    "epic": "E-002"
+  },
+  {
+    "id": "I-134",
+    "title": "Nakama persistent storage integration for player loadout, inventory, and stats in server-rs",
+    "created_at": "2026-10-05T14:53:31.699052+00:00",
+    "promoted_to": null,
+    "epic": "E-002"
+  },
+  {
+    "id": "I-135",
+    "title": "Complete colyseus-server decommissioning, workspace cleanup, and Gate 1/2 gate update",
+    "created_at": "2026-10-05T14:53:31.699650+00:00",
+    "promoted_to": null,
+    "epic": "E-002"
   }
 ]
