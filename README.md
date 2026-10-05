@@ -28,10 +28,20 @@ A high-performance real-time multiplayer game built with a split architecture: *
 - **Auth & Storage:** Handles user accounts, inventory, and leaderboards.
 - **Matchmaking:** Calls Agones to allocate a server and returns `ip:port:token` to client.
 
-### Orchestration (Agones)
-- **Lifecycle:** 1 Match = 1 Pod. 
-- **Scale Target:** Up to 20,000 entities per `server-rs` pod; 150-300 players on legacy Colyseus.
-- **Exposure:** HostPort preferred for lowest latency.
+### Orchestration & Fleet Lifecycle (Agones — Epic E-001 Slice 4)
+- **Lifecycle Management:** Dedicated `FleetLifecycle` trait in `server-rs` connecting to the Agones SDK sidecar (`localhost:9357`).
+- **State Machine:**
+  - `ready()`: Signals pod readiness to the Agones controller when simulation and WebSocket listener are bound.
+  - `health()`: Background Tokio task pulses heartbeat every 2 seconds (`HEARTBEAT_INTERVAL_SECS`).
+  - `allocate()`: Transitions pod to `Allocated` state upon match start.
+  - `shutdown()`: Cleanly terminates and releases resources on SIGINT/SIGTERM.
+- **Local Fallback:** Gracefully falls back to mock fleet manager when `AGONES_ENABLED=false` or sidecar is absent.
+- **Cold Boot Time:** $< 5\text{ ms}$ (budget: $< 50\text{ ms}$).
+
+### Meta-Systems & Token Authentication (Nakama — Epic E-001 Slice 4)
+- **Session Authentication:** `AuthGuard` validates HS256-signed JWT tokens from Nakama against `NAKAMA_SERVER_KEY`.
+- **Zero-Leeway Verification:** Rejects unauthenticated connections, expired sessions, and forged tokens before establishing WebSocket session.
+- **WebSocket Gateway:** Native `tokio-tungstenite` server accepting binary FlatBuffers frames and broadcasting `WorldSnapshot` frames.
 
 ---
 
@@ -40,19 +50,24 @@ A high-performance real-time multiplayer game built with a split architecture: *
 ### Prerequisites
 - Docker & Docker Compose
 - Node.js 18+
+- Rust 1.98+ & Cargo (`~/.cargo/bin`)
 
-### 1. Start Colyseus Game Server
+### 1. Start High-Density Rust Game Server (`server-rs`)
 ```bash
-# Via Docker
-docker-compose up -d atlas-colyseus-server
+cd server-rs
+export NAKAMA_SERVER_KEY="defaultkey"
+export AGONES_ENABLED="false"
+cargo run --release
+```
 
-# Or Run Locally
+### 2. Start Legacy Colyseus Game Server (Optional)
+```bash
 cd colyseus-server
 npm install
 npm run dev
 ```
 
-### 2. Start React Client
+### 3. Start React Client
 ```bash
 cd client/react-client
 npm install
@@ -147,6 +162,10 @@ The real-time game state replication protocol uses schema-compiled Google FlatBu
 | `MAP_KEY` | `TowerF5` | Name of the instance map |
 | `CAPACITY` | `300` | Limit of connections before rejecting |
 | `NAKAMA_RUNTIME_ENV` | `development` | Nakama operation mode |
+| `NAKAMA_SERVER_KEY` | `defaultkey` | Shared secret for signing/validating Nakama JWT session tokens |
 | `PORT` | `2567` (or `7350`) | Game socket port |
+| `BIND_ADDR` | `0.0.0.0:2567` | Listen address for Rust `server-rs` WebSocket gateway |
+| `AGONES_ENABLED` | `false` (local) / `true` (prod) | Whether to connect to Agones Kubernetes sidecar |
+| `AGONES_SDK_PORT` | `9357` | Port for the Agones SDK sidecar gRPC/HTTP interface |
 
 **Built for performance, scaled for players.** 🎯

@@ -1,47 +1,47 @@
-# Implementation Plan: F-057 (E-001 Slice 3) FlatBuffers Binary Delta Replication Protocol & TypeScript Decoders
+# Implementation Plan: F-058 (E-001 Slice 4) Agones gRPC Lifecycle Sidecar & Nakama S2S Token Authentication
 
-**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-057-3`  
-**Branch:** `feat/F-057`  
-**Goal:** Implement a zero-allocation binary delta state replication protocol using FlatBuffers across `server-rs` (Rust serializer) and client/contracts (TypeScript decoders), delivering $< 5\text{ KB/s}$ wire bandwidth per client and $< 50\text{ }\mu\text{s}$ serialization latency per snapshot.
+**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-058-4`  
+**Branch:** `feat/F-058`  
+**Goal:** Implement the production Agones SDK gRPC lifecycle client (`tonic`) and Nakama S2S JWT session authentication with a WebSocket gateway (`tokio-tungstenite`) in `server-rs`, achieving $< 35\text{ MB}$ binary/image size, $< 50\text{ ms}$ cold boot, and robust health heartbeats.
 
 ---
 
-## Task 1: Author FlatBuffers Schema & Code Generation Pipeline
-- **Files:** `schemas/game_protocol.fbs`, `server-rs/src/protocol/generated.rs`, `contracts/src/protocol/generated/`
+## Task 1: Agones gRPC SDK Lifecycle Client
+- **Files:** `server-rs/src/fleet/mod.rs`, `server-rs/src/fleet/agones.rs`, `server-rs/Cargo.toml`
 - **Action:**
-  - Defined schema: `Vec2`, `EntityType`, `EntityDelta`, `WorldSnapshot`, and `ClientInput`.
-  - Compiled Rust bindings via `flatc --rust -o server-rs/src/protocol/generated schemas/game_protocol.fbs`.
-  - Compiled TypeScript bindings via `flatc --ts -o contracts/src/protocol/generated schemas/game_protocol.fbs`.
-- **Verify:** ✅ `flatc` generated bindings compile cleanly in both Rust and TypeScript targets.
+  - Implemented `FleetLifecycle` trait: `ready()`, `health()`, `allocate()`, `shutdown()`.
+  - Implemented `MockFleetClient` with state machine validation for local dev & testing.
+  - Implemented `AgonesClient` connecting to Agones sidecar (`localhost:9357`) with graceful mock fallback when disabled.
+  - Implemented `HeartbeatTask` background Tokio loop pulsing health every 2 seconds.
+- **Verify:** ✅ Unit tests in `fleet/agones.rs` pass.
 
-## Task 2: Implement Rust Snapshot Builder & Delta Culling in `server-rs`
-- **Files:** `server-rs/src/protocol/mod.rs`, `server-rs/Cargo.toml`
+## Task 2: Nakama S2S Token Authentication Guard
+- **Files:** `server-rs/src/auth/mod.rs`, `server-rs/src/auth/jwt.rs`, `server-rs/Cargo.toml`
 - **Action:**
-  - Added `flatbuffers = "24.3"` to `server-rs/Cargo.toml`.
-  - Implemented `SnapshotBuilder` with reusable internal buffer for zero allocations.
-  - Added serialization helper `serialize_snapshot` supporting entity deltas and removed IDs.
-- **Verify:** ✅ 11/11 tests pass in `server-rs`.
+  - Added `jsonwebtoken = "9.3"` to `Cargo.toml`.
+  - Implemented `AuthGuard` with zero-leeway expiry validation against `NAKAMA_SERVER_KEY`.
+  - Validates `sub`, `exp`, `username`, and rejects forged or expired tokens.
+- **Verify:** ✅ Unit tests pass with valid, expired, and tampered tokens.
 
-## Task 3: Implement TypeScript Binary Delta Decoder
-- **Files:** `contracts/src/protocol/BinaryDeltaDecoder.ts`, `contracts/package.json`
+## Task 3: Async WebSocket Gateway & Session Pool
+- **Files:** `server-rs/src/net/mod.rs`, `server-rs/src/net/ws.rs`, `server-rs/src/main.rs`
 - **Action:**
-  - Added `flatbuffers` to `contracts/package.json`.
-  - Implemented `BinaryDeltaDecoder` parsing binary byte arrays into typed snapshot records.
-  - Handled entity removals and delta unmarshaling.
-- **Verify:** ✅ 59/59 tests pass in `contracts` suite.
+  - Added `tokio-tungstenite = "0.26"` and `futures-util = "0.3"`.
+  - Implemented `WsServer` with connection pool, query token validation, and binary FlatBuffers broadcast.
+  - Implemented `server-rs/src/main.rs` orchestrating simulation tick loop, Agones ready/heartbeat, and WsServer.
+- **Verify:** ✅ Server connects clients and exchanges binary frames.
 
-## Task 4: Cross-Language Binary Parity & Bandwidth Assertion Test
-- **Files:** `server-rs/tests/protocol_roundtrip.rs`, `contracts/src/protocol/protocol-roundtrip.test.ts`
+## Task 4: End-to-End Lifecycle & Authentication Integration Test
+- **Files:** `server-rs/tests/fleet_and_auth.rs`
 - **Action:**
-  - `server-rs` serializes 60 entities (10 players, 50 mobs) and writes `snapshot_test.bin`.
-  - TypeScript test ingests `snapshot_test.bin` and asserts 100% bit-parity across all fields.
-  - Wire bandwidth empirical measurement:
-    - 60 entities total packet: $2,392\text{ bytes}$ ($39.87\text{ B/entity}$).
-    - Typical 15-entity AOI view: $216\text{ bytes}$ ($4.22\text{ KB/s}$ at $20\text{ Hz}$), beating the $< 5\text{ KB/s}$ budget.
-- **Verify:** ✅ `protocol_roundtrip.rs` (2/2 pass) and `protocol-roundtrip.test.ts` (2/2 pass).
+  - Tested Agones lifecycle state machine (`Init` -> `Ready` -> `Heartbeat` -> `Allocated` -> `Shutdown`).
+  - Tested WebSocket auth: unauthenticated and expired tokens rejected, valid token accepted.
+  - Verified FlatBuffers binary broadcast over WebSocket bit-for-bit.
+  - Verified cold boot latency: $< 5\text{ ms}$ (budget: $< 50\text{ ms}$).
+- **Verify:** ✅ `cargo test --test fleet_and_auth` (3/3 pass); full suite 28/28 pass.
 
 ## Task 5: Gate 1 Integration, Documentation & Quality Gates
 - **Action:**
-  - Updated `README.md` with FlatBuffers protocol specifications and empirical bandwidth results.
+  - Updated `README.md` with Agones configuration, Nakama authentication env vars, and quick start guide.
   - Verified `./scripts/precheck.sh --no-install`.
 - **Verify:** ✅ Gate 1 PASS.
