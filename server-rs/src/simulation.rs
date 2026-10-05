@@ -1,6 +1,7 @@
 use bevy_ecs::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use crate::content::BestiaryCatalog;
 use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
@@ -10,10 +11,10 @@ use crate::ecs::components::{
 use crate::physics::world::PhysicsWorld;
 use crate::spatial::grid::SpatialGrid;
 use crate::systems::{
-    bot_steering_system, combat_system, cooldown_tick_system, physics_step_system,
-    player_input_system, projectile_collision_system, projectile_kinematics_system,
-    separation_system, skill_execution_system, spatial_grid_rebuild_system,
-    status_effect_tick_system, ArenaBounds,
+    bot_steering_system, combat_system, cooldown_tick_system, mob_ai_system, mob_lifecycle_system,
+    physics_step_system, player_input_system, projectile_collision_system,
+    projectile_kinematics_system, separation_system, skill_execution_system,
+    spatial_grid_rebuild_system, status_effect_tick_system, ArenaBounds,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -101,6 +102,7 @@ impl AtlasSimulation {
         world.insert_resource(spatial_grid);
         world.insert_resource(physics_world);
         world.insert_resource(arena_bounds);
+        world.insert_resource(BestiaryCatalog::default());
 
         let mut schedule = Schedule::default();
         schedule.add_systems(
@@ -110,12 +112,14 @@ impl AtlasSimulation {
                 player_input_system,
                 skill_execution_system,
                 bot_steering_system,
+                mob_ai_system,
                 spatial_grid_rebuild_system,
                 separation_system,
                 projectile_kinematics_system,
                 projectile_collision_system,
                 physics_step_system,
                 combat_system,
+                mob_lifecycle_system,
             )
                 .chain(),
         );
