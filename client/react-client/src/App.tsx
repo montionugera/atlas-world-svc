@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useColyseusClient, ColyseusClientConfig } from './hooks/useColyseusClient';
+import { useServerRsClient } from './hooks/useServerRsClient';
 import { ColyseusGameCanvas } from './components/ColyseusGameCanvas';
 import { LogPanel } from './components/LogPanel';
 import { EntityGrid } from './components/EntityGrid';
@@ -17,7 +18,7 @@ interface LogEntry {
   timestamp: Date;
 }
 
-const colyseusConfig: ColyseusClientConfig = {
+const clientConfig = {
   serverHost: 'localhost',
   serverPort: Number(process.env.REACT_APP_SERVER_PORT) || 2567,
   useSSL: false
@@ -39,7 +40,11 @@ const EQUIPMENT_SLOT_LABELS: Record<(typeof EQUIPMENT_SLOT_IDS)[number], string>
 function App() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   
-  const client = useColyseusClient(colyseusConfig);
+  // High-density Rust server (server-rs) is the primary authoritative backend
+  const useRustServer = process.env.REACT_APP_USE_COLYSEUS !== 'true';
+  const serverRsClient = useServerRsClient(clientConfig);
+  const colyseusClient = useColyseusClient(clientConfig);
+  const client = useRustServer ? serverRsClient : colyseusClient;
 
   // Frontend map picker (decides which server-side room to join). Use tabs/radio, not dropdown.
   const AVAILABLE_MAP_IDS = ['map-for-play', 'map-for-test-projectile', 'map-for-test-deflect'] as const

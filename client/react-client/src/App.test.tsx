@@ -4,8 +4,9 @@ import App from './App';
 import * as ColyseusClientHook from './hooks/useColyseusClient';
 import { emptyEquipmentSnapshot } from './config/equipmentSlots';
 
-// Mock the hook
+// Mock the hooks
 jest.mock('./hooks/useColyseusClient');
+jest.mock('./hooks/useServerRsClient');
 
 // Mock child components that rely on canvas/DOM APIs not present in JSDOM
 jest.mock('./components/ColyseusGameCanvas', () => ({
@@ -44,10 +45,13 @@ const mockClient = {
   toggleBotMode: jest.fn()
 };
 
+import * as ServerRsClientHook from './hooks/useServerRsClient';
+
 describe('App Component', () => {
   beforeEach(() => {
     // Reset mock implementation before each test
     (ColyseusClientHook.useColyseusClient as jest.Mock).mockReturnValue(mockClient);
+    (ServerRsClientHook.useServerRsClient as jest.Mock).mockReturnValue(mockClient);
   });
 
   test('renders Atlas World header', () => {

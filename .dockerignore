@@ -5,8 +5,11 @@
 !pnpm-lock.yaml
 !contracts/**
 !colyseus-server/**
+!server-rs/**
+!schemas/**
 !nakama/package.json
 # never ship local installs into the context
 contracts/node_modules
 colyseus-server/node_modules
 colyseus-server/dist
+server-rs/target
