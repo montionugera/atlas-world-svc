@@ -103,7 +103,7 @@ const REPO_ROOT = resolve(__dirname, "..");
 function parseArgs(argv) {
   const opts = {
     requireComplete: false,
-    keys: join(REPO_ROOT, "colyseus-server/generated/asset-keys.json"),
+    keys: join(REPO_ROOT, "content/generated/asset-keys.json"),
     renderSpec: join(REPO_ROOT, "game-client/assets/render-spec.json"),
     manifest: join(REPO_ROOT, "game-client/assets/manifest.json"),
     audioManifest: join(REPO_ROOT, "game-client/assets/audio-manifest.json"),

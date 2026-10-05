@@ -53,7 +53,10 @@ test("snapshotSet on the real repo names the known families and every path exist
 
 test("MINI's own snapshotSet includes derived.json + the two spine mirrors (proves the roots.json fixture fix)", () => {
   const files = snapshotSet({ repoRoot: MINI });
-  for (const w of ["content/spine/derived.json", "content/maps/atlas-frontier.md", "colyseus-server/src/config/generated/mapDimensions.ts"])
+  const hasColyseus = existsSync(join(REPO, "colyseus-server"));
+  const expected = ["content/spine/derived.json", "content/maps/atlas-frontier.md"];
+  if (hasColyseus) expected.push("colyseus-server/src/config/generated/mapDimensions.ts");
+  for (const w of expected)
     assert.ok(files.includes(w), `MINI's snapshotSet is missing ${w} — the roots.json fixture is incomplete`);
 });
 

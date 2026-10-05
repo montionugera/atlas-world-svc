@@ -137,10 +137,10 @@ function argFail(message) {
 function parseArgs(argv) {
   const opts = {
     contentRoot: join(ROOT, "content"),
-    keys: join(ROOT, "colyseus-server/generated/asset-keys.json"),
+    keys: join(ROOT, "content/generated/asset-keys.json"),
     manifest: join(ROOT, "game-client/assets/manifest.json"),
-    mobTypes: join(ROOT, "colyseus-server/generated/mob-types.json"),
-    spawnAreas: join(ROOT, "colyseus-server/generated/spawn-areas.json"),
+    mobTypes: join(ROOT, "content/generated/mob-types.json"),
+    spawnAreas: join(ROOT, "content/generated/spawn-areas.json"),
     artManifest: join(ROOT, "game-client/assets/art/art-manifest.json"),
     requireComplete: false,
     only: null,
@@ -2585,10 +2585,13 @@ function checkSpine(opts, mobTypes) {
   // (never FAIL). console.log only, no fail(), no warn(); degrades
   // gracefully if the server file is unreadable.
   try {
-    const mcSource = readFileSync(join(ROOT, "colyseus-server/src/config/mapConfig.ts"), "utf8");
-    const { rects } = parseRuntimeSpawnRects({ source: mcSource });
-    const { areas } = flattenSpawnAreas({ tree });
-    for (const line of spawnGeometryReportLines({ areas, runtimeRects: rects })) console.log(line);
+    const mcPath = join(ROOT, "colyseus-server/src/config/mapConfig.ts");
+    if (existsSync(mcPath)) {
+      const mcSource = readFileSync(mcPath, "utf8");
+      const { rects } = parseRuntimeSpawnRects({ source: mcSource });
+      const { areas } = flattenSpawnAreas({ tree });
+      for (const line of spawnGeometryReportLines({ areas, runtimeRects: rects })) console.log(line);
+    }
   } catch {
     console.log("spawn-geometry: mapConfig.ts unreadable — report skipped (informational only)");
   }

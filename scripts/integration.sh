@@ -12,7 +12,7 @@ set -uo pipefail
 # no node_modules, so this installs dependencies before testing rather than
 # failing on a missing binary.
 #
-# NOTE: this repo is a pnpm workspace (colyseus-server, client, contracts,
+# NOTE: this repo is a pnpm workspace (client, contracts,
 # nakama) and its packages use the `workspace:*` protocol — `npm install` fails
 # here with EUNSUPPORTEDPROTOCOL. Use pnpm at the root. `scripts/` is NOT part
 # of the workspace and carries its own npm lockfile.
@@ -64,7 +64,7 @@ run_section() {
 # --- Sections ----------------------------------------------------------------
 
 # Workspace deps + the content-gate package, which lives outside the workspace.
-# contracts must be BUILT, not just installed: colyseus-server imports
+# contracts must be BUILT, not just installed: nakama imports
 # @atlas/contracts from its dist/, so tsc reports phantom TS2307s without it.
 deps_install() {
   command -v pnpm >/dev/null 2>&1 || { echo "pnpm not found — install it (corepack enable)"; return 1; }
@@ -73,9 +73,15 @@ deps_install() {
   (cd "$REPO_ROOT/contracts" && npm run build)
 }
 
-server_build()  { (cd "$REPO_ROOT/colyseus-server" && npm run build); }
-server_tests()  { (cd "$REPO_ROOT/colyseus-server" && npm test); }
-server_format() { (cd "$REPO_ROOT/colyseus-server" && npm run format:check); }
+server_rs_build() {
+  export PATH="$HOME/.cargo/bin:$PATH"
+  (cd "$REPO_ROOT/server-rs" && cargo build --release)
+}
+
+server_rs_tests() {
+  export PATH="$HOME/.cargo/bin:$PATH"
+  (cd "$REPO_ROOT/server-rs" && cargo test --release)
+}
 
 # The ship bar: escalates orphan/unreachable content warnings to failures.
 content_gate()  { node "$REPO_ROOT/scripts/check_content.mjs" --require-complete; }
@@ -162,9 +168,8 @@ map_builder_e2e() { REPO_ROOT="$REPO_ROOT" bash "$REPO_ROOT/atelier/map-builder/
 
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace + content-gate + contracts build" deps_install
-run_section "server: tsc build"            server_build
-run_section "server: jest suite"           server_tests
-run_section "server: prettier format"      server_format
+run_section "server-rs: cargo build --release" server_rs_build
+run_section "server-rs: cargo test --release"  server_rs_tests
 run_section "content: gate (--require-complete)" content_gate
 run_section "content: story-graph drift"   graph_drift
 run_section "content: canon-leg pre-flight"  canon_legs

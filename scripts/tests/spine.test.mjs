@@ -372,7 +372,7 @@ test("deriveNode: emits the full derived block with a stable digest", () => {
 });
 
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { streamSeed, reroll } from "../lib/spine.mjs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -733,8 +733,13 @@ test("G-SPINE-COMPLETE: a reported trunk-tier node WITH children has no warn at 
 
 // ── F-041 P4 Task 4.9: informational authored-vs-runtime spawn geometry
 // report (never-FAIL) ───────────────────────────────────────────────────
-test("parseRuntimeSpawnRects extracts all 8 runtime rects from the live mapConfig.ts (drift pin)", () => {
-  const source = readFileSync(new URL("../../colyseus-server/src/config/mapConfig.ts", import.meta.url), "utf8");
+test("parseRuntimeSpawnRects extracts all 8 runtime rects from the live mapConfig.ts (drift pin)", (t) => {
+  const url = new URL("../../colyseus-server/src/config/mapConfig.ts", import.meta.url);
+  if (!existsSync(url)) {
+    t.skip("colyseus-server/src/config/mapConfig.ts deleted (server decommissioned)");
+    return;
+  }
+  const source = readFileSync(url, "utf8");
   const { rects, errors } = parseRuntimeSpawnRects({ source });
   assert.deepEqual(errors, []);
   assert.equal(rects.size, 8);   // if mapConfig's format drifts, THIS test reds — the report itself never fails
@@ -842,8 +847,13 @@ test("G-ALIAS reverse: a site authored under the playspace but missing from the 
 // exactly the live ids, in one top-level object literal: that IS the list, so
 // bind to it. A format change cannot silently pass — the parse would yield a
 // different set and this test reds.
-test("LIVE_MAP_IDS equals the per-map override keys in the live mobSpawnConfig.ts (no fourth copy drifting alone)", () => {
-  const source = readFileSync(new URL("../../colyseus-server/src/config/mobSpawnConfig.ts", import.meta.url), "utf8");
+test("LIVE_MAP_IDS equals the per-map override keys in the live mobSpawnConfig.ts (no fourth copy drifting alone)", (t) => {
+  const url = new URL("../../colyseus-server/src/config/mobSpawnConfig.ts", import.meta.url);
+  if (!existsSync(url)) {
+    t.skip("colyseus-server/src/config/mobSpawnConfig.ts deleted (server decommissioned)");
+    return;
+  }
+  const source = readFileSync(url, "utf8");
   const block = source.match(/const MAP_MOB_SETTINGS[^=]*=\s*\{([\s\S]*?)\n\}/);
   assert.ok(block, "MAP_MOB_SETTINGS object literal not found — mobSpawnConfig.ts format changed");
   const keys = [...block[1].matchAll(/^ {2}'([^']+)':/gm)].map((m) => m[1]);

@@ -3,7 +3,7 @@ set -uo pipefail
 
 # =============================================================================
 # test_all.sh — run the full local test suite for Atlas World in one shot:
-#   • server  : colyseus-server jest suite + schema-contract tests
+#   • server  : server-rs cargo test suite
 #   • client  : react-client suite (single run, non-watch)
 #   • e2e     : (opt-in) scripts/e2e-meta.sh — live Nakama meta RPC pipeline
 #
@@ -80,14 +80,9 @@ need_deps() {
 }
 
 # --- Section runners ---------------------------------------------------------
-server_jest() {
-  need_deps "$REPO_ROOT/colyseus-server" "server" jest || return 1
-  (cd "$REPO_ROOT/colyseus-server" && npm test)
-}
-
-server_contracts() {
-  need_deps "$REPO_ROOT/colyseus-server" "server" jest || return 1
-  (cd "$REPO_ROOT/colyseus-server" && npm run test:contracts)
+server_rust() {
+  export PATH="$HOME/.cargo/bin:$PATH"
+  (cd "$REPO_ROOT/server-rs" && cargo test)
 }
 
 client_tests() {
@@ -101,8 +96,7 @@ e2e_meta() {
 }
 
 # --- Execute -----------------------------------------------------------------
-run_section "server: jest suite" server_jest
-[ "$RUN_CONTRACTS" -eq 1 ] && run_section "server: schema contracts" server_contracts
+run_section "server-rs: cargo test suite" server_rust
 [ "$RUN_CLIENT" -eq 1 ]    && run_section "client: react-client suite" client_tests
 [ "$RUN_E2E" -eq 1 ]       && run_section "e2e: Nakama meta pipeline" e2e_meta
 
