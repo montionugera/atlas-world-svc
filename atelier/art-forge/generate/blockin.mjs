@@ -4,7 +4,7 @@ import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { briefHash } from "../lib/brief-hash.mjs";
-import { appendAttempt } from "../lib/run-ledger.mjs";
+import { appendAttempt, resolveRunsDir } from "../lib/run-ledger.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -151,7 +151,7 @@ export async function renderDepthPng({ brief, width, height, outPath }) {
   // must NOT fail the run after the PNG was produced — warn and continue
   // (same policy as artifact-gate.mjs).
   try {
-    appendAttempt(RUNS_DIR, brief.id, {
+    appendAttempt(resolveRunsDir({ defaultDir: RUNS_DIR }), brief.id, {
       type: "blockin",
       briefHash: briefHash(brief),
       out: path.relative(FORGE_DIR, outPath),

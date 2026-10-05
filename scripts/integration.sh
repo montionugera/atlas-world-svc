@@ -153,6 +153,13 @@ geometry_lock() { node "$REPO_ROOT/scripts/check_geometry_lock.mjs" --check; }
 # fails on newer Node (ledger ruling, Task 1).
 mapforge_tests() { node --test "$REPO_ROOT"/atelier/mapforge/tests/*.test.mjs; }
 
+# F-052 Task 17: a REAL draft → publish → undo with the real tools, run in a
+# THROWAWAY git worktree of this checkout (never this tree, never a shared dev
+# server). Proves the publish only touches the snapshot set and the undo is
+# byte-for-byte (clean tree afterwards), with G-RENDER-LOCK + G-EMIT-DRIFT green
+# on both sides. Needs scripts/node_modules (deps_install above) and rsvg-convert.
+map_builder_e2e() { REPO_ROOT="$REPO_ROOT" bash "$REPO_ROOT/atelier/map-builder/tests/e2e/publish-undo.sh"; }
+
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace + content-gate + contracts build" deps_install
 run_section "server: tsc build"            server_build
@@ -171,6 +178,7 @@ run_section "content: mapforge test suite (incl. G-REPRO)" mapforge_tests
 run_section "content: gate test suite"     content_tests
 run_section "content: story-explorer smoke" explorer_smoke
 run_section "art-forge: intake tests" art_forge_tests
+run_section "map-builder: draft → publish → undo end-to-end" map_builder_e2e
 
 # --- Summary -----------------------------------------------------------------
 echo ""

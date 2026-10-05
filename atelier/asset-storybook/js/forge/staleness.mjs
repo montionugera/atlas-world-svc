@@ -51,33 +51,40 @@ export async function digestHex(canonical) {
  * @param {string} text
  * @returns {{ header: object, attempts: object[] } | null}
  *   null for an empty/whitespace-only file (no runs recorded yet).
- * @throws {Error} with a clear message on any malformed line.
+ * @throws {Error} with .line (1-based physical line) on a malformed line; blank lines are skipped.
  */
 export function parseLedgerText(text) {
   if (typeof text !== "string" || text.trim() === "") return null;
 
-  function parseLine(line, what) {
+  function fail(lineNo, what, detail) {
+    const err = new Error(`ledger ${what} on line ${lineNo}: ${detail}`);
+    err.line = lineNo;
+    return err;
+  }
+
+  function parseLine(line, lineNo, what) {
     let value;
     try {
       value = JSON.parse(line);
     } catch {
-      throw new Error(
-        `ledger ${what}: malformed JSON line: ${line.slice(0, 120)}`,
-      );
+      throw fail(lineNo, what, `malformed JSON line: ${line.slice(0, 120)}`);
     }
     if (!value || typeof value !== "object" || Array.isArray(value)) {
-      throw new Error(
-        `ledger ${what}: expected a JSON object on line "${line.slice(0, 120)}"`,
-      );
+      throw fail(lineNo, what, `expected a JSON object on line "${line.slice(0, 120)}"`);
     }
     return value;
   }
 
-  const lines = text.trim().split("\n");
-  const header = parseLine(lines[0], "header");
-  const attempts = lines
-    .slice(1)
-    .map((l, i) => parseLine(l, `attempt on line ${i + 2}`));
+  // Blank lines are skipped (a hand edit or an append after a trailing
+  // newline leaves one); line numbers stay PHYSICAL so the error row points
+  // at the line a human opens in an editor.
+  let header = null;
+  const attempts = [];
+  text.split("\n").forEach((line, i) => {
+    if (line.trim() === "") return;
+    if (header === null) header = parseLine(line, i + 1, "header");
+    else attempts.push(parseLine(line, i + 1, "attempt"));
+  });
   return { header, attempts };
 }
 

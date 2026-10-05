@@ -176,14 +176,24 @@ world_digest() { node "$REPO_ROOT/scripts/check_world_digest.mjs" --check; }
 system_deps_check() { node "$REPO_ROOT/scripts/check-system-deps.mjs"; }
 
 art_forge_tests() {
-  ( cd "$REPO_ROOT/atelier/art-forge" && node --test tests/*.test.mjs )
+  # F-053: the suite must leave the committed run ledgers byte-identical —
+  # tests once appended 18 entries to runs/A1-ART-02.json.
+  local before after
+  before=$(cat "$REPO_ROOT"/atelier/art-forge/runs/*.json | shasum)
+  ( cd "$REPO_ROOT/atelier/art-forge" && node --test tests/*.test.mjs ) || return 1
+  after=$(cat "$REPO_ROOT"/atelier/art-forge/runs/*.json | shasum)
+  [ "$before" = "$after" ] || { echo "art-forge tests modified atelier/art-forge/runs/*.json"; return 1; }
 }
 
 storybook_tests() {
   # F-038: taxonomy resolution, thumb-index join, verdict store. Pure modules,
   # so they run here with no browser and no Blender.
-  ( cd "$REPO_ROOT" && node --test atelier/asset-storybook/tests/*.test.mjs )
+  # F-053: plus the headless Forge smoke (skips loudly, exit 0, with no Chrome).
+  ( cd "$REPO_ROOT" && node --test atelier/asset-storybook/tests/*.test.mjs \
+      && node atelier/asset-storybook/tests/smoke/run.mjs )
 }
+
+map_builder_tests() { ( cd "$REPO_ROOT" && node --test atelier/map-builder/tests/*.test.mjs ) }
 
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace install" deps_install
@@ -201,6 +211,7 @@ run_section "client: react-client suite"    client_tests
 run_section "system deps: binary check (scripts/system-deps.json)" system_deps_check
 run_section "art-forge: node --test suite"  art_forge_tests
 run_section "asset-storybook: node --test suite" storybook_tests
+run_section "map-builder: node --test suite" map_builder_tests
 run_section "combat-lab: model gates"       combat_lab
 run_section "content: spine gates (--only=spine)" content_spine
 run_section "world digest (G-WORLD-DIGEST)" world_digest

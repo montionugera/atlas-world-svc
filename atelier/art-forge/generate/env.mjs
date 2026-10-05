@@ -109,7 +109,7 @@ import {
 import { renderColourPng, renderDepthPng, renderSegmentPng } from "./blockin.mjs";
 import { assertPositivePromptClean } from "./prompt-lint.mjs";
 import { briefHash } from "../lib/brief-hash.mjs";
-import { appendAttempt } from "../lib/run-ledger.mjs";
+import { appendAttempt, resolveRunsDir } from "../lib/run-ledger.mjs";
 
 const RUNS_DIR = path.join(FORGE_DIR, "runs");
 
@@ -990,7 +990,7 @@ export async function generateEnv(
       // denoise) must be recoverable. `refineSource` names the input cell;
       // strength is null (no ControlNet in the anchor recipe the reuses).
       try {
-        appendAttempt(RUNS_DIR, briefId, {
+        appendAttempt(resolveRunsDir({ defaultDir: RUNS_DIR }), briefId, {
           type: "render",
           seed,
           hires: false,
@@ -1043,7 +1043,7 @@ export async function generateEnv(
     // Ledger failure must NOT fail the run after the PNG was produced —
     // warn and continue (same policy as artifact-gate.mjs).
     try {
-      appendAttempt(RUNS_DIR, briefId, {
+      appendAttempt(resolveRunsDir({ defaultDir: RUNS_DIR }), briefId, {
         type: "render",
         seed,
         hires: false,
@@ -1089,7 +1089,7 @@ export async function generateEnv(
     const colourSourceLocal = path.join(forge.outDir, "control", "colour", `${briefId}-colour.png`);
     await renderColourPng({ brief: rawBrief, width, height, outPath: colourSourceLocal });
     try {
-      appendAttempt(RUNS_DIR, briefId, {
+      appendAttempt(resolveRunsDir({ defaultDir: RUNS_DIR }), briefId, {
         type: "blockin",
         briefHash: briefHash(rawBrief),
         out: path.relative(FORGE_DIR, colourSourceLocal),
@@ -1140,7 +1140,7 @@ export async function generateEnv(
       // anchor graph conditions from the grained colour block-in alone) must
       // be recoverable from the ledger, not from filenames.
       try {
-        appendAttempt(RUNS_DIR, briefId, {
+        appendAttempt(resolveRunsDir({ defaultDir: RUNS_DIR }), briefId, {
           type: "render",
           seed,
           hires: false,
@@ -1176,7 +1176,7 @@ export async function generateEnv(
   if (hiresResult.dest) {
     // Same guard as the base render above: never throw after the PNG exists.
     try {
-      appendAttempt(RUNS_DIR, briefId, {
+      appendAttempt(resolveRunsDir({ defaultDir: RUNS_DIR }), briefId, {
         type: "render",
         seed,
         hires: true,

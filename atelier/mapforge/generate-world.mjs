@@ -19,7 +19,7 @@
 //
 // Usage:
 //   node atelier/mapforge/generate-world.mjs --seed <hex16> --out build/mapforge/<runId>
-//                                          [--no-png] [--stage-report]
+//                                          [--no-png] [--stage-report] [--json-report]
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, existsSync, cpSync, rmSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -1302,6 +1302,16 @@ export function atlasComposition({ atlas, children }) {
   return normaliseComposition(derived);
 }
 
+// Shared by renderReport's markdown table, jsonReport's `continents` array, AND
+// map-builder's review.mjs (Task 13) so the cell-area formula (0.25 km2/cell,
+// LAND + LAKE — see review.mjs's header for why lake is included) and the
+// field list have exactly one source of truth. `landKm2` is left unrounded
+// here; each caller formats it the way its own output needs.
+export function continentCensus(f) {
+  return { id: f.continent, landKm2: (f.cellCensus.land + f.cellCensus.lake) * 0.25,
+    regions: f.regions.length, settlements: f.settlements.length, instances: f.instances.length };
+}
+
 function renderReport({ run }) {
   const lines = [
     `# mapforge run ${run.runManifest.seed} / ${run.runManifest.version}`, "",
@@ -1311,7 +1321,8 @@ function renderReport({ run }) {
     `landform types placed: ${run.coverage.placed} / ${run.coverage.total}`, "",
     "| continent | gross land km2 | regions | settlements | instances |",
     "| --- | ---: | ---: | ---: | ---: |",
-    ...run.fabric.map((f) => `| ${f.continent} | ${((f.cellCensus.land + f.cellCensus.lake) * 0.25).toFixed(1)} | ${f.regions.length} | ${f.settlements.length} | ${f.instances.length} |`),
+    ...run.fabric.map((f) => { const c = continentCensus(f);
+      return `| ${c.id} | ${c.landKm2.toFixed(1)} | ${c.regions} | ${c.settlements} | ${c.instances} |`; }),
     "", "## stage timings", "",
     ...Object.entries(run.timings).map(([k, v]) => `- ${k}: ${v} ms`),
   ];
@@ -1338,7 +1349,7 @@ function renderReport({ run }) {
 export const SEED_GRAMMAR = /^[0-9a-f]{16}$/;
 
 export function parseArgs(argv, { fail = (m) => { console.error(m); process.exit(2); } } = {}) {
-  const opts = { seed: null, outDir: null, png: true, stageReport: false };
+  const opts = { seed: null, outDir: null, png: true, stageReport: false, jsonReport: false };
   // A flag whose value is missing used to eat the NEXT FLAG: `--seed --out x`
   // silently took "--out" as the seed, fell back to the manifest seed, and ran
   // 6.5 s into the DEFAULT out dir — losing both flags with no diagnostic.
@@ -1370,6 +1381,7 @@ export function parseArgs(argv, { fail = (m) => { console.error(m); process.exit
       opts.outDir = resolve(v);
     } else if (a === "--no-png") opts.png = false;
     else if (a === "--stage-report") opts.stageReport = true;
+    else if (a === "--json-report") opts.jsonReport = true;
     else { fail(`generate-world: unknown arg ${a}`); return opts; }
   }
   return opts;
@@ -1378,7 +1390,7 @@ export function parseArgs(argv, { fail = (m) => { console.error(m); process.exit
 // Everything this CLI writes lives under one of these six names. Anything else
 // in the out dir was not written by a mapforge run.
 export const RUN_ENTRIES = Object.freeze(
-  ["content", "baseline", "sheets", "manifest.json", "report.md", "civil-resolved.json"]);
+  ["content", "baseline", "sheets", "manifest.json", "report.md", "civil-resolved.json", "report.json"]);
 
 /**
  * Clear a previous draft root so `--out` means what the file header says: "a
@@ -1435,6 +1447,26 @@ export function loopBudget({ timings, budgets }) {
   if (timings.total > gen.failMs) over.push(`generate ${timings.total} ms > fail ${gen.failMs} ms`);
   if (sheetMs > sheetRow.failMs) over.push(`sheets ${sheetMs} ms > fail ${sheetRow.failMs} ms`);
   return { lines, over };
+}
+
+// `--json-report` — the same per-continent totals `writeRun`'s report.md
+// prints as a table (see the `run.fabric.map` above), as JSON for a caller
+// that wants to consume totals without parsing markdown. Pure function of a
+// completed `run`, so it is testable without a real generation wherever a run
+// fixture already exists.
+export function jsonReport({ run }) {
+  const m = run.runManifest;
+  const continents = run.fabric.map((f) => {
+    const c = continentCensus(f);
+    return { ...c, landKm2: Number(c.landKm2.toFixed(1)) };
+  });
+  const totals = continents.reduce((t, c) => ({
+    regions: t.regions + c.regions, settlements: t.settlements + c.settlements, instances: t.instances + c.instances,
+  }), { regions: 0, settlements: 0, instances: 0 });
+  return { seed: m.seed, version: m.version, seaLevel: m.seaLevel, rank: m.rank, landKm2: m.landKm2, waterKm2: m.waterKm2,
+    seaToLandRatio: m.seaToLandRatio, interstitialKm2: m.interstitialKm2,
+    totals: { continents: continents.length, regions: totals.regions, settlements: totals.settlements, landformInstances: totals.instances },
+    continents, coverage: { placed: run.coverage.placed, total: run.coverage.total }, timings: run.timings, problems: run.problems };
 }
 
 // async because the draft sheets are imported lazily: render-sheet.mjs imports
@@ -1527,6 +1559,9 @@ async function main() {
   }
   const { files } = writeRun({ run, outDir, repoRoot: REPO_ROOT, sheets: draftSheets,
                                rasterise: opts.png, resolved });
+
+  if (opts.jsonReport)
+    writeFileSync(join(outDir, "report.json"), JSON.stringify(jsonReport({ run }), null, 2) + "\n");
 
   // Per-stage budgets with fail thresholds — goal G4's measure is explicitly
   // NOT one aggregate number, because an aggregate hides which stage regressed
