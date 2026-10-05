@@ -1,41 +1,33 @@
 # 🚀 Atlas World - Real-time Multiplayer Game
 
-A high-performance real-time multiplayer game built with a split architecture: **Colyseus** for real-time physics and state, and **Nakama** for meta-systems (auth, social, matchmaking).
+A high-performance real-time multiplayer game built with a modern high-density architecture: **server-rs** (authoritative Rust ECS game server with FlatBuffers binary delta replication) and **Nakama** for meta-systems (auth, social, matchmaking).
 
 ---
 
 ## 🏗️ Architecture
 
 ### High-Density Rust Simulation Engine (`server-rs`) — Epic E-001
-- **Architecture:** Authoritative headless simulation engine built with `bevy_ecs` and `rapier2d`.
-- **Zero GC Overhead:** Replaces Node.js single-threaded event loop with archetypal SoA cache locality and Rayon multithreaded task pools.
+- **Architecture:** Authoritative headless simulation engine built with `bevy_ecs 0.15` and `rapier2d 0.22`.
+- **Zero GC Overhead:** Replaces Node.js single-threaded event loop with archetypal SoA cache locality, dual-layer contiguous `SpatialGrid`, and Rayon multithreaded task pools.
 - **Empirical Scale Benchmarks (Criterion):**
   - **1,000 entities:** $78.8\text{ }\mu\text{s}$ ($0.078\text{ ms}$)
   - **10,000 entities:** $503.8\text{ }\mu\text{s}$ ($0.503\text{ ms}$) — 50% under the $1.0\text{ ms}$ budget
   - **20,000 entities:** $1.03\text{ ms}$ — 58% under the $2.5\text{ ms}$ budget
 - **Deterministic Parity:** Verified against TypeScript baseline golden simulation trace (`golden_sim_trace_1000.json`) with $\epsilon \le 0.05$ coordinate parity across 1,000 ticks.
+- **Binary Delta Protocol (FlatBuffers):** Zero-allocation state serialization (`schemas/game_protocol.fbs`) broadcasting deltas at $20\text{ Hz}$ with $< 250\text{ B}$ typical AOI frame payload ($< 5\text{ KB/s}$ wire bandwidth).
+- **Client Cutover:** Full web client cutover via `useServerRsClient` React hook connecting directly to `server-rs` WebSocket gateway with FlatBuffers decoding.
+- **Platform Utility Integration:** Standalone functional wrappers (`withRetry`, `withCache`, `withCircuitBreaker`, `withRateLimit`, `withDistributedLock`, `withTrace`, `withTracking`) supported from `node-server-decorator`.
 
-### Legacy Core Simulation Engine (Colyseus TypeScript)
-- **Authoritative 2.5D Model:** Per-floor 2D physics using `Planck.js` with 3D visual metadata (slopes, portals).
-- **Tick/Time Budget:**
-  - `20 Hz` server tick ($50\text{ ms}$ budget)
-  - `60 Hz` physics sub-step (limit: <5ms p50)
-  - `~25 Hz` client snapshots
-  - `10-15 Hz` AoE pulses
-- **AOI (Area of Interest):** Grid filtering (3x3 cells per player) to optimize snapshot bandwidth (budget: 15-25 entities; ~800B peak/client).
+### Legacy Core Simulation Engine (Colyseus TypeScript — Retired)
+- **Authoritative 2.5D Model:** Per-floor 2D physics using `Planck.js` with 3D visual metadata (slopes, portals). Decommissioned in release 1.10 in favor of `server-rs`.
 
 ### Meta-Systems (Nakama)
 - **Auth & Storage:** Handles user accounts, inventory, and leaderboards.
 - **Matchmaking:** Calls Agones to allocate a server and returns `ip:port:token` to client.
 
-### Orchestration & Fleet Lifecycle (Agones — Epic E-001 Slice 4)
+### Orchestration & Fleet Lifecycle (Agones — Epic E-001 Slices 4 & 5)
 - **Lifecycle Management:** Dedicated `FleetLifecycle` trait in `server-rs` connecting to the Agones SDK sidecar (`localhost:9357`).
-- **State Machine:**
-  - `ready()`: Signals pod readiness to the Agones controller when simulation and WebSocket listener are bound.
-  - `health()`: Background Tokio task pulses heartbeat every 2 seconds (`HEARTBEAT_INTERVAL_SECS`).
-  - `allocate()`: Transitions pod to `Allocated` state upon match start.
-  - `shutdown()`: Cleanly terminates and releases resources on SIGINT/SIGTERM.
-- **Local Fallback:** Gracefully falls back to mock fleet manager when `AGONES_ENABLED=false` or sidecar is absent.
+- **Containerization:** Multi-stage Debian/Rust Docker image (`server-rs/Dockerfile`, $< 35\text{ MB}$), with local Kubernetes Deployment and Agones `GameServer` manifest (`k8s/local/server-rs.yaml`).
 - **Cold Boot Time:** $< 5\text{ ms}$ (budget: $< 50\text{ ms}$).
 
 ### Meta-Systems & Token Authentication (Nakama — Epic E-001 Slice 4)
