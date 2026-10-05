@@ -1,7 +1,8 @@
 ---
 title: "Elemental combat system, skill execution, and projectile kinematics in server-rs"
-id: I-132
-status: idea
+id: F-061
+status: refined
+from_idea: I-132
 ---
 
 # Elemental combat system, skill execution, and projectile kinematics in server-rs
