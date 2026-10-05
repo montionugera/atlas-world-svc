@@ -4,6 +4,9 @@ use std::fs;
 #[test]
 fn test_golden_trace_parity() {
     let fixture_paths = [
+        "tests/fixtures/golden_sim_trace_1000.json",
+        "server-rs/tests/fixtures/golden_sim_trace_1000.json",
+        "../server-rs/tests/fixtures/golden_sim_trace_1000.json",
         "../colyseus-server/src/tests/fixtures/golden_sim_trace_1000.json",
         "/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-056-2/colyseus-server/src/tests/fixtures/golden_sim_trace_1000.json",
     ];

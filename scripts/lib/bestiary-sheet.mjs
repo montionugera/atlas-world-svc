@@ -28,7 +28,7 @@ const MIRRORED_ENUMS = ["archetype", "durability", "speed", "threat"];
  *   Parsed frontmatter of a content/characters/*.md file.
  * @param {Record<string, string>} row  The matching bestiary.json record.
  * @param {Record<string, string>} elementByMobType
- *   `elements` from colyseus-server/generated/mob-types.json. A mob ABSENT
+ *   `elements` from content/generated/mob-types.json. A mob ABSENT
  *   from this map is neutral — that is the encoding, not an omission.
  * @param {(msg: string) => void} failFn
  */

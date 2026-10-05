@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { GENERATOR_VERSION } from "../../mapforge/lib/version.mjs";
 
 const WORLD_PATHS = ["content/world", "content/spine", "content/maps", "game-client/assets/art/maps",
-  "colyseus-server/src/config/generated", "atelier/asset-storybook/maps-index.json"];
+  "atelier/asset-storybook/maps-index.json"];
 
 export function assertRepoRoot({ repoRoot }) {
   if (!existsSync(join(repoRoot, "atelier/mapforge/generate-world.mjs")))

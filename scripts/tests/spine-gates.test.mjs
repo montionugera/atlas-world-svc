@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, cpSync, readFileSync, readdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, cpSync, readFileSync, readdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { TRUNK_NODES } from "./helpers/census.mjs";
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
@@ -1237,10 +1237,12 @@ test("spine-emit emits every node file plus BOTH surviving mirrors — a silentl
   // stay, and mapDimensions.ts is compiled server code.
   // Plan B Task 4: +1 — content/spine/derived.json, the hoisted `derived`
   // sidecar. 44 nodes + 3 = 47 outputs on the committed root.
-  assert.equal(outputs.length, nodeFiles + 3, paths.join("\n"));
-  for (const suffix of ["spine/derived.json",
-                        "maps/atlas-frontier.md",
-                        "colyseus-server/src/config/generated/mapDimensions.ts"])
+  const hasColyseus = existsSync(join(ROOT, "colyseus-server"));
+  const expectedExtra = hasColyseus ? 3 : 2;
+  assert.equal(outputs.length, nodeFiles + expectedExtra, paths.join("\n"));
+  const expectedSuffixes = ["spine/derived.json", "maps/atlas-frontier.md"];
+  if (hasColyseus) expectedSuffixes.push("colyseus-server/src/config/generated/mapDimensions.ts");
+  for (const suffix of expectedSuffixes)
     assert.ok(paths.some((p) => p.endsWith(suffix)), `missing mirror ${suffix} in:\n${paths.join("\n")}`);
   assert.ok(!paths.some((p) => p.endsWith("cluster1-geography.json")),
     "the retired geography mirror is being emitted again");

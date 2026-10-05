@@ -23,12 +23,12 @@ set -uo pipefail
 #   had just "passed". Never collapse these two sections into one.
 #
 # WHY contracts IS BUILT BEFORE ANYTHING ELSE:
-#   colyseus-server and nakama import @atlas/contracts from its dist/, so a
+#   nakama imports @atlas/contracts from its dist/, so a
 #   stale or missing dist makes tsc either report phantom TS2307s or — worse —
 #   typecheck green against the OLD types. Both failure modes are silent.
 #
-# NOTE: this repo is a pnpm workspace (colyseus-server, client, contracts,
-# nakama) whose packages use the `workspace:*` protocol — `npm install` fails
+# NOTE: this repo is a pnpm workspace (client, contracts, nakama)
+# whose packages use the `workspace:*` protocol — `npm install` fails
 # here with EUNSUPPORTEDPROTOCOL. Use pnpm at the root.
 #
 # Usage:
@@ -100,12 +100,6 @@ deps_install() {
 contracts_build() { (cd "$REPO_ROOT/contracts" && npm run build); }
 contracts_tests() { (cd "$REPO_ROOT/contracts" && npx jest); }
 
-# The check jest will NOT do for you. Covers src/tests/** too.
-server_typecheck() { (cd "$REPO_ROOT/colyseus-server" && npx tsc --noEmit); }
-server_tests()     { (cd "$REPO_ROOT/colyseus-server" && npm test); }
-server_coverage()  { (cd "$REPO_ROOT/colyseus-server" && npm run test:coverage:gate); }
-server_e2e()       { (cd "$REPO_ROOT/colyseus-server" && npm run test:e2e); }
-server_format()    { (cd "$REPO_ROOT/colyseus-server" && npm run format:check); }
 
 # Rust server-rs quality gate (fmt, clippy, unit tests)
 rust_gates() {
@@ -200,11 +194,6 @@ map_builder_tests() { ( cd "$REPO_ROOT" && node --test atelier/map-builder/tests
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace install" deps_install
 run_section "contracts: tsc build"          contracts_build
 run_section "contracts: jest suite"         contracts_tests
-run_section "server: tsc --noEmit"          server_typecheck
-run_section "server: jest suite"            server_tests
-run_section "server: coverage gate"         server_coverage
-run_section "server: e2e simulation suite"  server_e2e
-run_section "server: prettier format"       server_format
 run_section "server-rs: cargo clippy & test" rust_gates
 run_section "nakama: tsc --noEmit"          nakama_typecheck
 run_section "nakama: jest suite"            nakama_tests

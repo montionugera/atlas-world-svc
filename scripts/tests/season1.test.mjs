@@ -366,7 +366,7 @@ test("the gate and the zones measure agree on which filenames are records", () =
 
     // Hermeticity, exactly as Task 4's fixture()/runGate() do it. parseArgs in
     // check_content.mjs defaults --keys, --manifest, --mob-types and
-    // --spawn-areas to the LIVE repo artifacts (colyseus-server/generated/*,
+    // --spawn-areas to the LIVE repo artifacts (content/generated/*,
     // game-client/assets/manifest.json). Spawning with only --content-root
     // would make this filename-filter test read three committed generated files
     // and go red on a worktree where codegen has not run. These four stubs plus

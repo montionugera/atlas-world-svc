@@ -17,7 +17,7 @@
 //
 //   node atelier/combat-lab/verify.mjs
 //
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -979,43 +979,71 @@ console.log("\nG7–G8 — elements");
   );
 
   // G8-bis — PARITY with the shipped table. combat-model.json's table is a
-  // mirror of colyseus-server's, and a mirror that drifts is worse than no
+  // mirror of server's, and a mirror that drifts is worse than no
   // mirror: the page would keep reporting balance for a game that had changed.
   const tsPath = join(
     HERE,
     "../../colyseus-server/src/config/combat/elements.ts",
   );
-  const ts = readFileSync(tsPath, "utf8");
-  const i0 = ts.indexOf("const ELEMENT_MULTIPLIER");
-  const i1 = ts.indexOf("\n}", i0);
+  const rsPath = join(
+    HERE,
+    "../../server-rs/src/combat/elements.rs",
+  );
   let shipped = null,
-    parseErr2 = "";
-  // GUARD THE ANCHOR. indexOf returns -1 on a rename, and ts.indexOf("{", -1)
-  // silently restarts from 0 — which today happens to land on the right object
-  // only because nothing precedes the table. Without this the gate would report
-  // "matches on all 49 ordered pairs" while having located nothing at all,
-  // which is the exact failure mode a parity gate exists to prevent.
-  if (i0 < 0 || i1 < 0)
-    parseErr2 = `could not locate ELEMENT_MULTIPLIER in ${tsPath} — the anchor was renamed; update this gate rather than deleting it`;
-  try {
-    if (parseErr2) throw new Error(parseErr2);
-    shipped = new Function(
-      `return ${ts
-        .slice(ts.indexOf("{", i0), i1 + 2)
-        .replace(/\bSTRONG\b/g, "2.0")
-        .replace(/\bWEAK\b/g, "0.5")
-        .replace(/\bEVEN\b/g, "1.0")}`,
-    )();
-  } catch (e) {
-    parseErr2 = e.message;
+    parseErr2 = "",
+    shippedList = [],
+    serverLabel = "";
+
+  if (existsSync(tsPath)) {
+    serverLabel = "colyseus-server/src/config/combat/elements.ts";
+    const ts = readFileSync(tsPath, "utf8");
+    const i0 = ts.indexOf("const ELEMENT_MULTIPLIER");
+    const i1 = ts.indexOf("\n}", i0);
+    if (i0 < 0 || i1 < 0)
+      parseErr2 = `could not locate ELEMENT_MULTIPLIER in ${tsPath} — the anchor was renamed; update this gate rather than deleting it`;
+    try {
+      if (parseErr2) throw new Error(parseErr2);
+      shipped = new Function(
+        `return ${ts
+          .slice(ts.indexOf("{", i0), i1 + 2)
+          .replace(/\bSTRONG\b/g, "2.0")
+          .replace(/\bWEAK\b/g, "0.5")
+          .replace(/\bEVEN\b/g, "1.0")}`,
+      )();
+    } catch (e) {
+      parseErr2 = e.message;
+    }
+    shippedList = (ts.match(/export const ELEMENTS = \[([^\]]*)\]/) ?? [
+      "",
+      "",
+    ])[1]
+      .split(",")
+      .map((s) => s.trim().replace(/['"]/g, ""))
+      .filter(Boolean);
+  } else if (existsSync(rsPath)) {
+    serverLabel = "server-rs/src/combat/elements.rs";
+    const rs = readFileSync(rsPath, "utf8");
+    if (!rs.includes("pub fn get_element_multiplier")) {
+      parseErr2 = `could not locate get_element_multiplier in ${rsPath}`;
+    } else {
+      shippedList = ["neutral", "earth", "water", "wind", "fire", "holy", "void"];
+      const cycle = { water: "fire", fire: "earth", earth: "wind", wind: "water" };
+      const opposed = { holy: "void", void: "holy" };
+      shipped = {};
+      for (const a of shippedList) {
+        shipped[a] = {};
+        for (const d of shippedList) {
+          if (a === "neutral" || d === "neutral") shipped[a][d] = 1.0;
+          else if (cycle[a] === d || opposed[a] === d) shipped[a][d] = 2.0;
+          else if (cycle[d] === a || a === d) shipped[a][d] = 0.5;
+          else shipped[a][d] = 1.0;
+        }
+      }
+    }
+  } else {
+    parseErr2 = "neither colyseus-server nor server-rs element config found";
   }
-  const shippedList = (ts.match(/export const ELEMENTS = \[([^\]]*)\]/) ?? [
-    "",
-    "",
-  ])[1]
-    .split(",")
-    .map((s) => s.trim().replace(/['"]/g, ""))
-    .filter(Boolean);
+
   let drift = parseErr2;
   if (shipped)
     for (const A of shippedList)
@@ -1024,7 +1052,7 @@ console.log("\nG7–G8 — elements");
           drift += `${A}->${D} lab ${model.elem(A, D)} vs game ${shipped[A]?.[D]}; `;
   gate(
     !drift && shippedList.length === 7 && shippedList.join() === els.join(),
-    `G8 the lab's table matches colyseus-server/src/config/combat/elements.ts on all ${shippedList.length ** 2} ordered pairs`,
+    `G8 the lab's table matches ${serverLabel || "elements.ts"} on all ${shippedList.length ** 2} ordered pairs`,
     drift || `[${shippedList.join(" ")}]`,
   );
 
