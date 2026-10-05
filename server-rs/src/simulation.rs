@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
-    AiAgent, BotAgent, CombatStats, EntityId, Health, MobTag, PlayerAvatar, PlayerInputState,
-    PlayerTag, Position, Velocity,
+    AiAgent, BotAgent, CastingState, CombatStats, CooldownTracker, ElementalAttributes, EntityId,
+    Health, MobTag, PlayerAvatar, PlayerInputState, PlayerTag, Position, StatusEffects, Velocity,
 };
 use crate::physics::world::PhysicsWorld;
 use crate::spatial::grid::SpatialGrid;
@@ -236,6 +236,10 @@ impl AtlasSimulation {
                     cooldown_timer: 0.0,
                     is_player: true,
                 },
+                ElementalAttributes::default(),
+                CooldownTracker::default(),
+                CastingState::default(),
+                StatusEffects::default(),
             ))
             .id()
     }

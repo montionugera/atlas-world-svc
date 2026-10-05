@@ -2,9 +2,10 @@ use server_rs::combat::damage::{DamageCalculator, DamageOptions, DamageType};
 use server_rs::combat::elements::{get_element_multiplier, Element};
 use server_rs::combat::skills::get_skill;
 use server_rs::ecs::components::{
-    CastingState, CooldownTracker, ElementalAttributes, Health, MobTag, PlayerAvatar,
-    PlayerInputState, PlayerTag, Position, Projectile, StatusEffects, Velocity,
+    CooldownTracker, ElementalAttributes, Health, MobTag, PlayerAvatar, Position, Projectile,
+    StatusEffects, Velocity,
 };
+use server_rs::protocol::{deserialize_client_input, serialize_client_input};
 use server_rs::simulation::AtlasSimulation;
 
 #[test]
@@ -30,7 +31,7 @@ fn test_elemental_multipliers_end_to_end() {
 
 #[test]
 fn test_damage_calculator_defense_cap_and_elemental_scaling() {
-    // Base damage 100, 0 defense -> 100
+    // Base damage 100, 0 defense -> 100 * 2.0 = 200
     let opt_base = DamageOptions {
         base_damage: 100.0,
         damage_type: DamageType::Magical,
@@ -75,16 +76,10 @@ fn test_simulation_player_dash_execution() {
     let session_id = "test_player_dash";
     sim.spawn_player_avatar(session_id, 100.0, 100.0);
 
-    // Trigger dash (skill_slot = 5)
-    let dash_input = server_rs::protocol::ClientInput {
-        client_tick: 1,
-        move_x: 1.0,
-        move_y: 0.0,
-        attack: false,
-        skill_slot: 5,
-        target_id: 0,
-    };
-    sim.apply_player_input(session_id, dash_input);
+    // Trigger dash (skill_slot = 5) via serialized FlatBuffers ClientInput
+    let bytes = serialize_client_input(1, 1.0, 0.0, false, 5, 0);
+    let input = deserialize_client_input(&bytes).unwrap();
+    sim.apply_player_input(session_id, &input);
 
     // Step simulation
     sim.step();
@@ -133,19 +128,10 @@ fn test_projectile_flight_collision_and_status_effects() {
         ))
         .id();
 
-    // Spawn a player at (100.0, 200.0)
-    let player = sim
-        .world
-        .spawn((
-            PlayerTag,
-            PlayerAvatar::new("p1", 100.0),
-            Position::new(100.0, 200.0),
-            Velocity::zero(),
-            Health::new(200.0),
-        ))
-        .id();
+    // Spawn a player avatar
+    let player = sim.spawn_player_avatar("p_caster", 100.0, 200.0);
 
-    // Spawn a Fire projectile flying from (100.0, 200.0) towards (200.0, 200.0)
+    // Spawn a Fire projectile flying from (180.0, 200.0) towards mob at (200.0, 200.0)
     let blizzard_skill = get_skill("skill_3").unwrap();
     sim.world.spawn((
         Position::new(180.0, 200.0), // very close to mob (radius 20.0 hit)
@@ -202,18 +188,9 @@ fn test_projectile_flight_collision_and_status_effects() {
 fn test_stun_status_locks_movement() {
     let mut sim = AtlasSimulation::new(123, 1200.0, 1200.0);
     let session_id = "test_stunned_player";
-    sim.spawn_player_avatar(session_id, 100.0, 100.0);
+    let p_entity = sim.spawn_player_avatar(session_id, 100.0, 100.0);
 
-    // Find the player entity and apply Stun status effect
-    let mut player_entity = None;
-    let mut query = sim.world.query::<(Entity, &PlayerAvatar)>();
-    for (entity, avatar) in query.iter(&sim.world) {
-        if avatar.session_id == session_id {
-            player_entity = Some(entity);
-            break;
-        }
-    }
-    let p_entity = player_entity.expect("Player avatar not found");
+    // Apply Stun status effect
     sim.world.entity_mut(p_entity).insert(StatusEffects {
         freeze_timer: 0.0,
         freeze_speed_multiplier: 1.0,
@@ -221,17 +198,9 @@ fn test_stun_status_locks_movement() {
     });
 
     // Send movement input
-    sim.apply_player_input(
-        session_id,
-        server_rs::protocol::ClientInput {
-            client_tick: 1,
-            move_x: 1.0,
-            move_y: 1.0,
-            attack: false,
-            skill_slot: 0,
-            target_id: 0,
-        },
-    );
+    let bytes = serialize_client_input(1, 1.0, 1.0, false, 0, 0);
+    let input = deserialize_client_input(&bytes).unwrap();
+    sim.apply_player_input(session_id, &input);
 
     // Step simulation
     sim.step();

@@ -18,8 +18,14 @@ A high-performance real-time multiplayer game built with a modern high-density a
 - **Client Cutover:** Full web client cutover via `useServerRsClient` React hook connecting directly to `server-rs` WebSocket gateway with FlatBuffers decoding.
 - **Platform Utility Integration:** Standalone functional wrappers (`withRetry`, `withCache`, `withCircuitBreaker`, `withRateLimit`, `withDistributedLock`, `withTrace`, `withTracking`) supported from `node-server-decorator`.
 
-### Legacy Core Simulation Engine (Colyseus TypeScript — Retired)
-- **Authoritative 2.5D Model:** Per-floor 2D physics using `Planck.js` with 3D visual metadata (slopes, portals). Decommissioned in release 1.10 in favor of `server-rs`.
+### Domain Parity: Elemental Combat & Skill Execution (`server-rs`) — Epic E-002
+- **Elemental Matrix:** 7 elements (`Neutral`, `Earth`, `Water`, `Wind`, `Fire`, `Holy`, `Void`) with RO-style advantage cycle (Water > Fire > Earth > Wind > Water at 2.0x, Holy <-> Void duel at 2.0x, 0.5x resist).
+- **Damage Formula:** Exact damage mitigation with defense reduction capped at 80% base damage, armor addition, elemental multipliers, and 1.0 floor.
+- **Skill Execution:** Full player and mob skills (`skill_1` Meteor Strike, `skill_2` Precision Strike, `skill_3` Blizzard with Freeze, `skill_4` Thunder Strike with Stun, `skill_dash` Dash with 160.0 velocity impulse).
+- **Projectile Kinematics:** Integrated kinematic projectile integration, lifetime/range limits, and spatial grid collision detection.
+
+### Legacy Core Simulation Engine (Colyseus TypeScript — Migration to Rust in progress)
+- **Authoritative 2.5D Model:** Per-floor 2D physics using `Planck.js`. Being replaced by `server-rs` in release 1.11 (Epic E-002).
 
 ### Meta-Systems (Nakama)
 - **Auth & Storage:** Handles user accounts, inventory, and leaderboards.

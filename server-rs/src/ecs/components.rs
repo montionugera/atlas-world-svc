@@ -80,16 +80,6 @@ impl PlayerAvatar {
     }
 }
 
-#[derive(Component, Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
-pub struct PlayerInputState {
-    pub move_x: f32,
-    pub move_y: f32,
-    pub attack: bool,
-    pub skill_slot: u8,
-    pub target_id: u32,
-    pub client_tick: u32,
-}
-
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct MobTag;
 
@@ -354,7 +344,8 @@ pub struct PlayerInputState {
     pub move_y: f32,
     pub attack: bool,
     pub skill_slot: u8,
-    pub target_id: Option<u32>,
+    pub target_id: u32,
+    pub client_tick: u32,
     #[serde(with = "opt_entity_serde", default)]
     pub target_entity: Option<Entity>,
     pub target_pos: Option<Position>,
@@ -367,7 +358,8 @@ impl PlayerInputState {
             move_y,
             attack,
             skill_slot,
-            target_id: None,
+            target_id: 0,
+            client_tick: 0,
             target_entity: None,
             target_pos: None,
         }

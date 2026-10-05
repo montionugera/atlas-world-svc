@@ -6,6 +6,7 @@ use bevy_ecs::prelude::*;
 
 /// System that applies player movement inputs to velocities,
 /// respecting avatar speed, status effects (stun, freeze), and active casting.
+#[allow(clippy::type_complexity)]
 pub fn player_input_system(
     clock: Res<SimClock>,
     mut query: Query<(
