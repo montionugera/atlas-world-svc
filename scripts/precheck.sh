@@ -91,6 +91,9 @@ deps_install() {
   if [ -f "$REPO_ROOT/client/react-client/package.json" ]; then
     (cd "$REPO_ROOT/client/react-client" && npm ci) || return 1
   fi
+  if [ -f "$REPO_ROOT/scripts/package.json" ]; then
+    (cd "$REPO_ROOT/scripts" && npm ci) || return 1
+  fi
 }
 
 # Must run before any typecheck; see the header note.
@@ -100,7 +103,20 @@ contracts_tests() { (cd "$REPO_ROOT/contracts" && npx jest); }
 # The check jest will NOT do for you. Covers src/tests/** too.
 server_typecheck() { (cd "$REPO_ROOT/colyseus-server" && npx tsc --noEmit); }
 server_tests()     { (cd "$REPO_ROOT/colyseus-server" && npm test); }
+server_coverage()  { (cd "$REPO_ROOT/colyseus-server" && npm run test:coverage:gate); }
+server_e2e()       { (cd "$REPO_ROOT/colyseus-server" && npm run test:e2e); }
 server_format()    { (cd "$REPO_ROOT/colyseus-server" && npm run format:check); }
+
+# Rust server-rs quality gate (fmt, clippy, unit tests)
+rust_gates() {
+  if [ ! -d "$REPO_ROOT/server-rs" ]; then
+    echo "no server-rs on this branch — skipping"
+    return 0
+  fi
+  export PATH="$HOME/.cargo/bin:$PATH"
+  echo "🦀 Checking Rust server-rs formatting, lints, and tests..."
+  (cd "$REPO_ROOT/server-rs" && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test)
+}
 
 # nakama is bundled into the Nakama runtime; a type error here breaks InitModule.
 nakama_typecheck() { (cd "$REPO_ROOT/nakama" && npx tsc --noEmit); }
@@ -161,14 +177,24 @@ world_digest() { node "$REPO_ROOT/scripts/check_world_digest.mjs" --check; }
 system_deps_check() { node "$REPO_ROOT/scripts/check-system-deps.mjs"; }
 
 art_forge_tests() {
-  ( cd "$REPO_ROOT/atelier/art-forge" && node --test tests/*.test.mjs )
+  # F-053: the suite must leave the committed run ledgers byte-identical —
+  # tests once appended 18 entries to runs/A1-ART-02.json.
+  local before after
+  before=$(cat "$REPO_ROOT"/atelier/art-forge/runs/*.json | shasum)
+  ( cd "$REPO_ROOT/atelier/art-forge" && node --test tests/*.test.mjs ) || return 1
+  after=$(cat "$REPO_ROOT"/atelier/art-forge/runs/*.json | shasum)
+  [ "$before" = "$after" ] || { echo "art-forge tests modified atelier/art-forge/runs/*.json"; return 1; }
 }
 
 storybook_tests() {
   # F-038: taxonomy resolution, thumb-index join, verdict store. Pure modules,
   # so they run here with no browser and no Blender.
-  ( cd "$REPO_ROOT" && node --test atelier/asset-storybook/tests/*.test.mjs )
+  # F-053: plus the headless Forge smoke (skips loudly, exit 0, with no Chrome).
+  ( cd "$REPO_ROOT" && node --test atelier/asset-storybook/tests/*.test.mjs \
+      && node atelier/asset-storybook/tests/smoke/run.mjs )
 }
+
+map_builder_tests() { ( cd "$REPO_ROOT" && node --test atelier/map-builder/tests/*.test.mjs ) }
 
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace install" deps_install
@@ -176,13 +202,17 @@ run_section "contracts: tsc build"          contracts_build
 run_section "contracts: jest suite"         contracts_tests
 run_section "server: tsc --noEmit"          server_typecheck
 run_section "server: jest suite"            server_tests
+run_section "server: coverage gate"         server_coverage
+run_section "server: e2e simulation suite"  server_e2e
 run_section "server: prettier format"       server_format
+run_section "server-rs: cargo clippy & test" rust_gates
 run_section "nakama: tsc --noEmit"          nakama_typecheck
 run_section "nakama: jest suite"            nakama_tests
 run_section "client: react-client suite"    client_tests
 run_section "system deps: binary check (scripts/system-deps.json)" system_deps_check
 run_section "art-forge: node --test suite"  art_forge_tests
 run_section "asset-storybook: node --test suite" storybook_tests
+run_section "map-builder: node --test suite" map_builder_tests
 run_section "combat-lab: model gates"       combat_lab
 run_section "content: spine gates (--only=spine)" content_spine
 run_section "world digest (G-WORLD-DIGEST)" world_digest

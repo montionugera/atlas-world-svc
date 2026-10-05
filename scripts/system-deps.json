@@ -44,6 +44,23 @@
         "install": "sudo apt-get update -qq && sudo apt-get install -y -qq librsvg2-bin"
       },
       "warning": "Never substitute ImageMagick for rsvg-convert — see the `magick` entry's warning. atelier/mapforge/lib/raster.mjs enforces this at the call site."
+    },
+    {
+      "name": "google-chrome-stable",
+      "package": "Google Chrome (or Chromium) — headless, driven over the DevTools protocol",
+      "required": false,
+      "requiredNote": "atelier/asset-storybook/tests/smoke/run.mjs (F-053) is the actual gate: it exits 0 with a loud 'SKIPPED: no Chrome' when absent, or 2 when STORYBOOK_SMOKE_REQUIRED=1 (set in .github/workflows/ci.yml's 'Asset storybook headless smoke' step, which therefore cannot pass by silently skipping). That script's own findChrome() is the real search order — CHROME_BIN if set (exclusively, no fallback), else the macOS .app bundle absolute path, then google-chrome, google-chrome-stable, chromium, chromium-browser on PATH — and is NOT changed by this entry. This binary is marked optional (not required:true) here because `command -v google-chrome-stable`, which is all check-system-deps.mjs can see, does not find the macOS .app bundle path that findChrome() checks first, so a required:true entry would falsely report Chrome MISSING on every Mac dev machine that has it only as the app. GitHub's ubuntu-latest runners ship google-chrome-stable preinstalled, so CI's smoke step (which runs BEFORE the 'Install system dependencies' step below) already finds it without this manifest installing anything.",
+      "usedBy": [
+        "atelier/asset-storybook/tests/smoke/run.mjs"
+      ],
+      "verify": "google-chrome-stable --version",
+      "macos": {
+        "install": "brew install --cask google-chrome"
+      },
+      "debian": {
+        "install": "sudo apt-get update -qq && sudo apt-get install -y -qq google-chrome-stable || sudo apt-get install -y -qq chromium-browser",
+        "note": "Not expected to run in CI — ubuntu-latest runners already carry google-chrome-stable. Declared here so a bare/self-hosted runner or container has a documented install path instead of the smoke step failing with an undeclared dependency."
+      }
     }
   ]
 }

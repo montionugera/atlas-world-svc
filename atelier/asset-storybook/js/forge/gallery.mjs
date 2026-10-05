@@ -55,3 +55,18 @@ export function buildForgeGallery(attempts, staleFlags = []) {
     })
     .sort((a, b) => tsOf(b.cards[0]) - tsOf(a.cards[0]));
 }
+
+/** F-053: exact lead copy for renders whose PNG is not in this checkout/image. */
+export const PNG_MISSING_LEAD = "png missing (local only)";
+
+/**
+ * One notice per batch instead of one per card.
+ * @param {{ count: number }} opts count = renders in this batch whose PNG is missing (not the batch size)
+ */
+export function missingNoticeText({ count }) {
+  const noun = count === 1 ? "render" : "renders";
+  return (
+    `${PNG_MISSING_LEAD} — ${count} ${noun} in this batch; ` +
+    "atelier/art-forge/out/ is gitignored, so the files exist only in the checkout that rendered them"
+  );
+}

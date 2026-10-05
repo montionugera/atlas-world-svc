@@ -1,0 +1,2 @@
+{ "port": 6016, "bind": "127.0.0.1", "concurrency": 2, "maxConcurrency": 2,
+  "snapshotKeep": 3, "killGraceMs": 5000, "pollMs": 2000 }

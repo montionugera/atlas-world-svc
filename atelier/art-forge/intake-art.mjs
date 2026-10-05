@@ -58,7 +58,7 @@ import {
   writeManifestRaw,
 } from "../asset-forge/lib/manifest.mjs";
 import { inspectImage } from "./artifact-gate.mjs";
-import { appendAttempt } from "./lib/run-ledger.mjs";
+import { appendAttempt, resolveRunsDir } from "./lib/run-ledger.mjs";
 
 const FORGE_DIR = path.dirname(fileURLToPath(import.meta.url));
 const RUNS_DIR = path.join(FORGE_DIR, "runs");
@@ -329,7 +329,7 @@ export async function intakeArt(opts = {}) {
     // Run-ledger entry (F-050): a bypassed gate is a pipeline event — record
     // the skip reason against the brief when one was given.
     if (briefId) {
-      appendAttempt(RUNS_DIR, briefId, {
+      appendAttempt(resolveRunsDir({ defaultDir: RUNS_DIR }), briefId, {
         type: "gate-skipped",
         png: path.relative(FORGE_DIR, src),
         reason: artifactGateRecord.reason,
@@ -462,7 +462,7 @@ export async function intakeArt(opts = {}) {
   // Run-ledger entry (F-050): the intake fully committed (manifest entry +
   // copy survived the drift gate) — record it against the brief.
   if (briefId) {
-    appendAttempt(RUNS_DIR, briefId, {
+    appendAttempt(resolveRunsDir({ defaultDir: RUNS_DIR }), briefId, {
       type: "intake",
       assetKey: entry.file,
       manifest: "game-client/assets/art/art-manifest.json",

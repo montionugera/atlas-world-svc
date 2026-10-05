@@ -32,6 +32,9 @@ export const REVIEW_QUEUE_URL = "../../content/review-queue.json";
 export const RUNS_INDEX_URL = "../../atelier/art-forge/runs/_index.json";
 export const RUNS_BASE_URL = "../../atelier/art-forge/runs/";
 export const BRIEFS_BASE_URL = "../../atelier/art-forge/briefs/";
+// F-053: every brief id, including briefs with no ledger yet (a static page
+// cannot list briefs/). Parity with briefs/*.json: tests/forge-briefs-index.test.mjs.
+export const FORGE_BRIEFS_INDEX_URL = "./forge-briefs-index.json";
 // F-050: root of the art-forge tree, for linking ledger `out` PNG paths.
 export const ART_FORGE_ROOT_URL = "../../atelier/art-forge/";
 // Synthetic sidebar classes for the verdict filters (F-038 Phase 4). Not asset
@@ -129,6 +132,13 @@ export const STORY_VIEWS_FALLBACK = [
 // COMBAT_CLASS/STORY_CLASS it is not an asset — no manifest entry, no
 // renderer, no per-view health; its data is the committed run ledgers.
 export const FORGE_CLASS = "forge";
+
+// F-052: synthetic class for the Map Builder tab — start/watch world-generation
+// draft jobs against the local atelier/map-builder service. Like FORGE_CLASS
+// it is not an asset; its "health" is whether the service answers /api/health,
+// and its sidebar count is the number of succeeded drafts awaiting review
+// (map-builder-model.mjs badgeCount).
+export const MAP_BUILDER_CLASS = "map-builder";
 
 // health[kind] = { total, ok, err } — updated as models/audio finish loading,
 // sidebar badges re-render on every update.

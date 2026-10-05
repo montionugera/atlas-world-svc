@@ -11,6 +11,7 @@ import {
   RUNS_INDEX_URL,
   RUNS_BASE_URL,
   BRIEFS_BASE_URL,
+  FORGE_BRIEFS_INDEX_URL,
   REVIEW_QUEUE_URL,
   ART_FORGE_ROOT_URL,
   fetchJson,
@@ -21,7 +22,8 @@ import {
   markStale,
   parseLedgerText,
 } from "./staleness.mjs";
-import { buildForgeGallery } from "./gallery.mjs";
+import { buildForgeGallery, missingNoticeText, PNG_MISSING_LEAD } from "./gallery.mjs";
+import { buildPipelineRow, forgeBriefIds, forgeSourceFailureText, pipelineRowModel } from "./pipeline.mjs";
 import { openInfoDetail } from "../view/DetailOverlay.mjs";
 import { getStore } from "../review/ui.mjs";
 import {
@@ -30,14 +32,25 @@ import {
   serializeQueue,
   WORK_ORDER_CELLS,
 } from "../review/store.mjs";
+import { readOrderBuffer, resolveSessionOrders, writeOrderBuffer } from "../review/workorder-buffer.mjs";
 
 const EMPTY_RUNS_TEXT = "No forge runs recorded yet";
 
-// Session state: orders appended since page load (the committed file is only
-// updated when the human exports + commits), plus the last parsed committed
-// queue. Module-level because export + order listing outlive one render pass.
+// Orders issued in this browser and not yet in the committed queue. Buffered
+// in localStorage (js/review/workorder-buffer.mjs) so a reload keeps them;
+// the committed file stays the source of truth.
 let committedQueue = parseQueue(JSON.stringify({ version: 1, verdicts: {} }));
-const sessionOrders = [];
+let sessionOrders = [];
+// Whether the last buffer write (or read) succeeded — drives the saved label.
+let bufferSaved = true;
+
+function browserStorage() {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
 // briefId -> ledger attempts, for marking orders done/not-done.
 const attemptsByBrief = new Map();
 // Set by loadOrders(); re-run submits call it to repaint done/pending.
@@ -112,27 +125,33 @@ function forgeBadge(cls, text) {
   return b;
 }
 
-function buildForgeCard(briefId, card) {
+function buildForgeCard({ briefId, card, media }) {
   const { entry } = card;
   const cardEl = document.createElement("div");
   cardEl.className = "forge-card";
   cardEl.tabIndex = 0;
   cardEl.setAttribute("role", "button");
 
-  const img = document.createElement("img");
-  img.src = ART_FORGE_ROOT_URL + entry.out;
-  img.alt = cellLabel(entry);
-  img.loading = "lazy";
-  img.decoding = "async";
-  img.addEventListener("error", () => {
-    // Ledger is committed truth; out/ PNGs are local-only artifacts. A
-    // missing file is LOUD, never a broken-image icon (mirrors Card.mjs).
-    const missing = document.createElement("div");
-    missing.className = "forge-card-missing";
-    missing.textContent = "png missing — render exists only in the rolling checkout";
-    img.replaceWith(missing);
-  });
-  cardEl.appendChild(img);
+  if (media === "image") {
+    const img = document.createElement("img");
+    img.src = ART_FORGE_ROOT_URL + entry.out;
+    img.alt = cellLabel(entry);
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.addEventListener("error", () => {
+      // The per-card probe loaded this PNG, but the real load failed anyway
+      // (rare: the file was removed in between). Say so on this card.
+      const missing = document.createElement("div");
+      missing.className = "forge-card-missing";
+      missing.textContent = PNG_MISSING_LEAD;
+      img.replaceWith(missing);
+    });
+    cardEl.appendChild(img);
+  } else {
+    // No image slot at all: the batch notice already explains why. The card
+    // stays clickable (run detail) and keeps its ↻ work-order affordance.
+    cardEl.classList.add("is-imageless");
+  }
 
   const label = document.createElement("div");
   label.className = "forge-card-label";
@@ -175,35 +194,93 @@ function buildForgeCard(briefId, card) {
   return cardEl;
 }
 
+// A stalled request (no onload/onerror ever firing — e.g. a dropped
+// connection) must not hang the probe forever: that would hang the
+// Promise.all in fillBatch below, and with it the batch that stalled.
+const PROBE_TIMEOUT_MS = 3000;
+
+/** Resolves true when the PNG loads. An <img> probe, never fetch (read-only page). */
+function probeImage(src) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (ok) => {
+      if (settled) return; // never resolve twice (onload/onerror race with the timeout)
+      settled = true;
+      clearTimeout(timer);
+      resolve(ok);
+    };
+    const timer = setTimeout(() => finish(false), PROBE_TIMEOUT_MS);
+    const img = new Image();
+    img.onload = () => finish(true);
+    img.onerror = () => finish(false);
+    img.src = src;
+  });
+}
+
+/**
+ * Fills one already-appended batch element: builds the head, probes every
+ * card's PNG, then the one missing-count notice and the card grid. Runs
+ * without the caller awaiting it — see appendGallery.
+ */
+async function fillBatch(batchEl, briefId, batch) {
+  const head = document.createElement("div");
+  head.className = "forge-batch-head";
+  const hashEl = document.createElement("span");
+  hashEl.className = "forge-batch-hash";
+  hashEl.textContent = batch.briefHash.slice(0, 8);
+  hashEl.title = batch.briefHash;
+  const meta = document.createElement("span");
+  const newest = batch.cards[0].entry.ts;
+  meta.textContent =
+    "· " +
+    batch.cards.length +
+    (batch.cards.length === 1 ? " render" : " renders") +
+    (newest ? " · " + String(newest).slice(0, 10) : "");
+  head.append(hashEl, meta);
+  batchEl.appendChild(head);
+
+  // Probe EVERY card, not just the newest: out/ can be partly cleaned, and a
+  // PNG that is on disk must render even when a newer one in its batch is
+  // gone. Missing cards go image-less and the batch gets ONE notice counting
+  // only the missing ones. A loaded probe is in the browser cache, so the
+  // card's own <img> reuses it.
+  const present = await Promise.all(
+    batch.cards.map((card) => probeImage(ART_FORGE_ROOT_URL + card.entry.out)),
+  );
+
+  const missingCount = present.filter((ok) => !ok).length;
+  if (missingCount > 0) {
+    const notice = document.createElement("p");
+    notice.className = "forge-batch-missing";
+    notice.dataset.pngMissing = "batch";
+    notice.textContent = missingNoticeText({ count: missingCount });
+    batchEl.appendChild(notice);
+  }
+
+  const grid = document.createElement("div");
+  grid.className = "forge-card-grid";
+  batch.cards.forEach((card, j) => {
+    grid.appendChild(buildForgeCard({ briefId, card, media: present[j] ? "image" : "none" }));
+  });
+  batchEl.appendChild(grid);
+}
+
 function appendGallery(rowsHost, briefId, batches) {
-  for (const batch of batches) {
+  // Reserve each batch's position in rowsHost synchronously, directly under
+  // this brief's row, and fill it in the background. A stalled or slow PNG
+  // probe (even bounded by PROBE_TIMEOUT_MS) must never block loadRows from
+  // moving on to the next brief's row, nor delay the
+  // storybook:forge-attempts-loaded dispatch in mountForge (Batch B review,
+  // Important 2) — so this function does not return a promise the caller
+  // needs to await for correctness.
+  batches.forEach((batch) => {
     const batchEl = document.createElement("div");
     batchEl.className = "forge-batch";
-
-    const head = document.createElement("div");
-    head.className = "forge-batch-head";
-    const hashEl = document.createElement("span");
-    hashEl.className = "forge-batch-hash";
-    hashEl.textContent = batch.briefHash.slice(0, 8);
-    hashEl.title = batch.briefHash;
-    const meta = document.createElement("span");
-    const newest = batch.cards[0].entry.ts;
-    meta.textContent =
-      "· " +
-      batch.cards.length +
-      (batch.cards.length === 1 ? " render" : " renders") +
-      (newest ? " · " + String(newest).slice(0, 10) : "");
-    head.append(hashEl, meta);
-    batchEl.appendChild(head);
-
-    const grid = document.createElement("div");
-    grid.className = "forge-card-grid";
-    for (const card of batch.cards) {
-      grid.appendChild(buildForgeCard(briefId, card));
-    }
-    batchEl.appendChild(grid);
     rowsHost.appendChild(batchEl);
-  }
+    fillBatch(batchEl, briefId, batch).catch((err) => {
+      console.warn("[asset-storybook] could not render gallery batch for " + briefId, err);
+    });
+  });
 }
 
 // ---------- Task 9: per-cell re-run → work order (download-only) ----------
@@ -281,6 +358,12 @@ function openOrderForm(row, rerunBtn, order) {
   }
 
   submit.addEventListener("click", () => {
+    if (reason.value.trim() === "") {
+      err.textContent = "reason required";
+      err.hidden = false;
+      reason.focus();
+      return;
+    }
     const payload = { briefId: order.briefId, cell: order.cell, reason: reason.value };
     if (seedInput && seedInput.value !== "") payload.seed = Number(seedInput.value);
     let appended;
@@ -288,6 +371,7 @@ function openOrderForm(row, rerunBtn, order) {
       const next = addWorkOrder(committedQueue, payload);
       appended = next.workOrders[next.workOrders.length - 1];
       sessionOrders.push(appended);
+      bufferSaved = writeOrderBuffer({ storage: browserStorage(), orders: sessionOrders });
     } catch (e) {
       err.textContent = String(e.message || e);
       err.hidden = false;
@@ -321,83 +405,96 @@ function openOrderForm(row, rerunBtn, order) {
   reason.focus();
 }
 
-/**
- * Run ledgers are NDJSON (header line + one entry per line — see
- * atelier/art-forge/lib/run-ledger.mjs), so `res.json()` would throw on every
- * real ledger. Fetch text and parse with parseLedgerText instead. _index.json
- * and briefs are single JSON docs and keep using fetchJson.
- */
+/** null when runs/<brief>.json does not exist (HTTP 404): that brief has no ledger yet. */
 async function fetchLedger(briefId) {
   const res = await fetch(RUNS_BASE_URL + briefId + ".json");
+  if (res.status === 404) return null;
   if (!res.ok) throw new Error("ledger " + briefId + ": HTTP " + res.status);
   return parseLedgerText(await res.text());
 }
 
+function textLine(className, text) {
+  const p = document.createElement("p");
+  p.className = className;
+  p.textContent = text;
+  return p;
+}
+
 async function loadRows(rowsHost) {
-  let index;
-  try {
-    index = await fetchJson(RUNS_INDEX_URL, "runs-index");
-  } catch (err) {
-    console.warn(
-      "[asset-storybook] runs/_index.json unavailable — Forge shows no runs:",
-      err,
+  // Both indexes are independent (neither's data feeds the other's fetch), so
+  // fetch concurrently instead of paying two sequential round-trips.
+  const [runsResult, briefsResult] = await Promise.allSettled([
+    fetchJson(RUNS_INDEX_URL, "runs-index"),
+    fetchJson(FORGE_BRIEFS_INDEX_URL, "forge-briefs-index"),
+  ]);
+
+  if (runsResult.status === "rejected") {
+    console.warn("[asset-storybook] runs/_index.json unavailable:", runsResult.reason);
+    rowsHost.appendChild(
+      textLine("empty-state", forgeSourceFailureText({ path: "atelier/art-forge/runs/_index.json", error: runsResult.reason })),
     );
-  }
-  if (!index || !Array.isArray(index.briefs) || index.briefs.length === 0) {
-    const empty = document.createElement("p");
-    empty.className = "empty-state";
-    empty.textContent = EMPTY_RUNS_TEXT;
-    rowsHost.appendChild(empty);
     return;
   }
+  const runsIndex = runsResult.value;
 
-  for (const briefId of index.briefs) {
-    // Ledger is required for a row, brief is optional (absence just
-    // disables staleness for that row).
+  let briefsIndex = null;
+  if (briefsResult.status === "rejected") {
+    // Degrade to ledgered briefs only, but say so: never silent.
+    const line = textLine(
+      "source-error",
+      forgeSourceFailureText({ path: "atelier/asset-storybook/forge-briefs-index.json", error: briefsResult.reason }),
+    );
+    line.dataset.error = "briefs-index";
+    rowsHost.appendChild(line);
+  } else {
+    briefsIndex = briefsResult.value;
+  }
+
+  const briefIds = forgeBriefIds({ briefsIndex, runsIndex });
+  if (briefIds.length === 0) {
+    rowsHost.appendChild(textLine("empty-state", EMPTY_RUNS_TEXT));
+    return;
+  }
+  // "No ledger yet" comes from the ledger file itself (HTTP 404), NOT from
+  // runs/_index.json: that index is rebuilt only by hand (ledger-index.mjs),
+  // appendAttempt never updates it, and nothing checks it against runs/*.json,
+  // so a brief whose ledger exists but isn't indexed would be hidden. The
+  // index is still fetched above as the "is runs/ packaged at all?" probe.
+  for (const briefId of briefIds) {
+    // Brief is optional (absence just disables staleness for that row).
     let ledger = null;
     let brief = null;
     try {
       [ledger, brief] = await Promise.all([
         fetchLedger(briefId),
-        fetchJson(BRIEFS_BASE_URL + briefId + ".json", "brief " + briefId).catch(
-          () => null,
-        ),
+        fetchJson(BRIEFS_BASE_URL + briefId + ".json", "brief " + briefId).catch(() => null),
       ]);
-    } catch (err) {
-      console.warn("[asset-storybook] ledger unavailable for " + briefId, err);
+    } catch (error) {
+      console.warn("[asset-storybook] ledger unreadable for " + briefId, error);
+      rowsHost.appendChild(buildPipelineRow(pipelineRowModel({ briefId, outcome: { kind: "error", error } })));
       continue;
     }
 
-    // An empty ledger file parses to null — nothing recorded yet.
-    const attempts = ledger && Array.isArray(ledger.attempts) ? ledger.attempts : [];
+    // 404 (fetchLedger → null) or an empty file (parses to null): nothing recorded yet.
+    if (ledger === null) {
+      rowsHost.appendChild(buildPipelineRow(pipelineRowModel({ briefId, outcome: { kind: "no-ledger" } })));
+      continue;
+    }
+    const attempts = Array.isArray(ledger.attempts) ? ledger.attempts : [];
     attemptsByBrief.set(briefId, attempts);
 
     try {
-      let staleFlags;
-      if (brief) {
-        const currentHash = await digestHex(canonicalBriefString(brief));
-        staleFlags = markStale(attempts, currentHash);
-      } else {
-        staleFlags = attempts.map(() => false);
-      }
-
-      appendGallery(rowsHost, briefId, buildForgeGallery(attempts, staleFlags));
-    } catch (err) {
-      // One bad brief must not abort the remaining rows.
-      console.error(
-        "[asset-storybook] could not render pipeline row for " + briefId + ":",
-        err,
+      const staleFlags = brief
+        ? markStale(attempts, await digestHex(canonicalBriefString(brief)))
+        : attempts.map(() => false);
+      rowsHost.appendChild(
+        buildPipelineRow(pipelineRowModel({ briefId, outcome: { kind: "ledger", attempts, staleFlags } })),
       );
-      const errRow = document.createElement("div");
-      errRow.className = "forge-row";
-      const errLabel = document.createElement("span");
-      errLabel.className = "forge-brief-id";
-      errLabel.textContent = briefId;
-      const errMsg = document.createElement("span");
-      errMsg.className = "forge-cell is-notrun";
-      errMsg.textContent = "render error — see console";
-      errRow.append(errLabel, errMsg);
-      rowsHost.appendChild(errRow);
+      appendGallery(rowsHost, briefId, buildForgeGallery(attempts, staleFlags));
+    } catch (error) {
+      // One bad brief must not abort the remaining rows.
+      console.warn("[asset-storybook] could not render pipeline row for " + briefId, error);
+      rowsHost.appendChild(buildPipelineRow(pipelineRowModel({ briefId, outcome: { kind: "error", error } })));
     }
   }
 }
@@ -430,12 +527,16 @@ function allOrders() {
   return [...committedQueue.workOrders, ...sessionOrders];
 }
 
-function refreshOrders(listHost, countLabel) {
+function refreshOrders(listHost, countLabel, savedLabel) {
   const orders = allOrders();
   countLabel.textContent =
     orders.length === 0
       ? "none"
       : orders.length + (orders.length === 1 ? " order" : " orders");
+  const unsaved = sessionOrders.length > 0 && !bufferSaved;
+  savedLabel.textContent =
+    sessionOrders.length === 0 ? "" : unsaved ? "not saved — browser storage unavailable" : "saved in this browser";
+  savedLabel.classList.toggle("is-unsaved", unsaved);
 
   listHost.innerHTML = "";
   for (const order of orders) {
@@ -501,6 +602,19 @@ async function loadOrders(sectionEl) {
     );
   }
 
+  const storage = browserStorage();
+  const buffer = readOrderBuffer({ storage });
+  // A remount (e.g. a tab switch) must never wipe orders issued earlier in
+  // this session just because the buffer read failed — only adopt the
+  // buffer when it read cleanly; otherwise keep re-deriving from whatever is
+  // already in memory (Batch B review, Important 1 / Minor 1).
+  sessionOrders = resolveSessionOrders({ committed: committedQueue, buffer, current: sessionOrders });
+  bufferSaved = buffer.ok;
+  // Orders that reached the committed file are dropped from the buffer.
+  if (buffer.ok && sessionOrders.length !== buffer.orders.length) {
+    bufferSaved = writeOrderBuffer({ storage, orders: sessionOrders });
+  }
+
   const h3 = document.createElement("h3");
   h3.textContent = "Pending work orders";
   sectionEl.appendChild(h3);
@@ -508,6 +622,10 @@ async function loadOrders(sectionEl) {
   const countLabel = document.createElement("span");
   countLabel.className = "forge-orders-count";
   h3.appendChild(countLabel);
+
+  const savedLabel = document.createElement("span");
+  savedLabel.className = "forge-orders-saved";
+  h3.appendChild(savedLabel);
 
   const hint = document.createElement("p");
   hint.className = "art-tabbar-hint";
@@ -527,8 +645,8 @@ async function loadOrders(sectionEl) {
   exportBtn.addEventListener("click", downloadQueue);
   sectionEl.appendChild(exportBtn);
 
-  refreshOrders(listHost, countLabel);
-  refreshOrdersFn = () => refreshOrders(listHost, countLabel);
+  refreshOrders(listHost, countLabel, savedLabel);
+  refreshOrdersFn = () => refreshOrders(listHost, countLabel, savedLabel);
   // Re-evaluate done/pending once ledgers have loaded (loadRows may finish
   // after this point on a cold cache). Remove-before-add so remounting the
   // tab never stacks duplicate handlers.
@@ -538,7 +656,7 @@ async function loadOrders(sectionEl) {
       attemptsLoadedHandler,
     );
   }
-  attemptsLoadedHandler = () => refreshOrders(listHost, countLabel);
+  attemptsLoadedHandler = () => refreshOrders(listHost, countLabel, savedLabel);
   document.addEventListener(
     "storybook:forge-attempts-loaded",
     attemptsLoadedHandler,

@@ -18,6 +18,7 @@ a deeper README covering internals.
 | `asset-storybook/` | The review surface — every artifact must be observable here (owner rule). All tabs read their registries (`env-index.json`, `maps-index.json`, `world-index.json`) | `node --test asset-storybook/tests/*.test.mjs` |
 | `story-explorer/` | Read-only narrative-graph viewer for `content/story/*.json` | `node --test story-explorer/tests/*.test.mjs` |
 | `combat-lab/` | Interactive combat-balance viewer (I-028 model) | `node combat-lab/verify.mjs` |
+| `map-builder/` | Local builder service + storybook Map Builder tab: seed → generate → review (dry-run today; publish/undo land in Phase 2), jobs persisted under `build/map-builder/` | `node --test map-builder/tests/*.test.mjs` |
 
 ## Pipeline docs (the ABP family — read in this order)
 
@@ -42,5 +43,6 @@ npm test --prefix scripts                            # 1371 tests incl. town cri
 node --test atelier/art-forge/tests/*.test.mjs       # art-forge suite
 node --test atelier/asset-storybook/tests/*.test.mjs # storybook incl. env-index existence gate
 node atelier/mapforge/render-sheet.mjs --sheet atlas --no-png --check
+node atelier/map-builder/server.mjs   # storybook + /api on http://127.0.0.1:6016/
 # review surface: python3 -m http.server 6007 → http://127.0.0.1:6007/atelier/asset-storybook/index.html
 ```
