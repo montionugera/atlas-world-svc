@@ -802,7 +802,7 @@
     "id": "I-133",
     "title": "Bestiary catalog ingestion, mob AI states, threat table, and respawn lifecycle in server-rs",
     "created_at": "2026-10-05T14:53:31.698428+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-062",
     "epic": "E-002"
   },
   {
