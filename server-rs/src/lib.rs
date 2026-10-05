@@ -1,10 +1,17 @@
+pub mod auth;
 pub mod core;
 pub mod ecs;
+pub mod fleet;
+pub mod net;
 pub mod physics;
 pub mod protocol;
 pub mod simulation;
 pub mod spatial;
 pub mod systems;
+
+pub use auth::{AuthError, AuthGuard, Claims};
+pub use fleet::{AgonesClient, FleetLifecycle, FleetState, HeartbeatTask, MockFleetClient};
+pub use net::{ClientPacket, WsServer};
 
 pub use core::{Lcg, Mulberry32, SimClock};
 pub use ecs::{
