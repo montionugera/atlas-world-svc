@@ -87,14 +87,17 @@ test("the fixture repo links node_modules rather than copying 25 MB of them", T,
 test("promote --dry-run writes nothing and lists what it would do", T, () => {
   const repo = plantStaleNode(scratchRepo()), run = sharedRun();
   const before = nodesOf(repo);
-  const emitBefore = readFileSync(join(repo, "colyseus-server/src/config/generated/mapDimensions.ts"), "utf8");
+  const mapDimsPath = join(repo, "colyseus-server/src/config/generated/mapDimensions.ts");
+  const emitBefore = existsSync(mapDimsPath) ? readFileSync(mapDimsPath, "utf8") : null;
   const r = promoteWorld({ repoRoot: repo, runDir: run, dryRun: true });
   assert.deepEqual(nodesOf(repo), before, "dry run wrote files");
   assert.ok(r.written.length > 0);
   assert.ok(r.deleted.length > 0, "dry run reported no deletions — reconciliation is not happening");
   assert.equal(r.errors.length, 0, r.errors.join("; "));
   // It returns ABOVE step 3, so neither the derive-writer nor the renderer ran.
-  assert.equal(readFileSync(join(repo, "colyseus-server/src/config/generated/mapDimensions.ts"), "utf8"), emitBefore);
+  if (emitBefore !== null) {
+    assert.equal(readFileSync(mapDimsPath, "utf8"), emitBefore);
+  }
   assert.deepEqual(r.notes, [], "a dry run produced notes — something after step 2 ran");
   assert.equal(existsSync(join(repo, "game-client/assets/art/maps")), false, "a dry run rendered a sheet");
 });

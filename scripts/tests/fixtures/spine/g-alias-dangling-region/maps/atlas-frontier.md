@@ -100,7 +100,7 @@ mob that spawns nowhere.
   declared region id above — the content gate hard-fails on any dangling ref.
 - `mobType` ids (`balanced`, `defensive`, `spear_thrower`) are the real
   `colyseus-server` mob definition ids; the gate hard-FAILs any mobType not in
-  the generated `colyseus-server/generated/mob-types.json` (F-013).
+  the generated `content/generated/mob-types.json` (F-013).
 - `links` point back at the three bible region ids for coverage cross-check.
 - Every `mobSpawnAreas[].id` added from F-031 onward must ALSO exist in
   `colyseus-server/src/config/mapConfig.ts` with the same `mobType` and `count`

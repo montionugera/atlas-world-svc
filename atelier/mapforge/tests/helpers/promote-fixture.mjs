@@ -164,9 +164,11 @@ export function scratchRepo() {
     filter: (src) => !src.endsWith("/node_modules"),
   });
   symlinkSync(join(ROOT, "scripts/node_modules"), join(dir, "scripts/node_modules"));
-  mkdirSync(join(dir, "colyseus-server/src/config/generated"), { recursive: true });
-  cpSync(join(ROOT, "colyseus-server/src/config/generated"),
-    join(dir, "colyseus-server/src/config/generated"), { recursive: true });
+  if (existsSync(join(ROOT, "colyseus-server/src/config/generated"))) {
+    mkdirSync(join(dir, "colyseus-server/src/config/generated"), { recursive: true });
+    cpSync(join(ROOT, "colyseus-server/src/config/generated"),
+      join(dir, "colyseus-server/src/config/generated"), { recursive: true });
+  }
   return dir;
 }
 

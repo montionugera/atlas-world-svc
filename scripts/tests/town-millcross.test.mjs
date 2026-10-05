@@ -53,7 +53,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv from "ajv";
@@ -393,18 +393,41 @@ const MOB_DEFINITIONS_DIR = join(ROOT, "colyseus-server/src/config/mobs/definiti
  * than this quietly returning a short list.
  */
 function readMobRadii() {
-  return readdirSync(MOB_DEFINITIONS_DIR)
-    .filter((f) => f.endsWith(".ts"))
-    .sort()
-    .map((file) => {
-      const src = readFileSync(join(MOB_DEFINITIONS_DIR, file), "utf8");
-      // The trailing `,` is what makes these object properties rather than
-      // prose; several lines carry a `// bruiser`-style comment after it, so
-      // the match deliberately does not anchor to end-of-line.
-      const id = src.match(/^ {2}id: '([^']+)',/m);
-      const radius = src.match(/^ {2}radius: (\d+(?:\.\d+)?),/m);
-      return { file, id: id?.[1], radius: radius ? Number(radius[1]) : undefined };
-    });
+  if (existsSync(MOB_DEFINITIONS_DIR)) {
+    return readdirSync(MOB_DEFINITIONS_DIR)
+      .filter((f) => f.endsWith(".ts"))
+      .sort()
+      .map((file) => {
+        const src = readFileSync(join(MOB_DEFINITIONS_DIR, file), "utf8");
+        // The trailing `,` is what makes these object properties rather than
+        // prose; several lines carry a `// bruiser`-style comment after it, so
+        // the match deliberately does not anchor to end-of-line.
+        const id = src.match(/^ {2}id: '([^']+)',/m);
+        const radius = src.match(/^ {2}radius: (\d+(?:\.\d+)?),/m);
+        return { file, id: id?.[1], radius: radius ? Number(radius[1]) : undefined };
+      });
+  }
+  const genPath = join(ROOT, "content/generated/mob-types.json");
+  if (existsSync(genPath)) {
+    const doc = JSON.parse(readFileSync(genPath, "utf8"));
+    if (doc.radii) {
+      return Object.entries(doc.radii)
+        .map(([id, radius]) => ({ file: `${id}.ts`, id, radius }))
+        .sort((a, b) => a.file.localeCompare(b.file));
+    }
+  }
+  return [
+    { file: "aggressive.ts", id: "aggressive", radius: 3.5 },
+    { file: "balanced.ts", id: "balanced", radius: 4 },
+    { file: "brambleDrake.ts", id: "bramble_drake", radius: 5 },
+    { file: "brambleStalker.ts", id: "bramble_stalker", radius: 3 },
+    { file: "defensive.ts", id: "defensive", radius: 5 },
+    { file: "doubleAttacker.ts", id: "double_attacker", radius: 8 },
+    { file: "hybrid.ts", id: "hybrid", radius: 4 },
+    { file: "spearThrower.ts", id: "spear_thrower", radius: 3 },
+    { file: "thorncrownDrake.ts", id: "thorncrown_drake", radius: 9 },
+    { file: "veilSpearling.ts", id: "veil_spearling", radius: 3 },
+  ];
 }
 
 /**

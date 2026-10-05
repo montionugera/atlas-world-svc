@@ -158,7 +158,7 @@ export function collectOutputs({ contentRoot }) {
   // Path is derived FROM the content root: on a fixture root the sibling
   // colyseus-server/ doesn't exist and the mirror is skipped entirely.
   const serverDir = join(contentRoot, "..", "colyseus-server");
-  if (tree.byId.has("n-frontier-shelf") && existsSync(serverDir)) {
+  if (tree.byId.has("n-frontier-shelf") && existsSync(join(serverDir, "src/config"))) {
     const md = renderMapDimensionsTs({ tree });
     if (md.errors.length) return { errors: md.errors };
     outputs.push({ path: join(serverDir, "src/config/generated/mapDimensions.ts"), bytes: md.text });

@@ -7,7 +7,7 @@ set -e
 #
 #   cockroachdb      StatefulSet + PVC  (Nakama's database)
 #   nakama           Deployment + migrate initContainer
-#   colyseus-server  Deployment         (authoritative game sim)
+#   server-rs        Deployment         (authoritative game sim)
 #   asset-storybook  nginx Deployment   (asset/combat-lab review page)
 #
 # Invoked automatically by ps-release-workflow `ship` after a feature merges into
@@ -18,7 +18,7 @@ set -e
 #   ./scripts/deploy-local.sh                     # full stack
 #   ./scripts/deploy-local.sh --skip-storybook    # skip the 261 MB asset image
 #   ./scripts/deploy-local.sh --skip-meta         # skip nakama + cockroachdb
-#   ./scripts/deploy-local.sh --skip-server       # skip colyseus-server
+#   ./scripts/deploy-local.sh --skip-server       # skip server-rs
 #   LOCAL_CTX_PATTERN=mylocal ./scripts/deploy-local.sh   # custom local ctx name
 # =============================================================================
 
@@ -73,7 +73,6 @@ echo "📂 Working tree: $REPO_ROOT"
 [ "$REPO_ROOT" != "$MAIN_ROOT" ] && echo "   ↳ linked worktree (primary checkout: $MAIN_ROOT)"
 
 NAMESPACE="atlas-world"
-SERVER_IMAGE="atlas-world-colyseus-server:local"
 SERVER_RS_IMAGE="atlas-world-server-rs:local"
 NAKAMA_IMAGE="atlas-world-nakama:local"
 STORYBOOK_IMAGE="atlas-world-storybook:local"

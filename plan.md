@@ -1,62 +1,59 @@
-# Implementation Plan: F-059 (E-001 Slice 5) Platform Decorator Support, Full Client Cutover & Release Promotion
+# Implementation Plan: F-064 (E-002 Slice 5) Complete colyseus-server Decommissioning & Pure Rust Cutover
 
-**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-059-5`  
-**Branch:** `feat/F-059`  
-**Epic:** `E-001` (Rust game server migration - high-density ECS and Rapier physics core)  
-**Goal:** Implement functional utility function wrappers (`withRetry`, `withCache`, `withCircuitBreaker`, `withRateLimit`, `withDistributedLock`, `withTrace`, `withTracking`) in `node-server-decorator`, cut over the React game client to `server-rs` with FlatBuffers binary streaming, build the containerized deployment for local Agones/k8s, decommission the legacy Colyseus server, verify all quality gates, ship F-059, and promote release 1.10.
-
----
-
-## Batch 1: Platform Utility Functions Support in `node-server-decorator`
-- **Location:** `/Users/pasitnusso/workspace/repos/node-server-decorator`
-- **Task 1:**
-  - Implement functional wrapper utilities in `node/packages/core/src/utils/functional.ts`:
-    - `withRetry<T>(fn: (...args: any[]) => Promise<T> | T, options?: RetryOptions): (...args: any[]) => Promise<T>`
-    - `withCache<T>(fn: (...args: any[]) => Promise<T> | T, options: CacheOptions): (...args: any[]) => Promise<T>`
-    - `withCircuitBreaker<T>(fn: (...args: any[]) => Promise<T> | T, options: CircuitBreakerOptions): (...args: any[]) => Promise<T>`
-    - `withRateLimit<T>(fn: (...args: any[]) => Promise<T> | T, options: RateLimitOptions): (...args: any[]) => Promise<T>`
-    - `withDistributedLock<T>(lockKeyOrResolver: string | ((...args: any[]) => string), fn: (...args: any[]) => Promise<T> | T, options?: DistributedLockOptions): (...args: any[]) => Promise<T>`
-    - `withTrace<T>(spanName: string, fn: (...args: any[]) => Promise<T> | T, options?: TraceOptions): (...args: any[]) => Promise<T>`
-    - `withTracking<T>(eventType: string, fn: (...args: any[]) => Promise<T> | T, options?: any): (...args: any[]) => Promise<T>`
-  - Export from `node/packages/core/src/index.ts`.
-  - Fix devDependencies / mock for `src/adapters/express.spec.ts`.
-  - Author unit tests in `node/packages/core/test/functional.spec.ts`.
-  - Verify with `pnpm --filter @montionugera/server-decorator test` and `pnpm test`.
+**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-064-complete-colyseus-server-decommissioning`  
+**Branch:** `feat/F-064`  
+**Epic:** `E-002` (Complete game logic parity and full colyseus-server decommissioning)  
+**Goal:** Physically delete `colyseus-server`, relocate generated content artifacts, remove `colyseus-server` from `pnpm-workspace.yaml`, update `scripts/precheck.sh` and `scripts/integration.sh` to cement `server-rs` as the sole authoritative server, and verify Gate 1 and Gate 2 pass 100% cleanly on Rust.
 
 ---
 
-## Batch 2: Game Client Cutover in `atlas-world-svc` (`client/react-client`)
-- **Location:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-059-5/client/react-client`
-- **Task 2:**
-  - Author `client/react-client/src/hooks/useServerRsClient.ts`:
-    - React hook connecting via WebSocket to `server-rs` gateway (supporting `SERVER_RS_URL` or default `ws://localhost:2567?token=...`).
-    - Decodes incoming binary ArrayBuffer frames using `BinaryDeltaDecoder` from `@atlas/contracts`.
-    - Dispatches entity updates (`Player`, `Mob`, positions, health, combat state) to React state.
-    - Sends FlatBuffers-encoded `ClientInput` frames for player movement and actions at 20 Hz.
-  - Update `client/react-client/src/App.tsx` and canvas components to toggle / use `useServerRsClient`.
-  - Author unit test `client/react-client/src/hooks/useServerRsClient.test.ts`.
-  - Verify `npm test` in `client/react-client` passes 100%.
+## Task 1: Preserve Shared Content Artifacts & Update Tooling Paths
+- Move/copy `colyseus-server/generated/` artifacts (`asset-keys.json`, `mob-types.json`, `spawn-areas.json`) to `content/generated/`.
+- Update references in `scripts/`:
+  - `scripts/check_content.mjs`
+  - `scripts/check_asset_manifest.mjs`
+  - `scripts/lib/season1.mjs`
+  - `scripts/lib/spawn-pairing.mjs`
+  - `scripts/lib/bestiary-sheet.mjs`
+  - `scripts/check_spine_emit.mjs`
+  - `scripts/tests/node-pin.test.mjs`
+  - `scripts/tests/spine-gates.test.mjs`
+  - `scripts/tests/town-millcross.test.mjs`
+  - `scripts/tests/season1.test.mjs`
+  - `scripts/tests/spine.test.mjs`
+  - `scripts/gen_combat_model.mjs`
+  - `scripts/deploy-local.sh`
+- Verify that `node --test scripts/tests/*.test.mjs` and content validation passes.
 
 ---
 
-## Batch 3: Containerization & Agones/K8s Local Deployment Parity
-- **Location:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-059-5`
-- **Task 3:**
-  - Create multi-stage production Dockerfile `server-rs/Dockerfile`:
-    - Build stage: `rust:1.85-slim-bookworm` with cargo release build.
-    - Runtime stage: `debian:bookworm-slim` with ca-certificates and curl, non-root user, port 2567.
-  - Create Agones GameServer / Fleet manifest `k8s/local/server-rs-gameserver.yaml`.
-  - Update `scripts/deploy-local.sh` to build and deploy `server-rs`.
-  - Retire / mark legacy `colyseus-server` in documentation and compose/k8s configs.
+## Task 2: Physical Removal of colyseus-server & Manifest Cleanup
+- Execute `git rm -rf colyseus-server`.
+- Update `pnpm-workspace.yaml` to remove `colyseus-server`.
+- Update root `package.json` to remove any legacy `colyseus-server` script entries.
+- Run `pnpm install` to update workspace lockfile without `colyseus-server`.
 
 ---
 
-## Batch 4: Verification, Quality Gates & Release Promotion
-- **Location:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-059-5`
-- **Task 4:**
-  - Run full Gate 1 (`./scripts/precheck.sh --no-install`).
-  - Update `README.md` and documentation with the new architecture, endpoints, and deployment instructions.
-  - Commit changes to `feat/F-059`.
-  - Ship `F-059` to `release/1.10` via `psrw ship --no-deploy`.
-  - Verify epic `E-001` completion (5/5 slices shipped).
-  - Promote release 1.10 via `psrw promote`.
+## Task 3: Update Gate 1 (precheck.sh) & Gate 2 (integration.sh)
+- In `scripts/precheck.sh`:
+  - Remove legacy server suites (`server_typecheck`, `server_tests`, `server_coverage`, `server_e2e`, `server_format`).
+  - Keep and enhance `server-rs: cargo clippy & test` (including formatting and check).
+- In `scripts/integration.sh`:
+  - Replace `server_build`, `server_tests`, `server_format` with `server-rs: cargo build --release` and `cargo test --release`.
+- Update `scripts/deploy-local.sh`:
+  - Build and deploy `server-rs/Dockerfile` as the authoritative game server.
+
+---
+
+## Task 4: Gate 1 and Gate 2 Verification
+- Run `./scripts/precheck.sh --no-install`.
+- Run `./scripts/integration.sh --no-install`.
+- Ensure 100% of suites pass cleanly with zero legacy code remaining.
+
+---
+
+## Task 5: Commit, Ship & Promote Release 1.11
+- Commit all changes to `feat/F-064`.
+- Ship to `release/1.11` via `psrw ship --no-deploy`.
+- Run `psrw promote` to promote Release 1.11 to `main`.
