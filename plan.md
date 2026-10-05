@@ -1,86 +1,78 @@
-# Implementation Plan: F-061 (E-002 Slice 2) Elemental Combat System, Skill Execution & Projectile Kinematics in server-rs
+# Implementation Plan: F-062 (E-002 Slice 3) Bestiary Catalog Ingestion, Mob AI States, Threat Table & Respawn Lifecycle in server-rs
 
-**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-061-elemental-combat-system-skill-execution`  
-**Branch:** `feat/F-061`  
+**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-062-bestiary-catalog-ingestion-mob-ai-states`  
+**Branch:** `feat/F-062`  
 **Epic:** `E-002` (Complete game logic parity and full colyseus-server decommissioning)  
-**Goal:** Implement full elemental combat parity, RO-style 7-element multiplier matrix, defense mitigation formulas, 5 player/mob skills, cooldowns and casting states, and projectile kinematics/collision in `server-rs` with Bevy ECS, verified by end-to-end integration tests.
+**Goal:** Ingest the full bestiary catalog from `content/bestiary/bestiary.json` into `server-rs`, implement mob stat derivation matching F-031 rules, decaying threat tables with taunt support, Bevy ECS mob AI state machine (Idle, Wander, Chase, Attack, ReturnHome), and the respawn lifecycle, verified by automated unit and integration tests.
 
 ---
 
-## Task 1: Elemental Attribute System & Damage Calculator
-- **Location:** `server-rs/src/combat/elements.rs` and `server-rs/src/combat/damage.rs`
+## Task 1: Bestiary Catalog Ingestion & Stat Derivation Engine
+- **Location:** `server-rs/src/content/bestiary.rs` and `server-rs/src/content/mod.rs`
 - **Specification:**
-  - `Element` enum: `Neutral`, `Earth`, `Water`, `Wind`, `Fire`, `Holy`, `Void`.
-  - Full 7x7 multiplier matrix (`get_element_multiplier(attack, defense) -> f32`) matching `colyseus-server/src/config/combat/elements.ts` bit-for-bit:
-    - Cycle: Water > Fire > Earth > Wind > Water (2.0x strong).
-    - Opposed pair: Holy <-> Void (mutual 2.0x).
-    - Same element & reverse cycle: 0.5x.
-    - Neutral: 1.0x across all defenders; all attacks 1.0x against neutral.
-  - `DamageType`: `Physical`, `Magical`.
-  - `DamageCalculator`:
-    - `total_def = (if magical { m_def } else { p_def }) + armor`
-    - `reduction = min(total_def, base_damage * 0.8)`
-    - `after_def = max(1.0, base_damage - reduction)`
-    - `multiplier = get_element_multiplier(attack_elem, defense_elem)`
-    - `final_damage = floor(after_def * multiplier).max(1.0)`
-  - Unit tests covering all element pairings and defense boundary clamping.
+  - `BestiaryEntry`: `id: String`, `name: String`, `family: String`, `body_plan: String`, `level_band: String`, `element: Element`, `archetype: String`, `threat: String`, `durability: String`, `speed: String`, `region: String`, `faction: String`, `lore: String`, `visual_brief: String`.
+  - `BestiaryCatalog`: parse `content/bestiary/bestiary.json` (via compile-time `include_str!` or runtime read), indexing all 30+ mob types.
+  - `DerivedMobStats`: `hp: f32`, `p_atk: f32`, `p_def: f32`, `m_def: f32`, `armor: f32`, `move_speed: f32`, `radius: f32`, `chase_range: f32`, `element: Element`, `attack_range: f32`, `is_ranged: bool`.
+  - Derivation rules matching `f031-mob-derivation.test.ts`:
+    - `TIER`: verge (0.75), route (1.0), interior (1.75), heart (2.5)
+    - `DURABILITY`: low (70), mid (100), high (150) -> `hp = round(durability * tier)`
+    - `SPEED`: low (5.0), mid (8.0), high (11.0)
+    - `ARCHETYPE`:
+      - `skirmisher`: radius 3.0, pDef 1.0, armor 1.0, chaseRange 20.0
+      - `bruiser`: radius 5.0, pDef 3.0, armor 2.0, chaseRange 25.0
+      - `tank`: radius 5.0, pDef 4.0, armor 3.0, chaseRange 15.0
+    - `threat`: `ranged` has ranged attacks, others melee only.
+  - Unit tests verifying catalog parsing and exact stat derivation.
 
 ---
 
-## Task 2: ECS Components for Combat, Cooldowns & Status Effects
-- **Location:** `server-rs/src/ecs/components.rs` and `server-rs/src/combat/skills.rs`
+## Task 2: Decaying Threat Table & Threat ECS Component
+- **Location:** `server-rs/src/ai/threat.rs` and `server-rs/src/ai/mod.rs`
 - **Specification:**
-  - Components:
-    - `ElementalAttributes`: `element: Element`, `p_def: f32`, `m_def: f32`, `armor: f32`.
-    - `CooldownTracker`: HashMap/SmallVec of active cooldown keys and remaining seconds (supports per-skill and `global_magic_cd`).
-    - `CastingState`: `casting_until: f32`, `skill_id: Option<String>`, `is_casting: bool`.
-    - `StatusEffects`: active `freeze` (remaining duration, speed multiplier) and `stun` (remaining duration).
-  - Skill Catalog:
-    - `skill_1` (Meteor Strike): Fire AoE, 1.5s cast, 5s cd.
-    - `skill_2` (Precision Strike): Earth melee/single-target, 1s cast, 2s cd.
-    - `skill_3` (Blizzard): Water AoE with Freeze (speed multiplier 0.2, 5s), 1s cast, 4s cd.
-    - `skill_4` (Thunder Strike): Wind AoE with Stun (1.2s duration), 0.5s cast, 5s cd.
-    - `skill_dash` (Dash): Instant impulse (160 speed), 0.5s cd.
-  - Systems:
-    - `cooldown_tick_system`: decrements active cooldown timers.
-    - `status_effect_tick_system`: decrements freeze/stun timers, removes expired effects.
+  - `ThreatTable`:
+    - `entries: HashMap<Entity, ThreatEntry { value: f32, stamp: f32 }>`
+    - `taunted_entity: Option<Entity>`, `taunted_until: f32`
+    - `half_life: f32` (default 6.0s)
+    - `add_threat(entity, amount, current_time)`
+    - `taunt(entity, duration, current_time)`
+    - `top_target(current_time) -> Option<Entity>`
+    - `decayed_value(entry, current_time) -> f32`
+  - Unit tests verifying lazy exponential decay, taunt pinning, and threat accumulation.
 
 ---
 
-## Task 3: Projectile Kinematics & Spatial Collision Resolution [COMPLETED]
-- **Location:** `server-rs/src/ecs/components.rs` and `server-rs/src/systems/projectile.rs`
+## Task 3: Mob AI State Machine & Steering
+- **Location:** `server-rs/src/systems/mob_ai.rs` and `server-rs/src/ecs/components.rs`
 - **Specification:**
-  - Component `Projectile`:
-    - `owner: Entity`, `target: Option<Entity>`, `damage: f32`, `damage_type: DamageType`, `element: Element`.
-    - `speed: f32`, `radius: f32`, `max_range: f32`, `traveled_distance: f32`, `lifetime: f32`.
-    - `effects: Vec<SkillEffect>` (e.g. freeze, stun).
-  - Systems:
-    - `projectile_kinematics_system`: integrates position by velocity, increments `traveled_distance`, despawns on range/lifetime exceeded.
-    - `projectile_collision_system`: spatial query against opposing entities, runs `DamageCalculator`, applies damage & status effects to `Health`, despawns projectile.
+  - Component `MobAi`: `state: AiState` (Idle, Wander, Chase, Attack, ReturnHome), `home_pos: Position`, `leash_distance: f32`, `chase_range: f32`, `attack_range: f32`.
+  - Component `MobSpawnAnchor`: `spawn_pos: Position`, `mob_id: String`, `tier: String`, `respawn_delay_sec: f32`.
+  - System `mob_ai_system`:
+    - Evaluates threat table:
+      - If threat target exists within leash distance: steer toward target; if within attack range, execute attack (melee hit or ranged projectile).
+      - If target leaves leash distance or dies: clear threat and transition to `ReturnHome`.
+      - If no threat: wander near home position or idle.
 
 ---
 
-## Task 4: Skill Execution & Player Input Integration [COMPLETED]
-- **Location:** `server-rs/src/systems/skill_execution.rs` and `server-rs/src/simulation.rs`
+## Task 4: Mob Respawn Lifecycle
+- **Location:** `server-rs/src/systems/mob_lifecycle.rs` and `server-rs/src/simulation.rs`
 - **Specification:**
-  - Reads `PlayerInputState`:
-    - If `attack` flag is set and not on basic attack cooldown: perform basic attack in facing direction.
-    - If `skill_slot` > 0: validate cooldowns via `CooldownTracker`, check casting state.
-    - For instant skill (`skill_dash`): apply impulse vector to `Velocity`, set dash cooldown.
-    - For casted skills (`skill_1` .. `skill_4`): start casting, lock movement, upon cast completion spawn projectile / apply AoE.
-  - Incorporate `status_effects` into movement: Stun zeroes velocity; Freeze scales avatar speed by multiplier.
-  - Wire schedule in `AtlasSimulation`.
+  - Component `DeadMobTracker`: `death_time: f32`, `respawn_at: f32`, `anchor: MobSpawnAnchor`.
+  - System `mob_lifecycle_system`:
+    - Detects mob death (`health.is_alive == false`).
+    - Spawns `DeadMobTracker` and despawns or hides dead mob entity.
+    - When `current_time >= respawn_at`: spawns fresh mob entity at `anchor.spawn_pos` with full health, derived stats, and clean threat table.
+  - Wire systems into `AtlasSimulation::step()`.
 
 ---
 
 ## Task 5: Integration Tests & Parity Verification
-- **Location:** `server-rs/tests/elemental_combat_skills.rs`
+- **Location:** `server-rs/tests/bestiary_and_mob_ai.rs`
 - **Specification:**
-  - Test 1: Elemental multiplier verification (Fire vs Earth = 2x, Fire vs Water = 0.5x, Holy vs Void = 2x).
-  - Test 2: Defense reduction verification (capping at 80%, minimum 1 damage floor).
-  - Test 3: Skill casting, global cooldown lockout, and Dash impulse.
-  - Test 4: Projectile spawning, linear motion, and collision with mob.
-  - Test 5: Blizzard freeze reduces target speed, Thunder strike stuns target.
+  - Test 1: Ingestion of full `bestiary.json` catalog (verifying 30+ mob entries).
+  - Test 2: Parity tests for `mob-bramble-stalker`, `mob-veil-spearling`, and `mob-bramble-drake`.
+  - Test 3: Player damages mob -> threat table records threat -> mob enters Chase/Attack state.
+  - Test 4: Mob death -> respawn timer ticks -> mob respawns at anchor with full health.
 
 ---
 
@@ -88,5 +80,5 @@
 - Update `server-rs/README.md`.
 - Verify `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, and `cargo test`.
 - Run `./scripts/precheck.sh --no-install`.
-- Commit changes to `feat/F-061`.
+- Commit changes to `feat/F-062`.
 - Ship to `release/1.11` via `psrw ship --no-deploy`.

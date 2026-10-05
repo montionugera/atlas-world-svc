@@ -1,14 +1,22 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
+#[serde(rename_all = "lowercase")]
 pub enum Element {
     #[default]
+    #[serde(alias = "Neutral")]
     Neutral,
+    #[serde(alias = "Earth")]
     Earth,
+    #[serde(alias = "Water")]
     Water,
+    #[serde(alias = "Wind")]
     Wind,
+    #[serde(alias = "Fire")]
     Fire,
+    #[serde(alias = "Holy")]
     Holy,
+    #[serde(alias = "Void")]
     Void,
 }
 

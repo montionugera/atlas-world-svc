@@ -1,4 +1,6 @@
 pub mod combat;
+pub mod mob_ai;
+pub mod mob_lifecycle;
 pub mod physics;
 pub mod player_input;
 pub mod projectile;
@@ -8,6 +10,8 @@ pub mod spatial;
 pub mod steering;
 
 pub use combat::{combat_system, cooldown_tick_system, status_effect_tick_system};
+pub use mob_ai::mob_ai_system;
+pub use mob_lifecycle::mob_lifecycle_system;
 pub use physics::physics_step_system;
 pub use player_input::player_input_system;
 pub use projectile::{projectile_collision_system, projectile_kinematics_system};
