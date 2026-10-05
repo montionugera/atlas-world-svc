@@ -762,5 +762,15 @@
     "claimed_at": "2026-10-05T16:25:09.311534+00:00",
     "shipped_at": "2026-10-05T16:49:57.660381+00:00",
     "shipped_sha": "2d9688c945db1a5e4e61abbbebfb322c2401eac4"
+  },
+  {
+    "id": "F-064",
+    "title": "Complete colyseus-server decommissioning, workspace cleanup, and Gate 1/2 gate update",
+    "from_idea": "I-135",
+    "created_at": "2026-10-05T16:50:06.050130+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-002"
   }
 ]

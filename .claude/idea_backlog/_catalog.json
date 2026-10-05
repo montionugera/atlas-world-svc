@@ -816,7 +816,7 @@
     "id": "I-135",
     "title": "Complete colyseus-server decommissioning, workspace cleanup, and Gate 1/2 gate update",
     "created_at": "2026-10-05T14:53:31.699650+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-064",
     "epic": "E-002"
   }
 ]
