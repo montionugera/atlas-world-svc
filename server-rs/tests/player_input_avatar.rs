@@ -33,7 +33,7 @@ async fn test_player_avatar_input_pipeline_and_broadcast() {
     let mut snapshot_builder = SnapshotBuilder::new();
 
     // Client sends ClientInput moving diagonally: (move_x=0.8, move_y=0.6)
-    let input_bytes = serialize_client_input(10, 0.8, 0.6, true, 1, 42);
+    let input_bytes = serialize_client_input(10, 0.8, 0.6, true, 0, 42);
     ws_client
         .send(Message::Binary(input_bytes.into()))
         .await

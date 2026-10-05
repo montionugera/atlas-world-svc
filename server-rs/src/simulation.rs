@@ -4,14 +4,16 @@ use serde::{Deserialize, Serialize};
 use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
-    AiAgent, BotAgent, CombatStats, EntityId, Health, MobTag, PlayerAvatar, PlayerInputState,
-    PlayerTag, Position, Velocity,
+    AiAgent, BotAgent, CastingState, CombatStats, CooldownTracker, ElementalAttributes, EntityId,
+    Health, MobTag, PlayerAvatar, PlayerInputState, PlayerTag, Position, StatusEffects, Velocity,
 };
 use crate::physics::world::PhysicsWorld;
 use crate::spatial::grid::SpatialGrid;
 use crate::systems::{
-    bot_steering_system, combat_system, physics_step_system, player_input_system,
-    separation_system, spatial_grid_rebuild_system, ArenaBounds,
+    bot_steering_system, combat_system, cooldown_tick_system, physics_step_system,
+    player_input_system, projectile_collision_system, projectile_kinematics_system,
+    separation_system, skill_execution_system, spatial_grid_rebuild_system,
+    status_effect_tick_system, ArenaBounds,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -103,10 +105,15 @@ impl AtlasSimulation {
         let mut schedule = Schedule::default();
         schedule.add_systems(
             (
+                cooldown_tick_system,
+                status_effect_tick_system,
                 player_input_system,
+                skill_execution_system,
                 bot_steering_system,
                 spatial_grid_rebuild_system,
                 separation_system,
+                projectile_kinematics_system,
+                projectile_collision_system,
                 physics_step_system,
                 combat_system,
             )
@@ -229,6 +236,10 @@ impl AtlasSimulation {
                     cooldown_timer: 0.0,
                     is_player: true,
                 },
+                ElementalAttributes::default(),
+                CooldownTracker::default(),
+                CastingState::default(),
+                StatusEffects::default(),
             ))
             .id()
     }
