@@ -1,7 +1,8 @@
 ---
 title: "Nakama persistent storage integration for player loadout, inventory, and stats in server-rs"
-id: I-134
-status: idea
+id: F-063
+status: refined
+from_idea: I-134
 ---
 
 # Nakama persistent storage integration for player loadout, inventory, and stats in server-rs

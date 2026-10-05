@@ -749,5 +749,15 @@
     "claimed_at": "2026-10-05T16:02:20.872325+00:00",
     "shipped_at": "2026-10-05T16:24:39.468174+00:00",
     "shipped_sha": "60ebd64cc7b14f9504d50a77ec8dc31fe4e03e62"
+  },
+  {
+    "id": "F-063",
+    "title": "Nakama persistent storage integration for player loadout, inventory, and stats in server-rs",
+    "from_idea": "I-134",
+    "created_at": "2026-10-05T16:24:58.820132+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-002"
   }
 ]
