@@ -1,36 +1,36 @@
-# F-051 — World Fill Plan E: Redraw and Prose
+# Implementation Plan: F-055 (E-001 Slice 1) TypeScript Baseline & Golden Deterministic Trace
 
-**This file is a pointer. The real plan is elsewhere. Do not implement from this file.**
+**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-055-1`  
+**Branch:** `feat/F-055`  
+**Goal:** Establish an authoritative 1,000-tick deterministic simulation trace (`golden_sim_trace_1000.json`) driven by `SimClock` and seeded PRNG as the immutable behavioral test oracle for the Rust `server-rs` port.
 
-| What | Where |
-| --- | --- |
-| **The plan you implement** | `docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md` (13 tasks) |
-| **Read BEFORE any task** | `docs/superpowers/plans/world-fill-STATE.md` — §1–§27: measured baselines, shipped divergences, and every obligation Plan E owns |
-| **Approved design** | `docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md` |
-| Backlog spec stub | `.claude/refined_backlog/F-051-world-fill-plan-e-redraw-and-prose/spec.md` |
+---
 
-## The one-line goal
+## Task 1: Seeded PRNG and Deterministic Simulation Harness
+- **File:** `colyseus-server/src/tests/harness/DeterministicSimHarness.ts`
+- **Action:**
+  - Implemented Mulberry32 PRNG with fixed seed `0x1337C0DE`.
+  - Built test environment with `SimClock` (fixed 50 ms step per tick).
+  - Mocked `Date.now()` and `performance.now()` clamped to `SimClock` so all AI and combat sub-systems execute with 100% determinism.
+  - Setup 10 synthetic player bots and 50 mobs at deterministic spawn positions.
+  - Steered bots deterministically with margin avoidance.
+- **Verify:** ✅ Passes 1,000 ticks without NaN or unhandled errors.
 
-Make the committed chart, spine, sheets and prose describe the world that actually
-exists: unfreeze deepest-first, THE REDRAW (one commit, one revert), refreeze root-first,
-the 13 continent sheets, G-CITE + the citation sweep, survey as a first-class field,
-the canon-leg pre-flight on pins, world-digest, Z2 against the fabric, and the zone
-allocation table solved before writing a word.
+## Task 2: Golden Simulation Trace Generator & JSON Fixture
+- **File:** `colyseus-server/src/tests/fixtures/golden_sim_trace_1000.json` & generator script
+- **Action:**
+  - Captured tick-level state snapshots at tick intervals (0, 100, 200, ..., 1000) and consecutive ticks (990–1000).
+  - For each recorded entity, recorded `id`, `type`, `x`, `y`, `vx`, `vy`, `health`, `isAlive`, `behavior`, `targetId`.
+  - Saved to `colyseus-server/src/tests/fixtures/golden_sim_trace_1000.json` (176.4 KB, 21 snapshots).
+- **Verify:** ✅ Fixture generated and verified with 1,000 ticks of simulation data.
 
-## Obligations inherited from Plans A–D (STATE — do not re-derive)
+## Task 3: Deterministic Parity Regression Suite
+- **File:** `colyseus-server/src/tests/sim-trace-determinism.test.ts`
+- **Action:**
+  - Authored Jest test that re-executes the harness from seed `0x1337C0DE`.
+  - Asserts that every recorded tick in `golden_sim_trace_1000.json` matches the freshly simulated state with zero divergence.
+- **Verify:** ✅ `PASS src/tests/sim-trace-determinism.test.ts` (100% pass across all 21 snapshots, exact bit-level parity).
 
-- Clear the bounded Gate 2 red window (~172 named geography orphans, §26).
-- Re-home the alias-sweep data onto new region ids.
-- Decide road ink over reported ground; author or record-why-not network/betweenness/
-  adjacency relations (§23 follow-up).
-- Re-derive the rename+geoId alias fixture lost in Task 11's cutover (§26 erratum 8).
-- Judge the named pin deviations if prose claims need revoicing.
-
-## Non-negotiables (same as Plans A-D)
-
-- The redraw commit may not contain a hand edit — adjust the premise or seed and regenerate.
-- R12 re-baseline order runs against a lock that has already moved once, by design.
-- Every phase ends with the quality gate: implement -> verify -> adversarial review ->
-  refactor -> re-verify. Mutation-test every gate rule.
-- Zero runtime emitter drift outside declared surfaces; mapDimensions jest pin green
-  on EVERY commit.
+## Task 4: Full Quality Gate Verification & Documentation
+- **Action:** Updated `README.md` with testing quality gates and deterministic simulation oracle details. Ran `./scripts/precheck.sh --no-install`.
+- **Verify:** ✅ GATE 1 PASS — all contracts, tests, linter, formatting, and content gates clean.

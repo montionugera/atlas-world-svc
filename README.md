@@ -113,9 +113,12 @@ Attach the `AtlasWorldUnityClient` to a Unity GameObject and configure the serve
 - CI pipeline triggers on Pull Request.
 - `main` deploys to Production/Staging.
 
-### Required Code Quality
+### Required Code Quality & Testing Gates
 - TypeScript **Strict Mode** only.
-- Passing `ESLint` and `Prettier` configurations.
+- Passing `ESLint` and `Prettier` configurations (`npm run format`).
+- Unit & E2E Quality Gates (`npm run test:unit`, `npm run test:coverage:gate`, `npm run test:e2e`).
+- Precheck Gate: `./scripts/precheck.sh` enforces coverage thresholds (55% branch, 70% functions, 70% lines, 70% statements; 80%+ on core interest/time modules), linter, contracts, and full test suites.
+- **Deterministic Simulation Oracle:** `colyseus-server/src/tests/fixtures/golden_sim_trace_1000.json` records 1,000 ticks of authoritative simulation driven by `SimClock` and Mulberry32 PRNG. Verified by `npm test -- src/tests/sim-trace-determinism.test.ts` to ensure zero drift during the high-density Rust server migration (Epic `E-001`).
 - Commit to the 2.5D Physical limitations (never blindly trust Client elevation inputs, always audit slope coordinates).
 
 ---
