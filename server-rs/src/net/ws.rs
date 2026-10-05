@@ -26,6 +26,8 @@ pub struct WsServer {
     auth_guard: AuthGuard,
     inbound_tx: UnboundedSender<ClientPacket>,
     inbound_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<ClientPacket>>>,
+    pub nakama_client: Option<Arc<crate::storage::NakamaClient>>,
+    nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
 }
 
 impl WsServer {
@@ -40,6 +42,7 @@ impl WsServer {
         let connections = Arc::new(RwLock::new(HashMap::new()));
         let (inbound_tx, inbound_rx) = unbounded_channel();
         let inbound_rx = Arc::new(tokio::sync::Mutex::new(inbound_rx));
+        let nakama_ref = Arc::new(std::sync::RwLock::new(None));
 
         let server = Self {
             local_addr,
@@ -47,6 +50,8 @@ impl WsServer {
             auth_guard: auth_guard.clone(),
             inbound_tx: inbound_tx.clone(),
             inbound_rx,
+            nakama_client: None,
+            nakama_ref: nakama_ref.clone(),
         };
 
         // Spawn accept loop
@@ -55,9 +60,16 @@ impl WsServer {
             connections,
             auth_guard,
             inbound_tx,
+            nakama_ref,
         ));
 
         Ok(server)
+    }
+
+    pub fn with_nakama(mut self, client: Arc<crate::storage::NakamaClient>) -> Self {
+        *self.nakama_ref.write().unwrap() = Some(client.clone());
+        self.nakama_client = Some(client);
+        self
     }
 
     pub fn local_addr(&self) -> SocketAddr {
@@ -110,6 +122,7 @@ impl WsServer {
         connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
         auth_guard: AuthGuard,
         inbound_tx: UnboundedSender<ClientPacket>,
+        nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
     ) {
         info!(
             "WebSocket accept loop running on {}",
@@ -119,9 +132,10 @@ impl WsServer {
             let conns = connections.clone();
             let auth = auth_guard.clone();
             let in_tx = inbound_tx.clone();
+            let nakama = nakama_ref.clone();
 
             tokio::spawn(async move {
-                Self::handle_connection(stream, peer_addr, conns, auth, in_tx).await;
+                Self::handle_connection(stream, peer_addr, conns, auth, in_tx, nakama).await;
             });
         }
     }
@@ -169,6 +183,7 @@ impl WsServer {
         connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
         auth_guard: AuthGuard,
         inbound_tx: UnboundedSender<ClientPacket>,
+        nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
     ) {
         let mut session_id = String::new();
         let auth_ref = &auth_guard;
@@ -215,6 +230,28 @@ impl WsServer {
                 return;
             }
         };
+
+        // When token is validated, if nakama_client is configured, fetch get_loadout(&session_id)
+        let client_opt = nakama_ref.read().unwrap().clone();
+        if let Some(client) = client_opt {
+            match client.get_loadout(&session_id).await {
+                Ok(Some(loadout)) => {
+                    info!(
+                        "Retrieved persistent loadout for user {}: level {}",
+                        session_id, loadout.profile.level
+                    );
+                }
+                Ok(None) => {
+                    info!("No persistent loadout for user {}, defaulting", session_id);
+                }
+                Err(e) => {
+                    warn!(
+                        "Failed to fetch persistent loadout for user {}: {}",
+                        session_id, e
+                    );
+                }
+            }
+        }
 
         let (mut ws_write, mut ws_read) = ws_stream.split();
         let (out_tx, mut out_rx) = unbounded_channel::<Message>();

@@ -1,84 +1,75 @@
-# Implementation Plan: F-062 (E-002 Slice 3) Bestiary Catalog Ingestion, Mob AI States, Threat Table & Respawn Lifecycle in server-rs
+# Implementation Plan: F-063 (E-002 Slice 4) Nakama Persistent Storage Integration in server-rs
 
-**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-062-bestiary-catalog-ingestion-mob-ai-states`  
-**Branch:** `feat/F-062`  
+**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-063-nakama-persistent-storage-integration-fo`  
+**Branch:** `feat/F-063`  
 **Epic:** `E-002` (Complete game logic parity and full colyseus-server decommissioning)  
-**Goal:** Ingest the full bestiary catalog from `content/bestiary/bestiary.json` into `server-rs`, implement mob stat derivation matching F-031 rules, decaying threat tables with taunt support, Bevy ECS mob AI state machine (Idle, Wander, Chase, Attack, ReturnHome), and the respawn lifecycle, verified by automated unit and integration tests.
+**Goal:** Implement the Nakama persistent storage and RPC client in `server-rs`, player stat derivation matching `contracts/src/meta/derivedStats.ts`, avatar initialization with persistent loadouts on WebSocket connect, and match event reporting, verified by automated integration tests.
 
 ---
 
-## Task 1: Bestiary Catalog Ingestion & Stat Derivation Engine
-- **Location:** `server-rs/src/content/bestiary.rs` and `server-rs/src/content/mod.rs`
+## Task 1: Nakama REST & RPC Client
+- **Location:** `server-rs/src/storage/nakama.rs`, `server-rs/src/storage/mod.rs`
+- **Dependencies:** Add `reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }` to `server-rs/Cargo.toml`.
 - **Specification:**
-  - `BestiaryEntry`: `id: String`, `name: String`, `family: String`, `body_plan: String`, `level_band: String`, `element: Element`, `archetype: String`, `threat: String`, `durability: String`, `speed: String`, `region: String`, `faction: String`, `lore: String`, `visual_brief: String`.
-  - `BestiaryCatalog`: parse `content/bestiary/bestiary.json` (via compile-time `include_str!` or runtime read), indexing all 30+ mob types.
-  - `DerivedMobStats`: `hp: f32`, `p_atk: f32`, `p_def: f32`, `m_def: f32`, `armor: f32`, `move_speed: f32`, `radius: f32`, `chase_range: f32`, `element: Element`, `attack_range: f32`, `is_ranged: bool`.
-  - Derivation rules matching `f031-mob-derivation.test.ts`:
-    - `TIER`: verge (0.75), route (1.0), interior (1.75), heart (2.5)
-    - `DURABILITY`: low (70), mid (100), high (150) -> `hp = round(durability * tier)`
-    - `SPEED`: low (5.0), mid (8.0), high (11.0)
-    - `ARCHETYPE`:
-      - `skirmisher`: radius 3.0, pDef 1.0, armor 1.0, chaseRange 20.0
-      - `bruiser`: radius 5.0, pDef 3.0, armor 2.0, chaseRange 25.0
-      - `tank`: radius 5.0, pDef 4.0, armor 3.0, chaseRange 15.0
-    - `threat`: `ranged` has ranged attacks, others melee only.
-  - Unit tests verifying catalog parsing and exact stat derivation.
+  - Define `LoadoutSnapshot`, `ProfileDoc`, `PrimaryStats`, `EquippedItemIds`, `MatchEventBatch`, `MatchEvent`.
+  - Implement `NakamaClient`:
+    - `new(base_url: String, http_key: String, timeout_ms: u64, retries: u32) -> Self`
+    - `verify_session(&self, token: &str) -> Result<Option<String>, String>`
+    - `get_loadout(&self, user_id: &str) -> Result<Option<LoadoutSnapshot>, String>`
+    - `report_match_events(&self, user_id: &str, events: &[MatchEvent]) -> Result<String, String>`
+    - Exponential backoff retry (250ms * 2^attempt), fast fail on 4xx (except 429).
+  - Implement `MockNakamaClient` for deterministic testing and offline local fallback.
+  - Comprehensive unit tests in `storage/nakama.rs`.
 
 ---
 
-## Task 2: Decaying Threat Table & Threat ECS Component
-- **Location:** `server-rs/src/ai/threat.rs` and `server-rs/src/ai/mod.rs`
+## Task 2: Player Combat Stat Derivation Engine
+- **Location:** `server-rs/src/content/stats.rs`, `server-rs/src/content/weapons.rs`
 - **Specification:**
-  - `ThreatTable`:
-    - `entries: HashMap<Entity, ThreatEntry { value: f32, stamp: f32 }>`
-    - `taunted_entity: Option<Entity>`, `taunted_until: f32`
-    - `half_life: f32` (default 6.0s)
-    - `add_threat(entity, amount, current_time)`
-    - `taunt(entity, duration, current_time)`
-    - `top_target(current_time) -> Option<Entity>`
-    - `decayed_value(entry, current_time) -> f32`
-  - Unit tests verifying lazy exponential decay, taunt pinning, and threat accumulation.
+  - Constants matching `derivedStats.ts`:
+    - `GROWTH = 1.045`
+    - `STAT_COEF = 0.5`
+    - `STAT_MAX = 99.0`
+    - `BASE_HP = 108.9`
+    - `BASE_ATK = 19.602`
+    - `BASE_DEF = 5.94`
+    - `GEAR_REFERENCE = 18.0`
+    - `UNARMED_GEAR = 0.25`
+  - Weapon catalog lookup for equipped weapon ID (`basic_sword`, `apprentice_staff`, etc.) resolving `atk_stat`, `gear`, `rho`.
+  - `derived_stats(level: u32, primary: &PrimaryStats, weapon_id: Option<&str>) -> DerivedStats`:
+    - `max_health`, `p_atk`, `m_atk`, `p_def`, `m_def`, `max_move_speed`.
+  - Unit tests verifying exact numerical parity against `derivedStats.test.ts` (level 1 basic_sword anchor: 110 HP, 22 pAtk, 0 mAtk, 6 pDef, 6 mDef, 20.2 speed).
 
 ---
 
-## Task 3: Mob AI State Machine & Steering
-- **Location:** `server-rs/src/systems/mob_ai.rs` and `server-rs/src/ecs/components.rs`
+## Task 3: Player Avatar Initialization with Persistent Loadout in Bevy ECS & WebSocket
+- **Location:** `server-rs/src/simulation.rs`, `server-rs/src/net/ws.rs`
 - **Specification:**
-  - Component `MobAi`: `state: AiState` (Idle, Wander, Chase, Attack, ReturnHome), `home_pos: Position`, `leash_distance: f32`, `chase_range: f32`, `attack_range: f32`.
-  - Component `MobSpawnAnchor`: `spawn_pos: Position`, `mob_id: String`, `tier: String`, `respawn_delay_sec: f32`.
-  - System `mob_ai_system`:
-    - Evaluates threat table:
-      - If threat target exists within leash distance: steer toward target; if within attack range, execute attack (melee hit or ranged projectile).
-      - If target leaves leash distance or dies: clear threat and transition to `ReturnHome`.
-      - If no threat: wander near home position or idle.
+  - Update `AtlasSimulation::spawn_player_avatar`:
+    - Accepts `user_id`, `derived_stats: DerivedStats`, `elemental_attrs: ElementalAttributes`, `equipped_skills: Vec<String>`.
+    - Spawns player entity with `CombatStats`, `ElementalAttributes`, `CooldownTracker`, `CastingState`, `StatusEffects`.
+  - In `server-rs/src/net/ws.rs`:
+    - When client connects with token, verify session and query loadout via `NakamaClient`.
+    - If loadout found: calculate derived stats and initialize avatar.
+    - If offline / Nakama disabled: fall back to default level 1 profile.
+  - In `server-rs/src/systems/combat.rs`:
+    - On mob kill: record kill match event for the attacking player.
 
 ---
 
-## Task 4: Mob Respawn Lifecycle
-- **Location:** `server-rs/src/systems/mob_lifecycle.rs` and `server-rs/src/simulation.rs`
+## Task 4: Integration Tests & Parity Verification
+- **Location:** `server-rs/tests/nakama_persistence.rs`
 - **Specification:**
-  - Component `DeadMobTracker`: `death_time: f32`, `respawn_at: f32`, `anchor: MobSpawnAnchor`.
-  - System `mob_lifecycle_system`:
-    - Detects mob death (`health.is_alive == false`).
-    - Spawns `DeadMobTracker` and despawns or hides dead mob entity.
-    - When `current_time >= respawn_at`: spawns fresh mob entity at `anchor.spawn_pos` with full health, derived stats, and clean threat table.
-  - Wire systems into `AtlasSimulation::step()`.
+  - Test 1: `verify_session` and `get_loadout` against mock Nakama HTTP server (or wiremock/tokio mock).
+  - Test 2: Stat derivation parity matching `contracts/src/meta/derivedStats.ts` across multiple levels and stat allocations.
+  - Test 3: Player connect with Nakama token results in properly configured ECS avatar with custom health, defense, attack power, and skill list.
+  - Test 4: Match event reporting on mob death.
 
 ---
 
-## Task 5: Integration Tests & Parity Verification
-- **Location:** `server-rs/tests/bestiary_and_mob_ai.rs`
-- **Specification:**
-  - Test 1: Ingestion of full `bestiary.json` catalog (verifying 30+ mob entries).
-  - Test 2: Parity tests for `mob-bramble-stalker`, `mob-veil-spearling`, and `mob-bramble-drake`.
-  - Test 3: Player damages mob -> threat table records threat -> mob enters Chase/Attack state.
-  - Test 4: Mob death -> respawn timer ticks -> mob respawns at anchor with full health.
-
----
-
-## Task 6: Documentation, Precheck & Ship
-- Update `server-rs/README.md`.
-- Verify `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, and `cargo test`.
+## Task 5: Documentation, Gate 1 Verification & Ship
+- Update `server-rs/README.md` with Nakama integration configuration and environment variables.
+- Run `cargo fmt`, `cargo clippy --all-targets -- -D warnings`, `cargo test`.
 - Run `./scripts/precheck.sh --no-install`.
-- Commit changes to `feat/F-062`.
+- Commit changes to `feat/F-063`.
 - Ship to `release/1.11` via `psrw ship --no-deploy`.

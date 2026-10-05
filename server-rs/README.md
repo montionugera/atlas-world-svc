@@ -41,6 +41,39 @@ Implements the RO-style World Wisdom elemental combat table:
 
 ---
 
+## 💾 Nakama Persistent Storage & Stat Derivation (F-063 / E-002 Slice 4)
+
+### 1. Configuration & Environment Variables
+- `NAKAMA_BASE_URL`: HTTP REST/RPC endpoint for the Nakama cluster (e.g. `http://nakama:7350`).
+- `NAKAMA_HTTP_KEY`: Nakama server HTTP runtime key used for authenticating server-to-server RPCs (e.g. `defaultkey`).
+- `NAKAMA_TIMEOUT_MS`: Request timeout in milliseconds (default: 5000ms).
+- `NAKAMA_RETRIES`: Number of exponential backoff retry attempts on transient network or 5xx failures (default: 3).
+
+### 2. Persistence Lifecycle
+- **Session Verification:** During WebSocket handshake, player bearer tokens are validated with Nakama `GET /v2/account` (or local JWT auth guard fallback).
+- **Persistent Loadout Retrieval:** Upon successful authentication, `NakamaClient::get_loadout` fetches the player's persistent profile (`level`, `xp`, `allocated` primary stats), equipped weapons/armor, and skill loadouts.
+- **Avatar Initialization:** `AtlasSimulation::spawn_player_avatar_with_loadout` initializes the player's ECS avatar with server-authoritative derived combat attributes. If offline or loadout is unavailable, it gracefully falls back to level 1 defaults.
+- **Match Event Queue:** In-game achievements and quest objectives (e.g., `mob_kill`) are enqueued in `MatchEventQueue` and reported back to Nakama via `report_match_events` RPC batches with deduplication and idempotency.
+
+### 3. Server-Authoritative Combat Stat Derivation
+Mirrors `contracts/src/meta/derivedStats.ts` exactly:
+- **Constants:** `GROWTH = 1.045`, `STAT_COEF = 0.5`, `STAT_MAX = 99.0`, `BASE_HP = 108.9`, `BASE_ATK = 19.602`, `BASE_DEF = 5.94`, `GEAR_REFERENCE = 18.0`, `UNARMED_GEAR = 0.25`.
+- **Formulas:**
+  $$\text{grow} = \text{GROWTH}^{(\max(1, \text{level}) - 1)}$$
+  $$\text{share}(p) = \frac{\text{clamp}(p, 1, 99)}{99}$$
+  $$\text{offMagnitude} = 1 + 2 \times \text{STAT\_COEF} \times \text{share}(\text{allocated}[\text{weapon.atk\_stat}])$$
+  $$\text{defMagnitude} = 1 + 2 \times \text{STAT\_COEF} \times \text{share}(\text{vit})$$
+  $$\text{atk} = \text{BASE\_ATK} \times \text{grow} \times \text{offMagnitude} \times \text{weapon.gear}$$
+  $$\text{def} = \text{BASE\_DEF} \times \text{grow} \times \text{defMagnitude}$$
+  $$\text{maxHealth} = \text{BASE\_HP} \times \text{grow} \times \text{defMagnitude}$$
+  $$\text{p\_atk} = \text{atk} \times 2 \times \text{rho}$$
+  $$\text{m\_atk} = \text{atk} \times 2 \times (1 - \text{rho})$$
+  $$\text{p\_def} = \text{m\_def} = \text{def}$$
+  $$\text{maxMoveSpeed} = 20.0 + 0.2 \times \text{agi}$$
+- Level 1 `basic_sword` anchor parity: 110 HP, 22 pAtk, 0 mAtk, 6 pDef, 6 mDef, 20.2 speed.
+
+---
+
 ## 🏃 Running & Testing
 
 ```bash
