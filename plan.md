@@ -1,36 +1,52 @@
-# F-051 — World Fill Plan E: Redraw and Prose
+# Implementation Plan: F-056 (E-001 Slice 2) Headless Rust ECS Simulation Core
 
-**This file is a pointer. The real plan is elsewhere. Do not implement from this file.**
+**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-056-2`  
+**Branch:** `feat/F-056`  
+**Goal:** Implement the authoritative headless Rust game server core (`server-rs`) powered by `bevy_ecs` and `rapier2d`, validating behavioral parity against `golden_sim_trace_1000.json` ($\epsilon \le 0.05$) and delivering $\le 1.0\text{ ms}$ tick latency at 10,000 entities ($< 2.5\text{ ms}$ at 20,000 entities).
 
-| What | Where |
-| --- | --- |
-| **The plan you implement** | `docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md` (13 tasks) |
-| **Read BEFORE any task** | `docs/superpowers/plans/world-fill-STATE.md` — §1–§27: measured baselines, shipped divergences, and every obligation Plan E owns |
-| **Approved design** | `docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md` |
-| Backlog spec stub | `.claude/refined_backlog/F-051-world-fill-plan-e-redraw-and-prose/spec.md` |
+---
 
-## The one-line goal
+## Task 1: Scaffold `server-rs` Crate with Bevy ECS & Rapier2D
+- **Directory:** `server-rs/`
+- **Action:**
+  - Create `server-rs/Cargo.toml` with dependencies: `bevy_ecs = "0.15"`, `rapier2d = "0.22"`, `serde = { version = "1.0", features = ["derive"] }`, `serde_json = "1.0"`, `glam = "0.29"`, `rand = "0.8"`, `criterion = "0.5"`.
+  - Implement modules:
+    - `src/core/`: PRNG (`Mulberry32`), `SimClock` (fixed 50 ms tick step).
+    - `src/ecs/`: Components (`Position`, `Velocity`, `Health`, `CombatStats`, `PlayerTag`, `MobTag`, `BotController`, `AiState`).
+    - `src/spatial/`: Spatial hash grid with uniform cell indexing for $O(1)$ radius queries.
+- **Verify:** `cargo check` compiles with 0 errors.
 
-Make the committed chart, spine, sheets and prose describe the world that actually
-exists: unfreeze deepest-first, THE REDRAW (one commit, one revert), refreeze root-first,
-the 13 continent sheets, G-CITE + the citation sweep, survey as a first-class field,
-the canon-leg pre-flight on pins, world-digest, Z2 against the fabric, and the zone
-allocation table solved before writing a word.
+## Task 2: Implement Rapier2D Physics & Movement / AI Systems
+- **Files:** `server-rs/src/physics/`, `server-rs/src/ai/`, `server-rs/src/combat/`, `server-rs/src/simulation.rs`
+- **Action:**
+  - Initialize Rapier2D simulation world with boundary colliders matching the arena ($1200 \times 1200$).
+  - Implement Bevy ECS systems:
+    1. `bot_steering_system`: replicates margin turn logic and deterministic Mulberry32 wander turn.
+    2. `spatial_grid_rebuild_system`: populates spatial hash from positions.
+    3. `separation_system`: applies separation deflection force ($4.0 \times \text{speed}$) using spatial grid neighbors.
+    4. `physics_step_system`: syncs velocities and integrates positions with boundary clamping.
+    5. `combat_system`: attack checks, cooldowns, damage application, and entity death.
+- **Verify:** Headless simulation steps 1,000 ticks with zero panics or NaNs.
 
-## Obligations inherited from Plans A–D (STATE — do not re-derive)
+## Task 3: Golden Simulation Trace Parity Replay Harness
+- **File:** `server-rs/tests/trace_replay.rs`
+- **Action:**
+  - Ingest `colyseus-server/src/tests/fixtures/golden_sim_trace_1000.json`.
+  - Initialize `AtlasSimulation` with identical seed `0x1337C0DE`, 10 players, and 50 mobs.
+  - Step 1,000 ticks, capturing snapshots at the exact golden snapshot ticks (0, 100, 200, ..., 1000 and 990–1000).
+  - Assert coordinate, velocity, health, and liveness parity with tolerance $\epsilon \le 0.05$.
+- **Verify:** `cargo test --test trace_replay` passes with 100% parity.
 
-- Clear the bounded Gate 2 red window (~172 named geography orphans, §26).
-- Re-home the alias-sweep data onto new region ids.
-- Decide road ink over reported ground; author or record-why-not network/betweenness/
-  adjacency relations (§23 follow-up).
-- Re-derive the rename+geoId alias fixture lost in Task 11's cutover (§26 erratum 8).
-- Judge the named pin deviations if prose claims need revoicing.
+## Task 4: High-Density Entity Scale Benchmark (10,000–20,000 Entities)
+- **File:** `server-rs/benches/sim_scale.rs`
+- **Action:**
+  - Implement Criterion benchmark with 1,000, 10,000, and 20,000 entities.
+  - Profile tick latency p50, p95, p99 across spatial queries, AI separation, and physics steps.
+- **Verify:** `cargo bench` demonstrates p95 $\le 1.0\text{ ms}$ at 10,000 entities and $< 2.5\text{ ms}$ at 20,000 entities.
 
-## Non-negotiables (same as Plans A-D)
-
-- The redraw commit may not contain a hand edit — adjust the premise or seed and regenerate.
-- R12 re-baseline order runs against a lock that has already moved once, by design.
-- Every phase ends with the quality gate: implement -> verify -> adversarial review ->
-  refactor -> re-verify. Mutation-test every gate rule.
-- Zero runtime emitter drift outside declared surfaces; mapDimensions jest pin green
-  on EVERY commit.
+## Task 5: Gate 1 Integration, Documentation & Quality Gates
+- **Action:**
+  - Ensure `scripts/precheck.sh` runs `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, and `cargo test` in `server-rs`.
+  - Update `README.md` with the Rust simulation core architecture, benchmarks, and cargo commands.
+  - Run `./scripts/precheck.sh --no-install`.
+- **Verify:** Gate 1 PASS.
