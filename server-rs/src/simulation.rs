@@ -9,8 +9,10 @@ use crate::ecs::components::{
 use crate::physics::world::PhysicsWorld;
 use crate::spatial::grid::SpatialGrid;
 use crate::systems::{
-    bot_steering_system, combat_system, physics_step_system, separation_system,
-    spatial_grid_rebuild_system, ArenaBounds,
+    bot_steering_system, combat_system, cooldown_tick_system, physics_step_system,
+    player_input_system, projectile_collision_system, projectile_kinematics_system,
+    separation_system, skill_execution_system, spatial_grid_rebuild_system,
+    status_effect_tick_system, ArenaBounds,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -102,9 +104,15 @@ impl AtlasSimulation {
         let mut schedule = Schedule::default();
         schedule.add_systems(
             (
+                cooldown_tick_system,
+                status_effect_tick_system,
+                player_input_system,
+                skill_execution_system,
                 bot_steering_system,
                 spatial_grid_rebuild_system,
                 separation_system,
+                projectile_kinematics_system,
+                projectile_collision_system,
                 physics_step_system,
                 combat_system,
             )

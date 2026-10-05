@@ -46,6 +46,10 @@ impl SimClock {
     pub fn delta_seconds(&self) -> f32 {
         (self.tick_step_ms as f32) / 1000.0
     }
+
+    pub fn current_time_seconds(&self) -> f32 {
+        (self.elapsed_ms as f32) / 1000.0
+    }
 }
 
 #[cfg(test)]
