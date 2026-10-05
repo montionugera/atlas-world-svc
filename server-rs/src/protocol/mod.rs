@@ -145,6 +145,38 @@ pub fn serialize_snapshot(
     builder.serialize_snapshot(tick, time_ms, entities, removed)
 }
 
+/// Deserializes a client input payload received over WebSocket.
+pub fn deserialize_client_input(
+    bytes: &[u8],
+) -> Result<ClientInput<'_>, flatbuffers::InvalidFlatbuffer> {
+    flatbuffers::root::<ClientInput>(bytes)
+}
+
+/// Helper to serialize a client input for testing and clients.
+pub fn serialize_client_input(
+    client_tick: u32,
+    move_x: f32,
+    move_y: f32,
+    attack: bool,
+    skill_slot: u8,
+    target_id: u32,
+) -> Vec<u8> {
+    let mut fbb = flatbuffers::FlatBufferBuilder::new();
+    let offset = ClientInput::create(
+        &mut fbb,
+        &ClientInputArgs {
+            client_tick,
+            move_x,
+            move_y,
+            attack,
+            skill_slot,
+            target_id,
+        },
+    );
+    fbb.finish(offset, None);
+    fbb.finished_data().to_vec()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -241,5 +273,17 @@ mod tests {
         assert_eq!(snapshot.server_time_ms(), 1000);
         assert!(snapshot.entities().is_none());
         assert_eq!(snapshot.removed_ids().unwrap().get(0), 99);
+    }
+
+    #[test]
+    fn test_client_input_serialization_roundtrip() {
+        let bytes = serialize_client_input(42, 0.707, -0.707, true, 2, 909);
+        let input = deserialize_client_input(&bytes).expect("valid client input");
+        assert_eq!(input.client_tick(), 42);
+        assert!((input.move_x() - 0.707).abs() < 1e-4);
+        assert!((input.move_y() - (-0.707)).abs() < 1e-4);
+        assert!(input.attack());
+        assert_eq!(input.skill_slot(), 2);
+        assert_eq!(input.target_id(), 909);
     }
 }
