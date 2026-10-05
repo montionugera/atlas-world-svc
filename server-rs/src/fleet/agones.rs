@@ -262,9 +262,17 @@ pub struct HeartbeatTask {
 
 impl HeartbeatTask {
     pub fn start<T: FleetLifecycle + 'static>(client: Arc<T>, interval_secs: u64) -> Self {
+        Self::start_duration(client, Duration::from_secs(interval_secs))
+    }
+
+    pub fn start_millis<T: FleetLifecycle + 'static>(client: Arc<T>, interval_ms: u64) -> Self {
+        Self::start_duration(client, Duration::from_millis(interval_ms))
+    }
+
+    pub fn start_duration<T: FleetLifecycle + 'static>(client: Arc<T>, duration: Duration) -> Self {
         let (stop_tx, mut stop_rx) = watch::channel(false);
         let handle = tokio::spawn(async move {
-            let mut interval = tokio::time::interval(Duration::from_secs(interval_secs));
+            let mut interval = tokio::time::interval(duration);
             interval.tick().await; // first tick returns immediately
             loop {
                 tokio::select! {
