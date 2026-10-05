@@ -625,5 +625,14 @@
     "release_version": "1.10",
     "claimed_at": "2026-09-14T15:03:02.881964+00:00",
     "shipped_at": "2026-09-14T19:48:45.600746+00:00"
+  },
+  {
+    "id": "F-054",
+    "title": "AI separation and targeting query the existing spatial grid",
+    "from_idea": "I-124",
+    "created_at": "2026-10-05T08:12:26.774517+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
