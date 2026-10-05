@@ -91,6 +91,9 @@ deps_install() {
   if [ -f "$REPO_ROOT/client/react-client/package.json" ]; then
     (cd "$REPO_ROOT/client/react-client" && npm ci) || return 1
   fi
+  if [ -f "$REPO_ROOT/scripts/package.json" ]; then
+    (cd "$REPO_ROOT/scripts" && npm ci) || return 1
+  fi
 }
 
 # Must run before any typecheck; see the header note.
@@ -100,7 +103,19 @@ contracts_tests() { (cd "$REPO_ROOT/contracts" && npx jest); }
 # The check jest will NOT do for you. Covers src/tests/** too.
 server_typecheck() { (cd "$REPO_ROOT/colyseus-server" && npx tsc --noEmit); }
 server_tests()     { (cd "$REPO_ROOT/colyseus-server" && npm test); }
+server_coverage()  { (cd "$REPO_ROOT/colyseus-server" && npm run test:coverage:gate); }
+server_e2e()       { (cd "$REPO_ROOT/colyseus-server" && npm run test:e2e); }
 server_format()    { (cd "$REPO_ROOT/colyseus-server" && npm run format:check); }
+
+# Rust server-rs quality gate (fmt, clippy, unit tests)
+rust_gates() {
+  if [ ! -d "$REPO_ROOT/server-rs" ]; then
+    echo "no server-rs on this branch — skipping"
+    return 0
+  fi
+  echo "🦀 Checking Rust server-rs formatting, lints, and tests..."
+  (cd "$REPO_ROOT/server-rs" && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test)
+}
 
 # nakama is bundled into the Nakama runtime; a type error here breaks InitModule.
 nakama_typecheck() { (cd "$REPO_ROOT/nakama" && npx tsc --noEmit); }
@@ -186,7 +201,10 @@ run_section "contracts: tsc build"          contracts_build
 run_section "contracts: jest suite"         contracts_tests
 run_section "server: tsc --noEmit"          server_typecheck
 run_section "server: jest suite"            server_tests
+run_section "server: coverage gate"         server_coverage
+run_section "server: e2e simulation suite"  server_e2e
 run_section "server: prettier format"       server_format
+run_section "server-rs: cargo clippy & test" rust_gates
 run_section "nakama: tsc --noEmit"          nakama_typecheck
 run_section "nakama: jest suite"            nakama_tests
 run_section "client: react-client suite"    client_tests

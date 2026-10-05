@@ -129,32 +129,66 @@ export class AIModule {
     // 1.5x was too weak when multiple mobs cluster — 4x deflects without killing chase intent.
     const separationWeightBase = agent.maxMoveSpeed * 4.0
 
-    for (const { agent: other } of this.agents.values()) {
-      if (!other.isAlive || other.id === agent.id) continue
+    // Maximum possible separation radius across all entities (~25-35 units)
+    const maxQueryRadius = (agent.radius || 4) + 15 + 15
+    const nearby = this.worldInterface.querySpatialRadius
+      ? this.worldInterface.querySpatialRadius(agent.x, agent.y, maxQueryRadius)
+      : null
 
-      // Only separate agents on the same team (optional, but good for reducing friendly clustering)
-      // or optionally, all agents pushing each other
-      if (agent.teamId && other.teamId && agent.teamId !== other.teamId) continue
+    if (nearby) {
+      for (const hit of nearby) {
+        if (hit.type !== 'mob' && hit.type !== 'npc') continue
+        const agentEntry = this.agents.get(hit.id)
+        if (!agentEntry) continue
+        const other = agentEntry.agent
+        if (!other.isAlive || other.id === agent.id) continue
 
-      const dx = agent.x - other.x
-      const dy = agent.y - other.y
-      const distanceSq = dx * dx + dy * dy
+        // Only separate agents on the same team (optional, but good for reducing friendly clustering)
+        // or optionally, all agents pushing each other
+        if (agent.teamId && other.teamId && agent.teamId !== other.teamId) continue
 
-      // Separation must start BEFORE physical overlap (padding > collision gap).
-      // Padding = 15 gives mobs time to steer apart before Planck's restitution launches them.
-      const separationRadius = (agent.radius || 4) + (other.radius || 4) + 15
+        const dx = agent.x - other.x
+        const dy = agent.y - other.y
+        const distanceSq = dx * dx + dy * dy
 
-      if (distanceSq > 0 && distanceSq < separationRadius * separationRadius) {
-        const distance = Math.max(Math.sqrt(distanceSq), minSeparationRadius)
+        // Separation must start BEFORE physical overlap (padding > collision gap).
+        // Padding = 15 gives mobs time to steer apart before Planck's restitution launches them.
+        const separationRadius = (agent.radius || 4) + (other.radius || 4) + 15
 
-        // Repulsion is stronger the closer they are
-        // We scale the strength additionally by how much they are overlapping into their separation threshold
-        const strength = separationWeightBase * (1 - distance / separationRadius)
+        if (distanceSq > 0 && distanceSq < separationRadius * separationRadius) {
+          const distance = Math.max(Math.sqrt(distanceSq), minSeparationRadius)
 
-        // Normalize the direction vector and scale by strength
-        sepX += (dx / distance) * strength
-        sepY += (dy / distance) * strength
-        count++
+          // Repulsion is stronger the closer they are
+          // We scale the strength additionally by how much they are overlapping into their separation threshold
+          const strength = separationWeightBase * (1 - distance / separationRadius)
+
+          // Normalize the direction vector and scale by strength
+          sepX += (dx / distance) * strength
+          sepY += (dy / distance) * strength
+          count++
+        }
+      }
+    } else {
+      for (const { agent: other } of this.agents.values()) {
+        if (!other.isAlive || other.id === agent.id) continue
+
+        if (agent.teamId && other.teamId && agent.teamId !== other.teamId) continue
+
+        const dx = agent.x - other.x
+        const dy = agent.y - other.y
+        const distanceSq = dx * dx + dy * dy
+
+        const separationRadius = (agent.radius || 4) + (other.radius || 4) + 15
+
+        if (distanceSq > 0 && distanceSq < separationRadius * separationRadius) {
+          const distance = Math.max(Math.sqrt(distanceSq), minSeparationRadius)
+
+          const strength = separationWeightBase * (1 - distance / separationRadius)
+
+          sepX += (dx / distance) * strength
+          sepY += (dy / distance) * strength
+          count++
+        }
       }
     }
 

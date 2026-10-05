@@ -7,7 +7,7 @@
 // lockExtraPaths. Re-deriving from those means a new fabric family or mirror
 // only needs to be taught to ITS OWN producer; this file never grows a
 // parallel list that can drift from it.
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, copyFileSync, rmSync, lstatSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, copyFileSync, rmSync, unlinkSync, lstatSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { createHash } from "node:crypto";
 import { REPLACED_FAMILIES, listFiles } from "../../mapforge/promote-world.mjs";
@@ -197,7 +197,7 @@ export function createSnapshots({ repoRoot, dir, keep = 3 }) {
         // link itself regardless of whether its target exists, so both a
         // live and a dangling symlink at dst get unlinked before the copy.
         const dstLink = lstatSync(dst, { throwIfNoEntry: false });
-        if (dstLink?.isSymbolicLink()) rmSync(dst);
+        if (dstLink?.isSymbolicLink()) unlinkSync(dst);
         copyFileSync(src, dst);
         restored++;
       }
