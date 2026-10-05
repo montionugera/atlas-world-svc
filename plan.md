@@ -1,36 +1,43 @@
-# F-051 — World Fill Plan E: Redraw and Prose
+# Implementation Plan: F-054 AI separation and targeting query the existing spatial grid
 
-**This file is a pointer. The real plan is elsewhere. Do not implement from this file.**
+**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-054-ai-separation-and-targeting-query-the-ex`  
+**Branch:** `feat/F-054`  
+**Goal:** Eliminate the $O(N^2)$ all-pairs loops in mob AI by pointing separation and targeting at the existing `SpatialHash`, bringing 300 players $\times$ 1,000 mobs p95 under the 50 ms budget.
 
-| What | Where |
-| --- | --- |
-| **The plan you implement** | `docs/superpowers/plans/2026-08-16-world-fill-e-redraw-and-prose.md` (13 tasks) |
-| **Read BEFORE any task** | `docs/superpowers/plans/world-fill-STATE.md` — §1–§27: measured baselines, shipped divergences, and every obligation Plan E owns |
-| **Approved design** | `docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md` |
-| Backlog spec stub | `.claude/refined_backlog/F-051-world-fill-plan-e-redraw-and-prose/spec.md` |
+---
 
-## The one-line goal
+## Task 1: Spatial Grid Management in AIWorldInterface
+- **File:** `colyseus-server/src/ai/AIWorldInterface.ts`
+- **Action:**
+  - Import `SpatialHash` and `SpatialEntity` from `../interest/SpatialHash`.
+  - Maintain a `SpatialHash<AISpatialEntity>` with `cellSize = 50`.
+  - Add `rebuildSpatialGrid(tick: number)` method that clears and indexes all alive players, npcs, and mobs once per tick. Guard with `lastRebuildTick`.
+  - Expose helper query methods: `queryRadius(x, y, radius)`.
+- **Verify:** TypeScript compiles cleanly: `cd colyseus-server && npm run typecheck`.
 
-Make the committed chart, spine, sheets and prose describe the world that actually
-exists: unfreeze deepest-first, THE REDRAW (one commit, one revert), refreeze root-first,
-the 13 continent sheets, G-CITE + the citation sweep, survey as a first-class field,
-the canon-leg pre-flight on pins, world-digest, Z2 against the fabric, and the zone
-allocation table solved before writing a word.
+## Task 2: Refactor calculateSeparation to Use Spatial Grid
+- **File:** `colyseus-server/src/ai/AIModule.ts`
+- **Action:**
+  - In `calculateSeparation(agent: IAgent)`, replace the `for (const { agent: other } of this.agents.values())` loop with a localized query against the spatial grid within `maxSeparationRadius` (~25–30 units).
+  - Preserve identical separation force math, normalization, and team filtering.
+- **Verify:** `cd colyseus-server && npx jest src/tests/boundary-avoidance.test.ts`.
 
-## Obligations inherited from Plans A–D (STATE — do not re-derive)
+## Task 3: Refactor pickTarget and getNearestMob to Use Spatial Grid
+- **File:** `colyseus-server/src/ai/AIWorldInterface.ts`
+- **Action:**
+  - In `pickTarget(agent, position, myTeamId, perceptionRange)`, query `spatialHash.queryRadius` using `perceptionRange` (default 50 or agent's configured range).
+  - In `getNearestMob(position, excludeId, searchRadius)`, query `spatialHash.queryRadius` using `searchRadius` (~100 units).
+  - Invariant preservation: if the threat table has an active taunt or threat targets, guarantee those targets are included in candidate list even if beyond base perception range.
+- **Verify:** `cd colyseus-server && npx jest src/tests/ai-mob-decision.test.ts src/tests/ai-npc-targeting.test.ts`.
 
-- Clear the bounded Gate 2 red window (~172 named geography orphans, §26).
-- Re-home the alias-sweep data onto new region ids.
-- Decide road ink over reported ground; author or record-why-not network/betweenness/
-  adjacency relations (§23 follow-up).
-- Re-derive the rename+geoId alias fixture lost in Task 11's cutover (§26 erratum 8).
-- Judge the named pin deviations if prose claims need revoicing.
+## Task 4: Unit Test Suite Verification
+- **Action:** Run all existing AI tests to prove zero behavioral regressions.
+- **Verify:** `cd colyseus-server && npx jest src/tests/ai-*.test.ts src/tests/bot-mode.test.ts`.
 
-## Non-negotiables (same as Plans A-D)
+## Task 5: Load Harness Capacity Benchmark
+- **Action:** Run `roomLoad.harness.ts` to verify capacity targets.
+- **Verify:** `cd colyseus-server && npm run load 2>&1 | grep -E "^(OK|OVER|Capacity)"` confirms 300 players $\times$ 1,000 mobs passes with p95 $< 50\text{ ms}$.
 
-- The redraw commit may not contain a hand edit — adjust the premise or seed and regenerate.
-- R12 re-baseline order runs against a lock that has already moved once, by design.
-- Every phase ends with the quality gate: implement -> verify -> adversarial review ->
-  refactor -> re-verify. Mutation-test every gate rule.
-- Zero runtime emitter drift outside declared surfaces; mapDimensions jest pin green
-  on EVERY commit.
+## Task 6: Linter & Precheck
+- **Action:** Run formatting and precheck.
+- **Verify:** `cd colyseus-server && npm run lint && npm run typecheck`.
