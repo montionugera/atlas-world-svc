@@ -10,6 +10,7 @@ pub mod physics;
 pub mod protocol;
 pub mod simulation;
 pub mod spatial;
+pub mod storage;
 pub mod systems;
 
 pub use ai::{ThreatEntry, ThreatTable, DEFAULT_THREAT_HALF_LIFE};
@@ -19,11 +20,16 @@ pub use combat::{
     SkillDefinition, SkillEffect, ALL_ELEMENTS, GLOBAL_MAGIC_CD_KEY,
 };
 pub use content::{
-    derive_mob_stats, BestiaryCatalog, BestiaryEntry, DerivedMobStats, MobTier, BASE_MOB_ATK,
-    BESTIARY_JSON,
+    derive_mob_stats, derived_stats, weapon_offence, AtkStat, BestiaryCatalog, BestiaryEntry,
+    DerivedMobStats, DerivedStats, MobTier, WeaponOffence, BASE_ATK, BASE_DEF, BASE_HP,
+    BASE_MOB_ATK, BESTIARY_JSON, GEAR_REFERENCE, GROWTH, STAT_COEF, STAT_MAX, UNARMED_GEAR,
 };
 pub use fleet::{AgonesClient, FleetLifecycle, FleetState, HeartbeatTask, MockFleetClient};
 pub use net::{ClientPacket, WsServer};
+pub use storage::{
+    EquippedItemIds, LoadoutSnapshot, MatchEvent, MatchEventBatch, MatchEventQueue,
+    MockNakamaClient, NakamaClient, NakamaStorage, PrimaryStats, ProfileDoc,
+};
 
 pub use core::{Lcg, Mulberry32, SimClock};
 pub use ecs::{

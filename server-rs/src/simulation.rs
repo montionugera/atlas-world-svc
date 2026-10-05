@@ -1,7 +1,7 @@
 use bevy_ecs::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::content::BestiaryCatalog;
+use crate::content::{derived_stats, BestiaryCatalog};
 use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
@@ -10,6 +10,7 @@ use crate::ecs::components::{
 };
 use crate::physics::world::PhysicsWorld;
 use crate::spatial::grid::SpatialGrid;
+use crate::storage::{MatchEvent, MatchEventQueue, PrimaryStats};
 use crate::systems::{
     bot_steering_system, combat_system, cooldown_tick_system, mob_ai_system, mob_lifecycle_system,
     physics_step_system, player_input_system, projectile_collision_system,
@@ -103,6 +104,7 @@ impl AtlasSimulation {
         world.insert_resource(physics_world);
         world.insert_resource(arena_bounds);
         world.insert_resource(BestiaryCatalog::default());
+        world.insert_resource(MatchEventQueue::default());
 
         let mut schedule = Schedule::default();
         schedule.add_systems(
@@ -221,31 +223,66 @@ impl AtlasSimulation {
         }
     }
 
-    /// Spawns a human-controlled player avatar in the ECS world.
-    pub fn spawn_player_avatar(&mut self, session_id: &str, x: f32, y: f32) -> Entity {
+    /// Spawns a human-controlled player avatar in the ECS world with persistent loadout stats.
+    pub fn spawn_player_avatar_with_loadout(
+        &mut self,
+        session_id: &str,
+        x: f32,
+        y: f32,
+        loadout: Option<&crate::storage::LoadoutSnapshot>,
+    ) -> Entity {
+        let (level, allocated, weapon_id) = match loadout {
+            Some(l) => (
+                l.profile.level,
+                l.profile.allocated,
+                l.equipped_item_ids.weapon.as_deref(),
+            ),
+            None => (1, PrimaryStats::default(), Some("basic_sword")),
+        };
+
+        let derived = derived_stats(level, &allocated, weapon_id);
+
         self.world
             .spawn((
                 EntityId(session_id.to_string()),
                 Position::new(x, y),
                 Velocity::zero(),
-                Health::new(100.0),
+                Health::new(derived.max_health),
                 PlayerTag,
-                PlayerAvatar::new(session_id, 150.0),
+                PlayerAvatar::new(session_id, derived.max_move_speed * 10.0),
                 PlayerInputState::default(),
                 CombatStats {
-                    attack_power: 15.0,
-                    defense: 2.0,
+                    attack_power: derived.p_atk.max(derived.m_atk).max(1.0),
+                    defense: derived.p_def,
                     attack_range: 40.0,
                     attack_cooldown: 0.8,
                     cooldown_timer: 0.0,
                     is_player: true,
                 },
-                ElementalAttributes::default(),
+                ElementalAttributes {
+                    element: crate::combat::elements::Element::Neutral,
+                    p_def: derived.p_def,
+                    m_def: derived.m_def,
+                    armor: 0.0,
+                },
                 CooldownTracker::default(),
                 CastingState::default(),
                 StatusEffects::default(),
             ))
             .id()
+    }
+
+    /// Spawns a human-controlled player avatar in the ECS world with default level 1 loadout.
+    pub fn spawn_player_avatar(&mut self, session_id: &str, x: f32, y: f32) -> Entity {
+        self.spawn_player_avatar_with_loadout(session_id, x, y, None)
+    }
+
+    /// Drains queued match events from the ECS simulation.
+    pub fn drain_match_events(&mut self) -> Vec<(String, MatchEvent)> {
+        self.world
+            .get_resource_mut::<MatchEventQueue>()
+            .map(|mut q| q.drain())
+            .unwrap_or_default()
     }
 
     /// Removes a player avatar from the ECS world when disconnected.
@@ -441,15 +478,15 @@ mod tests {
         let client_input = deserialize_client_input(&input_bytes).unwrap();
         sim.apply_player_input(session_id, &client_input);
 
-        // Step simulation (dt = 0.05s, speed = 150.0 => dx = 7.5)
+        // Step simulation (dt = 0.05s, speed = 202.0 => dx = 10.1)
         sim.step();
 
         let updated_pos = sim.world.get::<Position>(avatar_entity).cloned().unwrap();
         let updated_vel = sim.world.get::<Velocity>(avatar_entity).cloned().unwrap();
 
-        assert!((updated_vel.vx - 150.0).abs() < 1.0);
+        assert!((updated_vel.vx - 202.0).abs() < 2.0);
         assert!((updated_vel.vy - 0.0).abs() < 0.1);
-        assert!((updated_pos.x - 207.5).abs() < 0.1);
+        assert!((updated_pos.x - 210.1).abs() < 0.2);
         assert!((updated_pos.y - 200.0).abs() < 0.1);
 
         // Test remove avatar

@@ -1,23 +1,35 @@
 use crate::core::clock::SimClock;
-use crate::ecs::components::{CombatStats, CooldownTracker, Health, Position, StatusEffects};
+use crate::ecs::components::{
+    CombatStats, CooldownTracker, EntityId, Health, MobSpawnAnchor, PlayerAvatar, Position,
+    StatusEffects,
+};
 use crate::spatial::grid::SpatialGrid;
+use crate::storage::{MatchEvent, MatchEventQueue};
 use bevy_ecs::prelude::*;
 
 #[allow(clippy::type_complexity)]
 pub fn combat_system(
     clock: Res<SimClock>,
     grid: Res<SpatialGrid>,
+    mut event_queue: Option<ResMut<MatchEventQueue>>,
     mut params: ParamSet<(
-        Query<(Entity, &Position, &mut CombatStats, &Health)>,
-        Query<&mut Health>,
+        Query<(
+            Entity,
+            &Position,
+            &mut CombatStats,
+            &Health,
+            Option<&EntityId>,
+            Option<&PlayerAvatar>,
+        )>,
+        Query<(&mut Health, Option<&EntityId>, Option<&MobSpawnAnchor>)>,
     )>,
 ) {
     let dt = clock.delta_seconds();
-    let mut attacks: Vec<(Entity, Entity, f32)> = Vec::new();
+    let mut attacks: Vec<(Option<String>, Entity, f32)> = Vec::new();
 
     {
         let mut attackers = params.p0();
-        for (entity, pos, mut stats, health) in &mut attackers {
+        for (entity, pos, mut stats, health, entity_id, avatar) in &mut attackers {
             if !health.is_alive {
                 continue;
             }
@@ -63,16 +75,43 @@ pub fn combat_system(
 
             if let Some(target_entity) = nearest_target {
                 stats.cooldown_timer = stats.attack_cooldown;
-                attacks.push((entity, target_entity, stats.attack_power.max(1.0)));
+                let player_user_id = if is_player {
+                    entity_id
+                        .map(|e| e.0.clone())
+                        .or_else(|| avatar.map(|a| a.session_id.clone()))
+                } else {
+                    None
+                };
+                attacks.push((player_user_id, target_entity, stats.attack_power.max(1.0)));
             }
         }
     }
 
     if !attacks.is_empty() {
         let mut health_query = params.p1();
-        for (_attacker, target, damage) in attacks {
-            if let Ok(mut target_health) = health_query.get_mut(target) {
+        for (attacker_user_id, target, damage) in attacks {
+            if let Ok((mut target_health, target_id, target_anchor)) = health_query.get_mut(target)
+            {
+                let was_alive = target_health.is_alive && target_health.current > 0.0;
                 target_health.take_damage(damage);
+                if was_alive && (!target_health.is_alive || target_health.current <= 0.0) {
+                    if let Some(user_id) = attacker_user_id {
+                        if let Some(ref mut queue) = event_queue {
+                            let mob_id = target_id
+                                .map(|id| id.0.clone())
+                                .or_else(|| target_anchor.map(|a| a.mob_id.clone()))
+                                .unwrap_or_else(|| "mob".to_string());
+                            queue.push(
+                                user_id,
+                                MatchEvent {
+                                    event_type: "mob_kill".to_string(),
+                                    target_id: mob_id.clone(),
+                                    payload: serde_json::json!({ "mob_id": mob_id }),
+                                },
+                            );
+                        }
+                    }
+                }
             }
         }
     }
