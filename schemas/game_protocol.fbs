@@ -1,0 +1,42 @@
+namespace Atlas.Protocol;
+
+enum EntityType : byte {
+    Player = 0,
+    Mob = 1,
+    Npc = 2,
+    Projectile = 3
+}
+
+struct Vec2 {
+    x: float;
+    y: float;
+}
+
+table EntityDelta {
+    id: uint32;
+    entity_type: EntityType;
+    pos: Vec2;
+    vel: Vec2;
+    health: float;
+    max_health: float;
+    state_flags: uint16;
+    target_id: uint32;
+}
+
+table WorldSnapshot {
+    tick: uint32;
+    server_time_ms: uint64;
+    entities: [EntityDelta];
+    removed_ids: [uint32];
+}
+
+table ClientInput {
+    client_tick: uint32;
+    move_x: float;
+    move_y: float;
+    attack: bool;
+    skill_slot: ubyte;
+    target_id: uint32;
+}
+
+root_type WorldSnapshot;

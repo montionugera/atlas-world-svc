@@ -4,3 +4,4 @@ export * from "./meta/schemas";
 export * from "./meta/catalogs";
 export * from "./meta/weaponStats";
 export * from "./meta/derivedStats";
+export * from "./protocol";

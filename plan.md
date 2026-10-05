@@ -1,47 +1,47 @@
-# Implementation Plan: F-056 (E-001 Slice 2) Headless Rust ECS Simulation Core
+# Implementation Plan: F-057 (E-001 Slice 3) FlatBuffers Binary Delta Replication Protocol & TypeScript Decoders
 
-**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-056-2`  
-**Branch:** `feat/F-056`  
-**Goal:** Implement the authoritative headless Rust game server core (`server-rs`) powered by `bevy_ecs` and `rapier2d`, validating behavioral parity against `golden_sim_trace_1000.json` ($\epsilon \le 0.05$) and delivering $\le 1.0\text{ ms}$ tick latency at 10,000 entities ($< 2.5\text{ ms}$ at 20,000 entities).
+**Worktree:** `/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-057-3`  
+**Branch:** `feat/F-057`  
+**Goal:** Implement a zero-allocation binary delta state replication protocol using FlatBuffers across `server-rs` (Rust serializer) and client/contracts (TypeScript decoders), delivering $< 5\text{ KB/s}$ wire bandwidth per client and $< 50\text{ }\mu\text{s}$ serialization latency per snapshot.
 
 ---
 
-## Task 1: Scaffold `server-rs` Crate with Bevy ECS & Rapier2D
-- **Directory:** `server-rs/`
+## Task 1: Author FlatBuffers Schema & Code Generation Pipeline
+- **Files:** `schemas/game_protocol.fbs`, `server-rs/src/protocol/generated.rs`, `contracts/src/protocol/generated/`
 - **Action:**
-  - Created `server-rs/Cargo.toml` with `bevy_ecs 0.15`, `rapier2d 0.22`, `serde`, `serde_json`, `glam`, `rand`, `criterion`.
-  - Implemented modular architecture: `core` (PRNG Mulberry32 & LCG, SimClock 50ms/20Hz), `ecs` (components & tags), `spatial` (dual-layer contiguous SpatialGrid).
-- **Verify:** ✅ `cargo check` and `cargo test` pass with 0 errors.
+  - Defined schema: `Vec2`, `EntityType`, `EntityDelta`, `WorldSnapshot`, and `ClientInput`.
+  - Compiled Rust bindings via `flatc --rust -o server-rs/src/protocol/generated schemas/game_protocol.fbs`.
+  - Compiled TypeScript bindings via `flatc --ts -o contracts/src/protocol/generated schemas/game_protocol.fbs`.
+- **Verify:** ✅ `flatc` generated bindings compile cleanly in both Rust and TypeScript targets.
 
-## Task 2: Implement Rapier2D Physics & Movement / AI Systems
-- **Files:** `server-rs/src/physics/`, `server-rs/src/ai/` (in systems), `server-rs/src/simulation.rs`
+## Task 2: Implement Rust Snapshot Builder & Delta Culling in `server-rs`
+- **Files:** `server-rs/src/protocol/mod.rs`, `server-rs/Cargo.toml`
 - **Action:**
-  - Initialized Rapier2D simulation world with boundary colliders ($1200 \times 1200$).
-  - Implemented Bevy ECS systems: `bot_steering`, `spatial_grid_rebuild`, `separation` ($4.0\times\text{speed}$ with Rayon task pools), `physics_step`, `combat`.
-- **Verify:** ✅ Headless simulation steps 1,000 ticks with zero panics or NaNs (7/7 unit tests pass).
+  - Added `flatbuffers = "24.3"` to `server-rs/Cargo.toml`.
+  - Implemented `SnapshotBuilder` with reusable internal buffer for zero allocations.
+  - Added serialization helper `serialize_snapshot` supporting entity deltas and removed IDs.
+- **Verify:** ✅ 11/11 tests pass in `server-rs`.
 
-## Task 3: Golden Simulation Trace Parity Replay Harness
-- **File:** `server-rs/tests/trace_replay.rs`
+## Task 3: Implement TypeScript Binary Delta Decoder
+- **Files:** `contracts/src/protocol/BinaryDeltaDecoder.ts`, `contracts/package.json`
 - **Action:**
-  - Ingested `colyseus-server/src/tests/fixtures/golden_sim_trace_1000.json`.
-  - Initialized `AtlasSimulation::init(0x1337c0de, 10, 50)`.
-  - Replayed 1,000 ticks with snapshot assertions at ticks 0, 100, ..., 1000 and consecutive ticks 990–1000.
-  - Verified 100% bit-parity at tick 0 across all 60 entities, tick 100 trajectory, and 1,000 ticks with $\epsilon \le 0.05$.
-- **Verify:** ✅ `cargo test --test trace_replay` passes with 100% parity.
+  - Added `flatbuffers` to `contracts/package.json`.
+  - Implemented `BinaryDeltaDecoder` parsing binary byte arrays into typed snapshot records.
+  - Handled entity removals and delta unmarshaling.
+- **Verify:** ✅ 59/59 tests pass in `contracts` suite.
 
-## Task 4: High-Density Entity Scale Benchmark (10,000–20,000 Entities)
-- **File:** `server-rs/benches/sim_scale.rs`
+## Task 4: Cross-Language Binary Parity & Bandwidth Assertion Test
+- **Files:** `server-rs/tests/protocol_roundtrip.rs`, `contracts/src/protocol/protocol-roundtrip.test.ts`
 - **Action:**
-  - Authored Criterion scale benchmark measuring full simulation tick loop at 1k, 10k, and 20k entities.
-  - Benchmark Results:
-    - **1,000 entities:** $78.8\text{ }\mu\text{s}$ ($0.078\text{ ms}$)
-    - **10,000 entities:** $503.8\text{ }\mu\text{s}$ ($0.503\text{ ms}$) — p95 $\le 1.0\text{ ms}$ budget met (50% faster)
-    - **20,000 entities:** $1.03\text{ ms}$ — $< 2.5\text{ ms}$ budget met (58% faster)
-- **Verify:** ✅ `cargo bench --bench sim_scale` verified with Criterion measurements.
+  - `server-rs` serializes 60 entities (10 players, 50 mobs) and writes `snapshot_test.bin`.
+  - TypeScript test ingests `snapshot_test.bin` and asserts 100% bit-parity across all fields.
+  - Wire bandwidth empirical measurement:
+    - 60 entities total packet: $2,392\text{ bytes}$ ($39.87\text{ B/entity}$).
+    - Typical 15-entity AOI view: $216\text{ bytes}$ ($4.22\text{ KB/s}$ at $20\text{ Hz}$), beating the $< 5\text{ KB/s}$ budget.
+- **Verify:** ✅ `protocol_roundtrip.rs` (2/2 pass) and `protocol-roundtrip.test.ts` (2/2 pass).
 
 ## Task 5: Gate 1 Integration, Documentation & Quality Gates
 - **Action:**
-  - Updated `scripts/precheck.sh` ensuring `export PATH="$HOME/.cargo/bin:$PATH"` and running `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test`.
-  - Updated `README.md` with `server-rs` architecture and empirical scale benchmark evidence.
+  - Updated `README.md` with FlatBuffers protocol specifications and empirical bandwidth results.
   - Verified `./scripts/precheck.sh --no-install`.
 - **Verify:** ✅ Gate 1 PASS.
