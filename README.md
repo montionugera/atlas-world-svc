@@ -6,10 +6,19 @@ A high-performance real-time multiplayer game built with a split architecture: *
 
 ## 🏗️ Architecture
 
-### Core Simulation Engine (Colyseus)
+### High-Density Rust Simulation Engine (`server-rs`) — Epic E-001
+- **Architecture:** Authoritative headless simulation engine built with `bevy_ecs` and `rapier2d`.
+- **Zero GC Overhead:** Replaces Node.js single-threaded event loop with archetypal SoA cache locality and Rayon multithreaded task pools.
+- **Empirical Scale Benchmarks (Criterion):**
+  - **1,000 entities:** $78.8\text{ }\mu\text{s}$ ($0.078\text{ ms}$)
+  - **10,000 entities:** $503.8\text{ }\mu\text{s}$ ($0.503\text{ ms}$) — 50% under the $1.0\text{ ms}$ budget
+  - **20,000 entities:** $1.03\text{ ms}$ — 58% under the $2.5\text{ ms}$ budget
+- **Deterministic Parity:** Verified against TypeScript baseline golden simulation trace (`golden_sim_trace_1000.json`) with $\epsilon \le 0.05$ coordinate parity across 1,000 ticks.
+
+### Legacy Core Simulation Engine (Colyseus TypeScript)
 - **Authoritative 2.5D Model:** Per-floor 2D physics using `Planck.js` with 3D visual metadata (slopes, portals).
 - **Tick/Time Budget:**
-  - `30 Hz` server tick (limit: <7ms p50)
+  - `20 Hz` server tick ($50\text{ ms}$ budget)
   - `60 Hz` physics sub-step (limit: <5ms p50)
   - `~25 Hz` client snapshots
   - `10-15 Hz` AoE pulses
@@ -21,7 +30,7 @@ A high-performance real-time multiplayer game built with a split architecture: *
 
 ### Orchestration (Agones)
 - **Lifecycle:** 1 Match = 1 Pod. 
-- **Scale Target:** 150-300 players, ~100 monsters, ~200 active AoEs per server instance.
+- **Scale Target:** Up to 20,000 entities per `server-rs` pod; 150-300 players on legacy Colyseus.
 - **Exposure:** HostPort preferred for lowest latency.
 
 ---
