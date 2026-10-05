@@ -4,7 +4,8 @@ use serde::{Deserialize, Serialize};
 use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
-    AiAgent, BotAgent, CombatStats, EntityId, Health, MobTag, PlayerTag, Position, Velocity,
+    AiAgent, BotAgent, CombatStats, EntityId, Health, MobTag, PlayerAvatar, PlayerInputState,
+    PlayerTag, Position, Velocity,
 };
 use crate::physics::world::PhysicsWorld;
 use crate::spatial::grid::SpatialGrid;
@@ -216,6 +217,86 @@ impl AtlasSimulation {
         }
     }
 
+    /// Spawns a human-controlled player avatar in the ECS world.
+    pub fn spawn_player_avatar(&mut self, session_id: &str, x: f32, y: f32) -> Entity {
+        self.world
+            .spawn((
+                EntityId(session_id.to_string()),
+                Position::new(x, y),
+                Velocity::zero(),
+                Health::new(100.0),
+                PlayerTag,
+                PlayerAvatar::new(session_id, 150.0),
+                PlayerInputState::default(),
+                CombatStats {
+                    attack_power: 15.0,
+                    defense: 2.0,
+                    attack_range: 40.0,
+                    attack_cooldown: 0.8,
+                    cooldown_timer: 0.0,
+                    is_player: true,
+                },
+            ))
+            .id()
+    }
+
+    /// Removes a player avatar from the ECS world when disconnected.
+    pub fn remove_player_avatar(&mut self, session_id: &str) -> bool {
+        let mut to_despawn = None;
+        let mut query = self.world.query::<(Entity, &EntityId, &PlayerAvatar)>();
+        for (entity, id, _avatar) in query.iter(&self.world) {
+            if id.0 == session_id {
+                to_despawn = Some(entity);
+                break;
+            }
+        }
+
+        if let Some(entity) = to_despawn {
+            self.world.despawn(entity);
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Applies client input state to the player avatar, auto-spawning if necessary.
+    pub fn apply_player_input(&mut self, session_id: &str, input: &crate::protocol::ClientInput) {
+        let mut found = false;
+        let mut query = self
+            .world
+            .query::<(&EntityId, &mut PlayerInputState, &mut CombatStats)>();
+        for (id, mut input_state, mut combat) in query.iter_mut(&mut self.world) {
+            if id.0 == session_id {
+                input_state.move_x = input.move_x();
+                input_state.move_y = input.move_y();
+                input_state.attack = input.attack();
+                input_state.skill_slot = input.skill_slot();
+                input_state.target_id = input.target_id();
+                input_state.client_tick = input.client_tick();
+
+                if input.attack() {
+                    combat.is_player = true;
+                }
+                found = true;
+                break;
+            }
+        }
+
+        if !found {
+            let center_x = self.arena_width / 2.0;
+            let center_y = self.arena_height / 2.0;
+            let entity = self.spawn_player_avatar(session_id, center_x, center_y);
+            if let Some(mut state) = self.world.get_mut::<PlayerInputState>(entity) {
+                state.move_x = input.move_x();
+                state.move_y = input.move_y();
+                state.attack = input.attack();
+                state.skill_slot = input.skill_slot();
+                state.target_id = input.target_id();
+                state.client_tick = input.client_tick();
+            }
+        }
+    }
+
     pub fn capture_snapshot(&mut self, tick: u32) -> TickTraceSnapshot {
         let round4 = |v: f32| (v * 10000.0).round() / 10000.0;
         let round2 = |v: f32| (v * 100.0).round() / 100.0;
@@ -333,5 +414,39 @@ mod tests {
             assert!(!e.vy.is_nan());
             assert!(!e.health.is_nan());
         }
+    }
+
+    #[test]
+    fn test_player_avatar_input_and_movement() {
+        use crate::protocol::{deserialize_client_input, serialize_client_input};
+
+        let mut sim = AtlasSimulation::new(0x1337c0de, 500.0, 500.0);
+        let session_id = "user-alice-123";
+        let avatar_entity = sim.spawn_player_avatar(session_id, 200.0, 200.0);
+
+        let initial_pos = sim.world.get::<Position>(avatar_entity).cloned().unwrap();
+        assert_eq!(initial_pos.x, 200.0);
+        assert_eq!(initial_pos.y, 200.0);
+
+        // Send movement input: move right (x=1.0, y=0.0)
+        let input_bytes = serialize_client_input(1, 1.0, 0.0, false, 0, 0);
+        let client_input = deserialize_client_input(&input_bytes).unwrap();
+        sim.apply_player_input(session_id, &client_input);
+
+        // Step simulation (dt = 0.05s, speed = 150.0 => dx = 7.5)
+        sim.step();
+
+        let updated_pos = sim.world.get::<Position>(avatar_entity).cloned().unwrap();
+        let updated_vel = sim.world.get::<Velocity>(avatar_entity).cloned().unwrap();
+
+        assert!((updated_vel.vx - 150.0).abs() < 1.0);
+        assert!((updated_vel.vy - 0.0).abs() < 0.1);
+        assert!((updated_pos.x - 207.5).abs() < 0.1);
+        assert!((updated_pos.y - 200.0).abs() < 0.1);
+
+        // Test remove avatar
+        let removed = sim.remove_player_avatar(session_id);
+        assert!(removed);
+        assert!(sim.world.get_entity(avatar_entity).is_err());
     }
 }

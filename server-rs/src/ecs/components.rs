@@ -65,6 +65,31 @@ pub struct EntityId(pub String);
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct PlayerTag;
 
+#[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PlayerAvatar {
+    pub session_id: String,
+    pub speed: f32,
+}
+
+impl PlayerAvatar {
+    pub fn new(session_id: impl Into<String>, speed: f32) -> Self {
+        Self {
+            session_id: session_id.into(),
+            speed,
+        }
+    }
+}
+
+#[derive(Component, Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
+pub struct PlayerInputState {
+    pub move_x: f32,
+    pub move_y: f32,
+    pub attack: bool,
+    pub skill_slot: u8,
+    pub target_id: u32,
+    pub client_tick: u32,
+}
+
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct MobTag;
 

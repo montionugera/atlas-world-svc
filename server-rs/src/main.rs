@@ -88,10 +88,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ticker.tick().await;
                 tick += 1;
 
-                // Drain inbound player inputs
+                // Drain inbound player inputs and apply to avatar entities
                 let inputs = ws_server.drain_inbound().await;
-                if !inputs.is_empty() {
-                    tracing::debug!("Processed {} inbound packets at tick {}", inputs.len(), tick);
+                for packet in inputs {
+                    if let Ok(client_input) =
+                        server_rs::protocol::deserialize_client_input(&packet.payload)
+                    {
+                        sim.apply_player_input(&packet.session_id, &client_input);
+                    }
                 }
 
                 // Step ECS simulation

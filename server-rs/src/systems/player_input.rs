@@ -1,10 +1,15 @@
 use crate::core::clock::SimClock;
-use crate::ecs::components::{CastingState, PlayerInputState, StatusEffects, Velocity};
+use crate::ecs::components::{
+    CastingState, PlayerAvatar, PlayerInputState, StatusEffects, Velocity,
+};
 use bevy_ecs::prelude::*;
 
+/// System that applies player movement inputs to velocities,
+/// respecting avatar speed, status effects (stun, freeze), and active casting.
 pub fn player_input_system(
     clock: Res<SimClock>,
     mut query: Query<(
+        Option<&PlayerAvatar>,
         &PlayerInputState,
         &mut Velocity,
         Option<&StatusEffects>,
@@ -13,7 +18,7 @@ pub fn player_input_system(
 ) {
     let current_time = clock.current_time_seconds();
 
-    for (input, mut vel, status_opt, casting_opt) in &mut query {
+    for (avatar_opt, input, mut vel, status_opt, casting_opt) in &mut query {
         // 1. Check StatusEffects: stun locks movement
         if let Some(status) = status_opt {
             if status.is_stunned() {
@@ -32,16 +37,16 @@ pub fn player_input_system(
             }
         }
 
-        // 3. Process movement input (respecting freeze speed multiplier if any)
+        // 3. Process movement input (respecting avatar speed and freeze multiplier)
+        let base_speed = avatar_opt.map_or(20.0, |a| a.speed);
         let speed_mult = status_opt.map_or(1.0, |s| s.speed_multiplier());
-        let base_speed = 20.0;
         let speed = base_speed * speed_mult;
 
         let len_sq = input.move_x * input.move_x + input.move_y * input.move_y;
-        if len_sq > 1e-4 {
-            let len = len_sq.sqrt();
-            vel.vx = (input.move_x / len) * speed;
-            vel.vy = (input.move_y / len) * speed;
+        if len_sq > 0.0001 {
+            let inv_len = 1.0 / len_sq.sqrt().max(1.0);
+            vel.vx = input.move_x * inv_len * speed;
+            vel.vy = input.move_y * inv_len * speed;
         } else {
             vel.vx = 0.0;
             vel.vy = 0.0;
@@ -52,6 +57,7 @@ pub fn player_input_system(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ecs::components::Position;
 
     #[test]
     fn test_normal_movement_input() {
@@ -69,6 +75,58 @@ mod tests {
         let vel = world.get::<Velocity>(entity).unwrap();
         assert_eq!(vel.vx, 20.0);
         assert_eq!(vel.vy, 0.0);
+    }
+
+    #[test]
+    fn test_player_input_system_updates_velocity_with_avatar() {
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50));
+        let entity = world
+            .spawn((
+                PlayerAvatar::new("p1", 100.0),
+                PlayerInputState {
+                    move_x: 1.0,
+                    move_y: 0.0,
+                    ..Default::default()
+                },
+                Position::new(0.0, 0.0),
+                Velocity::zero(),
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(player_input_system);
+        schedule.run(&mut world);
+
+        let vel = world.get::<Velocity>(entity).unwrap();
+        assert_eq!(vel.vx, 100.0);
+        assert_eq!(vel.vy, 0.0);
+    }
+
+    #[test]
+    fn test_player_input_system_normalizes_diagonal() {
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50));
+        let entity = world
+            .spawn((
+                PlayerAvatar::new("p1", 100.0),
+                PlayerInputState {
+                    move_x: 1.0,
+                    move_y: 1.0,
+                    ..Default::default()
+                },
+                Position::new(0.0, 0.0),
+                Velocity::zero(),
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(player_input_system);
+        schedule.run(&mut world);
+
+        let vel = world.get::<Velocity>(entity).unwrap();
+        let speed = (vel.vx * vel.vx + vel.vy * vel.vy).sqrt();
+        assert!((speed - 100.0).abs() < 1e-4);
     }
 
     #[test]
@@ -106,6 +164,7 @@ mod tests {
 
         let entity = world
             .spawn((
+                PlayerAvatar::new("p1", 100.0),
                 PlayerInputState::new(0.0, 1.0, false, 0),
                 Velocity::zero(),
                 status,
@@ -118,8 +177,8 @@ mod tests {
 
         let vel = world.get::<Velocity>(entity).unwrap();
         assert_eq!(vel.vx, 0.0);
-        // 20.0 * 0.2 = 4.0
-        assert!((vel.vy - 4.0).abs() < 1e-4);
+        // 100.0 * 0.2 = 20.0
+        assert!((vel.vy - 20.0).abs() < 1e-4);
     }
 
     #[test]
