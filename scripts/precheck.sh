@@ -113,6 +113,7 @@ rust_gates() {
     echo "no server-rs on this branch — skipping"
     return 0
   fi
+  export PATH="$HOME/.cargo/bin:$PATH"
   echo "🦀 Checking Rust server-rs formatting, lints, and tests..."
   (cd "$REPO_ROOT/server-rs" && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test)
 }
