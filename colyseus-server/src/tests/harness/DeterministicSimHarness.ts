@@ -67,20 +67,11 @@ export function runDeterministicSimulation(
 
   let currentSimTime = 0
   Date.now = () => SIM_BASE + currentSimTime
-  let perfSpy: any
-  if (typeof jest !== 'undefined' && jest.spyOn) {
-    perfSpy = jest.spyOn(performance, 'now').mockImplementation(() => currentSimTime)
-  } else {
-    try {
-      Object.defineProperty(performance, 'now', {
-        value: () => currentSimTime,
-        configurable: true,
-        writable: true,
-      })
-    } catch {
-      // fallback
-    }
-  }
+  Object.defineProperty(performance, 'now', {
+    value: () => currentSimTime,
+    configurable: true,
+    writable: true,
+  })
 
   const restoreRandom = seedRandom(seed)
   const prng = new Mulberry32PRNG(seed)
@@ -88,18 +79,14 @@ export function runDeterministicSimulation(
   const originalDispose = env.dispose
   env.dispose = () => {
     Date.now = originalDateNow
-    if (perfSpy) {
-      perfSpy.mockRestore()
-    } else {
-      try {
-        Object.defineProperty(performance, 'now', {
-          value: originalPerfNow,
-          configurable: true,
-          writable: true,
-        })
-      } catch {
-        // fallback
-      }
+    try {
+      delete (performance as any).now
+    } catch {
+      Object.defineProperty(performance, 'now', {
+        value: originalPerfNow,
+        configurable: true,
+        writable: true,
+      })
     }
     restoreRandom()
     originalDispose()
