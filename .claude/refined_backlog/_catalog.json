@@ -682,9 +682,10 @@
     "title": "4",
     "from_idea": "I-129",
     "created_at": "2026-10-05T10:10:29.007034+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-001"
+    "epic": "E-001",
+    "claimed_at": "2026-10-05T10:10:37.186458+00:00"
   }
 ]
