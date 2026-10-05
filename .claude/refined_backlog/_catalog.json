@@ -716,9 +716,10 @@
     "title": "Client input binding and player avatar entity control in Bevy ECS",
     "from_idea": "I-131",
     "created_at": "2026-10-05T14:53:41.809086+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-002"
+    "epic": "E-002",
+    "claimed_at": "2026-10-05T14:53:53.363806+00:00"
   }
 ]
