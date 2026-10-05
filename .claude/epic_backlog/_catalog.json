@@ -14,10 +14,11 @@
     "id": "E-002",
     "title": "Complete game logic parity and full colyseus-server decommissioning",
     "created_at": "2026-10-05T14:53:23.953887+00:00",
-    "status": "open",
+    "status": "verifying",
     "release_version": null,
     "verified_sha": null,
     "verified_at": null,
-    "split_approved_by": null
+    "split_approved_by": null,
+    "verifying_sha": "69fe2eca1872d5469172547e4c4468a82813c7ff"
   }
 ]
