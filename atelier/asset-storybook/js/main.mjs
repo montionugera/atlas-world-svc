@@ -38,6 +38,7 @@ import { mountCombatLab, mountCombatNav } from "./combat-lab.mjs";
 import { mountStory, mountStoryNav } from "./story.mjs";
 import { mountMaps, mountMapsNav } from "./maps.mjs";
 import { mountForge, mountForgeNav } from "./forge/nav.mjs";
+import { mountMapBuilder, mountMapBuilderNav } from "./map-builder.mjs";
 
 async function init() {
   const main = document.getElementById("main");
@@ -86,6 +87,9 @@ async function init() {
     // Nor does the forge dashboard (F-050) — its data is the run ledgers.
     mountForgeNav(sidebarNav);
     mountForge(main);
+    // Nor does Map Builder (F-052) — its own data source is a local service.
+    mountMapBuilderNav(sidebarNav);
+    await mountMapBuilder(main);
     return;
   }
 
@@ -221,6 +225,8 @@ async function init() {
   mountMapsNav(sidebarNav);
   // Forge (F-050) sits with the other non-asset sections near the top.
   mountForgeNav(sidebarNav);
+  // Map Builder (F-052) — same treatment.
+  mountMapBuilderNav(sidebarNav);
 
   for (const groupKey of groups.keys()) {
     initHealth(groupKey, groups.get(groupKey).length);
@@ -351,6 +357,7 @@ async function init() {
   await mountStory(main);
   await mountMaps(main);
   mountForge(main);
+  await mountMapBuilder(main);
 
   mountBespokeSections({
     main,

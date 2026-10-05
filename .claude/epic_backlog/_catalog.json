@@ -1,0 +1,12 @@
+[
+  {
+    "id": "E-001",
+    "title": "Rust game server migration - high-density ECS and Rapier physics core",
+    "created_at": "2026-10-05T08:08:25.459094+00:00",
+    "status": "open",
+    "release_version": null,
+    "verified_sha": null,
+    "verified_at": null,
+    "split_approved_by": null
+  }
+]

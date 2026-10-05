@@ -12,6 +12,12 @@ import { IAgent } from './interfaces/IAgent'
 import { AIDecision } from './core/AIBehavior'
 import { IAgentRuntime } from './interfaces/IAgentRuntime'
 import { selectTarget, TargetCandidate } from './targeting/selectTarget'
+import { SpatialHash, SpatialEntity } from '../interest/SpatialHash'
+
+export interface AISpatialEntity extends SpatialEntity {
+  type: 'player' | 'npc' | 'mob'
+  ref: WorldLife
+}
 
 export interface WorldData {
   players: Player[]
@@ -30,6 +36,9 @@ export class AIWorldInterface {
   private gameState: GameState
   private physicsManager?: any
   private aiDecisions: Map<string, AIDecision> = new Map()
+  private spatialHash = new SpatialHash<AISpatialEntity>(50)
+  private lastSpatialRebuildTick = -1
+  private spatialEntityCount = -1
   private static readonly DEBUG = false
 
   constructor(gameState: GameState) {
@@ -41,6 +50,68 @@ export class AIWorldInterface {
   setPhysicsManager(physicsManager: any): void {
     this.physicsManager = physicsManager
     if (AIWorldInterface.DEBUG) console.log(`🔗 Physics manager connected to AI interface`)
+  }
+
+  /**
+   * Rebuilds the uniform-grid spatial hash for all alive entities in the game state.
+   * Guarded by tick number so it executes at most once per simulation tick.
+   */
+  rebuildSpatialGrid(force = false): void {
+    const currentTick = this.gameState.tick
+    const currentCount =
+      this.gameState.players.size + this.gameState.npcs.size + this.gameState.mobs.size
+
+    if (
+      !force &&
+      this.lastSpatialRebuildTick === currentTick &&
+      this.spatialEntityCount === currentCount &&
+      currentTick > 0
+    ) {
+      return
+    }
+
+    this.lastSpatialRebuildTick = currentTick
+    this.spatialEntityCount = currentCount
+    this.spatialHash.clear()
+
+    for (const player of this.gameState.players.values()) {
+      if (!player.isAlive) continue
+      this.spatialHash.insert({
+        id: player.id,
+        x: player.x,
+        y: player.y,
+        type: 'player',
+        ref: player,
+      })
+    }
+    for (const npc of this.gameState.npcs.values()) {
+      if (!npc.isAlive) continue
+      this.spatialHash.insert({
+        id: npc.id,
+        x: npc.x,
+        y: npc.y,
+        type: 'npc',
+        ref: npc,
+      })
+    }
+    for (const mob of this.gameState.mobs.values()) {
+      if (!mob.isAlive) continue
+      this.spatialHash.insert({
+        id: mob.id,
+        x: mob.x,
+        y: mob.y,
+        type: 'mob',
+        ref: mob,
+      })
+    }
+  }
+
+  /**
+   * Query all living entities within radial distance of (x, y).
+   */
+  querySpatialRadius(x: number, y: number, radius: number): AISpatialEntity[] {
+    this.rebuildSpatialGrid()
+    return this.spatialHash.queryRadius(x, y, radius)
   }
 
   // Get world data for AI
@@ -139,7 +210,8 @@ export class AIWorldInterface {
   private pickTarget(
     agent: IAgent,
     position: { x: number; y: number },
-    myTeamId: string | undefined
+    myTeamId: string | undefined,
+    searchRadius?: number
   ): WorldLife | null {
     const byId = new Map<string, WorldLife>()
     const candidates: TargetCandidate[] = []
@@ -152,9 +224,29 @@ export class AIWorldInterface {
       candidates.push({ id: other.id, distance: this.calculateDistance(position, other) })
     }
 
-    for (const p of this.gameState.players.values()) consider(p)
-    for (const n of this.gameState.npcs.values()) consider(n)
-    for (const m of this.gameState.mobs.values()) consider(m)
+    if (searchRadius !== undefined && searchRadius < Infinity && searchRadius > 0) {
+      const spatialHits = this.querySpatialRadius(position.x, position.y, searchRadius)
+      for (const hit of spatialHits) {
+        consider(hit.ref)
+      }
+
+      // Preserve taunt & threat invariants: if threat table has targets, ensure they are evaluated
+      const table = this.gameState.threatRegistry?.peek({ agentId: agent.id })
+      if (table) {
+        const tauntedId = table.tauntedTarget({ now: performance.now() })
+        if (tauntedId && !byId.has(tauntedId)) {
+          const tauntedEntity =
+            this.gameState.players.get(tauntedId) ||
+            this.gameState.npcs.get(tauntedId) ||
+            this.gameState.mobs.get(tauntedId)
+          if (tauntedEntity) consider(tauntedEntity)
+        }
+      }
+    } else {
+      for (const p of this.gameState.players.values()) consider(p)
+      for (const n of this.gameState.npcs.values()) consider(n)
+      for (const m of this.gameState.mobs.values()) consider(m)
+    }
 
     const picked = selectTarget({
       candidates,
@@ -199,9 +291,31 @@ export class AIWorldInterface {
   }
 
   // Helper: get nearest mob to a position (only alive mobs)
-  getNearestMob(position: { x: number; y: number }, excludeId?: string): IAgent | null {
+  getNearestMob(
+    position: { x: number; y: number },
+    excludeId?: string,
+    searchRadius?: number
+  ): IAgent | null {
     let nearest: IAgent | null = null
     let nearestDist = Infinity
+
+    if (searchRadius !== undefined && searchRadius < Infinity && searchRadius > 0) {
+      const spatialHits = this.querySpatialRadius(position.x, position.y, searchRadius)
+      for (const hit of spatialHits) {
+        if (hit.type !== 'mob') continue
+        const mob = hit.ref as Mob
+        if (!mob.isAlive) continue
+        if (excludeId && mob.id === excludeId) continue
+
+        const d = this.calculateDistance(position, mob)
+        if (d < nearestDist) {
+          nearest = mob
+          nearestDist = d
+        }
+      }
+      return nearest
+    }
+
     for (const mob of this.gameState.mobs.values()) {
       // Only consider alive mobs
       if (!mob.isAlive) continue
@@ -246,7 +360,7 @@ export class AIWorldInterface {
     // Chase/attack target. Both AttackBehavior and ChaseBehavior read the single
     // field this produces, which is why they cannot disagree -- and why F-023 only
     // had to substitute here.
-    const nearestEnemy = this.pickTarget(agent, position, myTeamId)
+    const nearestEnemy = this.pickTarget(agent, position, myTeamId, perceptionRange)
     const distanceEnemy = nearestEnemy ? this.calculateDistance(position, nearestEnemy) : Infinity
     const inRangeEnemy = distanceEnemy <= (perceptionRange ?? Infinity)
 
@@ -259,7 +373,9 @@ export class AIWorldInterface {
     const distanceToPreferredTarget = preferredTarget ? distanceEnemy : Infinity
 
     const nearestMobRaw =
-      inRangeEnemy && isMobEnemy ? nearestEnemy : this.getNearestMob(position, agent.id)
+      inRangeEnemy && isMobEnemy
+        ? nearestEnemy
+        : this.getNearestMob(position, agent.id, perceptionRange)
     const distanceMobRaw = nearestMobRaw
       ? this.calculateDistance(position, nearestMobRaw)
       : Infinity

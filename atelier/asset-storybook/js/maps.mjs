@@ -9,6 +9,7 @@ import { initHealth, bumpHealth, renderSidebarBadge } from "./health.mjs";
 import { buildSidebarItem } from "./sidebar.mjs";
 import { mountVocabulary } from "./maps-vocabulary.mjs";
 import { mountFabricCensus } from "./maps-fabric.mjs";
+import { createPanZoom } from "./panzoom.mjs";
 
 /**
  * The Maps tab (F-044): every mapforge sheet (atelier/mapforge/render-sheet.mjs
@@ -82,6 +83,13 @@ function repoPath(p) {
 }
 
 // ---------- the pan/zoom viewer (module-level singleton, mirrors story.mjs's overlay) ----------
+//
+// F-052 Task 16: the wheel-zoom/drag-pan maths that used to live directly in
+// this module's module-level state was moved verbatim into panzoom.mjs's
+// createPanZoom() factory (so the Map Builder Review screen can run two
+// linked instances side by side) — this singleton now just owns ONE
+// instance. openMapViewer/closeMapViewer's signatures and behaviour are
+// unchanged.
 
 let overlay = null;
 let stage = null;
@@ -92,72 +100,7 @@ let svgLink = null;
 let closeBtn = null;
 let lastTrigger = null;
 let escHandler = null;
-
-const MIN_SCALE = 0.25;
-const MAX_SCALE = 8;
-let scale = 1;
-let tx = 0;
-let ty = 0;
-let dragging = false;
-let dragStartX = 0;
-let dragStartY = 0;
-let dragOriginTx = 0;
-let dragOriginTy = 0;
-
-function applyTransform() {
-  img.style.transform =
-    "translate(" + tx + "px, " + ty + "px) scale(" + scale + ")";
-}
-
-function resetView() {
-  scale = 1;
-  tx = 0;
-  ty = 0;
-  applyTransform();
-}
-
-function onWheel(ev) {
-  ev.preventDefault();
-  const rect = stage.getBoundingClientRect();
-  const cx = ev.clientX - rect.left;
-  const cy = ev.clientY - rect.top;
-  const prevScale = scale;
-  const factor = ev.deltaY < 0 ? 1.12 : 1 / 1.12;
-  scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * factor));
-  // Zoom toward the cursor: keep the point under the cursor stationary by
-  // solving for the translate that leaves (cx,cy) mapped to the same image
-  // point before and after the scale change.
-  tx = cx - ((cx - tx) / prevScale) * scale;
-  ty = cy - ((cy - ty) / prevScale) * scale;
-  applyTransform();
-}
-
-function onPointerDown(ev) {
-  dragging = true;
-  dragStartX = ev.clientX;
-  dragStartY = ev.clientY;
-  dragOriginTx = tx;
-  dragOriginTy = ty;
-  stage.setPointerCapture(ev.pointerId);
-  stage.style.cursor = "grabbing";
-}
-
-function onPointerMove(ev) {
-  if (!dragging) return;
-  tx = dragOriginTx + (ev.clientX - dragStartX);
-  ty = dragOriginTy + (ev.clientY - dragStartY);
-  applyTransform();
-}
-
-function onPointerUp(ev) {
-  dragging = false;
-  try {
-    stage.releasePointerCapture(ev.pointerId);
-  } catch (e) {
-    /* already released — ignore */
-  }
-  stage.style.cursor = "grab";
-}
+let panZoom = null;
 
 function buildOverlay() {
   overlay = document.createElement("div");
@@ -182,7 +125,7 @@ function buildOverlay() {
   resetBtn.type = "button";
   resetBtn.className = "story-tab";
   resetBtn.textContent = "Reset view";
-  resetBtn.addEventListener("click", resetView);
+  resetBtn.addEventListener("click", () => panZoom.reset());
   header.appendChild(resetBtn);
 
   svgLink = document.createElement("a");
@@ -211,12 +154,6 @@ function buildOverlay() {
 
   stage = document.createElement("div");
   stage.className = "maps-overlay-stage";
-  stage.style.cursor = "grab";
-  stage.addEventListener("wheel", onWheel, { passive: false });
-  stage.addEventListener("pointerdown", onPointerDown);
-  stage.addEventListener("pointermove", onPointerMove);
-  stage.addEventListener("pointerup", onPointerUp);
-  stage.addEventListener("pointercancel", onPointerUp);
 
   img = document.createElement("img");
   img.className = "maps-overlay-img";
@@ -225,6 +162,8 @@ function buildOverlay() {
 
   overlay.appendChild(stage);
   document.body.appendChild(overlay);
+
+  panZoom = createPanZoom({ stage, img });
 }
 
 // Tab/Shift+Tab trap while the overlay is open — same rationale as
@@ -250,11 +189,11 @@ function openMapViewer(sheet, trigger) {
   lastTrigger = trigger || null;
   titleEl.textContent = sheet.title;
   const svgSrc = repoPath(sheet.svg);
-  img.src = svgSrc;
+  panZoom.setSrc(svgSrc);
   img.alt = sheet.title;
   svgLink.href = svgSrc;
   pngLink.href = repoPath(sheet.png);
-  resetView();
+  panZoom.reset();
   if (overlay.hidden) {
     document.body.style.overflow = "hidden";
     overlay.hidden = false;

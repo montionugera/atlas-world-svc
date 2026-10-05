@@ -1,0 +1,64 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { createJobStore, newJobId, JOB_ID } from "../lib/jobs.mjs";
+
+const tmp = () => mkdtempSync(join(tmpdir(), "mb-jobs-"));
+
+test("ids are sortable and match the grammar", () => {
+  const a = newJobId(new Date("2026-09-13T14:02:01Z")); const b = newJobId(new Date("2026-09-13T14:02:02Z"));
+  assert.match(a, JOB_ID); assert.ok(a < b);
+});
+test("create/get/update round-trip persists JSON", () => {
+  const dir = tmp(); const s = createJobStore({ dir });
+  const j = s.create({ kind: "draft", seed: "3f81c0aa9d2e5b17", reason: "x" });
+  assert.equal(j.status, "queued"); assert.ok(j.createdAt);
+  s.update(j.id, { status: "running", startedAt: "t" });
+  assert.equal(createJobStore({ dir }).get(j.id).status, "running");
+  rmSync(dir, { recursive: true, force: true });
+});
+test("list filters by kind/status/seed and is newest first with limit", () => {
+  const dir = tmp(); const s = createJobStore({ dir });
+  const ids = ["a", "b", "c"].map((_, i) => s.create({ kind: i ? "draft" : "publish", seed: "3f81c0aa9d2e5b17".replace("3f", `${i}f`) }).id);
+  assert.deepEqual(s.list({}).map((j) => j.id), [...ids].reverse());
+  assert.equal(s.list({ kind: "publish" }).length, 1);
+  assert.equal(s.list({ seed: "1f81c0aa9d2e5b17" }).length, 1);
+  assert.equal(s.list({ limit: 2 }).length, 2);
+  rmSync(dir, { recursive: true, force: true });
+});
+test("logs append and tail", () => {
+  const dir = tmp(); const s = createJobStore({ dir }); const j = s.create({ kind: "draft", seed: "3f81c0aa9d2e5b17" });
+  s.appendLog(j.id, "l1\nl2\n"); s.appendLog(j.id, "l3\n");
+  assert.equal(s.readLog(j.id, { tail: 2 }), "l2\nl3\n");
+  rmSync(dir, { recursive: true, force: true });
+});
+test("recoverInterrupted marks queued/running as interrupted", () => {
+  const dir = tmp(); let s = createJobStore({ dir });
+  const q = s.create({ kind: "draft", seed: "3f81c0aa9d2e5b17" }); const r = s.create({ kind: "draft", seed: "4f81c0aa9d2e5b17" }); s.update(r.id, { status: "running" });
+  const d = s.create({ kind: "draft", seed: "5f81c0aa9d2e5b17" }); s.update(d.id, { status: "succeeded" });
+  s = createJobStore({ dir });
+  assert.deepEqual(new Set(s.recoverInterrupted()), new Set([q.id, r.id]));
+  assert.equal(s.get(d.id).status, "succeeded"); assert.equal(s.get(r.id).status, "interrupted");
+  rmSync(dir, { recursive: true, force: true });
+});
+test("recoverInterrupted reopens the draft an interrupted publish had accepted (re-review I4)", () => {
+  const dir = tmp(); let s = createJobStore({ dir });
+  const draft = s.create({ kind: "draft", seed: "3f81c0aa9d2e5b17", status: "succeeded", review: { decision: "accepted", reasons: [], at: "2026-09-17T00:00:00.000Z" } });
+  const publish = s.create({ kind: "publish", seed: "3f81c0aa9d2e5b17", draftJobId: draft.id, status: "running" });
+  // A draft published for real stays decided: publishedBy is the record of it.
+  const published = s.create({ kind: "draft", seed: "4f81c0aa9d2e5b17", status: "succeeded", publishedBy: "j-old", review: { decision: "accepted", reasons: [], at: "2026-09-17T00:00:00.000Z" } });
+  s = createJobStore({ dir });
+  assert.deepEqual(s.recoverInterrupted(), [publish.id]);
+  assert.equal(s.get(publish.id).status, "interrupted");
+  assert.deepEqual(s.get(draft.id).review, { decision: null, reasons: [], at: null });
+  assert.equal(s.get(draft.id).status, "succeeded", "only the review is touched");
+  assert.equal(s.get(published.id).review.decision, "accepted");
+  rmSync(dir, { recursive: true, force: true });
+});
+test("get rejects a malformed id without touching the filesystem", (t) => {
+  const dir = tmp(); t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const s = createJobStore({ dir });
+  assert.throws(() => s.get("../etc/passwd"), /invalid job id/);
+});
