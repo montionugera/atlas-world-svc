@@ -107,10 +107,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let entities: Vec<EntitySnapshotData> = trace_snap
                         .entities
                         .iter()
-                        .enumerate()
-                        .map(|(idx, e)| {
+                        .map(|e| {
                             EntitySnapshotData {
-                                id: idx as u32 + 1,
+                                id: server_rs::protocol::fnv1a_32(&e.id),
                                 entity_type: if e.entity_type == "player" {
                                     EntityType::Player
                                 } else {

@@ -53,11 +53,26 @@ export interface UseServerRsClientReturn {
   forceDie: () => void;
 }
 
+export function fnv1a32(s: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    hash ^= s.charCodeAt(i);
+    hash = Math.imul(hash, 16777619) >>> 0;
+  }
+  return hash;
+}
+
 export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClientReturn => {
   // State
   const [isConnected, setIsConnected] = useState(false);
   const [roomId, setRoomId] = useState<string | null>(null);
-  const [playerId, setPlayerId] = useState(`player-rs-${Date.now()}`);
+  const sessionName = config.token?.startsWith('dev-token:')
+    ? config.token.replace('dev-token:', '')
+    : config.token && config.token !== 'dev-token'
+      ? config.token
+      : 'dev-player';
+  const initialPlayerId = String(fnv1a32(sessionName));
+  const [playerId, setPlayerId] = useState(initialPlayerId);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [updateCount, setUpdateCount] = useState(0);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -80,8 +95,8 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
     tick: 0,
     mapId: 'map-01-sector-a',
     roomId: 'server-rs-room',
-    width: 1200,
-    height: 1200,
+    width: 1000,
+    height: 1000,
   });
 
   // Track frame for FPS calculation
@@ -126,6 +141,12 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
         isConnectingRef.current = true;
         const protocol = config.useSSL ? 'wss' : 'ws';
         const token = config.token || 'dev-token';
+        const sessionName = token.startsWith('dev-token:')
+          ? token.replace('dev-token:', '')
+          : token !== 'dev-token'
+            ? token
+            : 'dev-player';
+        setPlayerId(String(fnv1a32(sessionName)));
         const url = `${protocol}://${config.serverHost}:${config.serverPort}?token=${token}`;
 
         const ws = new WebSocket(url);
@@ -137,6 +158,20 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
           setRoomId('server-rs-room');
           isConnectingRef.current = false;
           localStorage.setItem('atlas-world-server-rs-connected', 'true');
+
+          // Send initial input frame so avatar spawns immediately
+          const builder = new flatbuffers.Builder(64);
+          const offset = ClientInput.createClientInput(
+            builder,
+            clientTickRef.current++,
+            0,
+            0,
+            false,
+            0,
+            0
+          );
+          builder.finish(offset);
+          ws.send(builder.asUint8Array());
           resolve();
         };
 
@@ -240,15 +275,6 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
     });
   }, [config]);
 
-  // Join room (maps seamlessly to server-rs ready connection)
-  const joinRoom = useCallback(async (mapId: string = 'map-01-sector-a') => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-      await connect();
-    }
-    setRoomId('server-rs-room');
-    stateRef.current.mapId = mapId;
-  }, [connect]);
-
   // Send binary input frame
   const sendInput = useCallback((vx: number, vy: number, attack: boolean = false, skillSlot: number = 0, targetId: number = 0) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
@@ -270,13 +296,27 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
     wsRef.current.send(bytes);
   }, []);
 
+  // Join room (maps seamlessly to server-rs ready connection)
+  const joinRoom = useCallback(async (mapId: string = 'map-01-sector-a') => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      await connect();
+    }
+    setRoomId('server-rs-room');
+    stateRef.current.mapId = mapId;
+    sendInput(0, 0, false, 0, 0);
+  }, [connect, sendInput]);
+
   const updatePlayerInput = useCallback((vx: number, vy: number) => {
     sendInput(vx, vy, false, 0, 0);
   }, [sendInput]);
 
   const sendPlayerAction = useCallback((action: string, pressed: boolean, options?: any) => {
     const isAttack = action === 'attack' && pressed;
-    const skillSlot = options?.skillSlot ?? 0;
+    let skillSlot = options?.skillSlot ?? 0;
+    if (options?.skillId === 'skill_1') skillSlot = 1;
+    if (options?.skillId === 'skill_2') skillSlot = 2;
+    if (options?.skillId === 'skill_3') skillSlot = 3;
+    if (options?.skillId === 'skill_4') skillSlot = 4;
     const targetId = options?.targetId ?? 0;
     sendInput(0, 0, isAttack, skillSlot, targetId);
   }, [sendInput]);

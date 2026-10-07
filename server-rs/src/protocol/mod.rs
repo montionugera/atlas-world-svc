@@ -177,6 +177,16 @@ pub fn serialize_client_input(
     fbb.finished_data().to_vec()
 }
 
+/// Computes 32-bit FNV-1a hash of a string, matching TypeScript client.
+pub fn fnv1a_32(s: &str) -> u32 {
+    let mut hash = 2166136261u32;
+    for b in s.as_bytes() {
+        hash ^= *b as u32;
+        hash = hash.wrapping_mul(16777619);
+    }
+    hash
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -285,5 +295,11 @@ mod tests {
         assert!(input.attack());
         assert_eq!(input.skill_slot(), 2);
         assert_eq!(input.target_id(), 909);
+    }
+
+    #[test]
+    fn test_fnv1a_32() {
+        assert_eq!(fnv1a_32("dev-player"), 4026785618);
+        assert_ne!(fnv1a_32("player-1"), fnv1a_32("player-2"));
     }
 }

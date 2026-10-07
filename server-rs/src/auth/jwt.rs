@@ -51,8 +51,27 @@ impl AuthGuard {
     }
 
     pub fn validate_token(&self, token: &str) -> Result<Claims, AuthError> {
-        if token.trim().is_empty() {
+        let trimmed = token.trim();
+        if trimmed.is_empty() {
             return Err(AuthError::MissingToken);
+        }
+
+        // Allow dev-token bypass for local development and testing
+        if trimmed == "dev-token" || trimmed.starts_with("dev-token:") {
+            let user_id = trimmed
+                .strip_prefix("dev-token:")
+                .unwrap_or("dev-player")
+                .trim();
+            let effective_id = if user_id.is_empty() {
+                "dev-player"
+            } else {
+                user_id
+            };
+            return Ok(Claims {
+                sub: effective_id.to_string(),
+                exp: usize::MAX,
+                username: Some(effective_id.to_string()),
+            });
         }
 
         let decoding_key = DecodingKey::from_secret(&self.secret);
@@ -165,5 +184,17 @@ mod tests {
             guard.validate_token("   ").unwrap_err(),
             AuthError::MissingToken
         );
+    }
+
+    #[test]
+    fn test_dev_token_bypass() {
+        let guard = AuthGuard::new(b"any_secret".to_vec());
+        let claims = guard.validate_token("dev-token").expect("dev-token bypass");
+        assert_eq!(claims.sub, "dev-player");
+
+        let claims2 = guard
+            .validate_token("dev-token:alice")
+            .expect("dev-token with suffix");
+        assert_eq!(claims2.sub, "alice");
     }
 }

@@ -160,9 +160,16 @@ describe('useServerRsClient', () => {
     });
 
     const ws = MockWebSocket.instances[0];
-    expect(ws.sentMessages.length).toBe(1);
+    expect(ws.sentMessages.length).toBe(2);
 
-    const sentBytes: Uint8Array = ws.sentMessages[0];
+    // Initial frame on open
+    const initialBytes: Uint8Array = ws.sentMessages[0];
+    const initialInput = ClientInput.getRootAsClientInput(new flatbuffers.ByteBuffer(initialBytes));
+    expect(initialInput.moveX()).toBe(0);
+    expect(initialInput.moveY()).toBe(0);
+
+    // Movement frame
+    const sentBytes: Uint8Array = ws.sentMessages[1];
     const bb = new flatbuffers.ByteBuffer(sentBytes);
     const decodedInput = ClientInput.getRootAsClientInput(bb);
 
