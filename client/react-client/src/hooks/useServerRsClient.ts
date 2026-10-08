@@ -62,6 +62,29 @@ export function fnv1a32(s: string): number {
   return hash;
 }
 
+/**
+ * server-rs world scale: 1000×1000 arena, player speed ≈ 200 units/s (10× the legacy
+ * Colyseus units). The camera must show a matching span or a 0.1s tap moves 40% of
+ * a 50-unit screen and the follow-camera makes movement look frozen.
+ */
+export const SERVER_RS_VIEWPORT = 400;
+export const SERVER_RS_PLAYER_RADIUS = 12;
+export const SERVER_RS_MOB_RADIUS = 14;
+
+/** Skill id → server-rs skill slot (see server-rs/src/systems/skill_execution.rs). */
+const SKILL_SLOTS: Record<string, number> = {
+  skill_1: 1,
+  skill_2: 2,
+  skill_3: 3,
+  skill_4: 4,
+  skill_dash: 5,
+};
+
+export function skillSlotFor(options?: { skillId?: string; skillSlot?: number }): number {
+  if (options?.skillId && SKILL_SLOTS[options.skillId] !== undefined) return SKILL_SLOTS[options.skillId];
+  return options?.skillSlot ?? 0;
+}
+
 export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClientReturn => {
   // State
   const [isConnected, setIsConnected] = useState(false);
@@ -85,6 +108,9 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
   const wsRef = useRef<WebSocket | null>(null);
   const clientTickRef = useRef<number>(0);
   const isConnectingRef = useRef<boolean>(false);
+  // Currently-held input, re-sent with every packet (server input is full-state).
+  const moveRef = useRef<{ vx: number; vy: number }>({ vx: 0, vy: 0 });
+  const attackHeldRef = useRef<boolean>(false);
   const simulationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const frameCountRef = useRef<number>(0);
   const lastFpsTimeRef = useRef<number>(performance.now());
@@ -97,6 +123,7 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
     roomId: 'server-rs-room',
     width: 1000,
     height: 1000,
+    viewportSize: SERVER_RS_VIEWPORT,
   });
 
   // Track frame for FPS calculation
@@ -119,9 +146,15 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
     setIsSimulating(false);
 
     if (wsRef.current) {
-      wsRef.current.close();
+      const ws = wsRef.current;
       wsRef.current = null;
+      ws.close();
     }
+    // Reset held input and the replicated-entity cache so a reconnect starts clean.
+    moveRef.current = { vx: 0, vy: 0 };
+    attackHeldRef.current = false;
+    stateRef.current.players.clear();
+    stateRef.current.mobs.clear();
 
     setIsConnected(false);
     setRoomId(null);
@@ -146,14 +179,31 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
           : token !== 'dev-token'
             ? token
             : 'dev-player';
-        setPlayerId(String(fnv1a32(sessionName)));
+        const localPlayerId = String(fnv1a32(sessionName));
+        setPlayerId(localPlayerId);
         const url = `${protocol}://${config.serverHost}:${config.serverPort}?token=${token}`;
 
         const ws = new WebSocket(url);
         ws.binaryType = 'arraybuffer';
+        // Track immediately so a disconnect() during CONNECTING (e.g. React
+        // StrictMode double-mount) closes this socket instead of leaking it.
+        wsRef.current = ws;
+        // Settle the connect() promise exactly once, whatever happens first.
+        let settled = false;
+        const settle = (err?: unknown) => {
+          if (settled) return;
+          settled = true;
+          if (err === undefined) resolve();
+          else reject(err);
+        };
 
         ws.onopen = () => {
-          wsRef.current = ws;
+          if (wsRef.current !== ws) {
+            // Superseded (StrictMode remount / disconnect during CONNECTING): not an error.
+            ws.close();
+            settle();
+            return;
+          }
           setIsConnected(true);
           setRoomId('server-rs-room');
           isConnectingRef.current = false;
@@ -172,10 +222,12 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
           );
           builder.finish(offset);
           ws.send(builder.asUint8Array());
-          resolve();
+          settle();
         };
 
         ws.onmessage = async (event: MessageEvent) => {
+          // Frames still in flight on a superseded socket must not resurrect state.
+          if (wsRef.current !== ws) return;
           let buffer: ArrayBuffer;
           if (event.data instanceof ArrayBuffer) {
             buffer = event.data;
@@ -186,6 +238,7 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
           }
 
           try {
+            if (wsRef.current !== ws) return; // superseded while awaiting a Blob
             const snapshot = BinaryDeltaDecoder.decode(buffer);
             const current = stateRef.current;
             current.tick = snapshot.tick;
@@ -194,7 +247,7 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
               const idStr = String(entity.id);
               if (entity.entityType === EntityType.Player) {
                 const existing = current.players.get(idStr);
-                const isLocalPlayer = idStr === playerId;
+                const isLocalPlayer = idStr === localPlayerId;
                 const updated: Player = {
                   ...existing,
                   id: idStr,
@@ -203,7 +256,7 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
                   y: entity.y,
                   vx: entity.vx,
                   vy: entity.vy,
-                  radius: 1.5,
+                  radius: SERVER_RS_PLAYER_RADIUS,
                   name: isLocalPlayer ? 'Player (YOU)' : (existing?.name || `Player-${idStr}`),
                   health: entity.health,
                   currentHealth: entity.health,
@@ -215,17 +268,17 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
               } else if (entity.entityType === EntityType.Mob) {
                 const existing = current.mobs.get(idStr);
                 const updated: Mob = {
+                  ...existing, // first: fresh snapshot fields must win
                   id: idStr,
                   x: entity.x,
                   y: entity.y,
                   vx: entity.vx,
                   vy: entity.vy,
-                  radius: 2.5,
+                  radius: SERVER_RS_MOB_RADIUS,
                   tag: 'mob',
                   currentHealth: entity.health,
                   maxHealth: entity.maxHealth,
                   isAlive: entity.health > 0,
-                  ...existing,
                 };
                 current.mobs.set(idStr, updated);
               }
@@ -237,11 +290,15 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
               current.mobs.delete(idStr);
             }
 
-            setGameState({
+            const nextState: GameState = {
               ...current,
               players: new Map(current.players),
               mobs: new Map(current.mobs),
-            });
+            };
+            setGameState(nextState);
+            // Expose for quick debug / e2e (parity with useColyseusClient)
+            (window as any).__gameState = nextState;
+            (window as any).__playerId = localPlayerId;
             setUpdateCount((prev) => prev + 1);
 
             // Calculate update rate over a sliding 10s window
@@ -261,12 +318,22 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
         };
 
         ws.onerror = (err) => {
+          if (wsRef.current !== ws) return settle();
           console.error('WebSocket error:', err);
           isConnectingRef.current = false;
-          reject(err);
+          settle(err);
         };
 
         ws.onclose = () => {
+          // A superseded socket (StrictMode remount, reconnect) must not wipe the live session's state.
+          if (wsRef.current !== ws) {
+            // Superseded, or deliberately disconnect()ed (wsRef already null): not an error.
+            settle();
+            if (wsRef.current !== null) return;
+          } else {
+            wsRef.current = null;
+            settle(new Error('WebSocket closed before it opened'));
+          }
           setIsConnected(false);
           setRoomId(null);
           setGameState(null);
@@ -320,24 +387,25 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
             roomId: targetRoomId,
             width: 1000,
             height: 1000,
+            viewportSize: SERVER_RS_VIEWPORT,
           }
     );
-    sendInput(0, 0, false, 0, 0);
+    sendInput(moveRef.current.vx, moveRef.current.vy, attackHeldRef.current, 0, 0);
   }, [connect, sendInput]);
 
+  // server-rs treats every ClientInput as the FULL input state (it overwrites
+  // PlayerInputState), so each packet must carry the currently-held movement and
+  // attack. Sending (0,0) with an action would cancel movement.
   const updatePlayerInput = useCallback((vx: number, vy: number) => {
-    sendInput(vx, vy, false, 0, 0);
+    moveRef.current = { vx, vy };
+    sendInput(vx, vy, attackHeldRef.current, 0, 0);
   }, [sendInput]);
 
   const sendPlayerAction = useCallback((action: string, pressed: boolean, options?: any) => {
-    const isAttack = action === 'attack' && pressed;
-    let skillSlot = options?.skillSlot ?? 0;
-    if (options?.skillId === 'skill_1') skillSlot = 1;
-    if (options?.skillId === 'skill_2') skillSlot = 2;
-    if (options?.skillId === 'skill_3') skillSlot = 3;
-    if (options?.skillId === 'skill_4') skillSlot = 4;
+    if (action === 'attack') attackHeldRef.current = pressed;
+    const skillSlot = pressed ? skillSlotFor(options) : 0;
     const targetId = options?.targetId ?? 0;
-    sendInput(0, 0, isAttack, skillSlot, targetId);
+    sendInput(moveRef.current.vx, moveRef.current.vy, attackHeldRef.current, skillSlot, targetId);
   }, [sendInput]);
 
   const switchWeapon = useCallback((weaponId: string) => {
@@ -360,7 +428,7 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
   }, []);
 
   const respawn = useCallback(() => {
-    sendInput(0, 0, false, 0, 0);
+    sendInput(moveRef.current.vx, moveRef.current.vy, attackHeldRef.current, 0, 0);
   }, [sendInput]);
 
   const startSimulation = useCallback(() => {

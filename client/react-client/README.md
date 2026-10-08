@@ -117,6 +117,27 @@ src/
 - **Responsive Design**: Mobile-first responsive design
 - **Type Safety**: Full TypeScript support throughout
 
+### Testing
+
+```bash
+CI=true npm test -- --watchAll=false   # unit tests (hooks, renderers, utils)
+npm run e2e                            # real Chromium vs live stack (needs server-rs :2567 + npm start :3000)
+```
+
+The e2e (`e2e/movement.e2e.mjs`) holds/taps WASD, attacks while moving, simulates
+swallowed modifier keyups, checks the camera scale and map switching. First run on a
+machine: `npx playwright install chromium-headless-shell`. `HEADED=1` to watch.
+
+### server-rs client notes
+
+- `?player=<name>` connects as `dev-token:<name>` — use distinct names per tab; tabs
+  sharing the default `dev-player` session control the same avatar.
+- Every `ClientInput` is the **full** input state (server overwrites it), so action
+  packets re-send the held move vector / attack. Skill slots are one-shot on the server.
+- server-rs world units are 10× the legacy Colyseus ones; the hook sets
+  `gameState.viewportSize` (400) so the follow-camera shows movement at a visible rate.
+- `window.__gameState` / `window.__playerId` are exposed for debugging and e2e.
+
 ## Troubleshooting
 
 ### Connection Issues

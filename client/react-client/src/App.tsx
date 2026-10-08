@@ -18,10 +18,16 @@ interface LogEntry {
   timestamp: Date;
 }
 
+// `?player=<name>` picks a distinct dev session (dev-token:<name>) so several tabs
+// or an e2e run don't fight over the shared default "dev-player" avatar.
+const playerParam =
+  typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('player') : null;
+
 const clientConfig = {
   serverHost: 'localhost',
   serverPort: Number(process.env.REACT_APP_SERVER_PORT) || 2567,
-  useSSL: false
+  useSSL: false,
+  token: playerParam ? `dev-token:${playerParam}` : undefined,
 };
 
 const EQUIPMENT_SLOT_LABELS: Record<(typeof EQUIPMENT_SLOT_IDS)[number], string> = {

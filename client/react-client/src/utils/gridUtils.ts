@@ -8,7 +8,8 @@ export const drawGrid = (
   width: number,
   height: number,
   scale: number = 1,
-  viewScale: number = 1
+  viewScale: number = 1,
+  gridSize: number = GRID_CONFIG.size
 ): void => {
   if (!GRID_CONFIG.enabled) return;
   
@@ -19,8 +20,7 @@ export const drawGrid = (
   ctx.strokeStyle = GRID_CONFIG.color;
   ctx.lineWidth = GRID_CONFIG.lineWidth * inverseScale;
   
-  // Grid size in World Units
-  const gridSize = GRID_CONFIG.size;
+  // Grid size in World Units (gridSize param)
   
   const gridLinesX = Math.ceil(width / gridSize);
   const gridLinesY = Math.ceil(height / gridSize);
@@ -58,7 +58,8 @@ export const drawGridCoordinates = (
   canvasWidth: number,
   canvasHeight: number,
   worldWidth: number,
-  worldHeight: number
+  worldHeight: number,
+  gridSize: number = GRID_CONFIG.size
 ): void => {
   if (!GRID_CONFIG.enabled || !GRID_CONFIG.showCoordinates) return;
 
@@ -68,7 +69,6 @@ export const drawGridCoordinates = (
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
 
-  const gridSize = GRID_CONFIG.size;
   const gridLinesX = Math.ceil(worldWidth / gridSize);
   const gridLinesY = Math.ceil(worldHeight / gridSize);
 

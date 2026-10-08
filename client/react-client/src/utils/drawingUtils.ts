@@ -163,7 +163,7 @@ export const drawHealthBar = (
   if (maxHealth <= 0) return;
   
   const scaledRadius = entityRadius * scale;
-  const healthPercentage = currentHealth / maxHealth;
+  const healthPercentage = Math.min(1, Math.max(0, currentHealth / maxHealth));
   const inverseScale = 1 / viewScale;
   
   // Destructure options with defaults (these are unscaled base values)

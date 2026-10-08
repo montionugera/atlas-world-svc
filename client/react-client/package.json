@@ -5,7 +5,6 @@
   "dependencies": {
     "@colyseus/schema": "^3.0.60",
     "@colyseus/sdk": "^0.17.43",
-    "flatbuffers": "^24.3.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
@@ -16,6 +15,7 @@
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@types/styled-components": "^5.1.36",
+    "flatbuffers": "^24.3.0",
     "matter-js": "^0.20.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -28,7 +28,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "e2e": "node e2e/movement.e2e.mjs"
   },
   "eslintConfig": {
     "extends": [
@@ -47,5 +48,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "playwright": "^1.64.0"
   }
 }

@@ -47,7 +47,7 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
       
       if (gameState) {
         // --- 1. Main Camera View ---
-        const viewportSize = 50; // 50x50 units visible
+        const viewportSize = gameState.viewportSize ?? 50;
         const scale = calculateScale(gameState, canvas, viewportSize);
         
         // Find player to center camera
@@ -76,7 +76,9 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
         ctx.lineWidth = 2 / scale; // Inverse scale line width for boundary
         ctx.strokeRect(0, 0, gameState.width, gameState.height);
 
-        drawGrid(ctx, gameState.width, gameState.height, 1, scale); // Pass viewScale
+        // Keep ~5 grid cells per screen regardless of world scale
+        const gridSize = Math.max(10, Math.round(viewportSize / 5));
+        drawGrid(ctx, gameState.width, gameState.height, 1, scale, gridSize);
         if (gameState.zoneEffects) {
           drawZoneEffects(ctx, gameState.zoneEffects, scale);
         }
@@ -103,7 +105,8 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
           canvas.width, 
           canvas.height, 
           gameState.width, 
-          gameState.height
+          gameState.height,
+          gridSize
         );
 
         // --- 2. Mini Map Overlay ---

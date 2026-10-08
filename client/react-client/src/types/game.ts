@@ -125,4 +125,6 @@ export interface GameState {
   roomId?: string;
   width: number;
   height: number;
+  /** World units visible across the camera (default 50 = legacy Colyseus scale). */
+  viewportSize?: number;
 }

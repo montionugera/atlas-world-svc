@@ -52,7 +52,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ client }
         const clientY = e.clientY - rect.top;
         
         // Match scaling logic from GameRenderer / drawingUtils
-        const viewportSize = 50; 
+        const viewportSize = gameState.viewportSize ?? 50;
         const scale = calculateScale(gameState, canvas, viewportSize);
         
         let cameraX = gameState.width / 2;
@@ -98,7 +98,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ client }
         const clientX = e.clientX - rect.left;
         const clientY = e.clientY - rect.top;
         
-        const viewportSize = 50; 
+        const viewportSize = gameState.viewportSize ?? 50;
         const scale = calculateScale(gameState, canvas, viewportSize);
         
         let cameraX = gameState.width / 2;

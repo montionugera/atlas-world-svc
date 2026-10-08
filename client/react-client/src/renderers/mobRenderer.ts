@@ -173,16 +173,16 @@ export const drawMobs = (
       );
     }
 
-    // Draw velocity vector
+    // Draw velocity vector (capped to 3× radius so it stays readable at any world scale)
+    let lineX = mob.vx * RENDER_CONFIG.velocityVectorScale;
+    let lineY = mob.vy * RENDER_CONFIG.velocityVectorScale;
+    const lineLen = Math.hypot(lineX, lineY);
+    const maxLen = mobRadius * scale * 3;
+    if (lineLen > maxLen) {
+      lineX = (lineX / lineLen) * maxLen;
+      lineY = (lineY / lineLen) * maxLen;
+    }
     ctx.lineWidth = 2 * inverseScale;
-    drawLine(
-      ctx,
-      x,
-      y,
-      x + mob.vx * RENDER_CONFIG.velocityVectorScale,
-      y + mob.vy * RENDER_CONFIG.velocityVectorScale,
-      COLORS.mob,
-      2 * inverseScale
-    );
+    drawLine(ctx, x, y, x + lineX, y + lineY, COLORS.mob, 2 * inverseScale);
   });
 };
