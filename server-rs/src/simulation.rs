@@ -315,7 +315,12 @@ impl AtlasSimulation {
                 input_state.move_x = input.move_x();
                 input_state.move_y = input.move_y();
                 input_state.attack = input.attack();
-                input_state.skill_slot = input.skill_slot();
+                // Latch one-shot skill presses: a movement packet arriving in the same
+                // tick (skill_slot = 0) must not erase a press before skill_execution
+                // consumes it.
+                if input.skill_slot() != 0 {
+                    input_state.skill_slot = input.skill_slot();
+                }
                 input_state.target_id = input.target_id();
                 input_state.client_tick = input.client_tick();
 
@@ -459,6 +464,30 @@ mod tests {
             assert!(!e.vy.is_nan());
             assert!(!e.health.is_nan());
         }
+    }
+
+    #[test]
+    fn test_skill_press_survives_same_tick_move_packet() {
+        use crate::protocol::{deserialize_client_input, serialize_client_input};
+        let mut sim = AtlasSimulation::new(1, 500.0, 500.0);
+        let e = sim.spawn_player_avatar("p", 100.0, 100.0);
+        let press = serialize_client_input(1, 0.0, 0.0, false, 5, 0); // dash
+        let mv = serialize_client_input(2, 0.0, 1.0, false, 0, 0); // move down, same tick
+        sim.apply_player_input("p", &deserialize_client_input(&press).unwrap());
+        sim.apply_player_input("p", &deserialize_client_input(&mv).unwrap());
+        let st = sim.world.get::<PlayerInputState>(e).unwrap();
+        assert_eq!(st.skill_slot, 5, "press must be latched until consumed");
+        assert_eq!(st.move_y, 1.0);
+        sim.step();
+        let st = sim.world.get::<PlayerInputState>(e).unwrap();
+        assert_eq!(st.skill_slot, 0, "consumed by skill_execution");
+        assert!(
+            sim.world
+                .get::<CooldownTracker>(e)
+                .unwrap()
+                .get_remaining("skill_dash")
+                > 0.0
+        );
     }
 
     #[test]

@@ -13,7 +13,7 @@ pub fn skill_execution_system(
     mut query: Query<(
         Entity,
         &Position,
-        &PlayerInputState,
+        &mut PlayerInputState,
         &mut CooldownTracker,
         &mut CastingState,
         &mut Velocity,
@@ -23,7 +23,9 @@ pub fn skill_execution_system(
 ) {
     let current_time = clock.current_time_seconds();
 
-    for (entity, pos, input, mut cooldown_tracker, mut casting, mut vel, is_player) in &mut query {
+    for (entity, pos, mut input, mut cooldown_tracker, mut casting, mut vel, is_player) in
+        &mut query
+    {
         // 1. Process completed casts
         if let Some(skill_id) = casting.skill_id.clone() {
             if current_time >= casting.casting_until {
@@ -140,9 +142,17 @@ pub fn skill_execution_system(
             }
         }
 
-        // 2. Process player input skill_slot
-        if input.skill_slot > 0 && !casting.is_casting(current_time) {
-            let skill_id_str = match input.skill_slot {
+        // 2. Process player input skill_slot.
+        // Skill presses are edge-triggered: the slot is consumed on the tick it is
+        // seen. Without this, PlayerInputState keeps the last slot until the next
+        // client packet, so one key press re-cast the skill every cooldown and the
+        // cast lock froze movement indefinitely.
+        let slot = input.skill_slot;
+        if slot > 0 {
+            input.skill_slot = 0;
+        }
+        if slot > 0 && !casting.is_casting(current_time) {
+            let skill_id_str = match slot {
                 1 => "skill_1",
                 2 => "skill_2",
                 3 => "skill_3",
@@ -197,6 +207,57 @@ pub fn skill_execution_system(
 mod tests {
     use super::*;
     use crate::combat::Element;
+
+    #[test]
+    fn test_skill_press_is_edge_triggered_and_does_not_recast() {
+        // Regression: a single press of skill_1 used to stay in PlayerInputState,
+        // re-casting every cooldown and freezing movement via the cast lock.
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50));
+        let entity = world
+            .spawn((
+                Position::new(0.0, 0.0),
+                PlayerInputState::new(1.0, 0.0, false, 1),
+                CooldownTracker::new(),
+                CastingState::new(),
+                Velocity::zero(),
+                PlayerTag,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(skill_execution_system);
+        schedule.run(&mut world);
+
+        assert_eq!(world.get::<PlayerInputState>(entity).unwrap().skill_slot, 0);
+        assert_eq!(
+            world
+                .get::<CastingState>(entity)
+                .unwrap()
+                .skill_id
+                .as_deref(),
+            Some("skill_1")
+        );
+        // Movement input is preserved, only the one-shot skill press is consumed.
+        assert_eq!(world.get::<PlayerInputState>(entity).unwrap().move_x, 1.0);
+
+        // Expire cast + cooldowns; with no new press nothing should be re-cast.
+        {
+            let mut clock = world.resource_mut::<SimClock>();
+            for _ in 0..200 {
+                clock.advance();
+            }
+        }
+        world
+            .get_mut::<CooldownTracker>(entity)
+            .unwrap()
+            .cooldowns
+            .clear();
+        schedule.run(&mut world);
+        schedule.run(&mut world);
+        let casting = world.get::<CastingState>(entity).unwrap();
+        assert!(casting.skill_id.is_none(), "skill must not auto re-cast");
+    }
 
     #[test]
     fn test_dash_applies_impulse_and_sets_cooldown() {

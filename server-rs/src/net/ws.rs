@@ -256,7 +256,8 @@ impl WsServer {
         let (mut ws_write, mut ws_read) = ws_stream.split();
         let (out_tx, mut out_rx) = unbounded_channel::<Message>();
 
-        // Register active session
+        // Register active session (a reconnect for the same session replaces the old sender)
+        let my_tx = out_tx.clone();
         {
             let mut conns = connections.write().await;
             conns.insert(session_id.clone(), out_tx);
@@ -302,10 +303,16 @@ impl WsServer {
             }
         }
 
-        // Clean up connection
+        // Clean up connection — only if the registry still points at OUR channel.
+        // A newer socket for the same session may have replaced it.
         {
             let mut conns = connections.write().await;
-            conns.remove(&session_id);
+            if conns
+                .get(&session_id)
+                .is_some_and(|tx| tx.same_channel(&my_tx))
+            {
+                conns.remove(&session_id);
+            }
         }
         write_task.abort();
         info!("Session {} disconnected", session_id);
@@ -398,6 +405,34 @@ mod tests {
         assert_eq!(server.active_connections_count().await, 1);
 
         client_ws.close(None).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_stale_duplicate_session_close_keeps_newer_socket() {
+        // Regression: StrictMode double-mount / page reload opens a 2nd socket for the
+        // same session; when the old one closed it unregistered the NEW one, so the
+        // live tab silently stopped receiving snapshots.
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let url = format!("ws://{}/ws?token=dev-token:dup", server.local_addr());
+
+        let (mut old_ws, _) = connect_async(&url).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        let (mut new_ws, _) = connect_async(&url).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(50)).await;
+
+        old_ws.close(None).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(100)).await;
+        assert_eq!(server.active_connections_count().await, 1);
+
+        server.broadcast_snapshot(&[7, 7, 7]).await;
+        let msg = tokio::time::timeout(Duration::from_secs(1), new_ws.next())
+            .await
+            .expect("newer socket must still receive snapshots")
+            .unwrap()
+            .unwrap();
+        assert_eq!(msg, Message::Binary(vec![7u8, 7, 7].into()));
+        new_ws.close(None).await.unwrap();
     }
 
     #[tokio::test]
