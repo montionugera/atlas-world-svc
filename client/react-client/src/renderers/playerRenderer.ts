@@ -19,13 +19,18 @@ export const drawPlayers = (
     const y = player.y * scale;
     
     // Draw player circle (scaled to match world/canvas ratio)
-    const radius = player.radius * scale;
-    drawCircle(ctx, x, y, radius, COLORS.player);
+    const effectiveRadius = (typeof player.radius === 'number' && !isNaN(player.radius) && player.radius > 0)
+      ? player.radius
+      : (RENDER_CONFIG.playerRadius || 1.5);
+    const radius = effectiveRadius * scale;
+    const isCurrent = sessionId === currentPlayerId || player.id === currentPlayerId || player.sessionId === currentPlayerId;
+
+    drawCircle(ctx, x, y, radius, isCurrent ? '#2ecc71' : COLORS.player);
 
     // Always draw a visible outline so players stand out
     ctx.beginPath();
     ctx.arc(x, y, radius + (1 * inverseScale), 0, Math.PI * 2);
-    ctx.strokeStyle = COLORS.playerHighlight;
+    ctx.strokeStyle = isCurrent ? '#f1c40f' : COLORS.playerHighlight;
     ctx.lineWidth = 2 * inverseScale;
     ctx.stroke();
     
@@ -34,7 +39,9 @@ export const drawPlayers = (
     let uiYOffset = y - radius; 
 
     // 1. Health Bar (Bottom of stack)
-    if (player.maxHealth && player.currentHealth !== undefined) {
+    const currentHealth = player.currentHealth ?? player.health ?? 100;
+    const maxHealth = player.maxHealth ?? 100;
+    if (maxHealth > 0 && currentHealth !== undefined) {
       // Pass PIXEL values for dimensions. drawHealthBar handles the inverse scaling conversion to world units.
       const healthBarHeight = 10; // pixels
       const healthBarMargin = 10; // pixels above radius
@@ -43,8 +50,8 @@ export const drawPlayers = (
         ctx,
         x,
         y,
-        player.currentHealth,
-        player.maxHealth,
+        currentHealth,
+        maxHealth,
         radius,
         scale,
         '#ff0000', // red background
@@ -64,9 +71,6 @@ export const drawPlayers = (
       );
       
       // Update Y offset for next elements
-      // Health bar is from (y - offset) downwards
-      // We want next element above (y - offset).
-      // Effective offset used by util is roughly (radius + margin).
       uiYOffset -= ((healthBarMargin + healthBarHeight + 4) * inverseScale);
     } else {
         // Base margin if no health bar
@@ -103,18 +107,19 @@ export const drawPlayers = (
     
     // Position name based on accumulated offset
     const nameY = uiYOffset - (2 * inverseScale); 
+    const displayName = player.name || (isCurrent ? 'Player (YOU)' : `Player-${sessionId}`);
     
     drawText(
       ctx,
-      player.name,
+      displayName,
       x - (25 * inverseScale), // Rough centering offset (text width dependent)
       nameY,
-      COLORS.hudText,
-      `${fontSize}px Arial`
+      isCurrent ? '#f1c40f' : COLORS.hudText,
+      `bold ${fontSize}px Arial`
     );
 
     // Draw BOT label if in bot mode
-    if (player.isBotMode) {
+    if (player.isBotMode && !isCurrent) {
       drawText(
         ctx,
         '[BOT]',
@@ -140,29 +145,33 @@ export const drawPlayers = (
     }
 
     // Draw heading indicator (smaller for player) - always show heading
-    if (player.heading !== undefined) {
+    let heading = player.heading;
+    if (heading === undefined && (player.vx !== 0 || player.vy !== 0)) {
+      heading = Math.atan2(player.vy || 0, player.vx || 0);
+    }
+    if (heading !== undefined) {
       drawHeading(
         ctx,
         x,
         y,
-        player.heading,
+        heading,
         radius,
         scale,
         '#ffffff', // white arrow
         2, // thicker line will be inversely scaled inside this function
-        0.3, // smaller arrow (30% of radius)
+        0.4,
         viewScale
       );
     }
     
     // Draw attack visualization if player is attacking
-    if (player.isAttacking && player.heading !== undefined) {
+    if (player.isAttacking && heading !== undefined) {
       // Draw attack cone
       drawAttackCone(
         ctx,
         x,
         y,
-        player.heading,
+        heading,
         player.attackRange || 3,
         scale,
         '#ff4444', // red cone
@@ -174,7 +183,7 @@ export const drawPlayers = (
         ctx,
         x,
         y,
-        player.heading,
+        heading,
         radius,
         '#ffff00', // yellow slash
         7, // thicker line for slash
@@ -182,12 +191,11 @@ export const drawPlayers = (
       );
     }
     
-    // Highlight current player
-    if (sessionId === currentPlayerId) {
-      // Stronger highlight for the local player
+    // Highlight current player with gold aura
+    if (isCurrent) {
       ctx.beginPath();
       ctx.arc(x, y, radius + (3 * inverseScale), 0, Math.PI * 2);
-      ctx.strokeStyle = COLORS.playerHighlight;
+      ctx.strokeStyle = '#f1c40f';
       ctx.lineWidth = 3 * inverseScale;
       ctx.stroke();
     }

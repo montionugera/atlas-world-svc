@@ -194,18 +194,22 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
               const idStr = String(entity.id);
               if (entity.entityType === EntityType.Player) {
                 const existing = current.players.get(idStr);
+                const isLocalPlayer = idStr === playerId;
                 const updated: Player = {
+                  ...existing,
                   id: idStr,
                   sessionId: idStr,
                   x: entity.x,
                   y: entity.y,
                   vx: entity.vx,
                   vy: entity.vy,
-                  name: `Player-${idStr}`,
+                  radius: 1.5,
+                  name: isLocalPlayer ? 'Player (YOU)' : (existing?.name || `Player-${idStr}`),
                   health: entity.health,
+                  currentHealth: entity.health,
                   maxHealth: entity.maxHealth,
                   isAlive: entity.health > 0,
-                  ...existing,
+                  isBotMode: !isLocalPlayer,
                 };
                 current.players.set(idStr, updated);
               } else if (entity.entityType === EntityType.Mob) {
@@ -216,7 +220,7 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
                   y: entity.y,
                   vx: entity.vx,
                   vy: entity.vy,
-                  radius: 14,
+                  radius: 2.5,
                   tag: 'mob',
                   currentHealth: entity.health,
                   maxHealth: entity.maxHealth,
@@ -301,8 +305,23 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
       await connect();
     }
-    setRoomId('server-rs-room');
+    const targetRoomId = `server-rs-${mapId}`;
+    setRoomId(targetRoomId);
     stateRef.current.mapId = mapId;
+    stateRef.current.roomId = targetRoomId;
+    setGameState((prev) =>
+      prev
+        ? { ...prev, mapId, roomId: targetRoomId }
+        : {
+            players: new Map(),
+            mobs: new Map(),
+            tick: 0,
+            mapId,
+            roomId: targetRoomId,
+            width: 1000,
+            height: 1000,
+          }
+    );
     sendInput(0, 0, false, 0, 0);
   }, [connect, sendInput]);
 

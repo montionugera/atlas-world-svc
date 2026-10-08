@@ -41,16 +41,26 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction, switc
     };
     
     const handleKeyDown = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase(); // Normalize!
+
+      // Prevent page scrolling on arrow keys or space
+      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(key)) {
+        event.preventDefault();
+      }
+
+      // Clear stuck modifier keys if browser reports them inactive
+      if (!event.metaKey) pressedKeysRef.current.delete('meta');
+      if (!event.ctrlKey) pressedKeysRef.current.delete('control');
+      if (!event.shiftKey) pressedKeysRef.current.delete('shift');
+      if (!event.altKey) pressedKeysRef.current.delete('alt');
+
       if (event.repeat) return; // Ignore repeat events to prevent spamming
       
-      const key = event.key.toLowerCase(); // Normalize!
       pressedKeysRef.current.add(key);
       updateMovement();
       
-      
       // Handle attack input
       if ((event.code === 'Space' || event.key === ' ') && sendPlayerAction) {
-        event.preventDefault(); // Prevent page scroll
         sendPlayerAction('attack', true);
       }
 
@@ -112,6 +122,12 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction, switc
     const handleKeyUp = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase(); // Normalize!
       pressedKeysRef.current.delete(key);
+
+      if (!event.metaKey) pressedKeysRef.current.delete('meta');
+      if (!event.ctrlKey) pressedKeysRef.current.delete('control');
+      if (!event.shiftKey) pressedKeysRef.current.delete('shift');
+      if (!event.altKey) pressedKeysRef.current.delete('alt');
+
       updateMovement();
       
       // Handle attack release
@@ -123,15 +139,6 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction, switc
       if ((key === 'f') && sendPlayerAction) {
         sendPlayerAction('useItem', false);
       }
-
-      // Handle Dash release (Shift)
-      // Skills generally don't need release, but we can send false if needed by system
-      // For now, removing the deprecated 'dash' action call
-      /*
-      if (key === 'shift' && sendPlayerAction) {
-         sendPlayerAction('dash', false)
-      }
-      */
     };
     
     const handleBlur = () => {
@@ -140,7 +147,6 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction, switc
       updateMovement();
       if (sendPlayerAction) {
           sendPlayerAction('attack', false);
-          // sendPlayerAction('dash', false); // deprecated
           sendPlayerAction('useItem', false);
       }
     };
@@ -148,11 +154,13 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction, switc
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleBlur);
     
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleBlur);
     };
   }, [updatePlayerInput, sendPlayerAction, switchWeapon, mousePositionRef]);
 

@@ -48,7 +48,10 @@ export const drawMobs = (
     }
     
     // Draw mob circle using server-provided radius (scale already applied to position)
-    drawCircle(ctx, x, y, mob.radius * scale, COLORS.mob);
+    const mobRadius = (typeof mob.radius === 'number' && !isNaN(mob.radius) && mob.radius > 0)
+      ? mob.radius
+      : (RENDER_CONFIG.mobRadius || 2.5);
+    drawCircle(ctx, x, y, mobRadius * scale, COLORS.mob);
     
     // Draw health bar for mobs
     if (mob.maxHealth && mob.currentHealth !== undefined) {
@@ -58,7 +61,7 @@ export const drawMobs = (
         y,
         mob.currentHealth,
         mob.maxHealth,
-        mob.radius, // use mob radius for proportional sizing
+        mobRadius, // use mob radius for proportional sizing
         scale,
         '#ff4444', // darker red background
         '#44ff44', // brighter green for health

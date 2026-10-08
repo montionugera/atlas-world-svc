@@ -98,14 +98,16 @@ function App() {
 
   const joinMap = useCallback(async (mapId: string) => {
     try {
-      if (!client.isConnected) return
-      setSelectedMapId(mapId as (typeof AVAILABLE_MAP_IDS)[number])
-      await client.joinRoom(mapId)
+      if (!client.isConnected) return;
+      setSelectedMapId(mapId as (typeof AVAILABLE_MAP_IDS)[number]);
+      await client.joinRoom(mapId);
+      const label = MAP_LABELS[mapId as (typeof AVAILABLE_MAP_IDS)[number]] || mapId;
+      addLog(`🗺️ Switched to map: ${label}`, 'info');
     } catch (e: any) {
-      console.error(e)
-      addLog(`❌ Failed to join map ${mapId}: ${e?.message || e}`, 'error')
+      console.error(e);
+      addLog(`❌ Failed to join map ${mapId}: ${e?.message || e}`, 'error');
     }
-  }, [client, addLog])
+  }, [client, addLog, MAP_LABELS]);
 
   function filterDep(c: any) {
       return c.connect;
@@ -296,7 +298,10 @@ function App() {
                           name="map"
                           value={id}
                           checked={selectedMapId === id}
-                          onChange={() => setSelectedMapId(id)}
+                          onChange={() => {
+                            setSelectedMapId(id);
+                            joinMap(id);
+                          }}
                           style={{ accentColor: 'rgba(255,255,255,0.8)' }}
                         />
                         <span>{MAP_LABELS[id]}</span>

@@ -76,12 +76,14 @@ export interface Player {
   y: number;
   vx: number;
   vy: number;
+  radius?: number;
   name: string;
   isBotMode?: boolean; // Synced from server
   currentBehavior?: string;
   currentAttackTarget?: string;
   isAlive?: boolean;
   health?: number;
+  currentHealth?: number;
   maxHealth?: number;
   castingUntil?: number; // Synced from server
   castDuration?: number; // Synced from server
