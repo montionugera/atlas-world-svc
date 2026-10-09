@@ -287,6 +287,47 @@ mod tests {
     }
 
     #[test]
+    fn test_dash_glide_persists_decays_then_returns_control() {
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50)); // dt = 0.05s
+
+        let mut dash = DashState::new();
+        dash.remaining_sec = 0.22;
+        dash.dir_x = 1.0;
+        dash.dir_y = 0.0;
+        dash.speed = 450.0;
+
+        let entity = world
+            .spawn((
+                PlayerAvatar::new("p1", 200.0),
+                PlayerInputState::new(0.0, 1.0, false, 0), // holding +Y throughout
+                Velocity::zero(),
+                dash,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(player_input_system);
+
+        // 0.22s glide at dt 0.05s: ticks 1-4 are dash-driven, tick 5 expires.
+        let mut prev_vx = f32::MAX;
+        for tick in 1..=4 {
+            schedule.run(&mut world);
+            let vel = world.get::<Velocity>(entity).unwrap();
+            assert!(vel.vx > 200.0, "tick {tick}: still above run speed, got {}", vel.vx);
+            assert!(vel.vx < prev_vx, "tick {tick}: dash speed must decay");
+            assert_eq!(vel.vy, 0.0, "tick {tick}: held input must not steer the glide");
+            prev_vx = vel.vx;
+        }
+
+        schedule.run(&mut world);
+        let vel = world.get::<Velocity>(entity).unwrap();
+        assert_eq!(vel.vx, 0.0);
+        assert_eq!(vel.vy, 200.0, "movement control returns once the glide expires");
+        assert!(!world.get::<DashState>(entity).unwrap().is_dashing());
+    }
+
+    #[test]
     fn test_dash_overrides_movement_and_decelerates() {
         let mut world = World::new();
         let clock = SimClock::new(50); // dt = 0.05s
