@@ -21,7 +21,7 @@ const seed = (i) => `${i}f81c0aa9d2e5b17`;
 const writeReportSrc = (path, obj) => `require('fs').writeFileSync(${JSON.stringify(path)}, ${JSON.stringify(JSON.stringify(obj))})`;
 
 test("FIFO with at most `concurrency` running", async () => {
-  const s = setup(); const jobs = [1, 2, 3].map((i) => s.queue.enqueue({ kind: "draft", seed: seed(i) }));
+  const s = setup({ sleepMs: 1000 }); const jobs = [1, 2, 3].map((i) => s.queue.enqueue({ kind: "draft", seed: seed(i) }));
   await new Promise((r) => setTimeout(r, 100));
   assert.equal(s.queue.running(), 2); assert.equal(s.queue.store.get(jobs[2].id).status, "queued");
   await s.queue.onIdle();
