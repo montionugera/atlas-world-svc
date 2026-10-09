@@ -300,6 +300,9 @@ impl MapConfig {
                         TerrainZone::rect(TerrainType::Road, 0.0, 485.0, 390.0, 30.0),
                         TerrainZone::rect(TerrainType::Road, 610.0, 485.0, 390.0, 30.0),
                         TerrainZone::rect(TerrainType::Road, 390.0, 390.0, 220.0, 220.0),
+                        // Town Trade Road and its bridge, painted over the Ice.
+                        TerrainZone::rect(TerrainType::Road, 0.0, 172.0, 195.0, 16.0),
+                        TerrainZone::rect(TerrainType::Road, 188.0, 170.0, 30.0, 20.0),
                     ],
                     player_spawn: None,
                 }

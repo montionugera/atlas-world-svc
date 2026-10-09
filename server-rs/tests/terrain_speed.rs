@@ -134,3 +134,27 @@ fn terrain_test_room_has_every_terrain_and_a_straight_run_crosses_them_all() {
     want.push(TerrainType::Grass);
     assert_eq!(crossed, want);
 }
+
+#[test]
+fn overlapping_zones_resolve_to_the_later_painted_one() {
+    let sim = play_map();
+    let zones = sim.world.resource::<TerrainZones>();
+    // plaza over mud, arm over forest, trade road over ice, bridge over ice
+    assert_eq!(zones.terrain_at(500.0, 600.0), TerrainType::Road);
+    assert_eq!(zones.terrain_at(700.0, 500.0), TerrainType::Road);
+    assert_eq!(zones.terrain_at(100.0, 180.0), TerrainType::Road);
+    assert_eq!(zones.terrain_at(200.0, 180.0), TerrainType::Road);
+    // beside the trade road is still ice
+    assert_eq!(zones.terrain_at(100.0, 160.0), TerrainType::Ice);
+}
+
+#[test]
+fn a_map_without_map_id_has_no_terrain() {
+    let sim = AtlasSimulation::live(LiveConfig {
+        bot_count: 0,
+        mob_count: 0,
+        map_id: None,
+        ..Default::default()
+    });
+    assert!(sim.world.get_resource::<TerrainZones>().is_none());
+}
