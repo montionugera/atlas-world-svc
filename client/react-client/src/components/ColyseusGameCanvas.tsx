@@ -7,6 +7,7 @@ import { useGameStateContext } from "../contexts/GameStateContext";
 import { InputDebugPanel } from "./InputDebugPanel";
 import { calculateScale } from "../utils/drawingUtils";
 import { SKILL_DEFINITIONS } from "../config/skills";
+import { getAoeReticle } from "../utils/aoeReticle";
 
 interface ColyseusGameCanvasProps {
   client: UseColyseusClientReturn;
@@ -26,6 +27,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     icon: string;
     startTime: number;
     durationMs: number;
+    aim: { x: number; y: number };
   } | null>(null);
   const [, setTickCounter] = React.useState(0);
 
@@ -49,6 +51,12 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
   const isDead = localPlayer
     ? !localPlayer.isAlive || (localPlayer.health ?? 1) <= 0
     : false;
+
+  // Ground-target indicator while an AoE skill is being cast (null otherwise)
+  const aoeReticle =
+    activeCast && localPlayer
+      ? getAoeReticle(activeCast.skillId, activeCast.aim, localPlayer)
+      : null;
 
   // Resolve aim towards mouse, or fallback to nearest mob / movement direction
   const resolveAimCoordinates = React.useCallback(
@@ -132,6 +140,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           icon: def.icon,
           startTime: now,
           durationMs: castDurationMs,
+          aim,
         });
 
         if (localPlayer) {
@@ -430,6 +439,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           roomId={roomId}
           playerId={playerId}
           trackFrame={trackFrame}
+          aoeReticle={aoeReticle}
         />
       </div>
 

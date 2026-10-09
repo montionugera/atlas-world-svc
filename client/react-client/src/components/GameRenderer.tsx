@@ -2,6 +2,7 @@ import { useRef, useEffect } from "react";
 import { GameState } from "../types/game";
 import { calculateScale, clearCanvas } from "../utils/drawingUtils";
 import { drawGrid, drawGridCoordinates } from "../utils/gridUtils";
+import type { AoeReticle } from "../utils/aoeReticle";
 import { extrapolateEntities } from "../utils/deadReckoning";
 import { drawMap } from "../renderers/mapRenderer";
 import { drawMobs } from "../renderers/mobRenderer";
@@ -24,6 +25,7 @@ interface GameRendererProps {
   roomId: string | null;
   playerId: string;
   trackFrame: () => void;
+  aoeReticle?: AoeReticle | null;
 }
 
 interface BlastEffect {
@@ -46,6 +48,7 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
   roomId,
   playerId,
   trackFrame,
+  aoeReticle,
 }) => {
   const animationFrameRef = useRef<number | undefined>(undefined);
   const floatingTextsRef = useRef<FloatingText[]>([]);
@@ -213,6 +216,26 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
         drawPlayers(ctx, renderPlayers, playerId, 1, scale);
         if (renderProjectiles) {
           drawProjectiles(ctx, renderProjectiles, 1, scale);
+        }
+
+        // Ground-target AoE reticle (world units, so it scales with the view)
+        if (aoeReticle) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(
+            aoeReticle.x,
+            aoeReticle.y,
+            aoeReticle.radius,
+            0,
+            Math.PI * 2,
+          );
+          ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
+          ctx.fill();
+          ctx.setLineDash([6 / scale, 4 / scale]);
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+          ctx.lineWidth = 2 / scale;
+          ctx.stroke();
+          ctx.restore();
         }
 
         // Draw AoE blast shockwaves
@@ -406,7 +429,16 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [gameState, updateCount, fps, updateRate, roomId, playerId, trackFrame]);
+  }, [
+    gameState,
+    updateCount,
+    fps,
+    updateRate,
+    roomId,
+    playerId,
+    trackFrame,
+    aoeReticle,
+  ]);
 
   return null; // This component only handles rendering
 };
