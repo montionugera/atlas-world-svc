@@ -170,7 +170,11 @@ read these routes from a browser.
 (the last two act on `player`). Success: `200 {"ok":true,"state":{…}}`; failure:
 `400 {"ok":false,"error":"…"}`. Counts are clamped to 300 bots and 1000 mobs per room. Commands
 are applied by the tick loop between ticks, at most 4 per tick; a command not answered within
-2 s gets `503` and is dropped.
+2 s gets `503` and is normally discarded, but a command can still be applied if the timeout
+fires in the same tick it is drained, so after a `503` re-read the state.
+
+An explicit `ATLAS_DEBUG=1` (or `true`) turns these controls on even in a release build with auth
+secrets set. Never set it in production.
 
 ---
 
