@@ -165,7 +165,7 @@ interface Sampled {
 }
 
 /** Write the position at simulation time `t` into `out` (no allocation). */
-function sampleInto(
+export function sampleInto(
   e: Sampled,
   t: number,
   out: { x: number; y: number },
