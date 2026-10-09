@@ -25,6 +25,7 @@ import {
   lockMovement,
   noteDash,
   observeServer,
+  restartPrediction,
   setHeldInput,
   unlockMovement,
 } from "../utils/localPrediction";
@@ -139,6 +140,10 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       );
     });
   }, [predicts, onSnapshot, playerId, prediction]);
+  // A new connection has no key held on the server (the hook drops its own too).
+  useEffect(() => {
+    restartPrediction(prediction, performance.now());
+  }, [clientConnected, playerId, prediction]);
   /** `p` at the position the local player is drawn at this frame. */
   const atDrawnPosition = React.useCallback(
     <T extends { x: number; y: number }>(p: T | undefined): T | undefined => {
@@ -823,6 +828,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
               position: "absolute",
               top: 6,
               left: 6,
+              // Above the death overlay (100), which would take the click as a respawn.
+              zIndex: 101,
               padding: "2px 6px",
               border: "none",
               borderRadius: 4,
