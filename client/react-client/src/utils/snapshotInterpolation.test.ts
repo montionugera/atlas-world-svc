@@ -1,6 +1,5 @@
 import { CAPTURE } from "./__fixtures__/snapshotCapture";
 import {
-  MAX_EXTRAPOLATION_MS,
   PosSample,
   SNAPSHOT_INTERVAL_MS,
   SnapshotClock,
@@ -30,10 +29,10 @@ function replay(rows: ReadonlyArray<Row>, untilMs?: number): Frame[] {
   const end = untilMs ?? rows[rows.length - 1][0];
   for (let now = rows[0][0] + 3; now <= end; now += FRAME_MS) {
     while (i < rows.length && rows[i][0] <= now) {
-      const [arrival, tick, x, y, vx, vy] = rows[i++];
+      const [arrival, tick, x, y] = rows[i++];
       const t = tick * SNAPSHOT_INTERVAL_MS;
       clock = observeSnapshot(clock, t, arrival);
-      samples = pushSample(samples, { t, x, y, vx, vy });
+      samples = pushSample(samples, { t, x, y });
     }
     const t = renderTimeAt(clock, now);
     frames.push({ now, t, ...samplePosition({ x: 0, y: 0, samples }, t) });
@@ -99,18 +98,33 @@ describe("snapshot interpolation on a real jittered capture", () => {
 });
 
 describe("late and missing snapshots", () => {
-  it("does not freeze when a snapshot is one interval late", () => {
+  it("holds, then resumes without a jump, when a snapshot is one interval late", () => {
     const arrivals = Array.from({ length: 40 }, (_, k) => k * 50);
     arrivals[20] += 50; // tick 20 arrives together with tick 21
     const d = steps(between(replay(walk(arrivals)), 500, 1900), "x");
-    expect(Math.min(...d)).toBeGreaterThan(0);
+    expect(Math.min(...d)).toBeGreaterThanOrEqual(0);
     expect(Math.max(...d)).toBeLessThan(3.34 * 1.1 + 0.01);
+    // The delay then covers that lateness: the same thing again is not a hold.
+    arrivals[30] += 50;
+    const again = steps(between(replay(walk(arrivals)), 1300, 1900), "x");
+    expect(Math.min(...again)).toBeGreaterThan(0);
+  });
+
+  it("stops without overshoot or snap-back when the stopping snapshot is late", () => {
+    // Walking +x at 200 u/s; the key is released during tick 20 (the server stops
+    // the player at x=193) and that snapshot arrives 80 ms late.
+    const rows = walk(Array.from({ length: 20 }, (_, k) => k * 50));
+    for (let k = 20; k < 40; k++) rows.push([k * 50 + 80, k, 193, 0, 0, 0]);
+    const frames = between(replay(rows), 800, 1900);
+    for (const f of frames) expect(f.x).toBeLessThanOrEqual(193 + 1e-6);
+    expect(Math.min(...steps(frames, "x"))).toBeGreaterThanOrEqual(0);
+    expect(frames[frames.length - 1].x).toBeCloseTo(193, 5);
   });
 
   it("holds through a long stall, then resumes from where it held", () => {
     const arrivals = Array.from({ length: 60 }, (_, k) => k * 50);
-    // 300 ms stall before tick 20, then the server bursts to catch up.
-    for (let k = 20; k < 26; k++) arrivals[k] = 1300 + (k - 20) * 2;
+    // 250 ms stall before tick 20 (the most the delay covers), then a catch-up burst.
+    for (let k = 20; k < 25; k++) arrivals[k] = 1250 + (k - 20) * 2;
     const d = steps(between(replay(walk(arrivals)), 500, 2900), "x");
     expect(Math.min(...d)).toBeGreaterThanOrEqual(0);
     expect(Math.max(...d)).toBeLessThan(3.34 * 1.1 + 0.01);
@@ -158,18 +172,18 @@ describe("late and missing snapshots", () => {
     expect(worst).toBeLessThanOrEqual(300);
   });
 
-  it("extrapolates a dry buffer by at most MAX_EXTRAPOLATION_MS", () => {
-    const samples = [{ t: 1000, x: 10, y: 0, vx: 200, vy: 0 }];
-    expect(samplePosition({ x: 0, y: 0, samples }, 1020).x).toBeCloseTo(14);
-    expect(samplePosition({ x: 0, y: 0, samples }, 5000).x).toBeCloseTo(
-      10 + (200 * MAX_EXTRAPOLATION_MS) / 1000,
-    );
+  it("holds at the newest sample when the buffer is dry", () => {
+    const samples = [{ t: 1000, x: 10, y: 0 }];
+    expect(samplePosition({ x: 0, y: 0, samples }, 1020).x).toBe(10);
+    expect(samplePosition({ x: 0, y: 0, samples }, 5000).x).toBe(10);
+    const clock = observeSnapshot(undefined, 1000, 2000);
+    expect(renderTimeAt(clock, 9000)).toBe(1000);
   });
 });
 
 describe("samplePosition / pushSample / clock", () => {
-  const a = { t: 1000, x: 0, y: 0, vx: 200, vy: 0 };
-  const b = { t: 1050, x: 10, y: 4, vx: 0, vy: 0 };
+  const a = { t: 1000, x: 0, y: 0 };
+  const b = { t: 1050, x: 10, y: 4 };
 
   it("interpolates between the bracketing samples", () => {
     const p = samplePosition({ x: 99, y: 99, samples: [a, b] }, 1025);
@@ -203,6 +217,34 @@ describe("samplePosition / pushSample / clock", () => {
     for (let k = 0; k < 50; k++) h = pushSample(h, { ...a, t: k * 50 });
     expect(h!.length).toBeLessThanOrEqual(12);
     expect(h![h!.length - 1].t).toBe(49 * 50);
+  });
+
+  it("starts a new history on a teleport (respawn / reset), not on a dash", () => {
+    // Dash: 450 u/s = 22.5 u per tick. Respawn: across the map in one tick.
+    expect(pushSample([a], { t: 1050, x: 22.5, y: 0 })).toHaveLength(2);
+    expect(pushSample([a], { t: 1050, x: 60, y: 80 })).toHaveLength(2);
+    const respawned = pushSample([a, b], { t: 1100, x: 500, y: 500 });
+    expect(respawned).toEqual([{ t: 1100, x: 500, y: 500 }]);
+    // Nothing is drawn part-way between the old and the new place.
+    expect(samplePosition({ x: 0, y: 0, samples: respawned }, 1075)).toEqual({
+      x: 500,
+      y: 500,
+    });
+  });
+
+  it("never lets a non-finite sample reach a drawn position", () => {
+    for (const bad of [
+      { t: 1100, x: NaN, y: 4 },
+      { t: 1100, x: 10, y: Infinity },
+      { t: NaN, x: 10, y: 4 },
+    ]) {
+      const samples = pushSample([a, b], bad);
+      for (const t of [1025, 1075, 1100, 1200]) {
+        const p = samplePosition({ x: 10, y: 4, samples }, t);
+        expect(Number.isFinite(p.x) && Number.isFinite(p.y)).toBe(true);
+      }
+    }
+    expect(pushSample(undefined, { t: 1, x: NaN, y: 0 })).toEqual([]);
   });
 
   it("resynchronises when the timeline changes (reconnect / room switch)", () => {

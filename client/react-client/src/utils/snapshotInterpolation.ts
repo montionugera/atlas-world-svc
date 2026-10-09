@@ -11,11 +11,9 @@
 
 /** Simulation time covered by one server tick. */
 export const SNAPSHOT_INTERVAL_MS = 50;
-/** How far past the newest snapshot we project when the buffer runs dry. */
-export const MAX_EXTRAPOLATION_MS = 50;
 /**
- * Slack on top of the worst recent lateness: one interval, so that together with
- * MAX_EXTRAPOLATION_MS a first-ever snapshot one interval late causes no freeze.
+ * On top of the worst recent lateness: one interval, so the snapshot after the one
+ * being drawn towards has arrived by the time it is needed.
  */
 const MARGIN_MS = 50;
 /**
@@ -33,14 +31,17 @@ const SHRINK_RATE = 0.1;
 const RESYNC_MS = 1000;
 /** Samples kept per entity (covers MAX_DELAY_MS plus a burst). */
 const MAX_SAMPLES = 12;
+/**
+ * A larger move in one snapshot is a teleport (respawn / reset), not motion: over 4x
+ * the fastest real step (dash, 450 u/s = 22.5 u per tick).
+ */
+const TELEPORT_UNITS = 100;
 
-/** Position of an entity at simulation time `t` (ms). Velocity is units/second. */
+/** Position of an entity at simulation time `t` (ms). */
 export interface PosSample {
   t: number;
   x: number;
   y: number;
-  vx: number;
-  vy: number;
 }
 
 /**
@@ -91,7 +92,7 @@ export function observeSnapshot(
   }
   const newest = Math.max(clock.newest, simTime);
   const cap = MAX_DELAY_MS + MARGIN_MS;
-  const late = offset - Math.min(...clock.offsets) > cap;
+  const late = offset - Math.min(...clock.offsets) > MAX_DELAY_MS;
   const burst = arrival - clock.at < SNAPSHOT_INTERVAL_MS / 2;
   if (clock.stalled ? burst : late) {
     // A stall longer than the delay covers; its backlog lands in one burst. Snap to
@@ -121,15 +122,15 @@ export function observeSnapshot(
 }
 
 /**
- * Simulation time to draw at `now`. Held once it is MAX_EXTRAPOLATION_MS past the
- * newest snapshot (nothing newer to draw).
+ * Simulation time to draw at `now`. Held at the newest snapshot when the buffer runs
+ * dry: guessing ahead overshoots a stop and then snaps back.
  */
 export function renderTimeAt(
   clock: SnapshotClock | undefined,
   now: number,
 ): number {
   if (!clock) return now;
-  return Math.min(now - lagAt(clock, now), clock.newest + MAX_EXTRAPOLATION_MS);
+  return Math.min(now - lagAt(clock, now), clock.newest);
 }
 
 /** How far behind the newest possible snapshot the picture is held at `now` (ms). */
@@ -141,13 +142,27 @@ export function interpolationDelayAt(
   return lagAt(clock, now) - Math.min(...clock.offsets);
 }
 
-/** Append a sample; a sample that does not move time forward starts a new history. */
+/**
+ * Append a sample. One that does not move time forward, or that teleports, starts a
+ * new history; a non-finite one is dropped.
+ */
 export function pushSample(
   samples: readonly PosSample[] | undefined,
   sample: PosSample,
 ): PosSample[] {
+  if (
+    !Number.isFinite(sample.t) ||
+    !Number.isFinite(sample.x) ||
+    !Number.isFinite(sample.y)
+  ) {
+    return samples ? [...samples] : [];
+  }
   if (!samples || samples.length === 0) return [sample];
-  if (sample.t <= samples[samples.length - 1].t) return [sample];
+  const last = samples[samples.length - 1];
+  if (sample.t <= last.t) return [sample];
+  if (Math.hypot(sample.x - last.x, sample.y - last.y) > TELEPORT_UNITS) {
+    return [sample];
+  }
   return [...samples, sample].slice(-MAX_SAMPLES);
 }
 
@@ -157,7 +172,7 @@ interface Sampled {
   samples?: readonly PosSample[];
 }
 
-/** Position at simulation time `t`: interpolated, or briefly extrapolated when dry. */
+/** Position at simulation time `t`: interpolated, or the newest sample when dry. */
 export function samplePosition(
   e: Sampled,
   t: number,
@@ -165,10 +180,7 @@ export function samplePosition(
   const s = e.samples;
   if (!s || s.length === 0 || !Number.isFinite(t)) return { x: e.x, y: e.y };
   const last = s[s.length - 1];
-  if (t >= last.t) {
-    const dt = Math.min(t - last.t, MAX_EXTRAPOLATION_MS) / 1000;
-    return { x: last.x + last.vx * dt, y: last.y + last.vy * dt };
-  }
+  if (t >= last.t) return { x: last.x, y: last.y };
   for (let i = s.length - 2; i >= 0; i--) {
     const a = s[i];
     if (t >= a.t) {

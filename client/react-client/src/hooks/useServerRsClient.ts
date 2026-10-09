@@ -349,17 +349,10 @@ export const useServerRsClient = (
                 simTime,
                 arrivalTime,
               );
-              const sampleOf = (e: {
-                x: number;
-                y: number;
-                vx: number;
-                vy: number;
-              }) => ({
+              const sampleOf = (e: { x: number; y: number }) => ({
                 t: simTime,
                 x: e.x,
                 y: e.y,
-                vx: e.vx,
-                vy: e.vy,
               });
               // Snapshots are full state: projectiles are ephemeral, so rebuild the set each
               // frame (they never go through removed_ids).
