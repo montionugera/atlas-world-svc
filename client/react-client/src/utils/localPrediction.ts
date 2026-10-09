@@ -7,13 +7,17 @@
  * the server's own walking rule (server-rs/src/systems/player_input.rs), and pulled
  * towards where the server's path says it should be.
  *
- * The wire does not echo which input a snapshot has processed, so that path is placed
- * by time: an input issued at client time `c` is consumed by the first tick whose
- * simulation time `S` satisfies `S + base >= c + rtt`, where `base` is the arrival
- * offset of the most punctual recent snapshot. The target is the server's path played
- * `50 ms - rtt` behind that, which is as early as it can be known: it follows input
- * 0-50 ms late (tick quantisation), built from real snapshots, with the ticks not
- * yet received replayed from the input history.
+ * Each snapshot echoes the number of the last input its tick ran on (`input_ack`), so
+ * what the server has done is known exactly: the path is the newest snapshot with the
+ * inputs it has not acknowledged replayed on top. Those are placed on the ticks still to
+ * come by time: an input sent at client time `c` makes the first tick whose simulation
+ * time `S` satisfies `c <= S + deadline`, and `deadline` is itself read off the echoes
+ * (which tick each earlier input made). The target is the server's path played one tick
+ * behind that, which is as early as it can be known: it follows input 0-50 ms late (tick
+ * quantisation).
+ *
+ * A server that sends no echo (or one that is not ours: a second socket on the session)
+ * gets no prediction: `ready` stays false and the interpolated position is drawn.
  *
  * All functions take time as an argument and mutate a caller-owned state object, so
  * a frame allocates nothing.
@@ -45,17 +49,16 @@ const STILL_SPEED = 5;
 const SPEED_TOLERANCE = 0.25;
 /** Consecutive disagreeing snapshots before the server takes over. */
 const DIVERGE_SNAPSHOTS = 2;
-/** An input change this close to a tick may or may not have been in it. */
+/** The end of a cast is placed by time: this close to a tick it may or may not be in it. */
 const AMBIGUOUS_MS = 75;
 /** Ticks replayed past the newest snapshot; beyond that the target holds (a stall). */
 const MAX_REPLAY_TICKS = 6;
 /** Longest the server-driven path is extrapolated with the server's own velocity. */
 const MAX_EXTRAPOLATE_MS = 100;
-/** Input-to-snapshot delays kept for the round-trip estimate. */
-const DELAY_WINDOW = 8;
-/** A change not seen in a snapshot within this long was refused (stun, cast lock). */
-const MAX_PROBE_MS = 300;
-const MAX_RTT_MS = 250;
+/** Acknowledged inputs kept for the tick deadline. */
+const MARK_WINDOW = 8;
+/** An input that missed a tick was sent after its deadline, by at least this (ms). */
+const MISSED_BY_MS = 0.001;
 const HISTORY = 32;
 /** Server dash: 0.22 s, plus the time the server takes to start it. */
 const DASH_YIELD_MS = 320;
@@ -63,13 +66,15 @@ const DASH_YIELD_MS = 320;
 const CALIBRATE_ALPHA = 0.3;
 const TICK_SEC = SNAPSHOT_INTERVAL_MS / 1000;
 
-export type YieldReason = "dead" | "dash" | "diverged";
+export type YieldReason = "dead" | "dash" | "unacked" | "diverged";
 
 /** Movement input in effect from client time `t`, normalised as the server does. */
 export interface InputChange {
   t: number;
   mx: number;
   my: number;
+  /** `client_tick` of the input that carried it; 0 when no input did (a cast's lock). */
+  seq: number;
 }
 
 export interface PredictionState {
@@ -83,11 +88,18 @@ export interface PredictionState {
   /** Walking speed on grass (u/s), calibrated from the server-reported speed. */
   baseSpeed: number;
   calibrated: boolean;
-  /** Estimated client -> server -> client delay, excluding the wait for a tick. */
+  /** Client -> server -> client delay the deadline implies (readout only). */
   rtt: number;
-  delays: number[];
   /** `arrival - simTime` of the most punctual recent snapshot. */
   base: number;
+  /** Newest input the server has acknowledged; 0: unknown, so nothing is predicted. */
+  ack: number;
+  /** An input sent by client time `S + deadline` is in the tick at simulation time `S`. */
+  deadline: number;
+  /** `sent - simTime` of recent inputs and the first tick that had them. */
+  marks: number[];
+  /** `base` the marks are relative to: they follow it when it moves by whole ticks. */
+  markBase: number;
   /** Changes of the input in effect, oldest first. */
   history: InputChange[];
   /** Keys held, kept through a cast lock. */
@@ -96,8 +108,6 @@ export interface PredictionState {
   /** The local cast locks movement until this client time (0: no cast). */
   lockUntil: number;
   dashUntil: number;
-  /** Input change not yet seen in a snapshot (measures the round trip). */
-  pending: InputChange | null;
   disagree: number;
   diverged: boolean;
   /** Time, position, velocity, speed and terrain multiplier of the newest snapshot. */
@@ -128,14 +138,16 @@ export function createPrediction(): PredictionState {
     baseSpeed: REFERENCE_RUN_SPEED,
     calibrated: false,
     rtt: 0,
-    delays: [],
     base: 0,
+    ack: 0,
+    deadline: 0,
+    marks: [],
+    markBase: 0,
     history: [],
     heldX: 0,
     heldY: 0,
     lockUntil: 0,
     dashUntil: 0,
-    pending: null,
     disagree: 0,
     diverged: false,
     serverAt: 0,
@@ -159,7 +171,7 @@ export function resetPrediction(s: PredictionState, now: number): void {
   s.history = [];
   s.lockUntil = 0;
   s.dashUntil = 0;
-  s.pending = null;
+  s.ack = 0;
   s.disagree = 0;
   s.diverged = false;
   s.serverVx = 0;
@@ -168,33 +180,47 @@ export function resetPrediction(s: PredictionState, now: number): void {
   s.yielding = null;
   s.error = 0;
   s.errorMax = 0;
-  pushEffective(s, now);
+  pushEffective(s, now, 0);
 }
 
-/** A new connection: the server holds no key for it, and its round trip is unknown. */
+/** A new connection: the server holds no key for it, and its link is unknown. */
 export function restartPrediction(s: PredictionState, now: number): void {
   s.heldX = 0;
   s.heldY = 0;
-  s.delays = [];
+  s.marks = [];
   s.rtt = 0;
   resetPrediction(s, now);
 }
 
-const NO_INPUT: InputChange = { t: -Infinity, mx: 0, my: 0 };
+const NO_INPUT: InputChange = { t: -Infinity, mx: 0, my: 0, seq: 0 };
 
-/** Input in effect at client time `t`. */
-function inputAt(s: PredictionState, t: number): InputChange {
+/**
+ * Input the tick at simulation time `simTime` runs on. An acknowledged input is in
+ * effect whatever the clock says; one not yet acknowledged can only make a tick the
+ * server has still to run (`ahead`), and which one is told by time, as is the end of a
+ * cast.
+ */
+function inputForTick(
+  s: PredictionState,
+  simTime: number,
+  ahead: boolean,
+): InputChange {
+  const due = simTime + s.deadline;
   for (let i = s.history.length - 1; i >= 0; i--) {
-    if (s.history[i].t <= t) return s.history[i];
+    const e = s.history[i];
+    if (e.seq !== 0 ? e.seq <= s.ack || (ahead && e.t <= due) : e.t <= due) {
+      return e;
+    }
   }
   return NO_INPUT;
 }
 
-function changedNear(s: PredictionState, t: number): boolean {
+/** Whether a change placed by time falls too near client time `t` to tell its tick. */
+function unsureNear(s: PredictionState, t: number): boolean {
   for (let i = s.history.length - 1; i >= 0; i--) {
     const d = s.history[i].t - t;
     if (d < -AMBIGUOUS_MS) return false;
-    if (d < AMBIGUOUS_MS) return true;
+    if (d < AMBIGUOUS_MS && s.history[i].seq === 0) return true;
   }
   return false;
 }
@@ -235,26 +261,30 @@ function walkSpeedAt(
   return s.serverSpeed >= STILL_SPEED ? s.serverSpeed : s.baseSpeed;
 }
 
-/** Record the input in effect from `t` (held keys, or none during a cast). */
-function pushEffective(s: PredictionState, t: number): void {
+/**
+ * Record the input in effect from `t` (held keys, or none during a cast); `seq` is the
+ * input that carries it to the server, 0 when the server changes it by itself.
+ */
+function pushEffective(s: PredictionState, t: number, seq: number): void {
   const locked = s.lockUntil > t;
   const mx = locked ? 0 : s.heldX;
   const my = locked ? 0 : s.heldY;
   const last = s.history[s.history.length - 1] ?? NO_INPUT;
   if (last.mx === mx && last.my === my) return;
-  const change = { t, mx, my };
-  s.history.push(change);
+  s.history.push({ t, mx, my, seq });
   if (s.history.length > HISTORY) s.history.shift();
-  // Time it to its first snapshot, unless the server is already doing this.
-  s.pending = sameWay(s.serverVx, s.serverVy, mx, my, 0.95) ? null : change;
 }
 
-/** The movement keys changed at client time `now` (raw vector, as sent to the server). */
+/**
+ * The movement keys changed at client time `now` (raw vector, as sent to the server in
+ * input number `seq`).
+ */
 export function setHeldInput(
   s: PredictionState,
   now: number,
   vx: number,
   vy: number,
+  seq: number,
 ): void {
   // Server rule: no input below 0.01 length, direction scaled down to unit length.
   const lenSq = vx * vx + vy * vy;
@@ -263,7 +293,7 @@ export function setHeldInput(
   const inv = held ? 1 / Math.max(Math.sqrt(lenSq), 1) : 0;
   s.heldX = held ? vx * inv : 0;
   s.heldY = held ? vy * inv : 0;
-  pushEffective(s, now);
+  pushEffective(s, now, seq);
 }
 
 /** A local cast started: the server ignores movement until `until` (client time). */
@@ -273,14 +303,14 @@ export function lockMovement(
   until: number,
 ): void {
   s.lockUntil = until;
-  pushEffective(s, now);
+  pushEffective(s, now, 0);
 }
 
 /** The local cast ended or was dropped. */
 export function unlockMovement(s: PredictionState, now: number): void {
   if (s.lockUntil === 0) return;
   s.lockUntil = 0;
-  pushEffective(s, now);
+  pushEffective(s, now, 0);
 }
 
 /** A dash was sent: the server drives the position until it is over. */
@@ -296,11 +326,14 @@ export interface ServerSample {
   vx: number;
   vy: number;
   alive: boolean;
+  /** The player's `input_ack`, and the newest input this client has sent. */
+  ack: number;
+  sent: number;
 }
 
 /**
- * Fold one snapshot of the local player in: round-trip estimate, base-speed
- * calibration, and whether the server is still obeying the input.
+ * Fold one snapshot of the local player in: which inputs it includes, the tick
+ * deadline, base-speed calibration, and whether the server is still obeying the input.
  * `offsets` are the snapshot clock's recent `arrival - simTime` values.
  */
 export function observeServer(
@@ -316,6 +349,54 @@ export function observeServer(
     }
     s.base = base;
   }
+  // A server that stalls skips ticks, so simulation time falls whole ticks behind,
+  // and the marks made before it with it.
+  const skipped =
+    Math.round((s.base - s.markBase) / SNAPSHOT_INTERVAL_MS) *
+    SNAPSHOT_INTERVAL_MS;
+  if (s.marks.length === 0) {
+    s.markBase = s.base;
+  } else if (skipped !== 0) {
+    s.markBase += skipped;
+    for (let i = 0; i < s.marks.length; i++) s.marks[i] += skipped;
+  }
+  // 0 is no echo (an older server); beyond what was sent it counts another socket.
+  const ack = snap.ack <= snap.sent ? snap.ack : 0;
+  if (ack !== 0) {
+    // An input this tick is the first to include was sent before its deadline and
+    // after the previous tick's (when that snapshot was seen, with an echo of ours).
+    const first =
+      s.ack !== 0 && snap.simTime - s.serverAt === SNAPSHOT_INTERVAL_MS;
+    let newest = -1;
+    for (let i = 0; i < s.history.length; i++) {
+      const e = s.history[i];
+      if (e.seq === 0 || e.seq > ack) continue;
+      newest = i;
+      if (first && e.seq > s.ack) {
+        s.marks.push(e.t - snap.simTime);
+        if (s.marks.length > MARK_WINDOW) s.marks.shift();
+      }
+    }
+    // Everything before the acknowledged input in effect is history.
+    if (newest > 0) s.history.splice(0, newest);
+  }
+  s.ack = ack;
+  // The deadline is no earlier than any input that made its tick, less than a tick
+  // after any that did, and before the snapshot of that tick arrives. The latest of
+  // those is taken: assuming an input makes the earlier tick never overshoots a stop.
+  // Only the mark that puts it latest and those after it count: an older one may be
+  // from a slower link, and one a whole tick below was a delayed input.
+  let from = 0;
+  for (let i = 1; i < s.marks.length; i++) {
+    if (s.marks[i] >= s.marks[from]) from = i;
+  }
+  let deadline = s.base;
+  for (let i = from; i < s.marks.length; i++) {
+    const hi = s.marks[i] + SNAPSHOT_INTERVAL_MS - MISSED_BY_MS;
+    if (hi > s.marks[from] && hi < deadline) deadline = hi;
+  }
+  s.deadline = deadline;
+  s.rtt = s.base - deadline;
   const speed = Math.hypot(snap.vx, snap.vy);
   const mult = multAt(zones, snap.x, snap.y);
   // Moved further than its velocity explains (debug teleport, reset to spawn): the
@@ -328,49 +409,13 @@ export function observeServer(
     s.ready = false;
   }
 
-  if (!snap.alive) {
-    s.pending = null;
+  if (!snap.alive || ack === 0) {
     s.disagree = 0;
     s.diverged = false;
   } else {
-    const pending = s.pending;
-    if (pending) {
-      // First snapshot showing the change: it took `rtt` plus 0-50 ms to reach a tick.
-      const delay = snap.simTime + s.base - pending.t;
-      if (delay > MAX_PROBE_MS) {
-        s.pending = null;
-      } else if (
-        delay >= 0 &&
-        sameWay(snap.vx, snap.vy, pending.mx, pending.my, 0.95)
-      ) {
-        s.pending = null;
-        s.delays.push(delay);
-        if (s.delays.length > DELAY_WINDOW) s.delays.shift();
-        // The longest wait was a just-missed tick, so rtt is at least 50 ms less.
-        // Erring low keeps a stop from overshooting where the server ends up; with
-        // enough samples the single longest is set aside as a possible hiccup.
-        let longest = 0;
-        let second = 0;
-        for (const d of s.delays) {
-          if (d > longest) {
-            second = longest;
-            longest = d;
-          } else if (d > second) {
-            second = d;
-          }
-        }
-        if (s.delays.length >= 4) longest = second;
-        s.rtt = Math.min(
-          Math.max(longest - SNAPSHOT_INTERVAL_MS, 0),
-          MAX_RTT_MS,
-        );
-      }
-    }
-
-    // Input this tick ran on, unless a change landed too close to it to tell.
-    const inputTime = snap.simTime + s.base - s.rtt;
-    if (!changedNear(s, inputTime)) {
-      const input = inputAt(s, inputTime);
+    // Input this tick ran on, unless a cast ended too close to it to tell.
+    if (!unsureNear(s, snap.simTime + deadline)) {
+      const input = inputForTick(s, snap.simTime, false);
       const len = Math.hypot(input.mx, input.my);
       const expected = s.baseSpeed * mult * len;
       // Standing still has no speed to compare: under STILL_SPEED is still.
@@ -432,7 +477,8 @@ const target = { x: 0, y: 0 };
 /**
  * Where the server's path is at simulation time `simNow`, written into `target`:
  * from real snapshots where they reach, beyond them either one more stretch at the
- * server's own velocity (`replay` false) or the input history replayed tick by tick.
+ * server's own velocity (`replay` false) or the unacknowledged inputs replayed tick by
+ * tick.
  */
 function serverPathAt(
   s: PredictionState,
@@ -457,8 +503,7 @@ function serverPathAt(
   } else {
     let t = newest.t;
     for (let i = 0; i < MAX_REPLAY_TICKS && t < simNow; i++) {
-      // The tick after `t` runs on the input that reached the server by then.
-      const input = inputAt(s, t + SNAPSHOT_INTERVAL_MS + s.base - s.rtt);
+      const input = inputForTick(s, t + SNAPSHOT_INTERVAL_MS, true);
       const part = Math.min((simNow - t) / SNAPSHOT_INTERVAL_MS, 1);
       const step = walkSpeedAt(s, world.zones, x, y) * TICK_SEC * part;
       x = clamp(x + input.mx * step, world.width);
@@ -488,11 +533,19 @@ export function advancePrediction(
   if (s.lockUntil !== 0 && now >= s.lockUntil) {
     const ended = s.lockUntil;
     s.lockUntil = 0;
-    pushEffective(s, ended);
+    pushEffective(s, ended, 0);
   }
   const alive = me.isAlive !== false;
   const revived = alive && !s.wasAlive;
   s.wasAlive = alive;
+  if (s.ack === 0) {
+    // No echo to reconcile with: nothing is predicted, and the caller draws the
+    // interpolated position as it does with prediction off.
+    s.yielding = "unacked";
+    s.ready = false;
+    s.error = 0;
+    return;
+  }
   s.yielding = !alive
     ? "dead"
     : now < s.dashUntil
@@ -506,7 +559,7 @@ export function advancePrediction(
   const idle = s.yielding === null && !moving;
   // With no key held the target is where the server will come to rest: the replay
   // runs on until the tick that takes the release.
-  const simNow = idle ? Infinity : now - s.base + s.rtt - SNAPSHOT_INTERVAL_MS;
+  const simNow = idle ? Infinity : now - s.deadline - SNAPSHOT_INTERVAL_MS;
   serverPathAt(s, me, world, simNow, s.yielding === null);
   if (
     !s.ready ||
@@ -535,8 +588,8 @@ export function advancePrediction(
   s.errorMax = Math.max(error, s.errorMax * Math.exp(-dt / 2000));
   if (idle) {
     // Stopping: walk on to the rest point, easing the last stretch, and never faster
-    // than the frame before. Only a rest point that moved on (the release landed a
-    // tick later than estimated) may raise the speed again, up to the floor.
+    // than the frame before. Only a rest point that moved on (the release made a
+    // later tick than its send time said) may raise the speed again, up to the floor.
     s.stopSpeed = Math.min(
       Math.max((error * 1000) / STOP_MS, STOP_MIN_SPEED),
       Math.max(s.stopSpeed, STOP_FLOOR_SPEED),

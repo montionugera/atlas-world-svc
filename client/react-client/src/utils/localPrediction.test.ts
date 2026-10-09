@@ -25,13 +25,29 @@ const FRAME_MS = 1000 / 60;
 const TICK_SEC = SNAPSHOT_INTERVAL_MS / 1000;
 const WORLD = 1000;
 
-/** Arrival ms, tick, x, y, vx, vy, alive. */
-type Snap = readonly [number, number, number, number, number, number, boolean];
+/** Arrival ms, tick, x, y, vx, vy, alive, and the input the tick ran on (`input_ack`). */
+type Snap = readonly [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  boolean,
+  number,
+];
+/**
+ * A change of the movement keys. As in useServerRsClient the connection's first input
+ * (number 1, no keys) is sent on open, so `keys[i]` is input `i + 2`.
+ */
 interface Key {
   t: number;
   vx: number;
   vy: number;
+  /** This message alone takes so much longer to reach the server (ms). */
+  late?: number;
 }
+const seqOf = (index: number) => index + 2;
 interface ServerOptions {
   /** Walking speed on grass. */
   speed?: number;
@@ -43,6 +59,10 @@ interface ServerOptions {
   uplink?: number;
   downlink?: number;
   jitter?: number;
+  /** The uplink delay of inputs sent at or after `at`. */
+  uplinkFrom?: { at: number; uplink: number };
+  /** `false`: a server without `input_ack`. A number: added to it (another socket's count). */
+  echo?: false | number;
   /** Server time of tick 0. */
   phase?: number;
   stun?: { from: number; to: number };
@@ -54,13 +74,20 @@ interface ServerOptions {
 
 /**
  * The server's walking rule (player_input.rs + physics.rs) at 20 ticks a second: each
- * tick runs on the newest input that has reached it, and its snapshot reaches the
- * client `downlink` plus a pseudo-random part of `jitter` later.
+ * tick runs on the newest input that has reached it (inputs arrive in the order sent, as
+ * on one socket) and echoes its number, and its snapshot reaches the client `downlink`
+ * plus a pseudo-random part of `jitter` later.
  */
 function serve(keys: readonly Key[], until: number, o: ServerOptions): Snap[] {
   const speed = o.speed ?? 200;
-  const up = o.uplink ?? 0;
   const world = o.world ?? WORLD;
+  let reached = -Infinity;
+  const arrivals = keys.map((k) => {
+    const from = o.uplinkFrom;
+    const up = from && k.t >= from.at ? from.uplink : (o.uplink ?? 0);
+    reached = Math.max(reached, k.t + up + (k.late ?? 0));
+    return reached;
+  });
   let { x, y } = o.start ?? { x: 500, y: 500 };
   let seed = 7;
   let knock: { vx: number; vy: number } | null = null;
@@ -72,13 +99,15 @@ function serve(keys: readonly Key[], until: number, o: ServerOptions): Snap[] {
     if (time > until) return snaps;
     let mx = 0;
     let my = 0;
-    for (const k of keys) {
-      if (k.t + up <= time) {
+    let ack = 1;
+    keys.forEach((k, i) => {
+      if (arrivals[i] <= time) {
         const len = Math.max(Math.hypot(k.vx, k.vy), 1);
         mx = k.vx / len;
         my = k.vy / len;
+        ack = seqOf(i);
       }
-    }
+    });
     const within = (w?: { from: number; to: number }) =>
       !!w && time >= w.from && time < w.to;
     const dead = within(o.dead);
@@ -108,7 +137,8 @@ function serve(keys: readonly Key[], until: number, o: ServerOptions): Snap[] {
     seed = (seed * 1103515245 + 12345) % 2147483648;
     const late = (o.jitter ?? 0) * (seed / 2147483648);
     lastArrival = Math.max(lastArrival, time + (o.downlink ?? 0) + late);
-    snaps.push([lastArrival, tick, x, y, vx, vy, !dead]);
+    const echo = o.echo === false ? 0 : ack + (o.echo ?? 0);
+    snaps.push([lastArrival, tick, x, y, vx, vy, !dead, echo]);
   }
 }
 
@@ -163,6 +193,8 @@ interface PlayOptions {
   state?: PredictionState;
   casts?: ReadonlyArray<{ t: number; until: number }>;
   dashes?: readonly number[];
+  /** Newest input sent before `keys` (default: the connection's first, 1). */
+  sent?: number;
 }
 
 /** Feed snapshots and key changes to the client and draw at `fps` (60 by default). */
@@ -184,6 +216,7 @@ function play(
     hitch = undefined;
     return ms;
   };
+  const sent = o.sent ?? 1;
   const frames: Frame[] = [];
   let clock: SnapshotClock | undefined;
   let samples: PosSample[] | undefined;
@@ -196,7 +229,7 @@ function play(
   const end = snaps[snaps.length - 1][0];
   for (let now = o.from ?? snaps[0][0] + 3; now <= end; now += nextFrame(now)) {
     for (; k < keys.length && keys[k].t <= now; k++) {
-      setHeldInput(state, keys[k].t, keys[k].vx, keys[k].vy);
+      setHeldInput(state, keys[k].t, keys[k].vx, keys[k].vy, seqOf(k));
     }
     for (; o.casts && c < o.casts.length && o.casts[c].t <= now; c++) {
       lockMovement(state, o.casts[c].t, o.casts[c].until);
@@ -205,7 +238,7 @@ function play(
       noteDash(state, o.dashes[d]);
     }
     for (; s < snaps.length && snaps[s][0] <= now; s++) {
-      const [arrival, tick, x, y, vx, vy, alive] = snaps[s];
+      const [arrival, tick, x, y, vx, vy, alive, ack] = snaps[s];
       const simTime = tick * SNAPSHOT_INTERVAL_MS;
       clock = observeSnapshot(clock, simTime, arrival);
       // As useServerRsClient does: a revived player starts a new history.
@@ -218,7 +251,7 @@ function play(
       me = { x, y, isAlive: alive, samples };
       observeServer(
         state,
-        { simTime, x, y, vx, vy, alive },
+        { simTime, x, y, vx, vy, alive, ack, sent: k ? seqOf(k - 1) : sent },
         clock.offsets,
         zones,
       );
@@ -227,10 +260,11 @@ function play(
     advancePrediction(state, now, me, world);
     const off = samplePosition(me, renderTimeAt(clock, now));
     const truth = serverAt(snaps, server, now + (server.uplink ?? 0));
+    // As GameRenderer does: with nothing predicted the interpolated position is drawn.
     frames.push({
       now,
-      x: state.x,
-      y: state.y,
+      x: state.ready ? state.x : off.x,
+      y: state.ready ? state.y : off.y,
       offX: off.x,
       offY: off.y,
       serverX: me.x,
@@ -462,9 +496,10 @@ describe.each([30, 60, 144])(
 );
 
 describe("a release the server takes one tick later than estimated", () => {
-  // The round trip is only known to within a tick, and is taken low so a stop never
-  // overshoots. When that is a tick short the rest point moves on 10 units after the
-  // stop began: the one case where the speed may rise again, and only to the floor.
+  // Until its echo arrives a release is placed by its send time, and the tick deadline
+  // is only known to within a tick; it is taken late so a stop never overshoots. When
+  // the release makes the tick after, the rest point moves on 10 units after the stop
+  // began: the one case where the speed may rise again, and only to the floor.
   const link = { uplink: 60, downlink: 60, jitter: 30 };
   const FLOOR_STEP = (60 * FRAME_MS) / 1000;
   const stops = [0, 10, 20, 30, 40].flatMap((phase) =>
@@ -727,24 +762,24 @@ describe("death, respawn and teleport", () => {
 
   it("starts over in a new room with the keys still held", () => {
     const state = createPrediction();
-    setHeldInput(state, 0, 2, 0);
+    setHeldInput(state, 0, 2, 0, 2);
     state.x = 900;
     state.ready = true;
     resetPrediction(state, 5000);
     expect(state.ready).toBe(false);
-    expect(state.history).toEqual([{ t: 5000, mx: 1, my: 0 }]);
+    expect(state.history).toEqual([{ t: 5000, mx: 1, my: 0, seq: 0 }]);
   });
 
-  it("starts a new connection with no key held and no round trip", () => {
+  it("starts a new connection with no key held and nothing known of its link", () => {
     const state = createPrediction();
-    setHeldInput(state, 0, 2, 0);
-    state.delays = [180, 190];
-    state.rtt = 140;
+    setHeldInput(state, 0, 2, 0, 2);
+    state.marks = [-180, -190];
+    state.ack = 2;
     state.ready = true;
     restartPrediction(state, 5000);
     expect(state.ready).toBe(false);
-    expect([state.heldX, state.heldY, state.rtt]).toEqual([0, 0, 0]);
-    expect(state.delays).toEqual([]);
+    expect([state.heldX, state.heldY, state.ack]).toEqual([0, 0, 0]);
+    expect(state.marks).toEqual([]);
     expect(state.history).toEqual([]);
   });
 });
@@ -782,20 +817,79 @@ describe("base speed calibration", () => {
   });
 });
 
-describe("round-trip estimate", () => {
-  it("is not thrown by one slow sample among normal ones", () => {
+describe("tick deadline", () => {
+  const still = { x: 0, y: 0, vx: 0, vy: 0, alive: true };
+  /** Feed ticks `from`..`to`; the server has input `ack` from tick `at` on. */
+  const feed = (
+    state: PredictionState,
+    ticks: { from: number; to: number; at: number; ack: number },
+    base: number,
+  ) => {
+    for (let tick = ticks.from; tick <= ticks.to; tick++) {
+      const ack = tick >= ticks.at ? ticks.ack : ticks.ack - 1;
+      observeServer(
+        state,
+        { ...still, simTime: tick * 50, ack, sent: ticks.ack },
+        [base],
+        null,
+      );
+    }
+  };
+
+  it("is the snapshot's arrival until an input has been acknowledged", () => {
     const state = createPrediction();
-    const offsets = [0];
-    const still = { x: 0, y: 0, vx: 0, vy: 0, alive: true };
-    // Key changes seen 30 ms later, except one seen 290 ms later.
-    [30, 30, 290, 30, 30].forEach((delay, i) => {
-      const t = 1000 * (i + 1);
-      setHeldInput(state, t, i % 2 ? 0 : 2, 0);
-      const seen = i % 2 ? still : { ...still, vx: 200 };
-      observeServer(state, { ...seen, simTime: t + delay }, offsets, null);
-    });
-    expect(state.delays).toHaveLength(5);
-    expect(state.rtt).toBe(0);
+    feed(state, { from: 0, to: 3, at: 0, ack: 1 }, 40);
+    expect(state.deadline).toBe(40);
+  });
+
+  it("is under a tick after an input that made its tick", () => {
+    const state = createPrediction();
+    feed(state, { from: 0, to: 1, at: 0, ack: 1 }, 400);
+    // Sent at 130, first in the tick at 200: the deadline of tick 0 is in [-70, -20).
+    setHeldInput(state, 130, 0, 2, 2);
+    feed(state, { from: 2, to: 5, at: 4, ack: 2 }, 400);
+    expect(state.marks).toEqual([-70]);
+    expect(state.deadline).toBeCloseTo(-20, 2);
+    expect(state.deadline).toBeLessThan(-20);
+    expect(state.rtt).toBeCloseTo(420, 2);
+  });
+
+  it("is not moved by a delayed input, and follows a link that got faster", () => {
+    const state = createPrediction();
+    feed(state, { from: 0, to: 1, at: 0, ack: 1 }, 400);
+    setHeldInput(state, 130, 0, 2, 2);
+    feed(state, { from: 2, to: 5, at: 4, ack: 2 }, 400);
+    // Sent at 300 but only in the tick at 500: held up on the way, not a later deadline.
+    setHeldInput(state, 300, 0, 0, 3);
+    feed(state, { from: 6, to: 11, at: 10, ack: 3 }, 400);
+    expect(state.deadline).toBeCloseTo(-20, 2);
+    // Sent at 640 and in the tick at 650: the deadline is 60 ms later than it was, so
+    // what the slower link showed no longer bounds it.
+    setHeldInput(state, 640, 0, 2, 4);
+    feed(state, { from: 12, to: 14, at: 13, ack: 4 }, 400);
+    expect(state.deadline).toBeCloseTo(40, 2);
+  });
+
+  it("moves with the simulation clock when the server skipped a tick", () => {
+    const state = createPrediction();
+    feed(state, { from: 0, to: 1, at: 0, ack: 1 }, 400);
+    setHeldInput(state, 130, 0, 2, 2);
+    feed(state, { from: 2, to: 5, at: 4, ack: 2 }, 400);
+    // The server stalled for a tick: every tick now runs, and arrives, 50 ms later
+    // than its number says (a few ms either way is only the link's jitter).
+    feed(state, { from: 6, to: 7, at: 0, ack: 2 }, 453);
+    expect(state.deadline).toBeCloseTo(30, 2);
+    feed(state, { from: 8, to: 9, at: 0, ack: 2 }, 396);
+    expect(state.deadline).toBeCloseTo(-20, 2);
+  });
+
+  it("takes no mark from an input first seen after a gap in the snapshots", () => {
+    const state = createPrediction();
+    feed(state, { from: 0, to: 1, at: 0, ack: 1 }, 400);
+    setHeldInput(state, 130, 0, 2, 2);
+    feed(state, { from: 6, to: 7, at: 6, ack: 2 }, 400);
+    expect(state.marks).toEqual([]);
+    expect(state.history).toHaveLength(1);
   });
 
   it("does not take a slow drift at rest for disobedience", () => {
@@ -803,7 +897,16 @@ describe("round-trip estimate", () => {
     for (let tick = 0; tick < 10; tick++) {
       observeServer(
         state,
-        { simTime: tick * 50, x: 0, y: 0, vx: 0.3, vy: 0, alive: true },
+        {
+          simTime: tick * 50,
+          x: 0,
+          y: 0,
+          vx: 0.3,
+          vy: 0,
+          alive: true,
+          ack: 1,
+          sent: 1,
+        },
         [0],
         null,
       );
@@ -811,7 +914,7 @@ describe("round-trip estimate", () => {
     expect(state.diverged).toBe(false);
   });
 
-  it("never exceeds the real round trip, and finds it from a few key changes", () => {
+  it("is never before the real one, and closes in on it from a few key changes", () => {
     const keys: Key[] = [];
     for (let i = 0; i < 12; i++) {
       keys.push({ t: 1000 + i * 437, ...(i % 2 ? STOP : RIGHT) });
@@ -820,27 +923,61 @@ describe("round-trip estimate", () => {
       serve(keys, 7000, { uplink: 60, downlink: 60, jitter: 30 }),
       keys,
     );
-    expect(state.rtt).toBeLessThanOrEqual(120);
-    expect(state.rtt).toBeGreaterThan(90);
+    // An input sent by `S - 60` is in the tick at `S`.
+    expect(state.deadline).toBeGreaterThanOrEqual(-60);
+    expect(state.deadline).toBeLessThan(-45);
+    expect(state.history).toHaveLength(1);
+  });
+});
+
+describe("a server whose echo cannot be used", () => {
+  const keys = [
+    { t: 1000, ...RIGHT },
+    { t: 3000, ...STOP },
+  ];
+
+  it.each<[string, false | number]>([
+    ["sends none (an older server)", false],
+    ["counts another socket's inputs", 1000],
+  ])("draws the server's position when it %s", (_, echo) => {
+    const { frames, state } = run(keys, 4500, { ...JITTERY, echo });
+    expect(frames.every((f) => f.yielding === "unacked")).toBe(true);
+    expect(state.ready).toBe(false);
+    expect(state.marks).toEqual([]);
+    // Exactly what is drawn with prediction off, to the server's rest position.
+    expect(frames.every((f) => f.x === f.offX && f.y === f.offY)).toBe(true);
+    expect(last(frames).x).toBe(last(frames).serverX);
+    expect(last(frames).x).toBeGreaterThan(800);
+  });
+
+  it("predicts again from the first echo that is its own", () => {
+    const state = createPrediction();
+    const old = serve(keys.slice(0, 1), 2000, { ...JITTERY, echo: false });
+    play(old, keys.slice(0, 1), { state });
+    expect(state.yielding).toBe("unacked");
+    const snaps = serve(keys.slice(0, 1), 4000, JITTERY).slice(old.length);
+    const { frames } = play(snaps, [], { state, sent: 2 });
+    expect(last(frames).yielding).toBeNull();
+    expect(last(frames).error).toBeLessThan(2);
   });
 });
 
 describe("input normalisation (server rule)", () => {
   it("scales the client's doubled vector down to a unit direction", () => {
     const state = createPrediction();
-    setHeldInput(state, 0, Math.SQRT2, -Math.SQRT2);
+    setHeldInput(state, 0, Math.SQRT2, -Math.SQRT2, 2);
     expect(Math.hypot(state.heldX, state.heldY)).toBeCloseTo(1, 6);
-    setHeldInput(state, 1, 0.005, 0);
+    setHeldInput(state, 1, 0.005, 0, 3);
     expect(state.heldX).toBe(0);
     expect(state.history).toHaveLength(2);
   });
 
   it("takes a non-finite vector for no input", () => {
     const state = createPrediction();
-    setHeldInput(state, 0, 2, 0);
-    setHeldInput(state, 1, NaN, 0);
+    setHeldInput(state, 0, 2, 0, 2);
+    setHeldInput(state, 1, NaN, 0, 3);
     expect([state.heldX, state.heldY]).toEqual([0, 0]);
-    setHeldInput(state, 2, 0, Infinity);
+    setHeldInput(state, 2, 0, Infinity, 4);
     expect([state.heldX, state.heldY]).toEqual([0, 0]);
   });
 
@@ -855,8 +992,8 @@ describe("input normalisation (server rule)", () => {
 
   it("records a change only when the input in effect changes", () => {
     const state = createPrediction();
-    setHeldInput(state, 0, 2, 0);
-    setHeldInput(state, 5, 2, 0);
+    setHeldInput(state, 0, 2, 0, 2);
+    setHeldInput(state, 5, 2, 0, 3);
     expect(state.history).toHaveLength(1);
   });
 });
@@ -881,7 +1018,21 @@ describe("a real jittered capture (map-for-test-terrain)", () => {
     { terrain: "ice", x: 650, y: 0, width: 150, height: 700 },
     { terrain: "mud", x: 800, y: 0, width: 150, height: 700 },
   ];
-  const snaps = CAPTURE.map((r): Snap => [...r, true]);
+  // The capture predates `input_ack`: each key is taken as applied by the first tick
+  // that moves its way.
+  let applied = 0;
+  const snaps = CAPTURE.map((r): Snap => {
+    const next = keys[applied];
+    if (
+      next &&
+      r[0] >= next.t &&
+      Math.sign(r[4]) === Math.sign(next.vx) &&
+      Math.sign(r[5]) === Math.sign(next.vy)
+    ) {
+      applied++;
+    }
+    return [...r, true, applied + 1];
+  });
   const { frames, state } = play(snaps, keys, { zones });
 
   it("responds within a frame where interpolation took over 100 ms", () => {
@@ -903,5 +1054,102 @@ describe("a real jittered capture (map-for-test-terrain)", () => {
       const f = last(between(frames, 0, t));
       expect([f.x, f.y]).toEqual([f.serverX, f.serverY]);
     }
+  });
+});
+
+/**
+ * Every stop measured the same way: a walk to the right, a release at each of 8 points
+ * of a tick, the server's ticks at each of 10 phases, drawn at 30, 60 and 144 fps.
+ */
+describe("stop sweep", () => {
+  const PHASES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45];
+  const RELEASES = [0, 7, 13, 19, 27, 33, 41, 47];
+  const slow = { uplink: 60, downlink: 60, jitter: 30 };
+  const oneWalk = (release: number, late?: number): Key[] => [
+    { t: 1000, ...RIGHT },
+    { t: release, ...STOP, late },
+  ];
+  /** A first walk and stop, then the walk whose stop is measured. */
+  const twoWalks = (release: number, late?: number): Key[] => [
+    { t: 1000, ...RIGHT },
+    { t: 1613, ...STOP },
+    { t: 2231, ...RIGHT, late },
+    { t: release, ...STOP },
+  ];
+  /** How many of the 240 stops break each rule. */
+  const sweep = (keysFor: (release: number) => Key[], link: ServerOptions) => {
+    const broken = { backward: 0, rise: 0, overshoot: 0, astray: 0 };
+    for (const fps of [30, 60, 144]) {
+      for (const phase of PHASES) {
+        for (const r of RELEASES) {
+          const release = 3200 + r;
+          const { frames } = run(
+            keysFor(release),
+            release + 1500,
+            { ...link, phase },
+            { fps },
+          );
+          const rest = last(frames).serverX;
+          const after = between(frames, release - 1000 / fps, Infinity);
+          if (Math.min(...stepsOf(after)) < -EPS) broken.backward++;
+          // Drawn speed higher than the frame before, at any point after the release.
+          if (riseOf(stepsOf(between(frames, release, Infinity))) > EPS) {
+            broken.rise++;
+          }
+          if (Math.max(...after.map((f) => f.x)) - rest > EPS) {
+            broken.overshoot++;
+          }
+          if (last(frames).x !== rest) broken.astray++;
+        }
+      }
+    }
+    return broken;
+  };
+  const NONE = { backward: 0, rise: 0, overshoot: 0, astray: 0 };
+
+  it.each<[string, ServerOptions]>([
+    ["no latency", {}],
+    ["5 ms each way", { uplink: 5, downlink: 5 }],
+  ])("breaks no rule on a link shorter than a tick (%s)", (_, link) => {
+    expect(sweep(oneWalk, link)).toEqual(NONE);
+  });
+
+  // Until the release is echoed, which of two ticks takes it cannot be told from one
+  // earlier input: the nearer rest point is assumed, and when the server walks a tick
+  // more the stop speeds up again (to the floor). No more often than when the tick
+  // was guessed from the round trip (94 and 123 of 240).
+  it.each<[string, ServerOptions, number]>([
+    ["a jittered link", JITTERY, 94],
+    ["a slow link", slow, 123],
+  ])(
+    "never overshoots or steps back on %s, and ends on the rest position",
+    (_, link, rises) => {
+      const broken = sweep(oneWalk, link);
+      expect({ ...broken, rise: 0 }).toEqual(NONE);
+      expect(broken.rise).toBeLessThanOrEqual(rises);
+    },
+  );
+
+  it("is not thrown by a key press that reached the server 120 ms late", () => {
+    const broken = sweep((release) => twoWalks(release, 120), slow);
+    expect({ ...broken, rise: 0 }).toEqual(NONE);
+  });
+
+  it("is not thrown by an uplink that fell from 60 ms to 5 ms before the walk", () => {
+    const link = { ...slow, uplinkFrom: { at: 2000, uplink: 5 } };
+    const broken = sweep(twoWalks, link);
+    expect({ ...broken, rise: 0 }).toEqual(NONE);
+  });
+
+  it("walks on to where the server stopped when the release itself is 120 ms late", () => {
+    const broken = sweep((release) => oneWalk(release, 120), slow);
+    expect({ ...broken, rise: 0 }).toEqual(NONE);
+  });
+
+  it("ends on the rest position when the uplink fell during the walk", () => {
+    // Nothing was sent between the fall and the release, so nothing could show it:
+    // the server stops a tick sooner than any input said, and the stop is walked back.
+    const link = { ...slow, uplinkFrom: { at: 2000, uplink: 5 } };
+    expect(sweep(oneWalk, link).astray).toBe(0);
   });
 });

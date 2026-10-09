@@ -220,8 +220,11 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
               me,
               predictionWorldRef.current,
             );
-            drawn.x = prediction.x;
-            drawn.y = prediction.y;
+            // Not ready: the server echoes no input, so nothing was predicted.
+            if (prediction.ready) {
+              drawn.x = prediction.x;
+              drawn.y = prediction.y;
+            }
             const input = prediction.history[prediction.history.length - 1];
             if (!prediction.yielding && input && (input.mx || input.my)) {
               drawn.heading = Math.atan2(input.my, input.mx);

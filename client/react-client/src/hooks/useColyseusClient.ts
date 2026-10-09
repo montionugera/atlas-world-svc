@@ -37,6 +37,8 @@ export interface UseColyseusClientReturn {
   joinRoom: (mapId?: string) => Promise<void>;
   updatePlayerInput: (vx: number, vy: number) => void;
   sendPlayerAction: (action: string, pressed: boolean, options?: any) => void;
+  /** server-rs: `client_tick` of the newest input sent (0: none yet). */
+  inputSeqRef?: React.MutableRefObject<number>;
   sentTargetRef?: React.MutableRefObject<{ x: number; y: number }>;
   /** server-rs: the newest snapshot (`gameState` is published to React less often). */
   gameStateRef?: React.RefObject<GameState | null>;

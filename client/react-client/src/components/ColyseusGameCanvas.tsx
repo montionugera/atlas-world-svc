@@ -95,6 +95,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     updateRate,
     updatePlayerInput,
     sendPlayerAction,
+    inputSeqRef,
     sentTargetRef,
     drainEvents,
     switchWeapon,
@@ -115,10 +116,17 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
   const predicts = !!gameStateRef && !!onSnapshot;
   const movePlayer = React.useCallback(
     (vx: number, vy: number) => {
-      setHeldInput(prediction, performance.now(), vx, vy);
       updatePlayerInput(vx, vy);
+      // The input just sent carries this change to the server.
+      setHeldInput(
+        prediction,
+        performance.now(),
+        vx,
+        vy,
+        inputSeqRef?.current ?? 0,
+      );
     },
-    [prediction, updatePlayerInput],
+    [prediction, updatePlayerInput, inputSeqRef],
   );
   useEffect(() => {
     if (!predicts) return;
@@ -134,12 +142,14 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           vx: me.vx,
           vy: me.vy,
           alive: me.isAlive !== false,
+          ack: me.inputAck ?? 0,
+          sent: inputSeqRef?.current ?? 0,
         },
         state.renderClock.offsets,
         terrainZonesFor(state.mapId),
       );
     });
-  }, [predicts, onSnapshot, playerId, prediction]);
+  }, [predicts, onSnapshot, playerId, prediction, inputSeqRef]);
   // A new connection has no key held on the server (the hook drops its own too).
   useEffect(() => {
     restartPrediction(prediction, performance.now());
