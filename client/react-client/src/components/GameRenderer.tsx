@@ -57,19 +57,12 @@ interface BlastEffect {
   durationMs: number;
 }
 
-export const GameRenderer: React.FC<GameRendererProps> = ({
-  canvasRef,
-  gameState,
-  updateCount,
-  fps,
-  updateRate,
-  roomId,
-  playerId,
-  trackFrame,
-  aoeReticle,
-  debug = DEFAULT_DEBUG_TOGGLES,
-  debugTrackerRef,
-}) => {
+export const GameRenderer: React.FC<GameRendererProps> = (props) => {
+  const { canvasRef, trackFrame, debugTrackerRef } = props;
+  // The frame loop reads the newest props from here, so a snapshot (20/s) neither
+  // restarts the loop nor paints an extra off-vsync frame.
+  const latestRef = useRef(props);
+  latestRef.current = props;
   const animationFrameRef = useRef<number | undefined>(undefined);
   const floatingTextsRef = useRef<FloatingText[]>([]);
   const blastEffectsRef = useRef<BlastEffect[]>([]);
@@ -87,6 +80,13 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
     if (!ctx) return;
 
     const animate = () => {
+      const {
+        gameState,
+        fps,
+        playerId,
+        aoeReticle,
+        debug = DEFAULT_DEBUG_TOGGLES,
+      } = latestRef.current;
       const renderStartTime = performance.now();
       trackFrame();
 
@@ -511,18 +511,7 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [
-    gameState,
-    updateCount,
-    fps,
-    updateRate,
-    roomId,
-    playerId,
-    trackFrame,
-    aoeReticle,
-    debug,
-    debugTrackerRef,
-  ]);
+  }, [canvasRef, trackFrame, debugTrackerRef]);
 
   return null; // This component only handles rendering
 };
