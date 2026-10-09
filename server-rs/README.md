@@ -136,7 +136,7 @@ Wire snapshot (`schemas/game_protocol.fbs`, fields only ever **added**; regenera
 | `ARENA_WIDTH` / `ARENA_HEIGHT` | `1000` | Arena size (px, overridden by map if configured) |
 | `MOB_RESPAWN_MS` | `5000` | Mob respawn delay (legacy `respawnDelayMs` default) |
 | `PLAYER_RESPAWN_MS` | `5000` | Player auto-respawn delay |
-| `ATLAS_DEBUG` | unset | `1`/`true` turns the debug controls on, any other value off. Unset: on only while neither `NAKAMA_SERVER_KEY` nor `JWT_SECRET` is set (development mode) |
+| `ATLAS_DEBUG` | unset | `1`/`true` turns the debug controls on, any other value off. Unset: on only in a debug build (`cargo run`, not `--release`) while neither `NAKAMA_SERVER_KEY` nor `JWT_SECRET` is set (development mode); a release build stays off |
 
 Rooms (`content::map::ROOM_IDS`): `map-for-play`, `map-for-test-projectile`, `map-for-test-deflect`,
 `map-for-test-terrain`, and `map-for-test-large` (4000 x 4000, 10 bots, 200 mobs, spawn at 2000,2000;
@@ -148,12 +148,20 @@ With `RUST_LOG` at its default the server logs `tick timing interval_ms=… work
 
 ### Debug controls (development mode only)
 
-Plain HTTP on the game port; every route answers 404 while the controls are off.
+Plain HTTP on the game port. Every route answers 404 unless the controls are on (see
+`ATLAS_DEBUG`), the caller is on this machine (loopback peer) and the `Host` header is
+`localhost`, `127.0.0.1` or `[::1]` (any port).
 
 ```bash
 curl 'localhost:2567/debug/state?map=map-for-play'
-curl -X POST localhost:2567/debug/command -d '{"map":"map-for-play","cmd":"set_bots","count":100}'
+curl -X POST localhost:2567/debug/command -H 'Content-Type: application/json' \
+  -d '{"map":"map-for-play","cmd":"set_bots","count":100}'
 ```
+
+`POST /debug/command` must be sent as `Content-Type: application/json` (otherwise `415`), with a
+body of at most 64 KiB (`413`; a malformed `Content-Length` is `400`). CORS headers are sent only
+to pages on `http://localhost` or `http://127.0.0.1` (any port), so no other site can call or
+read these routes from a browser.
 
 `POST /debug/command` takes `{"map": <room, default map-for-play>, "player": <session id>, "cmd": …}`:
 `state`, `set_bots {count}`, `add_bots {delta}`, `set_mobs {count}`, `add_mobs {delta}`,
@@ -161,7 +169,8 @@ curl -X POST localhost:2567/debug/command -d '{"map":"map-for-play","cmd":"set_b
 `pause_mobs {paused}`, `pause_bots {paused}`, `set_invulnerable {enabled}` and `teleport {x, y}`
 (the last two act on `player`). Success: `200 {"ok":true,"state":{…}}`; failure:
 `400 {"ok":false,"error":"…"}`. Counts are clamped to 300 bots and 1000 mobs per room. Commands
-are applied by the tick loop between ticks.
+are applied by the tick loop between ticks, at most 4 per tick; a command not answered within
+2 s gets `503` and is dropped.
 
 ---
 
