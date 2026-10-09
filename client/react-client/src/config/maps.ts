@@ -44,6 +44,13 @@ export const MAPS: readonly MapDef[] = [
     viewportSize: 100,
     art: "plain",
   },
+  {
+    id: "map-for-test-large",
+    label: "Large test",
+    width: 4000,
+    height: 4000,
+    art: "plain",
+  },
 ];
 
 export const DEFAULT_MAP_ID = MAPS[0].id;

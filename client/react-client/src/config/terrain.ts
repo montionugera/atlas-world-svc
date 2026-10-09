@@ -78,6 +78,29 @@ const TERRAIN_ZONES_BY_MAP: Record<string, readonly TerrainZone[]> = {
   ],
   "map-for-test-projectile": [],
   "map-for-test-deflect": [],
+  // `MapConfig::large_test_map`: biome patches, then the roads over everything.
+  "map-for-test-large": [
+    zone("ice", 0, 0, 1400, 800),
+    zone("ice", 2600, 3200, 1400, 800),
+    zone("ice", 1500, 300, 900, 500),
+    zone("forest", 2700, 100, 1200, 1100),
+    zone("forest", 100, 2700, 1100, 1200),
+    zone("forest", 1400, 3100, 900, 700),
+    zone("sand", 100, 1100, 800, 1200),
+    zone("sand", 3100, 1500, 800, 1300),
+    zone("sand", 2200, 2200, 600, 600),
+    zone("mud", 1200, 1200, 600, 600),
+    zone("mud", 2200, 1100, 700, 500),
+    zone("mud", 1100, 2200, 700, 700),
+    // The cross, the ring, the plaza.
+    zone("road", 1970, 0, 60, 4000),
+    zone("road", 0, 1970, 4000, 60),
+    zone("road", 1000, 970, 2000, 60),
+    zone("road", 1000, 2970, 2000, 60),
+    zone("road", 970, 1000, 60, 2000),
+    zone("road", 2970, 1000, 60, 2000),
+    zone("road", 1850, 1850, 300, 300),
+  ],
 };
 
 /** Solid blocks (server `static_obstacles`) worth drawing on the plain test maps. */
@@ -93,6 +116,20 @@ const STATIC_BLOCKS_BY_MAP: Record<string, readonly StaticBlock[]> = {
     { x: 300, y: 760, width: 40, height: 40 },
     { x: 660, y: 760, width: 40, height: 40 },
   ],
+  // Four clusters of four 40x40 blocks, one inside each corner of the ring road.
+  "map-for-test-large": [
+    [1200, 1200],
+    [2800, 1200],
+    [1200, 2800],
+    [2800, 2800],
+  ].flatMap(([cx, cy]) =>
+    [
+      [0, 0],
+      [90, 20],
+      [30, 100],
+      [130, 110],
+    ].map(([dx, dy]) => ({ x: cx + dx, y: cy + dy, width: 40, height: 40 })),
+  ),
 };
 
 export function staticBlocksFor(mapId: string): readonly StaticBlock[] {
