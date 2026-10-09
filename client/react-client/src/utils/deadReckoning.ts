@@ -1,5 +1,5 @@
-/** Snapshots arrive every 50 ms; cap extrapolation at ~2 intervals. */
-export const MAX_EXTRAPOLATION_MS = 100;
+/** Snapshots arrive every 50 ms; cap extrapolation at one interval. */
+export const MAX_EXTRAPOLATION_MS = 50;
 
 interface Extrapolatable {
   x: number;

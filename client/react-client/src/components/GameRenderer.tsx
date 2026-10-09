@@ -122,7 +122,8 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
           string,
           { x: number; y: number; type?: string }
         >();
-        currentProjs.forEach((p, id) => {
+        // Raw snapshot x/y: blasts must land where the server detonated.
+        gameState.projectiles?.forEach((p, id) => {
           nextPrev.set(id, { x: p.x, y: p.y, type: p.type });
         });
         prevProjectilesRef.current = nextPrev;
@@ -135,7 +136,7 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
           for (const ev of gameState.events) {
             const victimId = String(ev.targetId);
             const victim =
-              gameState.mobs.get(victimId) ?? gameState.players.get(victimId);
+              renderMobs.get(victimId) ?? renderPlayers.get(victimId);
             if (victim) {
               if (ev.kind === 1 /* Hit */ && ev.amount > 0) {
                 floatingTextsRef.current.push({

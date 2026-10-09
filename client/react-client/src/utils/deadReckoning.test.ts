@@ -20,7 +20,8 @@ describe("extrapolatePosition", () => {
     expect(p.y).toBeCloseTo(17);
   });
 
-  it("clamps elapsed time to MAX_EXTRAPOLATION_MS", () => {
+  it("clamps elapsed time to MAX_EXTRAPOLATION_MS (one 50 ms snapshot interval)", () => {
+    expect(MAX_EXTRAPOLATION_MS).toBe(50);
     const p = extrapolatePosition(
       { x: 0, y: 0, vx: 1000, vy: 0, receivedAt: 0 },
       5000,
