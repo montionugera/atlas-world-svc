@@ -42,6 +42,8 @@ export interface Mob {
   y: number;
   vx: number;
   vy: number;
+  /** performance.now() when the snapshot carrying x/y/vx/vy arrived (dead reckoning). */
+  receivedAt?: number;
   radius: number; // Receive radius from server
   tag: string; // Current behavior tag
   mobTypeId?: string; // Synced from server for UI display
@@ -76,6 +78,8 @@ export interface Player {
   y: number;
   vx: number;
   vy: number;
+  /** performance.now() when the snapshot carrying x/y/vx/vy arrived (dead reckoning). */
+  receivedAt?: number;
   radius?: number;
   name: string;
   isBotMode?: boolean; // Synced from server
@@ -108,6 +112,8 @@ export interface Projectile {
   y: number;
   vx: number;
   vy: number;
+  /** performance.now() when the snapshot carrying x/y/vx/vy arrived (dead reckoning). */
+  receivedAt?: number;
   radius: number;
   ownerId: string;
   isStuck: boolean;

@@ -2,6 +2,7 @@ import { useRef, useEffect } from "react";
 import { GameState } from "../types/game";
 import { calculateScale, clearCanvas } from "../utils/drawingUtils";
 import { drawGrid, drawGridCoordinates } from "../utils/gridUtils";
+import { extrapolateEntities } from "../utils/deadReckoning";
 import { drawMap } from "../renderers/mapRenderer";
 import { drawMobs } from "../renderers/mobRenderer";
 import { drawCompanions } from "../renderers/companionRenderer";
@@ -70,9 +71,16 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
       clearCanvas(ctx, canvas);
 
       if (gameState) {
+        // Dead-reckon between snapshots (velocity is units/second).
+        const frameNow = performance.now();
+        const renderPlayers = extrapolateEntities(gameState.players, frameNow);
+        const renderMobs = extrapolateEntities(gameState.mobs, frameNow);
+        const renderProjectiles = gameState.projectiles
+          ? extrapolateEntities(gameState.projectiles, frameNow)
+          : undefined;
         // Detect detonated projectiles to spawn AoE blast shockwaves
         const prevProjs = prevProjectilesRef.current;
-        const currentProjs = gameState.projectiles || new Map();
+        const currentProjs = renderProjectiles || new Map();
         prevProjs.forEach((p, id) => {
           if (!currentProjs.has(id)) {
             const pType = (p.type || "").toLowerCase();
@@ -158,7 +166,7 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
         const scale = calculateScale(gameState, canvas, viewportSize);
 
         // Find player to center camera
-        const player = gameState.players.get(playerId);
+        const player = renderPlayers.get(playerId);
         let cameraX = gameState.width / 2;
         let cameraY = gameState.height / 2;
 
@@ -195,16 +203,16 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
         if (gameState.zoneEffects) {
           drawZoneEffects(ctx, gameState.zoneEffects, scale);
         }
-        drawMobs(ctx, gameState.mobs, 1, scale);
+        drawMobs(ctx, renderMobs, 1, scale);
 
         const npcsMap = gameState.npcs ?? gameState.companions;
         if (npcsMap && npcsMap.size > 0) {
           drawCompanions(ctx, npcsMap, 1, scale);
         }
 
-        drawPlayers(ctx, gameState.players, playerId, 1, scale);
-        if (gameState.projectiles) {
-          drawProjectiles(ctx, gameState.projectiles, 1, scale);
+        drawPlayers(ctx, renderPlayers, playerId, 1, scale);
+        if (renderProjectiles) {
+          drawProjectiles(ctx, renderProjectiles, 1, scale);
         }
 
         // Draw AoE blast shockwaves
@@ -273,7 +281,7 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
 
         // Mobs (Red dots)
         ctx.fillStyle = "#ff4444";
-        gameState.mobs.forEach((mob) => {
+        renderMobs.forEach((mob) => {
           if (!mob.isAlive) return;
           ctx.beginPath();
           ctx.arc(mob.x, mob.y, mob.radius * 2, 0, Math.PI * 2); // Larger dots
@@ -301,7 +309,7 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
 
         // Other Players (Blue dots)
         ctx.fillStyle = "#4444ff";
-        gameState.players.forEach((p) => {
+        renderPlayers.forEach((p) => {
           if (p.id === playerId || !p.isAlive) return;
           ctx.beginPath();
           ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);

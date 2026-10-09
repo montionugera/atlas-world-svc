@@ -357,6 +357,7 @@ export const useServerRsClient = (
                     y: entity.y,
                     vx: entity.vx,
                     vy: entity.vy,
+                    receivedAt: arrivalTime,
                     radius: SERVER_RS_PLAYER_RADIUS,
                     name: isLocalPlayer
                       ? "Player (YOU)"
@@ -384,6 +385,7 @@ export const useServerRsClient = (
                     y: entity.y,
                     vx: entity.vx,
                     vy: entity.vy,
+                    receivedAt: arrivalTime,
                     radius: SERVER_RS_MOB_RADIUS,
                     tag: isAlive ? "mob" : "dead",
                     // Older servers send no mob_type: keep whatever we already had.
@@ -400,6 +402,7 @@ export const useServerRsClient = (
                     y: entity.y,
                     vx: entity.vx,
                     vy: entity.vy,
+                    receivedAt: arrivalTime,
                     radius: SERVER_RS_PROJECTILE_RADIUS,
                     ownerId: String(entity.ownerId),
                     isStuck: false,
