@@ -3,8 +3,10 @@ import { render } from "@testing-library/react";
 import { GameRenderer } from "./GameRenderer";
 import { GameState, Mob } from "../types/game";
 import { drawProjectiles } from "../renderers/projectileRenderer";
+import { drawMobs } from "../renderers/mobRenderer";
 
 jest.mock("../renderers/projectileRenderer");
+jest.mock("../renderers/mobRenderer");
 const drawnProjectiles: Array<Array<[string, number, number]>> = [];
 /** Projectiles handed to the projectile renderer on the latest frame. */
 const drawn = () => drawnProjectiles[drawnProjectiles.length - 1];
@@ -225,5 +227,112 @@ describe("GameRenderer frame loop", () => {
     frame();
     expect(drawn()).toEqual([]);
     expect(blastsAtEnd(calls)).toBe(1);
+  });
+
+  it("shows an in-place mutated entity's current hp, alive flag and heading (legacy state)", () => {
+    const mob = { id: "7", x: 10, y: 10, radius: 14, hp: 100, isAlive: true };
+    const state = stateAt(1);
+    state.mobs.set("7", mob as unknown as Mob);
+    const seen: Array<[number, boolean]> = [];
+    (drawMobs as jest.Mock).mockImplementation(
+      (_ctx, mobs: Map<string, { hp: number; isAlive: boolean }>) => {
+        const m = mobs.get("7")!;
+        seen.push([m.hp, m.isAlive]);
+      },
+    );
+    const { frame } = mount(state);
+    // Colyseus mutates the same object; no new identity reaches the renderer.
+    mob.hp = 40;
+    mob.isAlive = false;
+    frame();
+    expect(seen).toEqual([
+      [100, true],
+      [40, false],
+    ]);
+  });
+
+  it("drops old-room projectiles without blasting them after a room switch", () => {
+    const proj = new Map([
+      [
+        "900",
+        {
+          id: "900",
+          x: 110,
+          y: 50,
+          vx: 0,
+          vy: 0,
+          radius: 4,
+          ownerId: "1",
+          isStuck: false,
+        },
+      ],
+    ]);
+    const first = { ...stateAt(1), mapId: "room-a", projectiles: proj };
+    const gameStateRef = { current: first as GameState | null };
+    const { calls, frame } = mount(first, { gameStateRef });
+    gameStateRef.current = { ...stateAt(2), mapId: "room-b" };
+    frame();
+    expect(
+      calls.filter(([m, x, y]) => m === "arc" && x === 110 && y === 50),
+    ).toHaveLength(0);
+  });
+
+  describe("cached static layer", () => {
+    const layerContexts = () =>
+      (HTMLCanvasElement.prototype.getContext as unknown as jest.Mock).mock
+        .calls.length;
+
+    it("builds the layers once, blits them each frame, rebuilds on a room change", () => {
+      jest
+        .spyOn(HTMLCanvasElement.prototype, "getContext")
+        .mockImplementation((() =>
+          recordingContext([])) as unknown as HTMLCanvasElement["getContext"]);
+      const a = { ...stateAt(1), mapId: "layer-room-a", width: 640 };
+      const gameStateRef = { current: a as GameState | null };
+      const { calls, frame } = mount(a, { gameStateRef });
+      const blits = () => calls.filter(([m]) => m === "drawImage").length;
+      expect(layerContexts()).toBe(2); // ground + over
+      expect(blits()).toBe(2);
+
+      frame();
+      frame();
+      expect(layerContexts()).toBe(2);
+      expect(blits()).toBe(2);
+
+      gameStateRef.current = { ...a, mapId: "layer-room-b", tick: 2 };
+      frame();
+      expect(layerContexts()).toBe(4);
+      expect(blits()).toBe(2);
+    });
+
+    it("keeps the camera on whole device pixels while the player walks", () => {
+      jest
+        .spyOn(HTMLCanvasElement.prototype, "getContext")
+        .mockImplementation((() =>
+          recordingContext([])) as unknown as HTMLCanvasElement["getContext"]);
+      const state = { ...stateAt(1), mapId: "layer-room-c", width: 641 };
+      state.players.set("1", {
+        id: "1",
+        x: 100.37,
+        y: 200.61,
+        radius: 10,
+      } as unknown as GameState["players"] extends Map<string, infer P>
+        ? P
+        : never);
+      const { calls } = mount(state);
+      // Fold the transform calls that precede the first terrain blit.
+      let ox = 0;
+      let oy = 0;
+      let s = 1;
+      for (const [m, a, b] of calls) {
+        if (m === "drawImage") break;
+        if (m === "translate") {
+          ox += (a as number) * s;
+          oy += (b as number) * s;
+        } else if (m === "scale") s *= a as number;
+      }
+      expect(Number.isInteger(ox)).toBe(true);
+      expect(Number.isInteger(oy)).toBe(true);
+    });
   });
 });

@@ -89,6 +89,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
   const renderMobsRef = useRef<Map<string, Mob>>(new Map());
   const renderProjectilesRef = useRef<Map<string, Projectile>>(new Map());
   const lastRenderDurationRef = useRef<number>(0);
+  const mapIdRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -133,26 +134,36 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
       clearCanvas(ctx, canvas);
 
       if (gameState) {
+        // A new room starts with no projectiles: the old room's must not blast here.
+        if (mapIdRef.current !== gameState.mapId) {
+          mapIdRef.current = gameState.mapId;
+          prevProjectilesRef.current.clear();
+          blastEffectsRef.current = [];
+          floatingTextsRef.current = [];
+        }
         // Draw the server timeline slightly in the past, between real snapshots.
         const renderTime = renderTimeAt(
           gameState.renderClock,
           performance.now(),
         );
+        // Copies are reused only where snapshots replace entities (server-rs); the
+        // legacy client mutates them in place, so those are copied afresh.
+        const reuse = !!gameStateRef;
         const renderPlayers = interpolateEntities(
           gameState.players,
           renderTime,
-          renderPlayersRef.current,
+          reuse ? renderPlayersRef.current : undefined,
         );
         const renderMobs = interpolateEntities(
           gameState.mobs,
           renderTime,
-          renderMobsRef.current,
+          reuse ? renderMobsRef.current : undefined,
         );
         const renderProjectiles = gameState.projectiles
           ? interpolateEntities(
               gameState.projectiles,
               renderTime,
-              renderProjectilesRef.current,
+              reuse ? renderProjectilesRef.current : undefined,
             )
           : undefined;
         // One that left the snapshot flies on until the picture reaches its last
@@ -252,10 +263,13 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
 
         ctx.save();
 
-        // Center the view on the canvas
-        ctx.translate(canvas.width / 2, canvas.height / 2);
+        // Centre the camera, with the world origin on a whole device pixel so the
+        // cached terrain blits sharp and sprites do not shimmer against it.
+        ctx.translate(
+          Math.round(canvas.width / 2 - cameraX * scale),
+          Math.round(canvas.height / 2 - cameraY * scale),
+        );
         ctx.scale(scale, scale);
-        ctx.translate(-cameraX, -cameraY);
 
         // 1. Terrain, biomes, roads and town; 2. world boundaries; 3. grid overlay.
         // All static, so blitted from cached layers; only the river is drawn live.
