@@ -1,16 +1,19 @@
-import { renderHook, act } from '@testing-library/react';
-import { TextEncoder, TextDecoder } from 'util';
-import * as flatbuffers from 'flatbuffers';
-import { useServerRsClient, skillSlotFor, fnv1a32 } from './useServerRsClient';
-import { WorldSnapshot } from '../protocol/generated/atlas/protocol/world-snapshot';
-import { EntityDelta } from '../protocol/generated/atlas/protocol/entity-delta';
-import { EntityType } from '../protocol/generated/atlas/protocol/entity-type';
-import { Vec2 } from '../protocol/generated/atlas/protocol/vec2';
-import { ClientInput } from '../protocol/generated/atlas/protocol/client-input';
-import { GameEvent } from '../protocol/generated/atlas/protocol/game-event';
-import { GameEventKind } from '../protocol/generated/atlas/protocol/game-event-kind';
-import { STATE_FLAG_ALIVE, STATE_FLAG_BOT } from '../protocol/BinaryDeltaDecoder';
-import { getMobDisplayName } from '../utils/mobUtils';
+import { renderHook, act } from "@testing-library/react";
+import { TextEncoder, TextDecoder } from "util";
+import * as flatbuffers from "flatbuffers";
+import { useServerRsClient, skillSlotFor, fnv1a32 } from "./useServerRsClient";
+import { WorldSnapshot } from "../protocol/generated/atlas/protocol/world-snapshot";
+import { EntityDelta } from "../protocol/generated/atlas/protocol/entity-delta";
+import { EntityType } from "../protocol/generated/atlas/protocol/entity-type";
+import { Vec2 } from "../protocol/generated/atlas/protocol/vec2";
+import { ClientInput } from "../protocol/generated/atlas/protocol/client-input";
+import { GameEvent } from "../protocol/generated/atlas/protocol/game-event";
+import { GameEventKind } from "../protocol/generated/atlas/protocol/game-event-kind";
+import {
+  STATE_FLAG_ALIVE,
+  STATE_FLAG_BOT,
+} from "../protocol/BinaryDeltaDecoder";
+import { getMobDisplayName } from "../utils/mobUtils";
 
 (global as any).TextEncoder = TextEncoder;
 (global as any).TextDecoder = TextDecoder;
@@ -29,7 +32,7 @@ class MockWebSocket {
   readonly CLOSED = 3;
 
   url: string;
-  binaryType: string = 'blob';
+  binaryType: string = "blob";
   readyState: number = 1; // OPEN
   onopen: (() => void) | null = null;
   onmessage: ((event: { data: any }) => void) | null = null;
@@ -77,7 +80,10 @@ function createTestSnapshotBuffer(tick: number): Uint8Array {
   EntityDelta.addMaxHealth(fbb, 50);
   const mobOffset = EntityDelta.endEntityDelta(fbb);
 
-  const entitiesVec = WorldSnapshot.createEntitiesVector(fbb, [playerOffset, mobOffset]);
+  const entitiesVec = WorldSnapshot.createEntitiesVector(fbb, [
+    playerOffset,
+    mobOffset,
+  ]);
   const removedVec = WorldSnapshot.createRemovedIdsVector(fbb, []);
 
   WorldSnapshot.startWorldSnapshot(fbb);
@@ -91,19 +97,19 @@ function createTestSnapshotBuffer(tick: number): Uint8Array {
   return fbb.asUint8Array();
 }
 
-describe('useServerRsClient', () => {
+describe("useServerRsClient", () => {
   beforeEach(() => {
     MockWebSocket.instances = [];
     localStorage.clear();
   });
 
-  it('initializes in disconnected state', () => {
+  it("initializes in disconnected state", () => {
     const { result } = renderHook(() =>
       useServerRsClient({
-        serverHost: 'localhost',
+        serverHost: "localhost",
         serverPort: 2567,
         useSSL: false,
-      })
+      }),
     );
 
     expect(result.current.isConnected).toBe(false);
@@ -111,14 +117,14 @@ describe('useServerRsClient', () => {
     expect(result.current.updateCount).toBe(0);
   });
 
-  it('connects to server-rs WebSocket gateway and processes binary snapshot', async () => {
+  it("connects to server-rs WebSocket gateway and processes binary snapshot", async () => {
     const { result } = renderHook(() =>
       useServerRsClient({
-        serverHost: 'localhost',
+        serverHost: "localhost",
         serverPort: 2567,
         useSSL: false,
-        token: 'test-jwt-token',
-      })
+        token: "test-jwt-token",
+      }),
     );
 
     await act(async () => {
@@ -127,32 +133,37 @@ describe('useServerRsClient', () => {
 
     expect(result.current.isConnected).toBe(true);
     expect(MockWebSocket.instances.length).toBe(1);
-    expect(MockWebSocket.instances[0].url).toContain('token=test-jwt-token');
+    expect(MockWebSocket.instances[0].url).toContain("token=test-jwt-token");
 
     // Simulate incoming FlatBuffers snapshot
     const testSnapshot = createTestSnapshotBuffer(42);
     act(() => {
       const ws = MockWebSocket.instances[0];
       if (ws.onmessage) {
-        ws.onmessage({ data: testSnapshot.buffer.slice(testSnapshot.byteOffset, testSnapshot.byteOffset + testSnapshot.byteLength) });
+        ws.onmessage({
+          data: testSnapshot.buffer.slice(
+            testSnapshot.byteOffset,
+            testSnapshot.byteOffset + testSnapshot.byteLength,
+          ),
+        });
       }
     });
 
     expect(result.current.updateCount).toBe(1);
     expect(result.current.gameState?.tick).toBe(42);
-    expect(result.current.gameState?.players.has('101')).toBe(true);
-    expect(result.current.gameState?.players.get('101')?.x).toBe(500);
-    expect(result.current.gameState?.mobs.has('202')).toBe(true);
-    expect(result.current.gameState?.mobs.get('202')?.y).toBe(400);
+    expect(result.current.gameState?.players.has("101")).toBe(true);
+    expect(result.current.gameState?.players.get("101")?.x).toBe(500);
+    expect(result.current.gameState?.mobs.has("202")).toBe(true);
+    expect(result.current.gameState?.mobs.get("202")?.y).toBe(400);
   });
 
-  it('sends FlatBuffers ClientInput on updatePlayerInput', async () => {
+  it("sends FlatBuffers ClientInput on updatePlayerInput", async () => {
     const { result } = renderHook(() =>
       useServerRsClient({
-        serverHost: 'localhost',
+        serverHost: "localhost",
         serverPort: 2567,
         useSSL: false,
-      })
+      }),
     );
 
     await act(async () => {
@@ -168,7 +179,9 @@ describe('useServerRsClient', () => {
 
     // Initial frame on open
     const initialBytes: Uint8Array = ws.sentMessages[0];
-    const initialInput = ClientInput.getRootAsClientInput(new flatbuffers.ByteBuffer(initialBytes));
+    const initialInput = ClientInput.getRootAsClientInput(
+      new flatbuffers.ByteBuffer(initialBytes),
+    );
     expect(initialInput.moveX()).toBe(0);
     expect(initialInput.moveY()).toBe(0);
 
@@ -182,13 +195,13 @@ describe('useServerRsClient', () => {
     expect(decodedInput.attack()).toBe(false);
   });
 
-  it('disconnects and resets state cleanly', async () => {
+  it("disconnects and resets state cleanly", async () => {
     const { result } = renderHook(() =>
       useServerRsClient({
-        serverHost: 'localhost',
+        serverHost: "localhost",
         serverPort: 2567,
         useSSL: false,
-      })
+      }),
     );
 
     await act(async () => {
@@ -205,10 +218,16 @@ describe('useServerRsClient', () => {
     expect(result.current.gameState).toBeNull();
   });
 
-  const decode = (bytes: Uint8Array) => ClientInput.getRootAsClientInput(new flatbuffers.ByteBuffer(bytes));
+  const decode = (bytes: Uint8Array) =>
+    ClientInput.getRootAsClientInput(new flatbuffers.ByteBuffer(bytes));
   const connected = async (token?: string) => {
     const view = renderHook(() =>
-      useServerRsClient({ serverHost: 'localhost', serverPort: 2567, useSSL: false, token })
+      useServerRsClient({
+        serverHost: "localhost",
+        serverPort: 2567,
+        useSSL: false,
+        token,
+      }),
     );
     await act(async () => {
       await view.result.current.connect();
@@ -216,21 +235,21 @@ describe('useServerRsClient', () => {
     return view;
   };
 
-  it('keeps the held move vector when attacking (regression: attack cancelled movement)', async () => {
+  it("keeps the held move vector when attacking (regression: attack cancelled movement)", async () => {
     const { result } = await connected();
     act(() => {
       result.current.updatePlayerInput(2, 0);
-      result.current.sendPlayerAction('attack', true);
+      result.current.sendPlayerAction("attack", true);
     });
     const last = decode(MockWebSocket.instances[0].sentMessages.at(-1));
     expect(last.moveX()).toBeCloseTo(2);
     expect(last.attack()).toBe(true);
   });
 
-  it('keeps attack held while the move vector changes, and releases it', async () => {
+  it("keeps attack held while the move vector changes, and releases it", async () => {
     const { result } = await connected();
     act(() => {
-      result.current.sendPlayerAction('attack', true);
+      result.current.sendPlayerAction("attack", true);
       result.current.updatePlayerInput(0, -2);
     });
     const ws = MockWebSocket.instances[0];
@@ -239,40 +258,44 @@ describe('useServerRsClient', () => {
     expect(last.attack()).toBe(true);
 
     act(() => {
-      result.current.sendPlayerAction('attack', false);
+      result.current.sendPlayerAction("attack", false);
     });
     last = decode(ws.sentMessages.at(-1));
     expect(last.attack()).toBe(false);
     expect(last.moveY()).toBeCloseTo(-2);
   });
 
-  it('maps skills (incl. dash) to server slots and keeps movement', async () => {
+  it("maps skills (incl. dash) to server slots and keeps movement", async () => {
     const { result } = await connected();
     const ws = MockWebSocket.instances[0];
     act(() => {
       result.current.updatePlayerInput(0, 2);
     });
-    for (const [skillId, slot] of [['skill_1', 1], ['skill_4', 4], ['skill_dash', 5]] as const) {
+    for (const [skillId, slot] of [
+      ["skill_1", 1],
+      ["skill_4", 4],
+      ["skill_dash", 5],
+    ] as const) {
       act(() => {
-      result.current.sendPlayerAction('useSkill', true, { skillId });
-    });
+        result.current.sendPlayerAction("useSkill", true, { skillId });
+      });
       const last = decode(ws.sentMessages.at(-1));
       expect(last.skillSlot()).toBe(slot);
       expect(last.moveY()).toBeCloseTo(2);
     }
   });
 
-  it('skillSlotFor handles unknown ids and explicit slots', () => {
-    expect(skillSlotFor({ skillId: 'nope' })).toBe(0);
+  it("skillSlotFor handles unknown ids and explicit slots", () => {
+    expect(skillSlotFor({ skillId: "nope" })).toBe(0);
     expect(skillSlotFor({ skillSlot: 3 })).toBe(3);
     expect(skillSlotFor(undefined)).toBe(0);
   });
 
   it('tags only the local session as "Player (YOU)"', async () => {
     // fnv1a32('dev-player') === 4026785618 matches the server's id hash
-    expect(fnv1a32('dev-player')).toBe(4026785618);
-    const { result } = await connected('dev-token:alice');
-    const me = fnv1a32('alice');
+    expect(fnv1a32("dev-player")).toBe(4026785618);
+    const { result } = await connected("dev-token:alice");
+    const me = fnv1a32("alice");
     expect(result.current.playerId).toBe(String(me));
     const fbb = new flatbuffers.Builder(256);
     const mk = (id: number) => {
@@ -296,17 +319,23 @@ describe('useServerRsClient', () => {
       MockWebSocket.instances[0].onmessage?.({ data: bytes.slice().buffer });
     });
     const mine = result.current.gameState!.players.get(String(me))!;
-    expect(mine.name).toBe('Player (YOU)');
+    expect(mine.name).toBe("Player (YOU)");
     expect(mine.isBotMode).toBe(false);
     expect(mine.radius).toBeGreaterThan(0);
     expect(mine.currentHealth).toBe(80);
     // Regression: other humans were tagged [BOT]; only the server bot flag makes a bot.
-    expect(result.current.gameState!.players.get('12345')!.isBotMode).toBe(false);
+    expect(result.current.gameState!.players.get("12345")!.isBotMode).toBe(
+      false,
+    );
   });
 
-  it('disconnect during CONNECTING closes the socket (StrictMode double-mount leak)', async () => {
+  it("disconnect during CONNECTING closes the socket (StrictMode double-mount leak)", async () => {
     const { result } = renderHook(() =>
-      useServerRsClient({ serverHost: 'localhost', serverPort: 2567, useSSL: false })
+      useServerRsClient({
+        serverHost: "localhost",
+        serverPort: 2567,
+        useSSL: false,
+      }),
     );
     act(() => {
       result.current.connect();
@@ -315,13 +344,13 @@ describe('useServerRsClient', () => {
     expect(MockWebSocket.instances[0].readyState).toBe(3);
   });
 
-  it('joinRoom reflects the selected map in roomId and gameState', async () => {
+  it("joinRoom reflects the selected map in roomId and gameState", async () => {
     const { result } = await connected();
     await act(async () => {
-      await result.current.joinRoom('map-for-test-projectile');
+      await result.current.joinRoom("map-for-test-projectile");
     });
-    expect(result.current.roomId).toBe('server-rs-map-for-test-projectile');
-    expect(result.current.gameState?.mapId).toBe('map-for-test-projectile');
+    expect(result.current.roomId).toBe("server-rs-map-for-test-projectile");
+    expect(result.current.gameState?.mapId).toBe("map-for-test-projectile");
   });
 
   const frame = (tick: number, mobX: number) => {
@@ -341,7 +370,7 @@ describe('useServerRsClient', () => {
     return { data: fbb.asUint8Array().slice().buffer };
   };
 
-  it('mob positions follow every snapshot (regression: ...existing spread last froze mobs)', async () => {
+  it("mob positions follow every snapshot (regression: ...existing spread last froze mobs)", async () => {
     const { result } = await connected();
     const ws = MockWebSocket.instances[0];
     act(() => {
@@ -350,10 +379,10 @@ describe('useServerRsClient', () => {
     act(() => {
       ws.onmessage?.(frame(2, 150));
     });
-    expect(result.current.gameState!.mobs.get('202')!.x).toBe(150);
+    expect(result.current.gameState!.mobs.get("202")!.x).toBe(150);
   });
 
-  it('ignores frames from a socket that was disconnected', async () => {
+  it("ignores frames from a socket that was disconnected", async () => {
     const { result } = await connected();
     const ws = MockWebSocket.instances[0];
     act(() => {
@@ -365,9 +394,13 @@ describe('useServerRsClient', () => {
     expect(result.current.gameState).toBeNull();
   });
 
-  it('connect() settles when disconnected during CONNECTING (no hung promise)', async () => {
+  it("connect() settles when disconnected during CONNECTING (no hung promise)", async () => {
     const { result } = renderHook(() =>
-      useServerRsClient({ serverHost: 'localhost', serverPort: 2567, useSSL: false })
+      useServerRsClient({
+        serverHost: "localhost",
+        serverPort: 2567,
+        useSSL: false,
+      }),
     );
     let p!: Promise<void>;
     act(() => {
@@ -377,7 +410,7 @@ describe('useServerRsClient', () => {
     await expect(p).resolves.toBeUndefined();
   });
 
-  it('disconnect resets held input so a reconnect does not replay stale movement', async () => {
+  it("disconnect resets held input so a reconnect does not replay stale movement", async () => {
     const { result } = await connected();
     act(() => {
       result.current.updatePlayerInput(2, 0);
@@ -389,7 +422,7 @@ describe('useServerRsClient', () => {
       await result.current.connect();
     });
     act(() => {
-      result.current.sendPlayerAction('attack', true);
+      result.current.sendPlayerAction("attack", true);
     });
     const last = decode(MockWebSocket.instances[1].sentMessages.at(-1));
     expect(last.moveX()).toBe(0);
@@ -402,6 +435,9 @@ describe('useServerRsClient', () => {
     id: number;
     type: EntityType;
     x?: number;
+    y?: number;
+    vx?: number;
+    vy?: number;
     flags?: number;
     health?: number;
     mobType?: string;
@@ -411,7 +447,12 @@ describe('useServerRsClient', () => {
     tick: number,
     ents: Ent[],
     removed: number[] = [],
-    events: { kind: GameEventKind; source: number; target: number; amount: number }[] = []
+    events: {
+      kind: GameEventKind;
+      source: number;
+      target: number;
+      amount: number;
+    }[] = [],
   ) => {
     const fbb = new flatbuffers.Builder(256);
     const offs = ents.map((e) => {
@@ -419,7 +460,7 @@ describe('useServerRsClient', () => {
       EntityDelta.startEntityDelta(fbb);
       EntityDelta.addId(fbb, e.id);
       EntityDelta.addEntityType(fbb, e.type);
-      EntityDelta.addPos(fbb, Vec2.createVec2(fbb, e.x ?? 10, 20));
+      EntityDelta.addPos(fbb, Vec2.createVec2(fbb, e.x ?? 10, e.y ?? 20));
       EntityDelta.addHealth(fbb, e.health ?? 50);
       EntityDelta.addMaxHealth(fbb, 50);
       EntityDelta.addStateFlags(fbb, e.flags ?? STATE_FLAG_ALIVE);
@@ -451,81 +492,196 @@ describe('useServerRsClient', () => {
     const { result } = await connected();
     act(() => {
       MockWebSocket.instances[0].onmessage?.(
-        snap(1, [{ id: 7, type: EntityType.Mob, mobType: 'mob-millpond-gnawer' }])
+        snap(1, [
+          { id: 7, type: EntityType.Mob, mobType: "mob-millpond-gnawer" },
+        ]),
       );
     });
-    const mob = result.current.gameState!.mobs.get('7')!;
-    expect(mob.mobTypeId).toBe('mob-millpond-gnawer');
-    expect(getMobDisplayName(mob)).toBe('Millpond Gnawer');
+    const mob = result.current.gameState!.mobs.get("7")!;
+    expect(mob.mobTypeId).toBe("mob-millpond-gnawer");
+    expect(getMobDisplayName(mob)).toBe("Millpond Gnawer");
   });
 
-  it('getMobDisplayName falls back to a readable id for types missing from the bestiary', () => {
-    expect(getMobDisplayName({ mobTypeId: 'mob-brand-new-thing' })).toBe('Brand New Thing');
+  it("getMobDisplayName falls back to a readable id for types missing from the bestiary", () => {
+    expect(getMobDisplayName({ mobTypeId: "mob-brand-new-thing" })).toBe(
+      "Brand New Thing",
+    );
   });
 
-  it('tags only server bots (state_flags bot bit) as bots, never other humans', async () => {
-    const { result } = await connected('dev-token:alice');
+  it("tags only server bots (state_flags bot bit) as bots, never other humans", async () => {
+    const { result } = await connected("dev-token:alice");
     act(() => {
       MockWebSocket.instances[0].onmessage?.(
         snap(1, [
           { id: 11, type: EntityType.Player, flags: STATE_FLAG_ALIVE },
-          { id: 12, type: EntityType.Player, flags: STATE_FLAG_ALIVE | STATE_FLAG_BOT },
-        ])
+          {
+            id: 12,
+            type: EntityType.Player,
+            flags: STATE_FLAG_ALIVE | STATE_FLAG_BOT,
+          },
+        ]),
       );
     });
-    expect(result.current.gameState!.players.get('11')!.isBotMode).toBe(false);
-    expect(result.current.gameState!.players.get('12')!.isBotMode).toBe(true);
+    expect(result.current.gameState!.players.get("11")!.isBotMode).toBe(false);
+    expect(result.current.gameState!.players.get("12")!.isBotMode).toBe(true);
   });
 
-  it('shows the dead state from the alive flag (corpse at 0 hp) and deletes removed ids', async () => {
+  it("shows the dead state from the alive flag (corpse at 0 hp) and deletes removed ids", async () => {
     const { result } = await connected();
     const ws = MockWebSocket.instances[0];
     act(() => {
-      ws.onmessage?.(snap(1, [{ id: 7, type: EntityType.Mob, mobType: 'mob-millpond-gnawer' }]));
+      ws.onmessage?.(
+        snap(1, [
+          { id: 7, type: EntityType.Mob, mobType: "mob-millpond-gnawer" },
+        ]),
+      );
     });
-    expect(result.current.gameState!.mobs.get('7')!.isAlive).toBe(true);
+    expect(result.current.gameState!.mobs.get("7")!.isAlive).toBe(true);
     act(() => {
-      ws.onmessage?.(snap(2, [{ id: 7, type: EntityType.Mob, flags: 0, health: 0 }]));
+      ws.onmessage?.(
+        snap(2, [{ id: 7, type: EntityType.Mob, flags: 0, health: 0 }]),
+      );
     });
-    const corpse = result.current.gameState!.mobs.get('7')!;
+    const corpse = result.current.gameState!.mobs.get("7")!;
     expect(corpse.isAlive).toBe(false);
-    expect(corpse.mobTypeId).toBe('mob-millpond-gnawer'); // kept across frames
+    expect(corpse.mobTypeId).toBe("mob-millpond-gnawer"); // kept across frames
     act(() => {
       ws.onmessage?.(snap(3, [], [7]));
     });
-    expect(result.current.gameState!.mobs.has('7')).toBe(false);
+    expect(result.current.gameState!.mobs.has("7")).toBe(false);
   });
 
-  it('renders projectiles from the snapshot and drops them when they leave it', async () => {
+  it("renders projectiles from the snapshot and drops them when they leave it", async () => {
     const { result } = await connected();
     const ws = MockWebSocket.instances[0];
     act(() => {
-      ws.onmessage?.(snap(1, [{ id: 900, type: EntityType.Projectile, x: 33, ownerId: 11 }]));
+      ws.onmessage?.(
+        snap(1, [{ id: 900, type: EntityType.Projectile, x: 33, ownerId: 11 }]),
+      );
     });
-    const proj = result.current.gameState!.projectiles!.get('900')!;
+    const proj = result.current.gameState!.projectiles!.get("900")!;
     expect(proj.x).toBe(33);
-    expect(proj.ownerId).toBe('11');
+    expect(proj.ownerId).toBe("11");
     expect(proj.radius).toBeGreaterThan(0);
-    expect(result.current.gameState!.mobs.has('900')).toBe(false);
+    expect(result.current.gameState!.mobs.has("900")).toBe(false);
     act(() => {
       ws.onmessage?.(snap(2, []));
     });
     expect(result.current.gameState!.projectiles!.size).toBe(0);
   });
 
-  it('decodes combat events into gameState.events', async () => {
+  it("decodes combat events into gameState.events", async () => {
     const { result } = await connected();
     act(() => {
       MockWebSocket.instances[0].onmessage?.(
-        snap(1, [], [], [
-          { kind: GameEventKind.Hit, source: 11, target: 7, amount: 12 },
-          { kind: GameEventKind.Kill, source: 11, target: 7, amount: 0 },
-        ])
+        snap(
+          1,
+          [],
+          [],
+          [
+            { kind: GameEventKind.Hit, source: 11, target: 7, amount: 12 },
+            { kind: GameEventKind.Kill, source: 11, target: 7, amount: 0 },
+          ],
+        ),
       );
     });
     expect(result.current.gameState!.events).toEqual([
       { kind: GameEventKind.Hit, sourceId: 11, targetId: 7, amount: 12 },
       { kind: GameEventKind.Kill, sourceId: 11, targetId: 7, amount: 0 },
     ]);
+  });
+
+  it("respawn() sends a ClientInput packet with respawn = true", async () => {
+    const { result } = await connected();
+    const ws = MockWebSocket.instances[0];
+    const initialMsgCount = ws.sentMessages.length;
+
+    act(() => {
+      result.current.respawn();
+    });
+
+    expect(ws.sentMessages.length).toBe(initialMsgCount + 1);
+    const lastMsg = ws.sentMessages[ws.sentMessages.length - 1];
+    const bb = new flatbuffers.ByteBuffer(lastMsg);
+    const input = ClientInput.getRootAsClientInput(bb);
+
+    expect(input.respawn()).toBe(true);
+  });
+
+  it("sendPlayerAction with skill sends skill slot and mouse aim coordinates", async () => {
+    const { result } = await connected();
+    const ws = MockWebSocket.instances[0];
+
+    act(() => {
+      result.current.sendPlayerAction("useSkill", true, {
+        skillId: "skill_1",
+        x: 350.5,
+        y: 420.25,
+        targetId: 77,
+      });
+    });
+
+    const lastMsg = ws.sentMessages[ws.sentMessages.length - 1];
+    const bb = new flatbuffers.ByteBuffer(lastMsg);
+    const input = ClientInput.getRootAsClientInput(bb);
+
+    expect(input.skillSlot()).toBe(1);
+    expect(input.targetId()).toBe(77);
+    expect(input.targetX()).toBeCloseTo(350.5);
+    expect(input.targetY()).toBeCloseTo(420.25);
+    expect(input.respawn()).toBe(false);
+  });
+
+  it("sets isAttacking and heading toward mouse aim on local player", async () => {
+    const { result } = await connected("dev-token:alice");
+    const ws = MockWebSocket.instances[0];
+    const localId = result.current.playerId;
+
+    // Send snapshot with local player at (100, 100) stationary
+    act(() => {
+      ws.onmessage?.(
+        snap(1, [
+          {
+            id: Number(localId),
+            type: EntityType.Player,
+            x: 100,
+            y: 100,
+            vx: 0,
+            vy: 0,
+            flags: STATE_FLAG_ALIVE,
+          },
+        ]),
+      );
+    });
+
+    let player = result.current.gameState!.players.get(localId)!;
+    expect(player.isAttacking).toBe(false);
+
+    // Aim at (100, 200) (directly down, dy = 100, dx = 0 => heading = PI/2) and start attack
+    act(() => {
+      result.current.sendPlayerAction("attack", true, { x: 100, y: 200 });
+    });
+
+    // Next frame update reflects attacking state and heading
+    act(() => {
+      ws.onmessage?.(
+        snap(2, [
+          {
+            id: Number(localId),
+            type: EntityType.Player,
+            x: 100,
+            y: 100,
+            vx: 0,
+            vy: 0,
+            flags: STATE_FLAG_ALIVE,
+          },
+        ]),
+      );
+    });
+
+    player = result.current.gameState!.players.get(localId)!;
+    expect(player.isAttacking).toBe(true);
+    expect(player.heading).toBeCloseTo(Math.PI / 2);
+    expect(player.attackRange).toBe(40);
   });
 });

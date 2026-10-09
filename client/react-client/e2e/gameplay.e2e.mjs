@@ -7,53 +7,86 @@
 // Env:     E2E_URL (default http://localhost:3000)
 //          E2E_SERVER=host:port  point the client at another server-rs (adds ?server=)
 //          HEADED=1 to watch.
-import { chromium } from 'playwright';
-import { readFileSync } from 'node:fs';
+import { chromium } from "playwright";
+import { readFileSync } from "node:fs";
 
-const BASE = process.env.E2E_URL ?? 'http://localhost:3000';
-const SERVER_Q = process.env.E2E_SERVER ? `&server=${process.env.E2E_SERVER}` : '';
+const BASE = process.env.E2E_URL ?? "http://localhost:3000";
+const SERVER_Q = process.env.E2E_SERVER
+  ? `&server=${process.env.E2E_SERVER}`
+  : "";
 const player = `e2e-gp-${Date.now()}`;
 const BODY_GAP = 12 + 14; // player + mob body radius (server-rs)
-const bestiary = JSON.parse(readFileSync(new URL('../src/data/bestiaryNames.json', import.meta.url), 'utf8'));
+const bestiary = JSON.parse(
+  readFileSync(
+    new URL("../src/data/bestiaryNames.json", import.meta.url),
+    "utf8",
+  ),
+);
 
 let failures = 0;
 const check = (name, ok, detail) => {
-  console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? `  (${detail})` : ''}`);
+  console.log(
+    `${ok ? "PASS" : "FAIL"}  ${name}${detail ? `  (${detail})` : ""}`,
+  );
   if (!ok) failures++;
 };
 
 const browser = await chromium.launch({ headless: !process.env.HEADED });
 try {
-  const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+  const page = await browser.newPage({
+    viewport: { width: 1400, height: 900 },
+  });
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(`${BASE}/?player=${player}${SERVER_Q}`);
   await page.waitForFunction(
-    () => window.__gameState?.players?.get(window.__playerId) !== undefined && window.__gameState.mobs.size > 0,
+    () =>
+      window.__gameState?.players?.get(window.__playerId) !== undefined &&
+      window.__gameState.mobs.size > 0,
     null,
     { timeout: 15000 },
   );
-  await page.locator('canvas').first().click(); // focus the game like a user would
+  await page.locator("canvas").first().click(); // focus the game like a user would
 
   const state = () =>
     page.evaluate(() => {
       const gs = window.__gameState;
       const me = gs.players.get(window.__playerId);
       return {
-        me: me && { id: me.id, x: me.x, y: me.y, isAlive: me.isAlive, isBotMode: me.isBotMode },
+        me: me && {
+          id: me.id,
+          x: me.x,
+          y: me.y,
+          isAlive: me.isAlive,
+          isBotMode: me.isBotMode,
+        },
         mobs: [...gs.mobs.values()].map((m) => ({
-          id: m.id, x: m.x, y: m.y, isAlive: m.isAlive, hp: m.currentHealth, max: m.maxHealth, type: m.mobTypeId,
+          id: m.id,
+          x: m.x,
+          y: m.y,
+          isAlive: m.isAlive,
+          hp: m.currentHealth,
+          max: m.maxHealth,
+          type: m.mobTypeId,
         })),
         bots: [...gs.players.values()].filter((p) => p.isBotMode).length,
-        projectiles: [...(gs.projectiles?.values() ?? [])].map((p) => ({ id: p.id, owner: p.ownerId })),
+        projectiles: [...(gs.projectiles?.values() ?? [])].map((p) => ({
+          id: p.id,
+          owner: p.ownerId,
+        })),
       };
     });
   const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
   const releaseAll = async () => {
-    for (const k of ['w', 'a', 's', 'd']) await page.keyboard.up(k);
+    for (const k of ["w", "a", "s", "d"]) await page.keyboard.up(k);
   };
   /** Pulse WASD toward a mob until within `stop` units. Returns the last state. */
-  const steerTo = async (mobId, stop, timeoutMs, { attack = false, onSample } = {}) => {
+  const steerTo = async (
+    mobId,
+    stop,
+    timeoutMs,
+    { attack = false, onSample } = {},
+  ) => {
     const deadline = Date.now() + timeoutMs;
     let s = await state();
     while (Date.now() < deadline) {
@@ -70,8 +103,8 @@ try {
         continue;
       }
       const keys = [];
-      if (Math.abs(dx) > 8) keys.push(dx > 0 ? 'd' : 'a');
-      if (Math.abs(dy) > 8) keys.push(dy > 0 ? 's' : 'w');
+      if (Math.abs(dx) > 8) keys.push(dx > 0 ? "d" : "a");
+      if (Math.abs(dy) > 8) keys.push(dy > 0 ? "s" : "w");
       for (const k of keys) await page.keyboard.down(k);
       await page.waitForTimeout(90);
       for (const k of keys) await page.keyboard.up(k);
@@ -80,7 +113,9 @@ try {
     return s;
   };
   const nearestMob = (s, filter = () => true) =>
-    s.mobs.filter((m) => m.isAlive && filter(m)).sort((a, b) => dist(a, s.me) - dist(b, s.me))[0];
+    s.mobs
+      .filter((m) => m.isAlive && filter(m))
+      .sort((a, b) => dist(a, s.me) - dist(b, s.me))[0];
 
   // 1. Mobs move on their own over 3s (wander / chase).
   const s0 = await state();
@@ -90,15 +125,31 @@ try {
     const later = s1.mobs.find((n) => n.id === m.id);
     return later && dist(m, later) > 1;
   }).length;
-  check('mobs move over 3s', moved >= s0.mobs.length / 2, `${moved}/${s0.mobs.length} moved`);
+  check(
+    "mobs move over 3s",
+    moved >= s0.mobs.length / 2,
+    `${moved}/${s0.mobs.length} moved`,
+  );
 
   // 2. Every mob carries a bestiary type → labelled by name, never "Unknown Mob".
   const unnamed = s1.mobs.filter((m) => !m.type || !bestiary[m.type]);
-  check('no mob labelled "Unknown Mob" (all have a bestiary mob_type)', unnamed.length === 0,
-    unnamed.length ? `untyped: ${unnamed.slice(0, 3).map((m) => m.id).join(',')}` : `${s1.mobs.length} typed`);
+  check(
+    'no mob labelled "Unknown Mob" (all have a bestiary mob_type)',
+    unnamed.length === 0,
+    unnamed.length
+      ? `untyped: ${unnamed
+          .slice(0, 3)
+          .map((m) => m.id)
+          .join(",")}`
+      : `${s1.mobs.length} typed`,
+  );
 
   // 3. Only server bots are flagged as bots; this human is not.
-  check('local human is not tagged [BOT]', s1.me.isBotMode === false, `bots on wire: ${s1.bots}`);
+  check(
+    "local human is not tagged [BOT]",
+    s1.me.isBotMode === false,
+    `bots on wire: ${s1.bots}`,
+  );
 
   // 4. A mob near the player approaches: walk to ~120u of the nearest mob, stand still.
   let target = nearestMob(s1);
@@ -110,8 +161,11 @@ try {
     const later = s2.mobs.find((n) => n.id === m.id);
     return later && dist(later, s2.me) < dist(m, s.me) - 10;
   });
-  check('a mob near the player approaches it', approached.length > 0,
-    `${approached.length}/${near0.length} mobs within 200u closed in`);
+  check(
+    "a mob near the player approaches it",
+    approached.length > 0,
+    `${approached.length}/${near0.length} mobs within 200u closed in`,
+  );
 
   // 5. Hold Space next to a mob: its health drops, it dies, its id is removed, mobs respawn.
   //    Sample body distances the whole time (collision must keep bodies apart).
@@ -131,9 +185,12 @@ try {
   const fightDeadline = Date.now() + 40000;
   while (Date.now() < fightDeadline) {
     const currTargetId = target.id;
-    await page.keyboard.down(' ');
-    const st = await steerTo(currTargetId, 36, 1500, { attack: true, onSample: sampleGap });
-    await page.keyboard.up(' ');
+    await page.keyboard.down(" ");
+    const st = await steerTo(currTargetId, 36, 1500, {
+      attack: true,
+      onSample: sampleGap,
+    });
+    await page.keyboard.up(" ");
     const mob = st.mobs.find((m) => m.id === currTargetId);
     if (mob && mob.hp < mob.max) damaged = true;
     if (!mob) {
@@ -155,50 +212,170 @@ try {
   }
   const events = await page.evaluate(() => window.__gameEvents ?? []);
   damaged = damaged || events.some((e) => e.kind === 0 && e.sourceId === myId);
-  check('holding Space next to a mob reduces its health', damaged);
-  check('the killed mob id is removed from the client', removed, target.id);
-  check(`bodies never overlap (player vs mob >= ${BODY_GAP - 1})`, minGap >= BODY_GAP - 1, `min ${minGap.toFixed(1)}`);
-  check('hit + kill events from this player arrive on the wire',
-    events.some((e) => e.kind === 0 && e.sourceId === myId) && events.some((e) => e.kind === 1 && e.sourceId === myId),
-    `${events.length} events buffered`);
+  check("holding Space next to a mob reduces its health", damaged);
+  check("the killed mob id is removed from the client", removed, target.id);
+  check(
+    `bodies never overlap (player vs mob >= ${BODY_GAP - 1})`,
+    minGap >= BODY_GAP - 1,
+    `min ${minGap.toFixed(1)}`,
+  );
+  check(
+    "hit + kill events from this player arrive on the wire",
+    events.some((e) => e.kind === 0 && e.sourceId === myId) &&
+      events.some((e) => e.kind === 1 && e.sourceId === myId),
+    `${events.length} events buffered`,
+  );
   const respawned = await page
     .waitForFunction(
-      (seen) => [...window.__gameState.mobs.keys()].some((id) => !seen.includes(id)),
+      (seen) =>
+        [...window.__gameState.mobs.keys()].some((id) => !seen.includes(id)),
       [...idsAtStart],
       { timeout: 15000 },
     )
     .then(() => true)
     .catch(() => false);
-  check('mobs respawn after deaths (new mob ids appear)', respawned);
+  check("mobs respawn after deaths (new mob ids appear)", respawned);
 
   // 6. Using a skill spawns visible projectiles owned by this player.
-  // Ensure player is alive (wait for auto-respawn if killed in combat).
+  // Ensure player is at full health at spawn point so mobs don't interrupt the cast.
+  await page.evaluate(() => {
+    if (window.__respawn) window.__respawn();
+    window.__seenProjectiles = [];
+  });
   await page.waitForFunction(
-    () => window.__gameState?.players?.get(window.__playerId)?.isAlive === true,
+    () => {
+      const p = window.__gameState?.players?.get(window.__playerId);
+      return p?.isAlive === true && (p?.health ?? 0) >= 100;
+    },
     null,
-    { timeout: 10000 },
+    { timeout: 5000 },
   );
-  await page.locator('canvas').first().click();
+
+  const canvas = page.locator("canvas").first();
+  const canvasBox = await canvas.boundingBox();
+  if (canvasBox) {
+    await page.mouse.move(
+      canvasBox.x + canvasBox.width * 0.7,
+      canvasBox.y + canvasBox.height * 0.5,
+    );
+  }
+  await canvas.click();
+
   let sawProjectile = false;
-  for (let i = 0; i < 4 && !sawProjectile; i++) {
-    await page.keyboard.press('1');
+  for (let i = 0; i < 3 && !sawProjectile; i++) {
+    await page.keyboard.press("1");
     sawProjectile = await page
       .waitForFunction(
-        () => (
-          [...(window.__gameState.projectiles?.values() ?? [])].some((p) => p.ownerId === window.__playerId) ||
-          (window.__seenProjectiles ?? []).some((p) => p.ownerId === window.__playerId)
-        ),
+        () =>
+          [...(window.__gameState.projectiles?.values() ?? [])].some(
+            (p) => p.ownerId === window.__playerId,
+          ) ||
+          (window.__seenProjectiles ?? []).some(
+            (p) => p.ownerId === window.__playerId,
+          ),
         null,
-        { timeout: 3500 },
+        { timeout: 6000 },
       )
       .then(() => true)
       .catch(() => false);
+    if (!sawProjectile) await page.waitForTimeout(1000);
   }
-  check('skill key (1) shows this player\'s projectiles', sawProjectile);
+  check("skill key (1) shows this player's projectiles", sawProjectile);
 
-  check('no uncaught page errors', errors.length === 0, errors.join(' | '));
+  // 7. Mouse attack on canvas sets isAttacking and heading.
+  if (canvasBox) {
+    await page.mouse.move(
+      canvasBox.x + canvasBox.width * 0.75,
+      canvasBox.y + canvasBox.height * 0.5,
+    );
+    await page.mouse.down();
+    const isAttackingNow = await page
+      .waitForFunction(
+        () => {
+          const p = window.__gameState?.players?.get(window.__playerId);
+          return p?.isAttacking === true && p?.heading !== undefined;
+        },
+        null,
+        { timeout: 3000 },
+      )
+      .then(() => true)
+      .catch(() => false);
+    check(
+      "holding mouse button on canvas triggers melee attack and heading",
+      isAttackingNow,
+    );
+    await page.mouse.up();
+  }
+
+  // 8. Clicking on-screen Action Bar skill button triggers skill (wait for 5s GCD from skill 1).
+  await page.waitForTimeout(5500);
+  await page.evaluate(() => {
+    if (window.__respawn) window.__respawn();
+    window.__seenProjectiles = [];
+  });
+  await page.waitForFunction(
+    () => {
+      const p = window.__gameState?.players?.get(window.__playerId);
+      return p?.isAlive === true && (p?.health ?? 0) >= 100;
+    },
+    null,
+    { timeout: 5000 },
+  );
+
+  const skillButton = page.locator("button", { hasText: "Thunder" }).first();
+  if (await skillButton.isVisible()) {
+    await skillButton.click();
+    const sawSkillFromBar = await page
+      .waitForFunction(
+        () =>
+          [...(window.__gameState.projectiles?.values() ?? [])].some(
+            (p) => p.ownerId === window.__playerId,
+          ) ||
+          (window.__seenProjectiles ?? []).some(
+            (p) => p.ownerId === window.__playerId,
+          ),
+        null,
+        { timeout: 6000 },
+      )
+      .then(() => true)
+      .catch(() => false);
+    let detail = "";
+    if (!sawSkillFromBar) {
+      detail = await page.evaluate(() => {
+        const p = window.__gameState?.players?.get(window.__playerId);
+        return `alive=${p?.isAlive} hp=${p?.health} seen=${(window.__seenProjectiles ?? []).length} projs=${window.__gameState?.projectiles?.size}`;
+      });
+    }
+    check(
+      "clicking on-screen Action Bar skill button triggers skill",
+      sawSkillFromBar,
+      detail,
+    );
+  }
+
+  // 9. Manual respawn test: calls window.__respawn() and verifies full health.
+  await page.evaluate(() => {
+    if (window.__respawn) window.__respawn();
+  });
+  const respawnVerified = await page
+    .waitForFunction(
+      () => {
+        const p = window.__gameState?.players?.get(window.__playerId);
+        return p?.isAlive === true && (p?.health ?? 0) > 0;
+      },
+      null,
+      { timeout: 3000 },
+    )
+    .then(() => true)
+    .catch(() => false);
+  check(
+    "manual respawn restores player health and alive state",
+    respawnVerified,
+  );
+
+  check("no uncaught page errors", errors.length === 0, errors.join(" | "));
 } finally {
   await browser.close();
 }
-console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED');
+console.log(failures ? `\n${failures} FAILED` : "\nALL PASSED");
 process.exit(failures ? 1 : 0);

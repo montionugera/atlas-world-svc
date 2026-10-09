@@ -939,3 +939,100 @@ fn audit_gap3_bot_wire_target_id_replicates_nearest_mob() {
         expected_mob_wire_id, bot_delta.target_id
     );
 }
+
+#[test]
+fn test_manual_respawn_revives_dead_player_immediately() {
+    use server_rs::protocol::serialize_client_input_full;
+
+    let mut sim = live(0, 0);
+    let p_ent = sim.spawn_player_avatar("p-revive-test", 250.0, 350.0);
+
+    // Kill player
+    {
+        let mut h = sim.world.get_mut::<Health>(p_ent).unwrap();
+        h.current = 0.0;
+        h.is_alive = false;
+    }
+
+    // Tick without respawn: player is still dead
+    sim.live_tick(&[], &[]);
+    {
+        let h = sim.world.get::<Health>(p_ent).unwrap();
+        assert!(
+            !h.is_alive,
+            "Player should remain dead without respawn input"
+        );
+    }
+
+    // Send input with respawn = true
+    let respawn_packet = ClientPacket {
+        session_id: "p-revive-test".to_string(),
+        payload: serialize_client_input_full(1, 0.0, 0.0, false, 0, 0, 0.0, 0.0, true),
+    };
+    sim.live_tick(&[respawn_packet], &[]);
+
+    // Verify player is revived immediately with full health at spawn point
+    let h = sim.world.get::<Health>(p_ent).unwrap();
+    assert!(
+        h.is_alive,
+        "Player should be revived immediately on respawn input"
+    );
+    assert_eq!(
+        h.current, h.max,
+        "Player should have full health upon respawn"
+    );
+
+    let pos = sim.world.get::<Position>(p_ent).unwrap();
+    assert_eq!(pos.x, 250.0);
+    assert_eq!(pos.y, 350.0);
+}
+
+#[test]
+fn test_client_input_target_pos_and_entity_aiming() {
+    use server_rs::ecs::components::PlayerInputState;
+    use server_rs::protocol::serialize_client_input_full;
+
+    let mut sim = live(0, 0);
+    let p_ent = sim.spawn_player_avatar("p-aim-test", 100.0, 100.0);
+
+    let m_ent = sim
+        .world
+        .spawn((
+            EntityId("mob-aim-target".to_string()),
+            Position::new(150.0, 100.0),
+            Velocity::zero(),
+            Health::new(100.0),
+            MobTag,
+        ))
+        .id();
+    let mob_wire_id = server_rs::protocol::fnv1a_32("mob-aim-target");
+
+    let aim_packet = ClientPacket {
+        session_id: "p-aim-test".to_string(),
+        payload: serialize_client_input_full(
+            1,
+            0.0,
+            0.0,
+            false,
+            0,
+            mob_wire_id,
+            300.0,
+            400.0,
+            false,
+        ),
+    };
+    sim.live_tick(&[aim_packet], &[]);
+
+    let input_state = sim.world.get::<PlayerInputState>(p_ent).unwrap();
+    assert_eq!(input_state.target_id, mob_wire_id);
+    assert_eq!(
+        input_state.target_entity,
+        Some(m_ent),
+        "target_id should resolve to target_entity"
+    );
+    assert_eq!(
+        input_state.target_pos,
+        Some(Position::new(300.0, 400.0)),
+        "target_x and target_y should populate target_pos"
+    );
+}

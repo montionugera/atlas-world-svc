@@ -1083,6 +1083,9 @@ pub mod atlas {
             pub const VT_ATTACK: ::flatbuffers::VOffsetT = 10;
             pub const VT_SKILL_SLOT: ::flatbuffers::VOffsetT = 12;
             pub const VT_TARGET_ID: ::flatbuffers::VOffsetT = 14;
+            pub const VT_TARGET_X: ::flatbuffers::VOffsetT = 16;
+            pub const VT_TARGET_Y: ::flatbuffers::VOffsetT = 18;
+            pub const VT_RESPAWN: ::flatbuffers::VOffsetT = 20;
 
             #[inline]
             pub unsafe fn init_from_table(table: ::flatbuffers::Table<'a>) -> Self {
@@ -1099,10 +1102,13 @@ pub mod atlas {
                 args: &'args ClientInputArgs,
             ) -> ::flatbuffers::WIPOffset<ClientInput<'bldr>> {
                 let mut builder = ClientInputBuilder::new(_fbb);
+                builder.add_target_y(args.target_y);
+                builder.add_target_x(args.target_x);
                 builder.add_target_id(args.target_id);
                 builder.add_move_y(args.move_y);
                 builder.add_move_x(args.move_x);
                 builder.add_client_tick(args.client_tick);
+                builder.add_respawn(args.respawn);
                 builder.add_skill_slot(args.skill_slot);
                 builder.add_attack(args.attack);
                 builder.finish()
@@ -1174,6 +1180,39 @@ pub mod atlas {
                         .unwrap()
                 }
             }
+            #[inline]
+            pub fn target_x(&self) -> f32 {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe {
+                    self._tab
+                        .get::<f32>(ClientInput::VT_TARGET_X, Some(0.0))
+                        .unwrap()
+                }
+            }
+            #[inline]
+            pub fn target_y(&self) -> f32 {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe {
+                    self._tab
+                        .get::<f32>(ClientInput::VT_TARGET_Y, Some(0.0))
+                        .unwrap()
+                }
+            }
+            #[inline]
+            pub fn respawn(&self) -> bool {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe {
+                    self._tab
+                        .get::<bool>(ClientInput::VT_RESPAWN, Some(false))
+                        .unwrap()
+                }
+            }
         }
 
         impl ::flatbuffers::Verifiable for ClientInput<'_> {
@@ -1189,6 +1228,9 @@ pub mod atlas {
                     .visit_field::<bool>("attack", Self::VT_ATTACK, false)?
                     .visit_field::<u8>("skill_slot", Self::VT_SKILL_SLOT, false)?
                     .visit_field::<u32>("target_id", Self::VT_TARGET_ID, false)?
+                    .visit_field::<f32>("target_x", Self::VT_TARGET_X, false)?
+                    .visit_field::<f32>("target_y", Self::VT_TARGET_Y, false)?
+                    .visit_field::<bool>("respawn", Self::VT_RESPAWN, false)?
                     .finish();
                 Ok(())
             }
@@ -1200,6 +1242,9 @@ pub mod atlas {
             pub attack: bool,
             pub skill_slot: u8,
             pub target_id: u32,
+            pub target_x: f32,
+            pub target_y: f32,
+            pub respawn: bool,
         }
         impl<'a> Default for ClientInputArgs {
             #[inline]
@@ -1211,6 +1256,9 @@ pub mod atlas {
                     attack: false,
                     skill_slot: 0,
                     target_id: 0,
+                    target_x: 0.0,
+                    target_y: 0.0,
+                    respawn: false,
                 }
             }
         }
@@ -1251,6 +1299,21 @@ pub mod atlas {
                     .push_slot::<u32>(ClientInput::VT_TARGET_ID, target_id, 0);
             }
             #[inline]
+            pub fn add_target_x(&mut self, target_x: f32) {
+                self.fbb_
+                    .push_slot::<f32>(ClientInput::VT_TARGET_X, target_x, 0.0);
+            }
+            #[inline]
+            pub fn add_target_y(&mut self, target_y: f32) {
+                self.fbb_
+                    .push_slot::<f32>(ClientInput::VT_TARGET_Y, target_y, 0.0);
+            }
+            #[inline]
+            pub fn add_respawn(&mut self, respawn: bool) {
+                self.fbb_
+                    .push_slot::<bool>(ClientInput::VT_RESPAWN, respawn, false);
+            }
+            #[inline]
             pub fn new(
                 _fbb: &'b mut ::flatbuffers::FlatBufferBuilder<'a, A>,
             ) -> ClientInputBuilder<'a, 'b, A> {
@@ -1276,6 +1339,9 @@ pub mod atlas {
                 ds.field("attack", &self.attack());
                 ds.field("skill_slot", &self.skill_slot());
                 ds.field("target_id", &self.target_id());
+                ds.field("target_x", &self.target_x());
+                ds.field("target_y", &self.target_y());
+                ds.field("respawn", &self.respawn());
                 ds.finish()
             }
         }

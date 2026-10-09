@@ -1,20 +1,20 @@
 // React hook for Atlas World high-density Rust game server (server-rs) client
 // Replaces Colyseus with zero-allocation FlatBuffers binary streaming over WebSockets
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import * as flatbuffers from 'flatbuffers';
-import { GameState, Player, Mob, Projectile } from '../types/game';
+import { useState, useCallback, useRef, useEffect } from "react";
+import * as flatbuffers from "flatbuffers";
+import { GameState, Player, Mob, Projectile } from "../types/game";
 import {
   emptyEquipmentSnapshot,
   type EquipmentSnapshot,
-} from '../config/equipmentSlots';
+} from "../config/equipmentSlots";
 import {
   BinaryDeltaDecoder,
   EntityType,
   STATE_FLAG_ALIVE,
   STATE_FLAG_BOT,
-} from '../protocol/BinaryDeltaDecoder';
-import { ClientInput } from '../protocol/generated/atlas/protocol/client-input';
+} from "../protocol/BinaryDeltaDecoder";
+import { ClientInput } from "../protocol/generated/atlas/protocol/client-input";
 
 export interface ServerRsClientConfig {
   serverHost: string;
@@ -87,20 +87,26 @@ const SKILL_SLOTS: Record<string, number> = {
   skill_dash: 5,
 };
 
-export function skillSlotFor(options?: { skillId?: string; skillSlot?: number }): number {
-  if (options?.skillId && SKILL_SLOTS[options.skillId] !== undefined) return SKILL_SLOTS[options.skillId];
+export function skillSlotFor(options?: {
+  skillId?: string;
+  skillSlot?: number;
+}): number {
+  if (options?.skillId && SKILL_SLOTS[options.skillId] !== undefined)
+    return SKILL_SLOTS[options.skillId];
   return options?.skillSlot ?? 0;
 }
 
-export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClientReturn => {
+export const useServerRsClient = (
+  config: ServerRsClientConfig,
+): UseServerRsClientReturn => {
   // State
   const [isConnected, setIsConnected] = useState(false);
   const [roomId, setRoomId] = useState<string | null>(null);
-  const sessionName = config.token?.startsWith('dev-token:')
-    ? config.token.replace('dev-token:', '')
-    : config.token && config.token !== 'dev-token'
+  const sessionName = config.token?.startsWith("dev-token:")
+    ? config.token.replace("dev-token:", "")
+    : config.token && config.token !== "dev-token"
       ? config.token
-      : 'dev-player';
+      : "dev-player";
   const initialPlayerId = String(fnv1a32(sessionName));
   const [playerId, setPlayerId] = useState(initialPlayerId);
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -108,7 +114,9 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
   const [isSimulating, setIsSimulating] = useState(false);
   const [fps, setFps] = useState(0);
   const [updateRate, setUpdateRate] = useState(0);
-  const [equipment, setEquipment] = useState<EquipmentSnapshot>(() => emptyEquipmentSnapshot());
+  const [equipment, setEquipment] = useState<EquipmentSnapshot>(() =>
+    emptyEquipmentSnapshot(),
+  );
   const [equipmentRequestPending, setEquipmentRequestPending] = useState(false);
 
   // Refs
@@ -118,6 +126,8 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
   // Currently-held input, re-sent with every packet (server input is full-state).
   const moveRef = useRef<{ vx: number; vy: number }>({ vx: 0, vy: 0 });
   const attackHeldRef = useRef<boolean>(false);
+  const aimRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const targetIdRef = useRef<number>(0);
   const simulationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const frameCountRef = useRef<number>(0);
   const lastFpsTimeRef = useRef<number>(performance.now());
@@ -126,8 +136,8 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
     players: new Map(),
     mobs: new Map(),
     tick: 0,
-    mapId: 'map-01-sector-a',
-    roomId: 'server-rs-room',
+    mapId: "map-01-sector-a",
+    roomId: "server-rs-room",
     width: 1000,
     height: 1000,
     viewportSize: SERVER_RS_VIEWPORT,
@@ -138,7 +148,11 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
     const now = performance.now();
     frameCountRef.current++;
     if (now - lastFpsTimeRef.current >= 1000) {
-      setFps(Math.round((frameCountRef.current * 1000) / (now - lastFpsTimeRef.current)));
+      setFps(
+        Math.round(
+          (frameCountRef.current * 1000) / (now - lastFpsTimeRef.current),
+        ),
+      );
       frameCountRef.current = 0;
       lastFpsTimeRef.current = now;
     }
@@ -167,31 +181,35 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
     setRoomId(null);
     setGameState(null);
     setUpdateCount(0);
-    localStorage.removeItem('atlas-world-server-rs-connected');
+    localStorage.removeItem("atlas-world-server-rs-connected");
   }, []);
 
   // Connect to server-rs WebSocket gateway
   const connect = useCallback(async () => {
-    if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) {
+    if (
+      wsRef.current &&
+      (wsRef.current.readyState === WebSocket.OPEN ||
+        wsRef.current.readyState === WebSocket.CONNECTING)
+    ) {
       return;
     }
 
     return new Promise<void>((resolve, reject) => {
       try {
         isConnectingRef.current = true;
-        const protocol = config.useSSL ? 'wss' : 'ws';
-        const token = config.token || 'dev-token';
-        const sessionName = token.startsWith('dev-token:')
-          ? token.replace('dev-token:', '')
-          : token !== 'dev-token'
+        const protocol = config.useSSL ? "wss" : "ws";
+        const token = config.token || "dev-token";
+        const sessionName = token.startsWith("dev-token:")
+          ? token.replace("dev-token:", "")
+          : token !== "dev-token"
             ? token
-            : 'dev-player';
+            : "dev-player";
         const localPlayerId = String(fnv1a32(sessionName));
         setPlayerId(localPlayerId);
         const url = `${protocol}://${config.serverHost}:${config.serverPort}?token=${token}`;
 
         const ws = new WebSocket(url);
-        ws.binaryType = 'arraybuffer';
+        ws.binaryType = "arraybuffer";
         // Track immediately so a disconnect() during CONNECTING (e.g. React
         // StrictMode double-mount) closes this socket instead of leaking it.
         wsRef.current = ws;
@@ -212,9 +230,9 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
             return;
           }
           setIsConnected(true);
-          setRoomId('server-rs-room');
+          setRoomId("server-rs-room");
           isConnectingRef.current = false;
-          localStorage.setItem('atlas-world-server-rs-connected', 'true');
+          localStorage.setItem("atlas-world-server-rs-connected", "true");
 
           // Send initial input frame so avatar spawns immediately
           const builder = new flatbuffers.Builder(64);
@@ -225,7 +243,10 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
             0,
             false,
             0,
-            0
+            0,
+            0,
+            0,
+            false,
           );
           builder.finish(offset);
           ws.send(builder.asUint8Array());
@@ -259,6 +280,23 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
               if (entity.entityType === EntityType.Player) {
                 const existing = current.players.get(idStr);
                 const isLocalPlayer = idStr === localPlayerId;
+                const isAttacking = isLocalPlayer
+                  ? attackHeldRef.current
+                  : entity.targetId > 0;
+                let heading: number | undefined;
+                if (entity.vx !== 0 || entity.vy !== 0) {
+                  heading = Math.atan2(entity.vy, entity.vx);
+                } else if (
+                  isLocalPlayer &&
+                  (aimRef.current.x !== 0 || aimRef.current.y !== 0)
+                ) {
+                  const dx = aimRef.current.x - entity.x;
+                  const dy = aimRef.current.y - entity.y;
+                  if (dx * dx + dy * dy > 1) {
+                    heading = Math.atan2(dy, dx);
+                  }
+                }
+
                 const updated: Player = {
                   ...existing,
                   id: idStr,
@@ -268,14 +306,21 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
                   vx: entity.vx,
                   vy: entity.vy,
                   radius: SERVER_RS_PLAYER_RADIUS,
-                  name: isLocalPlayer ? 'Player (YOU)' : (existing?.name || `Player-${idStr}`),
+                  name: isLocalPlayer
+                    ? "Player (YOU)"
+                    : existing?.name || `Player-${idStr}`,
                   health: entity.health,
                   currentHealth: entity.health,
                   maxHealth: entity.maxHealth,
                   isAlive,
+                  isAttacking,
+                  heading,
+                  attackRange: 40,
                   // Only server-driven BotAgents are bots; other humans are not.
                   isBotMode: (entity.stateFlags & STATE_FLAG_BOT) !== 0,
-                  currentAttackTarget: entity.targetId ? String(entity.targetId) : undefined,
+                  currentAttackTarget: entity.targetId
+                    ? String(entity.targetId)
+                    : undefined,
                 };
                 current.players.set(idStr, updated);
               } else if (entity.entityType === EntityType.Mob) {
@@ -288,7 +333,7 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
                   vx: entity.vx,
                   vy: entity.vy,
                   radius: SERVER_RS_MOB_RADIUS,
-                  tag: isAlive ? 'mob' : 'dead',
+                  tag: isAlive ? "mob" : "dead",
                   // Older servers send no mob_type: keep whatever we already had.
                   mobTypeId: entity.mobType || existing?.mobTypeId,
                   currentHealth: entity.health,
@@ -327,14 +372,22 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
             // Expose for quick debug / e2e (parity with useColyseusClient)
             (window as any).__gameState = nextState;
             (window as any).__playerId = localPlayerId;
+            (window as any).__respawn = respawn;
+            (window as any).__sendPlayerAction = sendPlayerAction;
             if (projectiles.size > 0) {
               const w = window as any;
-              w.__seenProjectiles = [...(w.__seenProjectiles ?? []), ...Array.from(projectiles.values())].slice(-1000);
+              w.__seenProjectiles = [
+                ...(w.__seenProjectiles ?? []),
+                ...Array.from(projectiles.values()),
+              ].slice(-1000);
             }
             if (snapshot.events.length > 0) {
               // Rolling buffer so debug tools / e2e can see events between polls.
               const w = window as any;
-              w.__gameEvents = [...(w.__gameEvents ?? []), ...snapshot.events].slice(-500);
+              w.__gameEvents = [
+                ...(w.__gameEvents ?? []),
+                ...snapshot.events,
+              ].slice(-500);
             }
             setUpdateCount((prev) => prev + 1);
 
@@ -342,21 +395,29 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
             const now = Date.now();
             updateTimesRef.current.push(now);
             const tenSecondsAgo = now - 10000;
-            updateTimesRef.current = updateTimesRef.current.filter((t) => t > tenSecondsAgo);
+            updateTimesRef.current = updateTimesRef.current.filter(
+              (t) => t > tenSecondsAgo,
+            );
             if (updateTimesRef.current.length > 1) {
-              const span = updateTimesRef.current[updateTimesRef.current.length - 1] - updateTimesRef.current[0];
+              const span =
+                updateTimesRef.current[updateTimesRef.current.length - 1] -
+                updateTimesRef.current[0];
               if (span > 0) {
-                setUpdateRate(Math.round(((updateTimesRef.current.length - 1) * 1000) / span));
+                setUpdateRate(
+                  Math.round(
+                    ((updateTimesRef.current.length - 1) * 1000) / span,
+                  ),
+                );
               }
             }
           } catch (decodeErr) {
-            console.error('Failed to decode FlatBuffers snapshot:', decodeErr);
+            console.error("Failed to decode FlatBuffers snapshot:", decodeErr);
           }
         };
 
         ws.onerror = (err) => {
           if (wsRef.current !== ws) return settle();
-          console.error('WebSocket error:', err);
+          console.error("WebSocket error:", err);
           isConnectingRef.current = false;
           settle(err);
         };
@@ -369,7 +430,7 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
             if (wsRef.current !== null) return;
           } else {
             wsRef.current = null;
-            settle(new Error('WebSocket closed before it opened'));
+            settle(new Error("WebSocket closed before it opened"));
           }
           setIsConnected(false);
           setRoomId(null);
@@ -384,66 +445,124 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
   }, [config]);
 
   // Send binary input frame
-  const sendInput = useCallback((vx: number, vy: number, attack: boolean = false, skillSlot: number = 0, targetId: number = 0) => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-      return;
-    }
+  const sendInput = useCallback(
+    (
+      vx: number,
+      vy: number,
+      attack: boolean = false,
+      skillSlot: number = 0,
+      targetId: number = 0,
+      targetX: number = 0,
+      targetY: number = 0,
+      respawnFlag: boolean = false,
+    ) => {
+      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+        return;
+      }
 
-    const builder = new flatbuffers.Builder(64);
-    const offset = ClientInput.createClientInput(
-      builder,
-      clientTickRef.current++,
-      vx,
-      vy,
-      attack,
-      skillSlot,
-      targetId
-    );
-    builder.finish(offset);
-    const bytes = builder.asUint8Array();
-    wsRef.current.send(bytes);
-  }, []);
+      const builder = new flatbuffers.Builder(64);
+      const offset = ClientInput.createClientInput(
+        builder,
+        clientTickRef.current++,
+        vx,
+        vy,
+        attack,
+        skillSlot,
+        targetId,
+        targetX,
+        targetY,
+        respawnFlag,
+      );
+      builder.finish(offset);
+      const bytes = builder.asUint8Array();
+      wsRef.current.send(bytes);
+    },
+    [],
+  );
 
   // Join room (maps seamlessly to server-rs ready connection)
-  const joinRoom = useCallback(async (mapId: string = 'map-01-sector-a') => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-      await connect();
-    }
-    const targetRoomId = `server-rs-${mapId}`;
-    setRoomId(targetRoomId);
-    stateRef.current.mapId = mapId;
-    stateRef.current.roomId = targetRoomId;
-    setGameState((prev) =>
-      prev
-        ? { ...prev, mapId, roomId: targetRoomId }
-        : {
-            players: new Map(),
-            mobs: new Map(),
-            tick: 0,
-            mapId,
-            roomId: targetRoomId,
-            width: 1000,
-            height: 1000,
-            viewportSize: SERVER_RS_VIEWPORT,
-          }
-    );
-    sendInput(moveRef.current.vx, moveRef.current.vy, attackHeldRef.current, 0, 0);
-  }, [connect, sendInput]);
+  const joinRoom = useCallback(
+    async (mapId: string = "map-01-sector-a") => {
+      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+        await connect();
+      }
+      const targetRoomId = `server-rs-${mapId}`;
+      setRoomId(targetRoomId);
+      stateRef.current.mapId = mapId;
+      stateRef.current.roomId = targetRoomId;
+      setGameState((prev) =>
+        prev
+          ? { ...prev, mapId, roomId: targetRoomId }
+          : {
+              players: new Map(),
+              mobs: new Map(),
+              tick: 0,
+              mapId,
+              roomId: targetRoomId,
+              width: 1000,
+              height: 1000,
+              viewportSize: SERVER_RS_VIEWPORT,
+            },
+      );
+      sendInput(
+        moveRef.current.vx,
+        moveRef.current.vy,
+        attackHeldRef.current,
+        0,
+        0,
+        0,
+        0,
+        false,
+      );
+    },
+    [connect, sendInput],
+  );
 
   // server-rs treats every ClientInput as the FULL input state (it overwrites
   // PlayerInputState), so each packet must carry the currently-held movement and
   // attack. Sending (0,0) with an action would cancel movement.
-  const updatePlayerInput = useCallback((vx: number, vy: number) => {
-    moveRef.current = { vx, vy };
-    sendInput(vx, vy, attackHeldRef.current, 0, 0);
-  }, [sendInput]);
+  const updatePlayerInput = useCallback(
+    (vx: number, vy: number) => {
+      moveRef.current = { vx, vy };
+      sendInput(
+        vx,
+        vy,
+        attackHeldRef.current,
+        0,
+        targetIdRef.current,
+        aimRef.current.x,
+        aimRef.current.y,
+        false,
+      );
+    },
+    [sendInput],
+  );
 
-  const sendPlayerAction = useCallback((action: string, pressed: boolean, options?: any) => {
-    if (action === 'attack') attackHeldRef.current = pressed;
-    const skillSlot = pressed ? skillSlotFor(options) : 0;
-    const targetId = options?.targetId ?? 0;
-    sendInput(moveRef.current.vx, moveRef.current.vy, attackHeldRef.current, skillSlot, targetId);
-  }, [sendInput]);
+  const sendPlayerAction = useCallback(
+    (action: string, pressed: boolean, options?: any) => {
+      if (action === "attack") {
+        attackHeldRef.current = pressed;
+      }
+      const skillSlot = pressed ? skillSlotFor(options) : 0;
+      if (options?.targetId !== undefined) {
+        targetIdRef.current = options.targetId;
+      }
+      if (options?.x !== undefined && options?.y !== undefined) {
+        aimRef.current = { x: options.x, y: options.y };
+      }
+      sendInput(
+        moveRef.current.vx,
+        moveRef.current.vy,
+        attackHeldRef.current,
+        skillSlot,
+        targetIdRef.current,
+        aimRef.current.x,
+        aimRef.current.y,
+        false,
+      );
+    },
+    [sendInput],
+  );
 
   const switchWeapon = useCallback((weaponId: string) => {
     setEquipment((prev) => ({
@@ -465,7 +584,7 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
   }, []);
 
   const respawn = useCallback(() => {
-    sendInput(moveRef.current.vx, moveRef.current.vy, attackHeldRef.current, 0, 0);
+    sendInput(0, 0, false, 0, 0, 0, 0, true);
   }, [sendInput]);
 
   const startSimulation = useCallback(() => {

@@ -240,6 +240,32 @@ pub fn serialize_client_input(
     skill_slot: u8,
     target_id: u32,
 ) -> Vec<u8> {
+    serialize_client_input_full(
+        client_tick,
+        move_x,
+        move_y,
+        attack,
+        skill_slot,
+        target_id,
+        0.0,
+        0.0,
+        false,
+    )
+}
+
+/// Helper to serialize a client input with target aim coordinates and respawn flag.
+#[allow(clippy::too_many_arguments)]
+pub fn serialize_client_input_full(
+    client_tick: u32,
+    move_x: f32,
+    move_y: f32,
+    attack: bool,
+    skill_slot: u8,
+    target_id: u32,
+    target_x: f32,
+    target_y: f32,
+    respawn: bool,
+) -> Vec<u8> {
     let mut fbb = flatbuffers::FlatBufferBuilder::new();
     let offset = ClientInput::create(
         &mut fbb,
@@ -250,6 +276,9 @@ pub fn serialize_client_input(
             attack,
             skill_slot,
             target_id,
+            target_x,
+            target_y,
+            respawn,
         },
     );
     fbb.finish(offset, None);
@@ -376,6 +405,19 @@ mod tests {
         assert!(input.attack());
         assert_eq!(input.skill_slot(), 2);
         assert_eq!(input.target_id(), 909);
+        assert_eq!(input.target_x(), 0.0);
+        assert_eq!(input.target_y(), 0.0);
+        assert!(!input.respawn());
+
+        let bytes_full =
+            serialize_client_input_full(43, 0.0, 0.0, false, 1, 101, 250.5, 300.25, true);
+        let input_full = deserialize_client_input(&bytes_full).expect("valid client input");
+        assert_eq!(input_full.client_tick(), 43);
+        assert_eq!(input_full.skill_slot(), 1);
+        assert_eq!(input_full.target_id(), 101);
+        assert!((input_full.target_x() - 250.5).abs() < 1e-4);
+        assert!((input_full.target_y() - 300.25).abs() < 1e-4);
+        assert!(input_full.respawn());
     }
 
     #[test]

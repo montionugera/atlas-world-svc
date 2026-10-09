@@ -129,6 +129,18 @@ Wire snapshot (`schemas/game_protocol.fbs`, fields only ever **added**; regenera
 
 ---
 
+## 🎮 Player Input & Respawn Protocol
+
+- **`ClientInput` extensions (`schemas/game_protocol.fbs`):**
+  - `target_x: float`, `target_y: float`: World coordinates for skill aiming and mouse targeting.
+  - `respawn: bool`: Player-initiated instant respawn request.
+- **Respawn Mechanics:**
+  - Revives the player at `SpawnPoint` with full health.
+  - Clears `PlayerRespawnTimer` and resets `CastingState` and `CooldownTracker`.
+  - Clears all mobs' threat tables on the revived player and resets pursuing mobs (`Chase`/`Attack`) to `ReturnHome`.
+
+---
+
 ## 🏃 Running & Testing
 
 ```bash

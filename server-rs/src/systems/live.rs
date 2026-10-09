@@ -300,6 +300,12 @@ pub fn player_respawn_system(
                     .unwrap_or(Position::new(bounds.width / 2.0, bounds.height / 2.0));
                 *vel = Velocity::zero();
                 commands.entity(entity).remove::<PlayerRespawnTimer>();
+                commands
+                    .entity(entity)
+                    .insert(crate::ecs::components::CooldownTracker::default());
+                commands
+                    .entity(entity)
+                    .insert(crate::ecs::components::CastingState::default());
             }
             Some(_) => {}
         }

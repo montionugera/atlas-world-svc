@@ -677,12 +677,54 @@ impl AtlasSimulation {
 
     /// Applies client input state to the player avatar, auto-spawning if necessary.
     pub fn apply_player_input(&mut self, session_id: &str, input: &crate::protocol::ClientInput) {
+        let resolved_target_entity = if input.target_id() != 0 {
+            let mut id_query = self.world.query::<(Entity, &EntityId)>();
+            let mut found_e = None;
+            for (e, eid) in id_query.iter(&self.world) {
+                if crate::protocol::fnv1a_32(&eid.0) == input.target_id() {
+                    found_e = Some(e);
+                    break;
+                }
+            }
+            found_e
+        } else {
+            None
+        };
+
+        let target_pos = if input.target_x() != 0.0 || input.target_y() != 0.0 {
+            Some(Position::new(input.target_x(), input.target_y()))
+        } else {
+            None
+        };
+
         let mut found = false;
-        let mut query = self
-            .world
-            .query::<(&EntityId, &mut PlayerInputState, &mut CombatStats)>();
-        for (id, mut input_state, mut combat) in query.iter_mut(&mut self.world) {
+        let mut revived_entity = None;
+        let mut query = self.world.query::<(
+            Entity,
+            &EntityId,
+            &mut Health,
+            &mut Position,
+            &mut Velocity,
+            Option<&SpawnPoint>,
+            &mut PlayerInputState,
+            &mut CombatStats,
+        )>();
+        for (entity, id, mut health, mut pos, mut vel, spawn, mut input_state, mut combat) in
+            query.iter_mut(&mut self.world)
+        {
             if id.0 == session_id {
+                // If respawn requested, revive/teleport immediately to spawn point with full health
+                if input.respawn() {
+                    health.current = health.max;
+                    health.is_alive = true;
+                    *pos = spawn.map(|s| s.0).unwrap_or(Position::new(
+                        self.arena_width / 2.0,
+                        self.arena_height / 2.0,
+                    ));
+                    *vel = Velocity::zero();
+                    revived_entity = Some(entity);
+                }
+
                 input_state.move_x = input.move_x();
                 input_state.move_y = input.move_y();
                 input_state.attack = input.attack();
@@ -693,6 +735,10 @@ impl AtlasSimulation {
                     input_state.skill_slot = input.skill_slot();
                 }
                 input_state.target_id = input.target_id();
+                input_state.target_entity = resolved_target_entity;
+                if target_pos.is_some() {
+                    input_state.target_pos = target_pos;
+                }
                 input_state.client_tick = input.client_tick();
 
                 if input.attack() {
@@ -700,6 +746,38 @@ impl AtlasSimulation {
                 }
                 found = true;
                 break;
+            }
+        }
+
+        if let Some(e) = revived_entity {
+            self.world
+                .entity_mut(e)
+                .remove::<crate::ecs::components::PlayerRespawnTimer>();
+            if let Some(mut casting) = self
+                .world
+                .get_mut::<crate::ecs::components::CastingState>(e)
+            {
+                casting.finish_or_cancel();
+            }
+            if let Some(mut cd) = self
+                .world
+                .get_mut::<crate::ecs::components::CooldownTracker>(e)
+            {
+                cd.cooldowns.clear();
+            }
+
+            // Clear all mobs' threat and aggro against this revived player
+            let mut mob_query = self.world.query::<(
+                &mut crate::ai::threat::ThreatTable,
+                &mut crate::ecs::components::MobAi,
+            )>();
+            for (mut threat, mut mob_ai) in mob_query.iter_mut(&mut self.world) {
+                threat.clear_target(e);
+                if mob_ai.state == crate::ecs::components::AiState::Chase
+                    || mob_ai.state == crate::ecs::components::AiState::Attack
+                {
+                    mob_ai.state = crate::ecs::components::AiState::ReturnHome;
+                }
             }
         }
 
@@ -713,6 +791,8 @@ impl AtlasSimulation {
                 state.attack = input.attack();
                 state.skill_slot = input.skill_slot();
                 state.target_id = input.target_id();
+                state.target_entity = resolved_target_entity;
+                state.target_pos = target_pos;
                 state.client_tick = input.client_tick();
             }
         }

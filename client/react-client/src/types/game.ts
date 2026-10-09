@@ -95,6 +95,11 @@ export interface Player {
   
   // Resistances
   resistances?: Map<string, number>; // Synced: Type -> Value (0-1)
+
+  // Combat and Visuals
+  heading?: number;
+  isAttacking?: boolean;
+  attackRange?: number;
 }
 
 export interface Projectile {

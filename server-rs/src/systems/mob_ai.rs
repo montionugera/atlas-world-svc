@@ -38,7 +38,6 @@ pub fn mob_ai_system(
         }
 
         // Update threat table: if a top target exists, check if target is alive.
-        // If target dead or not found, clear target from threat table.
         let mut active_target: Option<(Entity, Position)> = None;
         while let Some(candidate) = threat.top_target(current_time) {
             match players.get(candidate) {
@@ -50,6 +49,12 @@ pub fn mob_ai_system(
                     threat.clear_target(candidate);
                 }
             }
+        }
+
+        if active_target.is_none()
+            && (mob_ai.state == AiState::Chase || mob_ai.state == AiState::Attack)
+        {
+            mob_ai.state = AiState::ReturnHome;
         }
 
         // Proximity aggro (legacy ChaseBehavior detection): with no live target and not

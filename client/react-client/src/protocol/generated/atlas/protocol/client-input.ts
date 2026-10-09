@@ -52,8 +52,23 @@ targetId():number {
   return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
 }
 
+targetX():number {
+  const offset = this.bb!.__offset(this.bb_pos, 16);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0;
+}
+
+targetY():number {
+  const offset = this.bb!.__offset(this.bb_pos, 18);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0;
+}
+
+respawn():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 20);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+}
+
 static startClientInput(builder:flatbuffers.Builder) {
-  builder.startObject(6);
+  builder.startObject(9);
 }
 
 static addClientTick(builder:flatbuffers.Builder, clientTick:number) {
@@ -80,12 +95,24 @@ static addTargetId(builder:flatbuffers.Builder, targetId:number) {
   builder.addFieldInt32(5, targetId, 0);
 }
 
+static addTargetX(builder:flatbuffers.Builder, targetX:number) {
+  builder.addFieldFloat32(6, targetX, 0.0);
+}
+
+static addTargetY(builder:flatbuffers.Builder, targetY:number) {
+  builder.addFieldFloat32(7, targetY, 0.0);
+}
+
+static addRespawn(builder:flatbuffers.Builder, respawn:boolean) {
+  builder.addFieldInt8(8, +respawn, +false);
+}
+
 static endClientInput(builder:flatbuffers.Builder):flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
 }
 
-static createClientInput(builder:flatbuffers.Builder, clientTick:number, moveX:number, moveY:number, attack:boolean, skillSlot:number, targetId:number):flatbuffers.Offset {
+static createClientInput(builder:flatbuffers.Builder, clientTick:number, moveX:number, moveY:number, attack:boolean, skillSlot:number, targetId:number, targetX:number, targetY:number, respawn:boolean):flatbuffers.Offset {
   ClientInput.startClientInput(builder);
   ClientInput.addClientTick(builder, clientTick);
   ClientInput.addMoveX(builder, moveX);
@@ -93,6 +120,9 @@ static createClientInput(builder:flatbuffers.Builder, clientTick:number, moveX:n
   ClientInput.addAttack(builder, attack);
   ClientInput.addSkillSlot(builder, skillSlot);
   ClientInput.addTargetId(builder, targetId);
+  ClientInput.addTargetX(builder, targetX);
+  ClientInput.addTargetY(builder, targetY);
+  ClientInput.addRespawn(builder, respawn);
   return ClientInput.endClientInput(builder);
 }
 }

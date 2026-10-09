@@ -58,6 +58,9 @@ table ClientInput {
     attack: bool;
     skill_slot: ubyte;
     target_id: uint32;
+    target_x: float;
+    target_y: float;
+    respawn: bool;
 }
 
 root_type WorldSnapshot;

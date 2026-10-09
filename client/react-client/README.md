@@ -158,6 +158,12 @@ First run on a machine: `npx playwright install chromium-headless-shell`. `HEADE
   - `events` (hit / kill) → `gameState.events` (latest snapshot) and a rolling
     `window.__gameEvents` buffer (last 500).
 - `MAP_ID` env on `server-rs` selects map bounds, static obstacle colliders, and bestiary spawn areas.
+- **Controls & Combat:**
+  - `WASD`: Movement (diagonal vectors normalized).
+  - `Space` or Left-Click on canvas: Authoritative melee attack towards cursor/facing.
+  - Number keys `1`–`4` or on-screen Action Bar buttons: Elemental skills (Meteor Strike, Precision Strike, Blizzard, Thunder Strike).
+  - `Shift` or on-screen Dash button: Dash impulse (160u speed).
+  - Death & Respawn: When defeated, a Death Overlay appears with instant respawn on click or Space bar, immediately reviving the player with full health at the spawn point.
 - `window.__gameState` / `window.__playerId` are exposed for debugging and e2e.
 
 ## Troubleshooting
