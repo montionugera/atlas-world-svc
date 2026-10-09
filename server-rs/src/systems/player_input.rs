@@ -77,12 +77,17 @@ pub fn player_input_system(
             continue;
         }
 
+        let terrain_mult = match (&terrain, pos_opt) {
+            (Some(t), Some(p)) => t.speed_multiplier_at(p.x, p.y),
+            _ => 1.0,
+        };
+
         // 3. Check DashState: active dash impulse overrides normal movement
         if let Some(ref mut dash) = dash_opt {
             if dash.is_dashing() {
                 dash.remaining_sec -= dt;
                 if dash.remaining_sec > 0.0 {
-                    let base_speed = avatar_opt.map_or(20.0, |a| a.speed);
+                    let base_speed = avatar_opt.map_or(20.0, |a| a.speed) * terrain_mult;
                     let dash_progress = (dash.remaining_sec / 0.22).clamp(0.0, 1.0);
                     let current_speed = base_speed + (dash.speed - base_speed) * dash_progress;
                     vel.vx = dash.dir_x * current_speed;
@@ -97,10 +102,6 @@ pub fn player_input_system(
         // 4. Process movement input (respecting avatar speed, freeze and terrain multipliers)
         let base_speed = avatar_opt.map_or(20.0, |a| a.speed);
         let speed_mult = status_opt.map_or(1.0, |s| s.speed_multiplier());
-        let terrain_mult = match (&terrain, pos_opt) {
-            (Some(t), Some(p)) => t.speed_multiplier_at(p.x, p.y),
-            _ => 1.0,
-        };
         let speed = base_speed * speed_mult * terrain_mult;
 
         let len_sq = input.move_x * input.move_x + input.move_y * input.move_y;
@@ -494,6 +495,52 @@ mod tests {
         assert!(
             (vx(shoved) - -80.0 * decay).abs() < 1e-3,
             "knockback unscaled"
+        );
+    }
+
+    #[test]
+    fn test_dash_ends_without_speed_pop_on_mud() {
+        use crate::content::map::{TerrainType, TerrainZone, TerrainZones};
+
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50));
+        world.insert_resource(TerrainZones {
+            zones: vec![TerrainZone {
+                terrain: TerrainType::Mud,
+                min_x: 0.0,
+                min_y: 0.0,
+                max_x: 1000.0,
+                max_y: 1000.0,
+            }],
+        });
+        let mut dash = DashState::new();
+        dash.remaining_sec = 0.22;
+        dash.dir_x = 1.0;
+        dash.speed = 450.0;
+        let entity = world
+            .spawn((
+                Position::new(50.0, 50.0),
+                PlayerAvatar::new("p", 200.0),
+                PlayerInputState::new(1.0, 0.0, false, 0),
+                Velocity::zero(),
+                dash,
+            ))
+            .id();
+        let mut schedule = Schedule::default();
+        schedule.add_systems(player_input_system);
+
+        // Ticks 1-4 are dash-driven, tick 5 is the first walking tick (100 on mud).
+        let mut last_dash_vx = 0.0;
+        for _ in 1..=4 {
+            schedule.run(&mut world);
+            last_dash_vx = world.get::<Velocity>(entity).unwrap().vx;
+        }
+        schedule.run(&mut world);
+        let walk_vx = world.get::<Velocity>(entity).unwrap().vx;
+        assert_eq!(walk_vx, 100.0);
+        assert!(
+            (last_dash_vx - walk_vx).abs() < 60.0,
+            "speed pop {last_dash_vx} -> {walk_vx}"
         );
     }
 }
