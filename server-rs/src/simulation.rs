@@ -270,6 +270,12 @@ impl AtlasSimulation {
                     is_player: true,
                     ..Default::default()
                 },
+                ElementalAttributes {
+                    element: crate::combat::Element::Neutral,
+                    p_def: 6.0,
+                    m_def: 6.0,
+                    armor: 0.0,
+                },
                 BodyRadius(PLAYER_BODY_RADIUS),
                 SpawnPoint(pos),
             ));
@@ -384,7 +390,7 @@ impl AtlasSimulation {
             &Velocity,
             &Health,
             Has<PlayerTag>,
-            Has<BotAgent>,
+            Option<&BotAgent>,
             Option<&MobSpawnAnchor>,
             Option<&ThreatTable>,
             Option<&PlayerInputState>,
@@ -392,17 +398,18 @@ impl AtlasSimulation {
         let mut entities: Vec<(String, EntitySnapshotData)> = query
             .iter(&self.world)
             .map(
-                |(id, pos, vel, health, is_player, is_bot, anchor, threat, input)| {
+                |(id, pos, vel, health, is_player, bot, anchor, threat, input)| {
                     let mut flags = 0;
                     if health.is_alive {
                         flags |= STATE_FLAG_ALIVE;
                     }
-                    if is_bot {
+                    if bot.is_some() {
                         flags |= STATE_FLAG_BOT;
                     }
-                    let target_id = match (threat, input) {
-                        (Some(t), _) if health.is_alive => id_of(t.top_target(now)),
-                        (_, Some(i)) => i.target_id,
+                    let target_id = match (threat, input, bot) {
+                        (Some(t), _, _) if health.is_alive => id_of(t.top_target(now)),
+                        (_, Some(i), _) => i.target_id,
+                        (_, _, Some(b)) if health.is_alive => id_of(b.target_entity),
                         _ => 0,
                     };
                     (

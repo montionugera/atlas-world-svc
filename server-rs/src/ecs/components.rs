@@ -251,11 +251,18 @@ pub struct BotAgent {
     pub id: String,
     pub vx: f32,
     pub vy: f32,
+    #[serde(skip)]
+    pub target_entity: Option<Entity>,
 }
 
 impl BotAgent {
     pub fn new(id: String, vx: f32, vy: f32) -> Self {
-        Self { id, vx, vy }
+        Self {
+            id,
+            vx,
+            vy,
+            target_entity: None,
+        }
     }
 }
 

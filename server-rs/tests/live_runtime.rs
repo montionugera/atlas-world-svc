@@ -837,3 +837,105 @@ fn row13_static_obstacles_block_movement() {
         p_pos.x
     );
 }
+
+#[test]
+fn audit_gap1_melee_combat_applies_damage_calculator_with_defense_and_elements() {
+    let mut sim = live(0, 0);
+    let p_ent = sim.spawn_player_avatar("p_melee", 100.0, 100.0);
+    // Set player melee attack power to 50
+    sim.world
+        .entity_mut(p_ent)
+        .insert(server_rs::ecs::components::CombatStats {
+            attack_power: 50.0,
+            attack_range: 50.0,
+            attack_cooldown: 0.8,
+            cooldown_timer: 0.0,
+            defense: 6.0,
+            is_player: true,
+        });
+
+    // Spawn a target mob at 110, 100 with 100 HP, p_def: 20, armor: 10
+    let m_ent = sim
+        .world
+        .spawn((
+            EntityId("mob_tank".to_string()),
+            Position::new(110.0, 100.0),
+            Velocity::zero(),
+            Health::new(100.0),
+            MobTag,
+            server_rs::ecs::components::ElementalAttributes {
+                element: server_rs::combat::Element::Earth,
+                p_def: 20.0,
+                m_def: 0.0,
+                armor: 10.0,
+            },
+        ))
+        .id();
+
+    // Human avatar holds attack
+    let input_pkt = input("p_melee", 0.0, 0.0, true);
+    sim.live_tick(&[input_pkt], &[]);
+
+    let hp = sim.world.get::<Health>(m_ent).unwrap().current;
+    // Base 50 - min(20+10, 40) = 20 damage. HP should be 100 - 20 = 80.
+    // If DamageCalculator was bypassed, HP would be 100 - 50 = 50.
+    assert_eq!(
+        hp, 80.0,
+        "Melee damage must apply target defense reduction; expected HP 80, got {}",
+        hp
+    );
+}
+
+#[test]
+fn audit_gap2_live_bots_have_elemental_attributes() {
+    let mut sim = live(5, 0);
+    let mut bot_query = sim.world.query_filtered::<&server_rs::ecs::components::ElementalAttributes, With<server_rs::ecs::components::BotAgent>>();
+    let bot_attrs: Vec<_> = bot_query.iter(&sim.world).collect();
+    assert_eq!(
+        bot_attrs.len(),
+        5,
+        "All 5 live bots must have ElementalAttributes"
+    );
+    for attr in bot_attrs {
+        assert_eq!(attr.p_def, 6.0);
+        assert_eq!(attr.m_def, 6.0);
+    }
+}
+
+#[test]
+fn audit_gap3_bot_wire_target_id_replicates_nearest_mob() {
+    let mut sim = live(1, 0);
+    // Move the single bot to 100, 100
+    let mut bot_q = sim
+        .world
+        .query_filtered::<(Entity, &mut Position), With<server_rs::ecs::components::BotAgent>>();
+    let (_b_ent, mut b_pos) = bot_q.iter_mut(&mut sim.world).next().unwrap();
+    b_pos.x = 100.0;
+    b_pos.y = 100.0;
+
+    // Spawn a mob 80px away (within 300px vision range)
+    let _m_ent = sim
+        .world
+        .spawn((
+            EntityId("mob_target".to_string()),
+            Position::new(180.0, 100.0),
+            Velocity::zero(),
+            Health::new(100.0),
+            MobTag,
+        ))
+        .id();
+
+    let frame = sim.live_tick(&[], &[]);
+    let expected_mob_wire_id = server_rs::protocol::fnv1a_32("mob_target");
+
+    let bot_delta = frame
+        .entities
+        .iter()
+        .find(|e| e.id == server_rs::protocol::fnv1a_32("bot-0"))
+        .expect("bot-0 must be in entities");
+    assert_eq!(
+        bot_delta.target_id, expected_mob_wire_id,
+        "Bot target_id on the wire must match the nearest mob's wire id ({}), got {}",
+        expected_mob_wire_id, bot_delta.target_id
+    );
+}

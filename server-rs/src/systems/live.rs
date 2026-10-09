@@ -178,7 +178,7 @@ pub fn live_bot_ai_system(
         &Health,
         &crate::ecs::components::CombatStats,
     )>,
-    mobs: Query<(&Position, &Health), With<crate::ecs::components::MobTag>>,
+    mobs: Query<(Entity, &Position, &Health), With<crate::ecs::components::MobTag>>,
 ) {
     if rules.is_none() {
         return;
@@ -197,8 +197,8 @@ pub fn live_bot_ai_system(
         }
 
         // Search for nearest alive mob within vision range
-        let mut nearest_mob: Option<(&Position, f32)> = None;
-        for (m_pos, m_health) in &mobs {
+        let mut nearest_mob: Option<(Entity, &Position, f32)> = None;
+        for (m_ent, m_pos, m_health) in &mobs {
             if !m_health.is_alive {
                 continue;
             }
@@ -206,17 +206,18 @@ pub fn live_bot_ai_system(
             let dy = m_pos.y - pos.y;
             let dist = (dx * dx + dy * dy).sqrt();
             if dist <= vision_range {
-                if let Some((_, best_dist)) = nearest_mob {
+                if let Some((_, _, best_dist)) = nearest_mob {
                     if dist < best_dist {
-                        nearest_mob = Some((m_pos, dist));
+                        nearest_mob = Some((m_ent, m_pos, dist));
                     }
                 } else {
-                    nearest_mob = Some((m_pos, dist));
+                    nearest_mob = Some((m_ent, m_pos, dist));
                 }
             }
         }
 
-        if let Some((m_pos, dist)) = nearest_mob {
+        if let Some((m_ent, m_pos, dist)) = nearest_mob {
+            bot.target_entity = Some(m_ent);
             let dx = m_pos.x - pos.x;
             let dy = m_pos.y - pos.y;
             let dir_x = if dist > 1e-4 { dx / dist } else { 1.0 };
@@ -234,6 +235,7 @@ pub fn live_bot_ai_system(
                 vel.vy += accel_gain * (desired_vy - vel.vy) * dt;
             }
         } else {
+            bot.target_entity = None;
             // Margin avoidance
             if (pos.x <= margin && bot.vx < 0.0) || (pos.x >= width - margin && bot.vx > 0.0) {
                 bot.vx = -bot.vx;

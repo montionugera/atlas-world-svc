@@ -1,8 +1,10 @@
 use crate::ai::ThreatTable;
+use crate::combat::damage::{DamageCalculator, DamageOptions};
+use crate::combat::{DamageType, Element};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    CombatStats, CooldownTracker, EntityId, Health, HitLog, HitRecord, MobAi, MobSpawnAnchor,
-    PlayerAvatar, PlayerInputState, Position, StatusEffects,
+    CombatStats, CooldownTracker, ElementalAttributes, EntityId, Health, HitLog, HitRecord, MobAi,
+    MobSpawnAnchor, PlayerAvatar, PlayerInputState, Position, StatusEffects,
 };
 use crate::spatial::grid::SpatialGrid;
 use crate::storage::{MatchEvent, MatchEventQueue};
@@ -24,6 +26,7 @@ pub fn combat_system(
                 Option<&EntityId>,
                 Option<&PlayerAvatar>,
                 Option<&PlayerInputState>,
+                Option<&ElementalAttributes>,
             ),
             Without<MobAi>,
         >,
@@ -32,18 +35,19 @@ pub fn combat_system(
             Option<&EntityId>,
             Option<&MobSpawnAnchor>,
             Option<&mut ThreatTable>,
+            Option<&ElementalAttributes>,
         )>,
     )>,
 ) {
     let dt = clock.delta_seconds();
     let now = clock.current_time_seconds();
-    let mut attacks: Vec<(Option<String>, Entity, Entity, f32)> = Vec::new();
+    let mut attacks: Vec<(Option<String>, Entity, Entity, f32, Element)> = Vec::new();
 
     {
         // Mobs with MobAi are excluded: mob_ai_system owns their attacks and their single
         // per-tick cooldown decrement.
         let mut attackers = params.p0();
-        for (entity, pos, mut stats, health, entity_id, avatar, input) in &mut attackers {
+        for (entity, pos, mut stats, health, entity_id, avatar, input, attrs) in &mut attackers {
             if !health.is_alive {
                 continue;
             }
@@ -102,11 +106,13 @@ pub fn combat_system(
                 } else {
                     None
                 };
+                let attacker_elem = attrs.map(|a| a.element).unwrap_or(Element::Neutral);
                 attacks.push((
                     player_user_id,
                     entity,
                     target_entity,
                     stats.attack_power.max(1.0),
+                    attacker_elem,
                 ));
             }
         }
@@ -114,11 +120,23 @@ pub fn combat_system(
 
     if !attacks.is_empty() {
         let mut health_query = params.p1();
-        for (attacker_user_id, attacker, target, damage) in attacks {
-            if let Ok((mut target_health, target_id, target_anchor, threat)) =
+        let default_attrs = ElementalAttributes::default();
+        for (attacker_user_id, attacker, target, base_damage, attacker_elem) in attacks {
+            if let Ok((mut target_health, target_id, target_anchor, threat, target_attrs)) =
                 health_query.get_mut(target)
             {
                 let was_alive = target_health.is_alive && target_health.current > 0.0;
+                let def_attrs = target_attrs.unwrap_or(&default_attrs);
+                let damage_opts = DamageOptions {
+                    base_damage,
+                    damage_type: DamageType::Physical,
+                    attack_element: attacker_elem,
+                    defense_element: def_attrs.element,
+                    p_def: def_attrs.p_def,
+                    m_def: def_attrs.m_def,
+                    armor: def_attrs.armor,
+                };
+                let damage = DamageCalculator::calculate(&damage_opts);
                 target_health.take_damage(damage);
                 if let Some(mut threat) = threat {
                     threat.add_threat(attacker, damage, now);
