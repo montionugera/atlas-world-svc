@@ -1,8 +1,8 @@
 use crate::auth::AuthGuard;
-use crate::debug::{DebugCommand, DebugCommandBody};
+use crate::debug::{DebugCommand, DebugCommandBody, MAX_COMMANDS_PER_TICK};
 use futures_util::{SinkExt, StreamExt};
 use std::collections::HashMap;
-use std::net::SocketAddr;
+use std::net::{IpAddr, SocketAddr};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -124,12 +124,17 @@ impl WsServer {
         self.debug_enabled.store(enabled, Ordering::Relaxed);
     }
 
-    /// Debug commands received since the last tick, for the tick loop to apply and answer.
+    /// Up to `MAX_COMMANDS_PER_TICK` waiting debug commands, for the tick loop to apply and
+    /// answer; the rest stay queued. Requests whose client stopped waiting are discarded.
     pub async fn drain_debug(&self) -> Vec<DebugRequest> {
         let mut rx = self.debug_rx.lock().await;
         let mut requests = Vec::new();
-        while let Ok(request) = rx.try_recv() {
-            requests.push(request);
+        while requests.len() < MAX_COMMANDS_PER_TICK {
+            match rx.try_recv() {
+                Ok(request) if request.reply.is_closed() => {}
+                Ok(request) => requests.push(request),
+                Err(_) => break,
+            }
         }
         requests
     }
@@ -271,7 +276,7 @@ impl WsServer {
 
             tokio::spawn(async move {
                 if is_debug_http(&stream).await {
-                    serve_debug_http(stream, debug).await;
+                    serve_debug_http(stream, peer_addr.ip(), debug).await;
                     return;
                 }
                 Self::handle_connection(
@@ -502,44 +507,101 @@ async fn is_debug_http(stream: &TcpStream) -> bool {
         .any(|prefix| head[..n].starts_with(prefix))
 }
 
-/// Largest debug request accepted, headers included.
-const DEBUG_HTTP_MAX_BYTES: usize = 16 * 1024;
+/// Largest debug request head and body accepted.
+const DEBUG_HEAD_MAX_BYTES: usize = 16 * 1024;
+const DEBUG_BODY_MAX_BYTES: usize = 64 * 1024;
+
+/// `localhost`, `127.0.0.1` or `[::1]`, with an optional port.
+fn is_local_authority(authority: &str) -> bool {
+    ["localhost", "127.0.0.1", "[::1]"].iter().any(|host| {
+        authority.strip_prefix(host).is_some_and(|rest| {
+            rest.is_empty()
+                || rest
+                    .strip_prefix(':')
+                    .is_some_and(|p| p.parse::<u16>().is_ok())
+        })
+    })
+}
+
+/// The debug routes exist only with the gate on, for a loopback peer that addressed this
+/// host by a local name (a page that rebinds its DNS name here still sends its own `Host`).
+fn debug_request_allowed(enabled: bool, peer: IpAddr, host: Option<&str>) -> bool {
+    enabled && peer.to_canonical().is_loopback() && host.is_some_and(is_local_authority)
+}
+
+/// The request's `Origin` when it is a local page: `http://localhost` or `http://127.0.0.1`,
+/// any port. Only these are named in the CORS headers.
+fn local_origin(origin: Option<&str>) -> Option<&str> {
+    origin.filter(|origin| {
+        origin
+            .strip_prefix("http://")
+            .is_some_and(|authority| !authority.starts_with('[') && is_local_authority(authority))
+    })
+}
 
 /// Serves one `/debug/*` request and closes: `GET /debug/state?map=<room>` and
 /// `POST /debug/command` (JSON body, see `debug::DebugCommandBody`). Every route is 404
-/// while the gate is off. Commands are queued for the tick loop, never applied here.
-async fn serve_debug_http(mut stream: TcpStream, debug: DebugGate) {
+/// unless `debug_request_allowed`. Commands are queued for the tick loop, never applied here.
+async fn serve_debug_http(mut stream: TcpStream, peer: IpAddr, debug: DebugGate) {
     let mut raw = Vec::new();
     let mut chunk = [0u8; 2048];
-    let (head_end, body_len) = loop {
+    let head_end = loop {
         if let Some(head_end) = raw.windows(4).position(|w| w == b"\r\n\r\n") {
-            let body_len = String::from_utf8_lossy(&raw[..head_end])
-                .lines()
-                .filter_map(|line| line.split_once(':'))
-                .find(|(name, _)| name.eq_ignore_ascii_case("content-length"))
-                .and_then(|(_, value)| value.trim().parse::<usize>().ok())
-                .unwrap_or(0);
-            if raw.len() >= head_end + 4 + body_len {
-                break (head_end, body_len);
-            }
+            break head_end;
         }
         match stream.read(&mut chunk).await {
-            Ok(n) if n > 0 && raw.len() + n <= DEBUG_HTTP_MAX_BYTES => {
+            Ok(n) if n > 0 && raw.len() < DEBUG_HEAD_MAX_BYTES => {
                 raw.extend_from_slice(&chunk[..n])
             }
             _ => return,
         }
     };
     let head = String::from_utf8_lossy(&raw[..head_end]).into_owned();
+    let header = |name: &str| {
+        head.lines()
+            .skip(1)
+            .filter_map(|line| line.split_once(':'))
+            .find(|(key, _)| key.trim().eq_ignore_ascii_case(name))
+            .map(|(_, value)| value.trim())
+    };
     let mut request_line = head.lines().next().unwrap_or("").split(' ');
     let method = request_line.next().unwrap_or("");
     let target = request_line.next().unwrap_or("");
     let (path, query) = target.split_once('?').unwrap_or((target, ""));
-    let body = &raw[head_end + 4..head_end + 4 + body_len];
+
+    // Refuse before reading the body: a closed gate or an absurd length costs nothing.
+    let length = header("content-length").map(|value| value.parse::<usize>());
+    let allowed =
+        debug_request_allowed(debug.enabled.load(Ordering::Relaxed), peer, header("host"));
+    let refused = match &length {
+        _ if !allowed => Some(("404 Not Found", "not found")),
+        Some(Err(_)) => Some(("400 Bad Request", "malformed Content-Length")),
+        Some(Ok(n)) if *n > DEBUG_BODY_MAX_BYTES => {
+            Some(("413 Content Too Large", "request body too large"))
+        }
+        _ => None,
+    };
+    let body_len = match (refused, length) {
+        (None, Some(Ok(n))) => n,
+        _ => 0,
+    };
+    let body_start = head_end + 4;
+    while raw.len() < body_start + body_len {
+        match stream.read(&mut chunk).await {
+            Ok(n) if n > 0 => raw.extend_from_slice(&chunk[..n]),
+            _ => return,
+        }
+    }
+    let body = &raw[body_start..body_start + body_len];
+    // A cross-origin page can send JSON only after a preflight, which `local_origin` decides.
+    let is_json = header("content-type").is_some_and(|value| {
+        let media_type = value.split(';').next().unwrap_or("").trim();
+        media_type.eq_ignore_ascii_case("application/json")
+    });
 
     let error = |message: &str| serde_json::json!({ "ok": false, "error": message });
-    let (status, payload) = if !debug.enabled.load(Ordering::Relaxed) {
-        ("404 Not Found", error("not found"))
+    let (status, payload) = if let Some((status, message)) = refused {
+        (status, error(message))
     } else if method == "OPTIONS" {
         ("204 No Content", serde_json::Value::Null)
     } else {
@@ -553,13 +615,16 @@ async fn serve_debug_http(mut stream: TcpStream, debug: DebugGate) {
                 player: None,
                 command: DebugCommand::State,
             }),
-            ("POST", "/debug/command") => {
-                serde_json::from_slice::<DebugCommandBody>(body).map_err(|e| e.to_string())
-            }
-            _ => Err("unknown debug route".to_string()),
+            ("POST", "/debug/command") if !is_json => Err((
+                "415 Unsupported Media Type",
+                "Content-Type must be application/json".to_string(),
+            )),
+            ("POST", "/debug/command") => serde_json::from_slice::<DebugCommandBody>(body)
+                .map_err(|e| ("400 Bad Request", e.to_string())),
+            _ => Err(("400 Bad Request", "unknown debug route".to_string())),
         };
         match parsed {
-            Err(message) => ("400 Bad Request", error(&message)),
+            Err((status, message)) => (status, error(&message)),
             Ok(parsed) => {
                 let (reply, answer) = oneshot::channel();
                 let _ = debug.tx.send(DebugRequest {
@@ -583,10 +648,18 @@ async fn serve_debug_http(mut stream: TcpStream, debug: DebugGate) {
     } else {
         payload.to_string()
     };
+    let cors = local_origin(header("origin"))
+        .map(|origin| {
+            format!(
+                "Access-Control-Allow-Origin: {origin}\r\nVary: Origin\r\n\
+                 Access-Control-Allow-Methods: GET, POST, OPTIONS\r\n\
+                 Access-Control-Allow-Headers: content-type\r\n"
+            )
+        })
+        .unwrap_or_default();
     let response = format!(
         "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\
-         Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS\r\n\
-         Access-Control-Allow-Headers: content-type\r\nConnection: close\r\n\r\n{payload}",
+         {cors}Connection: close\r\n\r\n{payload}",
         payload.len()
     );
     let _ = stream.write_all(response.as_bytes()).await;
@@ -606,6 +679,52 @@ mod tests {
     use tokio_tungstenite::connect_async;
     use tokio_tungstenite::tungstenite::handshake::client::generate_key;
     use tokio_tungstenite::tungstenite::handshake::client::Request as ClientRequest;
+
+    #[test]
+    fn debug_routes_need_an_open_gate_a_loopback_peer_and_a_local_host() {
+        let allowed = |enabled: bool, peer: &str, host: Option<&str>| {
+            debug_request_allowed(enabled, peer.parse().unwrap(), host)
+        };
+        assert!(allowed(true, "127.0.0.1", Some("localhost:2567")));
+        assert!(allowed(true, "127.0.0.1", Some("127.0.0.1")));
+        assert!(allowed(true, "::1", Some("[::1]:2567")));
+        assert!(allowed(true, "::ffff:127.0.0.1", Some("localhost")));
+        assert!(!allowed(false, "127.0.0.1", Some("localhost:2567")));
+        for peer in ["192.168.1.20", "10.0.0.5", "fe80::1", "::ffff:192.168.1.20"] {
+            assert!(!allowed(true, peer, Some("localhost:2567")), "peer {peer}");
+        }
+        for host in [
+            "evil.example",
+            "localhost.evil.example",
+            "127.0.0.1.evil.example:80",
+            "localhost:port",
+            "",
+        ] {
+            assert!(!allowed(true, "127.0.0.1", Some(host)), "host {host}");
+        }
+        assert!(!allowed(true, "127.0.0.1", None));
+    }
+
+    #[test]
+    fn only_local_http_origins_are_named_in_cors_headers() {
+        for origin in [
+            "http://localhost:3000",
+            "http://127.0.0.1:3001",
+            "http://localhost",
+        ] {
+            assert_eq!(local_origin(Some(origin)), Some(origin));
+        }
+        for origin in [
+            "http://evil.example",
+            "http://localhost.evil.example",
+            "https://localhost:3000",
+            "http://[::1]:3000",
+            "null",
+        ] {
+            assert_eq!(local_origin(Some(origin)), None, "origin {origin}");
+        }
+        assert_eq!(local_origin(None), None);
+    }
 
     #[tokio::test]
     async fn test_ws_server_valid_token_handshake_and_bidirectional() {

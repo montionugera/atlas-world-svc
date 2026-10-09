@@ -3,7 +3,7 @@
 
 use bevy_ecs::prelude::*;
 use server_rs::auth::AuthGuard;
-use server_rs::debug::{DebugCommand, MAX_BOTS, MAX_MOBS};
+use server_rs::debug::{DebugCommand, MAX_BOTS, MAX_COMMANDS_PER_TICK, MAX_MOBS};
 use server_rs::ecs::components::{BotAgent, Health, MobTag, Position};
 use server_rs::net::WsServer;
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
@@ -208,23 +208,38 @@ async fn http(addr: std::net::SocketAddr, request: &str) -> String {
     response
 }
 
-#[tokio::test]
-async fn debug_routes_are_404_until_enabled_and_then_answer_from_the_tick_loop() {
-    let server = std::sync::Arc::new(
+async fn server() -> std::sync::Arc<WsServer> {
+    std::sync::Arc::new(
         WsServer::bind("127.0.0.1:0", AuthGuard::new(b"secret".to_vec()))
             .await
             .unwrap(),
-    );
-    let addr = server.local_addr();
-    let post = |body: &str| {
-        format!(
-            "POST /debug/command HTTP/1.1\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{}",
-            body.len(),
-            body
-        )
-    };
+    )
+}
 
-    let closed = http(addr, "GET /debug/state?map=map-for-play HTTP/1.1\r\n\r\n").await;
+/// A request from a local tool: `Host: localhost`, plus `headers` (each ending in CRLF).
+fn request(method: &str, target: &str, headers: &str, body: &str) -> String {
+    format!("{method} {target} HTTP/1.1\r\nHost: localhost\r\n{headers}\r\n{body}")
+}
+
+fn get(target: &str) -> String {
+    request("GET", target, "", "")
+}
+
+fn post_as(content_type: &str, body: &str) -> String {
+    let headers = format!("{content_type}Content-Length: {}\r\n", body.len());
+    request("POST", "/debug/command", &headers, body)
+}
+
+fn post(body: &str) -> String {
+    post_as("Content-Type: application/json\r\n", body)
+}
+
+#[tokio::test]
+async fn debug_routes_are_404_until_enabled_and_then_answer_from_the_tick_loop() {
+    let server = server().await;
+    let addr = server.local_addr();
+
+    let closed = http(addr, &get("/debug/state?map=map-for-play")).await;
     assert!(closed.starts_with("HTTP/1.1 404"), "{closed}");
     let closed = http(addr, &post(r#"{"cmd":"set_bots","count":5}"#)).await;
     assert!(closed.starts_with("HTTP/1.1 404"), "{closed}");
@@ -246,7 +261,7 @@ async fn debug_routes_are_404_until_enabled_and_then_answer_from_the_tick_loop()
         }
     });
 
-    let state = http(addr, "GET /debug/state?map=map-for-play HTTP/1.1\r\n\r\n").await;
+    let state = http(addr, &get("/debug/state?map=map-for-play")).await;
     assert!(state.starts_with("HTTP/1.1 200"), "{state}");
     assert!(
         state.contains(r#""bots":1"#) && state.contains(r#""ok":true"#),
@@ -258,8 +273,9 @@ async fn debug_routes_are_404_until_enabled_and_then_answer_from_the_tick_loop()
     )
     .await;
     assert!(set.contains(r#""bots":5"#), "{set}");
-    let state = http(addr, "GET /debug/state HTTP/1.1\r\n\r\n").await;
-    assert!(state.contains(r#""bots":5"#), "{state}");
+    let charset = "Content-Type: application/json; charset=utf-8\r\n";
+    let set = http(addr, &post_as(charset, r#"{"cmd":"set_bots","count":4}"#)).await;
+    assert!(set.contains(r#""bots":4"#), "{set}");
     let bad = http(addr, &post(r#"{"cmd":"no_such_command"}"#)).await;
     assert!(
         bad.starts_with("HTTP/1.1 400") && bad.contains(r#""ok":false"#),
@@ -267,10 +283,103 @@ async fn debug_routes_are_404_until_enabled_and_then_answer_from_the_tick_loop()
     );
     let needs_player = http(addr, &post(r#"{"cmd":"teleport","x":1,"y":2}"#)).await;
     assert!(needs_player.starts_with("HTTP/1.1 400"), "{needs_player}");
-    let preflight = http(addr, "OPTIONS /debug/command HTTP/1.1\r\n\r\n").await;
-    assert!(preflight.starts_with("HTTP/1.1 204"), "{preflight}");
+
+    // Not JSON: refused, and the command never reaches the room.
+    for content_type in ["Content-Type: text/plain\r\n", ""] {
+        let plain = http(
+            addr,
+            &post_as(content_type, r#"{"cmd":"set_bots","count":9}"#),
+        )
+        .await;
+        assert!(plain.starts_with("HTTP/1.1 415"), "{plain}");
+    }
+    let state = http(addr, &get("/debug/state")).await;
+    assert!(state.contains(r#""bots":4"#), "{state}");
+
+    // Reached by any other name (a rebound DNS name, no Host at all): the routes do not exist.
+    for head in [
+        "GET /debug/state HTTP/1.1\r\nHost: evil.example\r\n\r\n",
+        "GET /debug/state HTTP/1.1\r\nHost: localhost.evil.example:2567\r\n\r\n",
+        "GET /debug/state HTTP/1.1\r\n\r\n",
+    ] {
+        let foreign = http(addr, head).await;
+        assert!(foreign.starts_with("HTTP/1.1 404"), "{foreign}");
+    }
+}
+
+#[tokio::test]
+async fn cors_headers_name_only_a_local_page() {
+    let server = server().await;
+    server.set_debug_enabled(true);
+    let addr = server.local_addr();
+    let preflight = |origin: &str| {
+        let headers = format!("Origin: {origin}\r\nAccess-Control-Request-Method: POST\r\n");
+        request("OPTIONS", "/debug/command", &headers, "")
+    };
+
+    let local = http(addr, &preflight("http://localhost:3000")).await;
+    assert!(local.starts_with("HTTP/1.1 204"), "{local}");
     assert!(
-        preflight.contains("Access-Control-Allow-Origin: *"),
-        "{preflight}"
+        local.contains("Access-Control-Allow-Origin: http://localhost:3000\r\n")
+            && local.contains("Access-Control-Allow-Headers: content-type\r\n"),
+        "{local}"
     );
+    for origin in ["http://evil.example", "http://localhost.evil.example"] {
+        let foreign = http(addr, &preflight(origin)).await;
+        assert!(!foreign.contains("Access-Control"), "{foreign}");
+    }
+    let no_origin = http(addr, &request("OPTIONS", "/debug/command", "", "")).await;
+    assert!(!no_origin.contains("Access-Control"), "{no_origin}");
+}
+
+#[tokio::test]
+async fn absurd_content_lengths_are_refused_without_reading_a_body() {
+    let server = server().await;
+    let addr = server.local_addr();
+    let claiming = |length: &str| {
+        let headers = format!("Content-Type: application/json\r\nContent-Length: {length}\r\n");
+        request("POST", "/debug/command", &headers, r#"{"cmd":"state"}"#)
+    };
+
+    // Gate off: still a plain 404, whatever the length says.
+    let closed = http(addr, &claiming("18446744073709551615")).await;
+    assert!(closed.starts_with("HTTP/1.1 404"), "{closed}");
+
+    server.set_debug_enabled(true);
+    for length in ["65537", "18446744073709551615"] {
+        let huge = http(addr, &claiming(length)).await;
+        assert!(huge.starts_with("HTTP/1.1 413"), "{length}: {huge}");
+    }
+    for length in ["abc", "-1", "99999999999999999999999"] {
+        let malformed = http(addr, &claiming(length)).await;
+        assert!(
+            malformed.starts_with("HTTP/1.1 400") && malformed.contains("malformed Content-Length"),
+            "{length}: {malformed}"
+        );
+    }
+    assert!(
+        server.drain_debug().await.is_empty(),
+        "a refused request queued a command"
+    );
+}
+
+#[tokio::test]
+async fn a_tick_takes_a_few_commands_and_skips_abandoned_ones() {
+    let server = server().await;
+    server.set_debug_enabled(true);
+    let addr = server.local_addr();
+    let waiting = MAX_COMMANDS_PER_TICK + 2;
+    for _ in 0..waiting {
+        tokio::spawn(async move { http(addr, &get("/debug/state")).await });
+    }
+    tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+    // The replies are held so the requests stay live until both drains have run.
+    let first = server.drain_debug().await;
+    let second = server.drain_debug().await;
+    assert_eq!((first.len(), second.len()), (MAX_COMMANDS_PER_TICK, 2));
+
+    // Nobody answers this one; its client gives up, and the command is never applied late.
+    let unanswered = http(addr, &get("/debug/state")).await;
+    assert!(unanswered.starts_with("HTTP/1.1 503"), "{unanswered}");
+    assert!(server.drain_debug().await.is_empty());
 }

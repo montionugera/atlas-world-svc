@@ -239,15 +239,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let disconnected = ws_server.drain_disconnects_with_rooms().await;
 
                 for request in ws_server.drain_debug().await {
-                    let map = if request.map.is_empty() {
-                        "map-for-play"
-                    } else {
-                        request.map.as_str()
-                    };
-                    let result = match rooms.get_mut(map) {
-                        Some(sim) => sim.debug_apply(&request.command, request.player.as_deref()),
-                        None => Err(format!("unknown map {map}")),
-                    };
+                    let result = server_rs::debug::debug_apply_to_room(
+                        &mut rooms,
+                        &request.map,
+                        &request.command,
+                        request.player.as_deref(),
+                    );
                     let _ = request.reply.send(result);
                 }
 

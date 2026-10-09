@@ -6,6 +6,7 @@ use bevy_ecs::prelude::*;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
+use crate::content::map::ROOM_IDS;
 use crate::content::{BestiaryCatalog, MobTier};
 use crate::core::prng::Mulberry32;
 use crate::ecs::components::{
@@ -19,13 +20,17 @@ use crate::systems::mob_bundle;
 pub const MAX_BOTS: usize = 300;
 pub const MAX_MOBS: usize = 1000;
 
+/// Most queued commands applied in one tick; the rest wait for the next.
+pub const MAX_COMMANDS_PER_TICK: usize = 4;
+
 /// `ATLAS_DEBUG=1|true` forces the controls on and any other value forces them off. Unset,
-/// they follow dev mode: on only while no auth secret is configured.
-pub fn debug_enabled(flag: Option<&str>, has_auth_secret: bool) -> bool {
+/// they are on only in a debug build with no auth secret configured, so a release build
+/// stays off unless told otherwise.
+pub fn debug_enabled(flag: Option<&str>, has_auth_secret: bool, debug_build: bool) -> bool {
     match flag.map(str::trim) {
         Some("1") | Some("true") => true,
         Some(_) => false,
-        None => !has_auth_secret,
+        None => debug_build && !has_auth_secret,
     }
 }
 
@@ -35,7 +40,23 @@ pub fn debug_enabled_from_env() -> bool {
     debug_enabled(
         std::env::var("ATLAS_DEBUG").ok().as_deref(),
         has_auth_secret,
+        cfg!(debug_assertions),
     )
+}
+
+/// Applies a command to the room `map` names (empty: `ROOM_IDS[0]`). An unknown room is an
+/// error rather than a fallback, so a typo never edits another room.
+pub fn debug_apply_to_room(
+    rooms: &mut std::collections::HashMap<String, AtlasSimulation>,
+    map: &str,
+    command: &DebugCommand,
+    player: Option<&str>,
+) -> Result<Value, String> {
+    let map = if map.is_empty() { ROOM_IDS[0] } else { map };
+    match rooms.get_mut(map) {
+        Some(sim) => sim.debug_apply(command, player),
+        None => Err(format!("unknown map {map}")),
+    }
 }
 
 /// AI switches read by `mob_ai_system`, `live_bot_ai_system` and `combat_system`.
@@ -327,10 +348,10 @@ impl AtlasSimulation {
             y.clamp(5.0, self.arena_height - 5.0),
         );
         let anchor = MobSpawnAnchor::new(pos, mob_type, MobTier::Route, self.mob_respawn_sec);
-        let catalog = self.world.resource::<BestiaryCatalog>().clone();
         self.debug_mob_seq += 1;
         let id = format!("{}-debug-{}", mob_type, self.debug_mob_seq);
-        self.world.spawn(mob_bundle(&catalog, &anchor, id));
+        let bundle = mob_bundle(self.world.resource::<BestiaryCatalog>(), &anchor, id);
+        self.world.spawn(bundle);
     }
 }
 
@@ -339,16 +360,51 @@ mod tests {
     use super::*;
 
     #[test]
-    fn controls_follow_dev_mode_unless_the_flag_decides() {
-        assert!(debug_enabled(None, false), "dev mode: no secret configured");
-        assert!(
-            !debug_enabled(None, true),
-            "a configured secret turns them off"
+    fn controls_follow_the_flag_and_default_on_only_in_a_secretless_debug_build() {
+        // (flag, has_auth_secret, debug_build) -> enabled
+        let table = [
+            (None, false, true, true),
+            (None, true, true, false),
+            (None, false, false, false),
+            (None, true, false, false),
+            (Some("1"), true, false, true),
+            (Some("true"), true, false, true),
+            (Some(" 1 "), true, false, true),
+            (Some("0"), false, true, false),
+            (Some(""), false, true, false),
+            (Some("yes"), false, true, false),
+        ];
+        for (flag, secret, debug_build, expected) in table {
+            assert_eq!(
+                debug_enabled(flag, secret, debug_build),
+                expected,
+                "flag={flag:?} secret={secret} debug_build={debug_build}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_command_goes_to_the_named_room_the_default_room_or_nowhere() {
+        let mut rooms = std::collections::HashMap::new();
+        for (id, bots) in [(ROOM_IDS[0], 1), (ROOM_IDS[1], 2)] {
+            let mut sim = AtlasSimulation::live(crate::simulation::LiveConfig {
+                bot_count: bots,
+                mob_count: 0,
+                ..Default::default()
+            });
+            sim.debug_enabled = true;
+            rooms.insert(id.to_string(), sim);
+        }
+        let mut bots = |map: &str| {
+            debug_apply_to_room(&mut rooms, map, &DebugCommand::State, None)
+                .map(|state| state["bots"].as_u64().unwrap())
+        };
+        assert_eq!(bots(ROOM_IDS[1]), Ok(2));
+        assert_eq!(bots(""), Ok(1), "no map means the default room");
+        assert_eq!(
+            bots("map-no-such-room"),
+            Err("unknown map map-no-such-room".to_string())
         );
-        assert!(debug_enabled(Some("1"), true));
-        assert!(debug_enabled(Some("true"), true));
-        assert!(!debug_enabled(Some("0"), false));
-        assert!(!debug_enabled(Some(""), false));
     }
 
     #[test]
