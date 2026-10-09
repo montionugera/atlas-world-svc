@@ -56,7 +56,11 @@ pub fn projectile_collision_system(
     let default_attrs = ElementalAttributes::default();
 
     for (proj_entity, pos, mut proj_vel_opt, mut proj) in &mut proj_query {
-        let hit_radius = proj.radius + 20.0;
+        let hit_radius = if proj.aoe_radius > 0.0 {
+            proj.aoe_radius
+        } else {
+            proj.radius + 20.0
+        };
         let hit_radius_sq = hit_radius * hit_radius;
         let mut hit_target = None;
 
@@ -232,6 +236,11 @@ pub fn projectile_collision_system(
 
                 // If not parried: resolve damage!
                 if proj.aoe_radius > 0.0 {
+                    if proj.detonated {
+                        continue;
+                    }
+                    proj.detonated = true;
+
                     // Detonate AoE!
                     let aoe_r = proj.aoe_radius;
                     let aoe_r_sq = aoe_r * aoe_r;
@@ -381,7 +390,11 @@ pub fn projectile_collision_system(
                         }
                     }
 
-                    commands.entity(proj_entity).despawn();
+                    if proj.speed == 0.0 {
+                        proj.lifetime = 0.3;
+                    } else {
+                        commands.entity(proj_entity).despawn();
+                    }
                 } else {
                     let attrs = opt_attrs.unwrap_or(&default_attrs);
                     let damage_opts = DamageOptions {
@@ -516,6 +529,7 @@ mod tests {
                     is_player_projectile: true,
                     aoe_radius: 0.0,
                     skill_id: None,
+                    detonated: false,
                 },
             ))
             .id();
@@ -563,6 +577,7 @@ mod tests {
                     is_player_projectile: true,
                     aoe_radius: 0.0,
                     skill_id: None,
+                    detonated: false,
                 },
             ))
             .id();
@@ -620,6 +635,7 @@ mod tests {
                     is_player_projectile: true,
                     aoe_radius: 0.0,
                     skill_id: Some("skill_3".to_string()),
+                    detonated: false,
                 },
             ))
             .id();
@@ -674,6 +690,7 @@ mod tests {
                     is_player_projectile: true,
                     aoe_radius: 0.0,
                     skill_id: Some("skill_4".to_string()),
+                    detonated: false,
                 },
             ))
             .id();
@@ -725,6 +742,7 @@ mod tests {
                     is_player_projectile: true,
                     aoe_radius: 0.0,
                     skill_id: None,
+                    detonated: false,
                 },
             ))
             .id();
@@ -818,6 +836,7 @@ mod tests {
                     is_player_projectile: true,
                     aoe_radius: 60.0,
                     skill_id: Some("skill_1".to_string()),
+                    detonated: false,
                 },
             ))
             .id();
@@ -883,6 +902,7 @@ mod tests {
                     is_player_projectile: false,
                     aoe_radius: 0.0,
                     skill_id: Some("spear".to_string()),
+                    detonated: false,
                 },
             ))
             .id();

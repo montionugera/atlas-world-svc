@@ -25,7 +25,7 @@ pub fn combat_system(
                 &Health,
                 Option<&EntityId>,
                 Option<&PlayerAvatar>,
-                Option<&PlayerInputState>,
+                Option<&mut PlayerInputState>,
                 Option<&ElementalAttributes>,
             ),
             Without<MobAi>,
@@ -51,7 +51,7 @@ pub fn combat_system(
         // Mobs with MobAi are excluded: mob_ai_system owns their attacks and their single
         // per-tick cooldown decrement.
         let mut attackers = params.p0();
-        for (entity, pos, mut stats, health, entity_id, avatar, input, attrs) in &mut attackers {
+        for (entity, pos, mut stats, health, entity_id, avatar, mut input, attrs) in &mut attackers {
             if !health.is_alive {
                 continue;
             }
@@ -66,7 +66,7 @@ pub fn combat_system(
 
             // Legacy attackQueue: a human avatar only swings while attack is held.
             // Bots (no PlayerAvatar) keep auto-attacking.
-            if avatar.is_some() && !input.is_some_and(|i| i.attack) {
+            if avatar.is_some() && !input.as_ref().is_some_and(|i| i.attack) {
                 continue;
             }
 
@@ -103,6 +103,9 @@ pub fn combat_system(
 
             if let Some(target_entity) = nearest_target {
                 stats.cooldown_timer = stats.attack_cooldown;
+                if let Some(ref mut inp) = input {
+                    inp.attack = inp.attack_held;
+                }
                 let player_user_id = if is_player {
                     entity_id
                         .map(|e| e.0.clone())

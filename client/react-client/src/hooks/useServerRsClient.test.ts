@@ -461,6 +461,9 @@ describe("useServerRsClient", () => {
       EntityDelta.addId(fbb, e.id);
       EntityDelta.addEntityType(fbb, e.type);
       EntityDelta.addPos(fbb, Vec2.createVec2(fbb, e.x ?? 10, e.y ?? 20));
+      if (e.vx !== undefined || e.vy !== undefined) {
+        EntityDelta.addVel(fbb, Vec2.createVec2(fbb, e.vx ?? 0, e.vy ?? 0));
+      }
       EntityDelta.addHealth(fbb, e.health ?? 50);
       EntityDelta.addMaxHealth(fbb, 50);
       EntityDelta.addStateFlags(fbb, e.flags ?? STATE_FLAG_ALIVE);
@@ -683,5 +686,51 @@ describe("useServerRsClient", () => {
     expect(player.isAttacking).toBe(true);
     expect(player.heading).toBeCloseTo(Math.PI / 2);
     expect(player.attackRange).toBe(40);
+  });
+
+  it("preserves heading when stopping movement and not attacking", async () => {
+    const { result } = await connected("dev-token:alice");
+    const ws = MockWebSocket.instances[0];
+    const localId = result.current.playerId;
+
+    // 1. Moving left: vx = -200, vy = 0 -> heading is PI (-3.14159)
+    act(() => {
+      ws.onmessage?.(
+        snap(1, [
+          {
+            id: Number(localId),
+            type: EntityType.Player,
+            x: 200,
+            y: 200,
+            vx: -200,
+            vy: 0,
+            flags: STATE_FLAG_ALIVE,
+          },
+        ]),
+      );
+    });
+
+    let player = result.current.gameState!.players.get(localId)!;
+    expect(player.heading).toBeCloseTo(Math.PI);
+
+    // 2. Stop moving: vx = 0, vy = 0, attack = false -> heading MUST STAY PI (facing left)
+    act(() => {
+      ws.onmessage?.(
+        snap(2, [
+          {
+            id: Number(localId),
+            type: EntityType.Player,
+            x: 190,
+            y: 200,
+            vx: 0,
+            vy: 0,
+            flags: STATE_FLAG_ALIVE,
+          },
+        ]),
+      );
+    });
+
+    player = result.current.gameState!.players.get(localId)!;
+    expect(player.heading).toBeCloseTo(Math.PI);
   });
 });

@@ -151,6 +151,7 @@ fn test_projectile_flight_collision_and_status_effects() {
             is_player_projectile: true,
             aoe_radius: 0.0,
             skill_id: Some("skill_3".to_string()),
+            detonated: false,
         },
     ));
 

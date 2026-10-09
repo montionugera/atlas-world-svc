@@ -1,7 +1,7 @@
 use crate::combat::get_skill;
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    CastingState, CooldownTracker, Health, MobTag, PlayerInputState, PlayerTag, Position,
+    CastingState, CooldownTracker, DashState, Health, MobTag, PlayerInputState, PlayerTag, Position,
     Projectile, Velocity,
 };
 use bevy_ecs::prelude::*;
@@ -19,12 +19,13 @@ pub fn skill_execution_system(
         &mut Velocity,
         Has<PlayerTag>,
         Option<&Health>,
+        Option<&mut DashState>,
     )>,
     enemies: Query<(Entity, &Position, &Health, Has<MobTag>, Has<PlayerTag>)>,
 ) {
     let current_time = clock.current_time_seconds();
 
-    for (entity, pos, mut input, mut cooldown_tracker, mut casting, mut vel, is_player, health) in
+    for (entity, pos, mut input, mut cooldown_tracker, mut casting, mut vel, is_player, health, mut dash_opt) in
         &mut query
     {
         // The dead cannot cast: drop any in-flight cast and swallow skill presses.
@@ -124,17 +125,74 @@ pub fn skill_execution_system(
                         }
                     }
 
-                    let speed = 150.0;
-                    let max_range = 300.0;
-                    let lifetime = 5.0;
-
-                    let proj_pos = Position::new(pos.x, pos.y);
-                    let proj_vel = Velocity::new(dir_x * speed, dir_y * speed);
-                    let aoe_radius = if skill.radius > 2.5 {
+                    let is_aoe = skill.radius > 2.5;
+                    let aoe_radius = if is_aoe {
                         skill.radius * 10.0
                     } else {
                         0.0
                     };
+
+                    let (proj_pos, proj_vel, speed, max_range, lifetime) = if is_aoe {
+                        // Ground-targeted AoE skill (Meteor, Blizzard, Thunder):
+                        // Detonates directly at the aimed target location!
+                        let max_cast_range = 200.0;
+                        let (impact_x, impact_y) = if let Some(t_pos) = input.target_pos {
+                            let dx = t_pos.x - pos.x;
+                            let dy = t_pos.y - pos.y;
+                            let dist = (dx * dx + dy * dy).sqrt();
+                            if dist <= max_cast_range {
+                                (t_pos.x, t_pos.y)
+                            } else if dist > 1e-4 {
+                                (
+                                    pos.x + (dx / dist) * max_cast_range,
+                                    pos.y + (dy / dist) * max_cast_range,
+                                )
+                            } else {
+                                (pos.x, pos.y)
+                            }
+                        } else if let Some(target_e) = target_entity {
+                            if let Ok((_, t_pos, _, _, _)) = enemies.get(target_e) {
+                                let dx = t_pos.x - pos.x;
+                                let dy = t_pos.y - pos.y;
+                                let dist = (dx * dx + dy * dy).sqrt();
+                                if dist <= max_cast_range {
+                                    (t_pos.x, t_pos.y)
+                                } else if dist > 1e-4 {
+                                    (
+                                        pos.x + (dx / dist) * max_cast_range,
+                                        pos.y + (dy / dist) * max_cast_range,
+                                    )
+                                } else {
+                                    (pos.x, pos.y)
+                                }
+                            } else {
+                                (pos.x + dir_x * 80.0, pos.y + dir_y * 80.0)
+                            }
+                        } else {
+                            (pos.x + dir_x * 80.0, pos.y + dir_y * 80.0)
+                        };
+
+                        (
+                            Position::new(impact_x, impact_y),
+                            Velocity::new(0.0, 0.0),
+                            0.0,
+                            aoe_radius,
+                            0.5,
+                        )
+                    } else {
+                        // Directional projectile / skillshot (Precision Strike, Spear, etc.)
+                        let speed = 150.0;
+                        let max_range = 300.0;
+                        let lifetime = 5.0;
+                        (
+                            Position::new(pos.x, pos.y),
+                            Velocity::new(dir_x * speed, dir_y * speed),
+                            speed,
+                            max_range,
+                            lifetime,
+                        )
+                    };
+
                     let projectile = Projectile {
                         owner: entity,
                         target: target_entity,
@@ -150,6 +208,7 @@ pub fn skill_execution_system(
                         is_player_projectile: is_player,
                         aoe_radius,
                         skill_id: Some(skill.id.clone()),
+                        detonated: false,
                     };
 
                     commands.spawn((proj_pos, proj_vel, projectile));
@@ -195,12 +254,20 @@ pub fn skill_execution_system(
                             if vel_len > 1e-4 {
                                 (vel.vx / vel_len, vel.vy / vel_len)
                             } else {
-                                (1.0, 0.0)
+                                input.last_facing
                             }
                         };
 
-                        vel.vx = dir_x * 160.0;
-                        vel.vy = dir_y * 160.0;
+                        let dash_speed = 450.0;
+                        let dash_duration = 0.22;
+                        if let Some(ref mut dash) = dash_opt {
+                            dash.remaining_sec = dash_duration;
+                            dash.dir_x = dir_x;
+                            dash.dir_y = dir_y;
+                            dash.speed = dash_speed;
+                        }
+                        vel.vx = dir_x * dash_speed;
+                        vel.vy = dir_y * dash_speed;
                         cooldown_tracker.set_cooldown(&skill.id, skill.cooldown_sec);
                     } else {
                         // Start casting
@@ -297,7 +364,7 @@ mod tests {
 
         let vel = world.get::<Velocity>(entity).unwrap();
         assert_eq!(vel.vx, 0.0);
-        assert_eq!(vel.vy, 160.0);
+        assert_eq!(vel.vy, 450.0);
 
         let cd = world.get::<CooldownTracker>(entity).unwrap();
         assert_eq!(cd.get_remaining("skill_dash"), 0.5);
@@ -327,8 +394,8 @@ mod tests {
         schedule.run(&mut world);
 
         let vel = world.get::<Velocity>(entity).unwrap();
-        // Default facing (1.0, 0.0) -> vel.vx = 160.0, vel.vy = 0.0
-        assert_eq!(vel.vx, 160.0);
+        // Default facing (1.0, 0.0) -> vel.vx = 450.0, vel.vy = 0.0
+        assert_eq!(vel.vx, 450.0);
         assert_eq!(vel.vy, 0.0);
     }
 
@@ -371,7 +438,7 @@ mod tests {
     }
 
     #[test]
-    fn test_cast_completion_spawns_projectile() {
+    fn test_cast_completion_spawns_aoe_projectile_at_target_position() {
         let mut world = World::new();
         let mut clock = SimClock::new(50);
         // Advance clock past cast duration
@@ -405,7 +472,7 @@ mod tests {
         assert!(!player_casting.is_casting(1.5));
         assert!(player_casting.skill_id.is_none());
 
-        // A projectile entity was spawned directed toward the mob
+        // A ground AoE projectile entity was spawned at the mob's location (100.0, 0.0) with zero velocity
         let mut proj_query = world.query::<(&Position, &Velocity, &Projectile)>();
         let mut found = false;
         for (p_pos, p_vel, proj) in proj_query.iter(&world) {
@@ -413,16 +480,16 @@ mod tests {
             assert_eq!(proj.target, Some(mob));
             assert_eq!(proj.damage, 20.0);
             assert_eq!(proj.element, Element::Fire);
-            assert_eq!(p_pos.x, 0.0);
+            assert_eq!(p_pos.x, 100.0);
             assert_eq!(p_pos.y, 0.0);
-            // Mob is at (100.0, 0.0), so dir is (1.0, 0.0) -> vel.vx = 150.0, vel.vy = 0.0
-            assert!((p_vel.vx - 150.0).abs() < 1e-4);
+            assert_eq!(p_vel.vx, 0.0);
             assert_eq!(p_vel.vy, 0.0);
+            assert_eq!(proj.aoe_radius, 60.0);
             found = true;
         }
         assert!(
             found,
-            "Projectile should have been spawned on cast completion"
+            "Ground AoE projectile should have been spawned at target position on cast completion"
         );
     }
 }
