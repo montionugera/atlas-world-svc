@@ -214,6 +214,9 @@ impl WsServer {
             listener.local_addr().unwrap()
         );
         while let Ok((stream, peer_addr)) = listener.accept().await {
+            if let Err(e) = stream.set_nodelay(true) {
+                warn!("Failed to set TCP_NODELAY for {}: {}", peer_addr, e);
+            }
             let conns = connections.clone();
             let rooms = session_rooms.clone();
             let auth = auth_guard.clone();
