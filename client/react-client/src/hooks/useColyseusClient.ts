@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Client, Room } from '@colyseus/sdk';
-import { GameState } from '../types/game';
+import { GameEventInfo, GameState } from '../types/game';
 import {
   emptyEquipmentSnapshot,
   snapshotFromEquipmentPayload,
@@ -38,6 +38,8 @@ export interface UseColyseusClientReturn {
   updatePlayerInput: (vx: number, vy: number) => void;
   sendPlayerAction: (action: string, pressed: boolean, options?: any) => void;
   sentTargetRef?: React.MutableRefObject<{ x: number; y: number }>;
+  /** server-rs: combat events received since the last call. */
+  drainEvents?: () => GameEventInfo[];
   switchWeapon: (weaponId: string) => void;
   requestEquipment: () => void;
   /** @deprecated use requestEquipment */

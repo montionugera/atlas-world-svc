@@ -3,13 +3,20 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import * as flatbuffers from "flatbuffers";
-import { GameState, Player, Mob, Projectile } from "../types/game";
+import {
+  GameEventInfo,
+  GameState,
+  Player,
+  Mob,
+  Projectile,
+} from "../types/game";
 import {
   emptyEquipmentSnapshot,
   type EquipmentSnapshot,
 } from "../config/equipmentSlots";
 import { mapDef } from "../config/maps";
 import {
+  MAX_BEHIND_MS,
   SNAPSHOT_INTERVAL_MS,
   observeSnapshot,
   pushSample,
@@ -62,6 +69,8 @@ export interface UseServerRsClientReturn {
   sendPlayerAction: (action: string, pressed: boolean, options?: any) => void;
   /** Last non-zero target sent to the server (it holds this for AoE impact). */
   sentTargetRef: React.MutableRefObject<{ x: number; y: number }>;
+  /** Combat events received since the last call (the renderer drains it per frame). */
+  drainEvents: () => GameEventInfo[];
   switchWeapon: (weaponId: string) => void;
   requestEquipment: () => void;
   requestLoadout: () => void;
@@ -97,6 +106,9 @@ export const SERVER_RS_PLAYER_RADIUS = 12;
 export const SERVER_RS_MOB_RADIUS = 14;
 /** Drawn projectile radius (the wire carries no radius). */
 export const SERVER_RS_PROJECTILE_RADIUS = 4;
+
+/** Undrained combat events kept (a hidden tab must not replay thousands on return). */
+const MAX_QUEUED_EVENTS = 64;
 
 /** Skill id → server-rs skill slot (see server-rs/src/systems/skill_execution.rs). */
 const SKILL_SLOTS: Record<string, number> = {
@@ -165,6 +177,13 @@ export const useServerRsClient = (
     fps: 0,
   });
 
+  const eventQueueRef = useRef<GameEventInfo[]>([]);
+  const drainEvents = useCallback(() => {
+    const queued = eventQueueRef.current;
+    if (queued.length > 0) eventQueueRef.current = [];
+    return queued;
+  }, []);
+
   const stateRef = useRef<GameState>({
     players: new Map(),
     mobs: new Map(),
@@ -209,7 +228,9 @@ export const useServerRsClient = (
     attackHeldRef.current = false;
     stateRef.current.players.clear();
     stateRef.current.mobs.clear();
+    stateRef.current.projectiles = undefined;
     stateRef.current.renderClock = undefined;
+    eventQueueRef.current = [];
 
     setIsConnected(false);
     setRoomId(null);
@@ -458,7 +479,22 @@ export const useServerRsClient = (
                 current.mobs.delete(idStr);
               }
 
+              // One that just left the snapshot is still in flight in the picture, which
+              // runs behind: keep it until render time has surely passed its last sample.
+              current.projectiles?.forEach((p, id) => {
+                if (projectiles.has(id)) return;
+                const endsAt = p.endsAt ?? p.samples?.[p.samples.length - 1]?.t;
+                if (endsAt !== undefined && simTime - endsAt <= MAX_BEHIND_MS) {
+                  projectiles.set(id, { ...p, endsAt });
+                }
+              });
               current.projectiles = projectiles;
+              if (snapshot.events.length > 0) {
+                eventQueueRef.current = [
+                  ...eventQueueRef.current,
+                  ...snapshot.events,
+                ].slice(-MAX_QUEUED_EVENTS);
+              }
               const nextState: GameState = {
                 ...current,
                 players: new Map(current.players),
@@ -614,7 +650,9 @@ export const useServerRsClient = (
         // Nothing from the old room may leak into the new one.
         stateRef.current.players.clear();
         stateRef.current.mobs.clear();
+        stateRef.current.projectiles = undefined;
         stateRef.current.renderClock = undefined;
+        eventQueueRef.current = [];
         targetIdRef.current = 0;
         aimRef.current = { x: 0, y: 0 };
         sentTargetRef.current = { x: 0, y: 0 };
@@ -800,6 +838,7 @@ export const useServerRsClient = (
     updatePlayerInput,
     sendPlayerAction,
     sentTargetRef,
+    drainEvents,
     switchWeapon,
     requestEquipment,
     requestLoadout,

@@ -21,6 +21,8 @@ const MARGIN_MS = 50;
  * held more than 300 ms behind the newest snapshot; anything later is a stall.
  */
 export const MAX_DELAY_MS = 250;
+/** The picture is never held further behind the newest snapshot than this. */
+export const MAX_BEHIND_MS = MAX_DELAY_MS + MARGIN_MS;
 /** Lateness window: 3 s of snapshots. */
 const WINDOW = 60;
 /** Playback slows by at most this fraction while the delay grows... */
@@ -91,7 +93,6 @@ export function observeSnapshot(
     };
   }
   const newest = Math.max(clock.newest, simTime);
-  const cap = MAX_DELAY_MS + MARGIN_MS;
   const late = offset - Math.min(...clock.offsets) > MAX_DELAY_MS;
   const burst = arrival - clock.at < SNAPSHOT_INTERVAL_MS / 2;
   if (clock.stalled ? burst : late) {
@@ -114,7 +115,7 @@ export function observeSnapshot(
     Math.min(Math.max(...offsets), offset + MAX_DELAY_MS) + MARGIN_MS;
   return {
     offsets,
-    lag: Math.min(lag, offset + cap),
+    lag: Math.min(lag, offset + MAX_BEHIND_MS),
     at: arrival,
     target,
     newest,

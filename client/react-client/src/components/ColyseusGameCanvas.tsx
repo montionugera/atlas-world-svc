@@ -65,6 +65,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     updatePlayerInput,
     sendPlayerAction,
     sentTargetRef,
+    drainEvents,
     switchWeapon,
     trackFrame,
     respawn,
@@ -560,6 +561,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           roomId={roomId}
           playerId={playerId}
           trackFrame={trackFrame}
+          drainEvents={drainEvents}
           aoeReticle={aoeReticle}
           debug={debug}
           debugTrackerRef={debugTrackerRef}

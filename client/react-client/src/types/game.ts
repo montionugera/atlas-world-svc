@@ -127,6 +127,8 @@ export interface Projectile {
   /** Synced from server `Projectile.type` (e.g. melee, smallMeelee, largeMeelee). */
   type?: string;
   teamId?: string;
+  /** server-rs: simulation time of its last position, once it has left the snapshot. */
+  endsAt?: number;
 }
 
 /** server-rs combat event (wire `GameEvent`); kind 0 = hit, 1 = kill. */

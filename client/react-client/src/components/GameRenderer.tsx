@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import { GameState } from "../types/game";
+import { GameEventInfo, GameState } from "../types/game";
 import { calculateScale, clearCanvas } from "../utils/drawingUtils";
 import { drawGrid, drawGridCoordinates } from "../utils/gridUtils";
 import type { AoeReticle } from "../utils/aoeReticle";
@@ -40,6 +40,8 @@ interface GameRendererProps {
   roomId: string | null;
   playerId: string;
   trackFrame: () => void;
+  /** Combat events not yet shown (server-rs); called once per drawn frame. */
+  drainEvents?: () => GameEventInfo[];
   aoeReticle?: AoeReticle | null;
   debug?: DebugToggles;
   /** Live speed tracker for the local player (read per frame, never triggers renders). */
@@ -69,7 +71,6 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
   const prevProjectilesRef = useRef<
     Map<string, { x: number; y: number; type?: string }>
   >(new Map());
-  const lastEventTickRef = useRef<number>(-1);
   const lastRenderDurationRef = useRef<number>(0);
 
   useEffect(() => {
@@ -84,6 +85,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         gameState,
         fps,
         playerId,
+        drainEvents,
         aoeReticle,
         debug = DEFAULT_DEBUG_TOGGLES,
       } = latestRef.current;
@@ -107,6 +109,13 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         const renderProjectiles = gameState.projectiles
           ? interpolateEntities(gameState.projectiles, renderTime)
           : undefined;
+        // One that left the snapshot flies on until the picture reaches its last
+        // position; the blast below then appears exactly where it vanished.
+        renderProjectiles?.forEach((p, id) => {
+          if (p.endsAt !== undefined && renderTime >= p.endsAt) {
+            renderProjectiles.delete(id);
+          }
+        });
         // Detect detonated projectiles to spawn AoE blast shockwaves
         const prevProjs = prevProjectilesRef.current;
         const currentProjs = renderProjectiles || new Map();
@@ -150,45 +159,40 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         >();
         // Raw snapshot x/y: blasts must land where the server detonated.
         gameState.projectiles?.forEach((p, id) => {
-          nextPrev.set(id, { x: p.x, y: p.y, type: p.type });
+          if (renderProjectiles?.has(id)) {
+            nextPrev.set(id, { x: p.x, y: p.y, type: p.type });
+          }
         });
         prevProjectilesRef.current = nextPrev;
-        // Process new combat events into floating damage/kill texts
-        if (
-          gameState.events &&
-          gameState.events.length > 0 &&
-          gameState.tick !== lastEventTickRef.current
-        ) {
-          for (const ev of gameState.events) {
-            const victimId = String(ev.targetId);
-            const victim =
-              renderMobs.get(victimId) ?? renderPlayers.get(victimId);
-            if (victim) {
-              if (ev.kind === 1 /* Hit */ && ev.amount > 0) {
-                floatingTextsRef.current.push({
-                  id: `${ev.targetId}-${ev.amount}-${Date.now()}-${Math.random()}`,
-                  text: `-${Math.round(ev.amount)}`,
-                  x: victim.x + (Math.random() - 0.5) * 8,
-                  y: victim.y - 12,
-                  createdAt: Date.now(),
-                  durationMs: 800,
-                  color: "#ff4d4f",
-                });
-              } else if (ev.kind === 2 /* Kill */) {
-                floatingTextsRef.current.push({
-                  id: `kill-${ev.targetId}-${Date.now()}`,
-                  text: "DEFEATED",
-                  x: victim.x,
-                  y: victim.y - 18,
-                  createdAt: Date.now(),
-                  durationMs: 1200,
-                  color: "#f39c12",
-                  isCrit: true,
-                });
-              }
-            }
+        // Process new combat events into floating damage/kill texts. Drained from a
+        // queue: several snapshots can land between two frames.
+        for (const ev of drainEvents?.() ?? []) {
+          const victimId = String(ev.targetId);
+          const victim =
+            renderMobs.get(victimId) ?? renderPlayers.get(victimId);
+          if (!victim) continue;
+          if (ev.kind === 1 /* Hit */ && ev.amount > 0) {
+            floatingTextsRef.current.push({
+              id: `${ev.targetId}-${ev.amount}-${Date.now()}-${Math.random()}`,
+              text: `-${Math.round(ev.amount)}`,
+              x: victim.x + (Math.random() - 0.5) * 8,
+              y: victim.y - 12,
+              createdAt: Date.now(),
+              durationMs: 800,
+              color: "#ff4d4f",
+            });
+          } else if (ev.kind === 2 /* Kill */) {
+            floatingTextsRef.current.push({
+              id: `kill-${ev.targetId}-${Date.now()}`,
+              text: "DEFEATED",
+              x: victim.x,
+              y: victim.y - 18,
+              createdAt: Date.now(),
+              durationMs: 1200,
+              color: "#f39c12",
+              isCrit: true,
+            });
           }
-          lastEventTickRef.current = gameState.tick;
         }
 
         // --- 1. Main Camera View ---

@@ -653,10 +653,67 @@ describe("useServerRsClient", () => {
     expect(proj.ownerId).toBe("11");
     expect(proj.radius).toBeGreaterThan(0);
     expect(result.current.gameState!.mobs.has("900")).toBe(false);
+    // Gone from the snapshot, but the picture is ~100 ms behind: it stays, marked
+    // with the simulation time of its last position, until that has surely passed.
     act(() => {
       ws.onmessage?.(snap(2, []));
     });
+    const leaving = result.current.gameState!.projectiles!.get("900")!;
+    expect(leaving.x).toBe(33);
+    expect(leaving.endsAt).toBe(50);
+    act(() => {
+      ws.onmessage?.(snap(7, []));
+    });
+    expect(result.current.gameState!.projectiles!.get("900")!.endsAt).toBe(50);
+    act(() => {
+      ws.onmessage?.(snap(8, []));
+    });
     expect(result.current.gameState!.projectiles!.size).toBe(0);
+  });
+
+  it("starts a projectile's history afresh after a room switch", async () => {
+    const { result } = await connected();
+    const proj = { id: 900, type: EntityType.Projectile, x: 33, ownerId: 11 };
+    act(() => {
+      MockWebSocket.instances[0].onmessage?.(snap(1, [proj]));
+    });
+    await act(async () => {
+      await result.current.joinRoom("map-for-test-terrain");
+    });
+    act(() => {
+      MockWebSocket.instances[1].onmessage?.(snap(2, [{ ...proj, x: 40 }]));
+    });
+    expect(
+      result.current.gameState!.projectiles!.get("900")!.samples,
+    ).toHaveLength(1);
+  });
+
+  it("queues combat events from every snapshot until they are drained", async () => {
+    const { result } = await connected();
+    const ws = MockWebSocket.instances[0];
+    const hit = (amount: number) => ({
+      kind: GameEventKind.Hit,
+      source: 11,
+      target: 7,
+      amount,
+    });
+    // Two snapshots land before the next frame.
+    act(() => {
+      ws.onmessage?.(snap(1, [], [], [hit(12)]));
+      ws.onmessage?.(snap(2, [], [], [hit(30)]));
+    });
+    expect(result.current.drainEvents().map((e) => e.amount)).toEqual([12, 30]);
+    expect(result.current.drainEvents()).toEqual([]);
+
+    // A long-hidden tab keeps only the newest few.
+    act(() => {
+      for (let tick = 3; tick < 103; tick++) {
+        ws.onmessage?.(snap(tick, [], [], [hit(tick), hit(tick)]));
+      }
+    });
+    const kept = result.current.drainEvents();
+    expect(kept.length).toBeLessThanOrEqual(64);
+    expect(kept[kept.length - 1].amount).toBe(102);
   });
 
   it("decodes combat events into gameState.events", async () => {
