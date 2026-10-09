@@ -376,6 +376,7 @@ describe("GameRenderer frame loop", () => {
         debug: { ...DEFAULT_DEBUG_TOGGLES, prediction: on },
       });
       // Mid-correction: drawn 40 units from where the server has the player.
+      prediction.ready = true;
       prediction.x = 140;
       prediction.at = performance.now();
       frame();

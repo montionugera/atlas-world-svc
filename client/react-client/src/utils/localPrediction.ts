@@ -50,7 +50,7 @@ const MAX_EXTRAPOLATE_MS = 100;
 /** Input-to-snapshot delays kept for the round-trip estimate. */
 const DELAY_WINDOW = 8;
 /** A change not seen in a snapshot within this long was refused (stun, cast lock). */
-const MAX_PROBE_MS = 400;
+const MAX_PROBE_MS = 300;
 const MAX_RTT_MS = 250;
 const HISTORY = 32;
 /** Server dash: 0.22 s, plus the time the server takes to start it. */
@@ -300,9 +300,19 @@ export function observeServer(
         s.delays.push(delay);
         if (s.delays.length > DELAY_WINDOW) s.delays.shift();
         // The longest wait was a just-missed tick, so rtt is at least 50 ms less.
-        // Erring low keeps a stop from overshooting where the server ends up.
+        // Erring low keeps a stop from overshooting where the server ends up; with
+        // enough samples the single longest is set aside as a possible hiccup.
         let longest = 0;
-        for (const d of s.delays) longest = Math.max(longest, d);
+        let second = 0;
+        for (const d of s.delays) {
+          if (d > longest) {
+            second = longest;
+            longest = d;
+          } else if (d > second) {
+            second = d;
+          }
+        }
+        if (s.delays.length >= 4) longest = second;
         s.rtt = Math.min(
           Math.max(longest - SNAPSHOT_INTERVAL_MS, 0),
           MAX_RTT_MS,
@@ -316,9 +326,10 @@ export function observeServer(
       const input = inputAt(s, inputTime);
       const len = Math.hypot(input.mx, input.my);
       const expected = s.baseSpeed * mult * len;
+      // Standing still has no speed to compare: under STILL_SPEED is still.
       const obeyed =
         sameWay(snap.vx, snap.vy, input.mx, input.my, 0.95) &&
-        Math.abs(speed - expected) <= SPEED_TOLERANCE * expected;
+        (len === 0 || Math.abs(speed - expected) <= SPEED_TOLERANCE * expected);
       if (obeyed) {
         s.disagree = 0;
         s.diverged = false;

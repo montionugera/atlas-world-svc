@@ -495,6 +495,34 @@ describe("base speed calibration", () => {
 });
 
 describe("round-trip estimate", () => {
+  it("is not thrown by one slow sample among normal ones", () => {
+    const state = createPrediction();
+    const offsets = [0];
+    const still = { x: 0, y: 0, vx: 0, vy: 0, alive: true };
+    // Key changes seen 30 ms later, except one seen 290 ms later.
+    [30, 30, 290, 30, 30].forEach((delay, i) => {
+      const t = 1000 * (i + 1);
+      setHeldInput(state, t, i % 2 ? 0 : 2, 0);
+      const seen = i % 2 ? still : { ...still, vx: 200 };
+      observeServer(state, { ...seen, simTime: t + delay }, offsets, null);
+    });
+    expect(state.delays).toHaveLength(5);
+    expect(state.rtt).toBe(0);
+  });
+
+  it("does not take a slow drift at rest for disobedience", () => {
+    const state = createPrediction();
+    for (let tick = 0; tick < 10; tick++) {
+      observeServer(
+        state,
+        { simTime: tick * 50, x: 0, y: 0, vx: 0.3, vy: 0, alive: true },
+        [0],
+        null,
+      );
+    }
+    expect(state.diverged).toBe(false);
+  });
+
   it("never exceeds the real round trip, and finds it from a few key changes", () => {
     const keys: Key[] = [];
     for (let i = 0; i < 12; i++) {
