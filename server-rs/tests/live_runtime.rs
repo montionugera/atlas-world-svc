@@ -1238,3 +1238,60 @@ fn parry_tap_released_within_one_tick_still_swings_once() {
         "attack stayed latched after the tap swung"
     );
 }
+
+fn seq_input(session: &str, client_tick: u32, mx: f32) -> ClientPacket {
+    ClientPacket {
+        session_id: session.to_string(),
+        room_id: "map-for-play".to_string(),
+        payload: serialize_client_input(client_tick, mx, 0.0, false, 0, 0),
+    }
+}
+
+/// `input_ack` of `session`'s avatar, read back from the encoded frame.
+fn wire_ack(frame: &LiveFrame, session: &str) -> u32 {
+    let bytes = wire(frame);
+    let snap = root_as_world_snapshot(&bytes).unwrap();
+    let ack = snap
+        .entities()
+        .unwrap()
+        .iter()
+        .find(|e| e.id() == fnv1a_32(session))
+        .expect("avatar on the wire")
+        .input_ack();
+    ack
+}
+
+#[test]
+fn input_ack_is_the_last_input_the_tick_ran_on() {
+    let mut sim = live(0, 0);
+    // The frame of the tick that applied an input carries that input's number.
+    let frame = sim.live_tick(&[seq_input("p1", 1, 1.0)], &[]);
+    assert_eq!(wire_ack(&frame, "p1"), 1);
+    // No new input: the same one is still in effect.
+    assert_eq!(wire_ack(&tick(&mut sim), "p1"), 1);
+    // An input that arrived between two ticks is applied by, and echoed in, the next.
+    let frame = sim.live_tick(&[seq_input("p1", 2, 0.0)], &[]);
+    assert_eq!(wire_ack(&frame, "p1"), 2);
+    // Two inputs in one tick: the later one is what the tick ran on.
+    let frame = sim.live_tick(&[seq_input("p1", 3, 1.0), seq_input("p1", 4, 0.0)], &[]);
+    assert_eq!(wire_ack(&frame, "p1"), 4);
+    let p1 = avatar(&mut sim, "p1").unwrap();
+    assert_eq!(sim.world.get::<Velocity>(p1).unwrap().vx, 0.0);
+}
+
+#[test]
+fn input_ack_is_per_player_and_zero_without_client_input() {
+    let mut sim = live(2, 2);
+    let frame = sim.live_tick(&[seq_input("p1", 5, 0.0), seq_input("p2", 9, 0.0)], &[]);
+    assert_eq!(wire_ack(&frame, "p1"), 5);
+    assert_eq!(wire_ack(&frame, "p2"), 9);
+    // Bots and mobs never had a client input: 0, which is also "no input yet".
+    let humans = [fnv1a_32("p1"), fnv1a_32("p2")];
+    let others: Vec<_> = frame
+        .entities
+        .iter()
+        .filter(|e| !humans.contains(&e.id))
+        .collect();
+    assert_eq!(others.len(), 4);
+    assert!(others.iter().all(|e| e.input_ack == 0));
+}

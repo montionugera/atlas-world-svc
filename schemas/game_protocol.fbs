@@ -26,6 +26,9 @@ table EntityDelta {
     mob_type: string;
     // Owning entity id (projectiles); 0 otherwise.
     owner_id: uint32;
+    // Added (backward compatible): ClientInput.client_tick of the last input this player's
+    // tick ran on; 0 for none yet, and for bots, mobs and projectiles.
+    input_ack: uint32;
 }
 
 // state_flags bits: 1 = alive, 2 = server-driven bot (BotAgent).

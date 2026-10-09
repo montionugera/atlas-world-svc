@@ -356,6 +356,7 @@ pub mod atlas {
             pub const VT_TARGET_ID: ::flatbuffers::VOffsetT = 18;
             pub const VT_MOB_TYPE: ::flatbuffers::VOffsetT = 20;
             pub const VT_OWNER_ID: ::flatbuffers::VOffsetT = 22;
+            pub const VT_INPUT_ACK: ::flatbuffers::VOffsetT = 24;
 
             #[inline]
             pub unsafe fn init_from_table(table: ::flatbuffers::Table<'a>) -> Self {
@@ -372,6 +373,7 @@ pub mod atlas {
                 args: &'args EntityDeltaArgs<'args>,
             ) -> ::flatbuffers::WIPOffset<EntityDelta<'bldr>> {
                 let mut builder = EntityDeltaBuilder::new(_fbb);
+                builder.add_input_ack(args.input_ack);
                 builder.add_owner_id(args.owner_id);
                 if let Some(x) = args.mob_type {
                     builder.add_mob_type(x);
@@ -488,6 +490,17 @@ pub mod atlas {
                         .unwrap()
                 }
             }
+            #[inline]
+            pub fn input_ack(&self) -> u32 {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe {
+                    self._tab
+                        .get::<u32>(EntityDelta::VT_INPUT_ACK, Some(0))
+                        .unwrap()
+                }
+            }
         }
 
         impl ::flatbuffers::Verifiable for EntityDelta<'_> {
@@ -511,6 +524,7 @@ pub mod atlas {
                         false,
                     )?
                     .visit_field::<u32>("owner_id", Self::VT_OWNER_ID, false)?
+                    .visit_field::<u32>("input_ack", Self::VT_INPUT_ACK, false)?
                     .finish();
                 Ok(())
             }
@@ -526,6 +540,7 @@ pub mod atlas {
             pub target_id: u32,
             pub mob_type: Option<::flatbuffers::WIPOffset<&'a str>>,
             pub owner_id: u32,
+            pub input_ack: u32,
         }
         impl<'a> Default for EntityDeltaArgs<'a> {
             #[inline]
@@ -541,6 +556,7 @@ pub mod atlas {
                     target_id: 0,
                     mob_type: None,
                     owner_id: 0,
+                    input_ack: 0,
                 }
             }
         }
@@ -605,6 +621,11 @@ pub mod atlas {
                     .push_slot::<u32>(EntityDelta::VT_OWNER_ID, owner_id, 0);
             }
             #[inline]
+            pub fn add_input_ack(&mut self, input_ack: u32) {
+                self.fbb_
+                    .push_slot::<u32>(EntityDelta::VT_INPUT_ACK, input_ack, 0);
+            }
+            #[inline]
             pub fn new(
                 _fbb: &'b mut ::flatbuffers::FlatBufferBuilder<'a, A>,
             ) -> EntityDeltaBuilder<'a, 'b, A> {
@@ -634,6 +655,7 @@ pub mod atlas {
                 ds.field("target_id", &self.target_id());
                 ds.field("mob_type", &self.mob_type());
                 ds.field("owner_id", &self.owner_id());
+                ds.field("input_ack", &self.input_ack());
                 ds.finish()
             }
         }

@@ -466,6 +466,8 @@ impl AtlasSimulation {
                             target_id,
                             mob_type: anchor.map_or("", |a| intern_mob_type(&a.mob_id)),
                             owner_id: 0,
+                            // Bots keep the default 0: only client packets set it.
+                            input_ack: input.map_or(0, |i| i.client_tick),
                         },
                     )
                 },
@@ -512,6 +514,7 @@ impl AtlasSimulation {
                         target_id: id_of(proj.target),
                         mob_type: p_type,
                         owner_id: id_of(Some(proj.owner)),
+                        input_ack: 0,
                     },
                 )
             })

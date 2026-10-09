@@ -119,6 +119,12 @@ Wire snapshot (`schemas/game_protocol.fbs`, fields only ever **added**; regenera
   human avatars never carry it).
 - `mob_type`: the mob's bestiary id (from `MobSpawnAnchor`), e.g. `mob-millpond-gnawer`.
 - `target_id`: a live mob's `ThreatTable` top target; a human's `ClientInput.target_id`.
+- `input_ack` (`EntityDelta`, uint32, last field): the `ClientInput.client_tick` of the last
+  input that player's tick ran on (`PlayerInputState.client_tick`), so a client knows exactly
+  which of its inputs a snapshot includes. `0` = none yet / bots / mobs / projectiles, and
+  being the default it is then not written at all. It is an echo, never read back as input;
+  clients number their inputs from 1. Older clients ignore it; a client reads `0` from an
+  older server.
 - **Projectiles** are sent as `EntityType::Projectile` (id = FNV of the ECS entity,
   `owner_id` / `target_id` = wire ids). They are ephemeral: never in `removed_ids`, clients
   rebuild their projectile set each snapshot.
