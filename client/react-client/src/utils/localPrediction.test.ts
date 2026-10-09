@@ -99,6 +99,12 @@ interface ServerOptions {
   repeats?: false;
   /** Server time of tick 0. */
   phase?: number;
+  /**
+   * The first tick due at or after `at` runs `by` ms late, taking the inputs that
+   * arrived meanwhile. As the server's timer does, the ticks after it keep their
+   * schedule, less the whole ticks that one overran.
+   */
+  lateTick?: { at: number; by: number };
   stun?: { from: number; to: number };
   knockback?: { from: number; to: number; vx: number; vy: number };
   dash?: { from: number; dirX: number };
@@ -133,9 +139,17 @@ function serve(keys: readonly Key[], until: number, o: ServerOptions): Snap[] {
   let dashLeft = 0;
   let lastArrival = -Infinity;
   const snaps: Snap[] = [];
+  let overrun = 0;
+  let lateTick = o.lateTick;
   for (let tick = 0; ; tick++) {
-    const time = tick * SNAPSHOT_INTERVAL_MS + (o.phase ?? 0);
+    let time = tick * SNAPSHOT_INTERVAL_MS + (o.phase ?? 0) + overrun;
     if (time > until) return snaps;
+    if (lateTick && time >= lateTick.at) {
+      time += lateTick.by;
+      overrun +=
+        Math.floor(lateTick.by / SNAPSHOT_INTERVAL_MS) * SNAPSHOT_INTERVAL_MS;
+      lateTick = undefined;
+    }
     let mx = 0;
     let my = 0;
     let ack = 1;
@@ -1116,6 +1130,26 @@ describe("a real jittered capture (map-for-test-terrain)", () => {
   });
 });
 
+describe("a server tick that runs late on a local link", () => {
+  // The price of never walking back from a stop made during it: the walk waits for
+  // the tick, as the server's own player does, instead of gliding on ahead of it.
+  const keys = [{ t: 1000, ...RIGHT }];
+
+  it.each([30, 80])("waits out a tick %i ms late and walks on", (by) => {
+    const { frames } = run(keys, 4000, {
+      uplinkJitter: 5,
+      jitter: 5,
+      lateTick: { at: 3000, by },
+    });
+    const steps = stepsOf(between(frames, 2950, 3400));
+    const waiting = steps.filter((step) => step < WALK_STEP * 0.5);
+    expect(Math.min(...steps)).toBeGreaterThan(0);
+    expect(waiting.length * FRAME_MS).toBeLessThanOrEqual(by + FRAME_MS);
+    expect(Math.max(...steps)).toBeLessThan(WALK_STEP * 1.25);
+    expect(last(steps)).toBeCloseTo(WALK_STEP, 1);
+  });
+});
+
 /**
  * Every stop measured the same way: a walk to the right, a release at each of 8 points
  * of a tick, the server's ticks at each of 10 phases, drawn at 30, 60 and 144 fps, each
@@ -1126,6 +1160,15 @@ describe("stop sweep", () => {
   const RELEASES = [0, 7, 13, 19, 27, 33, 41, 47];
   const slow = { uplink: 60, downlink: 60, jitter: 30 };
   const fell = { ...slow, uplinkFrom: { at: 2000, uplink: 5 } };
+  /** A local link: each way takes up to 5 ms. */
+  const local = { uplinkJitter: 5, jitter: 5 };
+  /** `link` with the server tick due around the release run `by` ms late. */
+  const lateTick =
+    (link: ServerOptions, by: number) =>
+    (release: number): ServerOptions => ({
+      ...link,
+      lateTick: { at: release - 40, by },
+    });
   const oneWalk = (release: number, late?: number): Key[] => [
     { t: 1000, ...RIGHT },
     { t: release, ...STOP, late },
@@ -1279,6 +1322,25 @@ describe("stop sweep", () => {
       oneWalk,
       sooner(slow, 30),
       count(42, 42, 45, 0),
+    ],
+    ["a local link", oneWalk, local, count(0, 0, 0, 0)],
+    [
+      "a local link, the tick at the release 30 ms late",
+      oneWalk,
+      lateTick(local, 30),
+      count(0, 0, 0, 0),
+    ],
+    [
+      "a local link, the tick at the release 55 ms late",
+      oneWalk,
+      lateTick(local, 55),
+      count(0, 0, 0, 0),
+    ],
+    [
+      "a local link, the tick at the release 80 ms late",
+      oneWalk,
+      lateTick(local, 80),
+      count(0, 0, 0, 0),
     ],
   ])("%s", (_, keysFor, link, ceiling) => {
     expect(sweep(keysFor, link)).toEqual(ceiling);
