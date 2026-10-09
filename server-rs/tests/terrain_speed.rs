@@ -20,9 +20,9 @@ fn play_map() -> AtlasSimulation {
     })
 }
 
-/// Distance a fresh avatar covers holding +X for `TICKS` ticks from (x, y); every tick of
+/// Distance a fresh avatar covers holding +X for `ticks` ticks from (x, y); every tick of
 /// the run must be on `terrain`.
-fn run_distance(session: &str, x: f32, y: f32, terrain: TerrainType) -> f32 {
+fn run_distance(session: &str, x: f32, y: f32, terrain: TerrainType, ticks: usize) -> f32 {
     let mut sim = play_map();
     let entity = sim.spawn_player_avatar(session, x, y);
     let held = ClientPacket {
@@ -31,7 +31,7 @@ fn run_distance(session: &str, x: f32, y: f32, terrain: TerrainType) -> f32 {
         payload: serialize_client_input(1, 1.0, 0.0, false, 0, 0),
     };
     let mut end = Position::new(x, y);
-    for tick in 0..TICKS {
+    for tick in 0..ticks {
         let zones = sim.world.resource::<TerrainZones>();
         assert_eq!(zones.terrain_at(end.x, end.y), terrain, "tick {tick}");
         sim.live_tick(std::slice::from_ref(&held), &[]);
@@ -43,10 +43,10 @@ fn run_distance(session: &str, x: f32, y: f32, terrain: TerrainType) -> f32 {
 
 #[test]
 fn held_input_covers_terrain_scaled_distance() {
-    let grass = run_distance("p-grass", 50.0, 850.0, TerrainType::Grass);
-    let mud = run_distance("p-mud", 520.0, 700.0, TerrainType::Mud);
-    let road = run_distance("p-road", 50.0, 500.0, TerrainType::Road);
-    let ice = run_distance("p-ice", 50.0, 50.0, TerrainType::Ice);
+    let grass = run_distance("p-grass", 50.0, 850.0, TerrainType::Grass, TICKS);
+    let mud = run_distance("p-mud", 520.0, 700.0, TerrainType::Mud, TICKS);
+    let road = run_distance("p-road", 50.0, 500.0, TerrainType::Road, TICKS);
+    let ice = run_distance("p-ice", 50.0, 50.0, TerrainType::Ice, TICKS);
 
     assert!(grass > 150.0, "grass run actually moved, got {grass}");
     for (name, dist, terrain) in [
@@ -133,6 +133,32 @@ fn terrain_test_room_has_every_terrain_and_a_straight_run_crosses_them_all() {
     want.extend(TerrainType::ALL);
     want.push(TerrainType::Grass);
     assert_eq!(crossed, want);
+}
+
+/// Every terrain type, through the real movement system, covers `multiplier x` the ground
+/// grass does. Runs are short (8 ticks) so the narrow sand strip fits.
+#[test]
+fn every_terrain_type_covers_its_multiplier_of_grass_distance() {
+    const SHORT: usize = 8;
+    let grass = run_distance("t-grass", 50.0, 850.0, TerrainType::Grass, SHORT);
+    let starts = [
+        (TerrainType::Grass, 50.0, 850.0),
+        (TerrainType::Road, 50.0, 500.0),
+        (TerrainType::Forest, 700.0, 300.0),
+        (TerrainType::Sand, 610.0, 420.0),
+        (TerrainType::Ice, 50.0, 50.0),
+        (TerrainType::Mud, 520.0, 700.0),
+    ];
+    assert_eq!(starts.len(), TerrainType::ALL.len());
+    for (terrain, x, y) in starts {
+        let dist = run_distance(&format!("t-{terrain:?}"), x, y, terrain, SHORT);
+        let ratio = dist / grass;
+        let want = terrain.speed_multiplier();
+        assert!(
+            (ratio - want).abs() < 0.02,
+            "{terrain:?}/grass distance ratio {ratio}, want {want}"
+        );
+    }
 }
 
 #[test]
