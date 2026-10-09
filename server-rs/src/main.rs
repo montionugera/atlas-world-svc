@@ -66,20 +66,64 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     info!("WebSocket gateway listening on {}", ws_server.local_addr());
 
-    // 5. Simulation initialization — `AtlasSimulation::live` is the ONLY constructor the
-    // live server may use (the golden-trace harness uses `with_arena`).
-    let live_cfg = LiveConfig {
-        seed,
-        arena_width,
-        arena_height,
-        bot_count: player_count,
-        mob_count,
-        mob_respawn_sec: env_f32("MOB_RESPAWN_MS", 5000.0) / 1000.0,
-        player_respawn_sec: env_f32("PLAYER_RESPAWN_MS", 5000.0) / 1000.0,
-        map_id: std::env::var("MAP_ID").ok(),
-    };
-    info!("AtlasSimulation live config: {:?}", live_cfg);
-    let mut sim = AtlasSimulation::live(live_cfg);
+    // 5. Simulation initialization — initialize rooms for play and test maps
+    let mob_respawn_sec = env_f32("MOB_RESPAWN_MS", 5000.0) / 1000.0;
+    let player_respawn_sec = env_f32("PLAYER_RESPAWN_MS", 5000.0) / 1000.0;
+
+    let mut rooms: std::collections::HashMap<String, AtlasSimulation> =
+        std::collections::HashMap::new();
+
+    // 1. Primary Play World
+    let play_map_id = std::env::var("MAP_ID").unwrap_or_else(|_| "map-for-play".to_string());
+    rooms.insert(
+        "map-for-play".to_string(),
+        AtlasSimulation::live(LiveConfig {
+            seed,
+            arena_width,
+            arena_height,
+            bot_count: player_count,
+            mob_count,
+            mob_respawn_sec,
+            player_respawn_sec,
+            map_id: Some(play_map_id),
+        }),
+    );
+
+    // 2. Projectile Testing Map (6 spear-throwers in cluster)
+    rooms.insert(
+        "map-for-test-projectile".to_string(),
+        AtlasSimulation::live(LiveConfig {
+            seed: seed.wrapping_add(1),
+            arena_width: 1000.0,
+            arena_height: 1000.0,
+            bot_count: 0,
+            mob_count: 6,
+            mob_respawn_sec,
+            player_respawn_sec,
+            map_id: Some("map-for-test-projectile".to_string()),
+        }),
+    );
+
+    // 3. Deflect / Parry Testing Map (100x100 arena, 1 spear-thrower mob)
+    rooms.insert(
+        "map-for-test-deflect".to_string(),
+        AtlasSimulation::live(LiveConfig {
+            seed: seed.wrapping_add(2),
+            arena_width: 100.0,
+            arena_height: 100.0,
+            bot_count: 0,
+            mob_count: 1,
+            mob_respawn_sec,
+            player_respawn_sec,
+            map_id: Some("map-for-test-deflect".to_string()),
+        }),
+    );
+
+    info!(
+        "Initialized {} simulation rooms: {:?}",
+        rooms.len(),
+        rooms.keys().collect::<Vec<_>>()
+    );
     let mut snapshot_builder = SnapshotBuilder::new();
 
     // 6. 20 Hz simulation tick loop (50ms interval)
@@ -93,27 +137,60 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             loop {
                 ticker.tick().await;
 
-                // Inbound first: drain_disconnects re-checks the registry, so a session that
-                // reconnects between the two drains is not reported as gone.
                 let inputs = ws_server.drain_inbound().await;
-                let disconnected = ws_server.drain_disconnects().await;
-                let frame = sim.live_tick(&inputs, &disconnected);
-                // MatchEventQueue is drained every tick by live_tick (bounded memory). No
-                // persistence sink is wired in the live loop yet, so log them.
-                for (user_id, event) in &frame.match_events {
-                    debug!(user_id = %user_id, event = ?event, "match event");
-                }
+                let disconnected = ws_server.drain_disconnects_with_rooms().await;
 
-                // Broadcast snapshot (incl. removed ids and combat events) to active clients
-                if ws_server.active_connections_count().await > 0 {
-                    let snapshot_bytes = snapshot_builder.build_frame(
-                        frame.tick,
-                        frame.sim_time_ms,
-                        &frame.entities,
-                        &frame.removed_ids,
-                        &frame.events,
-                    );
-                    ws_server.broadcast_snapshot(snapshot_bytes).await;
+                for (room_id, sim) in rooms.iter_mut() {
+                    let room_inputs: Vec<server_rs::net::ClientPacket> = inputs
+                        .iter()
+                        .filter(|p| {
+                            if room_id == "map-for-play" {
+                                p.room_id == "map-for-play"
+                                    || p.room_id.is_empty()
+                                    || (p.room_id != "map-for-test-projectile"
+                                        && p.room_id != "map-for-test-deflect")
+                            } else {
+                                p.room_id == *room_id
+                            }
+                        })
+                        .cloned()
+                        .collect();
+
+                    let room_disconnects: Vec<String> = disconnected
+                        .iter()
+                        .filter(|(_, r)| {
+                            if room_id == "map-for-play" {
+                                r == "map-for-play"
+                                    || r.is_empty()
+                                    || (r != "map-for-test-projectile"
+                                        && r != "map-for-test-deflect")
+                            } else {
+                                r == room_id
+                            }
+                        })
+                        .map(|(s, _)| s.clone())
+                        .collect();
+
+                    let frame = sim.live_tick(&room_inputs, &room_disconnects);
+
+                    for (user_id, event) in &frame.match_events {
+                        debug!(user_id = %user_id, room = %room_id, event = ?event, "match event");
+                    }
+
+                    if ws_server.active_connections_in_room(room_id).await > 0 {
+                        let epoch_ms = std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .map(|d| d.as_millis() as u64)
+                            .unwrap_or(frame.sim_time_ms);
+                        let snapshot_bytes = snapshot_builder.build_frame(
+                            frame.tick,
+                            epoch_ms,
+                            &frame.entities,
+                            &frame.removed_ids,
+                            &frame.events,
+                        );
+                        ws_server.broadcast_snapshot_to_room(room_id, snapshot_bytes).await;
+                    }
                 }
             }
         } => {}

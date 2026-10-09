@@ -38,6 +38,7 @@ fn live(bots: usize, mobs: usize) -> AtlasSimulation {
 fn input(session: &str, mx: f32, my: f32, attack: bool) -> ClientPacket {
     ClientPacket {
         session_id: session.to_string(),
+        room_id: "map-for-play".to_string(),
         payload: serialize_client_input(1, mx, my, attack, 0, 0),
     }
 }
@@ -424,6 +425,7 @@ fn review1_dead_avatar_cannot_cast_or_finish_a_cast() {
     sim.live_tick(
         &[ClientPacket {
             session_id: "p1".into(),
+            room_id: "map-for-play".to_string(),
             payload: serialize_client_input(1, 0.0, 0.0, false, 1, 0),
         }],
         &[],
@@ -433,6 +435,7 @@ fn review1_dead_avatar_cannot_cast_or_finish_a_cast() {
         sim.live_tick(
             &[ClientPacket {
                 session_id: "p1".into(),
+                room_id: "map-for-play".to_string(),
                 payload: serialize_client_input(2, 0.0, 0.0, false, 2, 0),
             }],
             &[],
@@ -559,6 +562,7 @@ fn wire(frame: &LiveFrame) -> Vec<u8> {
 fn skill(session: &str, slot: u8) -> ClientPacket {
     ClientPacket {
         session_id: session.to_string(),
+        room_id: "map-for-play".to_string(),
         payload: serialize_client_input(1, 0.0, 0.0, false, slot, 0),
     }
 }
@@ -967,6 +971,7 @@ fn test_manual_respawn_revives_dead_player_immediately() {
     // Send input with respawn = true
     let respawn_packet = ClientPacket {
         session_id: "p-revive-test".to_string(),
+        room_id: "map-for-play".to_string(),
         payload: serialize_client_input_full(1, 0.0, 0.0, false, 0, 0, 0.0, 0.0, true),
     };
     sim.live_tick(&[respawn_packet], &[]);
@@ -1009,6 +1014,7 @@ fn test_client_input_target_pos_and_entity_aiming() {
 
     let aim_packet = ClientPacket {
         session_id: "p-aim-test".to_string(),
+        room_id: "map-for-play".to_string(),
         payload: serialize_client_input_full(
             1,
             0.0,

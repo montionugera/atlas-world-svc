@@ -16,17 +16,34 @@ use tracing::{debug, error, info, warn};
 #[derive(Debug, Clone, PartialEq)]
 pub struct ClientPacket {
     pub session_id: String,
+    pub room_id: String,
     pub payload: Vec<u8>,
+}
+
+impl ClientPacket {
+    pub fn new(session_id: impl Into<String>, payload: Vec<u8>) -> Self {
+        Self {
+            session_id: session_id.into(),
+            room_id: "map-for-play".to_string(),
+            payload,
+        }
+    }
+
+    pub fn with_room(mut self, room_id: impl Into<String>) -> Self {
+        self.room_id = room_id.into();
+        self
+    }
 }
 
 /// WebSocket Gateway server managing active client sessions and snapshot broadcasting.
 pub struct WsServer {
     local_addr: SocketAddr,
     connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
+    session_rooms: Arc<RwLock<HashMap<String, String>>>,
     auth_guard: AuthGuard,
     inbound_tx: UnboundedSender<ClientPacket>,
     inbound_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<ClientPacket>>>,
-    disconnect_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<String>>>,
+    disconnect_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<(String, String)>>>,
     pub nakama_client: Option<Arc<crate::storage::NakamaClient>>,
     nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
 }
@@ -41,6 +58,7 @@ impl WsServer {
             .map_err(|e| format!("Failed to get local addr: {}", e))?;
 
         let connections = Arc::new(RwLock::new(HashMap::new()));
+        let session_rooms = Arc::new(RwLock::new(HashMap::new()));
         let (inbound_tx, inbound_rx) = unbounded_channel();
         let inbound_rx = Arc::new(tokio::sync::Mutex::new(inbound_rx));
         let (disconnect_tx, disconnect_rx) = unbounded_channel();
@@ -50,6 +68,7 @@ impl WsServer {
         let server = Self {
             local_addr,
             connections: connections.clone(),
+            session_rooms: session_rooms.clone(),
             auth_guard: auth_guard.clone(),
             inbound_tx: inbound_tx.clone(),
             inbound_rx,
@@ -62,6 +81,7 @@ impl WsServer {
         tokio::spawn(Self::accept_loop(
             listener,
             connections,
+            session_rooms,
             auth_guard,
             inbound_tx,
             disconnect_tx,
@@ -89,6 +109,11 @@ impl WsServer {
         self.connections.read().await.len()
     }
 
+    pub async fn active_connections_in_room(&self, room_id: &str) -> usize {
+        let rooms = self.session_rooms.read().await;
+        rooms.values().filter(|r| r.as_str() == room_id).count()
+    }
+
     pub fn auth_guard(&self) -> &AuthGuard {
         &self.auth_guard
     }
@@ -112,7 +137,7 @@ impl WsServer {
     pub async fn drain_disconnects(&self) -> Vec<String> {
         let mut rx = self.disconnect_rx.lock().await;
         let mut gone = Vec::new();
-        while let Ok(session_id) = rx.try_recv() {
+        while let Ok((session_id, _room_id)) = rx.try_recv() {
             if !gone.contains(&session_id) {
                 gone.push(session_id);
             }
@@ -120,6 +145,21 @@ impl WsServer {
         drop(rx);
         let conns = self.connections.read().await;
         gone.retain(|s| !has_session(&conns, s));
+        gone
+    }
+
+    /// Drain (session_id, room_id) pairs whose LAST socket in that room has closed.
+    pub async fn drain_disconnects_with_rooms(&self) -> Vec<(String, String)> {
+        let mut rx = self.disconnect_rx.lock().await;
+        let mut gone = Vec::new();
+        while let Ok((session_id, room_id)) = rx.try_recv() {
+            if !gone.contains(&(session_id.clone(), room_id.clone())) {
+                gone.push((session_id, room_id));
+            }
+        }
+        drop(rx);
+        let conns = self.connections.read().await;
+        gone.retain(|(s, _)| !has_session(&conns, s));
         gone
     }
 
@@ -138,12 +178,35 @@ impl WsServer {
         }
     }
 
+    /// Broadcast serialized snapshot bytes to active sessions in a specific room.
+    pub async fn broadcast_snapshot_to_room(&self, room_id: &str, bytes: &[u8]) {
+        let conns = self.connections.read().await;
+        let rooms = self.session_rooms.read().await;
+        if conns.is_empty() {
+            return;
+        }
+
+        let msg = Message::Binary(bytes.to_vec().into());
+        for (conn_key, tx) in conns.iter() {
+            let conn_room = rooms
+                .get(conn_key)
+                .map(|s| s.as_str())
+                .unwrap_or("map-for-play");
+            if conn_room == room_id {
+                if let Err(e) = tx.send(msg.clone()) {
+                    debug!("Failed to send snapshot to session {}: {}", conn_key, e);
+                }
+            }
+        }
+    }
+
     async fn accept_loop(
         listener: TcpListener,
         connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
+        session_rooms: Arc<RwLock<HashMap<String, String>>>,
         auth_guard: AuthGuard,
         inbound_tx: UnboundedSender<ClientPacket>,
-        disconnect_tx: UnboundedSender<String>,
+        disconnect_tx: UnboundedSender<(String, String)>,
         nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
     ) {
         info!(
@@ -152,13 +215,17 @@ impl WsServer {
         );
         while let Ok((stream, peer_addr)) = listener.accept().await {
             let conns = connections.clone();
+            let rooms = session_rooms.clone();
             let auth = auth_guard.clone();
             let in_tx = inbound_tx.clone();
             let dc_tx = disconnect_tx.clone();
             let nakama = nakama_ref.clone();
 
             tokio::spawn(async move {
-                Self::handle_connection(stream, peer_addr, conns, auth, in_tx, dc_tx, nakama).await;
+                Self::handle_connection(
+                    stream, peer_addr, conns, rooms, auth, in_tx, dc_tx, nakama,
+                )
+                .await;
             });
         }
     }
@@ -199,17 +266,32 @@ impl WsServer {
         None
     }
 
-    #[allow(clippy::result_large_err)]
+    fn extract_map(req: &Request) -> Option<String> {
+        if let Some(query) = req.uri().query() {
+            for pair in query.split('&') {
+                if let Some((k, v)) = pair.split_once('=') {
+                    if k == "map" {
+                        return Some(v.to_string());
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    #[allow(clippy::result_large_err, clippy::too_many_arguments)]
     async fn handle_connection(
         stream: TcpStream,
         peer_addr: SocketAddr,
         connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
+        session_rooms: Arc<RwLock<HashMap<String, String>>>,
         auth_guard: AuthGuard,
         inbound_tx: UnboundedSender<ClientPacket>,
-        disconnect_tx: UnboundedSender<String>,
+        disconnect_tx: UnboundedSender<(String, String)>,
         nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
     ) {
         let mut session_id = String::new();
+        let mut room_id = "map-for-play".to_string();
         let auth_ref = &auth_guard;
 
         let callback = |req: &Request, response: Response| -> Result<Response, ErrorResponse> {
@@ -226,12 +308,19 @@ impl WsServer {
                 }
             };
 
+            let req_map = Self::extract_map(req).unwrap_or_else(|| "map-for-play".to_string());
+            room_id = match req_map.as_str() {
+                "map-for-test-deflect" => "map-for-test-deflect".to_string(),
+                "map-for-test-projectile" => "map-for-test-projectile".to_string(),
+                _ => "map-for-play".to_string(),
+            };
+
             match auth_ref.validate_token(&token) {
                 Ok(claims) => {
                     session_id = claims.sub;
                     info!(
-                        "WebSocket handshake authenticated: user={} from {}",
-                        session_id, peer_addr
+                        "WebSocket handshake authenticated: user={} room={} from {}",
+                        session_id, room_id, peer_addr
                     );
                     Ok(response)
                 }
@@ -293,6 +382,8 @@ impl WsServer {
         {
             let mut conns = connections.write().await;
             conns.insert(conn_key.clone(), out_tx);
+            let mut rooms = session_rooms.write().await;
+            rooms.insert(conn_key.clone(), room_id.clone());
         }
 
         // Task for writing outbound messages to client
@@ -312,6 +403,7 @@ impl WsServer {
                 Ok(Message::Binary(bin)) => {
                     let packet = ClientPacket {
                         session_id: session_id.clone(),
+                        room_id: room_id.clone(),
                         payload: bin.to_vec(),
                     };
                     if let Err(e) = inbound_tx.send(packet) {
@@ -340,12 +432,14 @@ impl WsServer {
         {
             let mut conns = connections.write().await;
             conns.remove(&conn_key);
+            let mut rooms = session_rooms.write().await;
+            rooms.remove(&conn_key);
             if !has_session(&conns, &session_id) {
-                let _ = disconnect_tx.send(session_id.clone());
+                let _ = disconnect_tx.send((session_id.clone(), room_id.clone()));
             }
         }
         write_task.abort();
-        info!("Session {} disconnected", session_id);
+        info!("Session {} disconnected from room {}", session_id, room_id);
     }
 }
 
@@ -519,5 +613,52 @@ mod tests {
         let forged_token = "forged.header.signature";
         let ws_url_forged = format!("ws://{}/ws?token={}", addr, forged_token);
         assert!(connect_async(&ws_url_forged).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_ws_server_map_query_routing_and_broadcast() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let addr = server.local_addr();
+
+        let token1 = auth.generate_test_token("deflect-player", "Tester", 3600);
+        let token2 = auth.generate_test_token("play-player", "Gamer", 3600);
+
+        let ws_url1 = format!("ws://{}/ws?token={}&map=map-for-test-deflect", addr, token1);
+        let ws_url2 = format!("ws://{}/ws?token={}&map=map-for-play", addr, token2);
+
+        let (mut client_deflect, _) = connect_async(&ws_url1).await.unwrap();
+        let (mut client_play, _) = connect_async(&ws_url2).await.unwrap();
+
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(
+            server
+                .active_connections_in_room("map-for-test-deflect")
+                .await,
+            1
+        );
+        assert_eq!(server.active_connections_in_room("map-for-play").await, 1);
+
+        // Broadcast to deflect room only
+        server
+            .broadcast_snapshot_to_room("map-for-test-deflect", &[11, 22])
+            .await;
+
+        let msg1 = tokio::time::timeout(Duration::from_secs(1), client_deflect.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+        assert_eq!(msg1, Message::Binary(vec![11, 22].into()));
+
+        // Client play should NOT have received that message
+        let non_msg = tokio::time::timeout(Duration::from_millis(100), client_play.next()).await;
+        assert!(
+            non_msg.is_err(),
+            "client in play room should not receive deflect snapshot"
+        );
+
+        client_deflect.close(None).await.unwrap();
+        client_play.close(None).await.unwrap();
     }
 }

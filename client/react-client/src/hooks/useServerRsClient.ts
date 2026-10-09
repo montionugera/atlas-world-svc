@@ -23,6 +23,14 @@ export interface ServerRsClientConfig {
   token?: string;
 }
 
+export interface LatencyMetrics {
+  pingMs: number;
+  snapshotIntervalMs: number;
+  jitterMs: number;
+  serverTimeDeltaMs: number;
+  fps: number;
+}
+
 export interface UseServerRsClientReturn {
   // State
   isConnected: boolean;
@@ -33,6 +41,7 @@ export interface UseServerRsClientReturn {
   isSimulating: boolean;
   fps: number;
   updateRate: number;
+  latencyMetrics: LatencyMetrics;
   equipment: EquipmentSnapshot;
   equipmentRequestPending: boolean;
   equippedWeaponId: string;
@@ -132,12 +141,23 @@ export const useServerRsClient = (
   const frameCountRef = useRef<number>(0);
   const lastFpsTimeRef = useRef<number>(performance.now());
   const updateTimesRef = useRef<number[]>([]);
+  const currentMapRef = useRef<string>("map-for-play");
+  const lastSnapshotReceivedTimeRef = useRef<number>(performance.now());
+  const snapshotIntervalsRef = useRef<number[]>([]);
+  const [latencyMetrics, setLatencyMetrics] = useState<LatencyMetrics>({
+    pingMs: 0,
+    snapshotIntervalMs: 50,
+    jitterMs: 0,
+    serverTimeDeltaMs: 0,
+    fps: 0,
+  });
+
   const stateRef = useRef<GameState>({
     players: new Map(),
     mobs: new Map(),
     tick: 0,
-    mapId: "map-01-sector-a",
-    roomId: "server-rs-room",
+    mapId: "map-for-play",
+    roomId: "server-rs-map-for-play",
     width: 1000,
     height: 1000,
     viewportSize: SERVER_RS_VIEWPORT,
@@ -185,264 +205,299 @@ export const useServerRsClient = (
   }, []);
 
   // Connect to server-rs WebSocket gateway
-  const connect = useCallback(async () => {
-    if (
-      wsRef.current &&
-      (wsRef.current.readyState === WebSocket.OPEN ||
-        wsRef.current.readyState === WebSocket.CONNECTING)
-    ) {
-      return;
-    }
-
-    return new Promise<void>((resolve, reject) => {
-      try {
-        isConnectingRef.current = true;
-        const protocol = config.useSSL ? "wss" : "ws";
-        const token = config.token || "dev-token";
-        const sessionName = token.startsWith("dev-token:")
-          ? token.replace("dev-token:", "")
-          : token !== "dev-token"
-            ? token
-            : "dev-player";
-        const localPlayerId = String(fnv1a32(sessionName));
-        setPlayerId(localPlayerId);
-        const url = `${protocol}://${config.serverHost}:${config.serverPort}?token=${token}`;
-
-        const ws = new WebSocket(url);
-        ws.binaryType = "arraybuffer";
-        // Track immediately so a disconnect() during CONNECTING (e.g. React
-        // StrictMode double-mount) closes this socket instead of leaking it.
-        wsRef.current = ws;
-        // Settle the connect() promise exactly once, whatever happens first.
-        let settled = false;
-        const settle = (err?: unknown) => {
-          if (settled) return;
-          settled = true;
-          if (err === undefined) resolve();
-          else reject(err);
-        };
-
-        ws.onopen = () => {
-          if (wsRef.current !== ws) {
-            // Superseded (StrictMode remount / disconnect during CONNECTING): not an error.
-            ws.close();
-            settle();
-            return;
-          }
-          setIsConnected(true);
-          setRoomId("server-rs-room");
-          isConnectingRef.current = false;
-          localStorage.setItem("atlas-world-server-rs-connected", "true");
-
-          // Send initial input frame so avatar spawns immediately
-          const builder = new flatbuffers.Builder(64);
-          const offset = ClientInput.createClientInput(
-            builder,
-            clientTickRef.current++,
-            0,
-            0,
-            false,
-            0,
-            0,
-            0,
-            0,
-            false,
-          );
-          builder.finish(offset);
-          ws.send(builder.asUint8Array());
-          settle();
-        };
-
-        ws.onmessage = async (event: MessageEvent) => {
-          // Frames still in flight on a superseded socket must not resurrect state.
-          if (wsRef.current !== ws) return;
-          let buffer: ArrayBuffer;
-          if (event.data instanceof ArrayBuffer) {
-            buffer = event.data;
-          } else if (event.data instanceof Blob) {
-            buffer = await event.data.arrayBuffer();
-          } else {
-            return;
-          }
-
-          try {
-            if (wsRef.current !== ws) return; // superseded while awaiting a Blob
-            const snapshot = BinaryDeltaDecoder.decode(buffer);
-            const current = stateRef.current;
-            current.tick = snapshot.tick;
-            // Snapshots are full state: projectiles are ephemeral, so rebuild the set each
-            // frame (they never go through removed_ids).
-            const projectiles = new Map<string, Projectile>();
-
-            for (const entity of snapshot.entities) {
-              const idStr = String(entity.id);
-              const isAlive = (entity.stateFlags & STATE_FLAG_ALIVE) !== 0;
-              if (entity.entityType === EntityType.Player) {
-                const existing = current.players.get(idStr);
-                const isLocalPlayer = idStr === localPlayerId;
-                const isAttacking = isLocalPlayer
-                  ? attackHeldRef.current
-                  : entity.targetId > 0;
-                let heading: number | undefined;
-                if (entity.vx !== 0 || entity.vy !== 0) {
-                  heading = Math.atan2(entity.vy, entity.vx);
-                } else if (
-                  isLocalPlayer &&
-                  (aimRef.current.x !== 0 || aimRef.current.y !== 0)
-                ) {
-                  const dx = aimRef.current.x - entity.x;
-                  const dy = aimRef.current.y - entity.y;
-                  if (dx * dx + dy * dy > 1) {
-                    heading = Math.atan2(dy, dx);
-                  }
-                }
-
-                const updated: Player = {
-                  ...existing,
-                  id: idStr,
-                  sessionId: idStr,
-                  x: entity.x,
-                  y: entity.y,
-                  vx: entity.vx,
-                  vy: entity.vy,
-                  radius: SERVER_RS_PLAYER_RADIUS,
-                  name: isLocalPlayer
-                    ? "Player (YOU)"
-                    : existing?.name || `Player-${idStr}`,
-                  health: entity.health,
-                  currentHealth: entity.health,
-                  maxHealth: entity.maxHealth,
-                  isAlive,
-                  isAttacking,
-                  heading,
-                  attackRange: 40,
-                  // Only server-driven BotAgents are bots; other humans are not.
-                  isBotMode: (entity.stateFlags & STATE_FLAG_BOT) !== 0,
-                  currentAttackTarget: entity.targetId
-                    ? String(entity.targetId)
-                    : undefined,
-                };
-                current.players.set(idStr, updated);
-              } else if (entity.entityType === EntityType.Mob) {
-                const existing = current.mobs.get(idStr);
-                const updated: Mob = {
-                  ...existing, // first: fresh snapshot fields must win
-                  id: idStr,
-                  x: entity.x,
-                  y: entity.y,
-                  vx: entity.vx,
-                  vy: entity.vy,
-                  radius: SERVER_RS_MOB_RADIUS,
-                  tag: isAlive ? "mob" : "dead",
-                  // Older servers send no mob_type: keep whatever we already had.
-                  mobTypeId: entity.mobType || existing?.mobTypeId,
-                  currentHealth: entity.health,
-                  maxHealth: entity.maxHealth,
-                  isAlive,
-                };
-                current.mobs.set(idStr, updated);
-              } else if (entity.entityType === EntityType.Projectile) {
-                projectiles.set(idStr, {
-                  id: idStr,
-                  x: entity.x,
-                  y: entity.y,
-                  vx: entity.vx,
-                  vy: entity.vy,
-                  radius: SERVER_RS_PROJECTILE_RADIUS,
-                  ownerId: String(entity.ownerId),
-                  isStuck: false,
-                });
-              }
-            }
-
-            for (const removedId of snapshot.removedIds) {
-              const idStr = String(removedId);
-              current.players.delete(idStr);
-              current.mobs.delete(idStr);
-            }
-
-            const nextState: GameState = {
-              ...current,
-              players: new Map(current.players),
-              mobs: new Map(current.mobs),
-              projectiles,
-              events: snapshot.events,
-            };
-            setGameState(nextState);
-            // Expose for quick debug / e2e (parity with useColyseusClient)
-            (window as any).__gameState = nextState;
-            (window as any).__playerId = localPlayerId;
-            (window as any).__respawn = respawn;
-            (window as any).__sendPlayerAction = sendPlayerAction;
-            if (projectiles.size > 0) {
-              const w = window as any;
-              w.__seenProjectiles = [
-                ...(w.__seenProjectiles ?? []),
-                ...Array.from(projectiles.values()),
-              ].slice(-1000);
-            }
-            if (snapshot.events.length > 0) {
-              // Rolling buffer so debug tools / e2e can see events between polls.
-              const w = window as any;
-              w.__gameEvents = [
-                ...(w.__gameEvents ?? []),
-                ...snapshot.events,
-              ].slice(-500);
-            }
-            setUpdateCount((prev) => prev + 1);
-
-            // Calculate update rate over a sliding 10s window
-            const now = Date.now();
-            updateTimesRef.current.push(now);
-            const tenSecondsAgo = now - 10000;
-            updateTimesRef.current = updateTimesRef.current.filter(
-              (t) => t > tenSecondsAgo,
-            );
-            if (updateTimesRef.current.length > 1) {
-              const span =
-                updateTimesRef.current[updateTimesRef.current.length - 1] -
-                updateTimesRef.current[0];
-              if (span > 0) {
-                setUpdateRate(
-                  Math.round(
-                    ((updateTimesRef.current.length - 1) * 1000) / span,
-                  ),
-                );
-              }
-            }
-          } catch (decodeErr) {
-            console.error("Failed to decode FlatBuffers snapshot:", decodeErr);
-          }
-        };
-
-        ws.onerror = (err) => {
-          if (wsRef.current !== ws) return settle();
-          console.error("WebSocket error:", err);
-          isConnectingRef.current = false;
-          settle(err);
-        };
-
-        ws.onclose = () => {
-          // A superseded socket (StrictMode remount, reconnect) must not wipe the live session's state.
-          if (wsRef.current !== ws) {
-            // Superseded, or deliberately disconnect()ed (wsRef already null): not an error.
-            settle();
-            if (wsRef.current !== null) return;
-          } else {
-            wsRef.current = null;
-            settle(new Error("WebSocket closed before it opened"));
-          }
-          setIsConnected(false);
-          setRoomId(null);
-          setGameState(null);
-          isConnectingRef.current = false;
-        };
-      } catch (err) {
-        isConnectingRef.current = false;
-        reject(err);
+  const connect = useCallback(
+    async (mapIdOverride?: string) => {
+      if (mapIdOverride) {
+        currentMapRef.current = mapIdOverride;
       }
-    });
-  }, [config]);
+      const activeMap = currentMapRef.current;
+
+      if (
+        wsRef.current &&
+        (wsRef.current.readyState === WebSocket.OPEN ||
+          wsRef.current.readyState === WebSocket.CONNECTING)
+      ) {
+        return;
+      }
+
+      return new Promise<void>((resolve, reject) => {
+        try {
+          isConnectingRef.current = true;
+          const protocol = config.useSSL ? "wss" : "ws";
+          const token = config.token || "dev-token";
+          const sessionName = token.startsWith("dev-token:")
+            ? token.replace("dev-token:", "")
+            : token !== "dev-token"
+              ? token
+              : "dev-player";
+          const localPlayerId = String(fnv1a32(sessionName));
+          setPlayerId(localPlayerId);
+          const url = `${protocol}://${config.serverHost}:${config.serverPort}?token=${token}&map=${activeMap}`;
+
+          const ws = new WebSocket(url);
+          ws.binaryType = "arraybuffer";
+          // Track immediately so a disconnect() during CONNECTING (e.g. React
+          // StrictMode double-mount) closes this socket instead of leaking it.
+          wsRef.current = ws;
+          // Settle the connect() promise exactly once, whatever happens first.
+          let settled = false;
+          const settle = (err?: unknown) => {
+            if (settled) return;
+            settled = true;
+            if (err === undefined) resolve();
+            else reject(err);
+          };
+
+          ws.onopen = () => {
+            if (wsRef.current !== ws) {
+              // Superseded (StrictMode remount / disconnect during CONNECTING): not an error.
+              ws.close();
+              settle();
+              return;
+            }
+            setIsConnected(true);
+            setRoomId(`server-rs-${activeMap}`);
+            isConnectingRef.current = false;
+            localStorage.setItem("atlas-world-server-rs-connected", "true");
+
+            // Send initial input frame so avatar spawns immediately
+            const builder = new flatbuffers.Builder(64);
+            const offset = ClientInput.createClientInput(
+              builder,
+              clientTickRef.current++,
+              0,
+              0,
+              false,
+              0,
+              0,
+              0,
+              0,
+              false,
+            );
+            builder.finish(offset);
+            ws.send(builder.asUint8Array());
+            settle();
+          };
+
+          ws.onmessage = async (event: MessageEvent) => {
+            // Frames still in flight on a superseded socket must not resurrect state.
+            if (wsRef.current !== ws) return;
+            let buffer: ArrayBuffer;
+            if (event.data instanceof ArrayBuffer) {
+              buffer = event.data;
+            } else if (event.data instanceof Blob) {
+              buffer = await event.data.arrayBuffer();
+            } else {
+              return;
+            }
+
+            try {
+              if (wsRef.current !== ws) return; // superseded while awaiting a Blob
+              const snapshot = BinaryDeltaDecoder.decode(buffer);
+              const arrivalTime = performance.now();
+              const prevArrivalTime = lastSnapshotReceivedTimeRef.current;
+              lastSnapshotReceivedTimeRef.current = arrivalTime;
+              const interval = arrivalTime - prevArrivalTime;
+              snapshotIntervalsRef.current.push(interval);
+              if (snapshotIntervalsRef.current.length > 20) {
+                snapshotIntervalsRef.current.shift();
+              }
+              const jitter = Math.abs(interval - 50);
+              const serverDelta = snapshot.serverTimeMs
+                ? Date.now() - Number(snapshot.serverTimeMs)
+                : 0;
+
+              const nextMetrics: LatencyMetrics = {
+                pingMs: Math.max(0, Math.round(serverDelta)),
+                snapshotIntervalMs: Math.round(interval * 10) / 10,
+                jitterMs: Math.round(jitter * 10) / 10,
+                serverTimeDeltaMs: serverDelta,
+                fps: frameCountRef.current || 60,
+              };
+              setLatencyMetrics(nextMetrics);
+              (window as any).__latencyMetrics = nextMetrics;
+
+              const current = stateRef.current;
+              current.tick = snapshot.tick;
+              // Snapshots are full state: projectiles are ephemeral, so rebuild the set each
+              // frame (they never go through removed_ids).
+              const projectiles = new Map<string, Projectile>();
+
+              for (const entity of snapshot.entities) {
+                const idStr = String(entity.id);
+                const isAlive = (entity.stateFlags & STATE_FLAG_ALIVE) !== 0;
+                if (entity.entityType === EntityType.Player) {
+                  const existing = current.players.get(idStr);
+                  const isLocalPlayer = idStr === localPlayerId;
+                  const isAttacking = isLocalPlayer
+                    ? attackHeldRef.current
+                    : entity.targetId > 0;
+                  let heading: number | undefined;
+                  if (entity.vx !== 0 || entity.vy !== 0) {
+                    heading = Math.atan2(entity.vy, entity.vx);
+                  } else if (
+                    isLocalPlayer &&
+                    (aimRef.current.x !== 0 || aimRef.current.y !== 0)
+                  ) {
+                    const dx = aimRef.current.x - entity.x;
+                    const dy = aimRef.current.y - entity.y;
+                    if (dx * dx + dy * dy > 1) {
+                      heading = Math.atan2(dy, dx);
+                    }
+                  }
+
+                  const updated: Player = {
+                    ...existing,
+                    id: idStr,
+                    sessionId: idStr,
+                    x: entity.x,
+                    y: entity.y,
+                    vx: entity.vx,
+                    vy: entity.vy,
+                    radius: SERVER_RS_PLAYER_RADIUS,
+                    name: isLocalPlayer
+                      ? "Player (YOU)"
+                      : existing?.name || `Player-${idStr}`,
+                    health: entity.health,
+                    currentHealth: entity.health,
+                    maxHealth: entity.maxHealth,
+                    isAlive,
+                    isAttacking,
+                    heading,
+                    attackRange: 40,
+                    // Only server-driven BotAgents are bots; other humans are not.
+                    isBotMode: (entity.stateFlags & STATE_FLAG_BOT) !== 0,
+                    currentAttackTarget: entity.targetId
+                      ? String(entity.targetId)
+                      : undefined,
+                  };
+                  current.players.set(idStr, updated);
+                } else if (entity.entityType === EntityType.Mob) {
+                  const existing = current.mobs.get(idStr);
+                  const updated: Mob = {
+                    ...existing, // first: fresh snapshot fields must win
+                    id: idStr,
+                    x: entity.x,
+                    y: entity.y,
+                    vx: entity.vx,
+                    vy: entity.vy,
+                    radius: SERVER_RS_MOB_RADIUS,
+                    tag: isAlive ? "mob" : "dead",
+                    // Older servers send no mob_type: keep whatever we already had.
+                    mobTypeId: entity.mobType || existing?.mobTypeId,
+                    currentHealth: entity.health,
+                    maxHealth: entity.maxHealth,
+                    isAlive,
+                  };
+                  current.mobs.set(idStr, updated);
+                } else if (entity.entityType === EntityType.Projectile) {
+                  projectiles.set(idStr, {
+                    id: idStr,
+                    x: entity.x,
+                    y: entity.y,
+                    vx: entity.vx,
+                    vy: entity.vy,
+                    radius: SERVER_RS_PROJECTILE_RADIUS,
+                    ownerId: String(entity.ownerId),
+                    isStuck: false,
+                    type: entity.mobType || "spear",
+                  });
+                }
+              }
+
+              for (const removedId of snapshot.removedIds) {
+                const idStr = String(removedId);
+                current.players.delete(idStr);
+                current.mobs.delete(idStr);
+              }
+
+              const nextState: GameState = {
+                ...current,
+                players: new Map(current.players),
+                mobs: new Map(current.mobs),
+                projectiles,
+                events: snapshot.events,
+              };
+              setGameState(nextState);
+              // Expose for quick debug / e2e (parity with useColyseusClient)
+              (window as any).__gameState = nextState;
+              (window as any).__playerId = localPlayerId;
+              (window as any).__respawn = respawn;
+              (window as any).__sendPlayerAction = sendPlayerAction;
+              if (projectiles.size > 0) {
+                const w = window as any;
+                w.__seenProjectiles = [
+                  ...(w.__seenProjectiles ?? []),
+                  ...Array.from(projectiles.values()),
+                ].slice(-1000);
+              }
+              if (snapshot.events.length > 0) {
+                // Rolling buffer so debug tools / e2e can see events between polls.
+                const w = window as any;
+                w.__gameEvents = [
+                  ...(w.__gameEvents ?? []),
+                  ...snapshot.events,
+                ].slice(-500);
+              }
+              setUpdateCount((prev) => prev + 1);
+
+              // Calculate update rate over a sliding 10s window
+              const now = Date.now();
+              updateTimesRef.current.push(now);
+              const tenSecondsAgo = now - 10000;
+              updateTimesRef.current = updateTimesRef.current.filter(
+                (t) => t > tenSecondsAgo,
+              );
+              if (updateTimesRef.current.length > 1) {
+                const span =
+                  updateTimesRef.current[updateTimesRef.current.length - 1] -
+                  updateTimesRef.current[0];
+                if (span > 0) {
+                  setUpdateRate(
+                    Math.round(
+                      ((updateTimesRef.current.length - 1) * 1000) / span,
+                    ),
+                  );
+                }
+              }
+            } catch (decodeErr) {
+              console.error(
+                "Failed to decode FlatBuffers snapshot:",
+                decodeErr,
+              );
+            }
+          };
+
+          ws.onerror = (err) => {
+            if (wsRef.current !== ws) return settle();
+            console.error("WebSocket error:", err);
+            isConnectingRef.current = false;
+            settle(err);
+          };
+
+          ws.onclose = () => {
+            // A superseded socket (StrictMode remount, reconnect) must not wipe the live session's state.
+            if (wsRef.current !== ws) {
+              // Superseded, or deliberately disconnect()ed (wsRef already null): not an error.
+              settle();
+              if (wsRef.current !== null) return;
+            } else {
+              wsRef.current = null;
+              settle(new Error("WebSocket closed before it opened"));
+            }
+            setIsConnected(false);
+            setRoomId(null);
+            setGameState(null);
+            isConnectingRef.current = false;
+          };
+        } catch (err) {
+          isConnectingRef.current = false;
+          reject(err);
+        }
+      });
+    },
+    [config],
+  );
 
   // Send binary input frame
   const sendInput = useCallback(
@@ -482,26 +537,60 @@ export const useServerRsClient = (
 
   // Join room (maps seamlessly to server-rs ready connection)
   const joinRoom = useCallback(
-    async (mapId: string = "map-01-sector-a") => {
-      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-        await connect();
-      }
+    async (mapId: string = "map-for-play") => {
+      const isSwitchingMap = mapId !== currentMapRef.current;
+      currentMapRef.current = mapId;
       const targetRoomId = `server-rs-${mapId}`;
       setRoomId(targetRoomId);
+
+      const isDeflectMap = mapId === "map-for-test-deflect";
+      const width = isDeflectMap ? 100 : 1000;
+      const height = isDeflectMap ? 100 : 1000;
+      const viewportSize = isDeflectMap ? 100 : SERVER_RS_VIEWPORT;
+
       stateRef.current.mapId = mapId;
       stateRef.current.roomId = targetRoomId;
+      stateRef.current.width = width;
+      stateRef.current.height = height;
+      stateRef.current.viewportSize = viewportSize;
+
+      if (
+        isSwitchingMap &&
+        wsRef.current &&
+        wsRef.current.readyState === WebSocket.OPEN
+      ) {
+        stateRef.current.players.clear();
+        stateRef.current.mobs.clear();
+        const oldWs = wsRef.current;
+        wsRef.current = null;
+        oldWs.close();
+        await connect(mapId);
+      } else if (
+        !wsRef.current ||
+        wsRef.current.readyState !== WebSocket.OPEN
+      ) {
+        await connect(mapId);
+      }
+
       setGameState((prev) =>
         prev
-          ? { ...prev, mapId, roomId: targetRoomId }
+          ? {
+              ...prev,
+              mapId,
+              roomId: targetRoomId,
+              width,
+              height,
+              viewportSize,
+            }
           : {
               players: new Map(),
               mobs: new Map(),
               tick: 0,
               mapId,
               roomId: targetRoomId,
-              width: 1000,
-              height: 1000,
-              viewportSize: SERVER_RS_VIEWPORT,
+              width,
+              height,
+              viewportSize,
             },
       );
       sendInput(
@@ -628,6 +717,7 @@ export const useServerRsClient = (
     isSimulating,
     fps,
     updateRate,
+    latencyMetrics,
     equipment,
     equipmentRequestPending,
     equippedWeaponId: equipment.mainHand,

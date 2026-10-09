@@ -536,6 +536,10 @@ pub struct Projectile {
     pub lifetime: f32,
     pub effects: Vec<SkillEffect>,
     pub is_player_projectile: bool,
+    #[serde(default)]
+    pub aoe_radius: f32,
+    #[serde(default)]
+    pub skill_id: Option<String>,
 }
 
 #[derive(Component, Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
@@ -648,10 +652,14 @@ mod tests {
             lifetime: 5.0,
             effects: vec![SkillEffect::Damage(20.0)],
             is_player_projectile: true,
+            aoe_radius: 60.0,
+            skill_id: Some("skill_1".to_string()),
         };
         assert_eq!(proj.damage, 25.0);
         assert_eq!(proj.element, Element::Fire);
         assert!(proj.is_player_projectile);
+        assert_eq!(proj.aoe_radius, 60.0);
+        assert_eq!(proj.skill_id.as_deref(), Some("skill_1"));
     }
 
     #[test]

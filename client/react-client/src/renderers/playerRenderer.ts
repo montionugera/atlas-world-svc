@@ -8,6 +8,12 @@ import {
   drawAttackSlash,
 } from "../utils/drawingUtils";
 
+const ATTACK_CYCLE_DURATION_MS = 800; // Matches server-rs attack_cooldown (0.8s)
+const ATTACK_SWING_DURATION_MS = 240; // Active swing window with hit cone / slash visible
+
+// Track when each player's attack cycle began so cone only renders during active swing
+const playerAttackCycleStart = new Map<string, number>();
+
 /**
  * Draw all players with their names and highlight current player
  */
@@ -195,31 +201,44 @@ export const drawPlayers = (
       );
     }
 
-    // Draw attack visualization if player is attacking
+    // Draw attack visualization if player is attacking during active swing window
     if (player.isAttacking && heading !== undefined) {
-      // Draw attack cone
-      drawAttackCone(
-        ctx,
-        x,
-        y,
-        heading,
-        player.attackRange || 3,
-        scale,
-        "#ff4444", // red cone
-        0.4, // semi-transparent
-      );
+      let cycleStart = playerAttackCycleStart.get(sessionId);
+      if (!cycleStart || now - cycleStart >= ATTACK_CYCLE_DURATION_MS) {
+        cycleStart = now;
+        playerAttackCycleStart.set(sessionId, cycleStart);
+      }
 
-      // Draw attack slash effect
-      drawAttackSlash(
-        ctx,
-        x,
-        y,
-        heading,
-        radius,
-        "#ffff00", // yellow slash
-        7, // thicker line for slash
-        viewScale,
-      );
+      const elapsed = now - cycleStart;
+      const isSwingActive = elapsed < ATTACK_SWING_DURATION_MS;
+
+      if (isSwingActive) {
+        // Draw attack cone
+        drawAttackCone(
+          ctx,
+          x,
+          y,
+          heading,
+          player.attackRange || 3,
+          scale,
+          "#ff4444", // red cone
+          0.4, // semi-transparent
+        );
+
+        // Draw attack slash effect
+        drawAttackSlash(
+          ctx,
+          x,
+          y,
+          heading,
+          radius,
+          "#ffff00", // yellow slash
+          7, // thicker line for slash
+          viewScale,
+        );
+      }
+    } else {
+      playerAttackCycleStart.delete(sessionId);
     }
 
     // Highlight current player with gold aura

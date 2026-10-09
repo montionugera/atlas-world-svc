@@ -448,6 +448,21 @@ impl AtlasSimulation {
         let mut projs: Vec<(u64, EntitySnapshotData)> = projectiles
             .iter(&self.world)
             .map(|(e, pos, vel, proj)| {
+                let p_type: &'static str = match proj.skill_id.as_deref() {
+                    Some("skill_1") => "meteor",
+                    Some("skill_2") => "precision",
+                    Some("skill_3") => "blizzard",
+                    Some("skill_4") => "thunder",
+                    Some("skill_dash") => "dash",
+                    Some("spear") => "spear",
+                    Some(s) => intern_mob_type(s),
+                    None => match proj.element {
+                        crate::combat::Element::Fire => "meteor",
+                        crate::combat::Element::Water => "blizzard",
+                        crate::combat::Element::Wind => "thunder",
+                        _ => "spear",
+                    },
+                };
                 (
                     e.to_bits(),
                     EntitySnapshotData {
@@ -461,7 +476,7 @@ impl AtlasSimulation {
                         max_health: 0.0,
                         state_flags: STATE_FLAG_ALIVE,
                         target_id: id_of(proj.target),
-                        mob_type: "",
+                        mob_type: p_type,
                         owner_id: id_of(Some(proj.owner)),
                     },
                 )

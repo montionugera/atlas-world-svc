@@ -373,6 +373,40 @@ try {
     respawnVerified,
   );
 
+  // 10. Diagnostic latency telemetry is populated and healthy
+  const metrics = await page.evaluate(() => window.__latencyMetrics);
+  const metricsValid =
+    metrics !== undefined &&
+    typeof metrics.snapshotIntervalMs === "number" &&
+    metrics.snapshotIntervalMs > 0 &&
+    typeof metrics.jitterMs === "number";
+  check(
+    "diagnostic latency metrics are tracked live",
+    metricsValid,
+    `interval=${metrics?.snapshotIntervalMs}ms jitter=±${metrics?.jitterMs}ms ping=${metrics?.pingMs}ms`,
+  );
+
+  // 11. Multi-map switching: switch to "Deflect test" map (100x100, 1 spearling)
+  const deflectRadio = page.locator('input[type="radio"][value="map-for-test-deflect"]');
+  if (await deflectRadio.count() > 0) {
+    await deflectRadio.check();
+    const switchedToDeflect = await page
+      .waitForFunction(
+        () =>
+          window.__gameState?.mapId === "map-for-test-deflect" &&
+          window.__gameState?.width === 100 &&
+          window.__gameState?.height === 100,
+        null,
+        { timeout: 8000 }
+      )
+      .then(() => true)
+      .catch(() => false);
+    check(
+      "map switch to map-for-test-deflect updates arena dimensions (100x100) and room",
+      switchedToDeflect,
+    );
+  }
+
   check("no uncaught page errors", errors.length === 0, errors.join(" | "));
 } finally {
   await browser.close();

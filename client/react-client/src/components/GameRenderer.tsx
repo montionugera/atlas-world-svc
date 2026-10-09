@@ -25,6 +25,17 @@ interface GameRendererProps {
   trackFrame: () => void;
 }
 
+interface BlastEffect {
+  id: string;
+  x: number;
+  y: number;
+  radius: number;
+  maxRadius: number;
+  color: string;
+  createdAt: number;
+  durationMs: number;
+}
+
 export const GameRenderer: React.FC<GameRendererProps> = ({
   canvasRef,
   gameState,
@@ -37,7 +48,12 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
 }) => {
   const animationFrameRef = useRef<number | undefined>(undefined);
   const floatingTextsRef = useRef<FloatingText[]>([]);
+  const blastEffectsRef = useRef<BlastEffect[]>([]);
+  const prevProjectilesRef = useRef<
+    Map<string, { x: number; y: number; type?: string }>
+  >(new Map());
   const lastEventTickRef = useRef<number>(-1);
+  const lastRenderDurationRef = useRef<number>(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -47,12 +63,58 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
     if (!ctx) return;
 
     const animate = () => {
+      const renderStartTime = performance.now();
       trackFrame();
 
       // Clear canvas
       clearCanvas(ctx, canvas);
 
       if (gameState) {
+        // Detect detonated projectiles to spawn AoE blast shockwaves
+        const prevProjs = prevProjectilesRef.current;
+        const currentProjs = gameState.projectiles || new Map();
+        prevProjs.forEach((p, id) => {
+          if (!currentProjs.has(id)) {
+            const pType = (p.type || "").toLowerCase();
+            let maxRadius = 15;
+            let color = "255, 170, 0";
+            let durationMs = 450;
+            if (pType.includes("skill_1") || pType.includes("meteor")) {
+              maxRadius = 60; // 60.0 server AoE
+              color = "255, 69, 0";
+              durationMs = 700;
+            } else if (
+              pType.includes("skill_3") ||
+              pType.includes("blizzard")
+            ) {
+              maxRadius = 50; // 50.0 server AoE
+              color = "0, 210, 211";
+              durationMs = 800;
+            } else if (pType.includes("skill_4") || pType.includes("thunder")) {
+              maxRadius = 40; // 40.0 server AoE
+              color = "254, 202, 87";
+              durationMs = 600;
+            }
+            blastEffectsRef.current.push({
+              id: `${id}-${Date.now()}`,
+              x: p.x,
+              y: p.y,
+              radius: 4,
+              maxRadius,
+              color,
+              createdAt: Date.now(),
+              durationMs,
+            });
+          }
+        });
+        const nextPrev = new Map<
+          string,
+          { x: number; y: number; type?: string }
+        >();
+        currentProjs.forEach((p, id) => {
+          nextPrev.set(id, { x: p.x, y: p.y, type: p.type });
+        });
+        prevProjectilesRef.current = nextPrev;
         // Process new combat events into floating damage/kill texts
         if (
           gameState.events &&
@@ -145,8 +207,29 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
           drawProjectiles(ctx, gameState.projectiles, 1, scale);
         }
 
-        // 4. Floating Combat Numbers
+        // Draw AoE blast shockwaves
         const now = Date.now();
+        blastEffectsRef.current.forEach((blast) => {
+          const elapsed = now - blast.createdAt;
+          const progress = Math.min(1, elapsed / blast.durationMs);
+          const currentRadius =
+            blast.radius + (blast.maxRadius - blast.radius) * progress;
+          const alpha = 1 - progress;
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(blast.x, blast.y, currentRadius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${blast.color}, ${alpha * 0.25})`;
+          ctx.fill();
+          ctx.strokeStyle = `rgba(${blast.color}, ${alpha * 0.85})`;
+          ctx.lineWidth = Math.max(1, (3 * (1 - progress) + 1) / scale);
+          ctx.stroke();
+          ctx.restore();
+        });
+        blastEffectsRef.current = blastEffectsRef.current.filter(
+          (b) => now - b.createdAt < b.durationMs,
+        );
+
+        // 4. Floating Combat Numbers
         drawFloatingTexts(ctx, floatingTextsRef.current, 1, scale, now);
         floatingTextsRef.current = floatingTextsRef.current.filter(
           (t) => now - t.createdAt < t.durationMs,
@@ -236,7 +319,73 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
 
         ctx.restore();
 
-        // HUD is now rendered outside the canvas
+        // --- 3. Diagnostic Telemetry HUD (Top-Left) ---
+        const renderDuration = performance.now() - renderStartTime;
+        lastRenderDurationRef.current = renderDuration;
+        const lm = (window as any).__latencyMetrics;
+
+        ctx.save();
+        ctx.fillStyle = "rgba(10, 15, 25, 0.85)";
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+        ctx.lineWidth = 1;
+        const hudX = 14;
+        const hudY = 14;
+        const hudW = 280;
+        const hudH = 92;
+        if (typeof (ctx as any).roundRect === "function") {
+          (ctx as any).roundRect(hudX, hudY, hudW, hudH, 8);
+        } else {
+          ctx.rect(hudX, hudY, hudW, hudH);
+        }
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.font = 'bold 11px "Fira Code", monospace';
+        ctx.fillStyle = "#ecf0f1";
+        ctx.fillText("⚡ DIAGNOSTIC TELEMETRY", hudX + 10, hudY + 18);
+
+        // Client FPS & Render Time
+        ctx.font = '10px "Fira Code", monospace';
+        ctx.fillStyle =
+          fps >= 55 ? "#2ecc71" : fps >= 30 ? "#f1c40f" : "#e74c3c";
+        ctx.fillText(`FPS: ${fps}`, hudX + 10, hudY + 36);
+
+        ctx.fillStyle =
+          renderDuration < 8
+            ? "#2ecc71"
+            : renderDuration < 16
+              ? "#f1c40f"
+              : "#e74c3c";
+        ctx.fillText(
+          `Render: ${renderDuration.toFixed(1)}ms`,
+          hudX + 110,
+          hudY + 36,
+        );
+
+        // Ping / Net RTT
+        const ping = lm?.pingMs ?? 0;
+        ctx.fillStyle =
+          ping < 40 ? "#2ecc71" : ping < 100 ? "#f1c40f" : "#e74c3c";
+        ctx.fillText(`Net RTT: ${ping}ms`, hudX + 10, hudY + 54);
+
+        // Snapshot Interval & Jitter
+        const snapInterval = lm?.snapshotIntervalMs ?? 50;
+        const jitter = lm?.jitterMs ?? 0;
+        ctx.fillStyle = jitter < 15 ? "#2ecc71" : "#f1c40f";
+        ctx.fillText(
+          `Snap: ${snapInterval.toFixed(0)}ms (±${jitter.toFixed(0)}ms)`,
+          hudX + 110,
+          hudY + 54,
+        );
+
+        // Entities
+        ctx.fillStyle = "#95a5a6";
+        ctx.fillText(
+          `Entities: ${gameState.players.size}P | ${gameState.mobs.size}M | ${gameState.projectiles?.size || 0}Proj`,
+          hudX + 10,
+          hudY + 74,
+        );
+        ctx.restore();
       }
 
       animationFrameRef.current = requestAnimationFrame(animate);

@@ -130,6 +130,11 @@ pub fn skill_execution_system(
 
                     let proj_pos = Position::new(pos.x, pos.y);
                     let proj_vel = Velocity::new(dir_x * speed, dir_y * speed);
+                    let aoe_radius = if skill.radius > 2.5 {
+                        skill.radius * 10.0
+                    } else {
+                        0.0
+                    };
                     let projectile = Projectile {
                         owner: entity,
                         target: target_entity,
@@ -143,6 +148,8 @@ pub fn skill_execution_system(
                         lifetime,
                         effects: skill.effects.clone(),
                         is_player_projectile: is_player,
+                        aoe_radius,
+                        skill_id: Some(skill.id.clone()),
                     };
 
                     commands.spawn((proj_pos, proj_vel, projectile));

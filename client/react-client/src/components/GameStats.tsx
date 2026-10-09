@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface GameStatsProps {
   mapId?: string;
@@ -10,6 +10,12 @@ interface GameStatsProps {
   companionCount: number;
   roomId: string | null;
   isConnected: boolean;
+  latencyMetrics?: {
+    pingMs: number;
+    snapshotIntervalMs: number;
+    jitterMs: number;
+    serverTimeDeltaMs?: number;
+  };
 }
 
 export const GameStats: React.FC<GameStatsProps> = ({
@@ -21,95 +27,129 @@ export const GameStats: React.FC<GameStatsProps> = ({
   mobCount,
   companionCount,
   roomId,
-  isConnected
+  isConnected,
+  latencyMetrics,
 }) => {
   const containerStyle: React.CSSProperties = {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: '12px',
-    padding: '16px',
-    marginBottom: '16px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    borderRadius: "12px",
+    padding: "16px",
+    marginBottom: "16px",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
     fontFamily: '"Fira Code", monospace',
-    fontSize: '0.9rem'
+    fontSize: "0.9rem",
   };
 
   const headerStyle: React.CSSProperties = {
-      color: '#bdc3c7',
-      textTransform: 'uppercase',
-      letterSpacing: '1px',
-      fontSize: '0.8rem',
-      marginBottom: '12px',
-      borderBottom: '1px solid rgba(255,255,255,0.1)',
-      paddingBottom: '8px',
-      display: 'flex',
-      justifyContent: 'space-between'
+    color: "#bdc3c7",
+    textTransform: "uppercase",
+    letterSpacing: "1px",
+    fontSize: "0.8rem",
+    marginBottom: "12px",
+    borderBottom: "1px solid rgba(255,255,255,0.1)",
+    paddingBottom: "8px",
+    display: "flex",
+    justifyContent: "space-between",
   };
 
   const gridStyle: React.CSSProperties = {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      gap: '8px 16px'
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "8px 16px",
   };
 
   const itemStyle: React.CSSProperties = {
-      display: 'flex',
-      justifyContent: 'space-between'
+    display: "flex",
+    justifyContent: "space-between",
   };
 
   const labelStyle: React.CSSProperties = {
-      color: '#7f8c8d'
+    color: "#7f8c8d",
   };
 
   const valueStyle: React.CSSProperties = {
-      color: '#ecf0f1',
-      fontWeight: 600
+    color: "#ecf0f1",
+    fontWeight: 600,
   };
+
+  const pingColor = !latencyMetrics
+    ? "#ecf0f1"
+    : latencyMetrics.pingMs < 40
+      ? "#2ecc71"
+      : latencyMetrics.pingMs < 100
+        ? "#f1c40f"
+        : "#e74c3c";
 
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-          <span>Stats</span>
-          <span style={{ color: isConnected ? '#2ecc71' : '#e74c3c' }}>
-              {isConnected ? 'ONLINE' : 'OFFLINE'}
-          </span>
+        <span>Stats & Latency</span>
+        <span style={{ color: isConnected ? "#2ecc71" : "#e74c3c" }}>
+          {isConnected ? "ONLINE" : "OFFLINE"}
+        </span>
       </div>
-      
+
       <div style={gridStyle}>
         <div style={itemStyle}>
-            <span style={labelStyle}>FPS</span>
-            <span style={valueStyle}>{fps}</span>
+          <span style={labelStyle}>FPS</span>
+          <span style={valueStyle}>{fps}</span>
         </div>
         <div style={itemStyle}>
-             <span style={labelStyle}>Rate</span>
-             <span style={valueStyle}>{updateRate}/s</span>
+          <span style={labelStyle}>Rate</span>
+          <span style={valueStyle}>{updateRate}/s</span>
         </div>
         <div style={itemStyle}>
-             <span style={labelStyle}>Tick</span>
-             <span style={valueStyle}>{tick}</span>
+          <span style={labelStyle}>Net RTT</span>
+          <span style={{ ...valueStyle, color: pingColor }}>
+            {latencyMetrics ? `${latencyMetrics.pingMs} ms` : "-"}
+          </span>
         </div>
         <div style={itemStyle}>
-             <span style={labelStyle}>Map</span>
-             <span style={valueStyle}>{mapId || '-'}</span>
+          <span style={labelStyle}>Snap Delta</span>
+          <span style={valueStyle}>
+            {latencyMetrics ? `${latencyMetrics.snapshotIntervalMs} ms` : "-"}
+          </span>
         </div>
         <div style={itemStyle}>
-             <span style={labelStyle}>Players</span>
-             <span style={valueStyle}>{playerCount}</span>
+          <span style={labelStyle}>Tick</span>
+          <span style={valueStyle}>{tick}</span>
         </div>
         <div style={itemStyle}>
-             <span style={labelStyle}>Mobs</span>
-             <span style={valueStyle}>{mobCount}</span>
+          <span style={labelStyle}>Map</span>
+          <span style={valueStyle}>{mapId || "-"}</span>
         </div>
         <div style={itemStyle}>
-             <span style={labelStyle}>Companions</span>
-             <span style={valueStyle}>{companionCount}</span>
+          <span style={labelStyle}>Players</span>
+          <span style={valueStyle}>{playerCount}</span>
+        </div>
+        <div style={itemStyle}>
+          <span style={labelStyle}>Mobs</span>
+          <span style={valueStyle}>{mobCount}</span>
+        </div>
+        <div style={itemStyle}>
+          <span style={labelStyle}>Companions</span>
+          <span style={valueStyle}>{companionCount}</span>
+        </div>
+        <div style={itemStyle}>
+          <span style={labelStyle}>Jitter</span>
+          <span style={valueStyle}>
+            {latencyMetrics ? `±${latencyMetrics.jitterMs} ms` : "-"}
+          </span>
         </div>
       </div>
-      
+
       {roomId && (
-          <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '0.8rem' }}>
-              <span style={labelStyle}>Room: </span>
-              <span style={{ color: '#9b59b6' }}>{roomId}</span>
-          </div>
+        <div
+          style={{
+            marginTop: "12px",
+            paddingTop: "8px",
+            borderTop: "1px solid rgba(255,255,255,0.05)",
+            fontSize: "0.8rem",
+          }}
+        >
+          <span style={labelStyle}>Room: </span>
+          <span style={{ color: "#9b59b6" }}>{roomId}</span>
+        </div>
       )}
     </div>
   );
