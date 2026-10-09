@@ -137,6 +137,34 @@ describe("GameRenderer frame loop", () => {
     return { calls, frame };
   };
 
+  it("draws the newest snapshot from the state ref without a React render", () => {
+    const projectile = (x: number) =>
+      new Map([
+        [
+          "900",
+          {
+            id: "900",
+            x,
+            y: 50,
+            vx: 0,
+            vy: 0,
+            radius: 4,
+            ownerId: "1",
+            isStuck: false,
+          },
+        ],
+      ]);
+    // React state is published a few times a second; the ref has every snapshot.
+    const published = { ...stateAt(1), projectiles: projectile(10) };
+    const gameStateRef = { current: published as GameState | null };
+    const { frame } = mount(published, { gameStateRef });
+    expect(drawn()).toEqual([["900", 10, 50]]);
+
+    gameStateRef.current = { ...stateAt(2), projectiles: projectile(20) };
+    frame();
+    expect(drawn()).toEqual([["900", 20, 50]]);
+  });
+
   it("shows every queued combat event once, however many snapshots carried them", () => {
     const state = stateAt(2);
     state.mobs.set("7", { id: "7", x: 100, y: 100, radius: 14 } as Mob);

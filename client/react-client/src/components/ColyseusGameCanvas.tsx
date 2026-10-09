@@ -5,6 +5,7 @@ import { GameRenderer } from "./GameRenderer";
 import { CANVAS_CONFIG } from "../config/gameConfig";
 import { useGameStateContext } from "../contexts/GameStateContext";
 import { InputDebugPanel } from "./InputDebugPanel";
+import { GameState } from "../types/game";
 import { calculateScale } from "../utils/drawingUtils";
 import { SKILL_DEFINITIONS } from "../config/skills";
 import { getAoeReticle } from "../utils/aoeReticle";
@@ -59,6 +60,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     roomId,
     playerId,
     gameState,
+    gameStateRef,
+    onSnapshot,
     updateCount,
     fps,
     updateRate,
@@ -71,6 +74,13 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     respawn,
   } = client;
 
+  // `gameState` is React state and follows the server at HUD pace (server-rs publishes
+  // it a few times a second). Input handling and the frame loop need the newest
+  // snapshot, which server-rs keeps in a ref; the legacy client has only the state.
+  const stateFallbackRef = useRef(gameState);
+  stateFallbackRef.current = gameState;
+  const liveStateRef = gameStateRef ?? stateFallbackRef;
+
   // Local player state
   const localPlayer = gameState?.players.get(playerId);
   const isDead = localPlayer
@@ -78,12 +88,13 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     : false;
 
   // Ground-target indicator while an AoE skill is being cast (null otherwise)
+  const livePlayer = liveStateRef.current?.players.get(playerId);
   const aoeReticle =
-    activeCast && localPlayer && !isDead
+    activeCast && livePlayer && !isDead
       ? getAoeReticle(
           activeCast.skillId,
           sentTargetRef?.current ?? activeCast.aim,
-          localPlayer,
+          livePlayer,
         )
       : null;
 
@@ -145,12 +156,9 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       }
 
       const mousePos = mousePositionRef.current;
-      const aim = resolveAimCoordinates(
-        mousePos.x,
-        mousePos.y,
-        localPlayer,
-        gameState?.mobs,
-      );
+      const live = liveStateRef.current;
+      const me = live?.players.get(playerId);
+      const aim = resolveAimCoordinates(mousePos.x, mousePos.y, me, live?.mobs);
 
       const newCooldowns = { ...cooldowns };
       if (def.cooldown > 0) {
@@ -172,9 +180,9 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           aim,
         });
 
-        if (localPlayer) {
-          localPlayer.castingUntil = now + castDurationMs;
-          localPlayer.castDuration = castDurationMs;
+        if (me) {
+          me.castingUntil = now + castDurationMs;
+          me.castDuration = castDurationMs;
         }
       }
 
@@ -190,8 +198,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       isDead,
       cooldowns,
       activeCast,
-      localPlayer,
-      gameState?.mobs,
+      liveStateRef,
+      playerId,
       resolveAimCoordinates,
       sendPlayerAction,
     ],
@@ -236,33 +244,50 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     setActiveCast(null);
     debugTrackerRef.current = EMPTY_TRACKER;
   }, [currentMapId]);
+  const feedDebug = React.useCallback(
+    (state: GameState | null) => {
+      if (!state) {
+        debugTrackerRef.current = EMPTY_TRACKER;
+        readoutInputRef.current = null;
+        return;
+      }
+      const player = state.players.get(playerId);
+      if (player) {
+        debugTrackerRef.current = advanceTracker(
+          debugTrackerRef.current,
+          player,
+        );
+      }
+      const zones = terrainZonesFor(state.mapId);
+      readoutInputRef.current = {
+        mapId: state.mapId,
+        tick: state.tick,
+        player,
+        tracker: debugTrackerRef.current,
+        terrain: player && zones ? terrainAt(zones, player.x, player.y) : null,
+        referenceRunSpeed: REFERENCE_RUN_SPEED,
+        counts: {
+          players: state.players.size,
+          mobs: state.mobs.size,
+          projectiles: state.projectiles?.size ?? 0,
+        },
+        castingSkill,
+        attackHeld: player?.isAttacking ?? false,
+      };
+    },
+    [playerId, castingSkill],
+  );
+  // Fed by every snapshot where the client says when one lands (server-rs), so the
+  // snapshot rate and speed readings do not depend on how often React renders...
   useEffect(() => {
-    if (!gameState) {
-      debugTrackerRef.current = EMPTY_TRACKER;
-      readoutInputRef.current = null;
-      return;
-    }
-    const player = gameState.players.get(playerId);
-    if (player) {
-      debugTrackerRef.current = advanceTracker(debugTrackerRef.current, player);
-    }
-    const zones = terrainZonesFor(gameState.mapId);
-    readoutInputRef.current = {
-      mapId: gameState.mapId,
-      tick: gameState.tick,
-      player,
-      tracker: debugTrackerRef.current,
-      terrain: player && zones ? terrainAt(zones, player.x, player.y) : null,
-      referenceRunSpeed: REFERENCE_RUN_SPEED,
-      counts: {
-        players: gameState.players.size,
-        mobs: gameState.mobs.size,
-        projectiles: gameState.projectiles?.size ?? 0,
-      },
-      castingSkill,
-      attackHeld: player?.isAttacking ?? false,
-    };
-  }, [gameState, playerId, castingSkill]);
+    if (!onSnapshot) return;
+    feedDebug(liveStateRef.current);
+    return onSnapshot(feedDebug);
+  }, [onSnapshot, feedDebug, liveStateRef]);
+  // ...otherwise by every state change; either way a lost state resets it.
+  useEffect(() => {
+    if (!onSnapshot || !gameState) feedDebug(gameState);
+  }, [gameState, onSnapshot, feedDebug]);
 
   // Debug keys, and keep keyboard focus on the game: a clicked button must not hold
   // focus, or Space/Enter would re-press it instead of attacking.
@@ -290,21 +315,24 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     if (isDead) setActiveCast(null);
   }, [isDead]);
 
-  // Ticking effect for cooldowns and cast bar progress
+  // Ticking effect for cooldowns and cast bar progress; idle when nothing counts down.
+  const countingDown =
+    activeCast !== null ||
+    Object.values(cooldowns).some((end) => end > Date.now());
   useEffect(() => {
+    if (!countingDown) return;
     const timer = setInterval(() => {
       const now = Date.now();
       if (activeCast && now >= activeCast.startTime + activeCast.durationMs) {
         setActiveCast(null);
-        if (localPlayer) {
-          localPlayer.castingUntil = 0;
-        }
+        const me = liveStateRef.current?.players.get(playerId);
+        if (me) me.castingUntil = 0;
       }
       setTickCounter((c) => c + 1);
     }, 50);
 
     return () => clearInterval(timer);
-  }, [activeCast, localPlayer]);
+  }, [activeCast, countingDown, liveStateRef, playerId]);
 
   // Update context when gameState or roomId changes
   useEffect(() => {
@@ -321,18 +349,18 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     isDead,
   });
 
-  // Track latest state for mouse handlers without re-binding listeners
-  const latestStateRef = useRef({ gameState, playerId, isDead });
+  // Track the latest player id for mouse handlers without re-binding listeners
+  const latestStateRef = useRef({ playerId });
   useEffect(() => {
-    latestStateRef.current = { gameState, playerId, isDead };
-  }, [gameState, playerId, isDead]);
+    latestStateRef.current = { playerId };
+  }, [playerId]);
 
   // Mouse move tracking (single listener)
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const canvas = canvasRef.current;
-      const { gameState: currentGameState, playerId: currentPid } =
-        latestStateRef.current;
+      const currentGameState = liveStateRef.current;
+      const { playerId: currentPid } = latestStateRef.current;
 
       if (!canvas || !currentGameState) return;
 
@@ -365,7 +393,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [liveStateRef]);
 
   // Global mouseup listener to release attack if mouse is released outside canvas
   useEffect(() => {
@@ -392,12 +420,10 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       const { x: wx, y: wy } = mousePositionRef.current;
       let targetMobId: number | undefined;
 
-      if (gameState) {
-        const renderTime = renderTimeAt(
-          gameState.renderClock,
-          performance.now(),
-        );
-        gameState.mobs.forEach((mob) => {
+      const live = liveStateRef.current;
+      if (live) {
+        const renderTime = renderTimeAt(live.renderClock, performance.now());
+        live.mobs.forEach((mob) => {
           if (mob.isAlive === false || targetMobId !== undefined) return;
           // Pick against the interpolated position that is drawn on screen.
           const pos = samplePosition(mob, renderTime);
@@ -555,6 +581,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
         <GameRenderer
           canvasRef={canvasRef}
           gameState={gameState}
+          gameStateRef={liveStateRef}
           updateCount={updateCount}
           fps={fps}
           updateRate={updateRate}

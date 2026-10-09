@@ -100,11 +100,17 @@ function createTestSnapshotBuffer(tick: number): Uint8Array {
 }
 
 describe("useServerRsClient", () => {
+  let clock: number;
   beforeEach(() => {
     MockWebSocket.instances = [];
     MockWebSocket.manualOpen = false;
     localStorage.clear();
+    // Snapshots reach React state at most every 150 ms; unless a test drives the
+    // clock itself, every look at it is a second later, so each one is published.
+    clock = 0;
+    jest.spyOn(performance, "now").mockImplementation(() => (clock += 1000));
   });
+  afterEach(() => jest.restoreAllMocks());
 
   it("initializes in disconnected state", () => {
     const { result } = renderHook(() =>
@@ -686,6 +692,48 @@ describe("useServerRsClient", () => {
     expect(
       result.current.gameState!.projectiles!.get("900")!.samples,
     ).toHaveLength(1);
+  });
+
+  it("publishes snapshots to React a few times a second, keeping the newest in a ref", async () => {
+    const { result } = await connected("dev-token:alice");
+    const ws = MockWebSocket.instances[0];
+    const me = fnv1a32("alice");
+    const seen: number[] = [];
+    const unsubscribe = result.current.onSnapshot((s) => seen.push(s.tick));
+    let t = 10_000;
+    jest.spyOn(performance, "now").mockImplementation(() => t);
+    const at = (ms: number, tick: number, flags = STATE_FLAG_ALIVE) => {
+      t = ms;
+      act(() => {
+        ws.onmessage?.(
+          snap(tick, [{ id: me, type: EntityType.Player, flags }]),
+        );
+      });
+    };
+
+    at(10_000, 1);
+    expect(result.current.gameState!.tick).toBe(1);
+    // 20 snapshots a second do not each re-render the app...
+    at(10_050, 2);
+    at(10_100, 3);
+    expect(result.current.gameState!.tick).toBe(1);
+    expect(result.current.updateCount).toBe(1);
+    // ...but the canvas reads the newest one from the ref, and listeners get all.
+    expect(result.current.gameStateRef.current!.tick).toBe(3);
+    expect(seen).toEqual([1, 2, 3]);
+    at(10_150, 4);
+    expect(result.current.gameState!.tick).toBe(4);
+    expect(result.current.updateCount).toBe(4);
+
+    // Dying (and coming back) must show at once, not up to 150 ms later.
+    at(10_200, 5, 0);
+    expect(result.current.gameState!.tick).toBe(5);
+    at(10_250, 6, STATE_FLAG_ALIVE);
+    expect(result.current.gameState!.tick).toBe(6);
+
+    unsubscribe();
+    at(10_300, 7);
+    expect(seen).toEqual([1, 2, 3, 4, 5, 6]);
   });
 
   it("queues combat events from every snapshot until they are drained", async () => {

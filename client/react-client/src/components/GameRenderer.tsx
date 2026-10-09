@@ -46,6 +46,8 @@ import {
 interface GameRendererProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   gameState: GameState | null;
+  /** When given, the frame loop draws its value instead of `gameState` (which may lag). */
+  gameStateRef?: React.RefObject<GameState | null>;
   updateCount: number;
   fps: number;
   updateRate: number;
@@ -108,13 +110,16 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
 
     const animate = () => {
       const {
-        gameState,
+        gameStateRef,
         fps,
         playerId,
         drainEvents,
         aoeReticle,
         debug = DEFAULT_DEBUG_TOGGLES,
       } = latestRef.current;
+      const gameState = gameStateRef
+        ? gameStateRef.current
+        : latestRef.current.gameState;
       const renderStartTime = performance.now();
       timings = debug.overlay ? perfTimings : null;
       if (timings && lastFrameStart > 0) {

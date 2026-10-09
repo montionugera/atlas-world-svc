@@ -53,7 +53,12 @@ export interface UseServerRsClientReturn {
   isConnected: boolean;
   roomId: string | null;
   playerId: string;
+  /** Published to React a few times a second (see UI_PUBLISH_INTERVAL_MS). */
   gameState: GameState | null;
+  /** The newest snapshot, every snapshot: what the canvas draws. Never re-renders. */
+  gameStateRef: React.RefObject<GameState | null>;
+  /** Call `listener` on every snapshot; returns the unsubscribe function. */
+  onSnapshot: (listener: (state: GameState) => void) => () => void;
   updateCount: number;
   isSimulating: boolean;
   fps: number;
@@ -107,6 +112,12 @@ export const SERVER_RS_PLAYER_RADIUS = 12;
 export const SERVER_RS_MOB_RADIUS = 14;
 /** Drawn projectile radius (the wire carries no radius). */
 export const SERVER_RS_PROJECTILE_RADIUS = 4;
+
+/**
+ * Snapshots arrive 20 times a second; React state (HUD, entity cards, stats) follows
+ * at this pace. The canvas does not wait for it: it reads `gameStateRef`.
+ */
+const UI_PUBLISH_INTERVAL_MS = 150;
 
 /** Undrained combat events kept (a hidden tab must not replay thousands on return). */
 const MAX_QUEUED_EVENTS = 64;
@@ -178,6 +189,17 @@ export const useServerRsClient = (
     fps: 0,
   });
 
+  const gameStateRef = useRef<GameState | null>(null);
+  const snapshotListenersRef = useRef(new Set<(state: GameState) => void>());
+  const onSnapshot = useCallback((listener: (state: GameState) => void) => {
+    snapshotListenersRef.current.add(listener);
+    return () => {
+      snapshotListenersRef.current.delete(listener);
+    };
+  }, []);
+  // What React last saw: when, and the things it must not see late.
+  const publishedRef = useRef({ at: -Infinity, mapId: "", dead: false });
+  const updateCountRef = useRef(0);
   const eventQueueRef = useRef<GameEventInfo[]>([]);
   const drainEvents = useCallback(() => {
     const queued = eventQueueRef.current;
@@ -235,7 +257,10 @@ export const useServerRsClient = (
 
     setIsConnected(false);
     setRoomId(null);
+    gameStateRef.current = null;
+    publishedRef.current.at = -Infinity;
     setGameState(null);
+    updateCountRef.current = 0;
     setUpdateCount(0);
     localStorage.removeItem("atlas-world-server-rs-connected");
   }, []);
@@ -361,7 +386,6 @@ export const useServerRsClient = (
                 serverTimeDeltaMs: serverDelta,
                 fps: frameCountRef.current || 60,
               };
-              setLatencyMetrics(nextMetrics);
               (window as any).__latencyMetrics = nextMetrics;
 
               const current = stateRef.current;
@@ -504,7 +528,30 @@ export const useServerRsClient = (
                 mobs: new Map(current.mobs),
                 events: snapshot.events,
               };
-              setGameState(nextState);
+              gameStateRef.current = nextState;
+              snapshotListenersRef.current.forEach((listen) =>
+                listen(nextState),
+              );
+              updateCountRef.current++;
+              // React follows at a slower pace, except for what must show at once:
+              // the first state of a room and the local player dying or reviving.
+              const me = nextState.players.get(localPlayerId);
+              const dead = !!me && (!me.isAlive || (me.health ?? 1) <= 0);
+              const published = publishedRef.current;
+              const publish =
+                arrivalTime - published.at >= UI_PUBLISH_INTERVAL_MS ||
+                published.mapId !== nextState.mapId ||
+                published.dead !== dead;
+              if (publish) {
+                publishedRef.current = {
+                  at: arrivalTime,
+                  mapId: nextState.mapId,
+                  dead,
+                };
+                setGameState(nextState);
+                setLatencyMetrics(nextMetrics);
+                setUpdateCount(updateCountRef.current);
+              }
               // Expose for quick debug / e2e (parity with useColyseusClient)
               (window as any).__gameState = nextState;
               (window as any).__playerId = localPlayerId;
@@ -525,8 +572,6 @@ export const useServerRsClient = (
                   ...snapshot.events,
                 ].slice(-500);
               }
-              setUpdateCount((prev) => prev + 1);
-
               // Calculate update rate over a sliding 10s window
               const now = Date.now();
               updateTimesRef.current.push(now);
@@ -538,7 +583,7 @@ export const useServerRsClient = (
                 const span =
                   updateTimesRef.current[updateTimesRef.current.length - 1] -
                   updateTimesRef.current[0];
-                if (span > 0) {
+                if (span > 0 && publish) {
                   setUpdateRate(
                     Math.round(
                       ((updateTimesRef.current.length - 1) * 1000) / span,
@@ -578,6 +623,8 @@ export const useServerRsClient = (
             }
             setIsConnected(false);
             setRoomId(null);
+            gameStateRef.current = null;
+            publishedRef.current.at = -Infinity;
             setGameState(null);
             isConnectingRef.current = false;
           };
@@ -682,7 +729,8 @@ export const useServerRsClient = (
       // A newer joinRoom took over while we awaited: it owns the state now.
       if (currentMapRef.current !== mapId) return;
 
-      setGameState((prev) =>
+      const prev = gameStateRef.current;
+      const joined: GameState =
         prev && !isSwitchingMap
           ? {
               ...prev,
@@ -701,8 +749,9 @@ export const useServerRsClient = (
               width,
               height,
               viewportSize,
-            },
-      );
+            };
+      gameStateRef.current = joined;
+      setGameState(joined);
       sendInput(
         moveRef.current.vx,
         moveRef.current.vy,
@@ -832,6 +881,8 @@ export const useServerRsClient = (
     roomId,
     playerId,
     gameState,
+    gameStateRef,
+    onSnapshot,
     updateCount,
     isSimulating,
     fps,

@@ -38,6 +38,10 @@ export interface UseColyseusClientReturn {
   updatePlayerInput: (vx: number, vy: number) => void;
   sendPlayerAction: (action: string, pressed: boolean, options?: any) => void;
   sentTargetRef?: React.MutableRefObject<{ x: number; y: number }>;
+  /** server-rs: the newest snapshot (`gameState` is published to React less often). */
+  gameStateRef?: React.RefObject<GameState | null>;
+  /** server-rs: call `listener` on every snapshot; returns the unsubscribe function. */
+  onSnapshot?: (listener: (state: GameState) => void) => () => void;
   /** server-rs: combat events received since the last call. */
   drainEvents?: () => GameEventInfo[];
   switchWeapon: (weaponId: string) => void;
