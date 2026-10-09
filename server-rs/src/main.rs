@@ -76,6 +76,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         mob_count,
         mob_respawn_sec: env_f32("MOB_RESPAWN_MS", 5000.0) / 1000.0,
         player_respawn_sec: env_f32("PLAYER_RESPAWN_MS", 5000.0) / 1000.0,
+        map_id: std::env::var("MAP_ID").ok(),
     };
     info!("AtlasSimulation live config: {:?}", live_cfg);
     let mut sim = AtlasSimulation::live(live_cfg);

@@ -91,9 +91,9 @@ Live behaviour:
 - **Mob attacks** are owned by `mob_ai_system` (one cooldown decrement per tick). Melee reach
   is edge-to-edge (bestiary range + 12px player + 14px mob radius).
 - **Players**: human avatars only melee while `ClientInput.attack` is held; bots auto-attack.
+  In live mode, bots scan within 300px for the nearest alive mob, approaching and attacking it. If no mob is in range, they wander while avoiding borders.
 - **Collision**: players, bots and mobs are circles (player 12px, mob 14px — matching the
-  client renderer) pushed apart to `r1 + r2` every tick and clamped to the arena. Map statics
-  are not modelled yet.
+  client renderer) pushed apart to `r1 + r2` every tick and clamped to the arena. Static obstacles (e.g. town buildings, fences) are loaded from map definitions and block movement via circle-AABB push-out and Rapier2D static colliders.
 - **Death**: dead mobs stay visible ~0.5s as a corpse (sent with `state_flags = 0`), then
   despawn (id sent in the snapshot's `removed_ids`) and respawn at their anchor
   `MOB_RESPAWN_MS` after death; dead players cannot move or cast and respawn at their spawn
@@ -119,10 +119,11 @@ Wire snapshot (`schemas/game_protocol.fbs`, fields only ever **added**; regenera
 
 | Env var | Default | Meaning |
 |---|---|---|
+| `MAP_ID` | `default` | Map identifier selecting arena dimensions, spawn areas, and static obstacles (`default`, `map-for-test-deflect`, `map-for-test-projectile`) |
 | `SIM_SEED` | `0x1337c0de` | Live world seed |
 | `PLAYER_COUNT` | `10` | Number of bots |
 | `MOB_COUNT` | `50` | Number of bestiary mobs |
-| `ARENA_WIDTH` / `ARENA_HEIGHT` | `1000` | Arena size (px) |
+| `ARENA_WIDTH` / `ARENA_HEIGHT` | `1000` | Arena size (px, overridden by map if configured) |
 | `MOB_RESPAWN_MS` | `5000` | Mob respawn delay (legacy `respawnDelayMs` default) |
 | `PLAYER_RESPAWN_MS` | `5000` | Player auto-respawn delay |
 

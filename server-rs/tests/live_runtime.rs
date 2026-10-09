@@ -31,6 +31,7 @@ fn live(bots: usize, mobs: usize) -> AtlasSimulation {
         mob_count: mobs,
         mob_respawn_sec: 1.0,
         player_respawn_sec: 1.0,
+        map_id: None,
     })
 }
 
@@ -698,4 +699,141 @@ fn row10_mob_target_id_is_its_chase_target() {
         }
     }
     assert_eq!(target, fnv1a_32("p1"), "mob target_id not its chase target");
+}
+
+#[test]
+fn row12_bot_seeks_and_approaches_nearest_mob() {
+    let mut sim = live(1, 0);
+    let (bot_ent, mut bot_pos) = {
+        let mut q = sim.world.query_filtered::<(Entity, &Position), (
+            With<server_rs::ecs::components::BotAgent>,
+            With<server_rs::ecs::components::PlayerTag>,
+        )>();
+        let (e, p) = q.iter(&sim.world).next().expect("bot entity");
+        (e, *p)
+    };
+    bot_pos.x = 500.0;
+    bot_pos.y = 500.0;
+    *sim.world.get_mut::<Position>(bot_ent).unwrap() = bot_pos;
+    *sim.world.get_mut::<Velocity>(bot_ent).unwrap() = Velocity::zero();
+
+    let catalog = sim.world.resource::<BestiaryCatalog>().clone();
+    let entry = catalog.get_mob("mob-bramble-stalker").unwrap();
+    let derived = derive_mob_stats(entry, server_rs::content::MobTier::Route);
+    let mob_pos = Position::new(580.0, 500.0);
+    sim.world.spawn((
+        EntityId("m-target".to_string()),
+        mob_pos,
+        Velocity::zero(),
+        Health::new(derived.hp),
+        MobTag,
+        server_rs::ecs::components::BodyRadius(14.0),
+        CombatStats {
+            attack_power: derived.p_atk,
+            defense: derived.p_def,
+            attack_range: 20.0 + 12.0 + 14.0,
+            attack_cooldown: 1.0,
+            cooldown_timer: 0.0,
+            is_player: false,
+        },
+    ));
+
+    let initial_dist = 80.0;
+    ticks(&mut sim, 10);
+
+    let new_bot_pos = *sim.world.get::<Position>(bot_ent).unwrap();
+    let new_dist = (mob_pos.x - new_bot_pos.x).abs();
+
+    assert!(
+        new_bot_pos.x > 500.0,
+        "bot should steer towards mob at x=580, got x={}",
+        new_bot_pos.x
+    );
+    assert!(
+        new_dist < initial_dist - 10.0,
+        "bot should approach mob: initial dist={}, new dist={}",
+        initial_dist,
+        new_dist
+    );
+}
+
+#[test]
+fn row13_map_identity_loads_dims_and_spawn_areas() {
+    let mut deflect_sim = AtlasSimulation::live(LiveConfig {
+        seed: 42,
+        arena_width: 1000.0,
+        arena_height: 1000.0,
+        bot_count: 0,
+        mob_count: 1,
+        mob_respawn_sec: 1.0,
+        player_respawn_sec: 1.0,
+        map_id: Some("map-for-test-deflect".to_string()),
+    });
+    assert_eq!(deflect_sim.arena_width, 100.0);
+    assert_eq!(deflect_sim.arena_height, 100.0);
+    let mut q = deflect_sim
+        .world
+        .query_filtered::<&Position, With<MobTag>>();
+    let mob_positions: Vec<_> = q.iter(&deflect_sim.world).copied().collect();
+    assert_eq!(mob_positions.len(), 1);
+    assert!(
+        mob_positions[0].x >= 30.0 && mob_positions[0].x <= 70.0,
+        "mob x={} out of spawn rect",
+        mob_positions[0].x
+    );
+    assert!(
+        mob_positions[0].y >= 30.0 && mob_positions[0].y <= 70.0,
+        "mob y={} out of spawn rect",
+        mob_positions[0].y
+    );
+
+    let mut default_sim = AtlasSimulation::live(LiveConfig {
+        seed: 42,
+        arena_width: 1000.0,
+        arena_height: 1000.0,
+        bot_count: 0,
+        mob_count: 17,
+        mob_respawn_sec: 1.0,
+        player_respawn_sec: 1.0,
+        map_id: Some("default".to_string()),
+    });
+    assert_eq!(default_sim.arena_width, 1000.0);
+    assert_eq!(default_sim.arena_height, 1000.0);
+    let mut q_default = default_sim
+        .world
+        .query_filtered::<&Position, With<MobTag>>();
+    let default_mobs: Vec<_> = q_default.iter(&default_sim.world).copied().collect();
+    assert_eq!(default_mobs.len(), 17);
+}
+
+#[test]
+fn row13_static_obstacles_block_movement() {
+    let mut sim = live(0, 0);
+    use server_rs::content::map::{StaticObstacle, StaticObstacles};
+    sim.world.insert_resource(StaticObstacles {
+        obstacles: vec![StaticObstacle {
+            id: "test-wall".to_string(),
+            min_x: 400.0,
+            min_y: 400.0,
+            max_x: 500.0,
+            max_y: 500.0,
+        }],
+    });
+
+    let p_ent = sim.spawn_player_avatar("p_block", 380.0, 450.0);
+    sim.world
+        .entity_mut(p_ent)
+        .insert(server_rs::ecs::components::BodyRadius(12.0));
+
+    for _ in 0..10 {
+        let input_pkt = input("p_block", 1.0, 0.0, false);
+        sim.live_tick(&[input_pkt], &[]);
+    }
+
+    let p_pos = *sim.world.get::<Position>(p_ent).unwrap();
+    assert!(
+        p_pos.x <= 400.0 - 12.0 + 0.1,
+        "player penetrated static obstacle: x={}, expected <= 388.1",
+        p_pos.x
+    );
 }

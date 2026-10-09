@@ -142,6 +142,19 @@ impl PhysicsWorld {
             y.clamp(0.0, self.arena_height),
         )
     }
+
+    pub fn add_static_box(&mut self, center_x: f32, center_y: f32, half_w: f32, half_h: f32) {
+        let body = self.bodies.insert(
+            RigidBodyBuilder::fixed()
+                .translation(vector![center_x, center_y])
+                .build(),
+        );
+        self.colliders.insert_with_parent(
+            ColliderBuilder::cuboid(half_w, half_h).build(),
+            body,
+            &mut self.bodies,
+        );
+    }
 }
 
 #[cfg(test)]

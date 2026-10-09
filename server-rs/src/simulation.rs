@@ -17,11 +17,11 @@ use crate::protocol::{EntitySnapshotData, EntityType, GameEventData, GameEventKi
 use crate::spatial::grid::SpatialGrid;
 use crate::storage::{MatchEvent, MatchEventQueue, PrimaryStats};
 use crate::systems::{
-    body_collision_system, bot_steering_system, combat_system, cooldown_tick_system, mob_ai_system,
-    mob_bundle, mob_lifecycle_system, physics_step_system, player_input_system,
-    player_respawn_system, projectile_collision_system, projectile_kinematics_system,
-    separation_system, skill_execution_system, spatial_grid_rebuild_system,
-    status_effect_tick_system, ArenaBounds,
+    body_collision_system, bot_steering_system, combat_system, cooldown_tick_system,
+    live_bot_ai_system, mob_ai_system, mob_bundle, mob_lifecycle_system, physics_step_system,
+    player_input_system, player_respawn_system, projectile_collision_system,
+    projectile_kinematics_system, separation_system, skill_execution_system,
+    spatial_grid_rebuild_system, status_effect_tick_system, ArenaBounds,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -87,6 +87,7 @@ pub struct LiveConfig {
     pub mob_count: usize,
     pub mob_respawn_sec: f32,
     pub player_respawn_sec: f32,
+    pub map_id: Option<String>,
 }
 
 impl Default for LiveConfig {
@@ -99,6 +100,7 @@ impl Default for LiveConfig {
             mob_count: 50,
             mob_respawn_sec: 5.0,
             player_respawn_sec: 5.0,
+            map_id: None,
         }
     }
 }
@@ -162,6 +164,7 @@ impl AtlasSimulation {
                 player_input_system,
                 skill_execution_system,
                 bot_steering_system,
+                live_bot_ai_system,
                 mob_ai_system,
                 spatial_grid_rebuild_system,
                 separation_system,
@@ -207,20 +210,50 @@ impl AtlasSimulation {
     /// carry the full live bundles (collision bodies, spawn points, MobAi, ThreatTable,
     /// spawn anchors). The golden-trace harness uses `with_arena` instead.
     pub fn live(cfg: LiveConfig) -> Self {
-        let mut sim = Self::new(cfg.seed, cfg.arena_width, cfg.arena_height);
+        let map_cfg =
+            crate::content::map::MapConfig::load(cfg.map_id.as_deref().unwrap_or("default"));
+        let arena_width = if cfg.map_id.is_some() {
+            map_cfg.width
+        } else {
+            cfg.arena_width
+        };
+        let arena_height = if cfg.map_id.is_some() {
+            map_cfg.height
+        } else {
+            cfg.arena_height
+        };
+
+        let mut sim = Self::new(cfg.seed, arena_width, arena_height);
         sim.world.insert_resource(LiveRules {
             player_respawn_sec: cfg.player_respawn_sec,
             mob_corpse_sec: MOB_CORPSE_SEC,
         });
         sim.world.insert_resource(DespawnedIds::default());
         sim.world.insert_resource(HitLog::default());
+        sim.world
+            .insert_resource(crate::content::map::StaticObstacles {
+                obstacles: map_cfg.static_obstacles.clone(),
+            });
+
+        // Add static colliders to Rapier PhysicsWorld
+        if let Some(mut pw) = sim.world.get_resource_mut::<PhysicsWorld>() {
+            for obs in &map_cfg.static_obstacles {
+                let half_w = (obs.max_x - obs.min_x) / 2.0;
+                let half_h = (obs.max_y - obs.min_y) / 2.0;
+                let center_x = (obs.min_x + obs.max_x) / 2.0;
+                let center_y = (obs.min_y + obs.max_y) / 2.0;
+                pw.add_static_box(center_x, center_y, half_w, half_h);
+            }
+        }
 
         let mut prng = Mulberry32::new(cfg.seed);
         for i in 0..cfg.bot_count {
             let id = format!("bot-{}", i);
             let pos = Position::new(
-                prng.range(100.0, cfg.arena_width - 100.0),
-                prng.range(100.0, cfg.arena_height - 100.0),
+                prng.range(100.0, arena_width - 100.0)
+                    .clamp(10.0, arena_width - 10.0),
+                prng.range(100.0, arena_height - 100.0)
+                    .clamp(10.0, arena_height - 10.0),
             );
             let angle = prng.range(0.0, std::f32::consts::PI * 2.0);
             sim.world.spawn((
@@ -242,23 +275,56 @@ impl AtlasSimulation {
             ));
         }
 
-        // Mob types drawn deterministically from the bestiary (sorted ids; the catalog is
-        // a HashMap). Assumption until map spawn areas land (plan row 13): uniform random
-        // positions, all at the Route tier.
         let catalog = sim.world.resource::<BestiaryCatalog>().clone();
+        let mut spawned_count = 0;
+
+        if !map_cfg.spawn_areas.is_empty() {
+            for area in &map_cfg.spawn_areas {
+                for _ in 0..area.count {
+                    if spawned_count >= cfg.mob_count {
+                        break;
+                    }
+                    let min_x = area.x.clamp(5.0, arena_width - 5.0);
+                    let max_x = (area.x + area.width).clamp(min_x, arena_width - 5.0);
+                    let min_y = area.y.clamp(5.0, arena_height - 5.0);
+                    let max_y = (area.y + area.height).clamp(min_y, arena_height - 5.0);
+                    let pos = Position::new(prng.range(min_x, max_x), prng.range(min_y, max_y));
+                    let mob_id = if catalog.get_mob(&area.mob_type).is_some() {
+                        &area.mob_type
+                    } else {
+                        "mob-bramble-stalker"
+                    };
+                    let anchor =
+                        MobSpawnAnchor::new(pos, mob_id, MobTier::Route, cfg.mob_respawn_sec);
+                    sim.world.spawn(mob_bundle(
+                        &catalog,
+                        &anchor,
+                        format!("{}-{}", mob_id, spawned_count),
+                    ));
+                    spawned_count += 1;
+                }
+            }
+        }
+
         let mut mob_ids: Vec<String> = catalog.entries().map(|e| e.id.clone()).collect();
         mob_ids.sort();
         if !mob_ids.is_empty() {
-            for i in 0..cfg.mob_count {
+            while spawned_count < cfg.mob_count {
                 let pos = Position::new(
-                    prng.range(50.0, cfg.arena_width - 50.0),
-                    prng.range(50.0, cfg.arena_height - 50.0),
+                    prng.range(50.0, arena_width - 50.0)
+                        .clamp(5.0, arena_width - 5.0),
+                    prng.range(50.0, arena_height - 50.0)
+                        .clamp(5.0, arena_height - 5.0),
                 );
                 let pick = (prng.range(0.0, mob_ids.len() as f32) as usize).min(mob_ids.len() - 1);
                 let mob_id = &mob_ids[pick];
                 let anchor = MobSpawnAnchor::new(pos, mob_id, MobTier::Route, cfg.mob_respawn_sec);
-                sim.world
-                    .spawn(mob_bundle(&catalog, &anchor, format!("{}-{}", mob_id, i)));
+                sim.world.spawn(mob_bundle(
+                    &catalog,
+                    &anchor,
+                    format!("{}-{}", mob_id, spawned_count),
+                ));
+                spawned_count += 1;
             }
         }
 

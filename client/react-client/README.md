@@ -157,6 +157,7 @@ First run on a machine: `npx playwright install chromium-headless-shell`. `HEADE
     `owner_id`), drawn by `projectileRenderer`.
   - `events` (hit / kill) → `gameState.events` (latest snapshot) and a rolling
     `window.__gameEvents` buffer (last 500).
+- `MAP_ID` env on `server-rs` selects map bounds, static obstacle colliders, and bestiary spawn areas.
 - `window.__gameState` / `window.__playerId` are exposed for debugging and e2e.
 
 ## Troubleshooting

@@ -11,7 +11,7 @@ pub mod spatial;
 pub mod steering;
 
 pub use combat::{combat_system, cooldown_tick_system, status_effect_tick_system};
-pub use live::{body_collision_system, player_respawn_system};
+pub use live::{body_collision_system, live_bot_ai_system, player_respawn_system};
 pub use mob_ai::mob_ai_system;
 pub use mob_lifecycle::{mob_bundle, mob_lifecycle_system};
 pub use physics::physics_step_system;

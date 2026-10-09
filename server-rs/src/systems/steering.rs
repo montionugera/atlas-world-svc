@@ -34,8 +34,13 @@ pub fn bot_steering_system(
     clock: Res<SimClock>,
     mut prng: ResMut<Mulberry32>,
     bounds: Res<ArenaBounds>,
+    rules: Option<Res<crate::ecs::components::LiveRules>>,
     mut query: Query<(&EntityId, &Position, &mut BotAgent, &mut Velocity, &Health)>,
 ) {
+    if rules.is_some() {
+        return;
+    }
+
     let dt = clock.delta_seconds();
     let margin = bounds.margin;
     let width = bounds.width;
