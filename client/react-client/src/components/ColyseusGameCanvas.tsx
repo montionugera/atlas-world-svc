@@ -21,9 +21,11 @@ import {
   samplePosition,
 } from "../utils/snapshotInterpolation";
 import {
+  HELD_INPUT_MS,
   createPrediction,
   lockMovement,
   noteDash,
+  noteSent,
   observeServer,
   restartPrediction,
   setHeldInput,
@@ -96,6 +98,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     updatePlayerInput,
     sendPlayerAction,
     inputSeqRef,
+    inputSentRef,
     sentTargetRef,
     drainEvents,
     switchWeapon,
@@ -114,8 +117,11 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
   // snapshot here, advanced by the frame loop, which draws its position.
   const [prediction] = React.useState(createPrediction);
   const predicts = !!gameStateRef && !!onSnapshot;
+  const heldRef = useRef({ vx: 0, vy: 0 });
   const movePlayer = React.useCallback(
     (vx: number, vy: number) => {
+      heldRef.current.vx = vx;
+      heldRef.current.vy = vy;
       updatePlayerInput(vx, vy);
       // The input just sent carries this change to the server.
       setHeldInput(
@@ -150,8 +156,26 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       );
     });
   }, [predicts, onSnapshot, playerId, prediction, inputSeqRef]);
+  // The prediction places a stop by when recent inputs reached their tick: it is told
+  // when each is sent, and held keys are sent again so that some are always recent.
+  // To the server a repeat is the input it already holds (the full state every time).
+  useEffect(() => {
+    if (!predicts || !inputSentRef) return;
+    inputSentRef.current = (seq) =>
+      noteSent(prediction, performance.now(), seq);
+    const repeat = window.setInterval(() => {
+      const { vx, vy } = heldRef.current;
+      if (vx !== 0 || vy !== 0) updatePlayerInput(vx, vy);
+    }, HELD_INPUT_MS);
+    return () => {
+      inputSentRef.current = null;
+      window.clearInterval(repeat);
+    };
+  }, [predicts, inputSentRef, prediction, updatePlayerInput]);
   // A new connection has no key held on the server (the hook drops its own too).
   useEffect(() => {
+    heldRef.current.vx = 0;
+    heldRef.current.vy = 0;
     restartPrediction(prediction, performance.now());
   }, [clientConnected, playerId, prediction]);
   /** `p` at the position the local player is drawn at this frame. */

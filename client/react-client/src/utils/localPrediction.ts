@@ -12,9 +12,16 @@
  * inputs it has not acknowledged replayed on top. Those are placed on the ticks still to
  * come by time: an input sent at client time `c` makes the first tick whose simulation
  * time `S` satisfies `c <= S + deadline`, and `deadline` is itself read off the echoes
- * (which tick each earlier input made). The target is the server's path played one tick
+ * (which tick each earlier input made; held keys are sent again every HELD_INPUT_MS so
+ * that there are always recent ones). The target is the server's path played one tick
  * behind that, which is as early as it can be known: it follows input 0-50 ms late (tick
  * quantisation).
+ *
+ * The deadline is an estimate, a margin later than the fastest recent input showed. An
+ * input slower than that makes the tick after the one assumed: a stop then comes to
+ * rest a tick short and walks on when the snapshot shows it. Only an input faster than
+ * every recent one by more than the margin makes the tick before, and that stop
+ * overshoots and walks back.
  *
  * A server that sends no echo (or one that is not ours: a second socket on the session)
  * gets no prediction: `ready` stays false and the interpolated position is drawn.
@@ -55,8 +62,18 @@ const AMBIGUOUS_MS = 75;
 const MAX_REPLAY_TICKS = 6;
 /** Longest the server-driven path is extrapolated with the server's own velocity. */
 const MAX_EXTRAPOLATE_MS = 100;
-/** Acknowledged inputs kept for the tick deadline. */
-const MARK_WINDOW = 8;
+/**
+ * While a movement key is held the same input is sent again this often, so the tick
+ * deadline is measured all through a walk: 7/10 of a server tick, which steps through
+ * every 5 ms of a tick in ten sends.
+ */
+export const HELD_INPUT_MS = 35;
+/** Acknowledged inputs kept for the tick deadline: under a second of a walk. */
+const MARK_WINDOW = 24;
+/** Inputs whose send time is kept until they are acknowledged. */
+const SENT_WINDOW = 64;
+/** The deadline is this much after the fastest input seen: the next may be faster. */
+const DEADLINE_MARGIN_MS = 14;
 /** An input that missed a tick was sent after its deadline, by at least this (ms). */
 const MISSED_BY_MS = 0.001;
 const HISTORY = 32;
@@ -75,6 +92,11 @@ export interface InputChange {
   my: number;
   /** `client_tick` of the input that carried it; 0 when no input did (a cast's lock). */
   seq: number;
+  /**
+   * Simulation time of the first tick `t` was in time for, by the deadline as it was
+   * then: a deadline learnt later must not move a stop already begun back a tick.
+   */
+  due: number;
 }
 
 export interface PredictionState {
@@ -98,6 +120,9 @@ export interface PredictionState {
   deadline: number;
   /** `sent - simTime` of recent inputs and the first tick that had them. */
   marks: number[];
+  /** Number and send time of recent inputs, at `number % SENT_WINDOW`. */
+  sentSeq: number[];
+  sentAt: number[];
   /** `base` the marks are relative to: they follow it when it moves by whole ticks. */
   markBase: number;
   /** Changes of the input in effect, oldest first. */
@@ -142,6 +167,8 @@ export function createPrediction(): PredictionState {
     ack: 0,
     deadline: 0,
     marks: [],
+    sentSeq: new Array<number>(SENT_WINDOW).fill(0),
+    sentAt: new Array<number>(SENT_WINDOW).fill(0),
     markBase: 0,
     history: [],
     heldX: 0,
@@ -192,7 +219,13 @@ export function restartPrediction(s: PredictionState, now: number): void {
   resetPrediction(s, now);
 }
 
-const NO_INPUT: InputChange = { t: -Infinity, mx: 0, my: 0, seq: 0 };
+const NO_INPUT: InputChange = {
+  t: -Infinity,
+  mx: 0,
+  my: 0,
+  seq: 0,
+  due: -Infinity,
+};
 
 /**
  * Input the tick at simulation time `simTime` runs on. An acknowledged input is in
@@ -205,20 +238,18 @@ function inputForTick(
   simTime: number,
   ahead: boolean,
 ): InputChange {
-  const due = simTime + s.deadline;
   for (let i = s.history.length - 1; i >= 0; i--) {
     const e = s.history[i];
-    if (e.seq !== 0 ? e.seq <= s.ack || (ahead && e.t <= due) : e.t <= due) {
-      return e;
-    }
+    if (e.seq !== 0 && e.seq <= s.ack) return e;
+    if ((e.seq === 0 || ahead) && e.due <= simTime) return e;
   }
   return NO_INPUT;
 }
 
-/** Whether a change placed by time falls too near client time `t` to tell its tick. */
-function unsureNear(s: PredictionState, t: number): boolean {
+/** Whether a change placed by time falls too near the tick at `simTime` to tell its tick. */
+function unsureNear(s: PredictionState, simTime: number): boolean {
   for (let i = s.history.length - 1; i >= 0; i--) {
-    const d = s.history[i].t - t;
+    const d = s.history[i].due - simTime;
     if (d < -AMBIGUOUS_MS) return false;
     if (d < AMBIGUOUS_MS && s.history[i].seq === 0) return true;
   }
@@ -271,8 +302,18 @@ function pushEffective(s: PredictionState, t: number, seq: number): void {
   const my = locked ? 0 : s.heldY;
   const last = s.history[s.history.length - 1] ?? NO_INPUT;
   if (last.mx === mx && last.my === my) return;
-  s.history.push({ t, mx, my, seq });
+  s.history.push({ t, mx, my, seq, due: t - s.deadline });
   if (s.history.length > HISTORY) s.history.shift();
+}
+
+/**
+ * Input number `seq` was sent at client time `now`. Every input counts, a repeat or an
+ * attack as much as a change of keys: each one acknowledged places the tick deadline.
+ */
+export function noteSent(s: PredictionState, now: number, seq: number): void {
+  if (seq === 0) return;
+  s.sentSeq[seq % SENT_WINDOW] = seq;
+  s.sentAt[seq % SENT_WINDOW] = now;
 }
 
 /**
@@ -293,6 +334,7 @@ export function setHeldInput(
   const inv = held ? 1 / Math.max(Math.sqrt(lenSq), 1) : 0;
   s.heldX = held ? vx * inv : 0;
   s.heldY = held ? vy * inv : 0;
+  noteSent(s, now, seq);
   pushEffective(s, now, seq);
 }
 
@@ -359,6 +401,7 @@ export function observeServer(
   } else if (skipped !== 0) {
     s.markBase += skipped;
     for (let i = 0; i < s.marks.length; i++) s.marks[i] += skipped;
+    for (let i = 0; i < s.history.length; i++) s.history[i].due -= skipped;
   }
   // 0 is no echo (an older server); beyond what was sent it counts another socket.
   const ack = snap.ack <= snap.sent ? snap.ack : 0;
@@ -367,36 +410,44 @@ export function observeServer(
     // after the previous tick's (when that snapshot was seen, with an echo of ours).
     const first =
       s.ack !== 0 && snap.simTime - s.serverAt === SNAPSHOT_INTERVAL_MS;
+    const oldest = Math.max(s.ack, ack - SENT_WINDOW) + 1;
+    for (let seq = oldest; first && seq <= ack; seq++) {
+      if (s.sentSeq[seq % SENT_WINDOW] !== seq) continue;
+      s.marks.push(s.sentAt[seq % SENT_WINDOW] - snap.simTime);
+      if (s.marks.length > MARK_WINDOW) s.marks.shift();
+    }
     let newest = -1;
     for (let i = 0; i < s.history.length; i++) {
       const e = s.history[i];
-      if (e.seq === 0 || e.seq > ack) continue;
-      newest = i;
-      if (first && e.seq > s.ack) {
-        s.marks.push(e.t - snap.simTime);
-        if (s.marks.length > MARK_WINDOW) s.marks.shift();
-      }
+      if (e.seq !== 0 && e.seq <= ack) newest = i;
     }
     // Everything before the acknowledged input in effect is history.
     if (newest > 0) s.history.splice(0, newest);
   }
+  const unplaced = s.ack === 0;
   s.ack = ack;
-  // The deadline is no earlier than any input that made its tick, less than a tick
-  // after any that did, and before the snapshot of that tick arrives. The latest of
-  // those is taken: assuming an input makes the earlier tick never overshoots a stop.
-  // Only the mark that puts it latest and those after it count: an older one may be
-  // from a slower link, and one a whole tick below was a delayed input.
-  let from = 0;
-  for (let i = 1; i < s.marks.length; i++) {
-    if (s.marks[i] >= s.marks[from]) from = i;
+  // The deadline is no earlier than any input that made its tick (`top`: the fastest
+  // seen), less than a tick after any that did, and before the snapshot of that tick
+  // arrives. The latest of those is taken, and never closer to `top` than the margin:
+  // an input assumed to make the earlier tick stops short and walks on, one assumed to
+  // make the later tick overshoots and has to walk back. A mark a whole tick below
+  // `top` was a slower input, and bounds nothing.
+  let top = -Infinity;
+  for (let i = 0; i < s.marks.length; i++) {
+    if (s.marks[i] > top) top = s.marks[i];
   }
   let deadline = s.base;
-  for (let i = from; i < s.marks.length; i++) {
+  for (let i = 0; i < s.marks.length; i++) {
     const hi = s.marks[i] + SNAPSHOT_INTERVAL_MS - MISSED_BY_MS;
-    if (hi > s.marks[from] && hi < deadline) deadline = hi;
+    if (hi > top && hi < deadline) deadline = hi;
   }
+  deadline = Math.min(Math.max(deadline, top + DEADLINE_MARGIN_MS), s.base);
   s.deadline = deadline;
   s.rtt = s.base - deadline;
+  // Whatever was sent before the first echo was placed with no deadline to go by.
+  for (let i = 0; unplaced && i < s.history.length; i++) {
+    s.history[i].due = s.history[i].t - deadline;
+  }
   const speed = Math.hypot(snap.vx, snap.vy);
   const mult = multAt(zones, snap.x, snap.y);
   // Moved further than its velocity explains (debug teleport, reset to spawn): the
@@ -414,7 +465,7 @@ export function observeServer(
     s.diverged = false;
   } else {
     // Input this tick ran on, unless a cast ended too close to it to tell.
-    if (!unsureNear(s, snap.simTime + deadline)) {
+    if (!unsureNear(s, snap.simTime)) {
       const input = inputForTick(s, snap.simTime, false);
       const len = Math.hypot(input.mx, input.my);
       const expected = s.baseSpeed * mult * len;
@@ -520,7 +571,8 @@ function serverPathAt(
  * held now, then close part of the gap to the server's path. While the server is not
  * obeying walking input (`yielding`) only the second half runs, on the server-driven
  * path, so entering and leaving that state never jumps. With no key held it walks on
- * to where the server will come to rest, slowing all the way.
+ * to where the server is expected to come to rest, slowing all the way, and on again
+ * if the server walked a tick more.
  */
 export function advancePrediction(
   s: PredictionState,
@@ -589,12 +641,22 @@ export function advancePrediction(
   if (idle) {
     // Stopping: walk on to the rest point, easing the last stretch, and never faster
     // than the frame before. Only a rest point that moved on (the release made a
-    // later tick than its send time said) may raise the speed again, up to the floor.
+    // later tick than its send time said) may raise the speed again, up to the floor;
+    // until the release is acknowledged the ease ends there, so walking on from a
+    // stop a few frames old is no faster than the stop was.
+    const least = input.seq > s.ack ? STOP_FLOOR_SPEED : STOP_MIN_SPEED;
     s.stopSpeed = Math.min(
-      Math.max((error * 1000) / STOP_MS, STOP_MIN_SPEED),
+      Math.max((error * 1000) / STOP_MS, least),
       Math.max(s.stopSpeed, STOP_FLOOR_SPEED),
     );
     const k = (s.stopSpeed * dt) / 1000 / error;
+    // Until the release is acknowledged the rest point is where it is expected, not
+    // where it is: one behind the drawn position is waited out, never walked back to.
+    const walked = s.history[s.history.length - 2];
+    if (input.seq > s.ack && walked && ex * walked.mx + ey * walked.my < 0) {
+      s.stopSpeed = 0;
+      return;
+    }
     // Arrived: exactly the server's position, so standing still can never drift.
     s.x = k < 1 ? s.x + ex * k : target.x;
     s.y = k < 1 ? s.y + ey * k : target.y;

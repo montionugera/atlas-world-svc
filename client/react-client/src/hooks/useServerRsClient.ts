@@ -75,6 +75,8 @@ export interface UseServerRsClientReturn {
   sendPlayerAction: (action: string, pressed: boolean, options?: any) => void;
   /** `client_tick` of the newest input sent (0: none yet). */
   inputSeqRef: React.MutableRefObject<number>;
+  /** Called with the `client_tick` of every input as it is sent. */
+  inputSentRef: React.MutableRefObject<((seq: number) => void) | null>;
   /** Last non-zero target sent to the server (it holds this for AoE impact). */
   sentTargetRef: React.MutableRefObject<{ x: number; y: number }>;
   /** Combat events received since the last call (the renderer drains it per frame). */
@@ -173,6 +175,7 @@ export const useServerRsClient = (
   const wsRef = useRef<WebSocket | null>(null);
   // `client_tick` of the newest input sent; the first is 1, so 0 means none.
   const inputSeqRef = useRef<number>(0);
+  const inputSentRef = useRef<((seq: number) => void) | null>(null);
   const isConnectingRef = useRef<boolean>(false);
   // Currently-held input, re-sent with every packet (server input is full-state).
   const moveRef = useRef<{ vx: number; vy: number }>({ vx: 0, vy: 0 });
@@ -740,6 +743,7 @@ export const useServerRsClient = (
       builder.finish(offset);
       const bytes = builder.asUint8Array();
       wsRef.current.send(bytes);
+      inputSentRef.current?.(inputSeqRef.current);
     },
     [],
   );
@@ -960,6 +964,7 @@ export const useServerRsClient = (
     updatePlayerInput,
     sendPlayerAction,
     inputSeqRef,
+    inputSentRef,
     sentTargetRef,
     drainEvents,
     switchWeapon,

@@ -1,11 +1,13 @@
 import { TerrainZone, terrainAt, terrainZonesFor } from "../config/terrain";
 import { CAPTURE } from "./__fixtures__/snapshotCapture";
 import {
+  HELD_INPUT_MS,
   PredictionState,
   advancePrediction,
   createPrediction,
   lockMovement,
   noteDash,
+  noteSent,
   observeServer,
   resetPrediction,
   restartPrediction,
@@ -36,10 +38,7 @@ type Snap = readonly [
   boolean,
   number,
 ];
-/**
- * A change of the movement keys. As in useServerRsClient the connection's first input
- * (number 1, no keys) is sent on open, so `keys[i]` is input `i + 2`.
- */
+/** A change of the movement keys. */
 interface Key {
   t: number;
   vx: number;
@@ -47,7 +46,36 @@ interface Key {
   /** This message alone takes so much longer to reach the server (ms). */
   late?: number;
 }
-const seqOf = (index: number) => index + 2;
+/** An input as sent: a change of keys, or the held keys again (`repeat`). */
+interface Sent extends Key {
+  seq: number;
+  repeat: boolean;
+}
+/**
+ * The inputs the client sends up to `until`. As in useServerRsClient the connection's
+ * first input (number 1, no keys) is sent on open, so these count from 2; as in
+ * ColyseusGameCanvas held keys are sent again every HELD_INPUT_MS, by a timer that
+ * runs whatever the keys do (`repeats` false: a client from before that).
+ */
+function sendsOf(keys: readonly Key[], until: number, repeats = true): Sent[] {
+  const sends: Sent[] = [];
+  keys.forEach((k, i) => {
+    sends.push({ ...k, seq: sends.length + 2, repeat: false });
+    if (!repeats || (k.vx === 0 && k.vy === 0)) return;
+    const end = Math.min(keys[i + 1]?.t ?? Infinity, until);
+    const first = (Math.floor(k.t / HELD_INPUT_MS) + 1) * HELD_INPUT_MS;
+    for (let t = first; t < end; t += HELD_INPUT_MS) {
+      sends.push({
+        t,
+        vx: k.vx,
+        vy: k.vy,
+        seq: sends.length + 2,
+        repeat: true,
+      });
+    }
+  });
+  return sends;
+}
 interface ServerOptions {
   /** Walking speed on grass. */
   speed?: number;
@@ -67,6 +95,8 @@ interface ServerOptions {
   seed?: number;
   /** `false`: a server without `input_ack`. A number: added to it (another socket's count). */
   echo?: false | number;
+  /** `false`: the client does not send held keys again. */
+  repeats?: false;
   /** Server time of tick 0. */
   phase?: number;
   stun?: { from: number; to: number };
@@ -86,9 +116,10 @@ interface ServerOptions {
 function serve(keys: readonly Key[], until: number, o: ServerOptions): Snap[] {
   const speed = o.speed ?? 200;
   const world = o.world ?? WORLD;
+  const sends = sendsOf(keys, until, o.repeats);
   let reached = -Infinity;
   let draw = 11 + (o.seed ?? 0);
-  const arrivals = keys.map((k) => {
+  const arrivals = sends.map((k) => {
     const from = o.uplinkFrom;
     const up = from && k.t >= from.at ? from.uplink : (o.uplink ?? 0);
     draw = (draw * 1103515245 + 12345) % 2147483648;
@@ -108,12 +139,12 @@ function serve(keys: readonly Key[], until: number, o: ServerOptions): Snap[] {
     let mx = 0;
     let my = 0;
     let ack = 1;
-    keys.forEach((k, i) => {
+    sends.forEach((k, i) => {
       if (arrivals[i] <= time) {
         const len = Math.max(Math.hypot(k.vx, k.vy), 1);
         mx = k.vx / len;
         my = k.vy / len;
-        ack = seqOf(i);
+        ack = k.seq;
       }
     });
     const within = (w?: { from: number; to: number }) =>
@@ -201,8 +232,6 @@ interface PlayOptions {
   state?: PredictionState;
   casts?: ReadonlyArray<{ t: number; until: number }>;
   dashes?: readonly number[];
-  /** Newest input sent before `keys` (default: the connection's first, 1). */
-  sent?: number;
 }
 
 /** Feed snapshots and key changes to the client and draw at `fps` (60 by default). */
@@ -224,7 +253,6 @@ function play(
     hitch = undefined;
     return ms;
   };
-  const sent = o.sent ?? 1;
   const frames: Frame[] = [];
   let clock: SnapshotClock | undefined;
   let samples: PosSample[] | undefined;
@@ -235,9 +263,12 @@ function play(
   let c = 0;
   let d = 0;
   const end = snaps[snaps.length - 1][0];
+  const sends = sendsOf(keys, end, server.repeats);
   for (let now = o.from ?? snaps[0][0] + 3; now <= end; now += nextFrame(now)) {
-    for (; k < keys.length && keys[k].t <= now; k++) {
-      setHeldInput(state, keys[k].t, keys[k].vx, keys[k].vy, seqOf(k));
+    for (; k < sends.length && sends[k].t <= now; k++) {
+      const { t, vx, vy, seq, repeat } = sends[k];
+      if (repeat) noteSent(state, t, seq);
+      else setHeldInput(state, t, vx, vy, seq);
     }
     for (; o.casts && c < o.casts.length && o.casts[c].t <= now; c++) {
       lockMovement(state, o.casts[c].t, o.casts[c].until);
@@ -259,7 +290,7 @@ function play(
       me = { x, y, isAlive: alive, samples };
       observeServer(
         state,
-        { simTime, x, y, vx, vy, alive, ack, sent: k ? seqOf(k - 1) : sent },
+        { simTime, x, y, vx, vy, alive, ack, sent: k + 1 },
         clock.offsets,
         zones,
       );
@@ -505,8 +536,8 @@ describe.each([30, 60, 144])(
 
 describe("a release the server takes one tick later than estimated", () => {
   // Until its echo arrives a release is placed by its send time, and the tick deadline
-  // is only known to within a tick; it is taken late so a stop never overshoots. When
-  // the release makes the tick after, the rest point moves on 10 units after the stop
+  // is an estimate, taken late: a release is assumed to make the earlier of two ticks.
+  // When it makes the tick after, the rest point moves on 10 units after the stop
   // began: the one case where the speed may rise again, and only to the floor.
   const link = { uplink: 60, downlink: 60, jitter: 30 };
   const FLOOR_STEP = (60 * FRAME_MS) / 1000;
@@ -775,7 +806,9 @@ describe("death, respawn and teleport", () => {
     state.ready = true;
     resetPrediction(state, 5000);
     expect(state.ready).toBe(false);
-    expect(state.history).toEqual([{ t: 5000, mx: 1, my: 0, seq: 0 }]);
+    expect(state.history).toEqual([
+      { t: 5000, mx: 1, my: 0, seq: 0, due: 5000 },
+    ]);
   });
 
   it("starts a new connection with no key held and nothing known of its link", () => {
@@ -860,6 +893,21 @@ describe("tick deadline", () => {
     expect(state.deadline).toBeCloseTo(-20, 2);
     expect(state.deadline).toBeLessThan(-20);
     expect(state.rtt).toBeCloseTo(420, 2);
+  });
+
+  it("is placed by every acknowledged input, not only a change of keys", () => {
+    const state = createPrediction();
+    feed(state, { from: 0, to: 1, at: 0, ack: 1 }, 400);
+    noteSent(state, 130, 2);
+    feed(state, { from: 2, to: 4, at: 4, ack: 2 }, 400);
+    // Sent at 225, first in the tick at 250: the deadline is in [-25, -20).
+    noteSent(state, 225, 3);
+    feed(state, { from: 5, to: 6, at: 5, ack: 3 }, 400);
+    expect(state.marks).toEqual([-70, -25]);
+    expect(state.history).toEqual([]);
+    // Taken a margin after the fastest input, not at the end of what they allow.
+    expect(state.deadline).toBeGreaterThan(-20);
+    expect(state.deadline).toBeLessThan(-5);
   });
 
   it("is not moved by a delayed input, and follows a link that got faster", () => {
@@ -964,7 +1012,7 @@ describe("a server whose echo cannot be used", () => {
     play(old, keys.slice(0, 1), { state });
     expect(state.yielding).toBe("unacked");
     const snaps = serve(keys.slice(0, 1), 4000, JITTERY).slice(old.length);
-    const { frames } = play(snaps, [], { state, sent: 2 });
+    const { frames } = play(snaps, keys.slice(0, 1), { state });
     expect(last(frames).yielding).toBeNull();
     expect(last(frames).error).toBeLessThan(2);
   });
@@ -1041,7 +1089,10 @@ describe("a real jittered capture (map-for-test-terrain)", () => {
     }
     return [...r, true, applied + 1];
   });
-  const { frames, state } = play(snaps, keys, { zones });
+  const { frames, state } = play(snaps, keys, {
+    zones,
+    server: { repeats: false },
+  });
 
   it("responds within a frame where interpolation took over 100 ms", () => {
     const moved = (axis: "x" | "offX") =>
@@ -1086,11 +1137,14 @@ describe("stop sweep", () => {
     { t: 2231, ...RIGHT, late },
     { t: release, ...STOP },
   ];
-  /** Every input but the measured release takes `sooner` ms longer than it does. */
+  /** `link` with every input before the measured release `ms` longer on its way. */
   const sooner =
-    (keysFor: (release: number) => Key[], ms: number) =>
-    (release: number): Key[] =>
-      keysFor(release).map((k) => (k.t === release ? k : { ...k, late: ms }));
+    (link: ServerOptions, ms: number) =>
+    (release: number): ServerOptions => ({
+      ...link,
+      uplink: (link.uplink ?? 0) + ms,
+      uplinkFrom: { at: release, uplink: link.uplink ?? 0 },
+    });
   interface Broken {
     /** The drawn player stepped back the way it came. */
     backward: number;
@@ -1104,7 +1158,7 @@ describe("stop sweep", () => {
   /** How many of the 240 stops break each rule. */
   const sweep = (
     keysFor: (release: number) => Key[],
-    link: ServerOptions,
+    linkFor: ServerOptions | ((release: number) => ServerOptions),
   ): Broken => {
     const broken = { backward: 0, overshoot: 0, rise: 0, astray: 0 };
     let seed = 0;
@@ -1112,6 +1166,8 @@ describe("stop sweep", () => {
       for (const phase of PHASES) {
         for (const r of RELEASES) {
           const release = 3200 + r;
+          const link =
+            typeof linkFor === "function" ? linkFor(release) : linkFor;
           const { frames } = run(
             keysFor(release),
             release + 1500,
@@ -1142,17 +1198,27 @@ describe("stop sweep", () => {
 
   // Stops of 240 that walk backward, overshoot, speed up again, or end off the rest
   // position. Every count above zero is what the code does today: a measured ceiling,
-  // not a target, and one that may only be edited downwards.
-  it.each<[string, (release: number) => Key[], ServerOptions, Broken]>([
+  // not a target, and one that may only be edited downwards. The speed rises where the
+  // release was assumed to make the earlier of two ticks and made the later (the
+  // deadline's margin, 14 ms of every 50); a stop walks back only where the release
+  // was faster than every input of the walk before it, by more than that margin.
+  it.each<
+    [
+      string,
+      (release: number) => Key[],
+      ServerOptions | ((release: number) => ServerOptions),
+      Broken,
+    ]
+  >([
     ["no latency", oneWalk, {}, count(0, 0, 0, 0)],
     ["5 ms each way", oneWalk, { uplink: 5, downlink: 5 }, count(0, 0, 0, 0)],
-    ["a jittered link", oneWalk, JITTERY, count(0, 0, 94, 0)],
-    ["a slow link", oneWalk, slow, count(0, 0, 123, 0)],
+    ["a jittered link", oneWalk, JITTERY, count(0, 0, 52, 0)],
+    ["a slow link", oneWalk, slow, count(0, 0, 69, 0)],
     [
       "a slow link, the key press 120 ms late",
       (release) => twoWalks(release, 120),
       slow,
-      count(0, 0, 111, 0),
+      count(0, 0, 69, 0),
     ],
     [
       "a slow link, the release 120 ms late",
@@ -1164,56 +1230,55 @@ describe("stop sweep", () => {
       "an uplink that fell from 60 ms to 5 ms before the walk",
       twoWalks,
       fell,
-      count(0, 0, 88, 0),
+      count(0, 0, 67, 0),
     ],
-    // Nothing was sent between the fall and the release, so nothing could show it.
     [
       "an uplink that fell from 60 ms to 5 ms during the walk",
       oneWalk,
       fell,
-      count(138, 138, 138, 0),
+      count(0, 0, 67, 0),
     ],
     [
       "10 ms up and 2 ms down, inputs up to 10 ms longer",
       oneWalk,
       { uplink: 10, downlink: 2, uplinkJitter: 10 },
-      count(0, 0, 9, 0),
+      count(0, 0, 0, 0),
     ],
     [
       "a jittered link, inputs up to 15 ms longer",
       oneWalk,
       { ...JITTERY, uplinkJitter: 15 },
-      count(0, 0, 97, 0),
+      count(0, 0, 51, 0),
     ],
     [
       "a jittered link, inputs up to 15 ms longer, after an earlier walk",
       twoWalks,
       { ...JITTERY, uplinkJitter: 15 },
-      count(2, 2, 65, 0),
+      count(0, 0, 49, 0),
     ],
     [
       "a slow link, inputs up to 30 ms longer",
       oneWalk,
       { ...slow, uplinkJitter: 30 },
-      count(3, 3, 120, 0),
+      count(0, 0, 91, 0),
     ],
     [
-      "a jittered link, the release 15 ms sooner than the press",
-      sooner(oneWalk, 15),
-      JITTERY,
-      count(12, 12, 68, 0),
+      "a jittered link, the release 15 ms sooner than the walk's inputs",
+      oneWalk,
+      sooner(JITTERY, 15),
+      count(3, 3, 6, 0),
     ],
     [
-      "a jittered link, the release 15 ms sooner than three inputs before it",
-      sooner(twoWalks, 15),
-      JITTERY,
-      count(27, 27, 59, 0),
+      "a jittered link, the release 15 ms sooner, after an earlier walk",
+      twoWalks,
+      sooner(JITTERY, 15),
+      count(3, 3, 6, 0),
     ],
     [
-      "a slow link, the release 30 ms sooner than the press",
-      sooner(oneWalk, 30),
-      slow,
-      count(45, 45, 69, 0),
+      "a slow link, the release 30 ms sooner than the walk's inputs",
+      oneWalk,
+      sooner(slow, 30),
+      count(42, 42, 45, 0),
     ],
   ])("%s", (_, keysFor, link, ceiling) => {
     expect(sweep(keysFor, link)).toEqual(ceiling);
