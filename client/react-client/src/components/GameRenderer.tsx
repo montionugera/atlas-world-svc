@@ -421,6 +421,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
             players: visiblePlayers,
             mobs: visibleMobs,
             projectiles: visibleProjectiles,
+            roomPlayers: renderPlayers,
             playerId,
             viewScale: scale,
             localSpeed: debugTrackerRef?.current?.smoothedSpeed ?? 0,

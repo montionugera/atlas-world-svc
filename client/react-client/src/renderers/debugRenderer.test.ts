@@ -47,6 +47,39 @@ const player = (over = {}) => ({
 });
 
 describe("drawWorldDebug", () => {
+  it("labels each projectile with a short id and its side", () => {
+    const ctx = makeCtx();
+    const colors: Record<string, string> = {};
+    ctx.fillText.mockImplementation((text: string) => {
+      colors[text] = ctx.fillStyle;
+    });
+    const spear = (id: string, ownerId: string, x: number) => ({
+      id,
+      ownerId,
+      x,
+      y: 50,
+      vx: 300,
+      vy: 0,
+      radius: 4,
+    });
+    drawWorldDebug(asCtx(ctx), {
+      players: new Map(),
+      mobs: new Map(),
+      // The owner is in the room but off screen (culled from `players`).
+      roomPlayers: new Set(["7"]),
+      projectiles: new Map([
+        ["3000001234", spear("3000001234", "7", 10)],
+        ["3000005678", spear("3000005678", "900", 90)],
+      ]),
+      playerId: "1",
+      viewScale: 1,
+      localSpeed: 0,
+    });
+    expect(ctx.fillText).toHaveBeenCalledWith("P 1234", 10, expect.any(Number));
+    expect(ctx.fillText).toHaveBeenCalledWith("H 5678", 90, expect.any(Number));
+    expect(colors["P 1234"]).not.toBe(colors["H 5678"]);
+  });
+
   it("rings the local player's hit radius and melee range in world units", () => {
     const ctx = makeCtx();
     drawWorldDebug(asCtx(ctx), {

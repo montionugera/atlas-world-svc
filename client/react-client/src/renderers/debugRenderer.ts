@@ -19,10 +19,21 @@ interface DebugEntity {
   isAlive?: boolean;
 }
 
+interface DebugProjectile extends DebugEntity {
+  id?: string;
+  ownerId?: string;
+}
+
 export interface WorldDebugInput {
   players: Map<string, DebugEntity>;
   mobs: Map<string, DebugEntity>;
-  projectiles?: Map<string, DebugEntity>;
+  projectiles?: Map<string, DebugProjectile>;
+  /**
+   * Every player in the room, culled or not: a projectile owned by one of them is on
+   * the players' side (a parry hands the projectile to the parrying player).
+   * Defaults to `players`.
+   */
+  roomPlayers?: { has(id: string): boolean };
   playerId: string;
   viewScale: number;
   /** Smoothed local-player speed (u/s) for the on-canvas label. */
@@ -30,6 +41,23 @@ export interface WorldDebugInput {
 }
 
 const FULL_CIRCLE = Math.PI * 2;
+const FRIENDLY_PROJECTILE = "#69f0ae";
+const HOSTILE_PROJECTILE = "#ff5252";
+/** Digits of a projectile id shown in its label (ids are 32-bit hashes). */
+const PROJECTILE_LABEL_DIGITS = 4;
+
+// A drawn projectile is re-made only when a snapshot replaces it, so its label text is
+// built once per snapshot, not once per frame.
+const projectileLabels = new WeakMap<DebugProjectile, string>();
+
+function projectileLabel(p: DebugProjectile, friendly: boolean): string {
+  let label = projectileLabels.get(p);
+  if (label === undefined) {
+    label = `${friendly ? "P" : "H"} ${(p.id ?? "?").slice(-PROJECTILE_LABEL_DIGITS)}`;
+    projectileLabels.set(p, label);
+  }
+  return label;
+}
 
 const ring = (
   ctx: CanvasRenderingContext2D,
@@ -95,6 +123,28 @@ export function drawWorldDebug(
   players.forEach(vector);
   mobs.forEach(vector);
   projectiles?.forEach(vector);
+
+  // Projectiles: id and side, to tell one that turned round (same id, changes side)
+  // from a second one (new id). P = owned by a player, H = hostile.
+  if (projectiles && projectiles.size > 0) {
+    const roomPlayers = input.roomPlayers ?? players;
+    ctx.font = `700 ${11 * px}px monospace`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    projectiles.forEach((p) => {
+      const friendly = p.ownerId !== undefined && roomPlayers.has(p.ownerId);
+      const color = friendly ? FRIENDLY_PROJECTILE : HOSTILE_PROJECTILE;
+      const reach = (p.radius ?? 0) + 4 * px;
+      ctx.lineWidth = 1.5 * px;
+      ring(ctx, p, reach, color, []);
+      const label = projectileLabel(p, friendly);
+      ctx.lineWidth = 3 * px;
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.9)";
+      ctx.strokeText(label, p.x, p.y - reach - 2 * px);
+      ctx.fillStyle = color;
+      ctx.fillText(label, p.x, p.y - reach - 2 * px);
+    });
+  }
 
   // Speed label under the local player.
   if (local && local.isAlive !== false) {
