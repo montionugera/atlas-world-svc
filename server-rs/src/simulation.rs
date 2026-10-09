@@ -235,6 +235,15 @@ impl AtlasSimulation {
                 obstacles: map_cfg.static_obstacles.clone(),
             });
 
+        // Like the arena size, terrain belongs to a named map: a config without `map_id`
+        // (anonymous test arenas) is all default ground.
+        if cfg.map_id.is_some() {
+            sim.world
+                .insert_resource(crate::content::map::TerrainZones {
+                    zones: map_cfg.terrain_zones.clone(),
+                });
+        }
+
         // Add static colliders to Rapier PhysicsWorld
         if let Some(mut pw) = sim.world.get_resource_mut::<PhysicsWorld>() {
             for obs in &map_cfg.static_obstacles {

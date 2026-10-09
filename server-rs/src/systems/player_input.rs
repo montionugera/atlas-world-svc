@@ -1,16 +1,20 @@
+use crate::content::map::TerrainZones;
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    CastingState, DashState, Health, PlayerAvatar, PlayerInputState, StatusEffects, Velocity,
-    KNOCKBACK_DECAY_PER_SEC,
+    CastingState, DashState, Health, PlayerAvatar, PlayerInputState, Position, StatusEffects,
+    Velocity, KNOCKBACK_DECAY_PER_SEC,
 };
 use bevy_ecs::prelude::*;
 
 /// System that applies player movement inputs to velocities,
 /// respecting avatar speed, status effects (stun, freeze), active casting, and dash impulses.
+/// Walking speed is scaled by the terrain underfoot; dash and knockback are not.
 #[allow(clippy::type_complexity)]
 pub fn player_input_system(
     clock: Res<SimClock>,
+    terrain: Option<Res<TerrainZones>>,
     mut query: Query<(
+        Option<&Position>,
         Option<&PlayerAvatar>,
         &PlayerInputState,
         &mut Velocity,
@@ -23,7 +27,9 @@ pub fn player_input_system(
     let current_time = clock.current_time_seconds();
     let dt = clock.delta_seconds();
 
-    for (avatar_opt, input, mut vel, status_opt, casting_opt, health, mut dash_opt) in &mut query {
+    for (pos_opt, avatar_opt, input, mut vel, status_opt, casting_opt, health, mut dash_opt) in
+        &mut query
+    {
         // 0. The dead do not move.
         if health.is_some_and(|h| !h.is_alive) {
             vel.vx = 0.0;
@@ -88,10 +94,14 @@ pub fn player_input_system(
             }
         }
 
-        // 4. Process movement input (respecting avatar speed and freeze multiplier)
+        // 4. Process movement input (respecting avatar speed, freeze and terrain multipliers)
         let base_speed = avatar_opt.map_or(20.0, |a| a.speed);
         let speed_mult = status_opt.map_or(1.0, |s| s.speed_multiplier());
-        let speed = base_speed * speed_mult;
+        let terrain_mult = match (&terrain, pos_opt) {
+            (Some(t), Some(p)) => t.speed_multiplier_at(p.x, p.y),
+            _ => 1.0,
+        };
+        let speed = base_speed * speed_mult * terrain_mult;
 
         let len_sq = input.move_x * input.move_x + input.move_y * input.move_y;
         if len_sq > 0.0001 {
@@ -422,5 +432,68 @@ mod tests {
         let vel = world.get::<Velocity>(entity).unwrap();
         assert!(vel.vx > 300.0, "expected dash speed > 300, got {}", vel.vx);
         assert_eq!(vel.vy, 0.0, "dash overrides WASD input during dash window");
+    }
+
+    #[test]
+    fn test_terrain_scales_walking_but_not_dash_or_knockback() {
+        use crate::content::map::{TerrainType, TerrainZone, TerrainZones};
+
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50)); // dt = 0.05s
+        world.insert_resource(TerrainZones {
+            zones: vec![TerrainZone {
+                terrain: TerrainType::Mud,
+                min_x: 0.0,
+                min_y: 0.0,
+                max_x: 100.0,
+                max_y: 100.0,
+            }],
+        });
+
+        let mut dash = DashState::new();
+        dash.remaining_sec = 0.22;
+        dash.dir_x = 1.0;
+        dash.speed = 450.0;
+        let mut knocked = StatusEffects::new();
+        knocked.apply_knockback(0.2);
+
+        let on_mud = Position::new(50.0, 50.0);
+        let avatar = || PlayerAvatar::new("p", 200.0);
+        let held = || PlayerInputState::new(1.0, 0.0, false, 0);
+        let walker = world
+            .spawn((on_mud, avatar(), held(), Velocity::zero()))
+            .id();
+        let off_mud = world
+            .spawn((
+                Position::new(500.0, 50.0),
+                avatar(),
+                held(),
+                Velocity::zero(),
+            ))
+            .id();
+        let dasher = world
+            .spawn((on_mud, avatar(), held(), Velocity::zero(), dash))
+            .id();
+        let shoved = world
+            .spawn((on_mud, avatar(), held(), Velocity::new(-80.0, 0.0), knocked))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(player_input_system);
+        schedule.run(&mut world);
+
+        let vx = |e| world.get::<Velocity>(e).unwrap().vx;
+        assert_eq!(vx(off_mud), 200.0);
+        assert_eq!(vx(walker), 200.0 * TerrainType::Mud.speed_multiplier());
+        assert!(
+            vx(dasher) > 300.0,
+            "dash keeps full speed on mud, got {}",
+            vx(dasher)
+        );
+        let decay = (-KNOCKBACK_DECAY_PER_SEC * 0.05).exp();
+        assert!(
+            (vx(shoved) - -80.0 * decay).abs() < 1e-3,
+            "knockback unscaled"
+        );
     }
 }

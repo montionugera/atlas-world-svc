@@ -29,6 +29,83 @@ pub struct StaticObstacles {
     pub obstacles: Vec<StaticObstacle>,
 }
 
+/// Ground types a map can be painted with. Each scales voluntary movement speed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum TerrainType {
+    Road,
+    Grass,
+    Forest,
+    Sand,
+    Ice,
+    Mud,
+}
+
+impl TerrainType {
+    pub const ALL: [TerrainType; 6] = [
+        TerrainType::Road,
+        TerrainType::Grass,
+        TerrainType::Forest,
+        TerrainType::Sand,
+        TerrainType::Ice,
+        TerrainType::Mud,
+    ];
+
+    /// Multiplier on voluntary movement speed (walking, chasing, wandering). Dash and
+    /// knockback impulses are not scaled.
+    pub fn speed_multiplier(self) -> f32 {
+        match self {
+            TerrainType::Road => 1.3,
+            TerrainType::Grass => 1.0,
+            TerrainType::Forest => 0.8,
+            TerrainType::Sand => 0.7,
+            TerrainType::Ice => 0.6,
+            TerrainType::Mud => 0.5,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct TerrainZone {
+    pub terrain: TerrainType,
+    pub min_x: f32,
+    pub min_y: f32,
+    pub max_x: f32,
+    pub max_y: f32,
+}
+
+impl TerrainZone {
+    fn rect(terrain: TerrainType, x: f32, y: f32, width: f32, height: f32) -> Self {
+        Self {
+            terrain,
+            min_x: x,
+            min_y: y,
+            max_x: x + width,
+            max_y: y + height,
+        }
+    }
+}
+
+/// Terrain zones of the room's map. Later zones paint over earlier ones (same as the
+/// client's draw order); ground not covered by any zone is `Grass`.
+#[derive(Resource, Debug, Clone, Default)]
+pub struct TerrainZones {
+    pub zones: Vec<TerrainZone>,
+}
+
+impl TerrainZones {
+    pub fn terrain_at(&self, x: f32, y: f32) -> TerrainType {
+        self.zones
+            .iter()
+            .rev()
+            .find(|z| x >= z.min_x && x < z.max_x && y >= z.min_y && y < z.max_y)
+            .map_or(TerrainType::Grass, |z| z.terrain)
+    }
+
+    pub fn speed_multiplier_at(&self, x: f32, y: f32) -> f32 {
+        self.terrain_at(x, y).speed_multiplier()
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct MapConfig {
     pub map_id: String,
@@ -36,6 +113,7 @@ pub struct MapConfig {
     pub height: f32,
     pub spawn_areas: Vec<MapSpawnArea>,
     pub static_obstacles: Vec<StaticObstacle>,
+    pub terrain_zones: Vec<TerrainZone>,
 }
 
 #[derive(Deserialize)]
@@ -80,6 +158,7 @@ impl MapConfig {
                     count: 1,
                 }],
                 static_obstacles: Vec::new(),
+                terrain_zones: Vec::new(),
             },
             "map-for-test-projectile" => Self {
                 map_id: map_id.to_string(),
@@ -95,6 +174,7 @@ impl MapConfig {
                     count: 6,
                 }],
                 static_obstacles: Vec::new(),
+                terrain_zones: Vec::new(),
             },
             _ => {
                 // Default frontier world map:
@@ -162,6 +242,19 @@ impl MapConfig {
                     height: 1000.0,
                     spawn_areas,
                     static_obstacles,
+                    // Same rects, in the same paint order, as the biomes the client draws
+                    // (client/react-client/src/renderers/terrainRenderer.ts).
+                    terrain_zones: vec![
+                        TerrainZone::rect(TerrainType::Ice, 0.0, 0.0, 1000.0, 250.0),
+                        TerrainZone::rect(TerrainType::Forest, 680.0, 240.0, 320.0, 520.0),
+                        TerrainZone::rect(TerrainType::Sand, 540.0, 390.0, 150.0, 220.0),
+                        TerrainZone::rect(TerrainType::Mud, 390.0, 590.0, 230.0, 170.0),
+                        TerrainZone::rect(TerrainType::Road, 485.0, 0.0, 30.0, 390.0),
+                        TerrainZone::rect(TerrainType::Road, 485.0, 610.0, 30.0, 390.0),
+                        TerrainZone::rect(TerrainType::Road, 0.0, 485.0, 390.0, 30.0),
+                        TerrainZone::rect(TerrainType::Road, 610.0, 485.0, 390.0, 30.0),
+                        TerrainZone::rect(TerrainType::Road, 390.0, 390.0, 220.0, 220.0),
+                    ],
                 }
             }
         }
