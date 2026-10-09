@@ -478,6 +478,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
         ? null
         : new ResizeObserver(measure);
     observer?.observe(root);
+    if (belowRef.current) observer?.observe(belowRef.current);
     return () => {
       window.removeEventListener("resize", measure);
       observer?.disconnect();
@@ -750,7 +751,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
               transform: "translateX(-50%)",
               zIndex: 60,
               pointerEvents: "none",
-              width: "360px",
+              width: "min(360px, 90%)",
               backgroundColor: "rgba(15, 23, 42, 0.9)",
               borderRadius: "10px",
               border: "1px solid rgba(243, 156, 18, 0.6)",

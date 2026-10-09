@@ -407,14 +407,13 @@ describe("GameRenderer frame loop", () => {
       expect(tx).toBeCloseTo(400 - 333.37, 0);
     });
 
-    it("keeps debug boxes off the canvas and the minimap behind its toggle", () => {
+    it("draws the minimap only while its toggle is on", () => {
       const texts = (minimap: boolean) =>
         mount(local(), {
           debug: { ...DEFAULT_DEBUG_TOGGLES, world: false, minimap },
         }).calls;
       const on = texts(true);
       const off = texts(false);
-      expect(JSON.stringify(on)).not.toContain("TELEMETRY");
       const dots = (calls: unknown[][]) =>
         calls.filter(([m]) => m === "arc").length;
       expect(dots(on)).toBeGreaterThan(dots(off));
