@@ -83,7 +83,8 @@ body {
     overflow-y: auto;
   }
 
-  .game-section {
+  /* Stacked: the column has no height of its own to give the canvas. */
+  .app-main .game-section {
     height: 70vh;
   }
 }
