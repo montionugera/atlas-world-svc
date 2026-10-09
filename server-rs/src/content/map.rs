@@ -114,6 +114,8 @@ pub struct MapConfig {
     pub spawn_areas: Vec<MapSpawnArea>,
     pub static_obstacles: Vec<StaticObstacle>,
     pub terrain_zones: Vec<TerrainZone>,
+    /// Where joining players appear; `None` means the arena centre.
+    pub player_spawn: Option<(f32, f32)>,
 }
 
 #[derive(Deserialize)]
@@ -159,6 +161,7 @@ impl MapConfig {
                 }],
                 static_obstacles: Vec::new(),
                 terrain_zones: Vec::new(),
+                player_spawn: None,
             },
             "map-for-test-projectile" => Self {
                 map_id: map_id.to_string(),
@@ -175,6 +178,49 @@ impl MapConfig {
                 }],
                 static_obstacles: Vec::new(),
                 terrain_zones: Vec::new(),
+                player_spawn: None,
+            },
+            // Hand-testing sandbox: every terrain type as a 150-wide strip (fastest to slowest,
+            // west to east) so a run along +X from the west-edge spawn crosses them all. South
+            // of the strips: two blocks to bump into and two slow melee mobs, out of aggro
+            // range of the spawn, for knockback/AoE testing.
+            "map-for-test-terrain" => Self {
+                map_id: map_id.to_string(),
+                width: 1000.0,
+                height: 1000.0,
+                spawn_areas: vec![MapSpawnArea {
+                    id: "terrain_sandbox_mobs".to_string(),
+                    x: 450.0,
+                    y: 880.0,
+                    width: 100.0,
+                    height: 60.0,
+                    mob_type: "mob-chaff-crawler".to_string(),
+                    count: 2,
+                }],
+                static_obstacles: vec![
+                    StaticObstacle {
+                        id: "terrain_sandbox_block_w".to_string(),
+                        min_x: 300.0,
+                        min_y: 760.0,
+                        max_x: 340.0,
+                        max_y: 800.0,
+                    },
+                    StaticObstacle {
+                        id: "terrain_sandbox_block_e".to_string(),
+                        min_x: 660.0,
+                        min_y: 760.0,
+                        max_x: 700.0,
+                        max_y: 800.0,
+                    },
+                ],
+                terrain_zones: TerrainType::ALL
+                    .iter()
+                    .enumerate()
+                    .map(|(i, &terrain)| {
+                        TerrainZone::rect(terrain, 50.0 + 150.0 * i as f32, 0.0, 150.0, 700.0)
+                    })
+                    .collect(),
+                player_spawn: Some((25.0, 350.0)),
             },
             _ => {
                 // Default frontier world map:
@@ -255,6 +301,7 @@ impl MapConfig {
                         TerrainZone::rect(TerrainType::Road, 610.0, 485.0, 390.0, 30.0),
                         TerrainZone::rect(TerrainType::Road, 390.0, 390.0, 220.0, 220.0),
                     ],
+                    player_spawn: None,
                 }
             }
         }

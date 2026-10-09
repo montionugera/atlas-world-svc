@@ -1,8 +1,10 @@
 //! Terrain speed: the same held input covers measurably different ground on different
 //! terrain, through the live movement path (`AtlasSimulation::live` + `live_tick`).
 
+use bevy_ecs::prelude::*;
+use server_rs::content::StaticObstacles;
 use server_rs::content::{TerrainType, TerrainZones};
-use server_rs::ecs::components::Position;
+use server_rs::ecs::components::{MobAi, MobTag, PlayerAvatar, Position};
 use server_rs::net::ClientPacket;
 use server_rs::protocol::serialize_client_input;
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
@@ -69,4 +71,66 @@ fn held_input_covers_terrain_scaled_distance() {
         "road must feel fast, got {}",
         road / grass
     );
+}
+
+#[test]
+fn terrain_test_room_has_every_terrain_and_a_straight_run_crosses_them_all() {
+    let room = "map-for-test-terrain";
+    let mut sim = AtlasSimulation::live(LiveConfig {
+        bot_count: 0,
+        mob_count: 2,
+        map_id: Some(room.to_string()),
+        ..Default::default()
+    });
+
+    let zones = sim.world.resource::<TerrainZones>().clone();
+    for terrain in TerrainType::ALL {
+        assert!(
+            zones.zones.iter().any(|z| z.terrain == terrain),
+            "{terrain:?} strip missing"
+        );
+    }
+    assert!(!sim.world.resource::<StaticObstacles>().obstacles.is_empty());
+
+    // A player joining over the wire spawns at the west end and, holding +X, crosses every
+    // strip in multiplier order (fastest first).
+    let held = ClientPacket {
+        session_id: "tester".to_string(),
+        room_id: room.to_string(),
+        payload: serialize_client_input(1, 1.0, 0.0, false, 0, 0),
+    };
+    sim.live_tick(std::slice::from_ref(&held), &[]);
+    let mut players = sim.world.query::<(Entity, &PlayerAvatar)>();
+    let (player, _) = players.single(&sim.world);
+    let spawn = sim.player_spawn;
+    assert!(spawn.x < 50.0, "spawns at the west end, got {}", spawn.x);
+
+    // The sandbox mobs stand off to the side: nowhere near the spawn or its aggro range.
+    let mut mobs = sim
+        .world
+        .query_filtered::<(&Position, &MobAi), With<MobTag>>();
+    let mob_list: Vec<_> = mobs
+        .iter(&sim.world)
+        .map(|(p, ai)| (*p, ai.chase_range))
+        .collect();
+    assert_eq!(mob_list.len(), 2);
+    for (pos, chase_range) in &mob_list {
+        let d = ((pos.x - spawn.x).powi(2) + (pos.y - spawn.y).powi(2)).sqrt();
+        assert!(d > chase_range + 100.0, "mob {d} from spawn");
+    }
+
+    let mut crossed = Vec::new();
+    for _ in 0..200 {
+        sim.live_tick(std::slice::from_ref(&held), &[]);
+        let p = *sim.world.get::<Position>(player).unwrap();
+        let terrain = zones.terrain_at(p.x, p.y);
+        if crossed.last() != Some(&terrain) {
+            crossed.push(terrain);
+        }
+    }
+    // Grass margin at the spawn, the six strips, grass margin at the far edge.
+    let mut want = vec![TerrainType::Grass];
+    want.extend(TerrainType::ALL);
+    want.push(TerrainType::Grass);
+    assert_eq!(crossed, want);
 }

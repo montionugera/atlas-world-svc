@@ -119,6 +119,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }),
     );
 
+    // 4. Terrain Sandbox Map (every terrain type as a strip, 2 slow mobs off to the side)
+    rooms.insert(
+        "map-for-test-terrain".to_string(),
+        AtlasSimulation::live(LiveConfig {
+            seed: seed.wrapping_add(3),
+            arena_width: 1000.0,
+            arena_height: 1000.0,
+            bot_count: 0,
+            mob_count: 2,
+            mob_respawn_sec,
+            player_respawn_sec,
+            map_id: Some("map-for-test-terrain".to_string()),
+        }),
+    );
+
     info!(
         "Initialized {} simulation rooms: {:?}",
         rooms.len(),
@@ -148,7 +163,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 p.room_id == "map-for-play"
                                     || p.room_id.is_empty()
                                     || (p.room_id != "map-for-test-projectile"
-                                        && p.room_id != "map-for-test-deflect")
+                                        && p.room_id != "map-for-test-deflect"
+                                        && p.room_id != "map-for-test-terrain")
                             } else {
                                 p.room_id == *room_id
                             }
@@ -163,7 +179,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 r == "map-for-play"
                                     || r.is_empty()
                                     || (r != "map-for-test-projectile"
-                                        && r != "map-for-test-deflect")
+                                        && r != "map-for-test-deflect"
+                                        && r != "map-for-test-terrain")
                             } else {
                                 r == room_id
                             }

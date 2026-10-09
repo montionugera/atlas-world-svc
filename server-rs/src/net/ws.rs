@@ -315,6 +315,7 @@ impl WsServer {
             room_id = match req_map.as_str() {
                 "map-for-test-deflect" => "map-for-test-deflect".to_string(),
                 "map-for-test-projectile" => "map-for-test-projectile".to_string(),
+                "map-for-test-terrain" => "map-for-test-terrain".to_string(),
                 _ => "map-for-play".to_string(),
             };
 
@@ -663,5 +664,28 @@ mod tests {
 
         client_deflect.close(None).await.unwrap();
         client_play.close(None).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_ws_server_routes_terrain_test_map() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let token = auth.generate_test_token("terrain-player", "Tester", 3600);
+        let url = format!(
+            "ws://{}/ws?token={}&map=map-for-test-terrain",
+            server.local_addr(),
+            token
+        );
+
+        let (mut client, _) = connect_async(&url).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(
+            server
+                .active_connections_in_room("map-for-test-terrain")
+                .await,
+            1
+        );
+        assert_eq!(server.active_connections_in_room("map-for-play").await, 0);
+        client.close(None).await.unwrap();
     }
 }

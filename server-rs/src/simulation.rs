@@ -127,6 +127,8 @@ pub struct AtlasSimulation {
     pub prng: Mulberry32,
     pub arena_width: f32,
     pub arena_height: f32,
+    /// Where a joining player's avatar appears (arena centre unless the map says otherwise).
+    pub player_spawn: Position,
 }
 
 impl AtlasSimulation {
@@ -187,6 +189,7 @@ impl AtlasSimulation {
             prng,
             arena_width,
             arena_height,
+            player_spawn: Position::new(arena_width / 2.0, arena_height / 2.0),
         }
     }
 
@@ -224,6 +227,9 @@ impl AtlasSimulation {
         };
 
         let mut sim = Self::new(cfg.seed, arena_width, arena_height);
+        if let (Some(_), Some((x, y))) = (&cfg.map_id, map_cfg.player_spawn) {
+            sim.player_spawn = Position::new(x, y);
+        }
         sim.world.insert_resource(LiveRules {
             player_respawn_sec: cfg.player_respawn_sec,
             mob_corpse_sec: MOB_CORPSE_SEC,
@@ -826,9 +832,8 @@ impl AtlasSimulation {
         }
 
         if !found {
-            let center_x = self.arena_width / 2.0;
-            let center_y = self.arena_height / 2.0;
-            let entity = self.spawn_player_avatar(session_id, center_x, center_y);
+            let spawn = self.player_spawn;
+            let entity = self.spawn_player_avatar(session_id, spawn.x, spawn.y);
             if let Some(mut state) = self.world.get_mut::<PlayerInputState>(entity) {
                 state.move_x = input.move_x();
                 state.move_y = input.move_y();
