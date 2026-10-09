@@ -285,7 +285,11 @@ async fn debug_routes_are_404_until_enabled_and_then_answer_from_the_tick_loop()
     assert!(needs_player.starts_with("HTTP/1.1 400"), "{needs_player}");
 
     // Not JSON: refused, and the command never reaches the room.
-    for content_type in ["Content-Type: text/plain\r\n", ""] {
+    for content_type in [
+        "Content-Type: text/plain\r\n",
+        "Content-Type: text/plain; application/json\r\n",
+        "",
+    ] {
         let plain = http(
             addr,
             &post_as(content_type, r#"{"cmd":"set_bots","count":9}"#),
