@@ -1111,3 +1111,87 @@ fn test_client_input_target_pos_and_entity_aiming() {
         "target_x and target_y should populate target_pos"
     );
 }
+
+// ---- Parry needs a live attack input ---------------------------------------------------
+
+/// A melee mob with a stationary avatar 44 u away: inside the mob's reach (46) but outside
+/// the avatar's own (40), so an avatar swing finds no target. The mob holds its first swing
+/// for `mob_delay` seconds.
+fn parry_setup(mob_delay: f32) -> (AtlasSimulation, Entity, Entity) {
+    let mut sim = live(0, 1);
+    let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
+    make_melee(&mut sim, mob);
+    sim.world
+        .get_mut::<CombatStats>(mob)
+        .unwrap()
+        .cooldown_timer = mob_delay;
+    let p = player_near_mob(&mut sim, mob_pos, 44.0);
+    (sim, mob, p)
+}
+
+/// Ticks until the avatar loses health (true) or `n` ticks pass (false).
+fn hit_within(sim: &mut AtlasSimulation, p: Entity, n: usize) -> bool {
+    let max = sim.world.get::<Health>(p).unwrap().max;
+    for _ in 0..n {
+        tick(sim);
+        if sim.world.get::<Health>(p).unwrap().current < max {
+            return true;
+        }
+    }
+    false
+}
+
+#[test]
+fn parry_idle_avatar_with_no_input_takes_mob_melee_damage() {
+    let (mut sim, _, p) = parry_setup(0.0);
+    assert!(
+        hit_within(&mut sim, p, 40),
+        "an avatar that never sent input parried the mob's melee"
+    );
+}
+
+#[test]
+fn parry_released_tap_that_found_no_target_does_not_parry_later() {
+    let (mut sim, _, p) = parry_setup(0.5);
+    // One click with the mob outside the avatar's reach, then release.
+    sim.live_tick(&[input("p1", 0.0, 0.0, true)], &[]);
+    sim.live_tick(&[input("p1", 0.0, 0.0, false)], &[]);
+    assert!(
+        hit_within(&mut sim, p, 40),
+        "a tap released long ago still parried the mob's melee"
+    );
+    assert!(
+        !sim.world
+            .get::<server_rs::ecs::components::PlayerInputState>(p)
+            .unwrap()
+            .attack,
+        "attack stayed latched after the button was released"
+    );
+}
+
+#[test]
+fn parry_tap_released_within_one_tick_still_swings_once() {
+    let mut sim = live(0, 1);
+    let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
+    let p = player_near_mob(&mut sim, mob_pos, 30.0);
+    sim.world
+        .get_mut::<CombatStats>(mob)
+        .unwrap()
+        .cooldown_timer = 60.0;
+    let max = sim.world.get::<Health>(mob).unwrap().max;
+    sim.live_tick(
+        &[input("p1", 0.0, 0.0, true), input("p1", 0.0, 0.0, false)],
+        &[],
+    );
+    assert!(
+        sim.world.get::<Health>(mob).unwrap().current < max,
+        "a tap released in the same tick did not swing"
+    );
+    assert!(
+        !sim.world
+            .get::<server_rs::ecs::components::PlayerInputState>(p)
+            .unwrap()
+            .attack,
+        "attack stayed latched after the tap swung"
+    );
+}

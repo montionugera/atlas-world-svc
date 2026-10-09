@@ -54,6 +54,14 @@ pub fn combat_system(
         let mut attackers = params.p0();
         for (entity, pos, mut stats, health, entity_id, avatar, mut input, attrs) in &mut attackers
         {
+            // Consume the attack latch every tick, whether or not a swing happens. Clearing
+            // it only on a landed swing left a released tap armed forever when nothing was in
+            // reach, and projectile_collision_system reads that flag as "parrying".
+            let wants_attack = input.as_ref().is_some_and(|i| i.attack);
+            if let Some(ref mut inp) = input {
+                inp.attack = inp.attack_held;
+            }
+
             if !health.is_alive {
                 continue;
             }
@@ -68,7 +76,7 @@ pub fn combat_system(
 
             // Legacy attackQueue: a human avatar only swings while attack is held.
             // Bots (no PlayerAvatar) keep auto-attacking.
-            if avatar.is_some() && !input.as_ref().is_some_and(|i| i.attack) {
+            if avatar.is_some() && !wants_attack {
                 continue;
             }
 
@@ -105,9 +113,6 @@ pub fn combat_system(
 
             if let Some(target_entity) = nearest_target {
                 stats.cooldown_timer = stats.attack_cooldown;
-                if let Some(ref mut inp) = input {
-                    inp.attack = inp.attack_held;
-                }
                 let player_user_id = if is_player {
                     entity_id
                         .map(|e| e.0.clone())
