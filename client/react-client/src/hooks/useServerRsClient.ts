@@ -329,7 +329,7 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
             (window as any).__playerId = localPlayerId;
             if (projectiles.size > 0) {
               const w = window as any;
-              w.__seenProjectiles = [...(w.__seenProjectiles ?? []), ...Array.from(projectiles.values())].slice(-200);
+              w.__seenProjectiles = [...(w.__seenProjectiles ?? []), ...Array.from(projectiles.values())].slice(-1000);
             }
             if (snapshot.events.length > 0) {
               // Rolling buffer so debug tools / e2e can see events between polls.

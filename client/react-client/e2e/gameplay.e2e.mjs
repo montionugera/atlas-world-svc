@@ -127,8 +127,9 @@ try {
   const idsAtStart = new Set(s2.mobs.map((m) => m.id));
   let damaged = false;
   let removed = false;
+  const myId = Number(s2.me.id);
   const fightDeadline = Date.now() + 40000;
-  while (!removed && Date.now() < fightDeadline) {
+  while (Date.now() < fightDeadline) {
     const currTargetId = target.id;
     await page.keyboard.down(' ');
     const st = await steerTo(currTargetId, 36, 1500, { attack: true, onSample: sampleGap });
@@ -137,14 +138,22 @@ try {
     if (mob && mob.hp < mob.max) damaged = true;
     if (!mob) {
       const now = await state();
-      removed = !now.mobs.some((m) => m.id === currTargetId);
-      if (!removed) continue;
+      const gone = !now.mobs.some((m) => m.id === currTargetId);
+      if (gone) {
+        removed = true;
+        const evs = await page.evaluate(() => window.__gameEvents ?? []);
+        const hasHit = evs.some((e) => e.kind === 0 && e.sourceId === myId);
+        const hasKill = evs.some((e) => e.kind === 1 && e.sourceId === myId);
+        if (hasHit && hasKill) break;
+        target = nearestMob(now) ?? target;
+        continue;
+      }
     }
-    // Target died by someone else's hand before we hurt it: pick another.
-    if (!removed && mob && !mob.isAlive && !damaged) target = nearestMob(st) ?? target;
+    if (mob && !mob.isAlive) {
+      target = nearestMob(st) ?? target;
+    }
   }
   const events = await page.evaluate(() => window.__gameEvents ?? []);
-  const myId = Number(s2.me.id);
   damaged = damaged || events.some((e) => e.kind === 0 && e.sourceId === myId);
   check('holding Space next to a mob reduces its health', damaged);
   check('the killed mob id is removed from the client', removed, target.id);
@@ -163,14 +172,13 @@ try {
   check('mobs respawn after deaths (new mob ids appear)', respawned);
 
   // 6. Using a skill spawns visible projectiles owned by this player.
-  // If player was killed in combat, wait for auto-respawn first.
+  // Ensure player is alive (wait for auto-respawn if killed in combat).
   await page.waitForFunction(
     () => window.__gameState?.players?.get(window.__playerId)?.isAlive === true,
     null,
     { timeout: 10000 },
   );
-  target = nearestMob(await state());
-  await steerTo(target.id, 120, 8000);
+  await page.locator('canvas').first().click();
   let sawProjectile = false;
   for (let i = 0; i < 4 && !sawProjectile; i++) {
     await page.keyboard.press('1');
