@@ -419,6 +419,58 @@ mod tests {
         assert_eq!(mob_vel.vy, 0.0);
     }
 
+    #[test]
+    fn test_paused_bots_do_not_swing_until_resumed() {
+        use crate::debug::DebugToggles;
+        use crate::MobTag;
+
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50));
+        world.insert_resource(DebugToggles {
+            bots_paused: true,
+            ..Default::default()
+        });
+        let mut grid = SpatialGrid::new(50.0);
+        // A bot: a player-side attacker with no PlayerAvatar, so it swings on its own.
+        let bot = world
+            .spawn((
+                Position::new(100.0, 100.0),
+                Health::new(100.0),
+                CombatStats {
+                    attack_power: 25.0,
+                    defense: 5.0,
+                    attack_range: 40.0,
+                    attack_cooldown: 0.8,
+                    cooldown_timer: 0.0,
+                    is_player: true,
+                },
+            ))
+            .id();
+        let mob = world
+            .spawn((Position::new(120.0, 100.0), Health::new(100.0), MobTag))
+            .id();
+        grid.insert(bot, 100.0, 100.0, true);
+        grid.insert(mob, 120.0, 100.0, false);
+        grid.finish_build();
+        world.insert_resource(grid);
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(combat_system);
+        schedule.run(&mut world);
+        assert_eq!(
+            world.get::<Health>(mob).unwrap().current,
+            100.0,
+            "a paused bot attacked"
+        );
+
+        world.resource_mut::<DebugToggles>().bots_paused = false;
+        schedule.run(&mut world);
+        assert!(
+            world.get::<Health>(mob).unwrap().current < 100.0,
+            "a resumed bot never attacked"
+        );
+    }
+
     /// Spawns a non-AI melee attacker at (100,100) and a human player at (130,100) who is
     /// moving toward it (-X) with `vel`, then returns (world, player).
     fn knockback_world(
