@@ -51,12 +51,12 @@ describe("buildDebugRequest", () => {
     });
   });
 
-  it("sends no Content-Type, so the browser needs no CORS preflight", () => {
+  it("posts as JSON: the server answers anything else 415", () => {
     const { init } = buildDebugRequest({
       target,
       command: { cmd: "clear_mobs" },
     });
-    expect(init.headers).toBeUndefined();
+    expect(init.headers).toEqual({ "Content-Type": "application/json" });
   });
 
   it("leaves the caller out when there is none", () => {
@@ -107,6 +107,15 @@ describe("sendDebugCommand", () => {
       ok: false,
       kind: "rejected",
       error: "unknown mob_type mob-nope",
+    });
+  });
+
+  it("returns the server's reason for another refusal (415)", async () => {
+    answer(415, { ok: false, error: "Content-Type must be application/json" });
+    expect(await send()).toEqual({
+      ok: false,
+      kind: "rejected",
+      error: "Content-Type must be application/json",
     });
   });
 

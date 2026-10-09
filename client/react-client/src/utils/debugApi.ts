@@ -55,7 +55,7 @@ export interface DebugTarget {
 export type DebugFailure =
   /** 404: the server runs without debug mode. */
   | "disabled"
-  /** 400: the server refused the command; `error` is its reason. */
+  /** 400 (or another 4xx): the server refused the command; `error` is its reason. */
   | "rejected"
   /** 503: the tick loop did not answer in time. */
   | "busy"
@@ -84,12 +84,13 @@ export function buildDebugRequest({ target, command }: DebugRequestOptions): {
       init: { method: "GET" },
     };
   }
-  // No Content-Type header: the body goes out as text/plain, which needs no CORS
-  // preflight (a debug-off server answers the preflight 404, hiding the real 404).
+  // The server takes JSON only (415 otherwise). That costs a CORS preflight, which a
+  // debug-off server answers 404: there a POST fails as "network", the GET as "disabled".
   return {
     url: `${target.baseUrl}/debug/command`,
     init: {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         map: target.map,
         ...(target.player ? { player: target.player } : {}),
@@ -130,8 +131,8 @@ export async function sendDebugCommand(
   if (response.ok && body?.ok && body.state) {
     return { ok: true, state: body.state };
   }
-  if (response.status === 400) {
-    return failure("rejected", body?.error ?? "bad request");
+  if (response.status >= 400 && response.status < 500) {
+    return failure("rejected", body?.error ?? `HTTP ${response.status}`);
   }
   return failure("network", `unexpected answer (HTTP ${response.status})`);
 }
