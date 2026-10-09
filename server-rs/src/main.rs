@@ -4,7 +4,7 @@ use server_rs::net::WsServer;
 use server_rs::protocol::SnapshotBuilder;
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tracing::{debug, error, info};
 use tracing_subscriber::EnvFilter;
 
@@ -14,6 +14,53 @@ fn sim_ticker(period: Duration) -> tokio::time::Interval {
     let mut ticker = tokio::time::interval(period);
     ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
     ticker
+}
+
+/// Ticks per timing report: 10 s at 20 Hz.
+const TICK_REPORT_EVERY: usize = 200;
+
+/// Start-to-start interval and wall time of recent ticks, reported at DEBUG so a late
+/// timer and a slow tick body can be told apart on a running server.
+#[derive(Default)]
+struct TickTimings {
+    last_start: Option<Instant>,
+    interval_us: Vec<u64>,
+    work_us: Vec<u64>,
+}
+
+impl TickTimings {
+    fn record(&mut self, start: Instant, work: Duration) {
+        if let Some(prev) = self.last_start.replace(start) {
+            self.interval_us.push((start - prev).as_micros() as u64);
+        }
+        self.work_us.push(work.as_micros() as u64);
+        if self.work_us.len() >= TICK_REPORT_EVERY {
+            debug!(
+                interval_ms = %summarize(&mut self.interval_us),
+                work_ms = %summarize(&mut self.work_us),
+                "tick timing"
+            );
+            self.interval_us.clear();
+            self.work_us.clear();
+        }
+    }
+}
+
+/// `min/p50/p95/max` of microsecond samples, in milliseconds.
+fn summarize(micros: &mut [u64]) -> String {
+    if micros.is_empty() {
+        return "-".to_string();
+    }
+    micros.sort_unstable();
+    let at = |percent: usize| micros[(micros.len() * percent / 100).min(micros.len() - 1)];
+    let ms = |us: u64| us as f64 / 1000.0;
+    format!(
+        "{:.1}/{:.1}/{:.1}/{:.1}",
+        ms(micros[0]),
+        ms(at(50)),
+        ms(at(95)),
+        ms(at(100))
+    )
 }
 
 #[tokio::main]
@@ -153,12 +200,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tick_rate_ms = 50;
     let mut ticker = sim_ticker(Duration::from_millis(tick_rate_ms));
 
+    let mut timings = TickTimings::default();
+
     info!("Entering 20 Hz simulation tick loop...");
 
     tokio::select! {
         _ = async {
             loop {
                 ticker.tick().await;
+                let tick_start = Instant::now();
 
                 let inputs = ws_server.drain_inbound().await;
                 let disconnected = ws_server.drain_disconnects_with_rooms().await;
@@ -217,6 +267,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         ws_server.broadcast_snapshot_to_room(room_id, snapshot_bytes).await;
                     }
                 }
+                timings.record(tick_start, tick_start.elapsed());
             }
         } => {}
         _ = wait_for_shutdown_signal() => {
@@ -269,7 +320,30 @@ async fn wait_for_shutdown_signal() {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::time::Instant;
+
+    #[test]
+    fn summarize_reports_min_median_p95_and_max_in_milliseconds() {
+        let mut micros: Vec<u64> = (1..=100).rev().map(|n| n * 1000).collect();
+        assert_eq!(summarize(&mut micros), "1.0/51.0/96.0/100.0");
+        assert_eq!(summarize(&mut [2500]), "2.5/2.5/2.5/2.5");
+        assert_eq!(summarize(&mut []), "-");
+    }
+
+    #[test]
+    fn tick_timings_measure_start_to_start_and_reset_after_a_report() {
+        let mut timings = TickTimings::default();
+        let start = Instant::now();
+        for n in 0..TICK_REPORT_EVERY as u32 - 1 {
+            timings.record(
+                start + Duration::from_millis(50) * n,
+                Duration::from_millis(2),
+            );
+        }
+        assert_eq!(timings.interval_us.last(), Some(&50_000));
+        assert_eq!(timings.work_us.len(), TICK_REPORT_EVERY - 1);
+        timings.record(start + Duration::from_secs(60), Duration::from_millis(2));
+        assert!(timings.interval_us.is_empty() && timings.work_us.is_empty());
+    }
 
     #[tokio::test]
     async fn sim_ticker_does_not_burst_after_a_stall() {
