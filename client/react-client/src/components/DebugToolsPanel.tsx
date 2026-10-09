@@ -60,8 +60,9 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
   // Requests are numbered: state from one sent before the newest shown is stale.
   const sentRef = useRef(0);
   const shownRef = useRef(0);
-  // The newest refused poll and command: a success sent before it does not clear it.
-  const refusedRef = useRef({ poll: 0, command: 0 });
+  // The newest answered poll and command: an answer to one sent before it is stale,
+  // and neither sets nor clears the message.
+  const answeredRef = useRef({ poll: 0, command: 0 });
 
   const run = useCallback(
     async (command: DebugCommand) => {
@@ -74,20 +75,23 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
       if (roomRef.current !== room) return;
       const kind = command.cmd === "state" ? "poll" : "command";
       const setError = kind === "poll" ? setPollError : setCommandError;
+      const newest = sent > answeredRef.current[kind];
+      if (newest) answeredRef.current[kind] = sent;
       if (result.ok) {
         if (sent > shownRef.current) {
           shownRef.current = sent;
           setState(result.state);
         }
-        if (sent > refusedRef.current[kind]) {
+        if (newest) {
           setError("");
           setOff(false);
         }
         return;
       }
-      refusedRef.current[kind] = Math.max(refusedRef.current[kind], sent);
-      setError(result.error);
-      setOff(result.kind === "disabled");
+      if (newest) {
+        setError(result.error);
+        setOff(result.kind === "disabled");
+      }
       // The tick loop answered late: it may still have applied the command.
       if (result.kind === "busy" && command.cmd !== "state") {
         await run({ cmd: "state" });

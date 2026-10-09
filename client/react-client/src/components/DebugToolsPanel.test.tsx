@@ -173,6 +173,25 @@ describe("DebugToolsPanel", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("bad count");
   });
 
+  it("does not let a refusal answered late hide that a newer command worked", async () => {
+    await mount();
+    // The first command hangs until released; the second succeeds at once.
+    let release: (answer: object) => void = () => {};
+    fetchMock.mockImplementationOnce(
+      () => new Promise((resolve) => (release = resolve)),
+    );
+    await click("Clear");
+    await click("Clear");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    release({
+      status: 400,
+      ok: false,
+      json: () => Promise.resolve({ ok: false, error: "bad count" }),
+    });
+    await settle();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
   it("waits for a poll's answer before sending the next one", async () => {
     await mount();
     fetchMock.mockImplementationOnce(() => new Promise(() => {}));
