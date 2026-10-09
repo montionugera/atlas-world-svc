@@ -149,7 +149,7 @@ export function formatReadout(
   if (latency) {
     rows.push([
       "net",
-      `delta ${Math.round(latency.pingMs)} ms  jitter ${Math.round(latency.jitterMs)} ms`,
+      `clock offset ${Math.round(latency.pingMs)} ms  jitter ${Math.round(latency.jitterMs)} ms`,
     ]);
   }
   rows.push([

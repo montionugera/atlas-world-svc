@@ -133,7 +133,7 @@ describe("formatReadout", () => {
   it("shows snapshot rate, snapshot age and latency", () => {
     const r = rows(base);
     expect(r["snap"]).toBe("20.0 Hz  age 30 ms");
-    expect(r["net"]).toBe("delta 12 ms  jitter 3 ms");
+    expect(r["net"]).toBe("clock offset 12 ms  jitter 3 ms");
   });
 
   it("shows only state the snapshot or the client really has", () => {
