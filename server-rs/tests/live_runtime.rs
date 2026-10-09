@@ -196,8 +196,12 @@ fn row2_melee_mob_closes_distance_and_damages_player() {
     make_melee(&mut sim, mob);
     let p = player_near_mob(&mut sim, mob_pos, 120.0);
     let max = sim.world.get::<Health>(p).unwrap().max;
-    ticks(&mut sim, 100);
-    let d = dist(pos(&sim, mob), pos(&sim, p));
+    // Closest approach, not the final distance: each hit now shoves the player back out.
+    let mut d = f32::MAX;
+    for _ in 0..100 {
+        tick(&mut sim);
+        d = d.min(dist(pos(&sim, mob), pos(&sim, p)));
+    }
     assert!(d <= 46.0, "melee mob did not close to reach: {d}");
     let hp = sim.world.get::<Health>(p).unwrap().current;
     assert!(hp < max, "mob never damaged the player ({hp}/{max})");
@@ -317,6 +321,8 @@ fn row8_human_avatar_only_melees_while_attack_held() {
     let mut sim = live(0, 1);
     let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
     player_near_mob(&mut sim, mob_pos, 30.0);
+    // Keep the mob from swinging: its hit would shove the avatar out of melee reach.
+    sim.world.get_mut::<CombatStats>(mob).unwrap().cooldown_timer = 60.0;
     let max = sim.world.get::<Health>(mob).unwrap().max;
     for _ in 0..10 {
         sim.live_tick(&[input("p1", 0.0, 0.0, false)], &[]);
@@ -512,6 +518,9 @@ fn review5_bot_hits_mob_standing_at_mob_melee_reach() {
     // Mob at 44px: inside mob melee reach (20 + 12 + 14), beyond the old 30px bot range.
     *sim.world.get_mut::<Velocity>(bot).unwrap() = Velocity::zero();
     *sim.world.get_mut::<Position>(mob).unwrap() = Position::new(bot_pos.x + 44.0, bot_pos.y);
+    // The mob must not swing first: its hit now shoves the bot out of melee reach,
+    // which is not what this range check is about.
+    sim.world.get_mut::<CombatStats>(mob).unwrap().cooldown_timer = 5.0;
     let max = sim.world.get::<Health>(mob).unwrap().max;
     tick(&mut sim);
     assert!(sim.world.get::<Health>(mob).unwrap().current < max);

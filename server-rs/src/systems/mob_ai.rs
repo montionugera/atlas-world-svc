@@ -3,7 +3,7 @@ use crate::combat::{DamageType, Element};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
     AiState, CombatStats, ElementalAttributes, Health, MobAi, PlayerTag, Position, Projectile,
-    StatusEffects, Velocity,
+    StatusEffects, Velocity, KNOCKBACK_DECAY_PER_SEC,
 };
 use bevy_ecs::prelude::*;
 
@@ -47,8 +47,11 @@ pub fn mob_ai_system(
             stats.cooldown_timer = (stats.cooldown_timer - dt).max(0.0);
         }
 
-        // If knocked back from an attack, preserve knockback velocity and skip AI override
+        // If knocked back from an attack, preserve knockback velocity (easing out) and skip AI override
         if opt_status.is_some_and(|s| s.is_knocked_back()) {
+            let decay = (-KNOCKBACK_DECAY_PER_SEC * dt).exp();
+            vel.vx *= decay;
+            vel.vy *= decay;
             continue;
         }
 

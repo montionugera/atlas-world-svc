@@ -1,6 +1,7 @@
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
     CastingState, DashState, Health, PlayerAvatar, PlayerInputState, StatusEffects, Velocity,
+    KNOCKBACK_DECAY_PER_SEC,
 };
 use bevy_ecs::prelude::*;
 
@@ -57,8 +58,12 @@ pub fn player_input_system(
             }
         }
 
-        // 2b. Knocked back: keep the impulse velocity; input (and any dash) must not overwrite it
+        // 2b. Knocked back: keep the impulse velocity (easing out); input (and any dash)
+        // must not overwrite it
         if status_opt.is_some_and(|s| s.is_knocked_back()) {
+            let decay = (-KNOCKBACK_DECAY_PER_SEC * dt).exp();
+            vel.vx *= decay;
+            vel.vy *= decay;
             if let Some(ref mut dash) = dash_opt {
                 dash.remaining_sec = 0.0;
             }
@@ -274,8 +279,10 @@ mod tests {
         schedule.run(&mut world);
 
         let vel = world.get::<Velocity>(entity).unwrap();
-        assert_eq!(vel.vx, -80.0, "movement input must not erase knockback");
-        assert_eq!(vel.vy, 30.0);
+        // Direction is kept and the speed eases out by exp(-KNOCKBACK_DECAY_PER_SEC * dt).
+        let decay = (-KNOCKBACK_DECAY_PER_SEC * 0.05).exp();
+        assert!((vel.vx - -80.0 * decay).abs() < 1e-3, "movement input must not erase knockback");
+        assert!((vel.vy - 30.0 * decay).abs() < 1e-3);
 
         // Knockback ends: normal movement control resumes.
         world.get_mut::<StatusEffects>(entity).unwrap().knockback_timer = 0.0;

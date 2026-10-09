@@ -3,8 +3,9 @@ use crate::combat::damage::{DamageCalculator, DamageOptions};
 use crate::combat::{DamageType, Element};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    CombatStats, CooldownTracker, ElementalAttributes, EntityId, Health, HitLog, HitRecord, Mass,
-    MobAi, MobSpawnAnchor, PlayerAvatar, PlayerInputState, Position, StatusEffects, Velocity,
+    knockback_speed, CombatStats, CooldownTracker, ElementalAttributes, EntityId, Health, HitLog,
+    HitRecord, Mass, MobAi, MobSpawnAnchor, PlayerAvatar, PlayerInputState, Position,
+    StatusEffects, Velocity,
 };
 use crate::spatial::grid::SpatialGrid;
 use crate::storage::{MatchEvent, MatchEventQueue};
@@ -169,11 +170,10 @@ pub fn combat_system(
                     threat.add_threat(attacker, damage, now);
                 }
 
-                // Attack impulse & knockback:
-                // Legacy formula: impulse = clamp(damage * 20.0, 1.0, 2000.0) / victim_mass
-                let raw_impulse = (damage * 20.0).clamp(1.0, 2000.0);
+                // Knockback: replace the victim's velocity with a shove away from the attacker
+                // (adding to it left a running victim still drifting toward the attacker).
                 let victim_mass = target_mass.map(|m| m.value()).unwrap_or(25.0);
-                let impulse_mag = raw_impulse / victim_mass;
+                let impulse_mag = knockback_speed(damage, victim_mass);
 
                 if let (Some(t_pos), Some(ref mut t_vel)) = (target_pos, target_vel.as_mut()) {
                     let dx = t_pos.x - attacker_x;
@@ -184,8 +184,8 @@ pub fn combat_system(
                     } else {
                         (1.0, 0.0)
                     };
-                    t_vel.vx += nx * impulse_mag;
-                    t_vel.vy += ny * impulse_mag;
+                    t_vel.vx = nx * impulse_mag;
+                    t_vel.vy = ny * impulse_mag;
                 }
                 if let Some(ref mut status) = target_status {
                     status.apply_knockback(0.2);
@@ -404,5 +404,121 @@ mod tests {
             mob_vel.vx
         );
         assert_eq!(mob_vel.vy, 0.0);
+    }
+
+    /// Spawns a non-AI melee attacker at (100,100) and a human player at (130,100) who is
+    /// moving toward it (-X) with `vel`, then returns (world, player).
+    fn knockback_world(vel: crate::Velocity, dash: crate::ecs::components::DashState) -> (World, Entity) {
+        use crate::{Mass, PlayerTag};
+
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50));
+        let mut grid = SpatialGrid::new(50.0);
+
+        let attacker = world
+            .spawn((
+                Position::new(100.0, 100.0),
+                Health::new(100.0),
+                CombatStats {
+                    attack_power: 10.0,
+                    defense: 2.0,
+                    attack_range: 40.0,
+                    attack_cooldown: 5.0,
+                    cooldown_timer: 0.0,
+                    is_player: false,
+                },
+            ))
+            .id();
+        let player = world
+            .spawn((
+                Position::new(130.0, 100.0),
+                vel,
+                Health::new(100.0),
+                PlayerTag,
+                PlayerAvatar::new("player-1", 200.0),
+                PlayerInputState::new(-1.0, 0.0, false, 0), // holding toward the attacker
+                Mass(15.0),
+                StatusEffects::default(),
+                dash,
+            ))
+            .id();
+
+        grid.insert(attacker, 100.0, 100.0, false);
+        grid.insert(player, 130.0, 100.0, true);
+        grid.finish_build();
+        world.insert_resource(grid);
+        (world, player)
+    }
+
+    #[test]
+    fn test_hit_while_running_toward_attacker_shoves_player_away_then_returns_control() {
+        use crate::ecs::components::DashState;
+        use crate::systems::player_input_system;
+        use crate::Velocity;
+
+        let (mut world, player) = knockback_world(Velocity::new(-200.0, 0.0), DashState::new());
+
+        let mut hit = Schedule::default();
+        hit.add_systems(combat_system);
+        hit.run(&mut world);
+        assert!(world.get::<Health>(player).unwrap().current < 100.0);
+        let mut prev = world.get::<Velocity>(player).unwrap().vx;
+        assert!(prev > 0.0, "hit must push the player away from the attacker, got vx {prev}");
+
+        // Following ticks with the movement key still held toward the attacker.
+        let mut tick = Schedule::default();
+        tick.add_systems((status_effect_tick_system, player_input_system).chain());
+        let mut shove = 0.0;
+        loop {
+            tick.run(&mut world);
+            if !world.get::<StatusEffects>(player).unwrap().is_knocked_back() {
+                break;
+            }
+            let vx = world.get::<Velocity>(player).unwrap().vx;
+            assert!(vx > 0.0, "knockback must keep pointing away, got vx {vx}");
+            assert!(vx < prev, "knockback must ease out, got {vx} after {prev}");
+            shove += vx * 0.05;
+            prev = vx;
+        }
+        // Reads as a shove: about one to two body widths (24u), not a teleport.
+        assert!((20.0..=50.0).contains(&shove), "shove distance {shove}");
+
+        // Timer expired: control returns to the held input.
+        let vel = world.get::<Velocity>(player).unwrap();
+        assert_eq!(vel.vx, -200.0);
+        assert_eq!(vel.vy, 0.0);
+    }
+
+    #[test]
+    fn test_hit_mid_dash_does_not_leave_dash_speed_slide() {
+        use crate::ecs::components::DashState;
+        use crate::systems::player_input_system;
+        use crate::Velocity;
+
+        let mut dash = DashState::new();
+        dash.remaining_sec = 0.22;
+        dash.dir_x = -1.0;
+        dash.dir_y = 0.0;
+        dash.speed = 450.0;
+        let (mut world, player) = knockback_world(Velocity::new(-450.0, 0.0), dash);
+
+        let mut hit = Schedule::default();
+        hit.add_systems(combat_system);
+        hit.run(&mut world);
+
+        let mut tick = Schedule::default();
+        tick.add_systems((status_effect_tick_system, player_input_system).chain());
+        loop {
+            tick.run(&mut world);
+            if !world.get::<StatusEffects>(player).unwrap().is_knocked_back() {
+                break;
+            }
+            let vx = world.get::<Velocity>(player).unwrap().vx;
+            assert!(vx > 0.0, "dash velocity must not survive the hit, got vx {vx}");
+            assert!(vx < 450.0, "knockback must not be a dash-speed slide, got vx {vx}");
+            assert!(!world.get::<DashState>(player).unwrap().is_dashing());
+        }
+
+        assert_eq!(world.get::<Velocity>(player).unwrap().vx, -200.0);
     }
 }

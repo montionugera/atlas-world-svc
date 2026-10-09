@@ -78,6 +78,18 @@ impl Default for Mass {
     }
 }
 
+/// Knockback velocity decay rate (1/s) while `StatusEffects::is_knocked_back()`:
+/// `vel *= exp(-rate * dt)`, so the shove eases out instead of snapping at timer end.
+pub const KNOCKBACK_DECAY_PER_SEC: f32 = 6.0;
+
+/// Speed (u/s) a hit shoves its victim away at, tuned for the 10x world scale
+/// (run speed 200, dash 450): 240..=400 for a player (mass 15), 144..=240 for a
+/// standard mob (mass 25), reaching the cap at 20 damage. With the decay above over the
+/// 0.2 s knockback timer that is roughly a body width or two of travel.
+pub fn knockback_speed(damage: f32, victim_mass: f32) -> f32 {
+    (damage * 300.0).clamp(3600.0, 6000.0) / victim_mass
+}
+
 #[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct EntityId(pub String);
 

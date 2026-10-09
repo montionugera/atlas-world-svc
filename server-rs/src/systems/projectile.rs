@@ -2,8 +2,8 @@ use crate::ai::ThreatTable;
 use crate::combat::{DamageCalculator, DamageOptions, SkillEffect};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    ElementalAttributes, Health, HitLog, HitRecord, Mass, MobTag, PlayerInputState, PlayerTag,
-    Position, Projectile, StatusEffects, Velocity,
+    knockback_speed, ElementalAttributes, Health, HitLog, HitRecord, Mass, MobTag,
+    PlayerInputState, PlayerTag, Position, Projectile, StatusEffects, Velocity,
 };
 use crate::spatial::grid::SpatialGrid;
 use bevy_ecs::prelude::*;
@@ -330,13 +330,12 @@ pub fn projectile_collision_system(
                                 (1.0, 0.0)
                             };
 
-                            let raw_impulse = (damage * 20.0).clamp(1.0, 2000.0);
                             let victim_mass = v_mass.map(|m| m.value()).unwrap_or(25.0);
-                            let impulse_mag = raw_impulse / victim_mass;
+                            let impulse_mag = knockback_speed(damage, victim_mass);
 
                             if let Some(ref mut vel) = v_vel {
-                                vel.vx += nx * impulse_mag;
-                                vel.vy += ny * impulse_mag;
+                                vel.vx = nx * impulse_mag;
+                                vel.vy = ny * impulse_mag;
                             }
 
                             if let Some(ref mut log) = hit_log {
@@ -409,9 +408,8 @@ pub fn projectile_collision_system(
                     let damage = DamageCalculator::calculate(&damage_opts);
                     health.take_damage(damage);
 
-                    let raw_impulse = (damage * 20.0).clamp(1.0, 2000.0);
                     let victim_mass = opt_mass.map(|m| m.value()).unwrap_or(25.0);
-                    let impulse_mag = raw_impulse / victim_mass;
+                    let impulse_mag = knockback_speed(damage, victim_mass);
 
                     let (nx, ny) = if let Some(ref p_vel) = proj_vel_opt {
                         let speed = (p_vel.vx * p_vel.vx + p_vel.vy * p_vel.vy).sqrt();
@@ -439,8 +437,8 @@ pub fn projectile_collision_system(
                     };
 
                     if let Some(ref mut t_vel) = opt_vel {
-                        t_vel.vx += nx * impulse_mag;
-                        t_vel.vy += ny * impulse_mag;
+                        t_vel.vx = nx * impulse_mag;
+                        t_vel.vy = ny * impulse_mag;
                     }
 
                     if let Some(ref mut log) = hit_log {
@@ -754,7 +752,7 @@ mod tests {
         // Projectile despawns on hit
         assert!(world.get_entity(proj).is_err());
 
-        // Mob receives impulse along +X axis: raw_impulse = 25 * 20 = 500, impulse_mag = 500 / 25 = 20.0
+        // Mob is shoved along +X axis: knockback_speed(25 dmg, mass 25) = 6000 / 25 = 240.0
         let vel = world.get::<Velocity>(mob).unwrap();
         assert!(
             vel.vx > 10.0,
