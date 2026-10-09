@@ -18,7 +18,10 @@ export const MAX_EXTRAPOLATION_MS = 50;
  * MAX_EXTRAPOLATION_MS a first-ever snapshot one interval late causes no freeze.
  */
 const MARGIN_MS = 50;
-/** Never hold the picture further behind the newest snapshot than this. */
+/**
+ * Most lateness the delay is sized for. With MARGIN_MS on top, the picture is never
+ * held more than 300 ms behind the newest snapshot; anything later is a stall.
+ */
 export const MAX_DELAY_MS = 250;
 /** Lateness window: 3 s of snapshots. */
 const WINDOW = 60;
@@ -53,6 +56,8 @@ export interface SnapshotClock {
   target: number;
   /** Simulation time of the newest snapshot. */
   newest: number;
+  /** The backlog of a stall is still landing. */
+  stalled?: boolean;
 }
 
 function lagAt(clock: SnapshotClock, now: number): number {
@@ -84,11 +89,35 @@ export function observeSnapshot(
       newest: simTime,
     };
   }
+  const newest = Math.max(clock.newest, simTime);
+  const cap = MAX_DELAY_MS + MARGIN_MS;
+  const late = offset - Math.min(...clock.offsets) > cap;
+  const burst = arrival - clock.at < SNAPSHOT_INTERVAL_MS / 2;
+  if (clock.stalled ? burst : late) {
+    // A stall longer than the delay covers; its backlog lands in one burst. Snap to
+    // the normal delay (one visible jump, no seconds of lag behind input) and keep
+    // it out of the lateness window: it is not jitter to size the delay for.
+    return {
+      ...clock,
+      lag: Math.min(lag, clock.target),
+      at: arrival,
+      newest,
+      stalled: true,
+    };
+  }
+  // Still late once the burst is over: the timeline itself moved (the server skips
+  // the ticks it missed), so start over from this snapshot.
+  if (late) return observeSnapshot(undefined, simTime, arrival);
   const offsets = [...clock.offsets, offset].slice(-WINDOW);
   const target =
     Math.min(Math.max(...offsets), offset + MAX_DELAY_MS) + MARGIN_MS;
-  const newest = Math.max(clock.newest, simTime);
-  return { offsets, lag, at: arrival, target, newest };
+  return {
+    offsets,
+    lag: Math.min(lag, offset + cap),
+    at: arrival,
+    target,
+    newest,
+  };
 }
 
 /**

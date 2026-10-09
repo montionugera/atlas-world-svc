@@ -116,6 +116,48 @@ describe("late and missing snapshots", () => {
     expect(Math.max(...d)).toBeLessThan(3.34 * 1.1 + 0.01);
   });
 
+  it("snaps back to the normal delay after a stall longer than the buffer covers", () => {
+    const arrivals = Array.from({ length: 80 }, (_, k) => k * 50);
+    // 600 ms main-thread hitch before tick 20: twelve snapshots land together.
+    for (let k = 20; k < 32; k++) arrivals[k] = 1600 + (k - 20) * 0.1;
+    const frames = replay(walk(arrivals));
+    const lag = (f: Frame) => f.now - f.t;
+    const normal = Math.max(...between(frames, 500, 950).map(lag));
+    // No slow-motion replay of the backlog: the very next frames are back to normal.
+    for (const f of between(frames, 1620, 3900)) {
+      expect(lag(f)).toBeLessThanOrEqual(normal + 1);
+    }
+    expect(
+      Math.min(...steps(between(frames, 1620, 3900), "x")),
+    ).toBeGreaterThan(0);
+  });
+
+  it("re-bases when the server timeline itself shifts (skipped ticks)", () => {
+    // The server stalls 600 ms and skips the missed ticks: every later snapshot is
+    // 600 ms "late" for good, with no burst.
+    const arrivals = Array.from({ length: 80 }, (_, k) =>
+      k < 20 ? k * 50 : k * 50 + 600,
+    );
+    const frames = replay(walk(arrivals));
+    const after = between(frames, 1800, 3900);
+    expect(Math.min(...steps(after, "x"))).toBeGreaterThan(0);
+    for (const f of after) expect(f.now - f.t).toBeLessThanOrEqual(600 + 101);
+  });
+
+  it("never holds the picture more than 300 ms behind the newest snapshot", () => {
+    let clock: SnapshotClock | undefined;
+    let worst = 0;
+    const feed = (t: number, arrival: number) => {
+      clock = observeSnapshot(clock, t, arrival);
+      worst = Math.max(worst, clock.newest - renderTimeAt(clock, arrival));
+    };
+    for (let k = 0; k < 20; k++) feed(k * 50, k * 50);
+    // Six snapshots 290 ms late in one burst, then a seventh on time.
+    for (let k = 20; k < 26; k++) feed(k * 50, 1290 + (k - 20));
+    for (let k = 26; k < 40; k++) feed(k * 50, k * 50);
+    expect(worst).toBeLessThanOrEqual(300);
+  });
+
   it("extrapolates a dry buffer by at most MAX_EXTRAPOLATION_MS", () => {
     const samples = [{ t: 1000, x: 10, y: 0, vx: 200, vy: 0 }];
     expect(samplePosition({ x: 0, y: 0, samples }, 1020).x).toBeCloseTo(14);
