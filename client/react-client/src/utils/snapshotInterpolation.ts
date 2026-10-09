@@ -133,15 +133,6 @@ export function renderTimeAt(
   return Math.min(now - lagAt(clock, now), clock.newest);
 }
 
-/** How far behind the newest possible snapshot the picture is held at `now` (ms). */
-export function interpolationDelayAt(
-  clock: SnapshotClock | undefined,
-  now: number,
-): number {
-  if (!clock) return 0;
-  return lagAt(clock, now) - Math.min(...clock.offsets);
-}
-
 /**
  * Append a sample. One that does not move time forward, or that teleports, starts a
  * new history; a non-finite one is dropped.
