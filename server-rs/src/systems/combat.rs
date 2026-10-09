@@ -1,8 +1,8 @@
 use crate::ai::ThreatTable;
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    CombatStats, CooldownTracker, EntityId, Health, MobAi, MobSpawnAnchor, PlayerAvatar,
-    PlayerInputState, Position, StatusEffects,
+    CombatStats, CooldownTracker, EntityId, Health, HitLog, HitRecord, MobAi, MobSpawnAnchor,
+    PlayerAvatar, PlayerInputState, Position, StatusEffects,
 };
 use crate::spatial::grid::SpatialGrid;
 use crate::storage::{MatchEvent, MatchEventQueue};
@@ -13,6 +13,7 @@ pub fn combat_system(
     clock: Res<SimClock>,
     grid: Res<SpatialGrid>,
     mut event_queue: Option<ResMut<MatchEventQueue>>,
+    mut hit_log: Option<ResMut<HitLog>>,
     mut params: ParamSet<(
         Query<
             (
@@ -122,7 +123,16 @@ pub fn combat_system(
                 if let Some(mut threat) = threat {
                     threat.add_threat(attacker, damage, now);
                 }
-                if was_alive && (!target_health.is_alive || target_health.current <= 0.0) {
+                let killed = was_alive && (!target_health.is_alive || target_health.current <= 0.0);
+                if let Some(ref mut log) = hit_log {
+                    log.0.push(HitRecord {
+                        attacker,
+                        target,
+                        amount: damage,
+                        killed,
+                    });
+                }
+                if killed {
                     if let Some(user_id) = attacker_user_id {
                         if let Some(ref mut queue) = event_queue {
                             let mob_id = target_id

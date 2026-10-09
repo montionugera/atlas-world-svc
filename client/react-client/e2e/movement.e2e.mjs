@@ -7,6 +7,8 @@
 import { chromium } from 'playwright';
 
 const BASE = process.env.E2E_URL ?? 'http://localhost:3000';
+// E2E_SERVER=host:port points the client at another server-rs (adds ?server=).
+const SERVER_Q = process.env.E2E_SERVER ? `server=${process.env.E2E_SERVER}` : '';
 const player = `e2e-${Date.now()}`;
 let failures = 0;
 const check = (name, ok, detail) => {
@@ -19,7 +21,7 @@ try {
   const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto(`${BASE}/?player=${player}`);
+  await page.goto(`${BASE}/?player=${player}${SERVER_Q ? `&${SERVER_Q}` : ''}`);
 
   // Wait until our own avatar appears in replicated state.
   await page.waitForFunction(
@@ -116,7 +118,7 @@ try {
   let liveLoads = 0;
   const LOADS = 6;
   for (let i = 0; i < LOADS; i++) {
-    await page.goto(BASE);
+    await page.goto(SERVER_Q ? `${BASE}/?${SERVER_Q}` : BASE);
     const ok = await page
       .waitForFunction(() => (window.__gameState?.tick ?? 0) > 0 && window.__gameState.mobs.size > 0, null, {
         timeout: 4000,

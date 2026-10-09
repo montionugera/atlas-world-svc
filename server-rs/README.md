@@ -103,6 +103,20 @@ Live behaviour:
   sent in `removed_ids`. Closing one of several sockets for a session keeps the avatar.
 - **Wire `max_health`** is the entity's real `Health.max`.
 
+Wire snapshot (`schemas/game_protocol.fbs`, fields only ever **added**; regenerate Rust with
+`flatc --rust` + `rustfmt`, TS into `contracts/` and `client/react-client/` with `flatc --ts`):
+- `state_flags`: `STATE_FLAG_ALIVE` (1) and `STATE_FLAG_BOT` (2, only `BotAgent` players —
+  human avatars never carry it).
+- `mob_type`: the mob's bestiary id (from `MobSpawnAnchor`), e.g. `mob-millpond-gnawer`.
+- `target_id`: a live mob's `ThreatTable` top target; a human's `ClientInput.target_id`.
+- **Projectiles** are sent as `EntityType::Projectile` (id = FNV of the ECS entity,
+  `owner_id` / `target_id` = wire ids). They are ephemeral: never in `removed_ids`, clients
+  rebuild their projectile set each snapshot.
+- `events`: one `Hit` (source, target, amount) per melee/projectile damage application and a
+  `Kill` when that hit was lethal (live-only `HitLog` resource, drained every `live_tick`).
+  `MatchEventQueue` is drained every tick too (`LiveFrame.match_events`); `main.rs` only logs
+  those at debug level — no persistence sink is wired into the live loop yet.
+
 | Env var | Default | Meaning |
 |---|---|---|
 | `SIM_SEED` | `0x1337c0de` | Live world seed |

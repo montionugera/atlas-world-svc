@@ -114,6 +114,7 @@ data/
 # Negating the directory itself is required: git does not descend into an
 # excluded directory, so negating only the files inside would not work.
 !atelier/asset-storybook/js/data/
+!client/react-client/src/data/
 # ps-release-workflow (gitignored state)
 .claude/state/
 .claude/worktrees/

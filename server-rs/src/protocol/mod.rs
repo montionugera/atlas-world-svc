@@ -4,6 +4,11 @@ pub mod generated;
 
 pub use generated::atlas::protocol::*;
 
+/// `state_flags` bit: the entity is alive.
+pub const STATE_FLAG_ALIVE: u16 = 1;
+/// `state_flags` bit: the entity is a server-driven bot (`BotAgent`), not a human.
+pub const STATE_FLAG_BOT: u16 = 2;
+
 /// Data structure representing entity state for snapshot replication.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct EntitySnapshotData {
@@ -17,6 +22,10 @@ pub struct EntitySnapshotData {
     pub max_health: f32,
     pub state_flags: u16,
     pub target_id: u32,
+    /// Bestiary id for mobs (interned, see [`intern_mob_type`]); empty otherwise.
+    pub mob_type: &'static str,
+    /// Owning entity id (projectiles); 0 otherwise.
+    pub owner_id: u32,
 }
 
 impl Default for EntitySnapshotData {
@@ -32,8 +41,37 @@ impl Default for EntitySnapshotData {
             max_health: 100.0,
             state_flags: 0,
             target_id: 0,
+            mob_type: "",
+            owner_id: 0,
         }
     }
+}
+
+/// One combat event that happened during a tick (wire `GameEvent`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct GameEventData {
+    pub kind: GameEventKind,
+    pub source_id: u32,
+    pub target_id: u32,
+    pub amount: f32,
+}
+
+/// Interns a mob type id so `EntitySnapshotData` stays `Copy` and the per-tick snapshot
+/// path does not allocate. The set is bounded by the bestiary (~100 ids).
+pub fn intern_mob_type(id: &str) -> &'static str {
+    use std::collections::HashSet;
+    use std::sync::{Mutex, OnceLock};
+    static POOL: OnceLock<Mutex<HashSet<&'static str>>> = OnceLock::new();
+    let mut pool = POOL
+        .get_or_init(|| Mutex::new(HashSet::new()))
+        .lock()
+        .unwrap_or_else(|e| e.into_inner());
+    if let Some(s) = pool.get(id) {
+        return s;
+    }
+    let leaked: &'static str = Box::leak(id.to_owned().into_boxed_str());
+    pool.insert(leaked);
+    leaked
 }
 
 /// Zero-allocation FlatBuffers builder for world snapshots.
@@ -68,6 +106,18 @@ impl SnapshotBuilder {
         entities: &[EntitySnapshotData],
         removed: &[u32],
     ) -> &[u8] {
+        self.build_frame(tick, time_ms, entities, removed, &[])
+    }
+
+    /// Like [`Self::build_snapshot`], plus the tick's combat `events`.
+    pub fn build_frame(
+        &mut self,
+        tick: u32,
+        time_ms: u64,
+        entities: &[EntitySnapshotData],
+        removed: &[u32],
+        events: &[GameEventData],
+    ) -> &[u8] {
         self.fbb.reset();
         self.delta_offsets.clear();
 
@@ -78,6 +128,12 @@ impl SnapshotBuilder {
                 Some(&vel)
             } else {
                 None
+            };
+            // Shared strings: one copy per mob type per frame.
+            let mob_type = if e.mob_type.is_empty() {
+                None
+            } else {
+                Some(self.fbb.create_shared_string(e.mob_type))
             };
             let delta = EntityDelta::create(
                 &mut self.fbb,
@@ -90,6 +146,8 @@ impl SnapshotBuilder {
                     max_health: e.max_health,
                     state_flags: e.state_flags,
                     target_id: e.target_id,
+                    mob_type,
+                    owner_id: e.owner_id,
                 },
             );
             self.delta_offsets.push(delta);
@@ -107,6 +165,26 @@ impl SnapshotBuilder {
             None
         };
 
+        let events_vec = if events.is_empty() {
+            None
+        } else {
+            let offsets: Vec<_> = events
+                .iter()
+                .map(|ev| {
+                    GameEvent::create(
+                        &mut self.fbb,
+                        &GameEventArgs {
+                            kind: ev.kind,
+                            source_id: ev.source_id,
+                            target_id: ev.target_id,
+                            amount: ev.amount,
+                        },
+                    )
+                })
+                .collect();
+            Some(self.fbb.create_vector(&offsets))
+        };
+
         let snapshot = WorldSnapshot::create(
             &mut self.fbb,
             &WorldSnapshotArgs {
@@ -114,6 +192,7 @@ impl SnapshotBuilder {
                 server_time_ms: time_ms,
                 entities: entities_vec,
                 removed_ids: removed_vec,
+                events: events_vec,
             },
         );
 
@@ -205,6 +284,7 @@ mod tests {
                 max_health: 100.0,
                 state_flags: 0b0000_0001,
                 target_id: 202,
+                ..Default::default()
             },
             EntitySnapshotData {
                 id: 202,
@@ -217,6 +297,7 @@ mod tests {
                 max_health: 50.0,
                 state_flags: 0,
                 target_id: 101,
+                ..Default::default()
             },
         ];
         let removed = vec![303, 404];

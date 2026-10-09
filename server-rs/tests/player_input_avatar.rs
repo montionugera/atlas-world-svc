@@ -82,6 +82,7 @@ async fn test_player_avatar_input_pipeline_and_broadcast() {
         max_health: 100.0,
         state_flags: 1,
         target_id: 42,
+        ..Default::default()
     }];
     let snapshot_bytes = snapshot_builder.build_snapshot(2, 100, &entities, &[]);
     ws_server.broadcast_snapshot(snapshot_bytes).await;

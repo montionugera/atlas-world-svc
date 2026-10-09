@@ -2,8 +2,15 @@ import * as flatbuffers from 'flatbuffers';
 import { WorldSnapshot } from './generated/atlas/protocol/world-snapshot';
 import { EntityDelta } from './generated/atlas/protocol/entity-delta';
 import { EntityType } from './generated/atlas/protocol/entity-type';
+import { GameEvent } from './generated/atlas/protocol/game-event';
+import { GameEventKind } from './generated/atlas/protocol/game-event-kind';
 
-export { EntityType };
+export { EntityType, GameEventKind };
+
+/** `state_flags` bit: the entity is alive. */
+export const STATE_FLAG_ALIVE = 1;
+/** `state_flags` bit: the entity is a server-driven bot (not a human player). */
+export const STATE_FLAG_BOT = 2;
 
 export interface DecodedEntityDelta {
   id: number;
@@ -16,6 +23,17 @@ export interface DecodedEntityDelta {
   maxHealth: number;
   stateFlags: number;
   targetId: number;
+  /** Bestiary id for mobs (e.g. "mob-millpond-gnawer"); '' otherwise / from older servers. */
+  mobType: string;
+  /** Owning entity id (projectiles); 0 otherwise. */
+  ownerId: number;
+}
+
+export interface DecodedGameEvent {
+  kind: GameEventKind;
+  sourceId: number;
+  targetId: number;
+  amount: number;
 }
 
 export interface DecodedSnapshot {
@@ -23,6 +41,7 @@ export interface DecodedSnapshot {
   serverTimeMs: number;
   entities: DecodedEntityDelta[];
   removedIds: number[];
+  events: DecodedGameEvent[];
 }
 
 export class BinaryDeltaDecoder {
@@ -61,6 +80,8 @@ export class BinaryDeltaDecoder {
         maxHealth: entity.maxHealth(),
         stateFlags: entity.stateFlags(),
         targetId: entity.targetId(),
+        mobType: entity.mobType() ?? '',
+        ownerId: entity.ownerId(),
       };
     }
 
@@ -70,11 +91,26 @@ export class BinaryDeltaDecoder {
       removedIds[i] = snapshot.removedIds(i) ?? 0;
     }
 
+    const eventsLength = snapshot.eventsLength();
+    const events: DecodedGameEvent[] = [];
+    const eventAccessor = new GameEvent();
+    for (let i = 0; i < eventsLength; i++) {
+      const ev = snapshot.events(i, eventAccessor);
+      if (!ev) continue;
+      events.push({
+        kind: ev.kind(),
+        sourceId: ev.sourceId(),
+        targetId: ev.targetId(),
+        amount: ev.amount(),
+      });
+    }
+
     return {
       tick: snapshot.tick(),
       serverTimeMs: Number(snapshot.serverTimeMs()),
       entities,
       removedIds,
+      events,
     };
   }
 

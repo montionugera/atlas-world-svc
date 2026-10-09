@@ -23,9 +23,15 @@ interface LogEntry {
 const playerParam =
   typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('player') : null;
 
+// `?server=<host>:<port>` points this tab at another server-rs (e.g. an e2e build on :2577)
+// without rebuilding (REACT_APP_SERVER_PORT is baked in at build time).
+const [serverParamHost, serverParamPort] = (
+  (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('server') : null) ?? ''
+).split(':');
+
 const clientConfig = {
-  serverHost: 'localhost',
-  serverPort: Number(process.env.REACT_APP_SERVER_PORT) || 2567,
+  serverHost: serverParamHost || 'localhost',
+  serverPort: Number(serverParamPort) || Number(process.env.REACT_APP_SERVER_PORT) || 2567,
   useSSL: false,
   token: playerParam ? `dev-token:${playerParam}` : undefined,
 };

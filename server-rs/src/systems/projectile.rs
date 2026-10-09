@@ -2,7 +2,8 @@ use crate::ai::ThreatTable;
 use crate::combat::{DamageCalculator, DamageOptions, SkillEffect};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    ElementalAttributes, Health, MobTag, PlayerTag, Position, Projectile, StatusEffects, Velocity,
+    ElementalAttributes, Health, HitLog, HitRecord, MobTag, PlayerTag, Position, Projectile,
+    StatusEffects, Velocity,
 };
 use crate::spatial::grid::SpatialGrid;
 use bevy_ecs::prelude::*;
@@ -32,6 +33,7 @@ pub fn projectile_collision_system(
     mut commands: Commands,
     grid: Res<SpatialGrid>,
     clock: Option<Res<SimClock>>,
+    mut hit_log: Option<ResMut<HitLog>>,
     proj_query: Query<(Entity, &Position, &Projectile)>,
     mut targets: Query<(
         Entity,
@@ -117,6 +119,14 @@ pub fn projectile_collision_system(
                 };
                 let damage = DamageCalculator::calculate(&damage_opts);
                 health.take_damage(damage);
+                if let Some(ref mut log) = hit_log {
+                    log.0.push(HitRecord {
+                        attacker: proj.owner,
+                        target: target_entity,
+                        amount: damage,
+                        killed: !health.is_alive || health.current <= 0.0,
+                    });
+                }
                 // Being hit aggroes the victim mob onto the shooter.
                 if let Some(mut threat) = threat {
                     threat.add_threat(proj.owner, damage, now);

@@ -7,6 +7,10 @@ import { EntityDelta } from '../protocol/generated/atlas/protocol/entity-delta';
 import { EntityType } from '../protocol/generated/atlas/protocol/entity-type';
 import { Vec2 } from '../protocol/generated/atlas/protocol/vec2';
 import { ClientInput } from '../protocol/generated/atlas/protocol/client-input';
+import { GameEvent } from '../protocol/generated/atlas/protocol/game-event';
+import { GameEventKind } from '../protocol/generated/atlas/protocol/game-event-kind';
+import { STATE_FLAG_ALIVE, STATE_FLAG_BOT } from '../protocol/BinaryDeltaDecoder';
+import { getMobDisplayName } from '../utils/mobUtils';
 
 (global as any).TextEncoder = TextEncoder;
 (global as any).TextDecoder = TextDecoder;
@@ -296,7 +300,8 @@ describe('useServerRsClient', () => {
     expect(mine.isBotMode).toBe(false);
     expect(mine.radius).toBeGreaterThan(0);
     expect(mine.currentHealth).toBe(80);
-    expect(result.current.gameState!.players.get('12345')!.isBotMode).toBe(true);
+    // Regression: other humans were tagged [BOT]; only the server bot flag makes a bot.
+    expect(result.current.gameState!.players.get('12345')!.isBotMode).toBe(false);
   });
 
   it('disconnect during CONNECTING closes the socket (StrictMode double-mount leak)', async () => {
@@ -389,5 +394,138 @@ describe('useServerRsClient', () => {
     const last = decode(MockWebSocket.instances[1].sentMessages.at(-1));
     expect(last.moveX()).toBe(0);
     expect(last.attack()).toBe(true);
+  });
+
+  // ---- Wave B: mob names, bots, dead state, projectiles, removals, events ----
+
+  interface Ent {
+    id: number;
+    type: EntityType;
+    x?: number;
+    flags?: number;
+    health?: number;
+    mobType?: string;
+    ownerId?: number;
+  }
+  const snap = (
+    tick: number,
+    ents: Ent[],
+    removed: number[] = [],
+    events: { kind: GameEventKind; source: number; target: number; amount: number }[] = []
+  ) => {
+    const fbb = new flatbuffers.Builder(256);
+    const offs = ents.map((e) => {
+      const mt = e.mobType ? fbb.createString(e.mobType) : 0;
+      EntityDelta.startEntityDelta(fbb);
+      EntityDelta.addId(fbb, e.id);
+      EntityDelta.addEntityType(fbb, e.type);
+      EntityDelta.addPos(fbb, Vec2.createVec2(fbb, e.x ?? 10, 20));
+      EntityDelta.addHealth(fbb, e.health ?? 50);
+      EntityDelta.addMaxHealth(fbb, 50);
+      EntityDelta.addStateFlags(fbb, e.flags ?? STATE_FLAG_ALIVE);
+      if (mt) EntityDelta.addMobType(fbb, mt);
+      if (e.ownerId) EntityDelta.addOwnerId(fbb, e.ownerId);
+      return EntityDelta.endEntityDelta(fbb);
+    });
+    const evOffs = events.map((ev) => {
+      GameEvent.startGameEvent(fbb);
+      GameEvent.addKind(fbb, ev.kind);
+      GameEvent.addSourceId(fbb, ev.source);
+      GameEvent.addTargetId(fbb, ev.target);
+      GameEvent.addAmount(fbb, ev.amount);
+      return GameEvent.endGameEvent(fbb);
+    });
+    const entsVec = WorldSnapshot.createEntitiesVector(fbb, offs);
+    const remVec = WorldSnapshot.createRemovedIdsVector(fbb, removed);
+    const evVec = WorldSnapshot.createEventsVector(fbb, evOffs);
+    WorldSnapshot.startWorldSnapshot(fbb);
+    WorldSnapshot.addTick(fbb, tick);
+    WorldSnapshot.addEntities(fbb, entsVec);
+    WorldSnapshot.addRemovedIds(fbb, remVec);
+    WorldSnapshot.addEvents(fbb, evVec);
+    fbb.finish(WorldSnapshot.endWorldSnapshot(fbb));
+    return { data: fbb.asUint8Array().slice().buffer };
+  };
+
+  it('labels mobs with their bestiary name from the wire mob_type (not "Unknown Mob")', async () => {
+    const { result } = await connected();
+    act(() => {
+      MockWebSocket.instances[0].onmessage?.(
+        snap(1, [{ id: 7, type: EntityType.Mob, mobType: 'mob-millpond-gnawer' }])
+      );
+    });
+    const mob = result.current.gameState!.mobs.get('7')!;
+    expect(mob.mobTypeId).toBe('mob-millpond-gnawer');
+    expect(getMobDisplayName(mob)).toBe('Millpond Gnawer');
+  });
+
+  it('getMobDisplayName falls back to a readable id for types missing from the bestiary', () => {
+    expect(getMobDisplayName({ mobTypeId: 'mob-brand-new-thing' })).toBe('Brand New Thing');
+  });
+
+  it('tags only server bots (state_flags bot bit) as bots, never other humans', async () => {
+    const { result } = await connected('dev-token:alice');
+    act(() => {
+      MockWebSocket.instances[0].onmessage?.(
+        snap(1, [
+          { id: 11, type: EntityType.Player, flags: STATE_FLAG_ALIVE },
+          { id: 12, type: EntityType.Player, flags: STATE_FLAG_ALIVE | STATE_FLAG_BOT },
+        ])
+      );
+    });
+    expect(result.current.gameState!.players.get('11')!.isBotMode).toBe(false);
+    expect(result.current.gameState!.players.get('12')!.isBotMode).toBe(true);
+  });
+
+  it('shows the dead state from the alive flag (corpse at 0 hp) and deletes removed ids', async () => {
+    const { result } = await connected();
+    const ws = MockWebSocket.instances[0];
+    act(() => {
+      ws.onmessage?.(snap(1, [{ id: 7, type: EntityType.Mob, mobType: 'mob-millpond-gnawer' }]));
+    });
+    expect(result.current.gameState!.mobs.get('7')!.isAlive).toBe(true);
+    act(() => {
+      ws.onmessage?.(snap(2, [{ id: 7, type: EntityType.Mob, flags: 0, health: 0 }]));
+    });
+    const corpse = result.current.gameState!.mobs.get('7')!;
+    expect(corpse.isAlive).toBe(false);
+    expect(corpse.mobTypeId).toBe('mob-millpond-gnawer'); // kept across frames
+    act(() => {
+      ws.onmessage?.(snap(3, [], [7]));
+    });
+    expect(result.current.gameState!.mobs.has('7')).toBe(false);
+  });
+
+  it('renders projectiles from the snapshot and drops them when they leave it', async () => {
+    const { result } = await connected();
+    const ws = MockWebSocket.instances[0];
+    act(() => {
+      ws.onmessage?.(snap(1, [{ id: 900, type: EntityType.Projectile, x: 33, ownerId: 11 }]));
+    });
+    const proj = result.current.gameState!.projectiles!.get('900')!;
+    expect(proj.x).toBe(33);
+    expect(proj.ownerId).toBe('11');
+    expect(proj.radius).toBeGreaterThan(0);
+    expect(result.current.gameState!.mobs.has('900')).toBe(false);
+    act(() => {
+      ws.onmessage?.(snap(2, []));
+    });
+    expect(result.current.gameState!.projectiles!.size).toBe(0);
+  });
+
+  it('decodes combat events into gameState.events', async () => {
+    const { result } = await connected();
+    act(() => {
+      MockWebSocket.instances[0].onmessage?.(
+        snap(1, [], [], [
+          { kind: GameEventKind.Hit, source: 11, target: 7, amount: 12 },
+          { kind: GameEventKind.Kill, source: 11, target: 7, amount: 0 },
+        ])
+      );
+    });
+    expect(result.current.gameState!.events).toEqual([
+      { kind: GameEventKind.Hit, sourceId: 11, targetId: 7, amount: 12 },
+      { kind: GameEventKind.Kill, sourceId: 11, targetId: 7, amount: 0 },
+    ]);
   });
 });

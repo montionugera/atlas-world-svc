@@ -122,6 +122,21 @@ pub struct MobCorpse {
 #[derive(Resource, Debug, Clone, Default, PartialEq)]
 pub struct DespawnedIds(pub Vec<String>);
 
+/// One damage application, recorded for the wire `events` (live runtime only).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HitRecord {
+    pub attacker: Entity,
+    pub target: Entity,
+    pub amount: f32,
+    /// This hit took the target from alive to dead.
+    pub killed: bool,
+}
+
+/// Damage dealt since the last drain. Only the live runtime inserts it, so the golden-trace
+/// harness records nothing.
+#[derive(Resource, Debug, Clone, Default, PartialEq)]
+pub struct HitLog(pub Vec<HitRecord>);
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum AiState {
     #[default]

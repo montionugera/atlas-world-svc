@@ -23,6 +23,7 @@ fn test_protocol_cross_language_parity_and_bandwidth() {
             max_health: 100.0,
             state_flags: (i as u16) & 0b11,
             target_id: i.saturating_sub(1),
+            ..Default::default()
         });
     }
 
@@ -40,6 +41,7 @@ fn test_protocol_cross_language_parity_and_bandwidth() {
             max_health: 50.0,
             state_flags: 0,
             target_id: (j % 10) + 1,
+            ..Default::default()
         });
     }
 
@@ -105,6 +107,7 @@ fn test_aoi_typical_delta_bandwidth() {
             max_health: 100.0,
             state_flags: 1,
             target_id: 101,
+            ..Default::default()
         },
         EntitySnapshotData {
             id: 101,
@@ -117,6 +120,7 @@ fn test_aoi_typical_delta_bandwidth() {
             max_health: 50.0,
             state_flags: 0,
             target_id: 1,
+            ..Default::default()
         },
         EntitySnapshotData {
             id: 201,
@@ -129,6 +133,7 @@ fn test_aoi_typical_delta_bandwidth() {
             max_health: 1.0,
             state_flags: 0,
             target_id: 101,
+            ..Default::default()
         },
     ];
 

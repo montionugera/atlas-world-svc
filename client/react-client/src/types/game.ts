@@ -111,6 +111,14 @@ export interface Projectile {
   teamId?: string;
 }
 
+/** server-rs combat event (wire `GameEvent`); kind 0 = hit, 1 = kill. */
+export interface GameEventInfo {
+  kind: number;
+  sourceId: number;
+  targetId: number;
+  amount: number;
+}
+
 export interface GameState {
   players: Map<string, Player>;
   mobs: Map<string, Mob>;
@@ -120,6 +128,8 @@ export interface GameState {
   companions?: Map<string, Companion>;
   projectiles?: Map<string, Projectile>;
   zoneEffects?: Map<string, ZoneEffect>;
+  /** server-rs: combat events (hit / kill) carried by the latest snapshot. */
+  events?: GameEventInfo[];
   tick: number;
   mapId: string;
   roomId?: string;

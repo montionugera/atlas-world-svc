@@ -532,3 +532,170 @@ fn review6_dead_player_is_not_chased_or_attacked() {
     ));
     assert_eq!(projectiles_from(&mut sim, mob), 0);
 }
+
+// ---- Wave B: wire protocol (rows 3, 9, 10 + bot flag) -----------------------------------
+//
+// Each test serializes the live frame with the same builder `main.rs` uses and decodes it,
+// so a field that is computed but never put on the wire fails here.
+
+use server_rs::protocol::{
+    root_as_world_snapshot, EntityType, GameEventKind, SnapshotBuilder, STATE_FLAG_ALIVE,
+    STATE_FLAG_BOT,
+};
+
+fn wire(frame: &LiveFrame) -> Vec<u8> {
+    SnapshotBuilder::new()
+        .build_frame(
+            frame.tick,
+            frame.sim_time_ms,
+            &frame.entities,
+            &frame.removed_ids,
+            &frame.events,
+        )
+        .to_vec()
+}
+
+fn skill(session: &str, slot: u8) -> ClientPacket {
+    ClientPacket {
+        session_id: session.to_string(),
+        payload: serialize_client_input(1, 0.0, 0.0, false, slot, 0),
+    }
+}
+
+#[test]
+fn row3_wire_carries_mob_type_from_bestiary() {
+    let mut sim = live(0, 3);
+    let frame = tick(&mut sim);
+    let bytes = wire(&frame);
+    let snap = root_as_world_snapshot(&bytes).unwrap();
+    let decoded = snap.entities().unwrap();
+    for (mob, id, _) in mobs(&mut sim) {
+        let anchor_id = sim.world.get::<MobSpawnAnchor>(mob).unwrap().mob_id.clone();
+        let catalog = BestiaryCatalog::default();
+        assert!(catalog.get_mob(&anchor_id).is_some());
+        let ent = decoded
+            .iter()
+            .find(|e| e.id() == fnv1a_32(&id))
+            .expect("mob on wire");
+        assert_eq!(ent.entity_type(), EntityType::Mob);
+        assert_eq!(ent.mob_type(), Some(anchor_id.as_str()), "mob {id}");
+    }
+}
+
+#[test]
+fn bot_flag_only_on_bot_agents() {
+    let mut sim = live(1, 0);
+    let frame = sim.live_tick(&[input("human", 0.0, 0.0, false)], &[]);
+    let bytes = wire(&frame);
+    let snap = root_as_world_snapshot(&bytes).unwrap();
+    let decoded: Vec<_> = snap.entities().unwrap().iter().collect();
+    let human = decoded
+        .iter()
+        .find(|e| e.id() == fnv1a_32("human"))
+        .unwrap();
+    let bot = decoded
+        .iter()
+        .find(|e| e.id() == fnv1a_32("bot-0"))
+        .unwrap();
+    assert_eq!(human.state_flags() & STATE_FLAG_BOT, 0, "human flagged bot");
+    assert_ne!(bot.state_flags() & STATE_FLAG_BOT, 0, "bot not flagged");
+    assert_ne!(bot.state_flags() & STATE_FLAG_ALIVE, 0);
+    assert_ne!(human.state_flags() & STATE_FLAG_ALIVE, 0);
+}
+
+#[test]
+fn row9_projectiles_are_on_the_wire_after_a_cast() {
+    let mut sim = live(0, 1);
+    let (_, _, mob_pos) = mobs(&mut sim)[0].clone();
+    player_near_mob(&mut sim, mob_pos, 100.0);
+    sim.live_tick(&[skill("p1", 1)], &[]);
+    // The mob may shoot too: look for the player's own projectile.
+    let mine = |e: &server_rs::protocol::EntitySnapshotData| {
+        e.entity_type == EntityType::Projectile && e.owner_id == fnv1a_32("p1")
+    };
+    let mut seen = None;
+    for _ in 0..40 {
+        let frame = tick(&mut sim);
+        if frame.entities.iter().any(mine) {
+            seen = Some(frame);
+            break;
+        }
+    }
+    let frame = seen.expect("no projectile in any live frame after skill_1");
+    let bytes = wire(&frame);
+    let snap = root_as_world_snapshot(&bytes).unwrap();
+    let proj = snap
+        .entities()
+        .unwrap()
+        .iter()
+        .find(|e| e.entity_type() == EntityType::Projectile && e.owner_id() == fnv1a_32("p1"))
+        .expect("player projectile decoded with owner_id");
+    assert_ne!(proj.id(), 0);
+    assert!(proj.pos().is_some());
+}
+
+#[test]
+fn row10_kill_and_hit_events_on_the_wire_and_queue_drained() {
+    let mut sim = live(0, 1);
+    let (mob, id, mob_pos) = mobs(&mut sim)[0].clone();
+    player_near_mob(&mut sim, mob_pos, 30.0);
+    sim.world.get_mut::<Health>(mob).unwrap().current = 1.0;
+    let mut events = Vec::new();
+    let mut last = None;
+    for _ in 0..5 {
+        let frame = sim.live_tick(&[input("p1", 0.0, 0.0, true)], &[]);
+        events.extend(frame.events.iter().copied());
+        if !frame.events.is_empty() {
+            last = Some(frame);
+        }
+    }
+    let kill = events
+        .iter()
+        .find(|e| e.kind == GameEventKind::Kill)
+        .expect("no kill event in live frames");
+    assert_eq!(kill.source_id, fnv1a_32("p1"));
+    assert_eq!(kill.target_id, fnv1a_32(&id));
+    // The mob may also hit the player: look for the player's hit on the mob.
+    let hit = events
+        .iter()
+        .find(|e| e.kind == GameEventKind::Hit && e.target_id == fnv1a_32(&id))
+        .expect("no hit event on the mob in live frames");
+    assert_eq!(hit.source_id, fnv1a_32("p1"));
+    assert!(hit.amount > 0.0);
+    assert!(
+        sim.drain_match_events().is_empty(),
+        "live_tick must drain MatchEventQueue"
+    );
+
+    let frame = last.unwrap();
+    let bytes = wire(&frame);
+    let snap = root_as_world_snapshot(&bytes).unwrap();
+    let wire_events = snap.events().expect("events vector on wire");
+    assert_eq!(wire_events.len(), frame.events.len());
+    let e0 = wire_events.get(0);
+    assert_eq!(e0.kind(), frame.events[0].kind);
+    assert_eq!(e0.source_id(), frame.events[0].source_id);
+    assert_eq!(e0.target_id(), frame.events[0].target_id);
+}
+
+#[test]
+fn row10_mob_target_id_is_its_chase_target() {
+    let mut sim = live(0, 1);
+    let (mob, id, mob_pos) = mobs(&mut sim)[0].clone();
+    let off = chase_offset(&sim, mob);
+    player_near_mob(&mut sim, mob_pos, off);
+    let mut target = 0;
+    for _ in 0..10 {
+        let frame = tick(&mut sim);
+        target = frame
+            .entities
+            .iter()
+            .find(|e| e.id == fnv1a_32(&id))
+            .unwrap()
+            .target_id;
+        if target != 0 {
+            break;
+        }
+    }
+    assert_eq!(target, fnv1a_32("p1"), "mob target_id not its chase target");
+}

@@ -21,6 +21,25 @@ table EntityDelta {
     max_health: float;
     state_flags: uint16;
     target_id: uint32;
+    // Added (Wave B, backward compatible): bestiary id for mobs (e.g. "mob-millpond-gnawer"),
+    // empty for other entity types.
+    mob_type: string;
+    // Owning entity id (projectiles); 0 otherwise.
+    owner_id: uint32;
+}
+
+// state_flags bits: 1 = alive, 2 = server-driven bot (BotAgent).
+
+enum GameEventKind : ubyte {
+    Hit = 0,
+    Kill = 1
+}
+
+table GameEvent {
+    kind: GameEventKind;
+    source_id: uint32;
+    target_id: uint32;
+    amount: float;
 }
 
 table WorldSnapshot {
@@ -28,6 +47,8 @@ table WorldSnapshot {
     server_time_ms: uint64;
     entities: [EntityDelta];
     removed_ids: [uint32];
+    // Added (Wave B): combat events that happened this tick.
+    events: [GameEvent];
 }
 
 table ClientInput {

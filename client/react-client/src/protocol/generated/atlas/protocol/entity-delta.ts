@@ -66,8 +66,20 @@ targetId():number {
   return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
 }
 
+mobType():string|null
+mobType(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+mobType(optionalEncoding?:any):string|Uint8Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 20);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+}
+
+ownerId():number {
+  const offset = this.bb!.__offset(this.bb_pos, 22);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+}
+
 static startEntityDelta(builder:flatbuffers.Builder) {
-  builder.startObject(8);
+  builder.startObject(10);
 }
 
 static addId(builder:flatbuffers.Builder, id:number) {
@@ -100,6 +112,14 @@ static addStateFlags(builder:flatbuffers.Builder, stateFlags:number) {
 
 static addTargetId(builder:flatbuffers.Builder, targetId:number) {
   builder.addFieldInt32(7, targetId, 0);
+}
+
+static addMobType(builder:flatbuffers.Builder, mobTypeOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(8, mobTypeOffset, 0);
+}
+
+static addOwnerId(builder:flatbuffers.Builder, ownerId:number) {
+  builder.addFieldInt32(9, ownerId, 0);
 }
 
 static endEntityDelta(builder:flatbuffers.Builder):flatbuffers.Offset {

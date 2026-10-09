@@ -5,6 +5,7 @@
 import * as flatbuffers from 'flatbuffers';
 
 import { EntityDelta } from './entity-delta';
+import { GameEvent } from './game-event';
 
 
 export class WorldSnapshot {
@@ -60,8 +61,18 @@ removedIdsArray():Uint32Array|null {
   return offset ? new Uint32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
 }
 
+events(index: number, obj?:GameEvent):GameEvent|null {
+  const offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? (obj || new GameEvent()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+}
+
+eventsLength():number {
+  const offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+}
+
 static startWorldSnapshot(builder:flatbuffers.Builder) {
-  builder.startObject(4);
+  builder.startObject(5);
 }
 
 static addTick(builder:flatbuffers.Builder, tick:number) {
@@ -109,6 +120,22 @@ static startRemovedIdsVector(builder:flatbuffers.Builder, numElems:number) {
   builder.startVector(4, numElems, 4);
 }
 
+static addEvents(builder:flatbuffers.Builder, eventsOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(4, eventsOffset, 0);
+}
+
+static createEventsVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (let i = data.length - 1; i >= 0; i--) {
+    builder.addOffset(data[i]!);
+  }
+  return builder.endVector();
+}
+
+static startEventsVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(4, numElems, 4);
+}
+
 static endWorldSnapshot(builder:flatbuffers.Builder):flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
@@ -122,12 +149,13 @@ static finishSizePrefixedWorldSnapshotBuffer(builder:flatbuffers.Builder, offset
   builder.finish(offset, undefined, true);
 }
 
-static createWorldSnapshot(builder:flatbuffers.Builder, tick:number, serverTimeMs:bigint, entitiesOffset:flatbuffers.Offset, removedIdsOffset:flatbuffers.Offset):flatbuffers.Offset {
+static createWorldSnapshot(builder:flatbuffers.Builder, tick:number, serverTimeMs:bigint, entitiesOffset:flatbuffers.Offset, removedIdsOffset:flatbuffers.Offset, eventsOffset:flatbuffers.Offset):flatbuffers.Offset {
   WorldSnapshot.startWorldSnapshot(builder);
   WorldSnapshot.addTick(builder, tick);
   WorldSnapshot.addServerTimeMs(builder, serverTimeMs);
   WorldSnapshot.addEntities(builder, entitiesOffset);
   WorldSnapshot.addRemovedIds(builder, removedIdsOffset);
+  WorldSnapshot.addEvents(builder, eventsOffset);
   return WorldSnapshot.endWorldSnapshot(builder);
 }
 }

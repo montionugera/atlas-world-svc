@@ -5,7 +5,7 @@ use server_rs::protocol::SnapshotBuilder;
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
 use std::sync::Arc;
 use std::time::Duration;
-use tracing::{error, info};
+use tracing::{debug, error, info};
 use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
@@ -97,14 +97,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let inputs = ws_server.drain_inbound().await;
                 let disconnected = ws_server.drain_disconnects().await;
                 let frame = sim.live_tick(&inputs, &disconnected);
+                // MatchEventQueue is drained every tick by live_tick (bounded memory). No
+                // persistence sink is wired in the live loop yet, so log them.
+                for (user_id, event) in &frame.match_events {
+                    debug!(user_id = %user_id, event = ?event, "match event");
+                }
 
-                // Broadcast snapshot (incl. removed ids) to active clients
+                // Broadcast snapshot (incl. removed ids and combat events) to active clients
                 if ws_server.active_connections_count().await > 0 {
-                    let snapshot_bytes = snapshot_builder.build_snapshot(
+                    let snapshot_bytes = snapshot_builder.build_frame(
                         frame.tick,
                         frame.sim_time_ms,
                         &frame.entities,
                         &frame.removed_ids,
+                        &frame.events,
                     );
                     ws_server.broadcast_snapshot(snapshot_bytes).await;
                 }

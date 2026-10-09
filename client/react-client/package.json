@@ -29,7 +29,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "e2e": "node e2e/movement.e2e.mjs"
+    "e2e": "node e2e/movement.e2e.mjs && node e2e/gameplay.e2e.mjs"
   },
   "eslintConfig": {
     "extends": [

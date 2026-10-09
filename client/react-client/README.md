@@ -121,21 +121,42 @@ src/
 
 ```bash
 CI=true npm test -- --watchAll=false   # unit tests (hooks, renderers, utils)
-npm run e2e                            # real Chromium vs live stack (needs server-rs :2567 + npm start :3000)
+npm run e2e                            # both e2e files, real Chromium vs live stack (server-rs + npm start :3000)
+E2E_SERVER=localhost:2577 npm run e2e  # same, against a server-rs on another port (adds ?server=)
 ```
 
-The e2e (`e2e/movement.e2e.mjs`) holds/taps WASD, attacks while moving, simulates
-swallowed modifier keyups, checks the camera scale and map switching. First run on a
-machine: `npx playwright install chromium-headless-shell`. `HEADED=1` to watch.
+- `e2e/movement.e2e.mjs` holds/taps WASD, attacks while moving, simulates swallowed
+  modifier keyups, checks the camera scale and map switching.
+- `e2e/gameplay.e2e.mjs` checks live gameplay: mobs move, every mob has a bestiary type
+  (no "Unknown Mob"), the local human is not tagged `[BOT]`, a nearby mob approaches,
+  holding Space damages → kills → removes a mob, mobs respawn, bodies never overlap
+  (≥ 25u), hit/kill events from this player arrive, and skill key `1` shows the player's
+  projectiles.
+
+First run on a machine: `npx playwright install chromium-headless-shell`. `HEADED=1` to watch.
 
 ### server-rs client notes
 
 - `?player=<name>` connects as `dev-token:<name>` — use distinct names per tab; tabs
   sharing the default `dev-player` session control the same avatar.
+- `?server=<host>:<port>` points the tab at another server-rs without a rebuild
+  (`REACT_APP_SERVER_PORT` is build-time; default `localhost:2567`).
 - Every `ClientInput` is the **full** input state (server overwrites it), so action
   packets re-send the held move vector / attack. Skill slots are one-shot on the server.
 - server-rs world units are 10× the legacy Colyseus ones; the hook sets
   `gameState.viewportSize` (400) so the follow-camera shows movement at a visible rate.
+- Snapshot fields used by the hook (`schemas/game_protocol.fbs`):
+  - `state_flags`: bit 1 = alive (dead mobs render grey with `[DEAD]` until removed),
+    bit 2 = server bot — only these players get `isBotMode` / the `[BOT]` label.
+  - `mob_type`: bestiary id → `mobTypeId`; `getMobDisplayName` maps it to the bestiary
+    name via `src/data/bestiaryNames.json`. Regenerate that file with
+    `node scripts/gen-bestiary-names.mjs` when `content/bestiary/bestiary.json` changes
+    (`mobUtils.test.ts` fails on drift).
+  - `removed_ids`: deleted from `players` / `mobs`.
+  - Projectile entities → `gameState.projectiles` (rebuilt every snapshot; `ownerId` from
+    `owner_id`), drawn by `projectileRenderer`.
+  - `events` (hit / kill) → `gameState.events` (latest snapshot) and a rolling
+    `window.__gameEvents` buffer (last 500).
 - `window.__gameState` / `window.__playerId` are exposed for debugging and e2e.
 
 ## Troubleshooting

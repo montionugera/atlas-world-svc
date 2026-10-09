@@ -1,18 +1,19 @@
 use bevy_ecs::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use crate::ai::ThreatTable;
 use crate::content::{derived_stats, BestiaryCatalog, MobTier};
 use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
     AiAgent, BodyRadius, BotAgent, CastingState, CombatStats, CooldownTracker, DespawnedIds,
-    ElementalAttributes, EntityId, Health, LiveRules, MobSpawnAnchor, MobTag, PlayerAvatar,
-    PlayerInputState, PlayerTag, Position, SpawnPoint, StatusEffects, Velocity, MOB_BODY_RADIUS,
-    PLAYER_BODY_RADIUS,
+    ElementalAttributes, EntityId, Health, HitLog, LiveRules, MobSpawnAnchor, MobTag, PlayerAvatar,
+    PlayerInputState, PlayerTag, Position, Projectile, SpawnPoint, StatusEffects, Velocity,
+    MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
 };
 use crate::net::ClientPacket;
 use crate::physics::world::PhysicsWorld;
-use crate::protocol::{EntitySnapshotData, EntityType};
+use crate::protocol::{EntitySnapshotData, EntityType, GameEventData, GameEventKind};
 use crate::spatial::grid::SpatialGrid;
 use crate::storage::{MatchEvent, MatchEventQueue, PrimaryStats};
 use crate::systems::{
@@ -112,6 +113,9 @@ pub struct LiveFrame {
     pub sim_time_ms: u64,
     pub entities: Vec<EntitySnapshotData>,
     pub removed_ids: Vec<u32>,
+    pub events: Vec<GameEventData>,
+    /// Drained `MatchEventQueue` (user id, event) for persistence; not sent to clients.
+    pub match_events: Vec<(String, MatchEvent)>,
 }
 
 pub struct AtlasSimulation {
@@ -209,6 +213,7 @@ impl AtlasSimulation {
             mob_corpse_sec: MOB_CORPSE_SEC,
         });
         sim.world.insert_resource(DespawnedIds::default());
+        sim.world.insert_resource(HitLog::default());
 
         let mut prng = Mulberry32::new(cfg.seed);
         for i in 0..cfg.bot_count {
@@ -290,44 +295,146 @@ impl AtlasSimulation {
                 .iter()
                 .map(|id| crate::protocol::fnv1a_32(id))
                 .collect(),
+            events: self.drain_wire_events(),
+            match_events: self.drain_match_events(),
         }
     }
 
-    /// Wire-ready entity list for players and mobs, with the real `Health.max`.
+    /// Wire-ready entity list: players and mobs (sorted by id, real `Health.max`, bot flag,
+    /// mob bestiary type, current target), then live projectiles (with their owner).
     pub fn capture_wire_entities(&mut self) -> Vec<EntitySnapshotData> {
+        use crate::protocol::{fnv1a_32, intern_mob_type, STATE_FLAG_ALIVE, STATE_FLAG_BOT};
+        let now = self.clock.current_time_seconds();
+        let mut ids = self.world.query::<(Entity, &EntityId)>();
+        let wire_id: std::collections::HashMap<Entity, u32> = ids
+            .iter(&self.world)
+            .map(|(e, id)| (e, fnv1a_32(&id.0)))
+            .collect();
+        let id_of = |e: Option<Entity>| e.and_then(|e| wire_id.get(&e).copied()).unwrap_or(0);
+
         let mut query = self.world.query_filtered::<(
             &EntityId,
             &Position,
             &Velocity,
             &Health,
             Has<PlayerTag>,
+            Has<BotAgent>,
+            Option<&MobSpawnAnchor>,
+            Option<&ThreatTable>,
+            Option<&PlayerInputState>,
         ), Or<(With<PlayerTag>, With<MobTag>)>>();
         let mut entities: Vec<(String, EntitySnapshotData)> = query
             .iter(&self.world)
-            .map(|(id, pos, vel, health, is_player)| {
-                (
-                    id.0.clone(),
-                    EntitySnapshotData {
-                        id: crate::protocol::fnv1a_32(&id.0),
-                        entity_type: if is_player {
-                            EntityType::Player
-                        } else {
-                            EntityType::Mob
+            .map(
+                |(id, pos, vel, health, is_player, is_bot, anchor, threat, input)| {
+                    let mut flags = 0;
+                    if health.is_alive {
+                        flags |= STATE_FLAG_ALIVE;
+                    }
+                    if is_bot {
+                        flags |= STATE_FLAG_BOT;
+                    }
+                    let target_id = match (threat, input) {
+                        (Some(t), _) if health.is_alive => id_of(t.top_target(now)),
+                        (_, Some(i)) => i.target_id,
+                        _ => 0,
+                    };
+                    (
+                        id.0.clone(),
+                        EntitySnapshotData {
+                            id: fnv1a_32(&id.0),
+                            entity_type: if is_player {
+                                EntityType::Player
+                            } else {
+                                EntityType::Mob
+                            },
+                            x: pos.x,
+                            y: pos.y,
+                            vx: vel.vx,
+                            vy: vel.vy,
+                            health: health.current,
+                            max_health: health.max,
+                            state_flags: flags,
+                            target_id,
+                            mob_type: anchor.map_or("", |a| intern_mob_type(&a.mob_id)),
+                            owner_id: 0,
                         },
+                    )
+                },
+            )
+            .collect();
+        entities.sort_by(|a, b| a.0.cmp(&b.0));
+
+        // Projectiles carry no EntityId: their wire id is derived from the ECS entity, which
+        // is stable for the projectile's lifetime. They are ephemeral (the client replaces
+        // its projectile set every snapshot), so they never go through removed_ids.
+        let mut projectiles = self
+            .world
+            .query::<(Entity, &Position, &Velocity, &Projectile)>();
+        let mut projs: Vec<(u64, EntitySnapshotData)> = projectiles
+            .iter(&self.world)
+            .map(|(e, pos, vel, proj)| {
+                (
+                    e.to_bits(),
+                    EntitySnapshotData {
+                        id: fnv1a_32(&format!("proj-{}", e.to_bits())),
+                        entity_type: EntityType::Projectile,
                         x: pos.x,
                         y: pos.y,
                         vx: vel.vx,
                         vy: vel.vy,
-                        health: health.current,
-                        max_health: health.max,
-                        state_flags: u16::from(health.is_alive),
-                        target_id: 0,
+                        health: 0.0,
+                        max_health: 0.0,
+                        state_flags: STATE_FLAG_ALIVE,
+                        target_id: id_of(proj.target),
+                        mob_type: "",
+                        owner_id: id_of(Some(proj.owner)),
                     },
                 )
             })
             .collect();
-        entities.sort_by(|a, b| a.0.cmp(&b.0));
-        entities.into_iter().map(|(_, e)| e).collect()
+        projs.sort_by_key(|p| p.0);
+
+        entities
+            .into_iter()
+            .map(|(_, e)| e)
+            .chain(projs.into_iter().map(|(_, e)| e))
+            .collect()
+    }
+
+    /// Combat events since the last call (wire ids): one `Hit` per damage application and
+    /// a `Kill` when that hit was lethal.
+    pub fn drain_wire_events(&mut self) -> Vec<GameEventData> {
+        let hits = self
+            .world
+            .get_resource_mut::<HitLog>()
+            .map(|mut h| std::mem::take(&mut h.0))
+            .unwrap_or_default();
+        let wire = |world: &World, e: Entity| {
+            world
+                .get::<EntityId>(e)
+                .map_or(0, |id| crate::protocol::fnv1a_32(&id.0))
+        };
+        let mut events = Vec::with_capacity(hits.len());
+        for hit in hits {
+            let source_id = wire(&self.world, hit.attacker);
+            let target_id = wire(&self.world, hit.target);
+            events.push(GameEventData {
+                kind: GameEventKind::Hit,
+                source_id,
+                target_id,
+                amount: hit.amount,
+            });
+            if hit.killed {
+                events.push(GameEventData {
+                    kind: GameEventKind::Kill,
+                    source_id,
+                    target_id,
+                    amount: 0.0,
+                });
+            }
+        }
+        events
     }
 
     /// Ids despawned since the last call (dead mobs, disconnected avatars).

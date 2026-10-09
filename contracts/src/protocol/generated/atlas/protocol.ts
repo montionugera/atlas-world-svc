@@ -5,5 +5,7 @@
 export { ClientInput } from './protocol/client-input.js';
 export { EntityDelta } from './protocol/entity-delta.js';
 export { EntityType } from './protocol/entity-type.js';
+export { GameEvent } from './protocol/game-event.js';
+export { GameEventKind } from './protocol/game-event-kind.js';
 export { Vec2 } from './protocol/vec2.js';
 export { WorldSnapshot } from './protocol/world-snapshot.js';

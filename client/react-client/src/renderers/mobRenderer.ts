@@ -51,7 +51,8 @@ export const drawMobs = (
     const mobRadius = (typeof mob.radius === 'number' && !isNaN(mob.radius) && mob.radius > 0)
       ? mob.radius
       : (RENDER_CONFIG.mobRadius || 2.5);
-    drawCircle(ctx, x, y, mobRadius * scale, COLORS.mob);
+    // Dead mobs (server corpse frames before removal) are drawn grey; status shows [DEAD].
+    drawCircle(ctx, x, y, mobRadius * scale, mob.isAlive === false ? '#555555' : COLORS.mob);
     
     // Draw health bar for mobs
     if (mob.maxHealth && mob.currentHealth !== undefined) {

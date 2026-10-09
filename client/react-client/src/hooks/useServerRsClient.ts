@@ -3,12 +3,17 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import * as flatbuffers from 'flatbuffers';
-import { GameState, Player, Mob } from '../types/game';
+import { GameState, Player, Mob, Projectile } from '../types/game';
 import {
   emptyEquipmentSnapshot,
   type EquipmentSnapshot,
 } from '../config/equipmentSlots';
-import { BinaryDeltaDecoder, EntityType } from '../protocol/BinaryDeltaDecoder';
+import {
+  BinaryDeltaDecoder,
+  EntityType,
+  STATE_FLAG_ALIVE,
+  STATE_FLAG_BOT,
+} from '../protocol/BinaryDeltaDecoder';
 import { ClientInput } from '../protocol/generated/atlas/protocol/client-input';
 
 export interface ServerRsClientConfig {
@@ -70,6 +75,8 @@ export function fnv1a32(s: string): number {
 export const SERVER_RS_VIEWPORT = 400;
 export const SERVER_RS_PLAYER_RADIUS = 12;
 export const SERVER_RS_MOB_RADIUS = 14;
+/** Drawn projectile radius (the wire carries no radius). */
+export const SERVER_RS_PROJECTILE_RADIUS = 4;
 
 /** Skill id → server-rs skill slot (see server-rs/src/systems/skill_execution.rs). */
 const SKILL_SLOTS: Record<string, number> = {
@@ -242,9 +249,13 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
             const snapshot = BinaryDeltaDecoder.decode(buffer);
             const current = stateRef.current;
             current.tick = snapshot.tick;
+            // Snapshots are full state: projectiles are ephemeral, so rebuild the set each
+            // frame (they never go through removed_ids).
+            const projectiles = new Map<string, Projectile>();
 
             for (const entity of snapshot.entities) {
               const idStr = String(entity.id);
+              const isAlive = (entity.stateFlags & STATE_FLAG_ALIVE) !== 0;
               if (entity.entityType === EntityType.Player) {
                 const existing = current.players.get(idStr);
                 const isLocalPlayer = idStr === localPlayerId;
@@ -261,8 +272,10 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
                   health: entity.health,
                   currentHealth: entity.health,
                   maxHealth: entity.maxHealth,
-                  isAlive: entity.health > 0,
-                  isBotMode: !isLocalPlayer,
+                  isAlive,
+                  // Only server-driven BotAgents are bots; other humans are not.
+                  isBotMode: (entity.stateFlags & STATE_FLAG_BOT) !== 0,
+                  currentAttackTarget: entity.targetId ? String(entity.targetId) : undefined,
                 };
                 current.players.set(idStr, updated);
               } else if (entity.entityType === EntityType.Mob) {
@@ -275,12 +288,25 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
                   vx: entity.vx,
                   vy: entity.vy,
                   radius: SERVER_RS_MOB_RADIUS,
-                  tag: 'mob',
+                  tag: isAlive ? 'mob' : 'dead',
+                  // Older servers send no mob_type: keep whatever we already had.
+                  mobTypeId: entity.mobType || existing?.mobTypeId,
                   currentHealth: entity.health,
                   maxHealth: entity.maxHealth,
-                  isAlive: entity.health > 0,
+                  isAlive,
                 };
                 current.mobs.set(idStr, updated);
+              } else if (entity.entityType === EntityType.Projectile) {
+                projectiles.set(idStr, {
+                  id: idStr,
+                  x: entity.x,
+                  y: entity.y,
+                  vx: entity.vx,
+                  vy: entity.vy,
+                  radius: SERVER_RS_PROJECTILE_RADIUS,
+                  ownerId: String(entity.ownerId),
+                  isStuck: false,
+                });
               }
             }
 
@@ -294,11 +320,22 @@ export const useServerRsClient = (config: ServerRsClientConfig): UseServerRsClie
               ...current,
               players: new Map(current.players),
               mobs: new Map(current.mobs),
+              projectiles,
+              events: snapshot.events,
             };
             setGameState(nextState);
             // Expose for quick debug / e2e (parity with useColyseusClient)
             (window as any).__gameState = nextState;
             (window as any).__playerId = localPlayerId;
+            if (projectiles.size > 0) {
+              const w = window as any;
+              w.__seenProjectiles = [...(w.__seenProjectiles ?? []), ...Array.from(projectiles.values())].slice(-200);
+            }
+            if (snapshot.events.length > 0) {
+              // Rolling buffer so debug tools / e2e can see events between polls.
+              const w = window as any;
+              w.__gameEvents = [...(w.__gameEvents ?? []), ...snapshot.events].slice(-500);
+            }
             setUpdateCount((prev) => prev + 1);
 
             // Calculate update rate over a sliding 10s window

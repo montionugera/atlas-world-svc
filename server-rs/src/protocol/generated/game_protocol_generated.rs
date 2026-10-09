@@ -106,6 +106,95 @@ pub mod atlas {
         }
 
         impl ::flatbuffers::SimpleToVerifyInSlice for EntityType {}
+        #[deprecated(
+            since = "2.0.0",
+            note = "Use associated constants instead. This will no longer be generated in 2021."
+        )]
+        pub const ENUM_MIN_GAME_EVENT_KIND: u8 = 0;
+        #[deprecated(
+            since = "2.0.0",
+            note = "Use associated constants instead. This will no longer be generated in 2021."
+        )]
+        pub const ENUM_MAX_GAME_EVENT_KIND: u8 = 1;
+        #[deprecated(
+            since = "2.0.0",
+            note = "Use associated constants instead. This will no longer be generated in 2021."
+        )]
+        #[allow(non_camel_case_types)]
+        pub const ENUM_VALUES_GAME_EVENT_KIND: [GameEventKind; 2] =
+            [GameEventKind::Hit, GameEventKind::Kill];
+
+        #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+        #[repr(transparent)]
+        pub struct GameEventKind(pub u8);
+        #[allow(non_upper_case_globals)]
+        impl GameEventKind {
+            pub const Hit: Self = Self(0);
+            pub const Kill: Self = Self(1);
+
+            pub const ENUM_MIN: u8 = 0;
+            pub const ENUM_MAX: u8 = 1;
+            pub const ENUM_VALUES: &'static [Self] = &[Self::Hit, Self::Kill];
+            /// Returns the variant's name or "" if unknown.
+            pub fn variant_name(self) -> Option<&'static str> {
+                match self {
+                    Self::Hit => Some("Hit"),
+                    Self::Kill => Some("Kill"),
+                    _ => None,
+                }
+            }
+        }
+        impl ::core::fmt::Debug for GameEventKind {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
+                if let Some(name) = self.variant_name() {
+                    f.write_str(name)
+                } else {
+                    f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+                }
+            }
+        }
+        impl<'a> ::flatbuffers::Follow<'a> for GameEventKind {
+            type Inner = Self;
+            #[inline]
+            unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+                let b = unsafe { ::flatbuffers::read_scalar_at::<u8>(buf, loc) };
+                Self(b)
+            }
+        }
+
+        impl ::flatbuffers::Push for GameEventKind {
+            type Output = GameEventKind;
+            #[inline]
+            unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
+                unsafe { ::flatbuffers::emplace_scalar::<u8>(dst, self.0) };
+            }
+        }
+
+        impl ::flatbuffers::EndianScalar for GameEventKind {
+            type Scalar = u8;
+            #[inline]
+            fn to_little_endian(self) -> u8 {
+                self.0.to_le()
+            }
+            #[inline]
+            #[allow(clippy::wrong_self_convention)]
+            fn from_little_endian(v: u8) -> Self {
+                let b = u8::from_le(v);
+                Self(b)
+            }
+        }
+
+        impl<'a> ::flatbuffers::Verifiable for GameEventKind {
+            #[inline]
+            fn run_verifier(
+                v: &mut ::flatbuffers::Verifier,
+                pos: usize,
+            ) -> Result<(), ::flatbuffers::InvalidFlatbuffer> {
+                u8::run_verifier(v, pos)
+            }
+        }
+
+        impl ::flatbuffers::SimpleToVerifyInSlice for GameEventKind {}
         // struct Vec2, aligned to 4
         #[repr(transparent)]
         #[derive(Clone, Copy, PartialEq)]
@@ -265,6 +354,8 @@ pub mod atlas {
             pub const VT_MAX_HEALTH: ::flatbuffers::VOffsetT = 14;
             pub const VT_STATE_FLAGS: ::flatbuffers::VOffsetT = 16;
             pub const VT_TARGET_ID: ::flatbuffers::VOffsetT = 18;
+            pub const VT_MOB_TYPE: ::flatbuffers::VOffsetT = 20;
+            pub const VT_OWNER_ID: ::flatbuffers::VOffsetT = 22;
 
             #[inline]
             pub unsafe fn init_from_table(table: ::flatbuffers::Table<'a>) -> Self {
@@ -281,6 +372,10 @@ pub mod atlas {
                 args: &'args EntityDeltaArgs<'args>,
             ) -> ::flatbuffers::WIPOffset<EntityDelta<'bldr>> {
                 let mut builder = EntityDeltaBuilder::new(_fbb);
+                builder.add_owner_id(args.owner_id);
+                if let Some(x) = args.mob_type {
+                    builder.add_mob_type(x);
+                }
                 builder.add_target_id(args.target_id);
                 builder.add_max_health(args.max_health);
                 builder.add_health(args.health);
@@ -372,6 +467,27 @@ pub mod atlas {
                         .unwrap()
                 }
             }
+            #[inline]
+            pub fn mob_type(&self) -> Option<&'a str> {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe {
+                    self._tab
+                        .get::<::flatbuffers::ForwardsUOffset<&str>>(EntityDelta::VT_MOB_TYPE, None)
+                }
+            }
+            #[inline]
+            pub fn owner_id(&self) -> u32 {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe {
+                    self._tab
+                        .get::<u32>(EntityDelta::VT_OWNER_ID, Some(0))
+                        .unwrap()
+                }
+            }
         }
 
         impl ::flatbuffers::Verifiable for EntityDelta<'_> {
@@ -389,6 +505,12 @@ pub mod atlas {
                     .visit_field::<f32>("max_health", Self::VT_MAX_HEALTH, false)?
                     .visit_field::<u16>("state_flags", Self::VT_STATE_FLAGS, false)?
                     .visit_field::<u32>("target_id", Self::VT_TARGET_ID, false)?
+                    .visit_field::<::flatbuffers::ForwardsUOffset<&str>>(
+                        "mob_type",
+                        Self::VT_MOB_TYPE,
+                        false,
+                    )?
+                    .visit_field::<u32>("owner_id", Self::VT_OWNER_ID, false)?
                     .finish();
                 Ok(())
             }
@@ -402,6 +524,8 @@ pub mod atlas {
             pub max_health: f32,
             pub state_flags: u16,
             pub target_id: u32,
+            pub mob_type: Option<::flatbuffers::WIPOffset<&'a str>>,
+            pub owner_id: u32,
         }
         impl<'a> Default for EntityDeltaArgs<'a> {
             #[inline]
@@ -415,6 +539,8 @@ pub mod atlas {
                     max_health: 0.0,
                     state_flags: 0,
                     target_id: 0,
+                    mob_type: None,
+                    owner_id: 0,
                 }
             }
         }
@@ -467,6 +593,18 @@ pub mod atlas {
                     .push_slot::<u32>(EntityDelta::VT_TARGET_ID, target_id, 0);
             }
             #[inline]
+            pub fn add_mob_type(&mut self, mob_type: ::flatbuffers::WIPOffset<&'b str>) {
+                self.fbb_.push_slot_always::<::flatbuffers::WIPOffset<_>>(
+                    EntityDelta::VT_MOB_TYPE,
+                    mob_type,
+                );
+            }
+            #[inline]
+            pub fn add_owner_id(&mut self, owner_id: u32) {
+                self.fbb_
+                    .push_slot::<u32>(EntityDelta::VT_OWNER_ID, owner_id, 0);
+            }
+            #[inline]
             pub fn new(
                 _fbb: &'b mut ::flatbuffers::FlatBufferBuilder<'a, A>,
             ) -> EntityDeltaBuilder<'a, 'b, A> {
@@ -494,6 +632,184 @@ pub mod atlas {
                 ds.field("max_health", &self.max_health());
                 ds.field("state_flags", &self.state_flags());
                 ds.field("target_id", &self.target_id());
+                ds.field("mob_type", &self.mob_type());
+                ds.field("owner_id", &self.owner_id());
+                ds.finish()
+            }
+        }
+        pub enum GameEventOffset {}
+        #[derive(Copy, Clone, PartialEq)]
+
+        pub struct GameEvent<'a> {
+            pub _tab: ::flatbuffers::Table<'a>,
+        }
+
+        impl<'a> ::flatbuffers::Follow<'a> for GameEvent<'a> {
+            type Inner = GameEvent<'a>;
+            #[inline]
+            unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+                Self {
+                    _tab: unsafe { ::flatbuffers::Table::new(buf, loc) },
+                }
+            }
+        }
+
+        impl<'a> GameEvent<'a> {
+            pub const VT_KIND: ::flatbuffers::VOffsetT = 4;
+            pub const VT_SOURCE_ID: ::flatbuffers::VOffsetT = 6;
+            pub const VT_TARGET_ID: ::flatbuffers::VOffsetT = 8;
+            pub const VT_AMOUNT: ::flatbuffers::VOffsetT = 10;
+
+            #[inline]
+            pub unsafe fn init_from_table(table: ::flatbuffers::Table<'a>) -> Self {
+                GameEvent { _tab: table }
+            }
+            #[allow(unused_mut)]
+            pub fn create<
+                'bldr: 'args,
+                'args: 'mut_bldr,
+                'mut_bldr,
+                A: ::flatbuffers::Allocator + 'bldr,
+            >(
+                _fbb: &'mut_bldr mut ::flatbuffers::FlatBufferBuilder<'bldr, A>,
+                args: &'args GameEventArgs,
+            ) -> ::flatbuffers::WIPOffset<GameEvent<'bldr>> {
+                let mut builder = GameEventBuilder::new(_fbb);
+                builder.add_amount(args.amount);
+                builder.add_target_id(args.target_id);
+                builder.add_source_id(args.source_id);
+                builder.add_kind(args.kind);
+                builder.finish()
+            }
+
+            #[inline]
+            pub fn kind(&self) -> GameEventKind {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe {
+                    self._tab
+                        .get::<GameEventKind>(GameEvent::VT_KIND, Some(GameEventKind::Hit))
+                        .unwrap()
+                }
+            }
+            #[inline]
+            pub fn source_id(&self) -> u32 {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe {
+                    self._tab
+                        .get::<u32>(GameEvent::VT_SOURCE_ID, Some(0))
+                        .unwrap()
+                }
+            }
+            #[inline]
+            pub fn target_id(&self) -> u32 {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe {
+                    self._tab
+                        .get::<u32>(GameEvent::VT_TARGET_ID, Some(0))
+                        .unwrap()
+                }
+            }
+            #[inline]
+            pub fn amount(&self) -> f32 {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe {
+                    self._tab
+                        .get::<f32>(GameEvent::VT_AMOUNT, Some(0.0))
+                        .unwrap()
+                }
+            }
+        }
+
+        impl ::flatbuffers::Verifiable for GameEvent<'_> {
+            #[inline]
+            fn run_verifier(
+                v: &mut ::flatbuffers::Verifier,
+                pos: usize,
+            ) -> Result<(), ::flatbuffers::InvalidFlatbuffer> {
+                v.visit_table(pos)?
+                    .visit_field::<GameEventKind>("kind", Self::VT_KIND, false)?
+                    .visit_field::<u32>("source_id", Self::VT_SOURCE_ID, false)?
+                    .visit_field::<u32>("target_id", Self::VT_TARGET_ID, false)?
+                    .visit_field::<f32>("amount", Self::VT_AMOUNT, false)?
+                    .finish();
+                Ok(())
+            }
+        }
+        pub struct GameEventArgs {
+            pub kind: GameEventKind,
+            pub source_id: u32,
+            pub target_id: u32,
+            pub amount: f32,
+        }
+        impl<'a> Default for GameEventArgs {
+            #[inline]
+            fn default() -> Self {
+                GameEventArgs {
+                    kind: GameEventKind::Hit,
+                    source_id: 0,
+                    target_id: 0,
+                    amount: 0.0,
+                }
+            }
+        }
+
+        pub struct GameEventBuilder<'a: 'b, 'b, A: ::flatbuffers::Allocator + 'a> {
+            fbb_: &'b mut ::flatbuffers::FlatBufferBuilder<'a, A>,
+            start_: ::flatbuffers::WIPOffset<::flatbuffers::TableUnfinishedWIPOffset>,
+        }
+        impl<'a: 'b, 'b, A: ::flatbuffers::Allocator + 'a> GameEventBuilder<'a, 'b, A> {
+            #[inline]
+            pub fn add_kind(&mut self, kind: GameEventKind) {
+                self.fbb_
+                    .push_slot::<GameEventKind>(GameEvent::VT_KIND, kind, GameEventKind::Hit);
+            }
+            #[inline]
+            pub fn add_source_id(&mut self, source_id: u32) {
+                self.fbb_
+                    .push_slot::<u32>(GameEvent::VT_SOURCE_ID, source_id, 0);
+            }
+            #[inline]
+            pub fn add_target_id(&mut self, target_id: u32) {
+                self.fbb_
+                    .push_slot::<u32>(GameEvent::VT_TARGET_ID, target_id, 0);
+            }
+            #[inline]
+            pub fn add_amount(&mut self, amount: f32) {
+                self.fbb_
+                    .push_slot::<f32>(GameEvent::VT_AMOUNT, amount, 0.0);
+            }
+            #[inline]
+            pub fn new(
+                _fbb: &'b mut ::flatbuffers::FlatBufferBuilder<'a, A>,
+            ) -> GameEventBuilder<'a, 'b, A> {
+                let start = _fbb.start_table();
+                GameEventBuilder {
+                    fbb_: _fbb,
+                    start_: start,
+                }
+            }
+            #[inline]
+            pub fn finish(self) -> ::flatbuffers::WIPOffset<GameEvent<'a>> {
+                let o = self.fbb_.end_table(self.start_);
+                ::flatbuffers::WIPOffset::new(o.value())
+            }
+        }
+
+        impl ::core::fmt::Debug for GameEvent<'_> {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                let mut ds = f.debug_struct("GameEvent");
+                ds.field("kind", &self.kind());
+                ds.field("source_id", &self.source_id());
+                ds.field("target_id", &self.target_id());
+                ds.field("amount", &self.amount());
                 ds.finish()
             }
         }
@@ -519,6 +835,7 @@ pub mod atlas {
             pub const VT_SERVER_TIME_MS: ::flatbuffers::VOffsetT = 6;
             pub const VT_ENTITIES: ::flatbuffers::VOffsetT = 8;
             pub const VT_REMOVED_IDS: ::flatbuffers::VOffsetT = 10;
+            pub const VT_EVENTS: ::flatbuffers::VOffsetT = 12;
 
             #[inline]
             pub unsafe fn init_from_table(table: ::flatbuffers::Table<'a>) -> Self {
@@ -536,6 +853,9 @@ pub mod atlas {
             ) -> ::flatbuffers::WIPOffset<WorldSnapshot<'bldr>> {
                 let mut builder = WorldSnapshotBuilder::new(_fbb);
                 builder.add_server_time_ms(args.server_time_ms);
+                if let Some(x) = args.events {
+                    builder.add_events(x);
+                }
                 if let Some(x) = args.removed_ids {
                     builder.add_removed_ids(x);
                 }
@@ -595,6 +915,20 @@ pub mod atlas {
                         )
                 }
             }
+            #[inline]
+            pub fn events(
+                &self,
+            ) -> Option<::flatbuffers::Vector<'a, ::flatbuffers::ForwardsUOffset<GameEvent<'a>>>>
+            {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe {
+                    self._tab.get::<::flatbuffers::ForwardsUOffset<
+                        ::flatbuffers::Vector<'a, ::flatbuffers::ForwardsUOffset<GameEvent>>,
+                    >>(WorldSnapshot::VT_EVENTS, None)
+                }
+            }
         }
 
         impl ::flatbuffers::Verifiable for WorldSnapshot<'_> {
@@ -614,6 +948,9 @@ pub mod atlas {
                         Self::VT_REMOVED_IDS,
                         false,
                     )?
+                    .visit_field::<::flatbuffers::ForwardsUOffset<
+                        ::flatbuffers::Vector<'_, ::flatbuffers::ForwardsUOffset<GameEvent>>,
+                    >>("events", Self::VT_EVENTS, false)?
                     .finish();
                 Ok(())
             }
@@ -627,6 +964,11 @@ pub mod atlas {
                 >,
             >,
             pub removed_ids: Option<::flatbuffers::WIPOffset<::flatbuffers::Vector<'a, u32>>>,
+            pub events: Option<
+                ::flatbuffers::WIPOffset<
+                    ::flatbuffers::Vector<'a, ::flatbuffers::ForwardsUOffset<GameEvent<'a>>>,
+                >,
+            >,
         }
         impl<'a> Default for WorldSnapshotArgs<'a> {
             #[inline]
@@ -636,6 +978,7 @@ pub mod atlas {
                     server_time_ms: 0,
                     entities: None,
                     removed_ids: None,
+                    events: None,
                 }
             }
         }
@@ -677,6 +1020,18 @@ pub mod atlas {
                 );
             }
             #[inline]
+            pub fn add_events(
+                &mut self,
+                events: ::flatbuffers::WIPOffset<
+                    ::flatbuffers::Vector<'b, ::flatbuffers::ForwardsUOffset<GameEvent<'b>>>,
+                >,
+            ) {
+                self.fbb_.push_slot_always::<::flatbuffers::WIPOffset<_>>(
+                    WorldSnapshot::VT_EVENTS,
+                    events,
+                );
+            }
+            #[inline]
             pub fn new(
                 _fbb: &'b mut ::flatbuffers::FlatBufferBuilder<'a, A>,
             ) -> WorldSnapshotBuilder<'a, 'b, A> {
@@ -700,6 +1055,7 @@ pub mod atlas {
                 ds.field("server_time_ms", &self.server_time_ms());
                 ds.field("entities", &self.entities());
                 ds.field("removed_ids", &self.removed_ids());
+                ds.field("events", &self.events());
                 ds.finish()
             }
         }

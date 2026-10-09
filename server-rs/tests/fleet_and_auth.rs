@@ -91,6 +91,7 @@ async fn test_websocket_auth_and_binary_delta_streaming() {
         max_health: 100.0,
         state_flags: 1,
         target_id: 0,
+        ..Default::default()
     };
     let snapshot_bytes = builder.build_snapshot(1, 50, &[entity], &[]);
     server.broadcast_snapshot(snapshot_bytes).await;
