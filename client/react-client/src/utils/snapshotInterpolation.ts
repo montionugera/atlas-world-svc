@@ -44,6 +44,9 @@ export interface PosSample {
   t: number;
   x: number;
   y: number;
+  /** Velocity in force from `t` on; only kept where it is drawn (projectile heading). */
+  vx?: number;
+  vy?: number;
 }
 
 /**
@@ -164,14 +167,18 @@ interface Sampled {
   samples?: readonly PosSample[];
 }
 
-/** Write the position at simulation time `t` into `out` (no allocation). */
+/**
+ * Write the position at simulation time `t` into `out` (no allocation). Where the
+ * samples carry a velocity, the one in force at `t` is written too, so a heading drawn
+ * from it belongs to the same moment as the position.
+ */
 export function sampleInto(
   e: Sampled,
   t: number,
-  out: { x: number; y: number },
+  out: { x: number; y: number; vx?: number; vy?: number },
 ): void {
   const s = e.samples;
-  let a: { x: number; y: number } = e;
+  let a: { x: number; y: number; vx?: number; vy?: number } = e;
   let b = a;
   let k = 0;
   if (s && s.length > 0 && Number.isFinite(t)) {
@@ -192,6 +199,10 @@ export function sampleInto(
   }
   out.x = a.x + (b.x - a.x) * k;
   out.y = a.y + (b.y - a.y) * k;
+  if (a !== e && a.vx !== undefined && a.vy !== undefined) {
+    out.vx = a.vx;
+    out.vy = a.vy;
+  }
 }
 
 /** Position at simulation time `t`: interpolated, or the newest sample when dry. */

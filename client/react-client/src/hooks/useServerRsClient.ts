@@ -516,9 +516,11 @@ export const useServerRsClient = (
                     vx: entity.vx,
                     vy: entity.vy,
                     receivedAt: arrivalTime,
+                    // With its velocity: the heading is drawn from the same moment as
+                    // the position, or a parried spear turns round before it flies back.
                     samples: pushSample(
                       current.projectiles?.get(idStr)?.samples,
-                      sampleOf(entity),
+                      { ...sampleOf(entity), vx: entity.vx, vy: entity.vy },
                     ),
                     radius: SERVER_RS_PROJECTILE_RADIUS,
                     ownerId: String(entity.ownerId),

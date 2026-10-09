@@ -293,3 +293,145 @@ describe("samplePosition / pushSample / clock", () => {
     expect(src.get("a")!.x).toBe(10);
   });
 });
+
+describe("parried projectile: heading is drawn from the same moment as the position", () => {
+  interface Spear {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    samples: PosSample[];
+    endsAt?: number;
+  }
+  const PARRY_TICK = 20;
+  const LAST_TICK = 33;
+  const PARRY_T = PARRY_TICK * SNAPSHOT_INTERVAL_MS;
+  /** Server truth: flies -x at 300 u/s, is parried on PARRY_TICK, flies back. */
+  const truth = (tick: number) => ({
+    x: 100 + 15 * Math.abs(PARRY_TICK - tick),
+    y: 0,
+    vx: tick < PARRY_TICK ? -300 : 300,
+    vy: 0,
+  });
+
+  /**
+   * Ingest as useServerRsClient does (a new entity per snapshot, carrying the newest
+   * velocity) and draw at 60 fps as GameRenderer does. Returns per drawn frame the
+   * render time, the step since the previous frame and the drawn velocity.
+   */
+  function fly(lateness: (tick: number) => number) {
+    const arrivals = Array.from(
+      { length: LAST_TICK + 1 },
+      (_, tick) => tick * SNAPSHOT_INTERVAL_MS + lateness(tick),
+    );
+    for (let i = 1; i < arrivals.length; i++) {
+      arrivals[i] = Math.max(arrivals[i], arrivals[i - 1]); // in order
+    }
+    const map = new Map<string, Spear>();
+    const out = new Map<string, Spear>();
+    const frames: { t: number; dx: number; vx: number }[] = [];
+    let clock: SnapshotClock | undefined;
+    let tick = 0;
+    let prev: { t: number; x: number } | undefined;
+    const end = arrivals[LAST_TICK] + 400;
+    for (let now = arrivals[0] + 3; now <= end; now += FRAME_MS) {
+      for (; tick <= LAST_TICK && arrivals[tick] <= now; tick++) {
+        const t = tick * SNAPSHOT_INTERVAL_MS;
+        const e = truth(tick);
+        clock = observeSnapshot(clock, t, arrivals[tick]);
+        map.set("spear", {
+          ...e,
+          samples: pushSample(map.get("spear")?.samples, { t, ...e }),
+        });
+      }
+      const t = renderTimeAt(clock, now);
+      const drawn = interpolateEntities(map, t, out).get("spear");
+      if (!drawn) continue;
+      if (prev) frames.push({ t, dx: drawn.x - prev.x, vx: drawn.vx });
+      prev = { t, x: drawn.x };
+    }
+    return frames;
+  }
+
+  // Deterministic 5-125 ms jitter.
+  const jitter = (tick: number) => 5 + ((tick * 7919) % 121);
+  const links: [string, (tick: number) => number][] = [
+    ["a steady link", () => 20],
+    ["snapshot jitter", jitter],
+    [
+      "a stall that lands as a burst after the parry",
+      (tick) =>
+        tick >= PARRY_TICK - 2 && tick <= PARRY_TICK + 4
+          ? (PARRY_TICK + 5 - tick) * SNAPSHOT_INTERVAL_MS
+          : 20,
+    ],
+  ];
+
+  it.each(links)("never draws the spear tail-first on %s", (_, lateness) => {
+    const frames = fly(lateness);
+    const moving = frames.filter((f) => Math.abs(f.dx) > 1e-6);
+    // The scenario is not vacuous: it is drawn flying in, then flying back.
+    expect(moving.some((f) => f.dx < 0)).toBe(true);
+    expect(moving.some((f) => f.dx > 0)).toBe(true);
+    // The heading is the one in force at the moment being drawn...
+    for (const f of frames) {
+      expect(Math.sign(f.vx)).toBe(f.t < PARRY_T ? -1 : 1);
+    }
+    // ...so it agrees with the drawn motion on every frame (the one frame whose step
+    // spans the turn has no single direction).
+    const tailFirst = moving.filter((f, i) => {
+      const before = i > 0 ? moving[i - 1].t : -Infinity;
+      const spansTurn = before < PARRY_T && f.t >= PARRY_T;
+      return !spansTurn && Math.sign(f.vx) !== Math.sign(f.dx);
+    });
+    expect(tailFirst).toEqual([]);
+    // And the drawn motion itself turns round exactly once.
+    const turns = moving.filter(
+      (f, i) => i > 0 && Math.sign(f.dx) !== Math.sign(moving[i - 1].dx),
+    );
+    expect(turns).toHaveLength(1);
+  });
+
+  const samples: PosSample[] = [
+    { t: 900, x: 130, y: 0, vx: -300, vy: 0 },
+    { t: 950, x: 115, y: 0, vx: -300, vy: 0 },
+    { t: 1000, x: 115, y: 0, vx: 300, vy: 0 },
+    { t: 1050, x: 130, y: 0, vx: 300, vy: 0 },
+  ];
+  const newest: Spear = { x: 130, y: 0, vx: 300, vy: 0, samples };
+
+  it("takes the velocity of the earlier bracketing sample", () => {
+    const at = (t: number) =>
+      interpolateEntities(new Map([["s", newest]]), t).get("s")!;
+    expect(at(925).vx).toBe(-300);
+    expect(at(975).vx).toBe(-300);
+    expect(at(1025).vx).toBe(300);
+    expect(at(800).vx).toBe(-300); // before the oldest sample
+    expect(newest.vx).toBe(300);
+  });
+
+  it("holds the last velocity for one that has left the snapshot", () => {
+    const retained = { ...newest, endsAt: 1050 };
+    const at = (t: number) =>
+      interpolateEntities(new Map([["s", retained]]), t).get("s")!;
+    expect(at(1050).vx).toBe(300);
+    expect(at(925).vx).toBe(-300);
+  });
+
+  it("leaves the velocity of players and mobs (samples without one) alone", () => {
+    const mob = {
+      x: 10,
+      y: 4,
+      vx: 7,
+      vy: -3,
+      samples: [
+        { t: 1000, x: 0, y: 0 },
+        { t: 1050, x: 10, y: 4 },
+      ],
+    };
+    const drawn = interpolateEntities(new Map([["m", mob]]), 1025).get("m")!;
+    expect(drawn.x).toBeCloseTo(5);
+    expect(drawn.vx).toBe(7);
+    expect(drawn.vy).toBe(-3);
+  });
+});
