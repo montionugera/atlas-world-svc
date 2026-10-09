@@ -61,6 +61,10 @@ interface ServerOptions {
   jitter?: number;
   /** The uplink delay of inputs sent at or after `at`. */
   uplinkFrom?: { at: number; uplink: number };
+  /** Each input takes a pseudo-random part of this longer to reach the server (ms). */
+  uplinkJitter?: number;
+  /** Which draw of `uplinkJitter`: the same link on another day. */
+  seed?: number;
   /** `false`: a server without `input_ack`. A number: added to it (another socket's count). */
   echo?: false | number;
   /** Server time of tick 0. */
@@ -75,17 +79,21 @@ interface ServerOptions {
 /**
  * The server's walking rule (player_input.rs + physics.rs) at 20 ticks a second: each
  * tick runs on the newest input that has reached it (inputs arrive in the order sent, as
- * on one socket) and echoes its number, and its snapshot reaches the client `downlink`
- * plus a pseudo-random part of `jitter` later.
+ * on one socket, each after `uplink` plus a pseudo-random part of `uplinkJitter`) and
+ * echoes its number, and its snapshot reaches the client `downlink` plus a pseudo-random
+ * part of `jitter` later.
  */
 function serve(keys: readonly Key[], until: number, o: ServerOptions): Snap[] {
   const speed = o.speed ?? 200;
   const world = o.world ?? WORLD;
   let reached = -Infinity;
+  let draw = 11 + (o.seed ?? 0);
   const arrivals = keys.map((k) => {
     const from = o.uplinkFrom;
     const up = from && k.t >= from.at ? from.uplink : (o.uplink ?? 0);
-    reached = Math.max(reached, k.t + up + (k.late ?? 0));
+    draw = (draw * 1103515245 + 12345) % 2147483648;
+    const held = (o.uplinkJitter ?? 0) * (draw / 2147483648);
+    reached = Math.max(reached, k.t + up + held + (k.late ?? 0));
     return reached;
   });
   let { x, y } = o.start ?? { x: 500, y: 500 };
@@ -1059,12 +1067,14 @@ describe("a real jittered capture (map-for-test-terrain)", () => {
 
 /**
  * Every stop measured the same way: a walk to the right, a release at each of 8 points
- * of a tick, the server's ticks at each of 10 phases, drawn at 30, 60 and 144 fps.
+ * of a tick, the server's ticks at each of 10 phases, drawn at 30, 60 and 144 fps, each
+ * of the 240 with its own draw of the uplink jitter.
  */
 describe("stop sweep", () => {
   const PHASES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45];
   const RELEASES = [0, 7, 13, 19, 27, 33, 41, 47];
   const slow = { uplink: 60, downlink: 60, jitter: 30 };
+  const fell = { ...slow, uplinkFrom: { at: 2000, uplink: 5 } };
   const oneWalk = (release: number, late?: number): Key[] => [
     { t: 1000, ...RIGHT },
     { t: release, ...STOP, late },
@@ -1076,9 +1086,28 @@ describe("stop sweep", () => {
     { t: 2231, ...RIGHT, late },
     { t: release, ...STOP },
   ];
+  /** Every input but the measured release takes `sooner` ms longer than it does. */
+  const sooner =
+    (keysFor: (release: number) => Key[], ms: number) =>
+    (release: number): Key[] =>
+      keysFor(release).map((k) => (k.t === release ? k : { ...k, late: ms }));
+  interface Broken {
+    /** The drawn player stepped back the way it came. */
+    backward: number;
+    /** It was drawn beyond where the server came to rest. */
+    overshoot: number;
+    /** Its speed was higher than the frame before, at any point after the release. */
+    rise: number;
+    /** It did not end exactly on the server's rest position. */
+    astray: number;
+  }
   /** How many of the 240 stops break each rule. */
-  const sweep = (keysFor: (release: number) => Key[], link: ServerOptions) => {
-    const broken = { backward: 0, rise: 0, overshoot: 0, astray: 0 };
+  const sweep = (
+    keysFor: (release: number) => Key[],
+    link: ServerOptions,
+  ): Broken => {
+    const broken = { backward: 0, overshoot: 0, rise: 0, astray: 0 };
+    let seed = 0;
     for (const fps of [30, 60, 144]) {
       for (const phase of PHASES) {
         for (const r of RELEASES) {
@@ -1086,18 +1115,17 @@ describe("stop sweep", () => {
           const { frames } = run(
             keysFor(release),
             release + 1500,
-            { ...link, phase },
+            { ...link, phase, seed: seed++ },
             { fps },
           );
           const rest = last(frames).serverX;
           const after = between(frames, release - 1000 / fps, Infinity);
           if (Math.min(...stepsOf(after)) < -EPS) broken.backward++;
-          // Drawn speed higher than the frame before, at any point after the release.
-          if (riseOf(stepsOf(between(frames, release, Infinity))) > EPS) {
-            broken.rise++;
-          }
           if (Math.max(...after.map((f) => f.x)) - rest > EPS) {
             broken.overshoot++;
+          }
+          if (riseOf(stepsOf(between(frames, release, Infinity))) > EPS) {
+            broken.rise++;
           }
           if (last(frames).x !== rest) broken.astray++;
         }
@@ -1105,51 +1133,89 @@ describe("stop sweep", () => {
     }
     return broken;
   };
-  const NONE = { backward: 0, rise: 0, overshoot: 0, astray: 0 };
+  const count = (
+    backward: number,
+    overshoot: number,
+    rise: number,
+    astray: number,
+  ): Broken => ({ backward, overshoot, rise, astray });
 
-  it.each<[string, ServerOptions]>([
-    ["no latency", {}],
-    ["5 ms each way", { uplink: 5, downlink: 5 }],
-  ])("breaks no rule on a link shorter than a tick (%s)", (_, link) => {
-    expect(sweep(oneWalk, link)).toEqual(NONE);
-  });
-
-  // Until the release is echoed, which of two ticks takes it cannot be told from one
-  // earlier input: the nearer rest point is assumed, and when the server walks a tick
-  // more the stop speeds up again (to the floor). No more often than when the tick
-  // was guessed from the round trip (94 and 123 of 240).
-  it.each<[string, ServerOptions, number]>([
-    ["a jittered link", JITTERY, 94],
-    ["a slow link", slow, 123],
-  ])(
-    "never overshoots or steps back on %s, and ends on the rest position",
-    (_, link, rises) => {
-      const broken = sweep(oneWalk, link);
-      expect({ ...broken, rise: 0 }).toEqual(NONE);
-      expect(broken.rise).toBeLessThanOrEqual(rises);
-    },
-  );
-
-  it("is not thrown by a key press that reached the server 120 ms late", () => {
-    const broken = sweep((release) => twoWalks(release, 120), slow);
-    expect({ ...broken, rise: 0 }).toEqual(NONE);
-  });
-
-  it("is not thrown by an uplink that fell from 60 ms to 5 ms before the walk", () => {
-    const link = { ...slow, uplinkFrom: { at: 2000, uplink: 5 } };
-    const broken = sweep(twoWalks, link);
-    expect({ ...broken, rise: 0 }).toEqual(NONE);
-  });
-
-  it("walks on to where the server stopped when the release itself is 120 ms late", () => {
-    const broken = sweep((release) => oneWalk(release, 120), slow);
-    expect({ ...broken, rise: 0 }).toEqual(NONE);
-  });
-
-  it("ends on the rest position when the uplink fell during the walk", () => {
-    // Nothing was sent between the fall and the release, so nothing could show it:
-    // the server stops a tick sooner than any input said, and the stop is walked back.
-    const link = { ...slow, uplinkFrom: { at: 2000, uplink: 5 } };
-    expect(sweep(oneWalk, link).astray).toBe(0);
+  // Stops of 240 that walk backward, overshoot, speed up again, or end off the rest
+  // position. Every count above zero is what the code does today: a measured ceiling,
+  // not a target, and one that may only be edited downwards.
+  it.each<[string, (release: number) => Key[], ServerOptions, Broken]>([
+    ["no latency", oneWalk, {}, count(0, 0, 0, 0)],
+    ["5 ms each way", oneWalk, { uplink: 5, downlink: 5 }, count(0, 0, 0, 0)],
+    ["a jittered link", oneWalk, JITTERY, count(0, 0, 94, 0)],
+    ["a slow link", oneWalk, slow, count(0, 0, 123, 0)],
+    [
+      "a slow link, the key press 120 ms late",
+      (release) => twoWalks(release, 120),
+      slow,
+      count(0, 0, 111, 0),
+    ],
+    [
+      "a slow link, the release 120 ms late",
+      (release) => oneWalk(release, 120),
+      slow,
+      count(0, 0, 240, 0),
+    ],
+    [
+      "an uplink that fell from 60 ms to 5 ms before the walk",
+      twoWalks,
+      fell,
+      count(0, 0, 88, 0),
+    ],
+    // Nothing was sent between the fall and the release, so nothing could show it.
+    [
+      "an uplink that fell from 60 ms to 5 ms during the walk",
+      oneWalk,
+      fell,
+      count(138, 138, 138, 0),
+    ],
+    [
+      "10 ms up and 2 ms down, inputs up to 10 ms longer",
+      oneWalk,
+      { uplink: 10, downlink: 2, uplinkJitter: 10 },
+      count(0, 0, 9, 0),
+    ],
+    [
+      "a jittered link, inputs up to 15 ms longer",
+      oneWalk,
+      { ...JITTERY, uplinkJitter: 15 },
+      count(0, 0, 97, 0),
+    ],
+    [
+      "a jittered link, inputs up to 15 ms longer, after an earlier walk",
+      twoWalks,
+      { ...JITTERY, uplinkJitter: 15 },
+      count(2, 2, 65, 0),
+    ],
+    [
+      "a slow link, inputs up to 30 ms longer",
+      oneWalk,
+      { ...slow, uplinkJitter: 30 },
+      count(3, 3, 120, 0),
+    ],
+    [
+      "a jittered link, the release 15 ms sooner than the press",
+      sooner(oneWalk, 15),
+      JITTERY,
+      count(12, 12, 68, 0),
+    ],
+    [
+      "a jittered link, the release 15 ms sooner than three inputs before it",
+      sooner(twoWalks, 15),
+      JITTERY,
+      count(27, 27, 59, 0),
+    ],
+    [
+      "a slow link, the release 30 ms sooner than the press",
+      sooner(oneWalk, 30),
+      slow,
+      count(45, 45, 69, 0),
+    ],
+  ])("%s", (_, keysFor, link, ceiling) => {
+    expect(sweep(keysFor, link)).toEqual(ceiling);
   });
 });
