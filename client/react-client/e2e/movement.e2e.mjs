@@ -110,6 +110,23 @@ try {
   const roomText = await page.locator('header').textContent();
   check('map switch updates room badge', roomText.includes('server-rs-map-for-test-projectile'), roomText);
 
+  // 8. Default URL (no ?player → shared dev-player session) must always get a live feed.
+  // Regression: StrictMode opens 2 sockets whose handshakes race; when the discarded one
+  // had registered last, closing it unregistered the session → "Online" but Tick 0, empty world.
+  let liveLoads = 0;
+  const LOADS = 6;
+  for (let i = 0; i < LOADS; i++) {
+    await page.goto(BASE);
+    const ok = await page
+      .waitForFunction(() => (window.__gameState?.tick ?? 0) > 0 && window.__gameState.mobs.size > 0, null, {
+        timeout: 4000,
+      })
+      .then(() => true)
+      .catch(() => false);
+    if (ok) liveLoads++;
+  }
+  check('default URL reload always receives snapshots', liveLoads === LOADS, `${liveLoads}/${LOADS} loads live`);
+
   check('no uncaught page errors', errors.length === 0, errors.join(' | '));
 } finally {
   await browser.close();

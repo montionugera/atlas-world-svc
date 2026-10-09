@@ -256,11 +256,19 @@ impl WsServer {
         let (mut ws_write, mut ws_read) = ws_stream.split();
         let (out_tx, mut out_rx) = unbounded_channel::<Message>();
 
-        // Register active session (a reconnect for the same session replaces the old sender)
-        let my_tx = out_tx.clone();
+        // Register under a per-connection key. Two sockets for the same session (StrictMode
+        // double-mount, reload, second tab) finish their handshakes concurrently, so
+        // registration order is arbitrary — a session-keyed map let whichever registered
+        // last evict the other, and closing the discarded one left the live tab with no feed.
+        static CONN_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let conn_key = format!(
+            "{}#{}",
+            session_id,
+            CONN_SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+        );
         {
             let mut conns = connections.write().await;
-            conns.insert(session_id.clone(), out_tx);
+            conns.insert(conn_key.clone(), out_tx);
         }
 
         // Task for writing outbound messages to client
@@ -303,17 +311,8 @@ impl WsServer {
             }
         }
 
-        // Clean up connection — only if the registry still points at OUR channel.
-        // A newer socket for the same session may have replaced it.
-        {
-            let mut conns = connections.write().await;
-            if conns
-                .get(&session_id)
-                .is_some_and(|tx| tx.same_channel(&my_tx))
-            {
-                conns.remove(&session_id);
-            }
-        }
+        // Clean up only this connection's entry; other sockets for the session stay live.
+        connections.write().await.remove(&conn_key);
         write_task.abort();
         info!("Session {} disconnected", session_id);
     }
@@ -433,6 +432,34 @@ mod tests {
             .unwrap();
         assert_eq!(msg, Message::Binary(vec![7u8, 7, 7].into()));
         new_ws.close(None).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_closing_last_registered_duplicate_keeps_other_socket_live() {
+        // Regression: StrictMode opens two sockets whose handshakes finish in the same
+        // instant, so server registration order is arbitrary. If the socket the client
+        // discards registered LAST, a session-keyed registry dropped the live socket.
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let url = format!("ws://{}/ws?token=dev-token:dup2", server.local_addr());
+
+        let (mut kept_ws, _) = connect_async(&url).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        let (mut discarded_ws, _) = connect_async(&url).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(50)).await;
+
+        discarded_ws.close(None).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(100)).await;
+        assert_eq!(server.active_connections_count().await, 1);
+
+        server.broadcast_snapshot(&[9, 9]).await;
+        let msg = tokio::time::timeout(Duration::from_secs(1), kept_ws.next())
+            .await
+            .expect("remaining socket must still receive snapshots")
+            .unwrap()
+            .unwrap();
+        assert_eq!(msg, Message::Binary(vec![9u8, 9].into()));
+        kept_ws.close(None).await.unwrap();
     }
 
     #[tokio::test]
