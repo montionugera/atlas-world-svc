@@ -7,7 +7,7 @@ import { perfTimings } from "../utils/frameTiming";
 const READOUT_INTERVAL_MS = 150;
 
 /** A block of the debug dock (beside the canvas, never on it). */
-const panel: React.CSSProperties = {
+export const panel: React.CSSProperties = {
   background: "rgba(10, 15, 25, 0.82)",
   border: "1px solid rgba(255, 255, 255, 0.15)",
   borderRadius: 6,
@@ -123,7 +123,7 @@ export const HeldKeys: React.FC<{
   );
 };
 
-const toolbarButton = (active: boolean): React.CSSProperties => ({
+export const toolbarButton = (active: boolean): React.CSSProperties => ({
   padding: "4px 10px",
   borderRadius: 4,
   border: `1px solid ${active ? "#2ecc71" : "rgba(255, 255, 255, 0.25)"}`,

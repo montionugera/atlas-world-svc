@@ -8,6 +8,7 @@ import {
   ColyseusGameCanvas,
   DEBUG_DOCK_ID,
 } from "./components/ColyseusGameCanvas";
+import { DebugToolsPanel } from "./components/DebugToolsPanel";
 import { LogPanel } from "./components/LogPanel";
 import { EntityGrid } from "./components/EntityGrid";
 import { GameStats } from "./components/GameStats";
@@ -49,6 +50,11 @@ const clientConfig = {
   useSSL: false,
   token: playerParam ? `dev-token:${playerParam}` : undefined,
 };
+
+// The debug controls are plain HTTP on the game port; `player` is the session id the
+// server derives from the token.
+const debugBaseUrl = `http://${clientConfig.serverHost}:${clientConfig.serverPort}`;
+const debugPlayer = playerParam || "dev-player";
 
 const EQUIPMENT_SLOT_LABELS: Record<
   (typeof EQUIPMENT_SLOT_IDS)[number],
@@ -358,6 +364,15 @@ function App() {
             <div className="entity-panel">
               {/* The canvas draws its debug dock here, so nothing covers the play area. */}
               <div id={DEBUG_DOCK_ID} style={{ padding: 8 }} />
+              {useRustServer && client.isConnected && (
+                <div style={{ padding: "0 8px 8px" }}>
+                  <DebugToolsPanel
+                    baseUrl={debugBaseUrl}
+                    map={selectedMapId}
+                    player={debugPlayer}
+                  />
+                </div>
+              )}
               <div style={{ marginBottom: 12 }}>
                 <label style={{ color: "#fff", fontWeight: 700 }}>Weapon</label>
                 <div style={{ marginTop: 6, color: "#bdc3c7", fontSize: 12 }}>
