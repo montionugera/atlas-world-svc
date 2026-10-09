@@ -52,7 +52,8 @@ pub fn combat_system(
         // Mobs with MobAi are excluded: mob_ai_system owns their attacks and their single
         // per-tick cooldown decrement.
         let mut attackers = params.p0();
-        for (entity, pos, mut stats, health, entity_id, avatar, mut input, attrs) in &mut attackers {
+        for (entity, pos, mut stats, health, entity_id, avatar, mut input, attrs) in &mut attackers
+        {
             if !health.is_alive {
                 continue;
             }
@@ -408,7 +409,10 @@ mod tests {
 
     /// Spawns a non-AI melee attacker at (100,100) and a human player at (130,100) who is
     /// moving toward it (-X) with `vel`, then returns (world, player).
-    fn knockback_world(vel: crate::Velocity, dash: crate::ecs::components::DashState) -> (World, Entity) {
+    fn knockback_world(
+        vel: crate::Velocity,
+        dash: crate::ecs::components::DashState,
+    ) -> (World, Entity) {
         use crate::{Mass, PlayerTag};
 
         let mut world = World::new();
@@ -463,14 +467,21 @@ mod tests {
         hit.run(&mut world);
         assert!(world.get::<Health>(player).unwrap().current < 100.0);
         let mut prev = world.get::<Velocity>(player).unwrap().vx;
-        assert!(prev > 0.0, "hit must push the player away from the attacker, got vx {prev}");
+        assert!(
+            prev > 0.0,
+            "hit must push the player away from the attacker, got vx {prev}"
+        );
 
         // Following ticks with the movement key still held toward the attacker.
         let mut tick = Schedule::default();
         tick.add_systems((status_effect_tick_system, player_input_system).chain());
         loop {
             tick.run(&mut world);
-            if !world.get::<StatusEffects>(player).unwrap().is_knocked_back() {
+            if !world
+                .get::<StatusEffects>(player)
+                .unwrap()
+                .is_knocked_back()
+            {
                 break;
             }
             let vx = world.get::<Velocity>(player).unwrap().vx;
@@ -508,12 +519,22 @@ mod tests {
         tick.add_systems((status_effect_tick_system, player_input_system).chain());
         loop {
             tick.run(&mut world);
-            if !world.get::<StatusEffects>(player).unwrap().is_knocked_back() {
+            if !world
+                .get::<StatusEffects>(player)
+                .unwrap()
+                .is_knocked_back()
+            {
                 break;
             }
             let vx = world.get::<Velocity>(player).unwrap().vx;
-            assert!(vx > 0.0, "dash velocity must not survive the hit, got vx {vx}");
-            assert!(vx < 450.0, "knockback must not be a dash-speed slide, got vx {vx}");
+            assert!(
+                vx > 0.0,
+                "dash velocity must not survive the hit, got vx {vx}"
+            );
+            assert!(
+                vx < 450.0,
+                "knockback must not be a dash-speed slide, got vx {vx}"
+            );
             assert!(!world.get::<DashState>(player).unwrap().is_dashing());
         }
 

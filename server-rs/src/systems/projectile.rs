@@ -812,14 +812,22 @@ mod tests {
     #[test]
     fn test_projectile_direct_hit_knockback_replaces_velocity_toward_shooter() {
         let vel = hit_mob_running_at_shooter(50.0, 0.0);
-        assert!(vel.vx > 0.0, "hit must shove away from the shooter, got vx {}", vel.vx);
+        assert!(
+            vel.vx > 0.0,
+            "hit must shove away from the shooter, got vx {}",
+            vel.vx
+        );
     }
 
     #[test]
     fn test_projectile_aoe_knockback_replaces_velocity_toward_blast() {
         // Blast centre 10 u West of the mob: the radial shove points East.
         let vel = hit_mob_running_at_shooter(40.0, 60.0);
-        assert!(vel.vx > 0.0, "blast must shove away from its centre, got vx {}", vel.vx);
+        assert!(
+            vel.vx > 0.0,
+            "blast must shove away from its centre, got vx {}",
+            vel.vx
+        );
     }
 
     #[test]

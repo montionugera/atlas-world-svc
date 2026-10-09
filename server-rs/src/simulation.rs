@@ -624,7 +624,8 @@ impl AtlasSimulation {
 
         let derived = derived_stats(level, &allocated, weapon_id);
 
-        let entity = self.world
+        let entity = self
+            .world
             .spawn((
                 EntityId(session_id.to_string()),
                 Position::new(x, y),

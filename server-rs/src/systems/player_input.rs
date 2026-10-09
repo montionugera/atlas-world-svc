@@ -282,11 +282,17 @@ mod tests {
         let vel = world.get::<Velocity>(entity).unwrap();
         // Direction is kept and the speed eases out by exp(-KNOCKBACK_DECAY_PER_SEC * dt).
         let decay = (-KNOCKBACK_DECAY_PER_SEC * 0.05).exp();
-        assert!((vel.vx - -80.0 * decay).abs() < 1e-3, "movement input must not erase knockback");
+        assert!(
+            (vel.vx - -80.0 * decay).abs() < 1e-3,
+            "movement input must not erase knockback"
+        );
         assert!((vel.vy - 30.0 * decay).abs() < 1e-3);
 
         // Knockback ends: normal movement control resumes.
-        world.get_mut::<StatusEffects>(entity).unwrap().knockback_timer = 0.0;
+        world
+            .get_mut::<StatusEffects>(entity)
+            .unwrap()
+            .knockback_timer = 0.0;
         schedule.run(&mut world);
 
         let vel = world.get::<Velocity>(entity).unwrap();
@@ -322,10 +328,16 @@ mod tests {
 
         let decay = (-KNOCKBACK_DECAY_PER_SEC * 0.05).exp();
         let vel = world.get::<Velocity>(entity).unwrap();
-        assert!((vel.vx - -80.0 * decay).abs() < 1e-3, "cast lock must not erase knockback");
+        assert!(
+            (vel.vx - -80.0 * decay).abs() < 1e-3,
+            "cast lock must not erase knockback"
+        );
 
         // Knockback ends: the cast lock holds the caster still again.
-        world.get_mut::<StatusEffects>(entity).unwrap().knockback_timer = 0.0;
+        world
+            .get_mut::<StatusEffects>(entity)
+            .unwrap()
+            .knockback_timer = 0.0;
         schedule.run(&mut world);
         assert_eq!(world.get::<Velocity>(entity).unwrap().vx, 0.0);
     }
@@ -358,16 +370,26 @@ mod tests {
         for tick in 1..=4 {
             schedule.run(&mut world);
             let vel = world.get::<Velocity>(entity).unwrap();
-            assert!(vel.vx > 200.0, "tick {tick}: still above run speed, got {}", vel.vx);
+            assert!(
+                vel.vx > 200.0,
+                "tick {tick}: still above run speed, got {}",
+                vel.vx
+            );
             assert!(vel.vx < prev_vx, "tick {tick}: dash speed must decay");
-            assert_eq!(vel.vy, 0.0, "tick {tick}: held input must not steer the glide");
+            assert_eq!(
+                vel.vy, 0.0,
+                "tick {tick}: held input must not steer the glide"
+            );
             prev_vx = vel.vx;
         }
 
         schedule.run(&mut world);
         let vel = world.get::<Velocity>(entity).unwrap();
         assert_eq!(vel.vx, 0.0);
-        assert_eq!(vel.vy, 200.0, "movement control returns once the glide expires");
+        assert_eq!(
+            vel.vy, 200.0,
+            "movement control returns once the glide expires"
+        );
         assert!(!world.get::<DashState>(entity).unwrap().is_dashing());
     }
 

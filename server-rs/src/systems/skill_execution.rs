@@ -1,8 +1,8 @@
 use crate::combat::get_skill;
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    CastingState, CooldownTracker, DashState, Health, MobTag, PlayerInputState, PlayerTag, Position,
-    Projectile, StatusEffects, Velocity,
+    CastingState, CooldownTracker, DashState, Health, MobTag, PlayerInputState, PlayerTag,
+    Position, Projectile, StatusEffects, Velocity,
 };
 use bevy_ecs::prelude::*;
 
@@ -26,8 +26,18 @@ pub fn skill_execution_system(
 ) {
     let current_time = clock.current_time_seconds();
 
-    for (entity, pos, mut input, mut cooldown_tracker, mut casting, mut vel, is_player, health, mut dash_opt, status_opt) in
-        &mut query
+    for (
+        entity,
+        pos,
+        mut input,
+        mut cooldown_tracker,
+        mut casting,
+        mut vel,
+        is_player,
+        health,
+        mut dash_opt,
+        status_opt,
+    ) in &mut query
     {
         // The dead cannot cast: drop any in-flight cast and swallow skill presses.
         if health.is_some_and(|h| !h.is_alive) {
@@ -127,11 +137,7 @@ pub fn skill_execution_system(
                     }
 
                     let is_aoe = skill.radius > 2.5;
-                    let aoe_radius = if is_aoe {
-                        skill.radius * 10.0
-                    } else {
-                        0.0
-                    };
+                    let aoe_radius = if is_aoe { skill.radius * 10.0 } else { 0.0 };
 
                     let (proj_pos, proj_vel, speed, max_range, lifetime) = if is_aoe {
                         // Ground-targeted AoE skill (Meteor, Blizzard, Thunder):
@@ -563,8 +569,15 @@ mod tests {
         schedule.add_systems(skill_execution_system);
         schedule.run(&mut world);
 
-        assert!(world.get::<CastingState>(entity).unwrap().skill_id.is_some());
+        assert!(world
+            .get::<CastingState>(entity)
+            .unwrap()
+            .skill_id
+            .is_some());
         let vel = world.get::<Velocity>(entity).unwrap();
-        assert_eq!(vel.vx, -80.0, "cast start must not cancel knockback velocity");
+        assert_eq!(
+            vel.vx, -80.0,
+            "cast start must not cancel knockback velocity"
+        );
     }
 }

@@ -210,7 +210,10 @@ fn row2_melee_mob_closes_distance_and_damages_player() {
     }
     // A healthy mob lands 5 hits here and ends ~50 u away; one that walks home and
     // re-aggros between hits manages only 2 hits and ends ~84 u away.
-    assert!(hits >= 4, "mob did not keep engaging after its shove: {hits} hit(s)");
+    assert!(
+        hits >= 4,
+        "mob did not keep engaging after its shove: {hits} hit(s)"
+    );
     let d = dist(pos(&sim, mob), pos(&sim, p));
     assert!(d <= 60.0, "melee mob did not stay on the player: {d}");
 }
@@ -231,7 +234,10 @@ fn mob_melee_shove(attack_power: f32) -> f32 {
         }
         before = pos(&sim, p);
     }
-    assert!(sim.world.get::<Health>(p).unwrap().current < max, "mob never hit the player");
+    assert!(
+        sim.world.get::<Health>(p).unwrap().current < max,
+        "mob never hit the player"
+    );
     for _ in 0..10 {
         if !sim.world.get::<StatusEffects>(p).unwrap().is_knocked_back() {
             break;
@@ -370,7 +376,10 @@ fn row8_human_avatar_only_melees_while_attack_held() {
     let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
     player_near_mob(&mut sim, mob_pos, 30.0);
     // Keep the mob from swinging: its hit would shove the avatar out of melee reach.
-    sim.world.get_mut::<CombatStats>(mob).unwrap().cooldown_timer = 60.0;
+    sim.world
+        .get_mut::<CombatStats>(mob)
+        .unwrap()
+        .cooldown_timer = 60.0;
     let max = sim.world.get::<Health>(mob).unwrap().max;
     for _ in 0..10 {
         sim.live_tick(&[input("p1", 0.0, 0.0, false)], &[]);
@@ -568,7 +577,10 @@ fn review5_bot_hits_mob_standing_at_mob_melee_reach() {
     *sim.world.get_mut::<Position>(mob).unwrap() = Position::new(bot_pos.x + 44.0, bot_pos.y);
     // The mob must not swing first: its hit now shoves the bot out of melee reach,
     // which is not what this range check is about.
-    sim.world.get_mut::<CombatStats>(mob).unwrap().cooldown_timer = 5.0;
+    sim.world
+        .get_mut::<CombatStats>(mob)
+        .unwrap()
+        .cooldown_timer = 5.0;
     let max = sim.world.get::<Health>(mob).unwrap().max;
     tick(&mut sim);
     assert!(sim.world.get::<Health>(mob).unwrap().current < max);
