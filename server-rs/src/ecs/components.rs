@@ -83,11 +83,11 @@ impl Default for Mass {
 pub const KNOCKBACK_DECAY_PER_SEC: f32 = 6.0;
 
 /// Speed (u/s) a hit shoves its victim away at, tuned for the 10x world scale
-/// (run speed 200, dash 450): 240..=400 for a player (mass 15), 144..=240 for a
-/// standard mob (mass 25), reaching the cap at 20 damage. With the decay above over the
-/// 0.2 s knockback timer that is roughly a body width or two of travel.
+/// (run speed 200, dash 450): 120..=240 for a player (mass 15), 72..=144 for a
+/// standard mob (mass 25), reaching the cap at 12 damage. With the decay above over the
+/// 0.2 s knockback timer a live mob melee hit moves a player about 18..=36 u.
 pub fn knockback_speed(damage: f32, victim_mass: f32) -> f32 {
-    (damage * 300.0).clamp(3600.0, 6000.0) / victim_mass
+    (damage * 300.0).clamp(1800.0, 3600.0) / victim_mass
 }
 
 #[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]

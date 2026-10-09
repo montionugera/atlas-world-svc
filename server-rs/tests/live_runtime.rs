@@ -10,7 +10,8 @@ use server_rs::ai::ThreatTable;
 use server_rs::auth::AuthGuard;
 use server_rs::content::{derive_mob_stats, BestiaryCatalog};
 use server_rs::ecs::components::{
-    CombatStats, EntityId, Health, MobAi, MobSpawnAnchor, MobTag, PlayerAvatar, Position, Velocity,
+    CombatStats, EntityId, Health, MobAi, MobSpawnAnchor, MobTag, PlayerAvatar, Position,
+    StatusEffects, Velocity,
 };
 use server_rs::net::{ClientPacket, WsServer};
 use server_rs::protocol::{fnv1a_32, serialize_client_input};
@@ -196,15 +197,61 @@ fn row2_melee_mob_closes_distance_and_damages_player() {
     make_melee(&mut sim, mob);
     let p = player_near_mob(&mut sim, mob_pos, 120.0);
     let max = sim.world.get::<Health>(p).unwrap().max;
-    // Closest approach, not the final distance: each hit now shoves the player back out.
-    let mut d = f32::MAX;
+    // Each hit shoves the player out of reach (see the shove test below), so the mob has
+    // to close again: one hit followed by leashing or walking home must fail here.
+    let (mut hp, mut hits) = (max, 0);
     for _ in 0..100 {
         tick(&mut sim);
-        d = d.min(dist(pos(&sim, mob), pos(&sim, p)));
+        let now = sim.world.get::<Health>(p).unwrap().current;
+        if now < hp {
+            hits += 1;
+        }
+        hp = now;
     }
-    assert!(d <= 46.0, "melee mob did not close to reach: {d}");
-    let hp = sim.world.get::<Health>(p).unwrap().current;
-    assert!(hp < max, "mob never damaged the player ({hp}/{max})");
+    assert!(hits >= 2, "mob did not keep engaging after its shove: {hits} hit(s)");
+    // Still on the player at the end: mob reach (46) plus at most one shove (40).
+    let d = dist(pos(&sim, mob), pos(&sim, p));
+    assert!(d <= 86.0, "melee mob did not stay on the player: {d}");
+}
+
+/// Distance one real mob melee hit (projectile, live schedule) shoves a stationary avatar.
+fn mob_melee_shove(attack_power: f32) -> f32 {
+    let mut sim = live(0, 1);
+    let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
+    make_melee(&mut sim, mob);
+    sim.world.get_mut::<CombatStats>(mob).unwrap().attack_power = attack_power;
+    let p = player_near_mob(&mut sim, mob_pos, 44.0);
+    let max = sim.world.get::<Health>(p).unwrap().max;
+    let mut before = pos(&sim, p);
+    for _ in 0..40 {
+        tick(&mut sim);
+        if sim.world.get::<Health>(p).unwrap().current < max {
+            break;
+        }
+        before = pos(&sim, p);
+    }
+    assert!(sim.world.get::<Health>(p).unwrap().current < max, "mob never hit the player");
+    for _ in 0..10 {
+        if !sim.world.get::<StatusEffects>(p).unwrap().is_knocked_back() {
+            break;
+        }
+        tick(&mut sim);
+    }
+    dist(before, pos(&sim, p))
+}
+
+#[test]
+fn row2_mob_melee_hit_shoves_player_a_short_step() {
+    // Weakest and strongest shove (below and above the knockback_speed clamp). The player
+    // must visibly move, yet stay about one short step from melee: mob reach is 46, the
+    // avatar's 40, so a 44 -> ~98 fling is far too much.
+    for attack_power in [1.0, 40.0] {
+        let moved = mob_melee_shove(attack_power);
+        assert!(
+            (12.0..=40.0).contains(&moved),
+            "attack_power {attack_power}: player shoved {moved} u, want 12..=40"
+        );
+    }
 }
 
 #[test]

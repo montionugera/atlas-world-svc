@@ -468,7 +468,6 @@ mod tests {
         // Following ticks with the movement key still held toward the attacker.
         let mut tick = Schedule::default();
         tick.add_systems((status_effect_tick_system, player_input_system).chain());
-        let mut shove = 0.0;
         loop {
             tick.run(&mut world);
             if !world.get::<StatusEffects>(player).unwrap().is_knocked_back() {
@@ -477,11 +476,10 @@ mod tests {
             let vx = world.get::<Velocity>(player).unwrap().vx;
             assert!(vx > 0.0, "knockback must keep pointing away, got vx {vx}");
             assert!(vx < prev, "knockback must ease out, got {vx} after {prev}");
-            shove += vx * 0.05;
             prev = vx;
         }
-        // Reads as a shove: about one to two body widths (24u), not a teleport.
-        assert!((20.0..=50.0).contains(&shove), "shove distance {shove}");
+        // Shove distance is asserted on the real mob-melee path in
+        // tests/live_runtime.rs (row2_mob_melee_hit_shoves_player_a_short_step).
 
         // Timer expired: control returns to the held input.
         let vel = world.get::<Velocity>(player).unwrap();
