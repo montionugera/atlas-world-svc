@@ -161,6 +161,33 @@ describe("formatReadout", () => {
     expect(r["room"]).toBe("map-for-play  tick 42");
   });
 
+  it("shows the local prediction state, its error and the calibrated speed", () => {
+    const prediction = {
+      enabled: true,
+      yielding: null as string | null,
+      error: 0.42,
+      errorMax: 6.25,
+      baseSpeed: 201.3,
+      calibrated: true,
+      rtt: 12.4,
+    };
+    expect(rows(base)["predict"]).toBeUndefined();
+    expect(rows({ ...base, prediction })["predict"]).toBe(
+      "on  err 0.4 u (max 6.3)  base 201 u/s  rtt 12 ms",
+    );
+    expect(
+      rows({
+        ...base,
+        prediction: { ...prediction, yielding: "dash", calibrated: false },
+      })["predict"],
+    ).toBe("yielding (dash)  err 0.4 u (max 6.3)  base 201 u/s?  rtt 12 ms");
+    expect(
+      rows({ ...base, prediction: { ...prediction, enabled: false } })[
+        "predict"
+      ],
+    ).toBe("off (interpolated)");
+  });
+
   it("says so plainly when there is no terrain data for the map", () => {
     expect(rows({ ...base, terrain: null })["terrain"]).toBe(
       "no client terrain data",
@@ -236,17 +263,22 @@ describe("debug toggle persistence", () => {
       overlay: true,
       world: true,
       terrain: true,
+      prediction: true,
     });
     expect(loadDebugToggles(memoryStorage())).toEqual(DEFAULT_DEBUG_TOGGLES);
   });
 
   it("round-trips saved toggles", () => {
     const s = memoryStorage();
-    saveDebugToggles({ overlay: false, world: true, terrain: false }, s);
+    saveDebugToggles(
+      { overlay: false, world: true, terrain: false, prediction: false },
+      s,
+    );
     expect(loadDebugToggles(s)).toEqual({
       overlay: false,
       world: true,
       terrain: false,
+      prediction: false,
     });
   });
 
@@ -260,7 +292,7 @@ describe("debug toggle persistence", () => {
           "atlas-debug-toggles": '{"overlay":"no","world":false}',
         }),
       ),
-    ).toEqual({ overlay: true, world: false, terrain: true });
+    ).toEqual({ overlay: true, world: false, terrain: true, prediction: true });
     expect(
       loadDebugToggles(memoryStorage({ "atlas-debug-toggles": "null" })),
     ).toEqual(DEFAULT_DEBUG_TOGGLES);

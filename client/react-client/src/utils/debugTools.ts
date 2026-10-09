@@ -85,6 +85,16 @@ export interface ReadoutInput {
   /** Client-side prediction, not carried by the snapshot. */
   castingSkill: string | null;
   attackHeld: boolean;
+  /** Local-player prediction (utils/localPrediction.ts), read live. */
+  prediction?: {
+    enabled: boolean;
+    yielding: string | null;
+    error: number;
+    errorMax: number;
+    baseSpeed: number;
+    calibrated: boolean;
+    rtt: number;
+  };
 }
 
 /** Label/value rows for the debug readout, top to bottom. */
@@ -147,6 +157,20 @@ export function formatReadout(
   } else {
     rows.push(["pos", "no local player"]);
   }
+  const predict = input.prediction;
+  if (predict) {
+    rows.push([
+      "predict",
+      predict.enabled
+        ? [
+            predict.yielding ? `yielding (${predict.yielding})` : "on",
+            `err ${predict.error.toFixed(1)} u (max ${predict.errorMax.toFixed(1)})`,
+            `base ${Math.round(predict.baseSpeed)} u/s${predict.calibrated ? "" : "?"}`,
+            `rtt ${Math.round(predict.rtt)} ms`,
+          ].join("  ")
+        : "off (interpolated)",
+    ]);
+  }
 
   rows.push(["snap", `${hz === null ? "--" : hz.toFixed(1)} Hz  age ${age}`]);
   if (latency) {
@@ -195,12 +219,15 @@ export interface DebugToggles {
   world: boolean;
   /** Terrain zone tint, labels and legend. */
   terrain: boolean;
+  /** Draw the local player from its own input instead of the delayed timeline. */
+  prediction: boolean;
 }
 
 export const DEFAULT_DEBUG_TOGGLES: DebugToggles = {
   overlay: true,
   world: true,
   terrain: true,
+  prediction: true,
 };
 
 const TOGGLES_KEY = "atlas-debug-toggles";
@@ -233,6 +260,7 @@ export function loadDebugToggles(
       overlay: pick("overlay"),
       world: pick("world"),
       terrain: pick("terrain"),
+      prediction: pick("prediction"),
     };
   } catch {
     return DEFAULT_DEBUG_TOGGLES;

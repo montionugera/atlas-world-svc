@@ -27,6 +27,12 @@ export const DEBUG_BINDINGS: readonly DebugBinding[] = [
   { key: "`", keyLabel: "`", action: "Debug readout", toggle: "overlay" },
   { key: "g", keyLabel: "G", action: "World debug draw", toggle: "world" },
   { key: "t", keyLabel: "T", action: "Terrain overlay", toggle: "terrain" },
+  {
+    key: "p",
+    keyLabel: "P",
+    action: "Local prediction",
+    toggle: "prediction",
+  },
 ];
 
 export function debugToggleForKey(key: string): keyof DebugToggles | null {

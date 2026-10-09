@@ -59,7 +59,7 @@ const DASH_YIELD_MS = 320;
 const CALIBRATE_ALPHA = 0.3;
 const TICK_SEC = SNAPSHOT_INTERVAL_MS / 1000;
 
-export type YieldReason = "dead" | "dash" | "server";
+export type YieldReason = "dead" | "dash" | "diverged";
 
 /** Movement input in effect from client time `t`, normalised as the server does. */
 export interface InputChange {
@@ -433,7 +433,7 @@ export function advancePrediction(
     : now < s.dashUntil
       ? "dash"
       : s.diverged
-        ? "server"
+        ? "diverged"
         : null;
 
   const simNow = now - s.base + s.rtt - SNAPSHOT_INTERVAL_MS;

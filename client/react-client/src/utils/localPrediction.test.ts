@@ -354,7 +354,7 @@ describe("when the server stops obeying the keys", () => {
       serve(keys, 4000, { ...JITTERY, start, knockback }),
       keys,
     );
-    const yielded = frames.filter((f) => f.yielding === "server");
+    const yielded = frames.filter((f) => f.yielding === "diverged");
     expect(yielded[0].now).toBeLessThan(2300);
     expect(last(yielded).now).toBeLessThan(2700);
     // Pushed down the screen with the server, then walking right again.
@@ -370,7 +370,7 @@ describe("when the server stops obeying the keys", () => {
     const stun = { from: 2000, to: 3200 };
     const { frames } = play(serve(keys, 4500, { ...JITTERY, stun }), keys);
     const held = between(frames, 2600, 3200);
-    expect(held.every((f) => f.yielding === "server")).toBe(true);
+    expect(held.every((f) => f.yielding === "diverged")).toBe(true);
     expect(Math.abs(last(held).x - last(held).serverX)).toBeLessThan(0.5);
     expect(last(frames).yielding).toBeNull();
     expect(last(frames).error).toBeLessThan(2);

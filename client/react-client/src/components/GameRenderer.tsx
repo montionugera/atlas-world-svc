@@ -43,6 +43,12 @@ import {
   DebugToggles,
   DebugTracker,
 } from "../utils/debugTools";
+import {
+  PredictionState,
+  PredictionWorld,
+  advancePrediction,
+  resetPrediction,
+} from "../utils/localPrediction";
 
 interface GameRendererProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -63,6 +69,12 @@ interface GameRendererProps {
   debug?: DebugToggles;
   /** Live speed tracker for the local player (read per frame, never triggers renders). */
   debugTrackerRef?: React.RefObject<DebugTracker>;
+  /**
+   * Local-player prediction, advanced here once per frame. Its position replaces the
+   * interpolated one for everything drawn from the local player (sprite, camera,
+   * rings); the canvas reads the same object for mouse and aim.
+   */
+  prediction?: PredictionState;
 }
 
 interface BlastEffect {
@@ -93,6 +105,11 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
   const renderProjectilesRef = useRef<Map<string, Projectile>>(new Map());
   const lastRenderDurationRef = useRef<number>(0);
   const mapIdRef = useRef<string | undefined>(undefined);
+  const predictionWorldRef = useRef<PredictionWorld>({
+    zones: null,
+    width: 0,
+    height: 0,
+  });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -121,6 +138,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         localCastRef,
         aoeReticle,
         debug = DEFAULT_DEBUG_TOGGLES,
+        prediction,
       } = latestRef.current;
       const gameState = gameStateRef
         ? gameStateRef.current
@@ -145,6 +163,12 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
           prevProjectilesRef.current.clear();
           blastEffectsRef.current = [];
           floatingTextsRef.current = [];
+          predictionWorldRef.current = {
+            zones: terrainZonesFor(gameState.mapId),
+            width: gameState.width,
+            height: gameState.height,
+          };
+          if (prediction) resetPrediction(prediction, renderStartTime);
         }
         // Draw the server timeline slightly in the past, between real snapshots.
         const renderTime = renderTimeAt(
@@ -163,6 +187,29 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         if (localCopy) {
           localCopy.castingUntil = localCastRef.current?.until ?? 0;
           localCopy.castDuration = localCastRef.current?.duration;
+        }
+        // The local player is drawn where its own input puts it now, not on the
+        // delayed timeline; every use of its position below takes this one.
+        if (prediction) {
+          const me = gameState.players.get(playerId);
+          const drawn = renderPlayers.get(playerId);
+          prediction.enabled = debug.prediction;
+          if (!debug.prediction || !me || !drawn) {
+            prediction.ready = false;
+          } else {
+            advancePrediction(
+              prediction,
+              renderStartTime,
+              me,
+              predictionWorldRef.current,
+            );
+            drawn.x = prediction.x;
+            drawn.y = prediction.y;
+            const input = prediction.history[prediction.history.length - 1];
+            if (!prediction.yielding && input && (input.mx || input.my)) {
+              drawn.heading = Math.atan2(input.my, input.mx);
+            }
+          }
         }
         const renderMobs = interpolateEntities(
           gameState.mobs,

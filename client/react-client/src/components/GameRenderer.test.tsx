@@ -5,6 +5,8 @@ import { GameState, Mob } from "../types/game";
 import { drawProjectiles } from "../renderers/projectileRenderer";
 import { drawMobs } from "../renderers/mobRenderer";
 import { drawPlayers } from "../renderers/playerRenderer";
+import { DEFAULT_DEBUG_TOGGLES } from "../utils/debugTools";
+import { createPrediction } from "../utils/localPrediction";
 
 jest.mock("../renderers/projectileRenderer");
 jest.mock("../renderers/mobRenderer");
@@ -356,6 +358,50 @@ describe("GameRenderer frame loop", () => {
       }
       expect(Number.isInteger(ox)).toBe(true);
       expect(Number.isInteger(oy)).toBe(true);
+    });
+  });
+
+  describe("local prediction", () => {
+    type P = GameState["players"] extends Map<string, infer T> ? T : never;
+    const player = (id: string, x: number) =>
+      ({ id, x, y: 100, vx: 0, vy: 0, radius: 10, isAlive: true }) as P;
+    const setup = (on: boolean) => {
+      const state = stateAt(1);
+      state.players.set("1", player("1", 100));
+      state.players.set("2", player("2", 300));
+      const prediction = createPrediction();
+      const { calls, frame } = mount(state, {
+        gameStateRef: { current: state },
+        prediction,
+        debug: { ...DEFAULT_DEBUG_TOGGLES, prediction: on },
+      });
+      // Mid-correction: drawn 40 units from where the server has the player.
+      prediction.x = 140;
+      prediction.at = performance.now();
+      frame();
+      const players = (drawPlayers as jest.Mock).mock.calls.pop()![1] as Map<
+        string,
+        P
+      >;
+      const camera = calls.find(([m]) => m === "translate") as number[];
+      return { prediction, players, cameraX: camera[1] };
+    };
+
+    it("draws the local player and the camera at the predicted position", () => {
+      const { prediction, players, cameraX } = setup(true);
+      expect(prediction.x).toBeGreaterThan(130);
+      expect(prediction.x).toBeLessThanOrEqual(140);
+      expect(players.get("1")!.x).toBe(prediction.x);
+      expect(players.get("2")!.x).toBe(300);
+      // Further right than a camera on the server position (100) would be.
+      expect(cameraX).toBeLessThan(setup(false).cameraX);
+    });
+
+    it("draws the interpolated position when the toggle is off", () => {
+      const { prediction, players } = setup(false);
+      expect(players.get("1")!.x).toBe(100);
+      expect(prediction.enabled).toBe(false);
+      expect(prediction.ready).toBe(false);
     });
   });
 });

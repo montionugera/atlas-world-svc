@@ -9,7 +9,19 @@ import { GameState } from "../types/game";
 import { calculateScale } from "../utils/drawingUtils";
 import { SKILL_DEFINITIONS } from "../config/skills";
 import { getAoeReticle } from "../utils/aoeReticle";
-import { renderTimeAt, samplePosition } from "../utils/snapshotInterpolation";
+import {
+  SNAPSHOT_INTERVAL_MS,
+  renderTimeAt,
+  samplePosition,
+} from "../utils/snapshotInterpolation";
+import {
+  createPrediction,
+  lockMovement,
+  noteDash,
+  observeServer,
+  setHeldInput,
+  unlockMovement,
+} from "../utils/localPrediction";
 import { debugToggleForKey, hasModifierKey } from "../config/controls";
 import {
   REFERENCE_RUN_SPEED,
@@ -84,6 +96,47 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
   stateFallbackRef.current = gameState;
   const liveStateRef = gameStateRef ?? stateFallbackRef;
 
+  // Prediction of the local player (server-rs only): fed with the keys and each
+  // snapshot here, advanced by the frame loop, which draws its position.
+  const [prediction] = React.useState(createPrediction);
+  const predicts = !!gameStateRef && !!onSnapshot;
+  const movePlayer = React.useCallback(
+    (vx: number, vy: number) => {
+      setHeldInput(prediction, performance.now(), vx, vy);
+      updatePlayerInput(vx, vy);
+    },
+    [prediction, updatePlayerInput],
+  );
+  useEffect(() => {
+    if (!predicts) return;
+    return onSnapshot((state) => {
+      const me = state.players.get(playerId);
+      if (!me || !state.renderClock) return;
+      observeServer(
+        prediction,
+        {
+          simTime: state.tick * SNAPSHOT_INTERVAL_MS,
+          x: me.x,
+          y: me.y,
+          vx: me.vx,
+          vy: me.vy,
+          alive: me.isAlive !== false,
+        },
+        state.renderClock.offsets,
+        terrainZonesFor(state.mapId),
+      );
+    });
+  }, [predicts, onSnapshot, playerId, prediction]);
+  /** `p` at the position the local player is drawn at this frame. */
+  const atDrawnPosition = React.useCallback(
+    <T extends { x: number; y: number }>(p: T | undefined): T | undefined => {
+      return p && prediction.enabled && prediction.ready
+        ? { ...p, x: prediction.x, y: prediction.y }
+        : p;
+    },
+    [prediction],
+  );
+
   // Local player state
   const localPlayer = gameState?.players.get(playerId);
   const isDead = localPlayer
@@ -91,7 +144,9 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     : false;
 
   // Ground-target indicator while an AoE skill is being cast (null otherwise)
-  const livePlayer = liveStateRef.current?.players.get(playerId);
+  const livePlayer = atDrawnPosition(
+    liveStateRef.current?.players.get(playerId),
+  );
   const aoeReticle =
     activeCast && livePlayer && !isDead
       ? getAoeReticle(
@@ -160,7 +215,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
 
       const mousePos = mousePositionRef.current;
       const live = liveStateRef.current;
-      const me = live?.players.get(playerId);
+      const me = atDrawnPosition(live?.players.get(playerId));
       const aim = resolveAimCoordinates(mousePos.x, mousePos.y, me, live?.mobs);
 
       const newCooldowns = { ...cooldowns };
@@ -187,6 +242,12 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           until: now + castDurationMs,
           duration: castDurationMs,
         };
+        // The server ignores movement keys for the length of the cast.
+        const castAt = performance.now();
+        lockMovement(prediction, castAt, castAt + castDurationMs);
+      }
+      if (def.id === "skill_dash") {
+        noteDash(prediction, performance.now());
       }
 
       if (sendPlayerAction) {
@@ -205,6 +266,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       playerId,
       resolveAimCoordinates,
       sendPlayerAction,
+      atDrawnPosition,
+      prediction,
     ],
   );
 
@@ -243,8 +306,11 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
   const castingSkill = activeCast?.name ?? null;
   // The cast ring is drawn from this ref, so it is on the frame the cast starts.
   useEffect(() => {
-    if (!activeCast) localCastRef.current = null;
-  }, [activeCast]);
+    if (!activeCast) {
+      localCastRef.current = null;
+      unlockMovement(prediction, performance.now());
+    }
+  }, [activeCast, prediction]);
   // A new room starts with no cast in flight and no speed/position history.
   const currentMapId = gameState?.mapId;
   useEffect(() => {
@@ -280,9 +346,10 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
         },
         castingSkill,
         attackHeld: player?.isAttacking ?? false,
+        prediction: predicts ? prediction : undefined,
       };
     },
-    [playerId, castingSkill],
+    [playerId, castingSkill, predicts, prediction],
   );
   // Fed by every snapshot where the client says when one lands (server-rs), so the
   // snapshot rate and speed readings do not depend on how often React renders...
@@ -346,7 +413,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
 
   // Handle keyboard controls
   const { pressedKeys } = useKeyboardControls({
-    updatePlayerInput,
+    updatePlayerInput: movePlayer,
     sendPlayerAction: wrappedSendPlayerAction,
     switchWeapon,
     mousePositionRef,
@@ -381,11 +448,15 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
 
       const player = currentGameState.players.get(currentPid);
       if (player) {
-        // Same interpolated position the renderer centres the camera on.
-        const pos = samplePosition(
-          player,
-          renderTimeAt(currentGameState.renderClock, performance.now()),
-        );
+        // Same position the renderer centres the camera on: predicted, else
+        // interpolated.
+        const pos =
+          prediction.enabled && prediction.ready
+            ? prediction
+            : samplePosition(
+                player,
+                renderTimeAt(currentGameState.renderClock, performance.now()),
+              );
         cameraX = pos.x;
         cameraY = pos.y;
       }
@@ -398,7 +469,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [liveStateRef]);
+  }, [liveStateRef, prediction]);
 
   // Global mouseup listener to release attack if mouse is released outside canvas
   useEffect(() => {
@@ -598,6 +669,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           aoeReticle={aoeReticle}
           debug={debug}
           debugTrackerRef={debugTrackerRef}
+          prediction={predicts ? prediction : undefined}
         />
       </div>
 
