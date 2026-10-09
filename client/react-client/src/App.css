@@ -24,15 +24,15 @@ body {
 
 .app-header {
   background: rgba(0, 0, 0, 0.2);
-  padding: 1rem 2rem;
+  padding: 0.4rem 1rem; /* compact: keep the canvas and skill bar above the fold */
   text-align: center;
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .app-header h1 {
-  margin: 0 0 0.5rem 0;
-  font-size: 2.5rem;
+  margin: 0;
+  font-size: 1.4rem;
   font-weight: 700;
   background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
   -webkit-background-clip: text;
