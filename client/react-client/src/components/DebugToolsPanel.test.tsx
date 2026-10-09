@@ -46,7 +46,10 @@ describe("DebugToolsPanel", () => {
     global.fetch = realFetch;
   });
 
-  const settle = () => act(async () => {});
+  const settle = () =>
+    act(async () => {
+      await Promise.resolve();
+    });
   const wait = (ms: number) =>
     act(async () => {
       jest.advanceTimersByTime(ms);
@@ -134,4 +137,47 @@ describe("DebugToolsPanel", () => {
     expect(screen.queryByRole("status")).toBeNull();
     expect(screen.getByRole("alert")).toHaveTextContent("bad count");
   });
+
+  it("does not let a poll sent before a command overwrite the command's state", async () => {
+    await mount();
+    // The next poll hangs until released.
+    let release: (answer: object) => void = () => {};
+    fetchMock.mockImplementationOnce(
+      () => new Promise((resolve) => (release = resolve)),
+    );
+    await wait(1000);
+    command = {
+      status: 200,
+      body: { ok: true, state: { ...state, mobs: 0 } },
+    };
+    await click("Clear");
+    expect(screen.getByText(/mobs 0\/500/)).toBeInTheDocument();
+    release({ status: 200, ok: true, json: () => Promise.resolve(ok.body) });
+    await settle();
+    expect(screen.getByText(/mobs 0\/500/)).toBeInTheDocument();
+  });
+
+  it("waits for a poll's answer before sending the next one", async () => {
+    await mount();
+    fetchMock.mockImplementationOnce(() => new Promise(() => {}));
+    await wait(1000);
+    const before = polls();
+    await wait(5000);
+    expect(polls()).toBe(before);
+  });
+
+  it.each(["-5", "2.5", ""])(
+    "offers no Set for a count of '%s'",
+    async (text) => {
+      await mount();
+      fireEvent.change(screen.getByLabelText("bots"), {
+        target: { value: text },
+      });
+      expect(screen.getAllByRole("button", { name: "Set" })[0]).toBeDisabled();
+      fireEvent.change(screen.getByLabelText("bots"), {
+        target: { value: "7" },
+      });
+      expect(screen.getAllByRole("button", { name: "Set" })[0]).toBeEnabled();
+    },
+  );
 });

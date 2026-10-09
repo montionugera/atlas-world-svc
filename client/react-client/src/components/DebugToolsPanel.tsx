@@ -57,10 +57,14 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
   // The room being shown: an answer for another one (after a switch) is dropped.
   const roomRef = useRef("");
   roomRef.current = `${baseUrl}|${map}`;
+  // Requests are numbered: state from one sent before the newest shown is stale.
+  const sentRef = useRef(0);
+  const shownRef = useRef(0);
 
   const run = useCallback(
     async (command: DebugCommand) => {
       const room = `${baseUrl}|${map}`;
+      const sent = ++sentRef.current;
       const result = await sendDebugCommand({
         target: { baseUrl, map, player },
         command,
@@ -68,7 +72,10 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
       if (roomRef.current !== room) return;
       const setError = command.cmd === "state" ? setPollError : setCommandError;
       if (result.ok) {
-        setState(result.state);
+        if (sent > shownRef.current) {
+          shownRef.current = sent;
+          setState(result.state);
+        }
         setError("");
         setOff(false);
         return;
@@ -90,12 +97,21 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
     setOff(false);
   }, [baseUrl, map]);
 
-  // Live counts. A server without debug mode is asked once, not every second.
+  // Live counts, one poll at a time: the next is sent a second after the last was
+  // answered. A server without debug mode is asked once, not every second.
   useEffect(() => {
     if (off) return;
-    run({ cmd: "state" });
-    const timer = setInterval(() => run({ cmd: "state" }), STATE_POLL_MS);
-    return () => clearInterval(timer);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let live = true;
+    const poll = async () => {
+      await run({ cmd: "state" });
+      if (live) timer = setTimeout(poll, STATE_POLL_MS);
+    };
+    poll();
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
   }, [run, off]);
 
   /** `command` null = nothing valid to send yet; `active` lights a switch that is on. */
@@ -139,6 +155,8 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
     />
   );
   const finite = (n: number) => Number.isFinite(n);
+  /** Counts are a `usize` on the server. */
+  const count = (n: number) => Number.isInteger(n) && n >= 0;
   const bots = typed(botCount);
   const mobs = typed(mobCount);
   const spawn = typed(spawnCount);
@@ -183,7 +201,7 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
         {number("bots", botCount, setBotCount)}
         {button({
           label: "Set",
-          command: finite(bots) ? { cmd: "set_bots", count: bots } : null,
+          command: count(bots) ? { cmd: "set_bots", count: bots } : null,
         })}
         {button({
           label: state?.bots_paused ? "Paused" : "Pause",
@@ -200,7 +218,7 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
         {number("mobs", mobCount, setMobCount)}
         {button({
           label: "Set",
-          command: finite(mobs) ? { cmd: "set_mobs", count: mobs } : null,
+          command: count(mobs) ? { cmd: "set_mobs", count: mobs } : null,
         })}
         {button({ label: "Clear", command: { cmd: "clear_mobs" } })}
         {button({
@@ -227,7 +245,7 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
         {number("count", spawnCount, setSpawnCount)}
         {button({
           label: "Spawn at me",
-          command: finite(spawn)
+          command: count(spawn)
             ? { cmd: "spawn_mobs", mob_type: spawnType, count: spawn }
             : null,
         })}
