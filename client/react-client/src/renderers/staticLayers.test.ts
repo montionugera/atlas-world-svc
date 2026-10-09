@@ -125,6 +125,69 @@ describe("static world layers", () => {
     expect(canvas.width).toBe(Math.round(1000 * 3 - 2 * x * 3));
   });
 
+  describe("a world too big to hold whole (4000 units at 4 px each)", () => {
+    const large: StaticLayerSpec = {
+      mapId: "map-for-test-large",
+      width: 4000,
+      height: 4000,
+      scale: 4,
+      terrainTint: false,
+      gridSize: 0,
+    };
+    const seen = (minX: number) => ({
+      ...large,
+      visible: { minX, minY: 1900, maxX: minX + 400, maxY: 2200 },
+    });
+    const blitted = () => screen[0][1] as HTMLCanvasElement;
+
+    it("caches only the region around the view, not the whole world", () => {
+      frame(seen(1800));
+      expect(screen.map(([m]) => m)).toEqual(["drawImage", "drawImage"]);
+      // The 1600x1200 px view plus a margin: nowhere near 16000x16000.
+      expect(blitted().width).toBeLessThan(2400);
+      expect(blitted().height).toBeLessThan(2000);
+      // Blitted where it was painted: the region starts left of the view.
+      const [, , x, y, w] = screen[0] as [
+        string,
+        unknown,
+        number,
+        number,
+        number,
+      ];
+      expect(x).toBeLessThan(1800);
+      expect(y).toBeLessThan(1900);
+      expect(x + w).toBeGreaterThan(2200);
+      expect(offscreen).toContainEqual(["translate", -x * 4, -y * 4]);
+    });
+
+    it("blits the same region while the view stays inside it", () => {
+      frame(seen(1800));
+      const canvas = blitted();
+      offscreen.length = 0;
+      for (const minX of [1810, 1850, 1790, 1745]) frame(seen(minX));
+      expect(offscreen.length).toBe(0);
+      expect(blitted()).toBe(canvas);
+    });
+
+    it("repaints the same canvases around the view once it leaves the region", () => {
+      frame(seen(1800));
+      const canvas = blitted();
+      const before = screen[0][2] as number;
+      offscreen.length = 0;
+      frame(seen(1900));
+      expect(count(offscreen, "clearRect")).toBe(2);
+      expect(count(offscreen, "fillRect")).toBeGreaterThan(0);
+      expect(blitted()).toBe(canvas);
+      expect((screen[0][2] as number) - before).toBeCloseTo(100);
+    });
+
+    it("draws straight to the screen when it is not told what is visible", () => {
+      frame(large);
+      expect(count(screen, "drawImage")).toBe(0);
+      expect(count(screen, "fillRect")).toBeGreaterThan(0);
+    });
+  });
+
   it("draws straight to the screen when there is no offscreen canvas", () => {
     getContext.mockImplementation(() => null);
     frame({ ...spec, scale: 3 });

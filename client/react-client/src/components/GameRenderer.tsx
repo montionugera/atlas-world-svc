@@ -44,6 +44,7 @@ import {
   DebugTracker,
 } from "../utils/debugTools";
 import { CanvasView, snapToDevicePixel } from "../utils/canvasLayout";
+import { cullInto, visibleWorldRect } from "../utils/viewport";
 import {
   PredictionState,
   PredictionWorld,
@@ -83,6 +84,9 @@ interface GameRendererProps {
   view?: CanvasView;
 }
 
+/** World units past the view edge still drawn: name plates, bars and rings overhang. */
+const CULL_MARGIN = 64;
+
 interface BlastEffect {
   id: string;
   x: number;
@@ -109,6 +113,10 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
   const renderPlayersRef = useRef<Map<string, Player>>(new Map());
   const renderMobsRef = useRef<Map<string, Mob>>(new Map());
   const renderProjectilesRef = useRef<Map<string, Projectile>>(new Map());
+  // The on-screen subset of each, reused every frame (see cullInto).
+  const visiblePlayersRef = useRef<Map<string, Player>>(new Map());
+  const visibleMobsRef = useRef<Map<string, Mob>>(new Map());
+  const visibleProjectilesRef = useRef<Map<string, Projectile>>(new Map());
   const mapIdRef = useRef<string | undefined>(undefined);
   const predictionWorldRef = useRef<PredictionWorld>({
     zones: null,
@@ -340,6 +348,11 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         // 1. Terrain, biomes, roads and town; 2. world boundaries; 3. grid overlay.
         // All static, so blitted from cached layers; only the river is drawn live.
         const map = mapDef(gameState.mapId);
+        const visible = visibleWorldRect({
+          camera: { x: cameraX, y: cameraY },
+          view,
+          scale,
+        });
         const gridSize = Math.max(10, Math.round(viewportSize / 5));
         const staticSpec = {
           mapId: gameState.mapId,
@@ -349,6 +362,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
           pixelRatio: ratioX,
           terrainTint: debug.terrain,
           gridSize: debug.world ? gridSize : 0,
+          visible,
         };
         drawStaticUnder(ctx, staticSpec);
         if (map.art === "frontier") {
@@ -359,29 +373,44 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         // Zone labels follow the camera (top-centre of the visible part of a zone).
         const terrainZones = terrainZonesFor(gameState.mapId);
         if (terrainZones && debug.terrain) {
-          const halfW = view.width / 2 / scale;
-          const halfH = view.height / 2 / scale;
-          drawTerrainZoneLabels(ctx, terrainZones, scale, {
-            minX: cameraX - halfW,
-            minY: cameraY - halfH,
-            maxX: cameraX + halfW,
-            maxY: cameraY + halfH,
-          });
+          drawTerrainZoneLabels(ctx, terrainZones, scale, visible);
         }
         lap("tint+grid");
         if (gameState.zoneEffects) {
           drawZoneEffects(ctx, gameState.zoneEffects, scale);
         }
-        drawMobs(ctx, renderMobs, 1, scale);
+        // Every entity in the room is on the wire (no area of interest): draw only
+        // those on screen. The minimap below still shows them all.
+        const visibleMobs = cullInto({
+          source: renderMobs,
+          into: visibleMobsRef.current,
+          rect: visible,
+          margin: CULL_MARGIN,
+        });
+        const visiblePlayers = cullInto({
+          source: renderPlayers,
+          into: visiblePlayersRef.current,
+          rect: visible,
+          margin: CULL_MARGIN,
+        });
+        const visibleProjectiles =
+          renderProjectiles &&
+          cullInto({
+            source: renderProjectiles,
+            into: visibleProjectilesRef.current,
+            rect: visible,
+            margin: CULL_MARGIN,
+          });
+        drawMobs(ctx, visibleMobs, 1, scale);
 
         const npcsMap = gameState.npcs ?? gameState.companions;
         if (npcsMap && npcsMap.size > 0) {
           drawCompanions(ctx, npcsMap, 1, scale);
         }
 
-        drawPlayers(ctx, renderPlayers, playerId, 1, scale);
-        if (renderProjectiles) {
-          drawProjectiles(ctx, renderProjectiles, 1, scale);
+        drawPlayers(ctx, visiblePlayers, playerId, 1, scale);
+        if (visibleProjectiles) {
+          drawProjectiles(ctx, visibleProjectiles, 1, scale);
         }
 
         lap("entities");
@@ -389,9 +418,9 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         // Debug rings / velocity vectors, on the same interpolated positions as the sprites
         if (debug.world) {
           drawWorldDebug(ctx, {
-            players: renderPlayers,
-            mobs: renderMobs,
-            projectiles: renderProjectiles,
+            players: visiblePlayers,
+            mobs: visibleMobs,
+            projectiles: visibleProjectiles,
             playerId,
             viewScale: scale,
             localSpeed: debugTrackerRef?.current?.smoothedSpeed ?? 0,
@@ -487,13 +516,21 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
           // Entities
           // Simple dots for mini-map
           ctx.scale(miniMapScale, miniMapScale);
+          // Smallest dot radius in world units: one that is still seen in a big room.
+          const minDot = 1.5 / miniMapScale;
 
           // Mobs (Red dots)
           ctx.fillStyle = "#ff4444";
           renderMobs.forEach((mob) => {
             if (!mob.isAlive) return;
             ctx.beginPath();
-            ctx.arc(mob.x, mob.y, mob.radius * 2, 0, Math.PI * 2); // Larger dots
+            ctx.arc(
+              mob.x,
+              mob.y,
+              Math.max(mob.radius * 2, minDot),
+              0,
+              Math.PI * 2,
+            );
             ctx.fill();
           });
 
@@ -510,7 +547,13 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
               }) => {
                 if (!comp.isAlive) return;
                 ctx.beginPath();
-                ctx.arc(comp.x, comp.y, comp.radius * 2, 0, Math.PI * 2);
+                ctx.arc(
+                  comp.x,
+                  comp.y,
+                  Math.max(comp.radius * 2, minDot),
+                  0,
+                  Math.PI * 2,
+                );
                 ctx.fill();
               },
             );
@@ -521,7 +564,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
           renderPlayers.forEach((p) => {
             if (p.id === playerId || !p.isAlive) return;
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+            ctx.arc(p.x, p.y, Math.max(4, minDot), 0, Math.PI * 2);
             ctx.fill();
           });
 
@@ -529,10 +572,19 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
           if (player && player.isAlive) {
             ctx.fillStyle = "#00ff00";
             ctx.beginPath();
-            ctx.arc(player.x, player.y, 6, 0, Math.PI * 2);
+            ctx.arc(player.x, player.y, Math.max(6, minDot), 0, Math.PI * 2);
             ctx.fill();
-            // Optional: View cone
           }
+
+          // The part of the world on the main view.
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 1 / miniMapScale;
+          ctx.strokeRect(
+            visible.minX,
+            visible.minY,
+            visible.maxX - visible.minX,
+            visible.maxY - visible.minY,
+          );
 
           ctx.restore();
         }

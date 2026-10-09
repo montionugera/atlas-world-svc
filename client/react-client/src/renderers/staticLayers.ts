@@ -2,11 +2,18 @@
  * The parts of the world that look the same every frame, drawn once to two offscreen
  * canvases and blitted: one UNDER the animated river (the ground), one OVER it (town,
  * terrain tint, blocks, world bounds, grid). They are repainted only when the room,
- * the world size, the scale or a debug overlay changes.
+ * the world size, the scale or a debug overlay changes. A world too big to hold whole
+ * is cached as the region around the camera and repainted when the camera leaves it.
  */
 import { mapDef } from "../config/maps";
 import { staticBlocksFor, terrainZonesFor } from "../config/terrain";
 import { drawGrid } from "../utils/gridUtils";
+import {
+  PixelRegion,
+  WorldRect,
+  cacheRegion,
+  regionCovers,
+} from "../utils/viewport";
 import { drawStaticBlocks, drawTerrainZones } from "./debugRenderer";
 import { drawTerrainGround, drawTerrainTown } from "./terrainRenderer";
 
@@ -22,12 +29,16 @@ export interface StaticLayerSpec {
   terrainTint: boolean;
   /** Debug grid cell in world units; 0 = no grid. */
   gridSize: number;
+  /** World rectangle on screen; a world too big to hold whole is cached around it. */
+  visible?: WorldRect;
 }
 
 /** Border (px) around a layer, so strokes along the world edge are not cut off. */
 const PAD_PX = 4;
-/** A bigger world is drawn directly instead of being held as two canvases. */
+/** A bigger world is not held whole: only the region around the camera is. */
 const MAX_LAYER_PIXELS = 4096 * 4096;
+/** Layer pixels kept around the visible region: camera travel between repaints. */
+const REGION_MARGIN_PX = 256;
 
 type Paint = (ctx: CanvasRenderingContext2D, spec: StaticLayerSpec) => void;
 
@@ -68,8 +79,13 @@ const paintOver: Paint = (ctx, spec) => {
 
 type Layers = [under: HTMLCanvasElement, over: HTMLCanvasElement];
 
-/** The layers of the one room on screen; `layers` is null when they cannot be held. */
-let cache: { spec: StaticLayerSpec; layers: Layers | null } | undefined;
+/**
+ * The layers of the one room on screen and the part of the world they hold; `layers`
+ * is null when they cannot be held.
+ */
+let cache:
+  | { spec: StaticLayerSpec; region: PixelRegion; layers: Layers | null }
+  | undefined;
 
 const sameSpec = (a: StaticLayerSpec, b: StaticLayerSpec): boolean =>
   a.mapId === b.mapId &&
@@ -84,47 +100,83 @@ const sameSpec = (a: StaticLayerSpec, b: StaticLayerSpec): boolean =>
 const layerScale = (spec: StaticLayerSpec) =>
   spec.scale * (spec.pixelRatio ?? 1);
 
+/** Paint `region` of the world onto `canvas` (a new one when none is given). */
 function paintLayer(
   paint: Paint,
   spec: StaticLayerSpec,
-  width: number,
-  height: number,
+  region: PixelRegion,
+  canvas: HTMLCanvasElement = document.createElement("canvas"),
 ): HTMLCanvasElement | null {
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
-  ctx.translate(PAD_PX, PAD_PX);
+  if (canvas.width !== region.width || canvas.height !== region.height) {
+    canvas.width = region.width;
+    canvas.height = region.height;
+  } else {
+    // Same size: resizing would reallocate the backing store, so wipe it instead.
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, region.width, region.height);
+  }
+  ctx.translate(-region.x, -region.y);
   ctx.scale(layerScale(spec), layerScale(spec));
   paint(ctx, spec);
   return canvas;
 }
 
-function layersFor(spec: StaticLayerSpec): Layers | null {
-  if (cache && sameSpec(cache.spec, spec)) return cache.layers;
-  const width = Math.ceil(spec.width * layerScale(spec)) + 2 * PAD_PX;
-  const height = Math.ceil(spec.height * layerScale(spec)) + 2 * PAD_PX;
+function layersFor(spec: StaticLayerSpec): typeof cache {
+  const scale = layerScale(spec);
+  const whole: PixelRegion = {
+    x: -PAD_PX,
+    y: -PAD_PX,
+    width: Math.ceil(spec.width * scale) + 2 * PAD_PX,
+    height: Math.ceil(spec.height * scale) + 2 * PAD_PX,
+  };
+  const fits = whole.width * whole.height <= MAX_LAYER_PIXELS;
+  const reusable = cache && sameSpec(cache.spec, spec) ? cache : undefined;
+  if (
+    reusable &&
+    (fits ||
+      !reusable.layers ||
+      !spec.visible ||
+      regionCovers({
+        region: reusable.region,
+        visible: spec.visible,
+        layerScale: scale,
+      }))
+  ) {
+    return reusable;
+  }
+  let region = whole;
+  if (!fits && spec.visible) {
+    region = cacheRegion({
+      visible: spec.visible,
+      layerScale: scale,
+      marginPx: REGION_MARGIN_PX,
+    });
+  }
   let layers: Layers | null = null;
-  if (width * height <= MAX_LAYER_PIXELS) {
-    const under = paintLayer(paintUnder, spec, width, height);
-    const over = under && paintLayer(paintOver, spec, width, height);
+  if (region.width * region.height <= MAX_LAYER_PIXELS) {
+    // A moved region has the size of the last one: repaint the same two canvases.
+    const [oldUnder, oldOver] = reusable?.layers ?? [];
+    const under = paintLayer(paintUnder, spec, region, oldUnder);
+    const over = under && paintLayer(paintOver, spec, region, oldOver);
     if (under && over) layers = [under, over];
   }
-  cache = { spec: { ...spec }, layers };
-  return layers;
+  cache = { spec: { ...spec }, region, layers };
+  return cache;
 }
 
 /** Layer pixels map 1:1 onto device pixels: `scale` is layer pixels per world unit. */
 function blit(
   ctx: CanvasRenderingContext2D,
   layer: HTMLCanvasElement,
+  region: PixelRegion,
   scale: number,
 ): void {
   ctx.drawImage(
     layer,
-    -PAD_PX / scale,
-    -PAD_PX / scale,
+    region.x / scale,
+    region.y / scale,
     layer.width / scale,
     layer.height / scale,
   );
@@ -135,8 +187,8 @@ export function drawStaticUnder(
   ctx: CanvasRenderingContext2D,
   spec: StaticLayerSpec,
 ): void {
-  const layers = layersFor(spec);
-  if (layers) blit(ctx, layers[0], layerScale(spec));
+  const held = layersFor(spec);
+  if (held?.layers) blit(ctx, held.layers[0], held.region, layerScale(spec));
   else paintUnder(ctx, spec);
 }
 
@@ -145,7 +197,7 @@ export function drawStaticOver(
   ctx: CanvasRenderingContext2D,
   spec: StaticLayerSpec,
 ): void {
-  const layers = layersFor(spec);
-  if (layers) blit(ctx, layers[1], layerScale(spec));
+  const held = layersFor(spec);
+  if (held?.layers) blit(ctx, held.layers[1], held.region, layerScale(spec));
   else paintOver(ctx, spec);
 }

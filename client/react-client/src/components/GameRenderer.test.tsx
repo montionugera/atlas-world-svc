@@ -143,6 +143,32 @@ describe("GameRenderer frame loop", () => {
     return { calls, frame };
   };
 
+  // With no local player the camera sits on the world centre: these tests see
+  // x 0..1000, y 250..750 (a 300x150 canvas over a 500-unit viewport).
+  it("hands the renderers only the entities on screen", () => {
+    const state = stateAt(1);
+    const at = (id: string, x: number, y: number) =>
+      ({ id, x, y, radius: 10, isAlive: true }) as unknown as Mob;
+    state.mobs.set("near", at("near", 500, 500));
+    state.mobs.set("edge", at("edge", 500, 800));
+    state.mobs.set("far", at("far", 500, 900));
+    mount(state);
+    const mobs = (drawMobs as jest.Mock).mock.calls.pop()![1] as Map<
+      string,
+      Mob
+    >;
+    expect(Array.from(mobs.keys())).toEqual(["near", "edge"]);
+  });
+
+  it("draws the main view's rectangle on the minimap", () => {
+    const { calls } = mount(stateAt(1));
+    expect(calls).toContainEqual(["strokeRect", 0, 250, 1000, 500]);
+    const off = mount(stateAt(1), {
+      debug: { ...DEFAULT_DEBUG_TOGGLES, minimap: false },
+    }).calls;
+    expect(off).not.toContainEqual(["strokeRect", 0, 250, 1000, 500]);
+  });
+
   it("draws the newest snapshot from the state ref without a React render", () => {
     const projectile = (x: number) =>
       new Map([
@@ -151,7 +177,7 @@ describe("GameRenderer frame loop", () => {
           {
             id: "900",
             x,
-            y: 50,
+            y: 300,
             vx: 0,
             vy: 0,
             radius: 4,
@@ -164,11 +190,11 @@ describe("GameRenderer frame loop", () => {
     const published = { ...stateAt(1), projectiles: projectile(10) };
     const gameStateRef = { current: published as GameState | null };
     const { frame } = mount(published, { gameStateRef });
-    expect(drawn()).toEqual([["900", 10, 50]]);
+    expect(drawn()).toEqual([["900", 10, 300]]);
 
     gameStateRef.current = { ...stateAt(2), projectiles: projectile(20) };
     frame();
-    expect(drawn()).toEqual([["900", 20, 50]]);
+    expect(drawn()).toEqual([["900", 20, 300]]);
   });
 
   it("shows every queued combat event once, however many snapshots carried them", () => {
@@ -203,28 +229,28 @@ describe("GameRenderer frame loop", () => {
         {
           id: "900",
           x: 110,
-          y: 50,
+          y: 300,
           vx: 200,
           vy: 0,
           radius: 4,
           ownerId: "1",
           isStuck: false,
           samples: [
-            { t: 1000, x: 100, y: 50 },
-            { t: 1050, x: 110, y: 50 },
+            { t: 1000, x: 100, y: 300 },
+            { t: 1050, x: 110, y: 300 },
           ],
           endsAt: 1050,
         },
       ],
     ]);
     const blastsAtEnd = (calls: unknown[][]) =>
-      calls.filter(([m, x, y]) => m === "arc" && x === 110 && y === 50).length;
+      calls.filter(([m, x, y]) => m === "arc" && x === 110 && y === 300).length;
 
     // No render clock: render time is performance.now().
     now.mockReturnValue(1025);
     const { calls, frame } = mount(state);
     expect(drawProjectiles).toHaveBeenCalledTimes(1);
-    expect(drawn()).toEqual([["900", 105, 50]]);
+    expect(drawn()).toEqual([["900", 105, 300]]);
     expect(blastsAtEnd(calls)).toBe(0);
 
     now.mockReturnValue(1050);
@@ -234,7 +260,7 @@ describe("GameRenderer frame loop", () => {
   });
 
   it("shows an in-place mutated entity's current hp, alive flag and heading (legacy state)", () => {
-    const mob = { id: "7", x: 10, y: 10, radius: 14, hp: 100, isAlive: true };
+    const mob = { id: "7", x: 10, y: 300, radius: 14, hp: 100, isAlive: true };
     const state = stateAt(1);
     state.mobs.set("7", mob as unknown as Mob);
     const seen: Array<[number, boolean]> = [];
