@@ -55,6 +55,8 @@ interface GameRendererProps {
   roomId: string | null;
   playerId: string;
   trackFrame: () => void;
+  /** The local player's cast in flight, read per frame so its ring never lags a snapshot. */
+  localCastRef?: React.RefObject<{ until: number; duration: number } | null>;
   /** Combat events not yet shown (server-rs); called once per drawn frame. */
   drainEvents?: () => GameEventInfo[];
   aoeReticle?: AoeReticle | null;
@@ -116,6 +118,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         fps,
         playerId,
         drainEvents,
+        localCastRef,
         aoeReticle,
         debug = DEFAULT_DEBUG_TOGGLES,
       } = latestRef.current;
@@ -156,6 +159,11 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
           renderTime,
           reuse ? renderPlayersRef.current : undefined,
         );
+        const localCopy = localCastRef && renderPlayers.get(playerId);
+        if (localCopy) {
+          localCopy.castingUntil = localCastRef.current?.until ?? 0;
+          localCopy.castDuration = localCastRef.current?.duration;
+        }
         const renderMobs = interpolateEntities(
           gameState.mobs,
           renderTime,

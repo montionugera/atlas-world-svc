@@ -45,6 +45,9 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
   const { setGameState } = useGameStateContext();
 
   const [cooldowns, setCooldowns] = React.useState<Record<string, number>>({});
+  const localCastRef = React.useRef<{ until: number; duration: number } | null>(
+    null,
+  );
   const [activeCast, setActiveCast] = React.useState<{
     skillId: string;
     name: string;
@@ -180,10 +183,10 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           aim,
         });
 
-        if (me) {
-          me.castingUntil = now + castDurationMs;
-          me.castDuration = castDurationMs;
-        }
+        localCastRef.current = {
+          until: now + castDurationMs,
+          duration: castDurationMs,
+        };
       }
 
       if (sendPlayerAction) {
@@ -238,6 +241,10 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
   const debugTrackerRef = useRef<DebugTracker>(EMPTY_TRACKER);
   const readoutInputRef = useRef<Omit<ReadoutInput, "latency"> | null>(null);
   const castingSkill = activeCast?.name ?? null;
+  // The cast ring is drawn from this ref, so it is on the frame the cast starts.
+  useEffect(() => {
+    if (!activeCast) localCastRef.current = null;
+  }, [activeCast]);
   // A new room starts with no cast in flight and no speed/position history.
   const currentMapId = gameState?.mapId;
   useEffect(() => {
@@ -325,14 +332,12 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       const now = Date.now();
       if (activeCast && now >= activeCast.startTime + activeCast.durationMs) {
         setActiveCast(null);
-        const me = liveStateRef.current?.players.get(playerId);
-        if (me) me.castingUntil = 0;
       }
       setTickCounter((c) => c + 1);
     }, 50);
 
     return () => clearInterval(timer);
-  }, [activeCast, countingDown, liveStateRef, playerId]);
+  }, [activeCast, countingDown]);
 
   // Update context when gameState or roomId changes
   useEffect(() => {
@@ -589,6 +594,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           playerId={playerId}
           trackFrame={trackFrame}
           drainEvents={drainEvents}
+          localCastRef={localCastRef}
           aoeReticle={aoeReticle}
           debug={debug}
           debugTrackerRef={debugTrackerRef}

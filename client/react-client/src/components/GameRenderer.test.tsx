@@ -4,9 +4,11 @@ import { GameRenderer } from "./GameRenderer";
 import { GameState, Mob } from "../types/game";
 import { drawProjectiles } from "../renderers/projectileRenderer";
 import { drawMobs } from "../renderers/mobRenderer";
+import { drawPlayers } from "../renderers/playerRenderer";
 
 jest.mock("../renderers/projectileRenderer");
 jest.mock("../renderers/mobRenderer");
+jest.mock("../renderers/playerRenderer");
 const drawnProjectiles: Array<Array<[string, number, number]>> = [];
 /** Projectiles handed to the projectile renderer on the latest frame. */
 const drawn = () => drawnProjectiles[drawnProjectiles.length - 1];
@@ -275,6 +277,27 @@ describe("GameRenderer frame loop", () => {
     expect(
       calls.filter(([m, x, y]) => m === "arc" && x === 110 && y === 50),
     ).toHaveLength(0);
+  });
+
+  it("draws the local cast the same frame it starts, with no snapshot in between", () => {
+    const state = stateAt(1);
+    state.players.set("1", { id: "1", x: 10, y: 10, radius: 10 } as never);
+    const castingUntil: Array<number | undefined> = [];
+    (drawPlayers as jest.Mock).mockImplementation(
+      (_ctx, players: Map<string, { castingUntil?: number }>) => {
+        castingUntil.push(players.get("1")!.castingUntil);
+      },
+    );
+    const localCastRef = {
+      current: null as { until: number; duration: number } | null,
+    };
+    const gameStateRef = { current: state as GameState | null };
+    const { frame } = mount(state, { gameStateRef, localCastRef });
+    localCastRef.current = { until: 5000, duration: 1500 };
+    frame();
+    localCastRef.current = null;
+    frame();
+    expect(castingUntil).toEqual([0, 5000, 0]);
   });
 
   describe("cached static layer", () => {
