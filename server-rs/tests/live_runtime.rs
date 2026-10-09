@@ -208,10 +208,11 @@ fn row2_melee_mob_closes_distance_and_damages_player() {
         }
         hp = now;
     }
-    assert!(hits >= 2, "mob did not keep engaging after its shove: {hits} hit(s)");
-    // Still on the player at the end: mob reach (46) plus at most one shove (40).
+    // A healthy mob lands 5 hits here and ends ~50 u away; one that walks home and
+    // re-aggros between hits manages only 2 hits and ends ~84 u away.
+    assert!(hits >= 4, "mob did not keep engaging after its shove: {hits} hit(s)");
     let d = dist(pos(&sim, mob), pos(&sim, p));
-    assert!(d <= 86.0, "melee mob did not stay on the player: {d}");
+    assert!(d <= 60.0, "melee mob did not stay on the player: {d}");
 }
 
 /// Distance one real mob melee hit (projectile, live schedule) shoves a stationary avatar.
