@@ -752,7 +752,7 @@ mod tests {
         // Projectile despawns on hit
         assert!(world.get_entity(proj).is_err());
 
-        // Mob is shoved along +X axis: knockback_speed(25 dmg, mass 25) = 6000 / 25 = 240.0
+        // Mob is shoved along +X axis: knockback_speed(25 dmg, mass 25) = 3600 / 25 = 144.0
         let vel = world.get::<Velocity>(mob).unwrap();
         assert!(
             vel.vx > 10.0,
@@ -760,6 +760,66 @@ mod tests {
             vel.vx
         );
         assert_eq!(vel.vy, 0.0);
+    }
+
+    /// A mob moving West at run speed (toward the shooter) and a player projectile of
+    /// `aoe_radius` travelling East, spawned at `proj_x` on the mob's row.
+    fn hit_mob_running_at_shooter(proj_x: f32, aoe_radius: f32) -> crate::Velocity {
+        let mut world = World::new();
+        world.insert_resource(SpatialGrid::default());
+
+        let mob = world
+            .spawn((
+                Position::new(50.0, 50.0),
+                Velocity::new(-200.0, 0.0),
+                Health::new(100.0),
+                ElementalAttributes::default(),
+                StatusEffects::default(),
+                Mass(25.0),
+                MobTag,
+            ))
+            .id();
+        world.spawn((
+            Position::new(proj_x, 50.0),
+            Velocity::new(200.0, 0.0),
+            Projectile {
+                owner: Entity::PLACEHOLDER,
+                target: None,
+                damage: 25.0,
+                damage_type: DamageType::Physical,
+                element: Element::Neutral,
+                speed: 200.0,
+                radius: 4.0,
+                max_range: 300.0,
+                traveled_distance: 0.0,
+                lifetime: 5.0,
+                effects: vec![],
+                is_player_projectile: true,
+                aoe_radius,
+                skill_id: None,
+                detonated: false,
+            },
+        ));
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(projectile_collision_system);
+        schedule.run(&mut world);
+
+        assert!(world.get::<Health>(mob).unwrap().current < 100.0);
+        *world.get::<Velocity>(mob).unwrap()
+    }
+
+    #[test]
+    fn test_projectile_direct_hit_knockback_replaces_velocity_toward_shooter() {
+        let vel = hit_mob_running_at_shooter(50.0, 0.0);
+        assert!(vel.vx > 0.0, "hit must shove away from the shooter, got vx {}", vel.vx);
+    }
+
+    #[test]
+    fn test_projectile_aoe_knockback_replaces_velocity_toward_blast() {
+        // Blast centre 10 u West of the mob: the radial shove points East.
+        let vel = hit_mob_running_at_shooter(40.0, 60.0);
+        assert!(vel.vx > 0.0, "blast must shove away from its centre, got vx {}", vel.vx);
     }
 
     #[test]
