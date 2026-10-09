@@ -130,6 +130,22 @@ describe("formatReadout", () => {
     expect(r["expect"]).toBe("140 u/s walking  (200 x0.70, 0 AGI)");
   });
 
+  it("shows frame and snapshot cost once they are measured", () => {
+    expect(rows(base)["frame"]).toBeUndefined();
+    const r = rows({
+      ...base,
+      perf: new Map([
+        ["total", [4]],
+        ["decode", [0.2]],
+        ["update", [0.5]],
+      ]),
+    });
+    expect(r["frame"]).toBe("4.0 ms (max 4.0)");
+    expect(r["snap cost"]).toBe(
+      "decode 0.2 ms (max 0.2)  update 0.5 ms (max 0.5)",
+    );
+  });
+
   it("shows snapshot rate, snapshot age and latency", () => {
     const r = rows(base);
     expect(r["snap"]).toBe("20.0 Hz  age 30 ms");

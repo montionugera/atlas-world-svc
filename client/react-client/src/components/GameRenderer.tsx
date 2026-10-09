@@ -26,6 +26,12 @@ import {
 import { mapDef } from "../config/maps";
 import { staticBlocksFor, terrainZonesFor } from "../config/terrain";
 import {
+  Timings,
+  TimingKey,
+  perfTimings,
+  recordTiming,
+} from "../utils/frameTiming";
+import {
   DEFAULT_DEBUG_TOGGLES,
   DebugToggles,
   DebugTracker,
@@ -80,6 +86,17 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Stage timing for the debug readout; off (one null check per stage) without it.
+    let timings: Timings | null = null;
+    let lapStart = 0;
+    let lastFrameStart = 0;
+    const lap = (stage: TimingKey) => {
+      if (!timings) return;
+      const now = performance.now();
+      recordTiming(timings, stage, now - lapStart);
+      lapStart = now;
+    };
+
     const animate = () => {
       const {
         gameState,
@@ -90,6 +107,12 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         debug = DEFAULT_DEBUG_TOGGLES,
       } = latestRef.current;
       const renderStartTime = performance.now();
+      timings = debug.overlay ? perfTimings : null;
+      if (timings && lastFrameStart > 0) {
+        recordTiming(timings, "interval", renderStartTime - lastFrameStart);
+      }
+      lastFrameStart = renderStartTime;
+      lapStart = renderStartTime;
       trackFrame();
 
       // Clear canvas
@@ -195,6 +218,8 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
           }
         }
 
+        lap("interp");
+
         // --- 1. Main Camera View ---
         const viewportSize = gameState.viewportSize ?? 50;
         const scale = calculateScale(gameState, canvas, viewportSize);
@@ -245,6 +270,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
             { fillAlpha: 0.85 },
           );
         }
+        lap("terrain");
         // Terrain speed zones: the map itself on plain maps, a debug tint over the art.
         if (terrainZones && (map.art === "plain" || debug.terrain)) {
           const halfW = canvas.width / 2 / scale;
@@ -275,6 +301,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         if (debug.world) {
           drawGrid(ctx, gameState.width, gameState.height, 1, scale, gridSize);
         }
+        lap("tint+grid");
         if (gameState.zoneEffects) {
           drawZoneEffects(ctx, gameState.zoneEffects, scale);
         }
@@ -290,6 +317,8 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
           drawProjectiles(ctx, renderProjectiles, 1, scale);
         }
 
+        lap("entities");
+
         // Debug rings / velocity vectors, on the same interpolated positions as the sprites
         if (debug.world) {
           drawWorldDebug(ctx, {
@@ -301,6 +330,8 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
             localSpeed: debugTrackerRef?.current?.smoothedSpeed ?? 0,
           });
         }
+
+        lap("debug");
 
         // Ground-target AoE reticle (world units, so it scales with the view)
         if (aoeReticle) {
@@ -503,6 +534,10 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
           hudY + 74,
         );
         ctx.restore();
+        lap("hud");
+        if (timings) {
+          recordTiming(timings, "total", performance.now() - renderStartTime);
+        }
       }
 
       animationFrameRef.current = requestAnimationFrame(animate);

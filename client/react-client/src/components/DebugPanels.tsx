@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { DEBUG_BINDINGS, buildControlsLegend } from "../config/controls";
 import { terrainLegend } from "../config/terrain";
 import { DebugToggles, ReadoutInput, formatReadout } from "../utils/debugTools";
+import { perfTimings } from "../utils/frameTiming";
 
 const READOUT_INTERVAL_MS = 150;
 
@@ -39,7 +40,7 @@ export const DebugReadout = React.memo(({ inputRef }: DebugReadoutProps) => {
       if (input) {
         setRows(
           formatReadout(
-            { ...input, latency: readLatency() },
+            { ...input, latency: readLatency(), perf: perfTimings },
             performance.now(),
           ),
         );

@@ -1,4 +1,5 @@
 /** Pure helpers behind the test client's debug overlay (no DOM writes, no canvas). */
+import { Timings, formatPerfRows } from "./frameTiming";
 
 /** Velocity magnitude in world units/second; 0 for missing or non-finite input. */
 export function speedOf(vx?: number, vy?: number): number {
@@ -78,6 +79,8 @@ export interface ReadoutInput {
   /** Grass walking speed the expectation is built from (see config/terrain.ts). */
   referenceRunSpeed: number;
   latency?: { pingMs: number; jitterMs: number };
+  /** Frame-loop and snapshot-handling cost. */
+  perf?: Timings;
   counts: { players: number; mobs: number; projectiles: number };
   /** Client-side prediction, not carried by the snapshot. */
   castingSkill: string | null;
@@ -152,6 +155,7 @@ export function formatReadout(
       `clock offset ${Math.round(latency.pingMs)} ms  jitter ${Math.round(latency.jitterMs)} ms`,
     ]);
   }
+  if (input.perf) rows.push(...formatPerfRows(input.perf));
   rows.push([
     "entities",
     `${counts.players} P  ${counts.mobs} M  ${counts.projectiles} proj`,

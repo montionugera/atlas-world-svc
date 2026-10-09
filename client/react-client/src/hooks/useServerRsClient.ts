@@ -21,6 +21,7 @@ import {
   observeSnapshot,
   pushSample,
 } from "../utils/snapshotInterpolation";
+import { perfTimings, recordTiming } from "../utils/frameTiming";
 import {
   BinaryDeltaDecoder,
   EntityType,
@@ -328,8 +329,10 @@ export const useServerRsClient = (
 
             try {
               if (wsRef.current !== ws) return; // superseded while awaiting a Blob
+              const decodeStart = performance.now();
               const snapshot = BinaryDeltaDecoder.decode(buffer);
               const arrivalTime = performance.now();
+              recordTiming(perfTimings, "decode", arrivalTime - decodeStart);
               const prevArrivalTime = lastSnapshotReceivedTimeRef.current;
               lastSnapshotReceivedTimeRef.current = arrivalTime;
               const interval = arrivalTime - prevArrivalTime;
@@ -543,6 +546,11 @@ export const useServerRsClient = (
                   );
                 }
               }
+              recordTiming(
+                perfTimings,
+                "update",
+                performance.now() - arrivalTime,
+              );
             } catch (decodeErr) {
               console.error(
                 "Failed to decode FlatBuffers snapshot:",
