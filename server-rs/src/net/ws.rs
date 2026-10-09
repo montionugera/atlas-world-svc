@@ -361,12 +361,7 @@ impl WsServer {
             };
 
             let req_map = Self::extract_map(req).unwrap_or_else(|| "map-for-play".to_string());
-            room_id = match req_map.as_str() {
-                "map-for-test-deflect" => "map-for-test-deflect".to_string(),
-                "map-for-test-projectile" => "map-for-test-projectile".to_string(),
-                "map-for-test-terrain" => "map-for-test-terrain".to_string(),
-                _ => "map-for-play".to_string(),
-            };
+            room_id = crate::content::map::room_id_for(&req_map).to_string();
 
             match auth_ref.validate_token(&token) {
                 Ok(claims) => {

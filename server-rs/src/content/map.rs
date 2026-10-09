@@ -4,6 +4,24 @@ use serde::{Deserialize, Serialize};
 pub const SPAWN_AREAS_JSON: &str = include_str!("../../../content/generated/spawn-areas.json");
 pub const TOWN_MILLCROSS_JSON: &str = include_str!("../../../content/towns/town-millcross.json");
 
+/// Every room the server runs. `ROOM_IDS[0]` is where unknown or missing ids land.
+pub const ROOM_IDS: [&str; 5] = [
+    "map-for-play",
+    "map-for-test-projectile",
+    "map-for-test-deflect",
+    "map-for-test-terrain",
+    "map-for-test-large",
+];
+
+/// The room a requested map id joins.
+pub fn room_id_for(requested: &str) -> &'static str {
+    ROOM_IDS
+        .iter()
+        .copied()
+        .find(|id| *id == requested)
+        .unwrap_or(ROOM_IDS[0])
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MapSpawnArea {
     pub id: String,
@@ -143,9 +161,93 @@ struct TownPlanJson {
 }
 
 impl MapConfig {
+    /// Scale-testing map, 4000 x 4000: three big zones of each slow terrain, a road cross
+    /// through the centre plaza (the player spawn) plus a ring road, four clusters of
+    /// blocks beside the ring's corners, and a 4 x 4 grid of mob camps (12 mobs each).
+    fn large_test_map(map_id: &str) -> Self {
+        use TerrainType::*;
+        const MOB_TYPES: [&str; 6] = [
+            "mob-bramble-stalker",
+            "mob-veil-spearling",
+            "mob-chaff-crawler",
+            "mob-bramble-warden",
+            "mob-veil-cub",
+            "mob-bramble-drake",
+        ];
+        let mut spawn_areas = Vec::new();
+        let mut static_obstacles = Vec::new();
+        for row in 0..4 {
+            for col in 0..4 {
+                let n = row * 4 + col;
+                spawn_areas.push(MapSpawnArea {
+                    id: format!("large_camp_{n}"),
+                    x: 350.0 + 1000.0 * col as f32,
+                    y: 350.0 + 1000.0 * row as f32,
+                    width: 300.0,
+                    height: 300.0,
+                    mob_type: MOB_TYPES[n % MOB_TYPES.len()].to_string(),
+                    count: 12,
+                });
+            }
+        }
+        for (c, (cx, cy)) in [
+            (1200.0, 1200.0),
+            (2800.0, 1200.0),
+            (1200.0, 2800.0),
+            (2800.0, 2800.0),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            for (b, (dx, dy)) in [(0.0, 0.0), (90.0, 20.0), (30.0, 100.0), (130.0, 110.0)]
+                .into_iter()
+                .enumerate()
+            {
+                static_obstacles.push(StaticObstacle {
+                    id: format!("large_block_{c}_{b}"),
+                    min_x: cx + dx,
+                    min_y: cy + dy,
+                    max_x: cx + dx + 40.0,
+                    max_y: cy + dy + 40.0,
+                });
+            }
+        }
+        Self {
+            map_id: map_id.to_string(),
+            width: 4000.0,
+            height: 4000.0,
+            spawn_areas,
+            static_obstacles,
+            terrain_zones: vec![
+                TerrainZone::rect(Ice, 0.0, 0.0, 1400.0, 800.0),
+                TerrainZone::rect(Ice, 2600.0, 3200.0, 1400.0, 800.0),
+                TerrainZone::rect(Ice, 1500.0, 300.0, 900.0, 500.0),
+                TerrainZone::rect(Forest, 2700.0, 100.0, 1200.0, 1100.0),
+                TerrainZone::rect(Forest, 100.0, 2700.0, 1100.0, 1200.0),
+                TerrainZone::rect(Forest, 1400.0, 3100.0, 900.0, 700.0),
+                TerrainZone::rect(Sand, 100.0, 1100.0, 800.0, 1200.0),
+                TerrainZone::rect(Sand, 3100.0, 1500.0, 800.0, 1300.0),
+                TerrainZone::rect(Sand, 2200.0, 2200.0, 600.0, 600.0),
+                TerrainZone::rect(Mud, 1200.0, 1200.0, 600.0, 600.0),
+                TerrainZone::rect(Mud, 2200.0, 1100.0, 700.0, 500.0),
+                TerrainZone::rect(Mud, 1100.0, 2200.0, 700.0, 700.0),
+                // Roads paint over everything: the cross, the ring, the plaza.
+                TerrainZone::rect(Road, 1970.0, 0.0, 60.0, 4000.0),
+                TerrainZone::rect(Road, 0.0, 1970.0, 4000.0, 60.0),
+                TerrainZone::rect(Road, 1000.0, 970.0, 2000.0, 60.0),
+                TerrainZone::rect(Road, 1000.0, 2970.0, 2000.0, 60.0),
+                TerrainZone::rect(Road, 970.0, 1000.0, 60.0, 2000.0),
+                TerrainZone::rect(Road, 2970.0, 1000.0, 60.0, 2000.0),
+                TerrainZone::rect(Road, 1850.0, 1850.0, 300.0, 300.0),
+            ],
+            player_spawn: Some((2000.0, 2000.0)),
+        }
+    }
+
     /// Loads or derives map configuration, dimensions, spawn areas, and static footprints.
     pub fn load(map_id: &str) -> Self {
         match map_id {
+            "map-for-test-large" => Self::large_test_map(map_id),
             "map-for-test-deflect" => Self {
                 map_id: map_id.to_string(),
                 width: 100.0,

@@ -1,4 +1,5 @@
 use server_rs::auth::AuthGuard;
+use server_rs::content::map::room_id_for;
 use server_rs::fleet::{AgonesClient, FleetLifecycle, HeartbeatTask};
 use server_rs::net::WsServer;
 use server_rs::protocol::SnapshotBuilder;
@@ -189,6 +190,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }),
     );
 
+    // 5. Large scale-testing map (4000 x 4000)
+    rooms.insert(
+        "map-for-test-large".to_string(),
+        AtlasSimulation::live(LiveConfig {
+            seed,
+            arena_width: 4000.0,
+            arena_height: 4000.0,
+            bot_count: 10,
+            mob_count: 200,
+            mob_respawn_sec,
+            player_respawn_sec,
+            map_id: Some("map-for-test-large".to_string()),
+        }),
+    );
+
     info!(
         "Initialized {} simulation rooms: {:?}",
         rooms.len(),
@@ -238,33 +254,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 for (room_id, sim) in rooms.iter_mut() {
                     let room_inputs: Vec<server_rs::net::ClientPacket> = inputs
                         .iter()
-                        .filter(|p| {
-                            if room_id == "map-for-play" {
-                                p.room_id == "map-for-play"
-                                    || p.room_id.is_empty()
-                                    || (p.room_id != "map-for-test-projectile"
-                                        && p.room_id != "map-for-test-deflect"
-                                        && p.room_id != "map-for-test-terrain")
-                            } else {
-                                p.room_id == *room_id
-                            }
-                        })
+                        .filter(|p| room_id_for(&p.room_id) == room_id)
                         .cloned()
                         .collect();
 
                     let room_disconnects: Vec<String> = disconnected
                         .iter()
-                        .filter(|(_, r)| {
-                            if room_id == "map-for-play" {
-                                r == "map-for-play"
-                                    || r.is_empty()
-                                    || (r != "map-for-test-projectile"
-                                        && r != "map-for-test-deflect"
-                                        && r != "map-for-test-terrain")
-                            } else {
-                                r == room_id
-                            }
-                        })
+                        .filter(|(_, r)| room_id_for(r) == room_id)
                         .map(|(s, _)| s.clone())
                         .collect();
 
