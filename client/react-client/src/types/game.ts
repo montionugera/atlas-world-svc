@@ -88,6 +88,8 @@ export interface Player {
   radius?: number;
   name: string;
   isBotMode?: boolean; // Synced from server
+  /** server-rs: `client_tick` of the last input this player's tick ran on (0: none). */
+  inputAck?: number;
   currentBehavior?: string;
   currentAttackTarget?: string;
   isAlive?: boolean;

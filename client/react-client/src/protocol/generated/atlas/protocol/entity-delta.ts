@@ -78,8 +78,13 @@ ownerId():number {
   return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
 }
 
+inputAck():number {
+  const offset = this.bb!.__offset(this.bb_pos, 24);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+}
+
 static startEntityDelta(builder:flatbuffers.Builder) {
-  builder.startObject(10);
+  builder.startObject(11);
 }
 
 static addId(builder:flatbuffers.Builder, id:number) {
@@ -120,6 +125,10 @@ static addMobType(builder:flatbuffers.Builder, mobTypeOffset:flatbuffers.Offset)
 
 static addOwnerId(builder:flatbuffers.Builder, ownerId:number) {
   builder.addFieldInt32(9, ownerId, 0);
+}
+
+static addInputAck(builder:flatbuffers.Builder, inputAck:number) {
+  builder.addFieldInt32(10, inputAck, 0);
 }
 
 static endEntityDelta(builder:flatbuffers.Builder):flatbuffers.Offset {

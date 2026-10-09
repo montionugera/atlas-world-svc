@@ -538,6 +538,7 @@ describe("useServerRsClient", () => {
     health?: number;
     mobType?: string;
     ownerId?: number;
+    inputAck?: number;
   }
   const snap = (
     tick: number,
@@ -565,6 +566,7 @@ describe("useServerRsClient", () => {
       EntityDelta.addStateFlags(fbb, e.flags ?? STATE_FLAG_ALIVE);
       if (mt) EntityDelta.addMobType(fbb, mt);
       if (e.ownerId) EntityDelta.addOwnerId(fbb, e.ownerId);
+      if (e.inputAck) EntityDelta.addInputAck(fbb, e.inputAck);
       return EntityDelta.endEntityDelta(fbb);
     });
     const evOffs = events.map((ev) => {
@@ -623,6 +625,32 @@ describe("useServerRsClient", () => {
     });
     expect(result.current.gameState!.players.get("11")!.isBotMode).toBe(false);
     expect(result.current.gameState!.players.get("12")!.isBotMode).toBe(true);
+  });
+
+  it("reads a player's acknowledged input, and 0 from a server that does not send it", async () => {
+    const { result } = await connected("dev-token:alice");
+    act(() => {
+      MockWebSocket.instances[0].onmessage?.(
+        snap(1, [
+          { id: 11, type: EntityType.Player, inputAck: 7 },
+          { id: 12, type: EntityType.Player },
+        ]),
+      );
+    });
+    expect(result.current.gameState!.players.get("11")!.inputAck).toBe(7);
+    expect(result.current.gameState!.players.get("12")!.inputAck).toBe(0);
+  });
+
+  it("numbers its inputs from 1 and exposes the newest number sent", async () => {
+    const { result } = await connected("dev-token:alice");
+    act(() => result.current.updatePlayerInput(1, 0));
+    const ticks = MockWebSocket.instances[0].sentMessages.map((bytes) =>
+      ClientInput.getRootAsClientInput(
+        new flatbuffers.ByteBuffer(bytes),
+      ).clientTick(),
+    );
+    expect(ticks).toEqual([1, 2]);
+    expect(result.current.inputSeqRef.current).toBe(2);
   });
 
   it("shows the dead state from the alive flag (corpse at 0 hp) and deletes removed ids", async () => {

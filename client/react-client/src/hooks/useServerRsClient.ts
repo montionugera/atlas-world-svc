@@ -73,6 +73,8 @@ export interface UseServerRsClientReturn {
   joinRoom: (mapId?: string) => Promise<void>;
   updatePlayerInput: (vx: number, vy: number) => void;
   sendPlayerAction: (action: string, pressed: boolean, options?: any) => void;
+  /** `client_tick` of the newest input sent (0: none yet). */
+  inputSeqRef: React.MutableRefObject<number>;
   /** Last non-zero target sent to the server (it holds this for AoE impact). */
   sentTargetRef: React.MutableRefObject<{ x: number; y: number }>;
   /** Combat events received since the last call (the renderer drains it per frame). */
@@ -169,7 +171,8 @@ export const useServerRsClient = (
 
   // Refs
   const wsRef = useRef<WebSocket | null>(null);
-  const clientTickRef = useRef<number>(0);
+  // `client_tick` of the newest input sent; the first is 1, so 0 means none.
+  const inputSeqRef = useRef<number>(0);
   const isConnectingRef = useRef<boolean>(false);
   // Currently-held input, re-sent with every packet (server input is full-state).
   const moveRef = useRef<{ vx: number; vy: number }>({ vx: 0, vy: 0 });
@@ -341,7 +344,7 @@ export const useServerRsClient = (
             const builder = new flatbuffers.Builder(64);
             const offset = ClientInput.createClientInput(
               builder,
-              clientTickRef.current++,
+              ++inputSeqRef.current,
               0,
               0,
               false,
@@ -478,6 +481,7 @@ export const useServerRsClient = (
                     attackRange: 40,
                     // Only server-driven BotAgents are bots; other humans are not.
                     isBotMode: (entity.stateFlags & STATE_FLAG_BOT) !== 0,
+                    inputAck: entity.inputAck,
                     currentAttackTarget: entity.targetId
                       ? String(entity.targetId)
                       : undefined,
@@ -723,7 +727,7 @@ export const useServerRsClient = (
       const builder = new flatbuffers.Builder(64);
       const offset = ClientInput.createClientInput(
         builder,
-        clientTickRef.current++,
+        ++inputSeqRef.current,
         vx,
         vy,
         attack,
@@ -955,6 +959,7 @@ export const useServerRsClient = (
     joinRoom,
     updatePlayerInput,
     sendPlayerAction,
+    inputSeqRef,
     sentTargetRef,
     drainEvents,
     switchWeapon,
