@@ -159,6 +159,8 @@ impl AtlasSimulation {
         world.insert_resource(MatchEventQueue::default());
 
         let mut schedule = Schedule::default();
+        // The systems are fully chained: run them inline rather than through a task pool.
+        schedule.set_executor_kind(bevy_ecs::schedule::ExecutorKind::SingleThreaded);
         schedule.add_systems(
             (
                 cooldown_tick_system,
@@ -918,6 +920,17 @@ impl AtlasSimulation {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn schedule_runs_on_the_calling_thread() {
+        // Every system is chained, so a task pool adds only cross-thread handoffs:
+        // measured 15 ms p50 / 40-70 ms p95 per tick on a busy host, versus 3 / 7 ms.
+        let sim = AtlasSimulation::init(1, 1, 1);
+        assert_eq!(
+            sim.schedule.get_executor_kind(),
+            bevy_ecs::schedule::ExecutorKind::SingleThreaded
+        );
+    }
 
     #[test]
     fn test_simulation_init_and_tick0_snapshot() {
