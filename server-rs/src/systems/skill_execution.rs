@@ -279,8 +279,11 @@ pub fn skill_execution_system(
                         if skill.gcd_sec > 0.0 {
                             cooldown_tracker.set_cooldown("global_magic_cd", skill.gcd_sec);
                         }
-                        vel.vx = 0.0;
-                        vel.vy = 0.0;
+                        // A cast must not cancel a knockback in progress.
+                        if !status_opt.is_some_and(|s| s.is_knocked_back()) {
+                            vel.vx = 0.0;
+                            vel.vy = 0.0;
+                        }
                     }
                 }
             }
@@ -531,5 +534,37 @@ mod tests {
             found,
             "Ground AoE projectile should have been spawned at target position on cast completion"
         );
+    }
+
+    #[test]
+    fn test_cast_start_while_knocked_back_keeps_knockback_velocity() {
+        use crate::ecs::components::StatusEffects;
+
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50));
+
+        let mut status = StatusEffects::default();
+        status.apply_knockback(0.2);
+
+        let entity = world
+            .spawn((
+                Position::new(0.0, 0.0),
+                PlayerInputState::new(0.0, 0.0, false, 1), // Slot 1 = cast skill
+                CooldownTracker::new(),
+                CastingState::new(),
+                Velocity::new(-80.0, 0.0), // being knocked back toward -X
+                PlayerTag,
+                DashState::new(),
+                status,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(skill_execution_system);
+        schedule.run(&mut world);
+
+        assert!(world.get::<CastingState>(entity).unwrap().skill_id.is_some());
+        let vel = world.get::<Velocity>(entity).unwrap();
+        assert_eq!(vel.vx, -80.0, "cast start must not cancel knockback velocity");
     }
 }

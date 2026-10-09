@@ -46,9 +46,10 @@ pub fn player_input_system(
             }
         }
 
-        // 2. Check CastingState: active casting locks movement
+        // 2. Check CastingState: active casting locks movement (a knockback still plays out, 2b)
         if let Some(casting) = casting_opt {
-            if casting.is_casting(current_time) {
+            if casting.is_casting(current_time) && !status_opt.is_some_and(|s| s.is_knocked_back())
+            {
                 vel.vx = 0.0;
                 vel.vy = 0.0;
                 if let Some(ref mut dash) = dash_opt {
@@ -291,6 +292,42 @@ mod tests {
         let vel = world.get::<Velocity>(entity).unwrap();
         assert_eq!(vel.vx, 200.0);
         assert_eq!(vel.vy, 0.0);
+    }
+
+    #[test]
+    fn test_knockback_velocity_survives_cast_lock() {
+        use crate::ecs::components::CastingState;
+
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50));
+
+        let mut status = StatusEffects::default();
+        status.apply_knockback(0.2);
+        let mut casting = CastingState::new();
+        casting.start_cast("skill_1", 1.5, 0.0);
+
+        let entity = world
+            .spawn((
+                PlayerAvatar::new("p1", 200.0),
+                PlayerInputState::new(0.0, 0.0, false, 0),
+                Velocity::new(-80.0, 0.0), // knocked back toward -X mid-cast
+                status,
+                casting,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(player_input_system);
+        schedule.run(&mut world);
+
+        let decay = (-KNOCKBACK_DECAY_PER_SEC * 0.05).exp();
+        let vel = world.get::<Velocity>(entity).unwrap();
+        assert!((vel.vx - -80.0 * decay).abs() < 1e-3, "cast lock must not erase knockback");
+
+        // Knockback ends: the cast lock holds the caster still again.
+        world.get_mut::<StatusEffects>(entity).unwrap().knockback_timer = 0.0;
+        schedule.run(&mut world);
+        assert_eq!(world.get::<Velocity>(entity).unwrap().vx, 0.0);
     }
 
     #[test]
