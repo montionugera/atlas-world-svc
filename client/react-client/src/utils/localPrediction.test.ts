@@ -99,6 +99,17 @@ interface ServerOptions {
   repeats?: false;
   /** Server time of tick 0. */
   phase?: number;
+  /**
+   * For each, in order: the first tick due at or after `at` runs `by` ms late, taking
+   * the inputs that arrived meanwhile. As the server's timer does, the ticks after it
+   * keep their schedule, less the whole ticks that one overran.
+   */
+  lateTicks?: ReadonlyArray<{ at: number; by: number }>;
+  /**
+   * For each, in order: the snapshot of the first tick run at or after `at` is handed
+   * to the client `by` ms late (a busy main thread), and those behind it wait for it.
+   */
+  lateArrivals?: ReadonlyArray<{ at: number; by: number }>;
   stun?: { from: number; to: number };
   knockback?: { from: number; to: number; vx: number; vy: number };
   dash?: { from: number; dirX: number };
@@ -133,9 +144,19 @@ function serve(keys: readonly Key[], until: number, o: ServerOptions): Snap[] {
   let dashLeft = 0;
   let lastArrival = -Infinity;
   const snaps: Snap[] = [];
+  let overrun = 0;
+  const lateTicks = o.lateTicks ?? [];
+  const lateArrivals = o.lateArrivals ?? [];
+  let t = 0;
+  let a = 0;
   for (let tick = 0; ; tick++) {
-    const time = tick * SNAPSHOT_INTERVAL_MS + (o.phase ?? 0);
+    let time = tick * SNAPSHOT_INTERVAL_MS + (o.phase ?? 0) + overrun;
     if (time > until) return snaps;
+    if (t < lateTicks.length && time >= lateTicks[t].at) {
+      const { by } = lateTicks[t++];
+      time += by;
+      overrun += Math.floor(by / SNAPSHOT_INTERVAL_MS) * SNAPSHOT_INTERVAL_MS;
+    }
     let mx = 0;
     let my = 0;
     let ack = 1;
@@ -174,7 +195,10 @@ function serve(keys: readonly Key[], until: number, o: ServerOptions): Snap[] {
     x = Math.min(Math.max(x + vx * TICK_SEC, 0), world);
     y = Math.min(Math.max(y + vy * TICK_SEC, 0), world);
     seed = (seed * 1103515245 + 12345) % 2147483648;
-    const late = (o.jitter ?? 0) * (seed / 2147483648);
+    let late = (o.jitter ?? 0) * (seed / 2147483648);
+    if (a < lateArrivals.length && time >= lateArrivals[a].at) {
+      late += lateArrivals[a++].by;
+    }
     lastArrival = Math.max(lastArrival, time + (o.downlink ?? 0) + late);
     const echo = o.echo === false ? 0 : ack + (o.echo ?? 0);
     snaps.push([lastArrival, tick, x, y, vx, vy, !dead, echo]);
@@ -1116,6 +1140,60 @@ describe("a real jittered capture (map-for-test-terrain)", () => {
   });
 });
 
+describe("steady walking on a local link whose ticks and snapshots run late", () => {
+  /** Seeded: each 30 ms to `most` late, 0.5-1.3 s after the last: 2 or more in any 3 s. */
+  const lateness = (seed: number, most: number) => {
+    const events: Array<{ at: number; by: number }> = [];
+    let draw = seed;
+    const next = () =>
+      (draw = (draw * 1103515245 + 12345) % 2147483648) / 2147483648;
+    for (let at = 2000 + 800 * next(); at < 9500; at += 500 + 800 * next()) {
+      events.push({ at, by: 30 + (most - 30) * next() });
+    }
+    return events;
+  };
+  const keys = [{ t: 1000, ...RIGHT }];
+  const walk = (fps: number, tickMost: number) => {
+    const { frames, state } = run(
+      keys,
+      10000,
+      {
+        uplinkJitter: 5,
+        jitter: 5,
+        start: { x: 50, y: 500 },
+        world: 3000,
+        lateTicks: lateness(3, tickMost),
+        lateArrivals: lateness(5, 80),
+      },
+      { fps },
+    );
+    expect(state.yielding).toBeNull();
+    return stepsOf(between(frames, 1500, 10000)).map(
+      (step) => step / (200 / fps),
+    );
+  };
+
+  // A tick under 50 ms late costs the server's walk nothing, and a snapshot handed
+  // over late never does: neither may show in the drawn walk.
+  it.each([30, 60, 144])("keeps every step even at %i fps", (fps) => {
+    const steps = walk(fps, 49);
+    expect(Math.min(...steps)).toBeGreaterThan(0.99);
+    expect(Math.max(...steps)).toBeLessThan(1.01);
+  });
+
+  // A tick 50 ms or more late is one the server skips: its walk is a tick's distance
+  // (10 units) short for good, and the drawn walk gives that up by easing, measured at
+  // 0.53 of a step at the least. It never stalls, steps back, or runs to catch up.
+  it.each([30, 60, 144])(
+    "only eases for a tick the server skipped at %i fps",
+    (fps) => {
+      const steps = walk(fps, 80);
+      expect(Math.min(...steps)).toBeGreaterThan(0.5);
+      expect(Math.max(...steps)).toBeLessThan(1.01);
+    },
+  );
+});
+
 /**
  * Every stop measured the same way: a walk to the right, a release at each of 8 points
  * of a tick, the server's ticks at each of 10 phases, drawn at 30, 60 and 144 fps, each
@@ -1126,6 +1204,15 @@ describe("stop sweep", () => {
   const RELEASES = [0, 7, 13, 19, 27, 33, 41, 47];
   const slow = { uplink: 60, downlink: 60, jitter: 30 };
   const fell = { ...slow, uplinkFrom: { at: 2000, uplink: 5 } };
+  /** A local link: each way takes up to 5 ms. */
+  const local = { uplinkJitter: 5, jitter: 5 };
+  /** `link` with the server tick due around the release run `by` ms late. */
+  const lateTick =
+    (link: ServerOptions, by: number) =>
+    (release: number): ServerOptions => ({
+      ...link,
+      lateTicks: [{ at: release - 40, by }],
+    });
   const oneWalk = (release: number, late?: number): Key[] => [
     { t: 1000, ...RIGHT },
     { t: release, ...STOP, late },
@@ -1201,7 +1288,10 @@ describe("stop sweep", () => {
   // not a target, and one that may only be edited downwards. The speed rises where the
   // release was assumed to make the earlier of two ticks and made the later (the
   // deadline's margin, 14 ms of every 50); a stop walks back only where the release
-  // was faster than every input of the walk before it, by more than that margin.
+  // was faster than every input of the walk before it, by more than that margin, or
+  // where the server ran the tick at the release late and so took the release a tick
+  // sooner than placed (the last three rows: accepted, as waiting at such a tick
+  // made plain walking uneven).
   it.each<
     [
       string,
@@ -1279,6 +1369,25 @@ describe("stop sweep", () => {
       oneWalk,
       sooner(slow, 30),
       count(42, 42, 45, 0),
+    ],
+    ["a local link", oneWalk, local, count(0, 0, 0, 0)],
+    [
+      "a local link, the tick at the release 30 ms late",
+      oneWalk,
+      lateTick(local, 30),
+      count(129, 129, 129, 0),
+    ],
+    [
+      "a local link, the tick at the release 55 ms late",
+      oneWalk,
+      lateTick(local, 55),
+      count(192, 192, 192, 0),
+    ],
+    [
+      "a local link, the tick at the release 80 ms late",
+      oneWalk,
+      lateTick(local, 80),
+      count(192, 192, 192, 0),
     ],
   ])("%s", (_, keysFor, link, ceiling) => {
     expect(sweep(keysFor, link)).toEqual(ceiling);
