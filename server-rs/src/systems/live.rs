@@ -180,8 +180,15 @@ pub fn live_bot_ai_system(
         &crate::ecs::components::CombatStats,
     )>,
     mobs: Query<(Entity, &Position, &Health), With<crate::ecs::components::MobTag>>,
+    toggles: Option<Res<crate::debug::DebugToggles>>,
 ) {
     if rules.is_none() {
+        return;
+    }
+    if toggles.is_some_and(|t| t.bots_paused) {
+        for (.., mut vel, _, _) in &mut bots {
+            *vel = Velocity::zero();
+        }
         return;
     }
     let dt = clock.delta_seconds();

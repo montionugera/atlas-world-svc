@@ -25,7 +25,14 @@ pub fn mob_ai_system(
         Option<&StatusEffects>,
     )>,
     players: Query<(Entity, &Position, &Health, Has<PlayerTag>)>,
+    toggles: Option<Res<crate::debug::DebugToggles>>,
 ) {
+    if toggles.is_some_and(|t| t.mobs_paused) {
+        for (_, _, mut vel, ..) in &mut mobs {
+            *vel = Velocity::zero();
+        }
+        return;
+    }
     let current_time = clock.current_time_seconds();
     let dt = clock.delta_seconds();
 

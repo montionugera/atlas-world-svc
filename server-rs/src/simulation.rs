@@ -129,6 +129,12 @@ pub struct AtlasSimulation {
     pub arena_height: f32,
     /// Where a joining player's avatar appears (arena centre unless the map says otherwise).
     pub player_spawn: Position,
+    /// Development mode (see `debug::debug_enabled`): unlocks the debug controls.
+    pub debug_enabled: bool,
+    /// Respawn delay given to mobs spawned after start-up.
+    pub mob_respawn_sec: f32,
+    next_bot_index: usize,
+    pub(crate) debug_mob_seq: u32,
 }
 
 impl AtlasSimulation {
@@ -192,6 +198,10 @@ impl AtlasSimulation {
             arena_width,
             arena_height,
             player_spawn: Position::new(arena_width / 2.0, arena_height / 2.0),
+            debug_enabled: false,
+            mob_respawn_sec: LiveConfig::default().mob_respawn_sec,
+            next_bot_index: 0,
+            debug_mob_seq: 0,
         }
     }
 
@@ -264,39 +274,12 @@ impl AtlasSimulation {
         }
 
         let mut prng = Mulberry32::new(cfg.seed);
-        for i in 0..cfg.bot_count {
-            let id = format!("bot-{}", i);
-            let pos = Position::new(
-                prng.range(100.0, arena_width - 100.0)
-                    .clamp(10.0, arena_width - 10.0),
-                prng.range(100.0, arena_height - 100.0)
-                    .clamp(10.0, arena_height - 10.0),
-            );
+        sim.mob_respawn_sec = cfg.mob_respawn_sec;
+        for _ in 0..cfg.bot_count {
+            let x = prng.range(100.0, arena_width - 100.0);
+            let y = prng.range(100.0, arena_height - 100.0);
             let angle = prng.range(0.0, std::f32::consts::PI * 2.0);
-            sim.world.spawn((
-                EntityId(id.clone()),
-                pos,
-                Velocity::zero(),
-                Health::new(100.0),
-                PlayerTag,
-                BotAgent::new(id, angle.cos(), angle.sin()),
-                CombatStats {
-                    // Same edge-to-edge melee reach as mobs (20px + both body radii), so a
-                    // bot can answer a mob standing at its own melee reach.
-                    attack_range: 20.0 + PLAYER_BODY_RADIUS + MOB_BODY_RADIUS,
-                    is_player: true,
-                    ..Default::default()
-                },
-                ElementalAttributes {
-                    element: crate::combat::Element::Neutral,
-                    p_def: 6.0,
-                    m_def: 6.0,
-                    armor: 0.0,
-                },
-                BodyRadius(PLAYER_BODY_RADIUS),
-                Mass(15.0),
-                SpawnPoint(pos),
-            ));
+            sim.spawn_bot(x, y, angle);
         }
 
         let catalog = sim.world.resource::<BestiaryCatalog>().clone();
@@ -355,6 +338,40 @@ impl AtlasSimulation {
         sim.prng = prng.clone();
         sim.world.insert_resource(prng);
         sim
+    }
+
+    /// Spawns the next live bot (`bot-<n>`), clamped into the arena, heading along `angle`.
+    pub(crate) fn spawn_bot(&mut self, x: f32, y: f32, angle: f32) {
+        let id = format!("bot-{}", self.next_bot_index);
+        self.next_bot_index += 1;
+        let pos = Position::new(
+            x.clamp(10.0, self.arena_width - 10.0),
+            y.clamp(10.0, self.arena_height - 10.0),
+        );
+        self.world.spawn((
+            EntityId(id.clone()),
+            pos,
+            Velocity::zero(),
+            Health::new(100.0),
+            PlayerTag,
+            BotAgent::new(id, angle.cos(), angle.sin()),
+            CombatStats {
+                // Same edge-to-edge melee reach as mobs (20px + both body radii), so a
+                // bot can answer a mob standing at its own melee reach.
+                attack_range: 20.0 + PLAYER_BODY_RADIUS + MOB_BODY_RADIUS,
+                is_player: true,
+                ..Default::default()
+            },
+            ElementalAttributes {
+                element: crate::combat::Element::Neutral,
+                p_def: 6.0,
+                m_def: 6.0,
+                armor: 0.0,
+            },
+            BodyRadius(PLAYER_BODY_RADIUS),
+            Mass(15.0),
+            SpawnPoint(pos),
+        ));
     }
 
     /// One live server tick, exactly as `main.rs` runs it: apply inputs, then drop avatars

@@ -1,11 +1,14 @@
 use crate::auth::AuthGuard;
+use crate::debug::{DebugCommand, DebugCommandBody};
 use futures_util::{SinkExt, StreamExt};
 use std::collections::HashMap;
 use std::net::SocketAddr;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
-use tokio::sync::RwLock;
+use tokio::sync::{oneshot, RwLock};
 use tokio_tungstenite::accept_hdr_async;
 use tokio_tungstenite::tungstenite::handshake::server::{ErrorResponse, Request, Response};
 use tokio_tungstenite::tungstenite::http::StatusCode;
@@ -36,6 +39,21 @@ impl ClientPacket {
 }
 
 /// WebSocket Gateway server managing active client sessions and snapshot broadcasting.
+/// One debug command waiting for the tick loop; the answer goes back through `reply`.
+pub struct DebugRequest {
+    pub map: String,
+    pub player: Option<String>,
+    pub command: DebugCommand,
+    pub reply: oneshot::Sender<Result<serde_json::Value, String>>,
+}
+
+/// What a connection needs to serve `/debug/*`: the switch and the queue to the tick loop.
+#[derive(Clone)]
+struct DebugGate {
+    enabled: Arc<AtomicBool>,
+    tx: UnboundedSender<DebugRequest>,
+}
+
 pub struct WsServer {
     local_addr: SocketAddr,
     connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
@@ -46,6 +64,8 @@ pub struct WsServer {
     disconnect_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<(String, String)>>>,
     pub nakama_client: Option<Arc<crate::storage::NakamaClient>>,
     nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
+    debug_enabled: Arc<AtomicBool>,
+    debug_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<DebugRequest>>>,
 }
 
 impl WsServer {
@@ -64,6 +84,8 @@ impl WsServer {
         let (disconnect_tx, disconnect_rx) = unbounded_channel();
         let disconnect_rx = Arc::new(tokio::sync::Mutex::new(disconnect_rx));
         let nakama_ref = Arc::new(std::sync::RwLock::new(None));
+        let debug_enabled = Arc::new(AtomicBool::new(false));
+        let (debug_tx, debug_rx) = unbounded_channel();
 
         let server = Self {
             local_addr,
@@ -75,6 +97,8 @@ impl WsServer {
             disconnect_rx,
             nakama_client: None,
             nakama_ref: nakama_ref.clone(),
+            debug_enabled: debug_enabled.clone(),
+            debug_rx: Arc::new(tokio::sync::Mutex::new(debug_rx)),
         };
 
         // Spawn accept loop
@@ -86,9 +110,28 @@ impl WsServer {
             inbound_tx,
             disconnect_tx,
             nakama_ref,
+            DebugGate {
+                enabled: debug_enabled,
+                tx: debug_tx,
+            },
         ));
 
         Ok(server)
+    }
+
+    /// Turns the `/debug/*` HTTP routes on or off (off until called).
+    pub fn set_debug_enabled(&self, enabled: bool) {
+        self.debug_enabled.store(enabled, Ordering::Relaxed);
+    }
+
+    /// Debug commands received since the last tick, for the tick loop to apply and answer.
+    pub async fn drain_debug(&self) -> Vec<DebugRequest> {
+        let mut rx = self.debug_rx.lock().await;
+        let mut requests = Vec::new();
+        while let Ok(request) = rx.try_recv() {
+            requests.push(request);
+        }
+        requests
     }
 
     pub fn with_nakama(mut self, client: Arc<crate::storage::NakamaClient>) -> Self {
@@ -208,6 +251,7 @@ impl WsServer {
         inbound_tx: UnboundedSender<ClientPacket>,
         disconnect_tx: UnboundedSender<(String, String)>,
         nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
+        debug: DebugGate,
     ) {
         info!(
             "WebSocket accept loop running on {}",
@@ -223,8 +267,13 @@ impl WsServer {
             let in_tx = inbound_tx.clone();
             let dc_tx = disconnect_tx.clone();
             let nakama = nakama_ref.clone();
+            let debug = debug.clone();
 
             tokio::spawn(async move {
+                if is_debug_http(&stream).await {
+                    serve_debug_http(stream, debug).await;
+                    return;
+                }
                 Self::handle_connection(
                     stream, peer_addr, conns, rooms, auth, in_tx, dc_tx, nakama,
                 )
@@ -448,6 +497,107 @@ impl WsServer {
 }
 
 /// True if any registered `session#seq` connection key belongs to `session_id`.
+/// True when the connection opens with a plain HTTP request for `/debug/...` rather than a
+/// WebSocket upgrade (which the client sends to `/` or `/ws`).
+async fn is_debug_http(stream: &TcpStream) -> bool {
+    let mut head = [0u8; 15];
+    let n = stream.peek(&mut head).await.unwrap_or(0);
+    [&b"GET /debug/"[..], b"POST /debug/", b"OPTIONS /debug/"]
+        .iter()
+        .any(|prefix| head[..n].starts_with(prefix))
+}
+
+/// Largest debug request accepted, headers included.
+const DEBUG_HTTP_MAX_BYTES: usize = 16 * 1024;
+
+/// Serves one `/debug/*` request and closes: `GET /debug/state?map=<room>` and
+/// `POST /debug/command` (JSON body, see `debug::DebugCommandBody`). Every route is 404
+/// while the gate is off. Commands are queued for the tick loop, never applied here.
+async fn serve_debug_http(mut stream: TcpStream, debug: DebugGate) {
+    let mut raw = Vec::new();
+    let mut chunk = [0u8; 2048];
+    let (head_end, body_len) = loop {
+        if let Some(head_end) = raw.windows(4).position(|w| w == b"\r\n\r\n") {
+            let body_len = String::from_utf8_lossy(&raw[..head_end])
+                .lines()
+                .filter_map(|line| line.split_once(':'))
+                .find(|(name, _)| name.eq_ignore_ascii_case("content-length"))
+                .and_then(|(_, value)| value.trim().parse::<usize>().ok())
+                .unwrap_or(0);
+            if raw.len() >= head_end + 4 + body_len {
+                break (head_end, body_len);
+            }
+        }
+        match stream.read(&mut chunk).await {
+            Ok(n) if n > 0 && raw.len() + n <= DEBUG_HTTP_MAX_BYTES => {
+                raw.extend_from_slice(&chunk[..n])
+            }
+            _ => return,
+        }
+    };
+    let head = String::from_utf8_lossy(&raw[..head_end]).into_owned();
+    let mut request_line = head.lines().next().unwrap_or("").split(' ');
+    let method = request_line.next().unwrap_or("");
+    let target = request_line.next().unwrap_or("");
+    let (path, query) = target.split_once('?').unwrap_or((target, ""));
+    let body = &raw[head_end + 4..head_end + 4 + body_len];
+
+    let error = |message: &str| serde_json::json!({ "ok": false, "error": message });
+    let (status, payload) = if !debug.enabled.load(Ordering::Relaxed) {
+        ("404 Not Found", error("not found"))
+    } else if method == "OPTIONS" {
+        ("204 No Content", serde_json::Value::Null)
+    } else {
+        let parsed = match (method, path) {
+            ("GET", "/debug/state") => Ok(DebugCommandBody {
+                map: query
+                    .split('&')
+                    .find_map(|pair| pair.strip_prefix("map="))
+                    .unwrap_or("")
+                    .to_string(),
+                player: None,
+                command: DebugCommand::State,
+            }),
+            ("POST", "/debug/command") => {
+                serde_json::from_slice::<DebugCommandBody>(body).map_err(|e| e.to_string())
+            }
+            _ => Err("unknown debug route".to_string()),
+        };
+        match parsed {
+            Err(message) => ("400 Bad Request", error(&message)),
+            Ok(parsed) => {
+                let (reply, answer) = oneshot::channel();
+                let _ = debug.tx.send(DebugRequest {
+                    map: parsed.map,
+                    player: parsed.player,
+                    command: parsed.command,
+                    reply,
+                });
+                match tokio::time::timeout(std::time::Duration::from_secs(2), answer).await {
+                    Ok(Ok(Ok(state))) => {
+                        ("200 OK", serde_json::json!({ "ok": true, "state": state }))
+                    }
+                    Ok(Ok(Err(message))) => ("400 Bad Request", error(&message)),
+                    _ => ("503 Service Unavailable", error("tick loop did not answer")),
+                }
+            }
+        }
+    };
+    let payload = if payload.is_null() {
+        String::new()
+    } else {
+        payload.to_string()
+    };
+    let response = format!(
+        "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\
+         Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS\r\n\
+         Access-Control-Allow-Headers: content-type\r\nConnection: close\r\n\r\n{payload}",
+        payload.len()
+    );
+    let _ = stream.write_all(response.as_bytes()).await;
+    let _ = stream.shutdown().await;
+}
+
 fn has_session(conns: &HashMap<String, UnboundedSender<Message>>, session_id: &str) -> bool {
     conns
         .keys()

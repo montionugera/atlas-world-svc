@@ -36,6 +36,9 @@ pub struct Health {
     pub current: f32,
     pub max: f32,
     pub is_alive: bool,
+    /// Debug control: damage is ignored while set.
+    #[serde(skip)]
+    pub invulnerable: bool,
 }
 
 impl Health {
@@ -44,11 +47,12 @@ impl Health {
             current: max,
             max,
             is_alive: true,
+            invulnerable: false,
         }
     }
 
     pub fn take_damage(&mut self, amount: f32) {
-        if !self.is_alive {
+        if !self.is_alive || self.invulnerable {
             return;
         }
         self.current = (self.current - amount).max(0.0);

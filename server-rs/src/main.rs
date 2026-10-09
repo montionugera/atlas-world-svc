@@ -194,6 +194,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         rooms.len(),
         rooms.keys().collect::<Vec<_>>()
     );
+    let debug_enabled = server_rs::debug::debug_enabled_from_env();
+    ws_server.set_debug_enabled(debug_enabled);
+    for sim in rooms.values_mut() {
+        sim.debug_enabled = debug_enabled;
+    }
+    info!(
+        "Debug controls (/debug/*) {}",
+        if debug_enabled { "ENABLED" } else { "disabled" }
+    );
     let mut snapshot_builder = SnapshotBuilder::new();
 
     // 6. 20 Hz simulation tick loop (50ms interval)
@@ -212,6 +221,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 let inputs = ws_server.drain_inbound().await;
                 let disconnected = ws_server.drain_disconnects_with_rooms().await;
+
+                for request in ws_server.drain_debug().await {
+                    let map = if request.map.is_empty() {
+                        "map-for-play"
+                    } else {
+                        request.map.as_str()
+                    };
+                    let result = match rooms.get_mut(map) {
+                        Some(sim) => sim.debug_apply(&request.command, request.player.as_deref()),
+                        None => Err(format!("unknown map {map}")),
+                    };
+                    let _ = request.reply.send(result);
+                }
 
                 for (room_id, sim) in rooms.iter_mut() {
                     let room_inputs: Vec<server_rs::net::ClientPacket> = inputs

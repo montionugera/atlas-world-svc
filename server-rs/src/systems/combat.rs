@@ -17,6 +17,7 @@ pub fn combat_system(
     grid: Res<SpatialGrid>,
     mut event_queue: Option<ResMut<MatchEventQueue>>,
     mut hit_log: Option<ResMut<HitLog>>,
+    toggles: Option<Res<crate::debug::DebugToggles>>,
     mut params: ParamSet<(
         Query<
             (
@@ -77,6 +78,12 @@ pub fn combat_system(
             // Legacy attackQueue: a human avatar only swings while attack is held.
             // Bots (no PlayerAvatar) keep auto-attacking.
             if avatar.is_some() && !wants_attack {
+                continue;
+            }
+            if avatar.is_none()
+                && stats.is_player
+                && toggles.as_ref().is_some_and(|t| t.bots_paused)
+            {
                 continue;
             }
 
