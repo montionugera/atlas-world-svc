@@ -57,6 +57,14 @@ pub fn player_input_system(
             }
         }
 
+        // 2b. Knocked back: keep the impulse velocity; input (and any dash) must not overwrite it
+        if status_opt.is_some_and(|s| s.is_knocked_back()) {
+            if let Some(ref mut dash) = dash_opt {
+                dash.remaining_sec = 0.0;
+            }
+            continue;
+        }
+
         // 3. Check DashState: active dash impulse overrides normal movement
         if let Some(ref mut dash) = dash_opt {
             if dash.is_dashing() {
@@ -241,6 +249,40 @@ mod tests {
 
         let vel = world.get::<Velocity>(entity).unwrap();
         assert_eq!(vel.vx, 0.0);
+        assert_eq!(vel.vy, 0.0);
+    }
+
+    #[test]
+    fn test_knockback_velocity_survives_held_movement_input() {
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50));
+
+        let mut status = StatusEffects::default();
+        status.apply_knockback(0.2);
+
+        let entity = world
+            .spawn((
+                PlayerAvatar::new("p1", 200.0),
+                PlayerInputState::new(1.0, 0.0, false, 0), // holding +X
+                Velocity::new(-80.0, 30.0),                // knocked back toward -X
+                status,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(player_input_system);
+        schedule.run(&mut world);
+
+        let vel = world.get::<Velocity>(entity).unwrap();
+        assert_eq!(vel.vx, -80.0, "movement input must not erase knockback");
+        assert_eq!(vel.vy, 30.0);
+
+        // Knockback ends: normal movement control resumes.
+        world.get_mut::<StatusEffects>(entity).unwrap().knockback_timer = 0.0;
+        schedule.run(&mut world);
+
+        let vel = world.get::<Velocity>(entity).unwrap();
+        assert_eq!(vel.vx, 200.0);
         assert_eq!(vel.vy, 0.0);
     }
 
