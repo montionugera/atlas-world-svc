@@ -8,6 +8,7 @@ import { InputDebugPanel } from "./InputDebugPanel";
 import { calculateScale } from "../utils/drawingUtils";
 import { SKILL_DEFINITIONS } from "../config/skills";
 import { getAoeReticle } from "../utils/aoeReticle";
+import { extrapolatePosition } from "../utils/deadReckoning";
 
 interface ColyseusGameCanvasProps {
   client: UseColyseusClientReturn;
@@ -55,7 +56,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
 
   // Ground-target indicator while an AoE skill is being cast (null otherwise)
   const aoeReticle =
-    activeCast && localPlayer
+    activeCast && localPlayer && !isDead
       ? getAoeReticle(
           activeCast.skillId,
           sentTargetRef?.current ?? activeCast.aim,
@@ -186,6 +187,11 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     [handleTriggerSkill, sendPlayerAction],
   );
 
+  // A dead player's cast is over: drop the cast bar and reticle.
+  useEffect(() => {
+    if (isDead) setActiveCast(null);
+  }, [isDead]);
+
   // Ticking effect for cooldowns and cast bar progress
   useEffect(() => {
     const timer = setInterval(() => {
@@ -244,8 +250,10 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
 
       const player = currentGameState.players.get(currentPid);
       if (player) {
-        cameraX = player.x;
-        cameraY = player.y;
+        // Same extrapolated position the renderer centres the camera on.
+        const pos = extrapolatePosition(player, performance.now());
+        cameraX = pos.x;
+        cameraY = pos.y;
       }
 
       const worldX = (clientX - canvas.width / 2) / scale + cameraX;
@@ -284,9 +292,12 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       let targetMobId: number | undefined;
 
       if (gameState) {
+        const frameNow = performance.now();
         gameState.mobs.forEach((mob) => {
           if (mob.isAlive === false || targetMobId !== undefined) return;
-          const dist = Math.hypot(mob.x - wx, mob.y - wy);
+          // Pick against the extrapolated position that is drawn on screen.
+          const pos = extrapolatePosition(mob, frameNow);
+          const dist = Math.hypot(pos.x - wx, pos.y - wy);
           if (dist <= (mob.radius || 14) + 16) {
             targetMobId = Number(mob.id);
           }
