@@ -8,6 +8,14 @@ use std::time::Duration;
 use tracing::{debug, error, info};
 use tracing_subscriber::EnvFilter;
 
+/// Fixed-rate simulation timer. After a stall the default behaviour fires every missed
+/// tick back to back (snapshots 2 ms apart, then the world lurches); skip them instead.
+fn sim_ticker(period: Duration) -> tokio::time::Interval {
+    let mut ticker = tokio::time::interval(period);
+    ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+    ticker
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Initialize tracing subscriber
@@ -143,7 +151,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 6. 20 Hz simulation tick loop (50ms interval)
     let tick_rate_ms = 50;
-    let mut ticker = tokio::time::interval(Duration::from_millis(tick_rate_ms));
+    let mut ticker = sim_ticker(Duration::from_millis(tick_rate_ms));
 
     info!("Entering 20 Hz simulation tick loop...");
 
@@ -255,5 +263,27 @@ async fn wait_for_shutdown_signal() {
             .await
             .expect("Failed to listen for Ctrl+C");
         info!("Received Ctrl+C");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Instant;
+
+    #[tokio::test]
+    async fn sim_ticker_does_not_burst_after_a_stall() {
+        let period = Duration::from_millis(20);
+        let mut ticker = sim_ticker(period);
+        ticker.tick().await;
+        // Stall for six periods, as an overrunning tick or a starved host would.
+        std::thread::sleep(period * 6);
+        let resumed = Instant::now();
+        for _ in 0..4 {
+            ticker.tick().await;
+        }
+        // One tick is due at once; the next three keep the 20 ms cadence. A bursting
+        // timer returns all four immediately.
+        assert!(resumed.elapsed() >= period * 2, "{:?}", resumed.elapsed());
     }
 }
