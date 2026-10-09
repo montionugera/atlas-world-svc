@@ -4,7 +4,10 @@ import {
   ColyseusClientConfig,
 } from "./hooks/useColyseusClient";
 import { useServerRsClient } from "./hooks/useServerRsClient";
-import { ColyseusGameCanvas } from "./components/ColyseusGameCanvas";
+import {
+  ColyseusGameCanvas,
+  DEBUG_DOCK_ID,
+} from "./components/ColyseusGameCanvas";
 import { LogPanel } from "./components/LogPanel";
 import { EntityGrid } from "./components/EntityGrid";
 import { GameStats } from "./components/GameStats";
@@ -353,6 +356,8 @@ function App() {
           {/* Right Column: unified Info Panel */}
           <div className="info-section">
             <div className="entity-panel">
+              {/* The canvas draws its debug dock here, so nothing covers the play area. */}
+              <div id={DEBUG_DOCK_ID} style={{ padding: 8 }} />
               <div style={{ marginBottom: 12 }}>
                 <label style={{ color: "#fff", fontWeight: 700 }}>Weapon</label>
                 <div style={{ marginTop: 6, color: "#bdc3c7", fontSize: 12 }}>
@@ -421,15 +426,9 @@ function App() {
 
               <GameStats
                 mapId={client.gameState?.mapId}
-                fps={client.fps}
-                tick={client.gameState?.tick || 0}
-                updateRate={client.updateRate}
-                playerCount={players.length}
-                mobCount={mobs.length}
                 companionCount={companions.length}
                 roomId={client.roomId}
                 isConnected={client.isConnected}
-                latencyMetrics={(client as any).latencyMetrics}
               />
 
               <EntityGrid

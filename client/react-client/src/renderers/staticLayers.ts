@@ -14,8 +14,10 @@ export interface StaticLayerSpec {
   mapId: string;
   width: number;
   height: number;
-  /** Screen pixels per world unit. */
+  /** Logical screen pixels per world unit (the caller's transform). */
   scale: number;
+  /** Device pixels per logical pixel; the layers are painted at this density. */
+  pixelRatio?: number;
   /** Debug tint of the terrain speed zones over the world art. */
   terrainTint: boolean;
   /** Debug grid cell in world units; 0 = no grid. */
@@ -74,8 +76,13 @@ const sameSpec = (a: StaticLayerSpec, b: StaticLayerSpec): boolean =>
   a.width === b.width &&
   a.height === b.height &&
   a.scale === b.scale &&
+  (a.pixelRatio ?? 1) === (b.pixelRatio ?? 1) &&
   a.terrainTint === b.terrainTint &&
   a.gridSize === b.gridSize;
+
+/** Layer pixels per world unit. */
+const layerScale = (spec: StaticLayerSpec) =>
+  spec.scale * (spec.pixelRatio ?? 1);
 
 function paintLayer(
   paint: Paint,
@@ -89,15 +96,15 @@ function paintLayer(
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
   ctx.translate(PAD_PX, PAD_PX);
-  ctx.scale(spec.scale, spec.scale);
+  ctx.scale(layerScale(spec), layerScale(spec));
   paint(ctx, spec);
   return canvas;
 }
 
 function layersFor(spec: StaticLayerSpec): Layers | null {
   if (cache && sameSpec(cache.spec, spec)) return cache.layers;
-  const width = Math.ceil(spec.width * spec.scale) + 2 * PAD_PX;
-  const height = Math.ceil(spec.height * spec.scale) + 2 * PAD_PX;
+  const width = Math.ceil(spec.width * layerScale(spec)) + 2 * PAD_PX;
+  const height = Math.ceil(spec.height * layerScale(spec)) + 2 * PAD_PX;
   let layers: Layers | null = null;
   if (width * height <= MAX_LAYER_PIXELS) {
     const under = paintLayer(paintUnder, spec, width, height);
@@ -108,7 +115,7 @@ function layersFor(spec: StaticLayerSpec): Layers | null {
   return layers;
 }
 
-/** Layer pixels map 1:1 onto screen pixels: the caller's transform is `spec.scale`. */
+/** Layer pixels map 1:1 onto device pixels: `scale` is layer pixels per world unit. */
 function blit(
   ctx: CanvasRenderingContext2D,
   layer: HTMLCanvasElement,
@@ -129,7 +136,7 @@ export function drawStaticUnder(
   spec: StaticLayerSpec,
 ): void {
   const layers = layersFor(spec);
-  if (layers) blit(ctx, layers[0], spec.scale);
+  if (layers) blit(ctx, layers[0], layerScale(spec));
   else paintUnder(ctx, spec);
 }
 
@@ -139,6 +146,6 @@ export function drawStaticOver(
   spec: StaticLayerSpec,
 ): void {
   const layers = layersFor(spec);
-  if (layers) blit(ctx, layers[1], spec.scale);
+  if (layers) blit(ctx, layers[1], layerScale(spec));
   else paintOver(ctx, spec);
 }

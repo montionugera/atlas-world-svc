@@ -43,6 +43,7 @@ import {
   DebugToggles,
   DebugTracker,
 } from "../utils/debugTools";
+import { CanvasView, snapToDevicePixel } from "../utils/canvasLayout";
 import {
   PredictionState,
   PredictionWorld,
@@ -75,6 +76,11 @@ interface GameRendererProps {
    * rings); the canvas reads the same object for mouse and aim.
    */
   prediction?: PredictionState;
+  /**
+   * Logical size of the canvas and its device-pixel ratio. Everything is drawn in
+   * logical pixels; omitted = the backing store is the logical size.
+   */
+  view?: CanvasView;
 }
 
 interface BlastEffect {
@@ -103,7 +109,6 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
   const renderPlayersRef = useRef<Map<string, Player>>(new Map());
   const renderMobsRef = useRef<Map<string, Mob>>(new Map());
   const renderProjectilesRef = useRef<Map<string, Projectile>>(new Map());
-  const lastRenderDurationRef = useRef<number>(0);
   const mapIdRef = useRef<string | undefined>(undefined);
   const predictionWorldRef = useRef<PredictionWorld>({
     zones: null,
@@ -132,7 +137,6 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
     const animate = () => {
       const {
         gameStateRef,
-        fps,
         playerId,
         drainEvents,
         localCastRef,
@@ -140,6 +144,11 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         debug = DEFAULT_DEBUG_TOGGLES,
         prediction,
       } = latestRef.current;
+      // Draw in logical pixels whatever the density of the backing store.
+      const view = latestRef.current.view ?? canvas;
+      const ratioX = canvas.width / view.width;
+      const ratioY = canvas.height / view.height;
+      ctx.setTransform(ratioX, 0, 0, ratioY, 0, 0);
       const gameState = gameStateRef
         ? gameStateRef.current
         : latestRef.current.gameState;
@@ -154,7 +163,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
       trackFrame();
 
       // Clear canvas
-      clearCanvas(ctx, canvas);
+      clearCanvas(ctx, view);
 
       if (gameState) {
         // A new room starts with no projectiles: the old room's must not blast here.
@@ -306,7 +315,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
 
         // --- 1. Main Camera View ---
         const viewportSize = gameState.viewportSize ?? 50;
-        const scale = calculateScale(gameState, canvas, viewportSize);
+        const scale = calculateScale(gameState, view, viewportSize);
 
         // Find player to center camera
         const player = renderPlayers.get(playerId);
@@ -323,8 +332,8 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         // Centre the camera, with the world origin on a whole device pixel so the
         // cached terrain blits sharp and sprites do not shimmer against it.
         ctx.translate(
-          Math.round(canvas.width / 2 - cameraX * scale),
-          Math.round(canvas.height / 2 - cameraY * scale),
+          snapToDevicePixel(view.width / 2 - cameraX * scale, ratioX),
+          snapToDevicePixel(view.height / 2 - cameraY * scale, ratioY),
         );
         ctx.scale(scale, scale);
 
@@ -337,6 +346,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
           width: gameState.width,
           height: gameState.height,
           scale,
+          pixelRatio: ratioX,
           terrainTint: debug.terrain,
           gridSize: debug.world ? gridSize : 0,
         };
@@ -349,8 +359,8 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         // Zone labels follow the camera (top-centre of the visible part of a zone).
         const terrainZones = terrainZonesFor(gameState.mapId);
         if (terrainZones && debug.terrain) {
-          const halfW = canvas.width / 2 / scale;
-          const halfH = canvas.height / 2 / scale;
+          const halfW = view.width / 2 / scale;
+          const halfH = view.height / 2 / scale;
           drawTerrainZoneLabels(ctx, terrainZones, scale, {
             minX: cameraX - halfW,
             minY: cameraY - halfH,
@@ -447,150 +457,85 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
             cameraX,
             cameraY,
             scale,
-            canvas.width,
-            canvas.height,
+            view.width,
+            view.height,
             gameState.width,
             gameState.height,
             gridSize,
           );
         }
 
-        // --- 2. Mini Map Overlay ---
-        const miniMapSize = 150;
-        const padding = 20;
-        const miniMapX = canvas.width - miniMapSize - padding;
-        const miniMapY = padding;
-        const miniMapScale =
-          miniMapSize / Math.max(gameState.width, gameState.height);
+        // --- 2. Mini Map Overlay: small and see-through, so it hides no play ---
+        if (debug.minimap) {
+          const miniMapSize = 96;
+          const padding = 8;
+          const miniMapX = view.width - miniMapSize - padding;
+          const miniMapY = padding;
+          const miniMapScale =
+            miniMapSize / Math.max(gameState.width, gameState.height);
 
-        ctx.save();
-        ctx.translate(miniMapX, miniMapY);
+          ctx.save();
+          ctx.globalAlpha = 0.6;
+          ctx.translate(miniMapX, miniMapY);
 
-        // Background
-        ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-        ctx.fillRect(0, 0, miniMapSize, miniMapSize);
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
-        ctx.strokeRect(0, 0, miniMapSize, miniMapSize);
+          // Background
+          ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+          ctx.fillRect(0, 0, miniMapSize, miniMapSize);
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+          ctx.strokeRect(0, 0, miniMapSize, miniMapSize);
 
-        // Entities
-        // Simple dots for mini-map
-        ctx.scale(miniMapScale, miniMapScale);
+          // Entities
+          // Simple dots for mini-map
+          ctx.scale(miniMapScale, miniMapScale);
 
-        // Mobs (Red dots)
-        ctx.fillStyle = "#ff4444";
-        renderMobs.forEach((mob) => {
-          if (!mob.isAlive) return;
-          ctx.beginPath();
-          ctx.arc(mob.x, mob.y, mob.radius * 2, 0, Math.PI * 2); // Larger dots
-          ctx.fill();
-        });
+          // Mobs (Red dots)
+          ctx.fillStyle = "#ff4444";
+          renderMobs.forEach((mob) => {
+            if (!mob.isAlive) return;
+            ctx.beginPath();
+            ctx.arc(mob.x, mob.y, mob.radius * 2, 0, Math.PI * 2); // Larger dots
+            ctx.fill();
+          });
 
-        // NPCs / Companions (Purple dots)
-        const npcsForMinimap = gameState.npcs ?? gameState.companions;
-        if (npcsForMinimap) {
-          ctx.fillStyle = "#9b59b6";
-          npcsForMinimap.forEach(
-            (comp: {
-              x: number;
-              y: number;
-              radius: number;
-              isAlive?: boolean;
-            }) => {
-              if (!comp.isAlive) return;
-              ctx.beginPath();
-              ctx.arc(comp.x, comp.y, comp.radius * 2, 0, Math.PI * 2);
-              ctx.fill();
-            },
-          );
+          // NPCs / Companions (Purple dots)
+          const npcsForMinimap = gameState.npcs ?? gameState.companions;
+          if (npcsForMinimap) {
+            ctx.fillStyle = "#9b59b6";
+            npcsForMinimap.forEach(
+              (comp: {
+                x: number;
+                y: number;
+                radius: number;
+                isAlive?: boolean;
+              }) => {
+                if (!comp.isAlive) return;
+                ctx.beginPath();
+                ctx.arc(comp.x, comp.y, comp.radius * 2, 0, Math.PI * 2);
+                ctx.fill();
+              },
+            );
+          }
+
+          // Other Players (Blue dots)
+          ctx.fillStyle = "#4444ff";
+          renderPlayers.forEach((p) => {
+            if (p.id === playerId || !p.isAlive) return;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+            ctx.fill();
+          });
+
+          // Current Player (Green/White dot)
+          if (player && player.isAlive) {
+            ctx.fillStyle = "#00ff00";
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, 6, 0, Math.PI * 2);
+            ctx.fill();
+            // Optional: View cone
+          }
+
+          ctx.restore();
         }
-
-        // Other Players (Blue dots)
-        ctx.fillStyle = "#4444ff";
-        renderPlayers.forEach((p) => {
-          if (p.id === playerId || !p.isAlive) return;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-          ctx.fill();
-        });
-
-        // Current Player (Green/White dot)
-        if (player && player.isAlive) {
-          ctx.fillStyle = "#00ff00";
-          ctx.beginPath();
-          ctx.arc(player.x, player.y, 6, 0, Math.PI * 2);
-          ctx.fill();
-          // Optional: View cone
-        }
-
-        ctx.restore();
-
-        // --- 3. Diagnostic Telemetry HUD (Top-Left) ---
-        const renderDuration = performance.now() - renderStartTime;
-        lastRenderDurationRef.current = renderDuration;
-        const lm = (window as any).__latencyMetrics;
-
-        ctx.save();
-        ctx.fillStyle = "rgba(10, 15, 25, 0.85)";
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-        ctx.lineWidth = 1;
-        const hudX = 14;
-        const hudY = 14;
-        const hudW = 280;
-        const hudH = 92;
-        if (typeof (ctx as any).roundRect === "function") {
-          (ctx as any).roundRect(hudX, hudY, hudW, hudH, 8);
-        } else {
-          ctx.rect(hudX, hudY, hudW, hudH);
-        }
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.font = 'bold 11px "Fira Code", monospace';
-        ctx.fillStyle = "#ecf0f1";
-        ctx.fillText("⚡ DIAGNOSTIC TELEMETRY", hudX + 10, hudY + 18);
-
-        // Client FPS & Render Time
-        ctx.font = '10px "Fira Code", monospace';
-        ctx.fillStyle =
-          fps >= 55 ? "#2ecc71" : fps >= 30 ? "#f1c40f" : "#e74c3c";
-        ctx.fillText(`FPS: ${fps}`, hudX + 10, hudY + 36);
-
-        ctx.fillStyle =
-          renderDuration < 8
-            ? "#2ecc71"
-            : renderDuration < 16
-              ? "#f1c40f"
-              : "#e74c3c";
-        ctx.fillText(
-          `Render: ${renderDuration.toFixed(1)}ms`,
-          hudX + 110,
-          hudY + 36,
-        );
-
-        // Client clock minus server clock (NOT a round trip)
-        const ping = lm?.pingMs ?? 0;
-        ctx.fillStyle =
-          ping < 40 ? "#2ecc71" : ping < 100 ? "#f1c40f" : "#e74c3c";
-        ctx.fillText(`Clk off: ${ping}ms`, hudX + 10, hudY + 54);
-
-        // Snapshot gap: rolling median and worst over the last 20 snapshots
-        const snapP50 = lm?.snapshotP50Ms ?? 50;
-        const snapMax = lm?.snapshotMaxMs ?? 50;
-        ctx.fillStyle = snapMax < 80 ? "#2ecc71" : "#f1c40f";
-        ctx.fillText(
-          `Snap p50 ${snapP50}ms max ${snapMax}ms`,
-          hudX + 110,
-          hudY + 54,
-        );
-
-        // Entities
-        ctx.fillStyle = "#95a5a6";
-        ctx.fillText(
-          `Entities: ${gameState.players.size}P | ${gameState.mobs.size}M | ${gameState.projectiles?.size || 0}Proj`,
-          hudX + 10,
-          hudY + 74,
-        );
-        ctx.restore();
         lap("hud");
         if (timings) {
           recordTiming(timings, "total", performance.now() - renderStartTime);

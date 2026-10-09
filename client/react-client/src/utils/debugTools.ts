@@ -78,7 +78,13 @@ export interface ReadoutInput {
   /** `pingMs` is the client-clock minus server-clock delta, not a round trip. */
   /** Grass walking speed the expectation is built from (see config/terrain.ts). */
   referenceRunSpeed: number;
-  latency?: { pingMs: number; jitterMs: number };
+  latency?: {
+    pingMs: number;
+    jitterMs: number;
+    /** Gap between snapshots over the last 20: median and worst. */
+    snapshotP50Ms?: number;
+    snapshotMaxMs?: number;
+  };
   /** Frame-loop and snapshot-handling cost. */
   perf?: Timings;
   counts: { players: number; mobs: number; projectiles: number };
@@ -172,7 +178,14 @@ export function formatReadout(
     ]);
   }
 
-  rows.push(["snap", `${hz === null ? "--" : hz.toFixed(1)} Hz  age ${age}`]);
+  const gap =
+    latency?.snapshotP50Ms === undefined
+      ? ""
+      : `  gap p50 ${latency.snapshotP50Ms} max ${latency.snapshotMaxMs ?? "--"} ms`;
+  rows.push([
+    "snap",
+    `${hz === null ? "--" : hz.toFixed(1)} Hz  age ${age}${gap}`,
+  ]);
   if (latency) {
     rows.push([
       "net",
@@ -221,6 +234,10 @@ export interface DebugToggles {
   terrain: boolean;
   /** Draw the local player from its own input instead of the delayed timeline. */
   prediction: boolean;
+  /** Small translucent minimap in the corner of the canvas. */
+  minimap: boolean;
+  /** Play mode: hide every panel and give the canvas the whole window. */
+  focus: boolean;
 }
 
 export const DEFAULT_DEBUG_TOGGLES: DebugToggles = {
@@ -228,6 +245,8 @@ export const DEFAULT_DEBUG_TOGGLES: DebugToggles = {
   world: true,
   terrain: true,
   prediction: true,
+  minimap: true,
+  focus: false,
 };
 
 const TOGGLES_KEY = "atlas-debug-toggles";
@@ -261,6 +280,8 @@ export function loadDebugToggles(
       world: pick("world"),
       terrain: pick("terrain"),
       prediction: pick("prediction"),
+      minimap: pick("minimap"),
+      focus: pick("focus"),
     };
   } catch {
     return DEFAULT_DEBUG_TOGGLES;

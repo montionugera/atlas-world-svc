@@ -188,6 +188,13 @@ describe("formatReadout", () => {
     ).toBe("off (interpolated)");
   });
 
+  it("adds the snapshot gap to the snapshot row when it is measured", () => {
+    const latency = { ...base.latency!, snapshotP50Ms: 50, snapshotMaxMs: 131 };
+    expect(rows({ ...base, latency })["snap"]).toBe(
+      `${rows(base)["snap"]}  gap p50 50 max 131 ms`,
+    );
+  });
+
   it("says so plainly when there is no terrain data for the map", () => {
     expect(rows({ ...base, terrain: null })["terrain"]).toBe(
       "no client terrain data",
@@ -264,22 +271,24 @@ describe("debug toggle persistence", () => {
       world: true,
       terrain: true,
       prediction: true,
+      minimap: true,
+      focus: false,
     });
     expect(loadDebugToggles(memoryStorage())).toEqual(DEFAULT_DEBUG_TOGGLES);
   });
 
   it("round-trips saved toggles", () => {
     const s = memoryStorage();
-    saveDebugToggles(
-      { overlay: false, world: true, terrain: false, prediction: false },
-      s,
-    );
-    expect(loadDebugToggles(s)).toEqual({
+    const saved = {
       overlay: false,
       world: true,
       terrain: false,
       prediction: false,
-    });
+      minimap: false,
+      focus: true,
+    };
+    saveDebugToggles(saved, s);
+    expect(loadDebugToggles(s)).toEqual(saved);
   });
 
   it("falls back to defaults on garbage, wrong types or missing keys", () => {
@@ -292,7 +301,7 @@ describe("debug toggle persistence", () => {
           "atlas-debug-toggles": '{"overlay":"no","world":false}',
         }),
       ),
-    ).toEqual({ overlay: true, world: false, terrain: true, prediction: true });
+    ).toEqual({ ...DEFAULT_DEBUG_TOGGLES, world: false });
     expect(
       loadDebugToggles(memoryStorage({ "atlas-debug-toggles": "null" })),
     ).toEqual(DEFAULT_DEBUG_TOGGLES);

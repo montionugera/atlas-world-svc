@@ -33,6 +33,8 @@ export const DEBUG_BINDINGS: readonly DebugBinding[] = [
     action: "Local prediction",
     toggle: "prediction",
   },
+  { key: "m", keyLabel: "M", action: "Minimap", toggle: "minimap" },
+  { key: "h", keyLabel: "H", action: "Play mode (hide UI)", toggle: "focus" },
 ];
 
 export function debugToggleForKey(key: string): keyof DebugToggles | null {

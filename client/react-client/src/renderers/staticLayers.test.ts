@@ -97,6 +97,7 @@ describe("static world layers", () => {
     ["room", { mapId: "map-for-test-terrain" }],
     ["world size", { width: 800 }],
     ["scale", { scale: 2 }],
+    ["pixel ratio", { pixelRatio: 2 }],
     ["terrain tint", { terrainTint: false }],
     ["grid", { gridSize: 0 }],
   ])("repaints when the %s changes", (_, change) => {
@@ -107,6 +108,21 @@ describe("static world layers", () => {
     offscreen.length = 0;
     frame({ ...spec, ...change });
     expect(offscreen.length).toBe(0);
+  });
+
+  it("paints at device density and still blits pixel for pixel", () => {
+    frame({ ...spec, pixelRatio: 2 });
+    const [, canvas, x, , w] = screen[0] as [
+      string,
+      HTMLCanvasElement,
+      number,
+      number,
+      number,
+    ];
+    // 3 layer pixels per world unit: twice the logical scale.
+    expect(offscreen).toContainEqual(["scale", 3, 3]);
+    expect(w * 3).toBeCloseTo(canvas.width);
+    expect(canvas.width).toBe(Math.round(1000 * 3 - 2 * x * 3));
   });
 
   it("draws straight to the screen when there is no offscreen canvas", () => {

@@ -1,14 +1,20 @@
 import React, { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { UseColyseusClientReturn } from "../hooks/useColyseusClient";
 import { useKeyboardControls } from "../hooks/useKeyboardControls";
 import { GameRenderer } from "./GameRenderer";
 import { CANVAS_CONFIG } from "../config/gameConfig";
 import { useGameStateContext } from "../contexts/GameStateContext";
-import { InputDebugPanel } from "./InputDebugPanel";
 import { GameState } from "../types/game";
 import { calculateScale } from "../utils/drawingUtils";
 import { SKILL_DEFINITIONS } from "../config/skills";
 import { getAoeReticle } from "../utils/aoeReticle";
+import {
+  CanvasView,
+  backingSize,
+  clientToWorld,
+  fitCanvasSize,
+} from "../utils/canvasLayout";
 import {
   SNAPSHOT_INTERVAL_MS,
   renderTimeAt,
@@ -42,8 +48,14 @@ import {
   ControlsLegend,
   DebugReadout,
   DebugToolbar,
+  HeldKeys,
   TerrainLegend,
 } from "./DebugPanels";
+
+/** Where the debug dock is drawn when the page provides it (see App.tsx). */
+export const DEBUG_DOCK_ID = "debug-dock";
+const ROOT_PADDING = 8;
+const ROOT_GAP = 10;
 
 interface ColyseusGameCanvasProps {
   client: UseColyseusClientReturn;
@@ -427,6 +439,61 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     latestStateRef.current = { playerId };
   }, [playerId]);
 
+  // The canvas takes all the room its column has left above the skill bar, and
+  // follows the window; in play mode that column is the whole window.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const belowRef = useRef<HTMLDivElement>(null);
+  const [view, setView] = React.useState<CanvasView>(() =>
+    fitCanvasSize(CANVAS_CONFIG.width, CANVAS_CONFIG.height, 1),
+  );
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  const backing = backingSize(view);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const measure = () => {
+      const below = belowRef.current?.offsetHeight ?? 0;
+      const next = fitCanvasSize(
+        root.clientWidth - 2 * ROOT_PADDING,
+        // A column with no height of its own (stacked narrow layout): the window's.
+        (root.clientHeight || window.innerHeight) -
+          2 * ROOT_PADDING -
+          ROOT_GAP -
+          below,
+        window.devicePixelRatio,
+      );
+      setView((prev) =>
+        prev.width === next.width &&
+        prev.height === next.height &&
+        prev.pixelRatio === next.pixelRatio
+          ? prev
+          : next,
+      );
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(measure);
+    observer?.observe(root);
+    return () => {
+      window.removeEventListener("resize", measure);
+      observer?.disconnect();
+    };
+  }, []);
+
+  // Play mode is a class on <body>: App.css hides the header and side column.
+  useEffect(() => {
+    document.body.classList.toggle("play-focus", debug.focus);
+    return () => document.body.classList.remove("play-focus");
+  }, [debug.focus]);
+
+  // The debug dock is drawn into the side column (App renders the mount point).
+  const [dock, setDock] = React.useState<HTMLElement | null>(null);
+  useEffect(() => setDock(document.getElementById(DEBUG_DOCK_ID)), []);
+
   // Mouse move tracking (single listener)
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -436,12 +503,9 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
 
       if (!canvas || !currentGameState) return;
 
-      const rect = canvas.getBoundingClientRect();
-      const clientX = e.clientX - rect.left;
-      const clientY = e.clientY - rect.top;
-
+      const view = viewRef.current;
       const viewportSize = currentGameState.viewportSize ?? 50;
-      const scale = calculateScale(currentGameState, canvas, viewportSize);
+      const scale = calculateScale(currentGameState, view, viewportSize);
 
       let cameraX = currentGameState.width / 2;
       let cameraY = currentGameState.height / 2;
@@ -461,10 +525,14 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
         cameraY = pos.y;
       }
 
-      const worldX = (clientX - canvas.width / 2) / scale + cameraX;
-      const worldY = (clientY - canvas.height / 2) / scale + cameraY;
-
-      mousePositionRef.current = { x: worldX, y: worldY };
+      mousePositionRef.current = clientToWorld(
+        e.clientX,
+        e.clientY,
+        canvas.getBoundingClientRect(),
+        view,
+        scale,
+        { x: cameraX, y: cameraY },
+      );
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -528,7 +596,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
   const containerStyle: React.CSSProperties = {
     position: "relative",
     display: "inline-block",
-    borderRadius: CANVAS_CONFIG.borderRadius,
+    flexShrink: 0,
+    borderRadius: debug.focus ? 0 : CANVAS_CONFIG.borderRadius,
     overflow: "hidden",
     boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
   };
@@ -549,21 +618,40 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     userSelect: "none",
   });
 
+  // Everything about debugging lives here, beside the canvas, never on it.
+  const debugDock = (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <DebugToolbar
+        toggles={debug}
+        onToggle={toggleDebug}
+        onRespawn={resetToSpawn}
+      />
+      {debug.overlay && <DebugReadout inputRef={readoutInputRef} />}
+      {debug.overlay && <HeldKeys pressedKeysRef={pressedKeys} />}
+      {debug.terrain && <TerrainLegend />}
+      <ControlsLegend />
+    </div>
+  );
+
   return (
     <div
+      ref={rootRef}
       style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: "16px",
-        padding: "20px",
+        gap: ROOT_GAP,
+        padding: ROOT_PADDING,
+        width: "100%",
+        height: "100%",
+        boxSizing: "border-box",
       }}
     >
       <div style={containerStyle}>
         <canvas
           ref={canvasRef}
-          width={CANVAS_CONFIG.width}
-          height={CANVAS_CONFIG.height}
+          width={backing.width}
+          height={backing.height}
           onMouseDown={handleCanvasMouseDown}
           onMouseUp={handleCanvasMouseUp}
           onContextMenu={(e) => e.preventDefault()}
@@ -571,6 +659,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
             backgroundColor: CANVAS_CONFIG.backgroundColor,
             cursor: isDead ? "pointer" : "crosshair",
             display: "block",
+            width: view.width,
+            height: view.height,
           }}
         />
 
@@ -650,9 +740,100 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           </div>
         )}
 
-        <InputDebugPanel pressedKeysRef={pressedKeys} />
-        {debug.overlay && <DebugReadout inputRef={readoutInputRef} />}
-        {debug.terrain && <TerrainLegend />}
+        {/* Active Casting Bar: on the canvas, only while a cast is in flight */}
+        {activeCast && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 12,
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 60,
+              pointerEvents: "none",
+              width: "360px",
+              backgroundColor: "rgba(15, 23, 42, 0.9)",
+              borderRadius: "10px",
+              border: "1px solid rgba(243, 156, 18, 0.6)",
+              boxShadow: "0 0 15px rgba(243, 156, 18, 0.4)",
+              padding: "8px 14px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "6px",
+              userSelect: "none",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "0.85rem",
+                fontWeight: "bold",
+                color: "#f1c40f",
+              }}
+            >
+              <span>
+                {activeCast.icon} Casting {activeCast.name}...
+              </span>
+              <span>
+                {Math.max(
+                  0,
+                  (activeCast.startTime + activeCast.durationMs - Date.now()) /
+                    1000,
+                ).toFixed(1)}
+                s
+              </span>
+            </div>
+            <div
+              style={{
+                width: "100%",
+                height: "8px",
+                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                borderRadius: "4px",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: `${Math.min(
+                    100,
+                    Math.max(
+                      0,
+                      ((Date.now() - activeCast.startTime) /
+                        activeCast.durationMs) *
+                        100,
+                    ),
+                  )}%`,
+                  background: "linear-gradient(90deg, #e67e22, #f1c40f)",
+                  boxShadow: "0 0 8px #f1c40f",
+                  transition: "width 0.05s linear",
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {debug.focus && (
+          <button
+            type="button"
+            onClick={() => toggleDebug("focus")}
+            title="Show the panels again"
+            style={{
+              position: "absolute",
+              top: 6,
+              left: 6,
+              padding: "2px 6px",
+              border: "none",
+              borderRadius: 4,
+              background: "rgba(0, 0, 0, 0.35)",
+              color: "rgba(255, 255, 255, 0.7)",
+              font: '11px "Fira Code", monospace',
+              cursor: "pointer",
+            }}
+          >
+            [H] show UI
+          </button>
+        )}
 
         <GameRenderer
           canvasRef={canvasRef}
@@ -670,86 +851,16 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           debug={debug}
           debugTrackerRef={debugTrackerRef}
           prediction={predicts ? prediction : undefined}
+          view={view}
         />
       </div>
 
-      <DebugToolbar
-        toggles={debug}
-        onToggle={toggleDebug}
-        onRespawn={resetToSpawn}
-      />
-
-      {/* Active Casting Bar */}
-      {activeCast && (
-        <div
-          style={{
-            width: "360px",
-            backgroundColor: "rgba(15, 23, 42, 0.95)",
-            borderRadius: "10px",
-            border: "1px solid rgba(243, 156, 18, 0.6)",
-            boxShadow: "0 0 15px rgba(243, 156, 18, 0.4)",
-            padding: "8px 14px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "6px",
-            userSelect: "none",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontSize: "0.85rem",
-              fontWeight: "bold",
-              color: "#f1c40f",
-            }}
-          >
-            <span>
-              {activeCast.icon} Casting {activeCast.name}...
-            </span>
-            <span>
-              {Math.max(
-                0,
-                (activeCast.startTime + activeCast.durationMs - Date.now()) /
-                  1000,
-              ).toFixed(1)}
-              s
-            </span>
-          </div>
-          <div
-            style={{
-              width: "100%",
-              height: "8px",
-              backgroundColor: "rgba(255, 255, 255, 0.15)",
-              borderRadius: "4px",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                height: "100%",
-                width: `${Math.min(
-                  100,
-                  Math.max(
-                    0,
-                    ((Date.now() - activeCast.startTime) /
-                      activeCast.durationMs) *
-                      100,
-                  ),
-                )}%`,
-                background: "linear-gradient(90deg, #e67e22, #f1c40f)",
-                boxShadow: "0 0 8px #f1c40f",
-                transition: "width 0.05s linear",
-              }}
-            />
-          </div>
-        </div>
-      )}
-
       {/* Interactive Action / Skill Bar */}
       <div
+        ref={belowRef}
         style={{
           display: "flex",
+          flexShrink: 0,
           gap: "10px",
           alignItems: "center",
           justifyContent: "center",
@@ -848,7 +959,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
         })}
       </div>
 
-      <ControlsLegend />
+      {!debug.focus &&
+        (dock ? createPortal(debugDock, dock) : <div>{debugDock}</div>)}
     </div>
   );
 };

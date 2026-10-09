@@ -361,6 +361,66 @@ describe("GameRenderer frame loop", () => {
     });
   });
 
+  describe("canvas size and density", () => {
+    const local = () => {
+      const state = stateAt(1);
+      state.players.set("1", {
+        id: "1",
+        x: 333.37,
+        y: 200.61,
+        radius: 10,
+        isAlive: true,
+      } as unknown as GameState["players"] extends Map<string, infer P>
+        ? P
+        : never);
+      return state;
+    };
+
+    it("draws in logical pixels on a denser backing store", () => {
+      const calls: unknown[][] = [];
+      const canvas = document.createElement("canvas");
+      canvas.width = 1600;
+      canvas.height = 1000;
+      canvas.getContext = (() =>
+        recordingContext(calls)) as unknown as HTMLCanvasElement["getContext"];
+      render(
+        <GameRenderer
+          canvasRef={{ current: canvas }}
+          gameState={local()}
+          updateCount={0}
+          fps={60}
+          updateRate={20}
+          roomId="r"
+          playerId="1"
+          trackFrame={() => undefined}
+          view={{ width: 800, height: 500, pixelRatio: 2 }}
+        />,
+      );
+      expect(calls[0]).toEqual(["setTransform", 2, 0, 0, 2, 0, 0]);
+      // The view is cleared and scaled by its logical size (500 / 500-unit viewport).
+      expect(calls).toContainEqual(["fillRect", 0, 0, 800, 500]);
+      expect(calls).toContainEqual(["scale", 1, 1]);
+      // The camera lands on a whole DEVICE pixel: half logical pixels at 2x.
+      const [, tx, ty] = calls.find(([m]) => m === "translate") as number[];
+      expect(Number.isInteger(tx * 2)).toBe(true);
+      expect(Number.isInteger(ty * 2)).toBe(true);
+      expect(tx).toBeCloseTo(400 - 333.37, 0);
+    });
+
+    it("keeps debug boxes off the canvas and the minimap behind its toggle", () => {
+      const texts = (minimap: boolean) =>
+        mount(local(), {
+          debug: { ...DEFAULT_DEBUG_TOGGLES, world: false, minimap },
+        }).calls;
+      const on = texts(true);
+      const off = texts(false);
+      expect(JSON.stringify(on)).not.toContain("TELEMETRY");
+      const dots = (calls: unknown[][]) =>
+        calls.filter(([m]) => m === "arc").length;
+      expect(dots(on)).toBeGreaterThan(dots(off));
+    });
+  });
+
   describe("local prediction", () => {
     type P = GameState["players"] extends Map<string, infer T> ? T : never;
     const player = (id: string, x: number) =>
