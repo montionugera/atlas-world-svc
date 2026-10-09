@@ -142,6 +142,50 @@ describe("drawWorldDebug", () => {
 });
 
 describe("drawTerrainZones", () => {
+  it("tints an overlap with the later zone only (later wins, no blended colour)", () => {
+    const ctx = makeCtx();
+    const rects: {
+      color: string;
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+    }[] = [];
+    ctx.fillRect.mockImplementation((x, y, w, h) =>
+      rects.push({ color: ctx.fillStyle, x, y, w, h }),
+    );
+    drawTerrainZones(
+      asCtx(ctx),
+      [
+        { terrain: "ice", x: 0, y: 0, width: 100, height: 100 },
+        { terrain: "mud", x: 40, y: 40, width: 20, height: 20 },
+      ],
+      1,
+      { fillAlpha: 0.3 },
+    );
+    const covered = (px: number, py: number, color: string) =>
+      rects.filter(
+        (r) =>
+          r.color === color &&
+          px >= r.x &&
+          px < r.x + r.w &&
+          py >= r.y &&
+          py < r.y + r.h,
+      ).length;
+    // Inside the overlap: mud once, ice never.
+    expect(covered(50, 50, TERRAIN_TYPES.mud.color)).toBe(1);
+    expect(covered(50, 50, TERRAIN_TYPES.ice.color)).toBe(0);
+    // Ice-only points are covered exactly once.
+    for (const [x, y] of [
+      [10, 10],
+      [90, 90],
+      [39.5, 50],
+      [50, 60.5],
+    ]) {
+      expect(covered(x, y, TERRAIN_TYPES.ice.color)).toBe(1);
+    }
+  });
+
   const view = { minX: 0, minY: 0, maxX: 100, maxY: 100 };
 
   it("fills each zone with its terrain colour and labels it with the multiplier", () => {

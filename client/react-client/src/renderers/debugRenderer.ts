@@ -120,6 +120,49 @@ export interface WorldRect {
   maxY: number;
 }
 
+type Rect = { x: number; y: number; width: number; height: number };
+
+/** `a` minus `b`, as up to four non-overlapping rects. */
+function subtractRect(a: Rect, b: Rect): Rect[] {
+  const ax2 = a.x + a.width;
+  const ay2 = a.y + a.height;
+  const bx1 = Math.max(a.x, b.x);
+  const by1 = Math.max(a.y, b.y);
+  const bx2 = Math.min(ax2, b.x + b.width);
+  const by2 = Math.min(ay2, b.y + b.height);
+  if (bx1 >= bx2 || by1 >= by2) return [a];
+  const out: Rect[] = [];
+  if (by1 > a.y)
+    out.push({ x: a.x, y: a.y, width: a.width, height: by1 - a.y });
+  if (by2 < ay2)
+    out.push({ x: a.x, y: by2, width: a.width, height: ay2 - by2 });
+  if (bx1 > a.x)
+    out.push({ x: a.x, y: by1, width: bx1 - a.x, height: by2 - by1 });
+  if (bx2 < ax2)
+    out.push({ x: bx2, y: by1, width: ax2 - bx2, height: by2 - by1 });
+  return out;
+}
+
+// Zones are static per map, so the later-wins pieces are computed once per array.
+const visiblePiecesCache = new WeakMap<readonly TerrainZone[], Rect[][]>();
+
+/** Per zone, the part not covered by any LATER zone (later zones win, as in terrainAt). */
+function visiblePieces(zones: readonly TerrainZone[]): Rect[][] {
+  let cached = visiblePiecesCache.get(zones);
+  if (!cached) {
+    cached = zones.map((z, i) =>
+      zones
+        .slice(i + 1)
+        .reduce<Rect[]>(
+          (pieces, later) => pieces.flatMap((p) => subtractRect(p, later)),
+          [z],
+        ),
+    );
+    visiblePiecesCache.set(zones, cached);
+  }
+  return cached;
+}
+
 /**
  * Tint terrain zones. With `labelView` (the world rect on screen) each visible zone is
  * also labelled at the top-centre of its visible part, so big zones stay labelled.
@@ -132,16 +175,17 @@ export function drawTerrainZones(
 ): void {
   const px = 1 / viewScale;
   ctx.save();
-  for (const z of zones) {
+  const pieces = visiblePieces(zones);
+  zones.forEach((z, i) => {
     const def = TERRAIN_TYPES[z.terrain];
     ctx.globalAlpha = opts.fillAlpha;
     ctx.fillStyle = def.color;
-    ctx.fillRect(z.x, z.y, z.width, z.height);
+    for (const p of pieces[i]) ctx.fillRect(p.x, p.y, p.width, p.height);
     ctx.globalAlpha = 1;
     ctx.strokeStyle = def.color;
     ctx.lineWidth = 2 * px;
     ctx.strokeRect(z.x, z.y, z.width, z.height);
-  }
+  });
   const view = opts.labelView;
   if (view) {
     ctx.font = `700 ${11 * px}px monospace`;
