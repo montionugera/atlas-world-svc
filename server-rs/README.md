@@ -136,6 +136,32 @@ Wire snapshot (`schemas/game_protocol.fbs`, fields only ever **added**; regenera
 | `ARENA_WIDTH` / `ARENA_HEIGHT` | `1000` | Arena size (px, overridden by map if configured) |
 | `MOB_RESPAWN_MS` | `5000` | Mob respawn delay (legacy `respawnDelayMs` default) |
 | `PLAYER_RESPAWN_MS` | `5000` | Player auto-respawn delay |
+| `ATLAS_DEBUG` | unset | `1`/`true` turns the debug controls on, any other value off. Unset: on only while neither `NAKAMA_SERVER_KEY` nor `JWT_SECRET` is set (development mode) |
+
+Rooms (`content::map::ROOM_IDS`): `map-for-play`, `map-for-test-projectile`, `map-for-test-deflect`,
+`map-for-test-terrain`, and `map-for-test-large` (4000 x 4000, 10 bots, 200 mobs, spawn at 2000,2000;
+zones in `MapConfig::large_test_map`). Snapshots carry every entity of the room to every client
+(no area-of-interest filter), about 44 bytes per entity.
+
+With `RUST_LOG` at its default the server logs `tick timing interval_ms=… work_ms=…`
+(min/p50/p95/max over 200 ticks) every 10 s.
+
+### Debug controls (development mode only)
+
+Plain HTTP on the game port; every route answers 404 while the controls are off.
+
+```bash
+curl 'localhost:2567/debug/state?map=map-for-play'
+curl -X POST localhost:2567/debug/command -d '{"map":"map-for-play","cmd":"set_bots","count":100}'
+```
+
+`POST /debug/command` takes `{"map": <room, default map-for-play>, "player": <session id>, "cmd": …}`:
+`state`, `set_bots {count}`, `add_bots {delta}`, `set_mobs {count}`, `add_mobs {delta}`,
+`spawn_mobs {mob_type, count, x?, y?}` (around `player` when x/y are omitted), `clear_mobs`,
+`pause_mobs {paused}`, `pause_bots {paused}`, `set_invulnerable {enabled}` and `teleport {x, y}`
+(the last two act on `player`). Success: `200 {"ok":true,"state":{…}}`; failure:
+`400 {"ok":false,"error":"…"}`. Counts are clamped to 300 bots and 1000 mobs per room. Commands
+are applied by the tick loop between ticks.
 
 ---
 
@@ -143,7 +169,8 @@ Wire snapshot (`schemas/game_protocol.fbs`, fields only ever **added**; regenera
 
 - **`ClientInput` extensions (`schemas/game_protocol.fbs`):**
   - `target_x: float`, `target_y: float`: World coordinates for skill aiming and mouse targeting.
-  - `respawn: bool`: Player-initiated instant respawn request.
+  - `respawn: bool`: Player-initiated instant respawn request. Honoured only in development
+    mode (see `ATLAS_DEBUG`); otherwise ignored, and `PLAYER_RESPAWN_MS` revives the dead.
 - **Respawn Mechanics:**
   - Revives the player at `SpawnPoint` with full health.
   - Clears `PlayerRespawnTimer` and resets `CastingState` and `CooldownTracker`.
