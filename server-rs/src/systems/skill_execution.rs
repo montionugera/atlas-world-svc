@@ -18,14 +18,22 @@ pub fn skill_execution_system(
         &mut CastingState,
         &mut Velocity,
         Has<PlayerTag>,
+        Option<&Health>,
     )>,
     enemies: Query<(Entity, &Position, &Health, Has<MobTag>, Has<PlayerTag>)>,
 ) {
     let current_time = clock.current_time_seconds();
 
-    for (entity, pos, mut input, mut cooldown_tracker, mut casting, mut vel, is_player) in
+    for (entity, pos, mut input, mut cooldown_tracker, mut casting, mut vel, is_player, health) in
         &mut query
     {
+        // The dead cannot cast: drop any in-flight cast and swallow skill presses.
+        if health.is_some_and(|h| !h.is_alive) {
+            casting.finish_or_cancel();
+            input.skill_slot = 0;
+            continue;
+        }
+
         // 1. Process completed casts
         if let Some(skill_id) = casting.skill_id.clone() {
             if current_time >= casting.casting_until {

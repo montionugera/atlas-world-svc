@@ -1,7 +1,8 @@
+use crate::ai::ThreatTable;
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    CombatStats, CooldownTracker, EntityId, Health, MobSpawnAnchor, PlayerAvatar, Position,
-    StatusEffects,
+    CombatStats, CooldownTracker, EntityId, Health, MobAi, MobSpawnAnchor, PlayerAvatar,
+    PlayerInputState, Position, StatusEffects,
 };
 use crate::spatial::grid::SpatialGrid;
 use crate::storage::{MatchEvent, MatchEventQueue};
@@ -13,23 +14,35 @@ pub fn combat_system(
     grid: Res<SpatialGrid>,
     mut event_queue: Option<ResMut<MatchEventQueue>>,
     mut params: ParamSet<(
+        Query<
+            (
+                Entity,
+                &Position,
+                &mut CombatStats,
+                &Health,
+                Option<&EntityId>,
+                Option<&PlayerAvatar>,
+                Option<&PlayerInputState>,
+            ),
+            Without<MobAi>,
+        >,
         Query<(
-            Entity,
-            &Position,
-            &mut CombatStats,
-            &Health,
+            &mut Health,
             Option<&EntityId>,
-            Option<&PlayerAvatar>,
+            Option<&MobSpawnAnchor>,
+            Option<&mut ThreatTable>,
         )>,
-        Query<(&mut Health, Option<&EntityId>, Option<&MobSpawnAnchor>)>,
     )>,
 ) {
     let dt = clock.delta_seconds();
-    let mut attacks: Vec<(Option<String>, Entity, f32)> = Vec::new();
+    let now = clock.current_time_seconds();
+    let mut attacks: Vec<(Option<String>, Entity, Entity, f32)> = Vec::new();
 
     {
+        // Mobs with MobAi are excluded: mob_ai_system owns their attacks and their single
+        // per-tick cooldown decrement.
         let mut attackers = params.p0();
-        for (entity, pos, mut stats, health, entity_id, avatar) in &mut attackers {
+        for (entity, pos, mut stats, health, entity_id, avatar, input) in &mut attackers {
             if !health.is_alive {
                 continue;
             }
@@ -39,6 +52,12 @@ pub fn combat_system(
             }
 
             if stats.cooldown_timer > 0.0 {
+                continue;
+            }
+
+            // Legacy attackQueue: a human avatar only swings while attack is held.
+            // Bots (no PlayerAvatar) keep auto-attacking.
+            if avatar.is_some() && !input.is_some_and(|i| i.attack) {
                 continue;
             }
 
@@ -82,18 +101,27 @@ pub fn combat_system(
                 } else {
                     None
                 };
-                attacks.push((player_user_id, target_entity, stats.attack_power.max(1.0)));
+                attacks.push((
+                    player_user_id,
+                    entity,
+                    target_entity,
+                    stats.attack_power.max(1.0),
+                ));
             }
         }
     }
 
     if !attacks.is_empty() {
         let mut health_query = params.p1();
-        for (attacker_user_id, target, damage) in attacks {
-            if let Ok((mut target_health, target_id, target_anchor)) = health_query.get_mut(target)
+        for (attacker_user_id, attacker, target, damage) in attacks {
+            if let Ok((mut target_health, target_id, target_anchor, threat)) =
+                health_query.get_mut(target)
             {
                 let was_alive = target_health.is_alive && target_health.current > 0.0;
                 target_health.take_damage(damage);
+                if let Some(mut threat) = threat {
+                    threat.add_threat(attacker, damage, now);
+                }
                 if was_alive && (!target_health.is_alive || target_health.current <= 0.0) {
                     if let Some(user_id) = attacker_user_id {
                         if let Some(ref mut queue) = event_queue {

@@ -1,3 +1,4 @@
+use crate::ai::ThreatTable;
 use crate::combat::{DamageCalculator, DamageOptions, SkillEffect};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
@@ -30,6 +31,7 @@ pub fn projectile_kinematics_system(
 pub fn projectile_collision_system(
     mut commands: Commands,
     grid: Res<SpatialGrid>,
+    clock: Option<Res<SimClock>>,
     proj_query: Query<(Entity, &Position, &Projectile)>,
     mut targets: Query<(
         Entity,
@@ -39,8 +41,10 @@ pub fn projectile_collision_system(
         Option<&mut StatusEffects>,
         Has<PlayerTag>,
         Has<MobTag>,
+        Option<&mut ThreatTable>,
     )>,
 ) {
+    let now = clock.map_or(0.0, |c| c.current_time_seconds());
     let default_attrs = ElementalAttributes::default();
 
     for (proj_entity, pos, proj) in &proj_query {
@@ -75,7 +79,7 @@ pub fn projectile_collision_system(
 
         // Fallback for isolated tests where spatial grid was not rebuilt
         if hit_target.is_none() {
-            for (t_entity, t_pos, t_health, _, _, is_player, is_mob) in &targets {
+            for (t_entity, t_pos, t_health, _, _, is_player, is_mob, _) in &targets {
                 if t_entity == proj.owner || !t_health.is_alive {
                     continue;
                 }
@@ -94,7 +98,7 @@ pub fn projectile_collision_system(
         }
 
         if let Some(target_entity) = hit_target {
-            if let Ok((_, _, mut health, opt_attrs, mut opt_status, _, _)) =
+            if let Ok((_, _, mut health, opt_attrs, mut opt_status, _, _, threat)) =
                 targets.get_mut(target_entity)
             {
                 if !health.is_alive {
@@ -113,6 +117,10 @@ pub fn projectile_collision_system(
                 };
                 let damage = DamageCalculator::calculate(&damage_opts);
                 health.take_damage(damage);
+                // Being hit aggroes the victim mob onto the shooter.
+                if let Some(mut threat) = threat {
+                    threat.add_threat(proj.owner, damage, now);
+                }
 
                 if let Some(ref mut status) = opt_status {
                     for effect in &proj.effects {

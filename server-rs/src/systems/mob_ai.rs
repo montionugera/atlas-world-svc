@@ -52,6 +52,31 @@ pub fn mob_ai_system(
             }
         }
 
+        // Proximity aggro (legacy ChaseBehavior detection): with no live target and not
+        // walking home after a leash, threaten the nearest live player inside chase_range.
+        if active_target.is_none() && mob_ai.state != AiState::ReturnHome {
+            let range_sq = mob_ai.chase_range * mob_ai.chase_range;
+            let mut nearest: Option<(Entity, Position, f32)> = None;
+            for (p_entity, p_pos, p_health, is_player) in &players {
+                if !is_player || !p_health.is_alive {
+                    continue;
+                }
+                let d_sq = (p_pos.x - pos.x).powi(2) + (p_pos.y - pos.y).powi(2);
+                if d_sq <= range_sq && nearest.is_none_or(|(_, _, best)| d_sq < best) {
+                    nearest = Some((p_entity, *p_pos, d_sq));
+                }
+            }
+            if let Some((p_entity, p_pos, _)) = nearest {
+                threat.add_threat(p_entity, 1.0, current_time);
+                active_target = Some((p_entity, p_pos));
+            }
+        }
+
+        // Target died / despawned mid-chase: stop and walk home instead of drifting.
+        if active_target.is_none() && matches!(mob_ai.state, AiState::Chase | AiState::Attack) {
+            mob_ai.state = AiState::ReturnHome;
+        }
+
         if let Some((target_entity, target_pos)) = active_target {
             let home_dx = target_pos.x - mob_ai.home_pos.x;
             let home_dy = target_pos.y - mob_ai.home_pos.y;
@@ -123,9 +148,8 @@ pub fn mob_ai_system(
                     mob_ai.state = AiState::Chase;
                     let dir_x = if dist > 0.001 { dx / dist } else { 0.0 };
                     let dir_y = if dist > 0.001 { dy / dist } else { 0.0 };
-                    let move_speed = stats.attack_power;
-                    vel.vx = dir_x * move_speed;
-                    vel.vy = dir_y * move_speed;
+                    vel.vx = dir_x * mob_ai.move_speed;
+                    vel.vy = dir_y * mob_ai.move_speed;
                 } else {
                     // Outside chase range: clear target, switch to ReturnHome
                     threat.clear_target(target_entity);
@@ -147,7 +171,7 @@ pub fn mob_ai_system(
             } else {
                 let dir_x = home_dx / home_dist;
                 let dir_y = home_dy / home_dist;
-                let return_speed = stats.attack_power.max(20.0);
+                let return_speed = mob_ai.move_speed;
                 vel.vx = dir_x * return_speed;
                 vel.vy = dir_y * return_speed;
             }
@@ -184,7 +208,8 @@ pub fn mob_ai_system(
                     vel.vx = 0.0;
                     vel.vy = 0.0;
                 } else {
-                    let wander_speed = (stats.attack_power * 0.5).clamp(5.0, 15.0);
+                    // Legacy WanderBehavior strolls below full speed; half move speed.
+                    let wander_speed = mob_ai.move_speed * 0.5;
                     vel.vx = (wdx / wdist) * wander_speed;
                     vel.vy = (wdy / wdist) * wander_speed;
                 }

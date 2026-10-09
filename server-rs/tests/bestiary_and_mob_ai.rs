@@ -181,8 +181,9 @@ fn test_mob_respawn_lifecycle() {
                 health.current, health.max,
                 "Respawned mob must have full health"
             );
-            assert!((pos.x - 300.0).abs() < 1.0);
-            assert!((pos.y - 300.0).abs() < 1.0);
+            // Respawned at the anchor; it may already have started wandering (bestiary
+            // speed, 25px wander radius) in the ticks since respawn.
+            assert!((pos.x - 300.0).abs() <= 25.0 && (pos.y - 300.0).abs() <= 25.0);
             respawned_count += 1;
         }
     }

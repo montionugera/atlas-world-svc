@@ -215,6 +215,11 @@ fn test_mob_kill_records_match_event() {
         combat.attack_cooldown = 0.05;
         combat.cooldown_timer = 0.0;
     }
+    // Human avatars only melee while attack is held (legacy attackQueue parity).
+    sim.world
+        .get_mut::<server_rs::ecs::PlayerInputState>(player_entity)
+        .unwrap()
+        .attack = true;
 
     // Spawn target mob with 50 HP within attack range
     let mob_id = "veil_spearling_alpha";

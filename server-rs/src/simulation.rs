@@ -1,21 +1,26 @@
 use bevy_ecs::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::content::{derived_stats, BestiaryCatalog};
+use crate::content::{derived_stats, BestiaryCatalog, MobTier};
 use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
-    AiAgent, BotAgent, CastingState, CombatStats, CooldownTracker, ElementalAttributes, EntityId,
-    Health, MobTag, PlayerAvatar, PlayerInputState, PlayerTag, Position, StatusEffects, Velocity,
+    AiAgent, BodyRadius, BotAgent, CastingState, CombatStats, CooldownTracker, DespawnedIds,
+    ElementalAttributes, EntityId, Health, LiveRules, MobSpawnAnchor, MobTag, PlayerAvatar,
+    PlayerInputState, PlayerTag, Position, SpawnPoint, StatusEffects, Velocity, MOB_BODY_RADIUS,
+    PLAYER_BODY_RADIUS,
 };
+use crate::net::ClientPacket;
 use crate::physics::world::PhysicsWorld;
+use crate::protocol::{EntitySnapshotData, EntityType};
 use crate::spatial::grid::SpatialGrid;
 use crate::storage::{MatchEvent, MatchEventQueue, PrimaryStats};
 use crate::systems::{
-    bot_steering_system, combat_system, cooldown_tick_system, mob_ai_system, mob_lifecycle_system,
-    physics_step_system, player_input_system, projectile_collision_system,
-    projectile_kinematics_system, separation_system, skill_execution_system,
-    spatial_grid_rebuild_system, status_effect_tick_system, ArenaBounds,
+    body_collision_system, bot_steering_system, combat_system, cooldown_tick_system, mob_ai_system,
+    mob_bundle, mob_lifecycle_system, physics_step_system, player_input_system,
+    player_respawn_system, projectile_collision_system, projectile_kinematics_system,
+    separation_system, skill_execution_system, spatial_grid_rebuild_system,
+    status_effect_tick_system, ArenaBounds,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -70,6 +75,45 @@ pub struct SimulationTrace {
     pub final_summary: FinalSummary,
 }
 
+/// Configuration for the live game-server runtime (`main.rs`). The golden-trace harness
+/// uses `with_arena`/`populate_entities` instead and must never go through this path.
+#[derive(Debug, Clone, PartialEq)]
+pub struct LiveConfig {
+    pub seed: u32,
+    pub arena_width: f32,
+    pub arena_height: f32,
+    pub bot_count: usize,
+    pub mob_count: usize,
+    pub mob_respawn_sec: f32,
+    pub player_respawn_sec: f32,
+}
+
+impl Default for LiveConfig {
+    fn default() -> Self {
+        Self {
+            seed: 0x1337c0de,
+            arena_width: 1000.0,
+            arena_height: 1000.0,
+            bot_count: 10,
+            mob_count: 50,
+            mob_respawn_sec: 5.0,
+            player_respawn_sec: 5.0,
+        }
+    }
+}
+
+/// Dead mobs stay visible (flagged dead) this long before despawning.
+pub const MOB_CORPSE_SEC: f32 = 0.5;
+
+/// One live tick's wire-ready output (what `main.rs` broadcasts).
+#[derive(Debug, Clone, PartialEq)]
+pub struct LiveFrame {
+    pub tick: u32,
+    pub sim_time_ms: u64,
+    pub entities: Vec<EntitySnapshotData>,
+    pub removed_ids: Vec<u32>,
+}
+
 pub struct AtlasSimulation {
     pub world: World,
     pub schedule: Schedule,
@@ -120,8 +164,11 @@ impl AtlasSimulation {
                 projectile_kinematics_system,
                 projectile_collision_system,
                 physics_step_system,
+                // Live-only (BodyRadius / LiveRules gated): no-ops for the golden trace.
+                body_collision_system,
                 combat_system,
                 mob_lifecycle_system,
+                player_respawn_system,
             )
                 .chain(),
         );
@@ -150,6 +197,145 @@ impl AtlasSimulation {
 
     pub fn init(seed: u32, player_count: usize, mob_count: usize) -> Self {
         Self::with_arena(seed, 1000.0, 1000.0, player_count, mob_count)
+    }
+
+    /// The ONLY constructor the live server (`main.rs`) may use. Bots and bestiary mobs
+    /// carry the full live bundles (collision bodies, spawn points, MobAi, ThreatTable,
+    /// spawn anchors). The golden-trace harness uses `with_arena` instead.
+    pub fn live(cfg: LiveConfig) -> Self {
+        let mut sim = Self::new(cfg.seed, cfg.arena_width, cfg.arena_height);
+        sim.world.insert_resource(LiveRules {
+            player_respawn_sec: cfg.player_respawn_sec,
+            mob_corpse_sec: MOB_CORPSE_SEC,
+        });
+        sim.world.insert_resource(DespawnedIds::default());
+
+        let mut prng = Mulberry32::new(cfg.seed);
+        for i in 0..cfg.bot_count {
+            let id = format!("bot-{}", i);
+            let pos = Position::new(
+                prng.range(100.0, cfg.arena_width - 100.0),
+                prng.range(100.0, cfg.arena_height - 100.0),
+            );
+            let angle = prng.range(0.0, std::f32::consts::PI * 2.0);
+            sim.world.spawn((
+                EntityId(id.clone()),
+                pos,
+                Velocity::zero(),
+                Health::new(100.0),
+                PlayerTag,
+                BotAgent::new(id, angle.cos(), angle.sin()),
+                CombatStats {
+                    // Same edge-to-edge melee reach as mobs (20px + both body radii), so a
+                    // bot can answer a mob standing at its own melee reach.
+                    attack_range: 20.0 + PLAYER_BODY_RADIUS + MOB_BODY_RADIUS,
+                    is_player: true,
+                    ..Default::default()
+                },
+                BodyRadius(PLAYER_BODY_RADIUS),
+                SpawnPoint(pos),
+            ));
+        }
+
+        // Mob types drawn deterministically from the bestiary (sorted ids; the catalog is
+        // a HashMap). Assumption until map spawn areas land (plan row 13): uniform random
+        // positions, all at the Route tier.
+        let catalog = sim.world.resource::<BestiaryCatalog>().clone();
+        let mut mob_ids: Vec<String> = catalog.entries().map(|e| e.id.clone()).collect();
+        mob_ids.sort();
+        if !mob_ids.is_empty() {
+            for i in 0..cfg.mob_count {
+                let pos = Position::new(
+                    prng.range(50.0, cfg.arena_width - 50.0),
+                    prng.range(50.0, cfg.arena_height - 50.0),
+                );
+                let pick = (prng.range(0.0, mob_ids.len() as f32) as usize).min(mob_ids.len() - 1);
+                let mob_id = &mob_ids[pick];
+                let anchor = MobSpawnAnchor::new(pos, mob_id, MobTier::Route, cfg.mob_respawn_sec);
+                sim.world
+                    .spawn(mob_bundle(&catalog, &anchor, format!("{}-{}", mob_id, i)));
+            }
+        }
+
+        sim.prng = prng.clone();
+        sim.world.insert_resource(prng);
+        sim
+    }
+
+    /// One live server tick, exactly as `main.rs` runs it: apply inputs, then drop avatars
+    /// whose session's last socket closed (after inputs, so a late packet cannot respawn a
+    /// ghost; skipped for sessions that sent input this tick), step, and build the wire
+    /// frame including `removed_ids`.
+    pub fn live_tick(&mut self, inputs: &[ClientPacket], disconnected: &[String]) -> LiveFrame {
+        for packet in inputs {
+            if let Ok(client_input) = crate::protocol::deserialize_client_input(&packet.payload) {
+                self.apply_player_input(&packet.session_id, &client_input);
+            }
+        }
+        for session_id in disconnected {
+            // A packet from the same session this tick means it reconnected after the
+            // disconnect notice was drained: keep the avatar (no free heal / teleport).
+            if inputs.iter().any(|p| &p.session_id == session_id) {
+                continue;
+            }
+            self.remove_player_avatar(session_id);
+        }
+        self.step();
+        LiveFrame {
+            tick: self.clock.tick(),
+            sim_time_ms: self.clock.now(),
+            entities: self.capture_wire_entities(),
+            removed_ids: self
+                .drain_despawned_ids()
+                .iter()
+                .map(|id| crate::protocol::fnv1a_32(id))
+                .collect(),
+        }
+    }
+
+    /// Wire-ready entity list for players and mobs, with the real `Health.max`.
+    pub fn capture_wire_entities(&mut self) -> Vec<EntitySnapshotData> {
+        let mut query = self.world.query_filtered::<(
+            &EntityId,
+            &Position,
+            &Velocity,
+            &Health,
+            Has<PlayerTag>,
+        ), Or<(With<PlayerTag>, With<MobTag>)>>();
+        let mut entities: Vec<(String, EntitySnapshotData)> = query
+            .iter(&self.world)
+            .map(|(id, pos, vel, health, is_player)| {
+                (
+                    id.0.clone(),
+                    EntitySnapshotData {
+                        id: crate::protocol::fnv1a_32(&id.0),
+                        entity_type: if is_player {
+                            EntityType::Player
+                        } else {
+                            EntityType::Mob
+                        },
+                        x: pos.x,
+                        y: pos.y,
+                        vx: vel.vx,
+                        vy: vel.vy,
+                        health: health.current,
+                        max_health: health.max,
+                        state_flags: u16::from(health.is_alive),
+                        target_id: 0,
+                    },
+                )
+            })
+            .collect();
+        entities.sort_by(|a, b| a.0.cmp(&b.0));
+        entities.into_iter().map(|(_, e)| e).collect()
+    }
+
+    /// Ids despawned since the last call (dead mobs, disconnected avatars).
+    pub fn drain_despawned_ids(&mut self) -> Vec<String> {
+        self.world
+            .get_resource_mut::<DespawnedIds>()
+            .map(|mut d| std::mem::take(&mut d.0))
+            .unwrap_or_default()
     }
 
     pub fn populate_entities(&mut self, seed: u32, player_count: usize, mob_count: usize) {
@@ -268,6 +454,8 @@ impl AtlasSimulation {
                 CooldownTracker::default(),
                 CastingState::default(),
                 StatusEffects::default(),
+                BodyRadius(PLAYER_BODY_RADIUS),
+                SpawnPoint(Position::new(x, y)),
             ))
             .id()
     }
@@ -298,6 +486,9 @@ impl AtlasSimulation {
 
         if let Some(entity) = to_despawn {
             self.world.despawn(entity);
+            if let Some(mut despawned) = self.world.get_resource_mut::<DespawnedIds>() {
+                despawned.0.push(session_id.to_string());
+            }
             true
         } else {
             false

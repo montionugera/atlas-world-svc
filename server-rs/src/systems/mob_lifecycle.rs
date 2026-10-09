@@ -2,34 +2,127 @@ use crate::ai::ThreatTable;
 use crate::content::{derive_mob_stats, BestiaryCatalog};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    CombatStats, DeadMobTracker, ElementalAttributes, EntityId, Health, MobAi, MobSpawnAnchor,
-    MobTag, Position, Velocity,
+    BodyRadius, CombatStats, DeadMobTracker, DespawnedIds, ElementalAttributes, EntityId, Health,
+    LiveRules, MobAi, MobCorpse, MobSpawnAnchor, MobTag, Position, Velocity, MOB_BODY_RADIUS,
+    PLAYER_BODY_RADIUS,
 };
 use bevy_ecs::prelude::*;
 use std::sync::OnceLock;
 
 static DEFAULT_CATALOG: OnceLock<BestiaryCatalog> = OnceLock::new();
 
+/// The ONE full live mob bundle, shared by the live initial spawn
+/// (`AtlasSimulation::live`) and `mob_lifecycle_system` respawns.
+pub fn mob_bundle(catalog: &BestiaryCatalog, anchor: &MobSpawnAnchor, id: String) -> impl Bundle {
+    // (hp, p_atk, defence attrs, base attack range, chase range, ranged, speed)
+    let (hp, p_atk, attrs, base_range, chase_range, is_ranged, speed) =
+        match catalog.get_mob(&anchor.mob_id) {
+            Some(entry) => {
+                let d = derive_mob_stats(entry, anchor.tier);
+                (
+                    d.hp,
+                    d.p_atk,
+                    ElementalAttributes {
+                        element: d.element,
+                        p_def: d.p_def,
+                        m_def: d.m_def,
+                        armor: d.armor,
+                    },
+                    d.attack_range(),
+                    d.chase_range,
+                    d.is_ranged,
+                    d.move_speed(),
+                )
+            }
+            // Fallback for custom / unregistered mob_ids.
+            None => (
+                100.0,
+                10.0,
+                ElementalAttributes::default(),
+                20.0,
+                200.0,
+                false,
+                80.0,
+            ),
+        };
+    // Bodies can no longer overlap (min centre distance = mob + player radius), so melee
+    // reach is treated as edge-to-edge and measured centre-to-centre here (otherwise a
+    // 20px melee mob could never touch a player). Assumption: legacy melee attackRange was
+    // also surface reach for Planck bodies. Ranged reach is projectile range: unchanged.
+    let attack_range = if is_ranged {
+        base_range
+    } else {
+        base_range + MOB_BODY_RADIUS + PLAYER_BODY_RADIUS
+    };
+    let spawn = anchor.spawn_pos;
+
+    (
+        EntityId(id),
+        Position::new(spawn.x, spawn.y),
+        Velocity::zero(),
+        Health::new(hp),
+        MobTag,
+        attrs,
+        CombatStats {
+            attack_power: p_atk,
+            defense: attrs.p_def,
+            attack_range,
+            attack_cooldown: 1.0,
+            cooldown_timer: 0.0,
+            is_player: false,
+        },
+        ThreatTable::new(),
+        MobAi::new(spawn, chase_range, attack_range, is_ranged).with_move_speed(speed),
+        anchor.clone(),
+        BodyRadius(MOB_BODY_RADIUS),
+    )
+}
+
 #[allow(clippy::type_complexity)]
 pub fn mob_lifecycle_system(
     mut commands: Commands,
     clock: Res<SimClock>,
-    dead_query: Query<(Entity, &Position, &Health, &MobSpawnAnchor), With<MobTag>>,
+    dead_query: Query<
+        (
+            Entity,
+            &Health,
+            &MobSpawnAnchor,
+            Option<&EntityId>,
+            Option<&MobCorpse>,
+        ),
+        With<MobTag>,
+    >,
     trackers: Query<(Entity, &DeadMobTracker)>,
     catalog_res: Option<Res<BestiaryCatalog>>,
+    rules: Option<Res<LiveRules>>,
+    mut despawned: Option<ResMut<DespawnedIds>>,
 ) {
     let current_time = clock.current_time_seconds();
+    // Live keeps corpses briefly; without LiveRules (harness / unit tests) despawn at once.
+    let corpse_sec = rules.map_or(0.0, |r| r.mob_corpse_sec);
 
-    // 1. Check for newly dead mobs
-    for (entity, _pos, health, anchor) in &dead_query {
-        if !health.is_alive {
-            let death_time = current_time;
-            commands.spawn(DeadMobTracker {
-                death_time,
-                respawn_at: death_time + anchor.respawn_delay_sec,
-                anchor: anchor.clone(),
-            });
-            commands.entity(entity).despawn();
+    // 1. Dead mobs: linger as a corpse, then despawn and start the respawn timer.
+    for (entity, health, anchor, id, corpse) in &dead_query {
+        if health.is_alive {
+            continue;
+        }
+        let death_time = corpse.map_or(current_time, |c| c.died_at);
+        if current_time < death_time + corpse_sec {
+            if corpse.is_none() {
+                commands.entity(entity).insert(MobCorpse {
+                    died_at: death_time,
+                });
+            }
+            continue;
+        }
+        commands.spawn(DeadMobTracker {
+            death_time,
+            respawn_at: death_time + anchor.respawn_delay_sec,
+            anchor: anchor.clone(),
+        });
+        commands.entity(entity).despawn();
+        if let (Some(list), Some(id)) = (despawned.as_mut(), id) {
+            list.0.push(id.0.clone());
         }
     }
 
@@ -40,63 +133,14 @@ pub fn mob_lifecycle_system(
 
     for (tracker_entity, tracker) in &trackers {
         if current_time >= tracker.respawn_at {
-            if let Some(entry) = catalog.get_mob(&tracker.anchor.mob_id) {
-                let derived = derive_mob_stats(entry, tracker.anchor.tier);
-                let attack_range = derived.attack_range();
-
-                commands.spawn((
-                    EntityId(format!("{}-{}", tracker.anchor.mob_id, clock.tick())),
-                    Position::new(tracker.anchor.spawn_pos.x, tracker.anchor.spawn_pos.y),
-                    Velocity::zero(),
-                    Health::new(derived.hp),
-                    MobTag,
-                    ElementalAttributes {
-                        element: derived.element,
-                        p_def: derived.p_def,
-                        m_def: derived.m_def,
-                        armor: derived.armor,
-                    },
-                    CombatStats {
-                        attack_power: derived.p_atk,
-                        defense: derived.p_def,
-                        attack_range,
-                        attack_cooldown: 1.0,
-                        cooldown_timer: 0.0,
-                        is_player: false,
-                    },
-                    ThreatTable::new(),
-                    MobAi::new(
-                        tracker.anchor.spawn_pos,
-                        derived.chase_range,
-                        attack_range,
-                        derived.is_ranged,
-                    ),
-                    tracker.anchor.clone(),
-                ));
-            } else {
-                // Fallback for custom / unregistered mob_ids
-                let attack_range = 20.0;
-                commands.spawn((
-                    EntityId(format!("{}-{}", tracker.anchor.mob_id, clock.tick())),
-                    Position::new(tracker.anchor.spawn_pos.x, tracker.anchor.spawn_pos.y),
-                    Velocity::zero(),
-                    Health::new(100.0),
-                    MobTag,
-                    ElementalAttributes::default(),
-                    CombatStats {
-                        attack_power: 10.0,
-                        defense: 1.0,
-                        attack_range,
-                        attack_cooldown: 1.0,
-                        cooldown_timer: 0.0,
-                        is_player: false,
-                    },
-                    ThreatTable::new(),
-                    MobAi::new(tracker.anchor.spawn_pos, 200.0, attack_range, false),
-                    tracker.anchor.clone(),
-                ));
-            }
-
+            // Tracker index keeps ids unique when two same-type mobs respawn on one tick.
+            let id = format!(
+                "{}-{}-{}",
+                tracker.anchor.mob_id,
+                clock.tick(),
+                tracker_entity.index()
+            );
+            commands.spawn(mob_bundle(catalog, &tracker.anchor, id));
             commands.entity(tracker_entity).despawn();
         }
     }

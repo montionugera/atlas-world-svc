@@ -26,6 +26,7 @@ pub struct WsServer {
     auth_guard: AuthGuard,
     inbound_tx: UnboundedSender<ClientPacket>,
     inbound_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<ClientPacket>>>,
+    disconnect_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<String>>>,
     pub nakama_client: Option<Arc<crate::storage::NakamaClient>>,
     nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
 }
@@ -42,6 +43,8 @@ impl WsServer {
         let connections = Arc::new(RwLock::new(HashMap::new()));
         let (inbound_tx, inbound_rx) = unbounded_channel();
         let inbound_rx = Arc::new(tokio::sync::Mutex::new(inbound_rx));
+        let (disconnect_tx, disconnect_rx) = unbounded_channel();
+        let disconnect_rx = Arc::new(tokio::sync::Mutex::new(disconnect_rx));
         let nakama_ref = Arc::new(std::sync::RwLock::new(None));
 
         let server = Self {
@@ -50,6 +53,7 @@ impl WsServer {
             auth_guard: auth_guard.clone(),
             inbound_tx: inbound_tx.clone(),
             inbound_rx,
+            disconnect_rx,
             nakama_client: None,
             nakama_ref: nakama_ref.clone(),
         };
@@ -60,6 +64,7 @@ impl WsServer {
             connections,
             auth_guard,
             inbound_tx,
+            disconnect_tx,
             nakama_ref,
         ));
 
@@ -102,6 +107,22 @@ impl WsServer {
         packets
     }
 
+    /// Drain session ids whose LAST socket has closed since the previous drain. A session
+    /// that has reconnected since its notice was queued is skipped (its avatar stays).
+    pub async fn drain_disconnects(&self) -> Vec<String> {
+        let mut rx = self.disconnect_rx.lock().await;
+        let mut gone = Vec::new();
+        while let Ok(session_id) = rx.try_recv() {
+            if !gone.contains(&session_id) {
+                gone.push(session_id);
+            }
+        }
+        drop(rx);
+        let conns = self.connections.read().await;
+        gone.retain(|s| !has_session(&conns, s));
+        gone
+    }
+
     /// Broadcast serialized snapshot bytes to all active sessions.
     pub async fn broadcast_snapshot(&self, bytes: &[u8]) {
         let conns = self.connections.read().await;
@@ -122,6 +143,7 @@ impl WsServer {
         connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
         auth_guard: AuthGuard,
         inbound_tx: UnboundedSender<ClientPacket>,
+        disconnect_tx: UnboundedSender<String>,
         nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
     ) {
         info!(
@@ -132,10 +154,11 @@ impl WsServer {
             let conns = connections.clone();
             let auth = auth_guard.clone();
             let in_tx = inbound_tx.clone();
+            let dc_tx = disconnect_tx.clone();
             let nakama = nakama_ref.clone();
 
             tokio::spawn(async move {
-                Self::handle_connection(stream, peer_addr, conns, auth, in_tx, nakama).await;
+                Self::handle_connection(stream, peer_addr, conns, auth, in_tx, dc_tx, nakama).await;
             });
         }
     }
@@ -183,6 +206,7 @@ impl WsServer {
         connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
         auth_guard: AuthGuard,
         inbound_tx: UnboundedSender<ClientPacket>,
+        disconnect_tx: UnboundedSender<String>,
         nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
     ) {
         let mut session_id = String::new();
@@ -312,10 +336,24 @@ impl WsServer {
         }
 
         // Clean up only this connection's entry; other sockets for the session stay live.
-        connections.write().await.remove(&conn_key);
+        // Only when the session's LAST socket closes does the sim drop its avatar.
+        {
+            let mut conns = connections.write().await;
+            conns.remove(&conn_key);
+            if !has_session(&conns, &session_id) {
+                let _ = disconnect_tx.send(session_id.clone());
+            }
+        }
         write_task.abort();
         info!("Session {} disconnected", session_id);
     }
+}
+
+/// True if any registered `session#seq` connection key belongs to `session_id`.
+fn has_session(conns: &HashMap<String, UnboundedSender<Message>>, session_id: &str) -> bool {
+    conns
+        .keys()
+        .any(|k| k.rsplit_once('#').is_some_and(|(s, _)| s == session_id))
 }
 
 #[cfg(test)]

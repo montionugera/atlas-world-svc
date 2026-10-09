@@ -74,6 +74,46 @@ Mirrors `contracts/src/meta/derivedStats.ts` exactly:
 
 ---
 
+## 🌍 Live Runtime (`main.rs`) vs Golden-Trace Harness
+
+`main.rs` builds the world **only** via `AtlasSimulation::live(LiveConfig)` and advances it
+with `sim.live_tick(inputs, disconnected)`. `with_arena` / `populate_entities` remain the
+deterministic replay population for `tests/trace_replay.rs` and must not be used live.
+`tests/live_runtime.rs` drives the same two calls, so a system that exists but is not wired
+into the live path fails there.
+
+Live behaviour:
+- **Mobs** are drawn from the embedded bestiary (Route tier) with the full bundle shared with
+  respawn (`systems::mob_bundle`): `MobAi` (wander / chase / attack / return-home, leash 300px),
+  `ThreatTable`, `ElementalAttributes`, `MobSpawnAnchor`, bestiary HP / attack / speed.
+- **Aggro**: the nearest live player inside a mob's `chase_range` is added to its threat table;
+  any melee or projectile damage adds threat on the victim mob toward the attacker.
+- **Mob attacks** are owned by `mob_ai_system` (one cooldown decrement per tick). Melee reach
+  is edge-to-edge (bestiary range + 12px player + 14px mob radius).
+- **Players**: human avatars only melee while `ClientInput.attack` is held; bots auto-attack.
+- **Collision**: players, bots and mobs are circles (player 12px, mob 14px — matching the
+  client renderer) pushed apart to `r1 + r2` every tick and clamped to the arena. Map statics
+  are not modelled yet.
+- **Death**: dead mobs stay visible ~0.5s as a corpse (sent with `state_flags = 0`), then
+  despawn (id sent in the snapshot's `removed_ids`) and respawn at their anchor
+  `MOB_RESPAWN_MS` after death; dead players cannot move or cast and respawn at their spawn
+  point with full HP after
+  `PLAYER_RESPAWN_MS` (legacy Colyseus respawned players manually; server-rs auto-respawns).
+- **Disconnect**: when a session's **last** socket closes, its avatar is removed and its id is
+  sent in `removed_ids`. Closing one of several sockets for a session keeps the avatar.
+- **Wire `max_health`** is the entity's real `Health.max`.
+
+| Env var | Default | Meaning |
+|---|---|---|
+| `SIM_SEED` | `0x1337c0de` | Live world seed |
+| `PLAYER_COUNT` | `10` | Number of bots |
+| `MOB_COUNT` | `50` | Number of bestiary mobs |
+| `ARENA_WIDTH` / `ARENA_HEIGHT` | `1000` | Arena size (px) |
+| `MOB_RESPAWN_MS` | `5000` | Mob respawn delay (legacy `respawnDelayMs` default) |
+| `PLAYER_RESPAWN_MS` | `5000` | Player auto-respawn delay |
+
+---
+
 ## 🏃 Running & Testing
 
 ```bash

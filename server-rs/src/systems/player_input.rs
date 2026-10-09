@@ -1,6 +1,6 @@
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    CastingState, PlayerAvatar, PlayerInputState, StatusEffects, Velocity,
+    CastingState, Health, PlayerAvatar, PlayerInputState, StatusEffects, Velocity,
 };
 use bevy_ecs::prelude::*;
 
@@ -15,11 +15,19 @@ pub fn player_input_system(
         &mut Velocity,
         Option<&StatusEffects>,
         Option<&CastingState>,
+        Option<&Health>,
     )>,
 ) {
     let current_time = clock.current_time_seconds();
 
-    for (avatar_opt, input, mut vel, status_opt, casting_opt) in &mut query {
+    for (avatar_opt, input, mut vel, status_opt, casting_opt, health) in &mut query {
+        // 0. The dead do not move.
+        if health.is_some_and(|h| !h.is_alive) {
+            vel.vx = 0.0;
+            vel.vy = 0.0;
+            continue;
+        }
+
         // 1. Check StatusEffects: stun locks movement
         if let Some(status) = status_opt {
             if status.is_stunned() {

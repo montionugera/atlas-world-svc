@@ -1,8 +1,8 @@
 use server_rs::auth::AuthGuard;
 use server_rs::fleet::{AgonesClient, FleetLifecycle, HeartbeatTask};
 use server_rs::net::WsServer;
-use server_rs::protocol::{EntitySnapshotData, EntityType, SnapshotBuilder};
-use server_rs::simulation::AtlasSimulation;
+use server_rs::protocol::SnapshotBuilder;
+use server_rs::simulation::{AtlasSimulation, LiveConfig};
 use std::sync::Arc;
 use std::time::Duration;
 use tracing::{error, info};
@@ -66,19 +66,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     info!("WebSocket gateway listening on {}", ws_server.local_addr());
 
-    // 5. Simulation initialization
-    let mut sim =
-        AtlasSimulation::with_arena(seed, arena_width, arena_height, player_count, mob_count);
+    // 5. Simulation initialization — `AtlasSimulation::live` is the ONLY constructor the
+    // live server may use (the golden-trace harness uses `with_arena`).
+    let live_cfg = LiveConfig {
+        seed,
+        arena_width,
+        arena_height,
+        bot_count: player_count,
+        mob_count,
+        mob_respawn_sec: env_f32("MOB_RESPAWN_MS", 5000.0) / 1000.0,
+        player_respawn_sec: env_f32("PLAYER_RESPAWN_MS", 5000.0) / 1000.0,
+    };
+    info!("AtlasSimulation live config: {:?}", live_cfg);
+    let mut sim = AtlasSimulation::live(live_cfg);
     let mut snapshot_builder = SnapshotBuilder::new();
-    info!(
-        "AtlasSimulation initialized: seed=0x{:08x}, arena={}x{}, players={}, mobs={}",
-        seed, arena_width, arena_height, player_count, mob_count
-    );
 
     // 6. 20 Hz simulation tick loop (50ms interval)
     let tick_rate_ms = 50;
     let mut ticker = tokio::time::interval(Duration::from_millis(tick_rate_ms));
-    let mut tick: u32 = 0;
 
     info!("Entering 20 Hz simulation tick loop...");
 
@@ -86,52 +91,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         _ = async {
             loop {
                 ticker.tick().await;
-                tick += 1;
 
-                // Drain inbound player inputs and apply to avatar entities
+                // Inbound first: drain_disconnects re-checks the registry, so a session that
+                // reconnects between the two drains is not reported as gone.
                 let inputs = ws_server.drain_inbound().await;
-                for packet in inputs {
-                    if let Ok(client_input) =
-                        server_rs::protocol::deserialize_client_input(&packet.payload)
-                    {
-                        sim.apply_player_input(&packet.session_id, &client_input);
-                    }
-                }
+                let disconnected = ws_server.drain_disconnects().await;
+                let frame = sim.live_tick(&inputs, &disconnected);
 
-                // Step ECS simulation
-                sim.step();
-
-                // Capture and broadcast snapshot to active clients
+                // Broadcast snapshot (incl. removed ids) to active clients
                 if ws_server.active_connections_count().await > 0 {
-                    let trace_snap = sim.capture_snapshot(tick);
-                    let entities: Vec<EntitySnapshotData> = trace_snap
-                        .entities
-                        .iter()
-                        .map(|e| {
-                            EntitySnapshotData {
-                                id: server_rs::protocol::fnv1a_32(&e.id),
-                                entity_type: if e.entity_type == "player" {
-                                    EntityType::Player
-                                } else {
-                                    EntityType::Mob
-                                },
-                                x: e.x,
-                                y: e.y,
-                                vx: e.vx,
-                                vy: e.vy,
-                                health: e.health,
-                                max_health: 100.0,
-                                state_flags: if e.is_alive { 1 } else { 0 },
-                                target_id: 0,
-                            }
-                        })
-                        .collect();
-
                     let snapshot_bytes = snapshot_builder.build_snapshot(
-                        tick,
-                        trace_snap.sim_time_ms,
-                        &entities,
-                        &[],
+                        frame.tick,
+                        frame.sim_time_ms,
+                        &frame.entities,
+                        &frame.removed_ids,
                     );
                     ws_server.broadcast_snapshot(snapshot_bytes).await;
                 }
@@ -152,6 +125,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Server shutdown completed cleanly.");
     Ok(())
+}
+
+fn env_f32(key: &str, default: f32) -> f32 {
+    std::env::var(key)
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(default)
 }
 
 async fn wait_for_shutdown_signal() {

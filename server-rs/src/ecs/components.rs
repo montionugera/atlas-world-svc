@@ -83,6 +83,45 @@ impl PlayerAvatar {
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct MobTag;
 
+/// Player body radius (px). Matches the client's `SERVER_RS_PLAYER_RADIUS`.
+pub const PLAYER_BODY_RADIUS: f32 = 12.0;
+/// Mob body radius (px). Matches the client's `SERVER_RS_MOB_RADIUS`.
+pub const MOB_BODY_RADIUS: f32 = 14.0;
+
+/// Circular collision body. Only live-runtime entities carry it, so the golden-trace
+/// harness population (which has none) is unaffected by body collision.
+#[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct BodyRadius(pub f32);
+
+/// Where a player (human or bot) respawns after death.
+#[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct SpawnPoint(pub Position);
+
+/// Present on a dead player while it waits to respawn (sim seconds).
+#[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct PlayerRespawnTimer {
+    pub respawn_at: f32,
+}
+
+/// Live-runtime rules. Its presence enables live-only systems (player respawn).
+#[derive(Resource, Debug, Clone, Copy, PartialEq)]
+pub struct LiveRules {
+    pub player_respawn_sec: f32,
+    /// How long a dead mob stays in the world (sent flagged dead) before it despawns into
+    /// `removed_ids`, so clients see at least one dead frame.
+    pub mob_corpse_sec: f32,
+}
+
+/// On a dead mob that is still visible as a corpse (sim seconds).
+#[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct MobCorpse {
+    pub died_at: f32,
+}
+
+/// Wire ids of entities despawned since the last drain (fed into snapshot `removed_ids`).
+#[derive(Resource, Debug, Clone, Default, PartialEq)]
+pub struct DespawnedIds(pub Vec<String>);
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum AiState {
     #[default]
@@ -103,6 +142,8 @@ pub struct MobAi {
     pub is_ranged: bool,
     pub wander_timer: f32,
     pub wander_target: Position,
+    /// Chase / return speed in px/s (bestiary `derive_mob_stats().speed`).
+    pub move_speed: f32,
 }
 
 impl MobAi {
@@ -116,11 +157,18 @@ impl MobAi {
             is_ranged,
             wander_timer: 0.0,
             wander_target: home_pos,
+            // Bestiary "mid" speed (8 legacy units * 10).
+            move_speed: 80.0,
         }
     }
 
     pub fn with_leash_distance(mut self, leash_distance: f32) -> Self {
         self.leash_distance = leash_distance;
+        self
+    }
+
+    pub fn with_move_speed(mut self, move_speed: f32) -> Self {
+        self.move_speed = move_speed;
         self
     }
 }
