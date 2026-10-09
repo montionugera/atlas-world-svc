@@ -8,6 +8,7 @@ import {
   emptyEquipmentSnapshot,
   type EquipmentSnapshot,
 } from "../config/equipmentSlots";
+import { mapDef } from "../config/maps";
 import {
   BinaryDeltaDecoder,
   EntityType,
@@ -559,10 +560,11 @@ export const useServerRsClient = (
       const targetRoomId = `server-rs-${mapId}`;
       setRoomId(targetRoomId);
 
-      const isDeflectMap = mapId === "map-for-test-deflect";
-      const width = isDeflectMap ? 100 : 1000;
-      const height = isDeflectMap ? 100 : 1000;
-      const viewportSize = isDeflectMap ? 100 : SERVER_RS_VIEWPORT;
+      const {
+        width,
+        height,
+        viewportSize = SERVER_RS_VIEWPORT,
+      } = mapDef(mapId);
 
       stateRef.current.mapId = mapId;
       stateRef.current.roomId = targetRoomId;

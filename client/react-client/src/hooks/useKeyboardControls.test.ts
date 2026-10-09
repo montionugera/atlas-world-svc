@@ -106,4 +106,31 @@ describe('useKeyboardControls', () => {
     key('keydown', 'd');
     expect(updatePlayerInput.mock.calls.length).toBe(n);
   });
+
+  it('typing into a text field triggers no skill, attack or movement', () => {
+    const { updatePlayerInput, sendPlayerAction, switchWeapon } = setup();
+    const input = document.createElement('input');
+    document.body.appendChild(input);
+    const n = updatePlayerInput.mock.calls.length;
+    for (const k of ['1', ' ', 'w', '5', 'Shift']) {
+      const ev = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true });
+      input.dispatchEvent(ev);
+      expect(ev.defaultPrevented).toBe(false);
+    }
+    input.remove();
+    expect(sendPlayerAction).not.toHaveBeenCalled();
+    expect(switchWeapon).not.toHaveBeenCalled();
+    expect(updatePlayerInput.mock.calls.length).toBe(n);
+  });
+
+  it('keys still work when a button has focus', () => {
+    const { lastMove, sendPlayerAction } = setup();
+    const button = document.createElement('button');
+    document.body.appendChild(button);
+    button.dispatchEvent(new KeyboardEvent('keydown', { key: 'w', bubbles: true }));
+    expect(lastMove()).toEqual([0, -2]);
+    button.dispatchEvent(new KeyboardEvent('keydown', { key: '1', bubbles: true }));
+    button.remove();
+    expect(sendPlayerAction).toHaveBeenCalledWith('useSkill', true, expect.objectContaining({ skillId: 'skill_1' }));
+  });
 });

@@ -15,6 +15,18 @@ import {
   drawFloatingTexts,
   FloatingText,
 } from "../renderers/terrainRenderer";
+import {
+  drawStaticBlocks,
+  drawTerrainZones,
+  drawWorldDebug,
+} from "../renderers/debugRenderer";
+import { mapDef } from "../config/maps";
+import { staticBlocksFor, terrainZonesFor } from "../config/terrain";
+import {
+  DEFAULT_DEBUG_TOGGLES,
+  DebugToggles,
+  DebugTracker,
+} from "../utils/debugTools";
 
 interface GameRendererProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -26,6 +38,9 @@ interface GameRendererProps {
   playerId: string;
   trackFrame: () => void;
   aoeReticle?: AoeReticle | null;
+  debug?: DebugToggles;
+  /** Live speed tracker for the local player (read per frame, never triggers renders). */
+  debugTrackerRef?: React.RefObject<DebugTracker>;
 }
 
 interface BlastEffect {
@@ -49,6 +64,8 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
   playerId,
   trackFrame,
   aoeReticle,
+  debug = DEFAULT_DEBUG_TOGGLES,
+  debugTrackerRef,
 }) => {
   const animationFrameRef = useRef<number | undefined>(undefined);
   const floatingTextsRef = useRef<FloatingText[]>([]);
@@ -187,14 +204,53 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
         ctx.translate(-cameraX, -cameraY);
 
         // 1. Draw Terrain, Biomes, Roads, River, and Town Buildings
-        drawTerrain(
-          ctx,
-          gameState.width,
-          gameState.height,
-          1,
-          scale,
-          performance.now(),
-        );
+        const map = mapDef(gameState.mapId);
+        const terrainZones = terrainZonesFor(gameState.mapId);
+        if (map.art === "frontier") {
+          drawTerrain(
+            ctx,
+            gameState.width,
+            gameState.height,
+            1,
+            scale,
+            performance.now(),
+          );
+        } else {
+          // Plain test map: uncovered ground is grass.
+          drawTerrainZones(
+            ctx,
+            [
+              {
+                terrain: "grass",
+                x: 0,
+                y: 0,
+                width: gameState.width,
+                height: gameState.height,
+              },
+            ],
+            scale,
+            { fillAlpha: 0.85 },
+          );
+        }
+        // Terrain speed zones: the map itself on plain maps, a debug tint over the art.
+        if (terrainZones && (map.art === "plain" || debug.terrain)) {
+          const halfW = canvas.width / 2 / scale;
+          const halfH = canvas.height / 2 / scale;
+          drawTerrainZones(ctx, terrainZones, scale, {
+            fillAlpha: map.art === "plain" ? 0.85 : 0.3,
+            labelView: debug.terrain
+              ? {
+                  minX: cameraX - halfW,
+                  minY: cameraY - halfH,
+                  maxX: cameraX + halfW,
+                  maxY: cameraY + halfH,
+                }
+              : undefined,
+          });
+        }
+        if (map.art === "plain") {
+          drawStaticBlocks(ctx, staticBlocksFor(gameState.mapId), scale);
+        }
 
         // 2. World Boundaries
         ctx.strokeStyle = "#ff3838";
@@ -203,7 +259,9 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
 
         // 3. Coordinate Grid Overlay
         const gridSize = Math.max(10, Math.round(viewportSize / 5));
-        drawGrid(ctx, gameState.width, gameState.height, 1, scale, gridSize);
+        if (debug.world) {
+          drawGrid(ctx, gameState.width, gameState.height, 1, scale, gridSize);
+        }
         if (gameState.zoneEffects) {
           drawZoneEffects(ctx, gameState.zoneEffects, scale);
         }
@@ -217,6 +275,18 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
         drawPlayers(ctx, renderPlayers, playerId, 1, scale);
         if (renderProjectiles) {
           drawProjectiles(ctx, renderProjectiles, 1, scale);
+        }
+
+        // Debug rings / velocity vectors, on the same extrapolated positions as the sprites
+        if (debug.world) {
+          drawWorldDebug(ctx, {
+            players: renderPlayers,
+            mobs: renderMobs,
+            projectiles: renderProjectiles,
+            playerId,
+            viewScale: scale,
+            localSpeed: debugTrackerRef?.current?.smoothedSpeed ?? 0,
+          });
         }
 
         // Ground-target AoE reticle (world units, so it scales with the view)
@@ -270,17 +340,19 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
         ctx.restore();
 
         // Draw HUD-style Grid Coordinates
-        drawGridCoordinates(
-          ctx,
-          cameraX,
-          cameraY,
-          scale,
-          canvas.width,
-          canvas.height,
-          gameState.width,
-          gameState.height,
-          gridSize,
-        );
+        if (debug.world) {
+          drawGridCoordinates(
+            ctx,
+            cameraX,
+            cameraY,
+            scale,
+            canvas.width,
+            canvas.height,
+            gameState.width,
+            gameState.height,
+            gridSize,
+          );
+        }
 
         // --- 2. Mini Map Overlay ---
         const miniMapSize = 150;
@@ -439,6 +511,8 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
     playerId,
     trackFrame,
     aoeReticle,
+    debug,
+    debugTrackerRef,
   ]);
 
   return null; // This component only handles rendering

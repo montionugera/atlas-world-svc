@@ -9,6 +9,28 @@ import { calculateScale } from "../utils/drawingUtils";
 import { SKILL_DEFINITIONS } from "../config/skills";
 import { getAoeReticle } from "../utils/aoeReticle";
 import { extrapolatePosition } from "../utils/deadReckoning";
+import { debugToggleForKey } from "../config/controls";
+import {
+  REFERENCE_RUN_SPEED,
+  terrainAt,
+  terrainZonesFor,
+} from "../config/terrain";
+import {
+  DebugToggles,
+  DebugTracker,
+  EMPTY_TRACKER,
+  ReadoutInput,
+  advanceTracker,
+  isTextEntryTarget,
+  loadDebugToggles,
+  saveDebugToggles,
+} from "../utils/debugTools";
+import {
+  ControlsLegend,
+  DebugReadout,
+  DebugToolbar,
+  TerrainLegend,
+} from "./DebugPanels";
 
 interface ColyseusGameCanvasProps {
   client: UseColyseusClientReturn;
@@ -186,6 +208,69 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     },
     [handleTriggerSkill, sendPlayerAction],
   );
+
+  // Debug toggles (persisted) and the per-snapshot feed for the readout / speed label
+  const [debug, setDebug] = React.useState<DebugToggles>(() =>
+    loadDebugToggles(),
+  );
+  const toggleDebug = React.useCallback((toggle: keyof DebugToggles) => {
+    setDebug((prev) => {
+      const next = { ...prev, [toggle]: !prev[toggle] };
+      saveDebugToggles(next);
+      return next;
+    });
+  }, []);
+  const debugTrackerRef = useRef<DebugTracker>(EMPTY_TRACKER);
+  const readoutInputRef = useRef<Omit<ReadoutInput, "latency"> | null>(null);
+  const castingSkill = activeCast?.name ?? null;
+  useEffect(() => {
+    if (!gameState) {
+      debugTrackerRef.current = EMPTY_TRACKER;
+      readoutInputRef.current = null;
+      return;
+    }
+    const player = gameState.players.get(playerId);
+    if (player) {
+      debugTrackerRef.current = advanceTracker(debugTrackerRef.current, player);
+    }
+    const zones = terrainZonesFor(gameState.mapId);
+    readoutInputRef.current = {
+      mapId: gameState.mapId,
+      tick: gameState.tick,
+      player,
+      tracker: debugTrackerRef.current,
+      terrain: player && zones ? terrainAt(zones, player.x, player.y) : null,
+      referenceRunSpeed: REFERENCE_RUN_SPEED,
+      counts: {
+        players: gameState.players.size,
+        mobs: gameState.mobs.size,
+        projectiles: gameState.projectiles?.size ?? 0,
+      },
+      castingSkill,
+      attackHeld: player?.isAttacking ?? false,
+    };
+  }, [gameState, playerId, castingSkill]);
+
+  // Debug keys, and keep keyboard focus on the game: a clicked button must not hold
+  // focus, or Space/Enter would re-press it instead of attacking.
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (isTextEntryTarget(e.target)) return;
+      const toggle = debugToggleForKey(e.key);
+      if (toggle) toggleDebug(toggle);
+    };
+    const releaseButtonFocus = () => {
+      const active = document.activeElement;
+      if (active instanceof HTMLButtonElement) active.blur();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("click", releaseButtonFocus);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("click", releaseButtonFocus);
+    };
+  }, [toggleDebug]);
 
   // A dead player's cast is over: drop the cast bar and reticle.
   useEffect(() => {
@@ -445,6 +530,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
         )}
 
         <InputDebugPanel pressedKeysRef={pressedKeys} />
+        {debug.overlay && <DebugReadout inputRef={readoutInputRef} />}
+        {debug.terrain && <TerrainLegend />}
 
         <GameRenderer
           canvasRef={canvasRef}
@@ -456,8 +543,16 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           playerId={playerId}
           trackFrame={trackFrame}
           aoeReticle={aoeReticle}
+          debug={debug}
+          debugTrackerRef={debugTrackerRef}
         />
       </div>
+
+      <DebugToolbar
+        toggles={debug}
+        onToggle={toggleDebug}
+        onRespawn={respawn}
+      />
 
       {/* Active Casting Bar */}
       {activeCast && (
@@ -627,6 +722,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           );
         })}
       </div>
+
+      <ControlsLegend />
     </div>
   );
 };
