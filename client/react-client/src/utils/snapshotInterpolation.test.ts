@@ -365,6 +365,14 @@ describe("parried projectile: heading is drawn from the same moment as the posit
           ? (PARRY_TICK + 5 - tick) * SNAPSHOT_INTERVAL_MS
           : 20,
     ],
+    // The parry's snapshot arrives while the frames before it are still to be drawn.
+    [
+      "a stall that lands as a burst ending with the parry",
+      (tick) =>
+        tick >= PARRY_TICK - 4 && tick <= PARRY_TICK
+          ? 20 + (PARRY_TICK - tick) * SNAPSHOT_INTERVAL_MS
+          : 20,
+    ],
   ];
 
   it.each(links)("never draws the spear tail-first on %s", (_, lateness) => {

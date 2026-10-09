@@ -157,6 +157,22 @@ describe("DebugToolsPanel", () => {
     expect(screen.getByText(/mobs 0\/500/)).toBeInTheDocument();
   });
 
+  it("does not let a command answered late erase why a newer one was refused", async () => {
+    await mount();
+    // The first command hangs until released; the second is refused at once.
+    let release: (answer: object) => void = () => {};
+    fetchMock.mockImplementationOnce(
+      () => new Promise((resolve) => (release = resolve)),
+    );
+    await click("Clear");
+    command = { status: 400, body: { ok: false, error: "bad count" } };
+    await click("Clear");
+    expect(screen.getByRole("alert")).toHaveTextContent("bad count");
+    release({ status: 200, ok: true, json: () => Promise.resolve(ok.body) });
+    await settle();
+    expect(screen.getByRole("alert")).toHaveTextContent("bad count");
+  });
+
   it("waits for a poll's answer before sending the next one", async () => {
     await mount();
     fetchMock.mockImplementationOnce(() => new Promise(() => {}));

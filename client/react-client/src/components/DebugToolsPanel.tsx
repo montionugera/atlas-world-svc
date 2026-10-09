@@ -60,6 +60,8 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
   // Requests are numbered: state from one sent before the newest shown is stale.
   const sentRef = useRef(0);
   const shownRef = useRef(0);
+  // The newest refused poll and command: a success sent before it does not clear it.
+  const refusedRef = useRef({ poll: 0, command: 0 });
 
   const run = useCallback(
     async (command: DebugCommand) => {
@@ -70,16 +72,20 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
         command,
       });
       if (roomRef.current !== room) return;
-      const setError = command.cmd === "state" ? setPollError : setCommandError;
+      const kind = command.cmd === "state" ? "poll" : "command";
+      const setError = kind === "poll" ? setPollError : setCommandError;
       if (result.ok) {
         if (sent > shownRef.current) {
           shownRef.current = sent;
           setState(result.state);
         }
-        setError("");
-        setOff(false);
+        if (sent > refusedRef.current[kind]) {
+          setError("");
+          setOff(false);
+        }
         return;
       }
+      refusedRef.current[kind] = Math.max(refusedRef.current[kind], sent);
       setError(result.error);
       setOff(result.kind === "disabled");
       // The tick loop answered late: it may still have applied the command.
