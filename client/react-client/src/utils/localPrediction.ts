@@ -25,16 +25,20 @@ import {
   sampleInto,
 } from "./snapshotInterpolation";
 
-/** A longer frame gap is a hidden tab, not motion to integrate. */
+/** A longer frame gap is a hitch or a hidden tab: jump to the server's path. */
 const MAX_FRAME_MS = 100;
 /** Time constant of the pull towards the server's path. */
 const BLEND_MS = 100;
-/** Slowest the pull runs once no key is held, so a stop finishes instead of creeping. */
-const SETTLE_UNITS_PER_SEC = 20;
-/** Within this of a resting server position the drawn position lands on it exactly. */
-const SETTLE_UNITS = 0.1;
+/** Time constant of the stop: the last `speed x this` units are eased out. */
+const STOP_MS = 50;
+/** The ease ends at this speed (u/s), so a stop arrives instead of creeping. */
+const STOP_MIN_SPEED = 6;
+/** A stop whose rest point moved on may speed up again, to this at most (u/s). */
+const STOP_FLOOR_SPEED = 60;
 /** A larger error is a teleport (respawn / reset): same rule as the sample history. */
 const TELEPORT_UNITS = 100;
+/** A snapshot this far beyond what its velocity explains moved the player by fiat. */
+const WARP_UNITS = 20;
 /** Slower than this is standing still (u/s). */
 const STILL_SPEED = 5;
 /** Server speed may differ from the expected speed by this fraction before it disagrees. */
@@ -96,12 +100,17 @@ export interface PredictionState {
   pending: InputChange | null;
   disagree: number;
   diverged: boolean;
-  /** Velocity, speed and terrain multiplier of the newest snapshot. */
+  /** Time, position, velocity, speed and terrain multiplier of the newest snapshot. */
+  serverAt: number;
+  serverX: number;
+  serverY: number;
   serverVx: number;
   serverVy: number;
   serverSpeed: number;
   serverMult: number;
   wasAlive: boolean;
+  /** Drawn speed (u/s) while no key is held: a stop only ever slows down. */
+  stopSpeed: number;
   /** Why the server-driven position is drawn this frame, or null when predicting. */
   yielding: YieldReason | null;
   /** Distance to the server's path before this frame's correction, and its recent max. */
@@ -129,11 +138,15 @@ export function createPrediction(): PredictionState {
     pending: null,
     disagree: 0,
     diverged: false,
+    serverAt: 0,
+    serverX: 0,
+    serverY: 0,
     serverVx: 0,
     serverVy: 0,
     serverSpeed: 0,
     serverMult: 1,
     wasAlive: true,
+    stopSpeed: 0,
     yielding: null,
     error: 0,
     errorMax: 0,
@@ -156,6 +169,15 @@ export function resetPrediction(s: PredictionState, now: number): void {
   s.error = 0;
   s.errorMax = 0;
   pushEffective(s, now);
+}
+
+/** A new connection: the server holds no key for it, and its round trip is unknown. */
+export function restartPrediction(s: PredictionState, now: number): void {
+  s.heldX = 0;
+  s.heldY = 0;
+  s.delays = [];
+  s.rtt = 0;
+  resetPrediction(s, now);
 }
 
 const NO_INPUT: InputChange = { t: -Infinity, mx: 0, my: 0 };
@@ -199,6 +221,20 @@ function multAt(
   return zones ? terrainAt(zones, x, y).speedMultiplier : 1;
 }
 
+/**
+ * Walking speed at (x, y). On a map with no client terrain the multiplier is unknown,
+ * so the speed the server last walked at stands in for it.
+ */
+function walkSpeedAt(
+  s: PredictionState,
+  zones: readonly TerrainZone[] | null,
+  x: number,
+  y: number,
+): number {
+  if (zones) return s.baseSpeed * terrainAt(zones, x, y).speedMultiplier;
+  return s.serverSpeed >= STILL_SPEED ? s.serverSpeed : s.baseSpeed;
+}
+
 /** Record the input in effect from `t` (held keys, or none during a cast). */
 function pushEffective(s: PredictionState, t: number): void {
   const locked = s.lockUntil > t;
@@ -222,9 +258,11 @@ export function setHeldInput(
 ): void {
   // Server rule: no input below 0.01 length, direction scaled down to unit length.
   const lenSq = vx * vx + vy * vy;
-  const inv = lenSq > 0.0001 ? 1 / Math.max(Math.sqrt(lenSq), 1) : 0;
-  s.heldX = vx * inv;
-  s.heldY = vy * inv;
+  // A non-finite vector is no input (and `NaN * 0` would stay NaN).
+  const held = Number.isFinite(lenSq) && lenSq > 0.0001;
+  const inv = held ? 1 / Math.max(Math.sqrt(lenSq), 1) : 0;
+  s.heldX = held ? vx * inv : 0;
+  s.heldY = held ? vy * inv : 0;
   pushEffective(s, now);
 }
 
@@ -280,6 +318,15 @@ export function observeServer(
   }
   const speed = Math.hypot(snap.vx, snap.vy);
   const mult = multAt(zones, snap.x, snap.y);
+  // Moved further than its velocity explains (debug teleport, reset to spawn): the
+  // next frame starts over on the new position instead of easing across.
+  const reach =
+    (2 * Math.max(speed, s.serverSpeed) * (snap.simTime - s.serverAt)) / 1000;
+  if (
+    !(Math.hypot(snap.x - s.serverX, snap.y - s.serverY) <= reach + WARP_UNITS)
+  ) {
+    s.ready = false;
+  }
 
   if (!snap.alive) {
     s.pending = null;
@@ -327,9 +374,12 @@ export function observeServer(
       const len = Math.hypot(input.mx, input.my);
       const expected = s.baseSpeed * mult * len;
       // Standing still has no speed to compare: under STILL_SPEED is still.
+      // Without terrain data there is no expected speed either: direction only.
       const obeyed =
         sameWay(snap.vx, snap.vy, input.mx, input.my, 0.95) &&
-        (len === 0 || Math.abs(speed - expected) <= SPEED_TOLERANCE * expected);
+        (len === 0 ||
+          !zones ||
+          Math.abs(speed - expected) <= SPEED_TOLERANCE * expected);
       if (obeyed) {
         s.disagree = 0;
         s.diverged = false;
@@ -352,6 +402,9 @@ export function observeServer(
       }
     }
   }
+  s.serverAt = snap.simTime;
+  s.serverX = snap.x;
+  s.serverY = snap.y;
   s.serverVx = snap.vx;
   s.serverVy = snap.vy;
   s.serverSpeed = speed;
@@ -407,7 +460,7 @@ function serverPathAt(
       // The tick after `t` runs on the input that reached the server by then.
       const input = inputAt(s, t + SNAPSHOT_INTERVAL_MS + s.base - s.rtt);
       const part = Math.min((simNow - t) / SNAPSHOT_INTERVAL_MS, 1);
-      const step = s.baseSpeed * multAt(world.zones, x, y) * TICK_SEC * part;
+      const step = walkSpeedAt(s, world.zones, x, y) * TICK_SEC * part;
       x = clamp(x + input.mx * step, world.width);
       y = clamp(y + input.my * step, world.height);
       t += SNAPSHOT_INTERVAL_MS;
@@ -421,7 +474,8 @@ function serverPathAt(
  * Advance the drawn position to client time `now` (once per frame): move by the input
  * held now, then close part of the gap to the server's path. While the server is not
  * obeying walking input (`yielding`) only the second half runs, on the server-driven
- * path, so entering and leaving that state never jumps.
+ * path, so entering and leaving that state never jumps. With no key held it walks on
+ * to where the server will come to rest, slowing all the way.
  */
 export function advancePrediction(
   s: PredictionState,
@@ -429,7 +483,7 @@ export function advancePrediction(
   me: ServerPlayer,
   world: PredictionWorld,
 ): void {
-  const dt = Math.min(Math.max(now - s.at, 0), MAX_FRAME_MS);
+  const dt = Math.max(now - s.at, 0);
   s.at = now;
   if (s.lockUntil !== 0 && now >= s.lockUntil) {
     const ended = s.lockUntil;
@@ -447,12 +501,18 @@ export function advancePrediction(
         ? "diverged"
         : null;
 
-  const simNow = now - s.base + s.rtt - SNAPSHOT_INTERVAL_MS;
+  const input = s.history[s.history.length - 1] ?? NO_INPUT;
+  const moving = s.yielding === null && (input.mx !== 0 || input.my !== 0);
+  const idle = s.yielding === null && !moving;
+  // With no key held the target is where the server will come to rest: the replay
+  // runs on until the tick that takes the release.
+  const simNow = idle ? Infinity : now - s.base + s.rtt - SNAPSHOT_INTERVAL_MS;
   serverPathAt(s, me, world, simNow, s.yielding === null);
   if (
     !s.ready ||
     revived ||
-    Math.hypot(target.x - s.x, target.y - s.y) > TELEPORT_UNITS
+    dt > MAX_FRAME_MS ||
+    !(Math.hypot(target.x - s.x, target.y - s.y) <= TELEPORT_UNITS)
   ) {
     s.ready = true;
     s.x = target.x;
@@ -461,10 +521,9 @@ export function advancePrediction(
     return;
   }
 
-  const input = s.history[s.history.length - 1] ?? NO_INPUT;
-  const moving = s.yielding === null && (input.mx !== 0 || input.my !== 0);
+  const walkSpeed = walkSpeedAt(s, world.zones, s.x, s.y);
   if (moving) {
-    const step = (s.baseSpeed * multAt(world.zones, s.x, s.y) * dt) / 1000;
+    const step = (walkSpeed * dt) / 1000;
     s.x = clamp(s.x + input.mx * step, world.width);
     s.y = clamp(s.y + input.my * step, world.height);
   }
@@ -474,19 +533,21 @@ export function advancePrediction(
   const error = Math.hypot(ex, ey);
   s.error = error;
   s.errorMax = Math.max(error, s.errorMax * Math.exp(-dt / 2000));
-  const idle = s.yielding === null && !moving;
-  if (
-    idle &&
-    s.serverSpeed < STILL_SPEED &&
-    Math.hypot(me.x - s.x, me.y - s.y) < SETTLE_UNITS
-  ) {
-    // Standing still: exactly the server's position, so it can never drift.
-    s.x = me.x;
-    s.y = me.y;
-  } else if (error > 0) {
-    let step = error * (1 - Math.exp(-dt / BLEND_MS));
-    if (idle) step = Math.max(step, (SETTLE_UNITS_PER_SEC * dt) / 1000);
-    const k = Math.min(step / error, 1);
+  if (idle) {
+    // Stopping: walk on to the rest point, easing the last stretch, and never faster
+    // than the frame before. Only a rest point that moved on (the release landed a
+    // tick later than estimated) may raise the speed again, up to the floor.
+    s.stopSpeed = Math.min(
+      Math.max((error * 1000) / STOP_MS, STOP_MIN_SPEED),
+      Math.max(s.stopSpeed, STOP_FLOOR_SPEED),
+    );
+    const k = (s.stopSpeed * dt) / 1000 / error;
+    // Arrived: exactly the server's position, so standing still can never drift.
+    s.x = k < 1 ? s.x + ex * k : target.x;
+    s.y = k < 1 ? s.y + ey * k : target.y;
+  } else {
+    s.stopSpeed = walkSpeed;
+    const k = 1 - Math.exp(-dt / BLEND_MS);
     s.x += ex * k;
     s.y += ey * k;
   }

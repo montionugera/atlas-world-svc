@@ -1,4 +1,4 @@
-import { TerrainZone, terrainAt } from "../config/terrain";
+import { TerrainZone, terrainAt, terrainZonesFor } from "../config/terrain";
 import { CAPTURE } from "./__fixtures__/snapshotCapture";
 import {
   PredictionState,
@@ -8,6 +8,7 @@ import {
   noteDash,
   observeServer,
   resetPrediction,
+  restartPrediction,
   setHeldInput,
 } from "./localPrediction";
 import {
@@ -35,6 +36,8 @@ interface ServerOptions {
   /** Walking speed on grass. */
   speed?: number;
   start?: { x: number; y: number };
+  /** Side of the square world. */
+  world?: number;
   zones?: readonly TerrainZone[];
   /** One-way delays and extra, uneven snapshot lateness (ms). */
   uplink?: number;
@@ -57,6 +60,7 @@ interface ServerOptions {
 function serve(keys: readonly Key[], until: number, o: ServerOptions): Snap[] {
   const speed = o.speed ?? 200;
   const up = o.uplink ?? 0;
+  const world = o.world ?? WORLD;
   let { x, y } = o.start ?? { x: 500, y: 500 };
   let seed = 7;
   let knock: { vx: number; vy: number } | null = null;
@@ -99,13 +103,30 @@ function serve(keys: readonly Key[], until: number, o: ServerOptions): Snap[] {
       vx = (o.dash?.dirX ?? 1) * (base + (450 - base) * (dashLeft / 0.22));
       vy = 0;
     }
-    x = Math.min(Math.max(x + vx * TICK_SEC, 0), WORLD);
-    y = Math.min(Math.max(y + vy * TICK_SEC, 0), WORLD);
+    x = Math.min(Math.max(x + vx * TICK_SEC, 0), world);
+    y = Math.min(Math.max(y + vy * TICK_SEC, 0), world);
     seed = (seed * 1103515245 + 12345) % 2147483648;
     const late = (o.jitter ?? 0) * (seed / 2147483648);
     lastArrival = Math.max(lastArrival, time + (o.downlink ?? 0) + late);
     snaps.push([lastArrival, tick, x, y, vx, vy, !dead]);
   }
+}
+
+/**
+ * Where the simulated server has the player at server time `t`: the reference the
+ * drawn position is judged against (part-way through a tick: part-way along its step).
+ */
+function serverAt(
+  snaps: readonly Snap[],
+  o: ServerOptions,
+  t: number,
+): { x: number; y: number } {
+  const at = (t - (o.phase ?? 0)) / SNAPSHOT_INTERVAL_MS;
+  const i = Math.min(Math.max(Math.floor(at), 0), snaps.length - 2);
+  const k = Math.min(Math.max(at - i, 0), 1);
+  const [, , ax, ay] = snaps[i];
+  const [, , bx, by] = snaps[i + 1];
+  return { x: ax + (bx - ax) * k, y: ay + (by - ay) * k };
 }
 
 interface Frame {
@@ -119,27 +140,50 @@ interface Frame {
   /** Newest snapshot. */
   serverX: number;
   serverY: number;
+  /**
+   * How far (x) the drawn position trails where the simulated server will be when an
+   * input sent this frame reaches it (`now + uplink`); negative is ahead of it.
+   * Needs `PlayOptions.server`.
+   */
+  behind: number;
+  /** The module's own figure: distance to the target it computed. */
   error: number;
   yielding: PredictionState["yielding"];
 }
 
 interface PlayOptions {
-  zones?: readonly TerrainZone[];
+  /** The options the snapshots were served with (link and world), for `behind`. */
+  server?: ServerOptions;
+  /** Client terrain; defaults to the server's. `null`: the client has none. */
+  zones?: readonly TerrainZone[] | null;
+  fps?: number;
+  /** One frame this long (ms) at or after `at`: a hitch, or a tab coming back. */
+  hitch?: { at: number; ms: number };
   from?: number;
   state?: PredictionState;
   casts?: ReadonlyArray<{ t: number; until: number }>;
   dashes?: readonly number[];
 }
 
-/** Feed snapshots and key changes to the client and draw at 60 fps. */
+/** Feed snapshots and key changes to the client and draw at `fps` (60 by default). */
 function play(
   snaps: readonly Snap[],
   keys: readonly Key[],
   o: PlayOptions = {},
 ): { frames: Frame[]; state: PredictionState } {
   const state = o.state ?? createPrediction();
-  const zones = o.zones ?? null;
-  const world = { zones, width: WORLD, height: WORLD };
+  const server = o.server ?? {};
+  const zones = o.zones === undefined ? (server.zones ?? null) : o.zones;
+  const side = server.world ?? WORLD;
+  const world = { zones, width: side, height: side };
+  const frameMs = 1000 / (o.fps ?? 60);
+  let hitch = o.hitch;
+  const nextFrame = (now: number) => {
+    if (!hitch || now < hitch.at) return frameMs;
+    const ms = hitch.ms;
+    hitch = undefined;
+    return ms;
+  };
   const frames: Frame[] = [];
   let clock: SnapshotClock | undefined;
   let samples: PosSample[] | undefined;
@@ -150,7 +194,7 @@ function play(
   let c = 0;
   let d = 0;
   const end = snaps[snaps.length - 1][0];
-  for (let now = o.from ?? snaps[0][0] + 3; now <= end; now += FRAME_MS) {
+  for (let now = o.from ?? snaps[0][0] + 3; now <= end; now += nextFrame(now)) {
     for (; k < keys.length && keys[k].t <= now; k++) {
       setHeldInput(state, keys[k].t, keys[k].vx, keys[k].vy);
     }
@@ -182,6 +226,7 @@ function play(
     if (!clock) continue;
     advancePrediction(state, now, me, world);
     const off = samplePosition(me, renderTimeAt(clock, now));
+    const truth = serverAt(snaps, server, now + (server.uplink ?? 0));
     frames.push({
       now,
       x: state.x,
@@ -190,6 +235,7 @@ function play(
       offY: off.y,
       serverX: me.x,
       serverY: me.y,
+      behind: o.server ? truth.x - state.x : NaN,
       error: state.error,
       yielding: state.yielding,
     });
@@ -206,6 +252,18 @@ const jumpsOf = (frames: Frame[]) =>
     .slice(1)
     .map((f, i) => Math.hypot(f.x - frames[i].x, f.y - frames[i].y));
 const last = <T>(items: T[]) => items[items.length - 1];
+/** Largest increase from one step to the next: 0 or less means the speed only fell. */
+const riseOf = (steps: number[]) =>
+  Math.max(...steps.slice(1).map((step, i) => step - steps[i]));
+/** A millionth of a unit: below anything drawn, above floating-point residue. */
+const EPS = 1e-6;
+/** Serve and play one scenario on the same link, so `behind` is measured. */
+const run = (
+  keys: readonly Key[],
+  until: number,
+  server: ServerOptions,
+  o: PlayOptions = {},
+) => play(serve(keys, until, server), keys, { ...o, server });
 /** Distance walked in one frame at 200 u/s. */
 const WALK_STEP = (200 * FRAME_MS) / 1000;
 
@@ -229,6 +287,70 @@ describe("input-to-motion delay", () => {
     expect(firstMove("offX")).toBeGreaterThanOrEqual(100);
   });
 });
+
+/** Nothing, the test link, and a slow one (120 ms round trip). */
+const LINKS: ReadonlyArray<[string, ServerOptions]> = [
+  ["no latency", {}],
+  ["a jittered link", JITTERY],
+  ["a slow link", { uplink: 60, downlink: 60, jitter: 30 }],
+];
+
+describe.each([30, 60, 144])(
+  "against the simulated server at %i fps",
+  (fps) => {
+    const keys = [{ t: 1000, ...RIGHT }];
+    const start = { x: 50, y: 500 };
+    const walk = 200 / fps;
+
+    it.each(LINKS)("moves within one frame of the key on %s", (_, link) => {
+      const { frames } = run(keys, 2500, { ...link, start }, { fps });
+      const moved = frames.find((f) => f.x > 50.01)!;
+      expect(moved.now - 1000).toBeLessThanOrEqual(1000 / fps);
+      // And that first step is a walking step, not a nudge.
+      expect(moved.x - 50).toBeGreaterThan(walk * 0.7);
+    });
+
+    it.each(LINKS)(
+      "trails the server by under a tick and a half on %s, never ahead",
+      (_, link) => {
+        const { frames } = run(keys, 5000, { ...link, start }, { fps });
+        const behind = between(frames, 1500, 4800).map((f) => f.behind);
+        // One tick of walking is 10 units: the input waits up to that long for a tick.
+        expect(Math.min(...behind)).toBeGreaterThanOrEqual(0);
+        expect(Math.max(...behind)).toBeLessThan(15);
+      },
+    );
+
+    it.each(LINKS)(
+      "walks at the server's speed every frame on %s",
+      (_, link) => {
+        const { frames } = run(keys, 5000, { ...link, start }, { fps });
+        const steps = stepsOf(between(frames, 1500, 4800));
+        expect(Math.min(...steps)).toBeGreaterThan(walk * 0.95);
+        expect(Math.max(...steps)).toBeLessThan(walk * 1.05);
+      },
+    );
+
+    it.each(LINKS)(
+      "covers a 250 ms frame in one step of that length on %s, with no catch-up",
+      (_, link) => {
+        const hitch = { at: 3000, ms: 250 };
+        const { frames } = run(keys, 5000, { ...link, start }, { fps, hitch });
+        const steps = stepsOf(between(frames, 2900, 3700));
+        const long = Math.max(...steps);
+        // 250 ms of walking at 200 u/s, as the server did meanwhile.
+        expect(long).toBeGreaterThan(45);
+        expect(long).toBeLessThan(55);
+        const others = steps.filter((step) => step !== long);
+        expect(Math.min(...others)).toBeGreaterThan(walk * 0.95);
+        expect(Math.max(...others)).toBeLessThan(walk * 1.05);
+        const behind = between(frames, 3250, 3700).map((f) => f.behind);
+        expect(Math.min(...behind)).toBeGreaterThanOrEqual(0);
+        expect(Math.max(...behind)).toBeLessThan(15);
+      },
+    );
+  },
+);
 
 describe("steady walking on jittered snapshots", () => {
   const keys = [{ t: 1000, ...RIGHT }];
@@ -263,8 +385,10 @@ describe("stopping", () => {
   const { frames } = play(serve(keys, 4500, JITTERY), keys);
   const after = between(frames, 3000, 4500);
 
-  it("stops walking on the frame the key is released", () => {
-    expect(stepsOf(after)[0]).toBeLessThan(WALK_STEP * 0.5);
+  it("slows from walking speed and never speeds up again", () => {
+    const steps = stepsOf(between(frames, 3000 - 2 * FRAME_MS, 4500));
+    expect(steps[0]).toBeCloseTo(WALK_STEP, 1);
+    expect(riseOf(steps)).toBeLessThanOrEqual(EPS);
   });
 
   it("never steps backwards", () => {
@@ -273,7 +397,7 @@ describe("stopping", () => {
 
   it("eases the last few units out without a jump", () => {
     expect(last(after).x - after[0].x).toBeLessThan(15);
-    expect(Math.max(...stepsOf(after))).toBeLessThan(WALK_STEP * 0.6);
+    expect(Math.max(...stepsOf(after))).toBeLessThan(WALK_STEP * 1.01);
   });
 
   it("settles exactly on the server's position within half a second", () => {
@@ -288,6 +412,99 @@ describe("stopping", () => {
     expect(new Set(idle.map((f) => `${f.x},${f.y}`))).toEqual(
       new Set(["500,500"]),
     );
+  });
+});
+
+describe.each([30, 60, 144])(
+  "stopping at %i fps, at every tick phase",
+  (fps) => {
+    const frameMs = 1000 / fps;
+    // Where in a tick the release falls decides how far the server still walks.
+    const stops = [0, 10, 20, 30, 40].flatMap((phase) =>
+      [3000, 3013, 3027, 3041].map((release) => {
+        const keys = [
+          { t: 1000, ...RIGHT },
+          { t: release, ...STOP },
+        ];
+        const { frames } = run(keys, 4500, { phase }, { fps });
+        return {
+          frames,
+          release,
+          steps: stepsOf(between(frames, release - 2 * frameMs, 4500)),
+        };
+      }),
+    );
+
+    it("slows monotonically to zero", () => {
+      for (const { steps } of stops) {
+        expect(steps[0]).toBeCloseTo(200 / fps, 1);
+        expect(riseOf(steps)).toBeLessThanOrEqual(EPS);
+        expect(last(steps)).toBe(0);
+      }
+    });
+
+    it("never steps backwards", () => {
+      for (const { steps } of stops) {
+        expect(Math.min(...steps)).toBeGreaterThanOrEqual(0);
+      }
+    });
+
+    it("ends on the server's rest position within 400 ms", () => {
+      for (const { frames, release } of stops) {
+        const end = last(frames);
+        expect([end.x, end.y]).toEqual([end.serverX, end.serverY]);
+        expect(end.behind).toBe(0);
+        const landed = frames.find((f) => f.now > release && f.x === end.x)!;
+        expect(landed.now - release).toBeLessThan(400);
+      }
+    });
+  },
+);
+
+describe("a release the server takes one tick later than estimated", () => {
+  // The round trip is only known to within a tick, and is taken low so a stop never
+  // overshoots. When that is a tick short the rest point moves on 10 units after the
+  // stop began: the one case where the speed may rise again, and only to the floor.
+  const link = { uplink: 60, downlink: 60, jitter: 30 };
+  const FLOOR_STEP = (60 * FRAME_MS) / 1000;
+  const stops = [0, 10, 20, 30, 40].flatMap((phase) =>
+    [3000, 3013, 3027, 3041].map((release) => {
+      const keys = [
+        { t: 1000, ...RIGHT },
+        { t: release, ...STOP },
+      ];
+      const { frames } = run(keys, 4500, { ...link, phase });
+      return {
+        frames,
+        release,
+        steps: stepsOf(between(frames, release, 4500)),
+      };
+    }),
+  );
+
+  it("is among the cases", () => {
+    expect(stops.some(({ steps }) => riseOf(steps) > EPS)).toBe(true);
+  });
+
+  it("never steps backwards and ends on the server's rest position", () => {
+    for (const { frames, steps } of stops) {
+      expect(Math.min(...steps)).toBeGreaterThanOrEqual(0);
+      expect(last(frames).x).toBe(last(frames).serverX);
+      expect(last(frames).behind).toBe(0);
+    }
+  });
+
+  it("speeds up again to the floor at most, and is over within 600 ms", () => {
+    for (const { frames, release, steps } of stops) {
+      const slowed = steps.findIndex((step) => step <= FLOOR_STEP);
+      expect(Math.max(...steps.slice(slowed))).toBeLessThanOrEqual(
+        FLOOR_STEP + EPS,
+      );
+      const landed = frames.find(
+        (f) => f.now > release && f.x === last(frames).x,
+      )!;
+      expect(landed.now - release).toBeLessThan(600);
+    }
   });
 });
 
@@ -341,6 +558,43 @@ describe("crossing a terrain boundary", () => {
     expect(Math.max(...walking.map((f) => f.error))).toBeLessThan(3);
     expect(walking.every((f) => f.yielding === null)).toBe(true);
     expect(state.baseSpeed).toBeCloseTo(200, 0);
+  });
+});
+
+describe("the large test map (map-for-test-large)", () => {
+  // Grass from the ring road at x = 1030, mud (x0.5) from x = 1200.
+  const table = terrainZonesFor("map-for-test-large");
+  const zones = table ?? [];
+  const keys = [
+    { t: 1000, ...RIGHT },
+    { t: 3800, ...STOP },
+  ];
+  const server = {
+    ...JITTERY,
+    zones,
+    world: 4000,
+    start: { x: 1060, y: 1500 },
+  };
+
+  it("predicts through the mud edge with the client's zone table", () => {
+    expect(table).not.toBeNull();
+    const { frames } = run(keys, 4800, server);
+    const walking = between(frames, 1500, 3800);
+    expect(last(walking).x).toBeGreaterThan(1300);
+    const steps = stepsOf(walking);
+    expect(Math.min(...steps)).toBeGreaterThan(WALK_STEP * 0.45);
+    expect(Math.max(...steps)).toBeLessThan(WALK_STEP * 1.05);
+    expect(walking.every((f) => f.yielding === null)).toBe(true);
+    const behind = walking.map((f) => f.behind);
+    expect(Math.min(...behind)).toBeGreaterThanOrEqual(0);
+    expect(Math.max(...behind)).toBeLessThan(15);
+  });
+
+  it("without a zone table still predicts, and never steps backwards", () => {
+    const { frames } = run(keys, 4800, server, { zones: null });
+    expect(frames.every((f) => f.yielding === null)).toBe(true);
+    expect(Math.min(...stepsOf(frames))).toBeGreaterThanOrEqual(0);
+    expect(last(frames).x).toBe(last(frames).serverX);
   });
 });
 
@@ -425,6 +679,27 @@ describe("death, respawn and teleport", () => {
     expect(frames[moved - 1].x).toBe(500);
   });
 
+  it.each([
+    ["standing", 500, []],
+    ["walking", 300, [{ t: 1000, ...RIGHT }]],
+  ])("snaps to a short debug teleport while %s", (_, x, keys) => {
+    // From about (500, 500), 50 units: under the 100-unit rule, far beyond a tick.
+    const start = { x, y: 500 };
+    const teleport = { at: 2000, x: 540, y: 530 };
+    const { frames } = play(
+      serve(keys, 3000, { ...JITTERY, start, teleport }),
+      keys,
+    );
+    const moved = frames.findIndex((f) => f.serverY === 530);
+    expect(Math.abs(frames[moved - 1].y - 500)).toBeLessThan(0.01);
+    expect(Math.abs(frames[moved].y - 530)).toBeLessThan(0.01);
+    expect(Math.abs(frames[moved].x - frames[moved].serverX)).toBeLessThan(25);
+    // And nothing left to ease out afterwards.
+    expect(Math.max(...jumpsOf(frames.slice(moved)))).toBeLessThan(
+      WALK_STEP * 1.2,
+    );
+  });
+
   it("follows the server while dead and snaps to the respawn point", () => {
     const keys = [{ t: 1000, ...RIGHT }];
     const { frames } = play(
@@ -458,6 +733,19 @@ describe("death, respawn and teleport", () => {
     resetPrediction(state, 5000);
     expect(state.ready).toBe(false);
     expect(state.history).toEqual([{ t: 5000, mx: 1, my: 0 }]);
+  });
+
+  it("starts a new connection with no key held and no round trip", () => {
+    const state = createPrediction();
+    setHeldInput(state, 0, 2, 0);
+    state.delays = [180, 190];
+    state.rtt = 140;
+    state.ready = true;
+    restartPrediction(state, 5000);
+    expect(state.ready).toBe(false);
+    expect([state.heldX, state.heldY, state.rtt]).toEqual([0, 0, 0]);
+    expect(state.delays).toEqual([]);
+    expect(state.history).toEqual([]);
   });
 });
 
@@ -545,6 +833,24 @@ describe("input normalisation (server rule)", () => {
     setHeldInput(state, 1, 0.005, 0);
     expect(state.heldX).toBe(0);
     expect(state.history).toHaveLength(2);
+  });
+
+  it("takes a non-finite vector for no input", () => {
+    const state = createPrediction();
+    setHeldInput(state, 0, 2, 0);
+    setHeldInput(state, 1, NaN, 0);
+    expect([state.heldX, state.heldY]).toEqual([0, 0]);
+    setHeldInput(state, 2, 0, Infinity);
+    expect([state.heldX, state.heldY]).toEqual([0, 0]);
+  });
+
+  it("recovers from a non-finite drawn position on the next frame", () => {
+    const keys = [{ t: 1000, ...RIGHT }];
+    const snaps = serve(keys, 3000, JITTERY);
+    const { state } = play(snaps.slice(0, 30), keys);
+    state.x = NaN;
+    const { frames } = play(snaps, keys, { state, from: 1600 });
+    expect(Number.isFinite(frames[0].x)).toBe(true);
   });
 
   it("records a change only when the input in effect changes", () => {
