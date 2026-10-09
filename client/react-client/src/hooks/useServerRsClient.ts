@@ -572,26 +572,33 @@ export const useServerRsClient = (
       stateRef.current.height = height;
       stateRef.current.viewportSize = viewportSize;
 
-      if (
-        isSwitchingMap &&
-        wsRef.current &&
-        wsRef.current.readyState === WebSocket.OPEN
-      ) {
+      if (isSwitchingMap) {
+        // Nothing from the old room may leak into the new one.
         stateRef.current.players.clear();
         stateRef.current.mobs.clear();
+        targetIdRef.current = 0;
+        aimRef.current = { x: 0, y: 0 };
+        sentTargetRef.current = { x: 0, y: 0 };
         const oldWs = wsRef.current;
-        wsRef.current = null;
-        oldWs.close();
-        await connect(mapId);
-      } else if (
-        !wsRef.current ||
-        wsRef.current.readyState !== WebSocket.OPEN
-      ) {
+        if (
+          oldWs &&
+          (oldWs.readyState === WebSocket.OPEN ||
+            oldWs.readyState === WebSocket.CONNECTING)
+        ) {
+          // Detach first: handlers are guarded by wsRef identity, so the abandoned
+          // socket's late open/message/close cannot write state or reconnect.
+          wsRef.current = null;
+          oldWs.close();
+        }
+      }
+      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
         await connect(mapId);
       }
+      // A newer joinRoom took over while we awaited: it owns the state now.
+      if (currentMapRef.current !== mapId) return;
 
       setGameState((prev) =>
-        prev
+        prev && !isSwitchingMap
           ? {
               ...prev,
               mapId,
@@ -691,7 +698,16 @@ export const useServerRsClient = (
   }, []);
 
   const respawn = useCallback(() => {
-    sendInput(0, 0, false, 0, 0, 0, 0, true);
+    sendInput(
+      moveRef.current.vx,
+      moveRef.current.vy,
+      attackHeldRef.current,
+      0,
+      0,
+      0,
+      0,
+      true,
+    );
   }, [sendInput]);
 
   const startSimulation = useCallback(() => {

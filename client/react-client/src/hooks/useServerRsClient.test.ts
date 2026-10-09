@@ -21,6 +21,8 @@ import { getMobDisplayName } from "../utils/mobUtils";
 // Mock WebSocket
 class MockWebSocket {
   static instances: MockWebSocket[] = [];
+  /** When set, sockets stay CONNECTING until a test opens them by hand. */
+  static manualOpen = false;
   static readonly CONNECTING = 0;
   static readonly OPEN = 1;
   static readonly CLOSING = 2;
@@ -33,7 +35,7 @@ class MockWebSocket {
 
   url: string;
   binaryType: string = "blob";
-  readyState: number = 1; // OPEN
+  readyState: number = MockWebSocket.manualOpen ? 0 : 1; // OPEN unless manual
   onopen: (() => void) | null = null;
   onmessage: ((event: { data: any }) => void) | null = null;
   onclose: (() => void) | null = null;
@@ -44,7 +46,7 @@ class MockWebSocket {
     this.url = url;
     MockWebSocket.instances.push(this);
     setTimeout(() => {
-      if (this.onopen) this.onopen();
+      if (!MockWebSocket.manualOpen && this.onopen) this.onopen();
     }, 0);
   }
 
@@ -100,6 +102,7 @@ function createTestSnapshotBuffer(tick: number): Uint8Array {
 describe("useServerRsClient", () => {
   beforeEach(() => {
     MockWebSocket.instances = [];
+    MockWebSocket.manualOpen = false;
     localStorage.clear();
   });
 
@@ -351,6 +354,89 @@ describe("useServerRsClient", () => {
     });
     expect(result.current.roomId).toBe("server-rs-map-for-test-projectile");
     expect(result.current.gameState?.mapId).toBe("map-for-test-projectile");
+  });
+
+  it("rapid room switch before the first socket opens leaves one live socket on the LAST room", async () => {
+    MockWebSocket.manualOpen = true;
+    const { result } = renderHook(() =>
+      useServerRsClient({
+        serverHost: "localhost",
+        serverPort: 2567,
+        useSSL: false,
+      }),
+    );
+    let first!: Promise<void>;
+    let second!: Promise<void>;
+    act(() => {
+      first = result.current.joinRoom("map-for-test-terrain");
+      second = result.current.joinRoom("map-for-test-projectile");
+    });
+    const live = MockWebSocket.instances.filter((w) => w.readyState !== 3);
+    expect(live).toHaveLength(1);
+    expect(live[0].url).toContain("map=map-for-test-projectile");
+
+    // A late open/close from the abandoned socket must not touch state.
+    const abandoned = MockWebSocket.instances[0];
+    act(() => {
+      abandoned.readyState = 1;
+      abandoned.onopen?.();
+    });
+    expect(result.current.isConnected).toBe(false);
+
+    await act(async () => {
+      live[0].readyState = 1;
+      live[0].onopen?.();
+      await Promise.all([first, second]);
+    });
+    expect(result.current.isConnected).toBe(true);
+    expect(result.current.roomId).toBe("server-rs-map-for-test-projectile");
+    expect(result.current.gameState?.mapId).toBe("map-for-test-projectile");
+  });
+
+  it("a room switch drops the old room's target id and projectiles", async () => {
+    const { result } = await connected();
+    act(() => {
+      result.current.sendPlayerAction("attack", true, {
+        targetId: 77,
+        x: 40,
+        y: 50,
+      });
+      MockWebSocket.instances[0].onmessage?.(
+        snap(1, [{ id: 900, type: EntityType.Projectile, x: 33, ownerId: 11 }]),
+      );
+    });
+    expect(result.current.gameState!.projectiles!.size).toBe(1);
+    await act(async () => {
+      await result.current.joinRoom("map-for-test-terrain");
+    });
+    expect(result.current.gameState!.projectiles?.size ?? 0).toBe(0);
+    expect(result.current.sentTargetRef.current).toEqual({ x: 0, y: 0 });
+    const ws = MockWebSocket.instances[1];
+    act(() => {
+      result.current.updatePlayerInput(1, 0);
+    });
+    const last = ws.sentMessages[ws.sentMessages.length - 1];
+    const input = ClientInput.getRootAsClientInput(
+      new flatbuffers.ByteBuffer(last),
+    );
+    expect(input.targetId()).toBe(0);
+    expect(input.targetX()).toBe(0);
+  });
+
+  it("respawn() carries the held move and attack instead of zeroing them", async () => {
+    const { result } = await connected();
+    const ws = MockWebSocket.instances[0];
+    act(() => {
+      result.current.updatePlayerInput(1, 0);
+      result.current.sendPlayerAction("attack", true);
+      result.current.respawn();
+    });
+    const input = ClientInput.getRootAsClientInput(
+      new flatbuffers.ByteBuffer(ws.sentMessages[ws.sentMessages.length - 1]),
+    );
+    expect(input.respawn()).toBe(true);
+    expect(input.moveX()).toBe(1);
+    expect(input.attack()).toBe(true);
   });
 
   const frame = (tick: number, mobX: number) => {
