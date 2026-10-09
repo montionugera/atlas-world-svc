@@ -64,6 +64,8 @@ describe("GameRenderer frame loop", () => {
         );
       },
     );
+    // jsdom has no canvas: the static world layers fall back to drawing directly.
+    jest.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
     raf = jest.spyOn(window, "requestAnimationFrame").mockReturnValue(1);
     cancel = jest.spyOn(window, "cancelAnimationFrame").mockImplementation();
   });

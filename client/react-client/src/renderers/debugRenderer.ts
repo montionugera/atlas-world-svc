@@ -186,26 +186,41 @@ export function drawTerrainZones(
     ctx.lineWidth = 2 * px;
     ctx.strokeRect(z.x, z.y, z.width, z.height);
   });
-  const view = opts.labelView;
-  if (view) {
-    ctx.font = `700 ${11 * px}px monospace`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    for (const z of zones) {
-      const left = Math.max(z.x, view.minX);
-      const right = Math.min(z.x + z.width, view.maxX);
-      const top = Math.max(z.y, view.minY);
-      if (left >= right || top >= Math.min(z.y + z.height, view.maxY)) continue;
-      const def = TERRAIN_TYPES[z.terrain];
-      const label = `${def.label.toUpperCase()} x${def.speedMultiplier.toFixed(2)}`;
-      const x = (left + right) / 2;
-      const y = top + 4 * px;
-      ctx.lineWidth = 3 * px;
-      ctx.strokeStyle = "rgba(0, 0, 0, 0.9)";
-      ctx.strokeText(label, x, y);
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText(label, x, y);
-    }
+  ctx.restore();
+  if (opts.labelView) {
+    drawTerrainZoneLabels(ctx, zones, viewScale, opts.labelView);
+  }
+}
+
+/**
+ * Label each zone at the top-centre of the part of it inside `view`. Depends on the
+ * camera, unlike the tint, so it is drawn every frame.
+ */
+export function drawTerrainZoneLabels(
+  ctx: CanvasRenderingContext2D,
+  zones: readonly TerrainZone[],
+  viewScale: number,
+  view: WorldRect,
+): void {
+  const px = 1 / viewScale;
+  ctx.save();
+  ctx.font = `700 ${11 * px}px monospace`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  for (const z of zones) {
+    const left = Math.max(z.x, view.minX);
+    const right = Math.min(z.x + z.width, view.maxX);
+    const top = Math.max(z.y, view.minY);
+    if (left >= right || top >= Math.min(z.y + z.height, view.maxY)) continue;
+    const def = TERRAIN_TYPES[z.terrain];
+    const label = `${def.label.toUpperCase()} x${def.speedMultiplier.toFixed(2)}`;
+    const x = (left + right) / 2;
+    const y = top + 4 * px;
+    ctx.lineWidth = 3 * px;
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.9)";
+    ctx.strokeText(label, x, y);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(label, x, y);
   }
   ctx.restore();
 }

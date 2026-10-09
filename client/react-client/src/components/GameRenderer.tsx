@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { GameEventInfo, GameState } from "../types/game";
 import { calculateScale, clearCanvas } from "../utils/drawingUtils";
-import { drawGrid, drawGridCoordinates } from "../utils/gridUtils";
+import { drawGridCoordinates } from "../utils/gridUtils";
 import type { AoeReticle } from "../utils/aoeReticle";
 import {
   interpolateEntities,
@@ -14,17 +14,17 @@ import { drawProjectiles } from "../renderers/projectileRenderer";
 import { drawZoneEffects } from "../renderers/zoneEffectRenderer";
 import { drawPlayers } from "../renderers/playerRenderer";
 import {
-  drawTerrain,
+  drawTerrainRiver,
   drawFloatingTexts,
   FloatingText,
 } from "../renderers/terrainRenderer";
 import {
-  drawStaticBlocks,
-  drawTerrainZones,
+  drawTerrainZoneLabels,
   drawWorldDebug,
 } from "../renderers/debugRenderer";
+import { drawStaticOver, drawStaticUnder } from "../renderers/staticLayers";
 import { mapDef } from "../config/maps";
-import { staticBlocksFor, terrainZonesFor } from "../config/terrain";
+import { terrainZonesFor } from "../config/terrain";
 import {
   Timings,
   TimingKey,
@@ -241,65 +241,35 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         ctx.scale(scale, scale);
         ctx.translate(-cameraX, -cameraY);
 
-        // 1. Draw Terrain, Biomes, Roads, River, and Town Buildings
+        // 1. Terrain, biomes, roads and town; 2. world boundaries; 3. grid overlay.
+        // All static, so blitted from cached layers; only the river is drawn live.
         const map = mapDef(gameState.mapId);
-        const terrainZones = terrainZonesFor(gameState.mapId);
+        const gridSize = Math.max(10, Math.round(viewportSize / 5));
+        const staticSpec = {
+          mapId: gameState.mapId,
+          width: gameState.width,
+          height: gameState.height,
+          scale,
+          terrainTint: debug.terrain,
+          gridSize: debug.world ? gridSize : 0,
+        };
+        drawStaticUnder(ctx, staticSpec);
         if (map.art === "frontier") {
-          drawTerrain(
-            ctx,
-            gameState.width,
-            gameState.height,
-            1,
-            scale,
-            performance.now(),
-          );
-        } else {
-          // Plain test map: uncovered ground is grass.
-          drawTerrainZones(
-            ctx,
-            [
-              {
-                terrain: "grass",
-                x: 0,
-                y: 0,
-                width: gameState.width,
-                height: gameState.height,
-              },
-            ],
-            scale,
-            { fillAlpha: 0.85 },
-          );
+          drawTerrainRiver(ctx, 1, scale, performance.now());
         }
         lap("terrain");
-        // Terrain speed zones: the map itself on plain maps, a debug tint over the art.
-        if (terrainZones && (map.art === "plain" || debug.terrain)) {
+        drawStaticOver(ctx, staticSpec);
+        // Zone labels follow the camera (top-centre of the visible part of a zone).
+        const terrainZones = terrainZonesFor(gameState.mapId);
+        if (terrainZones && debug.terrain) {
           const halfW = canvas.width / 2 / scale;
           const halfH = canvas.height / 2 / scale;
-          drawTerrainZones(ctx, terrainZones, scale, {
-            fillAlpha: map.art === "plain" ? 0.85 : 0.3,
-            labelView: debug.terrain
-              ? {
-                  minX: cameraX - halfW,
-                  minY: cameraY - halfH,
-                  maxX: cameraX + halfW,
-                  maxY: cameraY + halfH,
-                }
-              : undefined,
+          drawTerrainZoneLabels(ctx, terrainZones, scale, {
+            minX: cameraX - halfW,
+            minY: cameraY - halfH,
+            maxX: cameraX + halfW,
+            maxY: cameraY + halfH,
           });
-        }
-        if (map.art === "plain") {
-          drawStaticBlocks(ctx, staticBlocksFor(gameState.mapId), scale);
-        }
-
-        // 2. World Boundaries
-        ctx.strokeStyle = "#ff3838";
-        ctx.lineWidth = 3 / scale;
-        ctx.strokeRect(0, 0, gameState.width, gameState.height);
-
-        // 3. Coordinate Grid Overlay
-        const gridSize = Math.max(10, Math.round(viewportSize / 5));
-        if (debug.world) {
-          drawGrid(ctx, gameState.width, gameState.height, 1, scale, gridSize);
         }
         lap("tint+grid");
         if (gameState.zoneEffects) {
