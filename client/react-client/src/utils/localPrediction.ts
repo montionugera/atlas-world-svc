@@ -112,9 +112,8 @@ export interface PredictionState {
   calibrated: boolean;
   /** Client -> server -> client delay the deadline implies (readout only). */
   rtt: number;
-  /** `arrival - simTime` of the most punctual recent snapshot, and of the latest. */
+  /** `arrival - simTime` of the most punctual recent snapshot. */
   base: number;
-  late: number;
   /** Newest input the server has acknowledged; 0: unknown, so nothing is predicted. */
   ack: number;
   /** An input sent by client time `S + deadline` is in the tick at simulation time `S`. */
@@ -165,7 +164,6 @@ export function createPrediction(): PredictionState {
     calibrated: false,
     rtt: 0,
     base: 0,
-    late: 0,
     ack: 0,
     deadline: 0,
     marks: [],
@@ -295,15 +293,6 @@ function walkSpeedAt(
 }
 
 /**
- * Client time from which the tick after the newest snapshot is taken to be running
- * late: its snapshot is overdue by more than any recent one was, and by a round trip
- * besides, so an input sent now is still in time for it whatever the deadline says.
- */
-function openUntil(s: PredictionState): number {
-  return s.serverAt + SNAPSHOT_INTERVAL_MS + s.late + s.rtt;
-}
-
-/**
  * Record the input in effect from `t` (held keys, or none during a cast); `seq` is the
  * input that carries it to the server, 0 when the server changes it by itself.
  */
@@ -313,9 +302,7 @@ function pushEffective(s: PredictionState, t: number, seq: number): void {
   const my = locked ? 0 : s.heldY;
   const last = s.history[s.history.length - 1] ?? NO_INPUT;
   if (last.mx === mx && last.my === my) return;
-  const open = s.ack !== 0 && t > openUntil(s);
-  const due = open ? s.serverAt + SNAPSHOT_INTERVAL_MS : t - s.deadline;
-  s.history.push({ t, mx, my, seq, due });
+  s.history.push({ t, mx, my, seq, due: t - s.deadline });
   if (s.history.length > HISTORY) s.history.shift();
 }
 
@@ -399,13 +386,10 @@ export function observeServer(
 ): void {
   if (offsets.length > 0) {
     let base = offsets[0];
-    let late = offsets[0];
     for (let i = 1; i < offsets.length; i++) {
       if (offsets[i] < base) base = offsets[i];
-      if (offsets[i] > late) late = offsets[i];
     }
     s.base = base;
-    s.late = late;
   }
   // A server that stalls skips ticks, so simulation time falls whole ticks behind,
   // and the marks made before it with it.
@@ -447,9 +431,7 @@ export function observeServer(
   // arrives. The latest of those is taken, and never closer to `top` than the margin:
   // an input assumed to make the earlier tick stops short and walks on, one assumed to
   // make the later tick overshoots and has to walk back. A mark a whole tick below
-  // `top` was a slower input, and bounds nothing. The margin may carry it past the
-  // snapshot's earliest arrival, up to its latest: on a link shorter than the margin
-  // a tick is open until it has been seen, as it is when the server runs it late.
+  // `top` was a slower input, and bounds nothing.
   let top = -Infinity;
   for (let i = 0; i < s.marks.length; i++) {
     if (s.marks[i] > top) top = s.marks[i];
@@ -459,9 +441,9 @@ export function observeServer(
     const hi = s.marks[i] + SNAPSHOT_INTERVAL_MS - MISSED_BY_MS;
     if (hi > top && hi < deadline) deadline = hi;
   }
-  deadline = Math.min(Math.max(deadline, top + DEADLINE_MARGIN_MS), s.late);
+  deadline = Math.min(Math.max(deadline, top + DEADLINE_MARGIN_MS), s.base);
   s.deadline = deadline;
-  s.rtt = Math.max(s.base - deadline, 0);
+  s.rtt = s.base - deadline;
   // Whatever was sent before the first echo was placed with no deadline to go by.
   for (let i = 0; unplaced && i < s.history.length; i++) {
     s.history[i].due = s.history[i].t - deadline;
@@ -628,12 +610,8 @@ export function advancePrediction(
   const moving = s.yielding === null && (input.mx !== 0 || input.my !== 0);
   const idle = s.yielding === null && !moving;
   // With no key held the target is where the server will come to rest: the replay
-  // runs on until the tick that takes the release. Walking, it waits at a tick that
-  // is running late: a release now would still be in it, and stop where that began.
-  const open = openUntil(s);
-  const simNow = idle
-    ? Infinity
-    : Math.min(now, open) - s.deadline - SNAPSHOT_INTERVAL_MS;
+  // runs on until the tick that takes the release.
+  const simNow = idle ? Infinity : now - s.deadline - SNAPSHOT_INTERVAL_MS;
   serverPathAt(s, me, world, simNow, s.yielding === null);
   if (
     !s.ready ||
@@ -649,7 +627,7 @@ export function advancePrediction(
   }
 
   const walkSpeed = walkSpeedAt(s, world.zones, s.x, s.y);
-  if (moving && now <= open) {
+  if (moving) {
     const step = (walkSpeed * dt) / 1000;
     s.x = clamp(s.x + input.mx * step, world.width);
     s.y = clamp(s.y + input.my * step, world.height);
