@@ -6,6 +6,7 @@ import { CANVAS_CONFIG } from "../config/gameConfig";
 import { useGameStateContext } from "../contexts/GameStateContext";
 import { InputDebugPanel } from "./InputDebugPanel";
 import { calculateScale } from "../utils/drawingUtils";
+import { SKILL_DEFINITIONS } from "../config/skills";
 
 interface ColyseusGameCanvasProps {
   client: UseColyseusClientReturn;
@@ -17,6 +18,16 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mousePositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 }); // Track mouse world position
   const { setGameState } = useGameStateContext();
+
+  const [cooldowns, setCooldowns] = React.useState<Record<string, number>>({});
+  const [activeCast, setActiveCast] = React.useState<{
+    skillId: string;
+    name: string;
+    icon: string;
+    startTime: number;
+    durationMs: number;
+  } | null>(null);
+  const [, setTickCounter] = React.useState(0);
 
   const {
     isConnected: clientConnected,
@@ -39,6 +50,144 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     ? !localPlayer.isAlive || (localPlayer.health ?? 1) <= 0
     : false;
 
+  // Resolve aim towards mouse, or fallback to nearest mob / movement direction
+  const resolveAimCoordinates = React.useCallback(
+    (
+      rawX: number,
+      rawY: number,
+      player?: { x: number; y: number; vx?: number; vy?: number },
+      mobs?: Map<string, any>,
+    ): { x: number; y: number } => {
+      if ((rawX !== 0 || rawY !== 0) && player) {
+        return { x: rawX, y: rawY };
+      }
+      if (!player) return { x: rawX, y: rawY };
+
+      if (mobs && mobs.size > 0) {
+        let nearestMob: { x: number; y: number } | null = null;
+        let minDistanceSq = 350 * 350;
+        mobs.forEach((mob) => {
+          if (mob.isAlive === false) return;
+          const dSq = (mob.x - player.x) ** 2 + (mob.y - player.y) ** 2;
+          if (dSq < minDistanceSq) {
+            minDistanceSq = dSq;
+            nearestMob = { x: mob.x, y: mob.y };
+          }
+        });
+        if (nearestMob) {
+          return nearestMob;
+        }
+      }
+
+      const vx = player.vx || 0;
+      const vy = player.vy || 0;
+      if (Math.hypot(vx, vy) > 0.1) {
+        const len = Math.hypot(vx, vy);
+        return {
+          x: player.x + (vx / len) * 150,
+          y: player.y + (vy / len) * 150,
+        };
+      }
+
+      return { x: player.x + 150, y: player.y };
+    },
+    [],
+  );
+
+  const handleTriggerSkill = React.useCallback(
+    (skillId: string) => {
+      if (isDead) return;
+      const def = SKILL_DEFINITIONS[skillId];
+      if (!def) return;
+
+      const now = Date.now();
+      const cdEnd = cooldowns[skillId] || 0;
+      const gcdEnd = cooldowns["gcd"] || 0;
+      if (now < cdEnd || now < gcdEnd || activeCast !== null) {
+        return;
+      }
+
+      const mousePos = mousePositionRef.current;
+      const aim = resolveAimCoordinates(
+        mousePos.x,
+        mousePos.y,
+        localPlayer,
+        gameState?.mobs,
+      );
+
+      const newCooldowns = { ...cooldowns };
+      if (def.cooldown > 0) {
+        newCooldowns[skillId] = now + def.cooldown * 1000;
+      }
+      if (def.gcd > 0) {
+        newCooldowns["gcd"] = now + def.gcd * 1000;
+      }
+      setCooldowns(newCooldowns);
+
+      if (def.castTime > 0) {
+        const castDurationMs = def.castTime * 1000;
+        setActiveCast({
+          skillId: def.id,
+          name: def.name,
+          icon: def.icon,
+          startTime: now,
+          durationMs: castDurationMs,
+        });
+
+        if (localPlayer) {
+          localPlayer.castingUntil = now + castDurationMs;
+          localPlayer.castDuration = castDurationMs;
+        }
+      }
+
+      if (sendPlayerAction) {
+        sendPlayerAction("useSkill", true, {
+          skillId: def.id,
+          x: aim.x,
+          y: aim.y,
+        });
+      }
+    },
+    [
+      isDead,
+      cooldowns,
+      activeCast,
+      localPlayer,
+      gameState?.mobs,
+      resolveAimCoordinates,
+      sendPlayerAction,
+    ],
+  );
+
+  const wrappedSendPlayerAction = React.useCallback(
+    (action: string, pressed: boolean, options?: any) => {
+      if (action === "useSkill" && options?.skillId && pressed) {
+        handleTriggerSkill(options.skillId);
+        return;
+      }
+      if (sendPlayerAction) {
+        sendPlayerAction(action, pressed, options);
+      }
+    },
+    [handleTriggerSkill, sendPlayerAction],
+  );
+
+  // Ticking effect for cooldowns and cast bar progress
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = Date.now();
+      if (activeCast && now >= activeCast.startTime + activeCast.durationMs) {
+        setActiveCast(null);
+        if (localPlayer) {
+          localPlayer.castingUntil = 0;
+        }
+      }
+      setTickCounter((c) => c + 1);
+    }, 50);
+
+    return () => clearInterval(timer);
+  }, [activeCast, localPlayer]);
+
   // Update context when gameState or roomId changes
   useEffect(() => {
     setGameState(gameState, roomId, clientConnected);
@@ -47,7 +196,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
   // Handle keyboard controls
   const { pressedKeys } = useKeyboardControls({
     updatePlayerInput,
-    sendPlayerAction,
+    sendPlayerAction: wrappedSendPlayerAction,
     switchWeapon,
     mousePositionRef,
     respawn,
@@ -284,6 +433,73 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
         />
       </div>
 
+      {/* Active Casting Bar */}
+      {activeCast && (
+        <div
+          style={{
+            width: "360px",
+            backgroundColor: "rgba(15, 23, 42, 0.95)",
+            borderRadius: "10px",
+            border: "1px solid rgba(243, 156, 18, 0.6)",
+            boxShadow: "0 0 15px rgba(243, 156, 18, 0.4)",
+            padding: "8px 14px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+            userSelect: "none",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "0.85rem",
+              fontWeight: "bold",
+              color: "#f1c40f",
+            }}
+          >
+            <span>
+              {activeCast.icon} Casting {activeCast.name}...
+            </span>
+            <span>
+              {Math.max(
+                0,
+                (activeCast.startTime + activeCast.durationMs - Date.now()) /
+                  1000,
+              ).toFixed(1)}
+              s
+            </span>
+          </div>
+          <div
+            style={{
+              width: "100%",
+              height: "8px",
+              backgroundColor: "rgba(255, 255, 255, 0.15)",
+              borderRadius: "4px",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                height: "100%",
+                width: `${Math.min(
+                  100,
+                  Math.max(
+                    0,
+                    ((Date.now() - activeCast.startTime) /
+                      activeCast.durationMs) *
+                      100,
+                  ),
+                )}%`,
+                background: "linear-gradient(90deg, #e67e22, #f1c40f)",
+                boxShadow: "0 0 8px #f1c40f",
+                transition: "width 0.05s linear",
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Interactive Action / Skill Bar */}
       <div
         style={{
@@ -327,105 +543,63 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           </div>
         </button>
 
-        {/* Skill 1: Meteor Shower */}
-        <button
-          onClick={() => {
-            if (sendPlayerAction)
-              sendPlayerAction("useSkill", true, {
-                skillId: "skill_1",
-                x: mousePositionRef.current.x,
-                y: mousePositionRef.current.y,
-              });
-          }}
-          style={actionBtnStyle("#e67e22")}
-          title="Meteor Shower (Key 1)"
-        >
-          <span style={{ fontSize: "1.2rem" }}>🔥</span>
-          <div style={{ textAlign: "left" }}>
-            <div style={{ fontWeight: "bold" }}>Meteor</div>
-            <div style={{ fontSize: "0.75rem", opacity: 0.8 }}>Key [1]</div>
-          </div>
-        </button>
+        {/* Dynamic Skill Action Buttons */}
+        {Object.values(SKILL_DEFINITIONS).map((skill) => {
+          const cdEnd = Math.max(
+            cooldowns[skill.id] || 0,
+            skill.gcd > 0 ? cooldowns["gcd"] || 0 : 0,
+          );
+          const remainingSec = Math.max(0, (cdEnd - Date.now()) / 1000);
+          const isOnCooldown = remainingSec > 0;
+          const isCastingThis = activeCast?.skillId === skill.id;
+          const isDisabled =
+            isDead ||
+            isOnCooldown ||
+            (activeCast !== null && skill.castTime > 0);
 
-        {/* Skill 2: Precision Strike */}
-        <button
-          onClick={() => {
-            if (sendPlayerAction)
-              sendPlayerAction("useSkill", true, {
-                skillId: "skill_2",
-                x: mousePositionRef.current.x,
-                y: mousePositionRef.current.y,
-              });
-          }}
-          style={actionBtnStyle("#8e44ad")}
-          title="Precision Strike (Key 2)"
-        >
-          <span style={{ fontSize: "1.2rem" }}>🪨</span>
-          <div style={{ textAlign: "left" }}>
-            <div style={{ fontWeight: "bold" }}>Precision</div>
-            <div style={{ fontSize: "0.75rem", opacity: 0.8 }}>Key [2]</div>
-          </div>
-        </button>
-
-        {/* Skill 3: Blizzard */}
-        <button
-          onClick={() => {
-            if (sendPlayerAction)
-              sendPlayerAction("useSkill", true, {
-                skillId: "skill_3",
-                x: mousePositionRef.current.x,
-                y: mousePositionRef.current.y,
-              });
-          }}
-          style={actionBtnStyle("#3498db")}
-          title="Blizzard (Key 3)"
-        >
-          <span style={{ fontSize: "1.2rem" }}>❄️</span>
-          <div style={{ textAlign: "left" }}>
-            <div style={{ fontWeight: "bold" }}>Blizzard</div>
-            <div style={{ fontSize: "0.75rem", opacity: 0.8 }}>Key [3]</div>
-          </div>
-        </button>
-
-        {/* Skill 4: Thunder Strike */}
-        <button
-          onClick={() => {
-            if (sendPlayerAction)
-              sendPlayerAction("useSkill", true, {
-                skillId: "skill_4",
-                x: mousePositionRef.current.x,
-                y: mousePositionRef.current.y,
-              });
-          }}
-          style={actionBtnStyle("#f1c40f")}
-          title="Thunder Strike (Key 4)"
-        >
-          <span style={{ fontSize: "1.2rem" }}>⚡</span>
-          <div style={{ textAlign: "left" }}>
-            <div style={{ fontWeight: "bold" }}>Thunder</div>
-            <div style={{ fontSize: "0.75rem", opacity: 0.8 }}>Key [4]</div>
-          </div>
-        </button>
-
-        {/* Skill 5: Dash */}
-        <button
-          onClick={() => {
-            if (sendPlayerAction)
-              sendPlayerAction("useSkill", true, {
-                skillId: "skill_dash",
-                x: mousePositionRef.current.x,
-                y: mousePositionRef.current.y,
-              });
-          }}
-          style={actionBtnStyle("#1abc9c")}
-          title="Dash Impulse (Shift)"
-        >
-          <span style={{ fontSize: "1.2rem" }}>💨</span>
-          <div style={{ textAlign: "left" }}>
-            <div style={{ fontWeight: "bold" }}>Dash</div>
-            <div style={{ fontSize: "0.75rem", opacity: 0.8 }}>[Shift]</div>
-          </div>
-        </button>
+          return (
+            <button
+              key={skill.id}
+              disabled={isDisabled}
+              onClick={() => handleTriggerSkill(skill.id)}
+              style={{
+                ...actionBtnStyle(skill.color),
+                position: "relative",
+                overflow: "hidden",
+                opacity: isDisabled ? 0.6 : 1,
+                borderColor: isCastingThis ? "#f1c40f" : skill.color,
+                boxShadow: isCastingThis ? "0 0 10px #f1c40f" : "none",
+              }}
+              title={`${skill.name} (Key [${skill.keyLabel}]) - ${skill.description}`}
+            >
+              <span style={{ fontSize: "1.2rem" }}>{skill.icon}</span>
+              <div style={{ textAlign: "left" }}>
+                <div style={{ fontWeight: "bold" }}>{skill.name}</div>
+                <div style={{ fontSize: "0.75rem", opacity: 0.8 }}>
+                  Key [{skill.keyLabel}]
+                </div>
+              </div>
+              {isOnCooldown && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    backgroundColor: "rgba(0, 0, 0, 0.75)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: "bold",
+                    color: "#f1c40f",
+                    fontSize: "0.95rem",
+                    textShadow: "0 1px 3px rgba(0,0,0,0.9)",
+                  }}
+                >
+                  {remainingSec.toFixed(1)}s
+                </div>
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

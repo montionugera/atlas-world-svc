@@ -2,7 +2,7 @@ use crate::ai::ThreatTable;
 use crate::combat::{DamageCalculator, DamageOptions, SkillEffect};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    ElementalAttributes, Health, HitLog, HitRecord, MobTag, PlayerTag, Position, Projectile,
+    ElementalAttributes, Health, HitLog, HitRecord, Mass, MobTag, PlayerTag, Position, Projectile,
     StatusEffects, Velocity,
 };
 use crate::spatial::grid::SpatialGrid;
@@ -34,22 +34,27 @@ pub fn projectile_collision_system(
     grid: Res<SpatialGrid>,
     clock: Option<Res<SimClock>>,
     mut hit_log: Option<ResMut<HitLog>>,
-    proj_query: Query<(Entity, &Position, &Projectile)>,
-    mut targets: Query<(
-        Entity,
-        &Position,
-        &mut Health,
-        Option<&ElementalAttributes>,
-        Option<&mut StatusEffects>,
-        Has<PlayerTag>,
-        Has<MobTag>,
-        Option<&mut ThreatTable>,
-    )>,
+    proj_query: Query<(Entity, &Position, Option<&Velocity>, &Projectile)>,
+    mut targets: Query<
+        (
+            Entity,
+            &Position,
+            &mut Health,
+            Option<&ElementalAttributes>,
+            Option<&mut StatusEffects>,
+            Has<PlayerTag>,
+            Has<MobTag>,
+            Option<&mut ThreatTable>,
+            Option<&mut Velocity>,
+            Option<&Mass>,
+        ),
+        Without<Projectile>,
+    >,
 ) {
     let now = clock.map_or(0.0, |c| c.current_time_seconds());
     let default_attrs = ElementalAttributes::default();
 
-    for (proj_entity, pos, proj) in &proj_query {
+    for (proj_entity, pos, proj_vel, proj) in &proj_query {
         let hit_radius = proj.radius + 20.0;
         let hit_radius_sq = hit_radius * hit_radius;
         let mut hit_target = None;
@@ -81,7 +86,7 @@ pub fn projectile_collision_system(
 
         // Fallback for isolated tests where spatial grid was not rebuilt
         if hit_target.is_none() {
-            for (t_entity, t_pos, t_health, _, _, is_player, is_mob, _) in &targets {
+            for (t_entity, t_pos, t_health, _, _, is_player, is_mob, _, _, _) in &targets {
                 if t_entity == proj.owner || !t_health.is_alive {
                     continue;
                 }
@@ -100,8 +105,18 @@ pub fn projectile_collision_system(
         }
 
         if let Some(target_entity) = hit_target {
-            if let Ok((_, _, mut health, opt_attrs, mut opt_status, _, _, threat)) =
-                targets.get_mut(target_entity)
+            if let Ok((
+                _,
+                t_pos,
+                mut health,
+                opt_attrs,
+                mut opt_status,
+                _,
+                _,
+                threat,
+                mut opt_vel,
+                opt_mass,
+            )) = targets.get_mut(target_entity)
             {
                 if !health.is_alive {
                     continue;
@@ -119,6 +134,43 @@ pub fn projectile_collision_system(
                 };
                 let damage = DamageCalculator::calculate(&damage_opts);
                 health.take_damage(damage);
+
+                // Projectile impulse & knockback:
+                // Legacy formula: impulse along projectile travel direction = clamp(damage * 20.0, 1.0, 2000.0) / victim_mass
+                let raw_impulse = (damage * 20.0).clamp(1.0, 2000.0);
+                let victim_mass = opt_mass.map(|m| m.value()).unwrap_or(25.0);
+                let impulse_mag = raw_impulse / victim_mass;
+
+                let (nx, ny) = if let Some(p_vel) = proj_vel {
+                    let speed = (p_vel.vx * p_vel.vx + p_vel.vy * p_vel.vy).sqrt();
+                    if speed > 1e-4 {
+                        (p_vel.vx / speed, p_vel.vy / speed)
+                    } else {
+                        let dx = t_pos.x - pos.x;
+                        let dy = t_pos.y - pos.y;
+                        let dist = (dx * dx + dy * dy).sqrt();
+                        if dist > 1e-4 {
+                            (dx / dist, dy / dist)
+                        } else {
+                            (1.0, 0.0)
+                        }
+                    }
+                } else {
+                    let dx = t_pos.x - pos.x;
+                    let dy = t_pos.y - pos.y;
+                    let dist = (dx * dx + dy * dy).sqrt();
+                    if dist > 1e-4 {
+                        (dx / dist, dy / dist)
+                    } else {
+                        (1.0, 0.0)
+                    }
+                };
+
+                if let Some(ref mut t_vel) = opt_vel {
+                    t_vel.vx += nx * impulse_mag;
+                    t_vel.vy += ny * impulse_mag;
+                }
+
                 if let Some(ref mut log) = hit_log {
                     log.0.push(HitRecord {
                         attacker: proj.owner,
@@ -133,6 +185,7 @@ pub fn projectile_collision_system(
                 }
 
                 if let Some(ref mut status) = opt_status {
+                    status.apply_knockback(0.2);
                     for effect in &proj.effects {
                         match effect {
                             SkillEffect::Freeze {
@@ -147,9 +200,9 @@ pub fn projectile_collision_system(
                             _ => {}
                         }
                     }
-                } else if !proj.effects.is_empty() {
+                } else {
                     let mut status = StatusEffects::default();
-                    let mut has_status = false;
+                    status.apply_knockback(0.2);
                     for effect in &proj.effects {
                         match effect {
                             SkillEffect::Freeze {
@@ -157,18 +210,14 @@ pub fn projectile_collision_system(
                                 speed_multiplier,
                             } => {
                                 status.apply_freeze(*duration_sec, *speed_multiplier);
-                                has_status = true;
                             }
                             SkillEffect::Stun { duration_sec } => {
                                 status.apply_stun(*duration_sec);
-                                has_status = true;
                             }
                             _ => {}
                         }
                     }
-                    if has_status {
-                        commands.entity(target_entity).insert(status);
-                    }
+                    commands.entity(target_entity).insert(status);
                 }
 
                 commands.entity(proj_entity).despawn();
@@ -369,5 +418,61 @@ mod tests {
         let status = world.get::<StatusEffects>(mob).unwrap();
         assert!(status.is_stunned());
         assert_eq!(status.stun_timer, 1.2);
+    }
+
+    #[test]
+    fn test_projectile_collision_applies_knockback_impulse() {
+        let mut world = World::new();
+        world.insert_resource(SpatialGrid::default());
+
+        let mob = world
+            .spawn((
+                Position::new(50.0, 50.0),
+                Velocity::zero(),
+                Health::new(100.0),
+                ElementalAttributes::default(),
+                StatusEffects::default(),
+                Mass(25.0),
+                MobTag,
+            ))
+            .id();
+
+        // Projectile traveling East (+X) with speed 200.0
+        let proj = world
+            .spawn((
+                Position::new(50.0, 50.0),
+                Velocity::new(200.0, 0.0),
+                Projectile {
+                    owner: Entity::PLACEHOLDER,
+                    target: None,
+                    damage: 25.0,
+                    damage_type: DamageType::Physical,
+                    element: Element::Neutral,
+                    speed: 200.0,
+                    radius: 4.0,
+                    max_range: 300.0,
+                    traveled_distance: 0.0,
+                    lifetime: 5.0,
+                    effects: vec![],
+                    is_player_projectile: true,
+                },
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(projectile_collision_system);
+        schedule.run(&mut world);
+
+        // Projectile despawns on hit
+        assert!(world.get_entity(proj).is_err());
+
+        // Mob receives impulse along +X axis: raw_impulse = 25 * 20 = 500, impulse_mag = 500 / 25 = 20.0
+        let vel = world.get::<Velocity>(mob).unwrap();
+        assert!(
+            vel.vx > 10.0,
+            "expected mob velocity vx > 10.0 from projectile impulse, got {}",
+            vel.vx
+        );
+        assert_eq!(vel.vy, 0.0);
     }
 }

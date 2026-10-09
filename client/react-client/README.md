@@ -4,7 +4,10 @@ A modern React TypeScript client for the Atlas World Server with real-time mob s
 
 ## Features
 
-- 🎮 **Real-time Visualization**: Canvas-based rendering of mobs and players
+- 🎮 **Real-time Visualization**: Canvas-based rendering of mobs, players, projectiles, and zone effects
+- 🗺️ **Top-Down Terrain & Biomes**: Full environment rendering with regional biomes (Northern Icefield, Thornveil Bramble, East Dunes, South Mud Pit), Central Cobblestone Courtyard, cross walkways, and Town of Millcross (The Meltwash river, roads, and styled building footprints)
+- ⚔️ **Interactive Combat & Skills**: Action Bar with real-time cooldown overlays, dual-layer casting bars (above-head and screen bottom), and automatic smart fallback aiming
+- 💥 **Floating Combat Text**: Real-time floating damage numbers and kill banners decoded directly from server combat events
 - 🔄 **Live Updates**: Real-time mob movement and player position updates
 - 📊 **Statistics Dashboard**: Live stats for match tick, mob count, players, and updates
 - 📝 **Activity Logs**: Real-time logging of all game events

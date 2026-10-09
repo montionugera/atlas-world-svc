@@ -59,6 +59,25 @@ impl Health {
     }
 }
 
+#[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct Mass(pub f32);
+
+impl Mass {
+    pub fn new(mass: f32) -> Self {
+        Self(mass)
+    }
+
+    pub fn value(&self) -> f32 {
+        self.0.max(1.0)
+    }
+}
+
+impl Default for Mass {
+    fn default() -> Self {
+        Self(15.0)
+    }
+}
+
 #[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct EntityId(pub String);
 
@@ -412,6 +431,7 @@ pub struct StatusEffects {
     pub freeze_timer: f32,
     pub freeze_speed_multiplier: f32,
     pub stun_timer: f32,
+    pub knockback_timer: f32,
 }
 
 impl StatusEffects {
@@ -421,6 +441,16 @@ impl StatusEffects {
 
     pub fn is_stunned(&self) -> bool {
         self.stun_timer > 0.0
+    }
+
+    pub fn is_knocked_back(&self) -> bool {
+        self.knockback_timer > 0.0
+    }
+
+    pub fn apply_knockback(&mut self, duration_sec: f32) {
+        if duration_sec > self.knockback_timer {
+            self.knockback_timer = duration_sec;
+        }
     }
 
     pub fn speed_multiplier(&self) -> f32 {

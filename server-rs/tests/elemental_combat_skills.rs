@@ -195,6 +195,7 @@ fn test_stun_status_locks_movement() {
         freeze_timer: 0.0,
         freeze_speed_multiplier: 1.0,
         stun_timer: 3.0,
+        knockback_timer: 0.0,
     });
 
     // Send movement input

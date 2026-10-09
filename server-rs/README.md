@@ -39,6 +39,16 @@ Implements the RO-style World Wisdom elemental combat table:
 - Range and lifetime expiration despawns projectiles automatically.
 - Collisions are resolved via `SpatialGrid` against opposing factions, calculating elemental damage and applying status effects.
 
+### 5. Mass-Based Knockback & Impulse Physics
+- Entities carry a `Mass` component:
+  - Players and bots: `15.0`
+  - Skirmisher mobs: `20.0`
+  - Bruiser & Tank mobs: `40.0`
+  - Default mobs: `25.0`
+- Both melee attacks (`combat_system`) and projectile hits (`projectile_collision_system`) impart knockback impulses:
+  $$\text{impulse\_magnitude} = \frac{\text{clamp}(\text{damage} \times 20.0, 1.0, 2000.0)}{\text{victim\_mass}}$$
+- The impulse vector pushes the victim along the attack direction and sets a `knockback_timer` (0.2s) in `StatusEffects`, during which mob AI steering preserves velocity pushback without premature override.
+
 ---
 
 ## 💾 Nakama Persistent Storage & Stat Derivation (F-063 / E-002 Slice 4)

@@ -3,8 +3,8 @@ use crate::content::{derive_mob_stats, BestiaryCatalog};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
     BodyRadius, CombatStats, DeadMobTracker, DespawnedIds, ElementalAttributes, EntityId, Health,
-    LiveRules, MobAi, MobCorpse, MobSpawnAnchor, MobTag, Position, Velocity, MOB_BODY_RADIUS,
-    PLAYER_BODY_RADIUS,
+    LiveRules, Mass, MobAi, MobCorpse, MobSpawnAnchor, MobTag, Position, StatusEffects, Velocity,
+    MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
 };
 use bevy_ecs::prelude::*;
 use std::sync::OnceLock;
@@ -14,11 +14,16 @@ static DEFAULT_CATALOG: OnceLock<BestiaryCatalog> = OnceLock::new();
 /// The ONE full live mob bundle, shared by the live initial spawn
 /// (`AtlasSimulation::live`) and `mob_lifecycle_system` respawns.
 pub fn mob_bundle(catalog: &BestiaryCatalog, anchor: &MobSpawnAnchor, id: String) -> impl Bundle {
-    // (hp, p_atk, defence attrs, base attack range, chase range, ranged, speed)
-    let (hp, p_atk, attrs, base_range, chase_range, is_ranged, speed) =
+    // (hp, p_atk, defence attrs, base attack range, chase range, ranged, speed, mass)
+    let (hp, p_atk, attrs, base_range, chase_range, is_ranged, speed, mass) =
         match catalog.get_mob(&anchor.mob_id) {
             Some(entry) => {
                 let d = derive_mob_stats(entry, anchor.tier);
+                let mass = match entry.archetype.as_str() {
+                    "bruiser" | "tank" => 40.0,
+                    "skirmisher" => 20.0,
+                    _ => 25.0,
+                };
                 (
                     d.hp,
                     d.p_atk,
@@ -32,6 +37,7 @@ pub fn mob_bundle(catalog: &BestiaryCatalog, anchor: &MobSpawnAnchor, id: String
                     d.chase_range,
                     d.is_ranged,
                     d.move_speed(),
+                    mass,
                 )
             }
             // Fallback for custom / unregistered mob_ids.
@@ -43,6 +49,7 @@ pub fn mob_bundle(catalog: &BestiaryCatalog, anchor: &MobSpawnAnchor, id: String
                 200.0,
                 false,
                 80.0,
+                25.0,
             ),
         };
     // Bodies can no longer overlap (min centre distance = mob + player radius), so melee
@@ -75,6 +82,8 @@ pub fn mob_bundle(catalog: &BestiaryCatalog, anchor: &MobSpawnAnchor, id: String
         MobAi::new(spawn, chase_range, attack_range, is_ranged).with_move_speed(speed),
         anchor.clone(),
         BodyRadius(MOB_BODY_RADIUS),
+        Mass(mass),
+        StatusEffects::default(),
     )
 }
 

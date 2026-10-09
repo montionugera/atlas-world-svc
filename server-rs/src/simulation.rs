@@ -7,9 +7,9 @@ use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
     AiAgent, BodyRadius, BotAgent, CastingState, CombatStats, CooldownTracker, DespawnedIds,
-    ElementalAttributes, EntityId, Health, HitLog, LiveRules, MobSpawnAnchor, MobTag, PlayerAvatar,
-    PlayerInputState, PlayerTag, Position, Projectile, SpawnPoint, StatusEffects, Velocity,
-    MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
+    ElementalAttributes, EntityId, Health, HitLog, LiveRules, Mass, MobSpawnAnchor, MobTag,
+    PlayerAvatar, PlayerInputState, PlayerTag, Position, Projectile, SpawnPoint, StatusEffects,
+    Velocity, MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
 };
 use crate::net::ClientPacket;
 use crate::physics::world::PhysicsWorld;
@@ -277,6 +277,7 @@ impl AtlasSimulation {
                     armor: 0.0,
                 },
                 BodyRadius(PLAYER_BODY_RADIUS),
+                Mass(15.0),
                 SpawnPoint(pos),
             ));
         }
@@ -635,6 +636,7 @@ impl AtlasSimulation {
                 CastingState::default(),
                 StatusEffects::default(),
                 BodyRadius(PLAYER_BODY_RADIUS),
+                Mass(15.0),
                 SpawnPoint(Position::new(x, y)),
             ))
             .id()

@@ -3,8 +3,8 @@ use crate::combat::damage::{DamageCalculator, DamageOptions};
 use crate::combat::{DamageType, Element};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    CombatStats, CooldownTracker, ElementalAttributes, EntityId, Health, HitLog, HitRecord, MobAi,
-    MobSpawnAnchor, PlayerAvatar, PlayerInputState, Position, StatusEffects,
+    CombatStats, CooldownTracker, ElementalAttributes, EntityId, Health, HitLog, HitRecord, Mass,
+    MobAi, MobSpawnAnchor, PlayerAvatar, PlayerInputState, Position, StatusEffects, Velocity,
 };
 use crate::spatial::grid::SpatialGrid;
 use crate::storage::{MatchEvent, MatchEventQueue};
@@ -36,12 +36,16 @@ pub fn combat_system(
             Option<&MobSpawnAnchor>,
             Option<&mut ThreatTable>,
             Option<&ElementalAttributes>,
+            Option<&Position>,
+            Option<&mut Velocity>,
+            Option<&Mass>,
+            Option<&mut StatusEffects>,
         )>,
     )>,
 ) {
     let dt = clock.delta_seconds();
     let now = clock.current_time_seconds();
-    let mut attacks: Vec<(Option<String>, Entity, Entity, f32, Element)> = Vec::new();
+    let mut attacks: Vec<(Option<String>, Entity, f32, f32, Entity, f32, Element)> = Vec::new();
 
     {
         // Mobs with MobAi are excluded: mob_ai_system owns their attacks and their single
@@ -110,6 +114,8 @@ pub fn combat_system(
                 attacks.push((
                     player_user_id,
                     entity,
+                    pos.x,
+                    pos.y,
                     target_entity,
                     stats.attack_power.max(1.0),
                     attacker_elem,
@@ -121,9 +127,27 @@ pub fn combat_system(
     if !attacks.is_empty() {
         let mut health_query = params.p1();
         let default_attrs = ElementalAttributes::default();
-        for (attacker_user_id, attacker, target, base_damage, attacker_elem) in attacks {
-            if let Ok((mut target_health, target_id, target_anchor, threat, target_attrs)) =
-                health_query.get_mut(target)
+        for (
+            attacker_user_id,
+            attacker,
+            attacker_x,
+            attacker_y,
+            target,
+            base_damage,
+            attacker_elem,
+        ) in attacks
+        {
+            if let Ok((
+                mut target_health,
+                target_id,
+                target_anchor,
+                threat,
+                target_attrs,
+                target_pos,
+                mut target_vel,
+                target_mass,
+                mut target_status,
+            )) = health_query.get_mut(target)
             {
                 let was_alive = target_health.is_alive && target_health.current > 0.0;
                 let def_attrs = target_attrs.unwrap_or(&default_attrs);
@@ -140,6 +164,28 @@ pub fn combat_system(
                 target_health.take_damage(damage);
                 if let Some(mut threat) = threat {
                     threat.add_threat(attacker, damage, now);
+                }
+
+                // Attack impulse & knockback:
+                // Legacy formula: impulse = clamp(damage * 20.0, 1.0, 2000.0) / victim_mass
+                let raw_impulse = (damage * 20.0).clamp(1.0, 2000.0);
+                let victim_mass = target_mass.map(|m| m.value()).unwrap_or(25.0);
+                let impulse_mag = raw_impulse / victim_mass;
+
+                if let (Some(t_pos), Some(ref mut t_vel)) = (target_pos, target_vel.as_mut()) {
+                    let dx = t_pos.x - attacker_x;
+                    let dy = t_pos.y - attacker_y;
+                    let dist = (dx * dx + dy * dy).sqrt();
+                    let (nx, ny) = if dist > 1e-4 {
+                        (dx / dist, dy / dist)
+                    } else {
+                        (1.0, 0.0)
+                    };
+                    t_vel.vx += nx * impulse_mag;
+                    t_vel.vy += ny * impulse_mag;
+                }
+                if let Some(ref mut status) = target_status {
+                    status.apply_knockback(0.2);
                 }
                 let killed = was_alive && (!target_health.is_alive || target_health.current <= 0.0);
                 if let Some(ref mut log) = hit_log {
@@ -200,6 +246,9 @@ pub fn status_effect_tick_system(clock: Res<SimClock>, mut query: Query<&mut Sta
         }
         if effects.stun_timer > 0.0 {
             effects.stun_timer = (effects.stun_timer - dt).max(0.0);
+        }
+        if effects.knockback_timer > 0.0 {
+            effects.knockback_timer = (effects.knockback_timer - dt).max(0.0);
         }
     }
 }
@@ -277,5 +326,80 @@ mod tests {
         let s3 = world.get::<StatusEffects>(entity).unwrap();
         assert!(!s3.is_stunned());
         assert_eq!(s3.speed_multiplier(), 1.0);
+    }
+
+    #[test]
+    fn test_combat_system_applies_knockback_impulse_to_victim() {
+        use crate::{Mass, MobTag, PlayerTag, Velocity};
+
+        let mut world = World::new();
+        let clock = SimClock::new(50);
+        world.insert_resource(clock);
+        let mut grid = SpatialGrid::new(50.0);
+
+        let player = world
+            .spawn((
+                EntityId("player-1".to_string()),
+                Position::new(100.0, 100.0),
+                Velocity::zero(),
+                Health::new(100.0),
+                PlayerTag,
+                PlayerAvatar::new("player-1", 200.0),
+                PlayerInputState {
+                    attack: true,
+                    ..Default::default()
+                },
+                CombatStats {
+                    attack_power: 25.0,
+                    defense: 5.0,
+                    attack_range: 40.0,
+                    attack_cooldown: 0.8,
+                    cooldown_timer: 0.0,
+                    is_player: true,
+                },
+                Mass(15.0),
+            ))
+            .id();
+
+        let mob = world
+            .spawn((
+                EntityId("mob-1".to_string()),
+                Position::new(120.0, 100.0),
+                Velocity::zero(),
+                Health::new(100.0),
+                MobTag,
+                Mass(25.0),
+                CombatStats {
+                    attack_power: 10.0,
+                    defense: 2.0,
+                    attack_range: 20.0,
+                    attack_cooldown: 1.0,
+                    cooldown_timer: 0.0,
+                    is_player: false,
+                },
+            ))
+            .id();
+
+        grid.insert(player, 100.0, 100.0, true);
+        grid.insert(mob, 120.0, 100.0, false);
+        grid.finish_build();
+        world.insert_resource(grid);
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(combat_system);
+        schedule.run(&mut world);
+
+        // Mob should have taken damage
+        let mob_health = world.get::<Health>(mob).unwrap();
+        assert!(mob_health.current < 100.0);
+
+        // Mob velocity should have received knockback impulse along +X axis
+        let mob_vel = world.get::<Velocity>(mob).unwrap();
+        assert!(
+            mob_vel.vx > 10.0,
+            "expected mob velocity vx > 10.0 from impulse, got {}",
+            mob_vel.vx
+        );
+        assert_eq!(mob_vel.vy, 0.0);
     }
 }

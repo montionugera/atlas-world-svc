@@ -3,7 +3,7 @@ use crate::combat::{DamageType, Element};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
     AiState, CombatStats, ElementalAttributes, Health, MobAi, PlayerTag, Position, Projectile,
-    Velocity,
+    StatusEffects, Velocity,
 };
 use bevy_ecs::prelude::*;
 
@@ -20,14 +20,24 @@ pub fn mob_ai_system(
         &mut CombatStats,
         &Health,
         Option<&ElementalAttributes>,
+        Option<&StatusEffects>,
     )>,
     players: Query<(Entity, &Position, &Health, Has<PlayerTag>)>,
 ) {
     let current_time = clock.current_time_seconds();
     let dt = clock.delta_seconds();
 
-    for (mob_entity, pos, mut vel, mut mob_ai, mut threat, mut stats, health, opt_attrs) in
-        &mut mobs
+    for (
+        mob_entity,
+        pos,
+        mut vel,
+        mut mob_ai,
+        mut threat,
+        mut stats,
+        health,
+        opt_attrs,
+        opt_status,
+    ) in &mut mobs
     {
         if !health.is_alive {
             continue;
@@ -35,6 +45,11 @@ pub fn mob_ai_system(
 
         if stats.cooldown_timer > 0.0 {
             stats.cooldown_timer = (stats.cooldown_timer - dt).max(0.0);
+        }
+
+        // If knocked back from an attack, preserve knockback velocity and skip AI override
+        if opt_status.is_some_and(|s| s.is_knocked_back()) {
+            continue;
         }
 
         // Update threat table: if a top target exists, check if target is alive.
