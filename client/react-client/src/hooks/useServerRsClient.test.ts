@@ -14,6 +14,7 @@ import {
   STATE_FLAG_BOT,
 } from "../protocol/BinaryDeltaDecoder";
 import { getMobDisplayName } from "../utils/mobUtils";
+import { perfTimings, timingGate } from "../utils/frameTiming";
 
 (global as any).TextEncoder = TextEncoder;
 (global as any).TextDecoder = TextDecoder;
@@ -110,7 +111,10 @@ describe("useServerRsClient", () => {
     clock = 0;
     jest.spyOn(performance, "now").mockImplementation(() => (clock += 1000));
   });
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
 
   it("initializes in disconnected state", () => {
     const { result } = renderHook(() =>
@@ -760,8 +764,94 @@ describe("useServerRsClient", () => {
       }
     });
     const kept = result.current.drainEvents();
-    expect(kept.length).toBeLessThanOrEqual(64);
-    expect(kept[kept.length - 1].amount).toBe(102);
+    // Exactly the cap, and the newest: ticks 71..102, two hits each.
+    expect(kept).toHaveLength(64);
+    expect(kept.map((e) => e.amount)).toEqual(
+      Array.from({ length: 32 }, (_, i) => [71 + i, 71 + i]).flat(),
+    );
+  });
+
+  it("publishes the latest state shortly after snapshots stop, and not after a disconnect", async () => {
+    const { result } = await connected("dev-token:alice");
+    const ws = MockWebSocket.instances[0];
+    const me = fnv1a32("alice");
+    jest.useFakeTimers();
+    let t = 10_000;
+    jest.spyOn(performance, "now").mockImplementation(() => t);
+    const at = (ms: number, tick: number) => {
+      t = ms;
+      act(() => {
+        ws.onmessage?.(snap(tick, [{ id: me, type: EntityType.Player }]));
+      });
+    };
+    at(10_000, 1);
+    at(10_050, 2);
+    at(10_100, 3);
+    expect(result.current.gameState!.tick).toBe(1);
+
+    // Snapshots stop; the socket stays open. React still catches up.
+    act(() => {
+      jest.advanceTimersByTime(150);
+    });
+    expect(result.current.gameState!.tick).toBe(3);
+    expect(result.current.updateCount).toBe(3);
+
+    // A pending catch-up is dropped by a disconnect.
+    at(10_200, 4);
+    at(10_250, 5);
+    act(() => result.current.disconnect());
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
+    expect(result.current.gameState).toBeNull();
+  });
+
+  it("times decode and update only while the debug readout is on", async () => {
+    const { result } = await connected();
+    const ws = MockWebSocket.instances[0];
+    perfTimings.clear();
+    timingGate.on = false;
+    act(() => {
+      ws.onmessage?.(snap(1, []));
+    });
+    expect(perfTimings.has("decode")).toBe(false);
+    expect(perfTimings.has("update")).toBe(false);
+    timingGate.on = true;
+    act(() => {
+      ws.onmessage?.(snap(2, []));
+    });
+    expect(perfTimings.get("decode")).toHaveLength(1);
+    expect(perfTimings.get("update")).toHaveLength(1);
+    expect(result.current.isConnected).toBe(true);
+    timingGate.on = false;
+  });
+
+  it("starts a new position history when an entity comes back to life", async () => {
+    const { result } = await connected("dev-token:alice");
+    const ws = MockWebSocket.instances[0];
+    const me = fnv1a32("alice");
+    const send = (tick: number, flags: number, x: number) =>
+      act(() => {
+        ws.onmessage?.(
+          snap(tick, [
+            { id: me, type: EntityType.Player, flags, x },
+            { id: 7, type: EntityType.Mob, flags, x },
+          ]),
+        );
+      });
+    const samples = () => {
+      const s = result.current.gameStateRef.current!;
+      return [
+        s.players.get(String(me))!.samples!.length,
+        s.mobs.get("7")!.samples!.length,
+      ];
+    };
+    send(1, STATE_FLAG_ALIVE, 10);
+    send(2, 0, 10);
+    expect(samples()).toEqual([2, 2]);
+    // Respawn 50 units away: under the teleport distance, still a cut, not a glide.
+    send(3, STATE_FLAG_ALIVE, 60);
+    expect(samples()).toEqual([1, 1]);
   });
 
   it("decodes combat events into gameState.events", async () => {

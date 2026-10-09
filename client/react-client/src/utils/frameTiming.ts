@@ -24,6 +24,9 @@ const WINDOW = 120;
 /** Timings of the running client (the frame loop and the snapshot handler write here). */
 export const perfTimings: Timings = new Map();
 
+/** Whether the debug readout is on; snapshot handling is only timed while it is. */
+export const timingGate = { on: false };
+
 export function recordTiming(
   timings: Timings,
   key: TimingKey,

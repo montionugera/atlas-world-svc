@@ -36,6 +36,7 @@ import {
   TimingKey,
   perfTimings,
   recordTiming,
+  timingGate,
 } from "../utils/frameTiming";
 import {
   DEFAULT_DEBUG_TOGGLES,
@@ -123,6 +124,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         : latestRef.current.gameState;
       const renderStartTime = performance.now();
       timings = debug.overlay ? perfTimings : null;
+      timingGate.on = debug.overlay;
       if (timings && lastFrameStart > 0) {
         recordTiming(timings, "interval", renderStartTime - lastFrameStart);
       }

@@ -21,7 +21,7 @@ import {
   observeSnapshot,
   pushSample,
 } from "../utils/snapshotInterpolation";
-import { perfTimings, recordTiming } from "../utils/frameTiming";
+import { perfTimings, recordTiming, timingGate } from "../utils/frameTiming";
 import {
   BinaryDeltaDecoder,
   EntityType,
@@ -119,6 +119,10 @@ export const SERVER_RS_PROJECTILE_RADIUS = 4;
  */
 const UI_PUBLISH_INTERVAL_MS = 150;
 
+/** A respawn is a cut, however short the hop: it starts a new position history. */
+const revived = (existing: { isAlive?: boolean } | undefined, alive: boolean) =>
+  alive && existing?.isAlive === false;
+
 /** Undrained combat events kept (a hidden tab must not replay thousands on return). */
 const MAX_QUEUED_EVENTS = 64;
 
@@ -200,6 +204,16 @@ export const useServerRsClient = (
   // What React last saw: when, and the things it must not see late.
   const publishedRef = useRef({ at: -Infinity, mapId: "", dead: false });
   const updateCountRef = useRef(0);
+  // The catch-up publish for snapshots that React has not seen yet.
+  const trailingRef = useRef<{
+    timer: ReturnType<typeof setTimeout> | null;
+    flush: () => void;
+  }>({ timer: null, flush: () => undefined });
+  const cancelTrailingPublish = useCallback(() => {
+    const trailing = trailingRef.current;
+    if (trailing.timer) clearTimeout(trailing.timer);
+    trailing.timer = null;
+  }, []);
   const eventQueueRef = useRef<GameEventInfo[]>([]);
   const drainEvents = useCallback(() => {
     const queued = eventQueueRef.current;
@@ -235,6 +249,7 @@ export const useServerRsClient = (
 
   // Disconnect WebSocket
   const disconnect = useCallback(() => {
+    cancelTrailingPublish();
     if (simulationIntervalRef.current) {
       clearInterval(simulationIntervalRef.current);
       simulationIntervalRef.current = null;
@@ -263,7 +278,7 @@ export const useServerRsClient = (
     updateCountRef.current = 0;
     setUpdateCount(0);
     localStorage.removeItem("atlas-world-server-rs-connected");
-  }, []);
+  }, [cancelTrailingPublish]);
 
   // Connect to server-rs WebSocket gateway
   const connect = useCallback(
@@ -281,6 +296,7 @@ export const useServerRsClient = (
         return;
       }
 
+      cancelTrailingPublish();
       return new Promise<void>((resolve, reject) => {
         try {
           isConnectingRef.current = true;
@@ -354,10 +370,12 @@ export const useServerRsClient = (
 
             try {
               if (wsRef.current !== ws) return; // superseded while awaiting a Blob
-              const decodeStart = performance.now();
+              const decodeStart = timingGate.on ? performance.now() : 0;
               const snapshot = BinaryDeltaDecoder.decode(buffer);
               const arrivalTime = performance.now();
-              recordTiming(perfTimings, "decode", arrivalTime - decodeStart);
+              if (timingGate.on) {
+                recordTiming(perfTimings, "decode", arrivalTime - decodeStart);
+              }
               const prevArrivalTime = lastSnapshotReceivedTimeRef.current;
               lastSnapshotReceivedTimeRef.current = arrivalTime;
               const interval = arrivalTime - prevArrivalTime;
@@ -441,7 +459,12 @@ export const useServerRsClient = (
                     vx: entity.vx,
                     vy: entity.vy,
                     receivedAt: arrivalTime,
-                    samples: pushSample(existing?.samples, sampleOf(entity)),
+                    samples: pushSample(
+                      revived(existing, isAlive)
+                        ? undefined
+                        : existing?.samples,
+                      sampleOf(entity),
+                    ),
                     radius: SERVER_RS_PLAYER_RADIUS,
                     name: isLocalPlayer
                       ? "Player (YOU)"
@@ -470,7 +493,12 @@ export const useServerRsClient = (
                     vx: entity.vx,
                     vy: entity.vy,
                     receivedAt: arrivalTime,
-                    samples: pushSample(existing?.samples, sampleOf(entity)),
+                    samples: pushSample(
+                      revived(existing, isAlive)
+                        ? undefined
+                        : existing?.samples,
+                      sampleOf(entity),
+                    ),
                     radius: SERVER_RS_MOB_RADIUS,
                     tag: isAlive ? "mob" : "dead",
                     // Older servers send no mob_type: keep whatever we already had.
@@ -543,6 +571,7 @@ export const useServerRsClient = (
                 published.mapId !== nextState.mapId ||
                 published.dead !== dead;
               if (publish) {
+                cancelTrailingPublish();
                 publishedRef.current = {
                   at: arrivalTime,
                   mapId: nextState.mapId,
@@ -551,6 +580,31 @@ export const useServerRsClient = (
                 setGameState(nextState);
                 setLatencyMetrics(nextMetrics);
                 setUpdateCount(updateCountRef.current);
+              } else {
+                // If no snapshot follows, React still gets this one on time.
+                const trailing = trailingRef.current;
+                trailing.flush = () => {
+                  publishedRef.current = {
+                    at: performance.now(),
+                    mapId: nextState.mapId,
+                    dead,
+                  };
+                  setGameState(nextState);
+                  setLatencyMetrics(nextMetrics);
+                  setUpdateCount(updateCountRef.current);
+                };
+                if (!trailing.timer) {
+                  trailing.timer = setTimeout(
+                    () => {
+                      trailing.timer = null;
+                      trailing.flush();
+                    },
+                    Math.max(
+                      0,
+                      UI_PUBLISH_INTERVAL_MS - (arrivalTime - published.at),
+                    ),
+                  );
+                }
               }
               // Expose for quick debug / e2e (parity with useColyseusClient)
               (window as any).__gameState = nextState;
@@ -591,11 +645,13 @@ export const useServerRsClient = (
                   );
                 }
               }
-              recordTiming(
-                perfTimings,
-                "update",
-                performance.now() - arrivalTime,
-              );
+              if (timingGate.on) {
+                recordTiming(
+                  perfTimings,
+                  "update",
+                  performance.now() - arrivalTime,
+                );
+              }
             } catch (decodeErr) {
               console.error(
                 "Failed to decode FlatBuffers snapshot:",
@@ -621,6 +677,7 @@ export const useServerRsClient = (
               wsRef.current = null;
               settle(new Error("WebSocket closed before it opened"));
             }
+            cancelTrailingPublish();
             setIsConnected(false);
             setRoomId(null);
             gameStateRef.current = null;
@@ -634,7 +691,7 @@ export const useServerRsClient = (
         }
       });
     },
-    [config],
+    [config, cancelTrailingPublish],
   );
 
   // Last non-zero target we actually sent (mirrors the target the server holds)
