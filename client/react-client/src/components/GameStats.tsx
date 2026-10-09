@@ -94,8 +94,11 @@ export const GameStats: React.FC<GameStatsProps> = ({
           <span style={labelStyle}>FPS</span>
           <span style={valueStyle}>{fps}</span>
         </div>
-        <div style={itemStyle}>
-          <span style={labelStyle}>Rate</span>
+        <div
+          style={itemStyle}
+          title="Server snapshots received per second, averaged over 10 s (the server sends 20)"
+        >
+          <span style={labelStyle}>Snapshots</span>
           <span style={valueStyle}>{updateRate}/s</span>
         </div>
         <div style={itemStyle}>
