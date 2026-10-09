@@ -43,7 +43,10 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
   player,
 }) => {
   const [state, setState] = useState<DebugRoomState | null>(null);
-  const [error, setError] = useState("");
+  // The poll's trouble and the last command's are kept apart: the next good poll must
+  // not erase why a command was refused.
+  const [pollError, setPollError] = useState("");
+  const [commandError, setCommandError] = useState("");
   const [off, setOff] = useState(false);
   const [botCount, setBotCount] = useState("50");
   const [mobCount, setMobCount] = useState("200");
@@ -63,13 +66,18 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
         command,
       });
       if (roomRef.current !== room) return;
+      const setError = command.cmd === "state" ? setPollError : setCommandError;
       if (result.ok) {
         setState(result.state);
         setError("");
         setOff(false);
-      } else {
-        setError(result.error);
-        setOff(result.kind === "disabled");
+        return;
+      }
+      setError(result.error);
+      setOff(result.kind === "disabled");
+      // The tick loop answered late: it may still have applied the command.
+      if (result.kind === "busy" && command.cmd !== "state") {
+        await run({ cmd: "state" });
       }
     },
     [baseUrl, map, player],
@@ -77,7 +85,8 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
 
   useEffect(() => {
     setState(null);
-    setError("");
+    setPollError("");
+    setCommandError("");
     setOff(false);
   }, [baseUrl, map]);
 
@@ -147,9 +156,22 @@ export const DebugToolsPanel: React.FC<DebugTarget> = ({
             `proj ${state.projectiles}  ${state.width}x${state.height}`
           : "room tools"}
       </div>
-      {error && (
-        <div role="alert" style={{ color: "#ff6b6b" }}>
-          {error}
+      {pollError && (
+        <div role="status" style={{ color: "#95a5a6" }}>
+          {pollError}
+        </div>
+      )}
+      {commandError && (
+        <div style={{ ...row, color: "#ff6b6b" }}>
+          <span role="alert">{commandError}</span>
+          <button
+            type="button"
+            aria-label="Dismiss"
+            onClick={() => setCommandError("")}
+            style={{ ...toolbarButton(false), padding: "0 5px" }}
+          >
+            x
+          </button>
         </div>
       )}
       <div style={row}>
