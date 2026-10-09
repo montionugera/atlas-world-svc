@@ -255,6 +255,36 @@ describe("samplePosition / pushSample / clock", () => {
     expect(renderTimeAt(undefined, 123)).toBe(123);
   });
 
+  it("reuses its output across frames and still follows the entities", () => {
+    type E = {
+      id: string;
+      x: number;
+      y: number;
+      hp: number;
+      samples: PosSample[];
+    };
+    const src = new Map<string, E>([
+      ["a", { id: "a", x: 10, y: 4, hp: 5, samples: [a, b] }],
+      ["gone", { id: "gone", x: 1, y: 1, hp: 1, samples: [a] }],
+    ]);
+    const out = interpolateEntities(src, 1025);
+    const view = out.get("a")!;
+
+    // Next frame: same map, same entry, new position; nothing new is allocated.
+    src.delete("gone");
+    expect(interpolateEntities(src, 1040, out)).toBe(out);
+    expect(out.get("a")).toBe(view);
+    expect(view.x).toBeCloseTo(8);
+    expect(out.has("gone")).toBe(false);
+    expect(src.get("a")!.x).toBe(10);
+
+    // A snapshot replaced the entity: the entry shows the new one, not stale fields.
+    src.set("a", { id: "a", x: 20, y: 4, hp: 3, samples: [b] });
+    interpolateEntities(src, 1040, out);
+    expect(out.get("a")!.hp).toBe(3);
+    expect(out.get("a")!.x).toBe(10);
+  });
+
   it("interpolates a map without mutating the originals", () => {
     const src = new Map([["a", { id: "a", x: 10, y: 4, samples: [a, b] }]]);
     const out = interpolateEntities(src, 1025);

@@ -164,32 +164,71 @@ interface Sampled {
   samples?: readonly PosSample[];
 }
 
+/** Write the position at simulation time `t` into `out` (no allocation). */
+function sampleInto(
+  e: Sampled,
+  t: number,
+  out: { x: number; y: number },
+): void {
+  const s = e.samples;
+  let a: { x: number; y: number } = e;
+  let b = a;
+  let k = 0;
+  if (s && s.length > 0 && Number.isFinite(t)) {
+    const last = s[s.length - 1];
+    a = b = s[0]; // before the oldest sample
+    if (t >= last.t) {
+      a = b = last; // dry: hold at the newest
+    } else {
+      for (let i = s.length - 2; i >= 0; i--) {
+        if (t >= s[i].t) {
+          a = s[i];
+          b = s[i + 1];
+          k = (t - s[i].t) / (s[i + 1].t - s[i].t);
+          break;
+        }
+      }
+    }
+  }
+  out.x = a.x + (b.x - a.x) * k;
+  out.y = a.y + (b.y - a.y) * k;
+}
+
 /** Position at simulation time `t`: interpolated, or the newest sample when dry. */
 export function samplePosition(
   e: Sampled,
   t: number,
 ): { x: number; y: number } {
-  const s = e.samples;
-  if (!s || s.length === 0 || !Number.isFinite(t)) return { x: e.x, y: e.y };
-  const last = s[s.length - 1];
-  if (t >= last.t) return { x: last.x, y: last.y };
-  for (let i = s.length - 2; i >= 0; i--) {
-    const a = s[i];
-    if (t >= a.t) {
-      const b = s[i + 1];
-      const k = (t - a.t) / (b.t - a.t);
-      return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k };
-    }
-  }
-  return { x: s[0].x, y: s[0].y };
+  const out = { x: 0, y: 0 };
+  sampleInto(e, t, out);
+  return out;
 }
 
-/** Copy of `entities` with each position sampled at simulation time `t`. */
+/** The entity each interpolated copy was made from. */
+const sourceOf = new WeakMap<object, object>();
+
+/**
+ * Copy of `entities` with each position sampled at simulation time `t`. Pass the
+ * previous result as `out` to reuse it: a copy is only re-made when a snapshot has
+ * replaced its entity, otherwise just its x/y are updated, so a frame between two
+ * snapshots allocates nothing. Copies are valid until the next call with that `out`.
+ */
 export function interpolateEntities<T extends Sampled>(
   entities: Map<string, T>,
   t: number,
+  out: Map<string, T> = new Map(),
 ): Map<string, T> {
-  const out = new Map<string, T>();
-  entities.forEach((e, id) => out.set(id, { ...e, ...samplePosition(e, t) }));
+  out.forEach((_, id) => {
+    if (!entities.has(id)) out.delete(id);
+  });
+  entities.forEach((e, id) => {
+    let copy = out.get(id);
+    if (!copy || sourceOf.get(copy) !== e) {
+      copy = { ...e };
+      sourceOf.set(copy, e);
+      out.set(id, copy);
+    }
+    sampleInto(e, t, copy);
+  });
   return out;
 }

@@ -1,5 +1,11 @@
 import { useRef, useEffect } from "react";
-import { GameEventInfo, GameState } from "../types/game";
+import {
+  GameEventInfo,
+  GameState,
+  Mob,
+  Player,
+  Projectile,
+} from "../types/game";
 import { calculateScale, clearCanvas } from "../utils/drawingUtils";
 import { drawGridCoordinates } from "../utils/gridUtils";
 import type { AoeReticle } from "../utils/aoeReticle";
@@ -74,9 +80,12 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
   const animationFrameRef = useRef<number | undefined>(undefined);
   const floatingTextsRef = useRef<FloatingText[]>([]);
   const blastEffectsRef = useRef<BlastEffect[]>([]);
-  const prevProjectilesRef = useRef<
-    Map<string, { x: number; y: number; type?: string }>
-  >(new Map());
+  // Last frame's drawn projectiles, as the raw snapshot objects.
+  const prevProjectilesRef = useRef<Map<string, Projectile>>(new Map());
+  // Interpolated views, reused every frame (see interpolateEntities).
+  const renderPlayersRef = useRef<Map<string, Player>>(new Map());
+  const renderMobsRef = useRef<Map<string, Mob>>(new Map());
+  const renderProjectilesRef = useRef<Map<string, Projectile>>(new Map());
   const lastRenderDurationRef = useRef<number>(0);
 
   useEffect(() => {
@@ -127,10 +136,19 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         const renderPlayers = interpolateEntities(
           gameState.players,
           renderTime,
+          renderPlayersRef.current,
         );
-        const renderMobs = interpolateEntities(gameState.mobs, renderTime);
+        const renderMobs = interpolateEntities(
+          gameState.mobs,
+          renderTime,
+          renderMobsRef.current,
+        );
         const renderProjectiles = gameState.projectiles
-          ? interpolateEntities(gameState.projectiles, renderTime)
+          ? interpolateEntities(
+              gameState.projectiles,
+              renderTime,
+              renderProjectilesRef.current,
+            )
           : undefined;
         // One that left the snapshot flies on until the picture reaches its last
         // position; the blast below then appears exactly where it vanished.
@@ -141,9 +159,9 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         });
         // Detect detonated projectiles to spawn AoE blast shockwaves
         const prevProjs = prevProjectilesRef.current;
-        const currentProjs = renderProjectiles || new Map();
         prevProjs.forEach((p, id) => {
-          if (!currentProjs.has(id)) {
+          if (!renderProjectiles?.has(id)) {
+            prevProjs.delete(id);
             const pType = (p.type || "").toLowerCase();
             let maxRadius = 15;
             let color = "255, 170, 0";
@@ -176,17 +194,10 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
             });
           }
         });
-        const nextPrev = new Map<
-          string,
-          { x: number; y: number; type?: string }
-        >();
         // Raw snapshot x/y: blasts must land where the server detonated.
         gameState.projectiles?.forEach((p, id) => {
-          if (renderProjectiles?.has(id)) {
-            nextPrev.set(id, { x: p.x, y: p.y, type: p.type });
-          }
+          if (renderProjectiles?.has(id)) prevProjs.set(id, p);
         });
-        prevProjectilesRef.current = nextPrev;
         // Process new combat events into floating damage/kill texts. Drained from a
         // queue: several snapshots can land between two frames.
         for (const ev of drainEvents?.() ?? []) {
