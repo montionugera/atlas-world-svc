@@ -9,7 +9,7 @@ import { calculateScale } from "../utils/drawingUtils";
 import { SKILL_DEFINITIONS } from "../config/skills";
 import { getAoeReticle } from "../utils/aoeReticle";
 import { extrapolatePosition } from "../utils/deadReckoning";
-import { debugToggleForKey } from "../config/controls";
+import { debugToggleForKey, hasModifierKey } from "../config/controls";
 import {
   REFERENCE_RUN_SPEED,
   terrainAt,
@@ -220,9 +220,21 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       return next;
     });
   }, []);
+  // The server clears cooldowns on reset; drop the client's cast bar and gate too.
+  const resetToSpawn = React.useCallback(() => {
+    setActiveCast(null);
+    setCooldowns({});
+    respawn();
+  }, [respawn]);
   const debugTrackerRef = useRef<DebugTracker>(EMPTY_TRACKER);
   const readoutInputRef = useRef<Omit<ReadoutInput, "latency"> | null>(null);
   const castingSkill = activeCast?.name ?? null;
+  // A new room starts with no cast in flight and no speed/position history.
+  const currentMapId = gameState?.mapId;
+  useEffect(() => {
+    setActiveCast(null);
+    debugTrackerRef.current = EMPTY_TRACKER;
+  }, [currentMapId]);
   useEffect(() => {
     if (!gameState) {
       debugTrackerRef.current = EMPTY_TRACKER;
@@ -255,7 +267,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
   // focus, or Space/Enter would re-press it instead of attacking.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.repeat || hasModifierKey(e)) return;
       if (isTextEntryTarget(e.target)) return;
       const toggle = debugToggleForKey(e.key);
       if (toggle) toggleDebug(toggle);
@@ -551,7 +563,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       <DebugToolbar
         toggles={debug}
         onToggle={toggleDebug}
-        onRespawn={respawn}
+        onRespawn={resetToSpawn}
       />
 
       {/* Active Casting Bar */}

@@ -34,6 +34,16 @@ export function debugToggleForKey(key: string): keyof DebugToggles | null {
   return DEBUG_BINDINGS.find((d) => d.key === k)?.toggle ?? null;
 }
 
+/** True when a modifier is held, so a debug key must not fire (Shift also dashes). */
+export function hasModifierKey(e: {
+  ctrlKey: boolean;
+  metaKey: boolean;
+  altKey: boolean;
+  shiftKey: boolean;
+}): boolean {
+  return e.ctrlKey || e.metaKey || e.altKey || e.shiftKey;
+}
+
 /** Every control the tester has, generated from the live skill / weapon / debug config. */
 export function buildControlsLegend(
   skills: Record<string, SkillConfig> = SKILL_DEFINITIONS,

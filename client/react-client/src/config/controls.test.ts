@@ -5,6 +5,7 @@ import {
   DEBUG_BINDINGS,
   buildControlsLegend,
   debugToggleForKey,
+  hasModifierKey,
 } from "./controls";
 import { PLAYER_WEAPON_OPTIONS } from "./playerWeapons";
 import { SKILL_DEFINITIONS } from "./skills";
@@ -114,5 +115,15 @@ describe("legend keys match the real key handler", () => {
     for (const d of DEBUG_BINDINGS) press(d.key);
     expect(sendPlayerAction).not.toHaveBeenCalled();
     expect(switchWeapon).not.toHaveBeenCalled();
+  });
+});
+
+describe("hasModifierKey", () => {
+  const none = { ctrlKey: false, metaKey: false, altKey: false, shiftKey: false };
+  it("is false with no modifier and true for each one, Shift included", () => {
+    expect(hasModifierKey(none)).toBe(false);
+    for (const m of ["ctrlKey", "metaKey", "altKey", "shiftKey"] as const) {
+      expect(hasModifierKey({ ...none, [m]: true })).toBe(true);
+    }
   });
 });
