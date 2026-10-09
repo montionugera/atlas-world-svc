@@ -1,4 +1,5 @@
 // Game types for Colyseus client
+import type { PosSample, SnapshotClock } from "../utils/snapshotInterpolation";
 
 export interface Position {
   x: number;
@@ -23,13 +24,13 @@ export interface ZoneEffect {
   ownerId: string;
   skillId?: string; // Synced from server
   radius: number;
-  effects: { type: string, value: number, chance?: number }[];
-  
+  effects: { type: string; value: number; chance?: number }[];
+
   // Timing
   castTime: number;
   duration: number;
   tickRate: number;
-  
+
   // State
   isActive: boolean;
   createdAt: number;
@@ -42,8 +43,10 @@ export interface Mob {
   y: number;
   vx: number;
   vy: number;
-  /** performance.now() when the snapshot carrying x/y/vx/vy arrived (dead reckoning). */
+  /** performance.now() when the snapshot carrying x/y/vx/vy arrived. */
   receivedAt?: number;
+  /** Recent server positions on the simulation timeline (snapshot interpolation). */
+  samples?: PosSample[];
   radius: number; // Receive radius from server
   tag: string; // Current behavior tag
   mobTypeId?: string; // Synced from server for UI display
@@ -52,7 +55,7 @@ export interface Mob {
   // Status Effects
   // Status Effects
   battleStatuses?: Map<string, BattleStatus>; // Synced: Status Type -> BattleStatus Object
-  
+
   // Combat and Visuals
   currentHealth?: number;
   maxHealth?: number;
@@ -78,8 +81,10 @@ export interface Player {
   y: number;
   vx: number;
   vy: number;
-  /** performance.now() when the snapshot carrying x/y/vx/vy arrived (dead reckoning). */
+  /** performance.now() when the snapshot carrying x/y/vx/vy arrived. */
   receivedAt?: number;
+  /** Recent server positions on the simulation timeline (snapshot interpolation). */
+  samples?: PosSample[];
   radius?: number;
   name: string;
   isBotMode?: boolean; // Synced from server
@@ -96,7 +101,7 @@ export interface Player {
   // Status Effects
   // Status Effects
   battleStatuses?: Map<string, BattleStatus>; // Synced: Status Type -> BattleStatus Object
-  
+
   // Resistances
   resistances?: Map<string, number>; // Synced: Type -> Value (0-1)
 
@@ -112,8 +117,10 @@ export interface Projectile {
   y: number;
   vx: number;
   vy: number;
-  /** performance.now() when the snapshot carrying x/y/vx/vy arrived (dead reckoning). */
+  /** performance.now() when the snapshot carrying x/y/vx/vy arrived. */
   receivedAt?: number;
+  /** Recent server positions on the simulation timeline (snapshot interpolation). */
+  samples?: PosSample[];
   radius: number;
   ownerId: string;
   isStuck: boolean;
@@ -139,6 +146,8 @@ export interface GameState {
   companions?: Map<string, Companion>;
   projectiles?: Map<string, Projectile>;
   zoneEffects?: Map<string, ZoneEffect>;
+  /** server-rs: maps performance.now() onto the snapshot timeline for rendering. */
+  renderClock?: SnapshotClock;
   /** server-rs: combat events (hit / kill) carried by the latest snapshot. */
   events?: GameEventInfo[];
   tick: number;

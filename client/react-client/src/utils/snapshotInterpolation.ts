@@ -1,0 +1,162 @@
+/**
+ * Snapshot interpolation on the SERVER timeline.
+ *
+ * The server advances every entity by exactly one 50 ms step per tick, but ticks reach
+ * us in bursts (measured gaps of 2–300 ms on a loaded dev box). Rendering against
+ * arrival time therefore stutters however it is smoothed. Instead each snapshot is
+ * placed at `tick * 50 ms` and the renderer plays that timeline back a little in the
+ * past, far enough behind that the snapshots bracketing the render time have usually
+ * already arrived.
+ */
+
+/** Simulation time covered by one server tick. */
+export const SNAPSHOT_INTERVAL_MS = 50;
+/** How far past the newest snapshot we project when the buffer runs dry. */
+export const MAX_EXTRAPOLATION_MS = 50;
+/**
+ * Slack on top of the worst recent lateness: one interval, so that together with
+ * MAX_EXTRAPOLATION_MS a first-ever snapshot one interval late causes no freeze.
+ */
+const MARGIN_MS = 50;
+/** Never hold the picture further behind the newest snapshot than this. */
+export const MAX_DELAY_MS = 250;
+/** Lateness window: 3 s of snapshots. */
+const WINDOW = 60;
+/** Playback slows by at most this fraction while the delay grows... */
+const GROW_RATE = 0.25;
+/** ...and speeds up by at most this fraction while it shrinks. */
+const SHRINK_RATE = 0.1;
+/** A clock error this large means a new timeline (reconnect / room switch). */
+const RESYNC_MS = 1000;
+/** Samples kept per entity (covers MAX_DELAY_MS plus a burst). */
+const MAX_SAMPLES = 12;
+
+/** Position of an entity at simulation time `t` (ms). Velocity is units/second. */
+export interface PosSample {
+  t: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+}
+
+/**
+ * Maps `performance.now()` onto the server timeline. `lag` is `now - renderTime`; it
+ * drifts towards `target` at a bounded rate so render time never runs backwards.
+ */
+export interface SnapshotClock {
+  /** Recent `arrival - simTime` values, newest last. */
+  offsets: number[];
+  /** Lag at time `at`. */
+  lag: number;
+  at: number;
+  target: number;
+  /** Simulation time of the newest snapshot. */
+  newest: number;
+}
+
+function lagAt(clock: SnapshotClock, now: number): number {
+  const dt = Math.max(now - clock.at, 0);
+  const step = Math.min(
+    Math.max(clock.target - clock.lag, -SHRINK_RATE * dt),
+    GROW_RATE * dt,
+  );
+  return clock.lag + step;
+}
+
+/** Fold one snapshot (simulation time `simTime`, arrived at `arrival`) into the clock. */
+export function observeSnapshot(
+  clock: SnapshotClock | undefined,
+  simTime: number,
+  arrival: number,
+): SnapshotClock {
+  const offset = arrival - simTime;
+  // Where the picture actually is: time it was held for (a stall) becomes lag, so
+  // playback resumes from the held frame instead of jumping to catch up.
+  const lag = clock ? arrival - renderTimeAt(clock, arrival) : NaN;
+  if (!clock || !(Math.abs(offset - lag) < RESYNC_MS)) {
+    const fresh = offset + MARGIN_MS;
+    return {
+      offsets: [offset],
+      lag: fresh,
+      at: arrival,
+      target: fresh,
+      newest: simTime,
+    };
+  }
+  const offsets = [...clock.offsets, offset].slice(-WINDOW);
+  const target =
+    Math.min(Math.max(...offsets), offset + MAX_DELAY_MS) + MARGIN_MS;
+  const newest = Math.max(clock.newest, simTime);
+  return { offsets, lag, at: arrival, target, newest };
+}
+
+/**
+ * Simulation time to draw at `now`. Held once it is MAX_EXTRAPOLATION_MS past the
+ * newest snapshot (nothing newer to draw).
+ */
+export function renderTimeAt(
+  clock: SnapshotClock | undefined,
+  now: number,
+): number {
+  if (!clock) return now;
+  return Math.min(now - lagAt(clock, now), clock.newest + MAX_EXTRAPOLATION_MS);
+}
+
+/** How far behind the newest possible snapshot the picture is held at `now` (ms). */
+export function interpolationDelayAt(
+  clock: SnapshotClock | undefined,
+  now: number,
+): number {
+  if (!clock) return 0;
+  return lagAt(clock, now) - Math.min(...clock.offsets);
+}
+
+/** Append a sample; a sample that does not move time forward starts a new history. */
+export function pushSample(
+  samples: readonly PosSample[] | undefined,
+  sample: PosSample,
+): PosSample[] {
+  if (!samples || samples.length === 0) return [sample];
+  if (sample.t <= samples[samples.length - 1].t) return [sample];
+  return [...samples, sample].slice(-MAX_SAMPLES);
+}
+
+interface Sampled {
+  x: number;
+  y: number;
+  samples?: readonly PosSample[];
+}
+
+/** Position at simulation time `t`: interpolated, or briefly extrapolated when dry. */
+export function samplePosition(
+  e: Sampled,
+  t: number,
+): { x: number; y: number } {
+  const s = e.samples;
+  if (!s || s.length === 0 || !Number.isFinite(t)) return { x: e.x, y: e.y };
+  const last = s[s.length - 1];
+  if (t >= last.t) {
+    const dt = Math.min(t - last.t, MAX_EXTRAPOLATION_MS) / 1000;
+    return { x: last.x + last.vx * dt, y: last.y + last.vy * dt };
+  }
+  for (let i = s.length - 2; i >= 0; i--) {
+    const a = s[i];
+    if (t >= a.t) {
+      const b = s[i + 1];
+      const k = (t - a.t) / (b.t - a.t);
+      return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k };
+    }
+  }
+  return { x: s[0].x, y: s[0].y };
+}
+
+/** Copy of `entities` with each position sampled at simulation time `t`. */
+export function interpolateEntities<T extends Sampled>(
+  entities: Map<string, T>,
+  t: number,
+): Map<string, T> {
+  const out = new Map<string, T>();
+  entities.forEach((e, id) => out.set(id, { ...e, ...samplePosition(e, t) }));
+  return out;
+}

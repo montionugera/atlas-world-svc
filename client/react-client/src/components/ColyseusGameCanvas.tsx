@@ -8,7 +8,7 @@ import { InputDebugPanel } from "./InputDebugPanel";
 import { calculateScale } from "../utils/drawingUtils";
 import { SKILL_DEFINITIONS } from "../config/skills";
 import { getAoeReticle } from "../utils/aoeReticle";
-import { extrapolatePosition } from "../utils/deadReckoning";
+import { renderTimeAt, samplePosition } from "../utils/snapshotInterpolation";
 import { debugToggleForKey, hasModifierKey } from "../config/controls";
 import {
   REFERENCE_RUN_SPEED,
@@ -347,8 +347,11 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
 
       const player = currentGameState.players.get(currentPid);
       if (player) {
-        // Same extrapolated position the renderer centres the camera on.
-        const pos = extrapolatePosition(player, performance.now());
+        // Same interpolated position the renderer centres the camera on.
+        const pos = samplePosition(
+          player,
+          renderTimeAt(currentGameState.renderClock, performance.now()),
+        );
         cameraX = pos.x;
         cameraY = pos.y;
       }
@@ -389,11 +392,14 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       let targetMobId: number | undefined;
 
       if (gameState) {
-        const frameNow = performance.now();
+        const renderTime = renderTimeAt(
+          gameState.renderClock,
+          performance.now(),
+        );
         gameState.mobs.forEach((mob) => {
           if (mob.isAlive === false || targetMobId !== undefined) return;
-          // Pick against the extrapolated position that is drawn on screen.
-          const pos = extrapolatePosition(mob, frameNow);
+          // Pick against the interpolated position that is drawn on screen.
+          const pos = samplePosition(mob, renderTime);
           const dist = Math.hypot(pos.x - wx, pos.y - wy);
           if (dist <= (mob.radius || 14) + 16) {
             targetMobId = Number(mob.id);

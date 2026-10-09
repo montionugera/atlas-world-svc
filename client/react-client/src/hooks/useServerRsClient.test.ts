@@ -766,6 +766,32 @@ describe("useServerRsClient", () => {
     }
   });
 
+  it("keeps a per-entity sample history on the server timeline", async () => {
+    const { result } = await connected();
+    const ws = MockWebSocket.instances[0];
+    const ents = (x: number) => [
+      { id: 11, type: EntityType.Player, x },
+      { id: 12, type: EntityType.Mob, x },
+      { id: 13, type: EntityType.Projectile, x, ownerId: 11 },
+    ];
+    act(() => {
+      ws.onmessage?.(snap(1, ents(1)));
+      ws.onmessage?.(snap(2, ents(2)));
+    });
+    const gs = result.current.gameState!;
+    expect(gs.renderClock).toBeDefined();
+    for (const e of [
+      gs.players.get("11")!,
+      gs.mobs.get("12")!,
+      gs.projectiles!.get("13")!,
+    ]) {
+      expect(e.samples!.map((s) => [s.t, s.x])).toEqual([
+        [50, 1],
+        [100, 2],
+      ]);
+    }
+  });
+
   it("sets isAttacking and heading toward mouse aim on local player", async () => {
     const { result } = await connected("dev-token:alice");
     const ws = MockWebSocket.instances[0];

@@ -3,7 +3,10 @@ import { GameState } from "../types/game";
 import { calculateScale, clearCanvas } from "../utils/drawingUtils";
 import { drawGrid, drawGridCoordinates } from "../utils/gridUtils";
 import type { AoeReticle } from "../utils/aoeReticle";
-import { extrapolateEntities } from "../utils/deadReckoning";
+import {
+  interpolateEntities,
+  renderTimeAt,
+} from "../utils/snapshotInterpolation";
 import { drawMap } from "../renderers/mapRenderer";
 import { drawMobs } from "../renderers/mobRenderer";
 import { drawCompanions } from "../renderers/companionRenderer";
@@ -91,12 +94,18 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
       clearCanvas(ctx, canvas);
 
       if (gameState) {
-        // Dead-reckon between snapshots (velocity is units/second).
-        const frameNow = performance.now();
-        const renderPlayers = extrapolateEntities(gameState.players, frameNow);
-        const renderMobs = extrapolateEntities(gameState.mobs, frameNow);
+        // Draw the server timeline slightly in the past, between real snapshots.
+        const renderTime = renderTimeAt(
+          gameState.renderClock,
+          performance.now(),
+        );
+        const renderPlayers = interpolateEntities(
+          gameState.players,
+          renderTime,
+        );
+        const renderMobs = interpolateEntities(gameState.mobs, renderTime);
         const renderProjectiles = gameState.projectiles
-          ? extrapolateEntities(gameState.projectiles, frameNow)
+          ? interpolateEntities(gameState.projectiles, renderTime)
           : undefined;
         // Detect detonated projectiles to spawn AoE blast shockwaves
         const prevProjs = prevProjectilesRef.current;
@@ -277,7 +286,7 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
           drawProjectiles(ctx, renderProjectiles, 1, scale);
         }
 
-        // Debug rings / velocity vectors, on the same extrapolated positions as the sprites
+        // Debug rings / velocity vectors, on the same interpolated positions as the sprites
         if (debug.world) {
           drawWorldDebug(ctx, {
             players: renderPlayers,
@@ -466,18 +475,18 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
           hudY + 36,
         );
 
-        // Ping / Net RTT
+        // Client clock minus server clock (NOT a round trip)
         const ping = lm?.pingMs ?? 0;
         ctx.fillStyle =
           ping < 40 ? "#2ecc71" : ping < 100 ? "#f1c40f" : "#e74c3c";
-        ctx.fillText(`Net RTT: ${ping}ms`, hudX + 10, hudY + 54);
+        ctx.fillText(`Clk off: ${ping}ms`, hudX + 10, hudY + 54);
 
-        // Snapshot Interval & Jitter
-        const snapInterval = lm?.snapshotIntervalMs ?? 50;
-        const jitter = lm?.jitterMs ?? 0;
-        ctx.fillStyle = jitter < 15 ? "#2ecc71" : "#f1c40f";
+        // Snapshot gap: rolling median and worst over the last 20 snapshots
+        const snapP50 = lm?.snapshotP50Ms ?? 50;
+        const snapMax = lm?.snapshotMaxMs ?? 50;
+        ctx.fillStyle = snapMax < 80 ? "#2ecc71" : "#f1c40f";
         ctx.fillText(
-          `Snap: ${snapInterval.toFixed(0)}ms (±${jitter.toFixed(0)}ms)`,
+          `Snap p50 ${snapP50}ms max ${snapMax}ms`,
           hudX + 110,
           hudY + 54,
         );

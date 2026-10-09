@@ -10,6 +10,11 @@ import {
 } from "../config/equipmentSlots";
 import { mapDef } from "../config/maps";
 import {
+  SNAPSHOT_INTERVAL_MS,
+  observeSnapshot,
+  pushSample,
+} from "../utils/snapshotInterpolation";
+import {
   BinaryDeltaDecoder,
   EntityType,
   STATE_FLAG_ALIVE,
@@ -27,6 +32,9 @@ export interface ServerRsClientConfig {
 export interface LatencyMetrics {
   pingMs: number;
   snapshotIntervalMs: number;
+  /** Median / worst gap over the last 20 snapshots. */
+  snapshotP50Ms: number;
+  snapshotMaxMs: number;
   jitterMs: number;
   serverTimeDeltaMs: number;
   fps: number;
@@ -150,6 +158,8 @@ export const useServerRsClient = (
   const [latencyMetrics, setLatencyMetrics] = useState<LatencyMetrics>({
     pingMs: 0,
     snapshotIntervalMs: 50,
+    snapshotP50Ms: 50,
+    snapshotMaxMs: 50,
     jitterMs: 0,
     serverTimeDeltaMs: 0,
     fps: 0,
@@ -199,6 +209,7 @@ export const useServerRsClient = (
     attackHeldRef.current = false;
     stateRef.current.players.clear();
     stateRef.current.mobs.clear();
+    stateRef.current.renderClock = undefined;
 
     setIsConnected(false);
     setRoomId(null);
@@ -306,6 +317,9 @@ export const useServerRsClient = (
                 snapshotIntervalsRef.current.shift();
               }
               const jitter = Math.abs(interval - 50);
+              const sortedIntervals = [...snapshotIntervalsRef.current].sort(
+                (a, b) => a - b,
+              );
               const serverDelta = snapshot.serverTimeMs
                 ? Date.now() - Number(snapshot.serverTimeMs)
                 : 0;
@@ -313,6 +327,12 @@ export const useServerRsClient = (
               const nextMetrics: LatencyMetrics = {
                 pingMs: Math.max(0, Math.round(serverDelta)),
                 snapshotIntervalMs: Math.round(interval * 10) / 10,
+                snapshotP50Ms: Math.round(
+                  sortedIntervals[sortedIntervals.length >> 1],
+                ),
+                snapshotMaxMs: Math.round(
+                  sortedIntervals[sortedIntervals.length - 1],
+                ),
                 jitterMs: Math.round(jitter * 10) / 10,
                 serverTimeDeltaMs: serverDelta,
                 fps: frameCountRef.current || 60,
@@ -322,6 +342,25 @@ export const useServerRsClient = (
 
               const current = stateRef.current;
               current.tick = snapshot.tick;
+              // Entities are drawn on the server timeline, not at arrival time.
+              const simTime = snapshot.tick * SNAPSHOT_INTERVAL_MS;
+              current.renderClock = observeSnapshot(
+                current.renderClock,
+                simTime,
+                arrivalTime,
+              );
+              const sampleOf = (e: {
+                x: number;
+                y: number;
+                vx: number;
+                vy: number;
+              }) => ({
+                t: simTime,
+                x: e.x,
+                y: e.y,
+                vx: e.vx,
+                vy: e.vy,
+              });
               // Snapshots are full state: projectiles are ephemeral, so rebuild the set each
               // frame (they never go through removed_ids).
               const projectiles = new Map<string, Projectile>();
@@ -361,6 +400,7 @@ export const useServerRsClient = (
                     vx: entity.vx,
                     vy: entity.vy,
                     receivedAt: arrivalTime,
+                    samples: pushSample(existing?.samples, sampleOf(entity)),
                     radius: SERVER_RS_PLAYER_RADIUS,
                     name: isLocalPlayer
                       ? "Player (YOU)"
@@ -389,6 +429,7 @@ export const useServerRsClient = (
                     vx: entity.vx,
                     vy: entity.vy,
                     receivedAt: arrivalTime,
+                    samples: pushSample(existing?.samples, sampleOf(entity)),
                     radius: SERVER_RS_MOB_RADIUS,
                     tag: isAlive ? "mob" : "dead",
                     // Older servers send no mob_type: keep whatever we already had.
@@ -406,6 +447,10 @@ export const useServerRsClient = (
                     vx: entity.vx,
                     vy: entity.vy,
                     receivedAt: arrivalTime,
+                    samples: pushSample(
+                      current.projectiles?.get(idStr)?.samples,
+                      sampleOf(entity),
+                    ),
                     radius: SERVER_RS_PROJECTILE_RADIUS,
                     ownerId: String(entity.ownerId),
                     isStuck: false,
@@ -420,11 +465,11 @@ export const useServerRsClient = (
                 current.mobs.delete(idStr);
               }
 
+              current.projectiles = projectiles;
               const nextState: GameState = {
                 ...current,
                 players: new Map(current.players),
                 mobs: new Map(current.mobs),
-                projectiles,
                 events: snapshot.events,
               };
               setGameState(nextState);
@@ -576,6 +621,7 @@ export const useServerRsClient = (
         // Nothing from the old room may leak into the new one.
         stateRef.current.players.clear();
         stateRef.current.mobs.clear();
+        stateRef.current.renderClock = undefined;
         targetIdRef.current = 0;
         aimRef.current = { x: 0, y: 0 };
         sentTargetRef.current = { x: 0, y: 0 };
