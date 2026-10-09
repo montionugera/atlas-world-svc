@@ -635,6 +635,51 @@ describe("useServerRsClient", () => {
     expect(input.respawn()).toBe(false);
   });
 
+  it("tracks the last non-zero target actually sent (server keeps it for AoE impact)", async () => {
+    const { result } = await connected();
+    expect(result.current.sentTargetRef.current).toEqual({ x: 0, y: 0 });
+    act(() => {
+      result.current.sendPlayerAction("useSkill", true, {
+        skillId: "skill_1",
+        x: 350,
+        y: 420,
+      });
+    });
+    expect(result.current.sentTargetRef.current).toEqual({ x: 350, y: 420 });
+    // A later packet with a different target (e.g. attack press) replaces it.
+    act(() => {
+      result.current.sendPlayerAction("attack", true, { x: 10, y: 20 });
+    });
+    expect(result.current.sentTargetRef.current).toEqual({ x: 10, y: 20 });
+    // Movement packets resend the same held aim, so it is unchanged.
+    act(() => {
+      result.current.updatePlayerInput(1, 0);
+    });
+    expect(result.current.sentTargetRef.current).toEqual({ x: 10, y: 20 });
+  });
+
+  it("stamps decoded players, mobs and projectiles with a finite receivedAt", async () => {
+    const { result } = await connected();
+    const ws = MockWebSocket.instances[0];
+    act(() => {
+      ws.onmessage?.(
+        snap(1, [
+          { id: 11, type: EntityType.Player, x: 1 },
+          { id: 12, type: EntityType.Mob, x: 2 },
+          { id: 13, type: EntityType.Projectile, x: 3, ownerId: 11 },
+        ]),
+      );
+    });
+    const gs = result.current.gameState!;
+    for (const e of [
+      gs.players.get("11")!,
+      gs.mobs.get("12")!,
+      gs.projectiles!.get("13")!,
+    ]) {
+      expect(Number.isFinite(e.receivedAt)).toBe(true);
+    }
+  });
+
   it("sets isAttacking and heading toward mouse aim on local player", async () => {
     const { result } = await connected("dev-token:alice");
     const ws = MockWebSocket.instances[0];

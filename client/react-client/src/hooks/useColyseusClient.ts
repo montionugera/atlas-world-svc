@@ -37,6 +37,7 @@ export interface UseColyseusClientReturn {
   joinRoom: (mapId?: string) => Promise<void>;
   updatePlayerInput: (vx: number, vy: number) => void;
   sendPlayerAction: (action: string, pressed: boolean, options?: any) => void;
+  sentTargetRef?: React.MutableRefObject<{ x: number; y: number }>;
   switchWeapon: (weaponId: string) => void;
   requestEquipment: () => void;
   /** @deprecated use requestEquipment */

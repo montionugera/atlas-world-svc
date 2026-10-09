@@ -51,6 +51,8 @@ export interface UseServerRsClientReturn {
   joinRoom: (mapId?: string) => Promise<void>;
   updatePlayerInput: (vx: number, vy: number) => void;
   sendPlayerAction: (action: string, pressed: boolean, options?: any) => void;
+  /** Last non-zero target sent to the server (it holds this for AoE impact). */
+  sentTargetRef: React.MutableRefObject<{ x: number; y: number }>;
   switchWeapon: (weaponId: string) => void;
   requestEquipment: () => void;
   requestLoadout: () => void;
@@ -505,6 +507,9 @@ export const useServerRsClient = (
     [config],
   );
 
+  // Last non-zero target we actually sent (mirrors the target the server holds)
+  const sentTargetRef = useRef({ x: 0, y: 0 });
+
   // Send binary input frame
   const sendInput = useCallback(
     (
@@ -519,6 +524,11 @@ export const useServerRsClient = (
     ) => {
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
         return;
+      }
+
+      // The server overwrites its held target on any non-zero target packet.
+      if (targetX !== 0 || targetY !== 0) {
+        sentTargetRef.current = { x: targetX, y: targetY };
       }
 
       const builder = new flatbuffers.Builder(64);
@@ -732,6 +742,7 @@ export const useServerRsClient = (
     joinRoom,
     updatePlayerInput,
     sendPlayerAction,
+    sentTargetRef,
     switchWeapon,
     requestEquipment,
     requestLoadout,

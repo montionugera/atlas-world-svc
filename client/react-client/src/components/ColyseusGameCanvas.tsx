@@ -41,6 +41,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     updateRate,
     updatePlayerInput,
     sendPlayerAction,
+    sentTargetRef,
     switchWeapon,
     trackFrame,
     respawn,
@@ -55,7 +56,11 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
   // Ground-target indicator while an AoE skill is being cast (null otherwise)
   const aoeReticle =
     activeCast && localPlayer
-      ? getAoeReticle(activeCast.skillId, activeCast.aim, localPlayer)
+      ? getAoeReticle(
+          activeCast.skillId,
+          sentTargetRef?.current ?? activeCast.aim,
+          localPlayer,
+        )
       : null;
 
   // Resolve aim towards mouse, or fallback to nearest mob / movement direction
