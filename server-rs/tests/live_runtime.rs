@@ -1018,6 +1018,7 @@ fn test_manual_respawn_revives_dead_player_immediately() {
     use server_rs::protocol::serialize_client_input_full;
 
     let mut sim = live(0, 0);
+    sim.debug_enabled = true;
     let p_ent = sim.spawn_player_avatar("p-revive-test", 250.0, 350.0);
 
     // Kill player
@@ -1059,6 +1060,48 @@ fn test_manual_respawn_revives_dead_player_immediately() {
     let pos = sim.world.get::<Position>(p_ent).unwrap();
     assert_eq!(pos.x, 250.0);
     assert_eq!(pos.y, 350.0);
+}
+
+#[test]
+fn respawn_requests_are_ignored_outside_development_mode() {
+    use server_rs::protocol::serialize_client_input_full;
+
+    let mut sim = live(0, 0); // debug_enabled is false unless the server turns it on
+    let p_ent = sim.spawn_player_avatar("p-no-debug", 250.0, 350.0);
+    let respawn = || ClientPacket {
+        session_id: "p-no-debug".to_string(),
+        room_id: "map-for-play".to_string(),
+        payload: serialize_client_input_full(1, 0.0, 0.0, false, 0, 0, 0.0, 0.0, true),
+    };
+
+    // Alive and away from the spawn point: no free heal, no teleport home.
+    *sim.world.get_mut::<Position>(p_ent).unwrap() = Position::new(600.0, 600.0);
+    sim.world
+        .get_mut::<Health>(p_ent)
+        .unwrap()
+        .take_damage(10.0);
+    let hurt = sim.world.get::<Health>(p_ent).unwrap().current;
+    sim.live_tick(&[respawn()], &[]);
+    assert_eq!(sim.world.get::<Health>(p_ent).unwrap().current, hurt);
+    assert_eq!(
+        *sim.world.get::<Position>(p_ent).unwrap(),
+        Position::new(600.0, 600.0)
+    );
+
+    // Dead: asking does not skip the respawn delay (1.0 s = 20 ticks here).
+    sim.world.get_mut::<Health>(p_ent).unwrap().take_damage(1e9);
+    for _ in 0..10 {
+        sim.live_tick(&[respawn()], &[]);
+    }
+    assert!(
+        !sim.world.get::<Health>(p_ent).unwrap().is_alive,
+        "revived early"
+    );
+    ticks(&mut sim, 15);
+    assert!(
+        sim.world.get::<Health>(p_ent).unwrap().is_alive,
+        "the timer never revived"
+    );
 }
 
 #[test]

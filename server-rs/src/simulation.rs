@@ -768,8 +768,10 @@ impl AtlasSimulation {
             query.iter_mut(&mut self.world)
         {
             if id.0 == session_id {
-                // If respawn requested, revive/teleport immediately to spawn point with full health
-                if input.respawn() {
+                // Development mode only: a respawn request revives/teleports to the spawn
+                // point at once with full health, alive or dead. Otherwise it is ignored and
+                // `player_respawn_system` revives the dead after the respawn delay.
+                if input.respawn() && self.debug_enabled {
                     health.current = health.max;
                     health.is_alive = true;
                     *pos = spawn.map(|s| s.0).unwrap_or(Position::new(
