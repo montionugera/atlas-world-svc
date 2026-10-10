@@ -578,6 +578,11 @@ pub struct Projectile {
     pub detonated: bool,
 }
 
+/// Marks a projectile that a parry has already reflected. A second parry
+/// destroys it instead of reflecting it again.
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Parried;
+
 #[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PlayerInputState {
     pub move_x: f32,

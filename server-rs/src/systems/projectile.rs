@@ -2,7 +2,7 @@ use crate::ai::ThreatTable;
 use crate::combat::{DamageCalculator, DamageOptions, SkillEffect};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    knockback_speed, ElementalAttributes, Health, HitLog, HitRecord, Mass, MobTag,
+    knockback_speed, ElementalAttributes, Health, HitLog, HitRecord, Mass, MobTag, Parried,
     PlayerInputState, PlayerTag, Position, Projectile, StatusEffects, Velocity,
 };
 use crate::spatial::grid::SpatialGrid;
@@ -34,7 +34,13 @@ pub fn projectile_collision_system(
     grid: Res<SpatialGrid>,
     clock: Option<Res<SimClock>>,
     mut hit_log: Option<ResMut<HitLog>>,
-    mut proj_query: Query<(Entity, &Position, Option<&mut Velocity>, &mut Projectile)>,
+    mut proj_query: Query<(
+        Entity,
+        &Position,
+        Option<&mut Velocity>,
+        &mut Projectile,
+        Has<Parried>,
+    )>,
     mut targets: Query<
         (
             Entity,
@@ -55,7 +61,7 @@ pub fn projectile_collision_system(
     let now = clock.map_or(0.0, |c| c.current_time_seconds());
     let default_attrs = ElementalAttributes::default();
 
-    for (proj_entity, pos, mut proj_vel_opt, mut proj) in &mut proj_query {
+    for (proj_entity, pos, mut proj_vel_opt, mut proj, already_parried) in &mut proj_query {
         let hit_radius = if proj.aoe_radius > 0.0 {
             proj.aoe_radius
         } else {
@@ -167,7 +173,15 @@ pub fn projectile_collision_system(
                     false
                 };
 
+                if is_parry && already_parried {
+                    // Second parry: destroy it, so it can never bounce a third time
+                    commands.entity(proj_entity).despawn();
+                    continue;
+                }
+
                 if is_parry {
+                    commands.entity(proj_entity).insert(Parried);
+
                     let dx = pos.x - t_pos.x;
                     let dy = pos.y - t_pos.y;
                     let dist = (dx * dx + dy * dy).sqrt();
@@ -1001,6 +1015,124 @@ mod tests {
             player_vel.vx < 0.0,
             "player should experience recoil impulse, got vx={}",
             player_vel.vx
+        );
+
+        assert!(
+            world.get::<Parried>(proj).is_some(),
+            "a reflected projectile must be marked as already parried"
+        );
+    }
+
+    #[test]
+    fn test_projectile_second_parry_destroys_instead_of_reflecting() {
+        let mut world = World::new();
+        world.insert_resource(SpatialGrid::default());
+
+        let player = world
+            .spawn((
+                Position::new(50.0, 50.0),
+                Velocity::zero(),
+                Health::new(100.0),
+                ElementalAttributes::default(),
+                StatusEffects::default(),
+                Mass(20.0),
+                PlayerTag,
+                PlayerInputState {
+                    attack: true,
+                    ..Default::default()
+                },
+            ))
+            .id();
+
+        // Already reflected once, then sent back at a player.
+        let proj = world
+            .spawn((
+                Position::new(60.0, 50.0),
+                Velocity::new(-200.0, 0.0),
+                Projectile {
+                    owner: Entity::PLACEHOLDER,
+                    target: Some(player),
+                    damage: 20.0,
+                    damage_type: DamageType::Physical,
+                    element: Element::Neutral,
+                    speed: 200.0,
+                    radius: 4.0,
+                    max_range: 300.0,
+                    traveled_distance: 100.0,
+                    lifetime: 1.5,
+                    effects: vec![],
+                    is_player_projectile: false,
+                    aoe_radius: 0.0,
+                    skill_id: Some("spear".to_string()),
+                    detonated: false,
+                },
+                Parried,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(projectile_collision_system);
+        schedule.run(&mut world);
+
+        assert!(
+            world.get_entity(proj).is_err(),
+            "a second parry must destroy the projectile"
+        );
+        assert_eq!(world.get::<Health>(player).unwrap().current, 100.0);
+        assert_eq!(*world.get::<Velocity>(player).unwrap(), Velocity::zero());
+    }
+
+    #[test]
+    fn test_projectile_already_parried_still_hits_a_player_not_swinging() {
+        let mut world = World::new();
+        world.insert_resource(SpatialGrid::default());
+
+        let player = world
+            .spawn((
+                Position::new(50.0, 50.0),
+                Velocity::zero(),
+                Health::new(100.0),
+                ElementalAttributes::default(),
+                StatusEffects::default(),
+                Mass(20.0),
+                PlayerTag,
+                PlayerInputState::default(),
+            ))
+            .id();
+
+        // Already reflected once, then sent back at a player.
+        let proj = world
+            .spawn((
+                Position::new(60.0, 50.0),
+                Velocity::new(-200.0, 0.0),
+                Projectile {
+                    owner: Entity::PLACEHOLDER,
+                    target: Some(player),
+                    damage: 20.0,
+                    damage_type: DamageType::Physical,
+                    element: Element::Neutral,
+                    speed: 200.0,
+                    radius: 4.0,
+                    max_range: 300.0,
+                    traveled_distance: 100.0,
+                    lifetime: 1.5,
+                    effects: vec![],
+                    is_player_projectile: false,
+                    aoe_radius: 0.0,
+                    skill_id: Some("spear".to_string()),
+                    detonated: false,
+                },
+                Parried,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(projectile_collision_system);
+        schedule.run(&mut world);
+
+        assert!(
+            world.get::<Health>(player).unwrap().current < 100.0,
+            "without a swing, an already-parried projectile must still deal damage"
         );
     }
 }
