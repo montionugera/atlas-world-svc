@@ -1161,5 +1161,54 @@
     "created_at": "2026-10-11T06:59:09.185141+00:00",
     "promoted_to": null,
     "epic": "E-008"
+  },
+  {
+    "id": "I-185",
+    "title": "Connect and decode",
+    "created_at": "2026-10-11T06:59:10.415261+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-186",
+    "title": "Move and predict",
+    "created_at": "2026-10-11T06:59:10.418881+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-187",
+    "title": "Fight",
+    "created_at": "2026-10-11T06:59:10.421592+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-188",
+    "title": "Sign-in panel on the new flow",
+    "created_at": "2026-10-11T06:59:10.422645+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-189",
+    "title": "Inventory panel on real data",
+    "created_at": "2026-10-11T06:59:10.423593+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-190",
+    "title": "Quest panel on real data",
+    "created_at": "2026-10-11T06:59:10.426011+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-191",
+    "title": "Refresh the documents",
+    "created_at": "2026-10-11T06:59:10.428079+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
   }
 ]
