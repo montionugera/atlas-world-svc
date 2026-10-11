@@ -60,5 +60,15 @@
     "verified_sha": null,
     "verified_at": null,
     "split_approved_by": null
+  },
+  {
+    "id": "E-007",
+    "title": "Combat depth",
+    "created_at": "2026-10-11T06:40:08.945927+00:00",
+    "status": "open",
+    "release_version": null,
+    "verified_sha": null,
+    "verified_at": null,
+    "split_approved_by": null
   }
 ]
