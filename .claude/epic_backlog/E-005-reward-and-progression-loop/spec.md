@@ -23,7 +23,7 @@ session.
 - No loot anywhere in `server-rs/src` or the client; `GameEventKind` has only Hit and Kill. `nakama/src/rpc/grantLoot.ts` and `grantXp.ts` have no caller.
 - The client's `requestLoadout` / `requestEquipment` are no-ops (`client/react-client/src/hooks/useServerRsClient.ts:889-895`); there is no inventory screen.
 - Weapon switch only changes client state (`useServerRsClient.ts:882-887`); skill slots are hard-wired to `skill_1..4` (`server-rs/src/systems/skill_execution.rs:236-241`).
-- No quest reference in `server-rs/src` beyond an unused `active_quest_ids`; `contracts/content/quests.json` holds 3 quests, not 6 (28 in `content/story/quests.json` is right).
+- No quest reference in `server-rs/src` beyond an unused `active_quest_ids`; `contracts/content/quests.json` holds 3 quests; `content/story/quests.json` holds 28.
 
 ## Slices
 
@@ -31,8 +31,8 @@ Order matters: earlier slices unblock later ones.
 
 1. Experience and levels — grant experience on mob kills, advance player levels on thresholds, and synchronize level and experience to the client.
 2. Minimal item catalogue — the smallest set of item definitions loot needs (the wider scheme stays in I-066).
-3. Idempotent server-only grants — every grant of experience, items or currency is made by the server, exactly once, with a test for two players racing for one pickup.
-4. Loot drops and pickup — mobs drop items into the world, a player picks them up, and the item lands in their saved inventory.
+3. Loot drops and pickup — mobs drop items into the world, a player picks them up, and the item lands in their saved inventory.
+4. Idempotent server-only grants — every grant of experience, items or currency is made by the server, exactly once (its test: two players racing for one pickup yields exactly one owner, and a replayed kill grants experience once).
 5. Inventory and equipment screen — the client lists owned items and equips them; the server applies the change to the live avatar.
 6. Weapon switching and skill loadout in play — the switch key and equipped skills change what the server actually does.
 7. Death, bind point and travel — a death penalty, a respawn location the player sets, and a way to travel across a 400 by 400 world.

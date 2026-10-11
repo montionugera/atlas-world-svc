@@ -36,7 +36,7 @@ Order matters: earlier slices unblock later ones. Slices 6 and 7 overlap idea I-
 4. Health, readiness and clean shutdown — health and readiness endpoints, probes in the manifest, and close frames plus a state flush on shutdown.
 5. Metrics endpoint — tick time, players, entities and bytes sent, readable by a load run.
 6. Origin check and token out of the URL — an Origin allowlist on the socket upgrade, and the client sends its token by the existing Sec-WebSocket-Protocol path instead of the query string; TLS termination documented.
-7. Validate target and respawn intents — reject a target_id or target position the player cannot legitimately use, and a respawn request before the timer, each with a test that fails today. (Movement normalisation, attack cooldown and range, and cast range are already enforced server-side; say so.)
+7. Validate target intents — reject a `target_id` or target position the player cannot legitimately use, each with a test that fails today. (Already enforced server-side, so not in scope: movement normalisation, attack cooldown and range, cast range, and respawn, which is timer-driven with the wire flag honoured only in debug.)
 8. Player caps per region — a per-region player limit with a clear refusal message.
 
 ## Depends on

@@ -37,7 +37,7 @@ Order matters: earlier slices unblock later ones.
 
 ## Depends on
 
-Slices 1 to 3 need E-006 slice 2; slices 4 to 6 need E-003 slice 2 and E-005 slices 5 and 9.
+Slices 1 to 3 need E-006 slice 2; slices 4 to 6 need E-003 slices 2 and 3 and E-005 slices 5 and 9.
 
 Build order across epics: E-006 slices 1 and 2; then E-003; then E-006 slices 3 to 7; then E-004 slices 1 to 3; then E-005 slices 1 to 6; then E-004 slices 4 to 10 and E-006 slice 8; then E-005 slices 7 to 9; E-007 alongside; then E-008; then E-009.
 

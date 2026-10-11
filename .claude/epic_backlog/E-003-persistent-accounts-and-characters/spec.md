@@ -36,13 +36,14 @@ someone else.
 
 Order matters: each slice builds on the one before. Saving data before real sign-in would store it under forgeable ids, which is why sign-in comes first.
 
-1. Local full stack wired to Nakama — one command starts game server, Nakama and its database; the server reads the Nakama URL and http key from the environment and constructs its client. (Reopens promoted F-021 and F-063, whose wiring is absent.)
-2. Real sign-in — settle which key Nakama signs session tokens with (`nakama/local.yml:8` sets a separate `encryption_key`, while the server verifies with `NAKAMA_SERVER_KEY`), then the client authenticates with Nakama, the server verifies that token, and `dev-token` and the hard-coded fallback secret (`jwt.rs:49`) work only in a debug build.
-3. One live session per account — a second connection for the same account replaces or is refused, instead of two sockets driving one session (`ws.rs:425-428`).
-4. Apply the saved character on join — build the server with its Nakama client, and spawn the avatar from the fetched loadout (level, weapon, stats) instead of defaults.
-5. Report match events to Nakama — flush kill and match events through `report_match_events` on a buffered interval and on leave.
-6. Save and restore position and health — on leave, on an interval, and safely across a server crash.
-7. Session resume after a dropped connection — keep the avatar for a grace period, let the same account reattach to it, and have the client retry with backoff.
+1. Wire the game server to Nakama — the server reads the Nakama URL and http key from the environment, calls `with_nakama`, and both are set in `k8s/local/server-rs.yaml`. (`scripts/deploy-local.sh` already starts game server, Nakama and CockroachDB together; this slice connects them. Reopens promoted F-021 and F-063.)
+2. Server accepts a real Nakama token — first mint one token via `authenticate/device` (as `scripts/e2e-meta.sh:85` does) and decode it, because `Claims` (`jwt.rs:8`) requires `sub` while Nakama tokens may carry `uid`/`usn` and be signed with `session.encryption_key` (`nakama/local.yml:8`); then either verify locally with that key and map the id, or use the existing unused `verify_session` (`nakama.rs:170`). `dev-token` (`jwt.rs:60`) and the hard-coded fallback secret (`jwt.rs:49`) are compiled in only under `cfg(debug_assertions)`.
+3. Client signs in with Nakama — the test client authenticates against Nakama and sends that session token instead of the configured `dev-token` (`useServerRsClient.ts:310`).
+4. One live session per account — newest connection wins and the older one is closed with a named close code; includes a regression test for the React StrictMode double-mount that `ws.rs:425-428` records.
+5. Apply the saved character on join — spawn the avatar from the fetched loadout (weapon and stats) instead of defaults.
+6. Report match events to Nakama — flush kill and match events through `report_match_events` on a buffered interval and on leave.
+7. Save and restore position and health — on leave, on an interval, and safely across a server crash.
+8. Session resume after a dropped connection — keep the avatar for a grace period, let the same account reattach to it, and have the client retry with backoff.
 
 ## Depends on
 

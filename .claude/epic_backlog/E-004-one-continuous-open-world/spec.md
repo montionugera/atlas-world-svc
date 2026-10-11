@@ -42,7 +42,7 @@ Order matters: earlier slices unblock later ones. Ideas I-072 (snapshot-bytes me
 
 ## Depends on
 
-Slice 1 needs E-006 slice 5 (metrics); slice 3 and every later wire change need E-006 slice 2 (protocol version); slice 10 needs E-003 slices 6 and 7.
+Slice 1 needs E-006 slice 5 (metrics); slice 3 and every later wire change need E-006 slice 2 (protocol version); slice 10 needs E-003 slices 7 and 8.
 
 Build order across epics: E-006 slices 1 and 2; then E-003; then E-006 slices 3 to 7; then E-004 slices 1 to 3; then E-005 slices 1 to 6; then E-004 slices 4 to 10 and E-006 slice 8; then E-005 slices 7 to 9; E-007 alongside; then E-008; then E-009.
 
