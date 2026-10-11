@@ -1101,30 +1101,28 @@ mod tests {
             .id();
 
         // Already reflected once, then sent back at a player.
-        let proj = world
-            .spawn((
-                Position::new(60.0, 50.0),
-                Velocity::new(-200.0, 0.0),
-                Projectile {
-                    owner: Entity::PLACEHOLDER,
-                    target: Some(player),
-                    damage: 20.0,
-                    damage_type: DamageType::Physical,
-                    element: Element::Neutral,
-                    speed: 200.0,
-                    radius: 4.0,
-                    max_range: 300.0,
-                    traveled_distance: 100.0,
-                    lifetime: 1.5,
-                    effects: vec![],
-                    is_player_projectile: false,
-                    aoe_radius: 0.0,
-                    skill_id: Some("spear".to_string()),
-                    detonated: false,
-                },
-                Parried,
-            ))
-            .id();
+        world.spawn((
+            Position::new(60.0, 50.0),
+            Velocity::new(-200.0, 0.0),
+            Projectile {
+                owner: Entity::PLACEHOLDER,
+                target: Some(player),
+                damage: 20.0,
+                damage_type: DamageType::Physical,
+                element: Element::Neutral,
+                speed: 200.0,
+                radius: 4.0,
+                max_range: 300.0,
+                traveled_distance: 100.0,
+                lifetime: 1.5,
+                effects: vec![],
+                is_player_projectile: false,
+                aoe_radius: 0.0,
+                skill_id: Some("spear".to_string()),
+                detonated: false,
+            },
+            Parried,
+        ));
 
         let mut schedule = Schedule::default();
         schedule.add_systems(projectile_collision_system);
