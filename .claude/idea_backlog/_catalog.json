@@ -944,5 +944,68 @@
     "created_at": "2026-10-11T06:59:04.690361+00:00",
     "promoted_to": null,
     "epic": "E-004"
+  },
+  {
+    "id": "I-154",
+    "title": "Experience and levels",
+    "created_at": "2026-10-11T06:59:05.803624+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-155",
+    "title": "Minimal item catalogue",
+    "created_at": "2026-10-11T06:59:05.805693+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-156",
+    "title": "Loot drops and pickup",
+    "created_at": "2026-10-11T06:59:05.823871+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-157",
+    "title": "Idempotent server-only grants",
+    "created_at": "2026-10-11T06:59:05.825978+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-158",
+    "title": "Inventory and equipment screen",
+    "created_at": "2026-10-11T06:59:05.828097+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-159",
+    "title": "Weapon switching and skill loadout in play",
+    "created_at": "2026-10-11T06:59:05.829423+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-160",
+    "title": "Death, bind point and travel",
+    "created_at": "2026-10-11T06:59:05.832159+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-161",
+    "title": "Currency and vendor",
+    "created_at": "2026-10-11T06:59:05.834028+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-162",
+    "title": "Quests at runtime",
+    "created_at": "2026-10-11T06:59:05.834954+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
   }
 ]
