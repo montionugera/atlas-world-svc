@@ -13,8 +13,8 @@ A client built for an older wire format (the bytes the two sides exchange) conne
 
 - The FlatBuffers schema (the binary message layout) has no version field and no `file_identifier`:
   `schemas/game_protocol.fbs:1` is the namespace and `:69` the `root_type`, with nothing between.
-- The server's socket upgrade reads only the token (`server-rs/src/net/ws.rs:290-324`) and the map
-  (`ws.rs:326-338`); the handshake callback (`ws.rs:354-390`) refuses only a bad or missing token.
+- The server's socket upgrade reads only the token (`server-rs/src/net/ws.rs:291-325`) and the map
+  (`ws.rs:327-338`); the handshake callback (`ws.rs:355-391`) refuses only a bad or missing token.
 - The client's address is only `?token=…&map=…` (`client/react-client/src/hooks/useServerRsClient.ts:318`).
 - On failure the player sees a guess: "Connection failed (Server might be offline or schema mismatch)" (`client/react-client/src/App.tsx:119-121`).
 - A decode failure is only logged to the console (`useServerRsClient.ts:664-667`).
@@ -38,9 +38,12 @@ handshake value needs none, and it refuses the client before any game bytes are 
 1. The client adds the query parameter `proto=<integer>`: `ws://host:2567/?token=…&map=…&proto=1`.
 2. The server always completes the WebSocket upgrade for a valid token, then compares.
 3. If `proto` equals the server's number: continue as today.
-4. If `proto` is present and different (or not an integer): the server sends one Close frame with
-   code **4001** and reason `protocol version mismatch: server=<S> client=<C>`, then drops the
-   socket, before registering the connection or spawning an avatar (that work starts at `ws.rs:400`).
+4. If `proto` is present and different (or not an integer): the close reason must never echo raw
+   client input. Echo the client value only when it parses as an integer; otherwise write `client=invalid`.
+   The server sends one Close frame with code **4001** and reason
+   `protocol version mismatch: server=<S> client=<C>` (or `protocol version mismatch: server=<S> client=invalid`),
+   then drops the socket. This version check runs before the `get_loadout` fetch (`ws.rs:401`) or registering
+   the connection (`ws.rs:426`).
 5. If `proto` is absent: the server admits the client and logs a warning (the rollout allowance).
 
 Any client (React today, Godot in `game-client/` later) needs one query parameter and one
@@ -55,8 +58,9 @@ Why not the alternatives:
 
 ### What the player sees
 
-On close code 4001 the client does not reconnect by itself, and shows (in the log panel and as a
-`connectionError` value returned by `useServerRsClient`):
+After close code 4001 the client shows the out-of-date message (in the log panel and as a
+`connectionError` value returned by `useServerRsClient`), and `App.tsx` does not call `joinRoom`
+or log "joined":
 
 - client older than server: "This game client is out of date (client protocol 1, server protocol 2). Reload the page to update."
 - client newer than server: "The server is older than this client (client protocol 2, server protocol 1). Try again in a minute."
@@ -64,44 +68,38 @@ On close code 4001 the client does not reconnect by itself, and shows (in the lo
 
 ### Where the number lives
 
-One file: `schemas/protocol_version.json`, containing `{"version": 1, "schemaSha256": "<hash>"}`.
-
-- **Server** compiles it in with `include_str!` from `server-rs/src/protocol/mod.rs` as
-  `PROTOCOL_VERSION`; the Docker build already copies `schemas/` beside the crate (`Dockerfile:17`).
-- **React client** cannot import from outside `src/` (a Create React App restriction), so it keeps
-  a mirror, `src/protocol/protocolVersion.ts`. A Jest test reads the JSON file from disk and fails
-  if the mirror differs. The Godot client will carry the same mirror plus the same test.
-- **Schema lock**: the same Jest test hashes `schemas/game_protocol.fbs` (SHA-256, raw bytes) and
-  fails if it differs from `schemaSha256`, so a schema edit forces a deliberate version-file edit.
+- **Server:** `pub const PROTOCOL_VERSION: u32 = 1;` in `server-rs/src/protocol/mod.rs`.
+- **React client:** one TypeScript constant in `client/react-client/src/protocol/protocolVersion.ts`.
+- **Single source of truth:** one Jest test reads the Rust source file (`server-rs/src/protocol/mod.rs`) from disk and checks that the two numbers are equal. No JSON file and no Docker path coupling.
 
 ### When the number must be bumped
 
-Bump `version` by one whenever a client built before the change would misread or be misread:
+Bump `PROTOCOL_VERSION` by one whenever a client built before the change would misread or be misread:
 removing, reordering or retyping a schema field; changing the meaning of an existing field or
 flag (for example `STATE_FLAG_*` in `server-rs/src/protocol/mod.rs:8-10`), an enum value, the
-delta-encoding rules, or the entity-id hash. For a field appended to the end of a table that old
-clients can ignore, or a comment, update `schemaSha256` only.
+delta-encoding rules, or the entity-id hash.
 
 ### Rollout order (the owner plays on a live local server)
 
 1. **Client first**: send `proto`, handle close code 4001. The current server ignores unknown
-   query keys (`ws.rs:293-300`, `:327-336` match only `token` and `map`), so nothing changes.
+   query keys (`ws.rs:294-301`, `:328-336` match only `token` and `map`), so nothing changes.
 2. **Server second**: add the comparison. The already-updated client matches; a tab still running
    the old client sends no `proto` and is admitted with a warning.
-3. Later bumps change the JSON file and the mirror in one commit; a stale open tab then gets the
-   "out of date" message, which is the feature working.
+3. Later bumps change the Rust constant and TypeScript constant in one commit; a stale open tab
+   then gets the "out of date" message, which is the feature working.
 
 ## Acceptance criteria
 
 - [ ] A Rust test connects with `proto=<server version + 1>` and a valid token, and receives a Close frame with code 4001 whose reason contains both version numbers; the server's connection count stays 0.
+- [ ] A Rust test connects with a 200-character non-numeric `proto` and receives a Close frame with code 4001 whose reason is at most 123 bytes and contains `client=invalid`; the server's connection count stays 0.
 - [ ] A Rust test connects with the matching `proto` and receives a broadcast snapshot; a second connects with no `proto` and is also admitted (rollout allowance).
 - [ ] A Jest test shows the client's socket address contains `proto=` followed by the client's version number.
-- [ ] A Jest test closes the mock socket with code 4001 and reason `protocol version mismatch: server=2 client=1`; the hook then reports the "out of date … Reload the page" message in `connectionError` and opens no further socket.
-- [ ] A Jest test fails if `src/protocol/protocolVersion.ts` differs from `schemas/protocol_version.json`, and a Rust test asserts `PROTOCOL_VERSION` equals the `version` in that file.
-- [ ] A Jest test fails when the SHA-256 of `schemas/game_protocol.fbs` differs from `schemaSha256` (shown by the test passing on the committed file and failing against a one-byte-changed copy).
+- [ ] A Jest test closes the mock socket with code 4001 and reason `protocol version mismatch: server=2 client=1`; the client shows the out-of-date message in `connectionError`, and `App.tsx` does not call `joinRoom` or log "joined".
+- [ ] A Jest test reads `server-rs/src/protocol/mod.rs` and asserts the client's TypeScript constant equals `PROTOCOL_VERSION`.
 
 ## Out of scope
 
+- Locking the schema file to the version (follow-up idea).
 - Refusing a client that sends no `proto`; slice 6 (origin check, token out of the address) already tightens the handshake and should make it mandatory.
 - Any change to `schemas/game_protocol.fbs` or regeneration of FlatBuffers code.
 - Supporting several versions at once, or negotiating down to an older one.
@@ -111,11 +109,9 @@ clients can ignore, or a comment, update `schemaSha256` only.
 
 - **The close frame arrives after the socket has opened**, so the client's `connect()` promise has
   already resolved (`useServerRsClient.ts:334-345`). The mismatch must be handled in `onclose`
-  (`:679`), which today receives no event argument, and `App.tsx:112-125` must not treat the
-  session as joined. The fourth criterion covers this.
-- **A close reason is limited to 123 bytes.** The fixed reason text is about 45.
-- **The hash covers only the schema file** and also trips on comment-only edits. Behaviour in code
-  (delta rules, flags) relies on the prose bump rule and on review.
+  (`:679`), which today receives no event argument, and `App.tsx` must not call `joinRoom` or log "joined".
+- **A close reason is limited to 123 bytes.** Formatting non-integer client inputs as `client=invalid` keeps the reason well under the 123-byte limit.
+- **Behaviour in code** (delta rules, flags) relies on the prose bump rule and on review.
 
 ## How to verify
 
@@ -125,5 +121,5 @@ cd client/react-client && CI=true npx react-scripts test --watchAll=false
 cd client/react-client && npx tsc --noEmit -p .
 ```
 
-Manual, on the live local server: change the client mirror's number, reload, and confirm the
+Manual, on the live local server: change the client constant's number, reload, and confirm the
 "out of date" sentence shows and no avatar spawns; then revert.

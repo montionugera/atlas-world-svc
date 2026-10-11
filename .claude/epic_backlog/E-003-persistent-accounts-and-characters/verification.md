@@ -10,7 +10,7 @@ toolkit never parses this file.
 
 ## Assertions
 
-1. A real `get_loadout` round trip succeeds on join in the local stack, and a wrong http key makes the server report not ready.
+1. A real `get_loadout` round trip succeeds on join in the local stack, and with a wrong http key the game server exits non-zero at startup after its retry window, so the rollout fails and the previous pod keeps serving.
 2. A real Nakama token is accepted, a forged token is refused in a release build with no auth secret set, and a token for account A cannot drive account B's avatar.
 3. The client URL and handshake carry a Nakama session token and no `dev-token`.
 4. A second connection for the same account closes the first with the named code, and a StrictMode double-mount still ends with one working connection.
