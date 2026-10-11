@@ -1133,5 +1133,33 @@
     "created_at": "2026-10-11T06:59:07.948224+00:00",
     "promoted_to": null,
     "epic": "E-007"
+  },
+  {
+    "id": "I-181",
+    "title": "Nearby and world chat",
+    "created_at": "2026-10-11T06:59:09.180187+00:00",
+    "promoted_to": null,
+    "epic": "E-008"
+  },
+  {
+    "id": "I-182",
+    "title": "Friends list",
+    "created_at": "2026-10-11T06:59:09.182780+00:00",
+    "promoted_to": null,
+    "epic": "E-008"
+  },
+  {
+    "id": "I-183",
+    "title": "Parties",
+    "created_at": "2026-10-11T06:59:09.184126+00:00",
+    "promoted_to": null,
+    "epic": "E-008"
+  },
+  {
+    "id": "I-184",
+    "title": "Find and join friends in the world",
+    "created_at": "2026-10-11T06:59:09.185141+00:00",
+    "promoted_to": null,
+    "epic": "E-008"
   }
 ]
