@@ -26,6 +26,8 @@ pub struct EntitySnapshotData {
     pub mob_type: &'static str,
     /// Owning entity id (projectiles); 0 otherwise.
     pub owner_id: u32,
+    /// `client_tick` of the last input this player's tick ran on; 0 for none / non-players.
+    pub input_ack: u32,
 }
 
 impl Default for EntitySnapshotData {
@@ -43,6 +45,7 @@ impl Default for EntitySnapshotData {
             target_id: 0,
             mob_type: "",
             owner_id: 0,
+            input_ack: 0,
         }
     }
 }
@@ -148,6 +151,7 @@ impl SnapshotBuilder {
                     target_id: e.target_id,
                     mob_type,
                     owner_id: e.owner_id,
+                    input_ack: e.input_ack,
                 },
             );
             self.delta_offsets.push(delta);
@@ -383,6 +387,26 @@ mod tests {
             assert_eq!(snapshot.tick(), tick);
             assert_eq!(snapshot.entities().unwrap().get(0).id(), tick);
         }
+    }
+
+    #[test]
+    fn test_input_ack_roundtrip_and_absent_when_zero() {
+        let player = |input_ack| EntitySnapshotData {
+            id: 101,
+            input_ack,
+            ..Default::default()
+        };
+        let with = serialize_snapshot(1, 1000, &[player(7)], &[]);
+        let without = serialize_snapshot(1, 1000, &[player(0)], &[]);
+        let ack = |bytes: &[u8]| {
+            let snapshot = root_as_world_snapshot(bytes).unwrap();
+            let ack = snapshot.entities().unwrap().get(0).input_ack();
+            ack
+        };
+        assert_eq!(ack(&with), 7);
+        // 0 is the default: not written, and read back as 0 (as from an older server).
+        assert_eq!(ack(&without), 0);
+        assert!(without.len() < with.len());
     }
 
     #[test]

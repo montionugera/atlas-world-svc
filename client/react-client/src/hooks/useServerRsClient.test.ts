@@ -14,6 +14,7 @@ import {
   STATE_FLAG_BOT,
 } from "../protocol/BinaryDeltaDecoder";
 import { getMobDisplayName } from "../utils/mobUtils";
+import { perfTimings, timingGate } from "../utils/frameTiming";
 
 (global as any).TextEncoder = TextEncoder;
 (global as any).TextDecoder = TextDecoder;
@@ -21,6 +22,8 @@ import { getMobDisplayName } from "../utils/mobUtils";
 // Mock WebSocket
 class MockWebSocket {
   static instances: MockWebSocket[] = [];
+  /** When set, sockets stay CONNECTING until a test opens them by hand. */
+  static manualOpen = false;
   static readonly CONNECTING = 0;
   static readonly OPEN = 1;
   static readonly CLOSING = 2;
@@ -33,7 +36,7 @@ class MockWebSocket {
 
   url: string;
   binaryType: string = "blob";
-  readyState: number = 1; // OPEN
+  readyState: number = MockWebSocket.manualOpen ? 0 : 1; // OPEN unless manual
   onopen: (() => void) | null = null;
   onmessage: ((event: { data: any }) => void) | null = null;
   onclose: (() => void) | null = null;
@@ -44,7 +47,7 @@ class MockWebSocket {
     this.url = url;
     MockWebSocket.instances.push(this);
     setTimeout(() => {
-      if (this.onopen) this.onopen();
+      if (!MockWebSocket.manualOpen && this.onopen) this.onopen();
     }, 0);
   }
 
@@ -98,9 +101,19 @@ function createTestSnapshotBuffer(tick: number): Uint8Array {
 }
 
 describe("useServerRsClient", () => {
+  let clock: number;
   beforeEach(() => {
     MockWebSocket.instances = [];
+    MockWebSocket.manualOpen = false;
     localStorage.clear();
+    // Snapshots reach React state at most every 150 ms; unless a test drives the
+    // clock itself, every look at it is a second later, so each one is published.
+    clock = 0;
+    jest.spyOn(performance, "now").mockImplementation(() => (clock += 1000));
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
   });
 
   it("initializes in disconnected state", () => {
@@ -353,6 +366,89 @@ describe("useServerRsClient", () => {
     expect(result.current.gameState?.mapId).toBe("map-for-test-projectile");
   });
 
+  it("rapid room switch before the first socket opens leaves one live socket on the LAST room", async () => {
+    MockWebSocket.manualOpen = true;
+    const { result } = renderHook(() =>
+      useServerRsClient({
+        serverHost: "localhost",
+        serverPort: 2567,
+        useSSL: false,
+      }),
+    );
+    let first!: Promise<void>;
+    let second!: Promise<void>;
+    act(() => {
+      first = result.current.joinRoom("map-for-test-terrain");
+      second = result.current.joinRoom("map-for-test-projectile");
+    });
+    const live = MockWebSocket.instances.filter((w) => w.readyState !== 3);
+    expect(live).toHaveLength(1);
+    expect(live[0].url).toContain("map=map-for-test-projectile");
+
+    // A late open/close from the abandoned socket must not touch state.
+    const abandoned = MockWebSocket.instances[0];
+    act(() => {
+      abandoned.readyState = 1;
+      abandoned.onopen?.();
+    });
+    expect(result.current.isConnected).toBe(false);
+
+    await act(async () => {
+      live[0].readyState = 1;
+      live[0].onopen?.();
+      await Promise.all([first, second]);
+    });
+    expect(result.current.isConnected).toBe(true);
+    expect(result.current.roomId).toBe("server-rs-map-for-test-projectile");
+    expect(result.current.gameState?.mapId).toBe("map-for-test-projectile");
+  });
+
+  it("a room switch drops the old room's target id and projectiles", async () => {
+    const { result } = await connected();
+    act(() => {
+      result.current.sendPlayerAction("attack", true, {
+        targetId: 77,
+        x: 40,
+        y: 50,
+      });
+      MockWebSocket.instances[0].onmessage?.(
+        snap(1, [{ id: 900, type: EntityType.Projectile, x: 33, ownerId: 11 }]),
+      );
+    });
+    expect(result.current.gameState!.projectiles!.size).toBe(1);
+    await act(async () => {
+      await result.current.joinRoom("map-for-test-terrain");
+    });
+    expect(result.current.gameState!.projectiles?.size ?? 0).toBe(0);
+    expect(result.current.sentTargetRef.current).toEqual({ x: 0, y: 0 });
+    const ws = MockWebSocket.instances[1];
+    act(() => {
+      result.current.updatePlayerInput(1, 0);
+    });
+    const last = ws.sentMessages[ws.sentMessages.length - 1];
+    const input = ClientInput.getRootAsClientInput(
+      new flatbuffers.ByteBuffer(last),
+    );
+    expect(input.targetId()).toBe(0);
+    expect(input.targetX()).toBe(0);
+  });
+
+  it("respawn() carries the held move and attack instead of zeroing them", async () => {
+    const { result } = await connected();
+    const ws = MockWebSocket.instances[0];
+    act(() => {
+      result.current.updatePlayerInput(1, 0);
+      result.current.sendPlayerAction("attack", true);
+      result.current.respawn();
+    });
+    const input = ClientInput.getRootAsClientInput(
+      new flatbuffers.ByteBuffer(ws.sentMessages[ws.sentMessages.length - 1]),
+    );
+    expect(input.respawn()).toBe(true);
+    expect(input.moveX()).toBe(1);
+    expect(input.attack()).toBe(true);
+  });
+
   const frame = (tick: number, mobX: number) => {
     const fbb = new flatbuffers.Builder(128);
     EntityDelta.startEntityDelta(fbb);
@@ -442,6 +538,7 @@ describe("useServerRsClient", () => {
     health?: number;
     mobType?: string;
     ownerId?: number;
+    inputAck?: number;
   }
   const snap = (
     tick: number,
@@ -461,11 +558,15 @@ describe("useServerRsClient", () => {
       EntityDelta.addId(fbb, e.id);
       EntityDelta.addEntityType(fbb, e.type);
       EntityDelta.addPos(fbb, Vec2.createVec2(fbb, e.x ?? 10, e.y ?? 20));
+      if (e.vx !== undefined || e.vy !== undefined) {
+        EntityDelta.addVel(fbb, Vec2.createVec2(fbb, e.vx ?? 0, e.vy ?? 0));
+      }
       EntityDelta.addHealth(fbb, e.health ?? 50);
       EntityDelta.addMaxHealth(fbb, 50);
       EntityDelta.addStateFlags(fbb, e.flags ?? STATE_FLAG_ALIVE);
       if (mt) EntityDelta.addMobType(fbb, mt);
       if (e.ownerId) EntityDelta.addOwnerId(fbb, e.ownerId);
+      if (e.inputAck) EntityDelta.addInputAck(fbb, e.inputAck);
       return EntityDelta.endEntityDelta(fbb);
     });
     const evOffs = events.map((ev) => {
@@ -526,6 +627,32 @@ describe("useServerRsClient", () => {
     expect(result.current.gameState!.players.get("12")!.isBotMode).toBe(true);
   });
 
+  it("reads a player's acknowledged input, and 0 from a server that does not send it", async () => {
+    const { result } = await connected("dev-token:alice");
+    act(() => {
+      MockWebSocket.instances[0].onmessage?.(
+        snap(1, [
+          { id: 11, type: EntityType.Player, inputAck: 7 },
+          { id: 12, type: EntityType.Player },
+        ]),
+      );
+    });
+    expect(result.current.gameState!.players.get("11")!.inputAck).toBe(7);
+    expect(result.current.gameState!.players.get("12")!.inputAck).toBe(0);
+  });
+
+  it("numbers its inputs from 1 and exposes the newest number sent", async () => {
+    const { result } = await connected("dev-token:alice");
+    act(() => result.current.updatePlayerInput(1, 0));
+    const ticks = MockWebSocket.instances[0].sentMessages.map((bytes) =>
+      ClientInput.getRootAsClientInput(
+        new flatbuffers.ByteBuffer(bytes),
+      ).clientTick(),
+    );
+    expect(ticks).toEqual([1, 2]);
+    expect(result.current.inputSeqRef.current).toBe(2);
+  });
+
   it("shows the dead state from the alive flag (corpse at 0 hp) and deletes removed ids", async () => {
     const { result } = await connected();
     const ws = MockWebSocket.instances[0];
@@ -564,10 +691,195 @@ describe("useServerRsClient", () => {
     expect(proj.ownerId).toBe("11");
     expect(proj.radius).toBeGreaterThan(0);
     expect(result.current.gameState!.mobs.has("900")).toBe(false);
+    // Gone from the snapshot, but the picture is ~100 ms behind: it stays, marked
+    // with the simulation time of its last position, until that has surely passed.
     act(() => {
       ws.onmessage?.(snap(2, []));
     });
+    const leaving = result.current.gameState!.projectiles!.get("900")!;
+    expect(leaving.x).toBe(33);
+    expect(leaving.endsAt).toBe(50);
+    act(() => {
+      ws.onmessage?.(snap(7, []));
+    });
+    expect(result.current.gameState!.projectiles!.get("900")!.endsAt).toBe(50);
+    act(() => {
+      ws.onmessage?.(snap(8, []));
+    });
     expect(result.current.gameState!.projectiles!.size).toBe(0);
+  });
+
+  it("starts a projectile's history afresh after a room switch", async () => {
+    const { result } = await connected();
+    const proj = { id: 900, type: EntityType.Projectile, x: 33, ownerId: 11 };
+    act(() => {
+      MockWebSocket.instances[0].onmessage?.(snap(1, [proj]));
+    });
+    await act(async () => {
+      await result.current.joinRoom("map-for-test-terrain");
+    });
+    act(() => {
+      MockWebSocket.instances[1].onmessage?.(snap(2, [{ ...proj, x: 40 }]));
+    });
+    expect(
+      result.current.gameState!.projectiles!.get("900")!.samples,
+    ).toHaveLength(1);
+  });
+
+  it("publishes snapshots to React a few times a second, keeping the newest in a ref", async () => {
+    const { result } = await connected("dev-token:alice");
+    const ws = MockWebSocket.instances[0];
+    const me = fnv1a32("alice");
+    const seen: number[] = [];
+    const unsubscribe = result.current.onSnapshot((s) => seen.push(s.tick));
+    let t = 10_000;
+    jest.spyOn(performance, "now").mockImplementation(() => t);
+    const at = (ms: number, tick: number, flags = STATE_FLAG_ALIVE) => {
+      t = ms;
+      act(() => {
+        ws.onmessage?.(
+          snap(tick, [{ id: me, type: EntityType.Player, flags }]),
+        );
+      });
+    };
+
+    at(10_000, 1);
+    expect(result.current.gameState!.tick).toBe(1);
+    // 20 snapshots a second do not each re-render the app...
+    at(10_050, 2);
+    at(10_100, 3);
+    expect(result.current.gameState!.tick).toBe(1);
+    expect(result.current.updateCount).toBe(1);
+    // ...but the canvas reads the newest one from the ref, and listeners get all.
+    expect(result.current.gameStateRef.current!.tick).toBe(3);
+    expect(seen).toEqual([1, 2, 3]);
+    at(10_150, 4);
+    expect(result.current.gameState!.tick).toBe(4);
+    expect(result.current.updateCount).toBe(4);
+
+    // Dying (and coming back) must show at once, not up to 150 ms later.
+    at(10_200, 5, 0);
+    expect(result.current.gameState!.tick).toBe(5);
+    at(10_250, 6, STATE_FLAG_ALIVE);
+    expect(result.current.gameState!.tick).toBe(6);
+
+    unsubscribe();
+    at(10_300, 7);
+    expect(seen).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+
+  it("queues combat events from every snapshot until they are drained", async () => {
+    const { result } = await connected();
+    const ws = MockWebSocket.instances[0];
+    const hit = (amount: number) => ({
+      kind: GameEventKind.Hit,
+      source: 11,
+      target: 7,
+      amount,
+    });
+    // Two snapshots land before the next frame.
+    act(() => {
+      ws.onmessage?.(snap(1, [], [], [hit(12)]));
+      ws.onmessage?.(snap(2, [], [], [hit(30)]));
+    });
+    expect(result.current.drainEvents().map((e) => e.amount)).toEqual([12, 30]);
+    expect(result.current.drainEvents()).toEqual([]);
+
+    // A long-hidden tab keeps only the newest few.
+    act(() => {
+      for (let tick = 3; tick < 103; tick++) {
+        ws.onmessage?.(snap(tick, [], [], [hit(tick), hit(tick)]));
+      }
+    });
+    const kept = result.current.drainEvents();
+    // Exactly the cap, and the newest: ticks 71..102, two hits each.
+    expect(kept).toHaveLength(64);
+    expect(kept.map((e) => e.amount)).toEqual(
+      Array.from({ length: 32 }, (_, i) => [71 + i, 71 + i]).flat(),
+    );
+  });
+
+  it("publishes the latest state shortly after snapshots stop, and not after a disconnect", async () => {
+    const { result } = await connected("dev-token:alice");
+    const ws = MockWebSocket.instances[0];
+    const me = fnv1a32("alice");
+    jest.useFakeTimers();
+    let t = 10_000;
+    jest.spyOn(performance, "now").mockImplementation(() => t);
+    const at = (ms: number, tick: number) => {
+      t = ms;
+      act(() => {
+        ws.onmessage?.(snap(tick, [{ id: me, type: EntityType.Player }]));
+      });
+    };
+    at(10_000, 1);
+    at(10_050, 2);
+    at(10_100, 3);
+    expect(result.current.gameState!.tick).toBe(1);
+
+    // Snapshots stop; the socket stays open. React still catches up.
+    act(() => {
+      jest.advanceTimersByTime(150);
+    });
+    expect(result.current.gameState!.tick).toBe(3);
+    expect(result.current.updateCount).toBe(3);
+
+    // A pending catch-up is dropped by a disconnect.
+    at(10_200, 4);
+    at(10_250, 5);
+    act(() => result.current.disconnect());
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
+    expect(result.current.gameState).toBeNull();
+  });
+
+  it("times decode and update only while the debug readout is on", async () => {
+    const { result } = await connected();
+    const ws = MockWebSocket.instances[0];
+    perfTimings.clear();
+    timingGate.on = false;
+    act(() => {
+      ws.onmessage?.(snap(1, []));
+    });
+    expect(perfTimings.has("decode")).toBe(false);
+    expect(perfTimings.has("update")).toBe(false);
+    timingGate.on = true;
+    act(() => {
+      ws.onmessage?.(snap(2, []));
+    });
+    expect(perfTimings.get("decode")).toHaveLength(1);
+    expect(perfTimings.get("update")).toHaveLength(1);
+    expect(result.current.isConnected).toBe(true);
+    timingGate.on = false;
+  });
+
+  it("starts a new position history when an entity comes back to life", async () => {
+    const { result } = await connected("dev-token:alice");
+    const ws = MockWebSocket.instances[0];
+    const me = fnv1a32("alice");
+    const send = (tick: number, flags: number, x: number) =>
+      act(() => {
+        ws.onmessage?.(
+          snap(tick, [
+            { id: me, type: EntityType.Player, flags, x },
+            { id: 7, type: EntityType.Mob, flags, x },
+          ]),
+        );
+      });
+    const samples = () => {
+      const s = result.current.gameStateRef.current!;
+      return [
+        s.players.get(String(me))!.samples!.length,
+        s.mobs.get("7")!.samples!.length,
+      ];
+    };
+    send(1, STATE_FLAG_ALIVE, 10);
+    send(2, 0, 10);
+    expect(samples()).toEqual([2, 2]);
+    // Respawn 50 units away: under the teleport distance, still a cut, not a glide.
+    send(3, STATE_FLAG_ALIVE, 60);
+    expect(samples()).toEqual([1, 1]);
   });
 
   it("decodes combat events into gameState.events", async () => {
@@ -632,6 +944,77 @@ describe("useServerRsClient", () => {
     expect(input.respawn()).toBe(false);
   });
 
+  it("tracks the last non-zero target actually sent (server keeps it for AoE impact)", async () => {
+    const { result } = await connected();
+    expect(result.current.sentTargetRef.current).toEqual({ x: 0, y: 0 });
+    act(() => {
+      result.current.sendPlayerAction("useSkill", true, {
+        skillId: "skill_1",
+        x: 350,
+        y: 420,
+      });
+    });
+    expect(result.current.sentTargetRef.current).toEqual({ x: 350, y: 420 });
+    // A later packet with a different target (e.g. attack press) replaces it.
+    act(() => {
+      result.current.sendPlayerAction("attack", true, { x: 10, y: 20 });
+    });
+    expect(result.current.sentTargetRef.current).toEqual({ x: 10, y: 20 });
+    // Movement packets resend the same held aim, so it is unchanged.
+    act(() => {
+      result.current.updatePlayerInput(1, 0);
+    });
+    expect(result.current.sentTargetRef.current).toEqual({ x: 10, y: 20 });
+  });
+
+  it("stamps decoded players, mobs and projectiles with a finite receivedAt", async () => {
+    const { result } = await connected();
+    const ws = MockWebSocket.instances[0];
+    act(() => {
+      ws.onmessage?.(
+        snap(1, [
+          { id: 11, type: EntityType.Player, x: 1 },
+          { id: 12, type: EntityType.Mob, x: 2 },
+          { id: 13, type: EntityType.Projectile, x: 3, ownerId: 11 },
+        ]),
+      );
+    });
+    const gs = result.current.gameState!;
+    for (const e of [
+      gs.players.get("11")!,
+      gs.mobs.get("12")!,
+      gs.projectiles!.get("13")!,
+    ]) {
+      expect(Number.isFinite(e.receivedAt)).toBe(true);
+    }
+  });
+
+  it("keeps a per-entity sample history on the server timeline", async () => {
+    const { result } = await connected();
+    const ws = MockWebSocket.instances[0];
+    const ents = (x: number) => [
+      { id: 11, type: EntityType.Player, x },
+      { id: 12, type: EntityType.Mob, x },
+      { id: 13, type: EntityType.Projectile, x, ownerId: 11 },
+    ];
+    act(() => {
+      ws.onmessage?.(snap(1, ents(1)));
+      ws.onmessage?.(snap(2, ents(2)));
+    });
+    const gs = result.current.gameState!;
+    expect(gs.renderClock).toBeDefined();
+    for (const e of [
+      gs.players.get("11")!,
+      gs.mobs.get("12")!,
+      gs.projectiles!.get("13")!,
+    ]) {
+      expect(e.samples!.map((s) => [s.t, s.x])).toEqual([
+        [50, 1],
+        [100, 2],
+      ]);
+    }
+  });
+
   it("sets isAttacking and heading toward mouse aim on local player", async () => {
     const { result } = await connected("dev-token:alice");
     const ws = MockWebSocket.instances[0];
@@ -683,5 +1066,51 @@ describe("useServerRsClient", () => {
     expect(player.isAttacking).toBe(true);
     expect(player.heading).toBeCloseTo(Math.PI / 2);
     expect(player.attackRange).toBe(40);
+  });
+
+  it("preserves heading when stopping movement and not attacking", async () => {
+    const { result } = await connected("dev-token:alice");
+    const ws = MockWebSocket.instances[0];
+    const localId = result.current.playerId;
+
+    // 1. Moving left: vx = -200, vy = 0 -> heading is PI (-3.14159)
+    act(() => {
+      ws.onmessage?.(
+        snap(1, [
+          {
+            id: Number(localId),
+            type: EntityType.Player,
+            x: 200,
+            y: 200,
+            vx: -200,
+            vy: 0,
+            flags: STATE_FLAG_ALIVE,
+          },
+        ]),
+      );
+    });
+
+    let player = result.current.gameState!.players.get(localId)!;
+    expect(player.heading).toBeCloseTo(Math.PI);
+
+    // 2. Stop moving: vx = 0, vy = 0, attack = false -> heading MUST STAY PI (facing left)
+    act(() => {
+      ws.onmessage?.(
+        snap(2, [
+          {
+            id: Number(localId),
+            type: EntityType.Player,
+            x: 190,
+            y: 200,
+            vx: 0,
+            vy: 0,
+            flags: STATE_FLAG_ALIVE,
+          },
+        ]),
+      );
+    });
+
+    player = result.current.gameState!.players.get(localId)!;
+    expect(player.heading).toBeCloseTo(Math.PI);
   });
 });

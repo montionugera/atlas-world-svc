@@ -170,6 +170,7 @@ pub fn live_bot_ai_system(
     mut prng: ResMut<crate::core::prng::Mulberry32>,
     bounds: Res<ArenaBounds>,
     rules: Option<Res<LiveRules>>,
+    terrain: Option<Res<crate::content::map::TerrainZones>>,
     mut bots: Query<(
         &crate::ecs::components::EntityId,
         &Position,
@@ -179,8 +180,15 @@ pub fn live_bot_ai_system(
         &crate::ecs::components::CombatStats,
     )>,
     mobs: Query<(Entity, &Position, &Health), With<crate::ecs::components::MobTag>>,
+    toggles: Option<Res<crate::debug::DebugToggles>>,
 ) {
     if rules.is_none() {
+        return;
+    }
+    if toggles.is_some_and(|t| t.bots_paused) {
+        for (.., mut vel, _, _) in &mut bots {
+            *vel = Velocity::zero();
+        }
         return;
     }
     let dt = clock.delta_seconds();
@@ -195,6 +203,11 @@ pub fn live_bot_ai_system(
         if !health.is_alive {
             continue;
         }
+
+        // Bots walk the same terrain as players: scale their desired speed underfoot.
+        let terrain_mult = terrain
+            .as_ref()
+            .map_or(1.0, |t| t.speed_multiplier_at(pos.x, pos.y));
 
         // Search for nearest alive mob within vision range
         let mut nearest_mob: Option<(Entity, &Position, f32)> = None;
@@ -229,8 +242,8 @@ pub fn live_bot_ai_system(
                 vel.vx = 0.0;
                 vel.vy = 0.0;
             } else {
-                let desired_vx = dir_x * max_chase_speed;
-                let desired_vy = dir_y * max_chase_speed;
+                let desired_vx = dir_x * max_chase_speed * terrain_mult;
+                let desired_vy = dir_y * max_chase_speed * terrain_mult;
                 vel.vx += accel_gain * (desired_vx - vel.vx) * dt;
                 vel.vy += accel_gain * (desired_vy - vel.vy) * dt;
             }
@@ -248,8 +261,8 @@ pub fn live_bot_ai_system(
             bot.vx = current_angle.cos();
             bot.vy = current_angle.sin();
 
-            let desired_vx = bot.vx * 20.0;
-            let desired_vy = bot.vy * 20.0;
+            let desired_vx = bot.vx * 20.0 * terrain_mult;
+            let desired_vy = bot.vy * 20.0 * terrain_mult;
             vel.vx += accel_gain * (desired_vx - vel.vx) * dt;
             vel.vy += accel_gain * (desired_vy - vel.vy) * dt;
         }

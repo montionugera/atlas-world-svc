@@ -27,6 +27,8 @@ export interface DecodedEntityDelta {
   mobType: string;
   /** Owning entity id (projectiles); 0 otherwise. */
   ownerId: number;
+  /** `client_tick` of the last input a player's tick ran on; 0: none / older server. */
+  inputAck: number;
 }
 
 export interface DecodedGameEvent {
@@ -82,6 +84,7 @@ export class BinaryDeltaDecoder {
         targetId: entity.targetId(),
         mobType: entity.mobType() ?? '',
         ownerId: entity.ownerId(),
+        inputAck: entity.inputAck(),
       };
     }
 

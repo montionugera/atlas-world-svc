@@ -3,6 +3,11 @@ use crate::ecs::components::{Health, MobTag, Position, Velocity};
 use crate::spatial::grid::SpatialGrid;
 use bevy_ecs::prelude::*;
 
+/// Below this many mobs the loop runs on the calling thread: fanning a few dozen entities
+/// out to the task pool makes the tick wait for pool threads to be scheduled, which on a
+/// busy host costs far more than the loop itself.
+const PARALLEL_MIN_MOBS: usize = 512;
+
 pub fn separation_system(
     clock: Res<SimClock>,
     grid: Res<SpatialGrid>,
@@ -15,36 +20,39 @@ pub fn separation_system(
     let speed = 6.0f32;
     let separation_weight_base = speed * 4.0f32;
 
-    query
-        .par_iter_mut()
-        .for_each(|(entity, pos, mut vel, health)| {
-            if !health.is_alive {
-                return;
-            }
+    let steer = |(entity, pos, mut vel, health): (Entity, &Position, Mut<Velocity>, &Health)| {
+        if !health.is_alive {
+            return;
+        }
 
-            let mut sep_x = 0.0;
-            let mut sep_y = 0.0;
-            let mut count = 0;
+        let mut sep_x = 0.0;
+        let mut sep_y = 0.0;
+        let mut count = 0;
 
-            grid.for_each_mob_in_radius(
-                pos.x,
-                pos.y,
-                separation_radius,
-                |other_entity, dx, dy, dist_sq| {
-                    if other_entity != entity && dist_sq > 0.0 {
-                        let dist = dist_sq.sqrt().max(min_separation_radius);
-                        let factor = separation_weight_base * (1.0 / dist - inv_separation_radius);
-                        sep_x += dx * factor;
-                        sep_y += dy * factor;
-                        count += 1;
-                    }
-                },
-            );
+        grid.for_each_mob_in_radius(
+            pos.x,
+            pos.y,
+            separation_radius,
+            |other_entity, dx, dy, dist_sq| {
+                if other_entity != entity && dist_sq > 0.0 {
+                    let dist = dist_sq.sqrt().max(min_separation_radius);
+                    let factor = separation_weight_base * (1.0 / dist - inv_separation_radius);
+                    sep_x += dx * factor;
+                    sep_y += dy * factor;
+                    count += 1;
+                }
+            },
+        );
 
-            if count > 0 {
-                let inv_count = 1.0 / (count as f32);
-                vel.vx += (sep_x * inv_count) * dt;
-                vel.vy += (sep_y * inv_count) * dt;
-            }
-        });
+        if count > 0 {
+            let inv_count = 1.0 / (count as f32);
+            vel.vx += (sep_x * inv_count) * dt;
+            vel.vy += (sep_y * inv_count) * dt;
+        }
+    };
+    if query.iter().len() < PARALLEL_MIN_MOBS {
+        query.iter_mut().for_each(steer);
+    } else {
+        query.par_iter_mut().for_each(steer);
+    }
 }

@@ -2,8 +2,8 @@ use crate::ai::ThreatTable;
 use crate::combat::{DamageCalculator, DamageOptions, SkillEffect};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    ElementalAttributes, Health, HitLog, HitRecord, Mass, MobTag, PlayerInputState, PlayerTag,
-    Position, Projectile, StatusEffects, Velocity,
+    knockback_speed, ElementalAttributes, Health, HitLog, HitRecord, Mass, MobTag, Parried,
+    PlayerInputState, PlayerTag, Position, Projectile, StatusEffects, Velocity,
 };
 use crate::spatial::grid::SpatialGrid;
 use bevy_ecs::prelude::*;
@@ -34,7 +34,13 @@ pub fn projectile_collision_system(
     grid: Res<SpatialGrid>,
     clock: Option<Res<SimClock>>,
     mut hit_log: Option<ResMut<HitLog>>,
-    mut proj_query: Query<(Entity, &Position, Option<&mut Velocity>, &mut Projectile)>,
+    mut proj_query: Query<(
+        Entity,
+        &Position,
+        Option<&mut Velocity>,
+        &mut Projectile,
+        Has<Parried>,
+    )>,
     mut targets: Query<
         (
             Entity,
@@ -55,8 +61,12 @@ pub fn projectile_collision_system(
     let now = clock.map_or(0.0, |c| c.current_time_seconds());
     let default_attrs = ElementalAttributes::default();
 
-    for (proj_entity, pos, mut proj_vel_opt, mut proj) in &mut proj_query {
-        let hit_radius = proj.radius + 20.0;
+    for (proj_entity, pos, mut proj_vel_opt, mut proj, already_parried) in &mut proj_query {
+        let hit_radius = if proj.aoe_radius > 0.0 {
+            proj.aoe_radius
+        } else {
+            proj.radius + 20.0
+        };
         let hit_radius_sq = hit_radius * hit_radius;
         let mut hit_target = None;
 
@@ -163,7 +173,15 @@ pub fn projectile_collision_system(
                     false
                 };
 
+                if is_parry && already_parried {
+                    // Second parry: destroy it, so it can never bounce a third time
+                    commands.entity(proj_entity).despawn();
+                    continue;
+                }
+
                 if is_parry {
+                    commands.entity(proj_entity).insert(Parried);
+
                     let dx = pos.x - t_pos.x;
                     let dy = pos.y - t_pos.y;
                     let dist = (dx * dx + dy * dy).sqrt();
@@ -232,6 +250,11 @@ pub fn projectile_collision_system(
 
                 // If not parried: resolve damage!
                 if proj.aoe_radius > 0.0 {
+                    if proj.detonated {
+                        continue;
+                    }
+                    proj.detonated = true;
+
                     // Detonate AoE!
                     let aoe_r = proj.aoe_radius;
                     let aoe_r_sq = aoe_r * aoe_r;
@@ -321,13 +344,12 @@ pub fn projectile_collision_system(
                                 (1.0, 0.0)
                             };
 
-                            let raw_impulse = (damage * 20.0).clamp(1.0, 2000.0);
                             let victim_mass = v_mass.map(|m| m.value()).unwrap_or(25.0);
-                            let impulse_mag = raw_impulse / victim_mass;
+                            let impulse_mag = knockback_speed(damage, victim_mass);
 
                             if let Some(ref mut vel) = v_vel {
-                                vel.vx += nx * impulse_mag;
-                                vel.vy += ny * impulse_mag;
+                                vel.vx = nx * impulse_mag;
+                                vel.vy = ny * impulse_mag;
                             }
 
                             if let Some(ref mut log) = hit_log {
@@ -381,7 +403,11 @@ pub fn projectile_collision_system(
                         }
                     }
 
-                    commands.entity(proj_entity).despawn();
+                    if proj.speed == 0.0 {
+                        proj.lifetime = 0.3;
+                    } else {
+                        commands.entity(proj_entity).despawn();
+                    }
                 } else {
                     let attrs = opt_attrs.unwrap_or(&default_attrs);
                     let damage_opts = DamageOptions {
@@ -396,9 +422,8 @@ pub fn projectile_collision_system(
                     let damage = DamageCalculator::calculate(&damage_opts);
                     health.take_damage(damage);
 
-                    let raw_impulse = (damage * 20.0).clamp(1.0, 2000.0);
                     let victim_mass = opt_mass.map(|m| m.value()).unwrap_or(25.0);
-                    let impulse_mag = raw_impulse / victim_mass;
+                    let impulse_mag = knockback_speed(damage, victim_mass);
 
                     let (nx, ny) = if let Some(ref p_vel) = proj_vel_opt {
                         let speed = (p_vel.vx * p_vel.vx + p_vel.vy * p_vel.vy).sqrt();
@@ -426,8 +451,8 @@ pub fn projectile_collision_system(
                     };
 
                     if let Some(ref mut t_vel) = opt_vel {
-                        t_vel.vx += nx * impulse_mag;
-                        t_vel.vy += ny * impulse_mag;
+                        t_vel.vx = nx * impulse_mag;
+                        t_vel.vy = ny * impulse_mag;
                     }
 
                     if let Some(ref mut log) = hit_log {
@@ -516,6 +541,7 @@ mod tests {
                     is_player_projectile: true,
                     aoe_radius: 0.0,
                     skill_id: None,
+                    detonated: false,
                 },
             ))
             .id();
@@ -563,6 +589,7 @@ mod tests {
                     is_player_projectile: true,
                     aoe_radius: 0.0,
                     skill_id: None,
+                    detonated: false,
                 },
             ))
             .id();
@@ -620,6 +647,7 @@ mod tests {
                     is_player_projectile: true,
                     aoe_radius: 0.0,
                     skill_id: Some("skill_3".to_string()),
+                    detonated: false,
                 },
             ))
             .id();
@@ -674,6 +702,7 @@ mod tests {
                     is_player_projectile: true,
                     aoe_radius: 0.0,
                     skill_id: Some("skill_4".to_string()),
+                    detonated: false,
                 },
             ))
             .id();
@@ -725,6 +754,7 @@ mod tests {
                     is_player_projectile: true,
                     aoe_radius: 0.0,
                     skill_id: None,
+                    detonated: false,
                 },
             ))
             .id();
@@ -736,7 +766,7 @@ mod tests {
         // Projectile despawns on hit
         assert!(world.get_entity(proj).is_err());
 
-        // Mob receives impulse along +X axis: raw_impulse = 25 * 20 = 500, impulse_mag = 500 / 25 = 20.0
+        // Mob is shoved along +X axis: knockback_speed(25 dmg, mass 25) = 3600 / 25 = 144.0
         let vel = world.get::<Velocity>(mob).unwrap();
         assert!(
             vel.vx > 10.0,
@@ -744,6 +774,74 @@ mod tests {
             vel.vx
         );
         assert_eq!(vel.vy, 0.0);
+    }
+
+    /// A mob moving West at run speed (toward the shooter) and a player projectile of
+    /// `aoe_radius` travelling East, spawned at `proj_x` on the mob's row.
+    fn hit_mob_running_at_shooter(proj_x: f32, aoe_radius: f32) -> crate::Velocity {
+        let mut world = World::new();
+        world.insert_resource(SpatialGrid::default());
+
+        let mob = world
+            .spawn((
+                Position::new(50.0, 50.0),
+                Velocity::new(-200.0, 0.0),
+                Health::new(100.0),
+                ElementalAttributes::default(),
+                StatusEffects::default(),
+                Mass(25.0),
+                MobTag,
+            ))
+            .id();
+        world.spawn((
+            Position::new(proj_x, 50.0),
+            Velocity::new(200.0, 0.0),
+            Projectile {
+                owner: Entity::PLACEHOLDER,
+                target: None,
+                damage: 25.0,
+                damage_type: DamageType::Physical,
+                element: Element::Neutral,
+                speed: 200.0,
+                radius: 4.0,
+                max_range: 300.0,
+                traveled_distance: 0.0,
+                lifetime: 5.0,
+                effects: vec![],
+                is_player_projectile: true,
+                aoe_radius,
+                skill_id: None,
+                detonated: false,
+            },
+        ));
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(projectile_collision_system);
+        schedule.run(&mut world);
+
+        assert!(world.get::<Health>(mob).unwrap().current < 100.0);
+        *world.get::<Velocity>(mob).unwrap()
+    }
+
+    #[test]
+    fn test_projectile_direct_hit_knockback_replaces_velocity_toward_shooter() {
+        let vel = hit_mob_running_at_shooter(50.0, 0.0);
+        assert!(
+            vel.vx > 0.0,
+            "hit must shove away from the shooter, got vx {}",
+            vel.vx
+        );
+    }
+
+    #[test]
+    fn test_projectile_aoe_knockback_replaces_velocity_toward_blast() {
+        // Blast centre 10 u West of the mob: the radial shove points East.
+        let vel = hit_mob_running_at_shooter(40.0, 60.0);
+        assert!(
+            vel.vx > 0.0,
+            "blast must shove away from its centre, got vx {}",
+            vel.vx
+        );
     }
 
     #[test]
@@ -818,6 +916,7 @@ mod tests {
                     is_player_projectile: true,
                     aoe_radius: 60.0,
                     skill_id: Some("skill_1".to_string()),
+                    detonated: false,
                 },
             ))
             .id();
@@ -883,6 +982,7 @@ mod tests {
                     is_player_projectile: false,
                     aoe_radius: 0.0,
                     skill_id: Some("spear".to_string()),
+                    detonated: false,
                 },
             ))
             .id();
@@ -915,6 +1015,124 @@ mod tests {
             player_vel.vx < 0.0,
             "player should experience recoil impulse, got vx={}",
             player_vel.vx
+        );
+
+        assert!(
+            world.get::<Parried>(proj).is_some(),
+            "a reflected projectile must be marked as already parried"
+        );
+    }
+
+    #[test]
+    fn test_projectile_second_parry_destroys_instead_of_reflecting() {
+        let mut world = World::new();
+        world.insert_resource(SpatialGrid::default());
+
+        let player = world
+            .spawn((
+                Position::new(50.0, 50.0),
+                Velocity::zero(),
+                Health::new(100.0),
+                ElementalAttributes::default(),
+                StatusEffects::default(),
+                Mass(20.0),
+                PlayerTag,
+                PlayerInputState {
+                    attack: true,
+                    ..Default::default()
+                },
+            ))
+            .id();
+
+        // Already reflected once, then sent back at a player.
+        let proj = world
+            .spawn((
+                Position::new(60.0, 50.0),
+                Velocity::new(-200.0, 0.0),
+                Projectile {
+                    owner: Entity::PLACEHOLDER,
+                    target: Some(player),
+                    damage: 20.0,
+                    damage_type: DamageType::Physical,
+                    element: Element::Neutral,
+                    speed: 200.0,
+                    radius: 4.0,
+                    max_range: 300.0,
+                    traveled_distance: 100.0,
+                    lifetime: 1.5,
+                    effects: vec![],
+                    is_player_projectile: false,
+                    aoe_radius: 0.0,
+                    skill_id: Some("spear".to_string()),
+                    detonated: false,
+                },
+                Parried,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(projectile_collision_system);
+        schedule.run(&mut world);
+
+        assert!(
+            world.get_entity(proj).is_err(),
+            "a second parry must destroy the projectile"
+        );
+        assert_eq!(world.get::<Health>(player).unwrap().current, 100.0);
+        assert_eq!(*world.get::<Velocity>(player).unwrap(), Velocity::zero());
+    }
+
+    #[test]
+    fn test_projectile_already_parried_still_hits_a_player_not_swinging() {
+        let mut world = World::new();
+        world.insert_resource(SpatialGrid::default());
+
+        let player = world
+            .spawn((
+                Position::new(50.0, 50.0),
+                Velocity::zero(),
+                Health::new(100.0),
+                ElementalAttributes::default(),
+                StatusEffects::default(),
+                Mass(20.0),
+                PlayerTag,
+                PlayerInputState::default(),
+            ))
+            .id();
+
+        // Already reflected once, then sent back at a player.
+        let proj = world
+            .spawn((
+                Position::new(60.0, 50.0),
+                Velocity::new(-200.0, 0.0),
+                Projectile {
+                    owner: Entity::PLACEHOLDER,
+                    target: Some(player),
+                    damage: 20.0,
+                    damage_type: DamageType::Physical,
+                    element: Element::Neutral,
+                    speed: 200.0,
+                    radius: 4.0,
+                    max_range: 300.0,
+                    traveled_distance: 100.0,
+                    lifetime: 1.5,
+                    effects: vec![],
+                    is_player_projectile: false,
+                    aoe_radius: 0.0,
+                    skill_id: Some("spear".to_string()),
+                    detonated: false,
+                },
+                Parried,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(projectile_collision_system);
+        schedule.run(&mut world);
+
+        assert!(
+            world.get::<Health>(player).unwrap().current < 100.0,
+            "without a swing, an already-parried projectile must still deal damage"
         );
     }
 }

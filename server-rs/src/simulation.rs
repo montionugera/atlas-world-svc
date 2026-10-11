@@ -6,10 +6,10 @@ use crate::content::{derived_stats, BestiaryCatalog, MobTier};
 use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
-    AiAgent, BodyRadius, BotAgent, CastingState, CombatStats, CooldownTracker, DespawnedIds,
-    ElementalAttributes, EntityId, Health, HitLog, LiveRules, Mass, MobSpawnAnchor, MobTag,
-    PlayerAvatar, PlayerInputState, PlayerTag, Position, Projectile, SpawnPoint, StatusEffects,
-    Velocity, MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
+    AiAgent, BodyRadius, BotAgent, CastingState, CombatStats, CooldownTracker, DashState,
+    DespawnedIds, ElementalAttributes, EntityId, Health, HitLog, LiveRules, Mass, MobSpawnAnchor,
+    MobTag, PlayerAvatar, PlayerInputState, PlayerTag, Position, Projectile, SpawnPoint,
+    StatusEffects, Velocity, MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
 };
 use crate::net::ClientPacket;
 use crate::physics::world::PhysicsWorld;
@@ -127,6 +127,14 @@ pub struct AtlasSimulation {
     pub prng: Mulberry32,
     pub arena_width: f32,
     pub arena_height: f32,
+    /// Where a joining player's avatar appears (arena centre unless the map says otherwise).
+    pub player_spawn: Position,
+    /// Development mode (see `debug::debug_enabled`): unlocks the debug controls.
+    pub debug_enabled: bool,
+    /// Respawn delay given to mobs spawned after start-up.
+    pub mob_respawn_sec: f32,
+    next_bot_index: usize,
+    pub(crate) debug_mob_seq: u32,
 }
 
 impl AtlasSimulation {
@@ -157,6 +165,8 @@ impl AtlasSimulation {
         world.insert_resource(MatchEventQueue::default());
 
         let mut schedule = Schedule::default();
+        // The systems are fully chained: run them inline rather than through a task pool.
+        schedule.set_executor_kind(bevy_ecs::schedule::ExecutorKind::SingleThreaded);
         schedule.add_systems(
             (
                 cooldown_tick_system,
@@ -187,6 +197,11 @@ impl AtlasSimulation {
             prng,
             arena_width,
             arena_height,
+            player_spawn: Position::new(arena_width / 2.0, arena_height / 2.0),
+            debug_enabled: false,
+            mob_respawn_sec: LiveConfig::default().mob_respawn_sec,
+            next_bot_index: 0,
+            debug_mob_seq: 0,
         }
     }
 
@@ -224,6 +239,9 @@ impl AtlasSimulation {
         };
 
         let mut sim = Self::new(cfg.seed, arena_width, arena_height);
+        if let (Some(_), Some((x, y))) = (&cfg.map_id, map_cfg.player_spawn) {
+            sim.player_spawn = Position::new(x, y);
+        }
         sim.world.insert_resource(LiveRules {
             player_respawn_sec: cfg.player_respawn_sec,
             mob_corpse_sec: MOB_CORPSE_SEC,
@@ -234,6 +252,15 @@ impl AtlasSimulation {
             .insert_resource(crate::content::map::StaticObstacles {
                 obstacles: map_cfg.static_obstacles.clone(),
             });
+
+        // Like the arena size, terrain belongs to a named map: a config without `map_id`
+        // (anonymous test arenas) is all default ground.
+        if cfg.map_id.is_some() {
+            sim.world
+                .insert_resource(crate::content::map::TerrainZones {
+                    zones: map_cfg.terrain_zones.clone(),
+                });
+        }
 
         // Add static colliders to Rapier PhysicsWorld
         if let Some(mut pw) = sim.world.get_resource_mut::<PhysicsWorld>() {
@@ -247,39 +274,12 @@ impl AtlasSimulation {
         }
 
         let mut prng = Mulberry32::new(cfg.seed);
-        for i in 0..cfg.bot_count {
-            let id = format!("bot-{}", i);
-            let pos = Position::new(
-                prng.range(100.0, arena_width - 100.0)
-                    .clamp(10.0, arena_width - 10.0),
-                prng.range(100.0, arena_height - 100.0)
-                    .clamp(10.0, arena_height - 10.0),
-            );
+        sim.mob_respawn_sec = cfg.mob_respawn_sec;
+        for _ in 0..cfg.bot_count {
+            let x = prng.range(100.0, arena_width - 100.0);
+            let y = prng.range(100.0, arena_height - 100.0);
             let angle = prng.range(0.0, std::f32::consts::PI * 2.0);
-            sim.world.spawn((
-                EntityId(id.clone()),
-                pos,
-                Velocity::zero(),
-                Health::new(100.0),
-                PlayerTag,
-                BotAgent::new(id, angle.cos(), angle.sin()),
-                CombatStats {
-                    // Same edge-to-edge melee reach as mobs (20px + both body radii), so a
-                    // bot can answer a mob standing at its own melee reach.
-                    attack_range: 20.0 + PLAYER_BODY_RADIUS + MOB_BODY_RADIUS,
-                    is_player: true,
-                    ..Default::default()
-                },
-                ElementalAttributes {
-                    element: crate::combat::Element::Neutral,
-                    p_def: 6.0,
-                    m_def: 6.0,
-                    armor: 0.0,
-                },
-                BodyRadius(PLAYER_BODY_RADIUS),
-                Mass(15.0),
-                SpawnPoint(pos),
-            ));
+            sim.spawn_bot(x, y, angle);
         }
 
         let catalog = sim.world.resource::<BestiaryCatalog>().clone();
@@ -338,6 +338,40 @@ impl AtlasSimulation {
         sim.prng = prng.clone();
         sim.world.insert_resource(prng);
         sim
+    }
+
+    /// Spawns the next live bot (`bot-<n>`), clamped into the arena, heading along `angle`.
+    pub(crate) fn spawn_bot(&mut self, x: f32, y: f32, angle: f32) {
+        let id = format!("bot-{}", self.next_bot_index);
+        self.next_bot_index += 1;
+        let pos = Position::new(
+            x.clamp(10.0, self.arena_width - 10.0),
+            y.clamp(10.0, self.arena_height - 10.0),
+        );
+        self.world.spawn((
+            EntityId(id.clone()),
+            pos,
+            Velocity::zero(),
+            Health::new(100.0),
+            PlayerTag,
+            BotAgent::new(id, angle.cos(), angle.sin()),
+            CombatStats {
+                // Same edge-to-edge melee reach as mobs (20px + both body radii), so a
+                // bot can answer a mob standing at its own melee reach.
+                attack_range: 20.0 + PLAYER_BODY_RADIUS + MOB_BODY_RADIUS,
+                is_player: true,
+                ..Default::default()
+            },
+            ElementalAttributes {
+                element: crate::combat::Element::Neutral,
+                p_def: 6.0,
+                m_def: 6.0,
+                armor: 0.0,
+            },
+            BodyRadius(PLAYER_BODY_RADIUS),
+            Mass(15.0),
+            SpawnPoint(pos),
+        ));
     }
 
     /// One live server tick, exactly as `main.rs` runs it: apply inputs, then drop avatars
@@ -432,6 +466,8 @@ impl AtlasSimulation {
                             target_id,
                             mob_type: anchor.map_or("", |a| intern_mob_type(&a.mob_id)),
                             owner_id: 0,
+                            // Bots keep the default 0: only client packets set it.
+                            input_ack: input.map_or(0, |i| i.client_tick),
                         },
                     )
                 },
@@ -478,6 +514,7 @@ impl AtlasSimulation {
                         target_id: id_of(proj.target),
                         mob_type: p_type,
                         owner_id: id_of(Some(proj.owner)),
+                        input_ack: 0,
                     },
                 )
             })
@@ -624,7 +661,8 @@ impl AtlasSimulation {
 
         let derived = derived_stats(level, &allocated, weapon_id);
 
-        self.world
+        let entity = self
+            .world
             .spawn((
                 EntityId(session_id.to_string()),
                 Position::new(x, y),
@@ -654,7 +692,10 @@ impl AtlasSimulation {
                 Mass(15.0),
                 SpawnPoint(Position::new(x, y)),
             ))
-            .id()
+            .id();
+
+        self.world.entity_mut(entity).insert(DashState::default());
+        entity
     }
 
     /// Spawns a human-controlled player avatar in the ECS world with default level 1 loadout.
@@ -730,8 +771,10 @@ impl AtlasSimulation {
             query.iter_mut(&mut self.world)
         {
             if id.0 == session_id {
-                // If respawn requested, revive/teleport immediately to spawn point with full health
-                if input.respawn() {
+                // Development mode only: a respawn request revives/teleports to the spawn
+                // point at once with full health, alive or dead. Otherwise it is ignored and
+                // `player_respawn_system` revives the dead after the respawn delay.
+                if input.respawn() && self.debug_enabled {
                     health.current = health.max;
                     health.is_alive = true;
                     *pos = spawn.map(|s| s.0).unwrap_or(Position::new(
@@ -744,7 +787,21 @@ impl AtlasSimulation {
 
                 input_state.move_x = input.move_x();
                 input_state.move_y = input.move_y();
-                input_state.attack = input.attack();
+                let move_len_sq = input.move_x() * input.move_x() + input.move_y() * input.move_y();
+                if move_len_sq > 1e-4 {
+                    let inv_len = 1.0 / move_len_sq.sqrt();
+                    input_state.last_facing = (input.move_x() * inv_len, input.move_y() * inv_len);
+                }
+
+                // Latch attack presses in the same tick: a keyup/movement packet arriving in the same
+                // tick must not erase a tap before combat_system runs.
+                if input.attack() {
+                    input_state.attack = true;
+                    input_state.attack_held = true;
+                } else {
+                    input_state.attack_held = false;
+                }
+
                 // Latch one-shot skill presses: a movement packet arriving in the same
                 // tick (skill_slot = 0) must not erase a press before skill_execution
                 // consumes it.
@@ -799,13 +856,18 @@ impl AtlasSimulation {
         }
 
         if !found {
-            let center_x = self.arena_width / 2.0;
-            let center_y = self.arena_height / 2.0;
-            let entity = self.spawn_player_avatar(session_id, center_x, center_y);
+            let spawn = self.player_spawn;
+            let entity = self.spawn_player_avatar(session_id, spawn.x, spawn.y);
             if let Some(mut state) = self.world.get_mut::<PlayerInputState>(entity) {
                 state.move_x = input.move_x();
                 state.move_y = input.move_y();
+                let move_len_sq = input.move_x() * input.move_x() + input.move_y() * input.move_y();
+                if move_len_sq > 1e-4 {
+                    let inv_len = 1.0 / move_len_sq.sqrt();
+                    state.last_facing = (input.move_x() * inv_len, input.move_y() * inv_len);
+                }
                 state.attack = input.attack();
+                state.attack_held = input.attack();
                 state.skill_slot = input.skill_slot();
                 state.target_id = input.target_id();
                 state.target_entity = resolved_target_entity;
@@ -880,6 +942,17 @@ impl AtlasSimulation {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn schedule_runs_on_the_calling_thread() {
+        // Every system is chained, so a task pool adds only cross-thread handoffs:
+        // measured 15 ms p50 / 40-70 ms p95 per tick on a busy host, versus 3 / 7 ms.
+        let sim = AtlasSimulation::init(1, 1, 1);
+        assert_eq!(
+            sim.schedule.get_executor_kind(),
+            bevy_ecs::schedule::ExecutorKind::SingleThreaded
+        );
+    }
 
     #[test]
     fn test_simulation_init_and_tick0_snapshot() {

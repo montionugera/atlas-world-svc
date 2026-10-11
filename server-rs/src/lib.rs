@@ -3,6 +3,7 @@ pub mod auth;
 pub mod combat;
 pub mod content;
 pub mod core;
+pub mod debug;
 pub mod ecs;
 pub mod fleet;
 pub mod net;
@@ -33,9 +34,9 @@ pub use storage::{
 
 pub use core::{Lcg, Mulberry32, SimClock};
 pub use ecs::{
-    AiAgent, AiState, BotAgent, CastingState, CombatStats, CooldownTracker, DeadMobTracker,
-    ElementalAttributes, EntityId, Health, Mass, MobAi, MobSpawnAnchor, MobTag, PlayerInputState,
-    PlayerTag, Position, Projectile, StatusEffects, Velocity,
+    AiAgent, AiState, BotAgent, CastingState, CombatStats, CooldownTracker, DashState,
+    DeadMobTracker, ElementalAttributes, EntityId, Health, Mass, MobAi, MobSpawnAnchor, MobTag,
+    PlayerInputState, PlayerTag, Position, Projectile, StatusEffects, Velocity,
 };
 pub use physics::{PhysicsWorld, RapierBodyHandle, RapierColliderHandle};
 pub use protocol::{

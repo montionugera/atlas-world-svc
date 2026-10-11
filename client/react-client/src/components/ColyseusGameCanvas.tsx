@@ -1,12 +1,64 @@
 import React, { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { UseColyseusClientReturn } from "../hooks/useColyseusClient";
 import { useKeyboardControls } from "../hooks/useKeyboardControls";
 import { GameRenderer } from "./GameRenderer";
 import { CANVAS_CONFIG } from "../config/gameConfig";
 import { useGameStateContext } from "../contexts/GameStateContext";
-import { InputDebugPanel } from "./InputDebugPanel";
+import { GameState } from "../types/game";
 import { calculateScale } from "../utils/drawingUtils";
 import { SKILL_DEFINITIONS } from "../config/skills";
+import { getAoeReticle } from "../utils/aoeReticle";
+import {
+  CanvasView,
+  backingSize,
+  clientToWorld,
+  fitCanvasSize,
+} from "../utils/canvasLayout";
+import {
+  SNAPSHOT_INTERVAL_MS,
+  renderTimeAt,
+  samplePosition,
+} from "../utils/snapshotInterpolation";
+import {
+  HELD_INPUT_MS,
+  createPrediction,
+  lockMovement,
+  noteDash,
+  noteSent,
+  observeServer,
+  restartPrediction,
+  setHeldInput,
+  unlockMovement,
+} from "../utils/localPrediction";
+import { debugToggleForKey, hasModifierKey } from "../config/controls";
+import {
+  REFERENCE_RUN_SPEED,
+  terrainAt,
+  terrainZonesFor,
+} from "../config/terrain";
+import {
+  DebugToggles,
+  DebugTracker,
+  EMPTY_TRACKER,
+  ReadoutInput,
+  advanceTracker,
+  isTextEntryTarget,
+  loadDebugToggles,
+  saveDebugToggles,
+} from "../utils/debugTools";
+import {
+  ControlsLegend,
+  DebugReadout,
+  DebugToolbar,
+  HeldKeys,
+  TerrainLegend,
+} from "./DebugPanels";
+
+/** Where the debug dock is drawn when the page provides it (see App.tsx). */
+export const DEBUG_DOCK_ID = "debug-dock";
+const ROOT_PADDING = 8;
+const ROOT_GAP = 10;
 
 interface ColyseusGameCanvasProps {
   client: UseColyseusClientReturn;
@@ -20,12 +72,16 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
   const { setGameState } = useGameStateContext();
 
   const [cooldowns, setCooldowns] = React.useState<Record<string, number>>({});
+  const localCastRef = React.useRef<{ until: number; duration: number } | null>(
+    null,
+  );
   const [activeCast, setActiveCast] = React.useState<{
     skillId: string;
     name: string;
     icon: string;
     startTime: number;
     durationMs: number;
+    aim: { x: number; y: number };
   } | null>(null);
   const [, setTickCounter] = React.useState(0);
 
@@ -34,21 +90,122 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     roomId,
     playerId,
     gameState,
+    gameStateRef,
+    onSnapshot,
     updateCount,
     fps,
     updateRate,
     updatePlayerInput,
     sendPlayerAction,
+    inputSeqRef,
+    inputSentRef,
+    sentTargetRef,
+    drainEvents,
     switchWeapon,
     trackFrame,
     respawn,
   } = client;
+
+  // `gameState` is React state and follows the server at HUD pace (server-rs publishes
+  // it a few times a second). Input handling and the frame loop need the newest
+  // snapshot, which server-rs keeps in a ref; the legacy client has only the state.
+  const stateFallbackRef = useRef(gameState);
+  stateFallbackRef.current = gameState;
+  const liveStateRef = gameStateRef ?? stateFallbackRef;
+
+  // Prediction of the local player (server-rs only): fed with the keys and each
+  // snapshot here, advanced by the frame loop, which draws its position.
+  const [prediction] = React.useState(createPrediction);
+  const predicts = !!gameStateRef && !!onSnapshot;
+  const heldRef = useRef({ vx: 0, vy: 0 });
+  const movePlayer = React.useCallback(
+    (vx: number, vy: number) => {
+      heldRef.current.vx = vx;
+      heldRef.current.vy = vy;
+      updatePlayerInput(vx, vy);
+      // The input just sent carries this change to the server.
+      setHeldInput(
+        prediction,
+        performance.now(),
+        vx,
+        vy,
+        inputSeqRef?.current ?? 0,
+      );
+    },
+    [prediction, updatePlayerInput, inputSeqRef],
+  );
+  useEffect(() => {
+    if (!predicts) return;
+    return onSnapshot((state) => {
+      const me = state.players.get(playerId);
+      if (!me || !state.renderClock) return;
+      observeServer(
+        prediction,
+        {
+          simTime: state.tick * SNAPSHOT_INTERVAL_MS,
+          x: me.x,
+          y: me.y,
+          vx: me.vx,
+          vy: me.vy,
+          alive: me.isAlive !== false,
+          ack: me.inputAck ?? 0,
+          sent: inputSeqRef?.current ?? 0,
+        },
+        state.renderClock.offsets,
+        terrainZonesFor(state.mapId),
+      );
+    });
+  }, [predicts, onSnapshot, playerId, prediction, inputSeqRef]);
+  // The prediction places a stop by when recent inputs reached their tick: it is told
+  // when each is sent, and held keys are sent again so that some are always recent.
+  // To the server a repeat is the input it already holds (the full state every time).
+  useEffect(() => {
+    if (!predicts || !inputSentRef) return;
+    inputSentRef.current = (seq) =>
+      noteSent(prediction, performance.now(), seq);
+    const repeat = window.setInterval(() => {
+      const { vx, vy } = heldRef.current;
+      if (vx !== 0 || vy !== 0) updatePlayerInput(vx, vy);
+    }, HELD_INPUT_MS);
+    return () => {
+      inputSentRef.current = null;
+      window.clearInterval(repeat);
+    };
+  }, [predicts, inputSentRef, prediction, updatePlayerInput]);
+  // A new connection has no key held on the server (the hook drops its own too).
+  useEffect(() => {
+    heldRef.current.vx = 0;
+    heldRef.current.vy = 0;
+    restartPrediction(prediction, performance.now());
+  }, [clientConnected, playerId, prediction]);
+  /** `p` at the position the local player is drawn at this frame. */
+  const atDrawnPosition = React.useCallback(
+    <T extends { x: number; y: number }>(p: T | undefined): T | undefined => {
+      return p && prediction.enabled && prediction.ready
+        ? { ...p, x: prediction.x, y: prediction.y }
+        : p;
+    },
+    [prediction],
+  );
 
   // Local player state
   const localPlayer = gameState?.players.get(playerId);
   const isDead = localPlayer
     ? !localPlayer.isAlive || (localPlayer.health ?? 1) <= 0
     : false;
+
+  // Ground-target indicator while an AoE skill is being cast (null otherwise)
+  const livePlayer = atDrawnPosition(
+    liveStateRef.current?.players.get(playerId),
+  );
+  const aoeReticle =
+    activeCast && livePlayer && !isDead
+      ? getAoeReticle(
+          activeCast.skillId,
+          sentTargetRef?.current ?? activeCast.aim,
+          livePlayer,
+        )
+      : null;
 
   // Resolve aim towards mouse, or fallback to nearest mob / movement direction
   const resolveAimCoordinates = React.useCallback(
@@ -108,12 +265,9 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       }
 
       const mousePos = mousePositionRef.current;
-      const aim = resolveAimCoordinates(
-        mousePos.x,
-        mousePos.y,
-        localPlayer,
-        gameState?.mobs,
-      );
+      const live = liveStateRef.current;
+      const me = atDrawnPosition(live?.players.get(playerId));
+      const aim = resolveAimCoordinates(mousePos.x, mousePos.y, me, live?.mobs);
 
       const newCooldowns = { ...cooldowns };
       if (def.cooldown > 0) {
@@ -132,12 +286,19 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           icon: def.icon,
           startTime: now,
           durationMs: castDurationMs,
+          aim,
         });
 
-        if (localPlayer) {
-          localPlayer.castingUntil = now + castDurationMs;
-          localPlayer.castDuration = castDurationMs;
-        }
+        localCastRef.current = {
+          until: now + castDurationMs,
+          duration: castDurationMs,
+        };
+        // The server ignores movement keys for the length of the cast.
+        const castAt = performance.now();
+        lockMovement(prediction, castAt, castAt + castDurationMs);
+      }
+      if (def.id === "skill_dash") {
+        noteDash(prediction, performance.now());
       }
 
       if (sendPlayerAction) {
@@ -152,10 +313,12 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       isDead,
       cooldowns,
       activeCast,
-      localPlayer,
-      gameState?.mobs,
+      liveStateRef,
+      playerId,
       resolveAimCoordinates,
       sendPlayerAction,
+      atDrawnPosition,
+      prediction,
     ],
   );
 
@@ -172,21 +335,127 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     [handleTriggerSkill, sendPlayerAction],
   );
 
-  // Ticking effect for cooldowns and cast bar progress
+  // Debug toggles (persisted) and the per-snapshot feed for the readout / speed label
+  const [debug, setDebug] = React.useState<DebugToggles>(() =>
+    loadDebugToggles(),
+  );
+  const toggleDebug = React.useCallback((toggle: keyof DebugToggles) => {
+    setDebug((prev) => {
+      const next = { ...prev, [toggle]: !prev[toggle] };
+      saveDebugToggles(next);
+      return next;
+    });
+  }, []);
+  // The server clears cooldowns on reset; drop the client's cast bar and gate too.
+  const resetToSpawn = React.useCallback(() => {
+    setActiveCast(null);
+    setCooldowns({});
+    respawn();
+  }, [respawn]);
+  const debugTrackerRef = useRef<DebugTracker>(EMPTY_TRACKER);
+  const readoutInputRef = useRef<Omit<ReadoutInput, "latency"> | null>(null);
+  const castingSkill = activeCast?.name ?? null;
+  // The cast ring is drawn from this ref, so it is on the frame the cast starts.
   useEffect(() => {
+    if (!activeCast) {
+      localCastRef.current = null;
+      unlockMovement(prediction, performance.now());
+    }
+  }, [activeCast, prediction]);
+  // A new room starts with no cast in flight and no speed/position history.
+  const currentMapId = gameState?.mapId;
+  useEffect(() => {
+    setActiveCast(null);
+    debugTrackerRef.current = EMPTY_TRACKER;
+  }, [currentMapId]);
+  const feedDebug = React.useCallback(
+    (state: GameState | null) => {
+      if (!state) {
+        debugTrackerRef.current = EMPTY_TRACKER;
+        readoutInputRef.current = null;
+        return;
+      }
+      const player = state.players.get(playerId);
+      if (player) {
+        debugTrackerRef.current = advanceTracker(
+          debugTrackerRef.current,
+          player,
+        );
+      }
+      const zones = terrainZonesFor(state.mapId);
+      readoutInputRef.current = {
+        mapId: state.mapId,
+        tick: state.tick,
+        player,
+        tracker: debugTrackerRef.current,
+        terrain: player && zones ? terrainAt(zones, player.x, player.y) : null,
+        referenceRunSpeed: REFERENCE_RUN_SPEED,
+        counts: {
+          players: state.players.size,
+          mobs: state.mobs.size,
+          projectiles: state.projectiles?.size ?? 0,
+        },
+        castingSkill,
+        attackHeld: player?.isAttacking ?? false,
+        prediction: predicts ? prediction : undefined,
+      };
+    },
+    [playerId, castingSkill, predicts, prediction],
+  );
+  // Fed by every snapshot where the client says when one lands (server-rs), so the
+  // snapshot rate and speed readings do not depend on how often React renders...
+  useEffect(() => {
+    if (!onSnapshot) return;
+    feedDebug(liveStateRef.current);
+    return onSnapshot(feedDebug);
+  }, [onSnapshot, feedDebug, liveStateRef]);
+  // ...otherwise by every state change; either way a lost state resets it.
+  useEffect(() => {
+    if (!onSnapshot || !gameState) feedDebug(gameState);
+  }, [gameState, onSnapshot, feedDebug]);
+
+  // Debug keys, and keep keyboard focus on the game: a clicked button must not hold
+  // focus, or Space/Enter would re-press it instead of attacking.
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat || hasModifierKey(e)) return;
+      if (isTextEntryTarget(e.target)) return;
+      const toggle = debugToggleForKey(e.key);
+      if (toggle) toggleDebug(toggle);
+    };
+    const releaseButtonFocus = () => {
+      const active = document.activeElement;
+      if (active instanceof HTMLButtonElement) active.blur();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("click", releaseButtonFocus);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("click", releaseButtonFocus);
+    };
+  }, [toggleDebug]);
+
+  // A dead player's cast is over: drop the cast bar and reticle.
+  useEffect(() => {
+    if (isDead) setActiveCast(null);
+  }, [isDead]);
+
+  // Ticking effect for cooldowns and cast bar progress; idle when nothing counts down.
+  const countingDown =
+    activeCast !== null ||
+    Object.values(cooldowns).some((end) => end > Date.now());
+  useEffect(() => {
+    if (!countingDown) return;
     const timer = setInterval(() => {
       const now = Date.now();
       if (activeCast && now >= activeCast.startTime + activeCast.durationMs) {
         setActiveCast(null);
-        if (localPlayer) {
-          localPlayer.castingUntil = 0;
-        }
       }
       setTickCounter((c) => c + 1);
     }, 50);
 
     return () => clearInterval(timer);
-  }, [activeCast, localPlayer]);
+  }, [activeCast, countingDown]);
 
   // Update context when gameState or roomId changes
   useEffect(() => {
@@ -195,7 +464,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
 
   // Handle keyboard controls
   const { pressedKeys } = useKeyboardControls({
-    updatePlayerInput,
+    updatePlayerInput: movePlayer,
     sendPlayerAction: wrappedSendPlayerAction,
     switchWeapon,
     mousePositionRef,
@@ -203,46 +472,112 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     isDead,
   });
 
-  // Track latest state for mouse handlers without re-binding listeners
-  const latestStateRef = useRef({ gameState, playerId, isDead });
+  // Track the latest player id for mouse handlers without re-binding listeners
+  const latestStateRef = useRef({ playerId });
   useEffect(() => {
-    latestStateRef.current = { gameState, playerId, isDead };
-  }, [gameState, playerId, isDead]);
+    latestStateRef.current = { playerId };
+  }, [playerId]);
+
+  // The canvas takes all the room its column has left above the skill bar, and
+  // follows the window; in play mode that column is the whole window.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const belowRef = useRef<HTMLDivElement>(null);
+  const [view, setView] = React.useState<CanvasView>(() =>
+    fitCanvasSize(CANVAS_CONFIG.width, CANVAS_CONFIG.height, 1),
+  );
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  const backing = backingSize(view);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const measure = () => {
+      const below = belowRef.current?.offsetHeight ?? 0;
+      const next = fitCanvasSize(
+        root.clientWidth - 2 * ROOT_PADDING,
+        // A column with no height of its own (stacked narrow layout): the window's.
+        (root.clientHeight || window.innerHeight) -
+          2 * ROOT_PADDING -
+          ROOT_GAP -
+          below,
+        window.devicePixelRatio,
+      );
+      setView((prev) =>
+        prev.width === next.width &&
+        prev.height === next.height &&
+        prev.pixelRatio === next.pixelRatio
+          ? prev
+          : next,
+      );
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(measure);
+    observer?.observe(root);
+    if (belowRef.current) observer?.observe(belowRef.current);
+    return () => {
+      window.removeEventListener("resize", measure);
+      observer?.disconnect();
+    };
+  }, []);
+
+  // Play mode is a class on <body>: App.css hides the header and side column.
+  useEffect(() => {
+    document.body.classList.toggle("play-focus", debug.focus);
+    return () => document.body.classList.remove("play-focus");
+  }, [debug.focus]);
+
+  // The debug dock is drawn into the side column (App renders the mount point).
+  const [dock, setDock] = React.useState<HTMLElement | null>(null);
+  useEffect(() => setDock(document.getElementById(DEBUG_DOCK_ID)), []);
 
   // Mouse move tracking (single listener)
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const canvas = canvasRef.current;
-      const { gameState: currentGameState, playerId: currentPid } =
-        latestStateRef.current;
+      const currentGameState = liveStateRef.current;
+      const { playerId: currentPid } = latestStateRef.current;
 
       if (!canvas || !currentGameState) return;
 
-      const rect = canvas.getBoundingClientRect();
-      const clientX = e.clientX - rect.left;
-      const clientY = e.clientY - rect.top;
-
+      const view = viewRef.current;
       const viewportSize = currentGameState.viewportSize ?? 50;
-      const scale = calculateScale(currentGameState, canvas, viewportSize);
+      const scale = calculateScale(currentGameState, view, viewportSize);
 
       let cameraX = currentGameState.width / 2;
       let cameraY = currentGameState.height / 2;
 
       const player = currentGameState.players.get(currentPid);
       if (player) {
-        cameraX = player.x;
-        cameraY = player.y;
+        // Same position the renderer centres the camera on: predicted, else
+        // interpolated.
+        const pos =
+          prediction.enabled && prediction.ready
+            ? prediction
+            : samplePosition(
+                player,
+                renderTimeAt(currentGameState.renderClock, performance.now()),
+              );
+        cameraX = pos.x;
+        cameraY = pos.y;
       }
 
-      const worldX = (clientX - canvas.width / 2) / scale + cameraX;
-      const worldY = (clientY - canvas.height / 2) / scale + cameraY;
-
-      mousePositionRef.current = { x: worldX, y: worldY };
+      mousePositionRef.current = clientToWorld(
+        e.clientX,
+        e.clientY,
+        canvas.getBoundingClientRect(),
+        view,
+        scale,
+        { x: cameraX, y: cameraY },
+      );
     };
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [liveStateRef, prediction]);
 
   // Global mouseup listener to release attack if mouse is released outside canvas
   useEffect(() => {
@@ -269,10 +604,14 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       const { x: wx, y: wy } = mousePositionRef.current;
       let targetMobId: number | undefined;
 
-      if (gameState) {
-        gameState.mobs.forEach((mob) => {
+      const live = liveStateRef.current;
+      if (live) {
+        const renderTime = renderTimeAt(live.renderClock, performance.now());
+        live.mobs.forEach((mob) => {
           if (mob.isAlive === false || targetMobId !== undefined) return;
-          const dist = Math.hypot(mob.x - wx, mob.y - wy);
+          // Pick against the interpolated position that is drawn on screen.
+          const pos = samplePosition(mob, renderTime);
+          const dist = Math.hypot(pos.x - wx, pos.y - wy);
           if (dist <= (mob.radius || 14) + 16) {
             targetMobId = Number(mob.id);
           }
@@ -297,7 +636,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
   const containerStyle: React.CSSProperties = {
     position: "relative",
     display: "inline-block",
-    borderRadius: CANVAS_CONFIG.borderRadius,
+    flexShrink: 0,
+    borderRadius: debug.focus ? 0 : CANVAS_CONFIG.borderRadius,
     overflow: "hidden",
     boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
   };
@@ -318,21 +658,40 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
     userSelect: "none",
   });
 
+  // Everything about debugging lives here, beside the canvas, never on it.
+  const debugDock = (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <DebugToolbar
+        toggles={debug}
+        onToggle={toggleDebug}
+        onRespawn={resetToSpawn}
+      />
+      {debug.overlay && <DebugReadout inputRef={readoutInputRef} />}
+      {debug.overlay && <HeldKeys pressedKeysRef={pressedKeys} />}
+      {debug.terrain && <TerrainLegend />}
+      <ControlsLegend />
+    </div>
+  );
+
   return (
     <div
+      ref={rootRef}
       style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: "16px",
-        padding: "20px",
+        gap: ROOT_GAP,
+        padding: ROOT_PADDING,
+        width: "100%",
+        height: "100%",
+        boxSizing: "border-box",
       }}
     >
       <div style={containerStyle}>
         <canvas
           ref={canvasRef}
-          width={CANVAS_CONFIG.width}
-          height={CANVAS_CONFIG.height}
+          width={backing.width}
+          height={backing.height}
           onMouseDown={handleCanvasMouseDown}
           onMouseUp={handleCanvasMouseUp}
           onContextMenu={(e) => e.preventDefault()}
@@ -340,6 +699,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
             backgroundColor: CANVAS_CONFIG.backgroundColor,
             cursor: isDead ? "pointer" : "crosshair",
             display: "block",
+            width: view.width,
+            height: view.height,
           }}
         />
 
@@ -419,91 +780,129 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           </div>
         )}
 
-        <InputDebugPanel pressedKeysRef={pressedKeys} />
+        {/* Active Casting Bar: on the canvas, only while a cast is in flight */}
+        {activeCast && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 12,
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 60,
+              pointerEvents: "none",
+              width: "min(360px, 90%)",
+              backgroundColor: "rgba(15, 23, 42, 0.9)",
+              borderRadius: "10px",
+              border: "1px solid rgba(243, 156, 18, 0.6)",
+              boxShadow: "0 0 15px rgba(243, 156, 18, 0.4)",
+              padding: "8px 14px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "6px",
+              userSelect: "none",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "0.85rem",
+                fontWeight: "bold",
+                color: "#f1c40f",
+              }}
+            >
+              <span>
+                {activeCast.icon} Casting {activeCast.name}...
+              </span>
+              <span>
+                {Math.max(
+                  0,
+                  (activeCast.startTime + activeCast.durationMs - Date.now()) /
+                    1000,
+                ).toFixed(1)}
+                s
+              </span>
+            </div>
+            <div
+              style={{
+                width: "100%",
+                height: "8px",
+                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                borderRadius: "4px",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: `${Math.min(
+                    100,
+                    Math.max(
+                      0,
+                      ((Date.now() - activeCast.startTime) /
+                        activeCast.durationMs) *
+                        100,
+                    ),
+                  )}%`,
+                  background: "linear-gradient(90deg, #e67e22, #f1c40f)",
+                  boxShadow: "0 0 8px #f1c40f",
+                  transition: "width 0.05s linear",
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {debug.focus && (
+          <button
+            type="button"
+            onClick={() => toggleDebug("focus")}
+            title="Show the panels again"
+            style={{
+              position: "absolute",
+              top: 6,
+              left: 6,
+              // Above the death overlay (100), which would take the click as a respawn.
+              zIndex: 101,
+              padding: "2px 6px",
+              border: "none",
+              borderRadius: 4,
+              background: "rgba(0, 0, 0, 0.35)",
+              color: "rgba(255, 255, 255, 0.7)",
+              font: '11px "Fira Code", monospace',
+              cursor: "pointer",
+            }}
+          >
+            [H] show UI
+          </button>
+        )}
 
         <GameRenderer
           canvasRef={canvasRef}
           gameState={gameState}
+          gameStateRef={liveStateRef}
           updateCount={updateCount}
           fps={fps}
           updateRate={updateRate}
           roomId={roomId}
           playerId={playerId}
           trackFrame={trackFrame}
+          drainEvents={drainEvents}
+          localCastRef={localCastRef}
+          aoeReticle={aoeReticle}
+          debug={debug}
+          debugTrackerRef={debugTrackerRef}
+          prediction={predicts ? prediction : undefined}
+          view={view}
         />
       </div>
 
-      {/* Active Casting Bar */}
-      {activeCast && (
-        <div
-          style={{
-            width: "360px",
-            backgroundColor: "rgba(15, 23, 42, 0.95)",
-            borderRadius: "10px",
-            border: "1px solid rgba(243, 156, 18, 0.6)",
-            boxShadow: "0 0 15px rgba(243, 156, 18, 0.4)",
-            padding: "8px 14px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "6px",
-            userSelect: "none",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontSize: "0.85rem",
-              fontWeight: "bold",
-              color: "#f1c40f",
-            }}
-          >
-            <span>
-              {activeCast.icon} Casting {activeCast.name}...
-            </span>
-            <span>
-              {Math.max(
-                0,
-                (activeCast.startTime + activeCast.durationMs - Date.now()) /
-                  1000,
-              ).toFixed(1)}
-              s
-            </span>
-          </div>
-          <div
-            style={{
-              width: "100%",
-              height: "8px",
-              backgroundColor: "rgba(255, 255, 255, 0.15)",
-              borderRadius: "4px",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                height: "100%",
-                width: `${Math.min(
-                  100,
-                  Math.max(
-                    0,
-                    ((Date.now() - activeCast.startTime) /
-                      activeCast.durationMs) *
-                      100,
-                  ),
-                )}%`,
-                background: "linear-gradient(90deg, #e67e22, #f1c40f)",
-                boxShadow: "0 0 8px #f1c40f",
-                transition: "width 0.05s linear",
-              }}
-            />
-          </div>
-        </div>
-      )}
-
       {/* Interactive Action / Skill Bar */}
       <div
+        ref={belowRef}
         style={{
           display: "flex",
+          flexShrink: 0,
           gap: "10px",
           alignItems: "center",
           justifyContent: "center",
@@ -601,6 +1000,9 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           );
         })}
       </div>
+
+      {!debug.focus &&
+        (dock ? createPortal(debugDock, dock) : <div>{debugDock}</div>)}
     </div>
   );
 };
