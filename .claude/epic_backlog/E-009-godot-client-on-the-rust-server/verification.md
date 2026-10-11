@@ -10,4 +10,6 @@ toolkit never parses this file.
 
 ## Assertions
 
-1. <!-- end-to-end assertion -->
+1. The Godot client joins a `server-rs` region and sees the same entities as the React test client.
+2. Walking and stopping reconcile on the server's acknowledged input.
+3. A fight can be played start to finish in the Godot client.

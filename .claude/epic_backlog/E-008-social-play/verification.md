@@ -10,4 +10,6 @@ toolkit never parses this file.
 
 ## Assertions
 
-1. <!-- end-to-end assertion -->
+1. Two signed-in players exchange a chat message.
+2. A friend request is sent, accepted, and the friend shows as online.
+3. Two players form a party and both get credit for a kill.
