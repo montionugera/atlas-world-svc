@@ -874,5 +874,75 @@
     "created_at": "2026-10-11T06:59:03.795224+00:00",
     "promoted_to": null,
     "epic": "E-003"
+  },
+  {
+    "id": "I-144",
+    "title": "Measure capacity",
+    "created_at": "2026-10-11T06:59:04.670870+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-145",
+    "title": "Decide the world model",
+    "created_at": "2026-10-11T06:59:04.674658+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-146",
+    "title": "Send each player only what is near them",
+    "created_at": "2026-10-11T06:59:04.676842+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-147",
+    "title": "Load a generated-world region on the server",
+    "created_at": "2026-10-11T06:59:04.677927+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-148",
+    "title": "Derive client obstacles and spawn from the same source",
+    "created_at": "2026-10-11T06:59:04.679157+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-149",
+    "title": "Sleeping regions",
+    "created_at": "2026-10-11T06:59:04.683180+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-150",
+    "title": "World state store",
+    "created_at": "2026-10-11T06:59:04.684576+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-151",
+    "title": "Save and restore region state across a restart",
+    "created_at": "2026-10-11T06:59:04.686973+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-152",
+    "title": "Border ghosts",
+    "created_at": "2026-10-11T06:59:04.689376+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-153",
+    "title": "Authority handoff",
+    "created_at": "2026-10-11T06:59:04.690361+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
   }
 ]
