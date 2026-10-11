@@ -248,6 +248,7 @@ impl WsServer {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     async fn accept_loop(
         listener: TcpListener,
         connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,

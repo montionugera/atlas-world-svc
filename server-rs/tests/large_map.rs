@@ -172,5 +172,6 @@ fn positions_near_4000_round_trip_through_the_snapshot_encoding() {
             "{held:?} not in {decoded:?}"
         );
     }
-    assert!(3999.25f32 + 0.001 > 3999.25f32);
+    let at_edge = std::hint::black_box(3999.25f32);
+    assert!(at_edge + 0.001 > at_edge);
 }

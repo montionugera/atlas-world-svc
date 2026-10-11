@@ -164,7 +164,7 @@ pub fn body_collision_system(
 /// Live bot AI: steers bots to acquire nearest mob within vision range (300u), approaches,
 /// and attacks when within melee reach. When no mob is in vision, falls back to boundary
 /// margin avoidance and wandering.
-#[allow(clippy::type_complexity)]
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
 pub fn live_bot_ai_system(
     clock: Res<SimClock>,
     mut prng: ResMut<crate::core::prng::Mulberry32>,
