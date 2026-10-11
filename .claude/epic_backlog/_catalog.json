@@ -30,5 +30,15 @@
     "verified_sha": null,
     "verified_at": null,
     "split_approved_by": null
+  },
+  {
+    "id": "E-004",
+    "title": "One continuous open world",
+    "created_at": "2026-10-11T06:40:07.212210+00:00",
+    "status": "open",
+    "release_version": null,
+    "verified_sha": null,
+    "verified_at": null,
+    "split_approved_by": null
   }
 ]
