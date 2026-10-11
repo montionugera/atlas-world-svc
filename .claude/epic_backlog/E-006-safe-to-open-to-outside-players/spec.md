@@ -20,29 +20,35 @@ merges.
 
 - Default WebSocket config, every binary frame forwarded, unbounded queues (`server-rs/src/net/ws.rs:392`, `:456`, `:423`).
 - No player cap on a room (`ws.rs:428`, `server-rs/src/simulation.rs:864`).
-- The token travels in the `?token=` query in clear text; no Origin check on upgrade (`ws.rs:310`, `:360-390`).
+- The token query path is `ws.rs:291`; `ws.rs:310` is the `Sec-WebSocket-Protocol` path, so the server already accepts a token outside the URL. `local_origin` (`ws.rs:534`) exists but only guards `/debug`.
 - The only CI job targets the deleted `colyseus-server` (`.github/workflows/ci.yml:14`); no workflow runs `cargo`.
 - Only `/debug/*` is served over HTTP; the k8s manifest has no probes (`k8s/local/server-rs.yaml:19-40`). Shutdown sends no close frames (`server-rs/src/main.rs:288-301`).
 - The protocol has no version field (`schemas/game_protocol.fbs:57-69`).
-- `docker-compose.yml` still builds the deleted server; `server-rs` reads no `NAKAMA_*` variable; the manifest sets `BIND_ADDR` while `main.rs:79` reads `HOST`/`PORT`.
+- `docker-compose.yml` still builds the deleted server; `server-rs` reads `NAKAMA_SERVER_KEY` (`auth/jwt.rs:47`, `debug.rs:39`) but reads no Nakama URL or http key, and `NakamaClient::new` is only called in tests; the manifest sets `BIND_ADDR` while `main.rs:79` reads `HOST`/`PORT`.
 
 ## Slices
 
-Order matters: earlier slices unblock later ones.
+Order matters: earlier slices unblock later ones. Slices 6 and 7 overlap idea I-002 (security hardening).
 
-1. CI for the Rust server — a workflow that runs `cargo fmt --check`, clippy and `cargo test` on every pull request, and removes the job for the deleted server.
-2. Input limits — cap message size, rate-limit inputs per connection, bound the queues, and drop idle or stalled connections.
-3. Player caps — a per-region player limit with a clear refusal message.
-4. Server-side checks on intents — enforce cooldowns, attack range and movement speed on the server so a modified client gains nothing.
-5. Health, readiness and clean shutdown — health and readiness endpoints, probes in the manifest, and close frames plus a state flush on shutdown.
-6. Protocol version — client and server exchange a version on connect and refuse a mismatch with a readable message.
-7. Encrypted connections and origin checks — token out of the URL, an Origin allowlist, and TLS termination documented for non-local use.
-8. One command for the full local stack — game server, Nakama and its database start together and are wired to each other.
+1. CI for the Rust server — a workflow that runs cargo fmt --check, clippy and cargo test on every pull request, and removes the job for the deleted server.
+2. Protocol version — client and server exchange a version on connect and refuse a mismatch with a readable message.
+3. Input limits — cap message size, rate-limit inputs per connection, bound the queues, and drop idle or stalled connections.
+4. Health, readiness and clean shutdown — health and readiness endpoints, probes in the manifest, and close frames plus a state flush on shutdown.
+5. Metrics endpoint — tick time, players, entities and bytes sent, readable by a load run.
+6. Origin check and token out of the URL — an Origin allowlist on the socket upgrade, and the client sends its token by the existing Sec-WebSocket-Protocol path instead of the query string; TLS termination documented.
+7. Validate target and respawn intents — reject a target_id or target position the player cannot legitimately use, and a respawn request before the timer, each with a test that fails today. (Movement normalisation, attack cooldown and range, and cast range are already enforced server-side; say so.)
+8. Player caps per region — a per-region player limit with a clear refusal message.
+
+## Depends on
+
+Slice 8 needs E-004 slice 2; slices 1 and 2 have no dependency and go first of everything.
+
+Build order across epics: E-006 slices 1 and 2; then E-003; then E-006 slices 3 to 7; then E-004 slices 1 to 3; then E-005 slices 1 to 6; then E-004 slices 4 to 10 and E-006 slice 8; then E-005 slices 7 to 9; E-007 alongside; then E-008; then E-009.
 
 ## Out of scope
 
 - Real sign-in itself (E-003).
-- Metrics dashboards and autoscaling.
+- Dashboards and autoscaling.
 
 ## Open questions
 

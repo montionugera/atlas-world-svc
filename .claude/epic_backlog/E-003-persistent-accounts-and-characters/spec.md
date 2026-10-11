@@ -34,13 +34,21 @@ someone else.
 
 ## Slices
 
-Order matters: each slice builds on the one before.
+Order matters: each slice builds on the one before. Saving data before real sign-in would store it under forgeable ids, which is why sign-in comes first.
 
-1. Apply the saved character on join — build the server with its Nakama client, and spawn the avatar from the fetched loadout (level, weapon, stats) instead of defaults.
-2. Report match events to Nakama — flush kill and match events through `report_match_events` on a buffered interval and on leave.
-3. Real sign-in — the client authenticates with Nakama and sends that session token; the server verifies it; the `dev-token` path is allowed only in a debug build with no auth secret set.
-4. Save and restore position and health — persist where a character is and its health on leave and on an interval; restore on join.
-5. Session resume after a dropped connection — keep the avatar for a grace period, let the same account reattach to it, and have the client retry with backoff.
+1. Local full stack wired to Nakama — one command starts game server, Nakama and its database; the server reads the Nakama URL and http key from the environment and constructs its client. (Reopens promoted F-021 and F-063, whose wiring is absent.)
+2. Real sign-in — settle which key Nakama signs session tokens with (`nakama/local.yml:8` sets a separate `encryption_key`, while the server verifies with `NAKAMA_SERVER_KEY`), then the client authenticates with Nakama, the server verifies that token, and `dev-token` and the hard-coded fallback secret (`jwt.rs:49`) work only in a debug build.
+3. One live session per account — a second connection for the same account replaces or is refused, instead of two sockets driving one session (`ws.rs:425-428`).
+4. Apply the saved character on join — build the server with its Nakama client, and spawn the avatar from the fetched loadout (level, weapon, stats) instead of defaults.
+5. Report match events to Nakama — flush kill and match events through `report_match_events` on a buffered interval and on leave.
+6. Save and restore position and health — on leave, on an interval, and safely across a server crash.
+7. Session resume after a dropped connection — keep the avatar for a grace period, let the same account reattach to it, and have the client retry with backoff.
+
+## Depends on
+
+Nothing external; it comes first after E-006 slices 1 and 2.
+
+Build order across epics: E-006 slices 1 and 2; then E-003; then E-006 slices 3 to 7; then E-004 slices 1 to 3; then E-005 slices 1 to 6; then E-004 slices 4 to 10 and E-006 slice 8; then E-005 slices 7 to 9; E-007 alongside; then E-008; then E-009.
 
 ## Out of scope
 
@@ -49,5 +57,4 @@ Order matters: each slice builds on the one before.
 
 ## Open questions
 
-- Whether a real Nakama session token validates against the key
-  `server-rs` uses (`jwt.rs:78`, HS256). Slice 3 must settle this first.
+None; the token signing key question is resolved in slice 2.

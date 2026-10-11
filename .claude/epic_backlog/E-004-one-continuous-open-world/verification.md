@@ -10,8 +10,13 @@ toolkit never parses this file.
 
 ## Assertions
 
-1. A load run at the chosen region capacity holds the tick budget recorded in the decision record.
-2. Two players far apart in one region receive no entities from each other's surroundings.
-3. The playable map is produced from the generated world data, with no hand-copied obstacle blocks in the client.
-4. After a server restart, a region's mobs and world objects are where they were.
-5. A player walks across a region border and keeps playing without a manual reconnect.
+1. A repeatable load run reports tick time and bandwidth per player measured at 50, 100, 200, and 400 entities against the tick budget.
+2. An architecture decision record is committed naming region size, world state store, crossing mechanism, and tick budget with F-027 cited as an input.
+3. In a simulation with at least 20 players spread across a region, each player receives only entities within their interest radius.
+4. The server loads and runs an authored region from the generated world data instead of hard-coded test maps.
+5. Client obstacle geometry and server spawn points match the generated map source with zero diff and no hand copies.
+6. A region with 0 players stops ticking at 0 Hz and wakes on player entry with mob respawn timers adjusted for sleeping duration.
+7. The world state store selected in slice 2 connects, writes, and reads world state data in integration tests.
+8. After a server restart, region state for active mobs and world objects is restored to pre-restart coordinates and states.
+9. An entity positioned near a region boundary is replicated and visible as a border ghost from the neighbouring region.
+10. A player walking across a region boundary transitions authority cleanly to the neighbouring region without a manual reconnect.
