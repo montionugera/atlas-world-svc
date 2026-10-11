@@ -1007,5 +1007,61 @@
     "created_at": "2026-10-11T06:59:05.834954+00:00",
     "promoted_to": null,
     "epic": "E-005"
+  },
+  {
+    "id": "I-163",
+    "title": "CI for the Rust server",
+    "created_at": "2026-10-11T06:59:06.877618+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-164",
+    "title": "Protocol version",
+    "created_at": "2026-10-11T06:59:06.885280+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-165",
+    "title": "Input limits",
+    "created_at": "2026-10-11T06:59:06.887009+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-166",
+    "title": "Health, readiness and clean shutdown",
+    "created_at": "2026-10-11T06:59:06.890918+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-167",
+    "title": "Metrics endpoint",
+    "created_at": "2026-10-11T06:59:06.892965+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-168",
+    "title": "Origin check and token out of the URL",
+    "created_at": "2026-10-11T06:59:06.896071+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-169",
+    "title": "Validate target intents",
+    "created_at": "2026-10-11T06:59:06.897169+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-170",
+    "title": "Player caps per region",
+    "created_at": "2026-10-11T06:59:06.898317+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
   }
 ]
