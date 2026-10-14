@@ -98,6 +98,18 @@ namespace AtlasWorld.Client.UI.Panels
                 _navButtons.Add(btn);
                 _nav.AddChild(btn);
             }
+
+            // Close button in nav rail / bar for mobile touch accessibility
+            var closeBtn = new Button
+            {
+                Text = "✕ Close",
+                ThemeTypeVariation = Design.Variants.GhostButton,
+                SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+                CustomMinimumSize = new Vector2(0, 40),
+            };
+            closeBtn.Pressed += () => SetOpen(false);
+            _navButtons.Add(closeBtn);
+            _nav.AddChild(closeBtn);
         }
 
         private void AddTab(string title, MetaPanel panel)
@@ -120,6 +132,19 @@ namespace AtlasWorld.Client.UI.Panels
                     : Design.Variants.GhostButton;
             }
             if (Visible) _tabs[index].Panel.Refresh();
+        }
+
+        public void OpenTab(string tabTitle)
+        {
+            for (int i = 0; i < _tabs.Count; i++)
+            {
+                if (_tabs[i].Title.Equals(tabTitle, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    SetActive(i);
+                    break;
+                }
+            }
+            SetOpen(true);
         }
 
         /// <summary>Swap between nav rail (wide) and bottom tab bar (narrow) at the breakpoint.</summary>
@@ -192,10 +217,6 @@ namespace AtlasWorld.Client.UI.Panels
             if (@event is not InputEventKey { Pressed: true, Echo: false } key) return;
             switch (key.Keycode)
             {
-                case Key.Tab:
-                    Toggle();
-                    GetViewport().SetInputAsHandled();
-                    break;
                 case Key.Escape when Visible:
                     SetOpen(false);
                     GetViewport().SetInputAsHandled();

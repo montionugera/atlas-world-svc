@@ -6,10 +6,10 @@ use crate::content::{derived_stats, BestiaryCatalog, MobTier};
 use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
-    AiAgent, BodyRadius, BotAgent, CastingState, CombatStats, CooldownTracker, DespawnedIds,
-    ElementalAttributes, EntityId, Health, HitLog, LiveRules, Mass, MobSpawnAnchor, MobTag,
-    PlayerAvatar, PlayerInputState, PlayerTag, Position, Projectile, SpawnPoint, StatusEffects,
-    Velocity, MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
+    AiAgent, BodyRadius, BotAgent, CastingState, CombatStats, CooldownTracker, DashState,
+    DespawnedIds, ElementalAttributes, EntityId, Health, HitLog, LiveRules, Mass, MobSpawnAnchor,
+    MobTag, PlayerAvatar, PlayerInputState, PlayerTag, Position, Projectile, SpawnPoint,
+    StatusEffects, Velocity, MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
 };
 use crate::net::ClientPacket;
 use crate::physics::world::PhysicsWorld;
@@ -624,7 +624,7 @@ impl AtlasSimulation {
 
         let derived = derived_stats(level, &allocated, weapon_id);
 
-        self.world
+        let entity = self.world
             .spawn((
                 EntityId(session_id.to_string()),
                 Position::new(x, y),
@@ -654,7 +654,10 @@ impl AtlasSimulation {
                 Mass(15.0),
                 SpawnPoint(Position::new(x, y)),
             ))
-            .id()
+            .id();
+
+        self.world.entity_mut(entity).insert(DashState::default());
+        entity
     }
 
     /// Spawns a human-controlled player avatar in the ECS world with default level 1 loadout.
@@ -744,7 +747,21 @@ impl AtlasSimulation {
 
                 input_state.move_x = input.move_x();
                 input_state.move_y = input.move_y();
-                input_state.attack = input.attack();
+                let move_len_sq = input.move_x() * input.move_x() + input.move_y() * input.move_y();
+                if move_len_sq > 1e-4 {
+                    let inv_len = 1.0 / move_len_sq.sqrt();
+                    input_state.last_facing = (input.move_x() * inv_len, input.move_y() * inv_len);
+                }
+
+                // Latch attack presses in the same tick: a keyup/movement packet arriving in the same
+                // tick must not erase a tap before combat_system runs.
+                if input.attack() {
+                    input_state.attack = true;
+                    input_state.attack_held = true;
+                } else {
+                    input_state.attack_held = false;
+                }
+
                 // Latch one-shot skill presses: a movement packet arriving in the same
                 // tick (skill_slot = 0) must not erase a press before skill_execution
                 // consumes it.
@@ -805,7 +822,13 @@ impl AtlasSimulation {
             if let Some(mut state) = self.world.get_mut::<PlayerInputState>(entity) {
                 state.move_x = input.move_x();
                 state.move_y = input.move_y();
+                let move_len_sq = input.move_x() * input.move_x() + input.move_y() * input.move_y();
+                if move_len_sq > 1e-4 {
+                    let inv_len = 1.0 / move_len_sq.sqrt();
+                    state.last_facing = (input.move_x() * inv_len, input.move_y() * inv_len);
+                }
                 state.attack = input.attack();
+                state.attack_held = input.attack();
                 state.skill_slot = input.skill_slot();
                 state.target_id = input.target_id();
                 state.target_entity = resolved_target_entity;

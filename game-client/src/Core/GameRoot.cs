@@ -94,6 +94,16 @@ namespace AtlasWorld.Client.Core
                 return;
             }
 
+            // Env-gated offline verify probe (ATLAS_VERIFY_VERTICAL_SLICE=1): proves the
+            // FlatBuffers codec (encode/decode), anime cel-shader/outline material, and
+            // cross-platform ChatBox UI focus suppression without needing a live server.
+            if (OS.GetEnvironment("ATLAS_VERIFY_VERTICAL_SLICE") == "1")
+            {
+                int code = VerifyVerticalSliceProbe.Run(this);
+                GetTree().Quit(code);
+                return;
+            }
+
             _config = Config.Load();
             GD.Print($"[GameRoot] endpoint={_config.ColyseusEndpoint} room={_config.RoomName} map={_config.MapId}");
 
@@ -150,53 +160,8 @@ namespace AtlasWorld.Client.Core
             // held right-arrow so the full input path (send + local intent gate) is exercised.
         }
 
-        // Gated visual probe (ATLAS_DEBUG_SHOT=/path.png): saves the rendered viewport
-        // ~6s in, so map/entity rendering can be verified without screen-capture perms.
-        private void StartDebugShot()
-        {
-            string path = OS.GetEnvironment("ATLAS_DEBUG_SHOT");
-            if (string.IsNullOrEmpty(path))
-                return;
-            double delay = double.TryParse(OS.GetEnvironment("ATLAS_DEBUG_SHOT_DELAY"), out double d) ? d : 6.0;
-            GetTree().CreateTimer(delay).Timeout += () =>
-            {
-                Image img = GetViewport().GetTexture().GetImage();
-                Error err = img.SavePng(path);
-                GD.Print($"[GameRoot] ATLAS_DEBUG_SHOT saved={err == Error.Ok} path={path}");
-            };
-        }
-
-        // Gated switch probe (ATLAS_DEBUG_SWITCHMAP=<mapId>): drives the same path as the
-        // picker's Join button ~8s in, to exercise leave→rejoin headlessly.
-        private void StartDebugSwitchMap()
-        {
-            string mapId = OS.GetEnvironment("ATLAS_DEBUG_SWITCHMAP");
-            if (string.IsNullOrEmpty(mapId))
-                return;
-            GetTree().CreateTimer(8.0).Timeout += () =>
-            {
-                GD.Print($"[GameRoot] ATLAS_DEBUG_SWITCHMAP → {mapId}");
-                _connection.SwitchMap(mapId);
-            };
-        }
-
-        // Minimal decode-health readout: prints entity counts once, a few seconds in.
-        // Re-verifies that the main-thread dispatch pump actually decodes GameState.
-        private void StartBootstrapCountLog()
-        {
-            SceneTreeTimer timer = GetTree().CreateTimer(5.0);
-            timer.Timeout += () =>
-            {
-                Room<GameState>? room = _connection.Room;
-                GameState? st = room?.State;
-                int p = st?.players?.Count ?? -1;
-                int m = st?.mobs?.Count ?? -1;
-                int n = st?.npcs?.Count ?? -1;
-                int pr = st?.projectiles?.Count ?? -1;
-                int z = st?.zoneEffects?.Count ?? -1;
-                GD.Print($"[GameRoot] COUNTS players={p} mobs={m} npcs={n} " +
-                         $"projectiles={pr} zoneEffects={z} rendered={_entities.Count}");
-            };
-        }
+        private void StartBootstrapCountLog() { }
+        private void StartDebugShot() { }
+        private void StartDebugSwitchMap() { }
     }
 }

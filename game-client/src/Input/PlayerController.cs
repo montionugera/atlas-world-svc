@@ -8,10 +8,8 @@ namespace AtlasWorld.Client.Input
     /// <see cref="InputSender.SendMove"/>, send-on-change only (the server holds the last
     /// input until it changes). Sends INTENTS only — never a position.
     ///
-    /// TODO (Phase B2, STRETCH): migrate to Godot InputMap actions so keyboard / gamepad
-    /// / touch resolve to the same intents, and add a touch-only VirtualJoystick.tscn for
-    /// mobile that feeds the same SendMove. Kept as raw physical-key polling here (the
-    /// spike-proven path) to carry the vertical slice without InputMap project config.
+    /// Includes UI Focus Guard: when chat or form input has focus, movement and skill
+    /// triggers are suppressed.
     /// </summary>
     public sealed partial class PlayerController : Node
     {
@@ -45,6 +43,20 @@ namespace AtlasWorld.Client.Input
 
         public override void _Process(double delta)
         {
+            // Gate input: If any UI form input (LineEdit, TextEdit) has focus, suppress gameplay movement
+            var focusOwner = GetViewport()?.GuiGetFocusOwner();
+            if (focusOwner is LineEdit or TextEdit)
+            {
+                if (_hasSent && (_lastVx != 0f || _lastVy != 0f))
+                {
+                    _entities.SetLocalMoveHeld(false);
+                    _lastVx = 0f;
+                    _lastVy = 0f;
+                    _input.SendMove(0f, 0f);
+                }
+                return;
+            }
+
             float vx = 0f, vy = 0f;
             if (AnyPressed(Left)) vx -= 1f;
             if (AnyPressed(Right)) vx += 1f;
@@ -79,6 +91,10 @@ namespace AtlasWorld.Client.Input
         // so each key press fires once. Intents only; the server owns all outcomes.
         public override void _UnhandledInput(InputEvent @event)
         {
+            var focusOwner = GetViewport()?.GuiGetFocusOwner();
+            if (focusOwner is LineEdit or TextEdit)
+                return;
+
             if (@event is not InputEventKey k || !k.Pressed || k.Echo)
                 return;
 

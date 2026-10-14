@@ -1,0 +1,215 @@
+[gd_scene load_steps=4 format=3 uid="uid://moboverlay12345"]
+
+[ext_resource type="Script" path="res://src/UI/Widgets/MobileControlsOverlay.cs" id="1_overlay"]
+[ext_resource type="Script" path="res://src/UI/Widgets/VirtualJoystick.cs" id="2_joy"]
+[ext_resource type="Script" path="res://src/UI/Widgets/SkillButton.cs" id="3_skill"]
+
+[node name="MobileControlsOverlay" type="Control" node_paths=PackedStringArray("Joystick", "AttackBtn", "Skill1Btn", "Skill2Btn", "Skill3Btn", "DashBtn", "PotionHpBtn", "PotionSpBtn", "TargetBtn")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_overlay")
+Joystick = NodePath("Joystick")
+AttackBtn = NodePath("ActionCluster/AttackBtn")
+Skill1Btn = NodePath("ActionCluster/Skill1Btn")
+Skill2Btn = NodePath("ActionCluster/Skill2Btn")
+Skill3Btn = NodePath("ActionCluster/Skill3Btn")
+DashBtn = NodePath("ActionCluster/DashBtn")
+PotionHpBtn = NodePath("ActionCluster/PotionHpBtn")
+PotionSpBtn = NodePath("ActionCluster/PotionSpBtn")
+TargetBtn = NodePath("ActionCluster/TargetBtn")
+
+[node name="Joystick" type="Control" parent="."]
+custom_minimum_size = Vector2(174, 174)
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = -215.0
+offset_right = 214.0
+offset_bottom = -41.0
+grow_vertical = 0
+script = ExtResource("2_joy")
+ClampRadius = 75.0
+
+[node name="ActionCluster" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -340.0
+offset_top = -340.0
+offset_right = -15.0
+offset_bottom = -15.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="AttackBtn" type="Control" parent="ActionCluster"]
+custom_minimum_size = Vector2(115, 115)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -125.0
+offset_top = -125.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("3_skill")
+SkillId = "attack"
+LabelText = "ATK"
+KeybindText = "SPC"
+Radius = 50.0
+
+[node name="DashBtn" type="Control" parent="ActionCluster"]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -225.0
+offset_top = -85.0
+offset_right = -145.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("3_skill")
+SkillId = "dash"
+LabelText = "DASH"
+KeybindText = "SHFT"
+Radius = 34.0
+
+[node name="Skill1Btn" type="Control" parent="ActionCluster"]
+custom_minimum_size = Vector2(82, 82)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -245.0
+offset_top = -185.0
+offset_right = -163.0
+offset_bottom = -103.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("3_skill")
+SkillId = "skill_1"
+LabelText = "METEOR"
+KeybindText = "1 / Q"
+Radius = 35.0
+
+[node name="Skill2Btn" type="Control" parent="ActionCluster"]
+custom_minimum_size = Vector2(82, 82)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -185.0
+offset_top = -265.0
+offset_right = -103.0
+offset_bottom = -183.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("3_skill")
+SkillId = "skill_2"
+LabelText = "BLIZZARD"
+KeybindText = "2 / E"
+Radius = 35.0
+
+[node name="Skill3Btn" type="Control" parent="ActionCluster"]
+custom_minimum_size = Vector2(76, 76)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -95.0
+offset_top = -275.0
+offset_right = -19.0
+offset_bottom = -199.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("3_skill")
+SkillId = "skill_3"
+LabelText = "SHIELD"
+KeybindText = "3 / R"
+Radius = 32.0
+
+[node name="PotionHpBtn" type="Control" parent="ActionCluster"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -315.0
+offset_top = -140.0
+offset_right = -257.0
+offset_bottom = -82.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("3_skill")
+SkillId = "potion_hp"
+LabelText = "HP POT"
+KeybindText = "F1"
+Radius = 24.0
+StackCount = 99
+
+[node name="PotionSpBtn" type="Control" parent="ActionCluster"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -315.0
+offset_top = -75.0
+offset_right = -257.0
+offset_bottom = -17.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("3_skill")
+SkillId = "potion_sp"
+LabelText = "SP POT"
+KeybindText = "F2"
+Radius = 24.0
+StackCount = 50
+
+[node name="TargetBtn" type="Control" parent="ActionCluster"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -315.0
+offset_top = -215.0
+offset_right = -257.0
+offset_bottom = -157.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("3_skill")
+SkillId = "target_switch"
+LabelText = "TARGET"
+KeybindText = "TAB"
+Radius = 24.0

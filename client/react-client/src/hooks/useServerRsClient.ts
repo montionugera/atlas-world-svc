@@ -337,6 +337,7 @@ export const useServerRsClient = (
                     heading = Math.atan2(entity.vy, entity.vx);
                   } else if (
                     isLocalPlayer &&
+                    isAttacking &&
                     (aimRef.current.x !== 0 || aimRef.current.y !== 0)
                   ) {
                     const dx = aimRef.current.x - entity.x;
@@ -344,6 +345,8 @@ export const useServerRsClient = (
                     if (dx * dx + dy * dy > 1) {
                       heading = Math.atan2(dy, dx);
                     }
+                  } else {
+                    heading = existing?.heading;
                   }
 
                   const updated: Player = {

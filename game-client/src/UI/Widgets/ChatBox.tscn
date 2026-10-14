@@ -1,0 +1,125 @@
+[gd_scene load_steps=2 format=3 uid="uid://cchatboxwidget123"]
+
+[ext_resource type="Script" path="res://src/UI/Widgets/ChatBox.cs" id="1_chat"]
+
+[node name="ChatBox" type="Control" node_paths=PackedStringArray("ExpandedPanel", "CollapsedTicker", "TickerLabel", "ExpandButton", "CollapseButton", "MessagesLabel", "InputField", "SendButton")]
+custom_minimum_size = Vector2(360, 38)
+layout_mode = 3
+anchors_preset = 2
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 230.0
+offset_top = -65.0
+offset_right = 590.0
+offset_bottom = -27.0
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("1_chat")
+ExpandedPanel = NodePath("ExpandedPanel")
+CollapsedTicker = NodePath("CollapsedTicker")
+TickerLabel = NodePath("CollapsedTicker/TickerContent/TickerLabel")
+ExpandButton = NodePath("CollapsedTicker/TickerContent/ExpandBtn")
+CollapseButton = NodePath("ExpandedPanel/VBox/Header/CloseBtn")
+MessagesLabel = NodePath("ExpandedPanel/VBox/Scroll/Messages")
+InputField = NodePath("ExpandedPanel/VBox/InputRow/LineEdit")
+SendButton = NodePath("ExpandedPanel/VBox/InputRow/SendButton")
+
+[node name="CollapsedTicker" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(360, 36)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = "ChatTicker"
+
+[node name="TickerContent" type="HBoxContainer" parent="CollapsedTicker"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ChannelTag" type="Label" parent="CollapsedTicker/TickerContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+text = "[World]"
+vertical_alignment = 1
+
+[node name="TickerLabel" type="Label" parent="CollapsedTicker/TickerContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "Atlas World Mobile MMORPG Ready."
+clip_text = true
+
+[node name="ExpandBtn" type="Button" parent="CollapsedTicker/TickerContent"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+theme_type_variation = "GhostButton"
+theme_override_font_sizes/font_size = 11
+text = "▲"
+flat = true
+
+[node name="ExpandedPanel" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(440, 260)
+layout_mode = 1
+anchors_preset = 2
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = -270.0
+offset_right = 440.0
+offset_bottom = -10.0
+grow_vertical = 0
+theme_type_variation = "ModalDialog"
+
+[node name="VBox" type="VBoxContainer" parent="ExpandedPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Header" type="HBoxContainer" parent="ExpandedPanel/VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="ExpandedPanel/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.88, 0.45, 1)
+theme_override_font_sizes/font_size = 13
+text = "Chat Channel: [World / Freja]"
+
+[node name="CloseBtn" type="Button" parent="ExpandedPanel/VBox/Header"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+theme_type_variation = "GhostButton"
+text = "✕"
+
+[node name="Scroll" type="ScrollContainer" parent="ExpandedPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Messages" type="RichTextLabel" parent="ExpandedPanel/VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+
+[node name="InputRow" type="HBoxContainer" parent="ExpandedPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LineEdit" type="LineEdit" parent="ExpandedPanel/VBox/InputRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Type a message in [World]..."
+
+[node name="SendButton" type="Button" parent="ExpandedPanel/VBox/InputRow"]
+custom_minimum_size = Vector2(64, 32)
+layout_mode = 2
+theme_type_variation = "SolidButton"
+text = "Send"

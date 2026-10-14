@@ -1,11 +1,11 @@
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    CastingState, Health, PlayerAvatar, PlayerInputState, StatusEffects, Velocity,
+    CastingState, DashState, Health, PlayerAvatar, PlayerInputState, StatusEffects, Velocity,
 };
 use bevy_ecs::prelude::*;
 
 /// System that applies player movement inputs to velocities,
-/// respecting avatar speed, status effects (stun, freeze), and active casting.
+/// respecting avatar speed, status effects (stun, freeze), active casting, and dash impulses.
 #[allow(clippy::type_complexity)]
 pub fn player_input_system(
     clock: Res<SimClock>,
@@ -16,15 +16,20 @@ pub fn player_input_system(
         Option<&StatusEffects>,
         Option<&CastingState>,
         Option<&Health>,
+        Option<&mut DashState>,
     )>,
 ) {
     let current_time = clock.current_time_seconds();
+    let dt = clock.delta_seconds();
 
-    for (avatar_opt, input, mut vel, status_opt, casting_opt, health) in &mut query {
+    for (avatar_opt, input, mut vel, status_opt, casting_opt, health, mut dash_opt) in &mut query {
         // 0. The dead do not move.
         if health.is_some_and(|h| !h.is_alive) {
             vel.vx = 0.0;
             vel.vy = 0.0;
+            if let Some(ref mut dash) = dash_opt {
+                dash.remaining_sec = 0.0;
+            }
             continue;
         }
 
@@ -33,6 +38,9 @@ pub fn player_input_system(
             if status.is_stunned() {
                 vel.vx = 0.0;
                 vel.vy = 0.0;
+                if let Some(ref mut dash) = dash_opt {
+                    dash.remaining_sec = 0.0;
+                }
                 continue;
             }
         }
@@ -42,11 +50,31 @@ pub fn player_input_system(
             if casting.is_casting(current_time) {
                 vel.vx = 0.0;
                 vel.vy = 0.0;
+                if let Some(ref mut dash) = dash_opt {
+                    dash.remaining_sec = 0.0;
+                }
                 continue;
             }
         }
 
-        // 3. Process movement input (respecting avatar speed and freeze multiplier)
+        // 3. Check DashState: active dash impulse overrides normal movement
+        if let Some(ref mut dash) = dash_opt {
+            if dash.is_dashing() {
+                dash.remaining_sec -= dt;
+                if dash.remaining_sec > 0.0 {
+                    let base_speed = avatar_opt.map_or(20.0, |a| a.speed);
+                    let dash_progress = (dash.remaining_sec / 0.22).clamp(0.0, 1.0);
+                    let current_speed = base_speed + (dash.speed - base_speed) * dash_progress;
+                    vel.vx = dash.dir_x * current_speed;
+                    vel.vy = dash.dir_y * current_speed;
+                    continue;
+                } else {
+                    dash.remaining_sec = 0.0;
+                }
+            }
+        }
+
+        // 4. Process movement input (respecting avatar speed and freeze multiplier)
         let base_speed = avatar_opt.map_or(20.0, |a| a.speed);
         let speed_mult = status_opt.map_or(1.0, |s| s.speed_multiplier());
         let speed = base_speed * speed_mult;
@@ -214,5 +242,36 @@ mod tests {
         let vel = world.get::<Velocity>(entity).unwrap();
         assert_eq!(vel.vx, 0.0);
         assert_eq!(vel.vy, 0.0);
+    }
+
+    #[test]
+    fn test_dash_overrides_movement_and_decelerates() {
+        let mut world = World::new();
+        let clock = SimClock::new(50); // dt = 0.05s
+        world.insert_resource(clock);
+
+        let mut dash = DashState::new();
+        dash.remaining_sec = 0.22;
+        dash.dir_x = 1.0;
+        dash.dir_y = 0.0;
+        dash.speed = 450.0;
+
+        let entity = world
+            .spawn((
+                PlayerAvatar::new("p1", 200.0),
+                PlayerInputState::new(0.0, 1.0, false, 0), // input moving down
+                Velocity::zero(),
+                dash,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(player_input_system);
+
+        // Tick 1 (dt = 0.05s): remaining = 0.17s. Dash overrides downward movement with +X dash
+        schedule.run(&mut world);
+        let vel = world.get::<Velocity>(entity).unwrap();
+        assert!(vel.vx > 300.0, "expected dash speed > 300, got {}", vel.vx);
+        assert_eq!(vel.vy, 0.0, "dash overrides WASD input during dash window");
     }
 }

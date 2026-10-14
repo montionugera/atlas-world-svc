@@ -9,6 +9,9 @@ namespace AtlasWorld.Client.Core
     /// </summary>
     public sealed class Config
     {
+        /// <summary>Rust ECS server-rs WebSocket endpoint (FlatBuffers binary protocol).</summary>
+        public string ServerRsEndpoint { get; private init; } = "ws://192.168.1.170:2567/ws?token=dev-token:mont-ipad";
+
         /// <summary>Colyseus WebSocket endpoint. Default targets the local 0.17 server.</summary>
         public string ColyseusEndpoint { get; private init; } = "ws://127.0.0.1:2568";
 
@@ -43,6 +46,7 @@ namespace AtlasWorld.Client.Core
 
             return new Config
             {
+                ServerRsEndpoint = Env("ATLAS_SERVER_RS_ENDPOINT", "ws://192.168.1.170:2567/ws?token=dev-token:mont-ipad"),
                 ColyseusEndpoint = Env("ATLAS_COLYSEUS_ENDPOINT", "ws://127.0.0.1:2568"),
                 RoomName = Env("ATLAS_ROOM_NAME", "game_room"),
                 MapId = Env("ATLAS_MAP_ID", "map-for-play"),

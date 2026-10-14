@@ -427,6 +427,24 @@ impl CastingState {
 }
 
 #[derive(Component, Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+pub struct DashState {
+    pub remaining_sec: f32,
+    pub dir_x: f32,
+    pub dir_y: f32,
+    pub speed: f32,
+}
+
+impl DashState {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn is_dashing(&self) -> bool {
+        self.remaining_sec > 0.0
+    }
+}
+
+#[derive(Component, Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct StatusEffects {
     pub freeze_timer: f32,
     pub freeze_speed_multiplier: f32,
@@ -540,19 +558,46 @@ pub struct Projectile {
     pub aoe_radius: f32,
     #[serde(default)]
     pub skill_id: Option<String>,
+    #[serde(default)]
+    pub detonated: bool,
 }
 
-#[derive(Component, Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PlayerInputState {
     pub move_x: f32,
     pub move_y: f32,
     pub attack: bool,
+    #[serde(default)]
+    pub attack_held: bool,
     pub skill_slot: u8,
     pub target_id: u32,
     pub client_tick: u32,
     #[serde(with = "opt_entity_serde", default)]
     pub target_entity: Option<Entity>,
     pub target_pos: Option<Position>,
+    #[serde(default = "default_facing")]
+    pub last_facing: (f32, f32),
+}
+
+fn default_facing() -> (f32, f32) {
+    (1.0, 0.0)
+}
+
+impl Default for PlayerInputState {
+    fn default() -> Self {
+        Self {
+            move_x: 0.0,
+            move_y: 0.0,
+            attack: false,
+            attack_held: false,
+            skill_slot: 0,
+            target_id: 0,
+            client_tick: 0,
+            target_entity: None,
+            target_pos: None,
+            last_facing: (1.0, 0.0),
+        }
+    }
 }
 
 impl PlayerInputState {
@@ -561,11 +606,13 @@ impl PlayerInputState {
             move_x,
             move_y,
             attack,
+            attack_held: attack,
             skill_slot,
             target_id: 0,
             client_tick: 0,
             target_entity: None,
             target_pos: None,
+            last_facing: (1.0, 0.0),
         }
     }
 
@@ -623,6 +670,16 @@ mod tests {
     }
 
     #[test]
+    fn test_dash_state() {
+        let mut dash = DashState::new();
+        assert!(!dash.is_dashing());
+        dash.remaining_sec = 0.2;
+        dash.speed = 450.0;
+        dash.dir_x = 1.0;
+        assert!(dash.is_dashing());
+    }
+
+    #[test]
     fn test_status_effects() {
         let mut status = StatusEffects::default();
         assert!(!status.is_stunned());
@@ -654,6 +711,7 @@ mod tests {
             is_player_projectile: true,
             aoe_radius: 60.0,
             skill_id: Some("skill_1".to_string()),
+            detonated: false,
         };
         assert_eq!(proj.damage, 25.0);
         assert_eq!(proj.element, Element::Fire);
