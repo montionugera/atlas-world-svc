@@ -18,22 +18,27 @@ namespace AtlasWorld.Client.UI.Widgets
         [Export] public long MaxHp { get; set; } = 1500000;
         [Export] public int BarSegments { get; set; } = 4;
 
-        private ProgressBar _hpBar = null!;
-        private Label _nameLabel = null!;
-        private Label _hpLabel = null!;
-        private Label _segmentLabel = null!;
-        private Control _avatarCircle = null!;
+        private ProgressBar? _hpBar;
+        private Label? _nameLabel;
+        private Label? _hpLabel;
+        private Label? _segmentLabel;
+        private Control? _avatarCircle;
         private float _hitFlash = 0f;
 
         public override void _Ready()
         {
             CustomMinimumSize = new Vector2(380, 56);
 
-            _hpBar = GetNodeOrNull<ProgressBar>("Container/BarBox/HpBar")!;
-            _nameLabel = GetNodeOrNull<Label>("Container/BarBox/InfoRow/NameLabel")!;
-            _hpLabel = GetNodeOrNull<Label>("Container/BarBox/HpBar/HpLabel")!;
-            _segmentLabel = GetNodeOrNull<Label>("Container/BarBox/InfoRow/SegmentLabel")!;
-            _avatarCircle = GetNodeOrNull<Control>("Container/AvatarFrame")!;
+            _hpBar = GetNodeOrNull<ProgressBar>("Container/HBox/BarBox/HpBar")
+                     ?? GetNodeOrNull<ProgressBar>("Container/BarBox/HpBar");
+            _nameLabel = GetNodeOrNull<Label>("Container/HBox/BarBox/InfoRow/NameLabel")
+                         ?? GetNodeOrNull<Label>("Container/BarBox/InfoRow/NameLabel");
+            _hpLabel = GetNodeOrNull<Label>("Container/HBox/BarBox/HpBar/HpLabel")
+                       ?? GetNodeOrNull<Label>("Container/BarBox/HpBar/HpLabel");
+            _segmentLabel = GetNodeOrNull<Label>("Container/HBox/BarBox/InfoRow/SegmentLabel")
+                            ?? GetNodeOrNull<Label>("Container/BarBox/InfoRow/SegmentLabel");
+            _avatarCircle = GetNodeOrNull<Control>("Container/HBox/AvatarFrame")
+                            ?? GetNodeOrNull<Control>("Container/AvatarFrame");
 
             UpdateDisplay();
         }
@@ -59,8 +64,8 @@ namespace AtlasWorld.Client.UI.Widgets
 
             if (_hpBar != null)
             {
-                _hpBar.MaxValue = MaxHp;
-                _hpBar.Value = CurrentHp;
+                _hpBar.MaxValue = Math.Max(1, MaxHp);
+                _hpBar.Value = Math.Clamp(CurrentHp, 0, MaxHp);
             }
 
             if (_hpLabel != null)

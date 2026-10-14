@@ -8,30 +8,9 @@ namespace AtlasWorld.Client.World
     /// Headless self-check for Task 4 — threading the specific server type id into the
     /// <see cref="AssetRegistry"/> when a view is spawned. No xunit/nunit harness exists in
     /// this client, so verification follows the project's env-gated probe pattern:
-    /// <c>GameRoot</c> runs this when <c>ATLAS_VERIFY_ENTITYVIEW=1</c>, it exercises the
-    /// wiring against the committed (empty) manifest, prints per-case <c>PASS</c>/<c>FAIL</c>
+    /// <c>GameRoot</c> / <c>VerticalSliceRoot</c> runs this when <c>ATLAS_VERIFY_ENTITYVIEW=1</c>,
+    /// exercises the wiring against the committed manifest, prints per-case <c>PASS</c>/<c>FAIL</c>
     /// lines and a verdict, and returns a process exit code (0 = all pass, 1 = any fail).
-    ///
-    /// Proves, without a live server: (1) the key mapping from a live entity to its registry
-    /// key is correct for all five kinds; (2) spawning through the real <see cref="EntityManager"/>
-    /// resolves the visual node via <c>AssetRegistry.Resolve(typeId)</c> — honoring the real,
-    /// committed manifest, so a mapped character key yields the loaded seed glTF and a
-    /// still-unmapped key (Stage 0.5: projectiles/zones) yields the capsule tier — and never
-    /// throws; (3) each view gets its OWN body material, so tinting one entity does not bleed
-    /// into a sibling that instanced the same cached capsule scene.
-    ///
-    /// Task 7 note: the committed manifest now maps <c>player</c>, <c>npc</c>, and all six
-    /// <c>mob:*</c> keys to real CC0 seed characters. Cases that need to exercise the
-    /// CAPSULE fallback path deliberately use type ids the manifest does NOT cover (still
-    /// the right kind, just an id that was never registered) so that coverage of the
-    /// "unknown/unmapped id never breaks" contract survives the seed set landing.
-    ///
-    /// Task 11 note: the committed manifest now also maps all 7 <c>projectile:*</c> keys
-    /// (CC0 Quaternius weapon glTF) and all 4 <c>zone:*</c> keys (generated emissive discs).
-    /// <c>projectile:arrow</c> and <c>zone:freeze</c> — previously this probe's stand-ins for
-    /// "still-unmapped" — now resolve to the Seed tier like the Task 7 characters; the
-    /// CAPSULE-fallback cases moved to freshly-unregistered probe-only ids so the
-    /// "unknown/unmapped id never breaks" contract keeps being exercised.
     /// </summary>
     public static class EntityViewVerify
     {
@@ -57,10 +36,9 @@ namespace AtlasWorld.Client.World
                 return 1;
             }
 
-            // Mapped keys (Task 7 characters + Task 11 projectiles/zones) resolve to the Seed
-            // tier — never the capsule — proving the manifest is actually wired through, not
-            // just present.
-            failures += Report("mob:spear_thrower (mapped) → seed tier", ResolvesToSeed(reg, EntityKeys.Mob("spear_thrower")));
+            // Mapped keys resolve to a real glTF tier (Seed or Bespoke) — never the capsule —
+            // proving the manifest is actually wired through, not just present.
+            failures += Report("mob:spear_thrower (mapped) → real glTF tier", ResolvesToSeed(reg, EntityKeys.Mob("spear_thrower")));
             failures += Report("projectile:arrow (mapped) → seed tier", ResolvesToSeed(reg, EntityKeys.Projectile("arrow")));
             failures += Report("zone:freeze (mapped) → seed tier", ResolvesToSeed(reg, EntityKeys.Zone("freeze")));
 
@@ -70,11 +48,7 @@ namespace AtlasWorld.Client.World
             failures += Report("projectile key (unmapped) → capsule tier", ResolvesToCapsule(reg, EntityKeys.Projectile("unmapped_probe_only")));
             failures += Report("zone key (unmapped) → capsule tier", ResolvesToCapsule(reg, EntityKeys.Zone("unmapped_probe_only")));
 
-            // Part 2 — spawn through the real EntityManager. player/npc/mob:spear_thrower
-            // (Task 7) and projectile:arrow/zone:freeze (Task 11) are now mapped to real seed
-            // glTF scenes: confirm each spawns the LOADED scene, not the capsule.
-            // Deliberately-unmapped probe-only ids for each kind confirm the capsule fallback
-            // still works.
+            // Part 2 — spawn through the real EntityManager.
             var mgr = new EntityManager { Name = "VerifyEntityManager" };
             host.AddChild(mgr);
 
@@ -89,8 +63,6 @@ namespace AtlasWorld.Client.World
 
             // Part 3 — per-entity material isolation: two mobs, tinted to different teams, must
             // end with DIFFERENT body colors (a shared cached material would make them equal).
-            // Uses type ids OUTSIDE the manifest on purpose — seed/bespoke scenes may not carry
-            // a "Body" node at all, so tinting them is a documented no-op (not what this proves).
             mgr.Spawn("ma", EntityKind.Mob, EntityKeys.Mob("aggressive_capsule_probe"));
             Node3D? rootA = LastSpawned(mgr);
             mgr.Spawn("mb", EntityKind.Mob, EntityKeys.Mob("balanced_capsule_probe"));
@@ -132,17 +104,9 @@ namespace AtlasWorld.Client.World
         private static bool ResolvesToSeed(AssetRegistry reg, string typeId)
         {
             PackedScene scene = reg.Resolve(typeId, out ResolveTier tier);
-            return scene != null && tier == ResolveTier.Seed;
+            return scene != null && tier is ResolveTier.Seed or ResolveTier.Bespoke;
         }
 
-        /// <summary>
-        /// Spawn a mapped character key and confirm the view root is the LOADED seed glTF
-        /// scene, not our procedural capsule. Doesn't assume anything about the imported
-        /// model's internal node names (no-magic) — instead it proves the negative: the
-        /// spawned root carries at least one mesh, but none of them is the "Body" node with
-        /// one of our own procedural primitive mesh types, which is the exact, exclusive
-        /// signature <see cref="EntityVisuals.CreateView"/> stamps onto every capsule tier.
-        /// </summary>
         private static int SpawnSeedCase(EntityManager mgr, string id, EntityKind kind, string typeId, string label)
         {
             mgr.Spawn(id, kind, typeId);

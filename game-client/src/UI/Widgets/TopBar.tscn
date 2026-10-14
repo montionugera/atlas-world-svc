@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://dk1gqjwkmlh7d" path="res://assets/art/maps/wealdmarch.png" id="2_minimap_tex"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_btn"]
-bg_color = Color(0.08, 0.11, 0.17, 0.92)
+bg_color = Color(0.08, 0.11, 0.17, 0.94)
 corner_radius_top_left = 22
 corner_radius_top_right = 22
 corner_radius_bottom_right = 22
@@ -14,7 +14,7 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.88, 0.74, 0.36, 0.95)
-shadow_color = Color(0, 0, 0, 0.4)
+shadow_color = Color(0, 0, 0, 0.45)
 shadow_size = 3
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_btn_pressed"]
@@ -89,47 +89,47 @@ alignment = 2
 [node name="ButtonsRow" type="HBoxContainer" parent="HBox"]
 layout_mode = 2
 size_flags_vertical = 4
-theme_override_constants/separation = 6
+theme_override_constants/separation = 8
 
 [node name="ShopButton" type="Button" parent="HBox/ButtonsRow"]
-custom_minimum_size = Vector2(44, 44)
+custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBox_btn")
+theme_override_styles/hover = SubResource("StyleBox_btn_pressed")
 theme_override_styles/pressed = SubResource("StyleBox_btn_pressed")
-theme_override_font_sizes/font_size = 18
-text = "🏪"
+text = ""
 
 [node name="SkillsButton" type="Button" parent="HBox/ButtonsRow"]
-custom_minimum_size = Vector2(44, 44)
+custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBox_btn")
+theme_override_styles/hover = SubResource("StyleBox_btn_pressed")
 theme_override_styles/pressed = SubResource("StyleBox_btn_pressed")
-theme_override_font_sizes/font_size = 18
-text = "⚔"
+text = ""
 
 [node name="QuestButton" type="Button" parent="HBox/ButtonsRow"]
-custom_minimum_size = Vector2(44, 44)
+custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBox_btn")
+theme_override_styles/hover = SubResource("StyleBox_btn_pressed")
 theme_override_styles/pressed = SubResource("StyleBox_btn_pressed")
-theme_override_font_sizes/font_size = 18
-text = "📜"
+text = ""
 
 [node name="BagButton" type="Button" parent="HBox/ButtonsRow"]
-custom_minimum_size = Vector2(44, 44)
+custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBox_btn")
+theme_override_styles/hover = SubResource("StyleBox_btn_pressed")
 theme_override_styles/pressed = SubResource("StyleBox_btn_pressed")
-theme_override_font_sizes/font_size = 18
-text = "🎒"
+text = ""
 
 [node name="WardrobeButton" type="Button" parent="HBox/ButtonsRow"]
-custom_minimum_size = Vector2(44, 44)
+custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBox_btn")
+theme_override_styles/hover = SubResource("StyleBox_btn_pressed")
 theme_override_styles/pressed = SubResource("StyleBox_btn_pressed")
-theme_override_font_sizes/font_size = 18
-text = "👗"
+text = ""
 
 [node name="MinimapBox" type="VBoxContainer" parent="HBox"]
 custom_minimum_size = Vector2(88, 88)

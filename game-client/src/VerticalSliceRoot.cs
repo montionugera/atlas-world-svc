@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using Atlas.Protocol;
 using AtlasWorld.Client.Core;
 using AtlasWorld.Client.Content;
 using AtlasWorld.Client.Audio;
@@ -16,15 +17,19 @@ namespace AtlasWorld.Client
     /// <summary>
     /// Root controller for the Godot 4 + server-rs (Rust ECS) Vertical Slice.
     /// Unified with the internal client library:
-    /// 1. Config.Load() & ServerRsConnection (WebSocket + FlatBuffers)
-    /// 2. AnimationController + AssetRegistry loop overrides + AudioRegistry 3D SFX
-    /// 3. Joymify Design System + MetaShell (Character, Inventory, Skills, Quests, Loadout)
-    /// 4. Split-screen WardrobeModal with real 3D Weapon GLB attachment
-    /// 5. 3D World Monsters (MVP Boss Drake & Elite Bramble Stalker) with 3D overhead nameplates, HP bars & target ring
-    /// 6. Responsive iPad mini safe-area adaptation, touch camera orbit/zoom, and desktop keyboard navigation
+    /// 1. Config.Load() &amp; ServerRsConnection (WebSocket + FlatBuffers)
+    /// 2. EntityManager &amp; SnapshotInterpolator (live 20 Hz EntityDelta + GameEvent ingestion)
+    /// 3. AnimationController + AssetRegistry loop overrides + AudioRegistry 3D SFX
+    /// 4. Joymify Design System + MetaShell (Character, Inventory, Skills, Quests, Loadout)
+    /// 5. Split-screen WardrobeModal with real 3D Weapon GLB attachment
+    /// 6. 3D World Monsters (showcase + live server-rs mobs/bots/projectiles) with 3D overhead nameplates, HP bars &amp; target ring
+    /// 7. Responsive iPad mini safe-area adaptation, touch camera orbit/zoom, and desktop keyboard navigation
     /// </summary>
     public partial class VerticalSliceRoot : Node3D
     {
+        public const float ServerCoordScale = 0.1f;
+        public static readonly Vector2 ServerArenaCenter = new(500f, 500f);
+
         [Export] public ServerRsConnection Connection = null!;
         [Export] public Node3D PlayerAvatar = null!;
         [Export] public Camera3D MainCamera = null!;
@@ -39,6 +44,7 @@ namespace AtlasWorld.Client
         [Export] public ExpBar PlayerExpBar = null!;
 
         private Config _config = null!;
+        private EntityManager _entityManager = null!;
         private AnimationController? _playerAnimController;
         private AnimationPlayer? _animPlayer;
         private MetaShell? _metaShell;
@@ -47,6 +53,7 @@ namespace AtlasWorld.Client
         private float _playerSpeed = 6.5f;
         private float _dashDuration = 0f;
         private float _attackAnimHoldSec = 0f;
+        private bool _wasMovingLastFrame = false;
 
         // Camera orbit & zoom state
         private float _cameraYaw = 0f;
@@ -68,17 +75,59 @@ namespace AtlasWorld.Client
         }
 
         private readonly List<WorldMobEntry> _worldMobs = new();
+        private Node3D? _worldMobsContainer;
         private int _selectedMobIndex = 0;
+        private uint _selectedServerTargetWireId = 0;
+        private string _selectedServerTargetId = "";
         private MeshInstance3D? _targetRingMesh;
         private float _pulseTime = 0f;
 
+        public EntityManager Entities => _entityManager;
+
         public override void _Ready()
         {
+            // 1. Initialize EntityManager + SnapshotInterpolator for live server-rs entities
+            _entityManager = new EntityManager
+            {
+                Name = "EntityManager",
+                SuppressOwnPlayerView = true
+            };
+            AddChild(_entityManager);
+
+            if (OS.GetEnvironment("ATLAS_VERIFY_VERTICAL_SLICE") == "1")
+            {
+                SetPhysicsProcess(false);
+                int code = VerifyVerticalSliceProbe.Run(this);
+                GetTree().Quit(code);
+                return;
+            }
+            if (OS.GetEnvironment("ATLAS_VERIFY_ENTITYVIEW") == "1")
+            {
+                SetPhysicsProcess(false);
+                int code = EntityViewVerify.Run(this);
+                GetTree().Quit(code);
+                return;
+            }
+            if (OS.GetEnvironment("ATLAS_VERIFY_ANIM") == "1")
+            {
+                SetPhysicsProcess(false);
+                int code = AnimationVerify.Run(this);
+                GetTree().Quit(code);
+                return;
+            }
+            if (OS.GetEnvironment("ATLAS_VERIFY_FACING") == "1")
+            {
+                SetPhysicsProcess(false);
+                int code = FacingVerify.Run(this);
+                GetTree().Quit(code);
+                return;
+            }
+
             GD.Print("[VerticalSliceRoot] Initializing Unified Godot 4 Mobile MMORPG Slice...");
 
             _config = Config.Load();
 
-            // 1. Initialize Player Avatar & AnimationController from internal library
+            // 2. Initialize Player Avatar & AnimationController from internal library
             if (PlayerAvatar != null)
             {
                 // player_knight.glb faces +Z in model space; rotating Y by Pi faces -Z (away from camera into the world)
@@ -117,10 +166,10 @@ namespace AtlasWorld.Client
                 }
             }
 
-            // 2. Spawn 3D World Monsters with Overhead Nameplates, HP Bars & Target Ring
+            // 3. Spawn 3D World Monsters with Overhead Nameplates, HP Bars & Target Ring
             SpawnWorldMonsters();
 
-            // 3. Apply Joymify Design System Theme to all UI controls & instantiate MetaShell
+            // 4. Apply Joymify Design System Theme to all UI controls & instantiate MetaShell
             var joymifyTheme = ThemeBuilder.Build();
             var uiNode = GetNodeOrNull("UI");
             if (uiNode != null)
@@ -141,15 +190,17 @@ namespace AtlasWorld.Client
             ApplyMobileSafeArea();
             GetViewport().SizeChanged += ApplyMobileSafeArea;
 
-            // 4. Connect to server-rs via Config endpoint
+            // 5. Connect to server-rs via Config endpoint and wire RawSnapshotReceived -> EntityManager
             if (Connection != null)
             {
                 Connection.Connected += OnServerConnected;
                 Connection.Disconnected += OnServerDisconnected;
                 Connection.SnapshotReceived += OnSnapshotReceived;
+                Connection.RawSnapshotReceived += OnRawSnapshotReceived;
 
                 UpdateStatusText($"[color=#{Design.Palette.Info.ToHtml(false)}]● Server: Connecting...[/color]");
                 Connection.ConnectToHost(_config.ServerRsEndpoint);
+                _entityManager.SetOwnPlayer(Connection.LocalWireId.ToString());
             }
 
             if (ChatWidget != null)
@@ -158,7 +209,7 @@ namespace AtlasWorld.Client
                 ChatWidget.AppendSystemMessage("Atlas World Mobile MMORPG Ready. WASD/Joystick to move, Drag right screen to orbit camera.");
             }
 
-            // 5. Wire Mobile Controls Overlay + Cooldown visuals
+            // 6. Wire Mobile Controls Overlay + Cooldown visuals
             if (MobileControls != null)
             {
                 MobileControls.MoveIntentChanged += dir =>
@@ -206,7 +257,7 @@ namespace AtlasWorld.Client
                 };
             }
 
-            // 6. Wire TopBar to MetaShell & WardrobeModal
+            // 7. Wire TopBar to MetaShell & WardrobeModal
             if (NavigationTopBar != null)
             {
                 NavigationTopBar.BagPressed += () => _metaShell?.OpenTab("Inventory");
@@ -216,7 +267,7 @@ namespace AtlasWorld.Client
                 NavigationTopBar.ShopPressed += () => _metaShell?.OpenTab("Loadout");
             }
 
-            // 7. Wire Wardrobe 3D Weapon Attachment to Live PlayerAvatar
+            // 8. Wire Wardrobe 3D Weapon Attachment to Live PlayerAvatar
             if (EquipmentWardrobeModal != null)
             {
                 EquipmentWardrobeModal.ItemEquipped += (slot, itemId) =>
@@ -272,6 +323,19 @@ namespace AtlasWorld.Client
                 PlayerStatusFrame.OffsetRight = leftInset + 320f;
             }
 
+            var questTracker = GetNodeOrNull<Control>("UI/HUD/QuestTracker");
+            if (questTracker != null)
+            {
+                questTracker.OffsetLeft = leftInset;
+                questTracker.OffsetRight = leftInset + 234f;
+            }
+
+            if (StatusLabel != null)
+            {
+                StatusLabel.OffsetLeft = leftInset;
+                StatusLabel.OffsetRight = leftInset + 260f;
+            }
+
             if (MobileControls?.Joystick != null)
             {
                 MobileControls.Joystick.OffsetLeft = leftInset + 26f;
@@ -288,8 +352,8 @@ namespace AtlasWorld.Client
 
         private void SpawnWorldMonsters()
         {
-            var mobsContainer = new Node3D { Name = "WorldMonsters" };
-            AddChild(mobsContainer);
+            _worldMobsContainer = new Node3D { Name = "WorldMonsters" };
+            AddChild(_worldMobsContainer);
 
             // Golden pulsing target selection ring
             var ringCyl = new CylinderMesh
@@ -316,7 +380,7 @@ namespace AtlasWorld.Client
 
             // 1. MVP Boss: Lv.60 Drake (using orc_brute.glb)
             SpawnSingleMonster(
-                mobsContainer,
+                _worldMobsContainer,
                 assetKey: "mob:aggressive",
                 fallbackPath: "res://assets/characters/orc_brute.glb",
                 name: "Lv.60 Drake",
@@ -332,7 +396,7 @@ namespace AtlasWorld.Client
 
             // 2. Elite Mob: Lv.58 Bramble Stalker (using mob_spear_thrower.glb)
             SpawnSingleMonster(
-                mobsContainer,
+                _worldMobsContainer,
                 assetKey: "mob:spear_thrower",
                 fallbackPath: "res://assets/characters/mob_spear_thrower.glb",
                 name: "Lv.58 Bramble Stalker",
@@ -366,8 +430,11 @@ namespace AtlasWorld.Client
             Node3D? mobRoot = null;
             if (AssetRegistry.Instance != null)
             {
-                var packed = AssetRegistry.Instance.Resolve(assetKey, out _);
-                mobRoot = packed?.Instantiate() as Node3D;
+                var packed = AssetRegistry.Instance.Resolve(assetKey, out ResolveTier tier);
+                if (tier != ResolveTier.Capsule)
+                {
+                    mobRoot = packed?.Instantiate() as Node3D;
+                }
             }
             if (mobRoot == null && ResourceLoader.Exists(fallbackPath))
             {
@@ -411,6 +478,7 @@ namespace AtlasWorld.Client
                 {
                     ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
                     BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
+                    BillboardKeepScale = true,
                     AlbedoColor = new Color(0.08f, 0.08f, 0.12f, 0.9f)
                 }
             };
@@ -424,6 +492,7 @@ namespace AtlasWorld.Client
                 {
                     ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
                     BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
+                    BillboardKeepScale = true,
                     AlbedoColor = new Color(0.92f, 0.18f, 0.18f, 1f)
                 }
             };
@@ -443,13 +512,61 @@ namespace AtlasWorld.Client
             });
         }
 
+        private Node3D? GetActiveTargetRoot()
+        {
+            if (_entityManager != null &&
+                !string.IsNullOrEmpty(_selectedServerTargetId) &&
+                _entityManager.TryGetEntityView(_selectedServerTargetId, out EntityView? serverView) &&
+                serverView != null &&
+                serverView.Alive &&
+                GodotObject.IsInstanceValid(serverView.Root))
+            {
+                return serverView.Root;
+            }
+
+            if (_worldMobs.Count > 0 && (_worldMobsContainer == null || _worldMobsContainer.Visible))
+            {
+                var target = _worldMobs[_selectedMobIndex % _worldMobs.Count];
+                if (GodotObject.IsInstanceValid(target.Root))
+                    return target.Root;
+            }
+            return null;
+        }
+
+        private void SelectServerTarget(EntityView serverMob, bool announceInChat)
+        {
+            _selectedServerTargetId = serverMob.WireId.ToString();
+            _selectedServerTargetWireId = serverMob.WireId;
+
+            string mobName = EntityKeys.FormatMobDisplayName(serverMob.RawMobType);
+            string badge = EntityKeys.FormatMobBadge(serverMob.RawMobType);
+            string elem = EntityKeys.FormatMobElement(serverMob.RawMobType);
+
+            if (TargetBossFrame != null)
+            {
+                TargetBossFrame.TargetName = mobName;
+                TargetBossFrame.TitleBadge = badge;
+                TargetBossFrame.ElementType = elem;
+                TargetBossFrame.CurrentHp = (long)Mathf.Round(serverMob.CurrentHealth);
+                TargetBossFrame.MaxHp = (long)Mathf.Max(1f, Mathf.Round(serverMob.MaxHealth));
+                TargetBossFrame.BarSegments = badge == "MVP Boss" ? 4 : 2;
+                TargetBossFrame.UpdateDisplay();
+            }
+
+            UpdateTargetRingPosition();
+            if (announceInChat)
+            {
+                ChatWidget?.AppendSystemMessage($"Target locked (Live Server): {mobName} [#{serverMob.WireId % 1000:D3}]");
+            }
+        }
+
         private void UpdateTargetRingPosition()
         {
-            if (_targetRingMesh == null || _worldMobs.Count == 0) return;
-            var target = _worldMobs[_selectedMobIndex];
-            if (GodotObject.IsInstanceValid(target.Root))
+            if (_targetRingMesh == null) return;
+            Node3D? targetRoot = GetActiveTargetRoot();
+            if (targetRoot != null)
             {
-                _targetRingMesh.Position = new Vector3(target.Root.Position.X, 0.04f, target.Root.Position.Z);
+                _targetRingMesh.Position = new Vector3(targetRoot.Position.X, 0.04f, targetRoot.Position.Z);
             }
         }
 
@@ -616,18 +733,142 @@ namespace AtlasWorld.Client
 
         private void OnServerConnected()
         {
+            _entityManager.Reset();
+            if (Connection != null)
+            {
+                _entityManager.SetOwnPlayer(Connection.LocalWireId.ToString());
+            }
             UpdateStatusText($"[color=#{Design.Palette.Success.ToHtml(false)}]● Server Connected (2567)[/color]");
             ChatWidget?.AppendSystemMessage("Connected to server-rs WebSocket gateway.");
         }
 
         private void OnServerDisconnected(int code, string reason)
         {
+            _entityManager.Reset();
+            _selectedServerTargetId = "";
+            _selectedServerTargetWireId = 0;
+            if (_worldMobsContainer != null)
+            {
+                _worldMobsContainer.Visible = true;
+            }
             UpdateStatusText($"[color=#{Design.Palette.Warn.ToHtml(false)}]○ Offline Simulation ({reason})[/color]");
+        }
+
+        private void OnRawSnapshotReceived(WorldSnapshot snapshot)
+        {
+            // 1. Ingest all entity deltas + removed IDs into EntityManager / SnapshotInterpolator
+            _entityManager.IngestServerRsSnapshot(snapshot, ServerCoordScale, ServerArenaCenter);
+
+            // Hide offline static showcase monsters once live server-rs entities are streaming
+            if (_worldMobsContainer != null && _entityManager.Count > 0)
+            {
+                _worldMobsContainer.Visible = false;
+            }
+
+            // Auto-select nearest live server-rs mob if none is currently locked
+            if (string.IsNullOrEmpty(_selectedServerTargetId) && _entityManager.Count > 0)
+            {
+                Vector3 playerPos = PlayerAvatar?.Position ?? Vector3.Zero;
+                EntityView? nearestMob = null;
+                float bestDistSq = float.MaxValue;
+                foreach (var kv in _entityManager.Views)
+                {
+                    if (kv.Value.Kind == EntityKind.Mob && kv.Value.Alive && GodotObject.IsInstanceValid(kv.Value.Root))
+                    {
+                        float dSq = kv.Value.Root.Position.DistanceSquaredTo(playerPos);
+                        if (dSq < bestDistSq)
+                        {
+                            bestDistSq = dSq;
+                            nearestMob = kv.Value;
+                        }
+                    }
+                }
+                if (nearestMob != null)
+                {
+                    SelectServerTarget(nearestMob, announceInChat: false);
+                }
+            }
+
+            // 2. If currently targeting a live server-rs mob, keep TargetFrame synced to its authoritative HP
+            if (!string.IsNullOrEmpty(_selectedServerTargetId))
+            {
+                if (_entityManager.TryGetEntityView(_selectedServerTargetId, out EntityView? targetView) &&
+                    targetView != null && targetView.Alive)
+                {
+                    if (TargetBossFrame != null)
+                    {
+                        TargetBossFrame.CurrentHp = (long)Mathf.Round(targetView.CurrentHealth);
+                        TargetBossFrame.MaxHp = (long)Mathf.Max(1f, Mathf.Round(targetView.MaxHealth));
+                        TargetBossFrame.UpdateDisplay();
+                    }
+                }
+                else
+                {
+                    // Target died or despawned on the server
+                    _selectedServerTargetId = "";
+                    _selectedServerTargetWireId = 0;
+                }
+            }
+
+            // 3. Process server-rs authoritative GameEvents (Hit / Kill) -> 3D-to-2D FloatingCombatText
+            uint myWireId = Connection?.LocalWireId ?? 0;
+            int evCount = snapshot.EventsLength;
+            for (int i = 0; i < evCount; i++)
+            {
+                GameEvent? evOpt = snapshot.Events(i);
+                if (!evOpt.HasValue)
+                    continue;
+
+                GameEvent ev = evOpt.Value;
+                if (ev.Kind == GameEventKind.Hit && ev.Amount > 0f)
+                {
+                    bool involvedLocal = (myWireId != 0 && (ev.SourceId == myWireId || ev.TargetId == myWireId)) ||
+                                         (_selectedServerTargetWireId != 0 && ev.TargetId == _selectedServerTargetWireId);
+                    if (!involvedLocal)
+                        continue;
+
+                    long dmgAmount = Math.Max(1L, (long)Mathf.Round(ev.Amount * 28f)); // Scaled to RPG display numbers
+                    bool isCrit = ev.Amount >= 25f;
+                    Vector2 screenPos = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
+                    screenPos += new Vector2(0, -85);
+
+                    if (_entityManager.TryGetEntityView(ev.TargetId.ToString(), out EntityView? hitView) &&
+                        hitView != null && GodotObject.IsInstanceValid(hitView.Root) && MainCamera != null)
+                    {
+                        Vector3 headWorldPos = hitView.Root.GlobalPosition + new Vector3(0f, 2.2f, 0f);
+                        if (!MainCamera.IsPositionBehind(headWorldPos))
+                        {
+                            screenPos = MainCamera.UnprojectPosition(headWorldPos);
+                        }
+                    }
+                    else if (ev.TargetId == myWireId && PlayerAvatar != null && MainCamera != null)
+                    {
+                        Vector3 headWorldPos = PlayerAvatar.GlobalPosition + new Vector3(0f, 2.1f, 0f);
+                        if (!MainCamera.IsPositionBehind(headWorldPos))
+                        {
+                            screenPos = MainCamera.UnprojectPosition(headWorldPos);
+                        }
+                    }
+
+                    CombatText?.SpawnDamage(screenPos, dmgAmount, isCrit);
+                }
+                else if (ev.Kind == GameEventKind.Kill && myWireId != 0 && ev.SourceId == myWireId)
+                {
+                    if (PlayerExpBar != null)
+                    {
+                        PlayerExpBar.BaseExpPercent = Mathf.Wrap(PlayerExpBar.BaseExpPercent + 8.0f, 0f, 100f);
+                        PlayerExpBar.JobExpPercent = Mathf.Wrap(PlayerExpBar.JobExpPercent + 8.0f, 0f, 100f);
+                        PlayerExpBar.UpdateDisplay();
+                    }
+                    ChatWidget?.AppendSystemMessage("Defeated monster! (+8.0% Base/Job EXP)");
+                }
+            }
         }
 
         private void OnSnapshotReceived(int tick, ulong serverTimeMs, int entityCount)
         {
-            UpdateStatusText($"[color=#{Design.Palette.Success.ToHtml(false)}]● Live | Tick {tick} | Entities: {entityCount}[/color]");
+            UpdateStatusText(
+                $"[color=#{Design.Palette.Success.ToHtml(false)}]● Live | Tick {tick} | Entities: {entityCount} (Views: {_entityManager.Count})[/color]");
         }
 
         private void UpdateStatusText(string bbcode)
@@ -643,7 +884,8 @@ namespace AtlasWorld.Client
             float dt = (float)delta;
             _pulseTime += dt;
 
-            // Animate target selection ring scale pulse
+            // Animate target selection ring scale pulse & track live interpolated target position
+            UpdateTargetRingPosition();
             if (_targetRingMesh != null)
             {
                 float s = 1.0f + 0.08f * Mathf.Sin(_pulseTime * 5.0f);
@@ -659,6 +901,12 @@ namespace AtlasWorld.Client
             var focusOwner = GetViewport()?.GuiGetFocusOwner();
             if (focusOwner is LineEdit or TextEdit || MetaGateway.CapturesInput)
             {
+                if (_wasMovingLastFrame)
+                {
+                    _wasMovingLastFrame = false;
+                    _entityManager?.SetLocalMoveHeld(false);
+                    Connection?.SendInput(0f, 0f, targetId: _selectedServerTargetWireId);
+                }
                 if (_attackAnimHoldSec <= 0f)
                 {
                     _playerAnimController?.Update(isAlive: true, velocity: Vector3.Zero, isAttacking: false);
@@ -695,14 +943,18 @@ namespace AtlasWorld.Client
                 _playerSpeed = 6.5f;
             }
 
-            if (PlayerAvatar != null && direction.LengthSquared() > 0.001f)
+            bool isMoving = PlayerAvatar != null && direction.LengthSquared() > 0.001f;
+            _entityManager?.SetLocalMoveHeld(isMoving);
+
+            if (isMoving && PlayerAvatar != null)
             {
-                Vector3 velocity = direction.Normalized() * (_playerSpeed * 1.45f); // Exceeds 8.0f sprint threshold in AnimationController
-                PlayerAvatar.Position += direction.Normalized() * _playerSpeed * dt;
+                Vector3 normDir = direction.Normalized();
+                Vector3 velocity = normDir * (_playerSpeed * 1.45f); // Exceeds 8.0f sprint threshold in AnimationController
+                PlayerAvatar.Position += normDir * _playerSpeed * dt;
 
                 // player_knight.glb faces +Z in local space:
                 // Atan2(direction.X, direction.Z) yields Pi when moving -Z (into scene) and 0 when moving +Z (toward camera)
-                float targetAngle = Mathf.Atan2(direction.X, direction.Z);
+                float targetAngle = Mathf.Atan2(normDir.X, normDir.Z);
                 float currentAngle = PlayerAvatar.Rotation.Y;
                 float smoothAngle = Mathf.LerpAngle(currentAngle, targetAngle, dt * 14.0f);
                 PlayerAvatar.Rotation = new Vector3(0f, smoothAngle, 0f);
@@ -715,10 +967,17 @@ namespace AtlasWorld.Client
                 _playerAnimController?.Update(isAlive: true, velocity: velocity, isAttacking: false);
 
                 // Stream FlatBuffers movement intent to server-rs
-                Connection?.SendInput(direction.X, direction.Z);
+                Connection?.SendInput(normDir.X, normDir.Z, targetId: _selectedServerTargetWireId);
+                _wasMovingLastFrame = true;
             }
             else
             {
+                if (_wasMovingLastFrame)
+                {
+                    // Send a zero-velocity stop frame so server-rs halts our avatar immediately
+                    Connection?.SendInput(0f, 0f, targetId: _selectedServerTargetWireId);
+                    _wasMovingLastFrame = false;
+                }
                 if (_attackAnimHoldSec <= 0f)
                 {
                     _playerAnimController?.Update(isAlive: true, velocity: Vector3.Zero, isAttacking: false);
@@ -743,16 +1002,28 @@ namespace AtlasWorld.Client
             }
         }
 
+        private (uint targetId, float targetX, float targetY) ResolveServerAimTarget()
+        {
+            Node3D? targetRoot = GetActiveTargetRoot();
+            if (targetRoot != null)
+            {
+                float sx = ServerArenaCenter.X + (targetRoot.Position.X / ServerCoordScale);
+                float sy = ServerArenaCenter.Y + (targetRoot.Position.Z / ServerCoordScale);
+                return (_selectedServerTargetWireId, sx, sy);
+            }
+            return (0u, 0f, 0f);
+        }
+
         private void TriggerAttack()
         {
             GD.Print("[VerticalSliceRoot] Attack triggered!");
             _attackAnimHoldSec = 0.55f;
 
             // Face currently selected target monster when attacking
-            if (PlayerAvatar != null && _worldMobs.Count > 0)
+            Node3D? targetRoot = GetActiveTargetRoot();
+            if (PlayerAvatar != null && targetRoot != null)
             {
-                var target = _worldMobs[_selectedMobIndex];
-                Vector3 toTarget = target.Root.Position - PlayerAvatar.Position;
+                Vector3 toTarget = targetRoot.Position - PlayerAvatar.Position;
                 toTarget.Y = 0f;
                 if (toTarget.LengthSquared() > 0.01f)
                 {
@@ -761,7 +1032,8 @@ namespace AtlasWorld.Client
             }
 
             _playerAnimController?.Update(isAlive: true, velocity: Vector3.Zero, isAttacking: true);
-            Connection?.SendInput(0f, 0f, attack: true);
+            var (targetId, targetX, targetY) = ResolveServerAimTarget();
+            Connection?.SendInput(0f, 0f, attack: true, targetId: targetId, targetX: targetX, targetY: targetY);
 
             long dmg = (long)GD.RandRange(420, 640);
             bool isCrit = GD.Randf() > 0.65f;
@@ -781,6 +1053,7 @@ namespace AtlasWorld.Client
                 _animPlayer.Queue("Idle");
             }
             AudioRegistry.Instance?.Play("sfx:attack", PlayerAvatar?.GlobalPosition ?? Vector3.Zero);
+            Connection?.SendInput(0f, 0f, skillSlot: 5, targetId: _selectedServerTargetWireId);
 
             Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
             CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -45), "Wind Dash!");
@@ -804,7 +1077,9 @@ namespace AtlasWorld.Client
                 _animPlayer.Queue("Idle");
             }
             AudioRegistry.Instance?.Play("sfx:attack", PlayerAvatar?.GlobalPosition ?? Vector3.Zero);
-            Connection?.SendInput(0f, 0f, attack: false, skillSlot: (byte)slot);
+
+            var (targetId, targetX, targetY) = ResolveServerAimTarget();
+            Connection?.SendInput(0f, 0f, attack: false, skillSlot: (byte)slot, targetId: targetId, targetX: targetX, targetY: targetY);
 
             Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
             CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -65), skillName);
@@ -829,9 +1104,21 @@ namespace AtlasWorld.Client
             Vector2 spawnPos = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
             spawnPos += new Vector2(0, -85);
 
-            if (_worldMobs.Count > 0)
+            Node3D? targetRoot = GetActiveTargetRoot();
+            if (!string.IsNullOrEmpty(_selectedServerTargetId) && targetRoot != null && MainCamera != null)
             {
-                var mob = _worldMobs[_selectedMobIndex];
+                Vector3 headWorldPos = targetRoot.GlobalPosition + new Vector3(0f, 2.2f, 0f);
+                if (!MainCamera.IsPositionBehind(headWorldPos))
+                {
+                    spawnPos = MainCamera.UnprojectPosition(headWorldPos);
+                }
+                var tween = CreateTween();
+                tween.TweenProperty(targetRoot, "scale", Vector3.One * 1.14f, 0.07);
+                tween.TweenProperty(targetRoot, "scale", Vector3.One, 0.12);
+            }
+            else if (_worldMobs.Count > 0)
+            {
+                var mob = _worldMobs[_selectedMobIndex % _worldMobs.Count];
                 mob.CurrentHp = Math.Max(0, mob.CurrentHp - dmg);
                 if (mob.CurrentHp == 0) mob.CurrentHp = mob.MaxHp; // Respawn HP for continuous testing
 
@@ -852,7 +1139,7 @@ namespace AtlasWorld.Client
 
                     // Hit-flash bounce on the 3D monster
                     var tween = CreateTween();
-                    float baseScale = _selectedMobIndex == 0 ? 1.35f : 1.05f;
+                    float baseScale = (_selectedMobIndex % _worldMobs.Count) == 0 ? 1.35f : 1.05f;
                     tween.TweenProperty(mob.Root, "scale", Vector3.One * (baseScale * 1.14f), 0.07);
                     tween.TweenProperty(mob.Root, "scale", Vector3.One * baseScale, 0.12);
                 }
@@ -881,9 +1168,34 @@ namespace AtlasWorld.Client
 
         private void TriggerTargetSwitch()
         {
-            if (_worldMobs.Count == 0) return;
+            var liveServerMobs = new List<EntityView>();
+            Vector3 playerPos = PlayerAvatar?.Position ?? Vector3.Zero;
 
+            foreach (var kv in _entityManager.Views)
+            {
+                if (kv.Value.Kind == EntityKind.Mob && kv.Value.Alive && GodotObject.IsInstanceValid(kv.Value.Root))
+                {
+                    liveServerMobs.Add(kv.Value);
+                }
+            }
+
+            liveServerMobs.Sort((a, b) =>
+                a.Root.Position.DistanceSquaredTo(playerPos).CompareTo(b.Root.Position.DistanceSquaredTo(playerPos)));
+
+            // If live server-rs mobs are present, cycle exclusively through the nearest 6 live server mobs
+            if (liveServerMobs.Count > 0)
+            {
+                int maxServerTargets = Math.Min(6, liveServerMobs.Count);
+                _selectedMobIndex = (_selectedMobIndex + 1) % maxServerTargets;
+                SelectServerTarget(liveServerMobs[_selectedMobIndex], announceInChat: true);
+                return;
+            }
+
+            // Offline fallback: cycle showcase monsters
+            if (_worldMobs.Count == 0) return;
             _selectedMobIndex = (_selectedMobIndex + 1) % _worldMobs.Count;
+            _selectedServerTargetId = "";
+            _selectedServerTargetWireId = 0;
             var mob = _worldMobs[_selectedMobIndex];
 
             if (TargetBossFrame != null)

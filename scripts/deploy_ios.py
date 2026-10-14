@@ -7,10 +7,25 @@ ENTITLEMENTS = "/Users/pasitnusso/Library/Developer/Xcode/DerivedData/AtlasWorld
 SIGN_ID = "FAAED654216EC342F4A7F95205F44F7B4F4EB02C"
 
 PCK_SRC = "/Users/pasitnusso/workspace/repos/atlas-world-svc/game-client/builds/AtlasWorld.pck"
+XCFRAMEWORK_DYLIB = "/Users/pasitnusso/workspace/repos/atlas-world-svc/game-client/.godot/mono/temp/bin/ExportRelease/GameClient_aot.xcframework/ios-arm64/GameClient.dylib"
+EXPORT_IOS_ICU = "/Users/pasitnusso/workspace/repos/atlas-world-svc/game-client/.godot/mono/temp/bin/ExportRelease/ios-arm64/icudt.dat"
 PUBLISH_DIR = "/Users/pasitnusso/workspace/repos/atlas-world-svc/game-client/.godot/mono/temp/bin/ExportRelease-ios-arm64/ios-arm64/publish"
-DYLIB_SRC = os.path.join(PUBLISH_DIR, "GameClient.dylib")
-ICU_SRC = os.path.join(PUBLISH_DIR, "icudt.dat")
+LEGACY_DYLIB = os.path.join(PUBLISH_DIR, "GameClient.dylib")
+LEGACY_ICU = os.path.join(PUBLISH_DIR, "icudt.dat")
 
+if os.path.exists(XCFRAMEWORK_DYLIB) and (
+    not os.path.exists(LEGACY_DYLIB)
+    or os.path.getmtime(XCFRAMEWORK_DYLIB) >= os.path.getmtime(LEGACY_DYLIB)
+):
+    DYLIB_SRC = XCFRAMEWORK_DYLIB
+    if os.path.exists(PUBLISH_DIR):
+        shutil.copy2(XCFRAMEWORK_DYLIB, LEGACY_DYLIB)
+else:
+    DYLIB_SRC = LEGACY_DYLIB
+
+ICU_SRC = EXPORT_IOS_ICU if os.path.exists(EXPORT_IOS_ICU) else LEGACY_ICU
+
+print(f"Using NativeAOT dylib: {DYLIB_SRC} (mtime={os.path.getmtime(DYLIB_SRC):.0f})")
 print(f"1. Copying PCK to {APP_PATH}...")
 shutil.copy2(PCK_SRC, os.path.join(APP_PATH, "AtlasWorld.pck"))
 shutil.copy2(PCK_SRC, "/Users/pasitnusso/workspace/repos/atlas-world-svc/game-client/builds/ios_device/AtlasWorld.pck")

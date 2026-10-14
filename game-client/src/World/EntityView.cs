@@ -14,18 +14,22 @@ namespace AtlasWorld.Client.World
     ///
     /// Its life VISUALS are a pure function of the synced schema fields — team → tint, hp → bar,
     /// isAlive → death — applied by rediscovering the capsule tier's named <c>Body</c>/<c>HpBar</c>
-    /// nodes (best-effort on bespoke/seed scenes that lack them). Its POSE (position + facing) is
+    /// nodes (or overhead 3D billboard bars on real glTF character models). Its POSE (position + facing) is
     /// unchanged: the <c>SnapshotInterpolator</c> remains the single source of the rendered pose
     /// and drives it via <see cref="ApplyPose"/>. This view never sends anything and never reads
     /// input; it only reflects server state.
     /// </summary>
     public sealed class EntityView
     {
+        private readonly EntityKind _kind;
+        private readonly string _typeId;
         private readonly Node3D _root;
         private readonly MeshInstance3D? _body;
         private readonly StandardMaterial3D? _material;
         private readonly MeshInstance3D? _hpBar;
+        private readonly MeshInstance3D? _hpBarBg;
         private readonly StandardMaterial3D? _hpBarMaterial;
+        private readonly Label3D? _nameLabel;
         private readonly AnimationController _animController;
 
         /// <summary>Cached from the most recent <see cref="ApplyLife"/> — animation reads it every frame.</summary>
@@ -39,8 +43,16 @@ namespace AtlasWorld.Client.World
         /// so the very first snapshot never falsely reads as a hit.
         /// </summary>
         private float _lastHealth = -1f;
+        private float _maxHealth = 100f;
 
         public Node3D Root => _root;
+        public EntityKind Kind => _kind;
+        public string TypeId => _typeId;
+        public float CurrentHealth => _lastHealth < 0f ? _maxHealth : _lastHealth;
+        public float MaxHealth => _maxHealth;
+        public string DisplayName { get; private set; } = "";
+        public string RawMobType { get; set; } = "";
+        public uint WireId { get; set; }
 
         /// <summary>False once the server reports the entity dead (life entities only).</summary>
         public bool Alive { get; private set; } = true;
@@ -52,6 +64,8 @@ namespace AtlasWorld.Client.World
         /// </param>
         public EntityView(EntityKind kind, string typeId)
         {
+            _kind = kind;
+            _typeId = typeId;
             _root = BuildVisualRoot(kind, typeId);
 
             // Same seam as the visual node itself: ask the registry for any per-entry clip
@@ -62,8 +76,8 @@ namespace AtlasWorld.Client.World
 
             // Rediscover the mutable capsule-tier parts by name. They exist on the procedural
             // capsule (player/npc/mob carry an HpBar); bespoke/seed scenes may omit them, in
-            // which case life visuals become a safe no-op. Materials are DUPLICATED so tinting
-            // one entity never bleeds into siblings that instanced the same cached PackedScene.
+            // which case we attach a 3D billboard overhead HP bar + nameplate. Materials are
+            // DUPLICATED so tinting one entity never bleeds into siblings.
             _body = _root.GetNodeOrNull<MeshInstance3D>("Body");
             if (_body?.MaterialOverride is StandardMaterial3D bodyMat)
             {
@@ -76,6 +90,99 @@ namespace AtlasWorld.Client.World
             {
                 _hpBarMaterial = (StandardMaterial3D)hpMat.Duplicate();
                 _hpBar.MaterialOverride = _hpBarMaterial;
+            }
+            else if (_body == null && kind is EntityKind.Player or EntityKind.Mob or EntityKind.Npc)
+            {
+                // Grounding contact shadow disc beneath real 3D character models
+                var shadowDisc = new MeshInstance3D
+                {
+                    Name = "DropShadow",
+                    Mesh = new CylinderMesh
+                    {
+                        TopRadius = 0.48f,
+                        BottomRadius = 0.48f,
+                        Height = 0.02f,
+                        RadialSegments = 16
+                    },
+                    Position = new Vector3(0f, 0.02f, 0f),
+                    MaterialOverride = new StandardMaterial3D
+                    {
+                        Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                        ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                        AlbedoColor = new Color(0f, 0f, 0f, 0.38f)
+                    }
+                };
+                _root.AddChild(shadowDisc);
+
+                // Real 3D glTF character model: attach overhead 3D billboard nameplate & HP bar
+                _nameLabel = new Label3D
+                {
+                    Name = "OverheadNameplate",
+                    Text = kind == EntityKind.Player ? "Adventurer" : EntityKeys.FormatMobDisplayName(typeId),
+                    PixelSize = 0.007f,
+                    FontSize = 20,
+                    OutlineSize = 6,
+                    Modulate = kind == EntityKind.Player
+                        ? new Color(0.55f, 0.88f, 1.0f, 1f)
+                        : new Color(1.0f, 0.72f, 0.48f, 1f),
+                    OutlineModulate = new Color(0.05f, 0.05f, 0.08f, 0.95f),
+                    Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+                    Position = new Vector3(0f, 2.28f, 0f),
+                    VisibilityRangeEnd = 28.0f,
+                    VisibilityRangeEndMargin = 4.0f,
+                    VisibilityRangeFadeMode = GeometryInstance3D.VisibilityRangeFadeModeEnum.Self
+                };
+                _root.AddChild(_nameLabel);
+
+                _hpBarBg = new MeshInstance3D
+                {
+                    Name = "OverheadHpBg",
+                    Mesh = new BoxMesh { Size = new Vector3(1.10f, 0.09f, 0.03f) },
+                    Position = new Vector3(0f, 2.02f, 0f),
+                    VisibilityRangeEnd = 28.0f,
+                    VisibilityRangeEndMargin = 4.0f,
+                    VisibilityRangeFadeMode = GeometryInstance3D.VisibilityRangeFadeModeEnum.Self,
+                    MaterialOverride = new StandardMaterial3D
+                    {
+                        ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                        BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
+                        BillboardKeepScale = true,
+                        AlbedoColor = new Color(0.08f, 0.08f, 0.12f, 0.9f)
+                    }
+                };
+                _root.AddChild(_hpBarBg);
+
+                _hpBarMaterial = new StandardMaterial3D
+                {
+                    ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                    BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
+                    BillboardKeepScale = true,
+                    AlbedoColor = kind == EntityKind.Player
+                        ? new Color(0.25f, 0.88f, 0.42f, 1f)
+                        : new Color(0.92f, 0.22f, 0.22f, 1f)
+                };
+                _hpBar = new MeshInstance3D
+                {
+                    Name = "OverheadHpFill",
+                    Mesh = new BoxMesh { Size = new Vector3(1.06f, 0.065f, 0.04f) },
+                    Position = new Vector3(0f, 2.02f, 0.01f),
+                    VisibilityRangeEnd = 28.0f,
+                    VisibilityRangeEndMargin = 4.0f,
+                    VisibilityRangeFadeMode = GeometryInstance3D.VisibilityRangeFadeModeEnum.Self,
+                    MaterialOverride = _hpBarMaterial
+                };
+                _root.AddChild(_hpBar);
+            }
+        }
+
+        public void SetDisplayName(string text, Color? color = null)
+        {
+            DisplayName = text;
+            if (_nameLabel != null && IsInstanceValid(_nameLabel))
+            {
+                _nameLabel.Text = text;
+                if (color.HasValue)
+                    _nameLabel.Modulate = color.Value;
             }
         }
 
@@ -108,8 +215,7 @@ namespace AtlasWorld.Client.World
             if (!IsInstanceValid(_root))
                 return;
             _root.Position = pos;
-            // heading is an angle in the server XY plane; rotate about world Y. Placeholder
-            // primitives are radially symmetric, so exact facing is cosmetic today.
+            // heading is an angle in the server XY plane; rotate about world Y.
             _root.Rotation = new Vector3(0f, -headingRadians, 0f);
         }
 
@@ -123,33 +229,48 @@ namespace AtlasWorld.Client.World
         /// <summary>Apply a life entity's VISUAL state (Player / Mob / NPC) — no pose here.</summary>
         public void ApplyLife(WorldLife e)
         {
-            Alive = e.isAlive;
-            _isAttacking = e.isAttacking;
+            ApplyLifeState(e.isAlive, e.currentHealth, e.maxHealth, e.isAttacking, e.teamId);
+        }
+
+        /// <summary>
+        /// Direct primitive life-state update used by both Colyseus (<see cref="ApplyLife"/>)
+        /// and zero-allocation FlatBuffers <c>server-rs</c> entity deltas.
+        /// </summary>
+        public void ApplyLifeState(bool isAlive, float currentHealth, float maxHealth, bool isAttacking, string teamId = "")
+        {
+            Alive = isAlive;
+            _isAttacking = isAttacking;
+            if (maxHealth > 0f)
+                _maxHealth = maxHealth;
 
             // "hit" edge: HP dropped since the last life update (and the entity was, and
             // still is, alive — death already plays its own sfx via AnimationController).
-            if (_lastHealth >= 0f && e.isAlive && e.currentHealth < _lastHealth &&
+            if (_lastHealth >= 0f && isAlive && currentHealth < _lastHealth &&
                 IsInstanceValid(_root))
             {
                 AudioRegistry.Instance?.Play("sfx:hit", _root.GlobalPosition);
             }
-            _lastHealth = e.currentHealth;
+            _lastHealth = currentHealth;
 
-            if (_material != null)
-                _material.AlbedoColor = TeamTint(e.teamId, _material.AlbedoColor);
+            if (_material != null && !string.IsNullOrEmpty(teamId))
+                _material.AlbedoColor = TeamTint(teamId, _material.AlbedoColor);
 
-            if (_hpBar != null)
+            if (_hpBar != null && IsInstanceValid(_hpBar))
             {
-                float frac = e.maxHealth > 0f ? Mathf.Clamp(e.currentHealth / e.maxHealth, 0f, 1f) : 0f;
+                float frac = maxHealth > 0f ? Mathf.Clamp(currentHealth / maxHealth, 0f, 1f) : 0f;
                 var s = _hpBar.Scale;
                 _hpBar.Scale = new Vector3(Mathf.Max(0.001f, frac), s.Y, s.Z);
-                if (_hpBarMaterial != null)
+                if (_hpBarMaterial != null && _body != null)
                 {
-                    // green → red as hp drops.
+                    // green → red as hp drops on procedural capsules
                     _hpBarMaterial.AlbedoColor = new Color(1f - frac, frac, 0.2f);
                 }
                 _hpBar.Visible = Alive;
             }
+            if (_hpBarBg != null && IsInstanceValid(_hpBarBg))
+                _hpBarBg.Visible = Alive;
+            if (_nameLabel != null && IsInstanceValid(_nameLabel))
+                _nameLabel.Visible = Alive;
 
             if (!Alive && _body != null)
                 _body.Visible = false; // simple death; EntityManager frees the view

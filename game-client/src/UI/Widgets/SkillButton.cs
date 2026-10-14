@@ -10,7 +10,7 @@ namespace AtlasWorld.Client.UI.Widgets
     /// - Deep jewel-toned radial dome with glass specular shine
     /// - Crisp procedural vector iconography (Swords, Meteor, Blizzard, Shield, Wind, Flasks)
     /// - Dark radial cooldown sweep with digital countdown timer (e.g. 0.8s)
-    /// - Desktop keybind hint badge (e.g. [SPC], [1], [2], [TAB])
+    /// - Clean ROX skill caption pill on mobile + optional desktop keybind hint badge on desktop
     /// - Touch/click reactive spring scaling & pulse
     /// </summary>
     public partial class SkillButton : Control
@@ -152,13 +152,24 @@ namespace AtlasWorld.Client.UI.Widgets
                 DrawArc(center, (r - 2f) * 0.5f, -Mathf.Pi * 0.5f, -Mathf.Pi * 0.5f + sweepAngle, 40, new Color(0.02f, 0.03f, 0.06f, 0.84f), r - 2f, false);
             }
 
-            // 7. Typography (Keybinds, Digital Timer, Potion Counts)
+            // 7. Typography (Bottom Skill Label, Desktop Keybinds, Digital Timer, Potion Counts)
             var font = ThemeDB.FallbackFont;
 
-            // Desktop Keybind Badge (e.g. [SPC], [1], [2], [TAB])
-            if (!string.IsNullOrEmpty(KeybindText))
+            // Bottom ROX Skill Label Caption (e.g. METEOR, BLIZZ, AEGIS, DASH, TARGET)
+            if (!string.IsNullOrEmpty(LabelText) && SkillId != "attack")
             {
-                int kbSize = Mathf.Max(9, (int)(r * 0.22f));
+                int lblSize = Mathf.Max(8, (int)(r * 0.24f));
+                Vector2 lblVec = font.GetStringSize(LabelText, HorizontalAlignment.Center, -1, lblSize);
+                Vector2 pillSize = new Vector2(lblVec.X + 8f, lblVec.Y + 2f);
+                Vector2 pillPos = center + new Vector2(-pillSize.X * 0.5f, r * 0.52f);
+                DrawRect(new Rect2(pillPos, pillSize), new Color(0.04f, 0.06f, 0.10f, 0.86f), true);
+                DrawString(font, pillPos + new Vector2(4f, pillSize.Y - 3f), LabelText, HorizontalAlignment.Center, -1, lblSize, new Color(1f, 0.94f, 0.76f, 0.98f));
+            }
+
+            // Desktop Keybind Badge (only shown on non-mobile platforms so iPad stays authentic mobile HUD)
+            if (!OS.HasFeature("mobile") && !string.IsNullOrEmpty(KeybindText))
+            {
+                int kbSize = Mathf.Max(8, (int)(r * 0.20f));
                 Vector2 textSize = font.GetStringSize(KeybindText, HorizontalAlignment.Center, -1, kbSize);
                 Vector2 boxSize = textSize + new Vector2(8, 4);
                 Vector2 boxPos = center + new Vector2(-r * 0.85f, -r * 0.85f);
@@ -171,9 +182,9 @@ namespace AtlasWorld.Client.UI.Widgets
             if (StackCount > 0)
             {
                 string countStr = $"x{StackCount}";
-                int countSize = (int)(r * 0.30f);
+                int countSize = Mathf.Max(9, (int)(r * 0.30f));
                 Vector2 cSize = font.GetStringSize(countStr, HorizontalAlignment.Right, -1, countSize);
-                Vector2 cPos = center + new Vector2(r * 0.60f - cSize.X, -r * 0.45f);
+                Vector2 cPos = center + new Vector2(r * 0.65f - cSize.X, -r * 0.38f);
                 DrawString(font, cPos + new Vector2(1, 1), countStr, HorizontalAlignment.Right, -1, countSize, Colors.Black);
                 DrawString(font, cPos, countStr, HorizontalAlignment.Right, -1, countSize, new Color(0.35f, 1.0f, 0.55f, 1f));
             }

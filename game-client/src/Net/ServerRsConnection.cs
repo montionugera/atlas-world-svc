@@ -33,6 +33,12 @@ namespace AtlasWorld.Client.Net
 
         public bool IsConnectedToHost => _peer.GetReadyState() == WebSocketPeer.State.Open;
 
+        /// <summary>Session name parsed from the endpoint token (e.g. "mont-ipad").</summary>
+        public string SessionName { get; private set; } = "mont-ipad";
+
+        /// <summary>FNV-1a 32-bit wire entity ID for this client's own player avatar on server-rs.</summary>
+        public uint LocalWireId { get; private set; } = PacketCodec.Fnv1a32("mont-ipad");
+
         public override void _Ready()
         {
             // Configure binary buffer limit (up to 256 KB)
@@ -43,7 +49,10 @@ namespace AtlasWorld.Client.Net
         public Error ConnectToHost(string url)
         {
             _targetUrl = url;
-            GD.Print($"[ServerRsConnection] Connecting to: {_targetUrl}");
+            SessionName = PacketCodec.ExtractSessionName(url);
+            LocalWireId = PacketCodec.Fnv1a32(SessionName);
+
+            GD.Print($"[ServerRsConnection] Connecting to: {_targetUrl} (session={SessionName}, wireId={LocalWireId})");
             Error err = _peer.ConnectToUrl(_targetUrl);
             if (err != Error.Ok)
             {
@@ -70,6 +79,8 @@ namespace AtlasWorld.Client.Net
                 GD.Print($"[ServerRsConnection] State changed: {_lastState} -> {state}");
                 if (state == WebSocketPeer.State.Open)
                 {
+                    // Send initial bootstrap input frame so server-rs spawns our player avatar on the next tick
+                    SendInput(0f, 0f);
                     EmitSignal(SignalName.Connected);
                 }
                 else if (state == WebSocketPeer.State.Closed)
@@ -109,11 +120,27 @@ namespace AtlasWorld.Client.Net
         /// <summary>
         /// Sends movement and action intent to server-rs encoded as a FlatBuffers ClientInput.
         /// </summary>
-        public bool SendInput(float moveX, float moveY, bool attack = false, byte skillSlot = 0, uint targetId = 0, bool respawn = false)
+        public bool SendInput(
+            float moveX,
+            float moveY,
+            bool attack = false,
+            byte skillSlot = 0,
+            uint targetId = 0,
+            float targetX = 0f,
+            float targetY = 0f,
+            bool respawn = false)
         {
             if (!IsConnectedToHost) return false;
 
-            byte[] bytes = PacketCodec.EncodeClientInput(moveX, moveY, attack, skillSlot, targetId, respawn: respawn);
+            byte[] bytes = PacketCodec.EncodeClientInput(
+                moveX,
+                moveY,
+                attack,
+                skillSlot,
+                targetId,
+                targetX,
+                targetY,
+                respawn);
             Error err = _peer.PutPacket(bytes);
             return err == Error.Ok;
         }

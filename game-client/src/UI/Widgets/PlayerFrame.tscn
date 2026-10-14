@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://cplayerframe001"]
+[gd_scene load_steps=10 format=3 uid="uid://cplayerframe001"]
 
 [ext_resource type="Script" path="res://src/UI/Widgets/PlayerFrame.cs" id="1_frame"]
 [ext_resource type="Texture2D" uid="uid://bgp50axxs4xfb" path="res://assets/art/classes/human-swordsman.png" id="2_portrait"]
@@ -64,26 +64,46 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_buff"]
-bg_color = Color(0.08, 0.12, 0.18, 0.85)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
+content_margin_left = 5.0
+content_margin_top = 1.0
+content_margin_right = 5.0
+content_margin_bottom = 1.0
+bg_color = Color(0.08, 0.12, 0.18, 0.88)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.85, 0.75, 0.4, 0.7)
+border_color = Color(0.85, 0.75, 0.4, 0.75)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_lvl_badge"]
+content_margin_left = 5.0
+content_margin_top = 1.0
+content_margin_right = 5.0
+content_margin_bottom = 1.0
+bg_color = Color(0.05, 0.07, 0.12, 0.96)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.95, 0.82, 0.40, 0.92)
 
 [node name="PlayerFrame" type="Control" node_paths=PackedStringArray("NameLabel", "LevelLabel", "HpBar", "HpText", "SpBar", "SpText")]
-custom_minimum_size = Vector2(320, 88)
+custom_minimum_size = Vector2(320, 92)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 320.0
-offset_bottom = 88.0
+offset_bottom = 92.0
 mouse_filter = 2
 script = ExtResource("1_frame")
-NameLabel = NodePath("Panel/InfoBox/NameLabel")
+NameLabel = NodePath("Panel/InfoBox/NameRow/NameLabel")
 LevelLabel = NodePath("AvatarRing/LevelBadge/LevelLabel")
 HpBar = NodePath("Panel/InfoBox/HpBar")
 HpText = NodePath("Panel/InfoBox/HpBar/HpText")
@@ -95,7 +115,7 @@ layout_mode = 0
 offset_left = 42.0
 offset_top = 4.0
 offset_right = 312.0
-offset_bottom = 74.0
+offset_bottom = 72.0
 theme_override_styles/panel = SubResource("StyleBox_bg")
 
 [node name="InfoBox" type="VBoxContainer" parent="Panel"]
@@ -113,6 +133,7 @@ theme_override_constants/separation = 2
 
 [node name="NameRow" type="HBoxContainer" parent="Panel/InfoBox"]
 layout_mode = 2
+theme_override_constants/separation = 6
 
 [node name="NameLabel" type="Label" parent="Panel/InfoBox/NameRow"]
 layout_mode = 2
@@ -176,47 +197,50 @@ vertical_alignment = 1
 
 [node name="BuffRow" type="HBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 80.0
-offset_top = 76.0
-offset_right = 260.0
-offset_bottom = 92.0
-theme_override_constants/separation = 4
+offset_left = 84.0
+offset_top = 74.0
+offset_right = 278.0
+offset_bottom = 90.0
+theme_override_constants/separation = 5
 
 [node name="Buff1" type="PanelContainer" parent="BuffRow"]
-custom_minimum_size = Vector2(36, 16)
+custom_minimum_size = Vector2(44, 15)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBox_buff")
 
 [node name="Label" type="Label" parent="BuffRow/Buff1"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 8
-theme_override_colors/font_color = Color(1, 0.6, 0.6, 1)
-text = "⚔ ATK"
+theme_override_colors/font_color = Color(1, 0.65, 0.65, 1)
+text = "+ATK"
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Buff2" type="PanelContainer" parent="BuffRow"]
-custom_minimum_size = Vector2(36, 16)
+custom_minimum_size = Vector2(44, 15)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBox_buff")
 
 [node name="Label" type="Label" parent="BuffRow/Buff2"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 8
-theme_override_colors/font_color = Color(0.6, 0.8, 1, 1)
-text = "🛡 DEF"
+theme_override_colors/font_color = Color(0.65, 0.84, 1, 1)
+text = "+DEF"
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Buff3" type="PanelContainer" parent="BuffRow"]
-custom_minimum_size = Vector2(36, 16)
+custom_minimum_size = Vector2(44, 15)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBox_buff")
 
 [node name="Label" type="Label" parent="BuffRow/Buff3"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 8
-theme_override_colors/font_color = Color(0.6, 1, 0.7, 1)
-text = "⚡ SPD"
+theme_override_colors/font_color = Color(0.65, 1, 0.72, 1)
+text = "+SPD"
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="AvatarRing" type="Panel" parent="."]
 layout_mode = 0
@@ -243,23 +267,13 @@ texture = ExtResource("2_portrait")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ClassBadge" type="Label" parent="AvatarRing"]
-layout_mode = 0
-offset_left = 48.0
-offset_top = 44.0
-offset_right = 68.0
-offset_bottom = 64.0
-theme_override_font_sizes/font_size = 11
-text = "⚔"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="LevelBadge" type="PanelContainer" parent="AvatarRing"]
 layout_mode = 0
-offset_left = 4.0
-offset_top = 54.0
-offset_right = 66.0
-offset_bottom = 72.0
+offset_left = -4.0
+offset_top = 56.0
+offset_right = 78.0
+offset_bottom = 73.0
+theme_override_styles/panel = SubResource("StyleBox_lvl_badge")
 
 [node name="LevelLabel" type="Label" parent="AvatarRing/LevelBadge"]
 layout_mode = 2
@@ -267,7 +281,7 @@ theme_override_colors/font_color = Color(1, 0.88, 0.45, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 9
+theme_override_font_sizes/font_size = 8
 text = "Lv.90 | Job 50"
 horizontal_alignment = 1
 vertical_alignment = 1

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Godot;
 
 namespace AtlasWorld.Client.Audio
@@ -83,6 +82,11 @@ namespace AtlasWorld.Client.Audio
             using FileAccess? file = FileAccess.Open(resPath, FileAccess.ModeFlags.Read);
             if (file == null)
             {
+                if (resPath == AudioRegistry.DefaultManifestPath)
+                {
+                    return Parse(EmbeddedDefaultAudioManifestJson);
+                }
+
                 Error err = FileAccess.GetOpenError();
                 throw new AudioManifestException(
                     $"AudioManifest: cannot open manifest at '{resPath}' (error={err}).");
@@ -101,65 +105,108 @@ namespace AtlasWorld.Client.Audio
         }
 
         /// <summary>
-        /// Parse a manifest from a raw JSON string. Exposed (over just <see cref="Load"/>)
-        /// so the parse path is verifiable without touching the filesystem.
+        /// Parse a manifest from a raw JSON string using reflection-free <see cref="JsonDocument"/>
+        /// so it works identically on Desktop JIT and iOS NativeAOT.
         /// </summary>
         public static AudioManifest Parse(string json)
         {
-            ManifestDto? dto;
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                throw new AudioManifestException("audio manifest JSON parsed to null (empty or 'null' document).");
+            }
+
+            JsonDocument doc;
             try
             {
-                dto = JsonSerializer.Deserialize<ManifestDto>(json, JsonOptions);
+                doc = JsonDocument.Parse(json, DocOptions);
             }
             catch (JsonException ex)
             {
                 throw new AudioManifestException($"malformed audio manifest JSON: {ex.Message}", ex);
             }
 
-            if (dto == null)
-                throw new AudioManifestException("audio manifest JSON parsed to null (empty or 'null' document).");
-
-            var entries = new Dictionary<string, AudioEntry>();
-            if (dto.Entries != null)
+            using (doc)
             {
-                foreach (KeyValuePair<string, EntryDto?> kv in dto.Entries)
-                {
-                    EntryDto d = kv.Value ?? new EntryDto();
-                    entries[kv.Key] = new AudioEntry
-                    {
-                        EventKey = kv.Key,
-                        Stream = d.Stream ?? "",
-                        License = d.License ?? "",
-                    };
-                }
-            }
+                JsonElement root = doc.RootElement;
+                if (root.ValueKind == JsonValueKind.Null)
+                    throw new AudioManifestException("audio manifest JSON parsed to null (empty or 'null' document).");
+                if (root.ValueKind != JsonValueKind.Object)
+                    throw new AudioManifestException($"audio manifest root must be a JSON object (got {root.ValueKind}).");
 
-            return new AudioManifest(dto.Version, entries);
+                int version = 0;
+                var entries = new Dictionary<string, AudioEntry>();
+
+                foreach (JsonProperty prop in root.EnumerateObject())
+                {
+                    if (string.Equals(prop.Name, "version", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (prop.Value.ValueKind == JsonValueKind.Number && prop.Value.TryGetInt32(out int v))
+                            version = v;
+                    }
+                    else if (string.Equals(prop.Name, "entries", StringComparison.OrdinalIgnoreCase) &&
+                             prop.Value.ValueKind == JsonValueKind.Object)
+                    {
+                        foreach (JsonProperty entryProp in prop.Value.EnumerateObject())
+                        {
+                            string key = entryProp.Name;
+                            string stream = "";
+                            string license = "";
+
+                            if (entryProp.Value.ValueKind == JsonValueKind.Object)
+                            {
+                                foreach (JsonProperty field in entryProp.Value.EnumerateObject())
+                                {
+                                    if (string.Equals(field.Name, "stream", StringComparison.OrdinalIgnoreCase) &&
+                                        field.Value.ValueKind == JsonValueKind.String)
+                                    {
+                                        stream = field.Value.GetString() ?? "";
+                                    }
+                                    else if (string.Equals(field.Name, "license", StringComparison.OrdinalIgnoreCase) &&
+                                             field.Value.ValueKind == JsonValueKind.String)
+                                    {
+                                        license = field.Value.GetString() ?? "";
+                                    }
+                                }
+                            }
+
+                            entries[key] = new AudioEntry
+                            {
+                                EventKey = key,
+                                Stream = stream,
+                                License = license,
+                            };
+                        }
+                    }
+                }
+
+                return new AudioManifest(version, entries);
+            }
         }
 
-        private static readonly JsonSerializerOptions JsonOptions = new()
+        private static readonly JsonDocumentOptions DocOptions = new()
         {
-            PropertyNameCaseInsensitive = true,
             AllowTrailingCommas = true,
-            ReadCommentHandling = JsonCommentHandling.Skip,
+            CommentHandling = JsonCommentHandling.Skip,
         };
 
-        private sealed class ManifestDto
+        private const string EmbeddedDefaultAudioManifestJson = """
         {
-            [JsonPropertyName("version")]
-            public int Version { get; set; }
-
-            [JsonPropertyName("entries")]
-            public Dictionary<string, EntryDto?>? Entries { get; set; }
+          "version": 1,
+          "entries": {
+            "sfx:attack": {
+              "stream": "res://assets/audio/chop.ogg",
+              "license": "CC0"
+            },
+            "sfx:hit": {
+              "stream": "res://assets/audio/knifeSlice.ogg",
+              "license": "CC0"
+            },
+            "sfx:death": {
+              "stream": "res://assets/audio/death.ogg",
+              "license": "CC0"
+            }
+          }
         }
-
-        private sealed class EntryDto
-        {
-            [JsonPropertyName("stream")]
-            public string? Stream { get; set; }
-
-            [JsonPropertyName("license")]
-            public string? License { get; set; }
-        }
+        """;
     }
 }
