@@ -1,66 +1,100 @@
-[gd_scene load_steps=2 format=3 uid="uid://cchatboxwidget123"]
+[gd_scene load_steps=3 format=3 uid="uid://cchatboxwidget123"]
 
 [ext_resource type="Script" path="res://src/UI/Widgets/ChatBox.cs" id="1_chat"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBox_roo_chat_ticker"]
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+bg_color = Color(0.05, 0.08, 0.13, 0.86)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.92, 0.78, 0.36, 0.85)
+shadow_color = Color(0, 0, 0, 0.38)
+shadow_size = 4
+
 [node name="ChatBox" type="Control" node_paths=PackedStringArray("ExpandedPanel", "CollapsedTicker", "TickerLabel", "ExpandButton", "CollapseButton", "MessagesLabel", "InputField", "SendButton")]
-custom_minimum_size = Vector2(360, 38)
+custom_minimum_size = Vector2(360, 56)
 layout_mode = 3
 anchors_preset = 2
 anchor_left = 0.0
 anchor_top = 1.0
 anchor_right = 0.0
 anchor_bottom = 1.0
-offset_left = 230.0
-offset_top = -65.0
-offset_right = 590.0
-offset_bottom = -27.0
+offset_left = 232.0
+offset_top = -80.0
+offset_right = 592.0
+offset_bottom = -24.0
 grow_vertical = 0
 mouse_filter = 2
 script = ExtResource("1_chat")
 ExpandedPanel = NodePath("ExpandedPanel")
 CollapsedTicker = NodePath("CollapsedTicker")
-TickerLabel = NodePath("CollapsedTicker/TickerContent/TickerLabel")
-ExpandButton = NodePath("CollapsedTicker/TickerContent/ExpandBtn")
+TickerLabel = NodePath("CollapsedTicker/VBox/BottomRow/TickerLabel")
+ExpandButton = NodePath("CollapsedTicker/VBox/HeaderRow/ExpandBtn")
 CollapseButton = NodePath("ExpandedPanel/VBox/Header/CloseBtn")
 MessagesLabel = NodePath("ExpandedPanel/VBox/Scroll/Messages")
 InputField = NodePath("ExpandedPanel/VBox/InputRow/LineEdit")
 SendButton = NodePath("ExpandedPanel/VBox/InputRow/SendButton")
 
 [node name="CollapsedTicker" type="PanelContainer" parent="."]
-custom_minimum_size = Vector2(360, 36)
+custom_minimum_size = Vector2(360, 54)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_type_variation = "ChatTicker"
+theme_override_styles/panel = SubResource("StyleBox_roo_chat_ticker")
 
-[node name="TickerContent" type="HBoxContainer" parent="CollapsedTicker"]
+[node name="VBox" type="VBoxContainer" parent="CollapsedTicker"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="HeaderRow" type="HBoxContainer" parent="CollapsedTicker/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="ChannelTag" type="Label" parent="CollapsedTicker/TickerContent"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 11
-theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
-text = "[World]"
-vertical_alignment = 1
-
-[node name="TickerLabel" type="Label" parent="CollapsedTicker/TickerContent"]
+[node name="ChannelTabs" type="Label" parent="CollapsedTicker/VBox/HeaderRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 11
-text = "Atlas World Mobile MMORPG Ready."
-clip_text = true
+theme_override_font_sizes/font_size = 9
+theme_override_colors/font_color = Color(0.96, 0.84, 0.42, 0.95)
+text = "[All]  [World]  [Party]  [System]"
+vertical_alignment = 1
 
-[node name="ExpandBtn" type="Button" parent="CollapsedTicker/TickerContent"]
-custom_minimum_size = Vector2(26, 26)
+[node name="ExpandBtn" type="Button" parent="CollapsedTicker/VBox/HeaderRow"]
+custom_minimum_size = Vector2(20, 18)
 layout_mode = 2
 theme_type_variation = "GhostButton"
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 9
 text = "▲"
 flat = true
+
+[node name="BottomRow" type="HBoxContainer" parent="CollapsedTicker/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ChannelTag" type="Label" parent="CollapsedTicker/VBox/BottomRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.45, 0.88, 1.0, 1)
+text = "[System]"
+vertical_alignment = 1
+
+[node name="TickerLabel" type="Label" parent="CollapsedTicker/VBox/BottomRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 10
+text = "Atlas World Mobile MMORPG Ready."
+clip_text = true
 
 [node name="ExpandedPanel" type="PanelContainer" parent="."]
 visible = false

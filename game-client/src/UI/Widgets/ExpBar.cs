@@ -4,7 +4,7 @@ using Godot;
 namespace AtlasWorld.Client.UI.Widgets
 {
     /// <summary>
-    /// Iconic Ragnarok bottom-screen dual EXP bar (Base Lv & Job Lv).
+    /// Iconic Ragnarok bottom-screen dual EXP bar (Base Lv &amp; Job Lv) with 10%-tick graduations.
     /// Grounding widget spanning the bottom edge of the HUD.
     /// </summary>
     public partial class ExpBar : Control
@@ -26,6 +26,19 @@ namespace AtlasWorld.Client.UI.Widgets
             _baseLabel = GetNodeOrNull<Label>("HBox/BaseContainer/BaseLabel")!;
             _jobLabel = GetNodeOrNull<Label>("HBox/JobContainer/JobLabel")!;
 
+            if (_baseBar != null)
+            {
+                var ticks = new ExpBarTickOverlay { MouseFilter = MouseFilterEnum.Ignore };
+                ticks.SetAnchorsPreset(LayoutPreset.FullRect);
+                _baseBar.AddChild(ticks);
+            }
+            if (_jobBar != null)
+            {
+                var ticks = new ExpBarTickOverlay { MouseFilter = MouseFilterEnum.Ignore };
+                ticks.SetAnchorsPreset(LayoutPreset.FullRect);
+                _jobBar.AddChild(ticks);
+            }
+
             UpdateDisplay();
         }
 
@@ -39,6 +52,26 @@ namespace AtlasWorld.Client.UI.Widgets
 
             if (_jobLabel != null)
                 _jobLabel.Text = $"Job Lv.{JobLevel}  [{JobExpPercent:0.0}%]";
+        }
+
+        private sealed partial class ExpBarTickOverlay : Control
+        {
+            public override void _Draw()
+            {
+                Vector2 sz = Size;
+                if (sz.X <= 10f || sz.Y <= 2f)
+                    return;
+
+                // Top specular gloss strip
+                DrawRect(new Rect2(0f, 0f, sz.X, sz.Y * 0.30f), new Color(1f, 1f, 1f, 0.14f), true);
+
+                // 10% graduation tick marks across the EXP bar (ROO signature detail)
+                for (int i = 1; i <= 9; i++)
+                {
+                    float x = sz.X * (i / 10.0f);
+                    DrawLine(new Vector2(x, 1f), new Vector2(x, sz.Y - 1f), new Color(0f, 0f, 0f, 0.45f), 1.0f);
+                }
+            }
         }
     }
 }

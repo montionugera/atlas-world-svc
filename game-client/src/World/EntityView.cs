@@ -44,6 +44,7 @@ namespace AtlasWorld.Client.World
         /// </summary>
         private float _lastHealth = -1f;
         private float _maxHealth = 100f;
+        private bool _isSelectedTarget = false;
 
         public Node3D Root => _root;
         public EntityKind Kind => _kind;
@@ -122,17 +123,17 @@ namespace AtlasWorld.Client.World
                 {
                     Name = "OverheadNameplate",
                     Text = kind == EntityKind.Player ? "Adventurer" : EntityKeys.FormatMobDisplayName(typeId),
-                    PixelSize = 0.0056f,
-                    FontSize = 18,
-                    OutlineSize = 5,
+                    PixelSize = 0.0048f,
+                    FontSize = 16,
+                    OutlineSize = 4,
                     Modulate = kind == EntityKind.Player
-                        ? new Color(0.62f, 0.92f, 1.0f, 0.96f)
-                        : new Color(1.0f, 0.86f, 0.56f, 0.96f),
-                    OutlineModulate = new Color(0.05f, 0.06f, 0.10f, 0.92f),
+                        ? new Color(0.62f, 0.92f, 1.0f, 0.92f)
+                        : new Color(1.0f, 0.86f, 0.56f, 0.94f),
+                    OutlineModulate = new Color(0.05f, 0.06f, 0.10f, 0.90f),
                     Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
-                    Position = new Vector3(0f, 2.18f, 0f),
-                    VisibilityRangeEnd = 18.5f,
-                    VisibilityRangeEndMargin = 3.5f,
+                    Position = new Vector3(0f, 2.15f, 0f),
+                    VisibilityRangeEnd = 13.5f,
+                    VisibilityRangeEndMargin = 2.5f,
                     VisibilityRangeFadeMode = GeometryInstance3D.VisibilityRangeFadeModeEnum.Self
                 };
                 _root.AddChild(_nameLabel);
@@ -140,10 +141,10 @@ namespace AtlasWorld.Client.World
                 _hpBarBg = new MeshInstance3D
                 {
                     Name = "OverheadHpBg",
-                    Mesh = new BoxMesh { Size = new Vector3(0.88f, 0.068f, 0.025f) },
-                    Position = new Vector3(0f, 1.96f, 0f),
-                    VisibilityRangeEnd = 18.5f,
-                    VisibilityRangeEndMargin = 3.5f,
+                    Mesh = new BoxMesh { Size = new Vector3(0.76f, 0.056f, 0.022f) },
+                    Position = new Vector3(0f, 1.94f, 0f),
+                    VisibilityRangeEnd = 13.5f,
+                    VisibilityRangeEndMargin = 2.5f,
                     VisibilityRangeFadeMode = GeometryInstance3D.VisibilityRangeFadeModeEnum.Self,
                     MaterialOverride = new StandardMaterial3D
                     {
@@ -167,14 +168,16 @@ namespace AtlasWorld.Client.World
                 _hpBar = new MeshInstance3D
                 {
                     Name = "OverheadHpFill",
-                    Mesh = new BoxMesh { Size = new Vector3(0.84f, 0.048f, 0.032f) },
-                    Position = new Vector3(0f, 1.96f, 0.01f),
-                    VisibilityRangeEnd = 18.5f,
-                    VisibilityRangeEndMargin = 3.5f,
+                    Mesh = new BoxMesh { Size = new Vector3(0.72f, 0.040f, 0.028f) },
+                    Position = new Vector3(0f, 1.94f, 0.01f),
+                    VisibilityRangeEnd = 13.5f,
+                    VisibilityRangeEndMargin = 2.5f,
                     VisibilityRangeFadeMode = GeometryInstance3D.VisibilityRangeFadeModeEnum.Self,
                     MaterialOverride = _hpBarMaterial
                 };
                 _root.AddChild(_hpBar);
+
+                UpdateOverheadBarVisibility();
             }
         }
 
@@ -241,11 +244,15 @@ namespace AtlasWorld.Client.World
             DisplayName = text;
             if (_nameLabel != null && IsInstanceValid(_nameLabel))
             {
-                // Keep overhead labels concise like Ragnarok Origin (strip verbose bracket prefixes unless MVP)
+                // Keep overhead labels concise like Ragnarok Origin (strip verbose bracket prefixes)
                 string cleanText = text;
                 if (cleanText.StartsWith("[Bot] "))
                     cleanText = cleanText.Substring(6);
+                else if (cleanText.StartsWith("[MVP Boss] "))
+                    cleanText = "♛ " + cleanText.Substring(11);
                 else if (cleanText.StartsWith("[Elite Mob] "))
+                    cleanText = cleanText.Substring(12);
+                else if (cleanText.StartsWith("[Field Mob] "))
                     cleanText = cleanText.Substring(12);
                 else if (cleanText.StartsWith("[Mob] "))
                     cleanText = cleanText.Substring(6);
@@ -253,6 +260,38 @@ namespace AtlasWorld.Client.World
                 _nameLabel.Text = cleanText;
                 if (color.HasValue)
                     _nameLabel.Modulate = color.Value;
+            }
+            UpdateOverheadBarVisibility();
+        }
+
+        public void SetSelectedTarget(bool selected)
+        {
+            if (_isSelectedTarget == selected)
+                return;
+            _isSelectedTarget = selected;
+            UpdateOverheadBarVisibility();
+        }
+
+        private void UpdateOverheadBarVisibility()
+        {
+            if (_body != null)
+                return; // Procedural capsule tier keeps its own simple bar behavior
+
+            bool isDamaged = _lastHealth >= 0f && _maxHealth > 0f && _lastHealth < _maxHealth - 0.5f;
+            bool isMvp = DisplayName.Contains("MVP");
+            // Authentic Ragnarok Origin rule: only show 3D overhead HP bar if damaged, targeted, or MVP boss!
+            bool showHpBar = Alive && (_isSelectedTarget || isDamaged || isMvp);
+
+            if (_hpBar != null && IsInstanceValid(_hpBar))
+                _hpBar.Visible = showHpBar;
+            if (_hpBarBg != null && IsInstanceValid(_hpBarBg))
+                _hpBarBg.Visible = showHpBar;
+            if (_nameLabel != null && IsInstanceValid(_nameLabel))
+            {
+                _nameLabel.Visible = Alive;
+                _nameLabel.Position = showHpBar
+                    ? new Vector3(0f, 2.15f, 0f)
+                    : new Vector3(0f, 1.98f, 0f);
             }
         }
 
@@ -334,13 +373,11 @@ namespace AtlasWorld.Client.World
                 {
                     // green → red as hp drops on procedural capsules
                     _hpBarMaterial.AlbedoColor = new Color(1f - frac, frac, 0.2f);
+                    _hpBar.Visible = Alive;
                 }
-                _hpBar.Visible = Alive;
             }
-            if (_hpBarBg != null && IsInstanceValid(_hpBarBg))
-                _hpBarBg.Visible = Alive;
-            if (_nameLabel != null && IsInstanceValid(_nameLabel))
-                _nameLabel.Visible = Alive;
+
+            UpdateOverheadBarVisibility();
 
             if (!Alive && _body != null)
                 _body.Visible = false; // simple death; EntityManager frees the view

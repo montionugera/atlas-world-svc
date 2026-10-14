@@ -496,6 +496,8 @@ namespace AtlasWorld.Client
                 StatusLabel.OffsetRight = leftInset + 240f;
             }
 
+            _tuningDrawer?.SetLeftInset(leftInset);
+
             if (MobileControls?.Joystick != null)
             {
                 MobileControls.Joystick.OffsetLeft = leftInset + 26f;
@@ -804,6 +806,14 @@ namespace AtlasWorld.Client
 
         private void SelectServerTarget(EntityView serverMob, bool announceInChat)
         {
+            if (_entityManager != null)
+            {
+                foreach (var kv in _entityManager.Views)
+                {
+                    kv.Value.SetSelectedTarget(kv.Value.WireId == serverMob.WireId);
+                }
+            }
+
             _selectedServerTargetId = serverMob.WireId.ToString();
             _selectedServerTargetWireId = serverMob.WireId;
 

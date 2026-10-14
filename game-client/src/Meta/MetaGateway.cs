@@ -46,7 +46,7 @@ namespace AtlasWorld.Client.Meta
         private ISocket? _socket;
 
         public string? UserId => _session?.UserId;
-        public bool Ready => _client != null && _session != null;
+        public new bool Ready => _client != null && _session != null;
 
         public override void _EnterTree()
         {
@@ -83,7 +83,7 @@ namespace AtlasWorld.Client.Meta
             }
             catch (Exception e)
             {
-                GD.PushError($"[MetaGateway] auth failed: {e.Message}");
+                GD.Print($"[MetaGateway] Nakama offline (using local defaults): {e.Message}");
                 CallDeferred(nameof(EmitAuthFailed), e.Message);
             }
         }
@@ -140,7 +140,7 @@ namespace AtlasWorld.Client.Meta
             }
             catch (Exception e)
             {
-                GD.PushError($"[MetaGateway] read {collection} failed: {e.Message}");
+                GD.Print($"[MetaGateway] read {collection} offline (non-fatal): {e.Message}");
                 CallDeferred(nameof(EmitDocLoaded), collection, "", false);
             }
         }
@@ -163,7 +163,7 @@ namespace AtlasWorld.Client.Meta
             }
             catch (Exception e)
             {
-                GD.PushError($"[MetaGateway] rpc {rpcId} failed: {e.Message}");
+                GD.Print($"[MetaGateway] rpc {rpcId} offline (non-fatal): {e.Message}");
                 CallDeferred(nameof(EmitRpcResult), rpcId, "", false, e.Message);
             }
         }
@@ -200,6 +200,6 @@ namespace AtlasWorld.Client.Meta
     /// <summary>Wire-level storage key, kept next to the gateway that uses it.</summary>
     internal static class MetaWireKeys
     {
-        public const string StorageKey = "main";
+        public const string StorageKey = "state";
     }
 }

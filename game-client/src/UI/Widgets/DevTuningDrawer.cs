@@ -70,9 +70,9 @@ namespace AtlasWorld.Client.UI.Widgets
                 CustomMinimumSize = new Vector2(92, 24),
                 LayoutMode = 0,
                 OffsetLeft = 18f,
-                OffsetTop = 214f,
+                OffsetTop = 212f,
                 OffsetRight = 110f,
-                OffsetBottom = 238f
+                OffsetBottom = 236f
             };
             _toggleButton.AddThemeFontSizeOverride("font_size", 10);
 
@@ -103,9 +103,9 @@ namespace AtlasWorld.Client.UI.Widgets
             };
             _drawerPanel.LayoutMode = 0;
             _drawerPanel.OffsetLeft = 120f;
-            _drawerPanel.OffsetTop = 214f;
+            _drawerPanel.OffsetTop = 212f;
             _drawerPanel.OffsetRight = 424f;
-            _drawerPanel.OffsetBottom = 508f;
+            _drawerPanel.OffsetBottom = 506f;
 
             var panelStyle = new StyleBoxFlat
             {
@@ -203,6 +203,20 @@ namespace AtlasWorld.Client.UI.Widgets
             _statusText.AddThemeFontSizeOverride("font_size", 9);
             _statusText.AddThemeColorOverride("font_color", new Color(0.55f, 0.92f, 0.68f, 0.95f));
             vbox.AddChild(_statusText);
+        }
+
+        public void SetLeftInset(float leftInset)
+        {
+            if (_toggleButton != null)
+            {
+                _toggleButton.OffsetLeft = leftInset;
+                _toggleButton.OffsetRight = leftInset + 92f;
+            }
+            if (_drawerPanel != null)
+            {
+                _drawerPanel.OffsetLeft = leftInset + 102f;
+                _drawerPanel.OffsetRight = leftInset + 406f;
+            }
         }
 
         public void ToggleDrawer()
@@ -350,52 +364,51 @@ namespace AtlasWorld.Client.UI.Widgets
                 if (string.IsNullOrWhiteSpace(json))
                     return;
 
-                using JsonDocument doc = JsonDocument.Parse(json);
-                JsonElement root = doc.RootElement;
-                if (root.TryGetProperty("cameraPitch", out JsonElement p)) _values.CameraPitch = p.GetSingle();
-                if (root.TryGetProperty("cameraDistance", out JsonElement d)) _values.CameraDistance = d.GetSingle();
-                if (root.TryGetProperty("cameraFov", out JsonElement fov)) _values.CameraFov = fov.GetSingle();
-                if (root.TryGetProperty("playerSpeed", out JsonElement spd)) _values.PlayerSpeed = spd.GetSingle();
-                if (root.TryGetProperty("meleeRange", out JsonElement rng)) _values.MeleeRange = rng.GetSingle();
-                if (root.TryGetProperty("safeAreaInset", out JsonElement ins)) _values.SafeAreaInset = ins.GetSingle();
-                if (root.TryGetProperty("actionClusterScale", out JsonElement scl)) _values.ActionClusterScale = scl.GetSingle();
-
-                SyncSlidersFromValues();
-                NotifyChanged();
-
-                if (announce && _statusText != null)
+                var loaded = JsonSerializer.Deserialize<TuningValues>(json, new JsonSerializerOptions
                 {
-                    _statusText.Text = $"Hot-reloaded tuning.json at {DateTime.Now:HH:mm:ss}";
-                    GD.Print("[DevTuningDrawer] Hot-reloaded assets/tuning.json");
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (loaded != null)
+                {
+                    _values.CameraPitch = loaded.CameraPitch;
+                    _values.CameraDistance = loaded.CameraDistance;
+                    _values.CameraFov = loaded.CameraFov;
+                    _values.PlayerSpeed = loaded.PlayerSpeed;
+                    _values.MeleeRange = loaded.MeleeRange;
+                    _values.SafeAreaInset = loaded.SafeAreaInset;
+                    _values.ActionClusterScale = loaded.ActionClusterScale;
+                    SyncSlidersFromValues();
+                    NotifyChanged();
+                    if (announce && _statusText != null)
+                    {
+                        _statusText.Text = $"Hot-reloaded tuning.json ({DateTime.Now:HH:mm:ss})";
+                    }
                 }
             }
             catch (Exception ex)
             {
-                GD.PrintErr($"[DevTuningDrawer] Failed to parse tuning.json: {ex.Message}");
+                GD.PrintErr($"[DevTuningDrawer] Failed to load tuning.json: {ex.Message}");
             }
         }
 
-        public void SaveToDisk()
+        private void SaveToDisk()
         {
             try
             {
-                string json =
-                    "{\n" +
-                    $"  \"cameraPitch\": {_values.CameraPitch:0.00},\n" +
-                    $"  \"cameraDistance\": {_values.CameraDistance:0.00},\n" +
-                    $"  \"cameraFov\": {_values.CameraFov:0.0},\n" +
-                    $"  \"playerSpeed\": {_values.PlayerSpeed:0.00},\n" +
-                    $"  \"meleeRange\": {_values.MeleeRange:0.00},\n" +
-                    $"  \"safeAreaInset\": {_values.SafeAreaInset:0.0},\n" +
-                    $"  \"actionClusterScale\": {_values.ActionClusterScale:0.00}\n" +
-                    "}\n";
-                File.WriteAllText(_diskJsonPath, json);
-                _lastFileWriteUtc = File.GetLastWriteTimeUtc(_diskJsonPath);
-                if (_statusText != null)
+                string json = JsonSerializer.Serialize(_values, new JsonSerializerOptions
                 {
-                    _statusText.Text = $"Saved to assets/tuning.json ({DateTime.Now:HH:mm:ss})";
+                    WriteIndented = true
+                });
+                if (!string.IsNullOrEmpty(_diskJsonPath))
+                {
+                    File.WriteAllText(_diskJsonPath, json);
+                    _lastFileWriteUtc = File.GetLastWriteTimeUtc(_diskJsonPath);
+                    if (_statusText != null)
+                    {
+                        _statusText.Text = $"Saved to assets/tuning.json ({DateTime.Now:HH:mm:ss})";
+                    }
                 }
-                GD.Print($"[DevTuningDrawer] Saved tuning parameters to {_diskJsonPath}");
             }
             catch (Exception ex)
             {

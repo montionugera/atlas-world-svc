@@ -10,9 +10,9 @@ namespace AtlasWorld.Client.UI.Widgets
     /// - Circular live radar minimap with gold compass bezel, "N" pointer, player heading arrow,
     ///   and real-time entity blips (Players/Bots in Cyan, Mobs in Crimson, MVP Bosses in Gold,
     ///   Locked Target in Pulsing Yellow Ring)
-    /// - Location & Channel banner ribbon (e.g. Freja 261, 286 | ● 45ms)
+    /// - Location &amp; Channel banner ribbon (e.g. Freja Ch.1 (500, 483))
     /// - Gilded utility action buttons for Bag, Wardrobe, Quests, Skills, Shop with
-    ///   procedural ROX vector iconography (no broken system emojis)
+    ///   procedural ROX vector iconography and red notification dots
     /// </summary>
     public partial class TopBar : Control
     {
@@ -48,35 +48,35 @@ namespace AtlasWorld.Client.UI.Widgets
             if (BagButton != null)
             {
                 BagButton.Text = "";
-                AttachIconOverlay(BagButton, "bag", "BAG");
+                AttachIconOverlay(BagButton, "bag", "BAG", showNotificationDot: true);
                 BagButton.Pressed += () => EmitSignal(SignalName.BagPressed);
             }
 
             if (WardrobeButton != null)
             {
                 WardrobeButton.Text = "";
-                AttachIconOverlay(WardrobeButton, "wardrobe", "WARD");
+                AttachIconOverlay(WardrobeButton, "wardrobe", "WARD", showNotificationDot: true);
                 WardrobeButton.Pressed += () => EmitSignal(SignalName.WardrobePressed);
             }
 
             if (QuestButton != null)
             {
                 QuestButton.Text = "";
-                AttachIconOverlay(QuestButton, "quest", "QUEST");
+                AttachIconOverlay(QuestButton, "quest", "QUEST", showNotificationDot: false);
                 QuestButton.Pressed += () => EmitSignal(SignalName.QuestPressed);
             }
 
             if (SkillsButton != null)
             {
                 SkillsButton.Text = "";
-                AttachIconOverlay(SkillsButton, "skills", "SKILL");
+                AttachIconOverlay(SkillsButton, "skills", "SKILL", showNotificationDot: false);
                 SkillsButton.Pressed += () => EmitSignal(SignalName.SkillsPressed);
             }
 
             if (ShopButton != null)
             {
                 ShopButton.Text = "";
-                AttachIconOverlay(ShopButton, "shop", "GEAR");
+                AttachIconOverlay(ShopButton, "shop", "GEAR", showNotificationDot: false);
                 ShopButton.Pressed += () => EmitSignal(SignalName.ShopPressed);
             }
 
@@ -98,12 +98,12 @@ namespace AtlasWorld.Client.UI.Widgets
                 minimapCircle.AddChild(_radarOverlay);
             }
 
-            SetLocation("Freja", 261, 286);
+            SetLocation("Freja", 500, 500);
         }
 
-        private static void AttachIconOverlay(Button btn, string iconKind, string caption)
+        private static void AttachIconOverlay(Button btn, string iconKind, string caption, bool showNotificationDot)
         {
-            var overlay = new TopBarButtonIcon(iconKind, caption)
+            var overlay = new TopBarButtonIcon(iconKind, caption, showNotificationDot)
             {
                 Name = "IconOverlay",
                 MouseFilter = MouseFilterEnum.Ignore
@@ -116,7 +116,7 @@ namespace AtlasWorld.Client.UI.Widgets
         {
             if (LocationLabel != null)
             {
-                LocationLabel.Text = $"{zoneName} ({x}, {z})";
+                LocationLabel.Text = $"{zoneName} Ch.1 ({x},{z})";
             }
         }
 
@@ -236,7 +236,6 @@ namespace AtlasWorld.Client.UI.Widgets
                 }
 
                 // Local player directional chevron at center
-                // Note: player_knight faces +Z at Rotation.Y = 0; moving -Z (north on screen) is Rotation.Y = Pi
                 Vector2 forward = new Vector2(Mathf.Sin(_playerYaw), Mathf.Cos(_playerYaw));
                 if (forward.LengthSquared() < 0.001f)
                     forward = new Vector2(0f, -1f);
@@ -256,13 +255,15 @@ namespace AtlasWorld.Client.UI.Widgets
         {
             private readonly string _kind;
             private readonly string _caption;
+            private readonly bool _showNotificationDot;
 
-            public TopBarButtonIcon() : this("bag", "BAG") { }
+            public TopBarButtonIcon() : this("bag", "BAG", false) { }
 
-            public TopBarButtonIcon(string kind, string caption)
+            public TopBarButtonIcon(string kind, string caption, bool showNotificationDot)
             {
                 _kind = kind;
                 _caption = caption;
+                _showNotificationDot = showNotificationDot;
             }
 
             public override void _Draw()
@@ -276,7 +277,6 @@ namespace AtlasWorld.Client.UI.Widgets
                 {
                     case "bag":
                     {
-                        // Knapsack body + top handle + gold clasp
                         DrawArc(c + new Vector2(0, -6), 4.5f, Mathf.Pi, Mathf.Tau, 12, gold, 1.8f);
                         var bodyRect = new Rect2(c.X - 8f, c.Y - 6f, 16f, 13f);
                         DrawRect(bodyRect, new Color(0.68f, 0.40f, 0.20f, 1f), true);
@@ -287,7 +287,6 @@ namespace AtlasWorld.Client.UI.Widgets
                     }
                     case "wardrobe":
                     {
-                        // Royal tunic / armor chestplate silhouette
                         Vector2[] tunic =
                         {
                             c + new Vector2(-4f, -8f),
@@ -306,7 +305,6 @@ namespace AtlasWorld.Client.UI.Widgets
                     }
                     case "quest":
                     {
-                        // Rolled parchment scroll + wax seal
                         var scrollRect = new Rect2(c.X - 7f, c.Y - 7f, 14f, 14f);
                         DrawRect(scrollRect, new Color(0.92f, 0.84f, 0.64f, 1f), true);
                         DrawRect(scrollRect, gold, false, 1.5f);
@@ -317,7 +315,6 @@ namespace AtlasWorld.Client.UI.Widgets
                     }
                     case "skills":
                     {
-                        // Crossed blade & arcane diamond star
                         DrawLine(c + new Vector2(-7f, 6f), c + new Vector2(7f, -6f), cream, 2.2f);
                         DrawLine(c + new Vector2(-7f, -6f), c + new Vector2(7f, 6f), accent, 2.2f);
                         Vector2[] star =
@@ -330,9 +327,8 @@ namespace AtlasWorld.Client.UI.Widgets
                         DrawColoredPolygon(star, gold);
                         break;
                     }
-                    default: // "shop" / "gear"
+                    default:
                     {
-                        // Gilded shield & crest
                         Vector2[] shield =
                         {
                             c + new Vector2(-7f, -7f),
@@ -347,6 +343,15 @@ namespace AtlasWorld.Client.UI.Widgets
                         DrawLine(c + new Vector2(-4f, -1f), c + new Vector2(4f, -1f), cream, 1.8f);
                         break;
                     }
+                }
+
+                // ROO Red Notification Badge Dot on upper-right corner
+                if (_showNotificationDot)
+                {
+                    Vector2 dotCenter = new Vector2(Size.X - 7f, 7f);
+                    DrawCircle(dotCenter, 4.8f, new Color(0.08f, 0.05f, 0.05f, 0.95f));
+                    DrawCircle(dotCenter, 3.6f, new Color(0.98f, 0.22f, 0.22f, 1.0f));
+                    DrawCircle(dotCenter + new Vector2(-1f, -1f), 1.2f, new Color(1f, 0.85f, 0.85f, 0.9f));
                 }
 
                 // Bottom micro-caption pill
