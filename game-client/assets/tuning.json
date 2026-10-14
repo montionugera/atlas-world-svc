@@ -1,0 +1,9 @@
+{
+  "cameraPitch": 0.56,
+  "cameraDistance": 6.20,
+  "cameraFov": 60.0,
+  "playerSpeed": 4.60,
+  "meleeRange": 3.50,
+  "safeAreaInset": 18.0,
+  "actionClusterScale": 1.00
+}

@@ -204,8 +204,9 @@ namespace AtlasWorld.Client.UI.Widgets
                 DrawString(font, pillPos + new Vector2(4f, pillSize.Y - 3f), displayLabel, HorizontalAlignment.Center, -1, lblSize, lblColor);
             }
 
-            // Desktop Keybind Badge (only shown on non-mobile platforms so iPad stays authentic mobile HUD)
-            if (!OS.HasFeature("mobile") && !string.IsNullOrEmpty(KeybindText))
+            // Desktop Keybind Badge (hidden on mobile or when ATLAS_SIMULATE_MOBILE=1 so Mac matches iPad 1:1)
+            bool isMobileHud = OS.HasFeature("mobile") || OS.GetEnvironment("ATLAS_SIMULATE_MOBILE") == "1";
+            if (!isMobileHud && !string.IsNullOrEmpty(KeybindText))
             {
                 int kbSize = Mathf.Max(8, (int)(r * 0.20f));
                 Vector2 textSize = font.GetStringSize(KeybindText, HorizontalAlignment.Center, -1, kbSize);

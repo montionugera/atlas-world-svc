@@ -23,7 +23,7 @@ namespace AtlasWorld.Client
     /// 4. Joymify Design System + MetaShell (Character, Inventory, Skills, Quests, Loadout)
     /// 5. Split-screen WardrobeModal with real 3D Weapon GLB attachment
     /// 6. 3D World Monsters (showcase + live server-rs mobs/bots/projectiles) with 3D overhead nameplates, HP bars &amp; target ring
-    /// 7. Authoritative Player HP/SP, ROX Auto-Combat AFK loop, Quest Kill Tracker, and Live Minimap Radar
+    /// 7. Authoritative Player HP/SP, ROX Auto-Combat AFK loop, Quest Kill Tracker, Live Minimap Radar, and DevTuningDrawer
     /// </summary>
     public partial class VerticalSliceRoot : Node3D
     {
@@ -50,9 +50,14 @@ namespace AtlasWorld.Client
         private AnimationController? _playerAnimController;
         private AnimationPlayer? _animPlayer;
         private MetaShell? _metaShell;
+        private DevTuningDrawer? _tuningDrawer;
 
         private Vector2 _touchMoveIntent = Vector2.Zero;
-        private float _playerSpeed = 4.6f; // Matches server-rs default derived speed (46.0 * 0.1 = 4.6 u/s)
+        private float _basePlayerSpeed = 4.6f; // Matches server-rs default derived speed (46.0 * 0.1 = 4.6 u/s)
+        private float _playerSpeed = 4.6f;
+        private float _meleeRangeWorld = MeleeAttackRangeWorld;
+        private float _customSafeInset = 18.0f;
+        private float _actionClusterScale = 1.0f;
         private float _dashDuration = 0f;
         private float _attackAnimHoldSec = 0f;
         private bool _wasMovingLastFrame = false;
@@ -187,11 +192,16 @@ namespace AtlasWorld.Client
             // 3. Spawn 3D World Monsters with Overhead Nameplates, HP Bars & Target Ring
             SpawnWorldMonsters();
 
-            // 4. Apply Joymify Design System Theme to all UI controls & instantiate MetaShell
+            // 4. Apply Joymify Design System Theme to all UI controls & instantiate MetaShell + DevTuningDrawer
             var joymifyTheme = ThemeBuilder.Build();
             var uiNode = GetNodeOrNull("UI");
             if (uiNode != null)
             {
+                _tuningDrawer = new DevTuningDrawer { Name = "DevTuningDrawer" };
+                uiNode.AddChild(_tuningDrawer);
+                _tuningDrawer.ValuesChanged += ApplyTuningValues;
+                _tuningDrawer.AutoCombatToggleRequested += ToggleAutoCombat;
+
                 foreach (Node child in uiNode.GetChildren())
                 {
                     if (child is Control ctrl)
@@ -203,6 +213,11 @@ namespace AtlasWorld.Client
 
             _metaShell = new MetaShell();
             AddChild(_metaShell);
+
+            if (_tuningDrawer != null)
+            {
+                ApplyTuningValues(_tuningDrawer.Current);
+            }
 
             // Apply iOS Safe Area insets so notch / home-indicator never clip HUD controls
             ApplyMobileSafeArea();
@@ -326,10 +341,19 @@ namespace AtlasWorld.Client
                 };
             }
 
+            // Optional auto-combat startup flag for automated Mac tests (ATLAS_AUTO_COMBAT_ON_START=1)
+            if (OS.GetEnvironment("ATLAS_AUTO_COMBAT_ON_START") == "1")
+            {
+                GetTree().CreateTimer(0.6).Timeout += () => SetAutoCombat(true);
+            }
+
             // Optional screenshot capture on desktop when ATLAS_CAPTURE_SCREENSHOT=1 (never stalls iOS GPU)
             if (!OS.HasFeature("mobile") && OS.GetEnvironment("ATLAS_CAPTURE_SCREENSHOT") == "1")
             {
-                GetTree().CreateTimer(1.2).Timeout += () =>
+                double delay = double.TryParse(OS.GetEnvironment("ATLAS_SCREENSHOT_DELAY"), out double customDelay)
+                    ? customDelay
+                    : 2.0;
+                GetTree().CreateTimer(delay).Timeout += () =>
                 {
                     var img = GetViewport()?.GetTexture()?.GetImage();
                     if (img != null)
@@ -337,8 +361,27 @@ namespace AtlasWorld.Client
                         img.SavePng("/tmp/atlas_actual_render.png");
                         GD.Print("[VerticalSliceRoot] Auto-screenshot captured to /tmp/atlas_actual_render.png");
                     }
+                    if (OS.GetEnvironment("ATLAS_QUIT_AFTER_SCREENSHOT") == "1")
+                    {
+                        GetTree().Quit(0);
+                    }
                 };
             }
+        }
+
+        private void ApplyTuningValues(DevTuningDrawer.TuningValues v)
+        {
+            _cameraPitch = v.CameraPitch;
+            _cameraDistance = v.CameraDistance;
+            if (MainCamera != null)
+            {
+                MainCamera.Fov = v.CameraFov;
+            }
+            _basePlayerSpeed = v.PlayerSpeed;
+            _meleeRangeWorld = v.MeleeRange;
+            _customSafeInset = v.SafeAreaInset;
+            _actionClusterScale = v.ActionClusterScale;
+            ApplyMobileSafeArea();
         }
 
         private void ToggleAutoCombat()
@@ -425,8 +468,8 @@ namespace AtlasWorld.Client
             Vector2I windowSize = DisplayServer.WindowGetSize();
             if (windowSize.X <= 0 || windowSize.Y <= 0) return;
 
-            float leftInset = Mathf.Max(14f, safeArea.Position.X * 0.5f);
-            float rightInset = Mathf.Max(14f, (windowSize.X - (safeArea.Position.X + safeArea.Size.X)) * 0.5f);
+            float leftInset = Mathf.Max(_customSafeInset, safeArea.Position.X * 0.5f);
+            float rightInset = Mathf.Max(_customSafeInset, (windowSize.X - (safeArea.Position.X + safeArea.Size.X)) * 0.5f);
 
             if (PlayerStatusFrame != null)
             {
@@ -458,6 +501,8 @@ namespace AtlasWorld.Client
             {
                 actionCluster.OffsetRight = -rightInset;
                 actionCluster.OffsetLeft = -rightInset - 325f;
+                actionCluster.PivotOffset = new Vector2(325f, 325f);
+                actionCluster.Scale = Vector2.One * _actionClusterScale;
             }
         }
 
@@ -739,6 +784,13 @@ namespace AtlasWorld.Client
             {
                 var focusOwner = GetViewport()?.GuiGetFocusOwner();
                 bool isTyping = focusOwner is LineEdit or TextEdit;
+
+                if (keyEvent.Keycode == Key.Quoteleft || keyEvent.Keycode == Key.F10)
+                {
+                    _tuningDrawer?.ToggleDrawer();
+                    GetViewport()?.SetInputAsHandled();
+                    return;
+                }
 
                 if (keyEvent.Keycode == Key.Escape)
                 {
@@ -1134,7 +1186,7 @@ namespace AtlasWorld.Client
                     Vector3 toTarget = targetRoot.Position - PlayerAvatar.Position;
                     toTarget.Y = 0f;
                     float dist = toTarget.Length();
-                    if (dist > MeleeAttackRangeWorld * 0.88f)
+                    if (dist > _meleeRangeWorld * 0.88f)
                     {
                         direction = toTarget / dist;
                     }
@@ -1183,7 +1235,7 @@ namespace AtlasWorld.Client
                     Vector3 toTarget = targetRoot.Position - PlayerAvatar.Position;
                     toTarget.Y = 0f;
                     float dist = toTarget.Length();
-                    if (dist > MeleeAttackRangeWorld * 0.88f)
+                    if (dist > _meleeRangeWorld * 0.88f)
                     {
                         direction = toTarget / dist;
                     }
@@ -1206,7 +1258,7 @@ namespace AtlasWorld.Client
             }
             else
             {
-                _playerSpeed = 4.6f;
+                _playerSpeed = _basePlayerSpeed;
             }
 
             bool isMoving = PlayerAvatar != null && direction.LengthSquared() > 0.001f;
@@ -1326,7 +1378,7 @@ namespace AtlasWorld.Client
 
                 // If target is outside server-rs melee attack range (40 server units = 4.0 world units),
                 // automatically sprint into melee range and swing on arrival (ROX mobile auto-approach)!
-                if (dist > MeleeAttackRangeWorld)
+                if (dist > _meleeRangeWorld)
                 {
                     _autoApproachAttackPending = true;
                     return;
