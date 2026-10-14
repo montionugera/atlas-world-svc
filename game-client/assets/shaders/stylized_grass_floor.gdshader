@@ -1,0 +1,100 @@
+shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_toon, specular_schlick_ggx;
+
+// Ragnarok Origin (ROO / ROX) Stylized Prontera South Gate Meadow Terrain Shader
+// Features:
+// - Lush multi-octave hand-painted clover & sunlit emerald grass patches
+// - Warm golden sunlight dappled canopy highlights + wind-swaying grass blade micro-texture
+// - Smooth cobblestone & warm earth path blending along the central sanctuary road & combat plaza
+// - Subtle wildflowers (daisy white, buttercup gold, pastel lavender) scattered in grass zones
+
+uniform vec4 grass_base_color : source_color = vec4(0.32, 0.58, 0.24, 1.0);
+uniform vec4 grass_highlight_color : source_color = vec4(0.56, 0.78, 0.28, 1.0);
+uniform vec4 grass_shadow_color : source_color = vec4(0.20, 0.42, 0.22, 1.0);
+uniform vec4 path_dirt_color : source_color = vec4(0.68, 0.56, 0.42, 1.0);
+uniform vec4 path_stone_color : source_color = vec4(0.78, 0.75, 0.68, 1.0);
+
+varying vec3 v_world_pos;
+
+float hash21(vec2 p) {
+    p = fract(p * vec2(234.34, 435.345));
+    p += dot(p, p + 34.23);
+    return fract(p.x * p.y);
+}
+
+float value_noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    float a = hash21(i);
+    float b = hash21(i + vec2(1.0, 0.0));
+    float c = hash21(i + vec2(0.0, 1.0));
+    float d = hash21(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+float fbm(vec2 p) {
+    float v = 0.0;
+    float amp = 0.5;
+    mat2 rot = mat2(vec2(0.8, 0.6), vec2(-0.6, 0.8));
+    for (int i = 0; i < 4; i++) {
+        v += amp * value_noise(p);
+        p = rot * p * 2.05;
+        amp *= 0.5;
+    }
+    return v;
+}
+
+void vertex() {
+    v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+}
+
+void fragment() {
+    vec2 wp = v_world_pos.xz;
+
+    // 1. Macro meadow patches (sunlit golden-green vs cool emerald clover)
+    float macro_patch = fbm(wp * 0.14);
+    float mid_patch = fbm(wp * 0.45 + vec2(12.3, -7.1));
+
+    // 2. Wind-rippled stylized grass strokes
+    vec2 wind_uv = wp * 2.2 + vec2(TIME * 0.35, TIME * 0.18);
+    float blade_ripple = value_noise(wind_uv * vec2(1.8, 0.7));
+    float micro_blade = value_noise(wp * 6.5);
+
+    vec3 meadow = mix(grass_shadow_color.rgb, grass_base_color.rgb, smoothstep(0.25, 0.65, macro_patch));
+    meadow = mix(meadow, grass_highlight_color.rgb, smoothstep(0.48, 0.82, mid_patch * 0.75 + blade_ripple * 0.35));
+    meadow += (micro_blade - 0.5) * 0.04;
+
+    // 3. Dappled sunlight canopy rings (bright anime sunspots on the grass)
+    float sun_dapple = smoothstep(0.66, 0.74, fbm(wp * 0.28 - vec2(TIME * 0.08, 0.0)));
+    meadow = mix(meadow, vec3(0.72, 0.88, 0.38), sun_dapple * 0.32);
+
+    // 4. Tiny stylized wildflowers in lush grass areas
+    vec2 flower_cell = floor(wp * 3.5);
+    vec2 flower_fract = fract(wp * 3.5) - 0.5;
+    float flower_seed = hash21(flower_cell);
+    if (flower_seed > 0.87 && length(wp) > 3.2) {
+        float dist = length(flower_fract);
+        float petal = smoothstep(0.22, 0.08, dist);
+        vec3 flower_col = flower_seed > 0.95
+            ? vec3(1.0, 0.92, 0.35)   // Buttercup gold
+            : (flower_seed > 0.91 ? vec3(0.98, 0.98, 1.0) : vec3(0.95, 0.72, 0.88)); // Daisy white / pastel pink
+        meadow = mix(meadow, flower_col, petal * 0.85);
+    }
+
+    // 5. Warm sanctuary dirt & cobblestone border along the central road and plaza
+    float road_dist = abs(wp.x + sin(wp.y * 0.12) * 1.2);
+    float plaza_dist = length(wp - vec2(0.0, -2.0));
+    float edge_noise = (macro_patch - 0.5) * 1.4;
+    float road_mask = 1.0 - smoothstep(1.6, 3.2, road_dist + edge_noise);
+    float plaza_mask = 1.0 - smoothstep(3.5, 6.2, plaza_dist + edge_noise);
+    float path_factor = clamp(max(road_mask * smoothstep(-14.0, 10.0, -wp.y), plaza_mask * 0.85), 0.0, 1.0);
+
+    // Cobblestone cell pattern inside the path
+    float stone_pattern = smoothstep(0.35, 0.65, value_noise(wp * 2.8));
+    vec3 path_col = mix(path_dirt_color.rgb, path_stone_color.rgb, stone_pattern * 0.55);
+
+    ALBEDO = mix(meadow, path_col, path_factor * 0.78);
+    ROUGHNESS = mix(0.88, 0.76, path_factor);
+    SPECULAR = 0.12;
+}

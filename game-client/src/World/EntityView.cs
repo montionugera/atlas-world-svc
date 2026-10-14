@@ -93,6 +93,9 @@ namespace AtlasWorld.Client.World
             }
             else if (_body == null && kind is EntityKind.Player or EntityKind.Mob or EntityKind.Npc)
             {
+                // Apply Ragnarok Origin anime cel-shading + warm rim light to all glTF character meshes
+                ApplyAnimeToonShading(_root, kind);
+
                 // Grounding contact shadow disc beneath real 3D character models
                 var shadowDisc = new MeshInstance3D
                 {
@@ -109,27 +112,27 @@ namespace AtlasWorld.Client.World
                     {
                         Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
                         ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-                        AlbedoColor = new Color(0f, 0f, 0f, 0.38f)
+                        AlbedoColor = new Color(0.06f, 0.12f, 0.08f, 0.36f)
                     }
                 };
                 _root.AddChild(shadowDisc);
 
-                // Real 3D glTF character model: attach overhead 3D billboard nameplate & HP bar
+                // Real 3D glTF character model: attach compact ROO-style overhead 3D billboard nameplate & slim HP bar
                 _nameLabel = new Label3D
                 {
                     Name = "OverheadNameplate",
                     Text = kind == EntityKind.Player ? "Adventurer" : EntityKeys.FormatMobDisplayName(typeId),
-                    PixelSize = 0.007f,
-                    FontSize = 20,
-                    OutlineSize = 6,
+                    PixelSize = 0.0056f,
+                    FontSize = 18,
+                    OutlineSize = 5,
                     Modulate = kind == EntityKind.Player
-                        ? new Color(0.55f, 0.88f, 1.0f, 1f)
-                        : new Color(1.0f, 0.72f, 0.48f, 1f),
-                    OutlineModulate = new Color(0.05f, 0.05f, 0.08f, 0.95f),
+                        ? new Color(0.62f, 0.92f, 1.0f, 0.96f)
+                        : new Color(1.0f, 0.86f, 0.56f, 0.96f),
+                    OutlineModulate = new Color(0.05f, 0.06f, 0.10f, 0.92f),
                     Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
-                    Position = new Vector3(0f, 2.28f, 0f),
-                    VisibilityRangeEnd = 28.0f,
-                    VisibilityRangeEndMargin = 4.0f,
+                    Position = new Vector3(0f, 2.18f, 0f),
+                    VisibilityRangeEnd = 18.5f,
+                    VisibilityRangeEndMargin = 3.5f,
                     VisibilityRangeFadeMode = GeometryInstance3D.VisibilityRangeFadeModeEnum.Self
                 };
                 _root.AddChild(_nameLabel);
@@ -137,17 +140,17 @@ namespace AtlasWorld.Client.World
                 _hpBarBg = new MeshInstance3D
                 {
                     Name = "OverheadHpBg",
-                    Mesh = new BoxMesh { Size = new Vector3(1.10f, 0.09f, 0.03f) },
-                    Position = new Vector3(0f, 2.02f, 0f),
-                    VisibilityRangeEnd = 28.0f,
-                    VisibilityRangeEndMargin = 4.0f,
+                    Mesh = new BoxMesh { Size = new Vector3(0.88f, 0.068f, 0.025f) },
+                    Position = new Vector3(0f, 1.96f, 0f),
+                    VisibilityRangeEnd = 18.5f,
+                    VisibilityRangeEndMargin = 3.5f,
                     VisibilityRangeFadeMode = GeometryInstance3D.VisibilityRangeFadeModeEnum.Self,
                     MaterialOverride = new StandardMaterial3D
                     {
                         ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
                         BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
                         BillboardKeepScale = true,
-                        AlbedoColor = new Color(0.08f, 0.08f, 0.12f, 0.9f)
+                        AlbedoColor = new Color(0.06f, 0.08f, 0.12f, 0.92f)
                     }
                 };
                 _root.AddChild(_hpBarBg);
@@ -158,20 +161,78 @@ namespace AtlasWorld.Client.World
                     BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
                     BillboardKeepScale = true,
                     AlbedoColor = kind == EntityKind.Player
-                        ? new Color(0.25f, 0.88f, 0.42f, 1f)
-                        : new Color(0.92f, 0.22f, 0.22f, 1f)
+                        ? new Color(0.28f, 0.92f, 0.48f, 1f)
+                        : new Color(0.95f, 0.26f, 0.24f, 1f)
                 };
                 _hpBar = new MeshInstance3D
                 {
                     Name = "OverheadHpFill",
-                    Mesh = new BoxMesh { Size = new Vector3(1.06f, 0.065f, 0.04f) },
-                    Position = new Vector3(0f, 2.02f, 0.01f),
-                    VisibilityRangeEnd = 28.0f,
-                    VisibilityRangeEndMargin = 4.0f,
+                    Mesh = new BoxMesh { Size = new Vector3(0.84f, 0.048f, 0.032f) },
+                    Position = new Vector3(0f, 1.96f, 0.01f),
+                    VisibilityRangeEnd = 18.5f,
+                    VisibilityRangeEndMargin = 3.5f,
                     VisibilityRangeFadeMode = GeometryInstance3D.VisibilityRangeFadeModeEnum.Self,
                     MaterialOverride = _hpBarMaterial
                 };
                 _root.AddChild(_hpBar);
+            }
+        }
+
+        /// <summary>
+        /// Upgrades imported glTF PBR materials to Ragnarok Origin's signature anime cel-shaded look:
+        /// Toon diffuse ramp, toon specular highlight, warm sunlit rim light, and subtle dark silhouette outline.
+        /// </summary>
+        public static void ApplyAnimeToonShading(Node root, EntityKind kind = EntityKind.Player)
+        {
+            Shader? outlineShader = ResourceLoader.Exists("res://assets/shaders/outline.gdshader")
+                ? GD.Load<Shader>("res://assets/shaders/outline.gdshader")
+                : null;
+
+            ApplyAnimeToonShadingRecursive(root, kind, outlineShader);
+        }
+
+        private static void ApplyAnimeToonShadingRecursive(Node node, EntityKind kind, Shader? outlineShader)
+        {
+            if (node is MeshInstance3D meshInst && meshInst.Mesh != null &&
+                meshInst.Name != "DropShadow" && meshInst.Name != "OverheadHpBg" && meshInst.Name != "OverheadHpFill")
+            {
+                int surfaceCount = meshInst.Mesh.GetSurfaceCount();
+                for (int i = 0; i < surfaceCount; i++)
+                {
+                    Material? existing = meshInst.GetSurfaceOverrideMaterial(i) ?? meshInst.Mesh.SurfaceGetMaterial(i);
+                    if (existing is StandardMaterial3D stdMat)
+                    {
+                        var toonMat = (StandardMaterial3D)stdMat.Duplicate();
+                        toonMat.DiffuseMode = BaseMaterial3D.DiffuseModeEnum.Toon;
+                        toonMat.SpecularMode = BaseMaterial3D.SpecularModeEnum.Toon;
+                        toonMat.Roughness = Mathf.Clamp(toonMat.Roughness * 0.65f, 0.25f, 0.55f);
+                        toonMat.RimEnabled = true;
+                        toonMat.Rim = 0.42f;
+                        toonMat.RimTint = 0.35f;
+
+                        // Warm anime bounce light so shadows never look muddy grey/black
+                        toonMat.EmissionEnabled = true;
+                        toonMat.Emission = kind == EntityKind.Mob
+                            ? new Color(0.18f, 0.11f, 0.14f, 1f)
+                            : new Color(0.16f, 0.15f, 0.18f, 1f);
+                        toonMat.EmissionEnergyMultiplier = 0.32f;
+
+                        if (outlineShader != null)
+                        {
+                            var outlineMat = new ShaderMaterial { Shader = outlineShader };
+                            outlineMat.SetShaderParameter("outline_color", new Color(0.14f, 0.10f, 0.16f, 1.0f));
+                            outlineMat.SetShaderParameter("outline_thickness", 0.0065f);
+                            toonMat.NextPass = outlineMat;
+                        }
+
+                        meshInst.SetSurfaceOverrideMaterial(i, toonMat);
+                    }
+                }
+            }
+
+            foreach (Node child in node.GetChildren())
+            {
+                ApplyAnimeToonShadingRecursive(child, kind, outlineShader);
             }
         }
 
@@ -180,7 +241,16 @@ namespace AtlasWorld.Client.World
             DisplayName = text;
             if (_nameLabel != null && IsInstanceValid(_nameLabel))
             {
-                _nameLabel.Text = text;
+                // Keep overhead labels concise like Ragnarok Origin (strip verbose bracket prefixes unless MVP)
+                string cleanText = text;
+                if (cleanText.StartsWith("[Bot] "))
+                    cleanText = cleanText.Substring(6);
+                else if (cleanText.StartsWith("[Elite Mob] "))
+                    cleanText = cleanText.Substring(12);
+                else if (cleanText.StartsWith("[Mob] "))
+                    cleanText = cleanText.Substring(6);
+
+                _nameLabel.Text = cleanText;
                 if (color.HasValue)
                     _nameLabel.Modulate = color.Value;
             }

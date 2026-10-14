@@ -153,6 +153,9 @@ namespace AtlasWorld.Client
             // 2. Initialize Player Avatar & AnimationController from internal library
             if (PlayerAvatar != null)
             {
+                // Apply Ragnarok Origin anime cel-shading + warm rim light to local PlayerAvatar
+                EntityView.ApplyAnimeToonShading(PlayerAvatar, EntityKind.Player);
+
                 // player_knight.glb faces +Z in model space; rotating Y by Pi faces -Z (away from camera into the world)
                 PlayerAvatar.Rotation = new Vector3(0f, Mathf.Pi, 0f);
 
@@ -177,9 +180,10 @@ namespace AtlasWorld.Client
 
                 _playerAnimController.Update(isAlive: true, velocity: Vector3.Zero, isAttacking: false);
 
-                // Also ensure Wardrobe PreviewAvatar loops its Idle animation
+                // Also ensure Wardrobe PreviewAvatar loops its Idle animation and uses anime cel-shading
                 if (EquipmentWardrobeModal?.PreviewAvatar != null)
                 {
+                    EntityView.ApplyAnimeToonShading(EquipmentWardrobeModal.PreviewAvatar, EntityKind.Player);
                     var previewAnim = EquipmentWardrobeModal.PreviewAvatar.FindChild("AnimationPlayer", true, false) as AnimationPlayer;
                     if (previewAnim != null && previewAnim.HasAnimation("Idle"))
                     {
@@ -189,7 +193,8 @@ namespace AtlasWorld.Client
                 }
             }
 
-            // 3. Spawn 3D World Monsters with Overhead Nameplates, HP Bars & Target Ring
+            // 3. Populate Stylized Meadow Foliage Ring & Spawn 3D World Monsters with Overhead Nameplates, HP Bars & Target Ring
+            PopulateMeadowEnvironment();
             SpawnWorldMonsters();
 
             // 4. Apply Joymify Design System Theme to all UI controls & instantiate MetaShell + DevTuningDrawer
@@ -333,6 +338,7 @@ namespace AtlasWorld.Client
                     if (PlayerAvatar != null)
                     {
                         WardrobeModal.AttachEquipmentToAvatar(PlayerAvatar, itemId);
+                        EntityView.ApplyAnimeToonShading(PlayerAvatar, EntityKind.Player);
                         AudioRegistry.Instance?.Play("sfx:attack", PlayerAvatar.GlobalPosition);
                         var tween = CreateTween();
                         tween.TweenProperty(PlayerAvatar, "scale", new Vector3(1.18f, 0.88f, 1.18f), 0.1);
@@ -412,7 +418,7 @@ namespace AtlasWorld.Client
         {
             if (_questTitleLabel != null)
             {
-                _questTitleLabel.Text = $"[Chapter {_questStage}] Midnight Bells";
+                _questTitleLabel.Text = $"[Main] Ch.{_questStage} Midnight Bells";
             }
             if (_questTargetLabel != null)
             {
@@ -421,11 +427,11 @@ namespace AtlasWorld.Client
             if (_questHintLabel != null)
             {
                 _questHintLabel.Text = _autoCombatEnabled
-                    ? "● Auto-Hunting Active (Tap to stop)"
-                    : ">> Tap or [AUTO] to auto-hunt";
+                    ? "● Auto-Hunting Active (Tap to pause)"
+                    : "▸ Tap or [AUTO] to auto-hunt";
                 _questHintLabel.Modulate = _autoCombatEnabled
                     ? new Color(0.35f, 1.0f, 0.58f, 1f)
-                    : new Color(0.85f, 0.92f, 0.65f, 0.95f);
+                    : new Color(0.95f, 0.90f, 0.58f, 0.95f);
             }
         }
 
@@ -487,7 +493,7 @@ namespace AtlasWorld.Client
             if (StatusLabel != null)
             {
                 StatusLabel.OffsetLeft = leftInset;
-                StatusLabel.OffsetRight = leftInset + 260f;
+                StatusLabel.OffsetRight = leftInset + 240f;
             }
 
             if (MobileControls?.Joystick != null)
@@ -500,9 +506,86 @@ namespace AtlasWorld.Client
             if (actionCluster != null)
             {
                 actionCluster.OffsetRight = -rightInset;
-                actionCluster.OffsetLeft = -rightInset - 325f;
-                actionCluster.PivotOffset = new Vector2(325f, 325f);
+                actionCluster.OffsetLeft = -rightInset - 335f;
+                actionCluster.PivotOffset = new Vector2(335f, 325f);
                 actionCluster.Scale = Vector2.One * _actionClusterScale;
+            }
+        }
+
+        /// <summary>
+        /// Scatters stylized Prontera South Gate meadow trees, bushes, rocks, and flower tufts
+        /// across the outer combat field so the arena looks lush in every direction.
+        /// </summary>
+        private void PopulateMeadowEnvironment()
+        {
+            var envProps = GetNodeOrNull<Node3D>("EnvironmentProps");
+            if (envProps == null)
+                return;
+
+            // Upgrade existing environment props to warm anime toon shading
+            EntityView.ApplyAnimeToonShading(envProps, EntityKind.Npc);
+
+            var tree1Scene = ResourceLoader.Exists("res://assets/nature/tree_1_a_color1.glb")
+                ? GD.Load<PackedScene>("res://assets/nature/tree_1_a_color1.glb") : null;
+            var tree2Scene = ResourceLoader.Exists("res://assets/nature/tree_2_a_color1.glb")
+                ? GD.Load<PackedScene>("res://assets/nature/tree_2_a_color1.glb") : null;
+            var bushScene = ResourceLoader.Exists("res://assets/nature/bush_1_a_color1.glb")
+                ? GD.Load<PackedScene>("res://assets/nature/bush_1_a_color1.glb") : null;
+            var rockScene = ResourceLoader.Exists("res://assets/nature/rock_1_a_color1.glb")
+                ? GD.Load<PackedScene>("res://assets/nature/rock_1_a_color1.glb") : null;
+
+            var meadowRing = new Node3D { Name = "MeadowRing" };
+            envProps.AddChild(meadowRing);
+
+            // Outer ring of stylized trees framing the horizon
+            (Vector3 pos, float scale, float rotY, bool alt)[] treeSpots =
+            {
+                (new Vector3(-16f, 0f, -14f), 1.55f, 0.4f, false),
+                (new Vector3(15f, 0f, -15f), 1.45f, 1.8f, true),
+                (new Vector3(-20f, 0f, -4f), 1.65f, 2.5f, true),
+                (new Vector3(19f, 0f, -2f), 1.50f, 0.9f, false),
+                (new Vector3(-15f, 0f, 13f), 1.40f, 3.1f, false),
+                (new Vector3(16f, 0f, 14f), 1.60f, 1.2f, true),
+                (new Vector3(-6f, 0f, 18f), 1.50f, 2.1f, true),
+                (new Vector3(8f, 0f, -22f), 1.75f, 0.6f, false),
+            };
+
+            foreach (var (pos, scale, rotY, alt) in treeSpots)
+            {
+                var scene = alt ? tree2Scene : tree1Scene;
+                if (scene?.Instantiate() is Node3D t)
+                {
+                    t.Position = pos;
+                    t.Scale = Vector3.One * scale;
+                    t.Rotation = new Vector3(0f, rotY, 0f);
+                    EntityView.ApplyAnimeToonShading(t, EntityKind.Npc);
+                    meadowRing.AddChild(t);
+                }
+            }
+
+            // Mid-field bushes & rocks with warm sunlit toon shading
+            (Vector3 pos, float scale, bool isRock)[] bushRockSpots =
+            {
+                (new Vector3(-9.5f, 0f, -2.5f), 1.25f, false),
+                (new Vector3(9.2f, 0f, -4.0f), 1.15f, false),
+                (new Vector3(-7.8f, 0f, 7.5f), 1.30f, false),
+                (new Vector3(8.4f, 0f, 8.2f), 1.20f, false),
+                (new Vector3(-12.5f, 0f, -10.5f), 1.35f, true),
+                (new Vector3(12.0f, 0f, -11.0f), 1.25f, true),
+                (new Vector3(-3.5f, 0f, 11.5f), 1.10f, false),
+                (new Vector3(4.5f, 0f, -12.5f), 1.25f, false),
+            };
+
+            foreach (var (pos, scale, isRock) in bushRockSpots)
+            {
+                var scene = isRock ? rockScene : bushScene;
+                if (scene?.Instantiate() is Node3D b)
+                {
+                    b.Position = pos;
+                    b.Scale = Vector3.One * scale;
+                    EntityView.ApplyAnimeToonShading(b, EntityKind.Npc);
+                    meadowRing.AddChild(b);
+                }
             }
         }
 
@@ -601,6 +684,8 @@ namespace AtlasWorld.Client
                 mobRoot = new Node3D();
             }
 
+            EntityView.ApplyAnimeToonShading(mobRoot, EntityKind.Mob);
+
             mobRoot.Position = pos;
             mobRoot.Scale = Vector3.One * scale;
             // Face +Z toward the player at origin
@@ -615,21 +700,21 @@ namespace AtlasWorld.Client
             var nameLabel = new Label3D
             {
                 Text = $"[{badge}] {name}",
-                PixelSize = 0.0085f,
-                FontSize = 26,
-                OutlineSize = 8,
+                PixelSize = 0.0065f,
+                FontSize = 20,
+                OutlineSize = 6,
                 Modulate = nameColor,
                 OutlineModulate = new Color(0.05f, 0.05f, 0.08f, 0.95f),
                 Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
-                Position = new Vector3(0f, 2.35f, 0f)
+                Position = new Vector3(0f, 2.30f, 0f)
             };
             mobRoot.AddChild(nameLabel);
 
             // Overhead 3D HP Bar background & crimson fill
             var hpBgMesh = new MeshInstance3D
             {
-                Mesh = new BoxMesh { Size = new Vector3(1.35f, 0.11f, 0.04f) },
-                Position = new Vector3(0f, 2.05f, 0f),
+                Mesh = new BoxMesh { Size = new Vector3(1.10f, 0.085f, 0.03f) },
+                Position = new Vector3(0f, 2.02f, 0f),
                 MaterialOverride = new StandardMaterial3D
                 {
                     ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
@@ -642,8 +727,8 @@ namespace AtlasWorld.Client
 
             var hpFillMesh = new MeshInstance3D
             {
-                Mesh = new BoxMesh { Size = new Vector3(1.30f, 0.08f, 0.05f) },
-                Position = new Vector3(0f, 2.05f, 0.01f),
+                Mesh = new BoxMesh { Size = new Vector3(1.06f, 0.062f, 0.04f) },
+                Position = new Vector3(0f, 2.02f, 0.01f),
                 MaterialOverride = new StandardMaterial3D
                 {
                     ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
@@ -1073,7 +1158,7 @@ namespace AtlasWorld.Client
         private void OnSnapshotReceived(int tick, ulong serverTimeMs, int entityCount)
         {
             UpdateStatusText(
-                $"[color=#{Design.Palette.Success.ToHtml(false)}]● Live | Tick {tick} | Entities: {entityCount} (Views: {_entityManager.Count})[/color]");
+                $"[color=#{Design.Palette.Success.ToHtml(false)}]● Ch.1 Freja | Tick {tick} | Entities: {entityCount}[/color]");
         }
 
         private void UpdateStatusText(string bbcode)

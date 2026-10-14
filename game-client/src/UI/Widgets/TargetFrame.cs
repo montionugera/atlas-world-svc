@@ -27,7 +27,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
         public override void _Ready()
         {
-            CustomMinimumSize = new Vector2(380, 56);
+            CustomMinimumSize = new Vector2(390, 58);
 
             _hpBar = GetNodeOrNull<ProgressBar>("Container/HBox/BarBox/HpBar")
                      ?? GetNodeOrNull<ProgressBar>("Container/BarBox/HpBar");
@@ -39,6 +39,17 @@ namespace AtlasWorld.Client.UI.Widgets
                             ?? GetNodeOrNull<Label>("Container/BarBox/InfoRow/SegmentLabel");
             _avatarCircle = GetNodeOrNull<Control>("Container/HBox/AvatarFrame")
                             ?? GetNodeOrNull<Control>("Container/AvatarFrame");
+
+            if (_hpBar != null)
+            {
+                var overlay = new HpBarSegmentOverlay(this)
+                {
+                    Name = "SegmentOverlay",
+                    MouseFilter = MouseFilterEnum.Ignore
+                };
+                overlay.SetAnchorsPreset(LayoutPreset.FullRect);
+                _hpBar.AddChild(overlay);
+            }
 
             UpdateDisplay();
         }
@@ -59,13 +70,15 @@ namespace AtlasWorld.Client.UI.Widgets
         {
             if (_nameLabel != null)
             {
-                _nameLabel.Text = $"{TargetName}  [{TitleBadge}]";
+                string crownPrefix = TitleBadge.Contains("MVP") ? "♛ " : "◈ ";
+                _nameLabel.Text = $"{crownPrefix}{TargetName}  [{TitleBadge}]";
             }
 
             if (_hpBar != null)
             {
                 _hpBar.MaxValue = Math.Max(1, MaxHp);
                 _hpBar.Value = Math.Clamp(CurrentHp, 0, MaxHp);
+                _hpBar.GetNodeOrNull<Control>("SegmentOverlay")?.QueueRedraw();
             }
 
             if (_hpLabel != null)
@@ -76,7 +89,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
             if (_segmentLabel != null)
             {
-                _segmentLabel.Text = $"x{BarSegments}  [{ElementType}]";
+                _segmentLabel.Text = $"[{ElementType}]  ×{BarSegments}";
             }
 
             QueueRedraw();
@@ -88,6 +101,39 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 _hitFlash -= (float)delta;
                 QueueRedraw();
+            }
+        }
+
+        private sealed partial class HpBarSegmentOverlay : Control
+        {
+            private readonly TargetFrame _owner;
+
+            public HpBarSegmentOverlay(TargetFrame owner)
+            {
+                _owner = owner;
+            }
+
+            public override void _Draw()
+            {
+                Vector2 sz = Size;
+                if (sz.X <= 4f || sz.Y <= 4f)
+                    return;
+
+                // Top glossy specular highlight band across the boss HP bar
+                DrawRect(new Rect2(2f, 1.5f, sz.X - 4f, sz.Y * 0.32f), new Color(1f, 1f, 1f, 0.18f), true);
+
+                // Quarter segment notch dividers (ROO style)
+                for (int i = 1; i <= 3; i++)
+                {
+                    float x = sz.X * (i / 4.0f);
+                    DrawLine(new Vector2(x, 1f), new Vector2(x, sz.Y - 1f), new Color(0.05f, 0.02f, 0.02f, 0.55f), 1.2f);
+                }
+
+                if (_owner._hitFlash > 0f)
+                {
+                    float alpha = Mathf.Clamp(_owner._hitFlash * 2.2f, 0f, 0.55f);
+                    DrawRect(new Rect2(Vector2.Zero, sz), new Color(1f, 0.92f, 0.75f, alpha), true);
+                }
             }
         }
     }
