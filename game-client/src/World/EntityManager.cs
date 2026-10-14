@@ -45,9 +45,11 @@ namespace AtlasWorld.Client.World
         /// </summary>
         public bool SuppressOwnPlayerView { get; set; }
 
+        public bool HasOwnPlayerState { get; private set; }
         public float OwnPlayerHealth { get; private set; } = 100f;
         public float OwnPlayerMaxHealth { get; private set; } = 100f;
         public bool OwnPlayerAlive { get; private set; } = true;
+        public Vector3 OwnPlayerServerPosition { get; private set; } = Vector3.Zero;
 
         public bool TryGetEntityView(string id, out EntityView? view) =>
             _views.TryGetValue(id, out view);
@@ -102,7 +104,10 @@ namespace AtlasWorld.Client.World
         public void SetOwnPlayer(string id)
         {
             if (id != _ownPlayerId)
+            {
                 _ownSmoother.Reset();
+                HasOwnPlayerState = false;
+            }
             _ownPlayerId = id;
         }
 
@@ -187,9 +192,11 @@ namespace AtlasWorld.Client.World
 
                 if (id == _ownPlayerId)
                 {
+                    HasOwnPlayerState = true;
                     OwnPlayerHealth = d.Health;
                     OwnPlayerMaxHealth = d.MaxHealth;
                     OwnPlayerAlive = isAlive;
+                    OwnPlayerServerPosition = new Vector3(wx, 0f, wz);
                     if (SuppressOwnPlayerView)
                         continue;
                 }
@@ -364,6 +371,7 @@ namespace AtlasWorld.Client.World
             _interp.Clear();
             _ownSmoother.Reset();
             _ownPlayerId = "";
+            HasOwnPlayerState = false;
         }
 
         public override void _Process(double delta)

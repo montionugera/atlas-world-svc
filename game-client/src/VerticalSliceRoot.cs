@@ -23,11 +23,13 @@ namespace AtlasWorld.Client
     /// 4. Joymify Design System + MetaShell (Character, Inventory, Skills, Quests, Loadout)
     /// 5. Split-screen WardrobeModal with real 3D Weapon GLB attachment
     /// 6. 3D World Monsters (showcase + live server-rs mobs/bots/projectiles) with 3D overhead nameplates, HP bars &amp; target ring
-    /// 7. Responsive iPad mini safe-area adaptation, touch camera orbit/zoom, and desktop keyboard navigation
+    /// 7. Authoritative Player HP/SP, Auto-Approach into Melee Attack Range (3.5u), and Respawn sync
     /// </summary>
     public partial class VerticalSliceRoot : Node3D
     {
         public const float ServerCoordScale = 0.1f;
+        public const float MeleeAttackRangeWorld = 3.5f;
+        public const int PlayerScaleMultiplier = 148;
         public static readonly Vector2 ServerArenaCenter = new(500f, 500f);
 
         [Export] public ServerRsConnection Connection = null!;
@@ -50,10 +52,15 @@ namespace AtlasWorld.Client
         private MetaShell? _metaShell;
 
         private Vector2 _touchMoveIntent = Vector2.Zero;
-        private float _playerSpeed = 6.5f;
+        private float _playerSpeed = 4.6f; // Matches server-rs default derived speed (46.0 * 0.1 = 4.6 u/s)
         private float _dashDuration = 0f;
         private float _attackAnimHoldSec = 0f;
         private bool _wasMovingLastFrame = false;
+        private bool _autoApproachAttackPending = false;
+        private int _currentSp = 3200;
+        private const int MaxSp = 3200;
+        private float _spRegenAccum = 0f;
+        private float _respawnRequestCooldownSec = 0f;
 
         // Camera orbit & zoom state
         private float _cameraYaw = 0f;
@@ -189,6 +196,25 @@ namespace AtlasWorld.Client
             // Apply iOS Safe Area insets so notch / home-indicator never clip HUD controls
             ApplyMobileSafeArea();
             GetViewport().SizeChanged += ApplyMobileSafeArea;
+
+            // Wire QuestTracker tap to auto-approach & engage nearest target
+            var questTracker = GetNodeOrNull<Control>("UI/HUD/QuestTracker");
+            if (questTracker != null)
+            {
+                questTracker.MouseFilter = Control.MouseFilterEnum.Stop;
+                questTracker.GuiInput += (@event) =>
+                {
+                    bool tapped = (@event is InputEventScreenTouch t && t.Pressed) ||
+                                  (@event is InputEventMouseButton m && m.ButtonIndex == MouseButton.Left && m.Pressed);
+                    if (tapped)
+                    {
+                        if (string.IsNullOrEmpty(_selectedServerTargetId))
+                            TriggerTargetSwitch();
+                        _autoApproachAttackPending = true;
+                        ChatWidget?.AppendSystemMessage("Auto-pathing to target monster...");
+                    }
+                };
+            }
 
             // 5. Connect to server-rs via Config endpoint and wire RawSnapshotReceived -> EntityManager
             if (Connection != null)
@@ -737,6 +763,8 @@ namespace AtlasWorld.Client
             if (Connection != null)
             {
                 _entityManager.SetOwnPlayer(Connection.LocalWireId.ToString());
+                // Send an initial neutral ClientInput packet so server-rs spawns our PlayerAvatar immediately
+                Connection.SendInput(0f, 0f);
             }
             UpdateStatusText($"[color=#{Design.Palette.Success.ToHtml(false)}]● Server Connected (2567)[/color]");
             ChatWidget?.AppendSystemMessage("Connected to server-rs WebSocket gateway.");
@@ -747,6 +775,7 @@ namespace AtlasWorld.Client
             _entityManager.Reset();
             _selectedServerTargetId = "";
             _selectedServerTargetWireId = 0;
+            _autoApproachAttackPending = false;
             if (_worldMobsContainer != null)
             {
                 _worldMobsContainer.Visible = true;
@@ -763,6 +792,21 @@ namespace AtlasWorld.Client
             if (_worldMobsContainer != null && _entityManager.Count > 0)
             {
                 _worldMobsContainer.Visible = false;
+            }
+
+            // Sync authoritative own-player HP & Respawn state into PlayerFrame
+            if (_entityManager.HasOwnPlayerState && PlayerStatusFrame != null)
+            {
+                int scaledHp = Mathf.Max(0, (int)Mathf.Round(_entityManager.OwnPlayerHealth * PlayerScaleMultiplier));
+                int scaledMaxHp = Mathf.Max(1, (int)Mathf.Round(_entityManager.OwnPlayerMaxHealth * PlayerScaleMultiplier));
+                PlayerStatusFrame.SetHp(scaledHp, scaledMaxHp);
+
+                if (!_entityManager.OwnPlayerAlive && _respawnRequestCooldownSec <= 0f)
+                {
+                    _respawnRequestCooldownSec = 2.0f;
+                    Connection?.SendInput(0f, 0f, respawn: true);
+                    ChatWidget?.AppendSystemMessage("Defeated in battle! Respawning at Freja Sanctuary...");
+                }
             }
 
             // Auto-select nearest live server-rs mob if none is currently locked
@@ -807,6 +851,7 @@ namespace AtlasWorld.Client
                     // Target died or despawned on the server
                     _selectedServerTargetId = "";
                     _selectedServerTargetWireId = 0;
+                    _autoApproachAttackPending = false;
                 }
             }
 
@@ -840,6 +885,9 @@ namespace AtlasWorld.Client
                         {
                             screenPos = MainCamera.UnprojectPosition(headWorldPos);
                         }
+                        var tween = CreateTween();
+                        tween.TweenProperty(hitView.Root, "scale", Vector3.One * 1.14f, 0.06);
+                        tween.TweenProperty(hitView.Root, "scale", Vector3.One, 0.11);
                     }
                     else if (ev.TargetId == myWireId && PlayerAvatar != null && MainCamera != null)
                     {
@@ -850,6 +898,7 @@ namespace AtlasWorld.Client
                         }
                     }
 
+                    AudioRegistry.Instance?.Play("sfx:hit", PlayerAvatar?.GlobalPosition ?? Vector3.Zero);
                     CombatText?.SpawnDamage(screenPos, dmgAmount, isCrit);
                 }
                 else if (ev.Kind == GameEventKind.Kill && myWireId != 0 && ev.SourceId == myWireId)
@@ -883,6 +932,22 @@ namespace AtlasWorld.Client
         {
             float dt = (float)delta;
             _pulseTime += dt;
+
+            if (_respawnRequestCooldownSec > 0f)
+                _respawnRequestCooldownSec -= dt;
+
+            // Passive SP regeneration (+80 SP/sec)
+            if (_currentSp < MaxSp)
+            {
+                _spRegenAccum += dt * 80f;
+                if (_spRegenAccum >= 1f)
+                {
+                    int add = (int)_spRegenAccum;
+                    _spRegenAccum -= add;
+                    _currentSp = Math.Min(MaxSp, _currentSp + add);
+                    PlayerStatusFrame?.SetSp(_currentSp, MaxSp);
+                }
+            }
 
             // Animate target selection ring scale pulse & track live interpolated target position
             UpdateTargetRingPosition();
@@ -933,6 +998,35 @@ namespace AtlasWorld.Client
             Vector2 rotatedInput = rawInput.Rotated(-_cameraYaw);
             Vector3 direction = new Vector3(rotatedInput.X, 0f, rotatedInput.Y);
 
+            // Manual movement cancels any pending auto-approach
+            if (direction.LengthSquared() > 0.001f)
+            {
+                _autoApproachAttackPending = false;
+            }
+            else if (_autoApproachAttackPending && PlayerAvatar != null)
+            {
+                Node3D? targetRoot = GetActiveTargetRoot();
+                if (targetRoot != null)
+                {
+                    Vector3 toTarget = targetRoot.Position - PlayerAvatar.Position;
+                    toTarget.Y = 0f;
+                    float dist = toTarget.Length();
+                    if (dist > MeleeAttackRangeWorld * 0.88f)
+                    {
+                        direction = toTarget / dist;
+                    }
+                    else
+                    {
+                        _autoApproachAttackPending = false;
+                        ExecuteMeleeSwing();
+                    }
+                }
+                else
+                {
+                    _autoApproachAttackPending = false;
+                }
+            }
+
             if (_dashDuration > 0f)
             {
                 _dashDuration -= dt;
@@ -940,7 +1034,7 @@ namespace AtlasWorld.Client
             }
             else
             {
-                _playerSpeed = 6.5f;
+                _playerSpeed = 4.6f;
             }
 
             bool isMoving = PlayerAvatar != null && direction.LengthSquared() > 0.001f;
@@ -949,8 +1043,23 @@ namespace AtlasWorld.Client
             if (isMoving && PlayerAvatar != null)
             {
                 Vector3 normDir = direction.Normalized();
-                Vector3 velocity = normDir * (_playerSpeed * 1.45f); // Exceeds 8.0f sprint threshold in AnimationController
+                Vector3 velocity = normDir * (_playerSpeed * 2.0f); // Exceeds 8.0f sprint threshold in AnimationController
                 PlayerAvatar.Position += normDir * _playerSpeed * dt;
+
+                // Softly reconcile PlayerAvatar position toward server-rs authoritative coordinates if drift builds up
+                if (_entityManager != null && _entityManager.HasOwnPlayerState && _dashDuration <= 0f)
+                {
+                    Vector3 serverPos = _entityManager.OwnPlayerServerPosition;
+                    float driftSq = PlayerAvatar.Position.DistanceSquaredTo(serverPos);
+                    if (driftSq > 36.0f)
+                    {
+                        PlayerAvatar.Position = serverPos;
+                    }
+                    else if (driftSq > 0.25f)
+                    {
+                        PlayerAvatar.Position = PlayerAvatar.Position.Lerp(serverPos, dt * 3.5f);
+                    }
+                }
 
                 // player_knight.glb faces +Z in local space:
                 // Atan2(direction.X, direction.Z) yields Pi when moving -Z (into scene) and 0 when moving +Z (toward camera)
@@ -967,7 +1076,8 @@ namespace AtlasWorld.Client
                 _playerAnimController?.Update(isAlive: true, velocity: velocity, isAttacking: false);
 
                 // Stream FlatBuffers movement intent to server-rs
-                Connection?.SendInput(normDir.X, normDir.Z, targetId: _selectedServerTargetWireId);
+                var (targetId, targetX, targetY) = ResolveServerAimTarget();
+                Connection?.SendInput(normDir.X, normDir.Z, targetId: targetId, targetX: targetX, targetY: targetY);
                 _wasMovingLastFrame = true;
             }
             else
@@ -975,9 +1085,20 @@ namespace AtlasWorld.Client
                 if (_wasMovingLastFrame)
                 {
                     // Send a zero-velocity stop frame so server-rs halts our avatar immediately
-                    Connection?.SendInput(0f, 0f, targetId: _selectedServerTargetWireId);
+                    var (targetId, targetX, targetY) = ResolveServerAimTarget();
+                    Connection?.SendInput(0f, 0f, targetId: targetId, targetX: targetX, targetY: targetY);
                     _wasMovingLastFrame = false;
                 }
+                else if (PlayerAvatar != null && _entityManager != null && _entityManager.HasOwnPlayerState && _dashDuration <= 0f)
+                {
+                    // Gently settle onto server-rs authoritative stop position
+                    Vector3 serverPos = _entityManager.OwnPlayerServerPosition;
+                    if (PlayerAvatar.Position.DistanceSquaredTo(serverPos) > 0.04f)
+                    {
+                        PlayerAvatar.Position = PlayerAvatar.Position.Lerp(serverPos, dt * 6.0f);
+                    }
+                }
+
                 if (_attackAnimHoldSec <= 0f)
                 {
                     _playerAnimController?.Update(isAlive: true, velocity: Vector3.Zero, isAttacking: false);
@@ -1016,6 +1137,33 @@ namespace AtlasWorld.Client
 
         private void TriggerAttack()
         {
+            // Ensure we have a target locked if live server mobs exist
+            if (string.IsNullOrEmpty(_selectedServerTargetId) && _entityManager != null && _entityManager.Count > 0)
+            {
+                TriggerTargetSwitch();
+            }
+
+            Node3D? targetRoot = GetActiveTargetRoot();
+            if (PlayerAvatar != null && targetRoot != null && !string.IsNullOrEmpty(_selectedServerTargetId))
+            {
+                Vector3 toTarget = targetRoot.Position - PlayerAvatar.Position;
+                toTarget.Y = 0f;
+                float dist = toTarget.Length();
+
+                // If target is outside server-rs melee attack range (40 server units = 4.0 world units),
+                // automatically sprint into melee range and swing on arrival (ROX mobile auto-approach)!
+                if (dist > MeleeAttackRangeWorld)
+                {
+                    _autoApproachAttackPending = true;
+                    return;
+                }
+            }
+
+            ExecuteMeleeSwing();
+        }
+
+        private void ExecuteMeleeSwing()
+        {
             GD.Print("[VerticalSliceRoot] Attack triggered!");
             _attackAnimHoldSec = 0.55f;
 
@@ -1032,19 +1180,26 @@ namespace AtlasWorld.Client
             }
 
             _playerAnimController?.Update(isAlive: true, velocity: Vector3.Zero, isAttacking: true);
+            AudioRegistry.Instance?.Play("sfx:attack", PlayerAvatar?.GlobalPosition ?? Vector3.Zero);
+
             var (targetId, targetX, targetY) = ResolveServerAimTarget();
             Connection?.SendInput(0f, 0f, attack: true, targetId: targetId, targetX: targetX, targetY: targetY);
 
-            long dmg = (long)GD.RandRange(420, 640);
-            bool isCrit = GD.Randf() > 0.65f;
-            if (isCrit) dmg = (long)(dmg * 1.85f);
-
-            ApplyDamageToCurrentTarget(dmg, isCrit);
+            // When connected to live server-rs, authoritative GameEventKind.Hit drives damage & HP bars;
+            // only run local damage simulation when offline.
+            if (string.IsNullOrEmpty(_selectedServerTargetId))
+            {
+                long dmg = (long)GD.RandRange(420, 640);
+                bool isCrit = GD.Randf() > 0.65f;
+                if (isCrit) dmg = (long)(dmg * 1.85f);
+                ApplyOfflineDamageToShowcaseTarget(dmg, isCrit);
+            }
         }
 
         private void TriggerDash()
         {
             GD.Print("[VerticalSliceRoot] Dash triggered!");
+            _autoApproachAttackPending = false;
             _dashDuration = 0.30f;
             _attackAnimHoldSec = 0.35f;
             if (_animPlayer != null && _animPlayer.HasAnimation("Dodge_Forward"))
@@ -1053,7 +1208,11 @@ namespace AtlasWorld.Client
                 _animPlayer.Queue("Idle");
             }
             AudioRegistry.Instance?.Play("sfx:attack", PlayerAvatar?.GlobalPosition ?? Vector3.Zero);
-            Connection?.SendInput(0f, 0f, skillSlot: 5, targetId: _selectedServerTargetWireId);
+
+            Vector3 forward = PlayerAvatar != null
+                ? new Vector3(Mathf.Sin(PlayerAvatar.Rotation.Y), 0f, Mathf.Cos(PlayerAvatar.Rotation.Y))
+                : new Vector3(0f, 0f, -1f);
+            Connection?.SendInput(forward.X, forward.Z, skillSlot: 5, targetId: _selectedServerTargetWireId);
 
             Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
             CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -45), "Wind Dash!");
@@ -1061,6 +1220,23 @@ namespace AtlasWorld.Client
 
         private void TriggerSkill(int slot)
         {
+            int spCost = slot switch
+            {
+                1 => 240,
+                2 => 320,
+                3 => 200,
+                _ => 150
+            };
+
+            if (_currentSp < spCost)
+            {
+                ChatWidget?.AppendSystemMessage("Not enough SP! Use a Mana Potion [F2].");
+                return;
+            }
+
+            _currentSp = Math.Max(0, _currentSp - spCost);
+            PlayerStatusFrame?.SetSp(_currentSp, MaxSp);
+
             GD.Print($"[VerticalSliceRoot] Skill {slot} triggered!");
             string skillName = slot switch
             {
@@ -1068,6 +1244,18 @@ namespace AtlasWorld.Client
                 2 => "Blizzard Storm!!",
                 3 => "Aegis Shield!!",
                 _ => $"Skill {slot}"
+            };
+
+            // Map UI button slot -> server-rs skill_execution.rs slot:
+            // UI 1 (Meteor) -> server slot 1 ("skill_1")
+            // UI 2 (Blizzard) -> server slot 3 ("skill_3")
+            // UI 3 (Aegis / Precision) -> server slot 2 ("skill_2")
+            byte serverSkillSlot = slot switch
+            {
+                1 => 1,
+                2 => 3,
+                3 => 2,
+                _ => (byte)slot
             };
 
             _attackAnimHoldSec = 0.65f;
@@ -1079,44 +1267,36 @@ namespace AtlasWorld.Client
             AudioRegistry.Instance?.Play("sfx:attack", PlayerAvatar?.GlobalPosition ?? Vector3.Zero);
 
             var (targetId, targetX, targetY) = ResolveServerAimTarget();
-            Connection?.SendInput(0f, 0f, attack: false, skillSlot: (byte)slot, targetId: targetId, targetX: targetX, targetY: targetY);
+            Connection?.SendInput(0f, 0f, attack: false, skillSlot: serverSkillSlot, targetId: targetId, targetX: targetX, targetY: targetY);
 
             Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
             CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -65), skillName);
 
-            long dmg = slot switch
+            // Offline fallback damage when not targeting a live server-rs entity
+            if (string.IsNullOrEmpty(_selectedServerTargetId))
             {
-                1 => (long)GD.RandRange(2800, 4200),
-                2 => (long)GD.RandRange(1950, 2900),
-                _ => 0
-            };
+                long dmg = slot switch
+                {
+                    1 => (long)GD.RandRange(2800, 4200),
+                    2 => (long)GD.RandRange(1950, 2900),
+                    _ => 0
+                };
 
-            if (dmg > 0)
-            {
-                ApplyDamageToCurrentTarget(dmg, isCrit: true);
+                if (dmg > 0)
+                {
+                    ApplyOfflineDamageToShowcaseTarget(dmg, isCrit: true);
+                }
             }
         }
 
-        private void ApplyDamageToCurrentTarget(long dmg, bool isCrit)
+        private void ApplyOfflineDamageToShowcaseTarget(long dmg, bool isCrit)
         {
             TargetBossFrame?.ApplyDamage(dmg);
 
             Vector2 spawnPos = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
             spawnPos += new Vector2(0, -85);
 
-            Node3D? targetRoot = GetActiveTargetRoot();
-            if (!string.IsNullOrEmpty(_selectedServerTargetId) && targetRoot != null && MainCamera != null)
-            {
-                Vector3 headWorldPos = targetRoot.GlobalPosition + new Vector3(0f, 2.2f, 0f);
-                if (!MainCamera.IsPositionBehind(headWorldPos))
-                {
-                    spawnPos = MainCamera.UnprojectPosition(headWorldPos);
-                }
-                var tween = CreateTween();
-                tween.TweenProperty(targetRoot, "scale", Vector3.One * 1.14f, 0.07);
-                tween.TweenProperty(targetRoot, "scale", Vector3.One, 0.12);
-            }
-            else if (_worldMobs.Count > 0)
+            if (_worldMobs.Count > 0)
             {
                 var mob = _worldMobs[_selectedMobIndex % _worldMobs.Count];
                 mob.CurrentHp = Math.Max(0, mob.CurrentHp - dmg);
@@ -1128,7 +1308,6 @@ namespace AtlasWorld.Client
                     mob.HpFillBar.Scale = new Vector3(frac, 1f, 1f);
                 }
 
-                // Project monster 3D head position to 2D screen coordinates for accurate floating combat text
                 if (MainCamera != null && GodotObject.IsInstanceValid(mob.Root))
                 {
                     Vector3 headWorldPos = mob.Root.GlobalPosition + new Vector3(0f, 2.2f, 0f);
@@ -1137,7 +1316,6 @@ namespace AtlasWorld.Client
                         spawnPos = MainCamera.UnprojectPosition(headWorldPos);
                     }
 
-                    // Hit-flash bounce on the 3D monster
                     var tween = CreateTween();
                     float baseScale = (_selectedMobIndex % _worldMobs.Count) == 0 ? 1.35f : 1.05f;
                     tween.TweenProperty(mob.Root, "scale", Vector3.One * (baseScale * 1.14f), 0.07);
@@ -1154,13 +1332,18 @@ namespace AtlasWorld.Client
             Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
             if (type == "hp")
             {
+                if (_entityManager != null && !_entityManager.OwnPlayerAlive)
+                {
+                    Connection?.SendInput(0f, 0f, respawn: true);
+                }
                 PlayerStatusFrame?.SetHp(14850, 14850);
                 ChatWidget?.AppendSystemMessage("Used [Health Potion] (+4,500 HP).");
                 CombatText?.SpawnDamage(centerScreen + new Vector2(0, -40), 4500, false);
             }
             else
             {
-                PlayerStatusFrame?.SetSp(3200, 3200);
+                _currentSp = MaxSp;
+                PlayerStatusFrame?.SetSp(_currentSp, MaxSp);
                 ChatWidget?.AppendSystemMessage("Used [Mana Potion] (+1,200 SP).");
                 CombatText?.SpawnDamage(centerScreen + new Vector2(0, -40), 1200, false);
             }
