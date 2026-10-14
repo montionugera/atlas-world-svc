@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://src/UI/Widgets/VirtualJoystick.cs" id="2_joy"]
 [ext_resource type="Script" path="res://src/UI/Widgets/SkillButton.cs" id="3_skill"]
 
-[node name="MobileControlsOverlay" type="Control" node_paths=PackedStringArray("Joystick", "AttackBtn", "Skill1Btn", "Skill2Btn", "Skill3Btn", "DashBtn", "PotionHpBtn", "PotionSpBtn", "TargetBtn")]
+[node name="MobileControlsOverlay" type="Control" node_paths=PackedStringArray("Joystick", "AttackBtn", "Skill1Btn", "Skill2Btn", "Skill3Btn", "DashBtn", "PotionHpBtn", "PotionSpBtn", "TargetBtn", "AutoBtn")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -22,6 +22,7 @@ DashBtn = NodePath("ActionCluster/DashBtn")
 PotionHpBtn = NodePath("ActionCluster/PotionHpBtn")
 PotionSpBtn = NodePath("ActionCluster/PotionSpBtn")
 TargetBtn = NodePath("ActionCluster/TargetBtn")
+AutoBtn = NodePath("ActionCluster/AutoBtn")
 
 [node name="Joystick" type="Control" parent="."]
 custom_minimum_size = Vector2(174, 174)
@@ -212,4 +213,24 @@ script = ExtResource("3_skill")
 SkillId = "target_switch"
 LabelText = "TARGET"
 KeybindText = "TAB"
+Radius = 24.0
+
+[node name="AutoBtn" type="Control" parent="ActionCluster"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -315.0
+offset_top = -282.0
+offset_right = -257.0
+offset_bottom = -224.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("3_skill")
+SkillId = "auto_combat"
+LabelText = "AUTO"
+KeybindText = "Z"
 Radius = 24.0

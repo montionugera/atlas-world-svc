@@ -5,7 +5,7 @@ namespace AtlasWorld.Client.UI.Widgets
     /// <summary>
     /// Complete mobile action cluster and HUD controls.
     /// Manages the Virtual Thumbstick (bottom-left) and Action Buttons (bottom-right).
-    /// Includes quick potion slots (HP/SP) and targeting toggle.
+    /// Includes quick potion slots (HP/SP), target switch, and ROX Auto-Combat toggle.
     /// </summary>
     public partial class MobileControlsOverlay : Control
     {
@@ -24,6 +24,7 @@ namespace AtlasWorld.Client.UI.Widgets
         [Export] public SkillButton PotionHpBtn = null!;
         [Export] public SkillButton PotionSpBtn = null!;
         [Export] public SkillButton TargetBtn = null!;
+        [Export] public SkillButton AutoBtn = null!;
 
         public override void _Ready()
         {
@@ -42,6 +43,7 @@ namespace AtlasWorld.Client.UI.Widgets
             WireButton(PotionHpBtn);
             WireButton(PotionSpBtn);
             WireButton(TargetBtn);
+            WireButton(AutoBtn);
         }
 
         private void WireButton(SkillButton? btn)

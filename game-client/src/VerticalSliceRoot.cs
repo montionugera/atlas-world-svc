@@ -23,7 +23,7 @@ namespace AtlasWorld.Client
     /// 4. Joymify Design System + MetaShell (Character, Inventory, Skills, Quests, Loadout)
     /// 5. Split-screen WardrobeModal with real 3D Weapon GLB attachment
     /// 6. 3D World Monsters (showcase + live server-rs mobs/bots/projectiles) with 3D overhead nameplates, HP bars &amp; target ring
-    /// 7. Authoritative Player HP/SP, Auto-Approach into Melee Attack Range (3.5u), and Respawn sync
+    /// 7. Authoritative Player HP/SP, ROX Auto-Combat AFK loop, Quest Kill Tracker, and Live Minimap Radar
     /// </summary>
     public partial class VerticalSliceRoot : Node3D
     {
@@ -57,10 +57,20 @@ namespace AtlasWorld.Client
         private float _attackAnimHoldSec = 0f;
         private bool _wasMovingLastFrame = false;
         private bool _autoApproachAttackPending = false;
+        private bool _autoCombatEnabled = false;
+        private float _autoAttackTimerSec = 0f;
         private int _currentSp = 3200;
         private const int MaxSp = 3200;
         private float _spRegenAccum = 0f;
         private float _respawnRequestCooldownSec = 0f;
+
+        // Quest progression state
+        private int _questStage = 1;
+        private int _questKillCount = 0;
+        private int _questKillGoal = 5;
+        private Label? _questTitleLabel;
+        private Label? _questTargetLabel;
+        private Label? _questHintLabel;
 
         // Camera orbit & zoom state
         private float _cameraYaw = 0f;
@@ -90,6 +100,7 @@ namespace AtlasWorld.Client
         private float _pulseTime = 0f;
 
         public EntityManager Entities => _entityManager;
+        public bool IsAutoCombatEnabled => _autoCombatEnabled;
 
         public override void _Ready()
         {
@@ -197,10 +208,15 @@ namespace AtlasWorld.Client
             ApplyMobileSafeArea();
             GetViewport().SizeChanged += ApplyMobileSafeArea;
 
-            // Wire QuestTracker tap to auto-approach & engage nearest target
+            // Wire QuestTracker labels and tap to toggle ROX Auto-Combat
             var questTracker = GetNodeOrNull<Control>("UI/HUD/QuestTracker");
             if (questTracker != null)
             {
+                _questTitleLabel = questTracker.GetNodeOrNull<Label>("VBox/QuestTitle");
+                _questTargetLabel = questTracker.GetNodeOrNull<Label>("VBox/QuestTarget");
+                _questHintLabel = questTracker.GetNodeOrNull<Label>("VBox/QuestHint");
+                UpdateQuestTrackerDisplay();
+
                 questTracker.MouseFilter = Control.MouseFilterEnum.Stop;
                 questTracker.GuiInput += (@event) =>
                 {
@@ -208,10 +224,7 @@ namespace AtlasWorld.Client
                                   (@event is InputEventMouseButton m && m.ButtonIndex == MouseButton.Left && m.Pressed);
                     if (tapped)
                     {
-                        if (string.IsNullOrEmpty(_selectedServerTargetId))
-                            TriggerTargetSwitch();
-                        _autoApproachAttackPending = true;
-                        ChatWidget?.AppendSystemMessage("Auto-pathing to target monster...");
+                        ToggleAutoCombat();
                     }
                 };
             }
@@ -232,7 +245,7 @@ namespace AtlasWorld.Client
             if (ChatWidget != null)
             {
                 ChatWidget.MessageSent += OnChatMessageSent;
-                ChatWidget.AppendSystemMessage("Atlas World Mobile MMORPG Ready. WASD/Joystick to move, Drag right screen to orbit camera.");
+                ChatWidget.AppendSystemMessage("Atlas World Mobile MMORPG Ready. Tap [AUTO] or Quest Tracker for AFK Combat.");
             }
 
             // 6. Wire Mobile Controls Overlay + Cooldown visuals
@@ -278,6 +291,9 @@ namespace AtlasWorld.Client
                         case "target_switch":
                             MobileControls.TargetBtn?.TriggerCooldown(0.3f);
                             TriggerTargetSwitch();
+                            break;
+                        case "auto_combat":
+                            ToggleAutoCombat();
                             break;
                     }
                 };
@@ -325,6 +341,75 @@ namespace AtlasWorld.Client
             }
         }
 
+        private void ToggleAutoCombat()
+        {
+            SetAutoCombat(!_autoCombatEnabled);
+        }
+
+        public void SetAutoCombat(bool enabled)
+        {
+            _autoCombatEnabled = enabled;
+            MobileControls?.AutoBtn?.SetToggled(_autoCombatEnabled);
+            UpdateQuestTrackerDisplay();
+
+            if (_autoCombatEnabled)
+            {
+                if (string.IsNullOrEmpty(_selectedServerTargetId))
+                    LockNearestServerMob();
+                ChatWidget?.AppendSystemMessage("[Auto-Combat] ON — Auto-hunting nearby Freja monsters.");
+            }
+            else
+            {
+                _autoApproachAttackPending = false;
+                ChatWidget?.AppendSystemMessage("[Auto-Combat] OFF — Manual control resumed.");
+            }
+        }
+
+        private void UpdateQuestTrackerDisplay()
+        {
+            if (_questTitleLabel != null)
+            {
+                _questTitleLabel.Text = $"[Chapter {_questStage}] Midnight Bells";
+            }
+            if (_questTargetLabel != null)
+            {
+                _questTargetLabel.Text = $"Purge Freja Monsters ({_questKillCount} / {_questKillGoal})";
+            }
+            if (_questHintLabel != null)
+            {
+                _questHintLabel.Text = _autoCombatEnabled
+                    ? "● Auto-Hunting Active (Tap to stop)"
+                    : ">> Tap or [AUTO] to auto-hunt";
+                _questHintLabel.Modulate = _autoCombatEnabled
+                    ? new Color(0.35f, 1.0f, 0.58f, 1f)
+                    : new Color(0.85f, 0.92f, 0.65f, 0.95f);
+            }
+        }
+
+        private void RecordQuestMonsterKill()
+        {
+            _questKillCount++;
+            if (_questKillCount >= _questKillGoal)
+            {
+                int completedStage = _questStage;
+                _questStage++;
+                _questKillCount = 0;
+                _questKillGoal = Math.Min(15, 5 + (_questStage - 1) * 2);
+
+                if (PlayerExpBar != null)
+                {
+                    PlayerExpBar.BaseExpPercent = Mathf.Wrap(PlayerExpBar.BaseExpPercent + 25.0f, 0f, 100f);
+                    PlayerExpBar.JobExpPercent = Mathf.Wrap(PlayerExpBar.JobExpPercent + 25.0f, 0f, 100f);
+                    PlayerExpBar.UpdateDisplay();
+                }
+
+                Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
+                CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -110), $"QUEST CH.{completedStage} COMPLETE!");
+                ChatWidget?.AppendSystemMessage($"[Quest] Chapter {completedStage} Complete! Reward: +25% Base/Job EXP.");
+            }
+            UpdateQuestTrackerDisplay();
+        }
+
         private static void SetClipLoop(AnimationPlayer player, string clipName, Animation.LoopModeEnum mode)
         {
             if (player.HasAnimation(clipName))
@@ -353,7 +438,7 @@ namespace AtlasWorld.Client
             if (questTracker != null)
             {
                 questTracker.OffsetLeft = leftInset;
-                questTracker.OffsetRight = leftInset + 234f;
+                questTracker.OffsetRight = leftInset + 240f;
             }
 
             if (StatusLabel != null)
@@ -559,6 +644,34 @@ namespace AtlasWorld.Client
             return null;
         }
 
+        private bool LockNearestServerMob()
+        {
+            if (_entityManager == null || _entityManager.Count == 0)
+                return false;
+
+            Vector3 playerPos = PlayerAvatar?.Position ?? Vector3.Zero;
+            EntityView? nearestMob = null;
+            float bestDistSq = float.MaxValue;
+            foreach (var kv in _entityManager.Views)
+            {
+                if (kv.Value.Kind == EntityKind.Mob && kv.Value.Alive && GodotObject.IsInstanceValid(kv.Value.Root))
+                {
+                    float dSq = kv.Value.Root.Position.DistanceSquaredTo(playerPos);
+                    if (dSq < bestDistSq)
+                    {
+                        bestDistSq = dSq;
+                        nearestMob = kv.Value;
+                    }
+                }
+            }
+            if (nearestMob != null)
+            {
+                SelectServerTarget(nearestMob, announceInChat: false);
+                return true;
+            }
+            return false;
+        }
+
         private void SelectServerTarget(EntityView serverMob, bool announceInChat)
         {
             _selectedServerTargetId = serverMob.WireId.ToString();
@@ -728,6 +841,10 @@ namespace AtlasWorld.Client
                         TriggerTargetSwitch();
                         GetViewport()?.SetInputAsHandled();
                         break;
+                    case Key.Z:
+                        ToggleAutoCombat();
+                        GetViewport()?.SetInputAsHandled();
+                        break;
                     case Key.B:
                     case Key.I:
                         if (EquipmentWardrobeModal != null)
@@ -812,25 +929,7 @@ namespace AtlasWorld.Client
             // Auto-select nearest live server-rs mob if none is currently locked
             if (string.IsNullOrEmpty(_selectedServerTargetId) && _entityManager.Count > 0)
             {
-                Vector3 playerPos = PlayerAvatar?.Position ?? Vector3.Zero;
-                EntityView? nearestMob = null;
-                float bestDistSq = float.MaxValue;
-                foreach (var kv in _entityManager.Views)
-                {
-                    if (kv.Value.Kind == EntityKind.Mob && kv.Value.Alive && GodotObject.IsInstanceValid(kv.Value.Root))
-                    {
-                        float dSq = kv.Value.Root.Position.DistanceSquaredTo(playerPos);
-                        if (dSq < bestDistSq)
-                        {
-                            bestDistSq = dSq;
-                            nearestMob = kv.Value;
-                        }
-                    }
-                }
-                if (nearestMob != null)
-                {
-                    SelectServerTarget(nearestMob, announceInChat: false);
-                }
+                LockNearestServerMob();
             }
 
             // 2. If currently targeting a live server-rs mob, keep TargetFrame synced to its authoritative HP
@@ -848,10 +947,14 @@ namespace AtlasWorld.Client
                 }
                 else
                 {
-                    // Target died or despawned on the server
+                    // Target died or despawned on the server -> immediately lock next nearest if Auto-Combat is active
                     _selectedServerTargetId = "";
                     _selectedServerTargetWireId = 0;
                     _autoApproachAttackPending = false;
+                    if (_autoCombatEnabled)
+                    {
+                        LockNearestServerMob();
+                    }
                 }
             }
 
@@ -910,6 +1013,7 @@ namespace AtlasWorld.Client
                         PlayerExpBar.UpdateDisplay();
                     }
                     ChatWidget?.AppendSystemMessage("Defeated monster! (+8.0% Base/Job EXP)");
+                    RecordQuestMonsterKill();
                 }
             }
         }
@@ -935,6 +1039,8 @@ namespace AtlasWorld.Client
 
             if (_respawnRequestCooldownSec > 0f)
                 _respawnRequestCooldownSec -= dt;
+            if (_autoAttackTimerSec > 0f)
+                _autoAttackTimerSec -= dt;
 
             // Passive SP regeneration (+80 SP/sec)
             if (_currentSp < MaxSp)
@@ -955,6 +1061,16 @@ namespace AtlasWorld.Client
             {
                 float s = 1.0f + 0.08f * Mathf.Sin(_pulseTime * 5.0f);
                 _targetRingMesh.Scale = new Vector3(s, 1f, s);
+            }
+
+            // Update live Minimap Radar dots every frame
+            if (NavigationTopBar != null && PlayerAvatar != null)
+            {
+                NavigationTopBar.UpdateRadar(
+                    PlayerAvatar.Position,
+                    PlayerAvatar.Rotation.Y,
+                    _entityManager?.Views,
+                    _selectedServerTargetId);
             }
 
             if (_attackAnimHoldSec > 0f)
@@ -998,10 +1114,66 @@ namespace AtlasWorld.Client
             Vector2 rotatedInput = rawInput.Rotated(-_cameraYaw);
             Vector3 direction = new Vector3(rotatedInput.X, 0f, rotatedInput.Y);
 
-            // Manual movement cancels any pending auto-approach
+            // Manual movement overrides auto-approach for the current frame
             if (direction.LengthSquared() > 0.001f)
             {
                 _autoApproachAttackPending = false;
+            }
+            else if (_autoCombatEnabled && PlayerAvatar != null)
+            {
+                // ROX Auto-Combat AFK Loop:
+                // 1. Ensure a live server mob is targeted (or fallback to showcase mob)
+                if (string.IsNullOrEmpty(_selectedServerTargetId))
+                {
+                    LockNearestServerMob();
+                }
+
+                Node3D? targetRoot = GetActiveTargetRoot();
+                if (targetRoot != null)
+                {
+                    Vector3 toTarget = targetRoot.Position - PlayerAvatar.Position;
+                    toTarget.Y = 0f;
+                    float dist = toTarget.Length();
+                    if (dist > MeleeAttackRangeWorld * 0.88f)
+                    {
+                        direction = toTarget / dist;
+                    }
+                    else if (_autoAttackTimerSec <= 0f)
+                    {
+                        // Auto-replenish SP if low during AFK farming
+                        if (_currentSp < 320 && (MobileControls?.PotionSpBtn == null || MobileControls.PotionSpBtn.IsReady))
+                        {
+                            MobileControls?.PotionSpBtn?.TriggerCooldown(1.5f);
+                            TriggerPotion("sp");
+                        }
+
+                        // Cycle off-cooldown skills first, then basic melee swing
+                        if (MobileControls?.Skill1Btn != null && MobileControls.Skill1Btn.IsReady && _currentSp >= 240)
+                        {
+                            MobileControls.Skill1Btn.TriggerCooldown(4.0f);
+                            TriggerSkill(1);
+                            _autoAttackTimerSec = 0.85f;
+                        }
+                        else if (MobileControls?.Skill2Btn != null && MobileControls.Skill2Btn.IsReady && _currentSp >= 320)
+                        {
+                            MobileControls.Skill2Btn.TriggerCooldown(6.0f);
+                            TriggerSkill(2);
+                            _autoAttackTimerSec = 0.85f;
+                        }
+                        else if (MobileControls?.Skill3Btn != null && MobileControls.Skill3Btn.IsReady && _currentSp >= 200)
+                        {
+                            MobileControls.Skill3Btn.TriggerCooldown(8.0f);
+                            TriggerSkill(3);
+                            _autoAttackTimerSec = 0.85f;
+                        }
+                        else
+                        {
+                            MobileControls?.AttackBtn?.TriggerCooldown(0.45f);
+                            ExecuteMeleeSwing();
+                            _autoAttackTimerSec = 0.80f;
+                        }
+                    }
+                }
             }
             else if (_autoApproachAttackPending && PlayerAvatar != null)
             {
@@ -1069,7 +1241,9 @@ namespace AtlasWorld.Client
                 PlayerAvatar.Rotation = new Vector3(0f, smoothAngle, 0f);
 
                 // Update minimap coordinates in TopBar
-                NavigationTopBar?.SetLocation("Freja", (int)PlayerAvatar.Position.X, (int)PlayerAvatar.Position.Z);
+                int mapX = (int)Mathf.Round(ServerArenaCenter.X + (PlayerAvatar.Position.X / ServerCoordScale));
+                int mapY = (int)Mathf.Round(ServerArenaCenter.Y + (PlayerAvatar.Position.Z / ServerCoordScale));
+                NavigationTopBar?.SetLocation("Freja", mapX, mapY);
 
                 // Always allow movement to interrupt any completed or ongoing attack hold so the character never feels frozen!
                 _attackAnimHoldSec = 0f;
@@ -1140,7 +1314,7 @@ namespace AtlasWorld.Client
             // Ensure we have a target locked if live server mobs exist
             if (string.IsNullOrEmpty(_selectedServerTargetId) && _entityManager != null && _entityManager.Count > 0)
             {
-                TriggerTargetSwitch();
+                LockNearestServerMob();
             }
 
             Node3D? targetRoot = GetActiveTargetRoot();
@@ -1300,7 +1474,11 @@ namespace AtlasWorld.Client
             {
                 var mob = _worldMobs[_selectedMobIndex % _worldMobs.Count];
                 mob.CurrentHp = Math.Max(0, mob.CurrentHp - dmg);
-                if (mob.CurrentHp == 0) mob.CurrentHp = mob.MaxHp; // Respawn HP for continuous testing
+                if (mob.CurrentHp == 0)
+                {
+                    mob.CurrentHp = mob.MaxHp; // Respawn HP for continuous testing
+                    RecordQuestMonsterKill();
+                }
 
                 float frac = mob.MaxHp > 0 ? Mathf.Clamp((float)mob.CurrentHp / mob.MaxHp, 0.01f, 1f) : 1f;
                 if (mob.HpFillBar != null)

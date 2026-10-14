@@ -8,10 +8,10 @@ namespace AtlasWorld.Client.UI.Widgets
     /// Features:
     /// - Multi-layered sculpted gold filigree bezel with cardinal stud rivets
     /// - Deep jewel-toned radial dome with glass specular shine
-    /// - Crisp procedural vector iconography (Swords, Meteor, Blizzard, Shield, Wind, Flasks)
+    /// - Crisp procedural vector iconography (Swords, Meteor, Blizzard, Shield, Wind, Flasks, Auto-Combat)
     /// - Dark radial cooldown sweep with digital countdown timer (e.g. 0.8s)
     /// - Clean ROX skill caption pill on mobile + optional desktop keybind hint badge on desktop
-    /// - Touch/click reactive spring scaling & pulse
+    /// - Touch/click reactive spring scaling & toggle active ring
     /// </summary>
     public partial class SkillButton : Control
     {
@@ -27,7 +27,20 @@ namespace AtlasWorld.Client.UI.Widgets
         private float _cooldownRemaining = 0f;
         private float _totalCooldown = 0f;
         private bool _isPressed = false;
+        private bool _isToggledOn = false;
+        private float _togglePulseTime = 0f;
         private double _lastFireTimeSec = -10.0;
+
+        public bool IsReady => _cooldownRemaining <= 0f;
+        public bool IsToggledOn => _isToggledOn;
+
+        public void SetToggled(bool active)
+        {
+            if (_isToggledOn == active)
+                return;
+            _isToggledOn = active;
+            QueueRedraw();
+        }
 
         public void TriggerCooldown(float duration)
         {
@@ -38,10 +51,22 @@ namespace AtlasWorld.Client.UI.Widgets
 
         public override void _Process(double delta)
         {
+            bool needsRedraw = false;
             if (_cooldownRemaining > 0f)
             {
                 _cooldownRemaining -= (float)delta;
                 if (_cooldownRemaining < 0f) _cooldownRemaining = 0f;
+                needsRedraw = true;
+            }
+
+            if (_isToggledOn)
+            {
+                _togglePulseTime += (float)delta;
+                needsRedraw = true;
+            }
+
+            if (needsRedraw)
+            {
                 QueueRedraw();
             }
         }
@@ -99,9 +124,16 @@ namespace AtlasWorld.Client.UI.Widgets
             // 1. Soft Ambient Drop Shadow
             DrawCircle(center + new Vector2(0, 5), r + 3f, new Color(0f, 0f, 0f, 0.55f));
 
+            // 1b. Active Toggle Outer Glow Ring (for AUTO combat button)
+            if (_isToggledOn)
+            {
+                float pulse = 0.65f + 0.35f * Mathf.Sin(_togglePulseTime * 6.0f);
+                DrawArc(center, r + 6.5f, 0f, Mathf.Tau, 40, new Color(0.35f, 1.0f, 0.58f, pulse), 3.2f, true);
+            }
+
             // 2. Sculpted Gold Bezel (Triple-layer metallic rim)
             Color goldRimDark = new Color(0.48f, 0.35f, 0.12f, 1f);
-            Color goldRimMid = new Color(0.86f, 0.70f, 0.28f, 1f);
+            Color goldRimMid = _isToggledOn ? new Color(0.38f, 0.96f, 0.55f, 1f) : new Color(0.86f, 0.70f, 0.28f, 1f);
             Color goldRimLight = new Color(1.0f, 0.94f, 0.62f, 1f);
 
             DrawCircle(center, r + 4.5f, goldRimDark);
@@ -120,7 +152,9 @@ namespace AtlasWorld.Client.UI.Widgets
                 "potion_hp" => new Color(0.72f, 0.10f, 0.12f, 1f),    // Health Ruby
                 "potion_sp" => new Color(0.10f, 0.42f, 0.88f, 1f),    // Mana Cobalt
                 "target_switch" => new Color(0.35f, 0.22f, 0.55f, 1f),// Mystic Amethyst
-                "auto_combat" => new Color(0.20f, 0.65f, 0.30f, 1f),  // Jade Green
+                "auto_combat" => _isToggledOn
+                    ? new Color(0.16f, 0.74f, 0.36f, 1f)              // Active Emerald Jade
+                    : new Color(0.18f, 0.36f, 0.28f, 1f),             // Idle Forest Slate
                 _ => PrimaryColor
             };
 
@@ -155,15 +189,19 @@ namespace AtlasWorld.Client.UI.Widgets
             // 7. Typography (Bottom Skill Label, Desktop Keybinds, Digital Timer, Potion Counts)
             var font = ThemeDB.FallbackFont;
 
-            // Bottom ROX Skill Label Caption (e.g. METEOR, BLIZZ, AEGIS, DASH, TARGET)
+            // Bottom ROX Skill Label Caption (e.g. METEOR, BLIZZ, AEGIS, DASH, TARGET, AUTO)
             if (!string.IsNullOrEmpty(LabelText) && SkillId != "attack")
             {
+                string displayLabel = (SkillId == "auto_combat" && _isToggledOn) ? "AUTO ON" : LabelText;
                 int lblSize = Mathf.Max(8, (int)(r * 0.24f));
-                Vector2 lblVec = font.GetStringSize(LabelText, HorizontalAlignment.Center, -1, lblSize);
+                Vector2 lblVec = font.GetStringSize(displayLabel, HorizontalAlignment.Center, -1, lblSize);
                 Vector2 pillSize = new Vector2(lblVec.X + 8f, lblVec.Y + 2f);
                 Vector2 pillPos = center + new Vector2(-pillSize.X * 0.5f, r * 0.52f);
                 DrawRect(new Rect2(pillPos, pillSize), new Color(0.04f, 0.06f, 0.10f, 0.86f), true);
-                DrawString(font, pillPos + new Vector2(4f, pillSize.Y - 3f), LabelText, HorizontalAlignment.Center, -1, lblSize, new Color(1f, 0.94f, 0.76f, 0.98f));
+                Color lblColor = _isToggledOn
+                    ? new Color(0.42f, 1.0f, 0.62f, 1f)
+                    : new Color(1f, 0.94f, 0.76f, 0.98f);
+                DrawString(font, pillPos + new Vector2(4f, pillSize.Y - 3f), displayLabel, HorizontalAlignment.Center, -1, lblSize, lblColor);
             }
 
             // Desktop Keybind Badge (only shown on non-mobile platforms so iPad stays authentic mobile HUD)
@@ -229,10 +267,28 @@ namespace AtlasWorld.Client.UI.Widgets
                 case "target_switch":
                     DrawTargetReticle(c, r * 0.48f);
                     break;
+                case "auto_combat":
+                    DrawAutoCombatCycle(c, r * 0.52f);
+                    break;
                 default:
                     DrawCrossedSwords(c, r * 0.5f);
                     break;
             }
+        }
+
+        private void DrawAutoCombatCycle(Vector2 c, float size)
+        {
+            float spin = _isToggledOn ? _togglePulseTime * 2.2f : 0f;
+            Color ringCol = _isToggledOn
+                ? new Color(1.0f, 0.96f, 0.55f, 1f)
+                : new Color(0.88f, 0.94f, 0.88f, 0.92f);
+
+            // Two orbiting cycle arcs
+            DrawArc(c, size * 0.78f, spin + 0.25f, spin + Mathf.Pi - 0.25f, 18, ringCol, 2.2f, true);
+            DrawArc(c, size * 0.78f, spin + Mathf.Pi + 0.25f, spin + Mathf.Tau - 0.25f, 18, ringCol, 2.2f, true);
+
+            // Miniature crossed swords inside the cycle ring
+            DrawCrossedSwords(c, size * 0.55f);
         }
 
         private void DrawCrossedSwords(Vector2 c, float size)
