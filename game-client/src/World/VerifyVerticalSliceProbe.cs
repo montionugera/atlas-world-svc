@@ -24,10 +24,11 @@ namespace AtlasWorld.Client.World
             failures += VerifyServerRsEntityManagerIngestion(context);
             failures += VerifyCelShadingAndOutlineMaterials();
             failures += VerifyChatBoxFocusAndSubmission(context);
+            failures += VerifyMultiFloorWatchtowerAndCrystalCave(context);
 
             if (failures == 0)
             {
-                GD.Print("[VerticalSliceProbe] RESULT: PASS (all 5 vertical slice cases)");
+                GD.Print("[VerticalSliceProbe] RESULT: PASS (all 6 vertical slice cases)");
                 return 0;
             }
 
@@ -343,7 +344,7 @@ namespace AtlasWorld.Client.World
 
                 if (!signalFired || receivedText != "Atlas World Live Test" || chatInstance.InputField.Text != "")
                 {
-                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  ChatBox submission verification failed");
+                    GD.PrintErr("[VerticalSliceProbe]   FAIL  ChatBox submission verification failed");
                     chatInstance.QueueFree();
                     return 1;
                 }
@@ -355,6 +356,88 @@ namespace AtlasWorld.Client.World
             catch (Exception ex)
             {
                 GD.PrintErr($"[VerticalSliceProbe]   FAIL  Exception in ChatBox check: {ex.Message}");
+                return 1;
+            }
+        }
+
+        private static int VerifyMultiFloorWatchtowerAndCrystalCave(Node context)
+        {
+            try
+            {
+                var doc = UnifiedMapDocument.LoadOrDefault("freja-south-gate");
+                if (doc.Structures.Count < 2)
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Expected >=2 default 3D structures, got {doc.Structures.Count}");
+                    return 1;
+                }
+
+                // 1. Locate default Watchtower (-9.5, -2.0) and Crystal Cave (10.5, -3.0)
+                var tower = doc.Structures.Find(s => s.Kind == "watchtower");
+                var cave = doc.Structures.Find(s => s.Kind == "crystal_cave");
+                if (tower == null || cave == null)
+                {
+                    GD.PrintErr("[VerticalSliceProbe]   FAIL  Missing default watchtower or crystal_cave structure");
+                    return 1;
+                }
+
+                float baseTowerY = TerrainElevation.SampleBaseTerrainHeight(tower.X, tower.Z, doc);
+                float expectedDeckY = baseTowerY + tower.UpperFloorHeight;
+
+                // 2. Ground-Floor Safety Check: An entity at ground level (Y=baseTowerY) walking into the center of the Watchtower
+                // MUST stay on 1F (baseTowerY) and NEVER teleport up to the 2nd floor (+3.2m)!
+                float sampled1F = TerrainElevation.SampleHeight(tower.X, tower.Z, doc, currentEntityY: baseTowerY);
+                if (Mathf.Abs(sampled1F - baseTowerY) > 0.1f)
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Watchtower 1F floor lock failed: expected {baseTowerY:0.00}, got {sampled1F:0.00}");
+                    return 1;
+                }
+
+                // 3. Upper-Floor Safety Check: An entity that climbed the East stair ramp (currentEntityY near expectedDeckY)
+                // MUST resolve to the 2nd-floor battlement deck (expectedDeckY)!
+                float sampled2F = TerrainElevation.SampleHeight(tower.X, tower.Z, doc, currentEntityY: expectedDeckY - 0.3f);
+                if (Mathf.Abs(sampled2F - expectedDeckY) > 0.1f)
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Watchtower 2F deck lock failed: expected {expectedDeckY:0.00}, got {sampled2F:0.00}");
+                    return 1;
+                }
+
+                // 4. Crystal Cave Walk-In & Wall Collider Check:
+                // Walking into the cave interior stays on the recessed cavern floor (baseY - 0.35m), while the North back wall pushes out.
+                float baseCaveY = TerrainElevation.SampleBaseTerrainHeight(cave.X, cave.Z, doc);
+                float sampledCaveFloor = TerrainElevation.SampleHeight(cave.X, cave.Z, doc, currentEntityY: baseCaveY);
+                if (Mathf.Abs(sampledCaveFloor - (baseCaveY - 0.15f)) > 0.15f)
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Crystal Cave recessed floor mismatch: expected {baseCaveY - 0.15f:0.00}, got {sampledCaveFloor:0.00}");
+                    return 1;
+                }
+
+                // 5. SmartCameraOccluder Automatic Roof Cutaway Check:
+                var occluder = new SmartCameraOccluder();
+                var testRoot = new Node3D();
+                context.AddChild(testRoot);
+                var streamer = new MapChunkStreamer(testRoot, doc, occluder);
+                streamer.UpdateStreaming(new Vector3(tower.X, baseTowerY, tower.Z), forceReload: true);
+
+                // Place player inside Watchtower 1F (Y = baseTowerY + 1.25f head focus, so footY = baseTowerY < deckY - 0.75f)
+                occluder.Update(
+                    0.5f,
+                    new Vector3(tower.X, baseTowerY + 8.0f, tower.Z + 8.0f),
+                    new Vector3(tower.X, baseTowerY + 1.25f, tower.Z));
+
+                if (occluder.CurrentlyFadedPropCount < 1)
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  SmartCameraOccluder did not auto-cutaway Watchtower roof when player is on 1F");
+                    testRoot.QueueFree();
+                    return 1;
+                }
+
+                testRoot.QueueFree();
+                GD.Print($"[VerticalSliceProbe]   PASS  Multi-Floor 3D Watchtower (1F={sampled1F:0.00}m, 2F={sampled2F:0.00}m), Crystal Cave ({sampledCaveFloor:0.00}m) & Auto Roof Cutaway");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"[VerticalSliceProbe]   FAIL  Exception in Multi-Floor Tower/Cave check: {ex.Message}");
                 return 1;
             }
         }
