@@ -32,7 +32,7 @@ namespace AtlasWorld.Client.World
 
     /// <summary>
     /// Safe, height-aware 3D Multi-Floor Structure Volume supporting:
-    /// - <c>"watchtower"</c>: 2-Story Stone Watchtower with ground floor interior, southern approach stair ramp,
+    /// - <c>"watchtower"</c>: 2-Story Stone Watchtower with ground floor interior, wide East approach stair ramp,
     ///   elevated 2nd-floor battlement deck (+3.2m), and automatic roof/upper-deck cutaway when the player is on the ground floor.
     /// - <c>"crystal_cave"</c>: Walk-in Underground Crystal Cavern carved beneath a hill with a southern entrance portal
     ///   (bypasses outer cliff slope blocker inside the tunnel), recessed glowing crystal floor, and automatic cave ceiling cutaway.
@@ -260,7 +260,7 @@ namespace AtlasWorld.Client.World
 
             if (Structures.Count == 0)
             {
-                // Default 2-Story Stone Watchtower with Walkable Ramp on West Meadow
+                // Default 2-Story Stone Watchtower with Walkable East Ramp on West Meadow
                 Structures.Add(new UnifiedMapStructureVolume
                 {
                     Id = "freja_west_watchtower_01",
@@ -268,7 +268,7 @@ namespace AtlasWorld.Client.World
                     X = -9.5f,
                     Z = -2.0f,
                     RotY = 0f,
-                    Radius = 3.8f,
+                    Radius = 3.6f,
                     UpperFloorHeight = 3.2f,
                     CeilingHeight = 3.2f
                 });
@@ -281,9 +281,9 @@ namespace AtlasWorld.Client.World
                     X = 10.5f,
                     Z = -3.0f,
                     RotY = 0f,
-                    Radius = 4.4f,
+                    Radius = 4.2f,
                     UpperFloorHeight = 3.5f,
-                    CeilingHeight = 3.2f
+                    CeilingHeight = 3.4f
                 });
             }
         }
@@ -387,12 +387,12 @@ namespace AtlasWorld.Client.World
 
         /// <summary>
         /// Registers the solid perimeter walls of a 3D Watchtower or Crystal Cave (leaving the southern doorway/ramp open)
-        /// into the O(1) height-aware spatial hash grid so entities cannot walk through cave walls or jump off unguarded tower sides.
+        /// into the O(1) height-aware spatial hash grid so entities cannot walk through cave walls or get blocked on the 2F deck.
         /// </summary>
         public void IndexStructureWallsIncremental(UnifiedMapStructureVolume s, Vector2 serverCenter, float serverCoordScale)
         {
             float baseY = TerrainElevation.SampleBaseTerrainHeight(s.X, s.Z, this);
-            float r = Mathf.Max(2.8f, s.Radius);
+            float r = Mathf.Max(2.5f, s.Radius);
             float wallThick = 0.55f;
 
             if (s.Kind == "crystal_cave")
@@ -409,14 +409,15 @@ namespace AtlasWorld.Client.World
             }
             else
             {
-                // Watchtower 4 corner pillars on the ground floor (walk-through archways on N/S/E/W, plus external West/South stair ramp)
+                // Watchtower 4 corner pillars on the 1st floor ONLY (maxY stops 0.35m below the 2nd-floor deck so 2F is 100% open & walkable!)
                 float minY = baseY - 0.5f;
-                float maxY = baseY + s.UpperFloorHeight + 1.2f;
-                float cornerSize = 0.85f;
-                AddWorldRectObstacle($"{s.Id}_pillar_nw", new Rect2(s.X - r * 0.72f, s.Z - r * 0.72f, cornerSize, cornerSize), minY, maxY, serverCenter, serverCoordScale);
-                AddWorldRectObstacle($"{s.Id}_pillar_ne", new Rect2(s.X + r * 0.72f - cornerSize, s.Z - r * 0.72f, cornerSize, cornerSize), minY, maxY, serverCenter, serverCoordScale);
-                AddWorldRectObstacle($"{s.Id}_pillar_sw", new Rect2(s.X - r * 0.72f, s.Z + r * 0.72f - cornerSize, cornerSize, cornerSize), minY, maxY, serverCenter, serverCoordScale);
-                AddWorldRectObstacle($"{s.Id}_pillar_se", new Rect2(s.X + r * 0.72f - cornerSize, s.Z + r * 0.72f - cornerSize, cornerSize, cornerSize), minY, maxY, serverCenter, serverCoordScale);
+                float maxY = baseY + s.UpperFloorHeight - 0.35f;
+                float pOff = r - 0.45f;
+                float halfPillar = 0.36f;
+                AddWorldRectObstacle($"{s.Id}_pillar_nw", new Rect2(s.X - pOff - halfPillar, s.Z - pOff - halfPillar, halfPillar * 2f, halfPillar * 2f), minY, maxY, serverCenter, serverCoordScale);
+                AddWorldRectObstacle($"{s.Id}_pillar_ne", new Rect2(s.X + pOff - halfPillar, s.Z - pOff - halfPillar, halfPillar * 2f, halfPillar * 2f), minY, maxY, serverCenter, serverCoordScale);
+                AddWorldRectObstacle($"{s.Id}_pillar_sw", new Rect2(s.X - pOff - halfPillar, s.Z + pOff - halfPillar, halfPillar * 2f, halfPillar * 2f), minY, maxY, serverCenter, serverCoordScale);
+                AddWorldRectObstacle($"{s.Id}_pillar_se", new Rect2(s.X + pOff - halfPillar, s.Z + pOff - halfPillar, halfPillar * 2f, halfPillar * 2f), minY, maxY, serverCenter, serverCoordScale);
             }
         }
 

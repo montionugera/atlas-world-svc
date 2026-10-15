@@ -11,7 +11,8 @@ namespace AtlasWorld.Client.World
     ///    that sit inside the viewing corridor between <see cref="Camera3D"/> and the player / target,
     ///    and smoothly fades their <see cref="GeometryInstance3D.Transparency"/> to <see cref="OccludedTransparency"/>.
     /// 2. Automatically cuts away (fades to 84% transparent silhouette) any Cave Roof or Upper Tower Deck
-    ///    when the player walks inside the ground floor of a Watchtower or inside an Underground Crystal Cave!
+    ///    when the player walks inside the ground floor of a Watchtower or inside an Underground Crystal Cave,
+    ///    while keeping the 2nd-floor deck 100% solid opaque whenever the player climbs onto the 2nd floor!
     /// </summary>
     public sealed class SmartCameraOccluder
     {
@@ -66,7 +67,8 @@ namespace AtlasWorld.Client.World
 
         /// <summary>
         /// Registers an upper tower floor/roof or cave ceiling canopy so it automatically cuts away
-        /// whenever the player walks underneath it (<c>playerFootY &lt; ceilingDeckY - 0.8f</c>).
+        /// whenever the player walks underneath it (<c>playerFootY &lt; ceilingDeckY - 0.75f</c>),
+        /// and stays 100% opaque when the player stands on top of the 2nd floor.
         /// </summary>
         public void RegisterRoofOrCeilingCanopy(Node3D canopyRoot, Rect2 footprintWorldRect, float ceilingDeckY)
         {
@@ -193,28 +195,31 @@ namespace AtlasWorld.Client.World
                 {
                     if (entry.IsRoofOrCeiling)
                     {
-                        // Cut away cave ceiling or upper watchtower deck whenever player is underneath its footprint!
-                        if (entry.FootprintWorldRect.Grow(0.85f).HasPoint(playerXZ) &&
-                            playerFootY < entry.CeilingDeckY - 0.75f)
+                        // Only cut away cave ceiling or upper watchtower deck when the player is BELOW the upper deck!
+                        // When the player climbs onto the 2nd floor (playerFootY >= CeilingDeckY - 0.75f), keep the 2F deck 100% solid opaque!
+                        if (playerFootY < entry.CeilingDeckY - 0.75f)
                         {
-                            blocksView = true;
-                            targetAlpha = Mathf.Max(OccludedTransparency, 0.84f);
+                            if (entry.FootprintWorldRect.Grow(0.85f).HasPoint(playerXZ) ||
+                                DoesPropOccludeRay(entry, cameraPos, rayDir, rayLen, playerFocusPos))
+                            {
+                                blocksView = true;
+                                targetAlpha = Mathf.Max(OccludedTransparency, 0.84f);
+                            }
                         }
                     }
-
-                    if (!blocksView)
+                    else
                     {
                         blocksView = DoesPropOccludeRay(entry, cameraPos, rayDir, rayLen, playerFocusPos);
-                    }
 
-                    if (!blocksView && combatTargetPos.HasValue)
-                    {
-                        Vector3 targetFocus = combatTargetPos.Value + new Vector3(0f, 1.1f, 0f);
-                        Vector3 targetRay = targetFocus - cameraPos;
-                        float targetLen = targetRay.Length();
-                        if (targetLen > 0.5f && targetLen < 28.0f)
+                        if (!blocksView && combatTargetPos.HasValue)
                         {
-                            blocksView = DoesPropOccludeRay(entry, cameraPos, targetRay / targetLen, targetLen, targetFocus);
+                            Vector3 targetFocus = combatTargetPos.Value + new Vector3(0f, 1.1f, 0f);
+                            Vector3 targetRay = targetFocus - cameraPos;
+                            float targetLen = targetRay.Length();
+                            if (targetLen > 0.5f && targetLen < 28.0f)
+                            {
+                                blocksView = DoesPropOccludeRay(entry, cameraPos, targetRay / targetLen, targetLen, targetFocus);
+                            }
                         }
                     }
                 }

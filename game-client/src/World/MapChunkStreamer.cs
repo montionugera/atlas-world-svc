@@ -17,7 +17,7 @@ namespace AtlasWorld.Client.World
     ///    foliage into a single <see cref="MultiMeshInstance3D"/> per chunk (1 GPU draw call per asset type,
     ///    0 individual <see cref="Node3D"/> overhead).
     /// 3. Safe Multi-Floor 3D Structures (<see cref="UnifiedMapStructureVolume"/>): Spawns 2-Story Watchtowers
-    ///    (with walkable ground chamber, exterior stepped stair ramp, and +3.2m upper battlement deck) and
+    ///    (with walkable ground chamber, wide exterior East stair ramp, and +3.2m upper battlement deck) and
     ///    Walk-In Crystal Caves (with South portal archway, glowing crystal interior, and automatic roof cutaway
     ///    via <see cref="SmartCameraOccluder.RegisterRoofOrCeilingCanopy"/>).
     /// 4. Smart LOS Occluder Registration: Tall/solid props and upper structure roofs automatically fade when
@@ -432,6 +432,14 @@ namespace AtlasWorld.Client.World
                     AlbedoColor = new Color(0.52f, 0.36f, 0.22f),
                     Roughness = 0.80f
                 };
+                var goldRunnerMat = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.86f, 0.26f, 0.22f),
+                    EmissionEnabled = true,
+                    Emission = new Color(0.95f, 0.65f, 0.20f),
+                    EmissionEnergyMultiplier = 0.35f,
+                    Roughness = 0.72f
+                };
 
                 // 1st-Floor Walkable Stone Sanctuary Chamber Plinth
                 var groundPlinth = new MeshInstance3D
@@ -463,10 +471,11 @@ namespace AtlasWorld.Client.World
                     root.AddChild(pillarMesh);
                 }
 
-                // Exterior East Stepped Stone Stair Ramp (climbs from Y=0 at x=+r+2.6m up to Y=deckH at x=+r-0.2m)
-                const int stepCount = 9;
-                float rampStartX = r + 2.6f;
-                float rampEndX = r - 0.2f;
+                // Exterior East Stepped Stone Stair Ramp (matches TerrainElevation.SampleHeight 1:1!)
+                // Climbs from Y=0 at x=+r+3.25m (East entrance) up to Y=deckH at x=+r-0.25m (2nd-floor deck edge)
+                const int stepCount = 12;
+                float rampStartX = r + 3.25f;
+                float rampEndX = r - 0.25f;
                 float stepSpanX = (rampStartX - rampEndX) / stepCount;
                 for (int i = 0; i < stepCount; i++)
                 {
@@ -476,11 +485,21 @@ namespace AtlasWorld.Client.World
                     var stepBox = new MeshInstance3D
                     {
                         Name = $"StairStep_{i + 1}",
-                        Mesh = new BoxMesh { Size = new Vector3(stepSpanX + 0.06f, stepH, 1.85f) },
+                        Mesh = new BoxMesh { Size = new Vector3(stepSpanX + 0.08f, stepH, 2.65f) },
                         MaterialOverride = stoneMat,
                         Position = new Vector3(sx, stepH * 0.5f, 0f)
                     };
                     root.AddChild(stepBox);
+
+                    // Crimson-Gold Royal Stair Runner Carpet along the center of the steps so the climb path is unmistakable
+                    var runnerStrip = new MeshInstance3D
+                    {
+                        Name = $"StairRunner_{i + 1}",
+                        Mesh = new BoxMesh { Size = new Vector3(stepSpanX + 0.09f, 0.03f, 1.15f) },
+                        MaterialOverride = goldRunnerMat,
+                        Position = new Vector3(sx, stepH + 0.015f, 0f)
+                    };
+                    root.AddChild(runnerStrip);
                 }
 
                 // Upper 2nd-Floor Battlement Deck & Parapets (registered for automatic roof cutaway when player is on 1F!)
@@ -535,7 +554,7 @@ namespace AtlasWorld.Client.World
 
                 var bannerLabel = new Label3D
                 {
-                    Text = $"🏰 Watchtower (2F +{deckH:0.0}m)\n[East Stairs -> 2F | 1F Auto-Cutaway]",
+                    Text = $"🏰 Watchtower (2F +{deckH:0.0}m)\n[Walk West Up East Stairs -> 2F]",
                     Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
                     FontSize = 22,
                     OutlineSize = 7,
@@ -546,8 +565,8 @@ namespace AtlasWorld.Client.World
 
                 EntityView.ApplyAnimeToonShading(root, EntityKind.Npc);
 
-                // Register both LOS occlusion and automatic 1st-floor interior cutaway
-                _occluder?.RegisterPropRoot(root, r, 1.0f);
+                // Register ONLY the upper 2F canopy for automatic 1st-floor interior cutaway
+                // (never fade the stairs or the 2F deck when the player stands on top of the 2F deck!)
                 _occluder?.RegisterRoofOrCeilingCanopy(
                     upperCanopy,
                     new Rect2(s.X - r, s.Z - r, r * 2.0f, r * 2.0f),
@@ -690,7 +709,6 @@ namespace AtlasWorld.Client.World
                 };
                 roofCanopy.AddChild(caveLabel);
 
-                _occluder?.RegisterPropRoot(root, r, 1.0f);
                 _occluder?.RegisterRoofOrCeilingCanopy(
                     roofCanopy,
                     new Rect2(s.X - r, s.Z - r, r * 2.0f, r * 2.0f),
@@ -729,7 +747,7 @@ namespace AtlasWorld.Client.World
                 for (int sIdx = 0; sIdx < _doc.Structures.Count; sIdx++)
                 {
                     var s = _doc.Structures[sIdx];
-                    if (Mathf.Abs(wx - s.X) <= s.Radius + 2.8f && Mathf.Abs(wz - s.Z) <= s.Radius + 1.8f)
+                    if (Mathf.Abs(wx - s.X) <= s.Radius + 3.6f && Mathf.Abs(wz - s.Z) <= s.Radius + 2.0f)
                     {
                         insideStructure = true;
                         break;

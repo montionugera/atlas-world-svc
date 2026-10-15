@@ -4,31 +4,37 @@ using Godot;
 namespace AtlasWorld.Client.World
 {
     /// <summary>
-    /// Deterministic analytical + terraced 3D heightfield, Multi-Floor Structure Deck &amp; Cave solver shared across:
-    /// 1. The GPU vertex shader (<c>stylized_grass_floor.gdshader</c>)
-    /// 2. CPU entity ground-snapping, multi-floor tower ramps, underground caves &amp; steep-cliff wall sliding
-    ///    (<see cref="VerticalSliceRoot"/>, <see cref="EntityManager"/>, <see cref="MapChunkStreamer"/>)
-    /// 3. Mac 3D Map Builder Studio terrain sculpting &amp; raycast ground intersection (<see cref="UI.Widgets.MapBuilderDock"/>)
+    /// Deterministic 3D Terrain Altitude, Steep Cliff Slope Evaluator &amp; Multi-Floor Structure Resolver (Watchtowers &amp; Caves)
+    /// for Freja South Gate and custom Map Builder terrains.
+    ///
+    /// Matches the vertex displacement in <c>res://assets/shaders/stylized_grass_floor.gdshader</c> 1:1
+    /// so PlayerAvatar, server-rs Entities, 3D Props, and GPU-instanced Meadow Clutter all sit accurately on:
+    /// 1. Base procedural rolling hills &amp; sculpted Map Builder height terraces / cliffs.
+    /// 2. Multi-floor 3D Watchtowers (1st-floor ground chamber + Exterior East Stair Ramp + 2nd-floor Battlement Deck).
+    /// 3. Walk-in Underground Crystal Caves (recessed cavern floor underneath a mountain/cliff roof without popping to the roof).
     /// </summary>
     public static class TerrainElevation
     {
-        public static float GlobalAmplitude { get; set; } = 1.0f;
-
         /// <summary>
-        /// Maximum walkable terrain slope angle in degrees (38°).
-        /// Slopes gentler than or equal to 38° are walkable hills/ramps; slopes steeper than 38°
-        /// act as impassable cliff walls that slide movement along the contour tangent.
+        /// Maximum walkable slope angle in degrees before a terrain incline is treated as an impassable cliff wall.
+        /// Standard 3D RPG / NavMesh convention: slopes &lt;= 38° are walkable; slopes &gt; 38° block and slide along the contour.
         /// </summary>
         public const float MaxWalkableSlopeDeg = 38.0f;
 
         /// <summary>
-        /// Maximum vertical step-up height (in meters) an entity can climb in a single frame without a ramp.
-        /// Prevents ground-floor players from teleporting onto a +3.2m 2nd-floor tower roof when walking underneath it.
+        /// Maximum vertical step-up height (in meters) an entity can climb in a single horizontal step
+        /// without a connecting ramp/staircase. Prevents teleporting straight up a 3.2m watchtower wall.
         /// </summary>
-        public const float MaxStepUpHeight = 1.25f;
+        public const float MaxStepUpHeight = 0.65f;
 
         /// <summary>
-        /// Evaluates the base terrain heightfield Y (hills + terraces, excluding multi-floor building decks/caves) at (wx, wz).
+        /// Global amplitude multiplier (0.0 = flat 2D plane, 1.0 = default rolling hills, up to 2.5 = dramatic mountain ridges).
+        /// </summary>
+        public static float GlobalAmplitude { get; set; } = 1.0f;
+
+        /// <summary>
+        /// Evaluates the continuous outdoor ground terrain height Y at world position (wx, wz)
+        /// (ignoring multi-floor structure decks or cave interiors).
         /// </summary>
         public static float SampleBaseTerrainHeight(float wx, float wz, UnifiedMapDocument? doc = null)
         {
@@ -36,36 +42,85 @@ namespace AtlasWorld.Client.World
             if (amp <= 0.001f && (doc == null || doc.HeightTerraces.Count == 0))
                 return 0f;
 
-            // 1. Base procedural rolling meadow hills & Northern Sanctuary overlook ridge
-            float distFromOrigin = Mathf.Sqrt(wx * wx + wz * wz);
-            float outerMask = SmoothStep(9.0f, 22.0f, distFromOrigin);
+            // Keep central spawn plaza & road corridor near (0, -2..+4) gently flattened so combat & spawning feel grounded
+            float distFromSpawn = Mathf.Sqrt(wx * wx + wz * wz);
+            float spawnFlatMask = SmoothStep(5.5f, 15.0f, distFromSpawn);
 
-            float waveA = Mathf.Sin(wx * 0.085f + 0.4f) * Mathf.Cos(wz * 0.075f - 0.3f) * 2.15f;
-            float waveB = Mathf.Sin((wx * 0.7f - wz * 0.7f) * 0.14f + 1.1f) * 0.85f;
+            // Keep the N-S cobblestone road (|x| < 2.6m) smooth and walkable
+            float roadFlatMask = SmoothStep(2.2f, 6.2f, Mathf.Abs(wx));
 
-            float northRamp = SmoothStep(-9.5f, -20.0f, wz);
-            float northPlateau = northRamp * 1.65f * SmoothStep(28.0f, 8.0f, Mathf.Abs(wx));
+            // Layered harmonic rolling hills (matches stylized_grass_floor.gdshader vertex() function)
+            float wave1 = Mathf.Sin(wx * 0.075f) * Mathf.Cos(wz * 0.075f) * 1.35f;
+            float wave2 = Mathf.Sin((wx * 0.14f) + (wz * 0.11f)) * 0.55f;
+            float ridge = Mathf.Cos(wz * 0.045f - 0.8f) * 0.85f;
 
-            float roadCarve = 1.0f - 0.55f * SmoothStep(4.5f, 1.8f, Mathf.Abs(wx));
+            float baseHills = (wave1 + wave2 + ridge) * spawnFlatMask * Mathf.Lerp(0.30f, 1.0f, roadFlatMask) * amp;
 
-            float proceduralY = (waveA + waveB) * outerMask * roadCarve + northPlateau;
-            float totalY = proceduralY * amp;
-
-            // 2. Authorable Height Terraces / Hills / Steep Cliffs from UnifiedMapDocument
+            float terraceDelta = 0f;
             if (doc != null && doc.HeightTerraces.Count > 0)
             {
-                foreach (var terrace in doc.HeightTerraces)
+                for (int i = 0; i < doc.HeightTerraces.Count; i++)
                 {
-                    float dx = wx - terrace.X;
-                    float dz = wz - terrace.Z;
-                    float d = Mathf.Sqrt(dx * dx + dz * dz);
-                    float outerR = Mathf.Max(1.0f, terrace.Radius);
-                    if (d >= outerR)
-                        continue;
+                    var t = doc.HeightTerraces[i];
+                    float dx = wx - t.X;
+                    float dz = wz - t.Z;
+                    float dist = Mathf.Sqrt(dx * dx + dz * dz);
+                    if (dist < t.Radius)
+                    {
+                        float norm = dist / Mathf.Max(0.5f, t.Radius);
+                        float innerFlat = Mathf.Clamp(1.0f - t.Falloff, 0.15f, 0.85f);
+                        float weight = 1.0f - SmoothStep(innerFlat, 1.0f, norm);
+                        terraceDelta += t.Height * weight;
+                    }
+                }
+            }
 
-                    float innerR = outerR * Mathf.Clamp(1.0f - terrace.Falloff, 0.08f, 0.92f);
-                    float weight = 1.0f - SmoothStep(innerR, outerR, d);
-                    totalY += terrace.Height * weight;
+            float totalY = baseHills + terraceDelta;
+
+            // Flatten base ground under Watchtower & Crystal Cave footprints so stairs and portals sit cleanly on level ground
+            if (doc != null && doc.Structures.Count > 0)
+            {
+                for (int i = 0; i < doc.Structures.Count; i++)
+                {
+                    var s = doc.Structures[i];
+                    float dx = wx - s.X;
+                    float dz = wz - s.Z;
+                    float dist = Mathf.Sqrt(dx * dx + dz * dz);
+                    float flatRadius = s.Radius + 3.8f;
+                    if (dist < flatRadius)
+                    {
+                        float centerH = SampleRawUnflattenedHeight(s.X, s.Z, amp, doc);
+                        float blend = SmoothStep(s.Radius + 0.5f, flatRadius, dist);
+                        totalY = Mathf.Lerp(centerH, totalY, blend);
+                    }
+                }
+            }
+
+            return totalY;
+        }
+
+        private static float SampleRawUnflattenedHeight(float wx, float wz, float amp, UnifiedMapDocument doc)
+        {
+            float distFromSpawn = Mathf.Sqrt(wx * wx + wz * wz);
+            float spawnFlatMask = SmoothStep(5.5f, 15.0f, distFromSpawn);
+            float roadFlatMask = SmoothStep(2.2f, 6.2f, Mathf.Abs(wx));
+            float wave1 = Mathf.Sin(wx * 0.075f) * Mathf.Cos(wz * 0.075f) * 1.35f;
+            float wave2 = Mathf.Sin((wx * 0.14f) + (wz * 0.11f)) * 0.55f;
+            float ridge = Mathf.Cos(wz * 0.045f - 0.8f) * 0.85f;
+            float totalY = (wave1 + wave2 + ridge) * spawnFlatMask * Mathf.Lerp(0.30f, 1.0f, roadFlatMask) * amp;
+
+            for (int i = 0; i < doc.HeightTerraces.Count; i++)
+            {
+                var t = doc.HeightTerraces[i];
+                float dx = wx - t.X;
+                float dz = wz - t.Z;
+                float dist = Mathf.Sqrt(dx * dx + dz * dz);
+                if (dist < t.Radius)
+                {
+                    float norm = dist / Mathf.Max(0.5f, t.Radius);
+                    float innerFlat = Mathf.Clamp(1.0f - t.Falloff, 0.15f, 0.85f);
+                    float weight = 1.0f - SmoothStep(innerFlat, 1.0f, norm);
+                    totalY += t.Height * weight;
                 }
             }
 
@@ -75,7 +130,7 @@ namespace AtlasWorld.Client.World
         /// <summary>
         /// Evaluates the walkable floor altitude Y at (wx, wz).
         /// When <paramref name="currentEntityY"/> is provided (not <c>NaN</c>), resolves multi-floor 3D structures
-        /// (Watchtower 1st floor vs. Stair Ramp vs. 2nd-floor Battlement Deck, or Underground Crystal Cave Floor vs. Mountain Roof)
+        /// (Watchtower 1st floor vs. East Stair Ramp vs. 2nd-floor Battlement Deck, or Underground Crystal Cave Floor vs. Mountain Roof)
         /// safely so entities never teleport across floors.
         /// </summary>
         public static float SampleHeight(float wx, float wz, UnifiedMapDocument? doc = null, float currentEntityY = float.NaN)
@@ -90,7 +145,7 @@ namespace AtlasWorld.Client.World
             {
                 var s = doc.Structures[i];
                 float structBaseY = SampleBaseTerrainHeight(s.X, s.Z, doc);
-                float r = Mathf.Max(2.8f, s.Radius);
+                float r = Mathf.Max(2.5f, s.Radius);
 
                 if (s.Kind == "crystal_cave")
                 {
@@ -111,40 +166,36 @@ namespace AtlasWorld.Client.World
                         }
                     }
                 }
-                else // "watchtower" (2-Story Stone Watchtower with Southern/Eastern Exterior Stair Ramp)
+                else // "watchtower" (2-Story Stone Watchtower with Wide East Exterior Stair Ramp)
                 {
-                    float upperDeckY = structBaseY + s.UpperFloorHeight;
+                    float upperDeckY = structBaseY + Mathf.Max(2.2f, s.UpperFloorHeight);
+                    float midFloorThresholdY = structBaseY + Mathf.Max(2.2f, s.UpperFloorHeight) * 0.42f;
 
-                    // 1. Check Exterior Stair Ramp on the East side of the tower:
-                    //    X in [s.X + r*0.72 .. s.X + r*0.72 + 1.8m], Z from (s.Z + r) [bottom, South] to (s.Z - r*0.65) [top, North]
-                    float rampMinX = s.X + r * 0.68f;
-                    float rampMaxX = s.X + r * 0.68f + 1.85f;
-                    float rampBottomZ = s.Z + r * 0.95f;
-                    float rampTopZ = s.Z - r * 0.65f;
-
-                    if (wx >= rampMinX && wx <= rampMaxX && wz <= rampBottomZ + 0.4f && wz >= rampTopZ - 0.8f)
+                    // 1. Check Exterior East Stair Ramp (matches visual steps in MapChunkStreamer.SpawnStructureVolumeIntoChunk!):
+                    //    Footprint X in [s.X + r - 0.35m (top at 2F edge) .. s.X + r + 3.45m (bottom on meadow ground)]
+                    //    Footprint Z in [s.Z - 1.55m .. s.Z + 1.55m] (wide 3.1m stair corridor centered on s.Z)
+                    float rampTopX = s.X + r - 0.25f;
+                    float rampBottomX = s.X + r + 3.25f;
+                    if (wx >= rampTopX - 0.35f && wx <= rampBottomX + 0.45f && Mathf.Abs(wz - s.Z) <= 1.55f)
                     {
-                        float t = Mathf.Clamp((rampBottomZ - wz) / Mathf.Max(0.5f, rampBottomZ - rampTopZ), 0f, 1f);
+                        float t = Mathf.Clamp((rampBottomX - wx) / Mathf.Max(0.5f, rampBottomX - rampTopX), 0f, 1f);
                         float rampY = Mathf.Lerp(structBaseY, upperDeckY, t);
-                        if (float.IsNaN(currentEntityY) || rampY <= currentEntityY + MaxStepUpHeight)
-                        {
-                            bestFloorY = Mathf.Max(bestFloorY, rampY);
-                        }
+                        bestFloorY = Mathf.Max(bestFloorY, rampY);
                     }
 
                     // 2. Check Watchtower Interior / 2nd-Floor Battlement Deck:
-                    //    Footprint X in [s.X - r*0.75 .. s.X + r*0.75], Z in [s.Z - r*0.75 .. s.Z + r*0.75]
-                    if (Mathf.Abs(wx - s.X) <= r * 0.78f && Mathf.Abs(wz - s.Z) <= r * 0.78f)
+                    //    Full deck footprint X in [s.X - r*1.06 .. s.X + r*1.06], Z in [s.Z - r*1.06 .. s.Z + r*1.06]
+                    if (Mathf.Abs(wx - s.X) <= r * 1.06f && Mathf.Abs(wz - s.Z) <= r * 1.06f)
                     {
-                        if (!float.IsNaN(currentEntityY) && currentEntityY >= upperDeckY - MaxStepUpHeight)
+                        if (!float.IsNaN(currentEntityY) && currentEntityY >= midFloorThresholdY)
                         {
-                            // Entity is on the 2nd floor (or stepping off the top of the ramp onto the 2nd floor)
+                            // Entity is on the 2nd floor (or stepping off the upper half of the East stair ramp onto the 2nd floor)
                             bestFloorY = Mathf.Max(bestFloorY, upperDeckY);
                         }
-                        else if (!float.IsNaN(currentEntityY))
+                        else if (!float.IsNaN(currentEntityY) && wx < rampTopX - 0.25f)
                         {
                             // Entity is walking inside the 1st-floor ground chamber under the 2nd-floor deck!
-                            bestFloorY = structBaseY;
+                            bestFloorY = structBaseY + 0.14f;
                         }
                     }
                 }
@@ -165,7 +216,7 @@ namespace AtlasWorld.Client.World
             for (int i = 0; i < doc.Structures.Count; i++)
             {
                 var s = doc.Structures[i];
-                float r = Mathf.Max(2.8f, s.Radius);
+                float r = Mathf.Max(2.5f, s.Radius);
                 if (s.Kind == "crystal_cave")
                 {
                     if (Mathf.Abs(wx - s.X) <= r - 0.35f && wz >= s.Z - r + 0.35f && wz <= s.Z + r + 1.8f)
@@ -173,8 +224,8 @@ namespace AtlasWorld.Client.World
                 }
                 else
                 {
-                    // Inside watchtower footprint or on its exterior stair ramp
-                    if (Mathf.Abs(wx - s.X) <= r + 2.0f && Mathf.Abs(wz - s.Z) <= r + 1.0f)
+                    // Inside watchtower footprint or on its exterior East stair ramp [s.X - r .. s.X + r + 3.6m]
+                    if (wx >= s.X - r - 0.5f && wx <= s.X + r + 3.8f && Mathf.Abs(wz - s.Z) <= r + 1.0f)
                         return true;
                 }
             }
@@ -273,18 +324,14 @@ namespace AtlasWorld.Client.World
             {
                 float tx = -gz / gradLen;
                 float tz = gx / gradLen;
+                float moveX = nextX - curX;
+                float moveZ = nextZ - curZ;
+                float dot = moveX * tx + moveZ * tz;
+                float slideX = curX + tx * dot * 0.75f;
+                float slideZ = curZ + tz * dot * 0.75f;
 
-                float dx = nextX - curX;
-                float dz = nextZ - curZ;
-                float dot = dx * tx + dz * tz;
-
-                float slideX = curX + tx * dot;
-                float slideZ = curZ + tz * dot;
-                float slideSlope = SampleSlopeDegrees(slideX, slideZ, doc);
-
-                if (slideSlope <= MaxWalkableSlopeDeg)
+                if (SampleSlopeDegrees(slideX, slideZ, doc) <= MaxWalkableSlopeDeg + 2.5f)
                 {
-                    slopeDeg = slideSlope;
                     return new Vector2(slideX, slideZ);
                 }
             }
@@ -296,8 +343,8 @@ namespace AtlasWorld.Client.World
         {
             if (Mathf.IsEqualApprox(edge0, edge1))
                 return x >= edge1 ? 1f : 0f;
-            float t = Mathf.Clamp((x - edge0) / (edge1 - edge0), 0f, 1f);
-            return t * t * (3f - 2f * t);
+            float t = Mathf.Clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+            return t * t * (3.0f - 2.0f * t);
         }
     }
 }

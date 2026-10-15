@@ -7,12 +7,14 @@ namespace AtlasWorld.Client.UI.Widgets
 {
     /// <summary>
     /// Native macOS / Godot 4 In-Engine 3D Map Builder Dock &amp; Viewport Controller.
-    /// Supports:\n    /// 1. Dynamic Map Size Expansion (1000x1000 / 2000x2000 / 4000x4000 server units)
+    /// Supports:
+    /// 1. Dynamic Map Size Expansion (1000x1000 / 2000x2000 / 4000x4000 server units)
     /// 2. On-Demand Spatial Chunk Streaming + GPU Hardware Instancing (MultiMeshInstance3D) &amp; Procedural Clutter Density
     /// 3. 3D Altitude, Multi-Floor Watchtowers &amp; Walk-In Crystal Caves (+Hill, +Cliff, +Valley, +Tower 2F, +Crystal Cave)
-    /// 4. Smart Auto-Transparent Camera LOS &amp; Interior Roof Cutaway (SmartCameraOccluder) with live opacity slider
-    /// 5. World Time &amp; Day/Night Atmosphere Control (24h Slider, Dawn/Noon/Sunset/Night presets, Auto-Advance &amp; Speed, Top Banner Quick Pill)
-    /// 6. Browsing 3D glTF assets from res://assets/nature &amp; res://assets/dungeon and exporting to content/maps/freja-south-gate.json
+    /// 4. Peaceful Exploration Mode Toggle (🕊️ MOBS: OFF [P]) for monster-free 3D terrain &amp; structure testing
+    /// 5. Smart Auto-Transparent Camera LOS &amp; Interior Roof Cutaway (SmartCameraOccluder) with live opacity slider
+    /// 6. World Time &amp; Day/Night Atmosphere Control (24h Slider, Dawn/Noon/Sunset/Night presets, Auto-Advance &amp; Speed, Top Banner Quick Pill)
+    /// 7. Browsing 3D glTF assets from res://assets/nature &amp; res://assets/dungeon and exporting to content/maps/freja-south-gate.json
     /// </summary>
     public partial class MapBuilderDock : Control
     {
@@ -77,6 +79,7 @@ namespace AtlasWorld.Client.UI.Widgets
         private PanelContainer? _dockPanel;
         private PanelContainer? _topBanner;
         private Button? _toggleBuilderBtn;
+        private Button? _topBannerMobsBtn;
         private Button? _topBannerTimeBtn;
         private Label? _selectedAssetLabel;
         private Label? _cursorCoordLabel;
@@ -129,6 +132,9 @@ namespace AtlasWorld.Client.UI.Widgets
             _gizmoRoot.AddChild(_chunkGridGizmoRoot);
 
             BuildUi();
+            _root.PeacefulModeChanged += _ => SyncPeacefulButtonState();
+            SyncPeacefulButtonState();
+
             _streamer.UpdateStreaming(_camFocus, forceReload: true);
             RebuildGizmoOverlays();
             RebuildChunkGridGizmos();
@@ -142,20 +148,76 @@ namespace AtlasWorld.Client.UI.Widgets
             }
         }
 
+        public override void _Process(double delta)
+        {
+            if (!_builderActive && _root?.PlayerAvatar != null && _cursorCoordLabel != null)
+            {
+                Vector3 p = _root.PlayerAvatar.Position;
+                string floorTag = ResolvePlayerFloorTag(p);
+                _cursorCoordLabel.Text =
+                    $"Pos ({p.X:0.1}, Alt {p.Y:+0.00;-0.00}m [{floorTag}], {p.Z:0.1})";
+            }
+        }
+
+        private string ResolvePlayerFloorTag(Vector3 p)
+        {
+            if (_doc == null) return "1F";
+            for (int i = 0; i < _doc.Structures.Count; i++)
+            {
+                var s = _doc.Structures[i];
+                float r = Mathf.Max(2.5f, s.Radius);
+                float baseY = TerrainElevation.SampleBaseTerrainHeight(s.X, s.Z, _doc);
+                if (s.Kind == "watchtower")
+                {
+                    float deckY = baseY + Mathf.Max(2.2f, s.UpperFloorHeight);
+                    if (Mathf.Abs(p.X - s.X) <= r * 1.06f && Mathf.Abs(p.Z - s.Z) <= r * 1.06f)
+                    {
+                        return p.Y >= baseY + s.UpperFloorHeight * 0.45f ? "2F TOWER DECK" : "1F TOWER";
+                    }
+                    if (p.X >= s.X + r - 0.35f && p.X <= s.X + r + 3.45f && Mathf.Abs(p.Z - s.Z) <= 1.55f)
+                    {
+                        return "TOWER STAIRS";
+                    }
+                }
+                else if (s.Kind == "crystal_cave")
+                {
+                    if (Mathf.Abs(p.X - s.X) <= r && Mathf.Abs(p.Z - s.Z) <= r + 1.5f)
+                    {
+                        return "CRYSTAL CAVE";
+                    }
+                }
+            }
+            return "GROUND";
+        }
+
+        private void SyncPeacefulButtonState()
+        {
+            if (_topBannerMobsBtn == null || _root == null)
+                return;
+
+            bool peaceful = _root.IsPeacefulMode;
+            _topBannerMobsBtn.Text = peaceful
+                ? "\ud83d\udd4a MOBS: OFF [P]"
+                : "\u2694 MOBS: ON [P]";
+            _topBannerMobsBtn.Modulate = peaceful
+                ? new Color(0.45f, 1.0f, 0.68f)
+                : new Color(1.0f, 0.72f, 0.42f);
+        }
+
         private void BuildUi()
         {
             AnchorsPreset = (int)LayoutPreset.FullRect;
             MouseFilter = MouseFilterEnum.Ignore;
 
-            // 1. Top-Center Map Builder Toggle Pill & Live Altitude / Chunk / World Time Status Banner
+            // 1. Top-Center Map Builder Toggle Pill & Live Altitude / Floor / Peaceful Mobs / World Time Status Banner
             _topBanner = new PanelContainer
             {
                 Name = "BuilderTopBanner",
                 AnchorLeft = 0.5f,
                 AnchorRight = 0.5f,
-                OffsetLeft = -465f,
+                OffsetLeft = -520f,
                 OffsetTop = 10f,
-                OffsetRight = 465f,
+                OffsetRight = 520f,
                 OffsetBottom = 46f,
                 MouseFilter = MouseFilterEnum.Stop
             };
@@ -171,21 +233,21 @@ namespace AtlasWorld.Client.UI.Widgets
                 CornerRadiusTopRight = 9,
                 CornerRadiusBottomLeft = 9,
                 CornerRadiusBottomRight = 9,
-                ContentMarginLeft = 12,
-                ContentMarginRight = 12,
+                ContentMarginLeft = 10,
+                ContentMarginRight = 10,
                 ContentMarginTop = 5,
                 ContentMarginBottom = 5
             };
             _topBanner.AddThemeStyleboxOverride("panel", bannerStyle);
 
             var bannerHBox = new HBoxContainer();
-            bannerHBox.AddThemeConstantOverride("separation", 10);
+            bannerHBox.AddThemeConstantOverride("separation", 8);
             _topBanner.AddChild(bannerHBox);
 
             _toggleBuilderBtn = new Button
             {
                 Text = "\ud83d\uddfa MAP BUILDER [F2]: OFF",
-                CustomMinimumSize = new Vector2(170, 26)
+                CustomMinimumSize = new Vector2(162, 26)
             };
             _toggleBuilderBtn.AddThemeFontSizeOverride("font_size", 11);
             _toggleBuilderBtn.Pressed += () => SetBuilderActive(!_builderActive);
@@ -193,17 +255,27 @@ namespace AtlasWorld.Client.UI.Widgets
 
             _cursorCoordLabel = new Label
             {
-                Text = "World (0.0, +0.0m, 0.0) | Chunk (0,0) | Server (500, 500)",
+                Text = "Pos (-2.4, Alt +0.38m [GROUND], -2.0)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill
             };
             _cursorCoordLabel.AddThemeFontSizeOverride("font_size", 11);
             _cursorCoordLabel.AddThemeColorOverride("font_color", new Color(0.86f, 0.92f, 1.0f));
             bannerHBox.AddChild(_cursorCoordLabel);
 
+            _topBannerMobsBtn = new Button
+            {
+                Text = "\ud83d\udd4a MOBS: OFF [P]",
+                CustomMinimumSize = new Vector2(118, 26),
+                TooltipText = "Click or press [P] to toggle Monsters ON/OFF for peaceful 3D terrain & watchtower testing"
+            };
+            _topBannerMobsBtn.AddThemeFontSizeOverride("font_size", 11);
+            _topBannerMobsBtn.Pressed += () => _root.TogglePeacefulMode();
+            bannerHBox.AddChild(_topBannerMobsBtn);
+
             _topBannerTimeBtn = new Button
             {
                 Text = "\u2600 10:30 DAY [T]",
-                CustomMinimumSize = new Vector2(128, 26),
+                CustomMinimumSize = new Vector2(124, 26),
                 TooltipText = "Click or press [T] to cycle World Time (Dawn / Noon / Sunset / Night)"
             };
             _topBannerTimeBtn.AddThemeFontSizeOverride("font_size", 11);
@@ -213,7 +285,7 @@ namespace AtlasWorld.Client.UI.Widgets
             var quickSaveBtn = new Button
             {
                 Text = "\ud83d\udcbe SAVE JSON (Cmd+S)",
-                CustomMinimumSize = new Vector2(138, 26)
+                CustomMinimumSize = new Vector2(132, 26)
             };
             quickSaveBtn.AddThemeFontSizeOverride("font_size", 11);
             quickSaveBtn.Pressed += SaveUnifiedMap;
@@ -1494,6 +1566,12 @@ namespace AtlasWorld.Client.UI.Widgets
                     GetViewport().SetInputAsHandled();
                     return;
                 }
+                if (key.Keycode == Key.P && _builderActive)
+                {
+                    _root.TogglePeacefulMode();
+                    GetViewport().SetInputAsHandled();
+                    return;
+                }
 
                 if (!_builderActive) return;
 
@@ -1573,7 +1651,6 @@ namespace AtlasWorld.Client.UI.Widgets
                         _cursorWorldPos = hit;
                         UpdateCursorPreviewTransform();
 
-                        Vector2 serverCenter = _doc.ServerCenter;
                         Vector2I chunk = _streamer.WorldToChunkCoord(hit);
                         if (_cursorCoordLabel != null)
                         {

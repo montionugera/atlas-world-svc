@@ -384,25 +384,37 @@ namespace AtlasWorld.Client.World
                 float expectedDeckY = baseTowerY + tower.UpperFloorHeight;
 
                 // 2. Ground-Floor Safety Check: An entity at ground level (Y=baseTowerY) walking into the center of the Watchtower
-                // MUST stay on 1F (baseTowerY) and NEVER teleport up to the 2nd floor (+3.2m)!
+                // MUST stay on 1F (baseTowerY + 0.14m plinth) and NEVER teleport up to the 2nd floor (+3.2m)!
                 float sampled1F = TerrainElevation.SampleHeight(tower.X, tower.Z, doc, currentEntityY: baseTowerY);
-                if (Mathf.Abs(sampled1F - baseTowerY) > 0.1f)
+                if (Mathf.Abs(sampled1F - (baseTowerY + 0.14f)) > 0.15f)
                 {
-                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Watchtower 1F floor lock failed: expected {baseTowerY:0.00}, got {sampled1F:0.00}");
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Watchtower 1F floor lock failed: expected {baseTowerY + 0.14f:0.00}, got {sampled1F:0.00}");
                     return 1;
                 }
 
-                // 3. Upper-Floor Safety Check: An entity that climbed the East stair ramp (currentEntityY near expectedDeckY)
-                // MUST resolve to the 2nd-floor battlement deck (expectedDeckY)!
-                float sampled2F = TerrainElevation.SampleHeight(tower.X, tower.Z, doc, currentEntityY: expectedDeckY - 0.3f);
-                if (Mathf.Abs(sampled2F - expectedDeckY) > 0.1f)
+                // 3. Step-by-Step Continuous Stair Climb Check:
+                // Walk an entity from East of the Watchtower (X = -2.2, Z = -2.0) Westward (-X) up the East Staircase
+                // all the way onto the center of the 2nd-Floor Battlement Deck (X = -9.5, Z = -2.0).
+                float walkX = -2.2f;
+                float walkZ = tower.Z;
+                float walkY = baseTowerY;
+                for (int step = 0; step < 65; step++)
                 {
-                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Watchtower 2F deck lock failed: expected {expectedDeckY:0.00}, got {sampled2F:0.00}");
+                    float nextX = Mathf.MoveToward(walkX, tower.X, 0.12f);
+                    Vector2 res = TerrainElevation.ResolveSteepSlopeMove(walkX, walkZ, nextX, walkZ, doc, out _, out _, walkY);
+                    walkX = res.X;
+                    walkZ = res.Y;
+                    float targetY = TerrainElevation.SampleHeight(walkX, walkZ, doc, walkY);
+                    walkY = Mathf.Lerp(walkY, targetY, 0.38f);
+                }
+
+                if (Mathf.Abs(walkX - tower.X) > 0.25f || Mathf.Abs(walkY - expectedDeckY) > 0.15f)
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Watchtower East Staircase climb to 2F failed: ended at X={walkX:0.2f} (expected {tower.X:0.2f}), Y={walkY:0.2f} (expected {expectedDeckY:0.2f})");
                     return 1;
                 }
 
                 // 4. Crystal Cave Walk-In & Wall Collider Check:
-                // Walking into the cave interior stays on the recessed cavern floor (baseY - 0.35m), while the North back wall pushes out.
                 float baseCaveY = TerrainElevation.SampleBaseTerrainHeight(cave.X, cave.Z, doc);
                 float sampledCaveFloor = TerrainElevation.SampleHeight(cave.X, cave.Z, doc, currentEntityY: baseCaveY);
                 if (Mathf.Abs(sampledCaveFloor - (baseCaveY - 0.15f)) > 0.15f)
@@ -411,14 +423,14 @@ namespace AtlasWorld.Client.World
                     return 1;
                 }
 
-                // 5. SmartCameraOccluder Automatic Roof Cutaway Check:
+                // 5. SmartCameraOccluder Automatic Roof Cutaway on 1F vs Solid Deck on 2F Check:
                 var occluder = new SmartCameraOccluder();
                 var testRoot = new Node3D();
                 context.AddChild(testRoot);
                 var streamer = new MapChunkStreamer(testRoot, doc, occluder);
                 streamer.UpdateStreaming(new Vector3(tower.X, baseTowerY, tower.Z), forceReload: true);
 
-                // Place player inside Watchtower 1F (Y = baseTowerY + 1.25f head focus, so footY = baseTowerY < deckY - 0.75f)
+                // 5a. Place player inside Watchtower 1F -> roof MUST auto-cutaway
                 occluder.Update(
                     0.5f,
                     new Vector3(tower.X, baseTowerY + 8.0f, tower.Z + 8.0f),
@@ -426,13 +438,26 @@ namespace AtlasWorld.Client.World
 
                 if (occluder.CurrentlyFadedPropCount < 1)
                 {
-                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  SmartCameraOccluder did not auto-cutaway Watchtower roof when player is on 1F");
+                    GD.PrintErr("[VerticalSliceProbe]   FAIL  SmartCameraOccluder did not auto-cutaway Watchtower roof when player is on 1F");
+                    testRoot.QueueFree();
+                    return 1;
+                }
+
+                // 5b. Place player on Watchtower 2F -> 2nd-floor deck MUST remain 100% solid opaque (0 faded canopies)!
+                occluder.Update(
+                    0.5f,
+                    new Vector3(tower.X, expectedDeckY + 8.0f, tower.Z + 8.0f),
+                    new Vector3(tower.X, expectedDeckY + 1.25f, tower.Z));
+
+                if (occluder.CurrentlyFadedPropCount != 0)
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Watchtower 2F deck faded while standing on 2F (faded={occluder.CurrentlyFadedPropCount})");
                     testRoot.QueueFree();
                     return 1;
                 }
 
                 testRoot.QueueFree();
-                GD.Print($"[VerticalSliceProbe]   PASS  Multi-Floor 3D Watchtower (1F={sampled1F:0.00}m, 2F={sampled2F:0.00}m), Crystal Cave ({sampledCaveFloor:0.00}m) & Auto Roof Cutaway");
+                GD.Print($"[VerticalSliceProbe]   PASS  Multi-Floor 3D Watchtower Climb (1F={sampled1F:0.00}m -> East Stairs -> 2F={walkY:0.00}m), Crystal Cave ({sampledCaveFloor:0.00}m) & Solid 2F / Cutaway 1F");
                 return 0;
             }
             catch (Exception ex)

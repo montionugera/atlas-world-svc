@@ -22,7 +22,7 @@ namespace AtlasWorld.Client
     /// 3. AnimationController + AssetRegistry loop overrides + AudioRegistry 3D SFX
     /// 4. Joymify Design System + MetaShell (Character, Inventory, Skills, Quests, Loadout)
     /// 5. Split-screen WardrobeModal with real 3D Weapon GLB attachment
-    /// 6. 3D World Monsters (showcase + live server-rs mobs/bots/projectiles) with 3D overhead nameplates, HP bars &amp; target ring
+    /// 6. 3D World Monsters (showcase + live server-rs mobs/bots/projectiles) with Peaceful Exploration Mode ([P] toggle, default ON for 3D terrain/structure testing)
     /// 7. Authoritative Player HP/SP, ROX Auto-Combat AFK loop, Quest Kill Tracker, Live Minimap Radar, DevTuningDrawer &amp; Mac 3D Map Builder
     /// 8. Scalable Map Expansion (1000x1000 -> 2000x2000 -> 4000x4000) &amp; On-Demand Spatial Chunk Streaming (MapChunkStreamer)
     /// 9. 3D Altitude, Multi-Floor Watchtowers &amp; Walk-In Crystal Caves (TerrainElevation) + Smart Camera LOS &amp; Roof Cutaway (SmartCameraOccluder)
@@ -71,6 +71,7 @@ namespace AtlasWorld.Client
         private bool _wasMovingLastFrame = false;
         private bool _autoApproachAttackPending = false;
         private bool _autoCombatEnabled = false;
+        private bool _peacefulNoMonsters = true;
         private float _autoAttackTimerSec = 0f;
         private int _currentSp = 3200;
         private const int MaxSp = 3200;
@@ -114,8 +115,11 @@ namespace AtlasWorld.Client
 
         public EntityManager Entities => _entityManager;
         public bool IsAutoCombatEnabled => _autoCombatEnabled;
+        public bool IsPeacefulMode => _peacefulNoMonsters;
         public SmartCameraOccluder CameraOccluder => _cameraOccluder;
         public DayNightCycleController DayNightCycle => _dayNightCycle;
+
+        public event Action<bool>? PeacefulModeChanged;
 
         public override void _Ready()
         {
@@ -208,6 +212,20 @@ namespace AtlasWorld.Client
             _dayNightCycle.Initialize(this, _mapDoc);
             SpawnWorldMonsters();
 
+            // Default to Peaceful Mode (no monsters) so 3D terrain, Watchtower 2F stairs, and Crystal Cave can be tested freely
+            SetPeacefulMode(OS.GetEnvironment("ATLAS_AUTO_COMBAT_ON_START") != "1");
+
+            // Position PlayerAvatar right at the foot of the Watchtower East Staircase facing West (-X) so 2F stair climbing can be tested immediately
+            if (PlayerAvatar != null && OS.GetEnvironment("ATLAS_AUTO_COMBAT_ON_START") != "1")
+            {
+                float startX = -2.4f;
+                float startZ = -2.0f;
+                float startY = TerrainElevation.SampleHeight(startX, startZ, _mapDoc, 0f);
+                PlayerAvatar.Position = new Vector3(startX, startY, startZ);
+                PlayerAvatar.Rotation = new Vector3(0f, -Mathf.Pi * 0.5f, 0f);
+                _chunkStreamer?.UpdateStreaming(PlayerAvatar.Position, forceReload: true);
+            }
+
             // 4. Apply Joymify Design System Theme to all UI controls & instantiate MetaShell + DevTuningDrawer + MapBuilderDock
             var joymifyTheme = ThemeBuilder.Build();
             var uiNode = GetNodeOrNull("UI");
@@ -287,7 +305,7 @@ namespace AtlasWorld.Client
             if (ChatWidget != null)
             {
                 ChatWidget.MessageSent += OnChatMessageSent;
-                ChatWidget.AppendSystemMessage("Atlas World Mobile MMORPG Ready. Tap [AUTO] or Quest Tracker for AFK Combat.");
+                ChatWidget.AppendSystemMessage("Peaceful 3D Exploration Mode ON (Monsters Hidden). Walk West [A] up the Watchtower East Stairs to 2F (+3.2m), or press [P] to toggle monsters.");
             }
 
             // 6. Wire Mobile Controls Overlay + Cooldown visuals
@@ -388,6 +406,29 @@ namespace AtlasWorld.Client
                 _chunkStreamer?.UpdateStreaming(PlayerAvatar.Position, forceReload: true);
             }
 
+            // Optional test pose that walks the player step-by-step up the Watchtower East Stairs onto the 2nd Floor (+3.2m)
+            if (OS.GetEnvironment("ATLAS_TEST_TOWER_2F_POSE") == "1" && PlayerAvatar != null)
+            {
+                float wx = -2.2f;
+                float wz = -2.0f;
+                float wy = TerrainElevation.SampleHeight(wx, wz, _mapDoc, 0f);
+                for (int step = 0; step < 60; step++)
+                {
+                    float nextX = Mathf.MoveToward(wx, -9.2f, 0.14f);
+                    Vector2 res = TerrainElevation.ResolveSteepSlopeMove(wx, wz, nextX, wz, _mapDoc, out _, out _, wy);
+                    wx = res.X;
+                    wz = res.Y;
+                    wy = TerrainElevation.SampleHeight(wx, wz, _mapDoc, wy);
+                }
+                PlayerAvatar.Position = new Vector3(wx, wy, wz);
+                PlayerAvatar.Rotation = new Vector3(0f, Mathf.Pi * 0.25f, 0f);
+                _cameraYaw = 0.42f;
+                _cameraPitch = 0.48f;
+                _cameraDistance = 7.4f;
+                _chunkStreamer?.UpdateStreaming(PlayerAvatar.Position, forceReload: true);
+                GD.Print($"[VerticalSliceRoot] Walked player up Watchtower East Stairs to 2nd Floor: pos=({wx:F2}, {wy:F2}, {wz:F2})");
+            }
+
             // Optional auto-combat startup flag for automated Mac tests (ATLAS_AUTO_COMBAT_ON_START=1)
             if (OS.GetEnvironment("ATLAS_AUTO_COMBAT_ON_START") == "1")
             {
@@ -435,7 +476,7 @@ namespace AtlasWorld.Client
         {
             if (PlayerStatusFrame != null) PlayerStatusFrame.Visible = visible;
             if (NavigationTopBar != null) NavigationTopBar.Visible = visible;
-            if (TargetBossFrame != null) TargetBossFrame.Visible = visible;
+            if (TargetBossFrame != null) TargetBossFrame.Visible = visible && !_peacefulNoMonsters;
             if (MobileControls != null) MobileControls.Visible = visible;
             if (ChatWidget != null) ChatWidget.Visible = visible;
             if (PlayerExpBar != null) PlayerExpBar.Visible = visible;
@@ -443,6 +484,42 @@ namespace AtlasWorld.Client
 
             var hud = GetNodeOrNull<Control>("UI/HUD");
             if (hud != null) hud.Visible = visible;
+        }
+
+        public void TogglePeacefulMode()
+        {
+            SetPeacefulMode(!_peacefulNoMonsters);
+        }
+
+        public void SetPeacefulMode(bool peaceful)
+        {
+            _peacefulNoMonsters = peaceful;
+
+            if (_peacefulNoMonsters)
+            {
+                _autoCombatEnabled = false;
+                _autoApproachAttackPending = false;
+                _selectedServerTargetId = "";
+                _selectedServerTargetWireId = 0;
+                MobileControls?.AutoBtn?.SetToggled(false);
+
+                if (_worldMobsContainer != null) _worldMobsContainer.Visible = false;
+                if (_entityManager != null) _entityManager.Visible = false;
+                if (TargetBossFrame != null) TargetBossFrame.Visible = false;
+                if (_targetRingMesh != null) _targetRingMesh.Visible = false;
+            }
+            else
+            {
+                bool hasServerMobs = _entityManager != null && _entityManager.Count > 0;
+                if (_worldMobsContainer != null) _worldMobsContainer.Visible = !hasServerMobs;
+                if (_entityManager != null) _entityManager.Visible = true;
+                bool hudVisible = _mapBuilderDock == null || !_mapBuilderDock.IsBuilderActive;
+                if (TargetBossFrame != null) TargetBossFrame.Visible = hudVisible;
+                if (_targetRingMesh != null) _targetRingMesh.Visible = true;
+            }
+
+            UpdateQuestTrackerDisplay();
+            PeacefulModeChanged?.Invoke(_peacefulNoMonsters);
         }
 
         private void CycleWorldTimeOfDay()
@@ -464,6 +541,11 @@ namespace AtlasWorld.Client
 
         public void SetAutoCombat(bool enabled)
         {
+            if (enabled && _peacefulNoMonsters)
+            {
+                SetPeacefulMode(false);
+            }
+
             _autoCombatEnabled = enabled;
             MobileControls?.AutoBtn?.SetToggled(_autoCombatEnabled);
             UpdateQuestTrackerDisplay();
@@ -485,20 +567,32 @@ namespace AtlasWorld.Client
         {
             if (_questTitleLabel != null)
             {
-                _questTitleLabel.Text = $"[Main] Ch.{_questStage} Midnight Bells";
+                _questTitleLabel.Text = _peacefulNoMonsters
+                    ? "[Sandbox] 3D Terrain & Tower Test"
+                    : $"[Main] Ch.{_questStage} Midnight Bells";
             }
             if (_questTargetLabel != null)
             {
-                _questTargetLabel.Text = $"Purge Freja Monsters ({_questKillCount} / {_questKillGoal})";
+                _questTargetLabel.Text = _peacefulNoMonsters
+                    ? "Walk West up Watchtower 2F Stairs"
+                    : $"Purge Freja Monsters ({_questKillCount} / {_questKillGoal})";
             }
             if (_questHintLabel != null)
             {
-                _questHintLabel.Text = _autoCombatEnabled
-                    ? "\u25cf Auto-Hunting Active (Tap to pause)"
-                    : "\u25b8 Tap or [AUTO] to auto-hunt";
-                _questHintLabel.Modulate = _autoCombatEnabled
-                    ? new Color(0.35f, 1.0f, 0.58f, 1f)
-                    : new Color(0.95f, 0.90f, 0.58f, 0.95f);
+                if (_peacefulNoMonsters)
+                {
+                    _questHintLabel.Text = "\ud83d\udd4a Peaceful (No Mobs) \u2014 Press [P] for Mobs";
+                    _questHintLabel.Modulate = new Color(0.45f, 0.96f, 0.68f, 1f);
+                }
+                else
+                {
+                    _questHintLabel.Text = _autoCombatEnabled
+                        ? "\u25cf Auto-Hunting Active (Tap to pause)"
+                        : "\u25b8 Tap or [AUTO] to auto-hunt";
+                    _questHintLabel.Modulate = _autoCombatEnabled
+                        ? new Color(0.35f, 1.0f, 0.58f, 1f)
+                        : new Color(0.95f, 0.90f, 0.58f, 0.95f);
+                }
             }
         }
 
@@ -855,6 +949,9 @@ namespace AtlasWorld.Client
 
         private Node3D? GetActiveTargetRoot()
         {
+            if (_peacefulNoMonsters)
+                return null;
+
             if (_entityManager != null &&
                 !string.IsNullOrEmpty(_selectedServerTargetId) &&
                 _entityManager.TryGetEntityView(_selectedServerTargetId, out EntityView? serverView) &&
@@ -876,7 +973,7 @@ namespace AtlasWorld.Client
 
         private bool LockNearestServerMob()
         {
-            if (_entityManager == null || _entityManager.Count == 0)
+            if (_peacefulNoMonsters || _entityManager == null || _entityManager.Count == 0)
                 return false;
 
             Vector3 playerPos = PlayerAvatar?.Position ?? Vector3.Zero;
@@ -951,6 +1048,8 @@ namespace AtlasWorld.Client
         public override void _UnhandledInput(InputEvent @event)
         {
             if (_mapBuilderDock != null && _mapBuilderDock.IsBuilderActive)
+                return;
+            if (OS.GetEnvironment("ATLAS_TEST_TOWER_2F_POSE") == "1" || OS.GetEnvironment("ATLAS_TEST_OCCLUSION_POSE") == "1")
                 return;
 
             // Camera orbit on right-side screen drag or right-mouse drag
@@ -1094,6 +1193,13 @@ namespace AtlasWorld.Client
                         ToggleAutoCombat();
                         GetViewport()?.SetInputAsHandled();
                         break;
+                    case Key.P:
+                        TogglePeacefulMode();
+                        ChatWidget?.AppendSystemMessage(_peacefulNoMonsters
+                            ? "\ud83d\udd4a Peaceful Exploration Mode ON \u2014 All monsters hidden for 3D terrain/tower testing."
+                            : "\u2694 Combat Mode ON \u2014 World monsters enabled.");
+                        GetViewport()?.SetInputAsHandled();
+                        break;
                     case Key.T:
                         CycleWorldTimeOfDay();
                         GetViewport()?.SetInputAsHandled();
@@ -1148,7 +1254,7 @@ namespace AtlasWorld.Client
             _autoApproachAttackPending = false;
             if (_worldMobsContainer != null)
             {
-                _worldMobsContainer.Visible = true;
+                _worldMobsContainer.Visible = !_peacefulNoMonsters;
             }
             UpdateStatusText($"[color=#{Design.Palette.Warn.ToHtml(false)}]\u25cb Offline Simulation ({reason})[/color]");
         }
@@ -1157,6 +1263,13 @@ namespace AtlasWorld.Client
         {
             // 1. Ingest all entity deltas + removed IDs into EntityManager / SnapshotInterpolator
             _entityManager.IngestServerRsSnapshot(snapshot, ServerCoordScale, ServerArenaCenter);
+
+            if (_peacefulNoMonsters)
+            {
+                if (_worldMobsContainer != null) _worldMobsContainer.Visible = false;
+                if (_entityManager != null) _entityManager.Visible = false;
+                return;
+            }
 
             // Hide offline static showcase monsters once live server-rs entities are streaming
             if (_worldMobsContainer != null && _entityManager.Count > 0)
@@ -1337,7 +1450,7 @@ namespace AtlasWorld.Client
                 NavigationTopBar.UpdateRadar(
                     PlayerAvatar.Position,
                     PlayerAvatar.Rotation.Y,
-                    _entityManager?.Views,
+                    _peacefulNoMonsters ? null : _entityManager?.Views,
                     _selectedServerTargetId);
             }
 
@@ -1364,6 +1477,7 @@ namespace AtlasWorld.Client
             }
 
             // Keyboard input (WASD + Arrow keys)
+            bool lockPose = OS.GetEnvironment("ATLAS_TEST_TOWER_2F_POSE") == "1" || OS.GetEnvironment("ATLAS_TEST_OCCLUSION_POSE") == "1";
             float vx = 0f, vy = 0f;
             if (Godot.Input.IsKeyPressed(Key.A) || Godot.Input.IsKeyPressed(Key.Left)) vx -= 1f;
             if (Godot.Input.IsKeyPressed(Key.D) || Godot.Input.IsKeyPressed(Key.Right)) vx += 1f;
@@ -1376,7 +1490,7 @@ namespace AtlasWorld.Client
                 keyboardDir = keyboardDir.Normalized();
             }
 
-            Vector2 rawInput = keyboardDir != Vector2.Zero ? keyboardDir : _touchMoveIntent;
+            Vector2 rawInput = lockPose ? Vector2.Zero : (keyboardDir != Vector2.Zero ? keyboardDir : _touchMoveIntent);
 
             // Rotate movement vector by camera yaw so W/Up always moves forward relative to camera view
             Vector2 rotatedInput = rawInput.Rotated(-_cameraYaw);
@@ -1387,7 +1501,7 @@ namespace AtlasWorld.Client
             {
                 _autoApproachAttackPending = false;
             }
-            else if (_autoCombatEnabled && PlayerAvatar != null)
+            else if (_autoCombatEnabled && !_peacefulNoMonsters && PlayerAvatar != null)
             {
                 // ROX Auto-Combat AFK Loop:
                 // 1. Ensure a live server mob is targeted (or fallback to showcase mob)
@@ -1443,7 +1557,7 @@ namespace AtlasWorld.Client
                     }
                 }
             }
-            else if (_autoApproachAttackPending && PlayerAvatar != null)
+            else if (_autoApproachAttackPending && !_peacefulNoMonsters && PlayerAvatar != null)
             {
                 Node3D? targetRoot = GetActiveTargetRoot();
                 if (targetRoot != null)
@@ -1502,22 +1616,26 @@ namespace AtlasWorld.Client
                     currentEntityY: curY);
                 PlayerAvatar.Position = new Vector3(resolvedXZ.X, curY, resolvedXZ.Y);
 
-                // Softly reconcile PlayerAvatar position toward server-rs authoritative coordinates if drift builds up
-                if (_entityManager != null && _entityManager.HasOwnPlayerState && _dashDuration <= 0f)
+                // In Combat Mode, softly reconcile horizontal (X, Z) toward server-rs authoritative coordinates
+                // while ALWAYS preserving PlayerAvatar.Position.Y so climbing to 2F (+3.2m) is never pulled down!
+                if (!_peacefulNoMonsters && _entityManager != null && _entityManager.HasOwnPlayerState && _dashDuration <= 0f)
                 {
                     Vector3 serverPos = _entityManager.OwnPlayerServerPosition;
-                    float driftSq = PlayerAvatar.Position.DistanceSquaredTo(serverPos);
-                    if (driftSq > 36.0f)
+                    Vector2 curXZ = new(PlayerAvatar.Position.X, PlayerAvatar.Position.Z);
+                    Vector2 srvXZ = new(serverPos.X, serverPos.Z);
+                    float driftXzSq = curXZ.DistanceSquaredTo(srvXZ);
+                    if (driftXzSq > 36.0f)
                     {
-                        PlayerAvatar.Position = serverPos;
+                        PlayerAvatar.Position = new Vector3(srvXZ.X, curY, srvXZ.Y);
                     }
-                    else if (driftSq > 0.25f)
+                    else if (driftXzSq > 0.36f)
                     {
-                        PlayerAvatar.Position = PlayerAvatar.Position.Lerp(serverPos, dt * 3.5f);
+                        Vector2 lerpedXZ = curXZ.Lerp(srvXZ, dt * 3.5f);
+                        PlayerAvatar.Position = new Vector3(lerpedXZ.X, curY, lerpedXZ.Y);
                     }
                 }
 
-                // Snap PlayerAvatar Y altitude smoothly to the active floor / stair / cavern elevation
+                // Snap PlayerAvatar Y altitude smoothly and responsively to the active floor / stair / cavern elevation
                 float targetGroundY = TerrainElevation.SampleHeight(
                     PlayerAvatar.Position.X,
                     PlayerAvatar.Position.Z,
@@ -1525,7 +1643,7 @@ namespace AtlasWorld.Client
                     PlayerAvatar.Position.Y);
                 PlayerAvatar.Position = new Vector3(
                     PlayerAvatar.Position.X,
-                    Mathf.Lerp(PlayerAvatar.Position.Y, targetGroundY, dt * 16.0f),
+                    Mathf.Lerp(PlayerAvatar.Position.Y, targetGroundY, Mathf.Clamp(dt * 24.0f, 0f, 1f)),
                     PlayerAvatar.Position.Z);
 
                 // Stream 3D chunks in/out on demand as the player walks across the map
@@ -1561,13 +1679,17 @@ namespace AtlasWorld.Client
                     Connection?.SendInput(0f, 0f, targetId: targetId, targetX: targetX, targetY: targetY);
                     _wasMovingLastFrame = false;
                 }
-                else if (PlayerAvatar != null && _entityManager != null && _entityManager.HasOwnPlayerState && _dashDuration <= 0f && OS.GetEnvironment("ATLAS_TEST_OCCLUSION_POSE") != "1")
+                else if (!_peacefulNoMonsters && PlayerAvatar != null && _entityManager != null && _entityManager.HasOwnPlayerState && _dashDuration <= 0f &&
+                         OS.GetEnvironment("ATLAS_TEST_OCCLUSION_POSE") != "1" && OS.GetEnvironment("ATLAS_TEST_TOWER_2F_POSE") != "1")
                 {
-                    // Gently settle onto server-rs authoritative stop position
+                    // Gently settle horizontal (X, Z) onto server-rs authoritative stop position while preserving Y floor height!
                     Vector3 serverPos = _entityManager.OwnPlayerServerPosition;
-                    if (PlayerAvatar.Position.DistanceSquaredTo(serverPos) > 0.04f)
+                    Vector2 curXZ = new(PlayerAvatar.Position.X, PlayerAvatar.Position.Z);
+                    Vector2 srvXZ = new(serverPos.X, serverPos.Z);
+                    if (curXZ.DistanceSquaredTo(srvXZ) > 0.09f)
                     {
-                        PlayerAvatar.Position = PlayerAvatar.Position.Lerp(serverPos, dt * 6.0f);
+                        Vector2 lerpedXZ = curXZ.Lerp(srvXZ, dt * 6.0f);
+                        PlayerAvatar.Position = new Vector3(lerpedXZ.X, PlayerAvatar.Position.Y, lerpedXZ.Y);
                     }
                 }
 
@@ -1580,7 +1702,7 @@ namespace AtlasWorld.Client
                         PlayerAvatar.Position.Y);
                     PlayerAvatar.Position = new Vector3(
                         PlayerAvatar.Position.X,
-                        Mathf.Lerp(PlayerAvatar.Position.Y, groundY, dt * 16.0f),
+                        Mathf.Lerp(PlayerAvatar.Position.Y, groundY, Mathf.Clamp(dt * 24.0f, 0f, 1f)),
                         PlayerAvatar.Position.Z);
                 }
 
@@ -1789,6 +1911,9 @@ namespace AtlasWorld.Client
 
         private void ApplyOfflineDamageToShowcaseTarget(long dmg, bool isCrit)
         {
+            if (_peacefulNoMonsters)
+                return;
+
             TargetBossFrame?.ApplyDamage(dmg);
 
             Vector2 spawnPos = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
@@ -1853,6 +1978,12 @@ namespace AtlasWorld.Client
 
         private void TriggerTargetSwitch()
         {
+            if (_peacefulNoMonsters)
+            {
+                ChatWidget?.AppendSystemMessage("Peaceful Mode is ON (Monsters hidden). Press [P] to enable monsters.");
+                return;
+            }
+
             var liveServerMobs = new List<EntityView>();
             Vector3 playerPos = PlayerAvatar?.Position ?? Vector3.Zero;
 
