@@ -23,7 +23,7 @@ namespace AtlasWorld.Client
     /// 4. Joymify Design System + MetaShell (Character, Inventory, Skills, Quests, Loadout)
     /// 5. Split-screen WardrobeModal with real 3D Weapon GLB attachment
     /// 6. 3D World Monsters (showcase + live server-rs mobs/bots/projectiles) with 3D overhead nameplates, HP bars &amp; target ring
-    /// 7. Authoritative Player HP/SP, ROX Auto-Combat AFK loop, Quest Kill Tracker, Live Minimap Radar, and DevTuningDrawer
+    /// 7. Authoritative Player HP/SP, ROX Auto-Combat AFK loop, Quest Kill Tracker, Live Minimap Radar, DevTuningDrawer &amp; Mac 3D Map Builder
     /// </summary>
     public partial class VerticalSliceRoot : Node3D
     {
@@ -51,6 +51,9 @@ namespace AtlasWorld.Client
         private AnimationPlayer? _animPlayer;
         private MetaShell? _metaShell;
         private DevTuningDrawer? _tuningDrawer;
+        private MapBuilderDock? _mapBuilderDock;
+        private UnifiedMapDocument _mapDoc = null!;
+        private Node3D? _meadowRingRoot;
 
         private Vector2 _touchMoveIntent = Vector2.Zero;
         private float _basePlayerSpeed = 4.6f; // Matches server-rs default derived speed (46.0 * 0.1 = 4.6 u/s)
@@ -197,7 +200,7 @@ namespace AtlasWorld.Client
             PopulateMeadowEnvironment();
             SpawnWorldMonsters();
 
-            // 4. Apply Joymify Design System Theme to all UI controls & instantiate MetaShell + DevTuningDrawer
+            // 4. Apply Joymify Design System Theme to all UI controls & instantiate MetaShell + DevTuningDrawer + MapBuilderDock
             var joymifyTheme = ThemeBuilder.Build();
             var uiNode = GetNodeOrNull("UI");
             if (uiNode != null)
@@ -206,6 +209,17 @@ namespace AtlasWorld.Client
                 uiNode.AddChild(_tuningDrawer);
                 _tuningDrawer.ValuesChanged += ApplyTuningValues;
                 _tuningDrawer.AutoCombatToggleRequested += ToggleAutoCombat;
+
+                // Only attach MapBuilderDock in Map Builder Studio mode or when toggled via F2 on desktop
+                if (!OS.HasFeature("mobile"))
+                {
+                    _mapBuilderDock = new MapBuilderDock { Name = "MapBuilderDock" };
+                    uiNode.AddChild(_mapBuilderDock);
+                    if (_meadowRingRoot != null)
+                    {
+                        _mapBuilderDock.Initialize(this, _mapDoc, _meadowRingRoot);
+                    }
+                }
 
                 foreach (Node child in uiNode.GetChildren())
                 {
@@ -257,7 +271,7 @@ namespace AtlasWorld.Client
                 Connection.SnapshotReceived += OnSnapshotReceived;
                 Connection.RawSnapshotReceived += OnRawSnapshotReceived;
 
-                UpdateStatusText($"[color=#{Design.Palette.Info.ToHtml(false)}]● Server: Connecting...[/color]");
+                UpdateStatusText($"[color=#{Design.Palette.Info.ToHtml(false)}]\u25cf Server: Connecting...[/color]");
                 Connection.ConnectToHost(_config.ServerRsEndpoint);
                 _entityManager.SetOwnPlayer(Connection.LocalWireId.ToString());
             }
@@ -390,6 +404,20 @@ namespace AtlasWorld.Client
             ApplyMobileSafeArea();
         }
 
+        public void SetGameHudVisible(bool visible)
+        {
+            if (PlayerStatusFrame != null) PlayerStatusFrame.Visible = visible;
+            if (NavigationTopBar != null) NavigationTopBar.Visible = visible;
+            if (TargetBossFrame != null) TargetBossFrame.Visible = visible;
+            if (MobileControls != null) MobileControls.Visible = visible;
+            if (ChatWidget != null) ChatWidget.Visible = visible;
+            if (PlayerExpBar != null) PlayerExpBar.Visible = visible;
+            if (_tuningDrawer != null) _tuningDrawer.Visible = visible;
+
+            var hud = GetNodeOrNull<Control>("UI/HUD");
+            if (hud != null) hud.Visible = visible;
+        }
+
         private void ToggleAutoCombat()
         {
             SetAutoCombat(!_autoCombatEnabled);
@@ -405,12 +433,12 @@ namespace AtlasWorld.Client
             {
                 if (string.IsNullOrEmpty(_selectedServerTargetId))
                     LockNearestServerMob();
-                ChatWidget?.AppendSystemMessage("[Auto-Combat] ON — Auto-hunting nearby Freja monsters.");
+                ChatWidget?.AppendSystemMessage("[Auto-Combat] ON \u2014 Auto-hunting nearby Freja monsters.");
             }
             else
             {
                 _autoApproachAttackPending = false;
-                ChatWidget?.AppendSystemMessage("[Auto-Combat] OFF — Manual control resumed.");
+                ChatWidget?.AppendSystemMessage("[Auto-Combat] OFF \u2014 Manual control resumed.");
             }
         }
 
@@ -427,8 +455,8 @@ namespace AtlasWorld.Client
             if (_questHintLabel != null)
             {
                 _questHintLabel.Text = _autoCombatEnabled
-                    ? "● Auto-Hunting Active (Tap to pause)"
-                    : "▸ Tap or [AUTO] to auto-hunt";
+                    ? "\u25cf Auto-Hunting Active (Tap to pause)"
+                    : "\u25b8 Tap or [AUTO] to auto-hunt";
                 _questHintLabel.Modulate = _autoCombatEnabled
                     ? new Color(0.35f, 1.0f, 0.58f, 1f)
                     : new Color(0.95f, 0.90f, 0.58f, 0.95f);
@@ -515,8 +543,8 @@ namespace AtlasWorld.Client
         }
 
         /// <summary>
-        /// Scatters stylized Prontera South Gate meadow trees, bushes, rocks, and flower tufts
-        /// across the outer combat field so the arena looks lush in every direction.
+        /// Loads the unified map JSON (content/maps/freja-south-gate.json) and populates
+        /// the stylized Prontera South Gate meadow props so game-client and server-rs stay in sync.
         /// </summary>
         private void PopulateMeadowEnvironment()
         {
@@ -524,69 +552,27 @@ namespace AtlasWorld.Client
             if (envProps == null)
                 return;
 
-            // Upgrade existing environment props to warm anime toon shading
+            // Upgrade existing static scene props to warm anime toon shading
             EntityView.ApplyAnimeToonShading(envProps, EntityKind.Npc);
 
-            var tree1Scene = ResourceLoader.Exists("res://assets/nature/tree_1_a_color1.glb")
-                ? GD.Load<PackedScene>("res://assets/nature/tree_1_a_color1.glb") : null;
-            var tree2Scene = ResourceLoader.Exists("res://assets/nature/tree_2_a_color1.glb")
-                ? GD.Load<PackedScene>("res://assets/nature/tree_2_a_color1.glb") : null;
-            var bushScene = ResourceLoader.Exists("res://assets/nature/bush_1_a_color1.glb")
-                ? GD.Load<PackedScene>("res://assets/nature/bush_1_a_color1.glb") : null;
-            var rockScene = ResourceLoader.Exists("res://assets/nature/rock_1_a_color1.glb")
-                ? GD.Load<PackedScene>("res://assets/nature/rock_1_a_color1.glb") : null;
+            _meadowRingRoot = new Node3D { Name = "MeadowRing" };
+            envProps.AddChild(_meadowRingRoot);
 
-            var meadowRing = new Node3D { Name = "MeadowRing" };
-            envProps.AddChild(meadowRing);
-
-            // Outer ring of stylized trees framing the horizon
-            (Vector3 pos, float scale, float rotY, bool alt)[] treeSpots =
+            _mapDoc = UnifiedMapDocument.LoadOrDefault("freja-south-gate");
+            foreach (var prop in _mapDoc.Props)
             {
-                (new Vector3(-16f, 0f, -14f), 1.55f, 0.4f, false),
-                (new Vector3(15f, 0f, -15f), 1.45f, 1.8f, true),
-                (new Vector3(-20f, 0f, -4f), 1.65f, 2.5f, true),
-                (new Vector3(19f, 0f, -2f), 1.50f, 0.9f, false),
-                (new Vector3(-15f, 0f, 13f), 1.40f, 3.1f, false),
-                (new Vector3(16f, 0f, 14f), 1.60f, 1.2f, true),
-                (new Vector3(-6f, 0f, 18f), 1.50f, 2.1f, true),
-                (new Vector3(8f, 0f, -22f), 1.75f, 0.6f, false),
-            };
+                if (!ResourceLoader.Exists(prop.AssetPath))
+                    continue;
 
-            foreach (var (pos, scale, rotY, alt) in treeSpots)
-            {
-                var scene = alt ? tree2Scene : tree1Scene;
-                if (scene?.Instantiate() is Node3D t)
+                var scene = GD.Load<PackedScene>(prop.AssetPath);
+                if (scene?.Instantiate() is Node3D instance)
                 {
-                    t.Position = pos;
-                    t.Scale = Vector3.One * scale;
-                    t.Rotation = new Vector3(0f, rotY, 0f);
-                    EntityView.ApplyAnimeToonShading(t, EntityKind.Npc);
-                    meadowRing.AddChild(t);
-                }
-            }
-
-            // Mid-field bushes & rocks with warm sunlit toon shading
-            (Vector3 pos, float scale, bool isRock)[] bushRockSpots =
-            {
-                (new Vector3(-9.5f, 0f, -2.5f), 1.25f, false),
-                (new Vector3(9.2f, 0f, -4.0f), 1.15f, false),
-                (new Vector3(-7.8f, 0f, 7.5f), 1.30f, false),
-                (new Vector3(8.4f, 0f, 8.2f), 1.20f, false),
-                (new Vector3(-12.5f, 0f, -10.5f), 1.35f, true),
-                (new Vector3(12.0f, 0f, -11.0f), 1.25f, true),
-                (new Vector3(-3.5f, 0f, 11.5f), 1.10f, false),
-                (new Vector3(4.5f, 0f, -12.5f), 1.25f, false),
-            };
-
-            foreach (var (pos, scale, isRock) in bushRockSpots)
-            {
-                var scene = isRock ? rockScene : bushScene;
-                if (scene?.Instantiate() is Node3D b)
-                {
-                    b.Position = pos;
-                    b.Scale = Vector3.One * scale;
-                    EntityView.ApplyAnimeToonShading(b, EntityKind.Npc);
-                    meadowRing.AddChild(b);
+                    instance.Name = prop.Id;
+                    instance.Position = new Vector3(prop.X, prop.Y, prop.Z);
+                    instance.Rotation = new Vector3(0f, prop.RotY, 0f);
+                    instance.Scale = Vector3.One * prop.Scale;
+                    EntityView.ApplyAnimeToonShading(instance, EntityKind.Npc);
+                    _meadowRingRoot.AddChild(instance);
                 }
             }
         }
@@ -851,6 +837,9 @@ namespace AtlasWorld.Client
 
         public override void _UnhandledInput(InputEvent @event)
         {
+            if (_mapBuilderDock != null && _mapBuilderDock.IsBuilderActive)
+                return;
+
             // Camera orbit on right-side screen drag or right-mouse drag
             if (@event is InputEventScreenDrag touchDrag)
             {
@@ -978,7 +967,7 @@ namespace AtlasWorld.Client
                         TriggerPotion("hp");
                         GetViewport()?.SetInputAsHandled();
                         break;
-                    case Key.F2:
+                    case Key.F3:
                         MobileControls?.PotionSpBtn?.TriggerCooldown(1.5f);
                         TriggerPotion("sp");
                         GetViewport()?.SetInputAsHandled();
@@ -1030,7 +1019,7 @@ namespace AtlasWorld.Client
                 // Send an initial neutral ClientInput packet so server-rs spawns our PlayerAvatar immediately
                 Connection.SendInput(0f, 0f);
             }
-            UpdateStatusText($"[color=#{Design.Palette.Success.ToHtml(false)}]● Server Connected (2567)[/color]");
+            UpdateStatusText($"[color=#{Design.Palette.Success.ToHtml(false)}]\u25cf Server Connected (2567)[/color]");
             ChatWidget?.AppendSystemMessage("Connected to server-rs WebSocket gateway.");
         }
 
@@ -1044,7 +1033,7 @@ namespace AtlasWorld.Client
             {
                 _worldMobsContainer.Visible = true;
             }
-            UpdateStatusText($"[color=#{Design.Palette.Warn.ToHtml(false)}]○ Offline Simulation ({reason})[/color]");
+            UpdateStatusText($"[color=#{Design.Palette.Warn.ToHtml(false)}]\u25cb Offline Simulation ({reason})[/color]");
         }
 
         private void OnRawSnapshotReceived(WorldSnapshot snapshot)
@@ -1168,7 +1157,7 @@ namespace AtlasWorld.Client
         private void OnSnapshotReceived(int tick, ulong serverTimeMs, int entityCount)
         {
             UpdateStatusText(
-                $"[color=#{Design.Palette.Success.ToHtml(false)}]● Ch.1 Freja | Tick {tick} | Entities: {entityCount}[/color]");
+                $"[color=#{Design.Palette.Success.ToHtml(false)}]\u25cf Ch.1 Freja | Tick {tick} | Entities: {entityCount}[/color]");
         }
 
         private void UpdateStatusText(string bbcode)
@@ -1183,6 +1172,13 @@ namespace AtlasWorld.Client
         {
             float dt = (float)delta;
             _pulseTime += dt;
+
+            // When Mac 3D Map Builder Studio is active, drive the free-fly / orbit studio camera
+            if (_mapBuilderDock != null && _mapBuilderDock.IsBuilderActive)
+            {
+                _mapBuilderDock.UpdateBuilderCamera(dt);
+                return;
+            }
 
             if (_respawnRequestCooldownSec > 0f)
                 _respawnRequestCooldownSec -= dt;
@@ -1551,7 +1547,7 @@ namespace AtlasWorld.Client
 
             if (_currentSp < spCost)
             {
-                ChatWidget?.AppendSystemMessage("Not enough SP! Use a Mana Potion [F2].");
+                ChatWidget?.AppendSystemMessage("Not enough SP! Use a Mana Potion [F3].");
                 return;
             }
 
