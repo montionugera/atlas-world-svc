@@ -56,6 +56,7 @@ namespace AtlasWorld.Client.World
         }
 
         public bool HasPlayer => _player != null;
+        public bool EnableStateAudio { get; set; } = false;
 
         public void Update(bool isAlive, Vector3 velocity, bool isAttacking = false)
         {
@@ -82,7 +83,9 @@ namespace AtlasWorld.Client.World
             };
             if (eventKey == null)
                 return;
-            if (_modelRoot == null || !GodotObject.IsInstanceValid(_modelRoot))
+            if (!EnableStateAudio || _modelRoot == null || !GodotObject.IsInstanceValid(_modelRoot))
+                return;
+            if (!_modelRoot.IsInsideTree() || !_modelRoot.IsVisibleInTree())
                 return;
 
             AudioRegistry.Instance?.Play(eventKey, _modelRoot.GlobalPosition);

@@ -61,8 +61,8 @@ namespace AtlasWorld.Client
         private Node3D? _meadowRingRoot;
 
         private Vector2 _touchMoveIntent = Vector2.Zero;
-        private float _basePlayerSpeed = 4.6f; // Matches server-rs default derived speed (46.0 * 0.1 = 4.6 u/s)
-        private float _playerSpeed = 4.6f;
+        private float _basePlayerSpeed = 6.5f; // Matches server-rs default derived speed (46.0 * 0.1 = 4.6 u/s)
+        private float _playerSpeed = 6.5f;
         private float _meleeRangeWorld = MeleeAttackRangeWorld;
         private float _customSafeInset = 18.0f;
         private float _actionClusterScale = 1.0f;
@@ -504,7 +504,13 @@ namespace AtlasWorld.Client
                 MobileControls?.AutoBtn?.SetToggled(false);
 
                 if (_worldMobsContainer != null) _worldMobsContainer.Visible = false;
-                if (_entityManager != null) _entityManager.Visible = false;
+                if (_entityManager != null)
+                {
+                    foreach (var kv in _entityManager.Views)
+                        kv.Value.SetSelectedTarget(false);
+                    _entityManager.Visible = false;
+                    _entityManager.SetProcess(false);
+                }
                 if (TargetBossFrame != null) TargetBossFrame.Visible = false;
                 if (_targetRingMesh != null) _targetRingMesh.Visible = false;
             }
@@ -512,7 +518,11 @@ namespace AtlasWorld.Client
             {
                 bool hasServerMobs = _entityManager != null && _entityManager.Count > 0;
                 if (_worldMobsContainer != null) _worldMobsContainer.Visible = !hasServerMobs;
-                if (_entityManager != null) _entityManager.Visible = true;
+                if (_entityManager != null)
+                {
+                    _entityManager.Visible = true;
+                    _entityManager.SetProcess(true);
+                }
                 bool hudVisible = _mapBuilderDock == null || !_mapBuilderDock.IsBuilderActive;
                 if (TargetBossFrame != null) TargetBossFrame.Visible = hudVisible;
                 if (_targetRingMesh != null) _targetRingMesh.Visible = true;
@@ -1239,15 +1249,19 @@ namespace AtlasWorld.Client
 
         private void OnRawSnapshotReceived(WorldSnapshot snapshot)
         {
-            // 1. Ingest all entity deltas + removed IDs into EntityManager / SnapshotInterpolator
-            _entityManager.IngestServerRsSnapshot(snapshot, ServerCoordScale, ServerArenaCenter);
-
             if (_peacefulNoMonsters)
             {
                 if (_worldMobsContainer != null) _worldMobsContainer.Visible = false;
-                if (_entityManager != null) _entityManager.Visible = false;
+                if (_entityManager != null)
+                {
+                    _entityManager.Visible = false;
+                    _entityManager.SetProcess(false);
+                }
                 return;
             }
+
+            // 1. Ingest all entity deltas + removed IDs into EntityManager / SnapshotInterpolator
+            _entityManager.IngestServerRsSnapshot(snapshot, ServerCoordScale, ServerArenaCenter);
 
             // Hide offline static showcase monsters once live server-rs entities are streaming
             if (_worldMobsContainer != null && _entityManager.Count > 0)
@@ -1594,24 +1608,7 @@ namespace AtlasWorld.Client
                     currentEntityY: curY);
                 PlayerAvatar.Position = new Vector3(resolvedXZ.X, curY, resolvedXZ.Y);
 
-                // In Combat Mode, softly reconcile horizontal (X, Z) toward server-rs authoritative coordinates
-                // while ALWAYS preserving PlayerAvatar.Position.Y so climbing to 2F (+3.2m) is never pulled down!
-                if (!_peacefulNoMonsters && _entityManager != null && _entityManager.HasOwnPlayerState && _dashDuration <= 0f)
-                {
-                    Vector3 serverPos = _entityManager.OwnPlayerServerPosition;
-                    Vector2 curXZ = new(PlayerAvatar.Position.X, PlayerAvatar.Position.Z);
-                    Vector2 srvXZ = new(serverPos.X, serverPos.Z);
-                    float driftXzSq = curXZ.DistanceSquaredTo(srvXZ);
-                    if (driftXzSq > 36.0f)
-                    {
-                        PlayerAvatar.Position = new Vector3(srvXZ.X, curY, srvXZ.Y);
-                    }
-                    else if (driftXzSq > 0.36f)
-                    {
-                        Vector2 lerpedXZ = curXZ.Lerp(srvXZ, dt * 3.5f);
-                        PlayerAvatar.Position = new Vector3(lerpedXZ.X, curY, lerpedXZ.Y);
-                    }
-                }
+                // Local PlayerAvatar position is 100% client-responsive (never warped or pushed by 2D server-rs mobs)
 
                 // Snap PlayerAvatar Y altitude smoothly and responsively to the active floor / stair / cavern elevation
                 float targetGroundY = TerrainElevation.SampleHeight(
@@ -1657,19 +1654,7 @@ namespace AtlasWorld.Client
                     Connection?.SendInput(0f, 0f, targetId: targetId, targetX: targetX, targetY: targetY);
                     _wasMovingLastFrame = false;
                 }
-                else if (!_peacefulNoMonsters && PlayerAvatar != null && _entityManager != null && _entityManager.HasOwnPlayerState && _dashDuration <= 0f &&
-                         OS.GetEnvironment("ATLAS_TEST_OCCLUSION_POSE") != "1" && OS.GetEnvironment("ATLAS_TEST_TOWER_2F_POSE") != "1")
-                {
-                    // Gently settle horizontal (X, Z) onto server-rs authoritative stop position while preserving Y floor height!
-                    Vector3 serverPos = _entityManager.OwnPlayerServerPosition;
-                    Vector2 curXZ = new(PlayerAvatar.Position.X, PlayerAvatar.Position.Z);
-                    Vector2 srvXZ = new(serverPos.X, serverPos.Z);
-                    if (curXZ.DistanceSquaredTo(srvXZ) > 0.09f)
-                    {
-                        Vector2 lerpedXZ = curXZ.Lerp(srvXZ, dt * 6.0f);
-                        PlayerAvatar.Position = new Vector3(lerpedXZ.X, PlayerAvatar.Position.Y, lerpedXZ.Y);
-                    }
-                }
+
 
                 if (PlayerAvatar != null)
                 {

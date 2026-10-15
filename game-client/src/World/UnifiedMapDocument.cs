@@ -356,13 +356,8 @@ namespace AtlasWorld.Client.World
             StaticObstacles.Clear();
             _spatialObstacleGrid.Clear();
 
-            foreach (var p in Props)
-            {
-                if (!p.BlocksMovement)
-                    continue;
-
-                IndexPropObstacleIncremental(p, serverCenter, serverCoordScale);
-            }
+            // Meadow trees, bushes, rocks, and torches do not create invisible AABB box walls;
+            // only 3D structure walls (Watchtower 1F pillars & Crystal Cave walls) block movement.
 
             foreach (var s in Structures)
             {
@@ -413,7 +408,7 @@ namespace AtlasWorld.Client.World
                 float minY = baseY - 0.5f;
                 float maxY = baseY + s.UpperFloorHeight - 0.35f;
                 float pOff = r - 0.45f;
-                float halfPillar = 0.36f;
+                float halfPillar = 0.22f;
                 AddWorldRectObstacle($"{s.Id}_pillar_nw", new Rect2(s.X - pOff - halfPillar, s.Z - pOff - halfPillar, halfPillar * 2f, halfPillar * 2f), minY, maxY, serverCenter, serverCoordScale);
                 AddWorldRectObstacle($"{s.Id}_pillar_ne", new Rect2(s.X + pOff - halfPillar, s.Z - pOff - halfPillar, halfPillar * 2f, halfPillar * 2f), minY, maxY, serverCenter, serverCoordScale);
                 AddWorldRectObstacle($"{s.Id}_pillar_sw", new Rect2(s.X - pOff - halfPillar, s.Z + pOff - halfPillar, halfPillar * 2f, halfPillar * 2f), minY, maxY, serverCenter, serverCoordScale);

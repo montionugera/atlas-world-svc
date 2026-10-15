@@ -19,7 +19,7 @@ namespace AtlasWorld.Client.UI.Widgets
             public float CameraPitch { get; set; } = 0.56f;
             public float CameraDistance { get; set; } = 6.2f;
             public float CameraFov { get; set; } = 60.0f;
-            public float PlayerSpeed { get; set; } = 4.6f;
+            public float PlayerSpeed { get; set; } = 6.5f;
             public float MeleeRange { get; set; } = 3.5f;
             public float SafeAreaInset { get; set; } = 18.0f;
             public float ActionClusterScale { get; set; } = 1.0f;

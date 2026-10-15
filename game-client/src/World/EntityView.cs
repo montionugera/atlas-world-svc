@@ -269,6 +269,7 @@ namespace AtlasWorld.Client.World
             if (_isSelectedTarget == selected)
                 return;
             _isSelectedTarget = selected;
+            _animController.EnableStateAudio = selected;
             UpdateOverheadBarVisibility();
         }
 
@@ -354,8 +355,8 @@ namespace AtlasWorld.Client.World
 
             // "hit" edge: HP dropped since the last life update (and the entity was, and
             // still is, alive — death already plays its own sfx via AnimationController).
-            if (_lastHealth >= 0f && isAlive && currentHealth < _lastHealth &&
-                IsInstanceValid(_root))
+            if (_isSelectedTarget && _lastHealth >= 0f && isAlive && currentHealth < _lastHealth &&
+                IsInstanceValid(_root) && _root.IsInsideTree() && _root.IsVisibleInTree())
             {
                 AudioRegistry.Instance?.Play("sfx:hit", _root.GlobalPosition);
             }

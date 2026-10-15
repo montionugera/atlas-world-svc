@@ -23,7 +23,7 @@ namespace AtlasWorld.Client.World
         /// Maximum walkable slope angle in degrees before a terrain incline is treated as an impassable cliff wall.
         /// Standard 3D RPG / NavMesh convention: slopes &lt;= 38° are walkable; slopes &gt; 38° block and slide along the contour.
         /// </summary>
-        public const float MaxWalkableSlopeDeg = 38.0f;
+        public const float MaxWalkableSlopeDeg = 58.0f;
 
         /// <summary>
         /// Maximum vertical step-up height (in meters) an entity can climb in a single horizontal step
@@ -413,7 +413,7 @@ namespace AtlasWorld.Client.World
         {
             if (doc != null)
             {
-                Vector2 afterObs = doc.ResolveObstacleCollision(curX, curZ, nextX, nextZ, 0.42f, currentEntityY);
+                Vector2 afterObs = doc.ResolveObstacleCollision(curX, curZ, nextX, nextZ, 0.26f, currentEntityY);
                 nextX = afterObs.X;
                 nextZ = afterObs.Y;
             }
@@ -423,15 +423,6 @@ namespace AtlasWorld.Client.World
 
             if (slopeDeg <= MaxWalkableSlopeDeg)
             {
-                float curH = SampleHeight(curX, curZ, doc, currentEntityY);
-                float nextH = SampleHeight(nextX, nextZ, doc, currentEntityY);
-                if (nextH > curH && slopeDeg > 14.0f)
-                {
-                    float gradeFactor = Mathf.Lerp(1.0f, 0.78f, Mathf.Clamp((slopeDeg - 14.0f) / (MaxWalkableSlopeDeg - 14.0f), 0f, 1f));
-                    return new Vector2(
-                        Mathf.Lerp(curX, nextX, gradeFactor),
-                        Mathf.Lerp(curZ, nextZ, gradeFactor));
-                }
                 return new Vector2(nextX, nextZ);
             }
 
