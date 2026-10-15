@@ -60,6 +60,9 @@ namespace AtlasWorld.Client.World
         [JsonPropertyName("chunkSizeWorld")] public float ChunkSizeWorld { get; set; } = 24.0f;
         [JsonPropertyName("activeChunkRadius")] public int ActiveChunkRadius { get; set; } = 2;
         [JsonPropertyName("terrainAmplitude")] public float TerrainAmplitude { get; set; } = 1.0f;
+        [JsonPropertyName("defaultTimeOfDayHours")] public float DefaultTimeOfDayHours { get; set; } = 10.5f;
+        [JsonPropertyName("autoAdvanceDayNight")] public bool AutoAdvanceDayNight { get; set; } = true;
+        [JsonPropertyName("dayNightSpeedHoursPerSec")] public float DayNightSpeedHoursPerSec { get; set; } = 0.10f;
         [JsonPropertyName("heightTerraces")] public List<UnifiedMapHeightTerrace> HeightTerraces { get; set; } = new();
         [JsonPropertyName("props")] public List<UnifiedMapProp> Props { get; set; } = new();
         [JsonPropertyName("spawnAreas")] public List<UnifiedMapSpawnArea> SpawnAreas { get; set; } = new();

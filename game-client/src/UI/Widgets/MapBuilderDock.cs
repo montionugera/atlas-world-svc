@@ -12,7 +12,8 @@ namespace AtlasWorld.Client.UI.Widgets
     /// 2. On-Demand Spatial Chunk Streaming (MapChunkStreamer) with 3D chunk boundary gizmos
     /// 3. 3D Altitude &amp; Terraced Elevation Sculpting (+ Add Hill/Terrace, - Add Valley, Amplitude slider)
     /// 4. Smart Auto-Transparent Camera LOS Occlusion Fader (SmartCameraOccluder) with live opacity slider
-    /// 5. Browsing 3D glTF assets from res://assets/nature &amp; res://assets/dungeon and exporting to content/maps/freja-south-gate.json
+    /// 5. World Time &amp; Day/Night Atmosphere Control (24h Slider, Dawn/Noon/Sunset/Night presets, Auto-Advance &amp; Speed, Top Banner Quick Pill)
+    /// 6. Browsing 3D glTF assets from res://assets/nature &amp; res://assets/dungeon and exporting to content/maps/freja-south-gate.json
     /// </summary>
     public partial class MapBuilderDock : Control
     {
@@ -77,6 +78,7 @@ namespace AtlasWorld.Client.UI.Widgets
         private PanelContainer? _dockPanel;
         private PanelContainer? _topBanner;
         private Button? _toggleBuilderBtn;
+        private Button? _topBannerTimeBtn;
         private Label? _selectedAssetLabel;
         private Label? _cursorCoordLabel;
         private Label? _statsSummaryLabel;
@@ -94,8 +96,15 @@ namespace AtlasWorld.Client.UI.Widgets
         private Label? _terrainAmpValLabel;
         private HSlider? _occlusionAlphaSlider;
         private Label? _occlusionAlphaValLabel;
+        private HSlider? _timeSlider;
+        private Label? _timeValLabel;
+        private CheckBox? _autoTimeCheck;
+        private HSlider? _timeSpeedSlider;
+        private Label? _timeSpeedValLabel;
+        private bool _suppressTimeSliderSignal = false;
         private readonly List<Button> _catalogButtons = new();
         private readonly List<(float size, Button btn)> _mapSizeButtons = new();
+        private readonly List<(WorldDayPhase phase, Button btn)> _timePresetButtons = new();
 
         public bool IsBuilderActive => _builderActive;
         public Vector3 CameraFocus => _camFocus;
@@ -123,6 +132,7 @@ namespace AtlasWorld.Client.UI.Widgets
             RebuildChunkGridGizmos();
             SelectCatalogAsset(0);
             RefreshMapSizeButtons();
+            SyncTimeControlsFromCycle();
 
             if (OS.GetEnvironment("ATLAS_MAP_BUILDER") == "1")
             {
@@ -135,15 +145,15 @@ namespace AtlasWorld.Client.UI.Widgets
             AnchorsPreset = (int)LayoutPreset.FullRect;
             MouseFilter = MouseFilterEnum.Ignore;
 
-            // 1. Top-Center Map Builder Toggle Pill & Live Altitude / Chunk Status Banner
+            // 1. Top-Center Map Builder Toggle Pill & Live Altitude / Chunk / World Time Status Banner
             _topBanner = new PanelContainer
             {
                 Name = "BuilderTopBanner",
                 AnchorLeft = 0.5f,
                 AnchorRight = 0.5f,
-                OffsetLeft = -420f,
+                OffsetLeft = -465f,
                 OffsetTop = 10f,
-                OffsetRight = 420f,
+                OffsetRight = 465f,
                 OffsetBottom = 46f,
                 MouseFilter = MouseFilterEnum.Stop
             };
@@ -173,7 +183,7 @@ namespace AtlasWorld.Client.UI.Widgets
             _toggleBuilderBtn = new Button
             {
                 Text = "\ud83d\uddfa MAP BUILDER [F2]: OFF",
-                CustomMinimumSize = new Vector2(174, 26)
+                CustomMinimumSize = new Vector2(170, 26)
             };
             _toggleBuilderBtn.AddThemeFontSizeOverride("font_size", 11);
             _toggleBuilderBtn.Pressed += () => SetBuilderActive(!_builderActive);
@@ -188,10 +198,20 @@ namespace AtlasWorld.Client.UI.Widgets
             _cursorCoordLabel.AddThemeColorOverride("font_color", new Color(0.86f, 0.92f, 1.0f));
             bannerHBox.AddChild(_cursorCoordLabel);
 
+            _topBannerTimeBtn = new Button
+            {
+                Text = "\u2600 10:30 DAY [T]",
+                CustomMinimumSize = new Vector2(128, 26),
+                TooltipText = "Click or press [T] to cycle World Time (Dawn / Noon / Sunset / Night)"
+            };
+            _topBannerTimeBtn.AddThemeFontSizeOverride("font_size", 11);
+            _topBannerTimeBtn.Pressed += CycleWorldTimeFromBuilder;
+            bannerHBox.AddChild(_topBannerTimeBtn);
+
             var quickSaveBtn = new Button
             {
                 Text = "\ud83d\udcbe SAVE JSON (Cmd+S)",
-                CustomMinimumSize = new Vector2(140, 26)
+                CustomMinimumSize = new Vector2(138, 26)
             };
             quickSaveBtn.AddThemeFontSizeOverride("font_size", 11);
             quickSaveBtn.Pressed += SaveUnifiedMap;
@@ -206,8 +226,8 @@ namespace AtlasWorld.Client.UI.Widgets
                 Visible = false,
                 OffsetLeft = 14f,
                 OffsetTop = 52f,
-                OffsetRight = 368f,
-                OffsetBottom = 885f,
+                OffsetRight = 374f,
+                OffsetBottom = 892f,
                 MouseFilter = MouseFilterEnum.Stop
             };
             var dockStyle = new StyleBoxFlat
@@ -233,12 +253,12 @@ namespace AtlasWorld.Client.UI.Widgets
             AddChild(_dockPanel);
 
             var vbox = new VBoxContainer();
-            vbox.AddThemeConstantOverride("separation", 5);
+            vbox.AddThemeConstantOverride("separation", 4);
             _dockPanel.AddChild(vbox);
 
             var title = new Label
             {
-                Text = "ATLAS 3D MAP BUILDER (ALTITUDE + CHUNKS)",
+                Text = "ATLAS 3D MAP BUILDER (ALTITUDE + TIME + CHUNKS)",
                 Modulate = new Color(0.98f, 0.85f, 0.45f)
             };
             title.AddThemeFontSizeOverride("font_size", 11);
@@ -294,7 +314,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 {
                     Text = lbl,
                     SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                    CustomMinimumSize = new Vector2(0, 24)
+                    CustomMinimumSize = new Vector2(0, 23)
                 };
                 sBtn.AddThemeFontSizeOverride("font_size", 10);
                 sBtn.Pressed += () => ApplyMapResize(targetSize);
@@ -386,7 +406,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u25b2 +Hill (+2.2m)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 24)
+                CustomMinimumSize = new Vector2(0, 23)
             };
             addHillBtn.AddThemeFontSizeOverride("font_size", 10);
             addHillBtn.Pressed += () => SculptTerraceAtCursor(2.2f, 11.5f, 0.48f);
@@ -395,7 +415,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u26f0 +Cliff (+4.2m)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 24)
+                CustomMinimumSize = new Vector2(0, 23)
             };
             addCliffBtn.AddThemeFontSizeOverride("font_size", 10);
             addCliffBtn.Pressed += () => SculptTerraceAtCursor(4.2f, 9.5f, 0.16f);
@@ -404,7 +424,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u25bc +Valley (-1.6m)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 24)
+                CustomMinimumSize = new Vector2(0, 23)
             };
             addValleyBtn.AddThemeFontSizeOverride("font_size", 10);
             addValleyBtn.Pressed += () => SculptTerraceAtCursor(-1.6f, 11.0f, 0.48f);
@@ -455,45 +475,59 @@ namespace AtlasWorld.Client.UI.Widgets
             occSliderRow.AddChild(_occlusionAlphaValLabel);
             vbox.AddChild(occSliderRow);
 
+            vbox.AddChild(new HSeparator());
+
+            // Section 3: World Time & Day/Night Atmosphere Control
+            var timeHeader = new Label
+            {
+                Text = "3. WORLD TIME & DAY/NIGHT ATMOSPHERE [T]",
+                Modulate = new Color(0.98f, 0.85f, 0.45f)
+            };
+            timeHeader.AddThemeFontSizeOverride("font_size", 10);
+            vbox.AddChild(timeHeader);
+
             var timeRow = new HBoxContainer();
-            var timeLbl = new Label { Text = "World Time:", CustomMinimumSize = new Vector2(86, 0) };
+            var timeLbl = new Label { Text = "World Clock:", CustomMinimumSize = new Vector2(80, 0) };
             timeLbl.AddThemeFontSizeOverride("font_size", 10);
-            var timeSlider = new HSlider
+            _timeSlider = new HSlider
             {
                 MinValue = 0.0,
                 MaxValue = 23.95,
-                Step = 0.25,
+                Step = 0.05,
                 Value = _root.DayNightCycle.TimeOfDayHours,
                 SizeFlagsHorizontal = SizeFlags.ExpandFill
             };
-            var timeValLabel = new Label
+            _timeValLabel = new Label
             {
-                Text = $"{_root.DayNightCycle.FormattedClockString} {_root.DayNightCycle.PhaseDisplayName}",
-                CustomMinimumSize = new Vector2(72, 0),
+                Text = $"{_root.DayNightCycle.PhaseIconGlyph} {_root.DayNightCycle.FormattedClockString} {_root.DayNightCycle.PhaseDisplayName}",
+                CustomMinimumSize = new Vector2(86, 0),
                 HorizontalAlignment = HorizontalAlignment.Right
             };
-            timeValLabel.AddThemeFontSizeOverride("font_size", 10);
-            timeSlider.ValueChanged += val =>
+            _timeValLabel.AddThemeFontSizeOverride("font_size", 10);
+            _timeSlider.ValueChanged += val =>
             {
+                if (_suppressTimeSliderSignal) return;
                 _root.DayNightCycle.AutoAdvance = false;
                 _root.DayNightCycle.SetTimeOfDay((float)val, _doc);
-                timeValLabel.Text = $"{_root.DayNightCycle.FormattedClockString} {_root.DayNightCycle.PhaseDisplayName}";
+                _doc.DefaultTimeOfDayHours = _root.DayNightCycle.TimeOfDayHours;
+                _doc.AutoAdvanceDayNight = false;
+                SyncTimeControlsFromCycle();
             };
             timeRow.AddChild(timeLbl);
-            timeRow.AddChild(timeSlider);
-            timeRow.AddChild(timeValLabel);
+            timeRow.AddChild(_timeSlider);
+            timeRow.AddChild(_timeValLabel);
             vbox.AddChild(timeRow);
 
             var timePresetRow = new HBoxContainer();
             timePresetRow.AddThemeConstantOverride("separation", 4);
-            (float hr, string label)[] timePresets =
+            (WorldDayPhase phase, float hr, string label)[] timePresets =
             {
-                (6.5f, "\u2600 Dawn"),
-                (12.5f, "\u2600 Noon"),
-                (18.25f, "\u25d0 Sunset"),
-                (22.5f, "\u263e Night")
+                (WorldDayPhase.Dawn, 6.5f, "\u2600 Dawn"),
+                (WorldDayPhase.Day, 12.5f, "\u2600 Noon"),
+                (WorldDayPhase.Dusk, 18.25f, "\u25d0 Sunset"),
+                (WorldDayPhase.Night, 22.5f, "\u263e Night")
             };
-            foreach (var (hr, lbl) in timePresets)
+            foreach (var (phase, hr, lbl) in timePresets)
             {
                 float targetHr = hr;
                 var pBtn = new Button
@@ -507,19 +541,71 @@ namespace AtlasWorld.Client.UI.Widgets
                 {
                     _root.DayNightCycle.AutoAdvance = false;
                     _root.DayNightCycle.SetTimeOfDay(targetHr, _doc);
-                    timeSlider.Value = targetHr;
-                    timeValLabel.Text = $"{_root.DayNightCycle.FormattedClockString} {_root.DayNightCycle.PhaseDisplayName}";
+                    _doc.DefaultTimeOfDayHours = targetHr;
+                    _doc.AutoAdvanceDayNight = false;
+                    SyncTimeControlsFromCycle();
+                    if (_saveFeedbackLabel != null)
+                    {
+                        _saveFeedbackLabel.Text = $"Set World Time -> {_root.DayNightCycle.FormattedClockString} ({_root.DayNightCycle.PhaseDisplayName}). Saved on Cmd+S.";
+                        _saveFeedbackLabel.Modulate = new Color(0.98f, 0.86f, 0.45f);
+                    }
                 };
+                _timePresetButtons.Add((phase, pBtn));
                 timePresetRow.AddChild(pBtn);
             }
             vbox.AddChild(timePresetRow);
 
+            var timeSpeedRow = new HBoxContainer();
+            timeSpeedRow.AddThemeConstantOverride("separation", 6);
+            _autoTimeCheck = new CheckBox
+            {
+                Text = "Auto-Cycle",
+                ButtonPressed = _root.DayNightCycle.AutoAdvance
+            };
+            _autoTimeCheck.AddThemeFontSizeOverride("font_size", 10);
+            _autoTimeCheck.Toggled += on =>
+            {
+                _root.DayNightCycle.AutoAdvance = on;
+                _doc.AutoAdvanceDayNight = on;
+                SyncTimeControlsFromCycle();
+            };
+
+            var speedLbl = new Label { Text = "Speed:" };
+            speedLbl.AddThemeFontSizeOverride("font_size", 10);
+            _timeSpeedSlider = new HSlider
+            {
+                MinValue = 0.02,
+                MaxValue = 1.00,
+                Step = 0.02,
+                Value = _root.DayNightCycle.HoursPerRealSecond,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill
+            };
+            _timeSpeedValLabel = new Label
+            {
+                Text = $"{_root.DayNightCycle.HoursPerRealSecond:0.00}h/s",
+                CustomMinimumSize = new Vector2(46, 0),
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            _timeSpeedValLabel.AddThemeFontSizeOverride("font_size", 10);
+            _timeSpeedSlider.ValueChanged += val =>
+            {
+                _root.DayNightCycle.HoursPerRealSecond = (float)val;
+                _doc.DayNightSpeedHoursPerSec = (float)val;
+                if (_timeSpeedValLabel != null)
+                    _timeSpeedValLabel.Text = $"{val:0.00}h/s";
+            };
+            timeSpeedRow.AddChild(_autoTimeCheck);
+            timeSpeedRow.AddChild(speedLbl);
+            timeSpeedRow.AddChild(_timeSpeedSlider);
+            timeSpeedRow.AddChild(_timeSpeedValLabel);
+            vbox.AddChild(timeSpeedRow);
+
             vbox.AddChild(new HSeparator());
 
-            // Section 3: Asset Palette
+            // Section 4: Asset Palette
             var paletteHeader = new Label
             {
-                Text = "3. 3D GLB ASSET PALETTE (Click to Arm Brush)",
+                Text = "4. 3D GLB ASSET PALETTE (Click to Arm Brush)",
                 Modulate = new Color(0.95f, 0.88f, 0.65f)
             };
             paletteHeader.AddThemeFontSizeOverride("font_size", 10);
@@ -527,7 +613,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
             var scroll = new ScrollContainer
             {
-                CustomMinimumSize = new Vector2(320f, 138f),
+                CustomMinimumSize = new Vector2(320f, 118f),
                 HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
             };
             vbox.AddChild(scroll);
@@ -548,7 +634,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 var btn = new Button
                 {
                     Text = $"{item.Label}\n[{item.Category}]",
-                    CustomMinimumSize = new Vector2(152f, 34f),
+                    CustomMinimumSize = new Vector2(152f, 32f),
                     ClipText = true
                 };
                 btn.AddThemeFontSizeOverride("font_size", 10);
@@ -567,10 +653,10 @@ namespace AtlasWorld.Client.UI.Widgets
 
             vbox.AddChild(new HSeparator());
 
-            // Section 4: Brush Transform & Server Collision Controls
+            // Section 5: Brush Transform & Server Collision Controls
             var brushHeader = new Label
             {
-                Text = "4. BRUSH TRANSFORM & GIZMOS",
+                Text = "5. BRUSH TRANSFORM & GIZMOS",
                 Modulate = new Color(0.95f, 0.88f, 0.65f)
             };
             brushHeader.AddThemeFontSizeOverride("font_size", 10);
@@ -700,7 +786,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\uff0b Place Prop (L-Click)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 25)
+                CustomMinimumSize = new Vector2(0, 24)
             };
             stampBtn.AddThemeFontSizeOverride("font_size", 10);
             stampBtn.Pressed += () => PlacePropAt(_cursorWorldPos);
@@ -709,7 +795,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u232b Undo Last (Z)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 25)
+                CustomMinimumSize = new Vector2(0, 24)
             };
             undoBtn.AddThemeFontSizeOverride("font_size", 10);
             undoBtn.Pressed += RemoveLastPlacedProp;
@@ -724,7 +810,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\ud83d\udcbe Save Map JSON",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 26)
+                CustomMinimumSize = new Vector2(0, 25)
             };
             saveBtn.AddThemeFontSizeOverride("font_size", 10);
             saveBtn.Pressed += SaveUnifiedMap;
@@ -733,7 +819,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u25b6 Playtest Here (F2)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 26)
+                CustomMinimumSize = new Vector2(0, 25)
             };
             playBtn.AddThemeFontSizeOverride("font_size", 10);
             playBtn.Pressed += () => SetBuilderActive(false);
@@ -744,7 +830,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
             _saveFeedbackLabel = new Label
             {
-                Text = "WASD Pan | R-Drag Orbit | L-Click Place | Blocking trees auto-fade!",
+                Text = "WASD Pan | R-Drag Orbit | L-Click Place | [T] Cycle Time | Cmd+S Save",
                 Modulate = new Color(0.75f, 0.84f, 0.96f),
                 AutowrapMode = TextServer.AutowrapMode.WordSmart
             };
@@ -752,6 +838,68 @@ namespace AtlasWorld.Client.UI.Widgets
             vbox.AddChild(_saveFeedbackLabel);
 
             UpdateStatsLabel();
+        }
+
+        public void SyncTimeControlsFromCycle()
+        {
+            var cycle = _root.DayNightCycle;
+            _suppressTimeSliderSignal = true;
+            if (_timeSlider != null && Mathf.Abs((float)_timeSlider.Value - cycle.TimeOfDayHours) > 0.02f)
+            {
+                _timeSlider.Value = cycle.TimeOfDayHours;
+            }
+            if (_autoTimeCheck != null && _autoTimeCheck.ButtonPressed != cycle.AutoAdvance)
+            {
+                _autoTimeCheck.ButtonPressed = cycle.AutoAdvance;
+            }
+            if (_timeSpeedSlider != null && Mathf.Abs((float)_timeSpeedSlider.Value - cycle.HoursPerRealSecond) > 0.005f)
+            {
+                _timeSpeedSlider.Value = cycle.HoursPerRealSecond;
+            }
+            _suppressTimeSliderSignal = false;
+
+            Color phaseColor = cycle.CurrentPhase switch
+            {
+                WorldDayPhase.Dawn => new Color(1.0f, 0.78f, 0.52f),
+                WorldDayPhase.Day => new Color(0.98f, 0.92f, 0.68f),
+                WorldDayPhase.Dusk => new Color(1.0f, 0.62f, 0.42f),
+                _ => new Color(0.66f, 0.82f, 1.0f)
+            };
+
+            if (_timeValLabel != null)
+            {
+                _timeValLabel.Text = $"{cycle.PhaseIconGlyph} {cycle.FormattedClockString} {cycle.PhaseDisplayName}";
+                _timeValLabel.Modulate = phaseColor;
+            }
+
+            if (_topBannerTimeBtn != null)
+            {
+                _topBannerTimeBtn.Text = $"{cycle.PhaseIconGlyph} {cycle.FormattedClockString} {cycle.PhaseDisplayName} [T]";
+                _topBannerTimeBtn.Modulate = phaseColor;
+            }
+
+            foreach (var (phase, btn) in _timePresetButtons)
+            {
+                btn.Modulate = (phase == cycle.CurrentPhase)
+                    ? phaseColor
+                    : Colors.White;
+            }
+        }
+
+        private void CycleWorldTimeFromBuilder()
+        {
+            _root.DayNightCycle.AutoAdvance = false;
+            _root.DayNightCycle.CycleNextPreset(_doc);
+            _doc.DefaultTimeOfDayHours = _root.DayNightCycle.TimeOfDayHours;
+            _doc.AutoAdvanceDayNight = false;
+            SyncTimeControlsFromCycle();
+
+            if (_saveFeedbackLabel != null)
+            {
+                _saveFeedbackLabel.Text =
+                    $"World Time cycled -> {_root.DayNightCycle.FormattedClockString} ({_root.DayNightCycle.PhaseDisplayName}). Press Cmd+S to persist.";
+                _saveFeedbackLabel.Modulate = new Color(0.98f, 0.86f, 0.45f);
+            }
         }
 
         private void SculptTerraceAtCursor(float deltaHeight, float radius, float falloff = 0.45f)
@@ -845,6 +993,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 RebuildGizmoOverlays();
                 RebuildChunkGridGizmos();
                 UpdateStatsLabel();
+                SyncTimeControlsFromCycle();
             }
         }
 
@@ -996,6 +1145,10 @@ namespace AtlasWorld.Client.UI.Widgets
 
         public void SaveUnifiedMap()
         {
+            _doc.DefaultTimeOfDayHours = Mathf.Round(_root.DayNightCycle.TimeOfDayHours * 100f) / 100f;
+            _doc.AutoAdvanceDayNight = _root.DayNightCycle.AutoAdvance;
+            _doc.DayNightSpeedHoursPerSec = Mathf.Round(_root.DayNightCycle.HoursPerRealSecond * 100f) / 100f;
+
             if (_doc.SaveToDisk(_doc.ServerCenter, VerticalSliceRoot.ServerCoordScale, out _))
             {
                 RebuildGizmoOverlays();
@@ -1003,7 +1156,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 if (_saveFeedbackLabel != null)
                 {
                     _saveFeedbackLabel.Text =
-                        $"\u2713 Saved {_doc.Width:0}\u00d7{_doc.Height:0} map ({_doc.Props.Count} props, {_doc.HeightTerraces.Count} terraces) to content/maps/{_doc.MapId}.json";
+                        $"\u2713 Saved {_doc.Width:0}\u00d7{_doc.Height:0} map ({_doc.Props.Count} props, {_doc.HeightTerraces.Count} terraces, Time {_root.DayNightCycle.FormattedClockString}) to content/maps/{_doc.MapId}.json";
                     _saveFeedbackLabel.Modulate = new Color(0.45f, 1.0f, 0.65f);
                 }
             }
@@ -1258,6 +1411,11 @@ namespace AtlasWorld.Client.UI.Widgets
                     SaveUnifiedMap();
                     GetViewport().SetInputAsHandled();
                 }
+                else if (key.Keycode == Key.T)
+                {
+                    CycleWorldTimeFromBuilder();
+                    GetViewport().SetInputAsHandled();
+                }
                 else if (key.Keycode == Key.R)
                 {
                     double nextDeg = (((_rotSlider?.Value ?? 0) + 45.0) % 360.0);
@@ -1331,9 +1489,9 @@ namespace AtlasWorld.Client.UI.Widgets
                         if (_cursorCoordLabel != null)
                         {
                             float slopeDeg = TerrainElevation.SampleSlopeDegrees(hit.X, hit.Z, _doc);
-                            string slopeTag = slopeDeg > TerrainElevation.MaxWalkableSlopeDeg ? "CLIFF BLOCKED >38°" : "WALKABLE";
+                            string slopeTag = slopeDeg > TerrainElevation.MaxWalkableSlopeDeg ? "CLIFF BLOCKED >38\u00b0" : "WALKABLE";
                             _cursorCoordLabel.Text =
-                                $"World ({hit.X:0.0}, Alt {hit.Y:+0.0;-0.0}m, {hit.Z:0.0}) | Slope {slopeDeg:0.0}° [{slopeTag}] | Chunk ({chunk.X},{chunk.Y})";
+                                $"World ({hit.X:0.0}, Alt {hit.Y:+0.0;-0.0}m, {hit.Z:0.0}) | Slope {slopeDeg:0.0}\u00b0 [{slopeTag}] | Chunk ({chunk.X},{chunk.Y})";
                         }
                     }
                 }
@@ -1386,6 +1544,8 @@ namespace AtlasWorld.Client.UI.Widgets
 
         public void UpdateBuilderCamera(float dt)
         {
+            SyncTimeControlsFromCycle();
+
             if (!_builderActive || _root.MainCamera == null) return;
 
             float panSpeed = 16.0f * (_camDistance / 20.0f);

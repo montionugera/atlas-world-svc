@@ -244,6 +244,13 @@ namespace AtlasWorld.Client.World
                 }
             }
 
+            if (mapDoc != null)
+            {
+                TimeOfDayHours = Wrap24(mapDoc.DefaultTimeOfDayHours);
+                AutoAdvance = mapDoc.AutoAdvanceDayNight;
+                HoursPerRealSecond = Mathf.Clamp(mapDoc.DayNightSpeedHoursPerSec, 0.0f, 2.0f);
+            }
+
             SetupSanctuaryLanternsAndFireflies(root, mapDoc);
 
             // Check optional CLI / env override for deterministic screenshot testing (e.g. ATLAS_TIME_OF_DAY=21.5)
