@@ -9,7 +9,7 @@ namespace AtlasWorld.Client.UI.Widgets
     /// Native macOS / Godot 4 In-Engine 3D Map Builder Dock &amp; Viewport Controller.
     /// Supports:
     /// 1. Dynamic Map Size Expansion (1000x1000 / 2000x2000 / 4000x4000 server units)
-    /// 2. On-Demand Spatial Chunk Streaming (MapChunkStreamer) with 3D chunk boundary gizmos
+    /// 2. On-Demand Spatial Chunk Streaming + GPU Hardware Instancing (MultiMeshInstance3D) &amp; Procedural Clutter Density
     /// 3. 3D Altitude &amp; Terraced Elevation Sculpting (+ Add Hill/Terrace, - Add Valley, Amplitude slider)
     /// 4. Smart Auto-Transparent Camera LOS Occlusion Fader (SmartCameraOccluder) with live opacity slider
     /// 5. World Time &amp; Day/Night Atmosphere Control (24h Slider, Dawn/Noon/Sunset/Night presets, Auto-Advance &amp; Speed, Top Banner Quick Pill)
@@ -92,6 +92,8 @@ namespace AtlasWorld.Client.UI.Widgets
         private Label? _rotValLabel;
         private HSlider? _chunkRadiusSlider;
         private Label? _chunkRadiusValLabel;
+        private HSlider? _clutterDensitySlider;
+        private Label? _clutterDensityValLabel;
         private HSlider? _terrainAmpSlider;
         private Label? _terrainAmpValLabel;
         private HSlider? _occlusionAlphaSlider;
@@ -105,6 +107,7 @@ namespace AtlasWorld.Client.UI.Widgets
         private readonly List<Button> _catalogButtons = new();
         private readonly List<(float size, Button btn)> _mapSizeButtons = new();
         private readonly List<(WorldDayPhase phase, Button btn)> _timePresetButtons = new();
+        private readonly List<UnifiedMapStaticObstacle> _nearbyObstaclesBuffer = new();
 
         public bool IsBuilderActive => _builderActive;
         public Vector3 CameraFocus => _camFocus;
@@ -227,7 +230,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 OffsetLeft = 14f,
                 OffsetTop = 52f,
                 OffsetRight = 374f,
-                OffsetBottom = 892f,
+                OffsetBottom = 900f,
                 MouseFilter = MouseFilterEnum.Stop
             };
             var dockStyle = new StyleBoxFlat
@@ -244,8 +247,8 @@ namespace AtlasWorld.Client.UI.Widgets
                 CornerRadiusBottomRight = 10,
                 ContentMarginLeft = 12,
                 ContentMarginRight = 12,
-                ContentMarginTop = 9,
-                ContentMarginBottom = 9,
+                ContentMarginTop = 8,
+                ContentMarginBottom = 8,
                 ShadowColor = new Color(0f, 0f, 0f, 0.55f),
                 ShadowSize = 8
             };
@@ -253,12 +256,12 @@ namespace AtlasWorld.Client.UI.Widgets
             AddChild(_dockPanel);
 
             var vbox = new VBoxContainer();
-            vbox.AddThemeConstantOverride("separation", 4);
+            vbox.AddThemeConstantOverride("separation", 3);
             _dockPanel.AddChild(vbox);
 
             var title = new Label
             {
-                Text = "ATLAS 3D MAP BUILDER (ALTITUDE + TIME + CHUNKS)",
+                Text = "ATLAS 3D MAP BUILDER (100M+ GPU INSTANCED)",
                 Modulate = new Color(0.98f, 0.85f, 0.45f)
             };
             title.AddThemeFontSizeOverride("font_size", 11);
@@ -290,10 +293,10 @@ namespace AtlasWorld.Client.UI.Widgets
 
             vbox.AddChild(new HSeparator());
 
-            // Section 1: Map Size Expansion & On-Demand Chunk Streaming
+            // Section 1: Map Size Expansion, On-Demand Chunk Streaming & MultiMesh GPU Clutter
             var scaleHeader = new Label
             {
-                Text = "1. MAP EXPANSION & ON-DEMAND CHUNK STREAMING",
+                Text = "1. MAP EXPANSION, CHUNKS & GPU INSTANCING",
                 Modulate = new Color(0.95f, 0.88f, 0.65f)
             };
             scaleHeader.AddThemeFontSizeOverride("font_size", 10);
@@ -314,7 +317,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 {
                     Text = lbl,
                     SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                    CustomMinimumSize = new Vector2(0, 23)
+                    CustomMinimumSize = new Vector2(0, 22)
                 };
                 sBtn.AddThemeFontSizeOverride("font_size", 10);
                 sBtn.Pressed += () => ApplyMapResize(targetSize);
@@ -324,7 +327,7 @@ namespace AtlasWorld.Client.UI.Widgets
             vbox.AddChild(sizeBtnRow);
 
             var radiusRow = new HBoxContainer();
-            var radiusLbl = new Label { Text = "Load Radius:", CustomMinimumSize = new Vector2(86, 0) };
+            var radiusLbl = new Label { Text = "Load Radius:", CustomMinimumSize = new Vector2(82, 0) };
             radiusLbl.AddThemeFontSizeOverride("font_size", 10);
             _chunkRadiusSlider = new HSlider
             {
@@ -350,12 +353,44 @@ namespace AtlasWorld.Client.UI.Widgets
                 _chunkRadiusValLabel.Text = $"R={r} ({side}\u00d7{side})";
                 _streamer.UpdateStreaming(_camFocus, forceReload: true);
                 RebuildChunkGridGizmos();
+                RebuildGizmoOverlays();
                 UpdateStatsLabel();
             };
             radiusRow.AddChild(radiusLbl);
             radiusRow.AddChild(_chunkRadiusSlider);
             radiusRow.AddChild(_chunkRadiusValLabel);
             vbox.AddChild(radiusRow);
+
+            var clutterRow = new HBoxContainer();
+            var clutterLbl = new Label { Text = "GPU Clutter:", CustomMinimumSize = new Vector2(82, 0) };
+            clutterLbl.AddThemeFontSizeOverride("font_size", 10);
+            _clutterDensitySlider = new HSlider
+            {
+                MinValue = 0,
+                MaxValue = 120,
+                Step = 4,
+                Value = _streamer.ProceduralClutterPerChunk,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill
+            };
+            _clutterDensityValLabel = new Label
+            {
+                Text = $"{_streamer.ProceduralClutterPerChunk}/chunk",
+                CustomMinimumSize = new Vector2(64, 0),
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            _clutterDensityValLabel.AddThemeFontSizeOverride("font_size", 10);
+            _clutterDensitySlider.ValueChanged += val =>
+            {
+                int density = (int)Math.Round(val);
+                _streamer.ProceduralClutterPerChunk = density;
+                _clutterDensityValLabel.Text = $"{density}/chunk";
+                _streamer.UpdateStreaming(_camFocus, forceReload: true);
+                UpdateStatsLabel();
+            };
+            clutterRow.AddChild(clutterLbl);
+            clutterRow.AddChild(_clutterDensitySlider);
+            clutterRow.AddChild(_clutterDensityValLabel);
+            vbox.AddChild(clutterRow);
 
             vbox.AddChild(new HSeparator());
 
@@ -369,7 +404,7 @@ namespace AtlasWorld.Client.UI.Widgets
             vbox.AddChild(altHeader);
 
             var ampRow = new HBoxContainer();
-            var ampLbl = new Label { Text = "Hill Height:", CustomMinimumSize = new Vector2(86, 0) };
+            var ampLbl = new Label { Text = "Hill Height:", CustomMinimumSize = new Vector2(82, 0) };
             ampLbl.AddThemeFontSizeOverride("font_size", 10);
             _terrainAmpSlider = new HSlider
             {
@@ -406,7 +441,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u25b2 +Hill (+2.2m)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 23)
+                CustomMinimumSize = new Vector2(0, 22)
             };
             addHillBtn.AddThemeFontSizeOverride("font_size", 10);
             addHillBtn.Pressed += () => SculptTerraceAtCursor(2.2f, 11.5f, 0.48f);
@@ -415,7 +450,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u26f0 +Cliff (+4.2m)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 23)
+                CustomMinimumSize = new Vector2(0, 22)
             };
             addCliffBtn.AddThemeFontSizeOverride("font_size", 10);
             addCliffBtn.Pressed += () => SculptTerraceAtCursor(4.2f, 9.5f, 0.16f);
@@ -424,7 +459,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u25bc +Valley (-1.6m)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 23)
+                CustomMinimumSize = new Vector2(0, 22)
             };
             addValleyBtn.AddThemeFontSizeOverride("font_size", 10);
             addValleyBtn.Pressed += () => SculptTerraceAtCursor(-1.6f, 11.0f, 0.48f);
@@ -448,7 +483,7 @@ namespace AtlasWorld.Client.UI.Widgets
             vbox.AddChild(occToggle);
 
             var occSliderRow = new HBoxContainer();
-            var occLbl = new Label { Text = "Block Fade:", CustomMinimumSize = new Vector2(86, 0) };
+            var occLbl = new Label { Text = "Block Fade:", CustomMinimumSize = new Vector2(82, 0) };
             occLbl.AddThemeFontSizeOverride("font_size", 10);
             _occlusionAlphaSlider = new HSlider
             {
@@ -534,7 +569,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 {
                     Text = lbl,
                     SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                    CustomMinimumSize = new Vector2(0, 22)
+                    CustomMinimumSize = new Vector2(0, 21)
                 };
                 pBtn.AddThemeFontSizeOverride("font_size", 9);
                 pBtn.Pressed += () =>
@@ -613,7 +648,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
             var scroll = new ScrollContainer
             {
-                CustomMinimumSize = new Vector2(320f, 118f),
+                CustomMinimumSize = new Vector2(320f, 108f),
                 HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
             };
             vbox.AddChild(scroll);
@@ -634,7 +669,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 var btn = new Button
                 {
                     Text = $"{item.Label}\n[{item.Category}]",
-                    CustomMinimumSize = new Vector2(152f, 32f),
+                    CustomMinimumSize = new Vector2(152f, 30f),
                     ClipText = true
                 };
                 btn.AddThemeFontSizeOverride("font_size", 10);
@@ -663,7 +698,7 @@ namespace AtlasWorld.Client.UI.Widgets
             vbox.AddChild(brushHeader);
 
             var scaleRow = new HBoxContainer();
-            var scaleLbl = new Label { Text = "Scale ([ / ]):", CustomMinimumSize = new Vector2(86, 0) };
+            var scaleLbl = new Label { Text = "Scale ([ / ]):", CustomMinimumSize = new Vector2(82, 0) };
             scaleLbl.AddThemeFontSizeOverride("font_size", 10);
             _scaleSlider = new HSlider
             {
@@ -687,7 +722,7 @@ namespace AtlasWorld.Client.UI.Widgets
             vbox.AddChild(scaleRow);
 
             var rotRow = new HBoxContainer();
-            var rotLbl = new Label { Text = "Rotate (R):", CustomMinimumSize = new Vector2(86, 0) };
+            var rotLbl = new Label { Text = "Rotate (R):", CustomMinimumSize = new Vector2(82, 0) };
             rotLbl.AddThemeFontSizeOverride("font_size", 10);
             _rotSlider = new HSlider
             {
@@ -786,7 +821,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\uff0b Place Prop (L-Click)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 24)
+                CustomMinimumSize = new Vector2(0, 23)
             };
             stampBtn.AddThemeFontSizeOverride("font_size", 10);
             stampBtn.Pressed += () => PlacePropAt(_cursorWorldPos);
@@ -795,7 +830,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u232b Undo Last (Z)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 24)
+                CustomMinimumSize = new Vector2(0, 23)
             };
             undoBtn.AddThemeFontSizeOverride("font_size", 10);
             undoBtn.Pressed += RemoveLastPlacedProp;
@@ -810,7 +845,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\ud83d\udcbe Save Map JSON",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 25)
+                CustomMinimumSize = new Vector2(0, 24)
             };
             saveBtn.AddThemeFontSizeOverride("font_size", 10);
             saveBtn.Pressed += SaveUnifiedMap;
@@ -819,7 +854,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u25b6 Playtest Here (F2)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 25)
+                CustomMinimumSize = new Vector2(0, 24)
             };
             playBtn.AddThemeFontSizeOverride("font_size", 10);
             playBtn.Pressed += () => SetBuilderActive(false);
@@ -1010,7 +1045,7 @@ namespace AtlasWorld.Client.UI.Widgets
             if (_blocksMoveCheck != null) _blocksMoveCheck.ButtonPressed = _placementBlocksMovement;
             if (_selectedAssetLabel != null)
             {
-                _selectedAssetLabel.Text = $"Armed: {item.Label} ({(item.DefaultBlocksMovement ? "Solid Collider" : "Pass-Through")})";
+                _selectedAssetLabel.Text = $"Armed: {item.Label} ({(item.DefaultBlocksMovement ? "Solid Collider" : "GPU-Instanced / Pass-Through")})";
             }
 
             for (int i = 0; i < _catalogButtons.Count; i++)
@@ -1110,7 +1145,8 @@ namespace AtlasWorld.Client.UI.Widgets
             };
 
             _doc.Props.Add(newProp);
-            _doc.RebuildStaticObstacles(_doc.ServerCenter, VerticalSliceRoot.ServerCoordScale);
+            // O(1) incremental obstacle insertion (no O(N) full-map rebuild!)
+            _doc.IndexPropObstacleIncremental(newProp, _doc.ServerCenter, VerticalSliceRoot.ServerCoordScale);
             _streamer.AddPropIncremental(newProp, _camFocus);
             RebuildGizmoOverlays();
             UpdateStatsLabel();
@@ -1164,19 +1200,18 @@ namespace AtlasWorld.Client.UI.Widgets
 
         public void UpdateStatsLabel()
         {
-            _doc.RebuildStaticObstacles(_doc.ServerCenter, VerticalSliceRoot.ServerCoordScale);
             if (_statsSummaryLabel != null)
             {
                 float worldW = _doc.Width * VerticalSliceRoot.ServerCoordScale;
                 float worldH = _doc.Height * VerticalSliceRoot.ServerCoordScale;
                 _statsSummaryLabel.Text =
-                    $"Size: {_doc.Width:0}\u00d7{_doc.Height:0} ({worldW:0}m\u00d7{worldH:0}m) | Terraces: {_doc.HeightTerraces.Count} | AABBs: {_doc.StaticObstacles.Count}";
+                    $"Size: {_doc.Width:0}\u00d7{_doc.Height:0} ({worldW:0}m\u00d7{worldH:0}m) | Terraces: {_doc.HeightTerraces.Count} | O(1) Grid Cells: {_doc.SpatialObstacleCellCount} ({_doc.StaticObstacles.Count} AABBs)";
             }
             if (_streamingStatusLabel != null)
             {
                 Vector2I c = _streamer.CurrentCenterChunk;
                 _streamingStatusLabel.Text =
-                    $"On-Demand Chunks: {_streamer.LoadedChunkCount}/{_streamer.TotalNonEmptyChunks} Active @ ({c.X},{c.Y}) | Props: {_streamer.LoadedPropCount}/{_streamer.TotalPropCount}";
+                    $"Chunks: {_streamer.LoadedChunkCount} Active @ ({c.X},{c.Y}) | Node3Ds: {_streamer.LoadedPropCount} | GPU MultiMesh: {_streamer.ActiveGpuInstanceCount} ({_streamer.ActiveMultiMeshBatchCount} draws)";
             }
             if (_occlusionStatusLabel != null)
             {
@@ -1265,9 +1300,8 @@ namespace AtlasWorld.Client.UI.Widgets
             if (!_builderActive) return;
 
             Vector2 serverCenter = _doc.ServerCenter;
-            _doc.RebuildStaticObstacles(serverCenter, VerticalSliceRoot.ServerCoordScale);
 
-            // 1. Render Red Translucent Server-RS StaticObstacle AABB Boxes (snapped to 3D Terrain Altitude!)
+            // 1. Render Red Translucent Server-RS StaticObstacle AABB Boxes using O(1) Spatial Hash Grid query around camera!
             if (_showServerAabbs)
             {
                 var aabbMat = new StandardMaterial3D
@@ -1277,7 +1311,10 @@ namespace AtlasWorld.Client.UI.Widgets
                     AlbedoColor = new Color(1.0f, 0.25f, 0.22f, 0.36f)
                 };
 
-                foreach (var obs in _doc.StaticObstacles)
+                float activeRadiusMeters = (_streamer.ActiveChunkRadius + 0.75f) * _streamer.ChunkSizeWorld;
+                _doc.QueryObstaclesNear(_camFocus, activeRadiusMeters, _nearbyObstaclesBuffer);
+
+                foreach (var obs in _nearbyObstaclesBuffer)
                 {
                     float wx0 = (obs.MinX - serverCenter.X) * VerticalSliceRoot.ServerCoordScale;
                     float wz0 = (obs.MinY - serverCenter.Y) * VerticalSliceRoot.ServerCoordScale;
@@ -1568,6 +1605,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 if (_streamer.UpdateStreaming(_camFocus))
                 {
                     RebuildChunkGridGizmos();
+                    RebuildGizmoOverlays();
                     UpdateStatsLabel();
                 }
             }

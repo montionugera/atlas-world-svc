@@ -60,6 +60,7 @@ namespace AtlasWorld.Client.World
         [JsonPropertyName("chunkSizeWorld")] public float ChunkSizeWorld { get; set; } = 24.0f;
         [JsonPropertyName("activeChunkRadius")] public int ActiveChunkRadius { get; set; } = 2;
         [JsonPropertyName("terrainAmplitude")] public float TerrainAmplitude { get; set; } = 1.0f;
+        [JsonPropertyName("proceduralClutterDensity")] public int ProceduralClutterDensity { get; set; } = 28;
         [JsonPropertyName("defaultTimeOfDayHours")] public float DefaultTimeOfDayHours { get; set; } = 10.5f;
         [JsonPropertyName("autoAdvanceDayNight")] public bool AutoAdvanceDayNight { get; set; } = true;
         [JsonPropertyName("dayNightSpeedHoursPerSec")] public float DayNightSpeedHoursPerSec { get; set; } = 0.10f;
@@ -68,11 +69,109 @@ namespace AtlasWorld.Client.World
         [JsonPropertyName("spawnAreas")] public List<UnifiedMapSpawnArea> SpawnAreas { get; set; } = new();
         [JsonPropertyName("staticObstacles")] public List<UnifiedMapStaticObstacle> StaticObstacles { get; set; } = new();
 
+        /// <summary>
+        /// O(1) 2D Spatial Hash Grid of world-space AABBs (<c>Rect2(minWorldX, minWorldZ, widthWorld, depthWorld)</c>)
+        /// partitioned by <c>ObstacleCellSizeWorld</c> (8.0m cells) so collision and gizmo queries never scan all obstacles.
+        /// </summary>
+        [JsonIgnore]
+        private readonly Dictionary<Vector2I, List<(string id, Rect2 worldRect, UnifiedMapStaticObstacle serverObs)>> _spatialObstacleGrid = new();
+
+        public const float ObstacleCellSizeWorld = 8.0f;
+
+        [JsonIgnore]
+        public int SpatialObstacleCellCount => _spatialObstacleGrid.Count;
+
         [JsonIgnore]
         public Vector2 ServerCenter => new(Width * 0.5f, Height * 0.5f);
 
         public float HalfWidthWorld(float serverCoordScale = 0.1f) => Width * 0.5f * serverCoordScale;
         public float HalfHeightWorld(float serverCoordScale = 0.1f) => Height * 0.5f * serverCoordScale;
+
+        public static Vector2I WorldToObstacleCell(float wx, float wz) =>
+            new(Mathf.FloorToInt(wx / ObstacleCellSizeWorld), Mathf.FloorToInt(wz / ObstacleCellSizeWorld));
+
+        /// <summary>
+        /// O(1) Spatial Hash Grid collision resolver for player/mob movement against solid map props.
+        /// Only inspects the 3x3 spatial cells around <paramref name="nextX"/>, <paramref name="nextZ"/>.
+        /// </summary>
+        public Vector2 ResolveObstacleCollision(float curX, float curZ, float nextX, float nextZ, float agentRadius = 0.42f)
+        {
+            if (_spatialObstacleGrid.Count == 0)
+                return new Vector2(nextX, nextZ);
+
+            Vector2I cell = WorldToObstacleCell(nextX, nextZ);
+            float rx = nextX;
+            float rz = nextZ;
+
+            for (int dz = -1; dz <= 1; dz++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    var key = new Vector2I(cell.X + dx, cell.Y + dz);
+                    if (!_spatialObstacleGrid.TryGetValue(key, out var list))
+                        continue;
+
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        Rect2 box = list[i].worldRect.Grow(agentRadius);
+                        if (box.HasPoint(new Vector2(rx, rz)))
+                        {
+                            // Push out along the shallowest penetration axis so the player slides cleanly past trunks/pillars
+                            float leftPen = Mathf.Abs(rx - box.Position.X);
+                            float rightPen = Mathf.Abs((box.Position.X + box.Size.X) - rx);
+                            float topPen = Mathf.Abs(rz - box.Position.Y);
+                            float bottomPen = Mathf.Abs((box.Position.Y + box.Size.Y) - rz);
+
+                            float minPen = Mathf.Min(Mathf.Min(leftPen, rightPen), Mathf.Min(topPen, bottomPen));
+                            if (Mathf.IsEqualApprox(minPen, leftPen))
+                                rx = box.Position.X - 0.001f;
+                            else if (Mathf.IsEqualApprox(minPen, rightPen))
+                                rx = box.Position.X + box.Size.X + 0.001f;
+                            else if (Mathf.IsEqualApprox(minPen, topPen))
+                                rz = box.Position.Y - 0.001f;
+                            else
+                                rz = box.Position.Y + box.Size.Y + 0.001f;
+                        }
+                    }
+                }
+            }
+
+            return new Vector2(rx, rz);
+        }
+
+        /// <summary>
+        /// Queries only the static obstacles inside the active world-space radius around <paramref name="focusWorldPos"/>
+        /// using the O(1) spatial hash grid, avoiding O(N) full-map scans when rendering AABB gizmos.
+        /// </summary>
+        public void QueryObstaclesNear(Vector3 focusWorldPos, float maxRadiusMeters, List<UnifiedMapStaticObstacle> results)
+        {
+            results.Clear();
+            if (_spatialObstacleGrid.Count == 0)
+                return;
+
+            int cellRadius = Mathf.Clamp(Mathf.CeilToInt(maxRadiusMeters / ObstacleCellSizeWorld), 1, 24);
+            Vector2I centerCell = WorldToObstacleCell(focusWorldPos.X, focusWorldPos.Z);
+            var seen = new HashSet<string>();
+
+            for (int dz = -cellRadius; dz <= cellRadius; dz++)
+            {
+                for (int dx = -cellRadius; dx <= cellRadius; dx++)
+                {
+                    var key = new Vector2I(centerCell.X + dx, centerCell.Y + dz);
+                    if (!_spatialObstacleGrid.TryGetValue(key, out var cellList))
+                        continue;
+
+                    for (int i = 0; i < cellList.Count; i++)
+                    {
+                        var item = cellList[i];
+                        if (seen.Add(item.id))
+                        {
+                            results.Add(item.serverObs);
+                        }
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Ensures default Freja South Gate terrain plateaus exist if loading a v1 JSON without heightTerraces.
@@ -163,6 +262,7 @@ namespace AtlasWorld.Client.World
                     if (doc != null)
                     {
                         doc.EnsureDefaultTerraces();
+                        doc.RebuildStaticObstacles(doc.ServerCenter, 0.1f);
                         return doc;
                     }
                 }
@@ -174,34 +274,68 @@ namespace AtlasWorld.Client.World
 
             var fallback = new UnifiedMapDocument { MapId = mapId };
             fallback.EnsureDefaultTerraces();
+            fallback.RebuildStaticObstacles(fallback.ServerCenter, 0.1f);
             return fallback;
         }
 
         /// <summary>
-        /// Rebuilds server-rs 2D AABB staticObstacles from all props marked BlocksMovement = true
-        /// using the canonical coordinate transform: ServerPos = ServerCenter + (WorldPos / 0.1).
+        /// Rebuilds server-rs 2D AABB staticObstacles AND the O(1) 2D Spatial Hash Grid
+        /// from all props marked BlocksMovement = true using: ServerPos = ServerCenter + (WorldPos / 0.1).
         /// </summary>
         public void RebuildStaticObstacles(Vector2 serverCenter, float serverCoordScale)
         {
             StaticObstacles.Clear();
+            _spatialObstacleGrid.Clear();
+
             foreach (var p in Props)
             {
                 if (!p.BlocksMovement)
                     continue;
 
-                float halfWorld = Mathf.Max(0.25f, p.ColliderHalfExtent * p.Scale * 0.72f);
-                float halfServer = halfWorld / serverCoordScale;
-                float sx = serverCenter.X + (p.X / serverCoordScale);
-                float sy = serverCenter.Y + (p.Z / serverCoordScale);
+                IndexPropObstacleIncremental(p, serverCenter, serverCoordScale);
+            }
+        }
 
-                StaticObstacles.Add(new UnifiedMapStaticObstacle
+        /// <summary>
+        /// Incrementally inserts a single blocking prop into <see cref="StaticObstacles"/> and the O(1) spatial hash grid
+        /// without scanning the rest of the map.
+        /// </summary>
+        public void IndexPropObstacleIncremental(UnifiedMapProp p, Vector2 serverCenter, float serverCoordScale)
+        {
+            if (!p.BlocksMovement)
+                return;
+
+            float halfWorld = Mathf.Max(0.25f, p.ColliderHalfExtent * p.Scale * 0.72f);
+            float halfServer = halfWorld / serverCoordScale;
+            float sx = serverCenter.X + (p.X / serverCoordScale);
+            float sy = serverCenter.Y + (p.Z / serverCoordScale);
+
+            var obs = new UnifiedMapStaticObstacle
+            {
+                Id = p.Id,
+                MinX = Mathf.Round((sx - halfServer) * 10f) / 10f,
+                MinY = Mathf.Round((sy - halfServer) * 10f) / 10f,
+                MaxX = Mathf.Round((sx + halfServer) * 10f) / 10f,
+                MaxY = Mathf.Round((sy + halfServer) * 10f) / 10f,
+            };
+            StaticObstacles.Add(obs);
+
+            var worldRect = new Rect2(p.X - halfWorld, p.Z - halfWorld, halfWorld * 2f, halfWorld * 2f);
+            Vector2I minCell = WorldToObstacleCell(worldRect.Position.X, worldRect.Position.Y);
+            Vector2I maxCell = WorldToObstacleCell(worldRect.Position.X + worldRect.Size.X, worldRect.Position.Y + worldRect.Size.Y);
+
+            for (int cz = minCell.Y; cz <= maxCell.Y; cz++)
+            {
+                for (int cx = minCell.X; cx <= maxCell.X; cx++)
                 {
-                    Id = p.Id,
-                    MinX = Mathf.Round((sx - halfServer) * 10f) / 10f,
-                    MinY = Mathf.Round((sy - halfServer) * 10f) / 10f,
-                    MaxX = Mathf.Round((sx + halfServer) * 10f) / 10f,
-                    MaxY = Mathf.Round((sy + halfServer) * 10f) / 10f,
-                });
+                    var cellKey = new Vector2I(cx, cz);
+                    if (!_spatialObstacleGrid.TryGetValue(cellKey, out var list))
+                    {
+                        list = new List<(string, Rect2, UnifiedMapStaticObstacle)>();
+                        _spatialObstacleGrid[cellKey] = list;
+                    }
+                    list.Add((p.Id, worldRect, obs));
+                }
             }
         }
 

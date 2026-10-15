@@ -104,10 +104,11 @@ namespace AtlasWorld.Client.World
         }
 
         /// <summary>
-        /// Evaluates a horizontal movement step from (curX, curZ) to (nextX, nextZ).
-        /// - If the destination slope is walkable (&lt;= 38°), applies subtle uphill grade pacing and returns the step.
-        /// - If the destination hits a steep cliff wall (&gt; 38°), projects the movement vector onto the 2D cliff
-        ///   contour tangent so the player smoothly slides along the cliff edge instead of climbing or clipping through it.
+        /// Evaluates a horizontal movement step from (curX, curZ) to (nextX, nextZ):
+        /// 1. Resolves O(1) Spatial Hash Grid solid prop collisions via <see cref="UnifiedMapDocument.ResolveObstacleCollision"/>.
+        /// 2. If the destination slope is walkable (&lt;= 38°), applies subtle uphill grade pacing and returns the step.
+        /// 3. If the destination hits a steep cliff wall (&gt; 38°), projects the movement vector onto the 2D cliff
+        ///    contour tangent so the player smoothly slides along the cliff edge instead of climbing or clipping through it.
         /// </summary>
         public static Vector2 ResolveSteepSlopeMove(
             float curX,
@@ -118,6 +119,13 @@ namespace AtlasWorld.Client.World
             out bool blockedByCliff,
             out float slopeDeg)
         {
+            if (doc != null)
+            {
+                Vector2 afterObs = doc.ResolveObstacleCollision(curX, curZ, nextX, nextZ);
+                nextX = afterObs.X;
+                nextZ = afterObs.Y;
+            }
+
             blockedByCliff = false;
             slopeDeg = SampleSlopeDegrees(nextX, nextZ, doc);
 
