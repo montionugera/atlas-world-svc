@@ -47,9 +47,41 @@ namespace AtlasWorld.Client.World
         [JsonPropertyName("name")] public string Name { get; set; } = "Prontera South Gate — Freja Meadow";
         [JsonPropertyName("width")] public float Width { get; set; } = 1000.0f;
         [JsonPropertyName("height")] public float Height { get; set; } = 1000.0f;
+        [JsonPropertyName("chunkSizeWorld")] public float ChunkSizeWorld { get; set; } = 24.0f;
+        [JsonPropertyName("activeChunkRadius")] public int ActiveChunkRadius { get; set; } = 2;
         [JsonPropertyName("props")] public List<UnifiedMapProp> Props { get; set; } = new();
         [JsonPropertyName("spawnAreas")] public List<UnifiedMapSpawnArea> SpawnAreas { get; set; } = new();
         [JsonPropertyName("staticObstacles")] public List<UnifiedMapStaticObstacle> StaticObstacles { get; set; } = new();
+
+        [JsonIgnore]
+        public Vector2 ServerCenter => new(Width * 0.5f, Height * 0.5f);
+
+        public float HalfWidthWorld(float serverCoordScale = 0.1f) => Width * 0.5f * serverCoordScale;
+        public float HalfHeightWorld(float serverCoordScale = 0.1f) => Height * 0.5f * serverCoordScale;
+
+        /// <summary>
+        /// Resizes the map in server units (e.g. 1000x1000 -> 2000x2000 or 4000x4000) while preserving
+        /// the relative offset of all server spawn areas from the center of the map so existing content stays aligned.
+        /// </summary>
+        public void ResizeMap(float newWidth, float newHeight, float serverCoordScale = 0.1f)
+        {
+            Vector2 oldCenter = ServerCenter;
+            Width = Mathf.Clamp(newWidth, 500f, 10000f);
+            Height = Mathf.Clamp(newHeight, 500f, 10000f);
+            Vector2 newCenter = ServerCenter;
+            Vector2 delta = newCenter - oldCenter;
+
+            if (delta.LengthSquared() > 0.01f)
+            {
+                foreach (var zone in SpawnAreas)
+                {
+                    zone.X = Mathf.Round((zone.X + delta.X) * 10f) / 10f;
+                    zone.Y = Mathf.Round((zone.Y + delta.Y) * 10f) / 10f;
+                }
+            }
+
+            RebuildStaticObstacles(newCenter, serverCoordScale);
+        }
 
         public static string ResolveMapFilePath(string mapId = "freja-south-gate")
         {
@@ -81,7 +113,7 @@ namespace AtlasWorld.Client.World
 
         /// <summary>
         /// Rebuilds server-rs 2D AABB staticObstacles from all props marked BlocksMovement = true
-        /// using the canonical coordinate transform: ServerPos = 500 + (WorldPos / 0.1).
+        /// using the canonical coordinate transform: ServerPos = ServerCenter + (WorldPos / 0.1).
         /// </summary>
         public void RebuildStaticObstacles(Vector2 serverCenter, float serverCoordScale)
         {
@@ -119,7 +151,7 @@ namespace AtlasWorld.Client.World
 
                 var opts = new JsonSerializerOptions { WriteIndented = true };
                 File.WriteAllText(savedPath, JsonSerializer.Serialize(this, opts));
-                GD.Print($"[MapBuilder] Saved unified map ({Props.Count} props, {StaticObstacles.Count} server AABBs, {SpawnAreas.Count} spawn zones) -> {savedPath}");
+                GD.Print($"[MapBuilder] Saved unified map ({Width:0}x{Height:0}, {Props.Count} props, {StaticObstacles.Count} server AABBs, {SpawnAreas.Count} spawn zones) -> {savedPath}");
                 return true;
             }
             catch (Exception ex)

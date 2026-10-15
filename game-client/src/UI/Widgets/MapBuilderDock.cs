@@ -7,9 +7,12 @@ namespace AtlasWorld.Client.UI.Widgets
 {
     /// <summary>
     /// Native macOS / Godot 4 In-Engine 3D Map Builder Dock &amp; Viewport Controller.
-    /// Allows browsing 3D glTF assets from res://assets/nature &amp; res://assets/dungeon,
-    /// raycast-placing props on the ground plane, toggling server-rs AABB movement collision,
-    /// inspecting 3D server spawn zones, and one-click saving to content/maps/freja-south-gate.json.
+    /// Supports:
+    /// 1. Dynamic Map Size Expansion (1000x1000 / 2000x2000 / 4000x4000 server units)
+    /// 2. On-Demand Spatial Chunk Streaming (MapChunkStreamer) with 3D chunk boundary gizmos
+    /// 3. Browsing 3D glTF assets from res://assets/nature &amp; res://assets/dungeon
+    /// 4. Raycast-placing props across the full expanded ground plane
+    /// 5. Exporting server-rs AABB movement colliders &amp; spawn zones to content/maps/freja-south-gate.json
     /// </summary>
     public partial class MapBuilderDock : Control
     {
@@ -45,8 +48,9 @@ namespace AtlasWorld.Client.UI.Widgets
 
         private VerticalSliceRoot _root = null!;
         private UnifiedMapDocument _doc = null!;
-        private Node3D _propsRoot = null!;
+        private MapChunkStreamer _streamer = null!;
         private Node3D _gizmoRoot = null!;
+        private Node3D _chunkGridGizmoRoot = null!;
         private Node3D? _cursorPreviewNode;
         private MeshInstance3D? _cursorRingMesh;
 
@@ -57,13 +61,14 @@ namespace AtlasWorld.Client.UI.Widgets
         private bool _placementBlocksMovement = true;
         private bool _showServerAabbs = true;
         private bool _showSpawnZones = true;
+        private bool _showChunkGrid = true;
         private Vector3 _cursorWorldPos = new(0f, 0f, -5f);
 
         // Free-fly / Orbit Builder Camera state
         private Vector3 _camFocus = new(0f, 0f, -4f);
         private float _camYaw = 0.28f;
         private float _camPitch = 0.72f;
-        private float _camDistance = 24.0f;
+        private float _camDistance = 26.0f;
         private bool _rightMouseOrbiting = false;
 
         // UI Elements
@@ -73,30 +78,39 @@ namespace AtlasWorld.Client.UI.Widgets
         private Label? _selectedAssetLabel;
         private Label? _cursorCoordLabel;
         private Label? _statsSummaryLabel;
+        private Label? _streamingStatusLabel;
         private Label? _saveFeedbackLabel;
         private CheckBox? _blocksMoveCheck;
         private HSlider? _scaleSlider;
         private Label? _scaleValLabel;
         private HSlider? _rotSlider;
         private Label? _rotValLabel;
+        private HSlider? _chunkRadiusSlider;
+        private Label? _chunkRadiusValLabel;
         private readonly List<Button> _catalogButtons = new();
-        private readonly List<(UnifiedMapProp prop, Node3D node)> _spawnedProps = new();
+        private readonly List<(float size, Button btn)> _mapSizeButtons = new();
 
         public bool IsBuilderActive => _builderActive;
+        public Vector3 CameraFocus => _camFocus;
 
-        public void Initialize(VerticalSliceRoot root, UnifiedMapDocument doc, Node3D propsRoot)
+        public void Initialize(VerticalSliceRoot root, UnifiedMapDocument doc, MapChunkStreamer streamer)
         {
             _root = root;
             _doc = doc;
-            _propsRoot = propsRoot;
+            _streamer = streamer;
 
             _gizmoRoot = new Node3D { Name = "MapBuilderGizmos", Visible = false };
             _root.AddChild(_gizmoRoot);
 
+            _chunkGridGizmoRoot = new Node3D { Name = "ChunkGridGizmos" };
+            _gizmoRoot.AddChild(_chunkGridGizmoRoot);
+
             BuildUi();
-            RebuildPropsFromDocument();
+            _streamer.UpdateStreaming(_camFocus, forceReload: true);
             RebuildGizmoOverlays();
+            RebuildChunkGridGizmos();
             SelectCatalogAsset(0);
+            RefreshMapSizeButtons();
 
             if (OS.GetEnvironment("ATLAS_MAP_BUILDER") == "1")
             {
@@ -109,15 +123,15 @@ namespace AtlasWorld.Client.UI.Widgets
             AnchorsPreset = (int)LayoutPreset.FullRect;
             MouseFilter = MouseFilterEnum.Ignore;
 
-            // 1. Top-Center Map Builder Toggle Pill & Status Banner
+            // 1. Top-Center Map Builder Toggle Pill & Live Chunk Status Banner
             _topBanner = new PanelContainer
             {
                 Name = "BuilderTopBanner",
                 AnchorLeft = 0.5f,
                 AnchorRight = 0.5f,
-                OffsetLeft = -310f,
+                OffsetLeft = -380f,
                 OffsetTop = 10f,
-                OffsetRight = 310f,
+                OffsetRight = 380f,
                 OffsetBottom = 46f,
                 MouseFilter = MouseFilterEnum.Stop
             };
@@ -147,7 +161,7 @@ namespace AtlasWorld.Client.UI.Widgets
             _toggleBuilderBtn = new Button
             {
                 Text = "🗺 MAP BUILDER [F2]: OFF",
-                CustomMinimumSize = new Vector2(180, 26)
+                CustomMinimumSize = new Vector2(178, 26)
             };
             _toggleBuilderBtn.AddThemeFontSizeOverride("font_size", 11);
             _toggleBuilderBtn.Pressed += () => SetBuilderActive(!_builderActive);
@@ -155,7 +169,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
             _cursorCoordLabel = new Label
             {
-                Text = "World (0.0, 0.0)  |  Server (500, 500)",
+                Text = "World (0.0, 0.0) | Chunk (0,0) | Server (500, 500)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill
             };
             _cursorCoordLabel.AddThemeFontSizeOverride("font_size", 11);
@@ -180,8 +194,8 @@ namespace AtlasWorld.Client.UI.Widgets
                 Visible = false,
                 OffsetLeft = 14f,
                 OffsetTop = 54f,
-                OffsetRight = 344f,
-                OffsetBottom = 720f,
+                OffsetRight = 356f,
+                OffsetBottom = 860f,
                 MouseFilter = MouseFilterEnum.Stop
             };
             var dockStyle = new StyleBoxFlat
@@ -207,15 +221,15 @@ namespace AtlasWorld.Client.UI.Widgets
             AddChild(_dockPanel);
 
             var vbox = new VBoxContainer();
-            vbox.AddThemeConstantOverride("separation", 7);
+            vbox.AddThemeConstantOverride("separation", 6);
             _dockPanel.AddChild(vbox);
 
             var title = new Label
             {
-                Text = "ATLAS 3D MAP BUILDER (MAC STUDIO)",
+                Text = "ATLAS 3D MAP BUILDER (SCALABLE CHUNKS)",
                 Modulate = new Color(0.98f, 0.85f, 0.45f)
             };
-            title.AddThemeFontSizeOverride("font_size", 13);
+            title.AddThemeFontSizeOverride("font_size", 12);
             vbox.AddChild(title);
 
             _statsSummaryLabel = new Label
@@ -223,23 +237,101 @@ namespace AtlasWorld.Client.UI.Widgets
                 Text = "Map: freja-south-gate (1000x1000)",
                 Modulate = new Color(0.72f, 0.86f, 0.98f)
             };
-            _statsSummaryLabel.AddThemeFontSizeOverride("font_size", 11);
+            _statsSummaryLabel.AddThemeFontSizeOverride("font_size", 10);
             vbox.AddChild(_statsSummaryLabel);
+
+            _streamingStatusLabel = new Label
+            {
+                Text = "On-Demand Streamer: 0/0 Chunks Active",
+                Modulate = new Color(0.45f, 1.0f, 0.68f)
+            };
+            _streamingStatusLabel.AddThemeFontSizeOverride("font_size", 10);
+            vbox.AddChild(_streamingStatusLabel);
 
             vbox.AddChild(new HSeparator());
 
-            // Asset Palette Header
-            var paletteHeader = new Label
+            // Section 1: Map Size Expansion & On-Demand Chunk Streaming
+            var scaleHeader = new Label
             {
-                Text = "1. 3D GLB ASSET PALETTE (Click to Arm Brush)",
+                Text = "1. MAP EXPANSION & ON-DEMAND CHUNK STREAMING",
                 Modulate = new Color(0.95f, 0.88f, 0.65f)
             };
-            paletteHeader.AddThemeFontSizeOverride("font_size", 11);
+            scaleHeader.AddThemeFontSizeOverride("font_size", 10);
+            vbox.AddChild(scaleHeader);
+
+            var sizeBtnRow = new HBoxContainer();
+            sizeBtnRow.AddThemeConstantOverride("separation", 5);
+            (float size, string label)[] mapSizes =
+            {
+                (1000f, "1000² (100m)"),
+                (2000f, "2000² (200m)"),
+                (4000f, "4000² (400m)")
+            };
+            foreach (var (sz, lbl) in mapSizes)
+            {
+                float targetSize = sz;
+                var sBtn = new Button
+                {
+                    Text = lbl,
+                    SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                    CustomMinimumSize = new Vector2(0, 25)
+                };
+                sBtn.AddThemeFontSizeOverride("font_size", 10);
+                sBtn.Pressed += () => ApplyMapResize(targetSize);
+                _mapSizeButtons.Add((targetSize, sBtn));
+                sizeBtnRow.AddChild(sBtn);
+            }
+            vbox.AddChild(sizeBtnRow);
+
+            // Active Chunk Radius Slider
+            var radiusRow = new HBoxContainer();
+            var radiusLbl = new Label { Text = "Load Radius:", CustomMinimumSize = new Vector2(88, 0) };
+            radiusLbl.AddThemeFontSizeOverride("font_size", 10);
+            _chunkRadiusSlider = new HSlider
+            {
+                MinValue = 1,
+                MaxValue = 5,
+                Step = 1,
+                Value = _streamer.ActiveChunkRadius,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill
+            };
+            int sideInit = _streamer.ActiveChunkRadius * 2 + 1;
+            _chunkRadiusValLabel = new Label
+            {
+                Text = $"R={_streamer.ActiveChunkRadius} ({sideInit}×{sideInit})",
+                CustomMinimumSize = new Vector2(68, 0),
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            _chunkRadiusValLabel.AddThemeFontSizeOverride("font_size", 10);
+            _chunkRadiusSlider.ValueChanged += val =>
+            {
+                int r = (int)Math.Round(val);
+                _streamer.ActiveChunkRadius = r;
+                int side = r * 2 + 1;
+                _chunkRadiusValLabel.Text = $"R={r} ({side}×{side})";
+                _streamer.UpdateStreaming(_camFocus, forceReload: true);
+                RebuildChunkGridGizmos();
+                UpdateStatsLabel();
+            };
+            radiusRow.AddChild(radiusLbl);
+            radiusRow.AddChild(_chunkRadiusSlider);
+            radiusRow.AddChild(_chunkRadiusValLabel);
+            vbox.AddChild(radiusRow);
+
+            vbox.AddChild(new HSeparator());
+
+            // Section 2: Asset Palette
+            var paletteHeader = new Label
+            {
+                Text = "2. 3D GLB ASSET PALETTE (Click to Arm Brush)",
+                Modulate = new Color(0.95f, 0.88f, 0.65f)
+            };
+            paletteHeader.AddThemeFontSizeOverride("font_size", 10);
             vbox.AddChild(paletteHeader);
 
             var scroll = new ScrollContainer
             {
-                CustomMinimumSize = new Vector2(300f, 210f),
+                CustomMinimumSize = new Vector2(312f, 185f),
                 HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
             };
             vbox.AddChild(scroll);
@@ -250,7 +342,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 SizeFlagsHorizontal = SizeFlags.ExpandFill
             };
             grid.AddThemeConstantOverride("h_separation", 6);
-            grid.AddThemeConstantOverride("v_separation", 5);
+            grid.AddThemeConstantOverride("v_separation", 4);
             scroll.AddChild(grid);
 
             for (int i = 0; i < AssetCatalog.Length; i++)
@@ -260,7 +352,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 var btn = new Button
                 {
                     Text = $"{item.Label}\n[{item.Category}]",
-                    CustomMinimumSize = new Vector2(142f, 38f),
+                    CustomMinimumSize = new Vector2(148f, 36f),
                     ClipText = true
                 };
                 btn.AddThemeFontSizeOverride("font_size", 10);
@@ -274,24 +366,23 @@ namespace AtlasWorld.Client.UI.Widgets
                 Text = "Armed: Oak Tree A",
                 Modulate = new Color(0.45f, 1.0f, 0.65f)
             };
-            _selectedAssetLabel.AddThemeFontSizeOverride("font_size", 11);
+            _selectedAssetLabel.AddThemeFontSizeOverride("font_size", 10);
             vbox.AddChild(_selectedAssetLabel);
 
             vbox.AddChild(new HSeparator());
 
-            // Brush Transform & Server Collision Controls
+            // Section 3: Brush Transform & Server Collision Controls
             var brushHeader = new Label
             {
-                Text = "2. BRUSH TRANSFORM & SERVER-RS COLLIDER",
+                Text = "3. BRUSH TRANSFORM & SERVER-RS COLLIDER",
                 Modulate = new Color(0.95f, 0.88f, 0.65f)
             };
-            brushHeader.AddThemeFontSizeOverride("font_size", 11);
+            brushHeader.AddThemeFontSizeOverride("font_size", 10);
             vbox.AddChild(brushHeader);
 
-            // Scale Slider
             var scaleRow = new HBoxContainer();
-            var scaleLbl = new Label { Text = "Scale ([ / ]):", CustomMinimumSize = new Vector2(90, 0) };
-            scaleLbl.AddThemeFontSizeOverride("font_size", 11);
+            var scaleLbl = new Label { Text = "Scale ([ / ]):", CustomMinimumSize = new Vector2(88, 0) };
+            scaleLbl.AddThemeFontSizeOverride("font_size", 10);
             _scaleSlider = new HSlider
             {
                 MinValue = 0.5,
@@ -301,7 +392,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 SizeFlagsHorizontal = SizeFlags.ExpandFill
             };
             _scaleValLabel = new Label { Text = "1.40x", CustomMinimumSize = new Vector2(44, 0), HorizontalAlignment = HorizontalAlignment.Right };
-            _scaleValLabel.AddThemeFontSizeOverride("font_size", 11);
+            _scaleValLabel.AddThemeFontSizeOverride("font_size", 10);
             _scaleSlider.ValueChanged += val =>
             {
                 _placementScale = (float)val;
@@ -313,10 +404,9 @@ namespace AtlasWorld.Client.UI.Widgets
             scaleRow.AddChild(_scaleValLabel);
             vbox.AddChild(scaleRow);
 
-            // Rotation Slider
             var rotRow = new HBoxContainer();
-            var rotLbl = new Label { Text = "Rotate (R):", CustomMinimumSize = new Vector2(90, 0) };
-            rotLbl.AddThemeFontSizeOverride("font_size", 11);
+            var rotLbl = new Label { Text = "Rotate (R):", CustomMinimumSize = new Vector2(88, 0) };
+            rotLbl.AddThemeFontSizeOverride("font_size", 10);
             _rotSlider = new HSlider
             {
                 MinValue = 0.0,
@@ -326,7 +416,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 SizeFlagsHorizontal = SizeFlags.ExpandFill
             };
             _rotValLabel = new Label { Text = "0°", CustomMinimumSize = new Vector2(44, 0), HorizontalAlignment = HorizontalAlignment.Right };
-            _rotValLabel.AddThemeFontSizeOverride("font_size", 11);
+            _rotValLabel.AddThemeFontSizeOverride("font_size", 10);
             _rotSlider.ValueChanged += val =>
             {
                 _placementRotY = Mathf.DegToRad((float)val);
@@ -343,7 +433,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 Text = "Blocks Movement (Export Server AABB)",
                 ButtonPressed = true
             };
-            _blocksMoveCheck.AddThemeFontSizeOverride("font_size", 11);
+            _blocksMoveCheck.AddThemeFontSizeOverride("font_size", 10);
             _blocksMoveCheck.Toggled += on =>
             {
                 _placementBlocksMovement = on;
@@ -353,21 +443,34 @@ namespace AtlasWorld.Client.UI.Widgets
 
             vbox.AddChild(new HSeparator());
 
-            // 3. Server Overlay Toggles
+            // Section 4: Overlays & Actions
             var overlayHeader = new Label
             {
-                Text = "3. AUTHORITATIVE OVERLAYS & ACTIONS",
+                Text = "4. GIZMOS & ACTIONS",
                 Modulate = new Color(0.95f, 0.88f, 0.65f)
             };
-            overlayHeader.AddThemeFontSizeOverride("font_size", 11);
+            overlayHeader.AddThemeFontSizeOverride("font_size", 10);
             vbox.AddChild(overlayHeader);
+
+            var chunkToggle = new CheckBox
+            {
+                Text = "Show On-Demand Chunk Cells (Green=Loaded)",
+                ButtonPressed = true
+            };
+            chunkToggle.AddThemeFontSizeOverride("font_size", 10);
+            chunkToggle.Toggled += on =>
+            {
+                _showChunkGrid = on;
+                RebuildChunkGridGizmos();
+            };
+            vbox.AddChild(chunkToggle);
 
             var aabbToggle = new CheckBox
             {
                 Text = "Show Server-RS Red AABB Colliders",
                 ButtonPressed = true
             };
-            aabbToggle.AddThemeFontSizeOverride("font_size", 11);
+            aabbToggle.AddThemeFontSizeOverride("font_size", 10);
             aabbToggle.Toggled += on =>
             {
                 _showServerAabbs = on;
@@ -380,7 +483,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 Text = "Show Server-RS Mob Spawn Zones",
                 ButtonPressed = true
             };
-            spawnToggle.AddThemeFontSizeOverride("font_size", 11);
+            spawnToggle.AddThemeFontSizeOverride("font_size", 10);
             spawnToggle.Toggled += on =>
             {
                 _showSpawnZones = on;
@@ -388,50 +491,48 @@ namespace AtlasWorld.Client.UI.Widgets
             };
             vbox.AddChild(spawnToggle);
 
-            // Action Buttons Row 1: Place at Cursor / Undo Last
             var actRow1 = new HBoxContainer();
             actRow1.AddThemeConstantOverride("separation", 6);
             var stampBtn = new Button
             {
                 Text = "＋ Place Prop (L-Click)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 28)
+                CustomMinimumSize = new Vector2(0, 26)
             };
-            stampBtn.AddThemeFontSizeOverride("font_size", 11);
+            stampBtn.AddThemeFontSizeOverride("font_size", 10);
             stampBtn.Pressed += () => PlacePropAt(_cursorWorldPos);
 
             var undoBtn = new Button
             {
                 Text = "⌫ Undo Last (Z)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 28)
+                CustomMinimumSize = new Vector2(0, 26)
             };
-            undoBtn.AddThemeFontSizeOverride("font_size", 11);
+            undoBtn.AddThemeFontSizeOverride("font_size", 10);
             undoBtn.Pressed += RemoveLastPlacedProp;
 
             actRow1.AddChild(stampBtn);
             actRow1.AddChild(undoBtn);
             vbox.AddChild(actRow1);
 
-            // Action Buttons Row 2: Save Map / Playtest Switch
             var actRow2 = new HBoxContainer();
             actRow2.AddThemeConstantOverride("separation", 6);
             var saveBtn = new Button
             {
                 Text = "💾 Save Map JSON",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 30)
+                CustomMinimumSize = new Vector2(0, 28)
             };
-            saveBtn.AddThemeFontSizeOverride("font_size", 11);
+            saveBtn.AddThemeFontSizeOverride("font_size", 10);
             saveBtn.Pressed += SaveUnifiedMap;
 
             var playBtn = new Button
             {
                 Text = "▶ Playtest Here (F2)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 30)
+                CustomMinimumSize = new Vector2(0, 28)
             };
-            playBtn.AddThemeFontSizeOverride("font_size", 11);
+            playBtn.AddThemeFontSizeOverride("font_size", 10);
             playBtn.Pressed += () => SetBuilderActive(false);
 
             actRow2.AddChild(saveBtn);
@@ -450,6 +551,36 @@ namespace AtlasWorld.Client.UI.Widgets
             UpdateStatsLabel();
         }
 
+        private void ApplyMapResize(float newServerSize)
+        {
+            _doc.ResizeMap(newServerSize, newServerSize, VerticalSliceRoot.ServerCoordScale);
+            _root.SyncMapFloorAndBounds();
+            _streamer.RebuildIndex(_camFocus);
+            RebuildGizmoOverlays();
+            RebuildChunkGridGizmos();
+            RefreshMapSizeButtons();
+            UpdateStatsLabel();
+
+            float worldMeters = newServerSize * VerticalSliceRoot.ServerCoordScale;
+            if (_saveFeedbackLabel != null)
+            {
+                _saveFeedbackLabel.Text =
+                    $"Expanded Map to {newServerSize:0}×{newServerSize:0} server units ({worldMeters:0}m×{worldMeters:0}m). Press Cmd+S to persist.";
+                _saveFeedbackLabel.Modulate = new Color(0.45f, 1.0f, 0.68f);
+            }
+        }
+
+        private void RefreshMapSizeButtons()
+        {
+            foreach (var (sz, btn) in _mapSizeButtons)
+            {
+                bool active = Mathf.Abs(_doc.Width - sz) < 10f;
+                btn.Modulate = active
+                    ? new Color(0.45f, 1.0f, 0.65f)
+                    : Colors.White;
+            }
+        }
+
         public void SetBuilderActive(bool active)
         {
             _builderActive = active;
@@ -466,7 +597,6 @@ namespace AtlasWorld.Client.UI.Widgets
                     : Colors.White;
             }
 
-            // Hide game HUD clutter while in full Studio Map Builder mode so the 3D canvas is clean
             _root.SetGameHudVisible(!active);
 
             if (active)
@@ -475,8 +605,11 @@ namespace AtlasWorld.Client.UI.Widgets
                 {
                     _camFocus = new Vector3(_root.PlayerAvatar.Position.X, 0f, _root.PlayerAvatar.Position.Z - 3f);
                 }
+                _streamer.UpdateStreaming(_camFocus, forceReload: true);
                 EnsureCursorPreview();
                 RebuildGizmoOverlays();
+                RebuildChunkGridGizmos();
+                UpdateStatsLabel();
             }
         }
 
@@ -572,40 +705,6 @@ namespace AtlasWorld.Client.UI.Widgets
             }
         }
 
-        public void RebuildPropsFromDocument()
-        {
-            foreach (var (_, node) in _spawnedProps)
-            {
-                if (GodotObject.IsInstanceValid(node))
-                    node.QueueFree();
-            }
-            _spawnedProps.Clear();
-
-            foreach (var prop in _doc.Props)
-            {
-                SpawnPropNode(prop);
-            }
-            UpdateStatsLabel();
-        }
-
-        private void SpawnPropNode(UnifiedMapProp prop)
-        {
-            if (!ResourceLoader.Exists(prop.AssetPath))
-                return;
-
-            var scene = GD.Load<PackedScene>(prop.AssetPath);
-            if (scene?.Instantiate() is Node3D instance)
-            {
-                instance.Name = prop.Id;
-                instance.Position = new Vector3(prop.X, prop.Y, prop.Z);
-                instance.Rotation = new Vector3(0f, prop.RotY, 0f);
-                instance.Scale = Vector3.One * prop.Scale;
-                EntityView.ApplyAnimeToonShading(instance, EntityKind.Npc);
-                _propsRoot.AddChild(instance);
-                _spawnedProps.Add((prop, instance));
-            }
-        }
-
         public void PlacePropAt(Vector3 worldPos)
         {
             var item = AssetCatalog[_selectedAssetIndex];
@@ -625,75 +724,174 @@ namespace AtlasWorld.Client.UI.Widgets
             };
 
             _doc.Props.Add(newProp);
-            _doc.RebuildStaticObstacles(VerticalSliceRoot.ServerArenaCenter, VerticalSliceRoot.ServerCoordScale);
-            SpawnPropNode(newProp);
+            _doc.RebuildStaticObstacles(_doc.ServerCenter, VerticalSliceRoot.ServerCoordScale);
+            _streamer.AddPropIncremental(newProp, _camFocus);
             RebuildGizmoOverlays();
             UpdateStatsLabel();
 
+            Vector2I chunk = _streamer.WorldToChunkCoord(worldPos);
             if (_saveFeedbackLabel != null)
             {
-                _saveFeedbackLabel.Text = $"Placed '{item.Label}' at World ({newProp.X:0.0}, {newProp.Z:0.0}) — Press Cmd+S to save.";
+                _saveFeedbackLabel.Text =
+                    $"Placed '{item.Label}' in Chunk ({chunk.X},{chunk.Y}) at ({newProp.X:0.0}, {newProp.Z:0.0}) — Cmd+S to save.";
                 _saveFeedbackLabel.Modulate = new Color(0.55f, 1.0f, 0.68f);
             }
         }
 
         public void RemoveLastPlacedProp()
         {
-            if (_spawnedProps.Count == 0 || _doc.Props.Count == 0)
+            if (_doc.Props.Count == 0)
                 return;
 
-            var last = _spawnedProps[^1];
-            if (GodotObject.IsInstanceValid(last.node))
-                last.node.QueueFree();
-
-            _spawnedProps.RemoveAt(_spawnedProps.Count - 1);
+            var removed = _doc.Props[^1];
             _doc.Props.RemoveAt(_doc.Props.Count - 1);
-            _doc.RebuildStaticObstacles(VerticalSliceRoot.ServerArenaCenter, VerticalSliceRoot.ServerCoordScale);
+            _doc.RebuildStaticObstacles(_doc.ServerCenter, VerticalSliceRoot.ServerCoordScale);
+            _streamer.RebuildIndex(_camFocus);
             RebuildGizmoOverlays();
             UpdateStatsLabel();
 
             if (_saveFeedbackLabel != null)
             {
-                _saveFeedbackLabel.Text = $"Removed '{last.prop.Id}'. ({_doc.Props.Count} props remaining)";
+                _saveFeedbackLabel.Text = $"Removed '{removed.Id}'. ({_doc.Props.Count} props remaining)";
                 _saveFeedbackLabel.Modulate = new Color(1.0f, 0.84f, 0.45f);
             }
         }
 
         public void SaveUnifiedMap()
         {
-            if (_doc.SaveToDisk(VerticalSliceRoot.ServerArenaCenter, VerticalSliceRoot.ServerCoordScale, out string path))
+            if (_doc.SaveToDisk(_doc.ServerCenter, VerticalSliceRoot.ServerCoordScale, out _))
             {
                 RebuildGizmoOverlays();
                 UpdateStatsLabel();
                 if (_saveFeedbackLabel != null)
                 {
-                    _saveFeedbackLabel.Text = $"✓ Saved {_doc.Props.Count} props & {_doc.StaticObstacles.Count} server AABBs to content/maps/{_doc.MapId}.json";
+                    _saveFeedbackLabel.Text =
+                        $"✓ Saved {_doc.Width:0}×{_doc.Height:0} map ({_doc.Props.Count} props, {_doc.StaticObstacles.Count} AABBs) to content/maps/{_doc.MapId}.json";
                     _saveFeedbackLabel.Modulate = new Color(0.45f, 1.0f, 0.65f);
                 }
             }
         }
 
-        private void UpdateStatsLabel()
+        public void UpdateStatsLabel()
         {
-            _doc.RebuildStaticObstacles(VerticalSliceRoot.ServerArenaCenter, VerticalSliceRoot.ServerCoordScale);
+            _doc.RebuildStaticObstacles(_doc.ServerCenter, VerticalSliceRoot.ServerCoordScale);
             if (_statsSummaryLabel != null)
             {
+                float worldW = _doc.Width * VerticalSliceRoot.ServerCoordScale;
+                float worldH = _doc.Height * VerticalSliceRoot.ServerCoordScale;
                 _statsSummaryLabel.Text =
-                    $"Props: {_doc.Props.Count}  |  Server AABBs: {_doc.StaticObstacles.Count}  |  Spawn Zones: {_doc.SpawnAreas.Count}";
+                    $"Size: {_doc.Width:0}×{_doc.Height:0} ({worldW:0}m×{worldH:0}m) | AABBs: {_doc.StaticObstacles.Count} | Zones: {_doc.SpawnAreas.Count}";
             }
+            if (_streamingStatusLabel != null)
+            {
+                Vector2I c = _streamer.CurrentCenterChunk;
+                _streamingStatusLabel.Text =
+                    $"On-Demand Chunks: {_streamer.LoadedChunkCount}/{_streamer.TotalNonEmptyChunks} Active @ ({c.X},{c.Y}) | Props Loaded: {_streamer.LoadedPropCount}/{_streamer.TotalPropCount}";
+            }
+        }
+
+        private void RebuildChunkGridGizmos()
+        {
+            foreach (Node child in _chunkGridGizmoRoot.GetChildren())
+            {
+                child.QueueFree();
+            }
+
+            if (!_builderActive || !_showChunkGrid) return;
+
+            float cs = _streamer.ChunkSizeWorld;
+            int radius = _streamer.ActiveChunkRadius;
+            Vector2I center = _streamer.WorldToChunkCoord(_camFocus);
+
+            var activeBorderMat = new StandardMaterial3D
+            {
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                AlbedoColor = new Color(0.28f, 0.98f, 0.56f, 0.42f)
+            };
+            var centerTileMat = new StandardMaterial3D
+            {
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                AlbedoColor = new Color(0.28f, 0.98f, 0.56f, 0.09f)
+            };
+
+            // Draw individual active chunk cells in [-radius .. +radius]
+            for (int dz = -radius; dz <= radius; dz++)
+            {
+                for (int dx = -radius; dx <= radius; dx++)
+                {
+                    Vector2I coord = new(center.X + dx, center.Y + dz);
+                    Rect2 rect = _streamer.GetChunkWorldRect(coord);
+                    float cx = rect.Position.X + rect.Size.X * 0.5f;
+                    float cz = rect.Position.Y + rect.Size.Y * 0.5f;
+
+                    // Highlight the center focus chunk with a subtle green floor tint
+                    if (dx == 0 && dz == 0)
+                    {
+                        var centerPlane = new MeshInstance3D
+                        {
+                            Mesh = new BoxMesh { Size = new Vector3(cs - 0.3f, 0.02f, cs - 0.3f) },
+                            MaterialOverride = centerTileMat,
+                            Position = new Vector3(cx, 0.02f, cz)
+                        };
+                        _chunkGridGizmoRoot.AddChild(centerPlane);
+                    }
+
+                    // North & West border strips for each active chunk cell
+                    var northStrip = new MeshInstance3D
+                    {
+                        Mesh = new BoxMesh { Size = new Vector3(cs, 0.04f, 0.10f) },
+                        MaterialOverride = activeBorderMat,
+                        Position = new Vector3(cx, 0.03f, rect.Position.Y)
+                    };
+                    var westStrip = new MeshInstance3D
+                    {
+                        Mesh = new BoxMesh { Size = new Vector3(0.10f, 0.04f, cs) },
+                        MaterialOverride = activeBorderMat,
+                        Position = new Vector3(rect.Position.X, 0.03f, cz)
+                    };
+                    _chunkGridGizmoRoot.AddChild(northStrip);
+                    _chunkGridGizmoRoot.AddChild(westStrip);
+                }
+            }
+
+            // Outer South & East boundary of the active streaming window
+            float windowWidth = (radius * 2 + 1) * cs;
+            float minX = (center.X - radius) * cs;
+            float minZ = (center.Y - radius) * cs;
+            float maxX = minX + windowWidth;
+            float maxZ = minZ + windowWidth;
+
+            var southOuter = new MeshInstance3D
+            {
+                Mesh = new BoxMesh { Size = new Vector3(windowWidth, 0.06f, 0.16f) },
+                MaterialOverride = activeBorderMat,
+                Position = new Vector3(minX + windowWidth * 0.5f, 0.04f, maxZ)
+            };
+            var eastOuter = new MeshInstance3D
+            {
+                Mesh = new BoxMesh { Size = new Vector3(0.16f, 0.06f, windowWidth) },
+                MaterialOverride = activeBorderMat,
+                Position = new Vector3(maxX, 0.04f, minZ + windowWidth * 0.5f)
+            };
+            _chunkGridGizmoRoot.AddChild(southOuter);
+            _chunkGridGizmoRoot.AddChild(eastOuter);
         }
 
         private void RebuildGizmoOverlays()
         {
             foreach (Node child in _gizmoRoot.GetChildren())
             {
-                if (child == _cursorPreviewNode) continue;
+                if (child == _cursorPreviewNode || child == _chunkGridGizmoRoot)
+                    continue;
                 child.QueueFree();
             }
 
             if (!_builderActive) return;
 
-            _doc.RebuildStaticObstacles(VerticalSliceRoot.ServerArenaCenter, VerticalSliceRoot.ServerCoordScale);
+            Vector2 serverCenter = _doc.ServerCenter;
+            _doc.RebuildStaticObstacles(serverCenter, VerticalSliceRoot.ServerCoordScale);
 
             // 1. Render Red Translucent Server-RS StaticObstacle AABB Boxes
             if (_showServerAabbs)
@@ -707,10 +905,10 @@ namespace AtlasWorld.Client.UI.Widgets
 
                 foreach (var obs in _doc.StaticObstacles)
                 {
-                    float wx0 = (obs.MinX - VerticalSliceRoot.ServerArenaCenter.X) * VerticalSliceRoot.ServerCoordScale;
-                    float wz0 = (obs.MinY - VerticalSliceRoot.ServerArenaCenter.Y) * VerticalSliceRoot.ServerCoordScale;
-                    float wx1 = (obs.MaxX - VerticalSliceRoot.ServerArenaCenter.X) * VerticalSliceRoot.ServerCoordScale;
-                    float wz1 = (obs.MaxY - VerticalSliceRoot.ServerArenaCenter.Y) * VerticalSliceRoot.ServerCoordScale;
+                    float wx0 = (obs.MinX - serverCenter.X) * VerticalSliceRoot.ServerCoordScale;
+                    float wz0 = (obs.MinY - serverCenter.Y) * VerticalSliceRoot.ServerCoordScale;
+                    float wx1 = (obs.MaxX - serverCenter.X) * VerticalSliceRoot.ServerCoordScale;
+                    float wz1 = (obs.MaxY - serverCenter.Y) * VerticalSliceRoot.ServerCoordScale;
 
                     float w = Mathf.Max(0.2f, Mathf.Abs(wx1 - wx0));
                     float d = Mathf.Max(0.2f, Mathf.Abs(wz1 - wz0));
@@ -746,8 +944,8 @@ namespace AtlasWorld.Client.UI.Widgets
 
                 foreach (var zone in _doc.SpawnAreas)
                 {
-                    float wx = (zone.X - VerticalSliceRoot.ServerArenaCenter.X) * VerticalSliceRoot.ServerCoordScale;
-                    float wz = (zone.Y - VerticalSliceRoot.ServerArenaCenter.Y) * VerticalSliceRoot.ServerCoordScale;
+                    float wx = (zone.X - serverCenter.X) * VerticalSliceRoot.ServerCoordScale;
+                    float wz = (zone.Y - serverCenter.Y) * VerticalSliceRoot.ServerCoordScale;
                     float ww = zone.Width * VerticalSliceRoot.ServerCoordScale;
                     float wd = zone.Height * VerticalSliceRoot.ServerCoordScale;
                     float cx = wx + ww * 0.5f;
@@ -831,11 +1029,11 @@ namespace AtlasWorld.Client.UI.Widgets
                 }
                 else if (mb.ButtonIndex == MouseButton.WheelUp && mb.Pressed && !overUi)
                 {
-                    _camDistance = Mathf.Clamp(_camDistance - 1.8f, 6.0f, 65.0f);
+                    _camDistance = Mathf.Clamp(_camDistance - 2.2f, 6.0f, 140.0f);
                 }
                 else if (mb.ButtonIndex == MouseButton.WheelDown && mb.Pressed && !overUi)
                 {
-                    _camDistance = Mathf.Clamp(_camDistance + 1.8f, 6.0f, 65.0f);
+                    _camDistance = Mathf.Clamp(_camDistance + 2.2f, 6.0f, 140.0f);
                 }
                 else if (mb.ButtonIndex == MouseButton.Left && mb.Pressed && !overUi)
                 {
@@ -861,11 +1059,14 @@ namespace AtlasWorld.Client.UI.Widgets
                         _cursorWorldPos = hit;
                         UpdateCursorPreviewTransform();
 
-                        int sx = (int)Mathf.Round(VerticalSliceRoot.ServerArenaCenter.X + (hit.X / VerticalSliceRoot.ServerCoordScale));
-                        int sy = (int)Mathf.Round(VerticalSliceRoot.ServerArenaCenter.Y + (hit.Z / VerticalSliceRoot.ServerCoordScale));
+                        Vector2 serverCenter = _doc.ServerCenter;
+                        int sx = (int)Mathf.Round(serverCenter.X + (hit.X / VerticalSliceRoot.ServerCoordScale));
+                        int sy = (int)Mathf.Round(serverCenter.Y + (hit.Z / VerticalSliceRoot.ServerCoordScale));
+                        Vector2I chunk = _streamer.WorldToChunkCoord(hit);
                         if (_cursorCoordLabel != null)
                         {
-                            _cursorCoordLabel.Text = $"Cursor World ({hit.X:0.0}, {hit.Z:0.0})  |  Server ({sx}, {sy})";
+                            _cursorCoordLabel.Text =
+                                $"World ({hit.X:0.0}, {hit.Z:0.0}) | Chunk ({chunk.X},{chunk.Y}) | Server ({sx}, {sy})";
                         }
                     }
                 }
@@ -892,13 +1093,16 @@ namespace AtlasWorld.Client.UI.Widgets
             if (Mathf.Abs(rayDir.Y) < 0.0001f) return false;
 
             float t = -rayOrigin.Y / rayDir.Y;
-            if (t <= 0f || t > 250f) return false;
+            if (t <= 0f || t > 600f) return false;
+
+            float maxHalfX = _doc.HalfWidthWorld(VerticalSliceRoot.ServerCoordScale) - 1.5f;
+            float maxHalfZ = _doc.HalfHeightWorld(VerticalSliceRoot.ServerCoordScale) - 1.5f;
 
             Vector3 p = rayOrigin + rayDir * t;
             hitPoint = new Vector3(
-                Mathf.Clamp(p.X, -48f, 48f),
+                Mathf.Clamp(p.X, -maxHalfX, maxHalfX),
                 0f,
-                Mathf.Clamp(p.Z, -48f, 48f));
+                Mathf.Clamp(p.Z, -maxHalfZ, maxHalfZ));
             return true;
         }
 
@@ -906,7 +1110,7 @@ namespace AtlasWorld.Client.UI.Widgets
         {
             if (!_builderActive || _root.MainCamera == null) return;
 
-            float panSpeed = 14.0f * (_camDistance / 20.0f);
+            float panSpeed = 16.0f * (_camDistance / 20.0f);
             Vector2 pan = Vector2.Zero;
             if (Godot.Input.IsKeyPressed(Key.W) || Godot.Input.IsKeyPressed(Key.Up)) pan.Y -= 1f;
             if (Godot.Input.IsKeyPressed(Key.S) || Godot.Input.IsKeyPressed(Key.Down)) pan.Y += 1f;
@@ -916,7 +1120,17 @@ namespace AtlasWorld.Client.UI.Widgets
             if (pan.LengthSquared() > 0.001f)
             {
                 Vector2 rotated = pan.Normalized().Rotated(-_camYaw);
-                _camFocus += new Vector3(rotated.X, 0f, rotated.Y) * panSpeed * dt;
+                float maxHalfX = _doc.HalfWidthWorld(VerticalSliceRoot.ServerCoordScale);
+                float maxHalfZ = _doc.HalfHeightWorld(VerticalSliceRoot.ServerCoordScale);
+                _camFocus.X = Mathf.Clamp(_camFocus.X + rotated.X * panSpeed * dt, -maxHalfX, maxHalfX);
+                _camFocus.Z = Mathf.Clamp(_camFocus.Z + rotated.Y * panSpeed * dt, -maxHalfZ, maxHalfZ);
+
+                // Stream chunks on demand as the builder camera pans across the map
+                if (_streamer.UpdateStreaming(_camFocus))
+                {
+                    RebuildChunkGridGizmos();
+                    UpdateStatsLabel();
+                }
             }
 
             float horiz = _camDistance * Mathf.Cos(_camPitch);

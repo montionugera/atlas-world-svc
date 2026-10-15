@@ -24,13 +24,14 @@ namespace AtlasWorld.Client
     /// 5. Split-screen WardrobeModal with real 3D Weapon GLB attachment
     /// 6. 3D World Monsters (showcase + live server-rs mobs/bots/projectiles) with 3D overhead nameplates, HP bars &amp; target ring
     /// 7. Authoritative Player HP/SP, ROX Auto-Combat AFK loop, Quest Kill Tracker, Live Minimap Radar, DevTuningDrawer &amp; Mac 3D Map Builder
+    /// 8. Scalable Map Expansion (1000x1000 -> 2000x2000 -> 4000x4000) &amp; On-Demand Spatial Chunk Streaming (MapChunkStreamer)
     /// </summary>
     public partial class VerticalSliceRoot : Node3D
     {
         public const float ServerCoordScale = 0.1f;
         public const float MeleeAttackRangeWorld = 3.5f;
         public const int PlayerScaleMultiplier = 148;
-        public static readonly Vector2 ServerArenaCenter = new(500f, 500f);
+        public static Vector2 ServerArenaCenter { get; private set; } = new(500f, 500f);
 
         [Export] public ServerRsConnection Connection = null!;
         [Export] public Node3D PlayerAvatar = null!;
@@ -53,6 +54,7 @@ namespace AtlasWorld.Client
         private DevTuningDrawer? _tuningDrawer;
         private MapBuilderDock? _mapBuilderDock;
         private UnifiedMapDocument _mapDoc = null!;
+        private MapChunkStreamer? _chunkStreamer;
         private Node3D? _meadowRingRoot;
 
         private Vector2 _touchMoveIntent = Vector2.Zero;
@@ -196,7 +198,7 @@ namespace AtlasWorld.Client
                 }
             }
 
-            // 3. Populate Stylized Meadow Foliage Ring & Spawn 3D World Monsters with Overhead Nameplates, HP Bars & Target Ring
+            // 3. Populate Stylized Meadow Foliage Ring via On-Demand MapChunkStreamer & Spawn 3D World Monsters
             PopulateMeadowEnvironment();
             SpawnWorldMonsters();
 
@@ -215,9 +217,9 @@ namespace AtlasWorld.Client
                 {
                     _mapBuilderDock = new MapBuilderDock { Name = "MapBuilderDock" };
                     uiNode.AddChild(_mapBuilderDock);
-                    if (_meadowRingRoot != null)
+                    if (_chunkStreamer != null)
                     {
-                        _mapBuilderDock.Initialize(this, _mapDoc, _meadowRingRoot);
+                        _mapBuilderDock.Initialize(this, _mapDoc, _chunkStreamer);
                     }
                 }
 
@@ -543,8 +545,31 @@ namespace AtlasWorld.Client
         }
 
         /// <summary>
-        /// Loads the unified map JSON (content/maps/freja-south-gate.json) and populates
-        /// the stylized Prontera South Gate meadow props so game-client and server-rs stay in sync.
+        /// Synchronizes ServerArenaCenter and dynamically resizes the 3D meadow Floor PlaneMesh
+        /// when the map is expanded (1000x1000 -> 2000x2000 -> 4000x4000).
+        /// </summary>
+        public void SyncMapFloorAndBounds()
+        {
+            if (_mapDoc == null)
+                return;
+
+            ServerArenaCenter = _mapDoc.ServerCenter;
+
+            var floorNode = GetNodeOrNull<MeshInstance3D>("Floor");
+            if (floorNode?.Mesh is PlaneMesh plane)
+            {
+                float worldW = _mapDoc.Width * ServerCoordScale;
+                float worldH = _mapDoc.Height * ServerCoordScale;
+                float floorW = Mathf.Max(200f, worldW * 1.35f);
+                float floorH = Mathf.Max(200f, worldH * 1.35f);
+                plane.Size = new Vector2(floorW, floorH);
+            }
+        }
+
+        /// <summary>
+        /// Loads the unified map JSON (content/maps/freja-south-gate.json) and initializes
+        /// the On-Demand Spatial Chunk Streamer (MapChunkStreamer) so only nearby 24m x 24m
+        /// chunks are instantiated in the 3D scene tree.
         /// </summary>
         private void PopulateMeadowEnvironment()
         {
@@ -559,22 +584,11 @@ namespace AtlasWorld.Client
             envProps.AddChild(_meadowRingRoot);
 
             _mapDoc = UnifiedMapDocument.LoadOrDefault("freja-south-gate");
-            foreach (var prop in _mapDoc.Props)
-            {
-                if (!ResourceLoader.Exists(prop.AssetPath))
-                    continue;
+            SyncMapFloorAndBounds();
 
-                var scene = GD.Load<PackedScene>(prop.AssetPath);
-                if (scene?.Instantiate() is Node3D instance)
-                {
-                    instance.Name = prop.Id;
-                    instance.Position = new Vector3(prop.X, prop.Y, prop.Z);
-                    instance.Rotation = new Vector3(0f, prop.RotY, 0f);
-                    instance.Scale = Vector3.One * prop.Scale;
-                    EntityView.ApplyAnimeToonShading(instance, EntityKind.Npc);
-                    _meadowRingRoot.AddChild(instance);
-                }
-            }
+            _chunkStreamer = new MapChunkStreamer(_meadowRingRoot, _mapDoc);
+            Vector3 initialFocus = PlayerAvatar?.Position ?? Vector3.Zero;
+            _chunkStreamer.UpdateStreaming(initialFocus, forceReload: true);
         }
 
         private void SpawnWorldMonsters()
@@ -1375,6 +1389,9 @@ namespace AtlasWorld.Client
                         PlayerAvatar.Position = PlayerAvatar.Position.Lerp(serverPos, dt * 3.5f);
                     }
                 }
+
+                // Stream 3D chunks in/out on demand as the player walks across the map
+                _chunkStreamer?.UpdateStreaming(PlayerAvatar.Position);
 
                 // player_knight.glb faces +Z in local space:
                 // Atan2(direction.X, direction.Z) yields Pi when moving -Z (into scene) and 0 when moving +Z (toward camera)

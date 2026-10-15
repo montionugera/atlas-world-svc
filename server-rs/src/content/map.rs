@@ -136,10 +136,14 @@ impl MapConfig {
                 static_obstacles: Vec::new(),
             },
             "freja-south-gate" => {
-                let disk_path = format!("content/maps/{map_id}.json");
-                if let Ok(raw) = std::fs::read_to_string(&disk_path) {
-                    if let Some(cfg) = Self::from_unified_json(map_id, &raw) {
-                        return cfg;
+                for candidate in [
+                    format!("content/maps/{map_id}.json"),
+                    format!("../content/maps/{map_id}.json"),
+                ] {
+                    if let Ok(raw) = std::fs::read_to_string(&candidate) {
+                        if let Some(cfg) = Self::from_unified_json(map_id, &raw) {
+                            return cfg;
+                        }
                     }
                 }
                 if let Some(cfg) = Self::from_unified_json(map_id, FREJA_SOUTH_GATE_JSON) {
@@ -147,7 +151,20 @@ impl MapConfig {
                 }
                 Self::load_legacy_default(map_id)
             }
-            _ => Self::load_legacy_default(map_id),
+            _ => {
+                // Any custom map saved in content/maps/<map_id>.json is loaded automatically
+                for candidate in [
+                    format!("content/maps/{map_id}.json"),
+                    format!("../content/maps/{map_id}.json"),
+                ] {
+                    if let Ok(raw) = std::fs::read_to_string(&candidate) {
+                        if let Some(cfg) = Self::from_unified_json(map_id, &raw) {
+                            return cfg;
+                        }
+                    }
+                }
+                Self::load_legacy_default(map_id)
+            }
         }
     }
 
@@ -234,5 +251,24 @@ mod tests {
         assert_eq!(cfg.spawn_areas.len(), 8);
         assert_eq!(cfg.static_obstacles.len(), 12);
         assert!(cfg.static_obstacles.iter().any(|o| o.id == "sanctuary_pillar_w"));
+    }
+
+    #[test]
+    fn supports_expanded_map_dimensions_in_unified_json() {
+        let expanded_json = r#"{
+            "mapId": "freja-expanded-2000",
+            "width": 2000.0,
+            "height": 2000.0,
+            "spawnAreas": [
+                { "id": "center_courtyard", "x": 900.0, "y": 900.0, "width": 200.0, "height": 200.0, "mobType": "mob-bramble-stalker", "count": 8 }
+            ],
+            "staticObstacles": [
+                { "id": "pillar_center", "min_x": 994.0, "min_y": 994.0, "max_x": 1006.0, "max_y": 1006.0 }
+            ]
+        }"#;
+        let cfg = MapConfig::from_unified_json("freja-expanded-2000", expanded_json).expect("valid expanded map");
+        assert_eq!(cfg.width, 2000.0);
+        assert_eq!(cfg.height, 2000.0);
+        assert_eq!(cfg.spawn_areas[0].x, 900.0);
     }
 }
