@@ -1451,7 +1451,21 @@ namespace AtlasWorld.Client
             {
                 Vector3 normDir = direction.Normalized();
                 Vector3 velocity = normDir * (_playerSpeed * 2.0f); // Exceeds 8.0f sprint threshold in AnimationController
-                PlayerAvatar.Position += normDir * _playerSpeed * dt;
+                float curX = PlayerAvatar.Position.X;
+                float curZ = PlayerAvatar.Position.Z;
+                float desiredX = curX + normDir.X * _playerSpeed * dt;
+                float desiredZ = curZ + normDir.Z * _playerSpeed * dt;
+
+                // Enforce 3D steep cliff & wall-sliding gate (>38 deg slides along cliff contour, <=38 deg walks up ramp)
+                Vector2 resolvedXZ = TerrainElevation.ResolveSteepSlopeMove(
+                    curX,
+                    curZ,
+                    desiredX,
+                    desiredZ,
+                    _mapDoc,
+                    out _,
+                    out _);
+                PlayerAvatar.Position = new Vector3(resolvedXZ.X, PlayerAvatar.Position.Y, resolvedXZ.Y);
 
                 // Softly reconcile PlayerAvatar position toward server-rs authoritative coordinates if drift builds up
                 if (_entityManager != null && _entityManager.HasOwnPlayerState && _dashDuration <= 0f)

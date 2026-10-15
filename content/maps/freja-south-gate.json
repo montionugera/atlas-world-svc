@@ -11,7 +11,8 @@
     { "id": "sanctuary_north_acropolis", "x": 0.0, "z": -18.0, "radius": 15.0, "height": 2.4, "falloff": 0.45 },
     { "id": "west_watchtower_hill", "x": -17.5, "z": -8.0, "radius": 11.5, "height": 2.1, "falloff": 0.48 },
     { "id": "east_wind_bluff", "x": 17.5, "z": -7.0, "radius": 12.0, "height": 2.3, "falloff": 0.46 },
-    { "id": "south_grove_knoll", "x": 14.0, "z": 14.0, "radius": 11.0, "height": 1.75, "falloff": 0.50 }
+    { "id": "south_grove_knoll", "x": 14.0, "z": 14.0, "radius": 11.0, "height": 1.75, "falloff": 0.50 },
+    { "id": "northwest_sheer_cliff_mesa", "x": -29.0, "z": -22.0, "radius": 9.5, "height": 4.2, "falloff": 0.16 }
   ],
   "props": [
     { "id": "tree_ring_01", "assetPath": "res://assets/nature/tree_1_a_color1.glb", "x": -16.0, "y": 1.82, "z": -14.0, "rotY": 0.4, "scale": 1.55, "blocksMovement": true, "colliderHalfExtent": 1.1 },

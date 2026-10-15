@@ -381,26 +381,36 @@ namespace AtlasWorld.Client.UI.Widgets
             vbox.AddChild(ampRow);
 
             var terraceBtnRow = new HBoxContainer();
-            terraceBtnRow.AddThemeConstantOverride("separation", 5);
+            terraceBtnRow.AddThemeConstantOverride("separation", 4);
             var addHillBtn = new Button
             {
-                Text = "\u25b2 +Hill Terrace (+2.2m)",
+                Text = "\u25b2 +Hill (+2.2m)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
                 CustomMinimumSize = new Vector2(0, 24)
             };
             addHillBtn.AddThemeFontSizeOverride("font_size", 10);
-            addHillBtn.Pressed += () => SculptTerraceAtCursor(2.2f, 11.5f);
+            addHillBtn.Pressed += () => SculptTerraceAtCursor(2.2f, 11.5f, 0.48f);
+
+            var addCliffBtn = new Button
+            {
+                Text = "\u26f0 +Cliff (+4.2m)",
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                CustomMinimumSize = new Vector2(0, 24)
+            };
+            addCliffBtn.AddThemeFontSizeOverride("font_size", 10);
+            addCliffBtn.Pressed += () => SculptTerraceAtCursor(4.2f, 9.5f, 0.16f);
 
             var addValleyBtn = new Button
             {
-                Text = "\u25bc +Valley Basin (-1.6m)",
+                Text = "\u25bc +Valley (-1.6m)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
                 CustomMinimumSize = new Vector2(0, 24)
             };
             addValleyBtn.AddThemeFontSizeOverride("font_size", 10);
-            addValleyBtn.Pressed += () => SculptTerraceAtCursor(-1.6f, 11.0f);
+            addValleyBtn.Pressed += () => SculptTerraceAtCursor(-1.6f, 11.0f, 0.48f);
 
             terraceBtnRow.AddChild(addHillBtn);
+            terraceBtnRow.AddChild(addCliffBtn);
             terraceBtnRow.AddChild(addValleyBtn);
             vbox.AddChild(terraceBtnRow);
 
@@ -685,9 +695,10 @@ namespace AtlasWorld.Client.UI.Widgets
             UpdateStatsLabel();
         }
 
-        private void SculptTerraceAtCursor(float deltaHeight, float radius)
+        private void SculptTerraceAtCursor(float deltaHeight, float radius, float falloff = 0.45f)
         {
-            string id = $"terrace_{_doc.HeightTerraces.Count + 1:00}";
+            string prefix = falloff <= 0.22f ? "cliff_mesa" : (deltaHeight >= 0 ? "hill_terrace" : "valley_basin");
+            string id = $"{prefix}_{_doc.HeightTerraces.Count + 1:00}";
             var terrace = new UnifiedMapHeightTerrace
             {
                 Id = id,
@@ -695,7 +706,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 Z = Mathf.Round(_cursorWorldPos.Z * 10f) / 10f,
                 Radius = radius,
                 Height = deltaHeight,
-                Falloff = 0.45f
+                Falloff = falloff
             };
             _doc.HeightTerraces.Add(terrace);
             _root.SyncMapFloorAndBounds();
@@ -1260,8 +1271,10 @@ namespace AtlasWorld.Client.UI.Widgets
                         Vector2I chunk = _streamer.WorldToChunkCoord(hit);
                         if (_cursorCoordLabel != null)
                         {
+                            float slopeDeg = TerrainElevation.SampleSlopeDegrees(hit.X, hit.Z, _doc);
+                            string slopeTag = slopeDeg > TerrainElevation.MaxWalkableSlopeDeg ? "CLIFF BLOCKED >38°" : "WALKABLE";
                             _cursorCoordLabel.Text =
-                                $"World ({hit.X:0.0}, Alt {hit.Y:+0.0;-0.0}m, {hit.Z:0.0}) | Chunk ({chunk.X},{chunk.Y}) | Server ({sx}, {sy})";
+                                $"World ({hit.X:0.0}, Alt {hit.Y:+0.0;-0.0}m, {hit.Z:0.0}) | Slope {slopeDeg:0.0}° [{slopeTag}] | Chunk ({chunk.X},{chunk.Y})";
                         }
                     }
                 }

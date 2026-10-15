@@ -5,6 +5,10 @@ pub const SPAWN_AREAS_JSON: &str = include_str!("../../../content/generated/spaw
 pub const TOWN_MILLCROSS_JSON: &str = include_str!("../../../content/towns/town-millcross.json");
 pub const FREJA_SOUTH_GATE_JSON: &str = include_str!("../../../content/maps/freja-south-gate.json");
 
+/// Maximum walkable terrain slope angle in degrees (38°).
+/// Slopes steeper than 38° act as impassable cliff walls that slide movement along the contour tangent.
+pub const MAX_WALKABLE_SLOPE_DEG: f32 = 38.0;
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MapSpawnArea {
     pub id: String,
@@ -26,9 +30,183 @@ pub struct StaticObstacle {
     pub max_y: f32,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct HeightTerrace {
+    pub id: String,
+    pub x: f32,
+    pub z: f32,
+    pub radius: f32,
+    pub height: f32,
+    #[serde(default = "default_terrace_falloff")]
+    pub falloff: f32,
+}
+
+fn default_terrace_falloff() -> f32 {
+    0.45
+}
+
+fn default_terrain_amplitude() -> f32 {
+    1.0
+}
+
 #[derive(Resource, Debug, Clone, Default)]
 pub struct StaticObstacles {
     pub obstacles: Vec<StaticObstacle>,
+}
+
+/// Authoritative 3D heightfield & steep-cliff collision solver shared between `server-rs` and `game-client`.
+#[derive(Resource, Debug, Clone)]
+pub struct TerrainHeightfield {
+    pub arena_width: f32,
+    pub arena_height: f32,
+    pub coord_scale: f32,
+    pub terrain_amplitude: f32,
+    pub height_terraces: Vec<HeightTerrace>,
+    pub max_walkable_slope_deg: f32,
+}
+
+impl Default for TerrainHeightfield {
+    fn default() -> Self {
+        Self {
+            arena_width: 1000.0,
+            arena_height: 1000.0,
+            coord_scale: 0.1,
+            terrain_amplitude: 0.0,
+            height_terraces: Vec::new(),
+            max_walkable_slope_deg: MAX_WALKABLE_SLOPE_DEG,
+        }
+    }
+}
+
+impl TerrainHeightfield {
+    pub fn from_map_config(cfg: &MapConfig) -> Self {
+        Self {
+            arena_width: cfg.width,
+            arena_height: cfg.height,
+            coord_scale: 0.1,
+            terrain_amplitude: cfg.terrain_amplitude,
+            height_terraces: cfg.height_terraces.clone(),
+            max_walkable_slope_deg: MAX_WALKABLE_SLOPE_DEG,
+        }
+    }
+
+    #[inline]
+    pub fn server_to_world(&self, sx: f32, sy: f32) -> (f32, f32) {
+        let cx = self.arena_width * 0.5;
+        let cy = self.arena_height * 0.5;
+        ((sx - cx) * self.coord_scale, (sy - cy) * self.coord_scale)
+    }
+
+    #[inline]
+    pub fn world_to_server(&self, wx: f32, wz: f32) -> (f32, f32) {
+        let cx = self.arena_width * 0.5;
+        let cy = self.arena_height * 0.5;
+        (cx + wx / self.coord_scale, cy + wz / self.coord_scale)
+    }
+
+    /// Evaluates the exact 3D terrain elevation Y (in meters) at world coordinate `(wx, wz)`.
+    /// Identical formula to `TerrainElevation.SampleHeight` in C# and `stylized_grass_floor.gdshader`.
+    pub fn sample_height_world(&self, wx: f32, wz: f32) -> f32 {
+        if self.terrain_amplitude <= 0.001 && self.height_terraces.is_empty() {
+            return 0.0;
+        }
+
+        let dist_origin = (wx * wx + wz * wz).sqrt();
+        let outer_mask = smooth_step(9.0, 22.0, dist_origin);
+
+        let wave_a = (wx * 0.085 + 0.4).sin() * (wz * 0.075 - 0.3).cos() * 2.15;
+        let wave_b = ((wx * 0.7 - wz * 0.7) * 0.14 + 1.1).sin() * 0.85;
+
+        let north_ramp = smooth_step(-9.5, -20.0, wz);
+        let north_plateau = north_ramp * 1.65 * smooth_step(28.0, 8.0, wx.abs());
+
+        let road_carve = 1.0 - 0.55 * smooth_step(4.5, 1.8, wx.abs());
+
+        let proc_y = (wave_a + wave_b) * outer_mask * road_carve + north_plateau;
+        let mut total_y = proc_y * self.terrain_amplitude;
+
+        for t in &self.height_terraces {
+            let dx = wx - t.x;
+            let dz = wz - t.z;
+            let d = (dx * dx + dz * dz).sqrt();
+            let outer_r = t.radius.max(1.0);
+            if d >= outer_r {
+                continue;
+            }
+            let inner_r = outer_r * (1.0 - t.falloff).clamp(0.08, 0.92);
+            let weight = 1.0 - smooth_step(inner_r, outer_r, d);
+            total_y += t.height * weight;
+        }
+
+        total_y
+    }
+
+    /// Returns the local 3D surface normal `(nx, ny, nz)` at world coordinate `(wx, wz)`.
+    pub fn sample_normal_world(&self, wx: f32, wz: f32) -> (f32, f32, f32) {
+        const EPS: f32 = 0.25;
+        let h_l = self.sample_height_world(wx - EPS, wz);
+        let h_r = self.sample_height_world(wx + EPS, wz);
+        let h_d = self.sample_height_world(wx, wz - EPS);
+        let h_u = self.sample_height_world(wx, wz + EPS);
+        let vx = h_l - h_r;
+        let vy = 2.0 * EPS;
+        let vz = h_d - h_u;
+        let len = (vx * vx + vy * vy + vz * vz).sqrt().max(1e-6);
+        (vx / len, vy / len, vz / len)
+    }
+
+    /// Returns the local terrain slope inclination angle in degrees (`0°` = flat, `90°` = vertical cliff).
+    pub fn sample_slope_deg_world(&self, wx: f32, wz: f32) -> f32 {
+        let (_, ny, _) = self.sample_normal_world(wx, wz);
+        ny.clamp(-1.0, 1.0).acos().to_degrees()
+    }
+
+    /// Pushes an entity in server coordinates `(sx, sy)` out of any impassable sheer cliff wall (`slope > 38°`).
+    pub fn resolve_against_cliffs(&self, sx: &mut f32, sy: &mut f32) -> bool {
+        if self.height_terraces.is_empty() && self.terrain_amplitude <= 0.001 {
+            return false;
+        }
+        let (mut wx, mut wz) = self.server_to_world(*sx, *sy);
+        let slope = self.sample_slope_deg_world(wx, wz);
+        if slope <= self.max_walkable_slope_deg {
+            return false;
+        }
+
+        // Push downhill/outward along the height gradient until on walkable ground (<= 38°)
+        const EPS: f32 = 0.25;
+        let mut moved = false;
+        for _ in 0..8 {
+            let cur_slope = self.sample_slope_deg_world(wx, wz);
+            if cur_slope <= self.max_walkable_slope_deg {
+                break;
+            }
+            let gx = self.sample_height_world(wx + EPS, wz) - self.sample_height_world(wx - EPS, wz);
+            let gz = self.sample_height_world(wx, wz + EPS) - self.sample_height_world(wx, wz - EPS);
+            let glen = (gx * gx + gz * gz).sqrt();
+            if glen <= 1e-4 {
+                break;
+            }
+            // Step downhill away from the sheer cliff face
+            wx -= (gx / glen) * 0.45;
+            wz -= (gz / glen) * 0.45;
+            moved = true;
+        }
+
+        if moved {
+            let (nsx, nsy) = self.world_to_server(wx, wz);
+            *sx = nsx;
+            *sy = nsy;
+        }
+        moved
+    }
+}
+
+fn smooth_step(edge0: f32, edge1: f32, x: f32) -> f32 {
+    if (edge0 - edge1).abs() < 1e-6 {
+        return if x >= edge1 { 1.0 } else { 0.0 };
+    }
+    let t = ((x - edge0) / (edge1 - edge0)).clamp(0.0, 1.0);
+    t * t * (3.0 - 2.0 * t)
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -36,6 +214,8 @@ pub struct MapConfig {
     pub map_id: String,
     pub width: f32,
     pub height: f32,
+    pub terrain_amplitude: f32,
+    pub height_terraces: Vec<HeightTerrace>,
     pub spawn_areas: Vec<MapSpawnArea>,
     pub static_obstacles: Vec<StaticObstacle>,
 }
@@ -48,6 +228,10 @@ struct UnifiedMapDoc {
     width: f32,
     #[serde(default = "default_map_dim")]
     height: f32,
+    #[serde(rename = "terrainAmplitude", default = "default_terrain_amplitude")]
+    terrain_amplitude: f32,
+    #[serde(rename = "heightTerraces", default)]
+    height_terraces: Vec<HeightTerrace>,
     #[serde(rename = "spawnAreas", default)]
     spawn_areas: Vec<MapSpawnArea>,
     #[serde(rename = "staticObstacles", default)]
@@ -97,6 +281,8 @@ impl MapConfig {
             },
             width: doc.width,
             height: doc.height,
+            terrain_amplitude: doc.terrain_amplitude,
+            height_terraces: doc.height_terraces,
             spawn_areas: doc.spawn_areas,
             static_obstacles: doc.static_obstacles,
         })
@@ -109,6 +295,8 @@ impl MapConfig {
                 map_id: map_id.to_string(),
                 width: 100.0,
                 height: 100.0,
+                terrain_amplitude: 0.0,
+                height_terraces: Vec::new(),
                 spawn_areas: vec![MapSpawnArea {
                     id: "deflect_single_mob".to_string(),
                     x: 30.0,
@@ -124,6 +312,8 @@ impl MapConfig {
                 map_id: map_id.to_string(),
                 width: 1000.0,
                 height: 1000.0,
+                terrain_amplitude: 0.0,
+                height_terraces: Vec::new(),
                 spawn_areas: vec![MapSpawnArea {
                     id: "proj_spear_thrower_area".to_string(),
                     x: 400.0,
@@ -232,6 +422,8 @@ impl MapConfig {
             map_id: map_id.to_string(),
             width: 1000.0,
             height: 1000.0,
+            terrain_amplitude: 0.0,
+            height_terraces: Vec::new(),
             spawn_areas,
             static_obstacles,
         }
@@ -250,7 +442,37 @@ mod tests {
         assert_eq!(cfg.height, 1000.0);
         assert_eq!(cfg.spawn_areas.len(), 8);
         assert_eq!(cfg.static_obstacles.len(), 12);
+        assert_eq!(cfg.height_terraces.len(), 5);
         assert!(cfg.static_obstacles.iter().any(|o| o.id == "sanctuary_pillar_w"));
+    }
+
+    #[test]
+    fn supports_3d_heightfield_and_blocks_steep_cliff_slopes() {
+        let cfg = MapConfig::load("freja-south-gate");
+        let hf = TerrainHeightfield::from_map_config(&cfg);
+
+        // Central combat plaza (0,0) is flat (0m, 0 deg)
+        assert!(hf.sample_height_world(0.0, 0.0).abs() < 0.05);
+        assert!(hf.sample_slope_deg_world(0.0, 0.0) < 2.0);
+
+        // Sanctuary north acropolis (0, -18) is elevated (> 3.0m) and its ramp at (0, -10.5) is walkable (<= 38 deg)
+        assert!(hf.sample_height_world(0.0, -18.0) > 3.0);
+        assert!(hf.sample_slope_deg_world(0.0, -10.5) <= MAX_WALKABLE_SLOPE_DEG);
+
+        // Northwest sheer cliff mesa (-29, -22, r=9.5, falloff=0.16) has a sheer cliff wall around d=8.7m (> 50 deg)
+        let cliff_rim_x = -29.0 + 8.7;
+        let cliff_rim_z = -22.0;
+        let rim_slope = hf.sample_slope_deg_world(cliff_rim_x, cliff_rim_z);
+        assert!(
+            rim_slope > MAX_WALKABLE_SLOPE_DEG,
+            "Expected sheer cliff rim slope > 38 deg, got {rim_slope}"
+        );
+
+        let (mut sx, mut sy) = hf.world_to_server(cliff_rim_x, cliff_rim_z);
+        let pushed = hf.resolve_against_cliffs(&mut sx, &mut sy);
+        assert!(pushed, "Entity on sheer cliff wall should be pushed back to walkable ground");
+        let (resolved_wx, resolved_wz) = hf.server_to_world(sx, sy);
+        assert!(hf.sample_slope_deg_world(resolved_wx, resolved_wz) <= MAX_WALKABLE_SLOPE_DEG);
     }
 
     #[test]

@@ -234,6 +234,9 @@ impl AtlasSimulation {
             .insert_resource(crate::content::map::StaticObstacles {
                 obstacles: map_cfg.static_obstacles.clone(),
             });
+        sim.world.insert_resource(
+            crate::content::map::TerrainHeightfield::from_map_config(&map_cfg),
+        );
 
         // Add static colliders to Rapier PhysicsWorld
         if let Some(mut pw) = sim.world.get_resource_mut::<PhysicsWorld>() {

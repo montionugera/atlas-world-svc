@@ -1,26 +1,20 @@
 shader_type spatial;
-render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_toon, specular_schlick_ggx;
+render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_toon, specular_toon;
 
-// Ragnarok Origin (ROO / ROX) Stylized Prontera South Gate Meadow Terrain Shader
-// Features:
-// - 3D Altitude & Terraced Elevation Displacement (rolling hills, northern sanctuary ridge & up to 16 sculpted terraces)
-// - Lush multi-octave hand-painted clover & sunlit emerald grass patches
-// - Highland rocky cliff / alpine moss blending on steep slopes and high-altitude plateaus
-// - Warm golden sunlight dappled canopy highlights + wind-swaying grass blade micro-texture
-// - Smooth cobblestone & warm earth path blending along the central sanctuary road & combat plaza
+// Ragnarok Origin / Ni no Kuni inspired hand-painted meadow & sanctuary plaza shader
+// Now with 3D elevation vertex displacement, finite-difference slope normals, and cliff rock blending!
+uniform vec4 grass_base_color : source_color = vec4(0.32, 0.62, 0.28, 1.0);
+uniform vec4 grass_highlight_color : source_color = vec4(0.52, 0.78, 0.34, 1.0);
+uniform vec4 grass_shadow_color : source_color = vec4(0.20, 0.44, 0.22, 1.0);
+uniform vec4 path_stone_color : source_color = vec4(0.76, 0.70, 0.58, 1.0);
+uniform vec4 path_dirt_color : source_color = vec4(0.62, 0.53, 0.42, 1.0);
+uniform vec4 cliff_rock_color : source_color = vec4(0.46, 0.43, 0.39, 1.0);
 
-uniform vec4 grass_base_color : source_color = vec4(0.32, 0.58, 0.24, 1.0);
-uniform vec4 grass_highlight_color : source_color = vec4(0.56, 0.78, 0.28, 1.0);
-uniform vec4 grass_shadow_color : source_color = vec4(0.20, 0.42, 0.22, 1.0);
-uniform vec4 path_dirt_color : source_color = vec4(0.68, 0.56, 0.42, 1.0);
-uniform vec4 path_stone_color : source_color = vec4(0.78, 0.75, 0.68, 1.0);
-uniform vec4 cliff_rock_color : source_color = vec4(0.52, 0.49, 0.45, 1.0);
-
-uniform float terrain_amplitude = 1.0;
+uniform float terrain_amplitude : hint_range(0.0, 3.0) = 1.0;
 uniform int terrace_count = 0;
-// Each vec4 is (x, z, radius, height)
+// xy = center (wx, wz), z = outer radius, w = height (meters)
 uniform vec4 terrace_data[16];
-// Each float is falloff (0.15 .. 0.85)
+// falloff ratio (0.08 .. 0.92) for each terrace
 uniform float terrace_falloff[16];
 
 varying vec3 v_world_pos;
@@ -36,27 +30,26 @@ float hash21(vec2 p) {
 float value_noise(vec2 p) {
     vec2 i = floor(p);
     vec2 f = fract(p);
-    vec2 u = f * f * (3.0 - 2.0 * f);
+    f = f * f * (3.0 - 2.0 * f);
     float a = hash21(i);
     float b = hash21(i + vec2(1.0, 0.0));
     float c = hash21(i + vec2(0.0, 1.0));
     float d = hash21(i + vec2(1.0, 1.0));
-    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
 
 float fbm(vec2 p) {
     float v = 0.0;
-    float amp = 0.5;
+    float a = 0.5;
     mat2 rot = mat2(vec2(0.8, 0.6), vec2(-0.6, 0.8));
-    for (int i = 0; i < 4; i++) {
-        v += amp * value_noise(p);
+    for (int i = 0; i < 3; i++) {
+        v += a * value_noise(p);
         p = rot * p * 2.05;
-        amp *= 0.5;
+        a *= 0.5;
     }
     return v;
 }
 
-// Exact match with C# TerrainElevation.SampleHeight(wx, wz)
 float sample_terrain_height(vec2 wp) {
     float dist_origin = length(wp);
     float outer_mask = smoothstep(9.0, 22.0, dist_origin);
@@ -80,7 +73,7 @@ float sample_terrain_height(vec2 wp) {
         float outer_r = max(1.0, td.z);
         float d = length(wp - td.xy);
         if (d < outer_r) {
-            float fall = clamp(terrace_falloff[i], 0.15, 0.85);
+            float fall = clamp(terrace_falloff[i], 0.08, 0.92);
             float inner_r = outer_r * (1.0 - fall);
             float w = 1.0 - smoothstep(inner_r, outer_r, d);
             total_y += td.w * w;
@@ -94,7 +87,7 @@ void vertex() {
     float h = sample_terrain_height(world_v.xz);
 
     // Finite-difference normal so directional sunlight & toon shading accentuate hills & terraces!
-    float eps = 0.35;
+    float eps = 0.25;
     float h_l = sample_terrain_height(world_v.xz - vec2(eps, 0.0));
     float h_r = sample_terrain_height(world_v.xz + vec2(eps, 0.0));
     float h_d = sample_terrain_height(world_v.xz - vec2(0.0, eps));
@@ -136,11 +129,19 @@ void fragment() {
         meadow = mix(meadow, cliff_rock_color.rgb * 1.12, contour_line * 0.22);
     }
 
-    // Steep slope rock exposure on terrace walls & hill embankments
-    float rock_mask = smoothstep(0.10, 0.32, v_slope);
+    // Walkable hill embankment (15°..38°) vs Impassable Sheer Cliff Wall (>38°, v_slope > 0.212)
+    float rock_mask = smoothstep(0.08, 0.22, v_slope);
+    float sheer_cliff_mask = smoothstep(0.20, 0.28, v_slope);
     float rock_tex = value_noise(wp * 3.2);
-    vec3 cliff_col = mix(cliff_rock_color.rgb * 0.85, cliff_rock_color.rgb * 1.15, rock_tex);
-    meadow = mix(meadow, cliff_col, rock_mask * 0.82);
+    float strata = 0.5 + 0.5 * sin(v_elevation * 8.5 + rock_tex * 2.2);
+    vec3 embankment_col = mix(cliff_rock_color.rgb * 0.88, cliff_rock_color.rgb * 1.14, rock_tex);
+    vec3 sheer_cliff_col = mix(vec3(0.26, 0.25, 0.28), vec3(0.38, 0.36, 0.39), strata);
+    vec3 cliff_col = mix(embankment_col, sheer_cliff_col, sheer_cliff_mask);
+    meadow = mix(meadow, cliff_col, rock_mask * 0.90);
+
+    // Subtle cliff-crest rim line right at the 38° walkability threshold (v_slope ≈ 0.212)
+    float rim_band = 1.0 - smoothstep(0.0, 0.035, abs(v_slope - 0.212));
+    meadow = mix(meadow, vec3(0.86, 0.74, 0.48), rim_band * 0.38);
 
     // 4. Dappled sunlight canopy rings (bright anime sunspots on the grass)
     float sun_dapple = smoothstep(0.66, 0.74, fbm(wp * 0.28 - vec2(TIME * 0.08, 0.0)));
@@ -170,7 +171,7 @@ void fragment() {
     float stone_pattern = smoothstep(0.35, 0.65, value_noise(wp * 2.8));
     vec3 path_col = mix(path_dirt_color.rgb, path_stone_color.rgb, stone_pattern * 0.55);
 
-    ALBEDO = mix(meadow, path_col, path_factor * 0.78);
+    ALBEDO = mix(meadow, path_col, path_factor * 0.78 * (1.0 - sheer_cliff_mask));
     ROUGHNESS = mix(0.88, 0.76, path_factor);
     SPECULAR = 0.12;
 }

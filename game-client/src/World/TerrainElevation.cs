@@ -4,14 +4,21 @@ using Godot;
 namespace AtlasWorld.Client.World
 {
     /// <summary>
-    /// Deterministic analytical + terraced heightfield sampler shared across:
+    /// Deterministic analytical + terraced 3D heightfield &amp; cliff-slope solver shared across:
     /// 1. The GPU vertex shader (<c>stylized_grass_floor.gdshader</c>)
-    /// 2. CPU entity ground-snapping (<see cref="VerticalSliceRoot"/>, <see cref="EntityManager"/>, <see cref="MapChunkStreamer"/>)
+    /// 2. CPU entity ground-snapping &amp; steep-cliff wall sliding (<see cref="VerticalSliceRoot"/>, <see cref="EntityManager"/>, <see cref="MapChunkStreamer"/>)
     /// 3. Mac 3D Map Builder Studio terrain sculpting &amp; raycast ground intersection (<see cref="UI.Widgets.MapBuilderDock"/>)
     /// </summary>
     public static class TerrainElevation
     {
         public static float GlobalAmplitude { get; set; } = 1.0f;
+
+        /// <summary>
+        /// Maximum walkable terrain slope angle in degrees (38°).
+        /// Slopes gentler than or equal to 38° are walkable hills/ramps; slopes steeper than 38°
+        /// act as impassable cliff walls that slide movement along the contour tangent.
+        /// </summary>
+        public const float MaxWalkableSlopeDeg = 38.0f;
 
         /// <summary>
         /// Evaluates the exact terrain altitude Y (in 3D world meters) at horizontal world coordinate (wx, wz).
@@ -44,7 +51,7 @@ namespace AtlasWorld.Client.World
             float proceduralY = (waveA + waveB) * outerMask * roadCarve + northPlateau;
             float totalY = proceduralY * amp;
 
-            // 2. Authorable Height Terraces / Hills from UnifiedMapDocument
+            // 2. Authorable Height Terraces / Hills / Steep Cliffs from UnifiedMapDocument
             if (doc != null && doc.HeightTerraces.Count > 0)
             {
                 foreach (var terrace in doc.HeightTerraces)
@@ -56,8 +63,8 @@ namespace AtlasWorld.Client.World
                     if (d >= outerR)
                         continue;
 
-                    float innerR = outerR * Mathf.Clamp(1.0f - terrace.Falloff, 0.15f, 0.85f);
-                    // 1.0 inside innerR (flat tabletop plateau), smooth cosine/hermite ramp down to 0 at outerR
+                    float innerR = outerR * Mathf.Clamp(1.0f - terrace.Falloff, 0.08f, 0.92f);
+                    // 1.0 inside innerR (flat tabletop plateau), smooth hermite ramp down to 0 at outerR
                     float weight = 1.0f - SmoothStep(innerR, outerR, d);
                     totalY += terrace.Height * weight;
                 }
@@ -67,7 +74,7 @@ namespace AtlasWorld.Client.World
         }
 
         /// <summary>
-        /// Finite-difference surface normal for aligning ground rings or tilted decals.
+        /// Finite-difference surface normal for aligning ground rings, slope lighting, and cliff detection.
         /// </summary>
         public static Vector3 SampleNormal(float wx, float wz, UnifiedMapDocument? doc = null)
         {
@@ -77,6 +84,95 @@ namespace AtlasWorld.Client.World
             float hD = SampleHeight(wx, wz - eps, doc);
             float hU = SampleHeight(wx, wz + eps, doc);
             return new Vector3(hL - hR, 2.0f * eps, hD - hU).Normalized();
+        }
+
+        /// <summary>
+        /// Returns the local terrain inclination angle in degrees (0° = flat horizontal, 90° = vertical wall).
+        /// </summary>
+        public static float SampleSlopeDegrees(float wx, float wz, UnifiedMapDocument? doc = null)
+        {
+            Vector3 normal = SampleNormal(wx, wz, doc);
+            return Mathf.RadToDeg(Mathf.Acos(Mathf.Clamp(normal.Y, -1.0f, 1.0f)));
+        }
+
+        /// <summary>
+        /// Returns true if an entity can walk onto (wx, wz) without hitting a sheer cliff wall (&gt; 38°).
+        /// </summary>
+        public static bool IsWalkableSlope(float wx, float wz, UnifiedMapDocument? doc = null)
+        {
+            return SampleSlopeDegrees(wx, wz, doc) <= MaxWalkableSlopeDeg;
+        }
+
+        /// <summary>
+        /// Evaluates a horizontal movement step from (curX, curZ) to (nextX, nextZ).
+        /// - If the destination slope is walkable (&lt;= 38°), applies subtle uphill grade pacing and returns the step.
+        /// - If the destination hits a steep cliff wall (&gt; 38°), projects the movement vector onto the 2D cliff
+        ///   contour tangent so the player smoothly slides along the cliff edge instead of climbing or clipping through it.
+        /// </summary>
+        public static Vector2 ResolveSteepSlopeMove(
+            float curX,
+            float curZ,
+            float nextX,
+            float nextZ,
+            UnifiedMapDocument? doc,
+            out bool blockedByCliff,
+            out float slopeDeg)
+        {
+            blockedByCliff = false;
+            slopeDeg = SampleSlopeDegrees(nextX, nextZ, doc);
+
+            if (slopeDeg <= MaxWalkableSlopeDeg)
+            {
+                // Apply subtle uphill movement pacing when climbing noticeable ramps (15°..38°)
+                float curH = SampleHeight(curX, curZ, doc);
+                float nextH = SampleHeight(nextX, nextZ, doc);
+                if (nextH > curH && slopeDeg > 14.0f)
+                {
+                    float gradeFactor = Mathf.Lerp(1.0f, 0.78f, Mathf.Clamp((slopeDeg - 14.0f) / (MaxWalkableSlopeDeg - 14.0f), 0f, 1f));
+                    return new Vector2(
+                        Mathf.Lerp(curX, nextX, gradeFactor),
+                        Mathf.Lerp(curZ, nextZ, gradeFactor));
+                }
+                return new Vector2(nextX, nextZ);
+            }
+
+            // Allow escaping if the entity was already standing on an even steeper spot and is moving toward flatter ground
+            float curSlope = SampleSlopeDegrees(curX, curZ, doc);
+            if (curSlope > MaxWalkableSlopeDeg && slopeDeg < curSlope - 0.25f)
+            {
+                return new Vector2(nextX, nextZ);
+            }
+
+            blockedByCliff = true;
+
+            // Compute 2D height gradient at the cliff face to find the contour tangent
+            const float eps = 0.25f;
+            float gx = SampleHeight(nextX + eps, nextZ, doc) - SampleHeight(nextX - eps, nextZ, doc);
+            float gz = SampleHeight(nextX, nextZ + eps, doc) - SampleHeight(nextX, nextZ - eps, doc);
+            float gradLen = Mathf.Sqrt(gx * gx + gz * gz);
+
+            if (gradLen > 1e-4f)
+            {
+                // Unit contour tangent perpendicular to the steepness gradient
+                float tx = -gz / gradLen;
+                float tz = gx / gradLen;
+
+                float dx = nextX - curX;
+                float dz = nextZ - curZ;
+                float dot = dx * tx + dz * tz;
+
+                float slideX = curX + tx * dot;
+                float slideZ = curZ + tz * dot;
+                float slideSlope = SampleSlopeDegrees(slideX, slideZ, doc);
+
+                if (slideSlope <= MaxWalkableSlopeDeg)
+                {
+                    slopeDeg = slideSlope;
+                    return new Vector2(slideX, slideZ);
+                }
+            }
+
+            return new Vector2(curX, curZ);
         }
 
         private static float SmoothStep(float edge0, float edge1, float x)
