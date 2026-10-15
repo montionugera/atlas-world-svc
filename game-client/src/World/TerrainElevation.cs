@@ -4,14 +4,18 @@ using Godot;
 namespace AtlasWorld.Client.World
 {
     /// <summary>
-    /// Deterministic 3D Terrain Altitude, Steep Cliff Slope Evaluator &amp; Multi-Floor Structure Resolver (Watchtowers &amp; Caves)
-    /// for Freja South Gate and custom Map Builder terrains.
+    /// Unified Single-Source-of-Truth 3D Terrain Altitude, CPU Heightfield Mesh Builder,
+    /// Steep Cliff Slope Evaluator &amp; Multi-Floor Structure Resolver (Watchtowers &amp; Caves).
     ///
-    /// Matches the vertex displacement in <c>res://assets/shaders/stylized_grass_floor.gdshader</c> 1:1
-    /// so PlayerAvatar, server-rs Entities, 3D Props, and GPU-instanced Meadow Clutter all sit accurately on:
-    /// 1. Base procedural rolling hills &amp; sculpted Map Builder height terraces / cliffs.
-    /// 2. Multi-floor 3D Watchtowers (1st-floor ground chamber + Exterior East Stair Ramp + 2nd-floor Battlement Deck).
-    /// 3. Walk-in Underground Crystal Caves (recessed cavern floor underneath a mountain/cliff roof without popping to the roof).
+    /// Architectural Guarantee (Zero Floating / Zero Sinking):
+    /// 1. <see cref="BuildTerrainMesh"/> generates the 3D <see cref="ArrayMesh"/> directly from
+    ///    <see cref="SampleAnalyticalTerrainHeight"/> on a deterministic grid of step <see cref="ActiveMeshCellSize"/>.
+    /// 2. <see cref="SampleBaseTerrainHeight"/> evaluates the exact barycentric triangle interpolation
+    ///    on that same grid cell (Triangle 1: u+v &lt;= 1, Triangle 2: u+v &gt; 1), so at every (X, Z) point
+    ///    in the world, the CPU height of PlayerAvatar, Mobs, Props, and GPU MultiMesh instances matches
+    ///    the rendered GPU floor triangle to within 0.0001m.
+    /// 3. <c>stylized_grass_floor.gdshader</c> performs zero duplicate vertex displacement — it shades
+    ///    the exact vertices and normals baked by <see cref="BuildTerrainMesh"/>.
     /// </summary>
     public static class TerrainElevation
     {
@@ -33,8 +37,14 @@ namespace AtlasWorld.Client.World
         public static float GlobalAmplitude { get; set; } = 1.0f;
 
         /// <summary>
-        /// Evaluates the continuous outdoor ground terrain height Y at world position (wx, wz)
-        /// (ignoring multi-floor structure decks or cave interiors).
+        /// Grid cell size (in meters) shared between <see cref="BuildTerrainMesh"/> and <see cref="SampleBaseTerrainHeight"/>
+        /// so CPU height queries interpolate the exact same triangles rendered by the GPU.
+        /// </summary>
+        public static float ActiveMeshCellSize { get; private set; } = 1.0f;
+
+        /// <summary>
+        /// Evaluates the exact rendered triangle height Y of the outdoor ground mesh at world position (wx, wz)
+        /// using barycentric interpolation on the <see cref="ActiveMeshCellSize"/> grid.
         /// </summary>
         public static float SampleBaseTerrainHeight(float wx, float wz, UnifiedMapDocument? doc = null)
         {
@@ -42,40 +52,46 @@ namespace AtlasWorld.Client.World
             if (amp <= 0.001f && (doc == null || doc.HeightTerraces.Count == 0))
                 return 0f;
 
-            // Keep central spawn plaza & road corridor near (0, -2..+4) gently flattened so combat & spawning feel grounded
-            float distFromSpawn = Mathf.Sqrt(wx * wx + wz * wz);
-            float spawnFlatMask = SmoothStep(5.5f, 15.0f, distFromSpawn);
+            float step = Mathf.Max(0.5f, ActiveMeshCellSize);
+            float gx = wx / step;
+            float gz = wz / step;
+            float ix = Mathf.Floor(gx);
+            float iz = Mathf.Floor(gz);
+            float u = gx - ix;
+            float v = gz - iz;
 
-            // Keep the N-S cobblestone road (|x| < 2.6m) smooth and walkable
-            float roadFlatMask = SmoothStep(2.2f, 6.2f, Mathf.Abs(wx));
+            float x0 = ix * step;
+            float x1 = x0 + step;
+            float z0 = iz * step;
+            float z1 = z0 + step;
 
-            // Layered harmonic rolling hills (matches stylized_grass_floor.gdshader vertex() function)
-            float wave1 = Mathf.Sin(wx * 0.075f) * Mathf.Cos(wz * 0.075f) * 1.35f;
-            float wave2 = Mathf.Sin((wx * 0.14f) + (wz * 0.11f)) * 0.55f;
-            float ridge = Mathf.Cos(wz * 0.045f - 0.8f) * 0.85f;
+            float y10 = SampleAnalyticalTerrainHeight(x1, z0, doc);
+            float y01 = SampleAnalyticalTerrainHeight(x0, z1, doc);
 
-            float baseHills = (wave1 + wave2 + ridge) * spawnFlatMask * Mathf.Lerp(0.30f, 1.0f, roadFlatMask) * amp;
-
-            float terraceDelta = 0f;
-            if (doc != null && doc.HeightTerraces.Count > 0)
+            if (u + v <= 1.0f)
             {
-                for (int i = 0; i < doc.HeightTerraces.Count; i++)
-                {
-                    var t = doc.HeightTerraces[i];
-                    float dx = wx - t.X;
-                    float dz = wz - t.Z;
-                    float dist = Mathf.Sqrt(dx * dx + dz * dz);
-                    if (dist < t.Radius)
-                    {
-                        float norm = dist / Mathf.Max(0.5f, t.Radius);
-                        float innerFlat = Mathf.Clamp(1.0f - t.Falloff, 0.15f, 0.85f);
-                        float weight = 1.0f - SmoothStep(innerFlat, 1.0f, norm);
-                        terraceDelta += t.Height * weight;
-                    }
-                }
+                float y00 = SampleAnalyticalTerrainHeight(x0, z0, doc);
+                return y00 + u * (y10 - y00) + v * (y01 - y00);
             }
+            else
+            {
+                float y11 = SampleAnalyticalTerrainHeight(x1, z1, doc);
+                return y11 + (1.0f - u) * (y01 - y11) + (1.0f - v) * (y10 - y11);
+            }
+        }
 
-            float totalY = baseHills + terraceDelta;
+        /// <summary>
+        /// Evaluates the continuous analytical terrain height at a grid vertex (wx, wz), including
+        /// harmonic rolling hills, sculpted Map Builder <see cref="UnifiedMapHeightTerrace"/> plateaus,
+        /// and automatic footprint leveling under 3D structures (Watchtowers &amp; Crystal Caves).
+        /// </summary>
+        public static float SampleAnalyticalTerrainHeight(float wx, float wz, UnifiedMapDocument? doc = null)
+        {
+            float amp = doc?.TerrainAmplitude ?? GlobalAmplitude;
+            if (amp <= 0.001f && (doc == null || doc.HeightTerraces.Count == 0))
+                return 0f;
+
+            float totalY = SampleRawUnflattenedHeight(wx, wz, amp, doc);
 
             // Flatten base ground under Watchtower & Crystal Cave footprints so stairs and portals sit cleanly on level ground
             if (doc != null && doc.Structures.Count > 0)
@@ -99,32 +115,144 @@ namespace AtlasWorld.Client.World
             return totalY;
         }
 
-        private static float SampleRawUnflattenedHeight(float wx, float wz, float amp, UnifiedMapDocument doc)
+        private static float SampleRawUnflattenedHeight(float wx, float wz, float amp, UnifiedMapDocument? doc)
         {
+            // Keep central spawn plaza & road corridor near (0, -2..+4) gently flattened so combat & spawning feel grounded
             float distFromSpawn = Mathf.Sqrt(wx * wx + wz * wz);
             float spawnFlatMask = SmoothStep(5.5f, 15.0f, distFromSpawn);
+
+            // Keep the N-S cobblestone road (|x| < 2.6m) smooth and walkable
             float roadFlatMask = SmoothStep(2.2f, 6.2f, Mathf.Abs(wx));
+
+            // Layered harmonic rolling hills
             float wave1 = Mathf.Sin(wx * 0.075f) * Mathf.Cos(wz * 0.075f) * 1.35f;
             float wave2 = Mathf.Sin((wx * 0.14f) + (wz * 0.11f)) * 0.55f;
             float ridge = Mathf.Cos(wz * 0.045f - 0.8f) * 0.85f;
             float totalY = (wave1 + wave2 + ridge) * spawnFlatMask * Mathf.Lerp(0.30f, 1.0f, roadFlatMask) * amp;
 
-            for (int i = 0; i < doc.HeightTerraces.Count; i++)
+            if (doc != null && doc.HeightTerraces.Count > 0)
             {
-                var t = doc.HeightTerraces[i];
-                float dx = wx - t.X;
-                float dz = wz - t.Z;
-                float dist = Mathf.Sqrt(dx * dx + dz * dz);
-                if (dist < t.Radius)
+                for (int i = 0; i < doc.HeightTerraces.Count; i++)
                 {
-                    float norm = dist / Mathf.Max(0.5f, t.Radius);
-                    float innerFlat = Mathf.Clamp(1.0f - t.Falloff, 0.15f, 0.85f);
-                    float weight = 1.0f - SmoothStep(innerFlat, 1.0f, norm);
-                    totalY += t.Height * weight;
+                    var t = doc.HeightTerraces[i];
+                    float dx = wx - t.X;
+                    float dz = wz - t.Z;
+                    float dist = Mathf.Sqrt(dx * dx + dz * dz);
+                    if (dist < t.Radius)
+                    {
+                        float norm = dist / Mathf.Max(0.5f, t.Radius);
+                        float innerFlat = Mathf.Clamp(1.0f - t.Falloff, 0.15f, 0.85f);
+                        float weight = 1.0f - SmoothStep(innerFlat, 1.0f, norm);
+                        totalY += t.Height * weight;
+                    }
                 }
             }
 
             return totalY;
+        }
+
+        /// <summary>
+        /// Builds the Single-Source-of-Truth 3D <see cref="ArrayMesh"/> for the map floor directly from
+        /// <see cref="SampleAnalyticalTerrainHeight"/> using the exact same triangle topology sampled by
+        /// <see cref="SampleBaseTerrainHeight"/>.
+        /// </summary>
+        public static ArrayMesh BuildTerrainMesh(float widthMeters, float depthMeters, UnifiedMapDocument? doc = null)
+        {
+            float maxSpan = Mathf.Max(widthMeters, depthMeters);
+            float step = maxSpan <= 220f ? 1.0f : Mathf.Round(maxSpan / 200f);
+            ActiveMeshCellSize = step;
+
+            int halfCellsX = Mathf.Max(10, Mathf.CeilToInt((widthMeters * 0.5f) / step));
+            int halfCellsZ = Mathf.Max(10, Mathf.CeilToInt((depthMeters * 0.5f) / step));
+            int cellsX = halfCellsX * 2;
+            int cellsZ = halfCellsZ * 2;
+            int vertsX = cellsX + 1;
+            int vertsZ = cellsZ + 1;
+
+            int vertexCount = vertsX * vertsZ;
+            var vertices = new Vector3[vertexCount];
+            var normals = new Vector3[vertexCount];
+            var uvs = new Vector2[vertexCount];
+
+            // 1. Sample vertex elevations on the exact integer*step grid centered at (0, 0)
+            for (int iz = 0; iz < vertsZ; iz++)
+            {
+                float wz = (iz - halfCellsZ) * step;
+                float v = (float)iz / cellsZ;
+                int rowOffset = iz * vertsX;
+                for (int ix = 0; ix < vertsX; ix++)
+                {
+                    float wx = (ix - halfCellsX) * step;
+                    float u = (float)ix / cellsX;
+                    float wy = SampleAnalyticalTerrainHeight(wx, wz, doc);
+                    vertices[rowOffset + ix] = new Vector3(wx, wy, wz);
+                    uvs[rowOffset + ix] = new Vector2(u, v);
+                }
+            }
+
+            // 2. Compute smooth central-difference normals from the sampled grid elevations
+            float twoStep = 2.0f * step;
+            for (int iz = 0; iz < vertsZ; iz++)
+            {
+                int izD = Math.Max(0, iz - 1);
+                int izU = Math.Min(vertsZ - 1, iz + 1);
+                int rowOffset = iz * vertsX;
+                int rowD = izD * vertsX;
+                int rowU = izU * vertsX;
+
+                for (int ix = 0; ix < vertsX; ix++)
+                {
+                    int ixL = Math.Max(0, ix - 1);
+                    int ixR = Math.Min(vertsX - 1, ix + 1);
+
+                    float hL = vertices[rowOffset + ixL].Y;
+                    float hR = vertices[rowOffset + ixR].Y;
+                    float hD = vertices[rowD + ix].Y;
+                    float hU = vertices[rowU + ix].Y;
+
+                    normals[rowOffset + ix] = new Vector3(hL - hR, twoStep, hD - hU).Normalized();
+                }
+            }
+
+            // 3. Emit clockwise front-facing triangles matching SampleBaseTerrainHeight's (u + v <= 1) split:
+            //    Triangle 1: V00 -> V10 -> V01
+            //    Triangle 2: V10 -> V11 -> V01
+            int indexCount = cellsX * cellsZ * 6;
+            var indices = new int[indexCount];
+            int idx = 0;
+            for (int iz = 0; iz < cellsZ; iz++)
+            {
+                int row0 = iz * vertsX;
+                int row1 = (iz + 1) * vertsX;
+                for (int ix = 0; ix < cellsX; ix++)
+                {
+                    int v00 = row0 + ix;
+                    int v10 = row0 + ix + 1;
+                    int v01 = row1 + ix;
+                    int v11 = row1 + ix + 1;
+
+                    // Triangle 1 (u + v <= 1)
+                    indices[idx++] = v00;
+                    indices[idx++] = v10;
+                    indices[idx++] = v01;
+
+                    // Triangle 2 (u + v > 1)
+                    indices[idx++] = v10;
+                    indices[idx++] = v11;
+                    indices[idx++] = v01;
+                }
+            }
+
+            var arrays = new Godot.Collections.Array();
+            arrays.Resize((int)Mesh.ArrayType.Max);
+            arrays[(int)Mesh.ArrayType.Vertex] = vertices;
+            arrays[(int)Mesh.ArrayType.Normal] = normals;
+            arrays[(int)Mesh.ArrayType.TexUV] = uvs;
+            arrays[(int)Mesh.ArrayType.Index] = indices;
+
+            var mesh = new ArrayMesh();
+            mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+            return mesh;
         }
 
         /// <summary>

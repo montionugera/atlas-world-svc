@@ -1,21 +1,16 @@
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_toon, specular_toon;
 
-// Ragnarok Origin / Ni no Kuni inspired hand-painted meadow & sanctuary plaza shader
-// Now with 3D elevation vertex displacement, finite-difference slope normals, and cliff rock blending!
+// Ragnarok Origin / Ni no Kuni inspired hand-painted meadow & sanctuary plaza shader.
+// Architecture: Single-Source-of-Truth CPU Heightfield Mesh (TerrainElevation.BuildTerrainMesh).
+// Vertex positions and normals are baked directly by C# TerrainElevation so GPU rendering and
+// CPU character/prop/shadow heights are 100% triangle-identical (zero floating or sinking).
 uniform vec4 grass_base_color : source_color = vec4(0.32, 0.62, 0.28, 1.0);
 uniform vec4 grass_highlight_color : source_color = vec4(0.52, 0.78, 0.34, 1.0);
 uniform vec4 grass_shadow_color : source_color = vec4(0.20, 0.44, 0.22, 1.0);
 uniform vec4 path_stone_color : source_color = vec4(0.76, 0.70, 0.58, 1.0);
 uniform vec4 path_dirt_color : source_color = vec4(0.62, 0.53, 0.42, 1.0);
 uniform vec4 cliff_rock_color : source_color = vec4(0.46, 0.43, 0.39, 1.0);
-
-uniform float terrain_amplitude : hint_range(0.0, 3.0) = 1.0;
-uniform int terrace_count = 0;
-// xy = center (wx, wz), z = outer radius, w = height (meters)
-uniform vec4 terrace_data[16];
-// falloff ratio (0.08 .. 0.92) for each terrace
-uniform float terrace_falloff[16];
 
 varying vec3 v_world_pos;
 varying float v_elevation;
@@ -50,56 +45,12 @@ float fbm(vec2 p) {
     return v;
 }
 
-float sample_terrain_height(vec2 wp) {
-    float dist_origin = length(wp);
-    float outer_mask = smoothstep(9.0, 22.0, dist_origin);
-
-    float wave_a = sin(wp.x * 0.085 + 0.4) * cos(wp.y * 0.075 - 0.3) * 2.15;
-    float wave_b = sin((wp.x * 0.7 - wp.y * 0.7) * 0.14 + 1.1) * 0.85;
-
-    float north_ramp = smoothstep(-9.5, -20.0, wp.y);
-    float north_plateau = north_ramp * 1.65 * smoothstep(28.0, 8.0, abs(wp.x));
-
-    float road_carve = 1.0 - 0.55 * smoothstep(4.5, 1.8, abs(wp.x));
-
-    float proc_y = (wave_a + wave_b) * outer_mask * road_carve + north_plateau;
-    float total_y = proc_y * terrain_amplitude;
-
-    for (int i = 0; i < 16; i++) {
-        if (i >= terrace_count) {
-            break;
-        }
-        vec4 td = terrace_data[i];
-        float outer_r = max(1.0, td.z);
-        float d = length(wp - td.xy);
-        if (d < outer_r) {
-            float fall = clamp(terrace_falloff[i], 0.08, 0.92);
-            float inner_r = outer_r * (1.0 - fall);
-            float w = 1.0 - smoothstep(inner_r, outer_r, d);
-            total_y += td.w * w;
-        }
-    }
-    return total_y;
-}
-
 void vertex() {
     vec3 world_v = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-    float h = sample_terrain_height(world_v.xz);
-
-    // Finite-difference normal so directional sunlight & toon shading accentuate hills & terraces!
-    float eps = 0.25;
-    float h_l = sample_terrain_height(world_v.xz - vec2(eps, 0.0));
-    float h_r = sample_terrain_height(world_v.xz + vec2(eps, 0.0));
-    float h_d = sample_terrain_height(world_v.xz - vec2(0.0, eps));
-    float h_u = sample_terrain_height(world_v.xz + vec2(0.0, eps));
-    vec3 calc_normal = normalize(vec3(h_l - h_r, 2.0 * eps, h_d - h_u));
-
-    VERTEX.y += h;
-    NORMAL = calc_normal;
-
-    v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-    v_elevation = h;
-    v_slope = 1.0 - clamp(calc_normal.y, 0.0, 1.0);
+    vec3 world_n = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
+    v_world_pos = world_v;
+    v_elevation = world_v.y;
+    v_slope = 1.0 - clamp(world_n.y, 0.0, 1.0);
 }
 
 void fragment() {

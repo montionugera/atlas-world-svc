@@ -693,43 +693,21 @@ namespace AtlasWorld.Client
                 _entityManager.MapDocument = _mapDoc;
             }
 
+            // Build Single-Source-of-Truth 3D ArrayMesh directly from TerrainElevation so GPU triangles
+            // and CPU SampleBaseTerrainHeight match to within 0.0001m (zero floating or sinking)
             var floorNode = GetNodeOrNull<MeshInstance3D>("Floor");
-            if (floorNode?.Mesh is PlaneMesh plane)
+            if (floorNode != null)
             {
                 float worldW = _mapDoc.Width * ServerCoordScale;
                 float worldH = _mapDoc.Height * ServerCoordScale;
                 float floorW = Mathf.Max(200f, worldW * 1.35f);
                 float floorH = Mathf.Max(200f, worldH * 1.35f);
-                plane.Size = new Vector2(floorW, floorH);
-                // High vertex subdivision so rolling hills and sculpted terraces deform smoothly
-                plane.SubdivideWidth = 140;
-                plane.SubdivideDepth = 140;
-            }
-
-            if (floorNode?.GetSurfaceOverrideMaterial(0) is ShaderMaterial shaderMat)
-            {
-                shaderMat.SetShaderParameter("terrain_amplitude", _mapDoc.TerrainAmplitude);
-                int tCount = Math.Min(16, _mapDoc.HeightTerraces.Count);
-                shaderMat.SetShaderParameter("terrace_count", tCount);
-
-                var vec4Array = new Godot.Collections.Array<Vector4>();
-                var falloffArray = new Godot.Collections.Array<float>();
-                for (int i = 0; i < 16; i++)
+                var surfaceMat = floorNode.GetSurfaceOverrideMaterial(0);
+                floorNode.Mesh = TerrainElevation.BuildTerrainMesh(floorW, floorH, _mapDoc);
+                if (surfaceMat != null)
                 {
-                    if (i < tCount)
-                    {
-                        var t = _mapDoc.HeightTerraces[i];
-                        vec4Array.Add(new Vector4(t.X, t.Z, t.Radius, t.Height));
-                        falloffArray.Add(t.Falloff);
-                    }
-                    else
-                    {
-                        vec4Array.Add(Vector4.Zero);
-                        falloffArray.Add(0.45f);
-                    }
+                    floorNode.SetSurfaceOverrideMaterial(0, surfaceMat);
                 }
-                shaderMat.SetShaderParameter("terrace_data", vec4Array);
-                shaderMat.SetShaderParameter("terrace_falloff", falloffArray);
             }
 
             // Snap static scene props (Trees, Rocks, Bushes, CobblestonePath, Props) to the 3D terrain altitude
@@ -1643,7 +1621,7 @@ namespace AtlasWorld.Client
                     PlayerAvatar.Position.Y);
                 PlayerAvatar.Position = new Vector3(
                     PlayerAvatar.Position.X,
-                    Mathf.Lerp(PlayerAvatar.Position.Y, targetGroundY, Mathf.Clamp(dt * 24.0f, 0f, 1f)),
+                    targetGroundY,
                     PlayerAvatar.Position.Z);
 
                 // Stream 3D chunks in/out on demand as the player walks across the map
@@ -1702,7 +1680,7 @@ namespace AtlasWorld.Client
                         PlayerAvatar.Position.Y);
                     PlayerAvatar.Position = new Vector3(
                         PlayerAvatar.Position.X,
-                        Mathf.Lerp(PlayerAvatar.Position.Y, groundY, Mathf.Clamp(dt * 24.0f, 0f, 1f)),
+                        groundY,
                         PlayerAvatar.Position.Z);
                 }
 
