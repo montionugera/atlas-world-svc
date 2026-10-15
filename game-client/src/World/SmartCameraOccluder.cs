@@ -5,12 +5,13 @@ using Godot;
 namespace AtlasWorld.Client.World
 {
     /// <summary>
-    /// Smart Camera Line-of-Sight (LOS) Occlusion Fader (Ragnarok Origin / Diablo IV style).
-    /// Automatically detects 3D environment props (trees, pillars, walls, boulders, banners)
-    /// that sit inside the viewing corridor between <see cref="Camera3D"/> and the player / target,
-    /// and smoothly fades their <see cref="GeometryInstance3D.Transparency"/> to <see cref="OccludedAlpha"/>
-    /// (default 0.72 transparency = 28% opacity) so the player never loses sight of their hero.
-    /// When the camera orbits away or the player walks past, faded props smoothly restore to 100% opaque.
+    /// Smart Camera Line-of-Sight (LOS) Occlusion Fader + Multi-Floor Roof / Cave Ceiling Cutaway
+    /// (Ragnarok Origin / Diablo IV style).
+    /// 1. Automatically detects 3D environment props (trees, pillars, walls, boulders, banners)
+    ///    that sit inside the viewing corridor between <see cref="Camera3D"/> and the player / target,
+    ///    and smoothly fades their <see cref="GeometryInstance3D.Transparency"/> to <see cref="OccludedTransparency"/>.
+    /// 2. Automatically cuts away (fades to 84% transparent silhouette) any Cave Roof or Upper Tower Deck
+    ///    when the player walks inside the ground floor of a Watchtower or inside an Underground Crystal Cave!
     /// </summary>
     public sealed class SmartCameraOccluder
     {
@@ -19,6 +20,9 @@ namespace AtlasWorld.Client.World
             public Node3D Root = null!;
             public float Radius = 1.6f;
             public float Height = 4.2f;
+            public bool IsRoofOrCeiling = false;
+            public Rect2 FootprintWorldRect;
+            public float CeilingDeckY = 0f;
             public float CurrentTransparency = 0f;
             public float TargetTransparency = 0f;
             public readonly List<GeometryInstance3D> Meshes = new();
@@ -58,6 +62,38 @@ namespace AtlasWorld.Client.World
             _entries.Clear();
             _registeredIds.Clear();
             _currentlyFadedCount = 0;
+        }
+
+        /// <summary>
+        /// Registers an upper tower floor/roof or cave ceiling canopy so it automatically cuts away
+        /// whenever the player walks underneath it (<c>playerFootY &lt; ceilingDeckY - 0.8f</c>).
+        /// </summary>
+        public void RegisterRoofOrCeilingCanopy(Node3D canopyRoot, Rect2 footprintWorldRect, float ceilingDeckY)
+        {
+            if (canopyRoot == null || !GodotObject.IsInstanceValid(canopyRoot))
+                return;
+
+            ulong id = canopyRoot.GetInstanceId();
+            if (_registeredIds.Contains(id))
+                return;
+
+            var meshes = new List<GeometryInstance3D>();
+            CollectGeometryInstances(canopyRoot, meshes);
+            if (meshes.Count == 0)
+                return;
+
+            _registeredIds.Add(id);
+            var entry = new OccludableEntry
+            {
+                Root = canopyRoot,
+                Radius = Mathf.Max(footprintWorldRect.Size.X, footprintWorldRect.Size.Y) * 0.5f,
+                Height = 2.5f,
+                IsRoofOrCeiling = true,
+                FootprintWorldRect = footprintWorldRect,
+                CeilingDeckY = ceilingDeckY
+            };
+            entry.Meshes.AddRange(meshes);
+            _entries.Add(entry);
         }
 
         /// <summary>
@@ -126,7 +162,7 @@ namespace AtlasWorld.Client.World
 
         /// <summary>
         /// Updates per-frame LOS occlusion between <paramref name="cameraPos"/> and <paramref name="playerFocusPos"/>
-        /// (plus optional <paramref name="combatTargetPos"/>) and smoothly interpolates mesh transparency.
+        /// (plus automatic roof/ceiling cutaway when underneath a tower deck or cave roof) and smoothly interpolates mesh transparency.
         /// </summary>
         public void Update(float dt, Vector3 cameraPos, Vector3 playerFocusPos, Vector3? combatTargetPos = null)
         {
@@ -138,6 +174,8 @@ namespace AtlasWorld.Client.World
                 return;
 
             Vector3 rayDir = rayVec / rayLen;
+            float playerFootY = playerFocusPos.Y - 1.25f;
+            Vector2 playerXZ = new(playerFocusPos.X, playerFocusPos.Z);
 
             for (int i = _entries.Count - 1; i >= 0; i--)
             {
@@ -149,9 +187,26 @@ namespace AtlasWorld.Client.World
                 }
 
                 bool blocksView = false;
+                float targetAlpha = OccludedTransparency;
+
                 if (Enabled)
                 {
-                    blocksView = DoesPropOccludeRay(entry, cameraPos, rayDir, rayLen, playerFocusPos);
+                    if (entry.IsRoofOrCeiling)
+                    {
+                        // Cut away cave ceiling or upper watchtower deck whenever player is underneath its footprint!
+                        if (entry.FootprintWorldRect.Grow(0.85f).HasPoint(playerXZ) &&
+                            playerFootY < entry.CeilingDeckY - 0.75f)
+                        {
+                            blocksView = true;
+                            targetAlpha = Mathf.Max(OccludedTransparency, 0.84f);
+                        }
+                    }
+
+                    if (!blocksView)
+                    {
+                        blocksView = DoesPropOccludeRay(entry, cameraPos, rayDir, rayLen, playerFocusPos);
+                    }
+
                     if (!blocksView && combatTargetPos.HasValue)
                     {
                         Vector3 targetFocus = combatTargetPos.Value + new Vector3(0f, 1.1f, 0f);
@@ -164,7 +219,7 @@ namespace AtlasWorld.Client.World
                     }
                 }
 
-                entry.TargetTransparency = blocksView ? OccludedTransparency : 0f;
+                entry.TargetTransparency = blocksView ? targetAlpha : 0f;
                 if (blocksView)
                 {
                     _currentlyFadedCount++;
@@ -190,20 +245,16 @@ namespace AtlasWorld.Client.World
             Vector3 focusPos)
         {
             Vector3 basePos = entry.Root.GlobalPosition;
-            // Sample the vertical trunk/canopy center of the prop
             Vector3 propCenter = basePos + new Vector3(0f, entry.Height * 0.48f, 0f);
 
-            // Project propCenter onto the segment [camPos -> focusPos]
             Vector3 toProp = propCenter - camPos;
             float t = toProp.Dot(rayDir);
 
-            // Must lie between the camera near plane and slightly behind the player's torso
             if (t < 0.35f || t > rayLen + 0.65f)
                 return false;
 
             Vector3 closestOnRay = camPos + rayDir * Mathf.Clamp(t, 0f, rayLen);
 
-            // Horizontal + vertical cylindrical distance check (canopy is wider horizontally than vertically)
             float dx = propCenter.X - closestOnRay.X;
             float dz = propCenter.Z - closestOnRay.Z;
             float dy = (propCenter.Y - closestOnRay.Y) * 0.62f;

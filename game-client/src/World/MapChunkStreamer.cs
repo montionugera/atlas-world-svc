@@ -6,21 +6,22 @@ namespace AtlasWorld.Client.World
 {
     /// <summary>
     /// On-Demand Spatial Chunk Streamer + GPU Hardware Instancer (<see cref="MultiMeshInstance3D"/>)
+    /// + Multi-Floor 3D Structure Assembler (Watchtowers &amp; Walk-In Crystal Caves)
     /// for massive 3D maps (1000x1000 up to 100M+ total world objects).
     ///
-    /// Scaling Architecture:
-    /// 1. Spatial Chunk Partitioning: Partitions authored props into 24m x 24m chunks and only keeps
-    ///    chunks within <see cref="ActiveChunkRadius"/> resident in the SceneTree.
+    /// Scaling &amp; Safety Architecture:
+    /// 1. Spatial Chunk Partitioning: Partitions authored props and 3D multi-floor structures into 24m x 24m chunks
+    ///    and only keeps chunks within <see cref="ActiveChunkRadius"/> resident in the SceneTree.
     /// 2. GPU Hardware Instancing (<see cref="MultiMeshInstance3D"/>): Batches non-occluding ground clutter
     ///    (grass tufts, flowers, cobblestone tiles, small shrubs) per asset type + deterministic procedural
     ///    foliage into a single <see cref="MultiMeshInstance3D"/> per chunk (1 GPU draw call per asset type,
     ///    0 individual <see cref="Node3D"/> overhead).
-    /// 3. Zero-Storage Procedural Meadow Foliage: Generates <see cref="ProceduralClutterPerChunk"/> grass/flower
-    ///    instances per active chunk deterministically from <c>Hash(chunkX, chunkZ, index)</c> on walkable terrain
-    ///    slopes (&lt;= 32°), enabling 100M+ visual world objects with 0 bytes of JSON storage.
-    /// 4. Smart LOS Occluder Registration: Tall/solid props (trees, pillars, walls, boulders) still spawn
-    ///    as lightweight <see cref="Node3D"/> roots in active chunks so <see cref="SmartCameraOccluder"/> can
-    ///    fade individual blocking trees smoothly when they cross the camera-to-player line of sight.
+    /// 3. Safe Multi-Floor 3D Structures (<see cref="UnifiedMapStructureVolume"/>): Spawns 2-Story Watchtowers
+    ///    (with walkable ground chamber, exterior stepped stair ramp, and +3.2m upper battlement deck) and
+    ///    Walk-In Crystal Caves (with South portal archway, glowing crystal interior, and automatic roof cutaway
+    ///    via <see cref="SmartCameraOccluder.RegisterRoofOrCeilingCanopy"/>).
+    /// 4. Smart LOS Occluder Registration: Tall/solid props and upper structure roofs automatically fade when
+    ///    they cross the camera-to-player line of sight or when the player walks underneath an upper deck/ceiling.
     /// </summary>
     public sealed class MapChunkStreamer
     {
@@ -28,6 +29,7 @@ namespace AtlasWorld.Client.World
         private readonly UnifiedMapDocument _doc;
         private readonly SmartCameraOccluder? _occluder;
         private readonly Dictionary<Vector2I, List<UnifiedMapProp>> _chunkBuckets = new();
+        private readonly Dictionary<Vector2I, List<UnifiedMapStructureVolume>> _structureBuckets = new();
         private readonly Dictionary<Vector2I, Node3D> _loadedChunkNodes = new();
         private readonly Dictionary<string, PackedScene?> _sceneCache = new();
         private readonly Dictionary<string, Mesh?> _meshPrototypeCache = new();
@@ -118,7 +120,7 @@ namespace AtlasWorld.Client.World
         }
 
         /// <summary>
-        /// Re-partitions all props into spatial chunk buckets and forces active chunks to reload.
+        /// Re-partitions all props and 3D structures into spatial chunk buckets and forces active chunks to reload.
         /// </summary>
         public void RebuildIndex(Vector3? focusWorldPos = null)
         {
@@ -129,6 +131,7 @@ namespace AtlasWorld.Client.World
             }
             _loadedChunkNodes.Clear();
             _chunkBuckets.Clear();
+            _structureBuckets.Clear();
             _loadedPropCount = 0;
             _activeGpuInstanceCount = 0;
             _activeMultiMeshBatchCount = 0;
@@ -144,6 +147,17 @@ namespace AtlasWorld.Client.World
                 list.Add(prop);
             }
 
+            foreach (var s in _doc.Structures)
+            {
+                Vector2I coord = WorldToChunkCoord(new Vector3(s.X, 0f, s.Z));
+                if (!_structureBuckets.TryGetValue(coord, out var sList))
+                {
+                    sList = new List<UnifiedMapStructureVolume>();
+                    _structureBuckets[coord] = sList;
+                }
+                sList.Add(s);
+            }
+
             _lastCenterChunk = new Vector2I(int.MinValue, int.MinValue);
             _lastRadius = -1;
 
@@ -154,7 +168,7 @@ namespace AtlasWorld.Client.World
         }
 
         /// <summary>
-        /// Re-snaps the Y altitude of all currently loaded chunk props AND GPU MultiMesh instances
+        /// Re-snaps the Y altitude of all currently loaded chunk props, structures, AND GPU MultiMesh instances
         /// to match sculpted terrain changes.
         /// </summary>
         public void RefreshLoadedPropsAltitude()
@@ -183,7 +197,29 @@ namespace AtlasWorld.Client.World
             int r = ActiveChunkRadius;
             if (Mathf.Abs(coord.X - center.X) <= r && Mathf.Abs(coord.Y - center.Y) <= r)
             {
-                // Rebuild just this active chunk so either its MultiMesh batch or Node3D list updates cleanly
+                ReloadSingleChunk(coord);
+                RecountActiveStats();
+            }
+        }
+
+        /// <summary>
+        /// Incrementally registers a newly placed 3D structure (Watchtower or Crystal Cave) into its spatial chunk
+        /// and spawns its 3D geometry immediately.
+        /// </summary>
+        public void AddStructureIncremental(UnifiedMapStructureVolume structure, Vector3 currentFocusPos)
+        {
+            Vector2I coord = WorldToChunkCoord(new Vector3(structure.X, 0f, structure.Z));
+            if (!_structureBuckets.TryGetValue(coord, out var sList))
+            {
+                sList = new List<UnifiedMapStructureVolume>();
+                _structureBuckets[coord] = sList;
+            }
+            sList.Add(structure);
+
+            Vector2I center = WorldToChunkCoord(currentFocusPos);
+            int r = ActiveChunkRadius;
+            if (Mathf.Abs(coord.X - center.X) <= r && Mathf.Abs(coord.Y - center.Y) <= r)
+            {
                 ReloadSingleChunk(coord);
                 RecountActiveStats();
             }
@@ -256,7 +292,8 @@ namespace AtlasWorld.Client.World
                                            Mathf.Abs(chunkCenterZ) <= halfH + ChunkSizeWorld * 0.5f;
 
                     bool hasAuthoredProps = _chunkBuckets.TryGetValue(coord, out var propsInChunk) && propsInChunk.Count > 0;
-                    if (!hasAuthoredProps && (!insideMapBounds || ProceduralClutterPerChunk <= 0))
+                    bool hasStructures = _structureBuckets.TryGetValue(coord, out var structsInChunk) && structsInChunk.Count > 0;
+                    if (!hasAuthoredProps && !hasStructures && (!insideMapBounds || ProceduralClutterPerChunk <= 0))
                         continue;
 
                     ReloadSingleChunk(coord);
@@ -285,7 +322,7 @@ namespace AtlasWorld.Client.World
             {
                 foreach (var prop in propsInChunk)
                 {
-                    float groundY = TerrainElevation.SampleHeight(prop.X, prop.Z, _doc);
+                    float groundY = TerrainElevation.SampleBaseTerrainHeight(prop.X, prop.Z, _doc);
                     prop.Y = Mathf.Round(groundY * 100f) / 100f;
 
                     if (IsGpuInstancedClutterAsset(prop))
@@ -302,6 +339,16 @@ namespace AtlasWorld.Client.World
                     {
                         spawnedNodeProps++;
                     }
+                }
+            }
+
+            // 2. Spawn Multi-Floor 3D Structure Volumes (Watchtowers & Walk-In Crystal Caves) in this chunk
+            if (_structureBuckets.TryGetValue(coord, out var structuresInChunk))
+            {
+                foreach (var s in structuresInChunk)
+                {
+                    SpawnStructureVolumeIntoChunk(s, chunkNode);
+                    spawnedNodeProps++;
                 }
             }
 
@@ -335,7 +382,7 @@ namespace AtlasWorld.Client.World
 
                 var mmi = new MultiMeshInstance3D
                 {
-                    Name = $"GPUInstanced_{ System.IO.Path.GetFileNameWithoutExtension(assetPath) }_{transforms.Count}",
+                    Name = $"GPUInstanced_{System.IO.Path.GetFileNameWithoutExtension(assetPath)}_{transforms.Count}",
                     Multimesh = multiMesh,
                     CastShadow = GeometryInstance3D.ShadowCastingSetting.Off
                 };
@@ -347,6 +394,308 @@ namespace AtlasWorld.Client.World
             chunkNode.SetMeta("node_prop_count", spawnedNodeProps);
             chunkNode.SetMeta("gpu_instance_count", chunkGpuInstances);
             chunkNode.SetMeta("gpu_batch_count", chunkBatchCount);
+        }
+
+        /// <summary>
+        /// Builds a complete 3D multi-floor structure ("watchtower" or "crystal_cave") with deterministic
+        /// stairs/portals and registers its upper deck / cave roof with <see cref="SmartCameraOccluder"/>
+        /// for automatic interior roof cutaway.
+        /// </summary>
+        private void SpawnStructureVolumeIntoChunk(UnifiedMapStructureVolume s, Node3D chunkNode)
+        {
+            float baseY = TerrainElevation.SampleBaseTerrainHeight(s.X, s.Z, _doc);
+            float r = Mathf.Max(2.5f, s.Radius);
+
+            var root = new Node3D
+            {
+                Name = $"Structure_{s.Id}",
+                Position = new Vector3(s.X, baseY, s.Z)
+            };
+            chunkNode.AddChild(root);
+
+            if (s.Kind == "watchtower")
+            {
+                float deckH = Mathf.Max(2.2f, s.UpperFloorHeight);
+
+                var stoneMat = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.58f, 0.56f, 0.52f),
+                    Roughness = 0.85f
+                };
+                var darkStoneMat = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.42f, 0.40f, 0.38f),
+                    Roughness = 0.90f
+                };
+                var woodDeckMat = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.52f, 0.36f, 0.22f),
+                    Roughness = 0.80f
+                };
+
+                // 1st-Floor Walkable Stone Sanctuary Chamber Plinth
+                var groundPlinth = new MeshInstance3D
+                {
+                    Name = "GroundFloorPlinth",
+                    Mesh = new BoxMesh { Size = new Vector3(r * 2.0f, 0.14f, r * 2.0f) },
+                    MaterialOverride = stoneMat,
+                    Position = new Vector3(0f, 0.07f, 0f)
+                };
+                root.AddChild(groundPlinth);
+
+                // 4 Heavy Stone Corner Pillars supporting the 2nd floor
+                float pOff = r - 0.45f;
+                (float px, float pz)[] corners =
+                {
+                    (-pOff, -pOff),
+                    ( pOff, -pOff),
+                    (-pOff,  pOff),
+                    ( pOff,  pOff)
+                };
+                foreach (var (px, pz) in corners)
+                {
+                    var pillarMesh = new MeshInstance3D
+                    {
+                        Mesh = new BoxMesh { Size = new Vector3(0.72f, deckH, 0.72f) },
+                        MaterialOverride = darkStoneMat,
+                        Position = new Vector3(px, deckH * 0.5f, pz)
+                    };
+                    root.AddChild(pillarMesh);
+                }
+
+                // Exterior East Stepped Stone Stair Ramp (climbs from Y=0 at x=+r+2.6m up to Y=deckH at x=+r-0.2m)
+                const int stepCount = 9;
+                float rampStartX = r + 2.6f;
+                float rampEndX = r - 0.2f;
+                float stepSpanX = (rampStartX - rampEndX) / stepCount;
+                for (int i = 0; i < stepCount; i++)
+                {
+                    float t = (i + 1f) / stepCount;
+                    float stepH = deckH * t;
+                    float sx = Mathf.Lerp(rampStartX, rampEndX, (i + 0.5f) / stepCount);
+                    var stepBox = new MeshInstance3D
+                    {
+                        Name = $"StairStep_{i + 1}",
+                        Mesh = new BoxMesh { Size = new Vector3(stepSpanX + 0.06f, stepH, 1.85f) },
+                        MaterialOverride = stoneMat,
+                        Position = new Vector3(sx, stepH * 0.5f, 0f)
+                    };
+                    root.AddChild(stepBox);
+                }
+
+                // Upper 2nd-Floor Battlement Deck & Parapets (registered for automatic roof cutaway when player is on 1F!)
+                var upperCanopy = new Node3D
+                {
+                    Name = "UpperDeckCanopy",
+                    Position = new Vector3(0f, deckH, 0f)
+                };
+                root.AddChild(upperCanopy);
+
+                var upperSlab = new MeshInstance3D
+                {
+                    Name = "SecondFloorDeck",
+                    Mesh = new BoxMesh { Size = new Vector3(r * 2.12f, 0.28f, r * 2.12f) },
+                    MaterialOverride = woodDeckMat,
+                    Position = new Vector3(0f, -0.10f, 0f)
+                };
+                upperCanopy.AddChild(upperSlab);
+
+                // Battlement Parapet Walls (North, South, West)
+                var northParapet = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(r * 2.12f, 0.85f, 0.35f) },
+                    MaterialOverride = stoneMat,
+                    Position = new Vector3(0f, 0.42f, -r + 0.15f)
+                };
+                var southParapet = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(r * 2.12f, 0.85f, 0.35f) },
+                    MaterialOverride = stoneMat,
+                    Position = new Vector3(0f, 0.42f, r - 0.15f)
+                };
+                var westParapet = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(0.35f, 0.85f, r * 2.12f) },
+                    MaterialOverride = stoneMat,
+                    Position = new Vector3(-r + 0.15f, 0.42f, 0f)
+                };
+                upperCanopy.AddChild(northParapet);
+                upperCanopy.AddChild(southParapet);
+                upperCanopy.AddChild(westParapet);
+
+                // Warm Beacon Torch Light on 2nd-Floor Battlement
+                var beaconLight = new OmniLight3D
+                {
+                    LightColor = new Color(1.0f, 0.78f, 0.42f),
+                    LightEnergy = 1.65f,
+                    OmniRange = 9.5f,
+                    Position = new Vector3(0f, 1.4f, 0f)
+                };
+                upperCanopy.AddChild(beaconLight);
+
+                var bannerLabel = new Label3D
+                {
+                    Text = $"🏰 Watchtower (2F +{deckH:0.0}m)\n[East Stairs -> 2F | 1F Auto-Cutaway]",
+                    Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+                    FontSize = 22,
+                    OutlineSize = 7,
+                    Modulate = new Color(1.0f, 0.90f, 0.52f),
+                    Position = new Vector3(0f, 1.85f, 0f)
+                };
+                upperCanopy.AddChild(bannerLabel);
+
+                EntityView.ApplyAnimeToonShading(root, EntityKind.Npc);
+
+                // Register both LOS occlusion and automatic 1st-floor interior cutaway
+                _occluder?.RegisterPropRoot(root, r, 1.0f);
+                _occluder?.RegisterRoofOrCeilingCanopy(
+                    upperCanopy,
+                    new Rect2(s.X - r, s.Z - r, r * 2.0f, r * 2.0f),
+                    baseY + deckH);
+            }
+            else if (s.Kind == "crystal_cave")
+            {
+                float ceilH = Mathf.Max(2.6f, s.CeilingHeight);
+
+                var cavernRockMat = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.28f, 0.31f, 0.38f),
+                    Roughness = 0.92f
+                };
+                var cavernFloorMat = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.18f, 0.22f, 0.29f),
+                    Roughness = 0.88f
+                };
+                var crystalMat = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.25f, 0.92f, 1.0f),
+                    EmissionEnabled = true,
+                    Emission = new Color(0.18f, 0.82f, 1.0f),
+                    EmissionEnergyMultiplier = 2.1f,
+                    Roughness = 0.2f
+                };
+
+                // Recessed Walk-In Crystal Cavern Floor Slab
+                var caveFloor = new MeshInstance3D
+                {
+                    Name = "CavernFloor",
+                    Mesh = new BoxMesh { Size = new Vector3(r * 1.9f, 0.16f, r * 1.9f) },
+                    MaterialOverride = cavernFloorMat,
+                    Position = new Vector3(0f, -0.32f, 0f)
+                };
+                root.AddChild(caveFloor);
+
+                // West, East, and North Rock Cavern Walls (South side is the open walk-in portal!)
+                var westWall = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(0.95f, ceilH, r * 1.95f) },
+                    MaterialOverride = cavernRockMat,
+                    Position = new Vector3(-r + 0.35f, ceilH * 0.45f, 0f)
+                };
+                var eastWall = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(0.95f, ceilH, r * 1.95f) },
+                    MaterialOverride = cavernRockMat,
+                    Position = new Vector3(r - 0.35f, ceilH * 0.45f, 0f)
+                };
+                var northWall = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(r * 1.95f, ceilH, 0.95f) },
+                    MaterialOverride = cavernRockMat,
+                    Position = new Vector3(0f, ceilH * 0.45f, -r + 0.35f)
+                };
+                root.AddChild(westWall);
+                root.AddChild(eastWall);
+                root.AddChild(northWall);
+
+                // South Portal Archway Pillars & Lintel
+                var archLeft = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(0.95f, ceilH, 0.85f) },
+                    MaterialOverride = cavernRockMat,
+                    Position = new Vector3(-r * 0.62f, ceilH * 0.45f, r - 0.25f)
+                };
+                var archRight = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(0.95f, ceilH, 0.85f) },
+                    MaterialOverride = cavernRockMat,
+                    Position = new Vector3(r * 0.62f, ceilH * 0.45f, r - 0.25f)
+                };
+                root.AddChild(archLeft);
+                root.AddChild(archRight);
+
+                // Glowing Bioluminescent Crystal Spires inside the Cavern
+                (float cx, float cz, float ch, float rot)[] crystals =
+                {
+                    (-r * 0.45f, -r * 0.42f, 1.65f, 0.25f),
+                    ( r * 0.48f, -r * 0.38f, 1.45f, -0.30f),
+                    ( 0.0f,      -r * 0.52f, 1.95f, 0.10f)
+                };
+                foreach (var (cx, cz, ch, rot) in crystals)
+                {
+                    var spire = new MeshInstance3D
+                    {
+                        Mesh = new PrismMesh { Size = new Vector3(0.55f, ch, 0.55f) },
+                        MaterialOverride = crystalMat,
+                        Position = new Vector3(cx, ch * 0.42f - 0.2f, cz),
+                        Rotation = new Vector3(rot * 0.35f, rot, -rot * 0.25f)
+                    };
+                    root.AddChild(spire);
+                }
+
+                var crystalLight = new OmniLight3D
+                {
+                    LightColor = new Color(0.22f, 0.88f, 1.0f),
+                    LightEnergy = 2.25f,
+                    OmniRange = 9.0f,
+                    Position = new Vector3(0f, 1.2f, -0.4f)
+                };
+                root.AddChild(crystalLight);
+
+                // Overhead Mountain Cavern Roof Canopy (auto-cuts away when the player walks inside the cave!)
+                var roofCanopy = new Node3D
+                {
+                    Name = "CaveRoofCanopy",
+                    Position = new Vector3(0f, ceilH, 0f)
+                };
+                root.AddChild(roofCanopy);
+
+                var roofDome = new MeshInstance3D
+                {
+                    Name = "MountainRoofSlab",
+                    Mesh = new BoxMesh { Size = new Vector3(r * 2.15f, 0.95f, r * 2.15f) },
+                    MaterialOverride = cavernRockMat,
+                    Position = new Vector3(0f, 0.25f, 0f)
+                };
+                roofCanopy.AddChild(roofDome);
+
+                var roofPeak = new MeshInstance3D
+                {
+                    Name = "MountainRoofPeak",
+                    Mesh = new PrismMesh { Size = new Vector3(r * 1.75f, 1.35f, r * 1.75f) },
+                    MaterialOverride = cavernRockMat,
+                    Position = new Vector3(0f, 1.25f, 0f)
+                };
+                roofCanopy.AddChild(roofPeak);
+
+                var caveLabel = new Label3D
+                {
+                    Text = "💎 Walk-In Crystal Cave\n[South Portal Entry | Auto Roof Cutaway]",
+                    Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+                    FontSize = 22,
+                    OutlineSize = 7,
+                    Modulate = new Color(0.45f, 0.95f, 1.0f),
+                    Position = new Vector3(0f, 2.25f, 0f)
+                };
+                roofCanopy.AddChild(caveLabel);
+
+                _occluder?.RegisterPropRoot(root, r, 1.0f);
+                _occluder?.RegisterRoofOrCeilingCanopy(
+                    roofCanopy,
+                    new Rect2(s.X - r, s.Z - r, r * 2.0f, r * 2.0f),
+                    baseY + ceilH);
+            }
         }
 
         private void AddDeterministicProceduralClutter(Vector2I coord, Dictionary<string, List<Transform3D>> batches)
@@ -375,11 +724,25 @@ namespace AtlasWorld.Client.World
                 if (Mathf.Abs(wx) < 2.6f && wz > -22f && wz < 22f)
                     continue;
 
+                // Keep 3D structure interiors & stair ramps clear of meadow grass
+                bool insideStructure = false;
+                for (int sIdx = 0; sIdx < _doc.Structures.Count; sIdx++)
+                {
+                    var s = _doc.Structures[sIdx];
+                    if (Mathf.Abs(wx - s.X) <= s.Radius + 2.8f && Mathf.Abs(wz - s.Z) <= s.Radius + 1.8f)
+                    {
+                        insideStructure = true;
+                        break;
+                    }
+                }
+                if (insideStructure)
+                    continue;
+
                 // Do not spawn meadow grass on sheer cliff walls (> 32 degrees)
                 if (TerrainElevation.SampleSlopeDegrees(wx, wz, _doc) > 32.0f)
                     continue;
 
-                float groundY = TerrainElevation.SampleHeight(wx, wz, _doc);
+                float groundY = TerrainElevation.SampleBaseTerrainHeight(wx, wz, _doc);
                 string assetPath = (i % 6 == 0) ? ProceduralClutterAssets[1] : ProceduralClutterAssets[0];
                 float scale = (i % 6 == 0)
                     ? 0.72f + (u * 0.35f)

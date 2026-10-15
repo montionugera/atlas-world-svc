@@ -30,6 +30,25 @@ namespace AtlasWorld.Client.World
         [JsonPropertyName("falloff")] public float Falloff { get; set; } = 0.45f;
     }
 
+    /// <summary>
+    /// Safe, height-aware 3D Multi-Floor Structure Volume supporting:
+    /// - <c>"watchtower"</c>: 2-Story Stone Watchtower with ground floor interior, southern approach stair ramp,
+    ///   elevated 2nd-floor battlement deck (+3.2m), and automatic roof/upper-deck cutaway when the player is on the ground floor.
+    /// - <c>"crystal_cave"</c>: Walk-in Underground Crystal Cavern carved beneath a hill with a southern entrance portal
+    ///   (bypasses outer cliff slope blocker inside the tunnel), recessed glowing crystal floor, and automatic cave ceiling cutaway.
+    /// </summary>
+    public sealed class UnifiedMapStructureVolume
+    {
+        [JsonPropertyName("id")] public string Id { get; set; } = "";
+        [JsonPropertyName("kind")] public string Kind { get; set; } = "watchtower";
+        [JsonPropertyName("x")] public float X { get; set; }
+        [JsonPropertyName("z")] public float Z { get; set; }
+        [JsonPropertyName("rotY")] public float RotY { get; set; }
+        [JsonPropertyName("radius")] public float Radius { get; set; } = 4.6f;
+        [JsonPropertyName("upperFloorHeight")] public float UpperFloorHeight { get; set; } = 3.2f;
+        [JsonPropertyName("ceilingHeight")] public float CeilingHeight { get; set; } = 3.4f;
+    }
+
     public sealed class UnifiedMapSpawnArea
     {
         [JsonPropertyName("id")] public string Id { get; set; } = "";
@@ -65,16 +84,24 @@ namespace AtlasWorld.Client.World
         [JsonPropertyName("autoAdvanceDayNight")] public bool AutoAdvanceDayNight { get; set; } = true;
         [JsonPropertyName("dayNightSpeedHoursPerSec")] public float DayNightSpeedHoursPerSec { get; set; } = 0.10f;
         [JsonPropertyName("heightTerraces")] public List<UnifiedMapHeightTerrace> HeightTerraces { get; set; } = new();
+        [JsonPropertyName("structures")] public List<UnifiedMapStructureVolume> Structures { get; set; } = new();
         [JsonPropertyName("props")] public List<UnifiedMapProp> Props { get; set; } = new();
         [JsonPropertyName("spawnAreas")] public List<UnifiedMapSpawnArea> SpawnAreas { get; set; } = new();
         [JsonPropertyName("staticObstacles")] public List<UnifiedMapStaticObstacle> StaticObstacles { get; set; } = new();
 
+        public readonly record struct SpatialObstacleRecord(
+            string Id,
+            Rect2 WorldRect,
+            float MinHeightY,
+            float MaxHeightY,
+            UnifiedMapStaticObstacle ServerObs);
+
         /// <summary>
-        /// O(1) 2D Spatial Hash Grid of world-space AABBs (<c>Rect2(minWorldX, minWorldZ, widthWorld, depthWorld)</c>)
+        /// O(1) 2D Spatial Hash Grid of height-aware world-space AABBs (<c>Rect2(minWorldX, minWorldZ, widthWorld, depthWorld)</c> + <c>[MinHeightY..MaxHeightY]</c>)
         /// partitioned by <c>ObstacleCellSizeWorld</c> (8.0m cells) so collision and gizmo queries never scan all obstacles.
         /// </summary>
         [JsonIgnore]
-        private readonly Dictionary<Vector2I, List<(string id, Rect2 worldRect, UnifiedMapStaticObstacle serverObs)>> _spatialObstacleGrid = new();
+        private readonly Dictionary<Vector2I, List<SpatialObstacleRecord>> _spatialObstacleGrid = new();
 
         public const float ObstacleCellSizeWorld = 8.0f;
 
@@ -91,10 +118,17 @@ namespace AtlasWorld.Client.World
             new(Mathf.FloorToInt(wx / ObstacleCellSizeWorld), Mathf.FloorToInt(wz / ObstacleCellSizeWorld));
 
         /// <summary>
-        /// O(1) Spatial Hash Grid collision resolver for player/mob movement against solid map props.
-        /// Only inspects the 3x3 spatial cells around <paramref name="nextX"/>, <paramref name="nextZ"/>.
+        /// O(1) Height-Aware Spatial Hash Grid collision resolver for player/mob movement against solid map props and tower/cave walls.
+        /// Only inspects the 3x3 spatial cells around <paramref name="nextX"/>, <paramref name="nextZ"/> and only collides
+        /// with obstacles whose vertical slab <c>[MinHeightY .. MaxHeightY]</c> overlaps the entity's current floor height <paramref name="entityY"/>.
         /// </summary>
-        public Vector2 ResolveObstacleCollision(float curX, float curZ, float nextX, float nextZ, float agentRadius = 0.42f)
+        public Vector2 ResolveObstacleCollision(
+            float curX,
+            float curZ,
+            float nextX,
+            float nextZ,
+            float agentRadius = 0.42f,
+            float entityY = float.NaN)
         {
             if (_spatialObstacleGrid.Count == 0)
                 return new Vector2(nextX, nextZ);
@@ -113,10 +147,15 @@ namespace AtlasWorld.Client.World
 
                     for (int i = 0; i < list.Count; i++)
                     {
-                        Rect2 box = list[i].worldRect.Grow(agentRadius);
+                        var rec = list[i];
+                        // Vertical slab check: ignore obstacles that are on a different floor than the entity!
+                        if (!float.IsNaN(entityY) && (entityY + 1.5f < rec.MinHeightY || entityY > rec.MaxHeightY))
+                            continue;
+
+                        Rect2 box = rec.WorldRect.Grow(agentRadius);
                         if (box.HasPoint(new Vector2(rx, rz)))
                         {
-                            // Push out along the shallowest penetration axis so the player slides cleanly past trunks/pillars
+                            // Push out along the shallowest penetration axis so the player slides cleanly past trunks/pillars/walls
                             float leftPen = Mathf.Abs(rx - box.Position.X);
                             float rightPen = Mathf.Abs((box.Position.X + box.Size.X) - rx);
                             float topPen = Mathf.Abs(rz - box.Position.Y);
@@ -164,9 +203,9 @@ namespace AtlasWorld.Client.World
                     for (int i = 0; i < cellList.Count; i++)
                     {
                         var item = cellList[i];
-                        if (seen.Add(item.id))
+                        if (seen.Add(item.Id))
                         {
-                            results.Add(item.serverObs);
+                            results.Add(item.ServerObs);
                         }
                     }
                 }
@@ -174,49 +213,79 @@ namespace AtlasWorld.Client.World
         }
 
         /// <summary>
-        /// Ensures default Freja South Gate terrain plateaus exist if loading a v1 JSON without heightTerraces.
+        /// Ensures default Freja South Gate terrain plateaus and default 3D Showcase Structures
+        /// (1 Multi-Floor Watchtower + 1 Underground Crystal Cave) exist so players can test them immediately.
         /// </summary>
         public void EnsureDefaultTerraces()
         {
-            if (HeightTerraces.Count > 0)
-                return;
+            if (HeightTerraces.Count == 0)
+            {
+                HeightTerraces.Add(new UnifiedMapHeightTerrace
+                {
+                    Id = "sanctuary_north_acropolis",
+                    X = 0.0f,
+                    Z = -18.0f,
+                    Radius = 15.0f,
+                    Height = 2.4f,
+                    Falloff = 0.45f
+                });
+                HeightTerraces.Add(new UnifiedMapHeightTerrace
+                {
+                    Id = "west_watchtower_hill",
+                    X = -17.5f,
+                    Z = -8.0f,
+                    Radius = 11.5f,
+                    Height = 2.1f,
+                    Falloff = 0.48f
+                });
+                HeightTerraces.Add(new UnifiedMapHeightTerrace
+                {
+                    Id = "east_wind_bluff",
+                    X = 17.5f,
+                    Z = -7.0f,
+                    Radius = 12.0f,
+                    Height = 2.3f,
+                    Falloff = 0.46f
+                });
+                HeightTerraces.Add(new UnifiedMapHeightTerrace
+                {
+                    Id = "south_grove_knoll",
+                    X = 14.0f,
+                    Z = 14.0f,
+                    Radius = 11.0f,
+                    Height = 1.75f,
+                    Falloff = 0.50f
+                });
+            }
 
-            HeightTerraces.Add(new UnifiedMapHeightTerrace
+            if (Structures.Count == 0)
             {
-                Id = "sanctuary_north_acropolis",
-                X = 0.0f,
-                Z = -18.0f,
-                Radius = 15.0f,
-                Height = 2.4f,
-                Falloff = 0.45f
-            });
-            HeightTerraces.Add(new UnifiedMapHeightTerrace
-            {
-                Id = "west_watchtower_hill",
-                X = -17.5f,
-                Z = -8.0f,
-                Radius = 11.5f,
-                Height = 2.1f,
-                Falloff = 0.48f
-            });
-            HeightTerraces.Add(new UnifiedMapHeightTerrace
-            {
-                Id = "east_wind_bluff",
-                X = 17.5f,
-                Z = -7.0f,
-                Radius = 12.0f,
-                Height = 2.3f,
-                Falloff = 0.46f
-            });
-            HeightTerraces.Add(new UnifiedMapHeightTerrace
-            {
-                Id = "south_grove_knoll",
-                X = 14.0f,
-                Z = 14.0f,
-                Radius = 11.0f,
-                Height = 1.75f,
-                Falloff = 0.50f
-            });
+                // Default 2-Story Stone Watchtower with Walkable Ramp on West Meadow
+                Structures.Add(new UnifiedMapStructureVolume
+                {
+                    Id = "freja_west_watchtower_01",
+                    Kind = "watchtower",
+                    X = -9.5f,
+                    Z = -2.0f,
+                    RotY = 0f,
+                    Radius = 3.8f,
+                    UpperFloorHeight = 3.2f,
+                    CeilingHeight = 3.2f
+                });
+
+                // Default Walk-In Crystal Cave Tunnel on East Bluff
+                Structures.Add(new UnifiedMapStructureVolume
+                {
+                    Id = "freja_east_crystal_cave_01",
+                    Kind = "crystal_cave",
+                    X = 10.5f,
+                    Z = -3.0f,
+                    RotY = 0f,
+                    Radius = 4.4f,
+                    UpperFloorHeight = 3.5f,
+                    CeilingHeight = 3.2f
+                });
+            }
         }
 
         /// <summary>
@@ -280,7 +349,7 @@ namespace AtlasWorld.Client.World
 
         /// <summary>
         /// Rebuilds server-rs 2D AABB staticObstacles AND the O(1) 2D Spatial Hash Grid
-        /// from all props marked BlocksMovement = true using: ServerPos = ServerCenter + (WorldPos / 0.1).
+        /// from all props marked BlocksMovement = true PLUS 3D structure perimeter walls.
         /// </summary>
         public void RebuildStaticObstacles(Vector2 serverCenter, float serverCoordScale)
         {
@@ -294,6 +363,11 @@ namespace AtlasWorld.Client.World
 
                 IndexPropObstacleIncremental(p, serverCenter, serverCoordScale);
             }
+
+            foreach (var s in Structures)
+            {
+                IndexStructureWallsIncremental(s, serverCenter, serverCoordScale);
+            }
         }
 
         /// <summary>
@@ -306,21 +380,70 @@ namespace AtlasWorld.Client.World
                 return;
 
             float halfWorld = Mathf.Max(0.25f, p.ColliderHalfExtent * p.Scale * 0.72f);
-            float halfServer = halfWorld / serverCoordScale;
-            float sx = serverCenter.X + (p.X / serverCoordScale);
-            float sy = serverCenter.Y + (p.Z / serverCoordScale);
+            float baseGroundY = TerrainElevation.SampleBaseTerrainHeight(p.X, p.Z, this);
+            var worldRect = new Rect2(p.X - halfWorld, p.Z - halfWorld, halfWorld * 2f, halfWorld * 2f);
+            AddWorldRectObstacle(p.Id, worldRect, baseGroundY - 1.0f, baseGroundY + 4.5f * p.Scale, serverCenter, serverCoordScale);
+        }
+
+        /// <summary>
+        /// Registers the solid perimeter walls of a 3D Watchtower or Crystal Cave (leaving the southern doorway/ramp open)
+        /// into the O(1) height-aware spatial hash grid so entities cannot walk through cave walls or jump off unguarded tower sides.
+        /// </summary>
+        public void IndexStructureWallsIncremental(UnifiedMapStructureVolume s, Vector2 serverCenter, float serverCoordScale)
+        {
+            float baseY = TerrainElevation.SampleBaseTerrainHeight(s.X, s.Z, this);
+            float r = Mathf.Max(2.8f, s.Radius);
+            float wallThick = 0.55f;
+
+            if (s.Kind == "crystal_cave")
+            {
+                // Cave walls on West, East, and North (leaving South z = +r open for the entrance portal!)
+                float minY = baseY - 1.5f;
+                float maxY = baseY + s.CeilingHeight + 1.5f;
+                // West wall
+                AddWorldRectObstacle($"{s.Id}_wall_w", new Rect2(s.X - r, s.Z - r, wallThick, r * 2f), minY, maxY, serverCenter, serverCoordScale);
+                // East wall
+                AddWorldRectObstacle($"{s.Id}_wall_e", new Rect2(s.X + r - wallThick, s.Z - r, wallThick, r * 2f), minY, maxY, serverCenter, serverCoordScale);
+                // North back wall
+                AddWorldRectObstacle($"{s.Id}_wall_n", new Rect2(s.X - r, s.Z - r, r * 2f, wallThick), minY, maxY, serverCenter, serverCoordScale);
+            }
+            else
+            {
+                // Watchtower 4 corner pillars on the ground floor (walk-through archways on N/S/E/W, plus external West/South stair ramp)
+                float minY = baseY - 0.5f;
+                float maxY = baseY + s.UpperFloorHeight + 1.2f;
+                float cornerSize = 0.85f;
+                AddWorldRectObstacle($"{s.Id}_pillar_nw", new Rect2(s.X - r * 0.72f, s.Z - r * 0.72f, cornerSize, cornerSize), minY, maxY, serverCenter, serverCoordScale);
+                AddWorldRectObstacle($"{s.Id}_pillar_ne", new Rect2(s.X + r * 0.72f - cornerSize, s.Z - r * 0.72f, cornerSize, cornerSize), minY, maxY, serverCenter, serverCoordScale);
+                AddWorldRectObstacle($"{s.Id}_pillar_sw", new Rect2(s.X - r * 0.72f, s.Z + r * 0.72f - cornerSize, cornerSize, cornerSize), minY, maxY, serverCenter, serverCoordScale);
+                AddWorldRectObstacle($"{s.Id}_pillar_se", new Rect2(s.X + r * 0.72f - cornerSize, s.Z + r * 0.72f - cornerSize, cornerSize, cornerSize), minY, maxY, serverCenter, serverCoordScale);
+            }
+        }
+
+        private void AddWorldRectObstacle(
+            string id,
+            Rect2 worldRect,
+            float minHeightY,
+            float maxHeightY,
+            Vector2 serverCenter,
+            float serverCoordScale)
+        {
+            float sxMin = serverCenter.X + (worldRect.Position.X / serverCoordScale);
+            float syMin = serverCenter.Y + (worldRect.Position.Y / serverCoordScale);
+            float sxMax = serverCenter.X + ((worldRect.Position.X + worldRect.Size.X) / serverCoordScale);
+            float syMax = serverCenter.Y + ((worldRect.Position.Y + worldRect.Size.Y) / serverCoordScale);
 
             var obs = new UnifiedMapStaticObstacle
             {
-                Id = p.Id,
-                MinX = Mathf.Round((sx - halfServer) * 10f) / 10f,
-                MinY = Mathf.Round((sy - halfServer) * 10f) / 10f,
-                MaxX = Mathf.Round((sx + halfServer) * 10f) / 10f,
-                MaxY = Mathf.Round((sy + halfServer) * 10f) / 10f,
+                Id = id,
+                MinX = Mathf.Round(sxMin * 10f) / 10f,
+                MinY = Mathf.Round(syMin * 10f) / 10f,
+                MaxX = Mathf.Round(sxMax * 10f) / 10f,
+                MaxY = Mathf.Round(syMax * 10f) / 10f,
             };
             StaticObstacles.Add(obs);
 
-            var worldRect = new Rect2(p.X - halfWorld, p.Z - halfWorld, halfWorld * 2f, halfWorld * 2f);
+            var record = new SpatialObstacleRecord(id, worldRect, minHeightY, maxHeightY, obs);
             Vector2I minCell = WorldToObstacleCell(worldRect.Position.X, worldRect.Position.Y);
             Vector2I maxCell = WorldToObstacleCell(worldRect.Position.X + worldRect.Size.X, worldRect.Position.Y + worldRect.Size.Y);
 
@@ -331,10 +454,10 @@ namespace AtlasWorld.Client.World
                     var cellKey = new Vector2I(cx, cz);
                     if (!_spatialObstacleGrid.TryGetValue(cellKey, out var list))
                     {
-                        list = new List<(string, Rect2, UnifiedMapStaticObstacle)>();
+                        list = new List<SpatialObstacleRecord>();
                         _spatialObstacleGrid[cellKey] = list;
                     }
-                    list.Add((p.Id, worldRect, obs));
+                    list.Add(record);
                 }
             }
         }
@@ -351,7 +474,7 @@ namespace AtlasWorld.Client.World
 
                 var opts = new JsonSerializerOptions { WriteIndented = true };
                 File.WriteAllText(savedPath, JsonSerializer.Serialize(this, opts));
-                GD.Print($"[MapBuilder] Saved unified map ({Width:0}x{Height:0}, {Props.Count} props, {HeightTerraces.Count} terraces, {StaticObstacles.Count} server AABBs) -> {savedPath}");
+                GD.Print($"[MapBuilder] Saved unified map ({Width:0}x{Height:0}, {Props.Count} props, {HeightTerraces.Count} terraces, {Structures.Count} 3D structures, {StaticObstacles.Count} server AABBs) -> {savedPath}");
                 return true;
             }
             catch (Exception ex)

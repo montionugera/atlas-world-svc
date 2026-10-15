@@ -25,7 +25,7 @@ namespace AtlasWorld.Client
     /// 6. 3D World Monsters (showcase + live server-rs mobs/bots/projectiles) with 3D overhead nameplates, HP bars &amp; target ring
     /// 7. Authoritative Player HP/SP, ROX Auto-Combat AFK loop, Quest Kill Tracker, Live Minimap Radar, DevTuningDrawer &amp; Mac 3D Map Builder
     /// 8. Scalable Map Expansion (1000x1000 -> 2000x2000 -> 4000x4000) &amp; On-Demand Spatial Chunk Streaming (MapChunkStreamer)
-    /// 9. 3D Altitude &amp; Terraced Elevation (TerrainElevation) + Smart Auto-Transparent Camera Occlusion Fader (SmartCameraOccluder)
+    /// 9. 3D Altitude, Multi-Floor Watchtowers &amp; Walk-In Crystal Caves (TerrainElevation) + Smart Camera LOS &amp; Roof Cutaway (SmartCameraOccluder)
     /// </summary>
     public partial class VerticalSliceRoot : Node3D
     {
@@ -652,7 +652,7 @@ namespace AtlasWorld.Client
                     {
                         if (prop is Node3D prop3D)
                         {
-                            float groundY = TerrainElevation.SampleHeight(prop3D.Position.X, prop3D.Position.Z, _mapDoc);
+                            float groundY = TerrainElevation.SampleBaseTerrainHeight(prop3D.Position.X, prop3D.Position.Z, _mapDoc);
                             prop3D.Position = new Vector3(
                                 prop3D.Position.X,
                                 groundY + (isPathTile ? 0.02f : 0f),
@@ -943,7 +943,7 @@ namespace AtlasWorld.Client
             Node3D? targetRoot = GetActiveTargetRoot();
             if (targetRoot != null)
             {
-                float groundY = TerrainElevation.SampleHeight(targetRoot.Position.X, targetRoot.Position.Z, _mapDoc);
+                float groundY = TerrainElevation.SampleHeight(targetRoot.Position.X, targetRoot.Position.Z, _mapDoc, targetRoot.Position.Y);
                 _targetRingMesh.Position = new Vector3(targetRoot.Position.X, groundY + 0.04f, targetRoot.Position.Z);
             }
         }
@@ -1485,11 +1485,12 @@ namespace AtlasWorld.Client
                 Vector3 normDir = direction.Normalized();
                 Vector3 velocity = normDir * (_playerSpeed * 2.0f); // Exceeds 8.0f sprint threshold in AnimationController
                 float curX = PlayerAvatar.Position.X;
+                float curY = PlayerAvatar.Position.Y;
                 float curZ = PlayerAvatar.Position.Z;
                 float desiredX = curX + normDir.X * _playerSpeed * dt;
                 float desiredZ = curZ + normDir.Z * _playerSpeed * dt;
 
-                // Enforce 3D steep cliff & wall-sliding gate (>38 deg slides along cliff contour, <=38 deg walks up ramp)
+                // Enforce 3D steep cliff & wall-sliding gate + Multi-Floor Watchtower / Crystal Cave height resolution
                 Vector2 resolvedXZ = TerrainElevation.ResolveSteepSlopeMove(
                     curX,
                     curZ,
@@ -1497,8 +1498,9 @@ namespace AtlasWorld.Client
                     desiredZ,
                     _mapDoc,
                     out _,
-                    out _);
-                PlayerAvatar.Position = new Vector3(resolvedXZ.X, PlayerAvatar.Position.Y, resolvedXZ.Y);
+                    out _,
+                    currentEntityY: curY);
+                PlayerAvatar.Position = new Vector3(resolvedXZ.X, curY, resolvedXZ.Y);
 
                 // Softly reconcile PlayerAvatar position toward server-rs authoritative coordinates if drift builds up
                 if (_entityManager != null && _entityManager.HasOwnPlayerState && _dashDuration <= 0f)
@@ -1515,8 +1517,12 @@ namespace AtlasWorld.Client
                     }
                 }
 
-                // Snap PlayerAvatar Y altitude smoothly to the 3D terrain elevation
-                float targetGroundY = TerrainElevation.SampleHeight(PlayerAvatar.Position.X, PlayerAvatar.Position.Z, _mapDoc);
+                // Snap PlayerAvatar Y altitude smoothly to the active floor / stair / cavern elevation
+                float targetGroundY = TerrainElevation.SampleHeight(
+                    PlayerAvatar.Position.X,
+                    PlayerAvatar.Position.Z,
+                    _mapDoc,
+                    PlayerAvatar.Position.Y);
                 PlayerAvatar.Position = new Vector3(
                     PlayerAvatar.Position.X,
                     Mathf.Lerp(PlayerAvatar.Position.Y, targetGroundY, dt * 16.0f),
@@ -1567,7 +1573,11 @@ namespace AtlasWorld.Client
 
                 if (PlayerAvatar != null)
                 {
-                    float groundY = TerrainElevation.SampleHeight(PlayerAvatar.Position.X, PlayerAvatar.Position.Z, _mapDoc);
+                    float groundY = TerrainElevation.SampleHeight(
+                        PlayerAvatar.Position.X,
+                        PlayerAvatar.Position.Z,
+                        _mapDoc,
+                        PlayerAvatar.Position.Y);
                     PlayerAvatar.Position = new Vector3(
                         PlayerAvatar.Position.X,
                         Mathf.Lerp(PlayerAvatar.Position.Y, groundY, dt * 16.0f),
@@ -1580,7 +1590,7 @@ namespace AtlasWorld.Client
                 }
             }
 
-            // Smooth spherical follow camera & Smart Auto-Transparent Camera Occlusion Fader
+            // Smooth spherical follow camera & Smart Auto-Transparent Camera Occlusion Fader + Roof Cutaway
             if (MainCamera != null && PlayerAvatar != null)
             {
                 Vector3 focusTarget = PlayerAvatar.Position + new Vector3(0f, 1.25f, 0f);
@@ -1595,13 +1605,13 @@ namespace AtlasWorld.Client
 
                 Vector3 desiredCamPos = focusTarget + offset;
                 // Prevent camera from dipping underground when orbiting near a steep hill slope
-                float camGroundY = TerrainElevation.SampleHeight(desiredCamPos.X, desiredCamPos.Z, _mapDoc);
+                float camGroundY = TerrainElevation.SampleBaseTerrainHeight(desiredCamPos.X, desiredCamPos.Z, _mapDoc);
                 desiredCamPos.Y = Mathf.Max(desiredCamPos.Y, camGroundY + 0.85f);
 
                 MainCamera.Position = MainCamera.Position.Lerp(desiredCamPos, dt * 8.0f);
                 MainCamera.LookAt(focusTarget, Vector3.Up);
 
-                // Automatically fade any 3D tree, pillar, boulder, or wall blocking the camera -> player/target LOS!
+                // Automatically fade any 3D tree, pillar, boulder, wall, or overhead Watchtower/Cave roof!
                 Node3D? activeTarget = GetActiveTargetRoot();
                 _cameraOccluder.Update(
                     dt,

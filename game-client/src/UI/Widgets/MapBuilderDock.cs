@@ -7,11 +7,10 @@ namespace AtlasWorld.Client.UI.Widgets
 {
     /// <summary>
     /// Native macOS / Godot 4 In-Engine 3D Map Builder Dock &amp; Viewport Controller.
-    /// Supports:
-    /// 1. Dynamic Map Size Expansion (1000x1000 / 2000x2000 / 4000x4000 server units)
+    /// Supports:\n    /// 1. Dynamic Map Size Expansion (1000x1000 / 2000x2000 / 4000x4000 server units)
     /// 2. On-Demand Spatial Chunk Streaming + GPU Hardware Instancing (MultiMeshInstance3D) &amp; Procedural Clutter Density
-    /// 3. 3D Altitude &amp; Terraced Elevation Sculpting (+ Add Hill/Terrace, - Add Valley, Amplitude slider)
-    /// 4. Smart Auto-Transparent Camera LOS Occlusion Fader (SmartCameraOccluder) with live opacity slider
+    /// 3. 3D Altitude, Multi-Floor Watchtowers &amp; Walk-In Crystal Caves (+Hill, +Cliff, +Valley, +Tower 2F, +Crystal Cave)
+    /// 4. Smart Auto-Transparent Camera LOS &amp; Interior Roof Cutaway (SmartCameraOccluder) with live opacity slider
     /// 5. World Time &amp; Day/Night Atmosphere Control (24h Slider, Dawn/Noon/Sunset/Night presets, Auto-Advance &amp; Speed, Top Banner Quick Pill)
     /// 6. Browsing 3D glTF assets from res://assets/nature &amp; res://assets/dungeon and exporting to content/maps/freja-south-gate.json
     /// </summary>
@@ -68,8 +67,8 @@ namespace AtlasWorld.Client.UI.Widgets
         private Vector3 _cursorWorldPos = new(0f, 0f, -5f);
 
         // Free-fly / Orbit Builder Camera state
-        private Vector3 _camFocus = new(0f, 0f, -4f);
-        private float _camYaw = 0.28f;
+        private Vector3 _camFocus = new(0f, 0f, -3f);
+        private float _camYaw = 0.22f;
         private float _camPitch = 0.72f;
         private float _camDistance = 26.0f;
         private bool _rightMouseOrbiting = false;
@@ -230,7 +229,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 OffsetLeft = 14f,
                 OffsetTop = 52f,
                 OffsetRight = 374f,
-                OffsetBottom = 900f,
+                OffsetBottom = 905f,
                 MouseFilter = MouseFilterEnum.Stop
             };
             var dockStyle = new StyleBoxFlat
@@ -261,7 +260,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
             var title = new Label
             {
-                Text = "ATLAS 3D MAP BUILDER (100M+ GPU INSTANCED)",
+                Text = "ATLAS 3D MAP BUILDER (100M+ GPU + 3D STRUCTURES)",
                 Modulate = new Color(0.98f, 0.85f, 0.45f)
             };
             title.AddThemeFontSizeOverride("font_size", 11);
@@ -285,7 +284,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
             _occlusionStatusLabel = new Label
             {
-                Text = "Smart LOS Fade: Active (0 props faded)",
+                Text = "Smart LOS & Roof Cutaway: Active",
                 Modulate = new Color(0.62f, 0.90f, 1.0f)
             };
             _occlusionStatusLabel.AddThemeFontSizeOverride("font_size", 10);
@@ -394,10 +393,10 @@ namespace AtlasWorld.Client.UI.Widgets
 
             vbox.AddChild(new HSeparator());
 
-            // Section 2: 3D Altitude & Smart Camera Occlusion Transparency
+            // Section 2: 3D Altitude, Multi-Floor Watchtowers, Crystal Caves & Smart Roof Cutaway
             var altHeader = new Label
             {
-                Text = "2. 3D ALTITUDE & SMART CAMERA OCCLUSION FADE",
+                Text = "2. 3D ALTITUDE, TOWERS/CAVES & ROOF CUTAWAY",
                 Modulate = new Color(0.95f, 0.88f, 0.65f)
             };
             altHeader.AddThemeFontSizeOverride("font_size", 10);
@@ -441,7 +440,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u25b2 +Hill (+2.2m)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 22)
+                CustomMinimumSize = new Vector2(0, 21)
             };
             addHillBtn.AddThemeFontSizeOverride("font_size", 10);
             addHillBtn.Pressed += () => SculptTerraceAtCursor(2.2f, 11.5f, 0.48f);
@@ -450,7 +449,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u26f0 +Cliff (+4.2m)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 22)
+                CustomMinimumSize = new Vector2(0, 21)
             };
             addCliffBtn.AddThemeFontSizeOverride("font_size", 10);
             addCliffBtn.Pressed += () => SculptTerraceAtCursor(4.2f, 9.5f, 0.16f);
@@ -459,7 +458,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u25bc +Valley (-1.6m)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 22)
+                CustomMinimumSize = new Vector2(0, 21)
             };
             addValleyBtn.AddThemeFontSizeOverride("font_size", 10);
             addValleyBtn.Pressed += () => SculptTerraceAtCursor(-1.6f, 11.0f, 0.48f);
@@ -469,9 +468,35 @@ namespace AtlasWorld.Client.UI.Widgets
             terraceBtnRow.AddChild(addValleyBtn);
             vbox.AddChild(terraceBtnRow);
 
+            var structBtnRow = new HBoxContainer();
+            structBtnRow.AddThemeConstantOverride("separation", 5);
+            var addTowerBtn = new Button
+            {
+                Text = "\ud83c\udff0 +Watchtower (2-Floor)",
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                CustomMinimumSize = new Vector2(0, 22),
+                TooltipText = "Spawns a 2-story Watchtower with 1F chamber, East stair ramp, +3.2m 2F deck & auto roof cutaway"
+            };
+            addTowerBtn.AddThemeFontSizeOverride("font_size", 10);
+            addTowerBtn.Pressed += () => PlaceStructureAtCursor("watchtower");
+
+            var addCaveBtn = new Button
+            {
+                Text = "\ud83d\udc8e +Crystal Cave",
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                CustomMinimumSize = new Vector2(0, 22),
+                TooltipText = "Spawns a Walk-In Crystal Cavern with South archway, glowing crystal interior & auto roof cutaway"
+            };
+            addCaveBtn.AddThemeFontSizeOverride("font_size", 10);
+            addCaveBtn.Pressed += () => PlaceStructureAtCursor("crystal_cave");
+
+            structBtnRow.AddChild(addTowerBtn);
+            structBtnRow.AddChild(addCaveBtn);
+            vbox.AddChild(structBtnRow);
+
             var occToggle = new CheckBox
             {
-                Text = "Auto-Transparent Blocking Objects (Camera LOS)",
+                Text = "Auto-Cutaway Roofs & Blocking Trees (LOS)",
                 ButtonPressed = _occluder.Enabled
             };
             occToggle.AddThemeFontSizeOverride("font_size", 10);
@@ -648,7 +673,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
             var scroll = new ScrollContainer
             {
-                CustomMinimumSize = new Vector2(320f, 108f),
+                CustomMinimumSize = new Vector2(320f, 100f),
                 HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
             };
             vbox.AddChild(scroll);
@@ -669,7 +694,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 var btn = new Button
                 {
                     Text = $"{item.Label}\n[{item.Category}]",
-                    CustomMinimumSize = new Vector2(152f, 30f),
+                    CustomMinimumSize = new Vector2(152f, 29f),
                     ClipText = true
                 };
                 btn.AddThemeFontSizeOverride("font_size", 10);
@@ -821,7 +846,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\uff0b Place Prop (L-Click)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 23)
+                CustomMinimumSize = new Vector2(0, 22)
             };
             stampBtn.AddThemeFontSizeOverride("font_size", 10);
             stampBtn.Pressed += () => PlacePropAt(_cursorWorldPos);
@@ -830,7 +855,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u232b Undo Last (Z)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 23)
+                CustomMinimumSize = new Vector2(0, 22)
             };
             undoBtn.AddThemeFontSizeOverride("font_size", 10);
             undoBtn.Pressed += RemoveLastPlacedProp;
@@ -845,7 +870,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\ud83d\udcbe Save Map JSON",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 24)
+                CustomMinimumSize = new Vector2(0, 23)
             };
             saveBtn.AddThemeFontSizeOverride("font_size", 10);
             saveBtn.Pressed += SaveUnifiedMap;
@@ -854,7 +879,7 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Text = "\u25b6 Playtest Here (F2)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 24)
+                CustomMinimumSize = new Vector2(0, 23)
             };
             playBtn.AddThemeFontSizeOverride("font_size", 10);
             playBtn.Pressed += () => SetBuilderActive(false);
@@ -962,6 +987,35 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 _saveFeedbackLabel.Text =
                     $"Sculpted {(deltaHeight >= 0 ? "Hill Terrace" : "Valley Basin")} ({deltaHeight:+0.0;-0.0}m) at ({terrace.X:0.0}, {terrace.Z:0.0}).";
+                _saveFeedbackLabel.Modulate = new Color(0.45f, 1.0f, 0.68f);
+            }
+        }
+
+        private void PlaceStructureAtCursor(string kind)
+        {
+            string id = $"{kind}_{_doc.Structures.Count + 1:00}";
+            var structure = new UnifiedMapStructureVolume
+            {
+                Id = id,
+                Kind = kind,
+                X = Mathf.Round(_cursorWorldPos.X * 10f) / 10f,
+                Z = Mathf.Round(_cursorWorldPos.Z * 10f) / 10f,
+                RotY = 0f,
+                Radius = kind == "watchtower" ? 3.6f : 4.2f,
+                UpperFloorHeight = 3.2f,
+                CeilingHeight = 3.4f
+            };
+            _doc.Structures.Add(structure);
+            _doc.IndexStructureWallsIncremental(structure, _doc.ServerCenter, VerticalSliceRoot.ServerCoordScale);
+            _streamer.AddStructureIncremental(structure, _camFocus);
+            RebuildGizmoOverlays();
+            UpdateStatsLabel();
+
+            if (_saveFeedbackLabel != null)
+            {
+                string label = kind == "watchtower" ? "2-Story Watchtower (+3.2m Deck)" : "Walk-In Crystal Cave";
+                _saveFeedbackLabel.Text =
+                    $"Placed {label} '{id}' at ({structure.X:0.0}, {structure.Z:0.0}) with O(1) wall slabs & Auto-Cutaway roof.";
                 _saveFeedbackLabel.Modulate = new Color(0.45f, 1.0f, 0.68f);
             }
         }
@@ -1129,7 +1183,7 @@ namespace AtlasWorld.Client.UI.Widgets
         {
             var item = AssetCatalog[_selectedAssetIndex];
             string id = $"{item.Category.ToLowerInvariant().Replace(" ", "_")}_{_doc.Props.Count + 1:00}";
-            float groundY = TerrainElevation.SampleHeight(worldPos.X, worldPos.Z, _doc);
+            float groundY = TerrainElevation.SampleBaseTerrainHeight(worldPos.X, worldPos.Z, _doc);
 
             var newProp = new UnifiedMapProp
             {
@@ -1192,7 +1246,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 if (_saveFeedbackLabel != null)
                 {
                     _saveFeedbackLabel.Text =
-                        $"\u2713 Saved {_doc.Width:0}\u00d7{_doc.Height:0} map ({_doc.Props.Count} props, {_doc.HeightTerraces.Count} terraces, Time {_root.DayNightCycle.FormattedClockString}) to content/maps/{_doc.MapId}.json";
+                        $"\u2713 Saved {_doc.Width:0}\u00d7{_doc.Height:0} map ({_doc.Props.Count} props, {_doc.Structures.Count} structures, {_doc.HeightTerraces.Count} terraces) to content/maps/{_doc.MapId}.json";
                     _saveFeedbackLabel.Modulate = new Color(0.45f, 1.0f, 0.65f);
                 }
             }
@@ -1205,7 +1259,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 float worldW = _doc.Width * VerticalSliceRoot.ServerCoordScale;
                 float worldH = _doc.Height * VerticalSliceRoot.ServerCoordScale;
                 _statsSummaryLabel.Text =
-                    $"Size: {_doc.Width:0}\u00d7{_doc.Height:0} ({worldW:0}m\u00d7{worldH:0}m) | Terraces: {_doc.HeightTerraces.Count} | O(1) Grid Cells: {_doc.SpatialObstacleCellCount} ({_doc.StaticObstacles.Count} AABBs)";
+                    $"Size: {_doc.Width:0}\u00d7{_doc.Height:0} ({worldW:0}m\u00d7{worldH:0}m) | Structures: {_doc.Structures.Count} | O(1) Grid: {_doc.SpatialObstacleCellCount} cells ({_doc.StaticObstacles.Count} AABBs)";
             }
             if (_streamingStatusLabel != null)
             {
@@ -1216,8 +1270,8 @@ namespace AtlasWorld.Client.UI.Widgets
             if (_occlusionStatusLabel != null)
             {
                 _occlusionStatusLabel.Text = _occluder.Enabled
-                    ? $"Smart Camera LOS Fade: ON ({_occluder.CurrentlyFadedPropCount} blocking props auto-faded / {_occluder.RegisteredPropCount} tracked)"
-                    : "Smart Camera LOS Fade: OFF";
+                    ? $"Smart LOS & Roof Cutaway: ON ({_occluder.CurrentlyFadedPropCount} faded / {_occluder.RegisteredPropCount} tracked)"
+                    : "Smart LOS & Roof Cutaway: OFF";
             }
         }
 
@@ -1255,7 +1309,7 @@ namespace AtlasWorld.Client.UI.Widgets
                     Rect2 rect = _streamer.GetChunkWorldRect(coord);
                     float cx = rect.Position.X + rect.Size.X * 0.5f;
                     float cz = rect.Position.Y + rect.Size.Y * 0.5f;
-                    float cy = TerrainElevation.SampleHeight(cx, cz, _doc);
+                    float cy = TerrainElevation.SampleBaseTerrainHeight(cx, cz, _doc);
 
                     if (dx == 0 && dz == 0)
                     {
@@ -1268,14 +1322,14 @@ namespace AtlasWorld.Client.UI.Widgets
                         _chunkGridGizmoRoot.AddChild(centerPlane);
                     }
 
-                    float northY = TerrainElevation.SampleHeight(cx, rect.Position.Y, _doc);
+                    float northY = TerrainElevation.SampleBaseTerrainHeight(cx, rect.Position.Y, _doc);
                     var northStrip = new MeshInstance3D
                     {
                         Mesh = new BoxMesh { Size = new Vector3(cs, 0.05f, 0.10f) },
                         MaterialOverride = activeBorderMat,
                         Position = new Vector3(cx, northY + 0.05f, rect.Position.Y)
                     };
-                    float westY = TerrainElevation.SampleHeight(rect.Position.X, cz, _doc);
+                    float westY = TerrainElevation.SampleBaseTerrainHeight(rect.Position.X, cz, _doc);
                     var westStrip = new MeshInstance3D
                     {
                         Mesh = new BoxMesh { Size = new Vector3(0.10f, 0.05f, cs) },
@@ -1325,7 +1379,7 @@ namespace AtlasWorld.Client.UI.Widgets
                     float d = Mathf.Max(0.2f, Mathf.Abs(wz1 - wz0));
                     float cx = (wx0 + wx1) * 0.5f;
                     float cz = (wz0 + wz1) * 0.5f;
-                    float groundY = TerrainElevation.SampleHeight(cx, cz, _doc);
+                    float groundY = TerrainElevation.SampleBaseTerrainHeight(cx, cz, _doc);
 
                     var box = new BoxMesh { Size = new Vector3(w, 0.35f, d) };
                     var meshInst = new MeshInstance3D
@@ -1350,7 +1404,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
                 foreach (var t in _doc.HeightTerraces)
                 {
-                    float topY = TerrainElevation.SampleHeight(t.X, t.Z, _doc);
+                    float topY = TerrainElevation.SampleBaseTerrainHeight(t.X, t.Z, _doc);
                     float plateauRadius = t.Radius * (1.0f - t.Falloff * 0.5f);
                     var cyl = new CylinderMesh
                     {
@@ -1404,7 +1458,7 @@ namespace AtlasWorld.Client.UI.Widgets
                     float wd = zone.Height * VerticalSliceRoot.ServerCoordScale;
                     float cx = wx + ww * 0.5f;
                     float cz = wz + wd * 0.5f;
-                    float groundY = TerrainElevation.SampleHeight(cx, cz, _doc);
+                    float groundY = TerrainElevation.SampleBaseTerrainHeight(cx, cz, _doc);
 
                     bool isBoss = zone.MobType.Contains("thorncrown") || zone.Id.Contains("boss");
                     var box = new BoxMesh { Size = new Vector3(ww, 0.08f, wd) };
@@ -1520,8 +1574,6 @@ namespace AtlasWorld.Client.UI.Widgets
                         UpdateCursorPreviewTransform();
 
                         Vector2 serverCenter = _doc.ServerCenter;
-                        int sx = (int)Mathf.Round(serverCenter.X + (hit.X / VerticalSliceRoot.ServerCoordScale));
-                        int sy = (int)Mathf.Round(serverCenter.Y + (hit.Z / VerticalSliceRoot.ServerCoordScale));
                         Vector2I chunk = _streamer.WorldToChunkCoord(hit);
                         if (_cursorCoordLabel != null)
                         {
@@ -1600,7 +1652,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 float maxHalfZ = _doc.HalfHeightWorld(VerticalSliceRoot.ServerCoordScale);
                 _camFocus.X = Mathf.Clamp(_camFocus.X + rotated.X * panSpeed * dt, -maxHalfX, maxHalfX);
                 _camFocus.Z = Mathf.Clamp(_camFocus.Z + rotated.Y * panSpeed * dt, -maxHalfZ, maxHalfZ);
-                _camFocus.Y = TerrainElevation.SampleHeight(_camFocus.X, _camFocus.Z, _doc);
+                _camFocus.Y = TerrainElevation.SampleBaseTerrainHeight(_camFocus.X, _camFocus.Z, _doc);
 
                 if (_streamer.UpdateStreaming(_camFocus))
                 {
@@ -1611,7 +1663,7 @@ namespace AtlasWorld.Client.UI.Widgets
             }
             else
             {
-                _camFocus.Y = Mathf.Lerp(_camFocus.Y, TerrainElevation.SampleHeight(_camFocus.X, _camFocus.Z, _doc), dt * 8.0f);
+                _camFocus.Y = Mathf.Lerp(_camFocus.Y, TerrainElevation.SampleBaseTerrainHeight(_camFocus.X, _camFocus.Z, _doc), dt * 8.0f);
             }
 
             float horiz = _camDistance * Mathf.Cos(_camPitch);
