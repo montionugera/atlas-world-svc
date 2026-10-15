@@ -3,18 +3,29 @@ render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_toon, specular_schl
 
 // Ragnarok Origin (ROO / ROX) Stylized Prontera South Gate Meadow Terrain Shader
 // Features:
+// - 3D Altitude & Terraced Elevation Displacement (rolling hills, northern sanctuary ridge & up to 16 sculpted terraces)
 // - Lush multi-octave hand-painted clover & sunlit emerald grass patches
+// - Highland rocky cliff / alpine moss blending on steep slopes and high-altitude plateaus
 // - Warm golden sunlight dappled canopy highlights + wind-swaying grass blade micro-texture
 // - Smooth cobblestone & warm earth path blending along the central sanctuary road & combat plaza
-// - Subtle wildflowers (daisy white, buttercup gold, pastel lavender) scattered in grass zones
 
 uniform vec4 grass_base_color : source_color = vec4(0.32, 0.58, 0.24, 1.0);
 uniform vec4 grass_highlight_color : source_color = vec4(0.56, 0.78, 0.28, 1.0);
 uniform vec4 grass_shadow_color : source_color = vec4(0.20, 0.42, 0.22, 1.0);
 uniform vec4 path_dirt_color : source_color = vec4(0.68, 0.56, 0.42, 1.0);
 uniform vec4 path_stone_color : source_color = vec4(0.78, 0.75, 0.68, 1.0);
+uniform vec4 cliff_rock_color : source_color = vec4(0.52, 0.49, 0.45, 1.0);
+
+uniform float terrain_amplitude = 1.0;
+uniform int terrace_count = 0;
+// Each vec4 is (x, z, radius, height)
+uniform vec4 terrace_data[16];
+// Each float is falloff (0.15 .. 0.85)
+uniform float terrace_falloff[16];
 
 varying vec3 v_world_pos;
+varying float v_elevation;
+varying float v_slope;
 
 float hash21(vec2 p) {
     p = fract(p * vec2(234.34, 435.345));
@@ -45,8 +56,57 @@ float fbm(vec2 p) {
     return v;
 }
 
+// Exact match with C# TerrainElevation.SampleHeight(wx, wz)
+float sample_terrain_height(vec2 wp) {
+    float dist_origin = length(wp);
+    float outer_mask = smoothstep(9.0, 22.0, dist_origin);
+
+    float wave_a = sin(wp.x * 0.085 + 0.4) * cos(wp.y * 0.075 - 0.3) * 2.15;
+    float wave_b = sin((wp.x * 0.7 - wp.y * 0.7) * 0.14 + 1.1) * 0.85;
+
+    float north_ramp = smoothstep(-9.5, -20.0, wp.y);
+    float north_plateau = north_ramp * 1.65 * smoothstep(28.0, 8.0, abs(wp.x));
+
+    float road_carve = 1.0 - 0.55 * smoothstep(4.5, 1.8, abs(wp.x));
+
+    float proc_y = (wave_a + wave_b) * outer_mask * road_carve + north_plateau;
+    float total_y = proc_y * terrain_amplitude;
+
+    for (int i = 0; i < 16; i++) {
+        if (i >= terrace_count) {
+            break;
+        }
+        vec4 td = terrace_data[i];
+        float outer_r = max(1.0, td.z);
+        float d = length(wp - td.xy);
+        if (d < outer_r) {
+            float fall = clamp(terrace_falloff[i], 0.15, 0.85);
+            float inner_r = outer_r * (1.0 - fall);
+            float w = 1.0 - smoothstep(inner_r, outer_r, d);
+            total_y += td.w * w;
+        }
+    }
+    return total_y;
+}
+
 void vertex() {
+    vec3 world_v = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+    float h = sample_terrain_height(world_v.xz);
+
+    // Finite-difference normal so directional sunlight & toon shading accentuate hills & terraces!
+    float eps = 0.35;
+    float h_l = sample_terrain_height(world_v.xz - vec2(eps, 0.0));
+    float h_r = sample_terrain_height(world_v.xz + vec2(eps, 0.0));
+    float h_d = sample_terrain_height(world_v.xz - vec2(0.0, eps));
+    float h_u = sample_terrain_height(world_v.xz + vec2(0.0, eps));
+    vec3 calc_normal = normalize(vec3(h_l - h_r, 2.0 * eps, h_d - h_u));
+
+    VERTEX.y += h;
+    NORMAL = calc_normal;
+
     v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+    v_elevation = h;
+    v_slope = 1.0 - clamp(calc_normal.y, 0.0, 1.0);
 }
 
 void fragment() {
@@ -65,15 +125,32 @@ void fragment() {
     meadow = mix(meadow, grass_highlight_color.rgb, smoothstep(0.48, 0.82, mid_patch * 0.75 + blade_ripple * 0.35));
     meadow += (micro_blade - 0.5) * 0.04;
 
-    // 3. Dappled sunlight canopy rings (bright anime sunspots on the grass)
-    float sun_dapple = smoothstep(0.66, 0.74, fbm(wp * 0.28 - vec2(TIME * 0.08, 0.0)));
-    meadow = mix(meadow, vec3(0.72, 0.88, 0.38), sun_dapple * 0.32);
+    // 3. Altitude tinting & cliff slope rock blending (gives clear visual reading of 3D elevation)
+    float high_ridge = smoothstep(0.8, 3.2, v_elevation);
+    meadow = mix(meadow, vec3(0.46, 0.72, 0.30), high_ridge * 0.35);
 
-    // 4. Tiny stylized wildflowers in lush grass areas
+    // Subtle elevation contour lines every 1.0m of height above 0.45m
+    if (abs(v_elevation) > 0.45) {
+        float contour = abs(fract(v_elevation * 1.0) - 0.5);
+        float contour_line = 1.0 - smoothstep(0.02, 0.06, contour);
+        meadow = mix(meadow, cliff_rock_color.rgb * 1.12, contour_line * 0.22);
+    }
+
+    // Steep slope rock exposure on terrace walls & hill embankments
+    float rock_mask = smoothstep(0.10, 0.32, v_slope);
+    float rock_tex = value_noise(wp * 3.2);
+    vec3 cliff_col = mix(cliff_rock_color.rgb * 0.85, cliff_rock_color.rgb * 1.15, rock_tex);
+    meadow = mix(meadow, cliff_col, rock_mask * 0.82);
+
+    // 4. Dappled sunlight canopy rings (bright anime sunspots on the grass)
+    float sun_dapple = smoothstep(0.66, 0.74, fbm(wp * 0.28 - vec2(TIME * 0.08, 0.0)));
+    meadow = mix(meadow, vec3(0.72, 0.88, 0.38), sun_dapple * 0.32 * (1.0 - rock_mask));
+
+    // 5. Tiny stylized wildflowers in lush grass areas
     vec2 flower_cell = floor(wp * 3.5);
     vec2 flower_fract = fract(wp * 3.5) - 0.5;
     float flower_seed = hash21(flower_cell);
-    if (flower_seed > 0.87 && length(wp) > 3.2) {
+    if (flower_seed > 0.87 && length(wp) > 3.2 && rock_mask < 0.3) {
         float dist = length(flower_fract);
         float petal = smoothstep(0.22, 0.08, dist);
         vec3 flower_col = flower_seed > 0.95
@@ -82,7 +159,7 @@ void fragment() {
         meadow = mix(meadow, flower_col, petal * 0.85);
     }
 
-    // 5. Warm sanctuary dirt & cobblestone border along the central road and plaza
+    // 6. Warm sanctuary dirt & cobblestone border along the central road and plaza
     float road_dist = abs(wp.x + sin(wp.y * 0.12) * 1.2);
     float plaza_dist = length(wp - vec2(0.0, -2.0));
     float edge_noise = (macro_patch - 0.5) * 1.4;
@@ -90,7 +167,6 @@ void fragment() {
     float plaza_mask = 1.0 - smoothstep(3.5, 6.2, plaza_dist + edge_noise);
     float path_factor = clamp(max(road_mask * smoothstep(-14.0, 10.0, -wp.y), plaza_mask * 0.85), 0.0, 1.0);
 
-    // Cobblestone cell pattern inside the path
     float stone_pattern = smoothstep(0.35, 0.65, value_noise(wp * 2.8));
     vec3 path_col = mix(path_dirt_color.rgb, path_stone_color.rgb, stone_pattern * 0.55);
 

@@ -20,6 +20,16 @@ namespace AtlasWorld.Client.World
         [JsonPropertyName("colliderHalfExtent")] public float ColliderHalfExtent { get; set; } = 1.0f;
     }
 
+    public sealed class UnifiedMapHeightTerrace
+    {
+        [JsonPropertyName("id")] public string Id { get; set; } = "";
+        [JsonPropertyName("x")] public float X { get; set; }
+        [JsonPropertyName("z")] public float Z { get; set; }
+        [JsonPropertyName("radius")] public float Radius { get; set; } = 12.0f;
+        [JsonPropertyName("height")] public float Height { get; set; } = 2.2f;
+        [JsonPropertyName("falloff")] public float Falloff { get; set; } = 0.45f;
+    }
+
     public sealed class UnifiedMapSpawnArea
     {
         [JsonPropertyName("id")] public string Id { get; set; } = "";
@@ -44,11 +54,13 @@ namespace AtlasWorld.Client.World
     {
         [JsonPropertyName("version")] public int Version { get; set; } = 1;
         [JsonPropertyName("mapId")] public string MapId { get; set; } = "freja-south-gate";
-        [JsonPropertyName("name")] public string Name { get; set; } = "Prontera South Gate — Freja Meadow";
+        [JsonPropertyName("name")] public string Name { get; set; } = "Prontera South Gate \u2014 Freja Meadow";
         [JsonPropertyName("width")] public float Width { get; set; } = 1000.0f;
         [JsonPropertyName("height")] public float Height { get; set; } = 1000.0f;
         [JsonPropertyName("chunkSizeWorld")] public float ChunkSizeWorld { get; set; } = 24.0f;
         [JsonPropertyName("activeChunkRadius")] public int ActiveChunkRadius { get; set; } = 2;
+        [JsonPropertyName("terrainAmplitude")] public float TerrainAmplitude { get; set; } = 1.0f;
+        [JsonPropertyName("heightTerraces")] public List<UnifiedMapHeightTerrace> HeightTerraces { get; set; } = new();
         [JsonPropertyName("props")] public List<UnifiedMapProp> Props { get; set; } = new();
         [JsonPropertyName("spawnAreas")] public List<UnifiedMapSpawnArea> SpawnAreas { get; set; } = new();
         [JsonPropertyName("staticObstacles")] public List<UnifiedMapStaticObstacle> StaticObstacles { get; set; } = new();
@@ -58,6 +70,52 @@ namespace AtlasWorld.Client.World
 
         public float HalfWidthWorld(float serverCoordScale = 0.1f) => Width * 0.5f * serverCoordScale;
         public float HalfHeightWorld(float serverCoordScale = 0.1f) => Height * 0.5f * serverCoordScale;
+
+        /// <summary>
+        /// Ensures default Freja South Gate terrain plateaus exist if loading a v1 JSON without heightTerraces.
+        /// </summary>
+        public void EnsureDefaultTerraces()
+        {
+            if (HeightTerraces.Count > 0)
+                return;
+
+            HeightTerraces.Add(new UnifiedMapHeightTerrace
+            {
+                Id = "sanctuary_north_acropolis",
+                X = 0.0f,
+                Z = -18.0f,
+                Radius = 15.0f,
+                Height = 2.4f,
+                Falloff = 0.45f
+            });
+            HeightTerraces.Add(new UnifiedMapHeightTerrace
+            {
+                Id = "west_watchtower_hill",
+                X = -17.5f,
+                Z = -8.0f,
+                Radius = 11.5f,
+                Height = 2.1f,
+                Falloff = 0.48f
+            });
+            HeightTerraces.Add(new UnifiedMapHeightTerrace
+            {
+                Id = "east_wind_bluff",
+                X = 17.5f,
+                Z = -7.0f,
+                Radius = 12.0f,
+                Height = 2.3f,
+                Falloff = 0.46f
+            });
+            HeightTerraces.Add(new UnifiedMapHeightTerrace
+            {
+                Id = "south_grove_knoll",
+                X = 14.0f,
+                Z = 14.0f,
+                Radius = 11.0f,
+                Height = 1.75f,
+                Falloff = 0.50f
+            });
+        }
 
         /// <summary>
         /// Resizes the map in server units (e.g. 1000x1000 -> 2000x2000 or 4000x4000) while preserving
@@ -100,7 +158,10 @@ namespace AtlasWorld.Client.World
                     string raw = File.ReadAllText(path);
                     var doc = JsonSerializer.Deserialize<UnifiedMapDocument>(raw);
                     if (doc != null)
+                    {
+                        doc.EnsureDefaultTerraces();
                         return doc;
+                    }
                 }
             }
             catch (Exception ex)
@@ -108,7 +169,9 @@ namespace AtlasWorld.Client.World
                 GD.Print($"[UnifiedMapDocument] Load fallback ({ex.Message})");
             }
 
-            return new UnifiedMapDocument { MapId = mapId };
+            var fallback = new UnifiedMapDocument { MapId = mapId };
+            fallback.EnsureDefaultTerraces();
+            return fallback;
         }
 
         /// <summary>
@@ -151,7 +214,7 @@ namespace AtlasWorld.Client.World
 
                 var opts = new JsonSerializerOptions { WriteIndented = true };
                 File.WriteAllText(savedPath, JsonSerializer.Serialize(this, opts));
-                GD.Print($"[MapBuilder] Saved unified map ({Width:0}x{Height:0}, {Props.Count} props, {StaticObstacles.Count} server AABBs, {SpawnAreas.Count} spawn zones) -> {savedPath}");
+                GD.Print($"[MapBuilder] Saved unified map ({Width:0}x{Height:0}, {Props.Count} props, {HeightTerraces.Count} terraces, {StaticObstacles.Count} server AABBs) -> {savedPath}");
                 return true;
             }
             catch (Exception ex)

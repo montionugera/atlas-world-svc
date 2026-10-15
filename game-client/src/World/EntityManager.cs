@@ -38,6 +38,12 @@ namespace AtlasWorld.Client.World
         public IReadOnlyDictionary<string, EntityView> Views => _views;
 
         /// <summary>
+        /// Optional reference to the active <see cref="UnifiedMapDocument"/> so 2D server-rs entities
+        /// (mobs, bots, players, projectiles) automatically snap their Y coordinate to the 3D terrain altitude.
+        /// </summary>
+        public UnifiedMapDocument? MapDocument { get; set; }
+
+        /// <summary>
         /// When true (used by <see cref="VerticalSliceRoot"/> which owns its bespoke hero
         /// <c>PlayerAvatar</c> node with attached 3D equipment), <see cref="IngestServerRsSnapshot"/>
         /// still feeds the own-player pose into <see cref="SnapshotInterpolator"/> and updates
@@ -168,7 +174,8 @@ namespace AtlasWorld.Client.World
                     _ => (EntityKind.Mob, EntityKeys.ServerRsMob(d.MobType)),
                 };
 
-                float wy = kind == EntityKind.Projectile ? 1.0f : 0f;
+                float groundY = TerrainElevation.SampleHeight(wx, wz, MapDocument);
+                float wy = kind == EntityKind.Projectile ? groundY + 1.0f : groundY;
 
                 float heading;
                 if (vx * vx + vz * vz > 0.0001f)
@@ -196,7 +203,7 @@ namespace AtlasWorld.Client.World
                     OwnPlayerHealth = d.Health;
                     OwnPlayerMaxHealth = d.MaxHealth;
                     OwnPlayerAlive = isAlive;
-                    OwnPlayerServerPosition = new Vector3(wx, 0f, wz);
+                    OwnPlayerServerPosition = new Vector3(wx, groundY, wz);
                     if (SuppressOwnPlayerView)
                         continue;
                 }

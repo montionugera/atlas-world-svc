@@ -9,12 +9,14 @@ namespace AtlasWorld.Client.World
     /// Partitions all props in a UnifiedMapDocument into a 2D grid of spatial chunks
     /// (default 24m x 24m) and only instantiates 3D Node3D scenes for chunks within
     /// ActiveChunkRadius around the camera or player focus point.
-    /// Out-of-range chunks are cleanly unloaded so GPU draw calls and memory stay bounded.
+    /// Automatically snaps prop Y altitude to <see cref="TerrainElevation"/> and registers
+    /// streamed props with <see cref="SmartCameraOccluder"/> for auto-transparent camera LOS fading.
     /// </summary>
     public sealed class MapChunkStreamer
     {
         private readonly Node3D _chunksRoot;
-        private UnifiedMapDocument _doc;
+        private readonly UnifiedMapDocument _doc;
+        private readonly SmartCameraOccluder? _occluder;
         private readonly Dictionary<Vector2I, List<UnifiedMapProp>> _chunkBuckets = new();
         private readonly Dictionary<Vector2I, Node3D> _loadedChunkNodes = new();
         private readonly Dictionary<string, PackedScene?> _sceneCache = new();
@@ -44,10 +46,11 @@ namespace AtlasWorld.Client.World
         public int LoadedPropCount => _loadedPropCount;
         public int TotalPropCount => _doc.Props.Count;
 
-        public MapChunkStreamer(Node3D chunksRoot, UnifiedMapDocument doc)
+        public MapChunkStreamer(Node3D chunksRoot, UnifiedMapDocument doc, SmartCameraOccluder? occluder = null)
         {
             _chunksRoot = chunksRoot;
             _doc = doc;
+            _occluder = occluder;
             RebuildIndex();
         }
 
@@ -100,6 +103,34 @@ namespace AtlasWorld.Client.World
         }
 
         /// <summary>
+        /// Re-snaps the Y altitude of all currently loaded chunk props to match sculpted terrain changes.
+        /// </summary>
+        public void RefreshLoadedPropsAltitude()
+        {
+            foreach (var kv in _loadedChunkNodes)
+            {
+                Node3D chunkNode = kv.Value;
+                if (!GodotObject.IsInstanceValid(chunkNode))
+                    continue;
+
+                if (!_chunkBuckets.TryGetValue(kv.Key, out var propsInChunk))
+                    continue;
+
+                int childCount = chunkNode.GetChildCount();
+                for (int i = 0; i < childCount && i < propsInChunk.Count; i++)
+                {
+                    if (chunkNode.GetChild(i) is Node3D instance)
+                    {
+                        var prop = propsInChunk[i];
+                        float groundY = TerrainElevation.SampleHeight(prop.X, prop.Z, _doc);
+                        prop.Y = Mathf.Round(groundY * 100f) / 100f;
+                        instance.Position = new Vector3(prop.X, groundY, prop.Z);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Incrementally registers a newly stamped prop into its spatial chunk and spawns it immediately
         /// if that chunk is within the active streaming window.
         /// </summary>
@@ -146,7 +177,7 @@ namespace AtlasWorld.Client.World
             _lastCenterChunk = center;
             _lastRadius = radius;
 
-            // 1. Unload any active chunk outside the Chebyshev radius (with 1-chunk hysteresis when moving)
+            // 1. Unload any active chunk outside the Chebyshev radius
             var toUnload = new List<Vector2I>();
             foreach (var kv in _loadedChunkNodes)
             {
@@ -210,12 +241,17 @@ namespace AtlasWorld.Client.World
 
             if (scene?.Instantiate() is Node3D instance)
             {
+                float groundY = TerrainElevation.SampleHeight(prop.X, prop.Z, _doc);
+                prop.Y = Mathf.Round(groundY * 100f) / 100f;
+
                 instance.Name = prop.Id;
-                instance.Position = new Vector3(prop.X, prop.Y, prop.Z);
+                instance.Position = new Vector3(prop.X, groundY, prop.Z);
                 instance.Rotation = new Vector3(0f, prop.RotY, 0f);
                 instance.Scale = Vector3.One * prop.Scale;
                 EntityView.ApplyAnimeToonShading(instance, EntityKind.Npc);
                 chunkNode.AddChild(instance);
+
+                _occluder?.RegisterPropRoot(instance, prop.ColliderHalfExtent, prop.Scale);
                 return true;
             }
             return false;

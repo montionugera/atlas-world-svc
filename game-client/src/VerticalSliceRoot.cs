@@ -25,6 +25,7 @@ namespace AtlasWorld.Client
     /// 6. 3D World Monsters (showcase + live server-rs mobs/bots/projectiles) with 3D overhead nameplates, HP bars &amp; target ring
     /// 7. Authoritative Player HP/SP, ROX Auto-Combat AFK loop, Quest Kill Tracker, Live Minimap Radar, DevTuningDrawer &amp; Mac 3D Map Builder
     /// 8. Scalable Map Expansion (1000x1000 -> 2000x2000 -> 4000x4000) &amp; On-Demand Spatial Chunk Streaming (MapChunkStreamer)
+    /// 9. 3D Altitude &amp; Terraced Elevation (TerrainElevation) + Smart Auto-Transparent Camera Occlusion Fader (SmartCameraOccluder)
     /// </summary>
     public partial class VerticalSliceRoot : Node3D
     {
@@ -55,6 +56,7 @@ namespace AtlasWorld.Client
         private MapBuilderDock? _mapBuilderDock;
         private UnifiedMapDocument _mapDoc = null!;
         private MapChunkStreamer? _chunkStreamer;
+        private readonly SmartCameraOccluder _cameraOccluder = new();
         private Node3D? _meadowRingRoot;
 
         private Vector2 _touchMoveIntent = Vector2.Zero;
@@ -111,6 +113,7 @@ namespace AtlasWorld.Client
 
         public EntityManager Entities => _entityManager;
         public bool IsAutoCombatEnabled => _autoCombatEnabled;
+        public SmartCameraOccluder CameraOccluder => _cameraOccluder;
 
         public override void _Ready()
         {
@@ -219,7 +222,7 @@ namespace AtlasWorld.Client
                     uiNode.AddChild(_mapBuilderDock);
                     if (_chunkStreamer != null)
                     {
-                        _mapBuilderDock.Initialize(this, _mapDoc, _chunkStreamer);
+                        _mapBuilderDock.Initialize(this, _mapDoc, _chunkStreamer, _cameraOccluder);
                     }
                 }
 
@@ -361,6 +364,19 @@ namespace AtlasWorld.Client
                         tween.TweenProperty(PlayerAvatar, "scale", Vector3.One, 0.15);
                     }
                 };
+            }
+
+            // Optional test camera pose to demonstrate Smart Camera LOS Occlusion Fading & 3D Altitude
+            if (OS.GetEnvironment("ATLAS_TEST_OCCLUSION_POSE") == "1" && PlayerAvatar != null)
+            {
+                float tx = -15.6f;
+                float tz = -12.6f;
+                float ty = TerrainElevation.SampleHeight(tx, tz, _mapDoc);
+                PlayerAvatar.Position = new Vector3(tx, ty, tz);
+                _cameraYaw = -0.35f;
+                _cameraPitch = 0.34f;
+                _cameraDistance = 6.8f;
+                _chunkStreamer?.UpdateStreaming(PlayerAvatar.Position, forceReload: true);
             }
 
             // Optional auto-combat startup flag for automated Mac tests (ATLAS_AUTO_COMBAT_ON_START=1)
@@ -545,8 +561,9 @@ namespace AtlasWorld.Client
         }
 
         /// <summary>
-        /// Synchronizes ServerArenaCenter and dynamically resizes the 3D meadow Floor PlaneMesh
-        /// when the map is expanded (1000x1000 -> 2000x2000 -> 4000x4000).
+        /// Synchronizes ServerArenaCenter, dynamically resizes and subdivides the 3D meadow Floor PlaneMesh,
+        /// uploads 3D Altitude &amp; Terrace shader uniforms to the GPU vertex shader, and snaps static scene props
+        /// to their terrain elevation.
         /// </summary>
         public void SyncMapFloorAndBounds()
         {
@@ -554,6 +571,12 @@ namespace AtlasWorld.Client
                 return;
 
             ServerArenaCenter = _mapDoc.ServerCenter;
+            TerrainElevation.GlobalAmplitude = _mapDoc.TerrainAmplitude;
+
+            if (_entityManager != null)
+            {
+                _entityManager.MapDocument = _mapDoc;
+            }
 
             var floorNode = GetNodeOrNull<MeshInstance3D>("Floor");
             if (floorNode?.Mesh is PlaneMesh plane)
@@ -563,13 +586,66 @@ namespace AtlasWorld.Client
                 float floorW = Mathf.Max(200f, worldW * 1.35f);
                 float floorH = Mathf.Max(200f, worldH * 1.35f);
                 plane.Size = new Vector2(floorW, floorH);
+                // High vertex subdivision so rolling hills and sculpted terraces deform smoothly
+                plane.SubdivideWidth = 140;
+                plane.SubdivideDepth = 140;
+            }
+
+            if (floorNode?.GetSurfaceOverrideMaterial(0) is ShaderMaterial shaderMat)
+            {
+                shaderMat.SetShaderParameter("terrain_amplitude", _mapDoc.TerrainAmplitude);
+                int tCount = Math.Min(16, _mapDoc.HeightTerraces.Count);
+                shaderMat.SetShaderParameter("terrace_count", tCount);
+
+                var vec4Array = new Godot.Collections.Array<Vector4>();
+                var falloffArray = new Godot.Collections.Array<float>();
+                for (int i = 0; i < 16; i++)
+                {
+                    if (i < tCount)
+                    {
+                        var t = _mapDoc.HeightTerraces[i];
+                        vec4Array.Add(new Vector4(t.X, t.Z, t.Radius, t.Height));
+                        falloffArray.Add(t.Falloff);
+                    }
+                    else
+                    {
+                        vec4Array.Add(Vector4.Zero);
+                        falloffArray.Add(0.45f);
+                    }
+                }
+                shaderMat.SetShaderParameter("terrace_data", vec4Array);
+                shaderMat.SetShaderParameter("terrace_falloff", falloffArray);
+            }
+
+            // Snap static scene props (Trees, Rocks, Bushes, CobblestonePath, Props) to the 3D terrain altitude
+            var envProps = GetNodeOrNull<Node3D>("EnvironmentProps");
+            if (envProps != null)
+            {
+                foreach (Node group in envProps.GetChildren())
+                {
+                    if (group is not Node3D group3D || group3D == _meadowRingRoot)
+                        continue;
+
+                    bool isPathTile = group3D.Name == "CobblestonePath";
+                    foreach (Node prop in group3D.GetChildren())
+                    {
+                        if (prop is Node3D prop3D)
+                        {
+                            float groundY = TerrainElevation.SampleHeight(prop3D.Position.X, prop3D.Position.Z, _mapDoc);
+                            prop3D.Position = new Vector3(
+                                prop3D.Position.X,
+                                groundY + (isPathTile ? 0.02f : 0f),
+                                prop3D.Position.Z);
+                        }
+                    }
+                }
             }
         }
 
         /// <summary>
-        /// Loads the unified map JSON (content/maps/freja-south-gate.json) and initializes
-        /// the On-Demand Spatial Chunk Streamer (MapChunkStreamer) so only nearby 24m x 24m
-        /// chunks are instantiated in the 3D scene tree.
+        /// Loads the unified map JSON (content/maps/freja-south-gate.json), initializes
+        /// the On-Demand Spatial Chunk Streamer (MapChunkStreamer), and registers all 3D props
+        /// with SmartCameraOccluder so any prop blocking the camera auto-fades cleanly.
         /// </summary>
         private void PopulateMeadowEnvironment()
         {
@@ -579,6 +655,7 @@ namespace AtlasWorld.Client
 
             // Upgrade existing static scene props to warm anime toon shading
             EntityView.ApplyAnimeToonShading(envProps, EntityKind.Npc);
+            _cameraOccluder.RegisterEnvironmentHierarchy(envProps);
 
             _meadowRingRoot = new Node3D { Name = "MeadowRing" };
             envProps.AddChild(_meadowRingRoot);
@@ -586,7 +663,7 @@ namespace AtlasWorld.Client
             _mapDoc = UnifiedMapDocument.LoadOrDefault("freja-south-gate");
             SyncMapFloorAndBounds();
 
-            _chunkStreamer = new MapChunkStreamer(_meadowRingRoot, _mapDoc);
+            _chunkStreamer = new MapChunkStreamer(_meadowRingRoot, _mapDoc, _cameraOccluder);
             Vector3 initialFocus = PlayerAvatar?.Position ?? Vector3.Zero;
             _chunkStreamer.UpdateStreaming(initialFocus, forceReload: true);
         }
@@ -630,7 +707,7 @@ namespace AtlasWorld.Client
                 hp: 1280000,
                 maxHp: 1500000,
                 segments: 4,
-                pos: new Vector3(0f, 0f, -4.8f),
+                pos: new Vector3(0f, TerrainElevation.SampleHeight(0f, -4.8f, _mapDoc), -4.8f),
                 scale: 1.35f,
                 nameColor: new Color(1.0f, 0.86f, 0.32f, 1f)
             );
@@ -646,7 +723,7 @@ namespace AtlasWorld.Client
                 hp: 420000,
                 maxHp: 420000,
                 segments: 2,
-                pos: new Vector3(3.8f, 0f, -3.6f),
+                pos: new Vector3(3.8f, TerrainElevation.SampleHeight(3.8f, -3.6f, _mapDoc), -3.6f),
                 scale: 1.05f,
                 nameColor: new Color(1.0f, 0.55f, 0.45f, 1f)
             );
@@ -845,7 +922,8 @@ namespace AtlasWorld.Client
             Node3D? targetRoot = GetActiveTargetRoot();
             if (targetRoot != null)
             {
-                _targetRingMesh.Position = new Vector3(targetRoot.Position.X, 0.04f, targetRoot.Position.Z);
+                float groundY = TerrainElevation.SampleHeight(targetRoot.Position.X, targetRoot.Position.Z, _mapDoc);
+                _targetRingMesh.Position = new Vector3(targetRoot.Position.X, groundY + 0.04f, targetRoot.Position.Z);
             }
         }
 
@@ -1390,6 +1468,13 @@ namespace AtlasWorld.Client
                     }
                 }
 
+                // Snap PlayerAvatar Y altitude smoothly to the 3D terrain elevation
+                float targetGroundY = TerrainElevation.SampleHeight(PlayerAvatar.Position.X, PlayerAvatar.Position.Z, _mapDoc);
+                PlayerAvatar.Position = new Vector3(
+                    PlayerAvatar.Position.X,
+                    Mathf.Lerp(PlayerAvatar.Position.Y, targetGroundY, dt * 16.0f),
+                    PlayerAvatar.Position.Z);
+
                 // Stream 3D chunks in/out on demand as the player walks across the map
                 _chunkStreamer?.UpdateStreaming(PlayerAvatar.Position);
 
@@ -1423,7 +1508,7 @@ namespace AtlasWorld.Client
                     Connection?.SendInput(0f, 0f, targetId: targetId, targetX: targetX, targetY: targetY);
                     _wasMovingLastFrame = false;
                 }
-                else if (PlayerAvatar != null && _entityManager != null && _entityManager.HasOwnPlayerState && _dashDuration <= 0f)
+                else if (PlayerAvatar != null && _entityManager != null && _entityManager.HasOwnPlayerState && _dashDuration <= 0f && OS.GetEnvironment("ATLAS_TEST_OCCLUSION_POSE") != "1")
                 {
                     // Gently settle onto server-rs authoritative stop position
                     Vector3 serverPos = _entityManager.OwnPlayerServerPosition;
@@ -1433,13 +1518,22 @@ namespace AtlasWorld.Client
                     }
                 }
 
+                if (PlayerAvatar != null)
+                {
+                    float groundY = TerrainElevation.SampleHeight(PlayerAvatar.Position.X, PlayerAvatar.Position.Z, _mapDoc);
+                    PlayerAvatar.Position = new Vector3(
+                        PlayerAvatar.Position.X,
+                        Mathf.Lerp(PlayerAvatar.Position.Y, groundY, dt * 16.0f),
+                        PlayerAvatar.Position.Z);
+                }
+
                 if (_attackAnimHoldSec <= 0f)
                 {
                     _playerAnimController?.Update(isAlive: true, velocity: Vector3.Zero, isAttacking: false);
                 }
             }
 
-            // Smooth spherical follow camera
+            // Smooth spherical follow camera & Smart Auto-Transparent Camera Occlusion Fader
             if (MainCamera != null && PlayerAvatar != null)
             {
                 Vector3 focusTarget = PlayerAvatar.Position + new Vector3(0f, 1.25f, 0f);
@@ -1452,8 +1546,21 @@ namespace AtlasWorld.Client
                     Mathf.Cos(_cameraYaw) * horizDist
                 );
 
-                MainCamera.Position = MainCamera.Position.Lerp(focusTarget + offset, dt * 8.0f);
+                Vector3 desiredCamPos = focusTarget + offset;
+                // Prevent camera from dipping underground when orbiting near a steep hill slope
+                float camGroundY = TerrainElevation.SampleHeight(desiredCamPos.X, desiredCamPos.Z, _mapDoc);
+                desiredCamPos.Y = Mathf.Max(desiredCamPos.Y, camGroundY + 0.85f);
+
+                MainCamera.Position = MainCamera.Position.Lerp(desiredCamPos, dt * 8.0f);
                 MainCamera.LookAt(focusTarget, Vector3.Up);
+
+                // Automatically fade any 3D tree, pillar, boulder, or wall blocking the camera -> player/target LOS!
+                Node3D? activeTarget = GetActiveTargetRoot();
+                _cameraOccluder.Update(
+                    dt,
+                    MainCamera.GlobalPosition,
+                    focusTarget,
+                    activeTarget?.GlobalPosition);
             }
         }
 
