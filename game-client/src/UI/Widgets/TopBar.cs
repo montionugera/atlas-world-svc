@@ -39,7 +39,10 @@ namespace AtlasWorld.Client.UI.Widgets
         [Export] public Label LocationLabel = null!;
         [Export] public Label PingLabel = null!;
 
+        public event System.Action? TimeBadgePressed;
+
         private MinimapRadarOverlay? _radarOverlay;
+        private Button? _timeOfDayBtn;
 
         public override void _Ready()
         {
@@ -98,7 +101,59 @@ namespace AtlasWorld.Client.UI.Widgets
                 minimapCircle.AddChild(_radarOverlay);
             }
 
+            var minimapBox = GetNodeOrNull<VBoxContainer>("HBox/MinimapBox");
+            if (minimapBox != null)
+            {
+                _timeOfDayBtn = new Button
+                {
+                    Name = "WorldClockPill",
+                    Text = "\u2600 10:30 DAY",
+                    CustomMinimumSize = new Vector2(88, 18),
+                    TooltipText = "Click or press [T] to cycle Dawn / Noon / Sunset / Night"
+                };
+                _timeOfDayBtn.AddThemeFontSizeOverride("font_size", 9);
+                _timeOfDayBtn.AddThemeColorOverride("font_color", new Color(1.0f, 0.92f, 0.55f));
+                var clockStyle = new StyleBoxFlat
+                {
+                    BgColor = new Color(0.05f, 0.08f, 0.14f, 0.92f),
+                    BorderWidthLeft = 1,
+                    BorderWidthTop = 1,
+                    BorderWidthRight = 1,
+                    BorderWidthBottom = 1,
+                    BorderColor = new Color(0.92f, 0.78f, 0.38f, 0.85f),
+                    CornerRadiusTopLeft = 6,
+                    CornerRadiusTopRight = 6,
+                    CornerRadiusBottomLeft = 6,
+                    CornerRadiusBottomRight = 6,
+                    ContentMarginLeft = 4,
+                    ContentMarginRight = 4,
+                    ContentMarginTop = 1,
+                    ContentMarginBottom = 1
+                };
+                _timeOfDayBtn.AddThemeStyleboxOverride("normal", clockStyle);
+                _timeOfDayBtn.AddThemeStyleboxOverride("hover", clockStyle);
+                _timeOfDayBtn.AddThemeStyleboxOverride("pressed", clockStyle);
+                _timeOfDayBtn.Pressed += () => TimeBadgePressed?.Invoke();
+                minimapBox.AddChild(_timeOfDayBtn);
+            }
+
             SetLocation("Freja", 500, 500);
+        }
+
+        public void SetWorldClock(string iconGlyph, string clockHHMM, string phaseLabel, WorldDayPhase phase)
+        {
+            if (_timeOfDayBtn == null)
+                return;
+
+            _timeOfDayBtn.Text = $"{iconGlyph} {clockHHMM} {phaseLabel}";
+            Color tint = phase switch
+            {
+                WorldDayPhase.Dawn => new Color(1.0f, 0.78f, 0.58f),
+                WorldDayPhase.Day => new Color(1.0f, 0.94f, 0.55f),
+                WorldDayPhase.Dusk => new Color(1.0f, 0.64f, 0.42f),
+                _ => new Color(0.68f, 0.84f, 1.0f)
+            };
+            _timeOfDayBtn.AddThemeColorOverride("font_color", tint);
         }
 
         private static void AttachIconOverlay(Button btn, string iconKind, string caption, bool showNotificationDot)

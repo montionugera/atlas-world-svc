@@ -57,6 +57,7 @@ namespace AtlasWorld.Client
         private UnifiedMapDocument _mapDoc = null!;
         private MapChunkStreamer? _chunkStreamer;
         private readonly SmartCameraOccluder _cameraOccluder = new();
+        private readonly DayNightCycleController _dayNightCycle = new();
         private Node3D? _meadowRingRoot;
 
         private Vector2 _touchMoveIntent = Vector2.Zero;
@@ -114,6 +115,7 @@ namespace AtlasWorld.Client
         public EntityManager Entities => _entityManager;
         public bool IsAutoCombatEnabled => _autoCombatEnabled;
         public SmartCameraOccluder CameraOccluder => _cameraOccluder;
+        public DayNightCycleController DayNightCycle => _dayNightCycle;
 
         public override void _Ready()
         {
@@ -201,8 +203,9 @@ namespace AtlasWorld.Client
                 }
             }
 
-            // 3. Populate Stylized Meadow Foliage Ring via On-Demand MapChunkStreamer & Spawn 3D World Monsters
+            // 3. Populate Stylized Meadow Foliage Ring via On-Demand MapChunkStreamer, Day/Night World Clock & Spawn 3D World Monsters
             PopulateMeadowEnvironment();
+            _dayNightCycle.Initialize(this, _mapDoc);
             SpawnWorldMonsters();
 
             // 4. Apply Joymify Design System Theme to all UI controls & instantiate MetaShell + DevTuningDrawer + MapBuilderDock
@@ -338,9 +341,15 @@ namespace AtlasWorld.Client
                 };
             }
 
-            // 7. Wire TopBar to MetaShell & WardrobeModal
+            // 7. Wire TopBar to MetaShell, WardrobeModal & World Clock Day/Night Badge
             if (NavigationTopBar != null)
             {
+                NavigationTopBar.TimeBadgePressed += CycleWorldTimeOfDay;
+                NavigationTopBar.SetWorldClock(
+                    _dayNightCycle.PhaseIconGlyph,
+                    _dayNightCycle.FormattedClockString,
+                    _dayNightCycle.PhaseDisplayName,
+                    _dayNightCycle.CurrentPhase);
                 NavigationTopBar.BagPressed += () => _metaShell?.OpenTab("Inventory");
                 NavigationTopBar.WardrobePressed += () => EquipmentWardrobeModal?.Open();
                 NavigationTopBar.QuestPressed += () => _metaShell?.OpenTab("Quests");
@@ -434,6 +443,18 @@ namespace AtlasWorld.Client
 
             var hud = GetNodeOrNull<Control>("UI/HUD");
             if (hud != null) hud.Visible = visible;
+        }
+
+        private void CycleWorldTimeOfDay()
+        {
+            WorldDayPhase nextPhase = _dayNightCycle.CycleNextPreset(_mapDoc);
+            NavigationTopBar?.SetWorldClock(
+                _dayNightCycle.PhaseIconGlyph,
+                _dayNightCycle.FormattedClockString,
+                _dayNightCycle.PhaseDisplayName,
+                nextPhase);
+            ChatWidget?.AppendSystemMessage(
+                $"World Time shifted to {_dayNightCycle.FormattedClockString} ({_dayNightCycle.PhaseDisplayName}).");
         }
 
         private void ToggleAutoCombat()
@@ -1073,6 +1094,10 @@ namespace AtlasWorld.Client
                         ToggleAutoCombat();
                         GetViewport()?.SetInputAsHandled();
                         break;
+                    case Key.T:
+                        CycleWorldTimeOfDay();
+                        GetViewport()?.SetInputAsHandled();
+                        break;
                     case Key.B:
                     case Key.I:
                         if (EquipmentWardrobeModal != null)
@@ -1264,6 +1289,14 @@ namespace AtlasWorld.Client
         {
             float dt = (float)delta;
             _pulseTime += dt;
+
+            // Advance 24-hour Day/Night cycle & update TopBar World Clock badge
+            _dayNightCycle.Update(dt, _mapDoc);
+            NavigationTopBar?.SetWorldClock(
+                _dayNightCycle.PhaseIconGlyph,
+                _dayNightCycle.FormattedClockString,
+                _dayNightCycle.PhaseDisplayName,
+                _dayNightCycle.CurrentPhase);
 
             // When Mac 3D Map Builder Studio is active, drive the free-fly / orbit studio camera
             if (_mapBuilderDock != null && _mapBuilderDock.IsBuilderActive)

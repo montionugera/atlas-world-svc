@@ -455,6 +455,65 @@ namespace AtlasWorld.Client.UI.Widgets
             occSliderRow.AddChild(_occlusionAlphaValLabel);
             vbox.AddChild(occSliderRow);
 
+            var timeRow = new HBoxContainer();
+            var timeLbl = new Label { Text = "World Time:", CustomMinimumSize = new Vector2(86, 0) };
+            timeLbl.AddThemeFontSizeOverride("font_size", 10);
+            var timeSlider = new HSlider
+            {
+                MinValue = 0.0,
+                MaxValue = 23.95,
+                Step = 0.25,
+                Value = _root.DayNightCycle.TimeOfDayHours,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill
+            };
+            var timeValLabel = new Label
+            {
+                Text = $"{_root.DayNightCycle.FormattedClockString} {_root.DayNightCycle.PhaseDisplayName}",
+                CustomMinimumSize = new Vector2(72, 0),
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            timeValLabel.AddThemeFontSizeOverride("font_size", 10);
+            timeSlider.ValueChanged += val =>
+            {
+                _root.DayNightCycle.AutoAdvance = false;
+                _root.DayNightCycle.SetTimeOfDay((float)val, _doc);
+                timeValLabel.Text = $"{_root.DayNightCycle.FormattedClockString} {_root.DayNightCycle.PhaseDisplayName}";
+            };
+            timeRow.AddChild(timeLbl);
+            timeRow.AddChild(timeSlider);
+            timeRow.AddChild(timeValLabel);
+            vbox.AddChild(timeRow);
+
+            var timePresetRow = new HBoxContainer();
+            timePresetRow.AddThemeConstantOverride("separation", 4);
+            (float hr, string label)[] timePresets =
+            {
+                (6.5f, "\u2600 Dawn"),
+                (12.5f, "\u2600 Noon"),
+                (18.25f, "\u25d0 Sunset"),
+                (22.5f, "\u263e Night")
+            };
+            foreach (var (hr, lbl) in timePresets)
+            {
+                float targetHr = hr;
+                var pBtn = new Button
+                {
+                    Text = lbl,
+                    SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                    CustomMinimumSize = new Vector2(0, 22)
+                };
+                pBtn.AddThemeFontSizeOverride("font_size", 9);
+                pBtn.Pressed += () =>
+                {
+                    _root.DayNightCycle.AutoAdvance = false;
+                    _root.DayNightCycle.SetTimeOfDay(targetHr, _doc);
+                    timeSlider.Value = targetHr;
+                    timeValLabel.Text = $"{_root.DayNightCycle.FormattedClockString} {_root.DayNightCycle.PhaseDisplayName}";
+                };
+                timePresetRow.AddChild(pBtn);
+            }
+            vbox.AddChild(timePresetRow);
+
             vbox.AddChild(new HSeparator());
 
             // Section 3: Asset Palette
