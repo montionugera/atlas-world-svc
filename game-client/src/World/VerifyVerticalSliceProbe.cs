@@ -82,7 +82,42 @@ namespace AtlasWorld.Client.World
                     return 1;
                 }
 
-                GD.Print($"[VerticalSliceProbe]   PASS  MMORPG Dual-Track Growth & Quest Board Catalogs (Base Lv.{growth.BaseLevel}, Job Lv.{growth.JobLevel}, Class={growth.CurrentJobDisplayName}, ActiveQuest='{growth.ActiveQuest.Title}')");
+                // Phase 3: Equipment Refine (+0 -> +4 safe zone), Monster Card Socketing, and Handbook Scenic Vista
+                for (int r = 0; r < 4; r++)
+                {
+                    if (!growth.AttemptRefineWeapon(out _))
+                    {
+                        GD.PrintErr($"[VerticalSliceProbe]   FAIL  Safe-zone refine (+0..+4) failed at step {r}");
+                        return 1;
+                    }
+                }
+
+                if (growth.WeaponRefineLevel != 4)
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Expected WeaponRefineLevel=4 after 4 safe refines, got {growth.WeaponRefineLevel}");
+                    return 1;
+                }
+
+                var socketedCard = growth.CycleNextSocketedCard(out string cardMsg);
+                if (socketedCard == null || string.IsNullOrEmpty(cardMsg))
+                {
+                    GD.PrintErr("[VerticalSliceProbe]   FAIL  CycleNextSocketedCard did not socket a Monster Card");
+                    return 1;
+                }
+
+                if (!growth.UnlockWatchtowerScenicVista(out string? vistaMsg) || string.IsNullOrEmpty(vistaMsg))
+                {
+                    GD.PrintErr("[VerticalSliceProbe]   FAIL  UnlockWatchtowerScenicVista did not unlock Watchtower 2F Scenic Vista");
+                    return 1;
+                }
+
+                if (growth.TotalBonusPAtk < 28 || growth.TotalBonusMaxHp < 60)
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Combined Refine+Card+Handbook passives too low: P.ATK=+{growth.TotalBonusPAtk}, MaxHP=+{growth.TotalBonusMaxHp}");
+                    return 1;
+                }
+
+                GD.Print($"[VerticalSliceProbe]   PASS  MMORPG Dual-Track Growth, Refine +{growth.WeaponRefineLevel}, Card ('{socketedCard.Name}'), Handbook Vista (+{growth.TotalBonusPAtk} P.ATK, +{growth.TotalBonusMaxHp} MaxHP)");
                 return 0;
             }
             catch (Exception ex)

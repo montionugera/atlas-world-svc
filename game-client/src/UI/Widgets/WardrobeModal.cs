@@ -6,11 +6,11 @@ using AtlasWorld.Client.Meta;
 namespace AtlasWorld.Client.UI.Widgets
 {
     /// <summary>
-    /// Split-screen Wardrobe & Equipment Modal aligned to the Joymify Design System.
+    /// Split-screen Wardrobe, Equipment Refine (+0..+15) &amp; Monster Card Socket Modal aligned to the Joymify Design System.
     /// Features:
     /// - Left: Interactive 3D Character SubViewport with touch swipe-to-rotate
     /// - Right: Category tabs (Weapons, Armor, Hair, Sets) + Item Card Grid with Joymify rarity borders
-    /// - Bottom Tray: Stat bonuses, [ทดลอง Try On] (GhostButton) and [สวมใส่ Equip] (PrimaryButton)
+    /// - Bottom Tray: Stat bonuses, [ทดลอง Try On], [สวมใส่ Equip], [ตีบวก Refine +1], and [ใส่การ์ด Socket Card]
     /// - 100% NativeAOT safe, zero raw hex values, fully driven by Design tokens
     /// </summary>
     public partial class WardrobeModal : Control
@@ -40,6 +40,12 @@ namespace AtlasWorld.Client.UI.Widgets
         private string _activeCategory = "weapons";
         private string? _selectedItemId = null;
         private readonly Dictionary<string, string> _equippedSlots = new();
+        private MmorpgGrowthManager? _growth;
+        private Button? _refineBtn;
+        private Button? _socketCardBtn;
+        private Label? _growthSummaryLabel;
+
+        public event Action<string>? GrowthActionTriggered;
 
         public record WardrobeItem(string Id, string Name, string Slot, int Rarity, string Stats, Color ColorTint, string? AssetPath = null);
 
@@ -84,6 +90,13 @@ namespace AtlasWorld.Client.UI.Widgets
                 new("set_crossroads", "Crossroads Traveler [ผู้เดินทางแยกทิศ]", "set", 3, "SET: MOVE SPEED +20% | EXP +15%", Design.Palette.Info),
             },
         };
+
+        public void BindGrowthManager(MmorpgGrowthManager growth)
+        {
+            _growth = growth;
+            EnsureRefineAndCardControls();
+            RefreshGrowthDisplay();
+        }
 
         public override void _Ready()
         {
@@ -151,8 +164,92 @@ namespace AtlasWorld.Client.UI.Widgets
                 SelectedItemStats.AddThemeColorOverride("font_color", Design.Colors.TextSecondary);
             }
 
+            EnsureRefineAndCardControls();
+
             // Initial category
             SelectCategory("weapons");
+        }
+
+        private void EnsureRefineAndCardControls()
+        {
+            if (_refineBtn != null || EquipBtn == null)
+                return;
+
+            var buttonParent = EquipBtn.GetParent();
+            if (buttonParent != null)
+            {
+                _refineBtn = new Button
+                {
+                    Name = "RefineWeaponBtn",
+                    Text = "⚒ Refine +1",
+                    CustomMinimumSize = new Vector2(118, 38),
+                    ThemeTypeVariation = Design.Variants.PrimaryButton
+                };
+                _refineBtn.Pressed += OnRefinePressed;
+                buttonParent.AddChild(_refineBtn);
+
+                _socketCardBtn = new Button
+                {
+                    Name = "SocketCardBtn",
+                    Text = "🃏 Socket Card",
+                    CustomMinimumSize = new Vector2(124, 38),
+                    ThemeTypeVariation = Design.Variants.GhostButton
+                };
+                _socketCardBtn.Pressed += OnSocketCardPressed;
+                buttonParent.AddChild(_socketCardBtn);
+            }
+
+            if (SelectedItemStats?.GetParent() is Control infoParent && _growthSummaryLabel == null)
+            {
+                _growthSummaryLabel = new Label
+                {
+                    Name = "GrowthSummaryLabel",
+                    AutowrapMode = TextServer.AutowrapMode.WordSmart
+                };
+                _growthSummaryLabel.AddThemeColorOverride("font_color", Design.Palette.Gold400);
+                _growthSummaryLabel.AddThemeFontSizeOverride("font_size", 12);
+                infoParent.AddChild(_growthSummaryLabel);
+            }
+        }
+
+        private void OnRefinePressed()
+        {
+            if (_growth == null) return;
+            _growth.AttemptRefineWeapon(out string msg);
+            RefreshGrowthDisplay();
+            OnTryOnPressed();
+            GrowthActionTriggered?.Invoke(msg);
+        }
+
+        private void OnSocketCardPressed()
+        {
+            if (_growth == null) return;
+            _growth.CycleNextSocketedCard(out string msg);
+            RefreshGrowthDisplay();
+            OnTryOnPressed();
+            GrowthActionTriggered?.Invoke(msg);
+        }
+
+        public void RefreshGrowthDisplay()
+        {
+            if (_growth == null) return;
+            if (_refineBtn != null)
+            {
+                int ratePct = _growth.NextRefineSuccessRateBps / 100;
+                _refineBtn.Text = _growth.WeaponRefineLevel >= 15
+                    ? "⚒ MAX +15"
+                    : $"⚒ Refine +{_growth.WeaponRefineLevel + 1} ({ratePct}%)";
+            }
+            if (_growthSummaryLabel != null)
+            {
+                _growthSummaryLabel.Text = _growth.FormatGrowthSummaryLine();
+            }
+            if (_selectedItemId != null && CatalogItems.TryGetValue(_activeCategory, out var items))
+            {
+                var item = items.Find(i => i.Id == _selectedItemId);
+                if (item != null)
+                    SelectItem(item);
+            }
         }
 
         private void WireTab(Button? btn, string category)
@@ -256,14 +353,26 @@ namespace AtlasWorld.Client.UI.Widgets
         {
             _selectedItemId = item.Id;
 
+            string refinePrefix = (_growth != null && _growth.WeaponRefineLevel > 0 && item.Slot == "weapon")
+                ? $"+{_growth.WeaponRefineLevel} "
+                : "";
+
             if (SelectedItemTitle != null)
             {
-                SelectedItemTitle.Text = $"{item.Name}";
+                SelectedItemTitle.Text = $"{refinePrefix}{item.Name}";
             }
 
             if (SelectedItemStats != null)
             {
-                SelectedItemStats.Text = $"Slot: {item.Slot.ToUpper()} | {item.Stats}";
+                string cardTag = "";
+                if (_growth != null)
+                {
+                    if (item.Slot == "weapon" && !string.IsNullOrEmpty(_growth.SocketedWeaponCardId))
+                        cardTag = $" | Card: {_growth.ActiveWeaponCardName}";
+                    else if (item.Slot == "armor" && !string.IsNullOrEmpty(_growth.SocketedArmorCardId))
+                        cardTag = $" | Card: {_growth.ActiveArmorCardName}";
+                }
+                SelectedItemStats.Text = $"Slot: {item.Slot.ToUpper()} | {item.Stats}{cardTag}";
             }
         }
 
@@ -341,6 +450,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
         public void Open()
         {
+            RefreshGrowthDisplay();
             SetVisible(true);
             MetaGateway.CapturesInput = true;
         }

@@ -32,6 +32,34 @@ namespace AtlasWorld.Client.Meta
         [JsonPropertyName("assetStudioKey")] public string AssetStudioKey { get; set; } = "";
     }
 
+    public sealed class CardCatalogDef
+    {
+        [JsonPropertyName("id")] public string Id { get; set; } = "";
+        [JsonPropertyName("name")] public string Name { get; set; } = "";
+        [JsonPropertyName("slot")] public string Slot { get; set; } = "weapon";
+        [JsonPropertyName("mobId")] public string MobId { get; set; } = "";
+        [JsonPropertyName("equipStats")] public Dictionary<string, int> EquipStats { get; set; } = new();
+        [JsonPropertyName("handbookDepositStats")] public Dictionary<string, int> HandbookDepositStats { get; set; } = new();
+        [JsonPropertyName("assetStudioKey")] public string AssetStudioKey { get; set; } = "";
+    }
+
+    public sealed class HandbookTierDef
+    {
+        [JsonPropertyName("requiredCount")] public int RequiredCount { get; set; } = 10;
+        [JsonPropertyName("unlockNote")] public string UnlockNote { get; set; } = "";
+        [JsonPropertyName("bonusStat")] public string BonusStat { get; set; } = "";
+        [JsonPropertyName("bonusValue")] public int BonusValue { get; set; }
+    }
+
+    public sealed class HandbookCatalogDef
+    {
+        [JsonPropertyName("id")] public string Id { get; set; } = "";
+        [JsonPropertyName("category")] public string Category { get; set; } = "";
+        [JsonPropertyName("title")] public string Title { get; set; } = "";
+        [JsonPropertyName("targetId")] public string TargetId { get; set; } = "";
+        [JsonPropertyName("tiers")] public List<HandbookTierDef> Tiers { get; set; } = new();
+    }
+
     public sealed class QuestObjectiveDef
     {
         [JsonPropertyName("id")] public string Id { get; set; } = "";
@@ -76,13 +104,15 @@ namespace AtlasWorld.Client.Meta
     }
 
     /// <summary>
-    /// Client-side MMORPG Growth, Job Progression &amp; Quest Board tracker backed directly by
-    /// <c>contracts/content/jobs.json</c> and <c>contracts/content/quest_board.json</c>.
+    /// Client-side MMORPG Growth, Job Progression, Equipment Refine (+0..+15), Monster Card Socketing,
+    /// Adventurer Handbook passives &amp; Quest Board tracker backed directly by <c>contracts/content/*.json</c>.
     /// </summary>
     public sealed class MmorpgGrowthManager
     {
         public List<JobCatalogDef> Jobs { get; private set; } = new();
         public List<QuestBoardDef> Quests { get; private set; } = new();
+        public List<CardCatalogDef> Cards { get; private set; } = new();
+        public List<HandbookCatalogDef> Handbook { get; private set; } = new();
 
         public int BaseLevel { get; private set; } = 12;
         public int JobLevel { get; private set; } = 15;
@@ -91,14 +121,26 @@ namespace AtlasWorld.Client.Meta
         public string CurrentJobId { get; private set; } = "swordman";
         public int ActiveQuestIndex { get; private set; } = 0;
         public int ActiveQuestProgress { get; private set; } = 0;
+
+        // Phase 3: Equipment Refine (+0..+15), Monster Card Slots & Adventurer Handbook Milestones
+        public int WeaponRefineLevel { get; private set; } = 0;
+        public int WeaponRefinePityCount { get; private set; } = 0;
+        public string? SocketedWeaponCardId { get; private set; } = null;
+        public string? SocketedArmorCardId { get; private set; } = null;
+        public HashSet<string> DepositedCardIds { get; } = new();
         public int HandbookSlimeKills { get; private set; } = 0;
         public int HandbookBoarKills { get; private set; } = 0;
+        public bool HandbookWatchtowerVistaUnlocked { get; private set; } = false;
+
+        private int _cardCycleIndex = -1;
 
         public void LoadCatalogs()
         {
             string repoRoot = ProjectSettings.GlobalizePath("res://..").TrimEnd('/', '\\');
             string jobsPath = Path.Combine(repoRoot, "contracts", "content", "jobs.json");
             string questsPath = Path.Combine(repoRoot, "contracts", "content", "quest_board.json");
+            string cardsPath = Path.Combine(repoRoot, "contracts", "content", "cards.json");
+            string handbookPath = Path.Combine(repoRoot, "contracts", "content", "handbook.json");
 
             try
             {
@@ -109,6 +151,14 @@ namespace AtlasWorld.Client.Meta
                 if (File.Exists(questsPath))
                 {
                     Quests = JsonSerializer.Deserialize<List<QuestBoardDef>>(File.ReadAllText(questsPath)) ?? new();
+                }
+                if (File.Exists(cardsPath))
+                {
+                    Cards = JsonSerializer.Deserialize<List<CardCatalogDef>>(File.ReadAllText(cardsPath)) ?? new();
+                }
+                if (File.Exists(handbookPath))
+                {
+                    Handbook = JsonSerializer.Deserialize<List<HandbookCatalogDef>>(File.ReadAllText(handbookPath)) ?? new();
                 }
             }
             catch (Exception ex)
@@ -135,6 +185,28 @@ namespace AtlasWorld.Client.Meta
                         new() { Id = "obj-1", Type = "kill_mob", TargetId = "mob-emerald-slime", Required = 5 }
                     },
                     Rewards = new QuestRewardsDef { BaseXp = 220, JobXp = 140 }
+                });
+            }
+
+            if (Cards.Count == 0)
+            {
+                Cards.Add(new CardCatalogDef
+                {
+                    Id = "card_boar",
+                    Name = "Wild Boar Card",
+                    Slot = "weapon",
+                    MobId = "boar",
+                    EquipStats = new Dictionary<string, int> { ["pAtkFlat"] = 8, ["str"] = 1 },
+                    HandbookDepositStats = new Dictionary<string, int> { ["pAtkFlat"] = 2 }
+                });
+                Cards.Add(new CardCatalogDef
+                {
+                    Id = "card_skeleton_soldier",
+                    Name = "Skeleton Soldier Card",
+                    Slot = "weapon",
+                    MobId = "skeleton_soldier",
+                    EquipStats = new Dictionary<string, int> { ["critRatePct"] = 9, ["pAtkFlat"] = 10 },
+                    HandbookDepositStats = new Dictionary<string, int> { ["pAtkFlat"] = 3 }
                 });
             }
         }
@@ -171,6 +243,204 @@ namespace AtlasWorld.Client.Meta
             Mathf.Clamp(100f * CurrentJobExp / Mathf.Max(1, RequiredJobExp), 0f, 99.9f);
 
         public int ActiveQuestGoal => ActiveQuest.KillGoal;
+
+        /// <summary>
+        /// Success rate in basis points (10000 = 100%) for refining from <see cref="WeaponRefineLevel"/> to +1.
+        /// +0 -> +4 is 100% safe; +4 -> +15 uses a 3-attempt guaranteed pity counter.
+        /// </summary>
+        public int NextRefineSuccessRateBps => WeaponRefineLevel switch
+        {
+            <= 3 => 10000,
+            4 => 6000,
+            5 => 5000,
+            6 => 4000,
+            7 => 3000,
+            8 => 2500,
+            9 => 2000,
+            <= 14 => 1500,
+            _ => 0
+        };
+
+        /// <summary>
+        /// Attempts to refine the equipped weapon (+0..+15) using Oridecon &amp; deterministic pity rules.
+        /// </summary>
+        public bool AttemptRefineWeapon(out string refineMessage, int? deterministicRollBps = null)
+        {
+            if (WeaponRefineLevel >= 15)
+            {
+                refineMessage = "[Refine] Weapon is already at MAX Refine +15!";
+                return false;
+            }
+
+            int roll = deterministicRollBps ?? (int)(GD.Randi() % 10000);
+            int chance = NextRefineSuccessRateBps;
+            bool triggeredPity = WeaponRefinePityCount >= 2;
+            bool success = triggeredPity || roll < chance;
+
+            if (success)
+            {
+                WeaponRefineLevel++;
+                WeaponRefinePityCount = 0;
+                string pityTag = triggeredPity ? " (PITY GUARANTEED!)" : "";
+                refineMessage = $"[Refine] SUCCESS! Weapon refined to +{WeaponRefineLevel}{pityTag} (+{WeaponRefineLevel * 2.5f:0.0}% ATK)";
+                return true;
+            }
+
+            WeaponRefinePityCount++;
+            refineMessage = $"[Refine] Failed at +{WeaponRefineLevel} (Gear Safe — Pity {WeaponRefinePityCount}/3 toward guaranteed +{WeaponRefineLevel + 1})";
+            return false;
+        }
+
+        /// <summary>
+        /// Cycles through Monster Cards in <c>cards.json</c>, socketing the card into its equipment slot
+        /// and depositing it into the Adventurer Handbook for permanent account bonuses.
+        /// </summary>
+        public CardCatalogDef CycleNextSocketedCard(out string cardMessage)
+        {
+            if (Cards.Count == 0)
+            {
+                LoadCatalogs();
+            }
+
+            _cardCycleIndex = (_cardCycleIndex + 1) % Cards.Count;
+            var card = Cards[_cardCycleIndex];
+            DepositedCardIds.Add(card.Id);
+
+            if (card.Slot == "armor")
+            {
+                SocketedArmorCardId = card.Id;
+            }
+            else
+            {
+                SocketedWeaponCardId = card.Id;
+            }
+
+            cardMessage = $"[Card Socket] Socketed '{card.Name}' into [{card.Slot.ToUpperInvariant()}] & deposited to Handbook! ({FormatCardStats(card.EquipStats)})";
+            return card;
+        }
+
+        public bool UnlockWatchtowerScenicVista(out string? vistaMessage)
+        {
+            if (HandbookWatchtowerVistaUnlocked)
+            {
+                vistaMessage = null;
+                return false;
+            }
+
+            HandbookWatchtowerVistaUnlocked = true;
+            vistaMessage = "[Adventurer Handbook] Discovered Scenic Vista: 'South Gate Watchtower Overlook' (Permanent MaxHP +25)!";
+            return true;
+        }
+
+        public int UnlockedHandbookTierCount
+        {
+            get
+            {
+                int count = 0;
+                foreach (var entry in Handbook)
+                {
+                    int progress = entry.TargetId switch
+                    {
+                        "forest_slime" => HandbookSlimeKills,
+                        "boar" => HandbookBoarKills,
+                        "prontera_south_field" => HandbookWatchtowerVistaUnlocked ? 1 : 0,
+                        _ => 0
+                    };
+                    foreach (var tier in entry.Tiers)
+                    {
+                        if (progress >= tier.RequiredCount)
+                            count++;
+                    }
+                }
+                return count;
+            }
+        }
+
+        public int TotalBonusPAtk
+        {
+            get
+            {
+                int bonus = WeaponRefineLevel * 7;
+                foreach (var cid in new[] { SocketedWeaponCardId, SocketedArmorCardId })
+                {
+                    if (string.IsNullOrEmpty(cid)) continue;
+                    var card = Cards.Find(c => c.Id == cid);
+                    if (card != null && card.EquipStats.TryGetValue("pAtkFlat", out int v))
+                        bonus += v;
+                }
+                foreach (string cid in DepositedCardIds)
+                {
+                    var card = Cards.Find(c => c.Id == cid);
+                    if (card != null && card.HandbookDepositStats.TryGetValue("pAtkFlat", out int v))
+                        bonus += v;
+                }
+                if (HandbookBoarKills >= 10) bonus += 1;
+                if (HandbookBoarKills >= 100) bonus += 2;
+                return bonus;
+            }
+        }
+
+        public int TotalBonusMaxHp
+        {
+            get
+            {
+                int bonus = 0;
+                foreach (var cid in new[] { SocketedWeaponCardId, SocketedArmorCardId })
+                {
+                    if (string.IsNullOrEmpty(cid)) continue;
+                    var card = Cards.Find(c => c.Id == cid);
+                    if (card != null && card.EquipStats.TryGetValue("maxHpFlat", out int v))
+                        bonus += v;
+                }
+                foreach (string cid in DepositedCardIds)
+                {
+                    var card = Cards.Find(c => c.Id == cid);
+                    if (card != null && card.HandbookDepositStats.TryGetValue("maxHpFlat", out int v))
+                        bonus += v;
+                }
+                if (HandbookSlimeKills >= 10) bonus += 15;
+                if (HandbookSlimeKills >= 500) bonus += 45;
+                if (HandbookWatchtowerVistaUnlocked) bonus += 25;
+                return bonus;
+            }
+        }
+
+        public int TotalBonusCritPct
+        {
+            get
+            {
+                int bonus = 0;
+                foreach (var cid in new[] { SocketedWeaponCardId, SocketedArmorCardId })
+                {
+                    if (string.IsNullOrEmpty(cid)) continue;
+                    var card = Cards.Find(c => c.Id == cid);
+                    if (card != null && card.EquipStats.TryGetValue("critRatePct", out int v))
+                        bonus += v;
+                }
+                return bonus;
+            }
+        }
+
+        public string ActiveWeaponCardName =>
+            Cards.Find(c => c.Id == SocketedWeaponCardId)?.Name ?? "Empty Slot";
+
+        public string ActiveArmorCardName =>
+            Cards.Find(c => c.Id == SocketedArmorCardId)?.Name ?? "Empty Slot";
+
+        public string FormatGrowthSummaryLine()
+        {
+            return $"Refine +{WeaponRefineLevel} (Pity {WeaponRefinePityCount}/3) | WpnCard: {ActiveWeaponCardName} | ArmCard: {ActiveArmorCardName} | Handbook: {UnlockedHandbookTierCount} Tiers (+{TotalBonusPAtk} ATK, +{TotalBonusMaxHp} HP, +{TotalBonusCritPct}% CRIT)";
+        }
+
+        private static string FormatCardStats(Dictionary<string, int> stats)
+        {
+            var parts = new List<string>();
+            foreach (var kv in stats)
+            {
+                parts.Add($"{kv.Key} +{kv.Value}");
+            }
+            return string.Join(", ", parts);
+        }
 
         public (bool baseLeveledUp, bool jobLeveledUp, string? autoPromotedJobName) GrantExp(int baseExp, int jobExp)
         {

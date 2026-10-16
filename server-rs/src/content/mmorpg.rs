@@ -98,6 +98,25 @@ pub struct CardCatalogEntry {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct HandbookTierEntry {
+    pub required_count: u32,
+    pub unlock_note: String,
+    pub bonus_stat: String,
+    pub bonus_value: i32,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HandbookCatalogEntry {
+    pub id: String,
+    pub category: String,
+    pub title: String,
+    pub target_id: String,
+    pub tiers: Vec<HandbookTierEntry>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct QuestObjectiveEntry {
     pub id: String,
     #[serde(rename = "type")]
@@ -196,6 +215,7 @@ pub struct MmorpgCatalogRegistry {
     pub mobs: Vec<MobCatalogEntry>,
     pub cards: Vec<CardCatalogEntry>,
     pub quests: Vec<QuestBoardCatalogEntry>,
+    pub handbook: Vec<HandbookCatalogEntry>,
     pub castles: Vec<CastleCatalogEntry>,
 }
 
@@ -208,6 +228,8 @@ pub static MMORPG_CATALOG: LazyLock<MmorpgCatalogRegistry> = LazyLock::new(|| {
         serde_json::from_str(CARDS_JSON).expect("cards.json must be valid");
     let quests: Vec<QuestBoardCatalogEntry> =
         serde_json::from_str(QUEST_BOARD_JSON).expect("quest_board.json must be valid");
+    let handbook: Vec<HandbookCatalogEntry> =
+        serde_json::from_str(HANDBOOK_JSON).expect("handbook.json must be valid");
     let castles: Vec<CastleCatalogEntry> =
         serde_json::from_str(CASTLES_JSON).expect("castles.json must be valid");
 
@@ -216,6 +238,7 @@ pub static MMORPG_CATALOG: LazyLock<MmorpgCatalogRegistry> = LazyLock::new(|| {
         mobs,
         cards,
         quests,
+        handbook,
         castles,
     }
 });
@@ -235,6 +258,151 @@ pub fn job_exp_to_next_level(job_level: u32, tier: u32) -> u32 {
         _ => 1.45,
     };
     (35.0 * tier_mult * 1.105_f32.powf(jlvl - 1.0)).round() as u32
+}
+
+/// Returns the success rate in basis points (10_000 = 100%) for refining from `current_refine` to `current_refine + 1`.
+/// `+0 -> +4` is 100% safe; `+4 -> +15` scales down with a 3-attempt guaranteed pity counter.
+pub fn refine_success_rate_bps(current_refine: u32) -> u32 {
+    match current_refine {
+        0..=3 => 10_000,
+        4 => 6_000,
+        5 => 5_000,
+        6 => 4_000,
+        7 => 3_000,
+        8 => 2_500,
+        9 => 2_000,
+        10..=14 => 1_500,
+        _ => 0,
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RefineOutcome {
+    pub success: bool,
+    pub new_refine_level: u32,
+    pub new_pity_count: u32,
+    pub triggered_pity: bool,
+    pub oridecon_cost: u32,
+}
+
+/// Executes an authoritative Refine attempt (`+0..+15`).
+/// Never destroys gear; if `pity_count >= 2` (3rd consecutive attempt after 2 failures), guarantees success.
+pub fn attempt_refine(current_refine: u32, pity_count: u32, roll_bps: u32) -> RefineOutcome {
+    if current_refine >= 15 {
+        return RefineOutcome {
+            success: false,
+            new_refine_level: 15,
+            new_pity_count: 0,
+            triggered_pity: false,
+            oridecon_cost: 0,
+        };
+    }
+
+    let oridecon_cost = match current_refine {
+        0..=3 => 1,
+        4..=6 => 2,
+        7..=9 => 3,
+        _ => 5,
+    };
+
+    let chance_bps = refine_success_rate_bps(current_refine);
+    let triggered_pity = pity_count >= 2;
+    let success = triggered_pity || roll_bps < chance_bps;
+
+    if success {
+        RefineOutcome {
+            success: true,
+            new_refine_level: current_refine + 1,
+            new_pity_count: 0,
+            triggered_pity,
+            oridecon_cost,
+        }
+    } else {
+        RefineOutcome {
+            success: false,
+            new_refine_level: current_refine,
+            new_pity_count: pity_count + 1,
+            triggered_pity: false,
+            oridecon_cost,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AccountGrowthBonuses {
+    pub str_bonus: i32,
+    pub agi_bonus: i32,
+    pub vit_bonus: i32,
+    pub int_bonus: i32,
+    pub dex_bonus: i32,
+    pub max_hp_flat: i32,
+    pub p_atk_flat: i32,
+    pub m_atk_flat: i32,
+    pub p_def_flat: i32,
+    pub crit_rate_pct: i32,
+    pub demi_human_resist_pct: i32,
+    pub unlocked_handbook_tiers: u32,
+}
+
+impl AccountGrowthBonuses {
+    fn add_stat(&mut self, key: &str, val: i32) {
+        match key {
+            "str" => self.str_bonus += val,
+            "agi" => self.agi_bonus += val,
+            "vit" => self.vit_bonus += val,
+            "int" => self.int_bonus += val,
+            "dex" => self.dex_bonus += val,
+            "maxHpFlat" => self.max_hp_flat += val,
+            "pAtkFlat" => self.p_atk_flat += val,
+            "mAtkFlat" => self.m_atk_flat += val,
+            "pDefFlat" => self.p_def_flat += val,
+            "critRatePct" => self.crit_rate_pct += val,
+            "demiHumanResistPct" => self.demi_human_resist_pct += val,
+            _ => {}
+        }
+    }
+}
+
+/// Evaluates cumulative bonuses from socketed Monster Cards, Handbook-deposited Cards,
+/// and Adventurer Handbook monster kill / scenic vista milestones.
+pub fn compute_card_and_handbook_bonuses(
+    socketed_card_ids: &[&str],
+    deposited_card_ids: &[&str],
+    handbook_counts: &HashMap<String, u32>,
+) -> AccountGrowthBonuses {
+    let mut out = AccountGrowthBonuses::default();
+
+    for cid in socketed_card_ids {
+        if let Some(card) = MMORPG_CATALOG.cards.iter().find(|c| c.id == *cid) {
+            for (k, v) in &card.equip_stats {
+                out.add_stat(k, *v);
+            }
+        }
+    }
+
+    for cid in deposited_card_ids {
+        if let Some(card) = MMORPG_CATALOG.cards.iter().find(|c| c.id == *cid) {
+            for (k, v) in &card.handbook_deposit_stats {
+                out.add_stat(k, *v);
+            }
+        }
+    }
+
+    for entry in &MMORPG_CATALOG.handbook {
+        let count = handbook_counts
+            .get(&entry.id)
+            .or_else(|| handbook_counts.get(&entry.target_id))
+            .copied()
+            .unwrap_or(0);
+        for tier in &entry.tiers {
+            if count >= tier.required_count {
+                out.add_stat(&tier.bonus_stat, tier.bonus_value);
+                out.unlocked_handbook_tiers += 1;
+            }
+        }
+    }
+
+    out
 }
 
 /// Computes effective primary stats including proportional Job Level bonus stats.
@@ -258,7 +426,7 @@ pub fn effective_stats_with_job(
 }
 
 /// Computes derived combat stats for a player factoring in Base Level, Job Level bonuses,
-/// Refine level (`+0..+15`), and Equipped/Deposited Monster Cards.
+/// and Refine level (`+0..+15`).
 pub fn derived_stats_for_job(
     base_level: u32,
     job_id: &str,
@@ -267,13 +435,43 @@ pub fn derived_stats_for_job(
     weapon_id: Option<&str>,
     refine_level: u32,
 ) -> DerivedStats {
-    let eff = effective_stats_with_job(allocated, job_id, job_level);
+    derived_stats_with_full_growth(
+        base_level,
+        job_id,
+        job_level,
+        allocated,
+        weapon_id,
+        refine_level,
+        &AccountGrowthBonuses::default(),
+    )
+}
+
+/// Computes derived combat stats combining Base Level, Job Level bonuses, Weapon Refine (`+0..+15`),
+/// Socketed Monster Cards, and Adventurer Handbook permanent account passives.
+pub fn derived_stats_with_full_growth(
+    base_level: u32,
+    job_id: &str,
+    job_level: u32,
+    allocated: &PrimaryStats,
+    weapon_id: Option<&str>,
+    refine_level: u32,
+    growth: &AccountGrowthBonuses,
+) -> DerivedStats {
+    let mut eff = effective_stats_with_job(allocated, job_id, job_level);
+    eff.str = (eff.str as i32 + growth.str_bonus).clamp(1, 99) as u32;
+    eff.agi = (eff.agi as i32 + growth.agi_bonus).clamp(1, 99) as u32;
+    eff.vit = (eff.vit as i32 + growth.vit_bonus).clamp(1, 99) as u32;
+    eff.int = (eff.int as i32 + growth.int_bonus).clamp(1, 99) as u32;
+    eff.dex = (eff.dex as i32 + growth.dex_bonus).clamp(1, 99) as u32;
+
     let mut base = derived_stats(base_level, &eff, weapon_id);
     let refine = refine_level.min(15) as f32;
-    // Each refine level adds +2.5% weapon offence
-    let refine_mult = 1.0 + 0.025 * refine;
-    base.p_atk *= refine_mult;
-    base.m_atk *= refine_mult;
+    // Each refine level adds +2.5% weapon offence; crit_rate_pct adds +0.5% expected DPS per 1% crit
+    let refine_mult = 1.0 + 0.025 * refine + 0.005 * (growth.crit_rate_pct.max(0) as f32);
+    base.p_atk = base.p_atk * refine_mult + (growth.p_atk_flat as f32);
+    base.m_atk = base.m_atk * refine_mult + (growth.m_atk_flat as f32);
+    base.p_def += growth.p_def_flat as f32;
+    base.max_health += growth.max_hp_flat as f32;
     base
 }
 
@@ -425,6 +623,7 @@ mod tests {
         assert_eq!(MMORPG_CATALOG.mobs.len(), 4);
         assert_eq!(MMORPG_CATALOG.cards.len(), 4);
         assert_eq!(MMORPG_CATALOG.quests.len(), 8);
+        assert_eq!(MMORPG_CATALOG.handbook.len(), 3);
         assert_eq!(MMORPG_CATALOG.castles.len(), 1);
     }
 
@@ -441,6 +640,37 @@ mod tests {
         let swordman = derived_stats_for_job(20, "swordman", 40, &alloc, Some("basic_sword"), 5);
         assert!(swordman.p_atk > novice.p_atk);
         assert!(swordman.max_health > novice.max_health);
+    }
+
+    #[test]
+    fn test_refine_pity_and_cards_and_handbook_passives() {
+        // Safe zone +0 -> +4 always succeeds
+        let safe = attempt_refine(3, 0, 9_999);
+        assert!(safe.success && safe.new_refine_level == 4);
+
+        // +7 with high roll fails twice, then 3rd attempt triggers guaranteed pity
+        let f1 = attempt_refine(7, 0, 9_500);
+        assert!(!f1.success && f1.new_pity_count == 1);
+        let f2 = attempt_refine(7, f1.new_pity_count, 9_500);
+        assert!(!f2.success && f2.new_pity_count == 2);
+        let pity = attempt_refine(7, f2.new_pity_count, 9_999);
+        assert!(pity.success && pity.triggered_pity && pity.new_refine_level == 8 && pity.new_pity_count == 0);
+
+        // Card socketing + Handbook milestones
+        let mut counts = HashMap::new();
+        counts.insert("forest_slime".to_string(), 120);
+        counts.insert("boar".to_string(), 500);
+        counts.insert("prontera_south_field".to_string(), 1);
+
+        let bonuses = compute_card_and_handbook_bonuses(
+            &["card_skeleton_soldier", "card_orc_warlord"],
+            &["card_forest_slime", "card_boar"],
+            &counts,
+        );
+        assert!(bonuses.p_atk_flat >= 15);
+        assert!(bonuses.max_hp_flat >= 850);
+        assert!(bonuses.crit_rate_pct >= 9);
+        assert!(bonuses.unlocked_handbook_tiers >= 5);
     }
 
     #[test]

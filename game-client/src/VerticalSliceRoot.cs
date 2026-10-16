@@ -21,12 +21,12 @@ namespace AtlasWorld.Client
     /// 2. EntityManager &amp; SnapshotInterpolator (live 20 Hz EntityDelta + GameEvent ingestion)
     /// 3. AnimationController + AssetRegistry loop overrides + AudioRegistry 3D SFX
     /// 4. Joymify Design System + MetaShell (Character, Inventory, Skills, Quests, Loadout)
-    /// 5. Split-screen WardrobeModal with real 3D Weapon GLB attachment
+    /// 5. Split-screen WardrobeModal with real 3D Weapon GLB attachment, Refine (+0..+15) &amp; Monster Card Socketing
     /// 6. 3D World Monsters (showcase + live server-rs mobs/bots/projectiles) with Peaceful Exploration Mode ([P] toggle, default ON for 3D terrain/structure testing)
     /// 7. Authoritative Player HP/SP, ROX Auto-Combat AFK loop, Quest Kill Tracker, Live Minimap Radar, DevTuningDrawer &amp; Mac 3D Map Builder
     /// 8. Scalable Map Expansion (1000x1000 -> 2000x2000 -> 4000x4000) &amp; On-Demand Spatial Chunk Streaming (MapChunkStreamer)
     /// 9. 3D Altitude, Multi-Floor Watchtowers &amp; Walk-In Crystal Caves (TerrainElevation) + Smart Camera LOS &amp; Roof Cutaway (SmartCameraOccluder)
-    /// 10. Dual-Track Base/Job Level Growth &amp; Unified Quest Board Catalogs (MmorpgGrowthManager)
+    /// 10. Dual-Track Base/Job Level Growth, Adventurer Handbook Passives &amp; Unified Quest Board Catalogs (MmorpgGrowthManager)
     /// </summary>
     public partial class VerticalSliceRoot : Node3D
     {
@@ -310,7 +310,7 @@ namespace AtlasWorld.Client
             if (ChatWidget != null)
             {
                 ChatWidget.MessageSent += OnChatMessageSent;
-                ChatWidget.AppendSystemMessage("Peaceful 3D Exploration Mode ON (Monsters Hidden). Walk West [A] up the Watchtower East Stairs to 2F (+3.2m), press [P] for Mobs, or [G] to switch Job Class.");
+                ChatWidget.AppendSystemMessage("Peaceful 3D Mode ON. Walk West [A] up Watchtower 2F Stairs, [P] Mobs, [G] Job Class, [H] Refine/Card, or [B] Wardrobe.");
             }
 
             // 6. Wire Mobile Controls Overlay + Cooldown visuals
@@ -380,12 +380,22 @@ namespace AtlasWorld.Client
                 NavigationTopBar.ShopPressed += () => _metaShell?.OpenTab("Loadout");
             }
 
-            // 8. Wire Wardrobe 3D Weapon Attachment to Live PlayerAvatar
+            // 8. Wire Wardrobe 3D Weapon Attachment, Refine (+0..+15) & Card Socketing to Live PlayerAvatar
             if (EquipmentWardrobeModal != null)
             {
+                EquipmentWardrobeModal.BindGrowthManager(_growth);
+                EquipmentWardrobeModal.GrowthActionTriggered += msg =>
+                {
+                    SyncGrowthHud();
+                    ChatWidget?.AppendSystemMessage(msg);
+                    Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
+                    CombatText?.SpawnSkillShout(
+                        centerScreen + new Vector2(0, -95),
+                        $"ATK +{_growth.TotalBonusPAtk} | HP +{_growth.TotalBonusMaxHp}");
+                };
                 EquipmentWardrobeModal.ItemEquipped += (slot, itemId) =>
                 {
-                    ChatWidget?.AppendPlayerMessage("Wardrobe", $"Equipped {slot}: {itemId}!");
+                    ChatWidget?.AppendPlayerMessage("Wardrobe", $"Equipped {slot}: {itemId} (+{_growth.WeaponRefineLevel})!");
                     if (PlayerAvatar != null)
                     {
                         WardrobeModal.AttachEquipmentToAvatar(PlayerAvatar, itemId);
@@ -560,12 +570,28 @@ namespace AtlasWorld.Client
                 $"[Job Change] Switched to {jobName} (Base Lv.{_growth.BaseLevel} | Job Lv.{_growth.JobLevel}/{_growth.MaxJobLevelForCurrentJob}).");
         }
 
+        private void TriggerRefineAndCardCycleForTest()
+        {
+            _growth.AttemptRefineWeapon(out string refineMsg);
+            _growth.CycleNextSocketedCard(out string cardMsg);
+            SyncGrowthHud();
+            EquipmentWardrobeModal?.RefreshGrowthDisplay();
+            Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
+            CombatText?.SpawnSkillShout(
+                centerScreen + new Vector2(0, -95),
+                $"+{_growth.WeaponRefineLevel} WPN | ATK +{_growth.TotalBonusPAtk} | HP +{_growth.TotalBonusMaxHp}");
+            ChatWidget?.AppendSystemMessage(refineMsg);
+            ChatWidget?.AppendSystemMessage(cardMsg);
+            ChatWidget?.AppendSystemMessage($"[Growth Summary] {_growth.FormatGrowthSummaryLine()}");
+        }
+
         private void SyncGrowthHud()
         {
+            string refineTag = _growth.WeaponRefineLevel > 0 ? $" +{_growth.WeaponRefineLevel}" : "";
             PlayerStatusFrame?.SetLevelAndJob(
                 _growth.BaseLevel,
                 _growth.JobLevel,
-                $"Player ({_growth.CurrentJobDisplayName})");
+                $"Player ({_growth.CurrentJobDisplayName}{refineTag})");
 
             if (PlayerExpBar != null)
             {
@@ -639,7 +665,7 @@ namespace AtlasWorld.Client
                 {
                     _questHintLabel.Text = _autoCombatEnabled
                         ? "\u25cf Auto-Hunting Active (Tap to pause)"
-                        : "\u25b8 Tap or [AUTO] to auto-hunt | [G] Job";
+                        : "\u25b8 Tap or [AUTO] | [G] Job | [H] Refine";
                     _questHintLabel.Modulate = _autoCombatEnabled
                         ? new Color(0.35f, 1.0f, 0.58f, 1f)
                         : new Color(0.95f, 0.90f, 0.58f, 0.95f);
@@ -1242,6 +1268,10 @@ namespace AtlasWorld.Client
                         CycleJobClassForTest();
                         GetViewport()?.SetInputAsHandled();
                         break;
+                    case Key.H:
+                        TriggerRefineAndCardCycleForTest();
+                        GetViewport()?.SetInputAsHandled();
+                        break;
                     case Key.B:
                     case Key.I:
                         if (EquipmentWardrobeModal != null)
@@ -1722,6 +1752,13 @@ namespace AtlasWorld.Client
                     targetGroundY,
                     PlayerAvatar.Position.Z);
 
+                if (targetGroundY >= 2.8f && _growth.UnlockWatchtowerScenicVista(out string? vistaMsg) && !string.IsNullOrEmpty(vistaMsg))
+                {
+                    Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
+                    CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -100), "SCENIC VISTA DISCOVERED!");
+                    ChatWidget?.AppendSystemMessage(vistaMsg);
+                }
+
                 // Stream 3D chunks in/out on demand as the player walks across the map
                 _chunkStreamer?.UpdateStreaming(PlayerAvatar.Position);
 
@@ -1754,7 +1791,7 @@ namespace AtlasWorld.Client
                     Vector2 srvDelta = new Vector2(
                         PlayerAvatar.Position.X - _entityManager.OwnPlayerServerPosition.X,
                         PlayerAvatar.Position.Z - _entityManager.OwnPlayerServerPosition.Z);
-                    float srvDist = srvDist = srvDelta.Length();
+                    float srvDist = srvDelta.Length();
                     if (srvDist > 0.75f)
                     {
                         Vector2 catchup = srvDelta / srvDist;
@@ -2123,9 +2160,17 @@ namespace AtlasWorld.Client
         private void OnChatMessageSent(string msg)
         {
             GD.Print($"[VerticalSliceRoot] Chat message sent: {msg}");
-            if (msg.Trim().Equals("/job", StringComparison.OrdinalIgnoreCase))
+            string cmd = msg.Trim();
+            if (cmd.Equals("/job", StringComparison.OrdinalIgnoreCase))
             {
                 CycleJobClassForTest();
+                return;
+            }
+            if (cmd.Equals("/refine", StringComparison.OrdinalIgnoreCase) ||
+                cmd.Equals("/card", StringComparison.OrdinalIgnoreCase) ||
+                cmd.Equals("/handbook", StringComparison.OrdinalIgnoreCase))
+            {
+                TriggerRefineAndCardCycleForTest();
                 return;
             }
             ChatWidget?.AppendPlayerMessage("You", msg);
