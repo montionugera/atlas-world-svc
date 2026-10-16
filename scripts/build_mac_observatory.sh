@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds the native macOS arm64 release bundle `build/AtlasObservatory.app`
-# using Apple's built-in `swiftc` compiler + SQLite3 + SwiftUI (zero external dependencies).
+# using Apple's built-in `swiftc` compiler + SQLite3 + SwiftUI + shared `JoyDesign.swift`.
 #
 # Usage:
 #   ./scripts/build_mac_observatory.sh            # Build + run self-test
@@ -14,6 +14,7 @@ APP_BUNDLE="${REPO_ROOT}/build/${APP_NAME}.app"
 CONTENTS_DIR="${APP_BUNDLE}/Contents"
 MACOS_DIR="${CONTENTS_DIR}/MacOS"
 RESOURCES_DIR="${CONTENTS_DIR}/Resources"
+JOY_DESIGN_FILE="${REPO_ROOT}/tools/mac-observatory/JoyDesign.swift"
 SRC_FILE="${REPO_ROOT}/tools/mac-observatory/AtlasObservatoryApp.swift"
 
 echo "[build_mac_observatory] Ensuring build/catalog.sqlite is up to date..."
@@ -48,12 +49,13 @@ cat > "${CONTENTS_DIR}/Info.plist" <<EOF
 </plist>
 EOF
 
-echo "[build_mac_observatory] Compiling native arm64 release binary with swiftc -O..."
+echo "[build_mac_observatory] Compiling native arm64 release binary with swiftc -O (JoyDesign + AtlasObservatoryApp)..."
 swiftc -O \
     -parse-as-library \
     -framework SwiftUI \
     -framework AppKit \
     -lsqlite3 \
+    "${JOY_DESIGN_FILE}" \
     "${SRC_FILE}" \
     -o "${MACOS_DIR}/${APP_NAME}"
 
