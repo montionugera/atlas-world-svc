@@ -117,7 +117,25 @@ namespace AtlasWorld.Client.World
                     return 1;
                 }
 
-                GD.Print($"[VerticalSliceProbe]   PASS  MMORPG Dual-Track Growth, Refine +{growth.WeaponRefineLevel}, Card ('{socketedCard.Name}'), Handbook Vista (+{growth.TotalBonusPAtk} P.ATK, +{growth.TotalBonusMaxHp} MaxHP)");
+                // Phase 4A: 10-Element Counter Matrix, Weapon-vs-Size Penalty & Job Class Skill Loadouts
+                if (growth.GetElementCounterPct("Fire", "Earth") != 150 ||
+                    growth.GetElementCounterPct("Holy", "Undead") != 150 ||
+                    growth.GetWeaponSizePenaltyPct("dagger", "Large") != 50 ||
+                    growth.GetWeaponSizePenaltyPct("scythe", "Large") != 100)
+                {
+                    GD.PrintErr("[VerticalSliceProbe]   FAIL  10-Element or Weapon-vs-Size matrix mismatch from elements.json");
+                    return 1;
+                }
+
+                var mageSkills = MmorpgGrowthManager.GetJobSkillsForClass("mage");
+                var (skillDmg, elemPct, sizePct, atkElem) = growth.CalculateSkillDamage(1, "Earth / Large", "Large", out _);
+                if (mageSkills.Length != 3 || mageSkills[0].Id != "fire_bolt" || skillDmg <= 0)
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Job skill loadout or CalculateSkillDamage failed: dmg={skillDmg}, elemPct={elemPct}");
+                    return 1;
+                }
+
+                GD.Print($"[VerticalSliceProbe]   PASS  MMORPG Growth, Refine +{growth.WeaponRefineLevel}, Card ('{socketedCard.Name}'), 10-Element/Size ({atkElem} {elemPct}% / Size {sizePct}%, Dmg={skillDmg})");
                 return 0;
             }
             catch (Exception ex)

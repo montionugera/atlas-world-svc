@@ -11,6 +11,28 @@ pub const CARDS_JSON: &str = include_str!("../../../contracts/content/cards.json
 pub const QUEST_BOARD_JSON: &str = include_str!("../../../contracts/content/quest_board.json");
 pub const HANDBOOK_JSON: &str = include_str!("../../../contracts/content/handbook.json");
 pub const CASTLES_JSON: &str = include_str!("../../../contracts/content/castles.json");
+pub const ELEMENTS_JSON: &str = include_str!("../../../contracts/content/elements.json");
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ElementsCatalogSpec {
+    pub elements: Vec<String>,
+    pub damage_matrix_pct: HashMap<String, HashMap<String, u32>>,
+    pub weapon_size_penalty_pct: HashMap<String, HashMap<String, u32>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct JobSkillProfile {
+    pub slot: u8,
+    pub id: String,
+    pub name: String,
+    pub button_label: String,
+    pub element: String,
+    pub damage_mult: f32,
+    pub sp_cost: u32,
+    pub cooldown_sec: f32,
+}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -217,6 +239,7 @@ pub struct MmorpgCatalogRegistry {
     pub quests: Vec<QuestBoardCatalogEntry>,
     pub handbook: Vec<HandbookCatalogEntry>,
     pub castles: Vec<CastleCatalogEntry>,
+    pub elements: ElementsCatalogSpec,
 }
 
 pub static MMORPG_CATALOG: LazyLock<MmorpgCatalogRegistry> = LazyLock::new(|| {
@@ -232,6 +255,8 @@ pub static MMORPG_CATALOG: LazyLock<MmorpgCatalogRegistry> = LazyLock::new(|| {
         serde_json::from_str(HANDBOOK_JSON).expect("handbook.json must be valid");
     let castles: Vec<CastleCatalogEntry> =
         serde_json::from_str(CASTLES_JSON).expect("castles.json must be valid");
+    let elements: ElementsCatalogSpec =
+        serde_json::from_str(ELEMENTS_JSON).expect("elements.json must be valid");
 
     MmorpgCatalogRegistry {
         jobs,
@@ -240,8 +265,231 @@ pub static MMORPG_CATALOG: LazyLock<MmorpgCatalogRegistry> = LazyLock::new(|| {
         quests,
         handbook,
         castles,
+        elements,
     }
 });
+
+/// Evaluates the 10-Element counter percentage (e.g. `Fire` vs `Earth` = `150`, `Fire` vs `Water` = `50`)
+/// directly from `contracts/content/elements.json`. Defaults to `100` when neutral/unspecified.
+pub fn element_counter_pct(attack_element: &str, defend_element: &str) -> u32 {
+    MMORPG_CATALOG
+        .elements
+        .damage_matrix_pct
+        .get(attack_element)
+        .and_then(|row| row.get(defend_element))
+        .copied()
+        .unwrap_or(100)
+}
+
+/// Evaluates the Weapon-vs-Monster-Size modifier percentage (`Small` / `Medium` / `Large`)
+/// from `contracts/content/elements.json`. Defaults to `100`.
+pub fn weapon_size_modifier_pct(weapon_kind: &str, target_size: &str) -> u32 {
+    MMORPG_CATALOG
+        .elements
+        .weapon_size_penalty_pct
+        .get(weapon_kind)
+        .and_then(|row| row.get(target_size))
+        .copied()
+        .unwrap_or(100)
+}
+
+/// Returns the 3 active hotbar skill profiles for a given Job Class (`novice`, `swordman`, `mage`, `archer`, `knight`, `wizard`).
+pub fn job_skill_loadout(job_id: &str) -> [JobSkillProfile; 3] {
+    match job_id {
+        "swordman" => [
+            JobSkillProfile {
+                slot: 1,
+                id: "bash".to_string(),
+                name: "Bash!!".to_string(),
+                button_label: "BASH".to_string(),
+                element: "Neutral".to_string(),
+                damage_mult: 2.10,
+                sp_cost: 180,
+                cooldown_sec: 3.5,
+            },
+            JobSkillProfile {
+                slot: 2,
+                id: "magnum_break".to_string(),
+                name: "Magnum Break!! (Fire)".to_string(),
+                button_label: "MAGNUM".to_string(),
+                element: "Fire".to_string(),
+                damage_mult: 2.60,
+                sp_cost: 260,
+                cooldown_sec: 5.5,
+            },
+            JobSkillProfile {
+                slot: 3,
+                id: "endure".to_string(),
+                name: "Endure! (DEF+Flint)".to_string(),
+                button_label: "ENDURE".to_string(),
+                element: "Holy".to_string(),
+                damage_mult: 1.50,
+                sp_cost: 160,
+                cooldown_sec: 7.0,
+            },
+        ],
+        "mage" => [
+            JobSkillProfile {
+                slot: 1,
+                id: "fire_bolt".to_string(),
+                name: "Fire Bolt!! (Fire)".to_string(),
+                button_label: "FIRE".to_string(),
+                element: "Fire".to_string(),
+                damage_mult: 2.75,
+                sp_cost: 220,
+                cooldown_sec: 3.5,
+            },
+            JobSkillProfile {
+                slot: 2,
+                id: "cold_bolt".to_string(),
+                name: "Cold Bolt!! (Water)".to_string(),
+                button_label: "COLD".to_string(),
+                element: "Water".to_string(),
+                damage_mult: 2.55,
+                sp_cost: 220,
+                cooldown_sec: 4.5,
+            },
+            JobSkillProfile {
+                slot: 3,
+                id: "lightning_bolt".to_string(),
+                name: "Lightning Bolt!! (Wind)".to_string(),
+                button_label: "THUNDER".to_string(),
+                element: "Wind".to_string(),
+                damage_mult: 2.65,
+                sp_cost: 240,
+                cooldown_sec: 5.5,
+            },
+        ],
+        "archer" => [
+            JobSkillProfile {
+                slot: 1,
+                id: "double_strafe".to_string(),
+                name: "Double Strafe!!".to_string(),
+                button_label: "STRAFE".to_string(),
+                element: "Wind".to_string(),
+                damage_mult: 2.45,
+                sp_cost: 190,
+                cooldown_sec: 3.0,
+            },
+            JobSkillProfile {
+                slot: 2,
+                id: "arrow_shower".to_string(),
+                name: "Arrow Shower!! (Fire)".to_string(),
+                button_label: "SHOWER".to_string(),
+                element: "Fire".to_string(),
+                damage_mult: 2.35,
+                sp_cost: 240,
+                cooldown_sec: 5.0,
+            },
+            JobSkillProfile {
+                slot: 3,
+                id: "owl_eye_shot".to_string(),
+                name: "Falcon Assault!! (Holy)".to_string(),
+                button_label: "FALCON".to_string(),
+                element: "Holy".to_string(),
+                damage_mult: 2.80,
+                sp_cost: 260,
+                cooldown_sec: 6.5,
+            },
+        ],
+        "knight" => [
+            JobSkillProfile {
+                slot: 1,
+                id: "bowling_bash".to_string(),
+                name: "Bowling Bash!!".to_string(),
+                button_label: "BOWL".to_string(),
+                element: "Fire".to_string(),
+                damage_mult: 3.20,
+                sp_cost: 240,
+                cooldown_sec: 4.0,
+            },
+            JobSkillProfile {
+                slot: 2,
+                id: "brandish_spear".to_string(),
+                name: "Brandish Spear!! (Holy)".to_string(),
+                button_label: "BRANDISH".to_string(),
+                element: "Holy".to_string(),
+                damage_mult: 3.40,
+                sp_cost: 280,
+                cooldown_sec: 5.5,
+            },
+            JobSkillProfile {
+                slot: 3,
+                id: "pierce".to_string(),
+                name: "Pierce!! (Anti-Large)".to_string(),
+                button_label: "PIERCE".to_string(),
+                element: "Earth".to_string(),
+                damage_mult: 3.00,
+                sp_cost: 200,
+                cooldown_sec: 4.5,
+            },
+        ],
+        "wizard" => [
+            JobSkillProfile {
+                slot: 1,
+                id: "meteor_storm".to_string(),
+                name: "Meteor Storm!! (Fire)".to_string(),
+                button_label: "METEOR".to_string(),
+                element: "Fire".to_string(),
+                damage_mult: 3.60,
+                sp_cost: 260,
+                cooldown_sec: 4.5,
+            },
+            JobSkillProfile {
+                slot: 2,
+                id: "storm_gust".to_string(),
+                name: "Storm Gust!! (Water)".to_string(),
+                button_label: "GUST".to_string(),
+                element: "Water".to_string(),
+                damage_mult: 3.45,
+                sp_cost: 280,
+                cooldown_sec: 5.5,
+            },
+            JobSkillProfile {
+                slot: 3,
+                id: "lord_of_vermilion".to_string(),
+                name: "Lord of Vermilion!! (Wind)".to_string(),
+                button_label: "VERMILION".to_string(),
+                element: "Wind".to_string(),
+                damage_mult: 3.50,
+                sp_cost: 300,
+                cooldown_sec: 6.5,
+            },
+        ],
+        _ => [
+            JobSkillProfile {
+                slot: 1,
+                id: "power_strike".to_string(),
+                name: "Power Strike!!".to_string(),
+                button_label: "STRIKE".to_string(),
+                element: "Neutral".to_string(),
+                damage_mult: 1.75,
+                sp_cost: 140,
+                cooldown_sec: 3.0,
+            },
+            JobSkillProfile {
+                slot: 2,
+                id: "ember_slash".to_string(),
+                name: "Ember Slash!! (Fire)".to_string(),
+                button_label: "EMBER".to_string(),
+                element: "Fire".to_string(),
+                damage_mult: 2.00,
+                sp_cost: 180,
+                cooldown_sec: 4.5,
+            },
+            JobSkillProfile {
+                slot: 3,
+                id: "first_aid".to_string(),
+                name: "Holy Aid!!".to_string(),
+                button_label: "AID".to_string(),
+                element: "Holy".to_string(),
+                damage_mult: 1.60,
+                sp_cost: 150,
+                cooldown_sec: 5.0,
+            },
+        ],
+    }
+}
 
 /// Base EXP required to advance from `base_level` to `base_level + 1` (Lv 1..99).
 pub fn base_exp_to_next_level(base_level: u32) -> u32 {
@@ -491,7 +739,8 @@ pub struct DuelSimulationResult {
     pub minutes_to_next_base_level: f32,
 }
 
-/// Simulates a deterministic PvE encounter & leveling speed for a given Job vs. a Catalog Mob.
+/// Simulates a deterministic PvE encounter & leveling speed for a given Job vs. a Catalog Mob,
+/// factoring in the 10-Element counter matrix and Weapon-vs-Size modifier from `elements.json`.
 pub fn simulate_job_vs_mob(
     job_id: &str,
     base_level: u32,
@@ -511,7 +760,13 @@ pub fn simulate_job_vs_mob(
         refine_level,
     );
 
-    let raw_offence = p_stats.p_atk.max(p_stats.m_atk);
+    let weapon_kind = weapon_id.unwrap_or("basic_sword");
+    let size_mult = (weapon_size_modifier_pct(weapon_kind, &mob.size) as f32) / 100.0;
+    let loadout = job_skill_loadout(job_id);
+    // Primary rotation uses slot 1 skill element counter
+    let elem_mult = (element_counter_pct(&loadout[0].element, &mob.element) as f32) / 100.0;
+
+    let raw_offence = p_stats.p_atk.max(p_stats.m_atk) * size_mult * elem_mult;
     let player_hit = (raw_offence - (mob.p_def as f32).min(raw_offence * 0.8)).max(1.0);
     // 1.25 attacks/sec baseline + skill weave
     let player_dps = player_hit * 1.25;
@@ -625,6 +880,21 @@ mod tests {
         assert_eq!(MMORPG_CATALOG.quests.len(), 8);
         assert_eq!(MMORPG_CATALOG.handbook.len(), 3);
         assert_eq!(MMORPG_CATALOG.castles.len(), 1);
+        assert_eq!(MMORPG_CATALOG.elements.elements.len(), 10);
+    }
+
+    #[test]
+    fn test_element_counter_and_weapon_size_matrix() {
+        assert_eq!(element_counter_pct("Fire", "Earth"), 150);
+        assert_eq!(element_counter_pct("Fire", "Water"), 50);
+        assert_eq!(element_counter_pct("Holy", "Undead"), 150);
+        assert_eq!(weapon_size_modifier_pct("dagger", "Small"), 100);
+        assert_eq!(weapon_size_modifier_pct("dagger", "Large"), 50);
+        assert_eq!(weapon_size_modifier_pct("scythe", "Large"), 100);
+
+        let mage_skills = job_skill_loadout("mage");
+        assert_eq!(mage_skills[0].id, "fire_bolt");
+        assert_eq!(mage_skills[0].element, "Fire");
     }
 
     #[test]

@@ -16,8 +16,7 @@ namespace AtlasWorld.Client
 {
     /// <summary>
     /// Root controller for the Godot 4 + server-rs (Rust ECS) Vertical Slice.
-    /// Unified with the internal client library:
-    /// 1. Config.Load() &amp; ServerRsConnection (WebSocket + FlatBuffers)
+    /// Unified with the internal client library:\n    /// 1. Config.Load() &amp; ServerRsConnection (WebSocket + FlatBuffers)
     /// 2. EntityManager &amp; SnapshotInterpolator (live 20 Hz EntityDelta + GameEvent ingestion)
     /// 3. AnimationController + AssetRegistry loop overrides + AudioRegistry 3D SFX
     /// 4. Joymify Design System + MetaShell (Character, Inventory, Skills, Quests, Loadout)
@@ -26,7 +25,7 @@ namespace AtlasWorld.Client
     /// 7. Authoritative Player HP/SP, ROX Auto-Combat AFK loop, Quest Kill Tracker, Live Minimap Radar, DevTuningDrawer &amp; Mac 3D Map Builder
     /// 8. Scalable Map Expansion (1000x1000 -> 2000x2000 -> 4000x4000) &amp; On-Demand Spatial Chunk Streaming (MapChunkStreamer)
     /// 9. 3D Altitude, Multi-Floor Watchtowers &amp; Walk-In Crystal Caves (TerrainElevation) + Smart Camera LOS &amp; Roof Cutaway (SmartCameraOccluder)
-    /// 10. Dual-Track Base/Job Level Growth, Adventurer Handbook Passives &amp; Unified Quest Board Catalogs (MmorpgGrowthManager)
+    /// 10. Dual-Track Base/Job Level Growth, Adventurer Handbook Passives, Job Skills, 10-Element/Size Combat &amp; Unified Quest Board Catalogs (MmorpgGrowthManager)
     /// </summary>
     public partial class VerticalSliceRoot : Node3D
     {
@@ -96,6 +95,7 @@ namespace AtlasWorld.Client
             public string Name = "";
             public string TitleBadge = "";
             public string ElementType = "";
+            public string SizeClass = "Medium";
             public long CurrentHp;
             public long MaxHp;
             public int BarSegments;
@@ -323,6 +323,7 @@ namespace AtlasWorld.Client
 
                 MobileControls.ActionTriggered += action =>
                 {
+                    var skills = _growth.GetCurrentJobSkills();
                     switch (action)
                     {
                         case "attack":
@@ -334,15 +335,15 @@ namespace AtlasWorld.Client
                             TriggerDash();
                             break;
                         case "skill_1":
-                            MobileControls.Skill1Btn?.TriggerCooldown(4.0f);
+                            MobileControls.Skill1Btn?.TriggerCooldown(skills[0].CooldownSec);
                             TriggerSkill(1);
                             break;
                         case "skill_2":
-                            MobileControls.Skill2Btn?.TriggerCooldown(6.0f);
+                            MobileControls.Skill2Btn?.TriggerCooldown(skills[1].CooldownSec);
                             TriggerSkill(2);
                             break;
                         case "skill_3":
-                            MobileControls.Skill3Btn?.TriggerCooldown(8.0f);
+                            MobileControls.Skill3Btn?.TriggerCooldown(skills[2].CooldownSec);
                             TriggerSkill(3);
                             break;
                         case "potion_hp":
@@ -564,10 +565,11 @@ namespace AtlasWorld.Client
             string jobName = _growth.CycleNextJobClass();
             SyncGrowthHud();
             UpdateQuestTrackerDisplay();
+            var skills = _growth.GetCurrentJobSkills();
             Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
             CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -90), $"JOB CLASS: {jobName.ToUpperInvariant()}!");
             ChatWidget?.AppendSystemMessage(
-                $"[Job Change] Switched to {jobName} (Base Lv.{_growth.BaseLevel} | Job Lv.{_growth.JobLevel}/{_growth.MaxJobLevelForCurrentJob}).");
+                $"[Job Change] Switched to {jobName} (Wpn: {_growth.EquippedWeaponKind}) | Hotbar: [1] {skills[0].ButtonLabel} ({skills[0].Element}), [2] {skills[1].ButtonLabel} ({skills[1].Element}), [3] {skills[2].ButtonLabel} ({skills[2].Element}).");
         }
 
         private void TriggerRefineAndCardCycleForTest()
@@ -598,6 +600,24 @@ namespace AtlasWorld.Client
                 PlayerExpBar.BaseExpPercent = _growth.BaseExpPercent;
                 PlayerExpBar.JobExpPercent = _growth.JobExpPercent;
                 PlayerExpBar.UpdateDisplay();
+            }
+
+            // Sync active Job Class Skill names onto the 3 MobileControls SkillButtons
+            var skills = _growth.GetCurrentJobSkills();
+            if (MobileControls?.Skill1Btn != null)
+            {
+                MobileControls.Skill1Btn.LabelText = skills[0].ButtonLabel;
+                MobileControls.Skill1Btn.QueueRedraw();
+            }
+            if (MobileControls?.Skill2Btn != null)
+            {
+                MobileControls.Skill2Btn.LabelText = skills[1].ButtonLabel;
+                MobileControls.Skill2Btn.QueueRedraw();
+            }
+            if (MobileControls?.Skill3Btn != null)
+            {
+                MobileControls.Skill3Btn.LabelText = skills[2].ButtonLabel;
+                MobileControls.Skill3Btn.QueueRedraw();
             }
         }
 
@@ -802,7 +822,7 @@ namespace AtlasWorld.Client
                         continue;
 
                     bool isPathTile = group3D.Name == "CobblestonePath";
-                    foreach (Node prop in group3D.GetChildren())
+                    foreach (Node prop in group.GetChildren())
                     {
                         if (prop is Node3D prop3D)
                         {
@@ -871,32 +891,34 @@ namespace AtlasWorld.Client
             };
             AddChild(_targetRingMesh);
 
-            // 1. MVP Boss: Lv.60 Drake (using orc_brute.glb)
+            // 1. Catalog MVP Boss: Lv.63 Orc Warlord (Earth / DemiHuman / Large) from contracts/content/mobs.json
             SpawnSingleMonster(
                 _worldMobsContainer,
                 assetKey: "mob:aggressive",
                 fallbackPath: "res://assets/characters/orc_brute.glb",
-                name: "Lv.60 Drake",
+                name: "Lv.63 Orc Warlord",
                 badge: "MVP Boss",
-                element: "Undead / Water",
-                hp: 1280000,
-                maxHp: 1500000,
+                element: "Earth / Large",
+                sizeClass: "Large",
+                hp: 144500,
+                maxHp: 144500,
                 segments: 4,
                 pos: new Vector3(0f, TerrainElevation.SampleHeight(0f, -4.8f, _mapDoc), -4.8f),
-                scale: 1.35f,
+                scale: 1.38f,
                 nameColor: new Color(1.0f, 0.86f, 0.32f, 1f)
             );
 
-            // 2. Elite Mob: Lv.58 Bramble Stalker (using mob_spear_thrower.glb)
+            // 2. Catalog Elite Mob: Lv.33 Skeleton Soldier (Undead / Medium) from contracts/content/mobs.json
             SpawnSingleMonster(
                 _worldMobsContainer,
                 assetKey: "mob:spear_thrower",
                 fallbackPath: "res://assets/characters/mob_spear_thrower.glb",
-                name: "Lv.58 Bramble Stalker",
+                name: "Lv.33 Skeleton Soldier",
                 badge: "Elite Mob",
-                element: "Earth / Insect",
-                hp: 420000,
-                maxHp: 420000,
+                element: "Undead / Medium",
+                sizeClass: "Medium",
+                hp: 42000,
+                maxHp: 42000,
                 segments: 2,
                 pos: new Vector3(3.8f, TerrainElevation.SampleHeight(3.8f, -3.6f, _mapDoc), -3.6f),
                 scale: 1.05f,
@@ -913,6 +935,7 @@ namespace AtlasWorld.Client
             string name,
             string badge,
             string element,
+            string sizeClass,
             long hp,
             long maxHp,
             int segments,
@@ -998,6 +1021,7 @@ namespace AtlasWorld.Client
                 Name = name,
                 TitleBadge = badge,
                 ElementType = element,
+                SizeClass = sizeClass,
                 CurrentHp = hp,
                 MaxHp = maxHp,
                 BarSegments = segments,
@@ -1200,6 +1224,8 @@ namespace AtlasWorld.Client
                     return;
                 }
 
+                var jobSkills = _growth.GetCurrentJobSkills();
+
                 // Gameplay desktop keyboard shortcuts
                 switch (keyEvent.Keycode)
                 {
@@ -1216,21 +1242,21 @@ namespace AtlasWorld.Client
                     case Key.Key1:
                     case Key.Q:
                     case Key.J:
-                        MobileControls?.Skill1Btn?.TriggerCooldown(4.0f);
+                        MobileControls?.Skill1Btn?.TriggerCooldown(jobSkills[0].CooldownSec);
                         TriggerSkill(1);
                         GetViewport()?.SetInputAsHandled();
                         break;
                     case Key.Key2:
                     case Key.E:
                     case Key.K:
-                        MobileControls?.Skill2Btn?.TriggerCooldown(6.0f);
+                        MobileControls?.Skill2Btn?.TriggerCooldown(jobSkills[1].CooldownSec);
                         TriggerSkill(2);
                         GetViewport()?.SetInputAsHandled();
                         break;
                     case Key.Key3:
                     case Key.R:
                     case Key.L:
-                        MobileControls?.Skill3Btn?.TriggerCooldown(8.0f);
+                        MobileControls?.Skill3Btn?.TriggerCooldown(jobSkills[2].CooldownSec);
                         TriggerSkill(3);
                         GetViewport()?.SetInputAsHandled();
                         break;
@@ -1645,6 +1671,7 @@ namespace AtlasWorld.Client
                     }
                     else if (_autoAttackTimerSec <= 0f)
                     {
+                        var skills = _growth.GetCurrentJobSkills();
                         // Auto-replenish SP if low during AFK farming
                         if (_currentSp < 320 && (MobileControls?.PotionSpBtn == null || MobileControls.PotionSpBtn.IsReady))
                         {
@@ -1653,21 +1680,21 @@ namespace AtlasWorld.Client
                         }
 
                         // Cycle off-cooldown skills first, then basic melee swing
-                        if (MobileControls?.Skill1Btn != null && MobileControls.Skill1Btn.IsReady && _currentSp >= 240)
+                        if (MobileControls?.Skill1Btn != null && MobileControls.Skill1Btn.IsReady && _currentSp >= skills[0].SpCost)
                         {
-                            MobileControls.Skill1Btn.TriggerCooldown(4.0f);
+                            MobileControls.Skill1Btn.TriggerCooldown(skills[0].CooldownSec);
                             TriggerSkill(1);
                             _autoAttackTimerSec = 0.85f;
                         }
-                        else if (MobileControls?.Skill2Btn != null && MobileControls.Skill2Btn.IsReady && _currentSp >= 320)
+                        else if (MobileControls?.Skill2Btn != null && MobileControls.Skill2Btn.IsReady && _currentSp >= skills[1].SpCost)
                         {
-                            MobileControls.Skill2Btn.TriggerCooldown(6.0f);
+                            MobileControls.Skill2Btn.TriggerCooldown(skills[1].CooldownSec);
                             TriggerSkill(2);
                             _autoAttackTimerSec = 0.85f;
                         }
-                        else if (MobileControls?.Skill3Btn != null && MobileControls.Skill3Btn.IsReady && _currentSp >= 200)
+                        else if (MobileControls?.Skill3Btn != null && MobileControls.Skill3Btn.IsReady && _currentSp >= skills[2].SpCost)
                         {
-                            MobileControls.Skill3Btn.TriggerCooldown(8.0f);
+                            MobileControls.Skill3Btn.TriggerCooldown(skills[2].CooldownSec);
                             TriggerSkill(3);
                             _autoAttackTimerSec = 0.85f;
                         }
@@ -1937,9 +1964,12 @@ namespace AtlasWorld.Client
             // only run local damage simulation when offline.
             if (string.IsNullOrEmpty(_selectedServerTargetId))
             {
-                long dmg = (long)GD.RandRange(420, 640);
-                bool isCrit = GD.Randf() > 0.65f;
-                if (isCrit) dmg = (long)(dmg * 1.85f);
+                var mob = _worldMobs.Count > 0 ? _worldMobs[_selectedMobIndex % _worldMobs.Count] : null;
+                int sizePct = _growth.GetWeaponSizePenaltyPct(_growth.EquippedWeaponKind, mob?.SizeClass ?? "Medium");
+                long baseHit = 240 + (_growth.BaseLevel * 14) + (_growth.TotalBonusPAtk * 10);
+                long dmg = Math.Max(1L, (baseHit * sizePct) / 100);
+                bool isCrit = (GD.Randi() % 100) < (15 + _growth.TotalBonusCritPct);
+                if (isCrit) dmg = (long)(dmg * 1.65f);
                 ApplyOfflineDamageToShowcaseTarget(dmg, isCrit);
             }
         }
@@ -1968,36 +1998,24 @@ namespace AtlasWorld.Client
 
         private void TriggerSkill(int slot)
         {
-            int spCost = slot switch
-            {
-                1 => 240,
-                2 => 320,
-                3 => 200,
-                _ => 150
-            };
+            var skills = _growth.GetCurrentJobSkills();
+            var skill = skills[Math.Clamp(slot - 1, 0, skills.Length - 1)];
 
-            if (_currentSp < spCost)
+            if (_currentSp < skill.SpCost)
             {
                 ChatWidget?.AppendSystemMessage("Not enough SP! Use a Mana Potion [F3].");
                 return;
             }
 
-            _currentSp = Math.Max(0, _currentSp - spCost);
+            _currentSp = Math.Max(0, _currentSp - skill.SpCost);
             PlayerStatusFrame?.SetSp(_currentSp, MaxSp);
 
-            GD.Print($"[VerticalSliceRoot] Skill {slot} triggered!");
-            string skillName = slot switch
-            {
-                1 => "Meteor Strike!!",
-                2 => "Blizzard Storm!!",
-                3 => "Aegis Shield!!",
-                _ => $"Skill {slot}"
-            };
+            GD.Print($"[VerticalSliceRoot] Skill {slot} ({skill.Id}) triggered!");
 
             // Map UI button slot -> server-rs skill_execution.rs slot:
-            // UI 1 (Meteor) -> server slot 1 ("skill_1")
-            // UI 2 (Blizzard) -> server slot 3 ("skill_3")
-            // UI 3 (Aegis / Precision) -> server slot 2 ("skill_2")
+            // UI 1 -> server slot 1 ("skill_1")
+            // UI 2 -> server slot 3 ("skill_3")
+            // UI 3 -> server slot 2 ("skill_2")
             byte serverSkillSlot = slot switch
             {
                 1 => 1,
@@ -2018,22 +2036,30 @@ namespace AtlasWorld.Client
             Connection?.SendInput(0f, 0f, attack: false, skillSlot: serverSkillSlot, targetId: targetId, targetX: targetX, targetY: targetY);
 
             Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
-            CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -65), skillName);
+            CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -65), skill.ShoutName);
 
-            // Offline fallback damage when not targeting a live server-rs entity
+            // Offline fallback damage when not targeting a live server-rs entity:
+            // Uses the 10-Element Counter Matrix & Weapon-vs-Size modifier from elements.json!
             if (string.IsNullOrEmpty(_selectedServerTargetId))
             {
-                long dmg = slot switch
-                {
-                    1 => (long)GD.RandRange(2800, 4200),
-                    2 => (long)GD.RandRange(1950, 2900),
-                    _ => 0
-                };
+                var mob = _worldMobs.Count > 0 ? _worldMobs[_selectedMobIndex % _worldMobs.Count] : null;
+                string targetElem = mob?.ElementType ?? "Earth";
+                string targetSize = mob?.SizeClass ?? "Large";
 
-                if (dmg > 0)
+                var (dmg, elemPct, sizePct, atkElem) = _growth.CalculateSkillDamage(
+                    slot,
+                    targetElem,
+                    targetSize,
+                    out bool isCrit);
+
+                if (elemPct > 100)
                 {
-                    ApplyOfflineDamageToShowcaseTarget(dmg, isCrit: true);
+                    CombatText?.SpawnSkillShout(
+                        centerScreen + new Vector2(0, -105),
+                        $"ELEMENT ADVANTAGE! ({atkElem} {elemPct}% | Size {sizePct}%)");
                 }
+
+                ApplyOfflineDamageToShowcaseTarget(dmg, isCrit || elemPct > 100);
             }
         }
 
@@ -2072,7 +2098,7 @@ namespace AtlasWorld.Client
                     }
 
                     var tween = CreateTween();
-                    float baseScale = (_selectedMobIndex % _worldMobs.Count) == 0 ? 1.35f : 1.05f;
+                    float baseScale = (_selectedMobIndex % _worldMobs.Count) == 0 ? 1.38f : 1.05f;
                     tween.TweenProperty(mob.Root, "scale", Vector3.One * (baseScale * 1.14f), 0.07);
                     tween.TweenProperty(mob.Root, "scale", Vector3.One * baseScale, 0.12);
                 }
@@ -2154,7 +2180,7 @@ namespace AtlasWorld.Client
             }
 
             UpdateTargetRingPosition();
-            ChatWidget?.AppendSystemMessage($"Target locked: {mob.Name} [{mob.TitleBadge}]");
+            ChatWidget?.AppendSystemMessage($"Target locked: {mob.Name} [{mob.TitleBadge}] ({mob.ElementType})");
         }
 
         private void OnChatMessageSent(string msg)

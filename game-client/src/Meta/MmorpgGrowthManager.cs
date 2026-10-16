@@ -32,6 +32,25 @@ namespace AtlasWorld.Client.Meta
         [JsonPropertyName("assetStudioKey")] public string AssetStudioKey { get; set; } = "";
     }
 
+    public sealed class ElementsCatalogDef
+    {
+        [JsonPropertyName("elements")] public List<string> Elements { get; set; } = new();
+        [JsonPropertyName("damageMatrixPct")] public Dictionary<string, Dictionary<string, int>> DamageMatrixPct { get; set; } = new();
+        [JsonPropertyName("weaponSizePenaltyPct")] public Dictionary<string, Dictionary<string, int>> WeaponSizePenaltyPct { get; set; } = new();
+    }
+
+    public sealed class JobSkillSlotDef
+    {
+        public int Slot { get; init; }
+        public string Id { get; init; } = "";
+        public string ShoutName { get; init; } = "";
+        public string ButtonLabel { get; init; } = "";
+        public string Element { get; init; } = "Neutral";
+        public float DamageMultiplier { get; init; } = 2.0f;
+        public int SpCost { get; init; } = 200;
+        public float CooldownSec { get; init; } = 4.0f;
+    }
+
     public sealed class CardCatalogDef
     {
         [JsonPropertyName("id")] public string Id { get; set; } = "";
@@ -105,7 +124,7 @@ namespace AtlasWorld.Client.Meta
 
     /// <summary>
     /// Client-side MMORPG Growth, Job Progression, Equipment Refine (+0..+15), Monster Card Socketing,
-    /// Adventurer Handbook passives &amp; Quest Board tracker backed directly by <c>contracts/content/*.json</c>.
+    /// Adventurer Handbook passives, 10-Element/Size Counter Matrix &amp; Quest Board tracker backed directly by <c>contracts/content/*.json</c>.
     /// </summary>
     public sealed class MmorpgGrowthManager
     {
@@ -113,6 +132,7 @@ namespace AtlasWorld.Client.Meta
         public List<QuestBoardDef> Quests { get; private set; } = new();
         public List<CardCatalogDef> Cards { get; private set; } = new();
         public List<HandbookCatalogDef> Handbook { get; private set; } = new();
+        public ElementsCatalogDef Elements { get; private set; } = new();
 
         public int BaseLevel { get; private set; } = 12;
         public int JobLevel { get; private set; } = 15;
@@ -141,6 +161,7 @@ namespace AtlasWorld.Client.Meta
             string questsPath = Path.Combine(repoRoot, "contracts", "content", "quest_board.json");
             string cardsPath = Path.Combine(repoRoot, "contracts", "content", "cards.json");
             string handbookPath = Path.Combine(repoRoot, "contracts", "content", "handbook.json");
+            string elementsPath = Path.Combine(repoRoot, "contracts", "content", "elements.json");
 
             try
             {
@@ -159,6 +180,10 @@ namespace AtlasWorld.Client.Meta
                 if (File.Exists(handbookPath))
                 {
                     Handbook = JsonSerializer.Deserialize<List<HandbookCatalogDef>>(File.ReadAllText(handbookPath)) ?? new();
+                }
+                if (File.Exists(elementsPath))
+                {
+                    Elements = JsonSerializer.Deserialize<ElementsCatalogDef>(File.ReadAllText(elementsPath)) ?? new();
                 }
             }
             catch (Exception ex)
@@ -215,6 +240,116 @@ namespace AtlasWorld.Client.Meta
             Jobs.Find(j => j.Id == CurrentJobId) ?? Jobs[0];
 
         public string CurrentJobDisplayName => CurrentJob.Name;
+
+        public string EquippedWeaponKind
+        {
+            get
+            {
+                var allowed = CurrentJob.AllowedWeaponKinds;
+                return allowed.Count > 0 ? allowed[0] : "basic_sword";
+            }
+        }
+
+        /// <summary>
+        /// Evaluates the 10-Element counter percentage from <c>contracts/content/elements.json</c>
+        /// (e.g. Fire vs Earth = 150%, Fire vs Water = 50%, Holy vs Undead = 150%).
+        /// </summary>
+        public int GetElementCounterPct(string attackElement, string targetElement)
+        {
+            string cleanTarget = targetElement.Split('/')[0].Trim();
+            if (Elements.DamageMatrixPct.TryGetValue(attackElement, out var row) &&
+                row.TryGetValue(cleanTarget, out int pct))
+            {
+                return pct;
+            }
+            return 100;
+        }
+
+        /// <summary>
+        /// Evaluates the Weapon-vs-Monster-Size modifier percentage (<c>Small</c>, <c>Medium</c>, <c>Large</c>)
+        /// from <c>contracts/content/elements.json</c>.
+        /// </summary>
+        public int GetWeaponSizePenaltyPct(string weaponKind, string targetSize)
+        {
+            if (Elements.WeaponSizePenaltyPct.TryGetValue(weaponKind, out var row) &&
+                row.TryGetValue(targetSize, out int pct))
+            {
+                return pct;
+            }
+            return 100;
+        }
+
+        /// <summary>
+        /// Returns the 3 active hotbar skill profiles for the current Job Class.
+        /// </summary>
+        public JobSkillSlotDef[] GetCurrentJobSkills() => GetJobSkillsForClass(CurrentJobId);
+
+        public static JobSkillSlotDef[] GetJobSkillsForClass(string jobId) => jobId switch
+        {
+            "swordman" => new[]
+            {
+                new JobSkillSlotDef { Slot = 1, Id = "bash", ShoutName = "Bash!!", ButtonLabel = "BASH", Element = "Neutral", DamageMultiplier = 2.15f, SpCost = 180, CooldownSec = 3.5f },
+                new JobSkillSlotDef { Slot = 2, Id = "magnum_break", ShoutName = "Magnum Break!! (Fire)", ButtonLabel = "MAGNUM", Element = "Fire", DamageMultiplier = 2.65f, SpCost = 260, CooldownSec = 5.5f },
+                new JobSkillSlotDef { Slot = 3, Id = "endure", ShoutName = "Endure! (Holy Guard)", ButtonLabel = "ENDURE", Element = "Holy", DamageMultiplier = 1.85f, SpCost = 160, CooldownSec = 6.5f },
+            },
+            "mage" => new[]
+            {
+                new JobSkillSlotDef { Slot = 1, Id = "fire_bolt", ShoutName = "Fire Bolt!! (Fire)", ButtonLabel = "FIRE", Element = "Fire", DamageMultiplier = 2.85f, SpCost = 220, CooldownSec = 3.5f },
+                new JobSkillSlotDef { Slot = 2, Id = "cold_bolt", ShoutName = "Cold Bolt!! (Water)", ButtonLabel = "COLD", Element = "Water", DamageMultiplier = 2.60f, SpCost = 220, CooldownSec = 4.5f },
+                new JobSkillSlotDef { Slot = 3, Id = "lightning_bolt", ShoutName = "Lightning Bolt!! (Wind)", ButtonLabel = "THUNDER", Element = "Wind", DamageMultiplier = 2.70f, SpCost = 240, CooldownSec = 5.5f },
+            },
+            "archer" => new[]
+            {
+                new JobSkillSlotDef { Slot = 1, Id = "double_strafe", ShoutName = "Double Strafe!! (Wind)", ButtonLabel = "STRAFE", Element = "Wind", DamageMultiplier = 2.55f, SpCost = 190, CooldownSec = 3.0f },
+                new JobSkillSlotDef { Slot = 2, Id = "arrow_shower", ShoutName = "Arrow Shower!! (Fire)", ButtonLabel = "SHOWER", Element = "Fire", DamageMultiplier = 2.40f, SpCost = 240, CooldownSec = 5.0f },
+                new JobSkillSlotDef { Slot = 3, Id = "falcon_assault", ShoutName = "Falcon Assault!! (Holy)", ButtonLabel = "FALCON", Element = "Holy", DamageMultiplier = 2.85f, SpCost = 260, CooldownSec = 6.0f },
+            },
+            "knight" => new[]
+            {
+                new JobSkillSlotDef { Slot = 1, Id = "bowling_bash", ShoutName = "Bowling Bash!! (Fire)", ButtonLabel = "BOWL", Element = "Fire", DamageMultiplier = 3.30f, SpCost = 240, CooldownSec = 4.0f },
+                new JobSkillSlotDef { Slot = 2, Id = "brandish_spear", ShoutName = "Brandish Spear!! (Holy)", ButtonLabel = "BRANDISH", Element = "Holy", DamageMultiplier = 3.45f, SpCost = 280, CooldownSec = 5.5f },
+                new JobSkillSlotDef { Slot = 3, Id = "pierce", ShoutName = "Pierce!! (Anti-Large)", ButtonLabel = "PIERCE", Element = "Earth", DamageMultiplier = 3.10f, SpCost = 200, CooldownSec = 4.5f },
+            },
+            "wizard" => new[]
+            {
+                new JobSkillSlotDef { Slot = 1, Id = "meteor_storm", ShoutName = "Meteor Storm!! (Fire)", ButtonLabel = "METEOR", Element = "Fire", DamageMultiplier = 3.70f, SpCost = 260, CooldownSec = 4.5f },
+                new JobSkillSlotDef { Slot = 2, Id = "storm_gust", ShoutName = "Storm Gust!! (Water)", ButtonLabel = "GUST", Element = "Water", DamageMultiplier = 3.50f, SpCost = 280, CooldownSec = 5.5f },
+                new JobSkillSlotDef { Slot = 3, Id = "lord_of_vermilion", ShoutName = "Lord of Vermilion!! (Wind)", ButtonLabel = "VERMILION", Element = "Wind", DamageMultiplier = 3.55f, SpCost = 300, CooldownSec = 6.5f },
+            },
+            _ => new[]
+            {
+                new JobSkillSlotDef { Slot = 1, Id = "power_strike", ShoutName = "Power Strike!!", ButtonLabel = "STRIKE", Element = "Neutral", DamageMultiplier = 1.85f, SpCost = 140, CooldownSec = 3.0f },
+                new JobSkillSlotDef { Slot = 2, Id = "ember_slash", ShoutName = "Ember Slash!! (Fire)", ButtonLabel = "EMBER", Element = "Fire", DamageMultiplier = 2.15f, SpCost = 180, CooldownSec = 4.5f },
+                new JobSkillSlotDef { Slot = 3, Id = "holy_aid", ShoutName = "Holy Strike!! (Holy)", ButtonLabel = "HOLY", Element = "Holy", DamageMultiplier = 2.05f, SpCost = 160, CooldownSec = 5.0f },
+            }
+        };
+
+        /// <summary>
+        /// Calculates combat damage factoring in Base/Job Level, Weapon Refine (+0..+15), Socketed Cards,
+        /// Handbook Passives, 10-Element Counter Matrix, and Weapon-vs-Monster-Size modifier.
+        /// </summary>
+        public (long finalDamage, int elemPct, int sizePct, string attackElement) CalculateSkillDamage(
+            int skillSlot,
+            string targetElement,
+            string targetSize,
+            out bool isCritical)
+        {
+            var skills = GetCurrentJobSkills();
+            var skill = skills[Math.Clamp(skillSlot - 1, 0, skills.Length - 1)];
+
+            float baseOffence = 180f + (BaseLevel * 18f) + (JobLevel * 9f) + (TotalBonusPAtk * 12f);
+            float refineMult = 1.0f + (WeaponRefineLevel * 0.025f);
+            int elemPct = GetElementCounterPct(skill.Element, targetElement);
+            int sizePct = GetWeaponSizePenaltyPct(EquippedWeaponKind, targetSize);
+
+            int critChancePct = 15 + TotalBonusCritPct;
+            isCritical = (GD.Randi() % 100) < critChancePct;
+            float critMult = isCritical ? 1.65f : 1.0f;
+
+            float raw = baseOffence * refineMult * skill.DamageMultiplier * (elemPct / 100f) * (sizePct / 100f) * critMult;
+            long finalDmg = Math.Max(1L, (long)Mathf.Round(raw));
+            return (finalDmg, elemPct, sizePct, skill.Element);
+        }
 
         public int MaxJobLevelForCurrentJob => CurrentJob.MaxJobLevel;
 
