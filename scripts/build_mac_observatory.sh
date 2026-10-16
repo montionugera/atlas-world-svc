@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 # Builds the native macOS arm64 release bundle `build/AtlasObservatory.app`
-# using Apple's built-in `swiftc` compiler + SQLite3 + SwiftUI + shared `joy-design` Swift package.
+# (and installs to `/Applications/AtlasObservatory.app` on local macOS machines)
+# using Apple's built-in `swiftc` compiler + SQLite3 + SwiftUI + WebKit + shared `joy-design`.
 #
 # Usage:
-#   ./scripts/build_mac_observatory.sh            # Build + run self-test
-#   ./scripts/build_mac_observatory.sh --open     # Build + launch native macOS window
+#   ./scripts/build_mac_observatory.sh            # Build + install to /Applications + run self-test
+#   ./scripts/build_mac_observatory.sh --open     # Build + install + launch native macOS window
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_NAME="AtlasObservatory"
 APP_BUNDLE="${REPO_ROOT}/build/${APP_NAME}.app"
+INSTALLED_APP="/Applications/${APP_NAME}.app"
 CONTENTS_DIR="${APP_BUNDLE}/Contents"
 MACOS_DIR="${CONTENTS_DIR}/MacOS"
 RESOURCES_DIR="${CONTENTS_DIR}/Resources"
@@ -40,6 +42,7 @@ echo "[build_mac_observatory] Ensuring build/catalog.sqlite is up to date..."
 python3 "${REPO_ROOT}/scripts/build_catalog_db.py"
 
 mkdir -p "${MACOS_DIR}" "${RESOURCES_DIR}"
+printf '%s\n' "${REPO_ROOT}" > "${RESOURCES_DIR}/repo_root.txt"
 
 cat > "${CONTENTS_DIR}/Info.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -64,15 +67,21 @@ cat > "${CONTENTS_DIR}/Info.plist" <<EOF
     <string>14.0</string>
     <key>NSHighResolutionCapable</key>
     <true/>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
 </dict>
 </plist>
 EOF
 
-echo "[build_mac_observatory] Compiling native arm64 release binary with swiftc -O (JoyDesign + AtlasObservatoryApp)..."
+echo "[build_mac_observatory] Compiling native arm64 release binary with swiftc -O (JoyDesign + WebKit + AtlasObservatoryApp)..."
 swiftc -O \
     -parse-as-library \
     -framework SwiftUI \
     -framework AppKit \
+    -framework WebKit \
     -lsqlite3 \
     "${JOY_DESIGN_SOURCES[@]}" \
     "${SRC_FILE}" \
@@ -87,7 +96,17 @@ ATLAS_REPO_ROOT="${REPO_ROOT}" "${MACOS_DIR}/${APP_NAME}" --self-test
 BIN_SIZE="$(du -sh "${MACOS_DIR}/${APP_NAME}" | awk '{print $1}')"
 echo "[build_mac_observatory] Built ${APP_BUNDLE} (binary size: ${BIN_SIZE})"
 
+if [[ "${SKIP_APPLICATIONS_INSTALL:-0}" != "1" && -w "/Applications" ]]; then
+    rm -rf "${INSTALLED_APP}"
+    cp -R "${APP_BUNDLE}" "${INSTALLED_APP}"
+    codesign --force --deep --sign - "${INSTALLED_APP}" >/dev/null 2>&1 || true
+    echo "[build_mac_observatory] Installed to ${INSTALLED_APP}"
+fi
+
 if [[ "${1:-}" == "--open" ]]; then
-    echo "[build_mac_observatory] Launching ${APP_BUNDLE}..."
-    ATLAS_REPO_ROOT="${REPO_ROOT}" open -a "${APP_BUNDLE}"
+    TARGET_APP="${INSTALLED_APP}"
+    [[ -d "${TARGET_APP}" ]] || TARGET_APP="${APP_BUNDLE}"
+    echo "[build_mac_observatory] Launching ${TARGET_APP}..."
+    killall "${APP_NAME}" >/dev/null 2>&1 || true
+    open -a "${TARGET_APP}"
 fi

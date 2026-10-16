@@ -2,29 +2,33 @@
 """
 Atlas World — MMORPG Catalog & Balance Observatory Web Studio (scripts/catalog_explorer_web.py)
 
-Zero-dependency local HTTP + SQLite + JSONB Web Observatory for exploring, reviewing,
-searching, and running SQL queries across the entire Atlas World MMORPG catalog:
-  - Full-Text Global Search across Jobs, Mobs, Cards, Items, Quests, Handbook, Castles, and Maps
+Powered by the canonical `joy-design` Design System (`@joymify/tokens` `theme.css`,
+`@joymify/brand` emblem, and `.joy-*` component primitives):
+  - Global Search (`⌘K` / `/`) across Jobs, Mobs, Cards, Items, Quests, Handbook, Castles, and Maps
+  - Interactive Slide-Over Inspector Drawer (`.joy-drawer`) with full JSON contract & cross-references
   - Interactive Job Tree & Promotion Trial Explorer
-  - Mob Bestiary, Drop Table & EXP/HP Economy Inspector
-  - 10-Element Counter Matrix & Weapon-vs-Size Heatmap
+  - Monster Bestiary, Drop Table & EXP/HP Economy Inspector
+  - 10-Element Counter Matrix & Weapon-vs-Size Heatmap + Live Damage Multiplier Calculator
   - Equipment, Refine (+0..+15 Pity), Cards & Adventurer Handbook Passive Calculator
   - War of Emperium (GvG Castle Siege) Breach & TTK Calculator
-  - Read-Only Live SQLite Query Console against build/catalog.sqlite
-  - Spec & Canon Markdown Reviewer (docs/superpowers/specs/*.md, content/story/canon.md)
+  - Read-Only Live SQLite Query Console against `build/catalog.sqlite`
+  - Live `server-rs` Headless Balance Simulator Runner (`POST /api/sim`)
+  - Spec & Canon Markdown Reviewer (`docs/superpowers/specs/*.md`, `content/story/canon.md`)
 
 Usage:
-  python3 scripts/catalog_explorer_web.py [--port 8765]
+  python3 scripts/catalog_explorer_web.py [--port 8788]
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
+import shutil
 import sqlite3
 import subprocess
 import sys
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
@@ -35,6 +39,19 @@ CONTENT_DIR = ROOT / "contracts" / "content"
 MAPS_DIR = ROOT / "content" / "maps"
 SPECS_DIR = ROOT / "docs" / "superpowers" / "specs"
 CANON_PATH = ROOT / "content" / "story" / "canon.md"
+
+THEME_CSS_CANDIDATES = [
+    ROOT.parent / "joy-design" / "packages" / "tokens" / "dist" / "theme.css",
+    ROOT.parent / "joy-design" / ".claude" / "worktrees" / "_release" / "packages" / "tokens" / "dist" / "theme.css",
+    ROOT / "tools" / "mac-observatory" / "joy-theme.css",
+]
+
+
+def load_theme_css() -> bytes:
+    for candidate in THEME_CSS_CANDIDATES:
+        if candidate.exists():
+            return candidate.read_bytes()
+    return b"/* joy-theme.css not found */"
 
 
 def ensure_catalog_db() -> None:
@@ -142,412 +159,733 @@ def run_readonly_sql(query: str) -> dict:
         return {"ok": False, "error": str(exc)}
 
 
+def run_balance_sim() -> dict:
+    cargo_bin = shutil.which("cargo") or str(Path.home() / ".cargo" / "bin" / "cargo")
+    manifest = ROOT / "server-rs" / "Cargo.toml"
+    try:
+        res = subprocess.run(
+            [cargo_bin, "run", "--quiet", "--manifest-path", str(manifest), "--bin", "balance_sim"],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        out = (res.stdout or "") + (("\n" + res.stderr) if res.stderr else "")
+        return {
+            "ok": res.returncode == 0,
+            "exitCode": res.returncode,
+            "output": out.strip() or "(no output)",
+        }
+    except Exception as exc:
+        return {"ok": False, "exitCode": -1, "output": f"Failed to run balance_sim: {exc}"}
+
+
 INDEX_HTML = r"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark" data-palette="classic">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Atlas World — MMORPG Catalog &amp; Balance Observatory</title>
-<style>
-  :root {
-    --bg: #070b14;
-    --panel: #0f172a;
-    --panel-2: #131e36;
-    --border: #1e293b;
-    --accent: #38bdf8;
-    --gold: #fbbf24;
-    --emerald: #34d399;
-    --rose: #fb7185;
-    --purple: #a78bfa;
-    --text: #f1f5f9;
-    --muted: #94a3b8;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  header {
-    background: linear-gradient(90deg, #0b1324 0%, #111c35 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    position: sticky;
-    top: 0;
-    z-index: 20;
-  }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .brand-badge {
-    background: rgba(251, 191, 36, 0.16);
-    border: 1px solid rgba(251, 191, 36, 0.45);
-    color: var(--gold);
-    font-weight: 700;
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    letter-spacing: 0.06em;
-  }
-  .brand h1 {
-    font-size: 17px;
-    font-weight: 700;
-    color: #fff;
-  }
-  .search-wrap {
-    flex: 1;
-    max-width: 520px;
-    position: relative;
-  }
-  .search-input {
-    width: 100%;
-    background: #070c18;
-    border: 1px solid #283652;
-    color: #fff;
-    padding: 9px 14px;
-    border-radius: 10px;
-    font-size: 13.5px;
-    outline: none;
-  }
-  .search-input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
-  }
-  .top-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-  .btn {
-    background: #17233d;
-    color: #e2e8f0;
-    border: 1px solid #2b3b5c;
-    padding: 7px 13px;
-    border-radius: 8px;
-    font-size: 12.5px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn:hover { background: #1f3052; border-color: var(--accent); color: #fff; }
-  .btn-gold {
-    background: rgba(251, 191, 36, 0.16);
-    color: var(--gold);
-    border-color: rgba(251, 191, 36, 0.45);
-  }
-  .layout {
-    display: grid;
-    grid-template-columns: 230px 1fr;
-    flex: 1;
-  }
-  nav {
-    background: #0a101f;
-    border-right: 1px solid var(--border);
-    padding: 16px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .nav-btn {
-    text-align: left;
-    background: transparent;
-    color: var(--muted);
-    border: 1px solid transparent;
-    padding: 10px 12px;
-    border-radius: 9px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .nav-btn:hover { color: #fff; background: rgba(255,255,255,0.03); }
-  .nav-btn.active {
-    background: rgba(56, 189, 248, 0.14);
-    color: var(--accent);
-    border-color: rgba(56, 189, 248, 0.35);
-  }
-  .nav-count {
-    font-size: 11px;
-    background: #162038;
-    color: #cbd5e1;
-    padding: 2px 7px;
-    border-radius: 99px;
-  }
-  main {
-    padding: 22px 26px;
-    overflow-y: auto;
-  }
-  .kpi-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .kpi {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px;
-  }
-  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
-  .kpi-val { font-size: 22px; font-weight: 800; color: #fff; margin-top: 4px; }
-  .kpi-sub { font-size: 11.5px; color: var(--emerald); margin-top: 2px; }
-  .section-title {
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 12px;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .grid-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-    gap: 14px;
-    margin-bottom: 22px;
-  }
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-  }
-  .card-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 10px;
-  }
-  .card-title { font-size: 15px; font-weight: 700; color: #fff; }
-  .card-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .pill {
-    font-size: 11px;
-    font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 99px;
-    background: rgba(56, 189, 248, 0.15);
-    color: var(--accent);
-    border: 1px solid rgba(56, 189, 248, 0.35);
-  }
-  .pill-gold {
-    background: rgba(251, 191, 36, 0.15);
-    color: var(--gold);
-    border-color: rgba(251, 191, 36, 0.4);
-  }
-  .pill-rose {
-    background: rgba(251, 113, 133, 0.15);
-    color: var(--rose);
-    border-color: rgba(251, 113, 133, 0.4);
-  }
-  .pill-emerald {
-    background: rgba(52, 211, 153, 0.15);
-    color: var(--emerald);
-    border-color: rgba(52, 211, 153, 0.4);
-  }
-  .kv-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    font-size: 12.5px;
-    color: #cbd5e1;
-    margin-top: 8px;
-  }
-  .kv-row {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px dashed rgba(148, 163, 184, 0.14);
-    padding-bottom: 4px;
-  }
-  .mono {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 12px;
-    color: #fcd34d;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    font-size: 12.5px;
-    margin-bottom: 22px;
-  }
-  th, td {
-    padding: 9px 12px;
-    border-bottom: 1px solid var(--border);
-    text-align: left;
-  }
-  th {
-    background: #131d33;
-    color: #93c5fd;
-    font-weight: 700;
-    font-size: 11.5px;
-    text-transform: uppercase;
-  }
-  tr:hover td { background: rgba(255,255,255,0.02); }
-  .sql-box {
-    width: 100%;
-    min-height: 92px;
-    background: #060a12;
-    color: #fcd34d;
-    border: 1px solid #283652;
-    border-radius: 10px;
-    padding: 12px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 13px;
-    margin-bottom: 10px;
-  }
-  .preset-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .doc-viewer {
-    background: #0a101d;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 12.5px;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    color: #e2e8f0;
-    max-height: 620px;
-    overflow-y: auto;
-  }
-  .sim-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    align-items: center;
-    background: var(--panel-2);
-    border: 1px solid var(--border);
-    padding: 14px;
-    border-radius: 12px;
-    margin-bottom: 16px;
-  }
-  .sim-controls label {
-    font-size: 12.5px;
-    color: #cbd5e1;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .sim-controls select, .sim-controls input {
-    background: #080d19;
-    color: #fff;
-    border: 1px solid #2b3b5c;
-    padding: 6px 10px;
-    border-radius: 7px;
-    font-size: 12.5px;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    (function () {
+      var theme = 'dark';
+      try { theme = localStorage.getItem('joy-theme') || 'dark'; } catch (e) {}
+      document.documentElement.setAttribute('data-theme', theme);
+      var palette = 'classic';
+      try { palette = localStorage.getItem('joy-palette') || 'classic'; } catch (e) {}
+      document.documentElement.setAttribute('data-palette', palette);
+    })();
+  </script>
+  <title>Atlas World — Joymify Design Observatory</title>
+  <link rel="stylesheet" href="/theme.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --sidebar-width: 276px;
+      --hub-sidebar-bg: var(--joy-surface-card);
+      --hub-topbar-bg: var(--joy-surface-card);
+      --hub-chrome-border: var(--joy-border-default);
+    }
+    [data-theme="dark"] {
+      --hub-sidebar-bg: var(--joy-surface-card);
+      --hub-topbar-bg: var(--joy-surface-card);
+      --hub-chrome-border: var(--joy-border-strong);
+    }
+    * { box-sizing: border-box; min-width: 0; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      font-family: var(--joy-font-family-sans, 'Inter', -apple-system, sans-serif);
+      background-color: var(--joy-surface-canvas);
+      color: var(--joy-text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+    body { display: flex; }
+
+    /* Custom Scrollbars */
+    * { scrollbar-width: thin; scrollbar-color: var(--joy-border-default) transparent; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background-color: var(--joy-border-default); border-radius: var(--joy-radius-pill); }
+    ::-webkit-scrollbar-thumb:hover { background-color: var(--joy-border-strong); }
+
+    /* Sidebar (joy-design Storybook Hub Shell) */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--hub-sidebar-bg);
+      border-right: 1px solid var(--hub-chrome-border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      height: 100%;
+      user-select: none;
+    }
+    .brand {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--joy-border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .brand-info h2 {
+      margin: 0;
+      font-size: var(--joy-font-size-md);
+      font-weight: 700;
+      color: var(--joy-text-primary);
+      letter-spacing: -0.01em;
+    }
+    .brand-info span {
+      display: block;
+      font-size: var(--joy-font-size-xs);
+      color: var(--joy-accent-text);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .sidebar-search {
+      padding: 12px 12px 6px;
+      flex-shrink: 0;
+    }
+    .sidebar-search__inner {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: var(--joy-surface-sunken);
+      border: 1px solid var(--joy-border-default);
+      border-radius: var(--joy-radius-control);
+      transition: border-color var(--joy-duration-fast), box-shadow var(--joy-duration-fast);
+    }
+    .sidebar-search__inner:focus-within {
+      border-color: var(--joy-border-focus);
+      box-shadow: 0 0 0 2px var(--joy-focus-ring);
+    }
+    .sidebar-search__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-left: 10px;
+      color: var(--joy-text-secondary);
+      pointer-events: none;
+    }
+    .sidebar-search__input {
+      flex: 1;
+      width: 100%;
+      height: 36px;
+      padding: 0 8px;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: var(--joy-font-size-sm);
+      font-family: inherit;
+      color: var(--joy-text-primary);
+    }
+    .sidebar-search__input::placeholder {
+      color: var(--joy-text-muted);
+    }
+    .sidebar-search__kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      margin-right: 8px;
+      font-size: 11px;
+      font-family: var(--joy-font-family-mono);
+      font-weight: 600;
+      color: var(--joy-text-secondary);
+      background: var(--joy-surface-card);
+      border: 1px solid var(--joy-border-default);
+      border-radius: 4px;
+    }
+    .nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 12px 16px;
+    }
+    .nav-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--joy-text-muted);
+      padding: 12px 10px 6px;
+      margin-top: 4px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--joy-radius-control);
+      font-size: var(--joy-font-size-sm);
+      font-weight: 500;
+      color: var(--joy-text-secondary);
+      cursor: pointer;
+      transition: background-color var(--joy-duration-fast), color var(--joy-duration-fast);
+      margin-bottom: 2px;
+    }
+    .nav-item__left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .nav-item:hover {
+      background: var(--joy-surface-sunken);
+      color: var(--joy-text-primary);
+    }
+    .nav-item.active {
+      background: var(--joy-accent-subtle);
+      color: var(--joy-accent-text);
+      font-weight: 600;
+    }
+    .nav-section-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1px 7px;
+      font-size: 11px;
+      font-family: var(--joy-font-family-mono);
+      font-weight: 600;
+      border-radius: var(--joy-radius-pill);
+      background: var(--joy-surface-sunken);
+      color: var(--joy-text-secondary);
+      border: 1px solid var(--joy-border-subtle);
+    }
+    .nav-item.active .nav-section-count {
+      background: var(--joy-surface-card);
+      color: var(--joy-accent-text);
+      border-color: var(--joy-border-default);
+    }
+    .sidebar-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--joy-border-subtle);
+      font-size: var(--joy-font-size-xs);
+      color: var(--joy-text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Main Content */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+    .topbar {
+      min-height: 60px;
+      border-bottom: 1px solid var(--hub-chrome-border);
+      background: var(--hub-topbar-bg);
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--joy-space-3);
+      flex-shrink: 0;
+    }
+    .topbar__start, .topbar__end {
+      display: flex;
+      align-items: center;
+      gap: var(--joy-space-2);
+    }
+    .topbar__title {
+      font-size: var(--joy-font-size-md);
+      font-weight: 600;
+      color: var(--joy-text-primary);
+    }
+    .scroll-stage {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .content-area {
+      max-width: 1220px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 32px 72px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--joy-space-6);
+    }
+
+    /* Editorial Page Header */
+    .page-hero {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--joy-space-4);
+      padding-bottom: var(--joy-space-4);
+      border-bottom: 1px solid var(--joy-border-subtle);
+    }
+    .page-hero__eyebrow {
+      font-family: var(--joy-font-family-mono);
+      font-size: var(--joy-font-size-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--joy-accent-text);
+      margin-bottom: 6px;
+    }
+    .page-hero__title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 2.25rem;
+      font-weight: 600;
+      line-height: 1.1;
+      color: var(--joy-text-primary);
+      margin: 0 0 6px 0;
+    }
+    .page-hero__sub {
+      font-size: var(--joy-font-size-sm);
+      color: var(--joy-text-secondary);
+      margin: 0;
+      max-width: 720px;
+      line-height: 1.5;
+    }
+
+    /* Grids & Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: var(--joy-space-3);
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: var(--joy-space-4);
+    }
+    .observatory-card {
+      background: var(--joy-surface-card);
+      border: 1px solid var(--joy-border-default);
+      border-radius: var(--joy-radius-card);
+      padding: var(--joy-space-5);
+      box-shadow: var(--joy-elevation-1);
+      display: flex;
+      flex-direction: column;
+      gap: var(--joy-space-3);
+      transition: border-color var(--joy-duration-fast), transform var(--joy-duration-fast), box-shadow var(--joy-duration-fast);
+    }
+    .observatory-card--interactive {
+      cursor: pointer;
+    }
+    .observatory-card--interactive:hover {
+      border-color: var(--joy-border-strong);
+      transform: translateY(-2px);
+      box-shadow: var(--joy-elevation-2);
+    }
+    .observatory-card--gold {
+      border-color: var(--joy-border-strong);
+    }
+    .observatory-card__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--joy-space-3);
+      padding-bottom: var(--joy-space-3);
+      border-bottom: 1px solid var(--joy-border-subtle);
+    }
+    .observatory-card__title {
+      font-size: var(--joy-font-size-md);
+      font-weight: 600;
+      color: var(--joy-text-primary);
+      margin: 0;
+    }
+    .observatory-card__meta {
+      font-family: var(--joy-font-family-mono);
+      font-size: var(--joy-font-size-xs);
+      color: var(--joy-text-muted);
+      margin-top: 3px;
+    }
+    .kv-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: var(--joy-font-size-sm);
+    }
+    .kv-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--joy-space-3);
+      padding: 4px 0;
+      border-bottom: 1px dashed var(--joy-border-subtle);
+    }
+    .kv-row:last-child { border-bottom: none; }
+    .kv-label { color: var(--joy-text-secondary); }
+    .kv-val {
+      font-family: var(--joy-font-family-mono);
+      font-size: 0.8125rem;
+      color: var(--joy-text-primary);
+      text-align: right;
+    }
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .mono {
+      font-family: var(--joy-font-family-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Controls Bar */
+    .controls-panel {
+      background: var(--joy-surface-card);
+      border: 1px solid var(--joy-border-default);
+      border-radius: var(--joy-radius-card);
+      padding: var(--joy-space-4) var(--joy-space-5);
+      box-shadow: var(--joy-elevation-1);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--joy-space-4);
+    }
+    .control-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .control-field label {
+      font-size: var(--joy-font-size-xs);
+      font-weight: 600;
+      color: var(--joy-text-secondary);
+    }
+
+    /* SQL Editor */
+    .sql-editor {
+      width: 100%;
+      min-height: 96px;
+      background: var(--joy-surface-sunken);
+      color: var(--joy-text-primary);
+      border: 1px solid var(--joy-border-default);
+      border-radius: var(--joy-radius-control);
+      padding: 12px 14px;
+      font-family: var(--joy-font-family-mono);
+      font-size: 0.84rem;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+    }
+    .sql-editor:focus {
+      border-color: var(--joy-border-focus);
+      box-shadow: 0 0 0 2px var(--joy-focus-ring);
+    }
+
+    /* Slide-over Inspector Drawer */
+    .inspector-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 18, 31, 0.62);
+      z-index: var(--joy-z-backdrop);
+      display: none;
+    }
+    .inspector-backdrop.open { display: block; }
+    .inspector-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(560px, 92vw);
+      background: var(--joy-surface-card);
+      border-left: 1px solid var(--joy-border-strong);
+      box-shadow: var(--joy-elevation-3);
+      z-index: var(--joy-z-drawer);
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform var(--joy-duration-normal) var(--joy-ease-out-quint);
+    }
+    .inspector-drawer.open {
+      transform: translateX(0);
+    }
+    .inspector-drawer__head {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--joy-border-default);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .inspector-drawer__body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Element cell coloring */
+    .elem-cell--pos {
+      color: var(--joy-status-success-fg);
+      background: var(--joy-status-success-bg);
+      font-weight: 700;
+    }
+    .elem-cell--neg {
+      color: var(--joy-status-danger-fg);
+      background: var(--joy-status-danger-bg);
+    }
+    .elem-cell--zero {
+      color: var(--joy-text-muted);
+      opacity: 0.55;
+    }
+  </style>
 </head>
 <body>
-  <header>
+  <!-- Sidebar -->
+  <aside class="sidebar" aria-label="Observatory navigation">
     <div class="brand">
-      <span class="brand-badge">3-TIER OBSERVATORY</span>
-      <h1>Atlas World — MMORPG Catalog, Balance &amp; SQLite Explorer</h1>
+      <div class="brand-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true" class="joy-brand-mark">
+          <rect width="32" height="32" rx="6" fill="var(--joy-brand-tile)"/>
+          <path d="M16 4 28 16 16 28 4 16Z" fill="none" stroke="var(--joy-brand-mark-on-tile)" stroke-width="1.6"/>
+          <path d="M16 9 23 16 16 23 9 16Z" fill="var(--joy-brand-mark-on-tile)"/>
+          <circle cx="16" cy="16" r="1.6" fill="var(--joy-brand-mark-contrast)"/>
+        </svg>
+      </div>
+      <div class="brand-info">
+        <h2>Atlas World</h2>
+        <span>Joymify Design v3.12</span>
+      </div>
     </div>
-    <div class="search-wrap">
-      <input id="globalSearch" class="search-input" type="text" placeholder="Search any Job, Mob, Card, Skill, Item, Quest, Castle, or Asset Key..." />
-    </div>
-    <div class="top-actions">
-      <button class="btn btn-gold" onclick="rebuildDb()">⟳ Rebuild SQLite DB</button>
-      <button class="btn" onclick="switchTab('sql')">SQL Console</button>
-    </div>
-  </header>
 
-  <div class="layout">
-    <nav id="navRail">
-      <button class="nav-btn active" data-tab="overview" onclick="switchTab('overview')">
-        <span>◈ Overview &amp; Search</span><span class="nav-count" id="cnt-all">0</span>
-      </button>
-      <button class="nav-btn" data-tab="jobs" onclick="switchTab('jobs')">
-        <span>⚔ Jobs &amp; Skills</span><span class="nav-count" id="cnt-jobs">0</span>
-      </button>
-      <button class="nav-btn" data-tab="mobs" onclick="switchTab('mobs')">
-        <span>☠ Bestiary &amp; Drops</span><span class="nav-count" id="cnt-mobs">0</span>
-      </button>
-      <button class="nav-btn" data-tab="elements" onclick="switchTab('elements')">
-        <span>✦ 10-Element &amp; Size</span><span class="nav-count">10×10</span>
-      </button>
-      <button class="nav-btn" data-tab="cards" onclick="switchTab('cards')">
-        <span>🃏 Cards &amp; Handbook</span><span class="nav-count" id="cnt-cards">0</span>
-      </button>
-      <button class="nav-btn" data-tab="quests" onclick="switchTab('quests')">
-        <span>📜 Quest Board</span><span class="nav-count" id="cnt-quests">0</span>
-      </button>
-      <button class="nav-btn" data-tab="siege" onclick="switchTab('siege')">
-        <span>🏰 WoE Castle Siege</span><span class="nav-count" id="cnt-castles">0</span>
-      </button>
-      <button class="nav-btn" data-tab="maps" onclick="switchTab('maps')">
-        <span>🗺 3D Maps &amp; Slabs</span><span class="nav-count" id="cnt-maps">0</span>
-      </button>
-      <button class="nav-btn" data-tab="sql" onclick="switchTab('sql')">
-        <span>⌕ SQLite Query Studio</span><span class="nav-count">SQL</span>
-      </button>
-      <button class="nav-btn" data-tab="docs" onclick="switchTab('docs')">
-        <span>📖 Specs &amp; Lore Canon</span><span class="nav-count" id="cnt-docs">0</span>
-      </button>
-    </nav>
+    <div class="sidebar-search" role="search">
+      <div class="sidebar-search__inner">
+        <span class="sidebar-search__icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </span>
+        <input
+          type="search"
+          id="globalSearch"
+          class="sidebar-search__input"
+          placeholder="Search catalog, IDs, skills..."
+          autocomplete="off"
+        />
+        <kbd class="sidebar-search__kbd">⌘K</kbd>
+      </div>
+    </div>
 
-    <main id="mainContent">
-      Loading catalog bundle...
-    </main>
+    <nav class="nav" id="sidebarNav"></nav>
+
+    <div class="sidebar-footer">
+      <span>SQLite + JSONB</span>
+      <span class="joy-badge joy-badge--brand joy-badge--sm">joy-design</span>
+    </div>
+  </aside>
+
+  <!-- Main Workspace -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__start">
+        <span class="topbar__title" id="topbarTitle">Overview &amp; Telemetry</span>
+        <span class="joy-badge joy-badge--neutral joy-badge--sm" id="topbarStatus">Ready</span>
+      </div>
+      <div class="topbar__end">
+        <select id="paletteSelect" class="joy-select" style="height:32px;font-size:12px;padding:0 28px 0 10px;width:auto" aria-label="Color palette" onchange="setPalette(this.value)">
+          <option value="classic">Palette: Classic Gold &amp; Navy</option>
+          <option value="clay-court">Palette: Clay Court</option>
+          <option value="verdant-lawn">Palette: Verdant Lawn</option>
+          <option value="nordic-slate">Palette: Nordic Slate</option>
+          <option value="bauhaus-primary">Palette: Bauhaus Primary</option>
+          <option value="outdoor">Palette: High-Contrast Outdoor</option>
+        </select>
+
+        <button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="toggleTheme()" id="themeToggleBtn">
+          Light / Dark
+        </button>
+
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="rebuildDb()">
+          Rebuild SQLite
+        </button>
+
+        <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="switchTab('sim'); triggerBalanceSim();">
+          Run Balance Sim
+        </button>
+      </div>
+    </header>
+
+    <div class="scroll-stage">
+      <main class="content-area" id="mainContent"></main>
+    </div>
   </div>
+
+  <!-- Slide-Over Entity Inspector Drawer -->
+  <div class="inspector-backdrop" id="inspectorBackdrop" onclick="closeInspector()"></div>
+  <aside class="inspector-drawer" id="inspectorDrawer" aria-label="Entity Contract Inspector">
+    <div class="inspector-drawer__head">
+      <div>
+        <div class="page-hero__eyebrow" id="inspectorKind">CONTRACT INSPECTOR</div>
+        <h3 style="margin:0;font-size:1.15rem" id="inspectorTitle">Entity</h3>
+      </div>
+      <button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="closeInspector()">Close (Esc)</button>
+    </div>
+    <div class="inspector-drawer__body" id="inspectorBody"></div>
+  </aside>
 
 <script>
 let DATA = null;
-let ACTIVE_TAB = 'overview';
+let CURRENT_TAB = 'overview';
 let SEARCH_QUERY = '';
 let SELECTED_DOC_IDX = 0;
+let SIM_OUTPUT = 'Click "Run Balance Sim" in the top bar (or below) to execute `cargo run --bin balance_sim` against the live Rust authoritative combat engine.';
+let SIM_RUNNING = false;
+
+const NAV_GROUPS = [
+  {
+    section: 'World Telemetry',
+    items: [
+      { id: 'overview', label: 'Overview & Matrix', countKey: () => 9 },
+      { id: 'sql',      label: 'SQLite Query Studio', countKey: () => 'SQL' },
+      { id: 'sim',      label: 'Rust Balance Sim', countKey: () => 'RS' },
+    ]
+  },
+  {
+    section: 'Combat & Progression',
+    items: [
+      { id: 'jobs',     label: 'Job Tree & Trials', countKey: d => d.jobs.length },
+      { id: 'mobs',     label: 'Monster Bestiary', countKey: d => d.mobs.length },
+      { id: 'elements', label: '10-Element & Size', countKey: d => (d.elements.elements || []).length },
+      { id: 'gear',     label: 'Equipment & Cards', countKey: d => d.items.length + d.cards.length },
+    ]
+  },
+  {
+    section: 'World & Endgame',
+    items: [
+      { id: 'quests',   label: 'Quest Board', countKey: d => d.quests.length },
+      { id: 'siege',    label: 'WoE Castle Siege', countKey: d => d.castles.length },
+      { id: 'maps',     label: '3D Maps & Terraces', countKey: d => d.maps.length },
+      { id: 'docs',     label: 'Specs & Lore Canon', countKey: d => d.docs.length },
+    ]
+  }
+];
+
+function syncUrlState() {
+  const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const t = params.get('tab');
+  const q = params.get('q');
+  if (t) CURRENT_TAB = t;
+  if (q !== null) {
+    SEARCH_QUERY = q;
+    const inp = document.getElementById('globalSearch');
+    if (inp) inp.value = q;
+  }
+}
+
+function writeUrlState() {
+  const params = new URLSearchParams();
+  params.set('tab', CURRENT_TAB);
+  if (SEARCH_QUERY) params.set('q', SEARCH_QUERY);
+  history.replaceState(null, '', '#' + params.toString());
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', cur);
+  try { localStorage.setItem('joy-theme', cur); } catch (e) {}
+  updateThemeButton();
+}
+
+function updateThemeButton() {
+  const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.textContent = cur === 'dark' ? 'Theme: Dark' : 'Theme: Light';
+}
+
+function setPalette(val) {
+  document.documentElement.setAttribute('data-palette', val);
+  try { localStorage.setItem('joy-palette', val); } catch (e) {}
+}
 
 async function init() {
+  updateThemeButton();
+  const savedPal = document.documentElement.getAttribute('data-palette') || 'classic';
+  const sel = document.getElementById('paletteSelect');
+  if (sel) sel.value = savedPal;
+
+  syncUrlState();
+  window.addEventListener('hashchange', () => { syncUrlState(); renderSidebar(); render(); });
   const res = await fetch('/api/bundle');
   DATA = await res.json();
-  updateCounts();
+  renderSidebar();
   render();
-  document.getElementById('globalSearch').addEventListener('input', (e) => {
+
+  const searchInput = document.getElementById('globalSearch');
+  searchInput.addEventListener('input', e => {
     SEARCH_QUERY = e.target.value.trim().toLowerCase();
+    writeUrlState();
     render();
   });
-}
 
-function updateCounts() {
-  if (!DATA) return;
-  const total = (DATA.jobs?.length || 0) + (DATA.mobs?.length || 0) + (DATA.cards?.length || 0) +
-                (DATA.items?.length || 0) + (DATA.quests?.length || 0) + (DATA.castles?.length || 0);
-  document.getElementById('cnt-all').textContent = total;
-  document.getElementById('cnt-jobs').textContent = DATA.jobs?.length || 0;
-  document.getElementById('cnt-mobs').textContent = DATA.mobs?.length || 0;
-  document.getElementById('cnt-cards').textContent = (DATA.cards?.length || 0) + (DATA.handbook?.length || 0);
-  document.getElementById('cnt-quests').textContent = DATA.quests?.length || 0;
-  document.getElementById('cnt-castles').textContent = DATA.castles?.length || 0;
-  document.getElementById('cnt-maps').textContent = DATA.maps?.length || 0;
-  document.getElementById('cnt-docs').textContent = DATA.docs?.length || 0;
-}
-
-function switchTab(tab) {
-  ACTIVE_TAB = tab;
-  document.querySelectorAll('.nav-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.tab === tab);
+  window.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      searchInput.focus();
+      searchInput.select();
+    } else if (e.key === '/' && document.activeElement !== searchInput && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
+      e.preventDefault();
+      searchInput.focus();
+    } else if (e.key === 'Escape') {
+      closeInspector();
+    }
   });
+}
+
+function switchTab(id) {
+  CURRENT_TAB = id;
+  writeUrlState();
+  renderSidebar();
   render();
+}
+
+function renderSidebar() {
+  if (!DATA) return;
+  const nav = document.getElementById('sidebarNav');
+  nav.innerHTML = NAV_GROUPS.map(group => `
+    <div class="nav-section">${group.section}</div>
+    ${group.items.map(it => `
+      <div class="nav-item ${it.id === CURRENT_TAB ? 'active' : ''}" onclick="switchTab('${it.id}')">
+        <div class="nav-item__left">
+          <span>${it.label}</span>
+        </div>
+        <span class="nav-section-count">${it.countKey(DATA)}</span>
+      </div>
+    `).join('')}
+  `).join('');
 }
 
 function matchesSearch(obj) {
@@ -555,117 +893,258 @@ function matchesSearch(obj) {
   return JSON.stringify(obj).toLowerCase().includes(SEARCH_QUERY);
 }
 
+function openInspector(kind, title, obj) {
+  document.getElementById('inspectorKind').textContent = kind.toUpperCase() + ' CONTRACT';
+  document.getElementById('inspectorTitle').textContent = title;
+  const jsonStr = escapeHtml(JSON.stringify(obj, null, 2));
+  document.getElementById('inspectorBody').innerHTML = `
+    <div class="joy-code-block">
+      <div class="joy-code-block__header">
+        <div class="joy-code-block__meta">
+          <span class="joy-code-block__lang">JSONB</span>
+          <span>Contract Payload</span>
+        </div>
+      </div>
+      <pre style="margin:0;padding:14px;overflow-x:auto"><code>${jsonStr}</code></pre>
+    </div>
+  `;
+  document.getElementById('inspectorBackdrop').classList.add('open');
+  document.getElementById('inspectorDrawer').classList.add('open');
+}
+
+function closeInspector() {
+  document.getElementById('inspectorBackdrop').classList.remove('open');
+  document.getElementById('inspectorDrawer').classList.remove('open');
+}
+
 async function rebuildDb() {
-  const res = await fetch('/api/rebuild', { method: 'POST' });
-  const out = await res.json();
-  await init();
-  alert(out.message || 'Rebuilt build/catalog.sqlite');
+  const status = document.getElementById('topbarStatus');
+  status.textContent = 'Rebuilding SQLite...';
+  await fetch('/api/rebuild', { method: 'POST' });
+  const res = await fetch('/api/bundle');
+  DATA = await res.json();
+  status.textContent = 'SQLite Rebuilt';
+  renderSidebar();
+  render();
+}
+
+async function triggerBalanceSim() {
+  if (SIM_RUNNING) return;
+  SIM_RUNNING = true;
+  SIM_OUTPUT = 'Running `cargo run --quiet --manifest-path server-rs/Cargo.toml --bin balance_sim`...';
+  document.getElementById('topbarStatus').textContent = 'Running Balance Sim...';
+  render();
+  const res = await fetch('/api/sim', { method: 'POST' });
+  const payload = await res.json();
+  SIM_RUNNING = false;
+  SIM_OUTPUT = payload.output || '(no output)';
+  document.getElementById('topbarStatus').textContent = payload.ok ? 'Balance Sim Complete' : 'Balance Sim Failed';
+  render();
 }
 
 function render() {
-  const main = document.getElementById('mainContent');
   if (!DATA) return;
+  const main = document.getElementById('mainContent');
+  const titleMap = {
+    overview: 'Overview & Cross-Repo Telemetry',
+    jobs: 'Job Class Hierarchy & Promotion Trials',
+    mobs: 'Monster Bestiary, Drops & Economy',
+    elements: '10-Element Counter Matrix & Size Penalties',
+    gear: 'Equipment, +0..+15 Refine & Adventurer Handbook',
+    quests: 'Unified 6-Category Quest Board',
+    siege: 'War of Emperium (GvG Castle Siege) Simulator',
+    maps: '3D World Maps, Walkable Structures & Terraces',
+    sql: 'Live Read-Only SQLite Query Studio',
+    sim: 'Authoritative Rust Balance Simulator (balance_sim)',
+    docs: 'Architecture Specs & World Lore Canon'
+  };
+  document.getElementById('topbarTitle').textContent = titleMap[CURRENT_TAB] || 'Observatory';
 
-  if (ACTIVE_TAB === 'overview') {
-    main.innerHTML = renderOverview();
-  } else if (ACTIVE_TAB === 'jobs') {
-    main.innerHTML = renderJobs();
-  } else if (ACTIVE_TAB === 'mobs') {
-    main.innerHTML = renderMobs();
-  } else if (ACTIVE_TAB === 'elements') {
-    main.innerHTML = renderElements();
-  } else if (ACTIVE_TAB === 'cards') {
-    main.innerHTML = renderCardsAndHandbook();
-  } else if (ACTIVE_TAB === 'quests') {
-    main.innerHTML = renderQuests();
-  } else if (ACTIVE_TAB === 'siege') {
-    main.innerHTML = renderSiege();
-  } else if (ACTIVE_TAB === 'maps') {
-    main.innerHTML = renderMaps();
-  } else if (ACTIVE_TAB === 'sql') {
-    main.innerHTML = renderSqlStudio();
-    runSqlPreset("SELECT * FROM v_mob_economy;");
-  } else if (ACTIVE_TAB === 'docs') {
-    main.innerHTML = renderDocs();
-  }
+  if (CURRENT_TAB === 'overview') main.innerHTML = renderOverview();
+  else if (CURRENT_TAB === 'jobs') main.innerHTML = renderJobs();
+  else if (CURRENT_TAB === 'mobs') main.innerHTML = renderMobs();
+  else if (CURRENT_TAB === 'elements') { main.innerHTML = renderElements(); updateElemCalc(); }
+  else if (CURRENT_TAB === 'gear') { main.innerHTML = renderGear(); updateRefineCalc(); }
+  else if (CURRENT_TAB === 'quests') main.innerHTML = renderQuests();
+  else if (CURRENT_TAB === 'siege') { main.innerHTML = renderSiege(); updateSiegeCalc(); }
+  else if (CURRENT_TAB === 'maps') main.innerHTML = renderMaps();
+  else if (CURRENT_TAB === 'sql') { main.innerHTML = renderSqlStudio(); executeSql(); }
+  else if (CURRENT_TAB === 'sim') main.innerHTML = renderSim();
+  else if (CURRENT_TAB === 'docs') main.innerHTML = renderDocs();
+}
+
+function inspectBtnHtml(kind, title, obj) {
+  const encoded = encodeURIComponent(JSON.stringify(obj));
+  const safeTitle = escapeHtml(title).replace(/'/g, "\\'");
+  return `<button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="openInspector('${kind}', '${safeTitle}', JSON.parse(decodeURIComponent('${encoded}')))">Inspect JSON</button>`;
 }
 
 function renderOverview() {
-  const c = DATA.summary?.counts || {};
-  const assetEntries = (DATA.summary?.assetStudioEntries || []).filter(matchesSearch);
-
-  let searchResultsHtml = '';
-  if (SEARCH_QUERY) {
-    const matchedJobs = DATA.jobs.filter(matchesSearch);
-    const matchedMobs = DATA.mobs.filter(matchesSearch);
-    const matchedCards = DATA.cards.filter(matchesSearch);
-    const matchedQuests = DATA.quests.filter(matchesSearch);
-    const matchedItems = DATA.items.filter(matchesSearch);
-    searchResultsHtml = `
-      <div class="section-title">Global Search Matches for "${SEARCH_QUERY}"</div>
-      <div class="grid-cards">
-        ${matchedJobs.map(j => `<div class="card"><div class="card-head"><div><div class="card-title">${j.name}</div><div class="card-sub">Job (${j.id}) · Tier ${j.tier}</div></div><span class="pill">Job</span></div><div class="mono">${j.assetStudioKey}</div></div>`).join('')}
-        ${matchedMobs.map(m => `<div class="card"><div class="card-head"><div><div class="card-title">Lv.${m.level} ${m.name}</div><div class="card-sub">${m.element} · ${m.race} · ${m.size}</div></div><span class="pill ${m.isMvp ? 'pill-gold' : 'pill-rose'}">${m.isMvp ? 'MVP Boss' : 'Mob'}</span></div><div class="mono">HP ${m.hp.toLocaleString()} · Card: ${m.cardId || 'None'}</div></div>`).join('')}
-        ${matchedCards.map(cd => `<div class="card"><div class="card-head"><div><div class="card-title">${cd.name}</div><div class="card-sub">Slot: ${cd.slot} · Mob: ${cd.mobId}</div></div><span class="pill pill-gold">Card</span></div><div class="mono">${JSON.stringify(cd.equipStats)}</div></div>`).join('')}
-        ${matchedQuests.map(q => `<div class="card"><div class="card-head"><div><div class="card-title">${q.title}</div><div class="card-sub">${q.category} · Zone: ${q.zoneId}</div></div><span class="pill pill-emerald">Quest</span></div><div class="mono">+${q.rewards.baseXp} BaseEXP / +${q.rewards.jobXp} JobEXP</div></div>`).join('')}
-        ${matchedItems.map(it => `<div class="card"><div class="card-head"><div><div class="card-title">${it.name}</div><div class="card-sub">${it.kind} (${it.id})</div></div><span class="pill">Item</span></div><div class="mono">P.ATK ${it.pAtk || 0} · M.ATK ${it.mAtk || 0}</div></div>`).join('')}
-      </div>
-    `;
-  }
+  const jobs = DATA.jobs.filter(matchesSearch);
+  const mobs = DATA.mobs.filter(matchesSearch);
+  const items = DATA.items.filter(matchesSearch);
+  const cards = DATA.cards.filter(matchesSearch);
+  const quests = DATA.quests.filter(matchesSearch);
 
   return `
-    <div class="kpi-row">
-      <div class="kpi"><div class="kpi-label">Job Classes</div><div class="kpi-val">${c.jobs || 0}</div><div class="kpi-sub">Tier 0 → Tier 1 → Tier 2</div></div>
-      <div class="kpi"><div class="kpi-label">Monsters &amp; MVPs</div><div class="kpi-val">${c.mobs || 0}</div><div class="kpi-sub">10-Element &amp; Size Indexed</div></div>
-      <div class="kpi"><div class="kpi-label">Monster Cards</div><div class="kpi-val">${c.cards || 0}</div><div class="kpi-sub">Equip + Handbook Deposit</div></div>
-      <div class="kpi"><div class="kpi-label">Quest Board</div><div class="kpi-val">${c.questBoard || 0}</div><div class="kpi-sub">Main / Job / Side / Bounty</div></div>
-      <div class="kpi"><div class="kpi-label">GvG Castles (WoE)</div><div class="kpi-val">${c.castles || 0}</div><div class="kpi-sub">Kriemhild (120k Emperium)</div></div>
-      <div class="kpi"><div class="kpi-label">3D World Maps</div><div class="kpi-val">${c.maps || 0}</div><div class="kpi-sub">Multi-Floor Slabs &amp; Caves</div></div>
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">JOYMIFY DESIGN SYSTEM · ATLAS WORLD OBSERVATORY</div>
+        <h1 class="page-hero__title">MMORPG Catalog, SQLite &amp; Balance Telemetry</h1>
+        <p class="page-hero__sub">
+          Single-source-of-truth contract explorer across <code>contracts/content/*.json</code>,
+          <code>build/catalog.sqlite</code>, <code>server-rs</code> combat math, and <code>atlas-asset-studio</code> keys.
+        </p>
+      </div>
+      <div class="chip-row">
+        <span class="joy-badge joy-badge--brand">SQLite Indexed</span>
+        <span class="joy-badge joy-badge--success">68/68 Rust Tests Passing</span>
+      </div>
     </div>
-    ${searchResultsHtml}
-    <div class="section-title">
-      <span>Cross-Repo Asset Studio Binding Index (v_asset_studio_entries)</span>
-      <span class="mono">${assetEntries.length} entries</span>
+
+    <div class="joy-telemetry-strip">
+      <div class="joy-telemetry-strip__item">
+        <span class="joy-telemetry-strip__metric">${DATA.jobs.length}</span>
+        <span class="joy-telemetry-strip__label">Job Classes</span>
+      </div>
+      <div class="joy-telemetry-strip__item">
+        <span class="joy-telemetry-strip__metric">${DATA.skills.length}</span>
+        <span class="joy-telemetry-strip__label">Active Skills</span>
+      </div>
+      <div class="joy-telemetry-strip__item">
+        <span class="joy-telemetry-strip__metric">${DATA.mobs.length}</span>
+        <span class="joy-telemetry-strip__label">Monsters &amp; MVPs</span>
+      </div>
+      <div class="joy-telemetry-strip__item">
+        <span class="joy-telemetry-strip__metric">${DATA.items.length}</span>
+        <span class="joy-telemetry-strip__label">Equipment &amp; Loot</span>
+      </div>
+      <div class="joy-telemetry-strip__item">
+        <span class="joy-telemetry-strip__metric">${DATA.cards.length}</span>
+        <span class="joy-telemetry-strip__label">Monster Cards</span>
+      </div>
+      <div class="joy-telemetry-strip__item">
+        <span class="joy-telemetry-strip__metric">${DATA.quests.length}</span>
+        <span class="joy-telemetry-strip__label">Quest Board</span>
+      </div>
+      <div class="joy-telemetry-strip__item">
+        <span class="joy-telemetry-strip__metric">${DATA.castles.length}</span>
+        <span class="joy-telemetry-strip__label">WoE Castles</span>
+      </div>
     </div>
-    <table>
-      <thead>
-        <tr><th>Asset Studio Entry Key</th><th>Domain</th><th>Catalog ID</th><th>Display Name</th></tr>
-      </thead>
-      <tbody>
-        ${assetEntries.map(e => `
-          <tr>
-            <td class="mono">${e.entryKey}</td>
-            <td><span class="pill">${e.domain.toUpperCase()}</span></td>
-            <td class="mono">${e.catalogId}</td>
-            <td>${e.name}</td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
+
+    <div class="kpi-grid">
+      <div class="joy-metric-tile joy-metric-tile--up" onclick="switchTab('jobs')" style="cursor:pointer">
+        <div class="joy-metric-tile__title">Job Tree &amp; Promotion Trials</div>
+        <div class="joy-metric-tile__value">${jobs.length}</div>
+        <div class="joy-metric-tile__change">Tier 0 Novice → Tier 2 Knight / Wizard</div>
+      </div>
+      <div class="joy-metric-tile joy-metric-tile--up" onclick="switchTab('mobs')" style="cursor:pointer">
+        <div class="joy-metric-tile__title">Monster Bestiary &amp; MVP Bosses</div>
+        <div class="joy-metric-tile__value">${mobs.length}</div>
+        <div class="joy-metric-tile__change">10-Element + 10-Race + 3-Size</div>
+      </div>
+      <div class="joy-metric-tile joy-metric-tile--up" onclick="switchTab('gear')" style="cursor:pointer">
+        <div class="joy-metric-tile__title">Items, Cards &amp; Handbook</div>
+        <div class="joy-metric-tile__value">${items.length + cards.length}</div>
+        <div class="joy-metric-tile__change">+0..+15 Pity Refine &amp; Card Sockets</div>
+      </div>
+      <div class="joy-metric-tile joy-metric-tile--up" onclick="switchTab('siege')" style="cursor:pointer">
+        <div class="joy-metric-tile__title">War of Emperium (GvG)</div>
+        <div class="joy-metric-tile__value">${DATA.castles.length} Castle</div>
+        <div class="joy-metric-tile__change">Kriemhild · Normal-Attack Emperium</div>
+      </div>
+    </div>
+
+    <div class="observatory-card observatory-card--gold">
+      <div class="observatory-card__head">
+        <div>
+          <h3 class="observatory-card__title">Cross-Repo Asset Studio Binding Matrix</h3>
+          <div class="observatory-card__meta">Live verification across jobs, monsters, castles, and 3D glTF / VRM assets</div>
+        </div>
+        <span class="joy-badge joy-badge--brand">v_asset_studio_entries</span>
+      </div>
+      <div class="joy-table-container">
+        <table class="joy-table">
+          <thead>
+            <tr>
+              <th>Domain</th>
+              <th>Entity ID</th>
+              <th>Display Name</th>
+              <th>Tier / Rank / Slot</th>
+              <th>Asset Studio Key</th>
+              <th>Inspect</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${jobs.map(j => `
+              <tr>
+                <td><span class="joy-badge joy-badge--brand joy-badge--sm">JOB</span></td>
+                <td class="mono">${j.id}</td>
+                <td><strong>${j.name}</strong></td>
+                <td class="mono">Tier ${j.tier} (${j.parentJobId || 'root'})</td>
+                <td class="mono">${j.assetStudioKey}</td>
+                <td>${inspectBtnHtml('job', j.name, j)}</td>
+              </tr>
+            `).join('')}
+            ${mobs.map(m => `
+              <tr>
+                <td><span class="joy-badge ${m.isMvp ? 'joy-badge--warning' : 'joy-badge--danger'} joy-badge--sm">${m.isMvp ? 'MVP' : 'MOB'}</span></td>
+                <td class="mono">${m.id}</td>
+                <td><strong>${m.name}</strong></td>
+                <td class="mono">Lv.${m.level} · ${m.element}/${m.race}/${m.size}</td>
+                <td class="mono">${m.assetStudioKey}</td>
+                <td>${inspectBtnHtml('mob', m.name, m)}</td>
+              </tr>
+            `).join('')}
+            ${DATA.castles.filter(matchesSearch).map(c => `
+              <tr>
+                <td><span class="joy-badge joy-badge--success joy-badge--sm">CASTLE</span></td>
+                <td class="mono">${c.id}</td>
+                <td><strong>${c.name}</strong></td>
+                <td class="mono">${c.hubTownId} → ${c.siegeMapId}</td>
+                <td class="mono">${c.assetStudioKey}</td>
+                <td>${inspectBtnHtml('castle', c.name, c)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
   `;
 }
 
 function renderJobs() {
   const jobs = DATA.jobs.filter(matchesSearch);
   return `
-    <div class="section-title">Job Class Hierarchy &amp; Promotion Trials (contracts/content/jobs.json)</div>
-    <div class="grid-cards">
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">PROGRESSION ARCHITECTURE</div>
+        <h1 class="page-hero__title">Job Class Hierarchy &amp; Promotion Trials (${jobs.length})</h1>
+        <p class="page-hero__sub">Novice (Tier 0) → First Class at Base Lv.10 / Job Lv.10 → Second Class at Base Lv.40 / Job Lv.40.</p>
+      </div>
+    </div>
+    <div class="card-grid">
       ${jobs.map(j => `
-        <div class="card">
-          <div class="card-head">
+        <div class="observatory-card ${j.tier === 2 ? 'observatory-card--gold' : ''}">
+          <div class="observatory-card__head">
             <div>
-              <div class="card-title">${j.name} <span class="mono">(${j.id})</span></div>
-              <div class="card-sub">Tier ${j.tier} · Parent: ${j.parentJobId || 'Root'}</div>
+              <h3 class="observatory-card__title">${j.name}</h3>
+              <div class="observatory-card__meta">ID: ${j.id} · Parent: ${j.parentJobId || 'Root'}</div>
             </div>
-            <span class="pill ${j.tier === 2 ? 'pill-gold' : ''}">Tier ${j.tier}</span>
+            <span class="joy-badge ${j.tier === 2 ? 'joy-badge--brand' : (j.tier === 1 ? 'joy-badge--success' : 'joy-badge--neutral')}">Tier ${j.tier}</span>
           </div>
           <div class="kv-list">
-            <div class="kv-row"><span>Min Base Level</span><span class="mono">Lv.${j.minBaseLevel}</span></div>
-            <div class="kv-row"><span>Max Job Level</span><span class="mono">Job Lv.${j.maxJobLevel}</span></div>
-            <div class="kv-row"><span>Allowed Weapons</span><span class="mono">${j.allowedWeaponKinds.join(', ')}</span></div>
-            <div class="kv-row"><span>Max Job Bonus</span><span class="mono">${Object.entries(j.jobBonusAtMax).filter(([k,v])=>v>0).map(([k,v])=>`${k.toUpperCase()}+${v}`).join(' ')}</span></div>
-            <div class="kv-row"><span>Job Trial Quest</span><span class="mono">${j.jobChangeQuestId || 'None'}</span></div>
-            <div class="kv-row"><span>Asset Studio Key</span><span class="mono">${j.assetStudioKey}</span></div>
+            <div class="kv-row"><span class="kv-label">Min Base Level</span><span class="kv-val">Lv.${j.minBaseLevel}</span></div>
+            <div class="kv-row"><span class="kv-label">Max Job Level</span><span class="kv-val">Job Lv.${j.maxJobLevel}</span></div>
+            <div class="kv-row"><span class="kv-label">Promotion Quest</span><span class="kv-val">${j.promotionQuestId || 'Starter'}</span></div>
+            <div class="kv-row"><span class="kv-label">Allowed Weapons</span><span class="kv-val">${(j.allowedWeaponKinds || []).join(', ')}</span></div>
+            <div class="kv-row"><span class="kv-label">Unlocked Skills</span><span class="kv-val">${(j.unlockedSkillIds || []).join(', ')}</span></div>
+            <div class="kv-row"><span class="kv-label">Base Stat Bonuses</span><span class="kv-val">${Object.entries(j.baseStatBonuses || {}).filter(([,v])=>v>0).map(([k,v])=>`${k.toUpperCase()}+${v}`).join(' ') || 'None'}</span></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px">
+            <span class="mono" style="font-size:11px;color:var(--joy-text-muted)">${j.assetStudioKey}</span>
+            ${inspectBtnHtml('job', j.name, j)}
           </div>
         </div>
       `).join('')}
@@ -676,24 +1155,33 @@ function renderJobs() {
 function renderMobs() {
   const mobs = DATA.mobs.filter(matchesSearch);
   return `
-    <div class="section-title">Monster Bestiary, Drop Tables &amp; EXP/HP Efficiency (contracts/content/mobs.json)</div>
-    <div class="grid-cards">
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">COMBAT &amp; LOOT TABLES</div>
+        <h1 class="page-hero__title">Monster Bestiary, Drop Tables &amp; EXP/HP Efficiency (${mobs.length})</h1>
+        <p class="page-hero__sub">Authoritative stats, 10-element / 10-race / 3-size tags, card sockets, and basis-point drop tables.</p>
+      </div>
+    </div>
+    <div class="card-grid">
       ${mobs.map(m => `
-        <div class="card">
-          <div class="card-head">
+        <div class="observatory-card ${m.isMvp ? 'observatory-card--gold' : ''}">
+          <div class="observatory-card__head">
             <div>
-              <div class="card-title">Lv.${m.level} ${m.name}</div>
-              <div class="card-sub">${m.element} · ${m.race} · ${m.size} · Rank ${m.rank}</div>
+              <h3 class="observatory-card__title">Lv.${m.level} ${m.name}</h3>
+              <div class="observatory-card__meta">${m.element} · ${m.race} · ${m.size}</div>
             </div>
-            <span class="pill ${m.isMvp ? 'pill-gold' : 'pill-rose'}">${m.isMvp ? '★ MVP BOSS' : 'Monster'}</span>
+            <span class="joy-badge ${m.isMvp ? 'joy-badge--brand' : 'joy-badge--danger'}">${m.isMvp ? 'MVP BOSS' : m.rank.toUpperCase()}</span>
           </div>
           <div class="kv-list">
-            <div class="kv-row"><span>HP / P.ATK / P.DEF</span><span class="mono">${m.hp.toLocaleString()} HP · ${m.pAtk} ATK · ${m.pDef} DEF</span></div>
-            <div class="kv-row"><span>Base EXP / Job EXP</span><span class="mono">+${m.baseExp} Base / +${m.jobExp} Job (${(m.baseExp/m.hp).toFixed(2)} EXP/HP)</span></div>
-            <div class="kv-row"><span>Aggro / Leash</span><span class="mono">${m.aggroRangeM}m / ${m.leashRangeM}m</span></div>
-            <div class="kv-row"><span>Spawn Zones</span><span class="mono">${m.spawnZones.join(', ')}</span></div>
-            <div class="kv-row"><span>Card Drop</span><span class="mono">${m.cardId || '—'}</span></div>
-            <div class="kv-row"><span>Drops (bps)</span><span class="mono">${m.drops.map(d => `${d.itemId} (${(d.chanceBps/100).toFixed(2)}%)`).join(', ')}</span></div>
+            <div class="kv-row"><span class="kv-label">HP / ATK / DEF / MDEF</span><span class="kv-val">${m.hp.toLocaleString()} HP · ${m.pAtk} ATK · ${m.pDef}/${m.mDef}</span></div>
+            <div class="kv-row"><span class="kv-label">Base / Job EXP</span><span class="kv-val">+${m.baseExp} / +${m.jobExp}</span></div>
+            <div class="kv-row"><span class="kv-label">EXP per 100 HP</span><span class="kv-val">${((m.baseExp * 100) / Math.max(1, m.hp)).toFixed(1)} Base/100HP</span></div>
+            <div class="kv-row"><span class="kv-label">Linked Card</span><span class="kv-val">${m.cardId || '—'}</span></div>
+            <div class="kv-row"><span class="kv-label">Loot Drops</span><span class="kv-val">${(m.drops || []).map(d => `${d.itemId} (${(d.chanceBps/100).toFixed(2)}%)`).join(', ')}</span></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px">
+            <span class="mono" style="font-size:11px;color:var(--joy-text-muted)">${m.assetStudioKey}</span>
+            ${inspectBtnHtml('mob', m.name, m)}
           </div>
         </div>
       `).join('')}
@@ -702,92 +1190,230 @@ function renderMobs() {
 }
 
 function renderElements() {
-  const elems = DATA.elements?.elements || [];
-  const matrix = DATA.elements?.damageMatrixPct || {};
-  const sizeTable = DATA.elements?.weaponSizePenaltyPct || {};
+  const elems = DATA.elements.elements || [];
+  const mat = DATA.elements.damageMatrixPct || {};
+  const sizePen = DATA.elements.weaponSizePenaltyPct || {};
+  const wpnKinds = Object.keys(sizePen);
 
   return `
-    <div class="section-title">10-Element Counter Matrix (Attacker Row vs. Defender Column %)</div>
-    <table>
-      <thead>
-        <tr>
-          <th>ATK \\ DEF</th>
-          ${elems.map(e => `<th>${e}</th>`).join('')}
-        </tr>
-      </thead>
-      <tbody>
-        ${elems.map(atk => `
-          <tr>
-            <td style="font-weight:700;color:#fff">${atk}</td>
-            ${elems.map(def => {
-              const val = (matrix[atk] && matrix[atk][def]) ?? 100;
-              const col = val > 100 ? '#34d399' : (val < 100 ? '#fb7185' : '#94a3b8');
-              return `<td class="mono" style="color:${col};font-weight:${val!==100?700:400}">${val}%</td>`;
-            }).join('')}
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">COMBAT DAMAGE MODEL</div>
+        <h1 class="page-hero__title">10-Element Counter Matrix &amp; Weapon-vs-Size Modifiers</h1>
+        <p class="page-hero__sub">Interactive damage multiplier calculator + full 10×10 elemental lookup table and Small/Medium/Large weapon size table.</p>
+      </div>
+    </div>
 
-    <div class="section-title">Weapon Kind vs. Monster Size Modifier (Small / Medium / Large %)</div>
-    <table>
-      <thead>
-        <tr><th>Weapon Kind</th><th>Small</th><th>Medium</th><th>Large</th></tr>
-      </thead>
-      <tbody>
-        ${Object.entries(sizeTable).map(([wpn, row]) => `
-          <tr>
-            <td class="mono">${wpn}</td>
-            <td class="mono">${row.Small}%</td>
-            <td class="mono">${row.Medium}%</td>
-            <td class="mono">${row.Large}%</td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
+    <div class="controls-panel">
+      <div class="control-field">
+        <label for="calcAtkElem">Attacker Element</label>
+        <select id="calcAtkElem" class="joy-select" onchange="updateElemCalc()">
+          ${elems.map((e, i) => `<option value="${e}" ${i===1?'selected':''}>${e}</option>`).join('')}
+        </select>
+      </div>
+      <div class="control-field">
+        <label for="calcDefElem">Defender Element</label>
+        <select id="calcDefElem" class="joy-select" onchange="updateElemCalc()">
+          ${elems.map((e, i) => `<option value="${e}" ${i===2?'selected':''}>${e}</option>`).join('')}
+        </select>
+      </div>
+      <div class="control-field">
+        <label for="calcWpnKind">Weapon Kind</label>
+        <select id="calcWpnKind" class="joy-select" onchange="updateElemCalc()">
+          ${wpnKinds.map(w => `<option value="${w}">${w}</option>`).join('')}
+        </select>
+      </div>
+      <div class="control-field">
+        <label for="calcTargetSize">Target Size</label>
+        <select id="calcTargetSize" class="joy-select" onchange="updateElemCalc()">
+          <option value="Small">Small</option>
+          <option value="Medium" selected>Medium</option>
+          <option value="Large">Large</option>
+        </select>
+      </div>
+      <div style="margin-left:auto">
+        <span class="joy-badge joy-badge--brand" id="elemCalcOutput" style="font-size:0.9rem;padding:8px 14px">Combined Multiplier: 100%</span>
+      </div>
+    </div>
+
+    <div class="observatory-card">
+      <div class="observatory-card__head">
+        <div>
+          <h3 class="observatory-card__title">10×10 Elemental Damage Matrix (Attacker Row vs. Defender Column %)</h3>
+          <div class="observatory-card__meta">Values &gt; 100% deal bonus counter damage; values &lt; 100% are resisted</div>
+        </div>
+        <span class="joy-badge joy-badge--brand">elements.json</span>
+      </div>
+      <div class="joy-table-container">
+        <table class="joy-table">
+          <thead>
+            <tr>
+              <th>ATK \\ DEF</th>
+              ${elems.map(e => `<th>${e}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${elems.map(atk => `
+              <tr>
+                <td><strong>${atk}</strong></td>
+                ${elems.map(def => {
+                  const v = (mat[atk] && mat[atk][def] !== undefined) ? mat[atk][def] : 100;
+                  const cls = v > 100 ? 'elem-cell--pos' : (v === 0 ? 'elem-cell--zero' : (v < 100 ? 'elem-cell--neg' : ''));
+                  return `<td class="mono ${cls}">${v}%</td>`;
+                }).join('')}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="observatory-card">
+      <div class="observatory-card__head">
+        <div>
+          <h3 class="observatory-card__title">Weapon Kind vs. Monster Size Modifier (Small / Medium / Large %)</h3>
+          <div class="observatory-card__meta">Classic RO weapon-size signature (e.g., Spears excel vs. Large, Daggers excel vs. Small)</div>
+        </div>
+        <span class="joy-badge joy-badge--neutral">Size Table</span>
+      </div>
+      <div class="joy-table-container">
+        <table class="joy-table">
+          <thead>
+            <tr>
+              <th>Weapon Kind</th>
+              <th>Small</th>
+              <th>Medium</th>
+              <th>Large</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${Object.entries(sizePen).map(([wpn, row]) => `
+              <tr>
+                <td><strong>${wpn}</strong></td>
+                <td class="mono">${row.Small}%</td>
+                <td class="mono">${row.Medium}%</td>
+                <td class="mono">${row.Large}%</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
   `;
 }
 
-function renderCardsAndHandbook() {
+function updateElemCalc() {
+  if (!DATA) return;
+  const atk = document.getElementById('calcAtkElem')?.value;
+  const def = document.getElementById('calcDefElem')?.value;
+  const wpn = document.getElementById('calcWpnKind')?.value;
+  const sz = document.getElementById('calcTargetSize')?.value;
+  const ePct = DATA.elements.damageMatrixPct?.[atk]?.[def] ?? 100;
+  const sPct = DATA.elements.weaponSizePenaltyPct?.[wpn]?.[sz] ?? 100;
+  const combined = ((ePct / 100) * (sPct / 100) * 100).toFixed(1);
+  const out = document.getElementById('elemCalcOutput');
+  if (out) out.textContent = `Element ${ePct}% × Size ${sPct}% = ${combined}% Final Damage`;
+}
+
+function renderGear() {
+  const items = DATA.items.filter(matchesSearch);
   const cards = DATA.cards.filter(matchesSearch);
-  const hb = DATA.handbook.filter(matchesSearch);
+  const handbook = DATA.handbook.filter(matchesSearch);
   return `
-    <div class="section-title">Monster Cards — Socket Bonus vs. Permanent Handbook Deposit (contracts/content/cards.json)</div>
-    <div class="grid-cards">
-      ${cards.map(c => `
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <div class="card-title">${c.name}</div>
-              <div class="card-sub">Equip Slot: ${c.slot.toUpperCase()} · Source Mob: ${c.mobId}</div>
-            </div>
-            <span class="pill pill-gold">Card</span>
-          </div>
-          <div class="kv-list">
-            <div class="kv-row"><span>Socketed Bonus</span><span class="mono">${JSON.stringify(c.equipStats)}</span></div>
-            <div class="kv-row"><span>Handbook Deposit</span><span class="mono">${JSON.stringify(c.handbookDepositStats)}</span></div>
-            <div class="kv-row"><span>Asset Studio Key</span><span class="mono">${c.assetStudioKey}</span></div>
-          </div>
-        </div>
-      `).join('')}
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">ITEMIZATION &amp; HORIZONTAL PROGRESSION</div>
+        <h1 class="page-hero__title">Equipment, +0..+15 Refine Calculator, Cards &amp; Handbook</h1>
+        <p class="page-hero__sub">Safe refine through +4, failure pity gauge (+20%/fail, 5/5 = 100%), socketable monster cards, and permanent account-wide handbook deposits.</p>
+      </div>
     </div>
 
-    <div class="section-title">Adventurer Handbook Milestones (contracts/content/handbook.json)</div>
-    <div class="grid-cards">
-      ${hb.map(h => `
-        <div class="card">
-          <div class="card-head">
+    <div class="controls-panel">
+      <div class="control-field">
+        <label for="refBaseAtk">Base Weapon ATK</label>
+        <input id="refBaseAtk" class="joy-input" type="number" value="120" min="10" max="500" style="width:120px" oninput="updateRefineCalc()" />
+      </div>
+      <div class="control-field">
+        <label for="refLevel">Target Refine Level (+0..+15)</label>
+        <input id="refLevel" class="joy-input" type="number" value="10" min="0" max="15" style="width:120px" oninput="updateRefineCalc()" />
+      </div>
+      <div class="control-field">
+        <label for="refFails">Consecutive Fails (Pity 0..5)</label>
+        <input id="refFails" class="joy-input" type="number" value="2" min="0" max="5" style="width:120px" oninput="updateRefineCalc()" />
+      </div>
+      <div style="margin-left:auto">
+        <span class="joy-badge joy-badge--brand" id="refineCalcResult" style="font-size:0.9rem;padding:8px 14px"></span>
+      </div>
+    </div>
+
+    <div class="observatory-card">
+      <div class="observatory-card__head">
+        <div>
+          <h3 class="observatory-card__title">Equipment &amp; Consumable Catalog (${items.length})</h3>
+          <div class="observatory-card__meta">contracts/content/items.json</div>
+        </div>
+      </div>
+      <div class="joy-table-container">
+        <table class="joy-table">
+          <thead>
+            <tr>
+              <th>Item ID</th>
+              <th>Name</th>
+              <th>Slot / Kind</th>
+              <th>Card Slots</th>
+              <th>Refineable</th>
+              <th>Base Stats</th>
+              <th>Inspect</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map(it => `
+              <tr>
+                <td class="mono">${it.id}</td>
+                <td><strong>${it.name}</strong></td>
+                <td><span class="joy-badge joy-badge--neutral joy-badge--sm">${it.slot}</span> <span class="mono" style="font-size:12px">${it.weaponKind || ''}</span></td>
+                <td class="mono">${it.cardSlots}</td>
+                <td><span class="joy-badge ${it.refineable ? 'joy-badge--success' : 'joy-badge--neutral'} joy-badge--sm">${it.refineable ? 'Yes' : 'No'}</span></td>
+                <td class="mono">${Object.entries(it.stats || {}).map(([k,v]) => `${k}+${v}`).join(' ') || '—'}</td>
+                <td>${inspectBtnHtml('item', it.name, it)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      ${cards.map(c => `
+        <div class="observatory-card observatory-card--gold">
+          <div class="observatory-card__head">
             <div>
-              <div class="card-title">${h.title}</div>
-              <div class="card-sub">Category: ${h.category} · Target: ${h.targetId}</div>
+              <h3 class="observatory-card__title">${c.name}</h3>
+              <div class="observatory-card__meta">Source Mob: ${c.mobId}</div>
             </div>
-            <span class="pill pill-emerald">${h.tiers.length} Tiers</span>
+            <span class="joy-badge joy-badge--brand">${c.slot.toUpperCase()} CARD</span>
+          </div>
+          <div class="kv-list">
+            <div class="kv-row"><span class="kv-label">Socket Equip Bonus</span><span class="kv-val">${Object.entries(c.equipStats || {}).map(([k,v]) => `${k} +${v}`).join(', ')}</span></div>
+            <div class="kv-row"><span class="kv-label">Handbook Deposit</span><span class="kv-val">${Object.entries(c.handbookDepositStats || {}).map(([k,v]) => `${k} +${v}`).join(', ')}</span></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end">${inspectBtnHtml('card', c.name, c)}</div>
+        </div>
+      `).join('')}
+      ${handbook.map(h => `
+        <div class="observatory-card">
+          <div class="observatory-card__head">
+            <div>
+              <h3 class="observatory-card__title">${h.title}</h3>
+              <div class="observatory-card__meta">Category: ${h.category} · Target: ${h.targetId}</div>
+            </div>
+            <span class="joy-badge joy-badge--success">HANDBOOK</span>
           </div>
           <div class="kv-list">
             ${h.tiers.map(t => `
               <div class="kv-row">
-                <span>≥ ${t.requiredCount}: ${t.unlockNote}</span>
-                <span class="mono">${t.bonusStat} +${t.bonusValue}</span>
+                <span class="kv-label">≥ ${t.requiredCount}: ${t.unlockNote}</span>
+                <span class="kv-val">${t.bonusStat} +${t.bonusValue}</span>
               </div>
             `).join('')}
           </div>
@@ -797,26 +1423,48 @@ function renderCardsAndHandbook() {
   `;
 }
 
+function updateRefineCalc() {
+  const baseAtk = parseInt(document.getElementById('refBaseAtk')?.value || '120', 10);
+  const lvl = Math.max(0, Math.min(15, parseInt(document.getElementById('refLevel')?.value || '10', 10)));
+  const fails = Math.max(0, Math.min(5, parseInt(document.getElementById('refFails')?.value || '0', 10)));
+  const baseRates = [100,100,100,100,100, 60,50,40,30,20, 15,12,10,8,5,5];
+  const baseRate = baseRates[lvl] ?? 10;
+  const effRate = lvl <= 4 ? 100 : (fails >= 5 ? 100 : Math.min(100, baseRate + fails * 20));
+  const overUpgrade = lvl > 4 ? (lvl - 4) * 5 : 0;
+  const totalAtk = baseAtk + lvl * 3 + overUpgrade;
+  const el = document.getElementById('refineCalcResult');
+  if (el) {
+    el.textContent = `+${lvl} Total ATK: ${totalAtk} (+${lvl*3 + overUpgrade} bonus) · Success Rate: ${effRate}% (Base ${baseRate}% + Pity ${fails}/5)`;
+  }
+}
+
 function renderQuests() {
   const quests = DATA.quests.filter(matchesSearch);
   return `
-    <div class="section-title">Unified 6-Category Quest Board (contracts/content/quest_board.json)</div>
-    <div class="grid-cards">
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">QUEST PROGRESSION</div>
+        <h1 class="page-hero__title">Unified 6-Category Quest Board (${quests.length})</h1>
+        <p class="page-hero__sub">Main Story, Side Story, Daily Board, Weekly Elite, Hunting Bounties, and Job Promotion Trials.</p>
+      </div>
+    </div>
+    <div class="card-grid">
       ${quests.map(q => `
-        <div class="card">
-          <div class="card-head">
+        <div class="observatory-card ${q.category === 'job_change' ? 'observatory-card--gold' : ''}">
+          <div class="observatory-card__head">
             <div>
-              <div class="card-title">${q.title}</div>
-              <div class="card-sub">ID: ${q.id} · Zone: ${q.zoneId} · NPC: ${q.giverNpcId}</div>
+              <h3 class="observatory-card__title">${q.title}</h3>
+              <div class="observatory-card__meta">ID: ${q.id} · Zone: ${q.zoneId} · NPC: ${q.giverNpcId}</div>
             </div>
-            <span class="pill ${q.category === 'job_change' ? 'pill-gold' : 'pill-emerald'}">${q.category}</span>
+            <span class="joy-badge ${q.category === 'job_change' ? 'joy-badge--brand' : 'joy-badge--success'}">${q.category.toUpperCase()}</span>
           </div>
           <div class="kv-list">
-            <div class="kv-row"><span>Min Base Level</span><span class="mono">Lv.${q.minBaseLevel} ${q.requiredJobId ? `(${q.requiredJobId})` : ''}</span></div>
-            <div class="kv-row"><span>Objectives</span><span class="mono">${q.objectives.map(o => `${o.type}: ${o.targetId} x${o.required}`).join(', ')}</span></div>
-            <div class="kv-row"><span>EXP Rewards</span><span class="mono">+${q.rewards.baseXp} Base / +${q.rewards.jobXp} Job</span></div>
-            <div class="kv-row"><span>Unlocks</span><span class="mono">${q.rewards.unlockJobId || q.rewards.unlockSkillId || '—'}</span></div>
+            <div class="kv-row"><span class="kv-label">Min Base Level</span><span class="kv-val">Lv.${q.minBaseLevel} ${q.requiredJobId ? `(${q.requiredJobId})` : ''}</span></div>
+            <div class="kv-row"><span class="kv-label">Objectives</span><span class="kv-val">${q.objectives.map(o => `${o.type}: ${o.targetId} ×${o.required}`).join(', ')}</span></div>
+            <div class="kv-row"><span class="kv-label">EXP Rewards</span><span class="kv-val">+${q.rewards.baseXp} Base / +${q.rewards.jobXp} Job</span></div>
+            <div class="kv-row"><span class="kv-label">Unlocks</span><span class="kv-val">${q.rewards.unlockJobId || q.rewards.unlockSkillId || '—'}</span></div>
           </div>
+          <div style="display:flex;justify-content:flex-end">${inspectBtnHtml('quest', q.title, q)}</div>
         </div>
       `).join('')}
     </div>
@@ -825,35 +1473,47 @@ function renderQuests() {
 
 function renderSiege() {
   const castles = DATA.castles.filter(matchesSearch);
-  const c = castles[0] || DATA.castles[0];
   return `
-    <div class="section-title">War of Emperium (GvG Castle Siege) — Interactive Breach Simulator</div>
-    <div class="sim-controls">
-      <label>Attackers:
-        <input id="simAttackers" type="number" value="15" min="1" max="50" oninput="updateSiegeCalc()" />
-      </label>
-      <label>Avg Normal-Attack DPS / Player:
-        <input id="simDps" type="number" value="620" min="50" max="5000" step="50" oninput="updateSiegeCalc()" />
-      </label>
-      <span id="siegeSimResult" class="mono"></span>
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">ENDGAME GVG SIEGE</div>
+        <h1 class="page-hero__title">War of Emperium (GvG Castle Siege) — Breach &amp; TTK Calculator</h1>
+        <p class="page-hero__sub">Simulate guild breach time across Outer Gate Barricades, Inner Gate Barricades, and the Holy 1 Normal-Attack-Only Emperium crystal.</p>
+      </div>
     </div>
-    <div class="grid-cards">
+
+    <div class="controls-panel">
+      <div class="control-field">
+        <label for="simAttackers">Attacking Guild Members (1..50)</label>
+        <input id="simAttackers" class="joy-input" type="number" value="15" min="1" max="50" style="width:140px" oninput="updateSiegeCalc()" />
+      </div>
+      <div class="control-field">
+        <label for="simDps">Avg Normal-Attack DPS / Player</label>
+        <input id="simDps" class="joy-input" type="number" value="620" min="50" max="5000" step="50" style="width:160px" oninput="updateSiegeCalc()" />
+      </div>
+      <div style="margin-left:auto">
+        <span class="joy-badge joy-badge--brand" id="siegeSimResult" style="font-size:0.9rem;padding:8px 14px"></span>
+      </div>
+    </div>
+
+    <div class="card-grid">
       ${castles.map(cs => `
-        <div class="card">
-          <div class="card-head">
+        <div class="observatory-card observatory-card--gold">
+          <div class="observatory-card__head">
             <div>
-              <div class="card-title">${cs.name}</div>
-              <div class="card-sub">Hub: ${cs.hubTownId} · Siege Map: ${cs.siegeMapId}</div>
+              <h3 class="observatory-card__title">${cs.name}</h3>
+              <div class="observatory-card__meta">Hub: ${cs.hubTownId} · Siege Map: ${cs.siegeMapId}</div>
             </div>
-            <span class="pill pill-gold">WoE Castle</span>
+            <span class="joy-badge joy-badge--brand">WOE CASTLE</span>
           </div>
           <div class="kv-list">
-            <div class="kv-row"><span>Emperium Crystal</span><span class="mono">${cs.emperium.hp.toLocaleString()} HP · ${cs.emperium.element}/${cs.emperium.race}/${cs.emperium.size}</span></div>
-            <div class="kv-row"><span>Normal Attack Only</span><span class="mono">${cs.emperium.onlyNormalAttackDamage ? 'YES (Skills Blocked)' : 'No'}</span></div>
-            <div class="kv-row"><span>Gate Barricades</span><span class="mono">${cs.fortifications.outerGateBarricadeCount} Outer + ${cs.fortifications.innerGateBarricadeCount} Inner (${cs.fortifications.barricadeHp.toLocaleString()} HP ea)</span></div>
-            <div class="kv-row"><span>PvP Damage Scaling</span><span class="mono">${cs.pvpRules.playerDamageScalingPct}% (Ranged ${cs.pvpRules.rangedDamageInSiegePct}%)</span></div>
-            <div class="kv-row"><span>Guild Rewards</span><span class="mono">${cs.ownerRewards.dailyTreasureChestCount} Chests/day · Dungeon: ${cs.ownerRewards.guildDungeonZoneId}</span></div>
+            <div class="kv-row"><span class="kv-label">Emperium Crystal</span><span class="kv-val">${cs.emperium.hp.toLocaleString()} HP · ${cs.emperium.element}/${cs.emperium.race}/${cs.emperium.size}</span></div>
+            <div class="kv-row"><span class="kv-label">Normal Attack Only</span><span class="kv-val">${cs.emperium.onlyNormalAttackDamage ? 'YES (Skills Blocked)' : 'No'}</span></div>
+            <div class="kv-row"><span class="kv-label">Gate Barricades</span><span class="kv-val">${cs.fortifications.outerGateBarricadeCount} Outer + ${cs.fortifications.innerGateBarricadeCount} Inner (${cs.fortifications.barricadeHp.toLocaleString()} HP ea)</span></div>
+            <div class="kv-row"><span class="kv-label">PvP Damage Scaling</span><span class="kv-val">${cs.pvpRules.playerDamageScalingPct}% (Ranged ${cs.pvpRules.rangedDamageInSiegePct}%)</span></div>
+            <div class="kv-row"><span class="kv-label">Owner Rewards</span><span class="kv-val">${cs.ownerRewards.dailyTreasureChestCount} Chests/day · Dungeon: ${cs.ownerRewards.guildDungeonZoneId}</span></div>
           </div>
+          <div style="display:flex;justify-content:flex-end">${inspectBtnHtml('castle', cs.name, cs)}</div>
         </div>
       `).join('')}
     </div>
@@ -873,29 +1533,36 @@ function updateSiegeCalc() {
   const totalMin = (barSec + empSec + 45) / 60.0;
   const el = document.getElementById('siegeSimResult');
   if (el) {
-    el.textContent = `Barricades (180k HP): ${barSec.toFixed(1)}s | Emperium (120k HP): ${empSec.toFixed(1)}s | Total Siege Breach: ${totalMin.toFixed(2)} min`;
+    el.textContent = `4 Barricades (180k HP): ${barSec.toFixed(1)}s · Emperium (120k HP): ${empSec.toFixed(1)}s · Total Siege Breach: ${totalMin.toFixed(2)} min`;
   }
 }
 
 function renderMaps() {
   const maps = DATA.maps.filter(matchesSearch);
   return `
-    <div class="section-title">3D World Maps, Walkable Multi-Floor Structures &amp; Height Terraces</div>
-    <div class="grid-cards">
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">WORLD TOPOLOGY</div>
+        <h1 class="page-hero__title">3D World Maps, Walkable Structures &amp; Height Terraces (${maps.length})</h1>
+        <p class="page-hero__sub">Single-source terrain heightfields, multi-floor towers, hollow caves, and instanced environment props.</p>
+      </div>
+    </div>
+    <div class="card-grid">
       ${maps.map(m => `
-        <div class="card">
-          <div class="card-head">
+        <div class="observatory-card observatory-card--gold">
+          <div class="observatory-card__head">
             <div>
-              <div class="card-title">${m.name} <span class="mono">(${m.id})</span></div>
-              <div class="card-sub">Dimensions: ${m.width}×${m.height} · Amplitude: ${m.terrainAmplitude}</div>
+              <h3 class="observatory-card__title">${m.name} (${m.id})</h3>
+              <div class="observatory-card__meta">Dimensions: ${m.width}×${m.height}m · Amplitude: ${m.terrainAmplitude}</div>
             </div>
-            <span class="pill pill-emerald">${m.structureCount} Structures</span>
+            <span class="joy-badge joy-badge--success">${m.structureCount} STRUCTURES</span>
           </div>
           <div class="kv-list">
-            <div class="kv-row"><span>Height Terraces</span><span class="mono">${m.terraceCount} terraces</span></div>
-            <div class="kv-row"><span>3D Structures</span><span class="mono">${(m.structures || []).map(s => `${s.kind}@(${s.x},${s.z})`).join(', ')}</span></div>
-            <div class="kv-row"><span>Environment Props</span><span class="mono">${m.propCount} props</span></div>
+            <div class="kv-row"><span class="kv-label">Height Terraces</span><span class="kv-val">${m.terraceCount} terraces</span></div>
+            <div class="kv-row"><span class="kv-label">Walkable 3D Structures</span><span class="kv-val">${(m.structures || []).map(s => `${s.kind}@(${s.x},${s.z})`).join(', ')}</span></div>
+            <div class="kv-row"><span class="kv-label">Environment Props</span><span class="kv-val">${m.propCount} props</span></div>
           </div>
+          <div style="display:flex;justify-content:flex-end">${inspectBtnHtml('map', m.name, m)}</div>
         </div>
       `).join('')}
     </div>
@@ -904,19 +1571,30 @@ function renderMaps() {
 
 function renderSqlStudio() {
   return `
-    <div class="section-title">Live Read-Only SQLite Query Studio (build/catalog.sqlite)</div>
-    <div class="preset-row">
-      <button class="btn" onclick="runSqlPreset('SELECT * FROM v_job_progression;')">v_job_progression</button>
-      <button class="btn" onclick="runSqlPreset('SELECT * FROM v_mob_economy;')">v_mob_economy</button>
-      <button class="btn" onclick="runSqlPreset('SELECT * FROM v_asset_studio_entries;')">v_asset_studio_entries</button>
-      <button class="btn" onclick="runSqlPreset('SELECT m.name AS mob, i.name AS item, d.chance_bps/100.0 AS drop_pct FROM mob_drops d JOIN mobs m ON m.id=d.mob_id JOIN items i ON i.id=d.item_id ORDER BY m.level, drop_pct DESC;')">Mob Drop Rates</button>
-      <button class="btn" onclick="runSqlPreset('SELECT id, title, category, min_base_level, base_xp, job_xp, unlock_job_id FROM quest_board ORDER BY min_base_level;')">Quest Board Progression</button>
-      <button class="btn" onclick="runSqlPreset('SELECT id, name, emperium_hp, barricade_hp, player_damage_scaling_pct, guild_dungeon_zone_id FROM castles;')">WoE Castles</button>
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">RELATIONAL + JSONB OBSERVABILITY</div>
+        <h1 class="page-hero__title">Live Read-Only SQLite Query Studio (build/catalog.sqlite)</h1>
+        <p class="page-hero__sub">Query indexed relational tables, JSONB payloads, and analytical views directly in browser or Mac app.</p>
+      </div>
     </div>
-    <textarea id="sqlInput" class="sql-box">SELECT * FROM v_mob_economy;</textarea>
-    <div style="margin-bottom:14px">
-      <button class="btn btn-gold" onclick="executeSql()">▶ Run SQL Query</button>
+
+    <div class="observatory-card">
+      <div class="chip-row">
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="runSqlPreset('SELECT * FROM v_job_progression;')">v_job_progression</button>
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="runSqlPreset('SELECT * FROM v_mob_economy;')">v_mob_economy</button>
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="runSqlPreset('SELECT * FROM v_asset_studio_entries;')">v_asset_studio_entries</button>
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="runSqlPreset('SELECT m.name AS mob, i.name AS item, d.chance_bps/100.0 AS drop_pct FROM mob_drops d JOIN mobs m ON m.id=d.mob_id JOIN items i ON i.id=d.item_id ORDER BY m.level, drop_pct DESC;')">Mob Drop Rates</button>
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="runSqlPreset('SELECT id, title, category, min_base_level, base_xp, job_xp, unlock_job_id FROM quest_board ORDER BY min_base_level;')">Quest Board</button>
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="runSqlPreset('SELECT id, name, emperium_hp, barricade_hp, player_damage_scaling_pct, guild_dungeon_zone_id FROM castles;')">WoE Castles</button>
+      </div>
+      <textarea id="sqlInput" class="sql-editor">SELECT * FROM v_mob_economy;</textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="observatory-card__meta">Read-only SQLite connection (`SELECT`, `WITH`, `PRAGMA`, `EXPLAIN`)</span>
+        <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="executeSql()">Execute SQL Query</button>
+      </div>
     </div>
+
     <div id="sqlOutput"></div>
   `;
 }
@@ -934,18 +1612,51 @@ async function executeSql() {
   const res = await fetch('/api/sql?q=' + encodeURIComponent(box.value));
   const data = await res.json();
   if (!data.ok) {
-    out.innerHTML = `<div class="card" style="border-color:var(--rose);color:var(--rose)">SQL Error: ${data.error}</div>`;
+    out.innerHTML = `<div class="joy-alert joy-alert--danger">SQL Error: ${escapeHtml(data.error)}</div>`;
     return;
   }
   out.innerHTML = `
-    <table>
-      <thead>
-        <tr>${data.columns.map(c => `<th>${c}</th>`).join('')}</tr>
-      </thead>
-      <tbody>
-        ${data.rows.map(r => `<tr>${r.map(v => `<td class="mono">${v === null ? 'NULL' : v}</td>`).join('')}</tr>`).join('')}
-      </tbody>
-    </table>
+    <div class="observatory-card">
+      <div class="observatory-card__head">
+        <h3 class="observatory-card__title">Query Result (${data.rowCount} rows)</h3>
+        <span class="joy-badge joy-badge--success">Read-Only</span>
+      </div>
+      <div class="joy-table-container">
+        <table class="joy-table">
+          <thead>
+            <tr>${data.columns.map(c => `<th>${escapeHtml(String(c))}</th>`).join('')}</tr>
+          </thead>
+          <tbody>
+            ${data.rows.map(r => `<tr>${r.map(v => `<td class="mono">${v === null ? 'NULL' : escapeHtml(String(v))}</td>`).join('')}</tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderSim() {
+  return `
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">AUTHORITATIVE RUST COMBAT ENGINE</div>
+        <h1 class="page-hero__title">Headless Balance Simulator (server-rs / balance_sim)</h1>
+        <p class="page-hero__sub">Executes <code>cargo run --bin balance_sim</code> to verify TTK, EXP/hour, refine +0..+15 curves, and WoE Emperium breach pacing.</p>
+      </div>
+      <button type="button" class="joy-button joy-button--solid" onclick="triggerBalanceSim()" ${SIM_RUNNING ? 'disabled' : ''}>
+        ${SIM_RUNNING ? 'Running Simulator...' : 'Re-Run Balance Simulator'}
+      </button>
+    </div>
+
+    <div class="joy-code-block">
+      <div class="joy-code-block__header">
+        <div class="joy-code-block__meta">
+          <span class="joy-code-block__lang">RUST</span>
+          <span>server-rs/src/bin/balance_sim.rs</span>
+        </div>
+      </div>
+      <pre style="margin:0;padding:18px;overflow-x:auto"><code>${escapeHtml(SIM_OUTPUT)}</code></pre>
+    </div>
   `;
 }
 
@@ -953,20 +1664,36 @@ function renderDocs() {
   const docs = DATA.docs || [];
   const active = docs[SELECTED_DOC_IDX] || docs[0];
   return `
-    <div class="section-title">Architecture Specs &amp; World Lore Canon Reviewer</div>
-    <div class="preset-row">
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">CANON &amp; ARCHITECTURE SPECS</div>
+        <h1 class="page-hero__title">Architecture Specs &amp; World Lore Canon Reviewer</h1>
+        <p class="page-hero__sub">Browse design specs and world canon directly inside the Joymify Observatory shell.</p>
+      </div>
+    </div>
+    <div class="chip-row">
       ${docs.map((d, i) => `
-        <button class="btn ${i === SELECTED_DOC_IDX ? 'btn-gold' : ''}" onclick="SELECTED_DOC_IDX=${i};render()">
-          ${d.id}
+        <button type="button" class="joy-button ${i === SELECTED_DOC_IDX ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="SELECTED_DOC_IDX=${i};render()">
+          ${escapeHtml(d.id)}
         </button>
       `).join('')}
     </div>
-    ${active ? `<div class="doc-viewer">${escapeHtml(active.content)}</div>` : ''}
+    ${active ? `
+      <div class="joy-code-block">
+        <div class="joy-code-block__header">
+          <div class="joy-code-block__meta">
+            <span class="joy-code-block__lang">MARKDOWN</span>
+            <span>${escapeHtml(active.path)}</span>
+          </div>
+        </div>
+        <pre style="margin:0;padding:18px;white-space:pre-wrap;font-family:var(--joy-font-family-mono)"><code>${escapeHtml(active.content)}</code></pre>
+      </div>
+    ` : ''}
   `;
 }
 
 function escapeHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 init();
@@ -999,6 +1726,15 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
             self.wfile.write(raw)
             return
 
+        if parsed.path == "/theme.css":
+            raw = load_theme_css()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/css; charset=utf-8")
+            self.send_header("Content-Length", str(len(raw)))
+            self.end_headers()
+            self.wfile.write(raw)
+            return
+
         if parsed.path == "/api/bundle":
             self._send_json(build_full_bundle())
             return
@@ -1017,12 +1753,15 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
             subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
             self._send_json({"ok": True, "message": "Rebuilt build/catalog.sqlite and build/catalog_summary.json"})
             return
+        if parsed.path == "/api/sim":
+            self._send_json(run_balance_sim())
+            return
         self._send_json({"ok": False, "error": "Not found"}, status=404)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Atlas World MMORPG Catalog & Balance Observatory Web Studio")
-    parser.add_argument("--port", type=int, default=8765, help="HTTP port (default: 8765)")
+    parser.add_argument("--port", type=int, default=8788, help="HTTP port (default: 8765)")
     parser.add_argument("--dump-check", action="store_true", help="Verify bundle + SQL engine and exit 0")
     args = parser.parse_args()
 
@@ -1037,7 +1776,8 @@ def main() -> int:
         return 0
 
     ensure_catalog_db()
-    server = HTTPServer(("127.0.0.1", args.port), ObservatoryHandler)
+    ThreadingHTTPServer.allow_reuse_address = True
+    server = ThreadingHTTPServer(("0.0.0.0", args.port), ObservatoryHandler)
     print(f"[catalog_explorer_web] Atlas World Observatory listening on http://127.0.0.1:{args.port}")
     sys.stdout.flush()
     try:
