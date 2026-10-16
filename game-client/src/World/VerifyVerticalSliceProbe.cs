@@ -135,7 +135,42 @@ namespace AtlasWorld.Client.World
                     return 1;
                 }
 
-                GD.Print($"[VerticalSliceProbe]   PASS  MMORPG Growth, Refine +{growth.WeaponRefineLevel}, Card ('{socketedCard.Name}'), 10-Element/Size ({atkElem} {elemPct}% / Size {sizePct}%, Dmg={skillDmg})");
+                // Phase 4B: GvG Castle Siege (War of Emperium — castles.json)
+                if (growth.ActiveCastle.Id != "castle_valkyrie_01" || growth.SiegeBarricadesRemaining != 4)
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Castle catalog load mismatch: id={growth.ActiveCastle.Id}, barricades={growth.SiegeBarricadesRemaining}");
+                    return 1;
+                }
+
+                // Breach all 4 gate barricades (45,000 HP each; 80,000 * 60% scaling = 48,000 -> 1-shot per gate)
+                for (int b = 0; b < 4; b++)
+                {
+                    growth.ApplySiegeAttack(80_000L, isSkillAttack: true, "Fire", "Freja Knights [ATK]", out _);
+                }
+
+                if (growth.SiegeBarricadesRemaining != 0)
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Expected 0 barricades remaining after 4 breaches, got {growth.SiegeBarricadesRemaining}");
+                    return 1;
+                }
+
+                // Verify Emperium skill immunity (onlyNormalAttackDamage: true)
+                var (blockedDmg, skillBlocked, _) = growth.ApplySiegeAttack(999_999L, isSkillAttack: true, "Fire", "Freja Knights [ATK]", out _);
+                if (!skillBlocked || blockedDmg != 0L || growth.EmperiumHp != 120_000L)
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Emperium skill immunity failed: blocked={skillBlocked}, dmg={blockedDmg}, hp={growth.EmperiumHp}");
+                    return 1;
+                }
+
+                // Capture Emperium with Normal Attack (isSkillAttack: false)
+                var (_, _, captured) = growth.ApplySiegeAttack(500_000L, isSkillAttack: false, "Neutral", "Freja Knights [ATK]", out _);
+                if (!captured || growth.CastleOwnerGuild != "Freja Knights [ATK]" || growth.CastleCaptureCount != 1)
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Emperium normal-attack capture failed: captured={captured}, owner={growth.CastleOwnerGuild}");
+                    return 1;
+                }
+
+                GD.Print($"[VerticalSliceProbe]   PASS  MMORPG Growth, Refine +{growth.WeaponRefineLevel}, Card ('{socketedCard.Name}'), 10-Element/Size ({atkElem} {elemPct}% / Size {sizePct}%), & WoE Castle Siege Captured by '{growth.CastleOwnerGuild}'");
                 return 0;
             }
             catch (Exception ex)

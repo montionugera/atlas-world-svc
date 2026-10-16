@@ -25,7 +25,7 @@ namespace AtlasWorld.Client
     /// 7. Authoritative Player HP/SP, ROX Auto-Combat AFK loop, Quest Kill Tracker, Live Minimap Radar, DevTuningDrawer &amp; Mac 3D Map Builder
     /// 8. Scalable Map Expansion (1000x1000 -> 2000x2000 -> 4000x4000) &amp; On-Demand Spatial Chunk Streaming (MapChunkStreamer)
     /// 9. 3D Altitude, Multi-Floor Watchtowers &amp; Walk-In Crystal Caves (TerrainElevation) + Smart Camera LOS &amp; Roof Cutaway (SmartCameraOccluder)
-    /// 10. Dual-Track Base/Job Level Growth, Adventurer Handbook Passives, Job Skills, 10-Element/Size Combat &amp; Unified Quest Board Catalogs (MmorpgGrowthManager)
+    /// 10. Dual-Track Base/Job Level Growth, Adventurer Handbook Passives, Job Skills, 10-Element/Size Combat, GvG Castle Siege (War of Emperium) &amp; Unified Quest Board Catalogs (MmorpgGrowthManager)
     /// </summary>
     public partial class VerticalSliceRoot : Node3D
     {
@@ -96,6 +96,7 @@ namespace AtlasWorld.Client
             public string TitleBadge = "";
             public string ElementType = "";
             public string SizeClass = "Medium";
+            public bool OnlyNormalAttackDamage = false;
             public long CurrentHp;
             public long MaxHp;
             public int BarSegments;
@@ -310,7 +311,7 @@ namespace AtlasWorld.Client
             if (ChatWidget != null)
             {
                 ChatWidget.MessageSent += OnChatMessageSent;
-                ChatWidget.AppendSystemMessage("Peaceful 3D Mode ON. Walk West [A] up Watchtower 2F Stairs, [P] Mobs, [G] Job Class, [H] Refine/Card, or [B] Wardrobe.");
+                ChatWidget.AppendSystemMessage("Peaceful 3D Mode ON. Walk West [A] up Watchtower 2F Stairs, [P] Mobs, [G] Job, [H] Refine/Card, [V] WoE Siege, or [B] Wardrobe.");
             }
 
             // 6. Wire Mobile Controls Overlay + Cooldown visuals
@@ -587,6 +588,28 @@ namespace AtlasWorld.Client
             ChatWidget?.AppendSystemMessage($"[Growth Summary] {_growth.FormatGrowthSummaryLine()}");
         }
 
+        private void TriggerSiegeStrikeForTest()
+        {
+            // When barricades are up, deal a heavy siege breach hit; once Emperium is exposed, alternate a skill block check or normal-attack strike
+            bool wasBarricadePhase = _growth.SiegeBarricadesRemaining > 0;
+            var (_, _, captured) = _growth.ApplySiegeAttack(
+                rawDamage: wasBarricadePhase ? 80_000L : 65_000L,
+                isSkillAttack: false,
+                attackElement: "Neutral",
+                attackerGuild: "Freja Knights [ATK]",
+                out string siegeBannerMsg);
+
+            Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
+            string shout = captured
+                ? $"CASTLE CAPTURED: {_growth.ActiveCastle.Name.ToUpperInvariant()}!"
+                : (wasBarricadePhase
+                    ? $"SIEGE BARRICADE BREACHED! ({_growth.SiegeBarricadesRemaining}/4)"
+                    : $"EMPERIUM NORMAL HIT! ({_growth.EmperiumHp:N0} HP)");
+            CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -105), shout);
+            ChatWidget?.AppendSystemMessage(siegeBannerMsg);
+            ChatWidget?.AppendSystemMessage($"[Siege Status] {_growth.FormatSiegeStatusLine()}");
+        }
+
         private void SyncGrowthHud()
         {
             string refineTag = _growth.WeaponRefineLevel > 0 ? $" +{_growth.WeaponRefineLevel}" : "";
@@ -685,7 +708,7 @@ namespace AtlasWorld.Client
                 {
                     _questHintLabel.Text = _autoCombatEnabled
                         ? "\u25cf Auto-Hunting Active (Tap to pause)"
-                        : "\u25b8 Tap or [AUTO] | [G] Job | [H] Refine";
+                        : "\u25b8 Tap or [AUTO] | [G] Job | [H] Refine | [V] Siege";
                     _questHintLabel.Modulate = _autoCombatEnabled
                         ? new Color(0.35f, 1.0f, 0.58f, 1f)
                         : new Color(0.95f, 0.90f, 0.58f, 0.95f);
@@ -925,6 +948,25 @@ namespace AtlasWorld.Client
                 nameColor: new Color(1.0f, 0.55f, 0.45f, 1f)
             );
 
+            // 3. Catalog GvG Castle Siege Crystal: Holy Emperium (Kriemhild) from contracts/content/castles.json
+            var castle = _growth.ActiveCastle;
+            SpawnSingleMonster(
+                _worldMobsContainer,
+                assetKey: "castle:emperium",
+                fallbackPath: "",
+                name: "Kriemhild Emperium",
+                badge: "WoE Crystal",
+                element: $"{castle.Emperium.Element} / {castle.Emperium.Size}",
+                sizeClass: castle.Emperium.Size,
+                hp: castle.Emperium.Hp,
+                maxHp: castle.Emperium.Hp,
+                segments: 4,
+                pos: new Vector3(-3.8f, TerrainElevation.SampleHeight(-3.8f, -3.6f, _mapDoc), -3.6f),
+                scale: 1.15f,
+                nameColor: new Color(1.0f, 0.92f, 0.38f, 1f),
+                onlyNormalAttackDamage: castle.Emperium.OnlyNormalAttackDamage
+            );
+
             UpdateTargetRingPosition();
         }
 
@@ -941,10 +983,11 @@ namespace AtlasWorld.Client
             int segments,
             Vector3 pos,
             float scale,
-            Color nameColor)
+            Color nameColor,
+            bool onlyNormalAttackDamage = false)
         {
             Node3D? mobRoot = null;
-            if (AssetRegistry.Instance != null)
+            if (!onlyNormalAttackDamage && AssetRegistry.Instance != null)
             {
                 var packed = AssetRegistry.Instance.Resolve(assetKey, out ResolveTier tier);
                 if (tier != ResolveTier.Capsule)
@@ -952,13 +995,32 @@ namespace AtlasWorld.Client
                     mobRoot = packed?.Instantiate() as Node3D;
                 }
             }
-            if (mobRoot == null && ResourceLoader.Exists(fallbackPath))
+            if (mobRoot == null && !string.IsNullOrEmpty(fallbackPath) && ResourceLoader.Exists(fallbackPath))
             {
                 mobRoot = GD.Load<PackedScene>(fallbackPath)?.Instantiate() as Node3D;
             }
             if (mobRoot == null)
             {
                 mobRoot = new Node3D();
+                if (onlyNormalAttackDamage)
+                {
+                    // Radiant Golden Holy Emperium Crystal mesh
+                    var crystalMesh = new MeshInstance3D
+                    {
+                        Mesh = new PrismMesh { Size = new Vector3(1.1f, 1.85f, 1.1f) },
+                        Position = new Vector3(0f, 0.95f, 0f),
+                        MaterialOverride = new StandardMaterial3D
+                        {
+                            AlbedoColor = new Color(1.0f, 0.85f, 0.25f, 0.92f),
+                            EmissionEnabled = true,
+                            Emission = new Color(1.0f, 0.78f, 0.18f),
+                            EmissionEnergyMultiplier = 1.6f,
+                            Roughness = 0.15f,
+                            Metallic = 0.35f
+                        }
+                    };
+                    mobRoot.AddChild(crystalMesh);
+                }
             }
 
             EntityView.ApplyAnimeToonShading(mobRoot, EntityKind.Mob);
@@ -1022,6 +1084,7 @@ namespace AtlasWorld.Client
                 TitleBadge = badge,
                 ElementType = element,
                 SizeClass = sizeClass,
+                OnlyNormalAttackDamage = onlyNormalAttackDamage,
                 CurrentHp = hp,
                 MaxHp = maxHp,
                 BarSegments = segments,
@@ -1296,6 +1359,10 @@ namespace AtlasWorld.Client
                         break;
                     case Key.H:
                         TriggerRefineAndCardCycleForTest();
+                        GetViewport()?.SetInputAsHandled();
+                        break;
+                    case Key.V:
+                        TriggerSiegeStrikeForTest();
                         GetViewport()?.SetInputAsHandled();
                         break;
                     case Key.B:
@@ -2043,6 +2110,16 @@ namespace AtlasWorld.Client
             if (string.IsNullOrEmpty(_selectedServerTargetId))
             {
                 var mob = _worldMobs.Count > 0 ? _worldMobs[_selectedMobIndex % _worldMobs.Count] : null;
+                if (mob != null && mob.OnlyNormalAttackDamage)
+                {
+                    CombatText?.SpawnSkillShout(
+                        centerScreen + new Vector2(0, -105),
+                        "EMPERIUM SKILL IMMUNE! (Normal Attacks Only)");
+                    ChatWidget?.AppendSystemMessage(
+                        $"[WoE Siege] {mob.Name} is IMMUNE to '{skill.ShoutName}' (`onlyNormalAttackDamage: true`)! Use Basic Melee Attacks [Space].");
+                    return;
+                }
+
                 string targetElem = mob?.ElementType ?? "Earth";
                 string targetSize = mob?.SizeClass ?? "Large";
 
@@ -2197,6 +2274,12 @@ namespace AtlasWorld.Client
                 cmd.Equals("/handbook", StringComparison.OrdinalIgnoreCase))
             {
                 TriggerRefineAndCardCycleForTest();
+                return;
+            }
+            if (cmd.Equals("/siege", StringComparison.OrdinalIgnoreCase) ||
+                cmd.Equals("/woe", StringComparison.OrdinalIgnoreCase))
+            {
+                TriggerSiegeStrikeForTest();
                 return;
             }
             ChatWidget?.AppendPlayerMessage("You", msg);

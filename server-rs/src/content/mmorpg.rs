@@ -822,6 +822,125 @@ pub struct SiegeSimulationResult {
     pub total_siege_breach_minutes: f32,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CastleSiegeState {
+    pub castle_id: String,
+    pub castle_name: String,
+    pub owner_guild_name: String,
+    pub outer_barricades_remaining: u32,
+    pub current_barricade_hp: u32,
+    pub max_barricade_hp: u32,
+    pub emperium_hp: u32,
+    pub max_emperium_hp: u32,
+    pub player_damage_scaling_pct: u32,
+    pub emperium_only_normal_attacks: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SiegeHitOutcome {
+    BarricadeDamaged {
+        damage_dealt: u32,
+        remaining_barricade_hp: u32,
+        barricades_left: u32,
+    },
+    BarricadeBreached {
+        barricades_left: u32,
+    },
+    EmperiumImmuneToSkills,
+    EmperiumDamaged {
+        damage_dealt: u32,
+        remaining_emperium_hp: u32,
+    },
+    CastleCaptured {
+        new_owner_guild: String,
+    },
+}
+
+impl CastleSiegeState {
+    pub fn from_catalog(castle_id: &str) -> Option<Self> {
+        let c = MMORPG_CATALOG.castles.iter().find(|x| x.id == castle_id)?;
+        let total_barricades =
+            c.fortifications.outer_gate_barricade_count + c.fortifications.inner_gate_barricade_count;
+        Some(Self {
+            castle_id: c.id.clone(),
+            castle_name: c.name.clone(),
+            owner_guild_name: "Valkyrie Vanguard".to_string(),
+            outer_barricades_remaining: total_barricades,
+            current_barricade_hp: c.fortifications.barricade_hp,
+            max_barricade_hp: c.fortifications.barricade_hp,
+            emperium_hp: c.emperium.hp,
+            max_emperium_hp: c.emperium.hp,
+            player_damage_scaling_pct: c.pvp_rules.player_damage_scaling_pct,
+            emperium_only_normal_attacks: c.emperium.only_normal_attack_damage,
+        })
+    }
+
+    /// Applies an authoritative GvG Siege attack against the Outer/Inner Barricades or the Holy Emperium.
+    /// Enforces:
+    /// 1. Barricades must be breached before the Emperium can take damage.
+    /// 2. `only_normal_attack_damage`: Active skills deal 0 damage (`EmperiumImmuneToSkills`) to the Holy Emperium.
+    /// 3. `player_damage_scaling_pct` (`60%` in `castles.json`) + `10-Element` vs `Holy` (`Shadow` = `150%`, `Holy` = `0%`).
+    pub fn apply_siege_attack(
+        &mut self,
+        raw_damage: u32,
+        is_skill_attack: bool,
+        attack_element: &str,
+        attacker_guild: &str,
+    ) -> SiegeHitOutcome {
+        let gvg_scaled = ((raw_damage as u64) * (self.player_damage_scaling_pct as u64) / 100).max(1) as u32;
+
+        if self.outer_barricades_remaining > 0 {
+            if gvg_scaled >= self.current_barricade_hp {
+                self.outer_barricades_remaining -= 1;
+                self.current_barricade_hp = if self.outer_barricades_remaining > 0 {
+                    self.max_barricade_hp
+                } else {
+                    0
+                };
+                return SiegeHitOutcome::BarricadeBreached {
+                    barricades_left: self.outer_barricades_remaining,
+                };
+            } else {
+                self.current_barricade_hp -= gvg_scaled;
+                return SiegeHitOutcome::BarricadeDamaged {
+                    damage_dealt: gvg_scaled,
+                    remaining_barricade_hp: self.current_barricade_hp,
+                    barricades_left: self.outer_barricades_remaining,
+                };
+            }
+        }
+
+        if self.emperium_only_normal_attacks && is_skill_attack {
+            return SiegeHitOutcome::EmperiumImmuneToSkills;
+        }
+
+        let elem_pct = element_counter_pct(attack_element, "Holy");
+        let emp_damage = ((gvg_scaled as u64) * (elem_pct as u64) / 100) as u32;
+        if emp_damage == 0 {
+            return SiegeHitOutcome::EmperiumDamaged {
+                damage_dealt: 0,
+                remaining_emperium_hp: self.emperium_hp,
+            };
+        }
+
+        if emp_damage >= self.emperium_hp {
+            self.owner_guild_name = attacker_guild.to_string();
+            self.emperium_hp = self.max_emperium_hp;
+            self.outer_barricades_remaining = 4;
+            self.current_barricade_hp = self.max_barricade_hp;
+            SiegeHitOutcome::CastleCaptured {
+                new_owner_guild: self.owner_guild_name.clone(),
+            }
+        } else {
+            self.emperium_hp -= emp_damage;
+            SiegeHitOutcome::EmperiumDamaged {
+                damage_dealt: emp_damage,
+                remaining_emperium_hp: self.emperium_hp,
+            }
+        }
+    }
+}
+
 /// Simulates a GvG Castle Siege breach duration against Barricades + the Holy Emperium.
 pub fn simulate_castle_siege(
     castle_id: &str,
@@ -895,6 +1014,38 @@ mod tests {
         let mage_skills = job_skill_loadout("mage");
         assert_eq!(mage_skills[0].id, "fire_bolt");
         assert_eq!(mage_skills[0].element, "Fire");
+    }
+
+    #[test]
+    fn test_castle_siege_barricade_and_emperium_normal_attack_rules() {
+        let mut siege =
+            CastleSiegeState::from_catalog("castle_valkyrie_01").expect("castle_valkyrie_01 must exist");
+        assert_eq!(siege.outer_barricades_remaining, 4);
+
+        // Breach all 4 barricades (each 45,000 HP; 100,000 raw * 60% GvG scaling = 60,000 > 45,000)
+        for expected_left in (0..4).rev() {
+            let res = siege.apply_siege_attack(100_000, true, "Fire", "Freja Knights");
+            assert_eq!(
+                res,
+                SiegeHitOutcome::BarricadeBreached {
+                    barricades_left: expected_left
+                }
+            );
+        }
+
+        // Once barricades are down, active skills are blocked by `onlyNormalAttackDamage: true`
+        let skill_attempt = siege.apply_siege_attack(50_000, true, "Fire", "Freja Knights");
+        assert_eq!(skill_attempt, SiegeHitOutcome::EmperiumImmuneToSkills);
+
+        // Normal melee attack damages the Holy Emperium and captures the castle when HP reaches 0
+        let capture = siege.apply_siege_attack(250_000, false, "Shadow", "Freja Knights");
+        assert_eq!(
+            capture,
+            SiegeHitOutcome::CastleCaptured {
+                new_owner_guild: "Freja Knights".to_string()
+            }
+        );
+        assert_eq!(siege.owner_guild_name, "Freja Knights");
     }
 
     #[test]

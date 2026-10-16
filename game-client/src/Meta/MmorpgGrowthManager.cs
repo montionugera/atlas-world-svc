@@ -51,6 +51,53 @@ namespace AtlasWorld.Client.Meta
         public float CooldownSec { get; init; } = 4.0f;
     }
 
+    public sealed class CastleEmperiumDef
+    {
+        [JsonPropertyName("hp")] public long Hp { get; set; } = 120000;
+        [JsonPropertyName("element")] public string Element { get; set; } = "Holy";
+        [JsonPropertyName("race")] public string Race { get; set; } = "Angel";
+        [JsonPropertyName("size")] public string Size { get; set; } = "Small";
+        [JsonPropertyName("onlyNormalAttackDamage")] public bool OnlyNormalAttackDamage { get; set; } = true;
+    }
+
+    public sealed class CastleFortificationsDef
+    {
+        [JsonPropertyName("outerGateBarricadeCount")] public int OuterGateBarricadeCount { get; set; } = 2;
+        [JsonPropertyName("innerGateBarricadeCount")] public int InnerGateBarricadeCount { get; set; } = 2;
+        [JsonPropertyName("guardianStoneCount")] public int GuardianStoneCount { get; set; } = 2;
+        [JsonPropertyName("barricadeHp")] public long BarricadeHp { get; set; } = 45000;
+    }
+
+    public sealed class CastlePvpRulesDef
+    {
+        [JsonPropertyName("playerDamageScalingPct")] public int PlayerDamageScalingPct { get; set; } = 60;
+        [JsonPropertyName("rangedDamageInSiegePct")] public int RangedDamageInSiegePct { get; set; } = 75;
+        [JsonPropertyName("knockbackDisabled")] public bool KnockbackDisabled { get; set; } = true;
+        [JsonPropertyName("consumableCooldownMs")] public int ConsumableCooldownMs { get; set; } = 3000;
+    }
+
+    public sealed class CastleOwnerRewardsDef
+    {
+        [JsonPropertyName("dailyTreasureChestCount")] public int DailyTreasureChestCount { get; set; } = 4;
+        [JsonPropertyName("guildDungeonZoneId")] public string GuildDungeonZoneId { get; set; } = "guild_abyss_valkyrie";
+        [JsonPropertyName("townTaxShareBps")] public int TownTaxShareBps { get; set; } = 200;
+    }
+
+    public sealed class CastleCatalogDef
+    {
+        [JsonPropertyName("id")] public string Id { get; set; } = "castle_valkyrie_01";
+        [JsonPropertyName("name")] public string Name { get; set; } = "Kriemhild (Valkyrie Realm)";
+        [JsonPropertyName("hubTownId")] public string HubTownId { get; set; } = "prontera_capital";
+        [JsonPropertyName("siegeMapId")] public string SiegeMapId { get; set; } = "valkyrie_siege_01";
+        [JsonPropertyName("siegeDurationMinutes")] public int SiegeDurationMinutes { get; set; } = 60;
+        [JsonPropertyName("maxGuildSize")] public int MaxGuildSize { get; set; } = 50;
+        [JsonPropertyName("emperium")] public CastleEmperiumDef Emperium { get; set; } = new();
+        [JsonPropertyName("fortifications")] public CastleFortificationsDef Fortifications { get; set; } = new();
+        [JsonPropertyName("pvpRules")] public CastlePvpRulesDef PvpRules { get; set; } = new();
+        [JsonPropertyName("ownerRewards")] public CastleOwnerRewardsDef OwnerRewards { get; set; } = new();
+        [JsonPropertyName("assetStudioKey")] public string AssetStudioKey { get; set; } = "castle.kriemhild";
+    }
+
     public sealed class CardCatalogDef
     {
         [JsonPropertyName("id")] public string Id { get; set; } = "";
@@ -124,7 +171,8 @@ namespace AtlasWorld.Client.Meta
 
     /// <summary>
     /// Client-side MMORPG Growth, Job Progression, Equipment Refine (+0..+15), Monster Card Socketing,
-    /// Adventurer Handbook passives, 10-Element/Size Counter Matrix &amp; Quest Board tracker backed directly by <c>contracts/content/*.json</c>.
+    /// Adventurer Handbook passives, 10-Element/Size Counter Matrix, GvG Castle Siege (War of Emperium),
+    /// &amp; Quest Board tracker backed directly by <c>contracts/content/*.json</c>.
     /// </summary>
     public sealed class MmorpgGrowthManager
     {
@@ -133,6 +181,7 @@ namespace AtlasWorld.Client.Meta
         public List<CardCatalogDef> Cards { get; private set; } = new();
         public List<HandbookCatalogDef> Handbook { get; private set; } = new();
         public ElementsCatalogDef Elements { get; private set; } = new();
+        public List<CastleCatalogDef> Castles { get; private set; } = new();
 
         public int BaseLevel { get; private set; } = 12;
         public int JobLevel { get; private set; } = 15;
@@ -152,6 +201,13 @@ namespace AtlasWorld.Client.Meta
         public int HandbookBoarKills { get; private set; } = 0;
         public bool HandbookWatchtowerVistaUnlocked { get; private set; } = false;
 
+        // Phase 4B: GvG Castle Siege (War of Emperium — Kriemhild)
+        public int SiegeBarricadesRemaining { get; private set; } = 4;
+        public long CurrentBarricadeHp { get; private set; } = 45000;
+        public long EmperiumHp { get; private set; } = 120000;
+        public string CastleOwnerGuild { get; private set; } = "Valkyrie Vanguard [DEF]";
+        public int CastleCaptureCount { get; private set; } = 0;
+
         private int _cardCycleIndex = -1;
 
         public void LoadCatalogs()
@@ -162,6 +218,7 @@ namespace AtlasWorld.Client.Meta
             string cardsPath = Path.Combine(repoRoot, "contracts", "content", "cards.json");
             string handbookPath = Path.Combine(repoRoot, "contracts", "content", "handbook.json");
             string elementsPath = Path.Combine(repoRoot, "contracts", "content", "elements.json");
+            string castlesPath = Path.Combine(repoRoot, "contracts", "content", "castles.json");
 
             try
             {
@@ -184,6 +241,10 @@ namespace AtlasWorld.Client.Meta
                 if (File.Exists(elementsPath))
                 {
                     Elements = JsonSerializer.Deserialize<ElementsCatalogDef>(File.ReadAllText(elementsPath)) ?? new();
+                }
+                if (File.Exists(castlesPath))
+                {
+                    Castles = JsonSerializer.Deserialize<List<CastleCatalogDef>>(File.ReadAllText(castlesPath)) ?? new();
                 }
             }
             catch (Exception ex)
@@ -234,6 +295,96 @@ namespace AtlasWorld.Client.Meta
                     HandbookDepositStats = new Dictionary<string, int> { ["pAtkFlat"] = 3 }
                 });
             }
+
+            if (Castles.Count == 0)
+            {
+                Castles.Add(new CastleCatalogDef());
+            }
+
+            ResetSiegeState("Valkyrie Vanguard [DEF]");
+        }
+
+        public CastleCatalogDef ActiveCastle =>
+            Castles.Count > 0 ? Castles[0] : new CastleCatalogDef();
+
+        public int TotalSiegeBarricades =>
+            ActiveCastle.Fortifications.OuterGateBarricadeCount + ActiveCastle.Fortifications.InnerGateBarricadeCount;
+
+        public void ResetSiegeState(string ownerGuildName)
+        {
+            var castle = ActiveCastle;
+            SiegeBarricadesRemaining = TotalSiegeBarricades;
+            CurrentBarricadeHp = castle.Fortifications.BarricadeHp;
+            EmperiumHp = castle.Emperium.Hp;
+            CastleOwnerGuild = ownerGuildName;
+        }
+
+        /// <summary>
+        /// Applies a War of Emperium siege strike against the active Castle (<c>castle_valkyrie_01</c>).
+        /// Enforces outer/inner barricade gates, <c>playerDamageScalingPct</c> (60%), and
+        /// <c>onlyNormalAttackDamage: true</c> on the Holy Emperium crystal.
+        /// </summary>
+        public (long appliedDamage, bool skillBlocked, bool castleCaptured) ApplySiegeAttack(
+            long rawDamage,
+            bool isSkillAttack,
+            string attackElement,
+            string attackerGuild,
+            out string siegeBannerMsg)
+        {
+            var castle = ActiveCastle;
+            long scaledDamage = Math.Max(1L, rawDamage * castle.PvpRules.PlayerDamageScalingPct / 100L);
+
+            if (SiegeBarricadesRemaining > 0)
+            {
+                if (scaledDamage >= CurrentBarricadeHp)
+                {
+                    SiegeBarricadesRemaining--;
+                    CurrentBarricadeHp = SiegeBarricadeResetHp();
+                    siegeBannerMsg = SiegeBarricadesRemaining == 0
+                        ? $"[WoE Siege] All {TotalSiegeBarricades} Gate Barricades BREACHED! Holy Emperium ({castle.Emperium.Hp:N0} HP, Normal Attacks Only) is EXPOSED!"
+                        : $"[WoE Siege] Gate Barricade Destroyed! ({SiegeBarricadesRemaining}/{TotalSiegeBarricades} Barricades Remaining)";
+                }
+                else
+                {
+                    CurrentBarricadeHp -= scaledDamage;
+                    siegeBannerMsg = $"[WoE Siege] Barricade Gate Hit -{scaledDamage:N0} HP ({CurrentBarricadeHp:N0}/{castle.Fortifications.BarricadeHp:N0} HP | {SiegeBarricadesRemaining} Gates up)";
+                }
+                return (scaledDamage, false, false);
+            }
+
+            // Emperium phase: enforce onlyNormalAttackDamage: true
+            if (castle.Emperium.OnlyNormalAttackDamage && isSkillAttack)
+            {
+                siegeBannerMsg = $"[WoE Siege] SKILL IMMUNE! {castle.Name} Emperium ({castle.Emperium.Element}/{castle.Emperium.Size}) only takes NORMAL ATTACK damage!";
+                return (0L, true, false);
+            }
+
+            int elemPct = GetElementCounterPct(attackElement, castle.Emperium.Element);
+            int sizePct = GetWeaponSizePenaltyPct(EquippedWeaponKind, castle.Emperium.Size);
+            long empDamage = Math.Max(1L, scaledDamage * elemPct / 100L * sizePct / 100L);
+
+            if (empDamage >= EmperiumHp)
+            {
+                CastleCaptureCount++;
+                ResetSiegeState(attackerGuild);
+                siegeBannerMsg = $"[WAR OF EMPERIUM] {castle.Name} CAPTURED by [{attackerGuild}]! (+{castle.OwnerRewards.DailyTreasureChestCount} Daily Treasure Chests & '{castle.OwnerRewards.GuildDungeonZoneId}' Unlocked!)";
+                return (empDamage, false, true);
+            }
+
+            EmperiumHp -= empDamage;
+            siegeBannerMsg = $"[WoE Siege] Emperium Normal-Attack Strike -{empDamage:N0} HP! ({EmperiumHp:N0}/{castle.Emperium.Hp:N0} HP | Owner: {CastleOwnerGuild})";
+            return (empDamage, false, false);
+        }
+
+        private long SiegeBarricadeResetHp() =>
+            SiegeBarricadesRemaining > 0 ? ActiveCastle.Fortifications.BarricadeHp : 0L;
+
+        public string FormatSiegeStatusLine()
+        {
+            var c = ActiveCastle;
+            return SiegeBarricadesRemaining > 0
+                ? $"WoE [{c.Name}] Owner: {CastleOwnerGuild} | Barricades: {SiegeBarricadesRemaining}/{TotalSiegeBarricades} ({CurrentBarricadeHp:N0} HP) | Emperium: {EmperiumHp:N0} HP (Protected)"
+                : $"WoE [{c.Name}] Owner: {CastleOwnerGuild} | Barricades: BREACHED | Holy Emperium: {EmperiumHp:N0}/{c.Emperium.Hp:N0} HP (Normal ATK Only)";
         }
 
         public JobCatalogDef CurrentJob =>
@@ -422,7 +573,7 @@ namespace AtlasWorld.Client.Meta
             }
 
             WeaponRefinePityCount++;
-            refineMessage = $"[Refine] Failed at +{WeaponRefineLevel} (Gear Safe — Pity {WeaponRefinePityCount}/3 toward guaranteed +{WeaponRefineLevel + 1})";
+            refineMessage = $"[Refine] Failed at +{WeaponRefineLevel} (Gear Safe \u2014 Pity {WeaponRefinePityCount}/3 toward guaranteed +{WeaponRefineLevel + 1})";
             return false;
         }
 
