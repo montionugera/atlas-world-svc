@@ -174,6 +174,13 @@ namespace AtlasWorld.Client.World
                     _ => (EntityKind.Mob, EntityKeys.ServerRsMob(d.MobType)),
                 };
 
+                if (id != _ownPlayerId && kind is EntityKind.Mob or EntityKind.Player)
+                {
+                    Vector2 clampedXZ = TerrainElevation.ClampToWalkableTerrain(wx, wz, MapDocument);
+                    wx = clampedXZ.X;
+                    wz = clampedXZ.Y;
+                }
+
                 float groundY = TerrainElevation.SampleHeight(wx, wz, MapDocument);
                 float wy = kind == EntityKind.Projectile ? groundY + 1.0f : groundY;
 

@@ -482,8 +482,38 @@ namespace AtlasWorld.Client.World
                     return 1;
                 }
 
+                // 6. Steep Sheer Cliff Mesa Blocking Check (Player & Mob cannot walk up northwest_sheer_cliff_mesa):
+                var cliffMesa = doc.HeightTerraces.Find(t => TerrainElevation.IsSheerCliffTerrace(t));
+                if (cliffMesa != null)
+                {
+                    float cx = cliffMesa.X + cliffMesa.Radius + 1.2f;
+                    float cz = cliffMesa.Z;
+                    for (int step = 0; step < 30; step++)
+                    {
+                        Vector2 stepRes = TerrainElevation.ResolveSteepSlopeMove(cx, cz, cliffMesa.X, cliffMesa.Z, doc, out _, out _);
+                        cx = stepRes.X;
+                        cz = stepRes.Y;
+                    }
+                    float distFromMesaCenter = Mathf.Sqrt((cx - cliffMesa.X) * (cx - cliffMesa.X) + (cz - cliffMesa.Z) * (cz - cliffMesa.Z));
+                    if (distFromMesaCenter < cliffMesa.Radius + 0.30f)
+                    {
+                        GD.PrintErr($"[VerticalSliceProbe]   FAIL  Player walked through sheer cliff mesa: dist={distFromMesaCenter:0.2f} < {cliffMesa.Radius + 0.30f:0.2f}");
+                        testRoot.QueueFree();
+                        return 1;
+                    }
+
+                    Vector2 mobClamped = TerrainElevation.ClampToWalkableTerrain(cliffMesa.X, cliffMesa.Z, doc);
+                    float mobDist = mobClamped.DistanceTo(new Vector2(cliffMesa.X, cliffMesa.Z));
+                    if (mobDist < cliffMesa.Radius + 0.40f)
+                    {
+                        GD.PrintErr($"[VerticalSliceProbe]   FAIL  Mob was not clamped out of sheer cliff mesa: dist={mobDist:0.2f}");
+                        testRoot.QueueFree();
+                        return 1;
+                    }
+                }
+
                 testRoot.QueueFree();
-                GD.Print($"[VerticalSliceProbe]   PASS  Multi-Floor 3D Watchtower Climb (1F={sampled1F:0.00}m -> East Stairs -> 2F={walkY:0.00}m), Crystal Cave Wall Cutaway ({sampledCaveFloor:0.00}m) & Near-Camera Tree Hide");
+                GD.Print($"[VerticalSliceProbe]   PASS  Multi-Floor 3D Watchtower Climb (1F={sampled1F:0.00}m -> East Stairs -> 2F={walkY:0.00}m), Crystal Cave Cutaway & Sheer Cliff Blocking");
                 return 0;
             }
             catch (Exception ex)

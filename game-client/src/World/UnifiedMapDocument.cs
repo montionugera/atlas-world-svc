@@ -363,6 +363,27 @@ namespace AtlasWorld.Client.World
             {
                 IndexStructureWallsIncremental(s, serverCenter, serverCoordScale);
             }
+
+            foreach (var t in HeightTerraces)
+            {
+                if (TerrainElevation.IsSheerCliffTerrace(t))
+                {
+                    // Register inscribed square AABB in server-rs StaticObstacles so server mobs/bots cannot path through sheer cliff mesas
+                    float halfBox = t.Radius * 0.82f;
+                    float sxMin = serverCenter.X + ((t.X - halfBox) / serverCoordScale);
+                    float syMin = serverCenter.Y + ((t.Z - halfBox) / serverCoordScale);
+                    float sxMax = serverCenter.X + ((t.X + halfBox) / serverCoordScale);
+                    float syMax = serverCenter.Y + ((t.Z + halfBox) / serverCoordScale);
+                    StaticObstacles.Add(new UnifiedMapStaticObstacle
+                    {
+                        Id = $"cliff_{t.Id}",
+                        MinX = Mathf.Round(sxMin * 10f) / 10f,
+                        MinY = Mathf.Round(syMin * 10f) / 10f,
+                        MaxX = Mathf.Round(sxMax * 10f) / 10f,
+                        MaxY = Mathf.Round(syMax * 10f) / 10f,
+                    });
+                }
+            }
         }
 
         /// <summary>

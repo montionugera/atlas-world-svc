@@ -21,9 +21,9 @@ namespace AtlasWorld.Client.World
     {
         /// <summary>
         /// Maximum walkable slope angle in degrees before a terrain incline is treated as an impassable cliff wall.
-        /// Standard 3D RPG / NavMesh convention: slopes &lt;= 38° are walkable; slopes &gt; 38° block and slide along the contour.
+        /// Gentle grassy hills (&lt;= 35°) are walkable; grey rock cliff walls (&gt; 35°) block both player and mobs.
         /// </summary>
-        public const float MaxWalkableSlopeDeg = 58.0f;
+        public const float MaxWalkableSlopeDeg = 35.0f;
 
         /// <summary>
         /// Maximum vertical step-up height (in meters) an entity can climb in a single horizontal step
@@ -41,6 +41,20 @@ namespace AtlasWorld.Client.World
         /// so CPU height queries interpolate the exact same triangles rendered by the GPU.
         /// </summary>
         public static float ActiveMeshCellSize { get; private set; } = 1.0f;
+
+        /// <summary>
+        /// Returns true if a sculpted <see cref="UnifiedMapHeightTerrace"/> has a cliff wall steeper than
+        /// <see cref="MaxWalkableSlopeDeg"/> (such as <c>northwest_sheer_cliff_mesa</c>), meaning entities
+        /// at ground level must be blocked at its base perimeter rather than walking up its rock wall.
+        /// </summary>
+        public static bool IsSheerCliffTerrace(UnifiedMapHeightTerrace t)
+        {
+            float r = Mathf.Max(0.5f, t.Radius);
+            float falloff = Mathf.Clamp(t.Falloff, 0.05f, 0.90f);
+            float rampWidth = r * falloff;
+            float peakSlopeRatio = (1.5f * Mathf.Abs(t.Height)) / Mathf.Max(0.25f, rampWidth);
+            return peakSlopeRatio > 0.72f; // > ~35.7 degrees
+        }
 
         /// <summary>
         /// Evaluates the exact rendered triangle height Y of the outdoor ground mesh at world position (wx, wz)
@@ -312,7 +326,7 @@ namespace AtlasWorld.Client.World
                     }
 
                     // 2. Check Watchtower Interior / 2nd-Floor Battlement Deck:
-                    //    Full deck footprint X in [s.X - r*1.06 .. s.X + r*1.06], Z in [s.Z - r*1.06 .. s.Z + r*1.06]
+                    //    Full deck footprint X in [s.X - r*1.06 .. s.X + r*1.06], Z in [s.X - r*1.06 .. s.Z + r*1.06]
                     if (Mathf.Abs(wx - s.X) <= r * 1.06f && Mathf.Abs(wz - s.Z) <= r * 1.06f)
                     {
                         if (!float.IsNaN(currentEntityY) && currentEntityY >= midFloorThresholdY)
@@ -374,8 +388,9 @@ namespace AtlasWorld.Client.World
         }
 
         /// <summary>
-        /// Returns the local terrain inclination angle in degrees (0° = flat horizontal, 90° = vertical wall).
-        /// Inside a walkable cave floor or watchtower deck/ramp, returns a walkable angle (&lt;= 18°).
+        /// Returns the local terrain inclination angle in degrees (0° = flat horizontal, 90° = vertical wall),
+        /// taking the maximum of the exact rendered triangle face slope and the finite-difference normal slope
+        /// so entities are blocked at the bottom edge of any steep cliff triangle.
         /// </summary>
         public static float SampleSlopeDegrees(float wx, float wz, UnifiedMapDocument? doc = null)
         {
@@ -383,23 +398,107 @@ namespace AtlasWorld.Client.World
                 return 12.0f;
 
             Vector3 normal = SampleNormal(wx, wz, doc);
-            return Mathf.RadToDeg(Mathf.Acos(Mathf.Clamp(normal.Y, -1.0f, 1.0f)));
+            float normalSlopeDeg = Mathf.RadToDeg(Mathf.Acos(Mathf.Clamp(normal.Y, -1.0f, 1.0f)));
+
+            float step = Mathf.Max(0.5f, ActiveMeshCellSize);
+            float gx = wx / step;
+            float gz = wz / step;
+            float ix = Mathf.Floor(gx);
+            float iz = Mathf.Floor(gz);
+            float u = gx - ix;
+            float v = gz - iz;
+            float x0 = ix * step;
+            float x1 = x0 + step;
+            float z0 = iz * step;
+            float z1 = z0 + step;
+
+            float y10 = SampleAnalyticalTerrainHeight(x1, z0, doc);
+            float y01 = SampleAnalyticalTerrainHeight(x0, z1, doc);
+            float dydx, dydz;
+            if (u + v <= 1.0f)
+            {
+                float y00 = SampleAnalyticalTerrainHeight(x0, z0, doc);
+                dydx = (y10 - y00) / step;
+                dydz = (y01 - y00) / step;
+            }
+            else
+            {
+                float y11 = SampleAnalyticalTerrainHeight(x1, z1, doc);
+                dydx = (y11 - y01) / step;
+                dydz = (y11 - y10) / step;
+            }
+
+            float triSlopeDeg = Mathf.RadToDeg(Mathf.Atan(Mathf.Sqrt(dydx * dydx + dydz * dydz)));
+            return Mathf.Max(normalSlopeDeg, triSlopeDeg);
         }
 
         /// <summary>
-        /// Returns true if an entity can walk onto (wx, wz) without hitting a sheer cliff wall (&gt; 38°).
+        /// Returns true if an entity can walk onto (wx, wz) without hitting a sheer cliff wall (&gt; 35°).
         /// </summary>
         public static bool IsWalkableSlope(float wx, float wz, UnifiedMapDocument? doc = null)
         {
+            if (doc != null && doc.HeightTerraces.Count > 0 && !IsInsideWalkableStructureCorridor(wx, wz, doc))
+            {
+                for (int i = 0; i < doc.HeightTerraces.Count; i++)
+                {
+                    var t = doc.HeightTerraces[i];
+                    if (!IsSheerCliffTerrace(t))
+                        continue;
+
+                    float dx = wx - t.X;
+                    float dz = wz - t.Z;
+                    if (dx * dx + dz * dz < (t.Radius + 0.35f) * (t.Radius + 0.35f))
+                        return false;
+                }
+            }
             return SampleSlopeDegrees(wx, wz, doc) <= MaxWalkableSlopeDeg;
+        }
+
+        /// <summary>
+        /// Pushes any 2D server entity position (mob/bot) out of sheer cliff mesas so server entities
+        /// never appear halfway up an impassable rock cliff wall.
+        /// </summary>
+        public static Vector2 ClampToWalkableTerrain(float wx, float wz, UnifiedMapDocument? doc)
+        {
+            if (doc == null || doc.HeightTerraces.Count == 0)
+                return new Vector2(wx, wz);
+
+            float rx = wx;
+            float rz = wz;
+            for (int i = 0; i < doc.HeightTerraces.Count; i++)
+            {
+                var t = doc.HeightTerraces[i];
+                if (!IsSheerCliffTerrace(t))
+                    continue;
+
+                float dx = rx - t.X;
+                float dz = rz - t.Z;
+                float distSq = dx * dx + dz * dz;
+                float minRadius = t.Radius + 0.45f;
+                if (distSq < minRadius * minRadius)
+                {
+                    float dist = Mathf.Sqrt(distSq);
+                    if (dist > 0.001f)
+                    {
+                        rx = t.X + (dx / dist) * minRadius;
+                        rz = t.Z + (dz / dist) * minRadius;
+                    }
+                    else
+                    {
+                        rx = t.X + minRadius;
+                    }
+                }
+            }
+            return new Vector2(rx, rz);
         }
 
         /// <summary>
         /// Evaluates a horizontal movement step from (curX, curZ) to (nextX, nextZ) with multi-floor height awareness:
         /// 1. Resolves O(1) Height-Aware Spatial Hash Grid solid prop &amp; cave/tower wall collisions.
-        /// 2. Bypasses surface cliff blocking when walking inside an underground cave tunnel or up a tower stair ramp.
-        /// 3. If the destination hits an outdoor steep cliff wall (&gt; 38°), projects the movement vector onto the 2D cliff
-        ///    contour tangent so the player smoothly slides along the cliff edge.
+        /// 2. Enforces circular cliff-base barrier around sheer cliff mesas so entities slide smoothly around the base
+        ///    and never climb onto grey cliff rock faces.
+        /// 3. If the destination hits any outdoor steep cliff wall (&gt; 35°), projects the movement vector onto the 2D cliff
+        ///    contour tangent without allowing upward creep.
         /// </summary>
         public static Vector2 ResolveSteepSlopeMove(
             float curX,
@@ -419,6 +518,38 @@ namespace AtlasWorld.Client.World
             }
 
             blockedByCliff = false;
+
+            // Enforce circular perimeter barrier at the foot of any sheer cliff mesa (e.g. northwest_sheer_cliff_mesa)
+            if (doc != null && doc.HeightTerraces.Count > 0 && !IsInsideWalkableStructureCorridor(nextX, nextZ, doc, currentEntityY))
+            {
+                for (int i = 0; i < doc.HeightTerraces.Count; i++)
+                {
+                    var t = doc.HeightTerraces[i];
+                    if (!IsSheerCliffTerrace(t))
+                        continue;
+
+                    float dx = nextX - t.X;
+                    float dz = nextZ - t.Z;
+                    float distSq = dx * dx + dz * dz;
+                    float cliffFootRadius = t.Radius + 0.35f;
+                    if (distSq < cliffFootRadius * cliffFootRadius)
+                    {
+                        blockedByCliff = true;
+                        float dist = Mathf.Sqrt(distSq);
+                        if (dist > 0.001f)
+                        {
+                            nextX = t.X + (dx / dist) * cliffFootRadius;
+                            nextZ = t.Z + (dz / dist) * cliffFootRadius;
+                        }
+                        else
+                        {
+                            nextX = curX;
+                            nextZ = curZ;
+                        }
+                    }
+                }
+            }
+
             slopeDeg = SampleSlopeDegrees(nextX, nextZ, doc);
 
             if (slopeDeg <= MaxWalkableSlopeDeg)
@@ -426,8 +557,12 @@ namespace AtlasWorld.Client.World
                 return new Vector2(nextX, nextZ);
             }
 
+            float curY = SampleBaseTerrainHeight(curX, curZ, doc);
+            float nextY = SampleBaseTerrainHeight(nextX, nextZ, doc);
             float curSlope = SampleSlopeDegrees(curX, curZ, doc);
-            if (curSlope > MaxWalkableSlopeDeg && slopeDeg < curSlope - 0.25f)
+
+            // If already on a steep slope, only allow stepping downhill to exit the cliff
+            if (curSlope > MaxWalkableSlopeDeg && nextY < curY - 0.005f)
             {
                 return new Vector2(nextX, nextZ);
             }
@@ -449,7 +584,8 @@ namespace AtlasWorld.Client.World
                 float slideX = curX + tx * dot * 0.75f;
                 float slideZ = curZ + tz * dot * 0.75f;
 
-                if (SampleSlopeDegrees(slideX, slideZ, doc) <= MaxWalkableSlopeDeg + 2.5f)
+                if (SampleSlopeDegrees(slideX, slideZ, doc) <= MaxWalkableSlopeDeg &&
+                    SampleBaseTerrainHeight(slideX, slideZ, doc) <= curY + 0.04f)
                 {
                     return new Vector2(slideX, slideZ);
                 }

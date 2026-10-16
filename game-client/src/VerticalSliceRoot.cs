@@ -1247,8 +1247,31 @@ namespace AtlasWorld.Client
             UpdateStatusText($"[color=#{Design.Palette.Warn.ToHtml(false)}]\u25cb Offline Simulation ({reason})[/color]");
         }
 
+        private bool HasLiveHostileMobNearPlayer(float maxRadiusMeters = 4.8f)
+        {
+            if (_peacefulNoMonsters || PlayerAvatar == null || _entityManager == null)
+                return false;
+
+            Vector3 pPos = PlayerAvatar.Position;
+            float maxDistSq = maxRadiusMeters * maxRadiusMeters;
+            foreach (var kv in _entityManager.Views)
+            {
+                if (kv.Value.Kind == EntityKind.Mob && kv.Value.Alive && GodotObject.IsInstanceValid(kv.Value.Root))
+                {
+                    float dx = kv.Value.Root.Position.X - pPos.X;
+                    float dz = kv.Value.Root.Position.Z - pPos.Z;
+                    if (dx * dx + dz * dz <= maxDistSq)
+                        return true;
+                }
+            }
+            return false;
+        }
+
         private void OnRawSnapshotReceived(WorldSnapshot snapshot)
         {
+            // Always ingest snapshots so OwnPlayerServerPosition stays tracked even in Peaceful Mode
+            _entityManager.IngestServerRsSnapshot(snapshot, ServerCoordScale, ServerArenaCenter);
+
             if (_peacefulNoMonsters)
             {
                 if (_worldMobsContainer != null) _worldMobsContainer.Visible = false;
@@ -1257,11 +1280,13 @@ namespace AtlasWorld.Client
                     _entityManager.Visible = false;
                     _entityManager.SetProcess(false);
                 }
+                if (_entityManager != null && !_entityManager.OwnPlayerAlive && _respawnRequestCooldownSec <= 0f)
+                {
+                    _respawnRequestCooldownSec = 2.0f;
+                    Connection?.SendInput(0f, 0f, respawn: true);
+                }
                 return;
             }
-
-            // 1. Ingest all entity deltas + removed IDs into EntityManager / SnapshotInterpolator
-            _entityManager.IngestServerRsSnapshot(snapshot, ServerCoordScale, ServerArenaCenter);
 
             // Hide offline static showcase monsters once live server-rs entities are streaming
             if (_worldMobsContainer != null && _entityManager.Count > 0)
@@ -1269,18 +1294,26 @@ namespace AtlasWorld.Client
                 _worldMobsContainer.Visible = false;
             }
 
+            bool hasMobNearPlayer = HasLiveHostileMobNearPlayer(4.8f);
+
             // Sync authoritative own-player HP & Respawn state into PlayerFrame
+            // (Only apply server HP reductions when a live hostile mob is actually near PlayerAvatar!)
             if (_entityManager.HasOwnPlayerState && PlayerStatusFrame != null)
             {
-                int scaledHp = Mathf.Max(0, (int)Mathf.Round(_entityManager.OwnPlayerHealth * PlayerScaleMultiplier));
                 int scaledMaxHp = Mathf.Max(1, (int)Mathf.Round(_entityManager.OwnPlayerMaxHealth * PlayerScaleMultiplier));
+                int scaledHp = hasMobNearPlayer
+                    ? Mathf.Max(0, (int)Mathf.Round(_entityManager.OwnPlayerHealth * PlayerScaleMultiplier))
+                    : scaledMaxHp;
                 PlayerStatusFrame.SetHp(scaledHp, scaledMaxHp);
 
                 if (!_entityManager.OwnPlayerAlive && _respawnRequestCooldownSec <= 0f)
                 {
                     _respawnRequestCooldownSec = 2.0f;
                     Connection?.SendInput(0f, 0f, respawn: true);
-                    ChatWidget?.AppendSystemMessage("Defeated in battle! Respawning at Freja Sanctuary...");
+                    if (hasMobNearPlayer)
+                    {
+                        ChatWidget?.AppendSystemMessage("Defeated in battle! Respawning at Freja Sanctuary...");
+                    }
                 }
             }
 
@@ -1318,6 +1351,9 @@ namespace AtlasWorld.Client
 
             // 3. Process server-rs authoritative GameEvents (Hit / Kill) -> 3D-to-2D FloatingCombatText
             uint myWireId = Connection?.LocalWireId ?? 0;
+            if (myWireId == 0 || PlayerAvatar == null || MainCamera == null)
+                return;
+
             int evCount = snapshot.EventsLength;
             for (int i = 0; i < evCount; i++)
             {
@@ -1328,41 +1364,62 @@ namespace AtlasWorld.Client
                 GameEvent ev = evOpt.Value;
                 if (ev.Kind == GameEventKind.Hit && ev.Amount > 0f)
                 {
-                    bool involvedLocal = (myWireId != 0 && (ev.SourceId == myWireId || ev.TargetId == myWireId)) ||
-                                         (_selectedServerTargetWireId != 0 && ev.TargetId == _selectedServerTargetWireId);
-                    if (!involvedLocal)
-                        continue;
-
                     long dmgAmount = Math.Max(1L, (long)Mathf.Round(ev.Amount * 28f)); // Scaled to RPG display numbers
                     bool isCrit = ev.Amount >= 25f;
-                    Vector2 screenPos = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
-                    screenPos += new Vector2(0, -85);
 
-                    if (_entityManager.TryGetEntityView(ev.TargetId.ToString(), out EntityView? hitView) &&
-                        hitView != null && GodotObject.IsInstanceValid(hitView.Root) && MainCamera != null)
+                    if (ev.SourceId == myWireId)
                     {
+                        // Outgoing hit dealt BY our player to a mob
+                        if (!_entityManager.TryGetEntityView(ev.TargetId.ToString(), out EntityView? hitView) ||
+                            hitView == null || !GodotObject.IsInstanceValid(hitView.Root))
+                            continue;
+
+                        float distSq = hitView.Root.Position.DistanceSquaredTo(PlayerAvatar.Position);
+                        if (distSq > 14.0f * 14.0f)
+                            continue;
+
                         Vector3 headWorldPos = hitView.Root.GlobalPosition + new Vector3(0f, 2.2f, 0f);
-                        if (!MainCamera.IsPositionBehind(headWorldPos))
-                        {
-                            screenPos = MainCamera.UnprojectPosition(headWorldPos);
-                        }
+                        if (MainCamera.IsPositionBehind(headWorldPos))
+                            continue;
+
+                        Vector2 screenPos = MainCamera.UnprojectPosition(headWorldPos);
                         var tween = CreateTween();
                         tween.TweenProperty(hitView.Root, "scale", Vector3.One * 1.14f, 0.06);
                         tween.TweenProperty(hitView.Root, "scale", Vector3.One, 0.11);
-                    }
-                    else if (ev.TargetId == myWireId && PlayerAvatar != null && MainCamera != null)
-                    {
-                        Vector3 headWorldPos = PlayerAvatar.GlobalPosition + new Vector3(0f, 2.1f, 0f);
-                        if (!MainCamera.IsPositionBehind(headWorldPos))
-                        {
-                            screenPos = MainCamera.UnprojectPosition(headWorldPos);
-                        }
-                    }
 
-                    AudioRegistry.Instance?.Play("sfx:hit", PlayerAvatar?.GlobalPosition ?? Vector3.Zero);
-                    CombatText?.SpawnDamage(screenPos, dmgAmount, isCrit);
+                        AudioRegistry.Instance?.Play("sfx:hit", hitView.Root.GlobalPosition);
+                        CombatText?.SpawnDamage(screenPos, dmgAmount, isCrit);
+                    }
+                    else if (ev.TargetId == myWireId)
+                    {
+                        // Incoming hit dealt TO our player by a mob:
+                        // Strictly verify that the attacking mob exists in the scene and is within 4.8m of PlayerAvatar!
+                        if (!hasMobNearPlayer)
+                            continue;
+
+                        if (_entityManager.TryGetEntityView(ev.SourceId.ToString(), out EntityView? attackerView) &&
+                            attackerView != null && GodotObject.IsInstanceValid(attackerView.Root))
+                        {
+                            float dx = attackerView.Root.Position.X - PlayerAvatar.Position.X;
+                            float dz = attackerView.Root.Position.Z - PlayerAvatar.Position.Z;
+                            if (dx * dx + dz * dz > 5.2f * 5.2f)
+                                continue;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+
+                        Vector3 headWorldPos = PlayerAvatar.GlobalPosition + new Vector3(0f, 2.1f, 0f);
+                        if (MainCamera.IsPositionBehind(headWorldPos))
+                            continue;
+
+                        Vector2 screenPos = MainCamera.UnprojectPosition(headWorldPos);
+                        AudioRegistry.Instance?.Play("sfx:hit", PlayerAvatar.GlobalPosition);
+                        CombatText?.SpawnDamage(screenPos, dmgAmount, isCrit);
+                    }
                 }
-                else if (ev.Kind == GameEventKind.Kill && myWireId != 0 && ev.SourceId == myWireId)
+                else if (ev.Kind == GameEventKind.Kill && ev.SourceId == myWireId)
                 {
                     if (PlayerExpBar != null)
                     {
@@ -1647,7 +1704,34 @@ namespace AtlasWorld.Client
             }
             else
             {
-                if (_wasMovingLastFrame)
+                if (_entityManager != null && _entityManager.HasOwnPlayerState && PlayerAvatar != null)
+                {
+                    // Steer server-side avatar toward client PlayerAvatar.Position if they drifted apart
+                    Vector2 srvDelta = new Vector2(
+                        PlayerAvatar.Position.X - _entityManager.OwnPlayerServerPosition.X,
+                        PlayerAvatar.Position.Z - _entityManager.OwnPlayerServerPosition.Z);
+                    float srvDist = srvDelta.Length();
+                    if (srvDist > 0.75f)
+                    {
+                        Vector2 catchup = srvDelta / srvDist;
+                        var (targetId, targetX, targetY) = ResolveServerAimTarget();
+                        Connection?.SendInput(
+                            catchup.X,
+                            catchup.Y,
+                            skillSlot: srvDist > 4.5f ? (byte)5 : (byte)0,
+                            targetId: targetId,
+                            targetX: targetX,
+                            targetY: targetY);
+                        _wasMovingLastFrame = true;
+                    }
+                    else if (_wasMovingLastFrame)
+                    {
+                        var (targetId, targetX, targetY) = ResolveServerAimTarget();
+                        Connection?.SendInput(0f, 0f, targetId: targetId, targetX: targetX, targetY: targetY);
+                        _wasMovingLastFrame = false;
+                    }
+                }
+                else if (_wasMovingLastFrame)
                 {
                     // Send a zero-velocity stop frame so server-rs halts our avatar immediately
                     var (targetId, targetX, targetY) = ResolveServerAimTarget();
