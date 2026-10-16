@@ -2,18 +2,14 @@
 """
 Atlas World — MMORPG Catalog & Balance Observatory Web Studio (scripts/catalog_explorer_web.py)
 
-Powered by the canonical `joy-design` Design System (`@joymify/tokens` `theme.css`,
-`@joymify/brand` emblem, and `.joy-*` component primitives):
-  - Global Search (`⌘K` / `/`) across Jobs, Mobs, Cards, Items, Quests, Handbook, Castles, and Maps
-  - Interactive Slide-Over Inspector Drawer (`.joy-drawer`) with full JSON contract & cross-references
-  - Interactive Job Tree & Promotion Trial Explorer
-  - Monster Bestiary, Drop Table & EXP/HP Economy Inspector
-  - 10-Element Counter Matrix & Weapon-vs-Size Heatmap + Live Damage Multiplier Calculator
-  - Equipment, Refine (+0..+15 Pity), Cards & Adventurer Handbook Passive Calculator
-  - War of Emperium (GvG Castle Siege) Breach & TTK Calculator
-  - Read-Only Live SQLite Query Console against `build/catalog.sqlite`
-  - Live `server-rs` Headless Balance Simulator Runner (`POST /api/sim`)
-  - Spec & Canon Markdown Reviewer (`docs/superpowers/specs/*.md`, `content/story/canon.md`)
+Unified Web-First + Native macOS (`WKWebView`) Observatory powered by:
+  1. Canonical `joy-design` Design System (`@joymify/tokens` `theme.css`, `@joymify/brand`, `.joy-*`)
+  2. RateMyServer (RMS) Information Architecture:
+     - Dense 2D Tabular Datasheets (`item_db`, `mob_db`, `skill_db_class`, `map_db` / `areainfo`)
+     - Dual Human Description + Authoritative Engine Script / Contract Rows
+     - Bidirectional Reverse-Lookup Joins (Dropped By, Applicable Jobs, Spawns On, Used In Quests)
+     - Live Parameterized Drop Rate Multiplier (`1x`, `3x`, `5x`, `10x`)
+     - 2D Top-Down Minimap SVG Renderer + Area Monster Spawn Table
 
 Usage:
   python3 scripts/catalog_explorer_web.py [--port 8788]
@@ -23,7 +19,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import shutil
 import sqlite3
 import subprocess
@@ -90,11 +85,14 @@ def build_full_bundle() -> dict:
                     "width": d.get("width", d.get("widthMeters", 200)),
                     "height": d.get("height", d.get("depthMeters", 200)),
                     "terrainAmplitude": d.get("terrainAmplitude", 1.0),
+                    "defaultTimeOfDayHours": d.get("defaultTimeOfDayHours", 12.0),
                     "terraceCount": len(d.get("heightTerraces", [])),
                     "structureCount": len(d.get("structures", [])),
                     "propCount": len(d.get("props", [])),
                     "structures": d.get("structures", []),
                     "heightTerraces": d.get("heightTerraces", []),
+                    "spawnAreas": d.get("spawnAreas", []),
+                    "props": (d.get("props", []) or [])[:40],
                 }
             )
 
@@ -195,14 +193,14 @@ INDEX_HTML = r"""<!DOCTYPE html>
       document.documentElement.setAttribute('data-palette', palette);
     })();
   </script>
-  <title>Atlas World — Joymify Design Observatory</title>
+  <title>Atlas World — Joymify Design Observatory (RMS Edition)</title>
   <link rel="stylesheet" href="/theme.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --sidebar-width: 276px;
+      --sidebar-width: 268px;
       --hub-sidebar-bg: var(--joy-surface-card);
       --hub-topbar-bg: var(--joy-surface-card);
       --hub-chrome-border: var(--joy-border-default);
@@ -226,14 +224,13 @@ INDEX_HTML = r"""<!DOCTYPE html>
     }
     body { display: flex; }
 
-    /* Custom Scrollbars */
     * { scrollbar-width: thin; scrollbar-color: var(--joy-border-default) transparent; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background-color: var(--joy-border-default); border-radius: var(--joy-radius-pill); }
     ::-webkit-scrollbar-thumb:hover { background-color: var(--joy-border-strong); }
 
-    /* Sidebar (joy-design Storybook Hub Shell) */
+    /* Sidebar */
     .sidebar {
       width: var(--sidebar-width);
       background: var(--hub-sidebar-bg);
@@ -245,7 +242,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
       user-select: none;
     }
     .brand {
-      padding: 20px 20px 16px;
+      padding: 18px 18px 14px;
       border-bottom: 1px solid var(--joy-border-subtle);
       display: flex;
       align-items: center;
@@ -284,7 +281,6 @@ INDEX_HTML = r"""<!DOCTYPE html>
       background: var(--joy-surface-sunken);
       border: 1px solid var(--joy-border-default);
       border-radius: var(--joy-radius-control);
-      transition: border-color var(--joy-duration-fast), box-shadow var(--joy-duration-fast);
     }
     .sidebar-search__inner:focus-within {
       border-color: var(--joy-border-focus);
@@ -301,7 +297,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
     .sidebar-search__input {
       flex: 1;
       width: 100%;
-      height: 36px;
+      height: 34px;
       padding: 0 8px;
       background: transparent;
       border: none;
@@ -309,9 +305,6 @@ INDEX_HTML = r"""<!DOCTYPE html>
       font-size: var(--joy-font-size-sm);
       font-family: inherit;
       color: var(--joy-text-primary);
-    }
-    .sidebar-search__input::placeholder {
-      color: var(--joy-text-muted);
     }
     .sidebar-search__kbd {
       display: inline-flex;
@@ -330,39 +323,29 @@ INDEX_HTML = r"""<!DOCTYPE html>
     .nav {
       flex: 1;
       overflow-y: auto;
-      padding: 8px 12px 16px;
+      padding: 6px 10px 16px;
     }
     .nav-section {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.07em;
       color: var(--joy-text-muted);
-      padding: 12px 10px 6px;
-      margin-top: 4px;
+      padding: 12px 10px 5px;
+      margin-top: 2px;
     }
     .nav-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      padding: 8px 10px;
+      gap: 8px;
+      padding: 7px 10px;
       border-radius: var(--joy-radius-control);
       font-size: var(--joy-font-size-sm);
       font-weight: 500;
       color: var(--joy-text-secondary);
       cursor: pointer;
-      transition: background-color var(--joy-duration-fast), color var(--joy-duration-fast);
       margin-bottom: 2px;
-    }
-    .nav-item__left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
     }
     .nav-item:hover {
       background: var(--joy-surface-sunken);
@@ -386,13 +369,8 @@ INDEX_HTML = r"""<!DOCTYPE html>
       color: var(--joy-text-secondary);
       border: 1px solid var(--joy-border-subtle);
     }
-    .nav-item.active .nav-section-count {
-      background: var(--joy-surface-card);
-      color: var(--joy-accent-text);
-      border-color: var(--joy-border-default);
-    }
     .sidebar-footer {
-      padding: 12px 16px;
+      padding: 10px 14px;
       border-top: 1px solid var(--joy-border-subtle);
       font-size: var(--joy-font-size-xs);
       color: var(--joy-text-muted);
@@ -401,7 +379,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
       justify-content: space-between;
     }
 
-    /* Main Content */
+    /* Main Workspace */
     .main {
       flex: 1;
       display: flex;
@@ -410,20 +388,22 @@ INDEX_HTML = r"""<!DOCTYPE html>
       overflow: hidden;
     }
     .topbar {
-      min-height: 60px;
+      min-height: 56px;
       border-bottom: 1px solid var(--hub-chrome-border);
       background: var(--hub-topbar-bg);
-      padding: 0 28px;
+      padding: 6px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: var(--joy-space-3);
       flex-shrink: 0;
+      flex-wrap: wrap;
     }
     .topbar__start, .topbar__end {
       display: flex;
       align-items: center;
-      gap: var(--joy-space-2);
+      gap: 8px;
+      flex-wrap: wrap;
     }
     .topbar__title {
       font-size: var(--joy-font-size-md);
@@ -433,15 +413,16 @@ INDEX_HTML = r"""<!DOCTYPE html>
     .scroll-stage {
       flex: 1;
       overflow-y: auto;
+      scroll-behavior: smooth;
     }
     .content-area {
-      max-width: 1220px;
+      max-width: 1260px;
       width: 100%;
       margin: 0 auto;
-      padding: 32px 32px 72px;
+      padding: 24px 28px 72px;
       display: flex;
       flex-direction: column;
-      gap: var(--joy-space-6);
+      gap: 20px;
     }
 
     /* Editorial Page Header */
@@ -450,32 +431,210 @@ INDEX_HTML = r"""<!DOCTYPE html>
       align-items: flex-end;
       justify-content: space-between;
       gap: var(--joy-space-4);
-      padding-bottom: var(--joy-space-4);
+      padding-bottom: 14px;
       border-bottom: 1px solid var(--joy-border-subtle);
     }
     .page-hero__eyebrow {
       font-family: var(--joy-font-family-mono);
-      font-size: var(--joy-font-size-xs);
+      font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--joy-accent-text);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     .page-hero__title {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 2.25rem;
+      font-size: 2rem;
       font-weight: 600;
       line-height: 1.1;
       color: var(--joy-text-primary);
-      margin: 0 0 6px 0;
+      margin: 0 0 4px 0;
     }
     .page-hero__sub {
       font-size: var(--joy-font-size-sm);
       color: var(--joy-text-secondary);
       margin: 0;
-      max-width: 720px;
-      line-height: 1.5;
+      max-width: 780px;
+      line-height: 1.45;
+    }
+
+    /* RateMyServer (RMS) 2D Datasheet Table */
+    .rms-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .rms-sheet {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--joy-surface-card);
+      border: 1px solid var(--joy-border-strong);
+      border-radius: var(--joy-radius-card);
+      overflow: hidden;
+      box-shadow: var(--joy-elevation-1);
+      font-size: 13px;
+      transition: box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .rms-sheet.rms-highlight {
+      border-color: var(--joy-accent-primary);
+      box-shadow: 0 0 0 3px var(--joy-focus-ring), var(--joy-elevation-2);
+    }
+    .rms-sheet__head {
+      background: var(--joy-accent-subtle);
+      border-bottom: 1px solid var(--joy-border-strong);
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .rms-sheet__head-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .rms-icon-box {
+      width: 26px;
+      height: 26px;
+      border-radius: 5px;
+      background: var(--joy-surface-sunken);
+      border: 1px solid var(--joy-border-default);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .rms-sheet__title {
+      font-weight: 700;
+      font-size: 14.5px;
+      color: var(--joy-text-primary);
+    }
+    .rms-sheet__id {
+      font-family: var(--joy-font-family-mono);
+      font-size: 12px;
+      color: var(--joy-text-secondary);
+    }
+    .rms-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .rms-table th, .rms-table td {
+      border: 1px solid var(--joy-border-subtle);
+      padding: 7px 11px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .rms-table th {
+      background: var(--joy-surface-sunken);
+      color: var(--joy-accent-text);
+      font-weight: 600;
+      font-size: 12px;
+      width: 128px;
+      white-space: nowrap;
+    }
+    .rms-table td {
+      color: var(--joy-text-primary);
+      font-size: 13px;
+    }
+    .rms-script-code {
+      display: block;
+      font-family: var(--joy-font-family-mono);
+      font-size: 12px;
+      background: var(--joy-surface-sunken);
+      border: 1px dashed var(--joy-border-default);
+      padding: 6px 10px;
+      border-radius: 4px;
+      color: var(--joy-accent-text);
+      overflow-x: auto;
+    }
+
+    /* Bidirectional RMS Entity Links */
+    .rms-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--joy-accent-text);
+      background: var(--joy-accent-subtle);
+      border: 1px solid var(--joy-border-default);
+      cursor: pointer;
+      text-decoration: none;
+      margin: 2px 4px 2px 0;
+      transition: transform 0.1s ease, border-color 0.15s ease;
+    }
+    .rms-link:hover {
+      border-color: var(--joy-accent-primary);
+      transform: translateY(-1px);
+    }
+    .rms-link__arrow {
+      font-size: 10px;
+      opacity: 0.8;
+    }
+    .rms-link__rate {
+      font-family: var(--joy-font-family-mono);
+      font-size: 11px;
+      color: var(--joy-text-secondary);
+    }
+
+    /* RMS 3-Column Reference Hub (Charts / Guides / Simulators) */
+    .rms-hub-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .rms-hub-box {
+      background: var(--joy-surface-card);
+      border: 1px solid var(--joy-border-default);
+      border-radius: var(--joy-radius-card);
+      padding: 14px 16px;
+      box-shadow: var(--joy-elevation-1);
+    }
+    .rms-hub-box h4 {
+      margin: 0 0 8px 0;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--joy-accent-text);
+      border-bottom: 1px solid var(--joy-border-subtle);
+      padding-bottom: 6px;
+    }
+    .rms-hub-links {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 13px;
+    }
+
+    /* RMS AreaInfo Map + Spawn Split Layout */
+    .rms-map-split {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 0;
+    }
+    @media (max-width: 860px) {
+      .rms-map-split { grid-template-columns: 1fr; }
+    }
+    .rms-minimap-cell {
+      padding: 14px;
+      background: var(--joy-surface-sunken);
+      border-right: 1px solid var(--joy-border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .rms-spawn-cell {
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     /* Grids & Cards */
@@ -498,19 +657,8 @@ INDEX_HTML = r"""<!DOCTYPE html>
       display: flex;
       flex-direction: column;
       gap: var(--joy-space-3);
-      transition: border-color var(--joy-duration-fast), transform var(--joy-duration-fast), box-shadow var(--joy-duration-fast);
     }
-    .observatory-card--interactive {
-      cursor: pointer;
-    }
-    .observatory-card--interactive:hover {
-      border-color: var(--joy-border-strong);
-      transform: translateY(-2px);
-      box-shadow: var(--joy-elevation-2);
-    }
-    .observatory-card--gold {
-      border-color: var(--joy-border-strong);
-    }
+    .observatory-card--gold { border-color: var(--joy-border-strong); }
     .observatory-card__head {
       display: flex;
       align-items: flex-start;
@@ -531,12 +679,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
       color: var(--joy-text-muted);
       margin-top: 3px;
     }
-    .kv-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      font-size: var(--joy-font-size-sm);
-    }
+    .kv-list { display: flex; flex-direction: column; gap: 6px; font-size: var(--joy-font-size-sm); }
     .kv-row {
       display: flex;
       align-items: baseline;
@@ -553,40 +696,27 @@ INDEX_HTML = r"""<!DOCTYPE html>
       color: var(--joy-text-primary);
       text-align: right;
     }
-    .chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .mono {
-      font-family: var(--joy-font-family-mono);
-      font-variant-numeric: tabular-nums;
-    }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .mono { font-family: var(--joy-font-family-mono); font-variant-numeric: tabular-nums; }
 
-    /* Controls Bar */
     .controls-panel {
       background: var(--joy-surface-card);
       border: 1px solid var(--joy-border-default);
       border-radius: var(--joy-radius-card);
-      padding: var(--joy-space-4) var(--joy-space-5);
+      padding: 12px 16px;
       box-shadow: var(--joy-elevation-1);
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: var(--joy-space-4);
+      gap: 14px;
     }
-    .control-field {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+    .control-field { display: flex; flex-direction: column; gap: 4px; }
     .control-field label {
       font-size: var(--joy-font-size-xs);
       font-weight: 600;
       color: var(--joy-text-secondary);
     }
 
-    /* SQL Editor */
     .sql-editor {
       width: 100%;
       min-height: 96px;
@@ -601,12 +731,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
       resize: vertical;
       outline: none;
     }
-    .sql-editor:focus {
-      border-color: var(--joy-border-focus);
-      box-shadow: 0 0 0 2px var(--joy-focus-ring);
-    }
 
-    /* Slide-over Inspector Drawer */
     .inspector-backdrop {
       position: fixed;
       inset: 0;
@@ -630,9 +755,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
       transform: translateX(100%);
       transition: transform var(--joy-duration-normal) var(--joy-ease-out-quint);
     }
-    .inspector-drawer.open {
-      transform: translateX(0);
-    }
+    .inspector-drawer.open { transform: translateX(0); }
     .inspector-drawer__head {
       padding: 20px 24px;
       border-bottom: 1px solid var(--joy-border-default);
@@ -650,7 +773,6 @@ INDEX_HTML = r"""<!DOCTYPE html>
       gap: 16px;
     }
 
-    /* Element cell coloring */
     .elem-cell--pos {
       color: var(--joy-status-success-fg);
       background: var(--joy-status-success-bg);
@@ -679,8 +801,8 @@ INDEX_HTML = r"""<!DOCTYPE html>
         </svg>
       </div>
       <div class="brand-info">
-        <h2>Atlas World</h2>
-        <span>Joymify Design v3.12</span>
+        <h2>Atlas World DB</h2>
+        <span>Joymify Design · RMS Edition</span>
       </div>
     </div>
 
@@ -693,7 +815,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
           type="search"
           id="globalSearch"
           class="sidebar-search__input"
-          placeholder="Search catalog, IDs, skills..."
+          placeholder="Search items, mobs, skills..."
           autocomplete="off"
         />
         <kbd class="sidebar-search__kbd">⌘K</kbd>
@@ -703,7 +825,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
     <nav class="nav" id="sidebarNav"></nav>
 
     <div class="sidebar-footer">
-      <span>SQLite + JSONB</span>
+      <span>Web + macOS WKWebView</span>
       <span class="joy-badge joy-badge--brand joy-badge--sm">joy-design</span>
     </div>
   </aside>
@@ -716,7 +838,14 @@ INDEX_HTML = r"""<!DOCTYPE html>
         <span class="joy-badge joy-badge--neutral joy-badge--sm" id="topbarStatus">Ready</span>
       </div>
       <div class="topbar__end">
-        <select id="paletteSelect" class="joy-select" style="height:32px;font-size:12px;padding:0 28px 0 10px;width:auto" aria-label="Color palette" onchange="setPalette(this.value)">
+        <select id="dropRateSelect" class="joy-select" style="height:30px;font-size:12px;padding:0 26px 0 10px;width:auto" aria-label="Item Drop Rate Multiplier" onchange="setDropRate(this.value)">
+          <option value="1">⚙️ Drop Rate: 1x (Official)</option>
+          <option value="3">⚙️ Drop Rate: 3x</option>
+          <option value="5">⚙️ Drop Rate: 5x</option>
+          <option value="10">⚙️ Drop Rate: 10x</option>
+        </select>
+
+        <select id="paletteSelect" class="joy-select" style="height:30px;font-size:12px;padding:0 26px 0 10px;width:auto" aria-label="Color palette" onchange="setPalette(this.value)">
           <option value="classic">Palette: Classic Gold &amp; Navy</option>
           <option value="clay-court">Palette: Clay Court</option>
           <option value="verdant-lawn">Palette: Verdant Lawn</option>
@@ -726,7 +855,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
         </select>
 
         <button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="toggleTheme()" id="themeToggleBtn">
-          Light / Dark
+          Theme: Dark
         </button>
 
         <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="rebuildDb()">
@@ -739,7 +868,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
       </div>
     </header>
 
-    <div class="scroll-stage">
+    <div class="scroll-stage" id="scrollStage">
       <main class="content-area" id="mainContent"></main>
     </div>
   </div>
@@ -752,8 +881,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
         <div class="page-hero__eyebrow" id="inspectorKind">CONTRACT INSPECTOR</div>
         <h3 style="margin:0;font-size:1.15rem" id="inspectorTitle">Entity</h3>
       </div>
-      <button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="closeInspector()">Close (Esc)</button>
-    </div>
+      <button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="closeInspector()">Close (Esc)</button>\n    </div>
     <div class="inspector-drawer__body" id="inspectorBody"></div>
   </aside>
 
@@ -761,35 +889,32 @@ INDEX_HTML = r"""<!DOCTYPE html>
 let DATA = null;
 let CURRENT_TAB = 'overview';
 let SEARCH_QUERY = '';
+let DROP_RATE_MULT = 1;
+let HIGHLIGHT_ENTITY_ID = '';
 let SELECTED_DOC_IDX = 0;
-let SIM_OUTPUT = 'Click "Run Balance Sim" in the top bar (or below) to execute `cargo run --bin balance_sim` against the live Rust authoritative combat engine.';
+let SIM_OUTPUT = 'Click "Run Balance Sim" in the top bar (or below) to execute cargo run --bin balance_sim against the live Rust authoritative combat engine.';
 let SIM_RUNNING = false;
 
 const NAV_GROUPS = [
   {
-    section: 'World Telemetry',
+    section: 'Databases (RMS)',
     items: [
-      { id: 'overview', label: 'Overview & Matrix', countKey: () => 9 },
+      { id: 'overview', label: 'Database Hub & Matrix', countKey: () => 9 },
+      { id: 'gear',     label: 'Item Database (item_db)', countKey: d => d.items.length + d.cards.length },
+      { id: 'mobs',     label: 'Monster Database (mob_db)', countKey: d => d.mobs.length },
+      { id: 'jobs',     label: 'Skill & Job DB (skill_db)', countKey: d => d.jobs.length + d.skills.length },
+      { id: 'maps',     label: 'Map & Spawn DB (map_db)', countKey: d => d.maps.length + 4 },
+      { id: 'quests',   label: 'Quest Database (quest_db)', countKey: d => d.quests.length },
+    ]
+  },
+  {
+    section: 'Tools & Calculators',
+    items: [
+      { id: 'elements', label: 'Property & Size Chart', countKey: d => (d.elements.elements || []).length },
+      { id: 'siege',    label: 'WoE Castle Calculator', countKey: d => d.castles.length },
       { id: 'sql',      label: 'SQLite Query Studio', countKey: () => 'SQL' },
-      { id: 'sim',      label: 'Rust Balance Sim', countKey: () => 'RS' },
-    ]
-  },
-  {
-    section: 'Combat & Progression',
-    items: [
-      { id: 'jobs',     label: 'Job Tree & Trials', countKey: d => d.jobs.length },
-      { id: 'mobs',     label: 'Monster Bestiary', countKey: d => d.mobs.length },
-      { id: 'elements', label: '10-Element & Size', countKey: d => (d.elements.elements || []).length },
-      { id: 'gear',     label: 'Equipment & Cards', countKey: d => d.items.length + d.cards.length },
-    ]
-  },
-  {
-    section: 'World & Endgame',
-    items: [
-      { id: 'quests',   label: 'Quest Board', countKey: d => d.quests.length },
-      { id: 'siege',    label: 'WoE Castle Siege', countKey: d => d.castles.length },
-      { id: 'maps',     label: '3D Maps & Terraces', countKey: d => d.maps.length },
-      { id: 'docs',     label: 'Specs & Lore Canon', countKey: d => d.docs.length },
+      { id: 'sim',      label: 'Rust Balance Simulator', countKey: () => 'RS' },
+      { id: 'docs',     label: 'RO Writings & Specs', countKey: d => d.docs.length },
     ]
   }
 ];
@@ -798,19 +923,59 @@ function syncUrlState() {
   const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
   const t = params.get('tab');
   const q = params.get('q');
+  const focus = params.get('focus');
   if (t) CURRENT_TAB = t;
   if (q !== null) {
     SEARCH_QUERY = q;
     const inp = document.getElementById('globalSearch');
     if (inp) inp.value = q;
   }
+  HIGHLIGHT_ENTITY_ID = focus || '';
 }
 
 function writeUrlState() {
   const params = new URLSearchParams();
   params.set('tab', CURRENT_TAB);
   if (SEARCH_QUERY) params.set('q', SEARCH_QUERY);
+  if (HIGHLIGHT_ENTITY_ID) params.set('focus', HIGHLIGHT_ENTITY_ID);
   history.replaceState(null, '', '#' + params.toString());
+}
+
+function setDropRate(val) {
+  DROP_RATE_MULT = Math.max(1, parseInt(val || '1', 10));
+  render();
+}
+
+function formatDropPct(chanceBps) {
+  const pct = Math.min(100, (chanceBps * DROP_RATE_MULT) / 100.0);
+  return pct.toFixed(pct >= 10 ? 1 : 2) + '%';
+}
+
+function jumpToEntity(tab, entityId) {
+  CURRENT_TAB = tab;
+  SEARCH_QUERY = '';
+  HIGHLIGHT_ENTITY_ID = entityId || '';
+  const inp = document.getElementById('globalSearch');
+  if (inp) inp.value = '';
+  writeUrlState();
+  renderSidebar();
+  render();
+  if (entityId) {
+    setTimeout(() => {
+      const el = document.getElementById('entity-' + entityId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('rms-highlight');
+      }
+    }, 40);
+  }
+}
+
+function rmsLink(tab, id, label, extraMeta) {
+  const safeId = escapeHtml(id);
+  const safeLabel = escapeHtml(label || id);
+  const metaHtml = extraMeta ? `<span class="rms-link__rate">(${escapeHtml(extraMeta)})</span>` : '';
+  return `<a class="rms-link" onclick="jumpToEntity('${tab}', '${safeId}')"><span class="rms-link__arrow">▸</span><span>${safeLabel}</span>${metaHtml}</a>`;
 }
 
 function toggleTheme() {
@@ -847,6 +1012,7 @@ async function init() {
   const searchInput = document.getElementById('globalSearch');
   searchInput.addEventListener('input', e => {
     SEARCH_QUERY = e.target.value.trim().toLowerCase();
+    HIGHLIGHT_ENTITY_ID = '';
     writeUrlState();
     render();
   });
@@ -867,9 +1033,12 @@ async function init() {
 
 function switchTab(id) {
   CURRENT_TAB = id;
+  HIGHLIGHT_ENTITY_ID = '';
   writeUrlState();
   renderSidebar();
   render();
+  const st = document.getElementById('scrollStage');
+  if (st) st.scrollTop = 0;
 }
 
 function renderSidebar() {
@@ -879,9 +1048,7 @@ function renderSidebar() {
     <div class="nav-section">${group.section}</div>
     ${group.items.map(it => `
       <div class="nav-item ${it.id === CURRENT_TAB ? 'active' : ''}" onclick="switchTab('${it.id}')">
-        <div class="nav-item__left">
-          <span>${it.label}</span>
-        </div>
+        <span>${it.label}</span>
         <span class="nav-section-count">${it.countKey(DATA)}</span>
       </div>
     `).join('')}
@@ -931,7 +1098,7 @@ async function rebuildDb() {
 async function triggerBalanceSim() {
   if (SIM_RUNNING) return;
   SIM_RUNNING = true;
-  SIM_OUTPUT = 'Running `cargo run --quiet --manifest-path server-rs/Cargo.toml --bin balance_sim`...';
+  SIM_OUTPUT = 'Running cargo run --quiet --manifest-path server-rs/Cargo.toml --bin balance_sim...';
   document.getElementById('topbarStatus').textContent = 'Running Balance Sim...';
   render();
   const res = await fetch('/api/sim', { method: 'POST' });
@@ -946,17 +1113,17 @@ function render() {
   if (!DATA) return;
   const main = document.getElementById('mainContent');
   const titleMap = {
-    overview: 'Overview & Cross-Repo Telemetry',
-    jobs: 'Job Class Hierarchy & Promotion Trials',
-    mobs: 'Monster Bestiary, Drops & Economy',
-    elements: '10-Element Counter Matrix & Size Penalties',
-    gear: 'Equipment, +0..+15 Refine & Adventurer Handbook',
-    quests: 'Unified 6-Category Quest Board',
-    siege: 'War of Emperium (GvG Castle Siege) Simulator',
-    maps: '3D World Maps, Walkable Structures & Terraces',
-    sql: 'Live Read-Only SQLite Query Studio',
-    sim: 'Authoritative Rust Balance Simulator (balance_sim)',
-    docs: 'Architecture Specs & World Lore Canon'
+    overview: 'RateMyServer Hub & Cross-Repo Telemetry',
+    gear:     'Item & Card Database (item_db)',
+    mobs:     'Monster Database & Spawn Drops (mob_db)',
+    jobs:     'Skill & Class Branch Database (skill_db_class)',
+    elements: '10-Element Property Chart & Size Matrix',
+    quests:   'Quest Database & Promotion Trials (quest_db)',
+    siege:    'War of Emperium (GvG Castle Siege) Calculator',
+    maps:     'Map Database & Area Monster Spawns (map_db / areainfo)',
+    sql:      'Live Read-Only SQLite Query Studio',
+    sim:      'Authoritative Rust Balance Simulator (balance_sim)',
+    docs:     'RO Writings — Architecture Specs & Lore Canon'
   };
   document.getElementById('topbarTitle').textContent = titleMap[CURRENT_TAB] || 'Observatory';
 
@@ -976,91 +1143,101 @@ function render() {
 function inspectBtnHtml(kind, title, obj) {
   const encoded = encodeURIComponent(JSON.stringify(obj));
   const safeTitle = escapeHtml(title).replace(/'/g, "\\'");
-  return `<button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="openInspector('${kind}', '${safeTitle}', JSON.parse(decodeURIComponent('${encoded}')))">Inspect JSON</button>`;
+  return `<button type="button" class="joy-button joy-button--outline joy-button--sm" style="height:24px;padding:0 8px;font-size:11px" onclick="openInspector('${kind}', '${safeTitle}', JSON.parse(decodeURIComponent('${encoded}')))">JSONB</button>`;
 }
 
+/* ============================================================================
+ * 1. OVERVIEW & RMS HUB
+ * ========================================================================== */
 function renderOverview() {
   const jobs = DATA.jobs.filter(matchesSearch);
   const mobs = DATA.mobs.filter(matchesSearch);
   const items = DATA.items.filter(matchesSearch);
   const cards = DATA.cards.filter(matchesSearch);
-  const quests = DATA.quests.filter(matchesSearch);
 
   return `
     <div class="page-hero">
       <div>
-        <div class="page-hero__eyebrow">JOYMIFY DESIGN SYSTEM · ATLAS WORLD OBSERVATORY</div>
-        <h1 class="page-hero__title">MMORPG Catalog, SQLite &amp; Balance Telemetry</h1>
+        <div class="page-hero__eyebrow">JOYMIFY DESIGN SYSTEM · RATEMYSERVER OBSERVATORY EDITION</div>
+        <h1 class="page-hero__title">Atlas World Database, Reverse-Lookup &amp; Balance Studio</h1>
         <p class="page-hero__sub">
-          Single-source-of-truth contract explorer across <code>contracts/content/*.json</code>,
-          <code>build/catalog.sqlite</code>, <code>server-rs</code> combat math, and <code>atlas-asset-studio</code> keys.
+          Dense 2D datasheets, bidirectional foreign-key joins, live drop-rate scaling (<strong>${DROP_RATE_MULT}x</strong>),
+          and top-down 2D map spawn charts—running identically in your browser and native macOS app.
         </p>
       </div>
       <div class="chip-row">
-        <span class="joy-badge joy-badge--brand">SQLite Indexed</span>
+        <span class="joy-badge joy-badge--brand">Drop Rate: ${DROP_RATE_MULT}x</span>
         <span class="joy-badge joy-badge--success">68/68 Rust Tests Passing</span>
+      </div>
+    </div>
+
+    <!-- RMS 3-Box Reference Hub -->
+    <div class="rms-hub-grid">
+      <div class="rms-hub-box">
+        <h4>📊 Charts &amp; Tables</h4>
+        <div class="rms-hub-links">
+          ${rmsLink('elements', '', '10×10 Elemental Property Chart', 'elements.json')}
+          ${rmsLink('elements', '', 'Weapon Type vs Monster Size Table', 'Small/Med/Large')}
+          ${rmsLink('gear', '', '+0..+15 Refine & Pity Success Table', '5-Fail Pity')}
+          ${rmsLink('sql', '', 'v_mob_economy (EXP-per-HP Ranking)', 'SQLite View')}
+        </div>
+      </div>
+      <div class="rms-hub-box">
+        <h4>📜 Promotion &amp; World Guides</h4>
+        <div class="rms-hub-links">
+          ${rmsLink('quests', 'jq_swordman_trial', 'Swordman → Knight Promotion Trials', 'Lv.10 / Lv.40')}
+          ${rmsLink('quests', 'jq_mage_academy', 'Mage → High Wizard Academy Trials', 'Lv.10 / Lv.40')}
+          ${rmsLink('maps', 'freja-south-gate', 'Prontera South Gate — Area Spawn Guide', '8 Spawn Areas')}
+          ${rmsLink('docs', '', 'World Lore Canon & Undertow Specs', DATA.docs.length + ' Docs')}
+        </div>
+      </div>
+      <div class="rms-hub-box">
+        <h4>🧮 Simulators &amp; Calculators</h4>
+        <div class="rms-hub-links">
+          ${rmsLink('sim', '', 'Authoritative Rust Balance Simulator', 'server-rs')}
+          ${rmsLink('siege', 'castle_valkyrie_01', 'WoE Emperium Breach & TTK Calculator', 'Kriemhild')}
+          ${rmsLink('gear', '', 'Equipment Refine & Card Socket Calculator', '+0..+15')}
+          ${rmsLink('sql', '', 'Read-Only SQLite + JSONB Query Console', 'catalog.sqlite')}
+        </div>
       </div>
     </div>
 
     <div class="joy-telemetry-strip">
       <div class="joy-telemetry-strip__item">
-        <span class="joy-telemetry-strip__metric">${DATA.jobs.length}</span>
-        <span class="joy-telemetry-strip__label">Job Classes</span>
-      </div>
-      <div class="joy-telemetry-strip__item">
-        <span class="joy-telemetry-strip__metric">${DATA.skills.length}</span>
-        <span class="joy-telemetry-strip__label">Active Skills</span>
-      </div>
-      <div class="joy-telemetry-strip__item">
-        <span class="joy-telemetry-strip__metric">${DATA.mobs.length}</span>
-        <span class="joy-telemetry-strip__label">Monsters &amp; MVPs</span>
-      </div>
-      <div class="joy-telemetry-strip__item">
         <span class="joy-telemetry-strip__metric">${DATA.items.length}</span>
-        <span class="joy-telemetry-strip__label">Equipment &amp; Loot</span>
+        <span class="joy-telemetry-strip__label">Items (item_db)</span>
       </div>
       <div class="joy-telemetry-strip__item">
         <span class="joy-telemetry-strip__metric">${DATA.cards.length}</span>
-        <span class="joy-telemetry-strip__label">Monster Cards</span>
+        <span class="joy-telemetry-strip__label">Cards</span>
+      </div>
+      <div class="joy-telemetry-strip__item">
+        <span class="joy-telemetry-strip__metric">${DATA.mobs.length}</span>
+        <span class="joy-telemetry-strip__label">Monsters (mob_db)</span>
+      </div>
+      <div class="joy-telemetry-strip__item">
+        <span class="joy-telemetry-strip__metric">${DATA.jobs.length}</span>
+        <span class="joy-telemetry-strip__label">Jobs</span>
+      </div>
+      <div class="joy-telemetry-strip__item">
+        <span class="joy-telemetry-strip__metric">${DATA.skills.length}</span>
+        <span class="joy-telemetry-strip__label">Skills (skill_db)</span>
       </div>
       <div class="joy-telemetry-strip__item">
         <span class="joy-telemetry-strip__metric">${DATA.quests.length}</span>
-        <span class="joy-telemetry-strip__label">Quest Board</span>
+        <span class="joy-telemetry-strip__label">Quests (quest_db)</span>
       </div>
       <div class="joy-telemetry-strip__item">
-        <span class="joy-telemetry-strip__metric">${DATA.castles.length}</span>
-        <span class="joy-telemetry-strip__label">WoE Castles</span>
+        <span class="joy-telemetry-strip__metric">${DATA.maps.length}</span>
+        <span class="joy-telemetry-strip__label">3D Maps (map_db)</span>
       </div>
     </div>
 
-    <div class="kpi-grid">
-      <div class="joy-metric-tile joy-metric-tile--up" onclick="switchTab('jobs')" style="cursor:pointer">
-        <div class="joy-metric-tile__title">Job Tree &amp; Promotion Trials</div>
-        <div class="joy-metric-tile__value">${jobs.length}</div>
-        <div class="joy-metric-tile__change">Tier 0 Novice → Tier 2 Knight / Wizard</div>
-      </div>
-      <div class="joy-metric-tile joy-metric-tile--up" onclick="switchTab('mobs')" style="cursor:pointer">
-        <div class="joy-metric-tile__title">Monster Bestiary &amp; MVP Bosses</div>
-        <div class="joy-metric-tile__value">${mobs.length}</div>
-        <div class="joy-metric-tile__change">10-Element + 10-Race + 3-Size</div>
-      </div>
-      <div class="joy-metric-tile joy-metric-tile--up" onclick="switchTab('gear')" style="cursor:pointer">
-        <div class="joy-metric-tile__title">Items, Cards &amp; Handbook</div>
-        <div class="joy-metric-tile__value">${items.length + cards.length}</div>
-        <div class="joy-metric-tile__change">+0..+15 Pity Refine &amp; Card Sockets</div>
-      </div>
-      <div class="joy-metric-tile joy-metric-tile--up" onclick="switchTab('siege')" style="cursor:pointer">
-        <div class="joy-metric-tile__title">War of Emperium (GvG)</div>
-        <div class="joy-metric-tile__value">${DATA.castles.length} Castle</div>
-        <div class="joy-metric-tile__change">Kriemhild · Normal-Attack Emperium</div>
-      </div>
-    </div>
-
-    <div class="observatory-card observatory-card--gold">
+    <div class="observatory-card">
       <div class="observatory-card__head">
         <div>
-          <h3 class="observatory-card__title">Cross-Repo Asset Studio Binding Matrix</h3>
-          <div class="observatory-card__meta">Live verification across jobs, monsters, castles, and 3D glTF / VRM assets</div>
+          <h3 class="observatory-card__title">Cross-Repo Entity &amp; Asset Studio Binding Matrix</h3>
+          <div class="observatory-card__meta">Click any entity link to jump straight to its RateMyServer 2D datasheet</div>
         </div>
         <span class="joy-badge joy-badge--brand">v_asset_studio_entries</span>
       </div>
@@ -1069,20 +1246,20 @@ function renderOverview() {
           <thead>
             <tr>
               <th>Domain</th>
-              <th>Entity ID</th>
-              <th>Display Name</th>
+              <th>Datasheet Link</th>
               <th>Tier / Rank / Slot</th>
+              <th>Cross-References</th>
               <th>Asset Studio Key</th>
-              <th>Inspect</th>
+              <th>Contract</th>
             </tr>
           </thead>
           <tbody>
             ${jobs.map(j => `
               <tr>
                 <td><span class="joy-badge joy-badge--brand joy-badge--sm">JOB</span></td>
-                <td class="mono">${j.id}</td>
-                <td><strong>${j.name}</strong></td>
-                <td class="mono">Tier ${j.tier} (${j.parentJobId || 'root'})</td>
+                <td>${rmsLink('jobs', j.id, j.name, 'Tier ' + j.tier)}</td>
+                <td>Tier ${j.tier} (${j.parentJobId || 'root'})</td>
+                <td>${(j.unlockedSkillIds || []).map(sid => rmsLink('jobs', sid, sid)).join('')}</td>
                 <td class="mono">${j.assetStudioKey}</td>
                 <td>${inspectBtnHtml('job', j.name, j)}</td>
               </tr>
@@ -1090,21 +1267,21 @@ function renderOverview() {
             ${mobs.map(m => `
               <tr>
                 <td><span class="joy-badge ${m.isMvp ? 'joy-badge--warning' : 'joy-badge--danger'} joy-badge--sm">${m.isMvp ? 'MVP' : 'MOB'}</span></td>
-                <td class="mono">${m.id}</td>
-                <td><strong>${m.name}</strong></td>
-                <td class="mono">Lv.${m.level} · ${m.element}/${m.race}/${m.size}</td>
+                <td>${rmsLink('mobs', m.id, m.name, 'Lv.' + m.level)}</td>
+                <td>${m.element} / ${m.race} / ${m.size}</td>
+                <td>${(m.drops || []).map(d => rmsLink('gear', d.itemId, d.itemId, formatDropPct(d.chanceBps))).join('')}</td>
                 <td class="mono">${m.assetStudioKey}</td>
                 <td>${inspectBtnHtml('mob', m.name, m)}</td>
               </tr>
             `).join('')}
-            ${DATA.castles.filter(matchesSearch).map(c => `
+            ${items.map(it => `
               <tr>
-                <td><span class="joy-badge joy-badge--success joy-badge--sm">CASTLE</span></td>
-                <td class="mono">${c.id}</td>
-                <td><strong>${c.name}</strong></td>
-                <td class="mono">${c.hubTownId} → ${c.siegeMapId}</td>
-                <td class="mono">${c.assetStudioKey}</td>
-                <td>${inspectBtnHtml('castle', c.name, c)}</td>
+                <td><span class="joy-badge joy-badge--neutral joy-badge--sm">ITEM</span></td>
+                <td>${rmsLink('gear', it.id, it.name, it.kind)}</td>
+                <td>${it.kind.toUpperCase()} ${it.pAtk ? '· ATK ' + it.pAtk : ''} ${it.mAtk ? '· MATK ' + it.mAtk : ''}</td>
+                <td>${DATA.mobs.filter(m => (m.drops || []).some(d => d.itemId === it.id)).map(m => rmsLink('mobs', m.id, m.name)).join('') || '<span class="observatory-card__meta">Quest / Starter</span>'}</td>
+                <td class="mono">item.${it.id}</td>
+                <td>${inspectBtnHtml('item', it.name, it)}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -1114,81 +1291,465 @@ function renderOverview() {
   `;
 }
 
-function renderJobs() {
-  const jobs = DATA.jobs.filter(matchesSearch);
+/* ============================================================================
+ * 2. ITEM & CARD DATABASE (RateMyServer item_db 2D Datasheet Layout)
+ * ========================================================================== */
+function renderGear() {
+  const items = DATA.items.filter(matchesSearch);
+  const cards = DATA.cards.filter(matchesSearch);
+  const handbook = DATA.handbook.filter(matchesSearch);
+
+  const iconForKind = k => k === 'weapon' ? '⚔️' : (k === 'armor' ? '🛡️' : (k === 'consumable' ? '🧪' : '🪨'));
+  const descForItem = it => {
+    if (it.id === 'basic_sword') return 'Standard-issue steel shortsword balanced for Novice and Swordman frontliners. Scales with STR.';
+    if (it.id === 'magic_staff') return ' Focuses ambient mana into elemental bolts. Increases Magical Attack (MATK +15) scaling with INT.';
+    if (it.id === 'great_bow') return 'Long-draw ashwood bow favored by Payon and Prontera Rangers. Scales with DEX.';
+    if (it.id === 'dagger') return 'Lightweight close-quarters blade usable by almost all novice and caster classes.';
+    if (it.id === 'scythe') return 'Heavy two-handed polearm-scythe wielded by Chivalry Knights and Orc Warlords. Excels against Large targets.';
+    if (it.id === 'potion_minor') return 'Restores a small amount of HP during field expeditions. Stackable consumable.';
+    if (it.id === 'leather_armor') return 'Reinforced boar-hide tunic providing reliable physical protection for field patrols.';
+    return 'High-purity metallic ore smelted by Prontera blacksmiths and required for Watchtower repairs and Promotion Trials.';
+  };
+
   return `
     <div class="page-hero">
       <div>
-        <div class="page-hero__eyebrow">PROGRESSION ARCHITECTURE</div>
-        <h1 class="page-hero__title">Job Class Hierarchy &amp; Promotion Trials (${jobs.length})</h1>
-        <p class="page-hero__sub">Novice (Tier 0) → First Class at Base Lv.10 / Job Lv.10 → Second Class at Base Lv.40 / Job Lv.40.</p>
+        <div class="page-hero__eyebrow">RATEMYSERVER ITEM_DB · +0..+15 REFINE &amp; CARDS</div>
+        <h1 class="page-hero__title">Item &amp; Card Database (${items.length} Items, ${cards.length} Cards)</h1>
+        <p class="page-hero__sub">
+          RateMyServer-style 2D tabular datasheets with Applicable Jobs bitmasks, Engine Script contracts,
+          Dropped By reverse joins (at <strong>${DROP_RATE_MULT}x</strong> rate), and Quest Reward sources.
+        </p>
       </div>
     </div>
-    <div class="card-grid">
-      ${jobs.map(j => `
-        <div class="observatory-card ${j.tier === 2 ? 'observatory-card--gold' : ''}">
-          <div class="observatory-card__head">
-            <div>
-              <h3 class="observatory-card__title">${j.name}</h3>
-              <div class="observatory-card__meta">ID: ${j.id} · Parent: ${j.parentJobId || 'Root'}</div>
+
+    <div class="controls-panel">
+      <div class="control-field">
+        <label for="refBaseAtk">Weapon Base ATK</label>
+        <input id="refBaseAtk" class="joy-input" type="number" value="120" min="10" max="500" style="width:110px" oninput="updateRefineCalc()" />
+      </div>
+      <div class="control-field">
+        <label for="refLevel">Target Refine (+0..+15)</label>
+        <input id="refLevel" class="joy-input" type="number" value="10" min="0" max="15" style="width:110px" oninput="updateRefineCalc()" />
+      </div>
+      <div class="control-field">
+        <label for="refFails">Consecutive Fails (Pity 0..5)</label>
+        <input id="refFails" class="joy-input" type="number" value="2" min="0" max="5" style="width:110px" oninput="updateRefineCalc()" />
+      </div>
+      <div style="margin-left:auto">
+        <span class="joy-badge joy-badge--brand" id="refineCalcResult" style="font-size:0.85rem;padding:7px 12px"></span>
+      </div>
+    </div>
+
+    <div class="rms-list">
+      ${items.map((it, idx) => {
+        const isWeapon = it.kind === 'weapon';
+        const isEquip = it.kind === 'weapon' || it.kind === 'armor';
+        const slots = isWeapon ? '[1]' : (it.kind === 'armor' ? '[1]' : '[0]');
+        const handed = it.id === 'great_bow' || it.id === 'scythe' ? '[Two Handed]' : (isWeapon ? '[One Hand]' : '');
+        const applicableJobs = isWeapon
+          ? DATA.jobs.filter(j => (j.allowedWeaponKinds || []).includes(it.id))
+          : DATA.jobs;
+        const droppedBy = [];
+        DATA.mobs.forEach(m => {
+          (m.drops || []).forEach(d => {
+            if (d.itemId === it.id) droppedBy.push({ mob: m, chanceBps: d.chanceBps });
+          });
+        });
+        const questRewards = DATA.quests.filter(q => ((q.rewards && q.rewards.items) || []).some(ri => ri.itemId === it.id));
+        const questObjectives = DATA.quests.filter(q => (q.objectives || []).some(ob => ob.targetId === it.id));
+        const scriptStr = isWeapon
+          ? `{ bonus bBaseAtk,${it.pAtk || 0}; bonus bMatk,${it.mAtk || 0}; bonus bAtkStat,"${(it.atkStat || 'str').toUpperCase()}"; bonus bRefinePityMax,5; }`
+          : (it.kind === 'armor'
+            ? `{ bonus bDef,12; bonus bMaxHp,80; bonus bRefinePityMax,5; }`
+            : (it.kind === 'consumable' ? `{ itemheal rand(45,65),0; }` : `{ /* Crafting & Quest Material */ }`));
+
+        return `
+          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === it.id ? 'rms-highlight' : ''}" id="entity-${it.id}">
+            <div class="rms-sheet__head">
+              <div class="rms-sheet__head-left">
+                <span class="rms-icon-box">${iconForKind(it.kind)}</span>
+                <span class="rms-sheet__title">${escapeHtml(it.name)} ${slots}</span>
+                ${handed ? `<span class="joy-badge joy-badge--brand joy-badge--sm">${handed}</span>` : ''}
+                <span class="rms-sheet__id">Item ID# ${1001 + idx} (<code>${escapeHtml(it.id)}</code>)</span>
+              </div>
+              <div class="chip-row">
+                <span class="joy-badge joy-badge--neutral joy-badge--sm">${it.kind.toUpperCase()}</span>
+                ${inspectBtnHtml('item', it.name, it)}
+              </div>
             </div>
-            <span class="joy-badge ${j.tier === 2 ? 'joy-badge--brand' : (j.tier === 1 ? 'joy-badge--success' : 'joy-badge--neutral')}">Tier ${j.tier}</span>
+            <table class="rms-table">
+              <tbody>
+                <tr>
+                  <th>Type</th>
+                  <td>${escapeHtml(it.kind.toUpperCase())}</td>
+                  <th>Class / Subtype</th>
+                  <td>${isWeapon ? escapeHtml(it.id.replace('_', ' ')) : escapeHtml(it.kind)}</td>
+                  <th>Stackable</th>
+                  <td class="mono">${it.stackable ? 'Yes (Max 999)' : 'No (Unique Slot)'}</td>
+                  <th>Refineable</th>
+                  <td class="mono">${isEquip ? 'Yes (+0..+15 Pity)' : 'No'}</td>
+                </tr>
+                <tr>
+                  <th>Physical ATK</th>
+                  <td class="mono">${it.pAtk ?? '—'}</td>
+                  <th>Magical MATK</th>
+                  <td class="mono">${it.mAtk ?? '—'}</td>
+                  <th>Scaling Stat</th>
+                  <td class="mono">${it.atkStat ? it.atkStat.toUpperCase() : '—'}</td>
+                  <th>Card Slots</th>
+                  <td class="mono">${isEquip ? '1' : '0'}</td>
+                </tr>
+                <tr>
+                  <th>Applicable Jobs</th>
+                  <td colspan="7">
+                    ${applicableJobs.map(j => rmsLink('jobs', j.id, j.name)).join(' ') || '<span class="observatory-card__meta">All Classes</span>'}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Description</th>
+                  <td colspan="7">${escapeHtml(descForItem(it))}</td>
+                </tr>
+                <tr>
+                  <th>Item Script</th>
+                  <td colspan="7"><code class="rms-script-code">${escapeHtml(scriptStr)}</code></td>
+                </tr>
+                <tr>
+                  <th>Dropped By</th>
+                  <td colspan="7">
+                    ${droppedBy.length
+                      ? droppedBy.map(d => rmsLink('mobs', d.mob.id, d.mob.name, formatDropPct(d.chanceBps))).join(' ')
+                      : '<span style="color:var(--joy-status-danger-fg);font-weight:600">No Monster Drop (Quest / Starter Reward)</span>'}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Obtainable / Used In</th>
+                  <td colspan="7">
+                    ${questRewards.map(q => rmsLink('quests', q.id, 'Reward: ' + q.title)).join(' ')}
+                    ${questObjectives.map(q => rmsLink('quests', q.id, 'Required: ' + q.title)).join(' ')}
+                    ${(!questRewards.length && !questObjectives.length) ? '<span class="observatory-card__meta">Field Drop / NPC Shop</span>' : ''}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <div class="kv-list">
-            <div class="kv-row"><span class="kv-label">Min Base Level</span><span class="kv-val">Lv.${j.minBaseLevel}</span></div>
-            <div class="kv-row"><span class="kv-label">Max Job Level</span><span class="kv-val">Job Lv.${j.maxJobLevel}</span></div>
-            <div class="kv-row"><span class="kv-label">Promotion Quest</span><span class="kv-val">${j.promotionQuestId || 'Starter'}</span></div>
-            <div class="kv-row"><span class="kv-label">Allowed Weapons</span><span class="kv-val">${(j.allowedWeaponKinds || []).join(', ')}</span></div>
-            <div class="kv-row"><span class="kv-label">Unlocked Skills</span><span class="kv-val">${(j.unlockedSkillIds || []).join(', ')}</span></div>
-            <div class="kv-row"><span class="kv-label">Base Stat Bonuses</span><span class="kv-val">${Object.entries(j.baseStatBonuses || {}).filter(([,v])=>v>0).map(([k,v])=>`${k.toUpperCase()}+${v}`).join(' ') || 'None'}</span></div>
+        `;
+      }).join('')}
+
+      ${cards.map((c, idx) => {
+        const mob = DATA.mobs.find(m => m.id === c.mobId);
+        const equipScript = Object.entries(c.equipStats || {}).map(([k,v]) => `bonus ${k},${v};`).join(' ');
+        const depScript = Object.entries(c.handbookDepositStats || {}).map(([k,v]) => `handbook_bonus ${k},${v};`).join(' ');
+        return `
+          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === c.id ? 'rms-highlight' : ''}" id="entity-${c.id}">
+            <div class="rms-sheet__head">
+              <div class="rms-sheet__head-left">
+                <span class="rms-icon-box">🃏</span>
+                <span class="rms-sheet__title">${escapeHtml(c.name)}</span>
+                <span class="joy-badge joy-badge--brand joy-badge--sm">[${c.slot.toUpperCase()} SOCKET]</span>
+                <span class="rms-sheet__id">Card ID# ${4001 + idx} (<code>${escapeHtml(c.id)}</code>)</span>
+              </div>
+              <div class="chip-row">
+                <span class="mono" style="font-size:11px;color:var(--joy-text-muted)">${c.assetStudioKey}</span>
+                ${inspectBtnHtml('card', c.name, c)}
+              </div>
+            </div>
+            <table class="rms-table">
+              <tbody>
+                <tr>
+                  <th>Type</th>
+                  <td>Monster Card</td>
+                  <th>Compound On</th>
+                  <td><strong>${escapeHtml(c.slot.toUpperCase())}</strong></td>
+                  <th>Socket Bonus</th>
+                  <td class="mono">${Object.entries(c.equipStats || {}).map(([k,v]) => `${k} +${v}`).join(', ')}</td>
+                  <th>Handbook Deposit</th>
+                  <td class="mono">${Object.entries(c.handbookDepositStats || {}).map(([k,v]) => `${k} +${v}`).join(', ')}</td>
+                </tr>
+                <tr>
+                  <th>Item Script</th>
+                  <td colspan="7"><code class="rms-script-code">{ ${escapeHtml(equipScript)} } /* Deposit: { ${escapeHtml(depScript)} } */</code></td>
+                </tr>
+                <tr>
+                  <th>Dropped By</th>
+                  <td colspan="7">
+                    ${mob ? rmsLink('mobs', mob.id, mob.name, formatDropPct(20)) : c.mobId}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px">
-            <span class="mono" style="font-size:11px;color:var(--joy-text-muted)">${j.assetStudioKey}</span>
-            ${inspectBtnHtml('job', j.name, j)}
-          </div>
-        </div>
-      `).join('')}
+        `;
+      }).join('')}
     </div>
   `;
 }
 
+function updateRefineCalc() {
+  const baseAtk = parseInt(document.getElementById('refBaseAtk')?.value || '120', 10);
+  const lvl = Math.max(0, Math.min(15, parseInt(document.getElementById('refLevel')?.value || '10', 10)));
+  const fails = Math.max(0, Math.min(5, parseInt(document.getElementById('refFails')?.value || '0', 10)));
+  const baseRates = [100,100,100,100,100, 60,50,40,30,20, 15,12,10,8,5,5];
+  const baseRate = baseRates[lvl] ?? 10;
+  const effRate = lvl <= 4 ? 100 : (fails >= 5 ? 100 : Math.min(100, baseRate + fails * 20));
+  const overUpgrade = lvl > 4 ? (lvl - 4) * 5 : 0;
+  const totalAtk = baseAtk + lvl * 3 + overUpgrade;
+  const el = document.getElementById('refineCalcResult');
+  if (el) {
+    el.textContent = `+${lvl} Total ATK: ${totalAtk} (+${lvl*3 + overUpgrade} bonus) · Success Rate: ${effRate}% (Base ${baseRate}% + Pity ${fails}/5)`;
+  }
+}
+
+/* ============================================================================
+ * 3. MONSTER DATABASE (RateMyServer mob_db 2D Datasheet Layout)
+ * ========================================================================== */
 function renderMobs() {
   const mobs = DATA.mobs.filter(matchesSearch);
+  const mat = (DATA.elements && DATA.elements.damageMatrixPct) || {};
+  const elems = (DATA.elements && DATA.elements.elements) || [];
+
   return `
     <div class="page-hero">
       <div>
-        <div class="page-hero__eyebrow">COMBAT &amp; LOOT TABLES</div>
-        <h1 class="page-hero__title">Monster Bestiary, Drop Tables &amp; EXP/HP Efficiency (${mobs.length})</h1>
-        <p class="page-hero__sub">Authoritative stats, 10-element / 10-race / 3-size tags, card sockets, and basis-point drop tables.</p>
+        <div class="page-hero__eyebrow">RATEMYSERVER MOB_DB · ELEMENT / RACE / SIZE &amp; DROPS</div>
+        <h1 class="page-hero__title">Monster Bestiary &amp; Drop Datasheets (${mobs.length})</h1>
+        <p class="page-hero__sub">
+          Full RateMyServer monster specification tables including elemental weakness calculations,
+          spawn map links, quest hunting links, and live <strong>${DROP_RATE_MULT}x</strong> drop rates.
+        </p>
       </div>
     </div>
-    <div class="card-grid">
-      ${mobs.map(m => `
-        <div class="observatory-card ${m.isMvp ? 'observatory-card--gold' : ''}">
-          <div class="observatory-card__head">
-            <div>
-              <h3 class="observatory-card__title">Lv.${m.level} ${m.name}</h3>
-              <div class="observatory-card__meta">${m.element} · ${m.race} · ${m.size}</div>
+
+    <div class="rms-list">
+      ${mobs.map((m, idx) => {
+        const weakTo = [];
+        const resists = [];
+        elems.forEach(atk => {
+          const pct = (mat[atk] && mat[atk][m.element] !== undefined) ? mat[atk][m.element] : 100;
+          if (pct > 100) weakTo.push(`${atk} (${pct}%)`);
+          else if (pct < 100) resists.push(`${atk} (${pct}%)`);
+        });
+        const huntedInQuests = DATA.quests.filter(q => (q.objectives || []).some(o => o.targetId === m.id));
+        const handbookEntries = DATA.handbook.filter(h => h.targetId === m.id);
+
+        return `
+          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === m.id ? 'rms-highlight' : ''}" id="entity-${m.id}">
+            <div class="rms-sheet__head">
+              <div class="rms-sheet__head-left">
+                <span class="rms-icon-box">${m.isMvp ? '👑' : '👾'}</span>
+                <span class="rms-sheet__title">Lv.${m.level} ${escapeHtml(m.name)}</span>
+                <span class="joy-badge ${m.isMvp ? 'joy-badge--warning' : 'joy-badge--danger'} joy-badge--sm">${m.isMvp ? 'MVP BOSS' : 'Rank ' + m.rank}</span>
+                <span class="rms-sheet__id">Mob ID# ${2001 + idx} (<code>${escapeHtml(m.id)}</code> · <code>${escapeHtml(m.assetStudioKey)}</code>)</span>
+              </div>
+              <div class="chip-row">
+                ${inspectBtnHtml('mob', m.name, m)}
+              </div>
             </div>
-            <span class="joy-badge ${m.isMvp ? 'joy-badge--brand' : 'joy-badge--danger'}">${m.isMvp ? 'MVP BOSS' : m.rank.toUpperCase()}</span>
+            <table class="rms-table">
+              <tbody>
+                <tr>
+                  <th>HP</th>
+                  <td class="mono"><strong>${m.hp.toLocaleString()}</strong></td>
+                  <th>Attack (pAtk)</th>
+                  <td class="mono">${m.pAtk}</td>
+                  <th>Defense (pDef)</th>
+                  <td class="mono">${m.pDef}</td>
+                  <th>Aggro / Leash</th>
+                  <td class="mono">${m.aggroRangeM}m / ${m.leashRangeM}m</td>
+                </tr>
+                <tr>
+                  <th>Element</th>
+                  <td><strong>${escapeHtml(m.element)}</strong></td>
+                  <th>Race</th>
+                  <td><strong>${escapeHtml(m.race)}</strong></td>
+                  <th>Size</th>
+                  <td><strong>${escapeHtml(m.size)}</strong></td>
+                  <th>EXP / 100 HP</th>
+                  <td class="mono">${((m.baseExp * 100) / Math.max(1, m.hp)).toFixed(1)} Base/100HP</td>
+                </tr>
+                <tr>
+                  <th>Base EXP</th>
+                  <td class="mono">+${(m.baseExp * DROP_RATE_MULT).toLocaleString()} (${DROP_RATE_MULT}x)</td>
+                  <th>Job EXP</th>
+                  <td class="mono">+${(m.jobExp * DROP_RATE_MULT).toLocaleString()} (${DROP_RATE_MULT}x)</td>
+                  <th>Weak To (&gt;100%)</th>
+                  <td style="color:var(--joy-status-success-fg);font-weight:600">${weakTo.join(', ') || 'None'}</td>
+                  <th>Resists (&lt;100%)</th>
+                  <td style="color:var(--joy-status-danger-fg)">${resists.join(', ') || 'None'}</td>
+                </tr>
+                <tr>
+                  <th>Spawn Maps</th>
+                  <td colspan="7">
+                    ${(m.spawnZones || []).map(z => rmsLink('maps', z, z, 'Active Spawn')).join(' ')}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Drops (${DROP_RATE_MULT}x Rate)</th>
+                  <td colspan="7">
+                    ${(m.drops || []).map(d => rmsLink('gear', d.itemId, d.itemId, formatDropPct(d.chanceBps))).join(' ')}
+                    ${m.cardId ? rmsLink('gear', m.cardId, m.cardId, formatDropPct(20)) : ''}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Quests &amp; Research</th>
+                  <td colspan="7">
+                    ${huntedInQuests.map(q => rmsLink('quests', q.id, q.title, 'Hunt Objective')).join(' ')}
+                    ${handbookEntries.map(h => `<span class="joy-badge joy-badge--success joy-badge--sm">${escapeHtml(h.title)} (${h.tiers.map(t => '≥' + t.requiredCount).join('/')})</span>`).join(' ')}
+                    ${(!huntedInQuests.length && !handbookEntries.length) ? '<span class="observatory-card__meta">Field / Boss Encounter</span>' : ''}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <div class="kv-list">
-            <div class="kv-row"><span class="kv-label">HP / ATK / DEF / MDEF</span><span class="kv-val">${m.hp.toLocaleString()} HP · ${m.pAtk} ATK · ${m.pDef}/${m.mDef}</span></div>
-            <div class="kv-row"><span class="kv-label">Base / Job EXP</span><span class="kv-val">+${m.baseExp} / +${m.jobExp}</span></div>
-            <div class="kv-row"><span class="kv-label">EXP per 100 HP</span><span class="kv-val">${((m.baseExp * 100) / Math.max(1, m.hp)).toFixed(1)} Base/100HP</span></div>
-            <div class="kv-row"><span class="kv-label">Linked Card</span><span class="kv-val">${m.cardId || '—'}</span></div>
-            <div class="kv-row"><span class="kv-label">Loot Drops</span><span class="kv-val">${(m.drops || []).map(d => `${d.itemId} (${(d.chanceBps/100).toFixed(2)}%)`).join(', ')}</span></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px">
-            <span class="mono" style="font-size:11px;color:var(--joy-text-muted)">${m.assetStudioKey}</span>
-            ${inspectBtnHtml('mob', m.name, m)}
-          </div>
-        </div>
-      `).join('')}
+        `;
+      }).join('')}
     </div>
   `;
 }
 
+/* ============================================================================
+ * 4. SKILL & JOB BRANCH DATABASE (RateMyServer skill_db_class Layout)
+ * ========================================================================== */
+function renderJobs() {
+  const jobs = DATA.jobs.filter(matchesSearch);
+  const skills = DATA.skills.filter(matchesSearch);
+
+  return `
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">RATEMYSERVER SKILL_DB_CLASS · JOB TREE &amp; SKILLS</div>
+        <h1 class="page-hero__title">Job Branches, Stat Bonuses &amp; Skill Database</h1>
+        <p class="page-hero__sub">
+          Browse class branches (Tier 0 Novice → Tier 1 Swordman / Mage / Archer → Tier 2 Knight / High Wizard),
+          allowed weapon bitmasks, and skill prerequisites.
+        </p>
+      </div>
+    </div>
+
+    <!-- RMS Visual Branch Summary -->
+    <div class="rms-hub-grid">
+      <div class="rms-hub-box">
+        <h4>⚔️ Swordman → Knight Branch</h4>
+        <div class="rms-hub-links">
+          ${rmsLink('jobs', 'novice', 'Tier 0: Novice (Lv.1 / Job 10)')}
+          ${rmsLink('jobs', 'swordman', '1-1: Swordman (Lv.10 / Job 40)')}
+          ${rmsLink('jobs', 'knight', '2-1: Knight (Lv.40 / Job 50)')}
+          ${rmsLink('quests', 'jq_swordman_trial', 'Quest: Trial of the Blade')}
+          ${rmsLink('quests', 'jq_knight_chivalry', 'Quest: Oath of the Watchtower')}
+        </div>
+      </div>
+      <div class="rms-hub-box">
+        <h4>🔮 Mage → High Wizard Branch</h4>
+        <div class="rms-hub-links">
+          ${rmsLink('jobs', 'novice', 'Tier 0: Novice (Lv.1 / Job 10)')}
+          ${rmsLink('jobs', 'mage', '1-1: Mage (Lv.10 / Job 40)')}
+          ${rmsLink('jobs', 'wizard', '2-1: High Wizard (Lv.40 / Job 50)')}
+          ${rmsLink('quests', 'jq_mage_academy', 'Quest: Elemental Thesis')}
+          ${rmsLink('quests', 'jq_wizard_tower', 'Quest: Rite of the High Arcana')}
+        </div>
+      </div>
+      <div class="rms-hub-box">
+        <h4>🏹 Archer &amp; Ranger Branch</h4>
+        <div class="rms-hub-links">
+          ${rmsLink('jobs', 'novice', 'Tier 0: Novice (Lv.1 / Job 10)')}
+          ${rmsLink('jobs', 'archer', '1-1: Archer (Lv.10 / Job 40)')}
+          ${rmsLink('quests', 'jq_archer_guild', 'Quest: Wind & Steady Aim')}
+          ${rmsLink('gear', 'great_bow', 'Weapon: Great Bow [Two Handed]')}
+        </div>
+      </div>
+    </div>
+
+    <div class="rms-list">
+      ${jobs.map((j, idx) => {
+        const bonusStr = Object.entries(j.jobBonusAtMax || {}).filter(([,v]) => v > 0).map(([k,v]) => `${k.toUpperCase()} +${v}`).join(' · ') || 'None';
+        const childJobs = DATA.jobs.filter(cj => cj.parentJobId === j.id);
+        return `
+          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === j.id ? 'rms-highlight' : ''}" id="entity-${j.id}">
+            <div class="rms-sheet__head">
+              <div class="rms-sheet__head-left">
+                <span class="rms-icon-box">🛡️</span>
+                <span class="rms-sheet__title">${escapeHtml(j.name)}</span>
+                <span class="joy-badge joy-badge--brand joy-badge--sm">TIER ${j.tier}</span>
+                <span class="rms-sheet__id">Job ID# ${3001 + idx} (<code>${escapeHtml(j.id)}</code> · <code>${escapeHtml(j.assetStudioKey)}</code>)</span>
+              </div>
+              <div class="chip-row">${inspectBtnHtml('job', j.name, j)}</div>
+            </div>
+            <table class="rms-table">
+              <tbody>
+                <tr>
+                  <th>Min Base Level</th>
+                  <td class="mono">Lv.${j.minBaseLevel}</td>
+                  <th>Max Job Level</th>
+                  <td class="mono">Job Lv.${j.maxJobLevel}</td>
+                  <th>Parent Class</th>
+                  <td>${j.parentJobId ? rmsLink('jobs', j.parentJobId, j.parentJobId) : '<span class="observatory-card__meta">Starter Root</span>'}</td>
+                  <th>Promotes To</th>
+                  <td>${childJobs.map(cj => rmsLink('jobs', cj.id, cj.name)).join(' ') || '<span class="observatory-card__meta">Max Tier</span>'}</td>
+                </tr>
+                <tr>
+                  <th>Primary Stats</th>
+                  <td class="mono">${(j.primaryStats || []).map(s => s.toUpperCase()).join(', ')}</td>
+                  <th>Max Job Bonuses</th>
+                  <td colspan="3" class="mono">${escapeHtml(bonusStr)}</td>
+                  <th>Promotion Trial</th>
+                  <td>${j.jobChangeQuestId ? rmsLink('quests', j.jobChangeQuestId, j.jobChangeQuestId) : '<span class="observatory-card__meta">None</span>'}</td>
+                </tr>
+                <tr>
+                  <th>Allowed Weapons</th>
+                  <td colspan="7">${(j.allowedWeaponKinds || []).map(w => rmsLink('gear', w, w)).join(' ')}</td>
+                </tr>
+                <tr>
+                  <th>Unlocked Skills</th>
+                  <td colspan="7">${(j.unlockedSkillIds || []).map(s => rmsLink('jobs', s, s)).join(' ')}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      }).join('')}
+
+      ${skills.map((sk, idx) => {
+        const usedByJobs = DATA.jobs.filter(j => (j.unlockedSkillIds || []).includes(sk.id));
+        const unlockedByQuests = DATA.quests.filter(q => q.rewards && q.rewards.unlockSkillId === sk.id);
+        return `
+          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === sk.id ? 'rms-highlight' : ''}" id="entity-${sk.id}">
+            <div class="rms-sheet__head">
+              <div class="rms-sheet__head-left">
+                <span class="rms-icon-box">✨</span>
+                <span class="rms-sheet__title">Skill: ${escapeHtml(sk.name)}</span>
+                <span class="joy-badge joy-badge--success joy-badge--sm">MAX LV.${sk.maxLevel}</span>
+                <span class="rms-sheet__id">Skill ID# ${5001 + idx} (<code>${escapeHtml(sk.id)}</code>)</span>
+              </div>
+              <div class="chip-row">${inspectBtnHtml('skill', sk.name, sk)}</div>
+            </div>
+            <table class="rms-table">
+              <tbody>
+                <tr>
+                  <th>Max Skill Level</th>
+                  <td class="mono">Lv.${sk.maxLevel}</td>
+                  <th>Prerequisites</th>
+                  <td>${(sk.requires || []).length ? sk.requires.map(r => rmsLink('jobs', r, r)).join(' ') : '<span class="observatory-card__meta">None (Tier 1 Core)</span>'}</td>
+                  <th>Learnable By</th>
+                  <td colspan="3">${usedByJobs.map(j => rmsLink('jobs', j.id, j.name)).join(' ')}</td>
+                </tr>
+                <tr>
+                  <th>Quest Unlocks</th>
+                  <td colspan="7">
+                    ${unlockedByQuests.map(q => rmsLink('quests', q.id, q.title)).join(' ') || '<span class="observatory-card__meta">Innate Class Skill</span>'}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+/* ============================================================================
+ * 5. ELEMENT & SIZE MATRIX
+ * ========================================================================== */
 function renderElements() {
   const elems = DATA.elements.elements || [];
   const mat = DATA.elements.damageMatrixPct || {};
@@ -1198,7 +1759,7 @@ function renderElements() {
   return `
     <div class="page-hero">
       <div>
-        <div class="page-hero__eyebrow">COMBAT DAMAGE MODEL</div>
+        <div class="page-hero__eyebrow">RATEMYSERVER PROPERTY CHART · 10-ELEMENT &amp; 3-SIZE</div>
         <h1 class="page-hero__title">10-Element Counter Matrix &amp; Weapon-vs-Size Modifiers</h1>
         <p class="page-hero__sub">Interactive damage multiplier calculator + full 10×10 elemental lookup table and Small/Medium/Large weapon size table.</p>
       </div>
@@ -1272,7 +1833,7 @@ function renderElements() {
       <div class="observatory-card__head">
         <div>
           <h3 class="observatory-card__title">Weapon Kind vs. Monster Size Modifier (Small / Medium / Large %)</h3>
-          <div class="observatory-card__meta">Classic RO weapon-size signature (e.g., Spears excel vs. Large, Daggers excel vs. Small)</div>
+          <div class="observatory-card__meta">Classic RO weapon-size signature (e.g., Spears/Scythes excel vs. Large, Daggers excel vs. Small)</div>
         </div>
         <span class="joy-badge joy-badge--neutral">Size Table</span>
       </div>
@@ -1289,7 +1850,7 @@ function renderElements() {
           <tbody>
             ${Object.entries(sizePen).map(([wpn, row]) => `
               <tr>
-                <td><strong>${wpn}</strong></td>
+                <td>${rmsLink('gear', wpn, wpn)}</td>
                 <td class="mono">${row.Small}%</td>
                 <td class="mono">${row.Medium}%</td>
                 <td class="mono">${row.Large}%</td>
@@ -1303,174 +1864,88 @@ function renderElements() {
 }
 
 function updateElemCalc() {
-  if (!DATA) return;
+  if (!DATA || !DATA.elements) return;
   const atk = document.getElementById('calcAtkElem')?.value;
   const def = document.getElementById('calcDefElem')?.value;
   const wpn = document.getElementById('calcWpnKind')?.value;
   const sz = document.getElementById('calcTargetSize')?.value;
-  const ePct = DATA.elements.damageMatrixPct?.[atk]?.[def] ?? 100;
-  const sPct = DATA.elements.weaponSizePenaltyPct?.[wpn]?.[sz] ?? 100;
-  const combined = ((ePct / 100) * (sPct / 100) * 100).toFixed(1);
+  const elemPct = (DATA.elements.damageMatrixPct?.[atk]?.[def]) ?? 100;
+  const sizePct = (DATA.elements.weaponSizePenaltyPct?.[wpn]?.[sz]) ?? 100;
+  const combined = ((elemPct / 100.0) * (sizePct / 100.0) * 100.0).toFixed(1);
   const out = document.getElementById('elemCalcOutput');
-  if (out) out.textContent = `Element ${ePct}% × Size ${sPct}% = ${combined}% Final Damage`;
-}
-
-function renderGear() {
-  const items = DATA.items.filter(matchesSearch);
-  const cards = DATA.cards.filter(matchesSearch);
-  const handbook = DATA.handbook.filter(matchesSearch);
-  return `
-    <div class="page-hero">
-      <div>
-        <div class="page-hero__eyebrow">ITEMIZATION &amp; HORIZONTAL PROGRESSION</div>
-        <h1 class="page-hero__title">Equipment, +0..+15 Refine Calculator, Cards &amp; Handbook</h1>
-        <p class="page-hero__sub">Safe refine through +4, failure pity gauge (+20%/fail, 5/5 = 100%), socketable monster cards, and permanent account-wide handbook deposits.</p>
-      </div>
-    </div>
-
-    <div class="controls-panel">
-      <div class="control-field">
-        <label for="refBaseAtk">Base Weapon ATK</label>
-        <input id="refBaseAtk" class="joy-input" type="number" value="120" min="10" max="500" style="width:120px" oninput="updateRefineCalc()" />
-      </div>
-      <div class="control-field">
-        <label for="refLevel">Target Refine Level (+0..+15)</label>
-        <input id="refLevel" class="joy-input" type="number" value="10" min="0" max="15" style="width:120px" oninput="updateRefineCalc()" />
-      </div>
-      <div class="control-field">
-        <label for="refFails">Consecutive Fails (Pity 0..5)</label>
-        <input id="refFails" class="joy-input" type="number" value="2" min="0" max="5" style="width:120px" oninput="updateRefineCalc()" />
-      </div>
-      <div style="margin-left:auto">
-        <span class="joy-badge joy-badge--brand" id="refineCalcResult" style="font-size:0.9rem;padding:8px 14px"></span>
-      </div>
-    </div>
-
-    <div class="observatory-card">
-      <div class="observatory-card__head">
-        <div>
-          <h3 class="observatory-card__title">Equipment &amp; Consumable Catalog (${items.length})</h3>
-          <div class="observatory-card__meta">contracts/content/items.json</div>
-        </div>
-      </div>
-      <div class="joy-table-container">
-        <table class="joy-table">
-          <thead>
-            <tr>
-              <th>Item ID</th>
-              <th>Name</th>
-              <th>Slot / Kind</th>
-              <th>Card Slots</th>
-              <th>Refineable</th>
-              <th>Base Stats</th>
-              <th>Inspect</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${items.map(it => `
-              <tr>
-                <td class="mono">${it.id}</td>
-                <td><strong>${it.name}</strong></td>
-                <td><span class="joy-badge joy-badge--neutral joy-badge--sm">${it.slot}</span> <span class="mono" style="font-size:12px">${it.weaponKind || ''}</span></td>
-                <td class="mono">${it.cardSlots}</td>
-                <td><span class="joy-badge ${it.refineable ? 'joy-badge--success' : 'joy-badge--neutral'} joy-badge--sm">${it.refineable ? 'Yes' : 'No'}</span></td>
-                <td class="mono">${Object.entries(it.stats || {}).map(([k,v]) => `${k}+${v}`).join(' ') || '—'}</td>
-                <td>${inspectBtnHtml('item', it.name, it)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card-grid">
-      ${cards.map(c => `
-        <div class="observatory-card observatory-card--gold">
-          <div class="observatory-card__head">
-            <div>
-              <h3 class="observatory-card__title">${c.name}</h3>
-              <div class="observatory-card__meta">Source Mob: ${c.mobId}</div>
-            </div>
-            <span class="joy-badge joy-badge--brand">${c.slot.toUpperCase()} CARD</span>
-          </div>
-          <div class="kv-list">
-            <div class="kv-row"><span class="kv-label">Socket Equip Bonus</span><span class="kv-val">${Object.entries(c.equipStats || {}).map(([k,v]) => `${k} +${v}`).join(', ')}</span></div>
-            <div class="kv-row"><span class="kv-label">Handbook Deposit</span><span class="kv-val">${Object.entries(c.handbookDepositStats || {}).map(([k,v]) => `${k} +${v}`).join(', ')}</span></div>
-          </div>
-          <div style="display:flex;justify-content:flex-end">${inspectBtnHtml('card', c.name, c)}</div>
-        </div>
-      `).join('')}
-      ${handbook.map(h => `
-        <div class="observatory-card">
-          <div class="observatory-card__head">
-            <div>
-              <h3 class="observatory-card__title">${h.title}</h3>
-              <div class="observatory-card__meta">Category: ${h.category} · Target: ${h.targetId}</div>
-            </div>
-            <span class="joy-badge joy-badge--success">HANDBOOK</span>
-          </div>
-          <div class="kv-list">
-            ${h.tiers.map(t => `
-              <div class="kv-row">
-                <span class="kv-label">≥ ${t.requiredCount}: ${t.unlockNote}</span>
-                <span class="kv-val">${t.bonusStat} +${t.bonusValue}</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-}
-
-function updateRefineCalc() {
-  const baseAtk = parseInt(document.getElementById('refBaseAtk')?.value || '120', 10);
-  const lvl = Math.max(0, Math.min(15, parseInt(document.getElementById('refLevel')?.value || '10', 10)));
-  const fails = Math.max(0, Math.min(5, parseInt(document.getElementById('refFails')?.value || '0', 10)));
-  const baseRates = [100,100,100,100,100, 60,50,40,30,20, 15,12,10,8,5,5];
-  const baseRate = baseRates[lvl] ?? 10;
-  const effRate = lvl <= 4 ? 100 : (fails >= 5 ? 100 : Math.min(100, baseRate + fails * 20));
-  const overUpgrade = lvl > 4 ? (lvl - 4) * 5 : 0;
-  const totalAtk = baseAtk + lvl * 3 + overUpgrade;
-  const el = document.getElementById('refineCalcResult');
-  if (el) {
-    el.textContent = `+${lvl} Total ATK: ${totalAtk} (+${lvl*3 + overUpgrade} bonus) · Success Rate: ${effRate}% (Base ${baseRate}% + Pity ${fails}/5)`;
+  if (out) {
+    out.textContent = `Elemental ${elemPct}% × Size ${sizePct}% = ${combined}% Final Damage`;
   }
 }
 
+/* ============================================================================
+ * 6. QUEST DATABASE (RateMyServer quest_db Datasheet Layout)
+ * ========================================================================== */
 function renderQuests() {
   const quests = DATA.quests.filter(matchesSearch);
   return `
     <div class="page-hero">
       <div>
-        <div class="page-hero__eyebrow">QUEST PROGRESSION</div>
-        <h1 class="page-hero__title">Unified 6-Category Quest Board (${quests.length})</h1>
-        <p class="page-hero__sub">Main Story, Side Story, Daily Board, Weekly Elite, Hunting Bounties, and Job Promotion Trials.</p>
+        <div class="page-hero__eyebrow">RATEMYSERVER QUEST_DB · PROGRESSION &amp; TRIALS</div>
+        <h1 class="page-hero__title">Unified 6-Category Quest Database (${quests.length})</h1>
+        <p class="page-hero__sub">Main Story, Side Story, Daily Bounties, and Job Promotion Trials with clickable objective targets and item rewards.</p>
       </div>
     </div>
-    <div class="card-grid">
-      ${quests.map(q => `
-        <div class="observatory-card ${q.category === 'job_change' ? 'observatory-card--gold' : ''}">
-          <div class="observatory-card__head">
-            <div>
-              <h3 class="observatory-card__title">${q.title}</h3>
-              <div class="observatory-card__meta">ID: ${q.id} · Zone: ${q.zoneId} · NPC: ${q.giverNpcId}</div>
+    <div class="rms-list">
+      ${quests.map((q, idx) => `
+        <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === q.id ? 'rms-highlight' : ''}" id="entity-${q.id}">
+          <div class="rms-sheet__head">
+            <div class="rms-sheet__head-left">
+              <span class="rms-icon-box">📜</span>
+              <span class="rms-sheet__title">${escapeHtml(q.title)}</span>
+              <span class="joy-badge ${q.category === 'job_change' ? 'joy-badge--brand' : 'joy-badge--success'} joy-badge--sm">${q.category.toUpperCase()}</span>
+              <span class="rms-sheet__id">Quest ID# ${6001 + idx} (<code>${escapeHtml(q.id)}</code>)</span>
             </div>
-            <span class="joy-badge ${q.category === 'job_change' ? 'joy-badge--brand' : 'joy-badge--success'}">${q.category.toUpperCase()}</span>
+            <div class="chip-row">${inspectBtnHtml('quest', q.title, q)}</div>
           </div>
-          <div class="kv-list">
-            <div class="kv-row"><span class="kv-label">Min Base Level</span><span class="kv-val">Lv.${q.minBaseLevel} ${q.requiredJobId ? `(${q.requiredJobId})` : ''}</span></div>
-            <div class="kv-row"><span class="kv-label">Objectives</span><span class="kv-val">${q.objectives.map(o => `${o.type}: ${o.targetId} ×${o.required}`).join(', ')}</span></div>
-            <div class="kv-row"><span class="kv-label">EXP Rewards</span><span class="kv-val">+${q.rewards.baseXp} Base / +${q.rewards.jobXp} Job</span></div>
-            <div class="kv-row"><span class="kv-label">Unlocks</span><span class="kv-val">${q.rewards.unlockJobId || q.rewards.unlockSkillId || '—'}</span></div>
-          </div>
-          <div style="display:flex;justify-content:flex-end">${inspectBtnHtml('quest', q.title, q)}</div>
+          <table class="rms-table">
+            <tbody>
+              <tr>
+                <th>Zone / Map</th>
+                <td>${rmsLink('maps', q.zoneId, q.zoneId)}</td>
+                <th>Giver NPC</th>
+                <td class="mono">${escapeHtml(q.giverNpcId)}</td>
+                <th>Min Base Lvl</th>
+                <td class="mono">Lv.${q.minBaseLevel}</td>
+                <th>Required Job</th>
+                <td>${q.requiredJobId ? rmsLink('jobs', q.requiredJobId, q.requiredJobId) : '<span class="observatory-card__meta">Any Job</span>'}</td>
+              </tr>
+              <tr>
+                <th>Objectives</th>
+                <td colspan="7">
+                  ${(q.objectives || []).map(o => {
+                    if (o.type === 'MOB_KILLED') return rmsLink('mobs', o.targetId, `Hunt ${o.targetId} ×${o.required}`, o.type);
+                    if (o.type === 'ITEM_PICKED_UP') return rmsLink('gear', o.targetId, `Collect ${o.targetId} ×${o.required}`, o.type);
+                    return rmsLink('maps', o.targetId, `Visit ${o.targetId} ×${o.required}`, o.type);
+                  }).join(' ')}
+                </td>
+              </tr>
+              <tr>
+                <th>Rewards</th>
+                <td colspan="7">
+                  <span class="joy-badge joy-badge--neutral joy-badge--sm">+${q.rewards.baseXp} Base EXP</span>
+                  <span class="joy-badge joy-badge--neutral joy-badge--sm">+${q.rewards.jobXp} Job EXP</span>
+                  ${q.rewards.unlockJobId ? rmsLink('jobs', q.rewards.unlockJobId, 'Promotes To: ' + q.rewards.unlockJobId) : ''}
+                  ${q.rewards.unlockSkillId ? rmsLink('jobs', q.rewards.unlockSkillId, 'Unlocks Skill: ' + q.rewards.unlockSkillId) : ''}
+                  ${((q.rewards && q.rewards.items) || []).map(ri => rmsLink('gear', ri.itemId, `${ri.itemId} ×${ri.qty}`, 'Item Reward')).join(' ')}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       `).join('')}
     </div>
   `;
 }
 
+/* ============================================================================
+ * 7. WOE CASTLE SIEGE SIMULATOR
+ * ========================================================================== */
 function renderSiege() {
   const castles = DATA.castles.filter(matchesSearch);
   return `
@@ -1496,24 +1971,44 @@ function renderSiege() {
       </div>
     </div>
 
-    <div class="card-grid">
+    <div class="rms-list">
       ${castles.map(cs => `
-        <div class="observatory-card observatory-card--gold">
-          <div class="observatory-card__head">
-            <div>
-              <h3 class="observatory-card__title">${cs.name}</h3>
-              <div class="observatory-card__meta">Hub: ${cs.hubTownId} · Siege Map: ${cs.siegeMapId}</div>
+        <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === cs.id ? 'rms-highlight' : ''}" id="entity-${cs.id}">
+          <div class="rms-sheet__head">
+            <div class="rms-sheet__head-left">
+              <span class="rms-icon-box">🏰</span>
+              <span class="rms-sheet__title">${escapeHtml(cs.name)}</span>
+              <span class="joy-badge joy-badge--brand joy-badge--sm">WOE CASTLE</span>
+              <span class="rms-sheet__id">Castle ID# <code>${escapeHtml(cs.id)}</code> (<code>${escapeHtml(cs.assetStudioKey)}</code>)</span>
             </div>
-            <span class="joy-badge joy-badge--brand">WOE CASTLE</span>
+            <div class="chip-row">${inspectBtnHtml('castle', cs.name, cs)}</div>
           </div>
-          <div class="kv-list">
-            <div class="kv-row"><span class="kv-label">Emperium Crystal</span><span class="kv-val">${cs.emperium.hp.toLocaleString()} HP · ${cs.emperium.element}/${cs.emperium.race}/${cs.emperium.size}</span></div>
-            <div class="kv-row"><span class="kv-label">Normal Attack Only</span><span class="kv-val">${cs.emperium.onlyNormalAttackDamage ? 'YES (Skills Blocked)' : 'No'}</span></div>
-            <div class="kv-row"><span class="kv-label">Gate Barricades</span><span class="kv-val">${cs.fortifications.outerGateBarricadeCount} Outer + ${cs.fortifications.innerGateBarricadeCount} Inner (${cs.fortifications.barricadeHp.toLocaleString()} HP ea)</span></div>
-            <div class="kv-row"><span class="kv-label">PvP Damage Scaling</span><span class="kv-val">${cs.pvpRules.playerDamageScalingPct}% (Ranged ${cs.pvpRules.rangedDamageInSiegePct}%)</span></div>
-            <div class="kv-row"><span class="kv-label">Owner Rewards</span><span class="kv-val">${cs.ownerRewards.dailyTreasureChestCount} Chests/day · Dungeon: ${cs.ownerRewards.guildDungeonZoneId}</span></div>
-          </div>
-          <div style="display:flex;justify-content:flex-end">${inspectBtnHtml('castle', cs.name, cs)}</div>
+          <table class="rms-table">
+            <tbody>
+              <tr>
+                <th>Hub Town</th>
+                <td class="mono">${escapeHtml(cs.hubTownId)}</td>
+                <th>Siege Map</th>
+                <td>${rmsLink('maps', cs.siegeMapId, cs.siegeMapId)}</td>
+                <th>Siege Duration</th>
+                <td class="mono">${cs.siegeDurationMinutes} mins</td>
+                <th>Max Guild Size</th>
+                <td class="mono">${cs.maxGuildSize} members</td>
+              </tr>
+              <tr>
+                <th>Emperium Crystal</th>
+                <td colspan="3" class="mono">${cs.emperium.hp.toLocaleString()} HP · ${cs.emperium.element} / ${cs.emperium.race} / ${cs.emperium.size}</td>
+                <th>Normal-Attack Only</th>
+                <td colspan="3"><span class="joy-badge joy-badge--warning joy-badge--sm">${cs.emperium.onlyNormalAttackDamage ? 'YES (Skills Blocked)' : 'No'}</span></td>
+              </tr>
+              <tr>
+                <th>Gate Barricades</th>
+                <td colspan="3" class="mono">${cs.fortifications.outerGateBarricadeCount} Outer + ${cs.fortifications.innerGateBarricadeCount} Inner (${cs.fortifications.barricadeHp.toLocaleString()} HP each)</td>
+                <th>Owner Rewards</th>
+                <td colspan="3" class="mono">${cs.ownerRewards.dailyTreasureChestCount} Treasure Chests/day · Dungeon: ${cs.ownerRewards.guildDungeonZoneId}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       `).join('')}
     </div>
@@ -1537,38 +2032,176 @@ function updateSiegeCalc() {
   }
 }
 
+/* ============================================================================
+ * 8. MAP & AREA SPAWN DIRECTORY (RateMyServer map_db + areainfo Layout)
+ * ========================================================================== */
+function renderMinimapSvg(m) {
+  const terraces = m.heightTerraces || [];
+  const structs = m.structures || [];
+  const spawns = m.spawnAreas || [];
+
+  const mapCoord = (v) => 120 + (v / 42.0) * 105;
+  const mapSpawnCoord = (v) => ((v - 1650) / 850.0) * 240;
+
+  return `
+    <svg width="240" height="240" viewBox="0 0 240 240" style="border-radius:6px;border:1px solid var(--joy-border-strong);background:#16241c">
+      <defs>
+        <pattern id="grid-${escapeHtml(m.id)}" width="24" height="24" patternUnits="userSpaceOnUse">
+          <path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect width="240" height="240" fill="url(#grid-${escapeHtml(m.id)})"/>
+      <!-- Roads / Gate Paths -->
+      <path d="M 120 0 L 120 240 M 0 120 L 240 120" stroke="rgba(212,175,55,0.22)" stroke-width="8" stroke-dasharray="4 2"/>
+      <!-- Height Terraces -->
+      ${terraces.map(t => {
+        const cx = mapCoord(t.x || 0);
+        const cy = mapCoord(t.z || 0);
+        const r = Math.max(12, (t.radius || 10) * 2.2);
+        return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="rgba(72, 168, 104, 0.28)" stroke="#5ec27e" stroke-width="1.2"/>`;
+      }).join('')}
+      <!-- Spawn Areas -->
+      ${spawns.map(sp => {
+        const sx = mapSpawnCoord(sp.x || 1900);
+        const sy = mapSpawnCoord(sp.y || 1900);
+        const sw = Math.max(14, ((sp.width || 120) / 850.0) * 240);
+        const sh = Math.max(14, ((sp.height || 120) / 850.0) * 240);
+        return `<rect x="${sx.toFixed(1)}" y="${sy.toFixed(1)}" width="${sw.toFixed(1)}" height="${sh.toFixed(1)}" fill="rgba(235, 87, 87, 0.18)" stroke="rgba(235, 87, 87, 0.75)" stroke-width="1" stroke-dasharray="2 2"/>`;
+      }).join('')}
+      <!-- Walkable 3D Structures -->
+      ${structs.map(s => {
+        const sx = mapCoord(s.x || 0);
+        const sy = mapCoord(s.z || 0);
+        const sr = Math.max(7, (s.radius || 3.5) * 2.1);
+        return `
+          <circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="${sr.toFixed(1)}" fill="rgba(230, 184, 77, 0.45)" stroke="#ffd166" stroke-width="2"/>
+          <text x="${sx.toFixed(1)}" y="${(sy - sr - 4).toFixed(1)}" text-anchor="middle" fill="#ffd166" font-size="9" font-family="monospace">${escapeHtml(s.kind)}</text>
+        `;
+      }).join('')}
+    </svg>
+  `;
+}
+
 function renderMaps() {
   const maps = DATA.maps.filter(matchesSearch);
+
+  const zoneCards = [
+    { id: 'prontera_south_field', name: 'Prontera South Gate Field (prontera_south_field)', area: 'Prontera Kingdom — Core Area', linkedMap: maps[0] },
+    { id: 'forest_zone',          name: 'Payon & South Gate Forest Range (forest_zone)',   area: 'Archery & Beast Hunting Woods', linkedMap: null },
+    { id: 'sunken_crypt_1f',      name: 'Sunken Crypt 1F (sunken_crypt_1f)',               area: 'Undead Catacombs · Chivalry & Arcana Trials', linkedMap: null },
+    { id: 'orc_fortress_courtyard', name: 'Orc Fortress Courtyard (orc_fortress_courtyard)', area: 'High-Risk MVP Siege Arena', linkedMap: null },
+  ].filter(matchesSearch);
+
   return `
     <div class="page-hero">
       <div>
-        <div class="page-hero__eyebrow">WORLD TOPOLOGY</div>
-        <h1 class="page-hero__title">3D World Maps, Walkable Structures &amp; Height Terraces (${maps.length})</h1>
-        <p class="page-hero__sub">Single-source terrain heightfields, multi-floor towers, hollow caves, and instanced environment props.</p>
+        <div class="page-hero__eyebrow">RATEMYSERVER MAP_DB &amp; AREAINFO · MONSTER ON MAPS</div>
+        <h1 class="page-hero__title">World Map Directory, 2D Minimaps &amp; Monster Spawn Tables</h1>
+        <p class="page-hero__sub">
+          RateMyServer <code>areainfo</code> layout: 2D top-down terrain/structure/spawn minimap on the left,
+          paired with clickable Monster Spawn counts, 3D Walkable Structures, and Zone Quests on the right.
+        </p>
       </div>
     </div>
-    <div class="card-grid">
-      ${maps.map(m => `
-        <div class="observatory-card observatory-card--gold">
-          <div class="observatory-card__head">
-            <div>
-              <h3 class="observatory-card__title">${m.name} (${m.id})</h3>
-              <div class="observatory-card__meta">Dimensions: ${m.width}×${m.height}m · Amplitude: ${m.terrainAmplitude}</div>
+
+    <div class="rms-list">
+      ${maps.map(m => {
+        const southMobs = DATA.mobs.filter(mb => (mb.spawnZones || []).includes('prontera_south_field'));
+        const southQuests = DATA.quests.filter(q => q.zoneId === 'prontera_south_field');
+        return `
+          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === m.id || HIGHLIGHT_ENTITY_ID === 'prontera_south_field' ? 'rms-highlight' : ''}" id="entity-${m.id}">
+            <div class="rms-sheet__head">
+              <div class="rms-sheet__head-left">
+                <span class="rms-icon-box">🗺️</span>
+                <span class="rms-sheet__title">Map: ${escapeHtml(m.id)} — ${escapeHtml(m.name)}</span>
+                <span class="joy-badge joy-badge--success joy-badge--sm">${m.structureCount} 3D Structures · ${m.terraceCount} Terraces</span>
+              </div>
+              <div class="chip-row">
+                <span class="rms-sheet__id">Area: Prontera South Gate (${m.width}×${m.height})</span>
+                ${inspectBtnHtml('map', m.name, m)}
+              </div>
             </div>
-            <span class="joy-badge joy-badge--success">${m.structureCount} STRUCTURES</span>
+            <div class="rms-map-split">
+              <div class="rms-minimap-cell">
+                ${renderMinimapSvg(m)}
+                <div class="observatory-card__meta" style="text-align:center">
+                  🟢 Terraces (${m.terraceCount}) · 🟡 3D Structures (${m.structureCount}) · 🔴 Spawn Areas (${(m.spawnAreas || []).length})
+                </div>
+              </div>
+              <div class="rms-spawn-cell">
+                <div style="font-weight:700;color:var(--joy-accent-text);font-size:13px">
+                  Click on a monster or quest below to view its datasheet:
+                </div>
+                <div>
+                  <strong style="font-size:12px;color:var(--joy-text-secondary)">Catalog Monsters in Zone (<code>prontera_south_field</code>):</strong><br/>
+                  ${southMobs.map(mb => rmsLink('mobs', mb.id, `${mb.name} (Lv.${mb.level})`, `${mb.element}/${mb.race}/${mb.size}`)).join(' ')}
+                </div>
+                <div>
+                  <strong style="font-size:12px;color:var(--joy-text-secondary)">Map Spawn Areas (<code>content/maps/${escapeHtml(m.id)}.json</code>):</strong>
+                  <div class="chip-row" style="margin-top:4px">
+                    ${(m.spawnAreas || []).map(sp => `
+                      <span class="joy-badge joy-badge--neutral joy-badge--sm mono">
+                        ${escapeHtml(sp.id)}: ${escapeHtml(sp.mobType)} (${sp.count}) @ (${sp.x},${sp.y})
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+                <div>
+                  <strong style="font-size:12px;color:var(--joy-text-secondary)">Walkable 3D Structures &amp; Terraces:</strong>
+                  <div class="chip-row" style="margin-top:4px">
+                    ${(m.structures || []).map(s => `<span class="joy-badge joy-badge--brand joy-badge--sm mono">${escapeHtml(s.id)} (${escapeHtml(s.kind)} · r=${s.radius}m · 2F=${s.upperFloorHeight}m)</span>`).join('')}
+                    ${(m.heightTerraces || []).map(t => `<span class="joy-badge joy-badge--success joy-badge--sm mono">${escapeHtml(t.id)} (h=${t.height}m)</span>`).join('')}
+                  </div>
+                </div>
+                <div>
+                  <strong style="font-size:12px;color:var(--joy-text-secondary)">Quests in this Area:</strong><br/>
+                  ${southQuests.map(q => rmsLink('quests', q.id, q.title, q.category)).join(' ')}
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="kv-list">
-            <div class="kv-row"><span class="kv-label">Height Terraces</span><span class="kv-val">${m.terraceCount} terraces</span></div>
-            <div class="kv-row"><span class="kv-label">Walkable 3D Structures</span><span class="kv-val">${(m.structures || []).map(s => `${s.kind}@(${s.x},${s.z})`).join(', ')}</span></div>
-            <div class="kv-row"><span class="kv-label">Environment Props</span><span class="kv-val">${m.propCount} props</span></div>
+        `;
+      }).join('')}
+
+      ${zoneCards.map(z => {
+        const zMobs = DATA.mobs.filter(mb => (mb.spawnZones || []).includes(z.id));
+        const zQuests = DATA.quests.filter(q => q.zoneId === z.id);
+        return `
+          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === z.id ? 'rms-highlight' : ''}" id="entity-${z.id}">
+            <div class="rms-sheet__head">
+              <div class="rms-sheet__head-left">
+                <span class="rms-icon-box">🧭</span>
+                <span class="rms-sheet__title">Zone: ${escapeHtml(z.id)}</span>
+                <span class="rms-sheet__id">${escapeHtml(z.name)}</span>
+              </div>
+              <span class="joy-badge joy-badge--neutral joy-badge--sm">${escapeHtml(z.area)}</span>
+            </div>
+            <table class="rms-table">
+              <tbody>
+                <tr>
+                  <th>Monsters on Map</th>
+                  <td>
+                    ${zMobs.map(mb => rmsLink('mobs', mb.id, `${mb.name} (Lv.${mb.level})`, mb.isMvp ? 'MVP Boss / 60 min' : 'Field Spawn / 3~5 min')).join(' ') || 'No monster on this map.'}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Active Quests</th>
+                  <td>
+                    ${zQuests.map(q => rmsLink('quests', q.id, q.title, 'Lv.' + q.minBaseLevel)).join(' ') || '<span class="observatory-card__meta">None</span>'}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <div style="display:flex;justify-content:flex-end">${inspectBtnHtml('map', m.name, m)}</div>
-        </div>
-      `).join('')}
+        `;
+      }).join('')}
     </div>
   `;
 }
 
+/* ============================================================================
+ * 9. SQLITE STUDIO, BALANCE SIM & DOCS
+ * ========================================================================== */
 function renderSqlStudio() {
   return `
     <div class="page-hero">
@@ -1761,7 +2394,7 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Atlas World MMORPG Catalog & Balance Observatory Web Studio")
-    parser.add_argument("--port", type=int, default=8788, help="HTTP port (default: 8765)")
+    parser.add_argument("--port", type=int, default=8788, help="HTTP port (default: 8788)")
     parser.add_argument("--dump-check", action="store_true", help="Verify bundle + SQL engine and exit 0")
     args = parser.parse_args()
 
