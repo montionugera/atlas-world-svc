@@ -1590,7 +1590,7 @@ function renderSqlStudio() {
       </div>
       <textarea id="sqlInput" class="sql-editor">SELECT * FROM v_mob_economy;</textarea>
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <span class="observatory-card__meta">Read-only SQLite connection (`SELECT`, `WITH`, `PRAGMA`, `EXPLAIN`)</span>
+        <span class="observatory-card__meta">Read-only SQLite connection (<code>SELECT</code>, <code>WITH</code>, <code>PRAGMA</code>, <code>EXPLAIN</code>)</span>
         <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="executeSql()">Execute SQL Query</button>
       </div>
     </div>
