@@ -262,6 +262,15 @@ namespace AtlasWorld.Client
 
             _metaShell = new MetaShell();
             AddChild(_metaShell);
+            _metaShell.BindGrowthManager(_growth, msg =>
+            {
+                SyncGrowthHud();
+                UpdateQuestTrackerDisplay();
+                EquipmentWardrobeModal?.RefreshGrowthDisplay();
+                ChatWidget?.AppendSystemMessage(msg);
+                Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
+                CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -95), msg.Length > 48 ? msg[..48] + "..." : msg);
+            });
 
             if (_tuningDrawer != null)
             {
