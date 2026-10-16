@@ -2,13 +2,15 @@ using System;
 using Godot;
 using Google.FlatBuffers;
 using Atlas.Protocol;
+using AtlasWorld.Client.Meta;
 using AtlasWorld.Client.Net;
 using AtlasWorld.Client.UI.Widgets;
 
 namespace AtlasWorld.Client.World
 {
     /// <summary>
-    /// Headless verification probe for the Godot 4 + server-rs (Rust) Vertical Slice.\n    /// Follows the repository probe contract:
+    /// Headless verification probe for the Godot 4 + server-rs (Rust) Vertical Slice.
+    /// Follows the repository probe contract:
     /// Runs when ATLAS_VERIFY_VERTICAL_SLICE=1 is set, returning 0 on PASS and 1 on FAIL.
     /// </summary>
     public static class VerifyVerticalSliceProbe
@@ -24,15 +26,70 @@ namespace AtlasWorld.Client.World
             failures += VerifyCelShadingAndOutlineMaterials();
             failures += VerifyChatBoxFocusAndSubmission(context);
             failures += VerifyMultiFloorWatchtowerAndCrystalCave(context);
+            failures += VerifyMmorpgGrowthAndQuestBoardCatalogs();
 
             if (failures == 0)
             {
-                GD.Print("[VerticalSliceProbe] RESULT: PASS (all 6 vertical slice cases)");
+                GD.Print("[VerticalSliceProbe] RESULT: PASS (all 7 vertical slice cases)");
                 return 0;
             }
 
             GD.PrintErr($"[VerticalSliceProbe] RESULT: FAIL ({failures} case(s) failed)");
             return 1;
+        }
+
+        private static int VerifyMmorpgGrowthAndQuestBoardCatalogs()
+        {
+            try
+            {
+                var growth = new MmorpgGrowthManager();
+                growth.LoadCatalogs();
+
+                if (growth.BaseLevel != 12 || growth.JobLevel != 15 || growth.CurrentJobDisplayName != "Swordman")
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  Initial growth state mismatch: Base={growth.BaseLevel}, Job={growth.JobLevel}, Class={growth.CurrentJobDisplayName}");
+                    return 1;
+                }
+
+                string nextJob = growth.CycleNextJobClass();
+                if (string.IsNullOrEmpty(nextJob) || nextJob == "Swordman")
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  CycleNextJobClass did not advance from Swordman: got '{nextJob}'");
+                    return 1;
+                }
+
+                bool leveled = growth.GrantExp(15000, 12000, out string? levelMsg);
+                if (!leveled || growth.BaseLevel <= 12 || growth.JobLevel <= 15 || string.IsNullOrEmpty(levelMsg))
+                {
+                    GD.PrintErr($"[VerticalSliceProbe]   FAIL  GrantExp did not level up Base/Job: Base={growth.BaseLevel}, Job={growth.JobLevel}");
+                    return 1;
+                }
+
+                var initialQuest = growth.ActiveQuest;
+                int goal = Math.Max(1, initialQuest.KillGoal);
+                bool completed = false;
+                for (int i = 0; i < goal; i++)
+                {
+                    if (growth.RecordMonsterKill(out _, out _))
+                    {
+                        completed = true;
+                    }
+                }
+
+                if (!completed)
+                {
+                    GD.PrintErr("[VerticalSliceProbe]   FAIL  RecordMonsterKill did not complete active Quest Board entry");
+                    return 1;
+                }
+
+                GD.Print($"[VerticalSliceProbe]   PASS  MMORPG Dual-Track Growth & Quest Board Catalogs (Base Lv.{growth.BaseLevel}, Job Lv.{growth.JobLevel}, Class={growth.CurrentJobDisplayName}, ActiveQuest='{growth.ActiveQuest.Title}')");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"[VerticalSliceProbe]   FAIL  Exception in MMORPG Growth check: {ex.Message}");
+                return 1;
+            }
         }
 
         private static int VerifyFlatBuffersClientInput()

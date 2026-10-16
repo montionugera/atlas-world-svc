@@ -26,6 +26,7 @@ namespace AtlasWorld.Client
     /// 7. Authoritative Player HP/SP, ROX Auto-Combat AFK loop, Quest Kill Tracker, Live Minimap Radar, DevTuningDrawer &amp; Mac 3D Map Builder
     /// 8. Scalable Map Expansion (1000x1000 -> 2000x2000 -> 4000x4000) &amp; On-Demand Spatial Chunk Streaming (MapChunkStreamer)
     /// 9. 3D Altitude, Multi-Floor Watchtowers &amp; Walk-In Crystal Caves (TerrainElevation) + Smart Camera LOS &amp; Roof Cutaway (SmartCameraOccluder)
+    /// 10. Dual-Track Base/Job Level Growth &amp; Unified Quest Board Catalogs (MmorpgGrowthManager)
     /// </summary>
     public partial class VerticalSliceRoot : Node3D
     {
@@ -58,6 +59,7 @@ namespace AtlasWorld.Client
         private MapChunkStreamer? _chunkStreamer;
         private readonly SmartCameraOccluder _cameraOccluder = new();
         private readonly DayNightCycleController _dayNightCycle = new();
+        private readonly MmorpgGrowthManager _growth = new();
         private Node3D? _meadowRingRoot;
 
         private Vector2 _touchMoveIntent = Vector2.Zero;
@@ -79,9 +81,6 @@ namespace AtlasWorld.Client
         private float _respawnRequestCooldownSec = 0f;
 
         // Quest progression state
-        private int _questStage = 1;
-        private int _questKillCount = 0;
-        private int _questKillGoal = 5;
         private Label? _questTitleLabel;
         private Label? _questTargetLabel;
         private Label? _questHintLabel;
@@ -118,11 +117,15 @@ namespace AtlasWorld.Client
         public bool IsPeacefulMode => _peacefulNoMonsters;
         public SmartCameraOccluder CameraOccluder => _cameraOccluder;
         public DayNightCycleController DayNightCycle => _dayNightCycle;
+        public MmorpgGrowthManager Growth => _growth;
 
         public event Action<bool>? PeacefulModeChanged;
 
         public override void _Ready()
         {
+            // 0. Load Unified MMORPG Growth & Quest Board Catalogs (contracts/content/*.json)
+            _growth.LoadCatalogs();
+
             // 1. Initialize EntityManager + SnapshotInterpolator for live server-rs entities
             _entityManager = new EntityManager
             {
@@ -289,6 +292,8 @@ namespace AtlasWorld.Client
                 };
             }
 
+            SyncGrowthHud();
+
             // 5. Connect to server-rs via Config endpoint and wire RawSnapshotReceived -> EntityManager
             if (Connection != null)
             {
@@ -305,7 +310,7 @@ namespace AtlasWorld.Client
             if (ChatWidget != null)
             {
                 ChatWidget.MessageSent += OnChatMessageSent;
-                ChatWidget.AppendSystemMessage("Peaceful 3D Exploration Mode ON (Monsters Hidden). Walk West [A] up the Watchtower East Stairs to 2F (+3.2m), or press [P] to toggle monsters.");
+                ChatWidget.AppendSystemMessage("Peaceful 3D Exploration Mode ON (Monsters Hidden). Walk West [A] up the Watchtower East Stairs to 2F (+3.2m), press [P] for Mobs, or [G] to switch Job Class.");
             }
 
             // 6. Wire Mobile Controls Overlay + Cooldown visuals
@@ -544,6 +549,32 @@ namespace AtlasWorld.Client
                 $"World Time shifted to {_dayNightCycle.FormattedClockString} ({_dayNightCycle.PhaseDisplayName}).");
         }
 
+        private void CycleJobClassForTest()
+        {
+            string jobName = _growth.CycleNextJobClass();
+            SyncGrowthHud();
+            UpdateQuestTrackerDisplay();
+            Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
+            CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -90), $"JOB CLASS: {jobName.ToUpperInvariant()}!");
+            ChatWidget?.AppendSystemMessage(
+                $"[Job Change] Switched to {jobName} (Base Lv.{_growth.BaseLevel} | Job Lv.{_growth.JobLevel}/{_growth.MaxJobLevelForCurrentJob}).");
+        }
+
+        private void SyncGrowthHud()
+        {
+            PlayerStatusFrame?.SetLevelAndJob(
+                _growth.BaseLevel,
+                _growth.JobLevel,
+                $"Player ({_growth.CurrentJobDisplayName})");
+
+            if (PlayerExpBar != null)
+            {
+                PlayerExpBar.BaseExpPercent = _growth.BaseExpPercent;
+                PlayerExpBar.JobExpPercent = _growth.JobExpPercent;
+                PlayerExpBar.UpdateDisplay();
+            }
+        }
+
         private void ToggleAutoCombat()
         {
             SetAutoCombat(!_autoCombatEnabled);
@@ -575,17 +606,27 @@ namespace AtlasWorld.Client
 
         private void UpdateQuestTrackerDisplay()
         {
+            var activeQuest = _growth.ActiveQuest;
+            string categoryBadge = activeQuest.Category switch
+            {
+                "main_story" => "[Main]",
+                "job_change" => "[Job]",
+                "side_story" => "[Side]",
+                "daily_bounty" => "[Bounty]",
+                _ => "[Quest]"
+            };
+
             if (_questTitleLabel != null)
             {
                 _questTitleLabel.Text = _peacefulNoMonsters
                     ? "[Sandbox] 3D Terrain & Tower Test"
-                    : $"[Main] Ch.{_questStage} Midnight Bells";
+                    : $"{categoryBadge} {activeQuest.Title}";
             }
             if (_questTargetLabel != null)
             {
                 _questTargetLabel.Text = _peacefulNoMonsters
                     ? "Walk West up Watchtower 2F Stairs"
-                    : $"Purge Freja Monsters ({_questKillCount} / {_questKillGoal})";
+                    : $"{activeQuest.TargetText} ({_growth.QuestKillCount} / {activeQuest.KillGoal})";
             }
             if (_questHintLabel != null)
             {
@@ -598,7 +639,7 @@ namespace AtlasWorld.Client
                 {
                     _questHintLabel.Text = _autoCombatEnabled
                         ? "\u25cf Auto-Hunting Active (Tap to pause)"
-                        : "\u25b8 Tap or [AUTO] to auto-hunt";
+                        : "\u25b8 Tap or [AUTO] to auto-hunt | [G] Job";
                     _questHintLabel.Modulate = _autoCombatEnabled
                         ? new Color(0.35f, 1.0f, 0.58f, 1f)
                         : new Color(0.95f, 0.90f, 0.58f, 0.95f);
@@ -608,26 +649,31 @@ namespace AtlasWorld.Client
 
         private void RecordQuestMonsterKill()
         {
-            _questKillCount++;
-            if (_questKillCount >= _questKillGoal)
-            {
-                int completedStage = _questStage;
-                _questStage++;
-                _questKillCount = 0;
-                _questKillGoal = Math.Min(15, 5 + (_questStage - 1) * 2);
+            // Grant monster kill Base/Job EXP and advance active Quest Board entry
+            bool monsterLeveled = _growth.GrantExp(95, 70, out string? monsterLevelMsg);
+            bool questCompleted = _growth.RecordMonsterKill(out string? questMsg, out string? jobPromotionMsg);
 
-                if (PlayerExpBar != null)
-                {
-                    PlayerExpBar.BaseExpPercent = Mathf.Wrap(PlayerExpBar.BaseExpPercent + 25.0f, 0f, 100f);
-                    PlayerExpBar.JobExpPercent = Mathf.Wrap(PlayerExpBar.JobExpPercent + 25.0f, 0f, 100f);
-                    PlayerExpBar.UpdateDisplay();
-                }
-
-                Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
-                CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -110), $"QUEST CH.{completedStage} COMPLETE!");
-                ChatWidget?.AppendSystemMessage($"[Quest] Chapter {completedStage} Complete! Reward: +25% Base/Job EXP.");
-            }
+            SyncGrowthHud();
             UpdateQuestTrackerDisplay();
+
+            Vector2 centerScreen = GetViewport()?.GetVisibleRect().Size * 0.5f ?? new Vector2(640, 360);
+            if (monsterLeveled && !string.IsNullOrEmpty(monsterLevelMsg))
+            {
+                CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -85), monsterLevelMsg);
+                ChatWidget?.AppendSystemMessage($"[Growth] {monsterLevelMsg} ({_growth.CurrentJobDisplayName})");
+            }
+
+            if (questCompleted && !string.IsNullOrEmpty(questMsg))
+            {
+                CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -115), "QUEST COMPLETE!");
+                ChatWidget?.AppendSystemMessage(questMsg);
+            }
+
+            if (!string.IsNullOrEmpty(jobPromotionMsg))
+            {
+                CombatText?.SpawnSkillShout(centerScreen + new Vector2(0, -145), jobPromotionMsg);
+                ChatWidget?.AppendSystemMessage($"[Job Trial] {jobPromotionMsg}");
+            }
         }
 
         private static void SetClipLoop(AnimationPlayer player, string clipName, Animation.LoopModeEnum mode)
@@ -1192,6 +1238,10 @@ namespace AtlasWorld.Client
                         CycleWorldTimeOfDay();
                         GetViewport()?.SetInputAsHandled();
                         break;
+                    case Key.G:
+                        CycleJobClassForTest();
+                        GetViewport()?.SetInputAsHandled();
+                        break;
                     case Key.B:
                     case Key.I:
                         if (EquipmentWardrobeModal != null)
@@ -1421,13 +1471,7 @@ namespace AtlasWorld.Client
                 }
                 else if (ev.Kind == GameEventKind.Kill && ev.SourceId == myWireId)
                 {
-                    if (PlayerExpBar != null)
-                    {
-                        PlayerExpBar.BaseExpPercent = Mathf.Wrap(PlayerExpBar.BaseExpPercent + 8.0f, 0f, 100f);
-                        PlayerExpBar.JobExpPercent = Mathf.Wrap(PlayerExpBar.JobExpPercent + 8.0f, 0f, 100f);
-                        PlayerExpBar.UpdateDisplay();
-                    }
-                    ChatWidget?.AppendSystemMessage("Defeated monster! (+8.0% Base/Job EXP)");
+                    ChatWidget?.AppendSystemMessage("Defeated monster! (+95 Base EXP / +70 Job EXP)");
                     RecordQuestMonsterKill();
                 }
             }
@@ -1710,7 +1754,7 @@ namespace AtlasWorld.Client
                     Vector2 srvDelta = new Vector2(
                         PlayerAvatar.Position.X - _entityManager.OwnPlayerServerPosition.X,
                         PlayerAvatar.Position.Z - _entityManager.OwnPlayerServerPosition.Z);
-                    float srvDist = srvDelta.Length();
+                    float srvDist = srvDist = srvDelta.Length();
                     if (srvDist > 0.75f)
                     {
                         Vector2 catchup = srvDelta / srvDist;
@@ -2079,6 +2123,11 @@ namespace AtlasWorld.Client
         private void OnChatMessageSent(string msg)
         {
             GD.Print($"[VerticalSliceRoot] Chat message sent: {msg}");
+            if (msg.Trim().Equals("/job", StringComparison.OrdinalIgnoreCase))
+            {
+                CycleJobClassForTest();
+                return;
+            }
             ChatWidget?.AppendPlayerMessage("You", msg);
         }
     }

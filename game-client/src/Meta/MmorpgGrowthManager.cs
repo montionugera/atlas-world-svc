@@ -1,0 +1,312 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Godot;
+
+namespace AtlasWorld.Client.Meta
+{
+    public sealed class JobBonusStatsDef
+    {
+        [JsonPropertyName("str")] public int Str { get; set; }
+        [JsonPropertyName("agi")] public int Agi { get; set; }
+        [JsonPropertyName("vit")] public int Vit { get; set; }
+        [JsonPropertyName("int")] public int Int { get; set; }
+        [JsonPropertyName("dex")] public int Dex { get; set; }
+    }
+
+    public sealed class JobCatalogDef
+    {
+        [JsonPropertyName("id")] public string Id { get; set; } = "";
+        [JsonPropertyName("name")] public string Name { get; set; } = "";
+        [JsonPropertyName("tier")] public int Tier { get; set; }
+        [JsonPropertyName("parentJobId")] public string? ParentJobId { get; set; }
+        [JsonPropertyName("minBaseLevel")] public int MinBaseLevel { get; set; } = 1;
+        [JsonPropertyName("maxJobLevel")] public int MaxJobLevel { get; set; } = 10;
+        [JsonPropertyName("jobChangeQuestId")] public string? JobChangeQuestId { get; set; }
+        [JsonPropertyName("primaryStats")] public List<string> PrimaryStats { get; set; } = new();
+        [JsonPropertyName("allowedWeaponKinds")] public List<string> AllowedWeaponKinds { get; set; } = new();
+        [JsonPropertyName("jobBonusAtMax")] public JobBonusStatsDef JobBonusAtMax { get; set; } = new();
+        [JsonPropertyName("unlockedSkillIds")] public List<string> UnlockedSkillIds { get; set; } = new();
+        [JsonPropertyName("assetStudioKey")] public string AssetStudioKey { get; set; } = "";
+    }
+
+    public sealed class QuestObjectiveDef
+    {
+        [JsonPropertyName("id")] public string Id { get; set; } = "";
+        [JsonPropertyName("type")] public string Type { get; set; } = "";
+        [JsonPropertyName("targetId")] public string TargetId { get; set; } = "";
+        [JsonPropertyName("required")] public int Required { get; set; } = 1;
+    }
+
+    public sealed class QuestRewardItemDef
+    {
+        [JsonPropertyName("itemId")] public string ItemId { get; set; } = "";
+        [JsonPropertyName("qty")] public int Qty { get; set; } = 1;
+    }
+
+    public sealed class QuestRewardsDef
+    {
+        [JsonPropertyName("baseXp")] public int BaseXp { get; set; }
+        [JsonPropertyName("jobXp")] public int JobXp { get; set; }
+        [JsonPropertyName("unlockJobId")] public string? UnlockJobId { get; set; }
+        [JsonPropertyName("unlockSkillId")] public string? UnlockSkillId { get; set; }
+        [JsonPropertyName("reputation")] public int Reputation { get; set; }
+        [JsonPropertyName("items")] public List<QuestRewardItemDef> Items { get; set; } = new();
+    }
+
+    public sealed class QuestBoardDef
+    {
+        [JsonPropertyName("id")] public string Id { get; set; } = "";
+        [JsonPropertyName("title")] public string Title { get; set; } = "";
+        [JsonPropertyName("category")] public string Category { get; set; } = "main_story";
+        [JsonPropertyName("minBaseLevel")] public int MinBaseLevel { get; set; } = 1;
+        [JsonPropertyName("requiredJobId")] public string? RequiredJobId { get; set; }
+        [JsonPropertyName("giverNpcId")] public string GiverNpcId { get; set; } = "";
+        [JsonPropertyName("zoneId")] public string ZoneId { get; set; } = "";
+        [JsonPropertyName("repeatable")] public bool Repeatable { get; set; }
+        [JsonPropertyName("objectives")] public List<QuestObjectiveDef> Objectives { get; set; } = new();
+        [JsonPropertyName("rewards")] public QuestRewardsDef Rewards { get; set; } = new();
+
+        public int KillGoal => Objectives.Count > 0 ? Math.Max(1, Objectives[0].Required) : 5;
+        public string TargetText => Objectives.Count > 0
+            ? $"Purge {Objectives[0].TargetId.Replace("mob-", "")}"
+            : "Purge Freja Monsters";
+    }
+
+    /// <summary>
+    /// Client-side MMORPG Growth, Job Progression &amp; Quest Board tracker backed directly by
+    /// <c>contracts/content/jobs.json</c> and <c>contracts/content/quest_board.json</c>.
+    /// </summary>
+    public sealed class MmorpgGrowthManager
+    {
+        public List<JobCatalogDef> Jobs { get; private set; } = new();
+        public List<QuestBoardDef> Quests { get; private set; } = new();
+
+        public int BaseLevel { get; private set; } = 12;
+        public int JobLevel { get; private set; } = 15;
+        public int CurrentBaseExp { get; private set; } = 0;
+        public int CurrentJobExp { get; private set; } = 0;
+        public string CurrentJobId { get; private set; } = "swordman";
+        public int ActiveQuestIndex { get; private set; } = 0;
+        public int ActiveQuestProgress { get; private set; } = 0;
+        public int HandbookSlimeKills { get; private set; } = 0;
+        public int HandbookBoarKills { get; private set; } = 0;
+
+        public void LoadCatalogs()
+        {
+            string repoRoot = ProjectSettings.GlobalizePath("res://..").TrimEnd('/', '\\');
+            string jobsPath = Path.Combine(repoRoot, "contracts", "content", "jobs.json");
+            string questsPath = Path.Combine(repoRoot, "contracts", "content", "quest_board.json");
+
+            try
+            {
+                if (File.Exists(jobsPath))
+                {
+                    Jobs = JsonSerializer.Deserialize<List<JobCatalogDef>>(File.ReadAllText(jobsPath)) ?? new();
+                }
+                if (File.Exists(questsPath))
+                {
+                    Quests = JsonSerializer.Deserialize<List<QuestBoardDef>>(File.ReadAllText(questsPath)) ?? new();
+                }
+            }
+            catch (Exception ex)
+            {
+                GD.PushWarning($"[MmorpgGrowthManager] Failed to load catalogs: {ex.Message}");
+            }
+
+            if (Jobs.Count == 0)
+            {
+                Jobs.Add(new JobCatalogDef { Id = "novice", Name = "Novice", Tier = 0, MinBaseLevel = 1, MaxJobLevel = 10 });
+                Jobs.Add(new JobCatalogDef { Id = "swordman", Name = "Swordman", Tier = 1, ParentJobId = "novice", MinBaseLevel = 10, MaxJobLevel = 40 });
+                Jobs.Add(new JobCatalogDef { Id = "knight", Name = "Knight", Tier = 2, ParentJobId = "swordman", MinBaseLevel = 40, MaxJobLevel = 50 });
+            }
+
+            if (Quests.Count == 0)
+            {
+                Quests.Add(new QuestBoardDef
+                {
+                    Id = "quest-main-01-freja-gate",
+                    Title = "Ch.1 Midnight Bells",
+                    Category = "main_story",
+                    Objectives = new List<QuestObjectiveDef>
+                    {
+                        new() { Id = "obj-1", Type = "kill_mob", TargetId = "mob-emerald-slime", Required = 5 }
+                    },
+                    Rewards = new QuestRewardsDef { BaseXp = 220, JobXp = 140 }
+                });
+            }
+        }
+
+        public JobCatalogDef CurrentJob =>
+            Jobs.Find(j => j.Id == CurrentJobId) ?? Jobs[0];
+
+        public string CurrentJobDisplayName => CurrentJob.Name;
+
+        public int MaxJobLevelForCurrentJob => CurrentJob.MaxJobLevel;
+
+        public int QuestKillCount => ActiveQuestProgress;
+
+        public QuestBoardDef ActiveQuest =>
+            Quests.Count > 0 ? Quests[ActiveQuestIndex % Quests.Count] : new QuestBoardDef { Title = "Ch.1 Midnight Bells" };
+
+        public int RequiredBaseExp =>
+            Mathf.Max(50, Mathf.RoundToInt(50f * Mathf.Pow(1.115f, Mathf.Clamp(BaseLevel, 1, 99) - 1)));
+
+        public int RequiredJobExp
+        {
+            get
+            {
+                var job = CurrentJob;
+                float tierMult = job.Tier == 0 ? 0.65f : (job.Tier == 1 ? 1.0f : 1.45f);
+                return Mathf.Max(20, Mathf.RoundToInt(35f * tierMult * Mathf.Pow(1.105f, Mathf.Clamp(JobLevel, 1, 50) - 1)));
+            }
+        }
+
+        public float BaseExpPercent =>
+            Mathf.Clamp(100f * CurrentBaseExp / Mathf.Max(1, RequiredBaseExp), 0f, 99.9f);
+
+        public float JobExpPercent =>
+            Mathf.Clamp(100f * CurrentJobExp / Mathf.Max(1, RequiredJobExp), 0f, 99.9f);
+
+        public int ActiveQuestGoal => ActiveQuest.KillGoal;
+
+        public (bool baseLeveledUp, bool jobLeveledUp, string? autoPromotedJobName) GrantExp(int baseExp, int jobExp)
+        {
+            bool baseUp = false;
+            bool jobUp = false;
+            string? promotedName = null;
+
+            CurrentBaseExp += Math.Max(0, baseExp);
+            while (BaseLevel < 99 && CurrentBaseExp >= RequiredBaseExp)
+            {
+                CurrentBaseExp -= RequiredBaseExp;
+                BaseLevel++;
+                baseUp = true;
+            }
+
+            var job = CurrentJob;
+            CurrentJobExp += Math.Max(0, jobExp);
+            while (JobLevel < job.MaxJobLevel && CurrentJobExp >= RequiredJobExp)
+            {
+                CurrentJobExp -= RequiredJobExp;
+                JobLevel++;
+                jobUp = true;
+            }
+
+            // Auto-promote Novice -> Swordman at Job Lv 10, Swordman -> Knight at Job Lv 40
+            if (CurrentJobId == "novice" && JobLevel >= 10 && BaseLevel >= 10)
+            {
+                CurrentJobId = "swordman";
+                JobLevel = 1;
+                CurrentJobExp = 0;
+                promotedName = CurrentJob.Name;
+            }
+            else if (CurrentJobId == "swordman" && JobLevel >= 40 && BaseLevel >= 40)
+            {
+                CurrentJobId = "knight";
+                JobLevel = 1;
+                CurrentJobExp = 0;
+                promotedName = CurrentJob.Name;
+            }
+
+            return (baseUp, jobUp, promotedName);
+        }
+
+        public bool GrantExp(int baseExp, int jobExp, out string? levelUpMessage)
+        {
+            var (baseUp, jobUp, promoted) = GrantExp(baseExp, jobExp);
+            if (!string.IsNullOrEmpty(promoted))
+            {
+                levelUpMessage = $"JOB PROMOTED: {promoted.ToUpperInvariant()}!";
+                return true;
+            }
+            if (baseUp && jobUp)
+            {
+                levelUpMessage = $"BASE LV.{BaseLevel} & JOB LV.{JobLevel} UP!";
+                return true;
+            }
+            if (baseUp)
+            {
+                levelUpMessage = $"BASE LEVEL UP! (Lv.{BaseLevel})";
+                return true;
+            }
+            if (jobUp)
+            {
+                levelUpMessage = $"JOB LEVEL UP! (Job {JobLevel})";
+                return true;
+            }
+            levelUpMessage = null;
+            return false;
+        }
+
+        public string CycleNextJobClass()
+        {
+            if (Jobs.Count == 0) return "Novice";
+            int idx = Jobs.FindIndex(j => j.Id == CurrentJobId);
+            int nextIdx = (idx + 1) % Jobs.Count;
+            var nextJob = Jobs[nextIdx];
+            CurrentJobId = nextJob.Id;
+            BaseLevel = Math.Max(BaseLevel, nextJob.MinBaseLevel);
+            JobLevel = Math.Clamp(JobLevel, 1, nextJob.MaxJobLevel);
+            return nextJob.Name;
+        }
+
+        public (bool questCompleted, QuestBoardDef? completedQuest, string? unlockedJobName) RecordMonsterKill()
+        {
+            HandbookSlimeKills++;
+            HandbookBoarKills++;
+            ActiveQuestProgress++;
+
+            var q = ActiveQuest;
+            int goal = ActiveQuestGoal;
+            if (ActiveQuestProgress < goal)
+            {
+                return (false, null, null);
+            }
+
+            ActiveQuestProgress = 0;
+            ActiveQuestIndex = Quests.Count > 0 ? (ActiveQuestIndex + 1) % Quests.Count : 0;
+
+            string? unlockedJobName = null;
+            var (_, _, promoted) = GrantExp(q.Rewards.BaseXp, q.Rewards.JobXp);
+            if (!string.IsNullOrEmpty(q.Rewards.UnlockJobId))
+            {
+                var unlockedJob = Jobs.Find(j => j.Id == q.Rewards.UnlockJobId);
+                if (unlockedJob != null)
+                {
+                    CurrentJobId = unlockedJob.Id;
+                    BaseLevel = Math.Max(BaseLevel, unlockedJob.MinBaseLevel);
+                    JobLevel = 1;
+                    CurrentJobExp = 0;
+                    unlockedJobName = unlockedJob.Name;
+                }
+            }
+            else if (promoted != null)
+            {
+                unlockedJobName = promoted;
+            }
+
+            return (true, q, unlockedJobName);
+        }
+
+        public bool RecordMonsterKill(out string? questCompletedMessage, out string? jobPromotionMessage)
+        {
+            var (completed, q, unlockedJob) = RecordMonsterKill();
+            if (!completed || q == null)
+            {
+                questCompletedMessage = null;
+                jobPromotionMessage = null;
+                return false;
+            }
+
+            questCompletedMessage =
+                $"[Quest] Completed '{q.Title}' [{q.Category}]! Reward: +{q.Rewards.BaseXp} Base EXP, +{q.Rewards.JobXp} Job EXP.";
+            jobPromotionMessage = !string.IsNullOrEmpty(unlockedJob)
+                ? $"JOB PROMOTED TO {unlockedJob.ToUpperInvariant()}!"
+                : null;
+            return true;
+        }
+    }
+}
