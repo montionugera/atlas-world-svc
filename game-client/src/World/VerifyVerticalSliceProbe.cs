@@ -8,8 +8,7 @@ using AtlasWorld.Client.UI.Widgets;
 namespace AtlasWorld.Client.World
 {
     /// <summary>
-    /// Headless verification probe for the Godot 4 + server-rs (Rust) Vertical Slice.
-    /// Follows the repository probe contract:
+    /// Headless verification probe for the Godot 4 + server-rs (Rust) Vertical Slice.\n    /// Follows the repository probe contract:
     /// Runs when ATLAS_VERIFY_VERTICAL_SLICE=1 is set, returning 0 on PASS and 1 on FAIL.
     /// </summary>
     public static class VerifyVerticalSliceProbe
@@ -423,14 +422,14 @@ namespace AtlasWorld.Client.World
                     return 1;
                 }
 
-                // 5. SmartCameraOccluder Automatic Roof Cutaway on 1F vs Solid Deck on 2F Check:
+                // 5. SmartCameraOccluder Automatic Roof/Wall Cutaway & Near-Camera Tree Hide Check:
                 var occluder = new SmartCameraOccluder();
                 var testRoot = new Node3D();
                 context.AddChild(testRoot);
                 var streamer = new MapChunkStreamer(testRoot, doc, occluder);
                 streamer.UpdateStreaming(new Vector3(tower.X, baseTowerY, tower.Z), forceReload: true);
 
-                // 5a. Place player inside Watchtower 1F -> roof MUST auto-cutaway
+                // 5a. Place player inside Watchtower 1F -> roof & upper pillars MUST auto-cutaway
                 occluder.Update(
                     0.5f,
                     new Vector3(tower.X, baseTowerY + 8.0f, tower.Z + 8.0f),
@@ -443,7 +442,7 @@ namespace AtlasWorld.Client.World
                     return 1;
                 }
 
-                // 5b. Place player on Watchtower 2F -> 2nd-floor deck MUST remain 100% solid opaque (0 faded canopies)!
+                // 5b. Place player on Watchtower 2F -> 2nd-floor deck MUST remain 100% solid opaque!
                 occluder.Update(
                     0.5f,
                     new Vector3(tower.X, expectedDeckY + 8.0f, tower.Z + 8.0f),
@@ -456,8 +455,35 @@ namespace AtlasWorld.Client.World
                     return 1;
                 }
 
+                // 5c. Place player inside Crystal Cave -> cave roof AND upper walls MUST auto-cutaway!
+                occluder.Update(
+                    0.5f,
+                    new Vector3(cave.X - 3.5f, baseCaveY + 4.5f, cave.Z - 4.5f),
+                    new Vector3(cave.X, sampledCaveFloor + 1.25f, cave.Z));
+
+                if (occluder.CurrentlyFadedPropCount < 1)
+                {
+                    GD.PrintErr("[VerticalSliceProbe]   FAIL  SmartCameraOccluder did not cutaway Crystal Cave walls/roof when player is inside cave");
+                    testRoot.QueueFree();
+                    return 1;
+                }
+
+                // 5d. Place Camera3D directly inside a tree canopy (-16, y+2.5, -14) -> tree MUST fade & hide completely (zero black screen)
+                float treeY = TerrainElevation.SampleBaseTerrainHeight(-16f, -14f, doc);
+                occluder.Update(
+                    1.0f,
+                    new Vector3(-16.0f, treeY + 2.4f, -14.0f),
+                    new Vector3(-12.0f, treeY + 1.25f, -10.0f));
+
+                if (occluder.CurrentlyFadedPropCount < 1)
+                {
+                    GD.PrintErr("[VerticalSliceProbe]   FAIL  SmartCameraOccluder did not fade tree when camera is inside tree canopy");
+                    testRoot.QueueFree();
+                    return 1;
+                }
+
                 testRoot.QueueFree();
-                GD.Print($"[VerticalSliceProbe]   PASS  Multi-Floor 3D Watchtower Climb (1F={sampled1F:0.00}m -> East Stairs -> 2F={walkY:0.00}m), Crystal Cave ({sampledCaveFloor:0.00}m) & Solid 2F / Cutaway 1F");
+                GD.Print($"[VerticalSliceProbe]   PASS  Multi-Floor 3D Watchtower Climb (1F={sampled1F:0.00}m -> East Stairs -> 2F={walkY:0.00}m), Crystal Cave Wall Cutaway ({sampledCaveFloor:0.00}m) & Near-Camera Tree Hide");
                 return 0;
             }
             catch (Exception ex)

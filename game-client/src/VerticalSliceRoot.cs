@@ -396,13 +396,13 @@ namespace AtlasWorld.Client
             // Optional test camera pose to demonstrate Smart Camera LOS Occlusion Fading & 3D Altitude
             if (OS.GetEnvironment("ATLAS_TEST_OCCLUSION_POSE") == "1" && PlayerAvatar != null)
             {
-                float tx = -15.6f;
-                float tz = -12.6f;
-                float ty = TerrainElevation.SampleHeight(tx, tz, _mapDoc);
+                float tx = 9.8f;
+                float tz = -4.2f;
+                float ty = TerrainElevation.SampleHeight(tx, tz, _mapDoc, 2.86f);
                 PlayerAvatar.Position = new Vector3(tx, ty, tz);
-                _cameraYaw = -0.35f;
-                _cameraPitch = 0.34f;
-                _cameraDistance = 6.8f;
+                _cameraYaw = -0.45f;
+                _cameraPitch = 0.36f;
+                _cameraDistance = 6.4f;
                 _chunkStreamer?.UpdateStreaming(PlayerAvatar.Position, forceReload: true);
             }
 

@@ -18,9 +18,9 @@ namespace AtlasWorld.Client.World
     ///    0 individual <see cref="Node3D"/> overhead).
     /// 3. Safe Multi-Floor 3D Structures (<see cref="UnifiedMapStructureVolume"/>): Spawns 2-Story Watchtowers
     ///    (with walkable ground chamber, wide exterior East stair ramp, and +3.2m upper battlement deck) and
-    ///    Walk-In Crystal Caves (with South portal archway, glowing crystal interior, and automatic roof cutaway
+    ///    Walk-In Crystal Caves (with South portal archway, glowing crystal interior, and automatic roof + wall cutaway
     ///    via <see cref="SmartCameraOccluder.RegisterRoofOrCeilingCanopy"/>).
-    /// 4. Smart LOS Occluder Registration: Tall/solid props and upper structure roofs automatically fade when
+    /// 4. Smart LOS Occluder Registration: Tall/solid props and upper structure roofs/walls automatically fade when
     ///    they cross the camera-to-player line of sight or when the player walks underneath an upper deck/ceiling.
     /// </summary>
     public sealed class MapChunkStreamer
@@ -398,8 +398,8 @@ namespace AtlasWorld.Client.World
 
         /// <summary>
         /// Builds a complete 3D multi-floor structure ("watchtower" or "crystal_cave") with deterministic
-        /// stairs/portals and registers its upper deck / cave roof with <see cref="SmartCameraOccluder"/>
-        /// for automatic interior roof cutaway.
+        /// stairs/portals and registers its upper deck / cave roof &amp; walls with <see cref="SmartCameraOccluder"/>
+        /// for automatic interior cutaway.
         /// </summary>
         private void SpawnStructureVolumeIntoChunk(UnifiedMapStructureVolume s, Node3D chunkNode)
         {
@@ -451,26 +451,6 @@ namespace AtlasWorld.Client.World
                 };
                 root.AddChild(groundPlinth);
 
-                // 4 Heavy Stone Corner Pillars supporting the 2nd floor
-                float pOff = r - 0.45f;
-                (float px, float pz)[] corners =
-                {
-                    (-pOff, -pOff),
-                    ( pOff, -pOff),
-                    (-pOff,  pOff),
-                    ( pOff,  pOff)
-                };
-                foreach (var (px, pz) in corners)
-                {
-                    var pillarMesh = new MeshInstance3D
-                    {
-                        Mesh = new BoxMesh { Size = new Vector3(0.72f, deckH, 0.72f) },
-                        MaterialOverride = darkStoneMat,
-                        Position = new Vector3(px, deckH * 0.5f, pz)
-                    };
-                    root.AddChild(pillarMesh);
-                }
-
                 // Exterior East Stepped Stone Stair Ramp (matches TerrainElevation.SampleHeight 1:1!)
                 // Climbs from Y=0 at x=+r+3.25m (East entrance) up to Y=deckH at x=+r-0.25m (2nd-floor deck edge)
                 const int stepCount = 12;
@@ -502,13 +482,44 @@ namespace AtlasWorld.Client.World
                     root.AddChild(runnerStrip);
                 }
 
-                // Upper 2nd-Floor Battlement Deck & Parapets (registered for automatic roof cutaway when player is on 1F!)
+                // Upper 2nd-Floor Battlement Deck, Parapets & Supporting Pillars
+                // (registered for automatic cutaway when player is on 1F or behind the tower!)
                 var upperCanopy = new Node3D
                 {
                     Name = "UpperDeckCanopy",
                     Position = new Vector3(0f, deckH, 0f)
                 };
                 root.AddChild(upperCanopy);
+
+                // 4 Stone Corner Pillars: ankle-high plinth stays on 1F, upper shaft cuts away with 2F canopy!
+                float pOff = r - 0.45f;
+                (float px, float pz)[] corners =
+                {
+                    (-pOff, -pOff),
+                    ( pOff, -pOff),
+                    (-pOff,  pOff),
+                    ( pOff,  pOff)
+                };
+                const float plinthH = 0.36f;
+                float upperPillarH = Mathf.Max(0.5f, deckH - plinthH);
+                foreach (var (px, pz) in corners)
+                {
+                    var pillarPlinth = new MeshInstance3D
+                    {
+                        Mesh = new BoxMesh { Size = new Vector3(0.76f, plinthH, 0.76f) },
+                        MaterialOverride = darkStoneMat,
+                        Position = new Vector3(px, plinthH * 0.5f, pz)
+                    };
+                    root.AddChild(pillarPlinth);
+
+                    var pillarShaft = new MeshInstance3D
+                    {
+                        Mesh = new BoxMesh { Size = new Vector3(0.72f, upperPillarH, 0.72f) },
+                        MaterialOverride = darkStoneMat,
+                        Position = new Vector3(px, -upperPillarH * 0.5f, pz)
+                    };
+                    upperCanopy.AddChild(pillarShaft);
+                }
 
                 var upperSlab = new MeshInstance3D
                 {
@@ -519,24 +530,24 @@ namespace AtlasWorld.Client.World
                 };
                 upperCanopy.AddChild(upperSlab);
 
-                // Battlement Parapet Walls (North, South, West)
+                // Low Battlement Parapet Walls (North, South, West — 0.62m high so they never hide the player on 2F)
                 var northParapet = new MeshInstance3D
                 {
-                    Mesh = new BoxMesh { Size = new Vector3(r * 2.12f, 0.85f, 0.35f) },
+                    Mesh = new BoxMesh { Size = new Vector3(r * 2.12f, 0.62f, 0.35f) },
                     MaterialOverride = stoneMat,
-                    Position = new Vector3(0f, 0.42f, -r + 0.15f)
+                    Position = new Vector3(0f, 0.31f, -r + 0.15f)
                 };
                 var southParapet = new MeshInstance3D
                 {
-                    Mesh = new BoxMesh { Size = new Vector3(r * 2.12f, 0.85f, 0.35f) },
+                    Mesh = new BoxMesh { Size = new Vector3(r * 2.12f, 0.62f, 0.35f) },
                     MaterialOverride = stoneMat,
-                    Position = new Vector3(0f, 0.42f, r - 0.15f)
+                    Position = new Vector3(0f, 0.31f, r - 0.15f)
                 };
                 var westParapet = new MeshInstance3D
                 {
-                    Mesh = new BoxMesh { Size = new Vector3(0.35f, 0.85f, r * 2.12f) },
+                    Mesh = new BoxMesh { Size = new Vector3(0.35f, 0.62f, r * 2.12f) },
                     MaterialOverride = stoneMat,
-                    Position = new Vector3(-r + 0.15f, 0.42f, 0f)
+                    Position = new Vector3(-r + 0.15f, 0.31f, 0f)
                 };
                 upperCanopy.AddChild(northParapet);
                 upperCanopy.AddChild(southParapet);
@@ -565,7 +576,7 @@ namespace AtlasWorld.Client.World
 
                 EntityView.ApplyAnimeToonShading(root, EntityKind.Npc);
 
-                // Register ONLY the upper 2F canopy for automatic 1st-floor interior cutaway
+                // Register the upper 2F canopy + pillar shafts for automatic 1st-floor interior & LOS cutaway
                 // (never fade the stairs or the 2F deck when the player stands on top of the 2F deck!)
                 _occluder?.RegisterRoofOrCeilingCanopy(
                     upperCanopy,
@@ -605,46 +616,32 @@ namespace AtlasWorld.Client.World
                 };
                 root.AddChild(caveFloor);
 
-                // West, East, and North Rock Cavern Walls (South side is the open walk-in portal!)
-                var westWall = new MeshInstance3D
+                // Low ankle-high stone perimeter curb on the ground (0.28m high) so the cave boundary
+                // remains clearly visible even when the upper walls & roof cut away!
+                const float curbH = 0.28f;
+                var westCurb = new MeshInstance3D
                 {
-                    Mesh = new BoxMesh { Size = new Vector3(0.95f, ceilH, r * 1.95f) },
+                    Mesh = new BoxMesh { Size = new Vector3(0.95f, curbH, r * 1.95f) },
                     MaterialOverride = cavernRockMat,
-                    Position = new Vector3(-r + 0.35f, ceilH * 0.45f, 0f)
+                    Position = new Vector3(-r + 0.35f, curbH * 0.5f - 0.24f, 0f)
                 };
-                var eastWall = new MeshInstance3D
+                var eastCurb = new MeshInstance3D
                 {
-                    Mesh = new BoxMesh { Size = new Vector3(0.95f, ceilH, r * 1.95f) },
+                    Mesh = new BoxMesh { Size = new Vector3(0.95f, curbH, r * 1.95f) },
                     MaterialOverride = cavernRockMat,
-                    Position = new Vector3(r - 0.35f, ceilH * 0.45f, 0f)
+                    Position = new Vector3(r - 0.35f, curbH * 0.5f - 0.24f, 0f)
                 };
-                var northWall = new MeshInstance3D
+                var northCurb = new MeshInstance3D
                 {
-                    Mesh = new BoxMesh { Size = new Vector3(r * 1.95f, ceilH, 0.95f) },
+                    Mesh = new BoxMesh { Size = new Vector3(r * 1.95f, curbH, 0.95f) },
                     MaterialOverride = cavernRockMat,
-                    Position = new Vector3(0f, ceilH * 0.45f, -r + 0.35f)
+                    Position = new Vector3(0f, curbH * 0.5f - 0.24f, -r + 0.35f)
                 };
-                root.AddChild(westWall);
-                root.AddChild(eastWall);
-                root.AddChild(northWall);
+                root.AddChild(westCurb);
+                root.AddChild(eastCurb);
+                root.AddChild(northCurb);
 
-                // South Portal Archway Pillars & Lintel
-                var archLeft = new MeshInstance3D
-                {
-                    Mesh = new BoxMesh { Size = new Vector3(0.95f, ceilH, 0.85f) },
-                    MaterialOverride = cavernRockMat,
-                    Position = new Vector3(-r * 0.62f, ceilH * 0.45f, r - 0.25f)
-                };
-                var archRight = new MeshInstance3D
-                {
-                    Mesh = new BoxMesh { Size = new Vector3(0.95f, ceilH, 0.85f) },
-                    MaterialOverride = cavernRockMat,
-                    Position = new Vector3(r * 0.62f, ceilH * 0.45f, r - 0.25f)
-                };
-                root.AddChild(archLeft);
-                root.AddChild(archRight);
-
-                // Glowing Bioluminescent Crystal Spires inside the Cavern
+                // Glowing Bioluminescent Crystal Spires inside the Cavern (always visible!)
                 (float cx, float cz, float ch, float rot)[] crystals =
                 {
                     (-r * 0.45f, -r * 0.42f, 1.65f, 0.25f),
@@ -672,13 +669,52 @@ namespace AtlasWorld.Client.World
                 };
                 root.AddChild(crystalLight);
 
-                // Overhead Mountain Cavern Roof Canopy (auto-cuts away when the player walks inside the cave!)
+                // Overhead Mountain Cavern Roof & Upper Walls Shell (auto-cuts away when the player walks inside or behind the cave!)
                 var roofCanopy = new Node3D
                 {
                     Name = "CaveRoofCanopy",
                     Position = new Vector3(0f, ceilH, 0f)
                 };
                 root.AddChild(roofCanopy);
+
+                // Upper West, East, North Cavern Walls & South Portal Archway inside roofCanopy so they cut away with the roof!
+                float wallShellH = Mathf.Max(1.8f, ceilH - curbH);
+                float wallCenterRelY = -wallShellH * 0.5f;
+                var westWall = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(0.95f, wallShellH, r * 1.95f) },
+                    MaterialOverride = cavernRockMat,
+                    Position = new Vector3(-r + 0.35f, wallCenterRelY, 0f)
+                };
+                var eastWall = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(0.95f, wallShellH, r * 1.95f) },
+                    MaterialOverride = cavernRockMat,
+                    Position = new Vector3(r - 0.35f, wallCenterRelY, 0f)
+                };
+                var northWall = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(r * 1.95f, wallShellH, 0.95f) },
+                    MaterialOverride = cavernRockMat,
+                    Position = new Vector3(0f, wallCenterRelY, -r + 0.35f)
+                };
+                var archLeft = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(0.95f, wallShellH, 0.85f) },
+                    MaterialOverride = cavernRockMat,
+                    Position = new Vector3(-r * 0.62f, wallCenterRelY, r - 0.25f)
+                };
+                var archRight = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(0.95f, wallShellH, 0.85f) },
+                    MaterialOverride = cavernRockMat,
+                    Position = new Vector3(r * 0.62f, wallCenterRelY, r - 0.25f)
+                };
+                roofCanopy.AddChild(westWall);
+                roofCanopy.AddChild(eastWall);
+                roofCanopy.AddChild(northWall);
+                roofCanopy.AddChild(archLeft);
+                roofCanopy.AddChild(archRight);
 
                 var roofDome = new MeshInstance3D
                 {
@@ -700,7 +736,7 @@ namespace AtlasWorld.Client.World
 
                 var caveLabel = new Label3D
                 {
-                    Text = "💎 Walk-In Crystal Cave\n[South Portal Entry | Auto Roof Cutaway]",
+                    Text = "💎 Walk-In Crystal Cave\n[South Portal Entry | Auto Roof & Wall Cutaway]",
                     Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
                     FontSize = 22,
                     OutlineSize = 7,
@@ -708,6 +744,8 @@ namespace AtlasWorld.Client.World
                     Position = new Vector3(0f, 2.25f, 0f)
                 };
                 roofCanopy.AddChild(caveLabel);
+
+                EntityView.ApplyAnimeToonShading(root, EntityKind.Npc);
 
                 _occluder?.RegisterRoofOrCeilingCanopy(
                     roofCanopy,
