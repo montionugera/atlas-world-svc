@@ -1,0 +1,35 @@
+[
+  {
+    "id": "castle_valkyrie_01",
+    "name": "Kriemhild (Valkyrie Realm)",
+    "hubTownId": "prontera_capital",
+    "siegeMapId": "valkyrie_siege_01",
+    "siegeDurationMinutes": 60,
+    "maxGuildSize": 50,
+    "emperium": {
+      "hp": 120000,
+      "element": "Holy",
+      "race": "Angel",
+      "size": "Small",
+      "onlyNormalAttackDamage": true
+    },
+    "fortifications": {
+      "outerGateBarricadeCount": 2,
+      "innerGateBarricadeCount": 2,
+      "guardianStoneCount": 2,
+      "barricadeHp": 45000
+    },
+    "pvpRules": {
+      "playerDamageScalingPct": 60,
+      "rangedDamageInSiegePct": 75,
+      "knockbackDisabled": true,
+      "consumableCooldownMs": 3000
+    },
+    "ownerRewards": {
+      "dailyTreasureChestCount": 4,
+      "guildDungeonZoneId": "guild_abyss_valkyrie",
+      "townTaxShareBps": 200
+    },
+    "assetStudioKey": "castle.kriemhild"
+  }
+]

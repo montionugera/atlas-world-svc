@@ -1,0 +1,33 @@
+[
+  {
+    "id": "hb_mob_forest_slime",
+    "category": "monster_research",
+    "title": "Forest Slime Ecology",
+    "targetId": "forest_slime",
+    "tiers": [
+      { "requiredCount": 10, "unlockNote": "Unlocks HP bar & Element visibility", "bonusStat": "maxHpFlat", "bonusValue": 15 },
+      { "requiredCount": 100, "unlockNote": "Unlocks Drop table preview", "bonusStat": "pDefFlat", "bonusValue": 1 },
+      { "requiredCount": 500, "unlockNote": "Master Slime Hunter title", "bonusStat": "maxHpFlat", "bonusValue": 45 }
+    ]
+  },
+  {
+    "id": "hb_mob_boar",
+    "category": "monster_research",
+    "title": "Wild Boar Ecology",
+    "targetId": "boar",
+    "tiers": [
+      { "requiredCount": 10, "unlockNote": "Unlocks HP bar & Element visibility", "bonusStat": "pAtkFlat", "bonusValue": 1 },
+      { "requiredCount": 100, "unlockNote": "Unlocks Drop table preview", "bonusStat": "pAtkFlat", "bonusValue": 2 },
+      { "requiredCount": 500, "unlockNote": "Tusk Breaker badge", "bonusStat": "str", "bonusValue": 1 }
+    ]
+  },
+  {
+    "id": "hb_vista_watchtower_top",
+    "category": "scenic_vista",
+    "title": "South Gate Watchtower Overlook",
+    "targetId": "prontera_south_field",
+    "tiers": [
+      { "requiredCount": 1, "unlockNote": "Climb to the 2nd Floor Watchtower roof", "bonusStat": "maxHpFlat", "bonusValue": 25 }
+    ]
+  }
+]
