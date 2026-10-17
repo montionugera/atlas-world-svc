@@ -1019,7 +1019,7 @@
     "id": "I-164",
     "title": "Protocol version",
     "created_at": "2026-10-11T06:59:06.885280+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-066",
     "epic": "E-006"
   },
   {

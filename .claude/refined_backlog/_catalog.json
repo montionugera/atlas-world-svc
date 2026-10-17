@@ -793,5 +793,15 @@
     "status": "open",
     "release_version": null,
     "epic": "E-006"
+  },
+  {
+    "id": "F-066",
+    "title": "Protocol version",
+    "from_idea": "I-164",
+    "created_at": "2026-10-17T19:31:59.427504+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-006"
   }
 ]
