@@ -803,10 +803,12 @@
     "from_idea": "I-164",
     "created_at": "2026-10-17T19:31:59.427504+00:00",
     "claimed_by": "agy-studio-95f66467",
-    "status": "claimed",
-    "release_version": null,
+    "status": "shipped",
+    "release_version": "1.12",
     "epic": "E-006",
-    "claimed_at": "2026-10-17T19:53:13.723961+00:00"
+    "claimed_at": "2026-10-17T19:53:13.723961+00:00",
+    "shipped_at": "2026-10-17T20:19:55.574989+00:00",
+    "shipped_sha": "70013503684b60f23182ab0152bf34a7febd938c"
   },
   {
     "id": "F-067",
