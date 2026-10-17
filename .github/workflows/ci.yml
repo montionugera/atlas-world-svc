@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  colyseus-server:
-    name: colyseus-server (typecheck · format · test)
+  content-gates:
+    name: content and tooling gates
     runs-on: ubuntu-latest
     env:
       HUSKY: "0" # skip husky install in CI (no git hooks needed)
@@ -33,7 +33,7 @@ jobs:
       # scripts/tests/node-pin.test.mjs asserts this file reads it.
       #
       # It is NOT the deployment runtime, and the line this replaces claimed it
-      # was: colyseus-server/Dockerfile has been node:22-alpine since release
+      # was: the legacy server Dockerfile has been node:22-alpine since release
       # 1.2. That number is recorded in .release.json as runtimeNodeMajor and
       # joined to the Dockerfile by the same test, so the two can diverge on
       # purpose but never by accident.
@@ -57,32 +57,15 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # @atlas/contracts resolves from dist (main/types → dist/) and has no
-      # prepare hook, so a clean install leaves it unbuilt. The server's
-      # src/meta/* import it, so build it before typecheck/test or module
-      # resolution fails.
+      # prepare hook, so a clean install leaves it unbuilt. Build it before
+      # running downstream gates.
       - name: Build contracts (@atlas/contracts)
         run: pnpm --filter @atlas/contracts run build
 
-      - name: Typecheck (tsc --noEmit)
-        run: pnpm --filter atlas-world-colyseus-server run typecheck
-
-      - name: Format check (prettier)
-        run: pnpm --filter atlas-world-colyseus-server run format:check
-
-      - name: Test (jest)
-        run: pnpm --filter atlas-world-colyseus-server run test
-
       # Asset pipeline drift-gate (F-002): the client manifest must stay
-      # consistent with the codegen-emitted key set and the files on disk.
-      # Refresh generated/asset-keys.json from the live server config FIRST
-      # (contracts already built above) so the gate checks current keys, not a
-      # stale committed snapshot; then run the checker. Stage-0: unmapped keys
-      # are warnings, broken paths / missing licenses are hard failures.
-      - name: Codegen asset keys + mob types (refresh generated/*.json)
-        run: |
-          bash colyseus-server/scripts/codegen/gen-asset-keys.sh
-          bash colyseus-server/scripts/codegen/gen-mob-types.sh
-
+      # consistent with committed content/generated/asset-keys.json and the
+      # files on disk. Stage-0: unmapped keys are warnings, broken paths /
+      # missing licenses are hard failures.
       - name: Asset manifest drift-gate (keys ↔ manifest ↔ files ↔ license)
         run: node scripts/check_asset_manifest.mjs
 
