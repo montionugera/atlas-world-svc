@@ -3,7 +3,10 @@ import {
   useColyseusClient,
   ColyseusClientConfig,
 } from "./hooks/useColyseusClient";
-import { useServerRsClient } from "./hooks/useServerRsClient";
+import {
+  useServerRsClient,
+  getOrCreateNakamaDeviceId,
+} from "./hooks/useServerRsClient";
 import {
   ColyseusGameCanvas,
   DEBUG_DOCK_ID,
@@ -26,11 +29,16 @@ interface LogEntry {
   timestamp: Date;
 }
 
-// `?player=<name>` picks a distinct dev session (dev-token:<name>) so several tabs
-// or an e2e run don't fight over the shared default "dev-player" avatar.
+// `?player=<name>` picks a distinct device seed so several tabs or an e2e run
+// each get their own persistent Nakama account.
 const playerParam =
   typeof window !== "undefined"
     ? new URLSearchParams(window.location.search).get("player")
+    : null;
+
+const nakamaParam =
+  typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).get("nakama")
     : null;
 
 // `?server=<host>:<port>` points this tab at another server-rs (e.g. an e2e build on :2577)
@@ -41,14 +49,23 @@ const [serverParamHost, serverParamPort] = (
     : null) ?? ""
 ).split(":");
 
+const serverHost = serverParamHost || "localhost";
+
 const clientConfig = {
-  serverHost: serverParamHost || "localhost",
+  serverHost,
   serverPort:
     Number(serverParamPort) ||
     Number(process.env.REACT_APP_SERVER_PORT) ||
     2567,
   useSSL: false,
-  token: playerParam ? `dev-token:${playerParam}` : undefined,
+  nakamaUrl:
+    nakamaParam ||
+    process.env.REACT_APP_NAKAMA_URL ||
+    `http://${serverHost}:7350`,
+  deviceId:
+    typeof getOrCreateNakamaDeviceId === "function"
+      ? getOrCreateNakamaDeviceId(playerParam)
+      : undefined,
 };
 
 // The debug controls are plain HTTP on the game port; `player` is the session id the
@@ -267,8 +284,7 @@ function App() {
 
           <div className="header-status">
             <span>{client.isConnected ? "🟢 Online" : "🔴 Offline"}</span>
-            {client.roomId && <span>Room: {client.roomId}</span>}
-          </div>
+            {client.roomId && <span>Room: {client.roomId}</span>}\n          </div>
         </header>
 
         <ControlsHelp isOpen={showHelp} onClose={() => setShowHelp(false)} />
