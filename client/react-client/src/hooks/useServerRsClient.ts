@@ -28,6 +28,11 @@ import {
   STATE_FLAG_ALIVE,
   STATE_FLAG_BOT,
 } from "../protocol/BinaryDeltaDecoder";
+import {
+  PROTOCOL_MISMATCH_CLOSE_CODE,
+  PROTOCOL_VERSION,
+  formatProtocolMismatchMessage,
+} from "../protocol/protocolVersion";
 import { ClientInput } from "../protocol/generated/atlas/protocol/client-input";
 
 export interface ServerRsClientConfig {
@@ -51,6 +56,7 @@ export interface LatencyMetrics {
 export interface UseServerRsClientReturn {
   // State
   isConnected: boolean;
+  connectionError: string | null;
   roomId: string | null;
   playerId: string;
   /** Published to React a few times a second (see UI_PUBLISH_INTERVAL_MS). */
@@ -69,7 +75,7 @@ export interface UseServerRsClientReturn {
   equippedWeaponId: string;
 
   // Actions
-  connect: () => Promise<void>;
+  connect: (mapIdOverride?: string) => Promise<void>;
   joinRoom: (mapId?: string) => Promise<void>;
   updatePlayerInput: (vx: number, vy: number) => void;
   sendPlayerAction: (action: string, pressed: boolean, options?: any) => void;
@@ -153,6 +159,7 @@ export const useServerRsClient = (
 ): UseServerRsClientReturn => {
   // State
   const [isConnected, setIsConnected] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
   const [roomId, setRoomId] = useState<string | null>(null);
   const sessionName = config.token?.startsWith("dev-token:")
     ? config.token.replace("dev-token:", "")
@@ -173,6 +180,7 @@ export const useServerRsClient = (
 
   // Refs
   const wsRef = useRef<WebSocket | null>(null);
+  const connectionErrorRef = useRef<string | null>(null);
   // `client_tick` of the newest input sent; the first is 1, so 0 means none.
   const inputSeqRef = useRef<number>(0);
   const inputSentRef = useRef<((seq: number) => void) | null>(null);
@@ -303,6 +311,8 @@ export const useServerRsClient = (
       }
 
       cancelTrailingPublish();
+      connectionErrorRef.current = null;
+      setConnectionError(null);
       return new Promise<void>((resolve, reject) => {
         try {
           isConnectingRef.current = true;
@@ -315,7 +325,7 @@ export const useServerRsClient = (
               : "dev-player";
           const localPlayerId = String(fnv1a32(sessionName));
           setPlayerId(localPlayerId);
-          const url = `${protocol}://${config.serverHost}:${config.serverPort}?token=${token}&map=${activeMap}`;
+          const url = `${protocol}://${config.serverHost}:${config.serverPort}?token=${token}&map=${activeMap}&proto=${PROTOCOL_VERSION}`;
 
           const ws = new WebSocket(url);
           ws.binaryType = "arraybuffer";
@@ -332,7 +342,11 @@ export const useServerRsClient = (
           };
 
           ws.onopen = () => {
-            if (wsRef.current !== ws) {
+            if (
+              wsRef.current !== ws ||
+              ws.readyState === WebSocket.CLOSED ||
+              ws.readyState === WebSocket.CLOSING
+            ) {
               // Superseded (StrictMode remount / disconnect during CONNECTING): not an error.
               ws.close();
               settle();
@@ -676,7 +690,24 @@ export const useServerRsClient = (
             settle(err);
           };
 
-          ws.onclose = () => {
+          ws.onclose = (event?: { code?: number; reason?: string }) => {
+            if (event?.code === PROTOCOL_MISMATCH_CLOSE_CODE) {
+              const mismatchMsg = formatProtocolMismatchMessage(event.reason);
+              connectionErrorRef.current = mismatchMsg;
+              setConnectionError(mismatchMsg);
+              if (wsRef.current === ws) {
+                wsRef.current = null;
+              }
+              cancelTrailingPublish();
+              setIsConnected(false);
+              setRoomId(null);
+              gameStateRef.current = null;
+              publishedRef.current.at = -Infinity;
+              setGameState(null);
+              isConnectingRef.current = false;
+              settle();
+              return;
+            }
             // A superseded socket (StrictMode remount, reconnect) must not wipe the live session's state.
             if (wsRef.current !== ws) {
               // Superseded, or deliberately disconnect()ed (wsRef already null): not an error.
@@ -751,6 +782,7 @@ export const useServerRsClient = (
   // Join room (maps seamlessly to server-rs ready connection)
   const joinRoom = useCallback(
     async (mapId: string = "map-for-play") => {
+      if (connectionErrorRef.current) return;
       const isSwitchingMap = mapId !== currentMapRef.current;
       currentMapRef.current = mapId;
       const targetRoomId = `server-rs-${mapId}`;
@@ -793,6 +825,7 @@ export const useServerRsClient = (
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
         await connect(mapId);
       }
+      if (connectionErrorRef.current) return;
       // A newer joinRoom took over while we awaited: it owns the state now.
       if (currentMapRef.current !== mapId) return;
 
@@ -945,6 +978,7 @@ export const useServerRsClient = (
 
   return {
     isConnected,
+    connectionError,
     roomId,
     playerId,
     gameState,

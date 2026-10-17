@@ -1,7 +1,15 @@
-import { renderHook, act } from "@testing-library/react";
+import React from "react";
+import { render, renderHook, screen, act } from "@testing-library/react";
 import { TextEncoder, TextDecoder } from "util";
+import fs from "fs";
+import path from "path";
 import * as flatbuffers from "flatbuffers";
+import App from "../App";
 import { useServerRsClient, skillSlotFor, fnv1a32 } from "./useServerRsClient";
+import {
+  PROTOCOL_VERSION,
+  formatProtocolMismatchMessage,
+} from "../protocol/protocolVersion";
 import { WorldSnapshot } from "../protocol/generated/atlas/protocol/world-snapshot";
 import { EntityDelta } from "../protocol/generated/atlas/protocol/entity-delta";
 import { EntityType } from "../protocol/generated/atlas/protocol/entity-type";
@@ -15,6 +23,12 @@ import {
 } from "../protocol/BinaryDeltaDecoder";
 import { getMobDisplayName } from "../utils/mobUtils";
 import { perfTimings, timingGate } from "../utils/frameTiming";
+
+jest.mock("../components/ColyseusGameCanvas", () => ({
+  ColyseusGameCanvas: () =>
+    null,
+  DEBUG_DOCK_ID: "debug-dock",
+}));
 
 (global as any).TextEncoder = TextEncoder;
 (global as any).TextDecoder = TextDecoder;
@@ -39,7 +53,7 @@ class MockWebSocket {
   readyState: number = MockWebSocket.manualOpen ? 0 : 1; // OPEN unless manual
   onopen: (() => void) | null = null;
   onmessage: ((event: { data: any }) => void) | null = null;
-  onclose: (() => void) | null = null;
+  onclose: ((event?: { code?: number; reason?: string }) => void) | null = null;
   onerror: ((err: any) => void) | null = null;
   sentMessages: any[] = [];
 
@@ -47,7 +61,9 @@ class MockWebSocket {
     this.url = url;
     MockWebSocket.instances.push(this);
     setTimeout(() => {
-      if (!MockWebSocket.manualOpen && this.onopen) this.onopen();
+      if (!MockWebSocket.manualOpen && this.readyState !== 3 && this.onopen) {
+        this.onopen();
+      }
     }, 0);
   }
 
@@ -55,9 +71,9 @@ class MockWebSocket {
     this.sentMessages.push(data);
   }
 
-  close() {
+  close(code: number = 1000, reason: string = "") {
     this.readyState = 3; // CLOSED
-    if (this.onclose) this.onclose();
+    if (this.onclose) this.onclose({ code, reason });
   }
 }
 
@@ -147,6 +163,9 @@ describe("useServerRsClient", () => {
     expect(result.current.isConnected).toBe(true);
     expect(MockWebSocket.instances.length).toBe(1);
     expect(MockWebSocket.instances[0].url).toContain("token=test-jwt-token");
+    expect(MockWebSocket.instances[0].url).toContain(
+      `proto=${PROTOCOL_VERSION}`,
+    );
 
     // Simulate incoming FlatBuffers snapshot
     const testSnapshot = createTestSnapshotBuffer(42);
@@ -1112,5 +1131,74 @@ describe("useServerRsClient", () => {
 
     player = result.current.gameState!.players.get(localId)!;
     expect(player.heading).toBeCloseTo(Math.PI);
+  });
+
+  it("includes proto=<PROTOCOL_VERSION> in the WebSocket handshake URL", async () => {
+    await connected("dev-token:proto-check");
+    expect(MockWebSocket.instances[0].url).toMatch(
+      new RegExp(`[?&]proto=${PROTOCOL_VERSION}(?:&|$)`),
+    );
+  });
+
+  it("surfaces protocol version mismatch (close code 4001) in connectionError and App does not call joinRoom or log joined", async () => {
+    const { result } = await connected();
+    act(() => {
+      MockWebSocket.instances[0].close(
+        4001,
+        "protocol version mismatch: server=2 client=1",
+      );
+    });
+    expect(result.current.connectionError).toBe(
+      "This game client is out of date (client protocol 1, server protocol 2). Reload the page to update.",
+    );
+    expect(result.current.isConnected).toBe(false);
+
+    expect(
+      formatProtocolMismatchMessage(
+        "protocol version mismatch: server=1 client=2",
+      ),
+    ).toBe(
+      "The server is older than this client (client protocol 2, server protocol 1). Try again in a minute.",
+    );
+    expect(
+      formatProtocolMismatchMessage(
+        "protocol version mismatch: server=1 client=invalid",
+      ),
+    ).toBe("This game client is out of date. Reload the page to update.");
+
+    // Render App and close its socket with 4001 after opening
+    MockWebSocket.instances = [];
+    await act(async () => {
+      render(React.createElement(App));
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(MockWebSocket.instances).toHaveLength(1);
+    act(() => {
+      MockWebSocket.instances[0].close(
+        4001,
+        "protocol version mismatch: server=2 client=1",
+      );
+    });
+    // App never called joinRoom (which would open a 2nd socket) and never logged "joined"
+    expect(MockWebSocket.instances).toHaveLength(1);
+    expect(
+      screen.getByText(
+        /This game client is out of date \(client protocol 1, server protocol 2\)\. Reload the page to update\./i,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/joined/i)).not.toBeInTheDocument();
+  });
+
+  it("matches PROTOCOL_VERSION in server-rs/src/protocol/mod.rs", () => {
+    const rustPath = path.resolve(
+      __dirname,
+      "../../../../server-rs/src/protocol/mod.rs",
+    );
+    const rustSource = fs.readFileSync(rustPath, "utf8");
+    const match = rustSource.match(
+      /pub\s+const\s+PROTOCOL_VERSION\s*:\s*u32\s*=\s*(\d+)\s*;/,
+    );
+    expect(match).not.toBeNull();
+    expect(PROTOCOL_VERSION).toBe(Number(match![1]));
   });
 });
