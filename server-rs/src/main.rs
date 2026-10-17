@@ -4,10 +4,10 @@ use server_rs::fleet::{AgonesClient, FleetLifecycle, HeartbeatTask};
 use server_rs::net::WsServer;
 use server_rs::protocol::SnapshotBuilder;
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
-use server_rs::storage::{NakamaClient, NakamaConfig};
+use server_rs::storage::{MatchEventBuffer, NakamaClient, NakamaConfig};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tracing::{debug, error, info};
+use tracing::{debug, error, info, warn};
 use tracing_subscriber::EnvFilter;
 
 /// Fixed-rate simulation timer. After a stall the default behaviour fires every missed
@@ -148,8 +148,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut ws_server_inner = WsServer::bind(&bind_addr, auth_guard)
         .await
         .map_err(std::io::Error::other)?;
-    if let Some(client) = nakama_client {
-        ws_server_inner = ws_server_inner.with_nakama(client);
+    if let Some(ref client) = nakama_client {
+        ws_server_inner = ws_server_inner.with_nakama(client.clone());
     }
     let ws_server = Arc::new(ws_server_inner);
     info!("WebSocket gateway listening on {}", ws_server.local_addr());
@@ -252,10 +252,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         if debug_enabled { "ENABLED" } else { "disabled" }
     );
     let mut snapshot_builder = SnapshotBuilder::new();
+    let mut match_event_buffer = MatchEventBuffer::default();
 
     // 6. 20 Hz simulation tick loop (50ms interval)
     let tick_rate_ms = 50;
-    let mut ticker = sim_ticker(Duration::from_millis(tick_rate_ms));
+    let tick_dt = Duration::from_millis(tick_rate_ms);
+    let mut ticker = sim_ticker(tick_dt);
 
     let mut timings = TickTimings::default();
 
@@ -303,6 +305,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                     for (user_id, event) in &frame.match_events {
                         debug!(user_id = %user_id, room = %room_id, event = ?event, "match event");
+                        match_event_buffer.record(user_id, event.clone());
                     }
 
                     if ws_server.active_connections_in_room(room_id).await > 0 {
@@ -320,11 +323,44 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         ws_server.broadcast_snapshot_to_room(room_id, snapshot_bytes).await;
                     }
                 }
+
+                let disconnected_users: Vec<String> =
+                    disconnected.iter().map(|(s, _)| s.clone()).collect();
+                let mut batches_to_flush = match_event_buffer.flush_users(&disconnected_users);
+                batches_to_flush.extend(match_event_buffer.tick(tick_dt));
+
+                if !batches_to_flush.is_empty() {
+                    if let Some(ref client) = nakama_client {
+                        let client = client.clone();
+                        tokio::spawn(async move {
+                            for res in
+                                MatchEventBuffer::dispatch_batches(client.as_ref(), &batches_to_flush)
+                                    .await
+                            {
+                                if let Err(err) = res {
+                                    warn!("Failed to report match events to Nakama: {}", err);
+                                }
+                            }
+                        });
+                    }
+                }
+
                 timings.record(tick_start, tick_start.elapsed());
             }
         } => {}
         _ = wait_for_shutdown_signal() => {
             info!("Shutdown signal received. Initiating graceful shutdown...");
+        }
+    }
+
+    let final_batches = match_event_buffer.flush_all();
+    if !final_batches.is_empty() {
+        if let Some(ref client) = nakama_client {
+            for res in MatchEventBuffer::dispatch_batches(client.as_ref(), &final_batches).await {
+                if let Err(err) = res {
+                    warn!("Failed to flush final match events on shutdown: {}", err);
+                }
+            }
         }
     }
 

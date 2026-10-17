@@ -1,17 +1,18 @@
 use futures_util::SinkExt;
 use server_rs::auth::AuthGuard;
-use server_rs::content::derived_stats;
+use server_rs::content::{derived_stats, MobTier};
 use server_rs::ecs::{
-    CombatStats, ElementalAttributes, EntityId, Health, MobTag, PlayerAvatar, Position,
+    CombatStats, ElementalAttributes, EntityId, Health, MobSpawnAnchor, MobTag, PlayerAvatar,
+    Position,
 };
 use server_rs::net::WsServer;
 use server_rs::protocol::{fnv1a_32, serialize_client_input};
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
 use server_rs::storage::{
-    EquippedItemIds, LoadoutSnapshot, MatchEvent, MatchEventBatch, MockNakamaClient, NakamaClient,
-    PrimaryStats, ProfileDoc,
+    EquippedItemIds, LoadoutSnapshot, MatchEvent, MatchEventBatch, MatchEventBuffer,
+    MockNakamaClient, NakamaClient, PrimaryStats, ProfileDoc,
 };
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
@@ -411,4 +412,176 @@ fn test_mob_kill_records_match_event() {
 
     // Second drain should be empty
     assert!(sim.drain_match_events().is_empty());
+}
+
+#[tokio::test]
+async fn test_match_event_buffer_flushes_on_leave_and_on_interval_with_nakama_rpc_contract() {
+    // E-003 slice 6 (F-072):
+    // 1. Live mob kills prefer `MobSpawnAnchor.mob_id` over runtime `EntityId("mob-0")`.
+    // 2. Non-UUID bot kills ("bot-0") are ignored by `MatchEventBuffer`.
+    // 3. Disconnecting players flush immediately on leave (`flush_users`), and remaining
+    //    players flush on the buffered interval (`tick`).
+    // 4. `NakamaClient::report_match_events` sends JSON matching `nakama/src/rpc/reportMatchEvents.ts`
+    //    (`userId`, `matchId`, monotonically increasing `seq`, and `events: [{ type: "MOB_KILLED", userId, targetId, count: 1 }]`).
+    let mut sim = AtlasSimulation::new(0x1337c0de, 1000.0, 1000.0);
+
+    let uid_leaver = "00000000-0000-4000-8000-000000000141";
+    let uid_stayer = "00000000-0000-4000-8000-000000000142";
+
+    let e_leaver = sim.spawn_player_avatar(uid_leaver, 200.0, 200.0);
+    if let Some(mut c) = sim.world.get_mut::<CombatStats>(e_leaver) {
+        c.attack_power = 250.0;
+        c.attack_range = 50.0;
+        c.cooldown_timer = 0.0;
+    }
+    sim.world
+        .get_mut::<server_rs::ecs::PlayerInputState>(e_leaver)
+        .unwrap()
+        .attack = true;
+
+    let e_stayer = sim.spawn_player_avatar(uid_stayer, 600.0, 600.0);
+    if let Some(mut c) = sim.world.get_mut::<CombatStats>(e_stayer) {
+        c.attack_power = 250.0;
+        c.attack_range = 50.0;
+        c.cooldown_timer = 0.0;
+    }
+    sim.world
+        .get_mut::<server_rs::ecs::PlayerInputState>(e_stayer)
+        .unwrap()
+        .attack = true;
+
+    // Spawn two mobs with both runtime EntityId("mob-0"/"mob-1") AND MobSpawnAnchor template IDs
+    sim.world.spawn((
+        EntityId("mob-0".to_string()),
+        MobSpawnAnchor::new(Position::new(220.0, 200.0), "boar", MobTier::Verge, 5.0),
+        Position::new(220.0, 200.0),
+        server_rs::ecs::Velocity::zero(),
+        Health::new(40.0),
+        MobTag,
+        CombatStats {
+            attack_power: 5.0,
+            defense: 0.0,
+            attack_range: 20.0,
+            attack_cooldown: 1.0,
+            cooldown_timer: 1.0,
+            is_player: false,
+        },
+    ));
+    sim.world.spawn((
+        EntityId("mob-1".to_string()),
+        MobSpawnAnchor::new(
+            Position::new(620.0, 600.0),
+            "veil_spearling",
+            MobTier::Verge,
+            5.0,
+        ),
+        Position::new(620.0, 600.0),
+        server_rs::ecs::Velocity::zero(),
+        Health::new(40.0),
+        MobTag,
+        CombatStats {
+            attack_power: 5.0,
+            defense: 0.0,
+            attack_range: 20.0,
+            attack_cooldown: 1.0,
+            cooldown_timer: 1.0,
+            is_player: false,
+        },
+    ));
+
+    sim.step();
+
+    let mut drained = sim.drain_match_events();
+    assert_eq!(drained.len(), 2);
+    // Inject a synthetic bot kill event to verify non-UUID filtering
+    drained.push((
+        "bot-0".to_string(),
+        MatchEvent {
+            event_type: "mob_kill".to_string(),
+            target_id: "boar".to_string(),
+            payload: serde_json::json!({ "mob_id": "boar" }),
+        },
+    ));
+
+    let mut buffer = MatchEventBuffer::new(Duration::from_secs(5));
+    buffer.record_all(drained);
+
+    // Capturing HTTP server for Nakama `POST /v2/rpc/report_match_events`
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let received_bodies: Arc<Mutex<Vec<serde_json::Value>>> = Arc::new(Mutex::new(Vec::new()));
+    let received_clone = received_bodies.clone();
+
+    tokio::spawn(async move {
+        while let Ok((mut stream, _)) = listener.accept().await {
+            let mut buf = [0u8; 4096];
+            let n = stream.read(&mut buf).await.unwrap_or(0);
+            let req = String::from_utf8_lossy(&buf[..n]);
+            if let Some(idx) = req.find("\r\n\r\n") {
+                let body_str = &req[idx + 4..];
+                if let Ok(json_val) = serde_json::from_str::<serde_json::Value>(body_str) {
+                    received_clone.lock().unwrap().push(json_val);
+                }
+            }
+            let body = r#"{"deduped":false,"progressed":["q_boar_5"],"completedNow":[]}"#;
+            let resp = format!(
+                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                body.len(),
+                body
+            );
+            let _ = stream.write_all(resp.as_bytes()).await;
+        }
+    });
+
+    let client = NakamaClient::new(
+        format!("http://{addr}"),
+        "test_http_key".to_string(),
+        2000,
+        0,
+    )
+    .with_match_id("match-e003-slice6");
+
+    // 1. Leaver disconnects before the 5-second interval -> flushes immediately
+    let leave_batches = buffer.flush_users(&[uid_leaver.to_string()]);
+    assert_eq!(leave_batches.len(), 1);
+    assert_eq!(leave_batches[0].user_id, uid_leaver);
+    assert_eq!(leave_batches[0].events[0].target_id, "boar");
+
+    let leave_res = MatchEventBuffer::dispatch_batches(&client, &leave_batches).await;
+    assert_eq!(leave_res.len(), 1);
+    assert!(leave_res[0].is_ok());
+
+    // 2. Partial interval tick (2s < 5s) -> does not flush stayer yet
+    assert!(buffer.tick(Duration::from_secs(2)).is_empty());
+    assert_eq!(received_bodies.lock().unwrap().len(), 1);
+
+    // 3. Remaining interval tick (+3s => 5s) -> flushes stayer's buffered events
+    let interval_batches = buffer.tick(Duration::from_secs(3));
+    assert_eq!(interval_batches.len(), 1);
+    assert_eq!(interval_batches[0].user_id, uid_stayer);
+    assert_eq!(interval_batches[0].events[0].target_id, "veil_spearling");
+
+    let interval_res = MatchEventBuffer::dispatch_batches(&client, &interval_batches).await;
+    assert_eq!(interval_res.len(), 1);
+    assert!(interval_res[0].is_ok());
+
+    // Verify exact Nakama RPC wire payloads received over HTTP
+    let payloads = received_bodies.lock().unwrap().clone();
+    assert_eq!(payloads.len(), 2);
+
+    assert_eq!(payloads[0]["userId"], uid_leaver);
+    assert_eq!(payloads[0]["matchId"], "match-e003-slice6");
+    assert_eq!(payloads[0]["seq"], 0);
+    assert_eq!(payloads[0]["events"][0]["type"], "MOB_KILLED");
+    assert_eq!(payloads[0]["events"][0]["userId"], uid_leaver);
+    assert_eq!(payloads[0]["events"][0]["targetId"], "boar");
+    assert_eq!(payloads[0]["events"][0]["count"], 1);
+
+    assert_eq!(payloads[1]["userId"], uid_stayer);
+    assert_eq!(payloads[1]["matchId"], "match-e003-slice6");
+    assert_eq!(payloads[1]["seq"], 1);
+    assert_eq!(payloads[1]["events"][0]["type"], "MOB_KILLED");
+    assert_eq!(payloads[1]["events"][0]["userId"], uid_stayer);
+    assert_eq!(payloads[1]["events"][0]["targetId"], "veil_spearling");
+    assert_eq!(payloads[1]["events"][0]["count"], 1);
 }

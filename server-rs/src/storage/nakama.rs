@@ -1,12 +1,27 @@
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 use tracing::warn;
 
 /// Default startup retry window (~60 seconds) for `NakamaClient::probe()`.
 pub const PROBE_RETRY_WINDOW: Duration = Duration::from_secs(60);
+
+/// Default `matchId` sent to Nakama's `report_match_events` RPC for idempotency tracking.
+pub const DEFAULT_NAKAMA_MATCH_ID: &str = "server-rs-live";
+
+/// Normalizes internal `server-rs` match event names (e.g. `"mob_kill"`) to the
+/// canonical `@atlas/contracts` `MatchEventType` expected by Nakama (`"MOB_KILLED"`).
+pub fn normalize_match_event_type(raw: &str) -> &str {
+    match raw {
+        "mob_kill" | "MOB_KILLED" => "MOB_KILLED",
+        "item_picked_up" | "ITEM_PICKED_UP" => "ITEM_PICKED_UP",
+        "zone_entered" | "ZONE_ENTERED" => "ZONE_ENTERED",
+        other => other,
+    }
+}
 
 /// Environment configuration for connecting `server-rs` to Nakama.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -174,6 +189,46 @@ pub struct MatchEventBatch {
     pub events: Vec<MatchEvent>,
 }
 
+impl MatchEventBatch {
+    /// Builds the JSON payload expected by Nakama's `report_match_events` RPC
+    /// (`{ userId, matchId, seq, events: [{ type, eventType, userId, targetId, count, payload }] }`).
+    pub fn to_rpc_payload(&self, default_match_id: &str, seq: u64) -> serde_json::Value {
+        let match_id = self
+            .events
+            .iter()
+            .find_map(|e| e.payload.get("matchId").and_then(|v| v.as_str()))
+            .filter(|s| !s.is_empty())
+            .unwrap_or(default_match_id);
+        let events: Vec<serde_json::Value> = self
+            .events
+            .iter()
+            .map(|ev| {
+                let normalized_type = normalize_match_event_type(&ev.event_type);
+                let count = ev
+                    .payload
+                    .get("count")
+                    .and_then(|v| v.as_u64())
+                    .filter(|&c| c > 0)
+                    .unwrap_or(1);
+                serde_json::json!({
+                    "type": normalized_type,
+                    "eventType": ev.event_type,
+                    "userId": self.user_id,
+                    "targetId": ev.target_id,
+                    "count": count,
+                    "payload": ev.payload,
+                })
+            })
+            .collect();
+        serde_json::json!({
+            "userId": self.user_id,
+            "matchId": match_id,
+            "seq": seq,
+            "events": events,
+        })
+    }
+}
+
 /// Abstract persistent storage interface for Nakama.
 #[async_trait]
 pub trait NakamaStorage: Send + Sync {
@@ -189,6 +244,8 @@ pub struct NakamaClient {
     http_key: String,
     retries: u32,
     probe_window: Duration,
+    match_id: String,
+    seq_counter: Arc<AtomicU64>,
     client: reqwest::Client,
 }
 
@@ -215,12 +272,23 @@ impl NakamaClient {
                 .and_then(|v| v.parse::<u64>().ok())
                 .map(Duration::from_secs)
                 .unwrap_or(PROBE_RETRY_WINDOW),
+            match_id: std::env::var("NAKAMA_MATCH_ID")
+                .ok()
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .unwrap_or_else(|| DEFAULT_NAKAMA_MATCH_ID.to_string()),
+            seq_counter: Arc::new(AtomicU64::new(0)),
             client,
         }
     }
 
     pub fn with_probe_window(mut self, probe_window: Duration) -> Self {
         self.probe_window = probe_window;
+        self
+    }
+
+    pub fn with_match_id(mut self, match_id: impl Into<String>) -> Self {
+        self.match_id = match_id.into();
         self
     }
 
@@ -441,7 +509,9 @@ impl NakamaClient {
             "{}/v2/rpc/report_match_events?http_key={}&unwrap",
             self.base_url, self.http_key
         );
-        let payload = serde_json::to_string(batch)
+        let seq = self.seq_counter.fetch_add(1, Ordering::Relaxed);
+        let rpc_payload = batch.to_rpc_payload(&self.match_id, seq);
+        let payload = serde_json::to_string(&rpc_payload)
             .map_err(|e| format!("Failed to serialize MatchEventBatch: {e}"))?;
 
         let mut attempt = 0;
@@ -731,6 +801,15 @@ mod tests {
         assert_eq!(parsed.events.len(), 1);
         assert_eq!(parsed.events[0].event_type, "MOB_KILLED");
         assert_eq!(parsed.events[0].target_id, "veil_spearling");
+
+        let rpc = batch.to_rpc_payload("match-99", 7);
+        assert_eq!(rpc["userId"], "user_42");
+        assert_eq!(rpc["matchId"], "match-99");
+        assert_eq!(rpc["seq"], 7);
+        assert_eq!(rpc["events"][0]["type"], "MOB_KILLED");
+        assert_eq!(rpc["events"][0]["userId"], "user_42");
+        assert_eq!(rpc["events"][0]["targetId"], "veil_spearling");
+        assert_eq!(rpc["events"][0]["count"], 1);
     }
 
     #[tokio::test]
