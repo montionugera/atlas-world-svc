@@ -80,6 +80,8 @@ function App() {
   const serverRsClient = useServerRsClient(clientConfig);
   const colyseusClient = useColyseusClient(clientConfig);
   const client = useRustServer ? serverRsClient : colyseusClient;
+  const connectionError =
+    "connectionError" in client ? client.connectionError : null;
 
   // Room picker: joins the server-side room named by `?map=` (kept in the URL so a
   // reload stays in the same room).
@@ -108,21 +110,20 @@ function App() {
     // Auto-connect when app starts
     if (!client.isConnected) {
       addLog("🔌 Connecting to Colyseus Server...", "info");
-      client
-        .connect()
-        .then(() => {
-          // Default initial join; user can switch maps from the UI.
-          return client.joinRoom(selectedMapId);
-        })
-        .catch((e) => {
-          let errorMessage = e.message || "Unknown error";
-          if (e instanceof ProgressEvent || e.type === "error") {
-            errorMessage =
-              "Connection failed (Server might be offline or schema mismatch)";
-          }
-          addLog(`❌ Detailed connection error: ${errorMessage}`, "error");
-          console.error(e);
-        });
+      const connectPromise = useRustServer
+        ? Promise.resolve(serverRsClient.connect(selectedMapId))
+        : Promise.resolve(client.connect()).then(() =>
+            client.joinRoom(selectedMapId),
+          );
+      connectPromise.catch((e) => {
+        let errorMessage = e?.message || "Unknown error";
+        if (e instanceof ProgressEvent || e?.type === "error") {
+          errorMessage =
+            "Connection failed (Server might be offline or schema mismatch)";
+        }
+        addLog(`❌ Detailed connection error: ${errorMessage}`, "error");
+        console.error(e);
+      });
     } else {
       // Already connected
     }
@@ -131,7 +132,7 @@ function App() {
   const joinMap = useCallback(
     async (mapId: string) => {
       try {
-        if (!client.isConnected) return;
+        if (!client.isConnected || connectionError) return;
         setSelectedMapId(mapId);
         const url = new URL(window.location.href);
         url.searchParams.set("map", mapId);
@@ -143,7 +144,7 @@ function App() {
         addLog(`❌ Failed to join map ${mapId}: ${e?.message || e}`, "error");
       }
     },
-    [client, addLog],
+    [client, connectionError, addLog],
   );
 
   function filterDep(c: any) {
@@ -151,10 +152,17 @@ function App() {
   }
 
   useEffect(() => {
-    if (client.isConnected) {
+    if (connectionError) {
+      setLogs((prev) => prev.filter((l) => !/joined/i.test(l.message)));
+      addLog(`❌ ${connectionError}`, "error");
+    }
+  }, [connectionError, addLog]);
+
+  useEffect(() => {
+    if (client.isConnected && !connectionError && client.gameState) {
       addLog("✅ Connected and joined room successfully!", "info");
     }
-  }, [client.isConnected, addLog]);
+  }, [client.isConnected, connectionError, Boolean(client.gameState), addLog]);
 
   // Log specialized game events
   useEffect(() => {

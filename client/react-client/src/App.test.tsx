@@ -20,6 +20,7 @@ const mockClient = {
   sessionId: 'test-session',
   playerId: 'player-1',
   isConnected: true,
+  connectionError: null as string | null,
   error: null,
   gameState: {
     players: new Map(),
@@ -49,6 +50,9 @@ import * as ServerRsClientHook from './hooks/useServerRsClient';
 
 describe('App Component', () => {
   beforeEach(() => {
+    jest.clearAllMocks();
+    mockClient.connect.mockResolvedValue(undefined);
+    mockClient.joinRoom.mockResolvedValue(true);
     // Reset mock implementation before each test
     (ColyseusClientHook.useColyseusClient as jest.Mock).mockReturnValue(mockClient);
     (ServerRsClientHook.useServerRsClient as jest.Mock).mockReturnValue(mockClient);
@@ -84,5 +88,28 @@ describe('App Component', () => {
       render(<App />);
     });
     expect(screen.getByTestId('game-canvas')).toBeInTheDocument();
+  });
+
+  test('surfaces protocol mismatch connectionError without calling joinRoom or logging joined', () => {
+    const mismatchClient = {
+      ...mockClient,
+      isConnected: false,
+      gameState: null,
+      connectionError:
+        'This game client is out of date (client protocol 1, server protocol 2). Reload the page to update.',
+    };
+    (ServerRsClientHook.useServerRsClient as jest.Mock).mockReturnValue(
+      mismatchClient,
+    );
+    act(() => {
+      render(<App />);
+    });
+    expect(mismatchClient.joinRoom).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(
+        /This game client is out of date \(client protocol 1, server protocol 2\)\. Reload the page to update\./i,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/joined/i)).not.toBeInTheDocument();
   });
 });

@@ -12,6 +12,8 @@ use tokio::sync::{oneshot, RwLock};
 use tokio_tungstenite::accept_hdr_async;
 use tokio_tungstenite::tungstenite::handshake::server::{ErrorResponse, Request, Response};
 use tokio_tungstenite::tungstenite::http::StatusCode;
+use tokio_tungstenite::tungstenite::protocol::frame::coding::CloseCode;
+use tokio_tungstenite::tungstenite::protocol::CloseFrame;
 use tokio_tungstenite::tungstenite::Message;
 use tracing::{debug, error, info, warn};
 
@@ -337,6 +339,19 @@ impl WsServer {
         None
     }
 
+    fn extract_proto(req: &Request) -> Option<String> {
+        if let Some(query) = req.uri().query() {
+            for pair in query.split('&') {
+                if let Some((k, v)) = pair.split_once('=') {
+                    if k == "proto" {
+                        return Some(v.to_string());
+                    }
+                }
+            }
+        }
+        None
+    }
+
     #[allow(clippy::result_large_err, clippy::too_many_arguments)]
     async fn handle_connection(
         stream: TcpStream,
@@ -350,6 +365,7 @@ impl WsServer {
     ) {
         let mut session_id = String::new();
         let mut room_id = "map-for-play".to_string();
+        let mut req_proto: Option<String> = None;
         let auth_ref = &auth_guard;
 
         let callback = |req: &Request, response: Response| -> Result<Response, ErrorResponse> {
@@ -368,6 +384,7 @@ impl WsServer {
 
             let req_map = Self::extract_map(req).unwrap_or_else(|| "map-for-play".to_string());
             room_id = crate::content::map::room_id_for(&req_map).to_string();
+            req_proto = Self::extract_proto(req);
 
             match auth_ref.validate_token(&token) {
                 Ok(claims) => {
@@ -390,13 +407,59 @@ impl WsServer {
             }
         };
 
-        let ws_stream = match accept_hdr_async(stream, callback).await {
+        let mut ws_stream = match accept_hdr_async(stream, callback).await {
             Ok(ws) => ws,
             Err(e) => {
                 debug!("WebSocket handshake failed with {}: {}", peer_addr, e);
                 return;
             }
         };
+
+        // Check protocol version before fetching persistent loadout or registering connection.
+        let server_ver = crate::protocol::PROTOCOL_VERSION;
+        match req_proto.as_deref() {
+            Some(raw) => match raw.parse::<u32>() {
+                Ok(client_ver) if client_ver == server_ver => {}
+                Ok(client_ver) => {
+                    let reason = format!(
+                        "protocol version mismatch: server={} client={}",
+                        server_ver, client_ver
+                    );
+                    warn!(
+                        "Rejecting WebSocket connection for user={} from {}: {}",
+                        session_id, peer_addr, reason
+                    );
+                    let frame = CloseFrame {
+                        code: CloseCode::Library(4001),
+                        reason: reason.into(),
+                    };
+                    let _ = ws_stream.close(Some(frame)).await;
+                    return;
+                }
+                Err(_) => {
+                    let reason = format!(
+                        "protocol version mismatch: server={} client=invalid",
+                        server_ver
+                    );
+                    warn!(
+                        "Rejecting WebSocket connection for user={} from {}: invalid proto parameter",
+                        session_id, peer_addr
+                    );
+                    let frame = CloseFrame {
+                        code: CloseCode::Library(4001),
+                        reason: reason.into(),
+                    };
+                    let _ = ws_stream.close(Some(frame)).await;
+                    return;
+                }
+            },
+            None => {
+                warn!(
+                    "WebSocket connection from {} (user={}) missing proto query parameter; admitting under rollout allowance",
+                    peer_addr, session_id
+                );
+            }
+        }
 
         // When token is validated, if nakama_client is configured, fetch get_loadout(&session_id)
         let client_opt = nakama_ref.read().unwrap().clone();
@@ -952,5 +1015,125 @@ mod tests {
         );
         assert_eq!(server.active_connections_in_room("map-for-play").await, 0);
         client.close(None).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_ws_protocol_version_mismatch_closes_with_4001() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let token = auth.generate_test_token("mismatch-player", "Tester", 3600);
+        let server_ver = crate::protocol::PROTOCOL_VERSION;
+        let client_ver = server_ver + 1;
+        let url = format!(
+            "ws://{}/ws?token={}&proto={}",
+            server.local_addr(),
+            token,
+            client_ver
+        );
+
+        let (mut client, _) = connect_async(&url).await.unwrap();
+        let msg = tokio::time::timeout(Duration::from_secs(1), client.next())
+            .await
+            .expect("timeout waiting for close frame")
+            .expect("stream ended without close frame")
+            .expect("websocket error");
+
+        match msg {
+            Message::Close(Some(frame)) => {
+                assert_eq!(frame.code, CloseCode::Library(4001));
+                let reason = frame.reason.as_str();
+                assert!(
+                    reason.contains(&format!("server={}", server_ver))
+                        && reason.contains(&format!("client={}", client_ver)),
+                    "unexpected close reason: {}",
+                    reason
+                );
+            }
+            other => panic!("expected Close(4001) frame, got {:?}", other),
+        }
+        assert_eq!(server.active_connections_count().await, 0);
+    }
+
+    #[tokio::test]
+    async fn test_ws_protocol_version_non_numeric_200_chars_closes_with_4001_invalid() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let token = auth.generate_test_token("bad-proto-player", "Tester", 3600);
+        let bad_proto = "x".repeat(200);
+        let url = format!(
+            "ws://{}/ws?token={}&proto={}",
+            server.local_addr(),
+            token,
+            bad_proto
+        );
+
+        let (mut client, _) = connect_async(&url).await.unwrap();
+        let msg = tokio::time::timeout(Duration::from_secs(1), client.next())
+            .await
+            .expect("timeout waiting for close frame")
+            .expect("stream ended without close frame")
+            .expect("websocket error");
+
+        match msg {
+            Message::Close(Some(frame)) => {
+                assert_eq!(frame.code, CloseCode::Library(4001));
+                let reason = frame.reason.as_str();
+                assert!(
+                    reason.len() <= 123,
+                    "close reason exceeds 123 bytes: len={}",
+                    reason.len()
+                );
+                assert!(
+                    reason.contains("client=invalid"),
+                    "close reason must contain client=invalid, got: {}",
+                    reason
+                );
+                assert!(!reason.contains(&bad_proto));
+            }
+            other => panic!("expected Close(4001) frame, got {:?}", other),
+        }
+        assert_eq!(server.active_connections_count().await, 0);
+    }
+
+    #[tokio::test]
+    async fn test_ws_protocol_version_matching_and_absent_admitted() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let token1 = auth.generate_test_token("match-player", "Tester1", 3600);
+        let token2 = auth.generate_test_token("legacy-player", "Tester2", 3600);
+        let server_ver = crate::protocol::PROTOCOL_VERSION;
+
+        let url_matching = format!(
+            "ws://{}/ws?token={}&proto={}",
+            server.local_addr(),
+            token1,
+            server_ver
+        );
+        let url_absent = format!("ws://{}/ws?token={}", server.local_addr(), token2);
+
+        let (mut client_match, _) = connect_async(&url_matching).await.unwrap();
+        let (mut client_absent, _) = connect_async(&url_absent).await.unwrap();
+
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(server.active_connections_count().await, 2);
+
+        let snapshot = [1u8, 2, 3, 4];
+        server.broadcast_snapshot(&snapshot).await;
+
+        let msg_match = tokio::time::timeout(Duration::from_secs(1), client_match.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+        let msg_absent = tokio::time::timeout(Duration::from_secs(1), client_absent.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+        assert_eq!(msg_match, Message::Binary(snapshot.to_vec().into()));
+        assert_eq!(msg_absent, Message::Binary(snapshot.to_vec().into()));
+
+        client_match.close(None).await.unwrap();
+        client_absent.close(None).await.unwrap();
     }
 }
