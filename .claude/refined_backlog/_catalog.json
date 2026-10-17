@@ -909,9 +909,10 @@
     "title": "Session resume after a dropped connection",
     "from_idea": "I-143",
     "created_at": "2026-10-17T22:51:45.494413+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-003"
+    "epic": "E-003",
+    "claimed_at": "2026-10-17T22:51:50.975130+00:00"
   }
 ]
