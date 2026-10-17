@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Atlas civil record (pinned or bound)",
+  "description": "The authored half of the world. A PINNED record is a generator INPUT: a committed seed point plus the constraint block its prose depends on, honoured before the coastline settles. A BOUND record is a generator OUTPUT consumer: a stable handle plus a declared size band, and NO coordinate anywhere — G-BIND deep-scans for at/points/rect/anchor because two binding paths means two ways for a record to move. There is deliberately no bind.spineId. additionalProperties: false throughout: the bound layer is machine-written and every unexpected key is a bug.",
+  "type": "object",
+  "required": ["id", "kind", "tier", "title", "prose", "resolution"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^c-(town|lm|camp|dungeon)-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "kind": { "type": "string", "enum": ["town", "landmark", "camp", "dungeon"] },
+    "tier": { "type": "string", "enum": ["pinned", "bound"] },
+    "title": { "type": "string", "minLength": 1 },
+    "settlementRank": { "type": "string", "enum": ["capital", "hub", "village"] },
+    "properties": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "coasts": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" } },
+    "networkAnchor": { "type": "boolean" },
+    "plan": { "type": "string" },
+    "prose": { "type": "string", "enum": ["authored", "frontier"] },
+    "provenance": {
+      "type": "object",
+      "required": ["authored", "generator"],
+      "additionalProperties": false,
+      "properties": {
+        "authored": { "type": "string", "enum": ["hand", "generated"] },
+        "generator": { "type": ["object", "null"] }
+      }
+    },
+    "resolution": { "type": ["object", "null"] },
+    "pin": {
+      "type": "object",
+      "required": ["at", "toleranceKm", "why"],
+      "additionalProperties": false,
+      "properties": {
+        "at": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number", "minimum": 0, "maximum": 400 } },
+        "toleranceKm": { "type": "number", "exclusiveMinimum": 0, "maximum": 10 },
+        "why": { "type": "string", "minLength": 10 }
+      }
+    },
+    "requires": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "continent": { "type": "string", "pattern": "^c[0-9]{2}$" },
+        "landform": { "type": "string", "minLength": 1 },
+        "water": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "type": "string", "enum": ["sea", "lake", "river", "none"] },
+            "shelterFetchKmMax": { "type": "number", "exclusiveMinimum": 0 },
+            "minDepthM": { "type": "number", "minimum": 0 }
+          }
+        },
+        "slopeMax": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "freshWaterWithinKm": { "type": "number", "minimum": 0 },
+        "biomeNot": { "type": "array", "items": { "type": "string" } },
+        "elevationMaxM": { "type": "number" }
+      }
+    },
+    "bind": {
+      "type": "object",
+      "required": ["handle", "expect"],
+      "additionalProperties": false,
+      "properties": {
+        "handle": { "type": "string", "pattern": "^c[0-9]{2}/[a-z-]+/h-[0-9a-f]{4,6}$",
+                     "description": "IDENTICAL to content/schemas/handle-ledger.schema.json and landform-instance.schema.json. 4-6 hex, not exactly 4: mintHandle slices 4 from contentHash and widens to 6 on a real collision (65,536 values against 1,740 instances makes one near-certain by the birthday bound). A stricter {4} here would hard-reject a handle the ledger considers valid the first time that fires. The group segment allows a hyphen because lexicon groups may be hyphenated." },
+        "expect": {
+          "type": "object",
+          "required": ["type", "sizeKm"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "type": "string", "minLength": 1 },
+            "sizeKm": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number", "exclusiveMinimum": 0 } }
+          }
+        }
+      }
+    },
+    "lore": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "note": { "type": "string", "minLength": 1 },
+        "labelAnchor": { "type": "string", "enum": ["north", "south", "east", "west"] },
+        "source": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "tier": { "const": "pinned" } }, "required": ["tier"] }, "then": { "required": ["pin", "requires", "provenance"] } },
+    { "if": { "properties": { "tier": { "const": "bound" } }, "required": ["tier"] }, "then": { "required": ["bind", "lore"], "not": { "required": ["pin"] } } }
+  ]
+}

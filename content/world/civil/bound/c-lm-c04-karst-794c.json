@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-794c",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Sink at Dolinsink",
+  "bind": {
+    "handle": "c04/karst/h-d8794c",
+    "expect": {
+      "type": "karst-fenster",
+      "sizeKm": [
+        0.08,
+        0.3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A window where an underground river shows itself for a few paces, then goes back under.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#karst-fenster.gloss"
+  },
+  "resolution": null
+}

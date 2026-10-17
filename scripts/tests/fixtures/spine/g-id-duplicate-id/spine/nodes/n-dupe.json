@@ -1,0 +1,9 @@
+{
+  "id": "n-atlas",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "Duplicate",
+  "seed": { "value": "0000000000000a02", "epoch": 0, "why": null },
+  "placement": { "shape": "rect", "rect": { "x": 10, "y": 10, "w": 10, "h": 10 }, "anchor": [15, 15] },
+  "composition": { "meadow": 100 }
+}

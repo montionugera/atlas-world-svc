@@ -1,0 +1,69 @@
+namespace Atlas.Protocol;
+
+enum EntityType : byte {
+    Player = 0,
+    Mob = 1,
+    Npc = 2,
+    Projectile = 3
+}
+
+struct Vec2 {
+    x: float;
+    y: float;
+}
+
+table EntityDelta {
+    id: uint32;
+    entity_type: EntityType;
+    pos: Vec2;
+    vel: Vec2;
+    health: float;
+    max_health: float;
+    state_flags: uint16;
+    target_id: uint32;
+    // Added (Wave B, backward compatible): bestiary id for mobs (e.g. "mob-millpond-gnawer"),
+    // empty for other entity types.
+    mob_type: string;
+    // Owning entity id (projectiles); 0 otherwise.
+    owner_id: uint32;
+    // Added (backward compatible): ClientInput.client_tick of the last input this player's
+    // tick ran on; 0 for none yet, and for bots, mobs and projectiles.
+    input_ack: uint32;
+}
+
+// state_flags bits: 1 = alive, 2 = server-driven bot (BotAgent).
+
+enum GameEventKind : ubyte {
+    Hit = 0,
+    Kill = 1
+}
+
+table GameEvent {
+    kind: GameEventKind;
+    source_id: uint32;
+    target_id: uint32;
+    amount: float;
+}
+
+table WorldSnapshot {
+    tick: uint32;
+    server_time_ms: uint64;
+    entities: [EntityDelta];
+    removed_ids: [uint32];
+    // Added (Wave B): combat events that happened this tick.
+    events: [GameEvent];
+}
+
+table ClientInput {
+    client_tick: uint32;
+    move_x: float;
+    move_y: float;
+    attack: bool;
+    skill_slot: ubyte;
+    target_id: uint32;
+    target_x: float;
+    target_y: float;
+    respawn: bool;
+}
+
+root_type WorldSnapshot;

@@ -1,0 +1,29 @@
+{
+  "id": "c-lm-quillreef-ring",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Quillreef Ring",
+  "pin": {
+    "at": [
+      338,
+      66
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §10: an atoll ring — every settlement a port, no interior"
+  },
+  "requires": {
+    "continent": "c11",
+    "landform": "atoll",
+    "water": {
+      "kind": "sea"
+    }
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

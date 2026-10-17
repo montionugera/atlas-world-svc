@@ -1,0 +1,123 @@
+[gd_scene load_steps=6 format=3 uid="uid://cexpbar0001"]
+
+[ext_resource type="Script" path="res://src/UI/Widgets/ExpBar.cs" id="1_exp"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_bg"]
+bg_color = Color(0.04, 0.06, 0.08, 0.95)
+border_width_top = 1
+border_color = Color(0.85, 0.72, 0.35, 0.6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_bar_bg"]
+bg_color = Color(0.08, 0.12, 0.16, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_base_fill"]
+bg_color = Color(0.25, 0.85, 0.4, 0.95)
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_job_fill"]
+bg_color = Color(0.55, 0.35, 0.95, 0.95)
+corner_radius_top_left = 3
+corner_radius_bottom_left = 3
+
+[node name="ExpBar" type="Control"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 3
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("1_exp")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBox_bg")
+
+[node name="HBox" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="BaseContainer" type="Control" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BaseBar" type="ProgressBar" parent="HBox/BaseContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/background = SubResource("StyleBox_bar_bg")
+theme_override_styles/fill = SubResource("StyleBox_base_fill")
+value = 78.4
+show_percentage = false
+
+[node name="BaseLabel" type="Label" parent="HBox/BaseContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.95)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 9
+text = "Base Lv.90  [78.4%]"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Divider" type="Label" parent="HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
+theme_override_font_sizes/font_size = 9
+text = "◆ Freja ◆"
+vertical_alignment = 1
+
+[node name="JobContainer" type="Control" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="JobBar" type="ProgressBar" parent="HBox/JobContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/background = SubResource("StyleBox_bar_bg")
+theme_override_styles/fill = SubResource("StyleBox_job_fill")
+value = 52.1
+show_percentage = false
+
+[node name="JobLabel" type="Label" parent="HBox/JobContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.95)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 9
+text = "Job Lv.50  [52.1%]"
+horizontal_alignment = 1
+vertical_alignment = 1

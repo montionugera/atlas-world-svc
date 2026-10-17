@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-e7e4",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Sink below Chalkmoor",
+  "bind": {
+    "handle": "c04/karst/h-a6e7e4",
+    "expect": {
+      "type": "karst-tower",
+      "sizeKm": [
+        0.3,
+        1.18
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A steep-sided limestone stack rising sheer out of flat ground, wooded on top.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#karst-tower.gloss"
+  },
+  "resolution": null
+}

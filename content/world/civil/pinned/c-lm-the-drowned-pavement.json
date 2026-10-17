@@ -1,0 +1,29 @@
+{
+  "id": "c-lm-the-drowned-pavement",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "The Drowned Pavement",
+  "pin": {
+    "at": [
+      296,
+      282
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §3: nothing sworn beyond the shore"
+  },
+  "requires": {
+    "continent": "c04",
+    "landform": "limestone-pavement",
+    "water": {
+      "kind": "sea"
+    }
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

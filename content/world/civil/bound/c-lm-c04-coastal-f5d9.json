@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-coastal-f5d9",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Fenpot Roads",
+  "bind": {
+    "handle": "c04/coastal/h-5df5d9",
+    "expect": {
+      "type": "cuspate-foreland",
+      "sizeKm": [
+        1.83,
+        7
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A blunt triangle of shingle thrown out from the coast where two drifts meet.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#cuspate-foreland.gloss"
+  },
+  "resolution": null
+}

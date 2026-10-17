@@ -13,7 +13,7 @@
 # edge as a sliver. Shading response is untouched by that rotation.
 #
 # Blender does NOT exit non-zero on an unhandled Python exception (see
-# tools/asset-forge/bake.sh), so every failure path prints a BAKE_FAIL: line
+# atelier/asset-forge/bake.sh), so every failure path prints a BAKE_FAIL: line
 # and the caller counts them rather than trusting the exit code.
 #
 # Usage: blender -b --factory-startup --python bake_poster.py -- jobs.json

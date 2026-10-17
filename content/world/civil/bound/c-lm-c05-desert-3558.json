@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-3558",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Pan within Emberpan",
+  "bind": {
+    "handle": "c05/desert/h-083558",
+    "expect": {
+      "type": "desert-pavement-reg",
+      "sizeKm": [
+        5.37,
+        20
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A floor of close-packed stones polished flat, the fine stuff all blown out between.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#desert-pavement-reg.gloss"
+  },
+  "resolution": null
+}

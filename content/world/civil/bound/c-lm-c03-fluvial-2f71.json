@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-2f71",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Wracksound Race",
+  "bind": {
+    "handle": "c03/fluvial/h-b52f71",
+    "expect": {
+      "type": "delta",
+      "sizeKm": [
+        3.19,
+        12.76
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The river gives up and splits, laying its load down in a fan of shifting channels.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#delta.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-lakes-cc02",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Grikeclint Deep",
+  "bind": {
+    "handle": "c04/lakes/h-97cc02",
+    "expect": {
+      "type": "moraine-dammed-lake",
+      "sizeKm": [
+        1.82,
+        4
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Water held back by a bank of loose rubble that was never built to hold anything.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#moraine-dammed-lake.gloss"
+  },
+  "resolution": null
+}

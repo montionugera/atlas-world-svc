@@ -1,0 +1,119 @@
+{
+  "id": "n-site-icefield",
+  "tier": "site",
+  "parentId": "n-frontier-shelf",
+  "title": "Northern Icefield",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/atlas-frontier.md"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "0d6b39f8a24c71e5",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "rect",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "w": 1000,
+      "h": 250
+    },
+    "anchor": [500, 125]
+  },
+  "interior": {
+    "units": "u",
+    "perParentUnit": 1,
+    "size": [1000, 250],
+    "originInParent": [0, 0]
+  },
+  "composition": {
+    "ice": 100
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [
+    {
+      "id": "f-spawnpoint-icefield",
+      "kind": "point",
+      "at": [500, 125],
+      "attrs": {
+        "role": "spawnPoint"
+      }
+    },
+    {
+      "id": "f-hazard-freeze-icefield-1",
+      "kind": "point",
+      "at": [380, 110],
+      "attrs": {
+        "hazard": {
+          "type": "freeze",
+          "radius": 60,
+          "value": 4,
+          "interval": 1000,
+          "duration": 2000
+        }
+      }
+    },
+    {
+      "id": "f-hazard-freeze-icefield-2",
+      "kind": "point",
+      "at": [640, 150],
+      "attrs": {
+        "hazard": {
+          "type": "freeze",
+          "radius": 55,
+          "value": 4,
+          "interval": 1000,
+          "duration": 2000
+        }
+      }
+    },
+    {
+      "id": "f-hazard-stun-icefield",
+      "kind": "point",
+      "at": [500, 90],
+      "attrs": {
+        "hazard": {
+          "type": "stun",
+          "radius": 45,
+          "value": 1,
+          "interval": 1500,
+          "duration": 800,
+          "castTime": 400
+        }
+      }
+    }
+  ],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": [0, 0],
+    "spawnAreas": [
+      {
+        "id": "icefield_stoneguard",
+        "x": 300,
+        "y": 40,
+        "width": 400,
+        "height": 170,
+        "mobType": "defensive",
+        "count": 2,
+        "spawnIntervalMs": 8000
+      }
+    ],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": "n-northern-icefield",
+  "lore": {
+    "summary": "The Stoneguard's home turf on the runtime shelf; stands in for the fiction Northern Icefield."
+  },
+  "tags": ["runtime-only"],
+  "levelBand": null
+}

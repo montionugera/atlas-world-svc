@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c09-coastal-ff07",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Willowlobe Stack",
+  "bind": {
+    "handle": "c09/coastal/h-81ff07",
+    "expect": {
+      "type": "spit",
+      "sizeKm": [
+        1.63,
+        6
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A finger of shingle the drift keeps building out across open water, growing every year.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#spit.gloss"
+  },
+  "resolution": null
+}

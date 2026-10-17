@@ -1,0 +1,4 @@
+[
+  { "rel": "colocated_with", "subject": "c-lm-stonemoor-shore", "host": "c-town-netstead", "withinKm": 15.0, "cite": "docs/worldbuilding/A2-wider-world.md §3 \"The continents\"", "note": "\"a moor-backed coast ... Its reported port is Netstead\" — the port is a point on the shore it reports." },
+  { "rel": "unique_in_scope", "subject": "c-town-netstead", "property": "reported-port", "scope": "continent:c04", "cite": "content/story/canon.md §4 (Stonemoor bullet)", "note": "\"a second reported port, Netstead\" — Stonemoor has exactly one." }
+]

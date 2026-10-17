@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-e0a4",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head under Bramfield",
+  "bind": {
+    "handle": "c02/coastal/h-c2e0a4",
+    "expect": {
+      "type": "estuary",
+      "sizeKm": [
+        4.33,
+        14
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Where the river's water and the sea's argue twice a day over the same mudflats.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#estuary.gloss"
+  },
+  "resolution": null
+}

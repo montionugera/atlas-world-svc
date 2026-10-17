@@ -1,0 +1,29 @@
+{
+  "id": "c-lm-peatrun-coast",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Peatrun Coast",
+  "pin": {
+    "at": [
+      262,
+      150
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §2: \"The far run of coast where the Peatrun stains the sea brown a mile out, or so the wreck-reports swear.\" The committed spine node n-peatrun-coast is a child of n-coldreach, NOT of n-cluster1 — A1 (the basin) contains no peat at all — so this row is c03 with a literal `at` (t=0.840 inside Coldreach) and is never translated by PIN_OFFSET"
+  },
+  "requires": {
+    "continent": "c03",
+    "landform": "blanket-mire",
+    "water": {
+      "kind": "sea"
+    }
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

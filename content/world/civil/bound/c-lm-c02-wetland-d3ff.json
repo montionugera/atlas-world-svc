@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-d3ff",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Gildmark Quag",
+  "bind": {
+    "handle": "c02/wetland/h-9ad3ff",
+    "expect": {
+      "type": "spring-mire",
+      "sizeKm": [
+        0.15,
+        0.6
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A patch kept permanently wet by water rising from below, greener than all round it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#spring-mire.gloss"
+  },
+  "resolution": null
+}

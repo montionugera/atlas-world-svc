@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-slateflow-swallet",
+  "title": "Slateflow Swallet",
+  "family": null,
+  "bind": {
+    "handle": "c03/fluvial/h-e32bd7"
+  },
+  "entranceType": "plunge-pool",
+  "floors": 3,
+  "levelBand": [
+    32,
+    50
+  ],
+  "hazards": [
+    "grave-damp",
+    "collapse"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "A swallet that takes the slate-runoff; everything inside is layered thin and grey.",
+    "source": "content/world/premises/continent-04.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "c-lm-brightfall-leap",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Brightfall Leap",
+  "pin": {
+    "at": [
+      352,
+      196
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §8: cliff-hung waterfalls straight into the sea. `sea-waterfall` (D-B4), not `knickpoint-gorge`: the gorge's biomes are river,rock and its requires block is nearFlag RIVER, so it can never be satisfied at a cell that also satisfies water.kind sea — a G-PIN-SAT failure by construction. This is the exact unsatisfiable-coastal-pin the addition exists to prevent"
+  },
+  "requires": {
+    "continent": "c09",
+    "landform": "sea-waterfall",
+    "water": {
+      "kind": "sea"
+    }
+  },
+  "properties": [
+    "charted-isle"
+  ],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

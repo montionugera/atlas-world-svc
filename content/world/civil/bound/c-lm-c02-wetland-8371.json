@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-8371",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Wainveil Carr",
+  "bind": {
+    "handle": "c02/wetland/h-808371",
+    "expect": {
+      "type": "saltmire-pan",
+      "sizeKm": [
+        1.46,
+        4
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A bare salt patch inside the marsh where nothing grows and the crust holds water.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#saltmire-pan.gloss"
+  },
+  "resolution": null
+}

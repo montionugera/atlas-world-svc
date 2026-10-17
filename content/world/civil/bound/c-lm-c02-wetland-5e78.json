@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-5e78",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Mire at Wainbourne",
+  "bind": {
+    "handle": "c02/wetland/h-045e78",
+    "expect": {
+      "type": "swamp-forest",
+      "sizeKm": [
+        1.97,
+        7.86
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Trees standing in water, with the ground somewhere below and no telling where.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#swamp-forest.gloss"
+  },
+  "resolution": null
+}

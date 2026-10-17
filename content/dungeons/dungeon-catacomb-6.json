@@ -1,0 +1,21 @@
+{
+  "id": "dungeon-catacomb-6",
+  "title": "Catacomb 7",
+  "family": "family-catacomb",
+  "familyIndex": 6,
+  "bind": {
+    "handle": "c04/karst/h-a966fa"
+  },
+  "entranceType": "sinkhole-doline",
+  "floors": 3,
+  "levelBand": [
+    60,
+    66
+  ],
+  "hazards": [
+    "bad-air",
+    "collapse",
+    "grave-damp"
+  ],
+  "spineId": null
+}

@@ -184,10 +184,10 @@ official reading of the first caravan burning says beneath the tower.
   near it. The Northern Icefield lies further north past Millcross's
   expedition camp; Thornveil's bramble forest lies east of Millcross.
 - **Embervale** and **Norhollow** are sister towns on either side of the
-  Ashvale plain, roughly a day's ride apart in peacetime. **Ashvale Front**
+  Ashvale plain, half an hour's ride apart in peacetime. **Ashvale Front**
   is the contested middle ground between them — neither town claims it, both
-  bury their dead in it; wartime crossing is under a day, which is exactly
-  why the front is so lethal.
+  bury their dead in it; the wartime crossing is faster still, which is
+  exactly why the front is so lethal.
 - **Embervale farms the Ashvale loam and works the ember-seam beneath it.**
   Norhollow remains a forest-and-mine town. Both readings are true and
   neither is a correction of the other: the loam is what the year's harvest
@@ -208,7 +208,7 @@ official reading of the first caravan burning says beneath the tower.
   `content/story/characters.json` — the content gate checks only that the
   id resolves, not that the two agree.
 - **Gildmark** sits on the coast: reachable from Millcross by the old trade
-  road (4–5 days) and from both war towns by a coastal spur (about 3 days).
+  road (2.5 h) and from both war towns by a coastal spur (1.5 h).
   Its harbor is the only deepwater port on this coast — there is no other
   route to bring bound war-beasts or relic-cargo in by ship, which is why
   the arms flow, in either direction, must pass Gildmark's harbor. Its
@@ -216,7 +216,7 @@ official reading of the first caravan burning says beneath the tower.
   than the Bellfaith's fast signal — a private line outside the relay chain
   entirely (see "How news travels" below) — which is why Gildmark always
   knows before the market does, and is always rich and always prepared.
-- **Rooktide** sits inland, south of Millcross (about 2 days), off the
+- **Rooktide** sits inland, south of Millcross (1 h), off the
   direct war road entirely — part of why it recovered undisturbed, and why
   it's the natural place for the first crossing (act 5) to happen quietly,
   away from either capital's watching eyes.
@@ -230,6 +230,38 @@ official reading of the first caravan burning says beneath the tower.
   is found on a frozen shelf a world away from it — they are holding both
   ends of the same road. Their home turf in seed content is the icefield;
   their reason for existing is the gate.
+
+- **Coldreach is the far end of the trade wind.** A day and a half out,
+  masters log a cold grey coast under one long spine of rock, and no log
+  claims what stands behind it; the once-a-year merchantmen that reach
+  Gildmark are the ones that tied up at its port, Tallowquay, first — the
+  same voyage, its far end now charted, not a second service. *(By
+  mariners' report — `A2-wider-world.md`; `n-coldreach`, `e-lane-coldreach`.)*
+- **Stonemoor is set down from wharf-talk at Tallowquay.** A moor-backed
+  coast a day along a foreign lane, with a second reported port,
+  Netstead; no Gildmark keel has run that lane, and nothing is sworn beyond
+  the shore. *(`n-stonemoor`, `e-lane-stonemoor-foreign`.)*
+- **Three island chains are marks on a chart and no more.** Driftholt,
+  Reedstrand and Brightfall exist by fog-sight and wreck-report; a handful
+  of their isles are fixed, the rest claimed, and the outlying isles carry
+  no names at all. *(`n-driftholt`, `n-reedstrand`, `n-brightfall`.)*
+- **The three seas are named from the logs.** The Keelbreak Sea is the
+  western water of the wreck-ledgers; the Galereach Sea is the middle water
+  the trade wind crosses; the Tarnmark Sea is the eastern water past
+  Stonemoor, where the charts run out. *(`n-keelbreak`, `n-galereach`,
+  `n-tarnmark`.)*
+- **The Rimewall Cap shuts the north.** Every master who has run far enough
+  north reports the same white wall and none reports an end to it — a
+  reported ice edge, never a coastline; the basin map's own northern
+  parchment edge is unchanged. *(`n-rimewall-cap`; A1 §7.2.)*
+- **The wider chart changes none of this coast's arithmetic.** Everything
+  above is charted from shipmasters' logs sworn at Gildmark harbor —
+  reported, not surveyed; the interiors are blank and nobody from the basin
+  has walked them. Both far ports are foreign harbors on foreign coasts, so
+  **Gildmark remains the only deepwater port on this coast and the land's
+  only door to the sea** — the sister towns still have neither ships nor
+  ports, and whoever controls the door still controls the price of the
+  whole land. *(`A2-wider-world.md`; A0 §2.1 V8.)*
 
 ### How news travels (the Bellfaith, three layers, two speeds)
 
@@ -268,29 +300,30 @@ burned before either — never in the tone or timing of the bell itself.
 
 **Two speeds carry these three layers between towns:**
 
-- **Fast signals (hours).** Bellfaith relay towers strung along the
-  ridgelines and trade roads pass layer-1 codes town-to-town in a chain —
-  category only (war, danger, all-clear, "await proclamation"), no detail.
-  A signal reaches all six towns within hours of the first tower ringing it.
-- **Slow detail (days).** The actual sealed proclamation — layers 2 and 3 —
-  travels by bell-rider (the Bellfaith's fast couriers) or message-bird
-  along the trade roads, at the same pace as any other road traffic (see
-  the travel times above). Each town's tower verifies the seal, tolls
-  assembly, reads the proclamation aloud, and forwards a copy on to the
-  next town.
+- **Fast signals (hours).** Each town's own bell relays layer-1 codes to the
+  next town's along the trade roads, in a chain — category only (war,
+  danger, all-clear, "await proclamation"), no detail. A signal reaches
+  every town on the network within hours of the first bell ringing it.
+- **Slow detail.** The actual sealed proclamation — layers 2 and 3 — travels
+  by bell-rider (the Bellfaith's fast couriers) or message-bird along the
+  same trade roads, at the same pace as any other road traffic (see the
+  travel times above): the same hours the fast signal took, never longer.
+  Each town's tower verifies the seal, tolls assembly, reads the
+  proclamation aloud, and forwards a copy on to the next town.
 
-**The exploit (the Broker's core method):** the gap between the fast signal
-and the slow detail — hours versus days — is where truth is decided. A town
-knows *something* happened within hours, but not *what* for days; whoever's
-version of the detail arrives first at a given town is the version that
-sticks, because there is nothing to compare it against yet ("the first news
-sticks"). The Broker's own riders always ride that gap faster than anyone
-else's — better horses, paid relay stops, roads he already controls through
-Gildmark's trade contracts — and riders carrying a proclamation inconvenient
-to him get robbed on the road unusually often, always after the signal has
-already gone out and always before the truthful detail can catch up to it.
-This is recorded on his dossier in §2 and cross-referenced in "the Broker's
-hand behind Gildmark" in §3.
+**The exploit (the Broker's core method):** the gap is no longer in raw
+speed — both layers now travel the same roads in the same hours — it is in
+DETAIL. A town knows *something* happened as soon as the bare category
+arrives, but not *what* until the full proclamation catches up behind it;
+whoever's version of the detail arrives first at a given town is the
+version that sticks, because there is nothing to compare it against yet
+("the first news sticks"). The Broker's own riders always ride that gap
+faster than anyone else's — better horses, paid relay stops, roads he
+already controls through Gildmark's trade contracts — and riders carrying a
+proclamation inconvenient to him get robbed on the road unusually often,
+always after the bare signal has already gone out and always before the
+full, truthful detail can catch up to it. This is recorded on his dossier
+in §2 and cross-referenced in "the Broker's hand behind Gildmark" in §3.
 
 **Gildmark's edge:** the spec's far-mirrors — a Gildmark monopoly — are the
 one channel faster than even the fast signal, a private line outside the
@@ -482,3 +515,4 @@ failure this section exists to prevent is a contradiction being marked
 | Six *peoples* and eight *races* are separate axes | `style.md` §"Peoples", copied to `core-story.md` |
 | Magic is rune-gated, not scarcity-gated (F-017) | §5, and the scarcity rule retired from `core-story.md` |
 | The seal certifies provenance, not truth (F-035) | §4 |
+| The wider world is charted from mariners' reports; reported ≠ surveyed; Gildmark stays the only door (F-043, DR-006 opt. 3) | §4 |

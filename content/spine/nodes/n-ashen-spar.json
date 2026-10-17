@@ -1,0 +1,82 @@
+{
+  "id": "n-ashen-spar",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "Ashen Spar",
+  "provenance": {
+    "authored": "generated",
+    "generator": {
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/continent-10.json"
+    },
+    "source": "content/world/premises/continent-10.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "fa5f5624b88e32c1",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [98.5, 361.5],
+      [96.5, 359.5],
+      [95.5, 356.5],
+      [96.5, 352.5],
+      [101.5, 348],
+      [112, 344],
+      [118.5, 343],
+      [126, 343],
+      [132.5, 344],
+      [140.5, 346.5],
+      [147.5, 351.5],
+      [148.5, 353.5],
+      [148.5, 358],
+      [144, 362.5],
+      [135, 366],
+      [120.5, 367.5],
+      [118, 367],
+      [113, 367],
+      [113, 366.5],
+      [108, 366],
+      [108, 365.5],
+      [106.5, 365.5],
+      [106.5, 365],
+      [105, 365],
+      [105, 364.5],
+      [103.5, 364.5],
+      [103.5, 364],
+      [100.5, 363],
+      [100, 362]
+    ],
+    "anchor": [119.25, 355.25]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [53, 24.5],
+    "originInParent": [95.5, 343]
+  },
+  "composition": {
+    "ash": 49.7,
+    "rock": 22.4,
+    "lava": 20.9,
+    "scree": 7
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "volcanic-arc",
+  "features": [],
+  "bands": [],
+  "runtime": null,
+  "representsNodeId": null,
+  "lore": {
+    "summary": "the volcanic arc — a strung line of cones, calderas, lava tubes"
+  },
+  "tags": [],
+  "levelBand": [55, 80]
+}

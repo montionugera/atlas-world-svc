@@ -1,0 +1,7 @@
+[
+  { "id": "karst-cenote", "group": "karst", "geometry": "point", "biomes": ["karst"], "sizeKm": [0.05, 0.6], "dungeonCapable": true, "glyph": "g-cenote", "rarity": "uncommon", "requires": { "rock": "carbonate", "precipDecileMin": 4 }, "gloss": "A collapsed limestone shaft flooded to the water table.", "absentBecause": null },
+  { "id": "coastal-drowned-valley", "group": "coastal", "geometry": "area", "biomes": ["meadow"], "sizeKm": [0.5, 8.0], "dungeonCapable": false, "glyph": "g-ria", "rarity": "common", "requires": { "nearFlag": "SEA" }, "gloss": "A river valley the sea has walked up.", "absentBecause": null },
+  { "id": "lava-tube", "group": "volcanic", "geometry": "line", "biomes": ["lava"], "sizeKm": [0.2, 4.0], "dungeonCapable": true, "glyph": "g-tube", "rarity": "rare", "requires": { "rock": "volcanic", "nearFlag": "ARC" }, "gloss": "A drained conduit under a cooled flow.", "absentBecause": null },
+  { "id": "tidal-mire", "group": "wetland", "geometry": "area", "biomes": ["marsh"], "sizeKm": [0.5, 20.0], "dungeonCapable": false, "glyph": "g-mire", "rarity": "common", "requires": { "precipDecileMin": 5, "slopeMax": 0.02 }, "gloss": "Salt-worked mire the tide walks in and out of.", "absentBecause": null },
+  { "id": "salt-pan-crust", "group": "desert", "geometry": "area", "biomes": ["alkali"], "sizeKm": [0.3, 12.0], "dungeonCapable": false, "glyph": "g-pan", "rarity": "common", "requires": { "rock": "clastic", "precipDecileMax": 1 }, "gloss": "Flat evaporite crust over a closed basin.", "absentBecause": null }
+]

@@ -1,0 +1,32 @@
+{
+  "id": "dungeon-millcross-race-tunnels",
+  "title": "Millcross Race Tunnels",
+  "family": null,
+  "bind": {
+    "handle": "c02/fluvial/h-8da216"
+  },
+  "entranceType": "knickpoint-gorge",
+  "floors": 2,
+  "levelBand": [
+    1,
+    10
+  ],
+  "hazards": [
+    "bad-air",
+    "loose-floor"
+  ],
+  "roomCountCurve": [
+    8,
+    10
+  ],
+  "lore": {
+    "note": "A leat race driven through the gorge wall; the millers never finished the far portal.",
+    "source": "content/world/premises/continent-02.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

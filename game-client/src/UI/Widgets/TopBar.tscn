@@ -1,0 +1,215 @@
+[gd_scene load_steps=7 format=3 uid="uid://ctopbar001"]
+
+[ext_resource type="Script" path="res://src/UI/Widgets/TopBar.cs" id="1_topbar"]
+[ext_resource type="Texture2D" uid="uid://dk1gqjwkmlh7d" path="res://assets/art/maps/wealdmarch.png" id="2_minimap_tex"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_btn"]
+bg_color = Color(0.08, 0.11, 0.17, 0.94)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.88, 0.74, 0.36, 0.95)
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_btn_pressed"]
+bg_color = Color(0.25, 0.35, 0.52, 0.95)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.92, 0.65, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_minimap"]
+bg_color = Color(0.06, 0.08, 0.12, 0.95)
+corner_radius_top_left = 38
+corner_radius_top_right = 38
+corner_radius_bottom_right = 38
+corner_radius_bottom_left = 38
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.95, 0.82, 0.4, 1)
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_banner"]
+bg_color = Color(0.05, 0.07, 0.1, 0.88)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.85, 0.72, 0.35, 0.7)
+
+[node name="TopBar" type="Control" node_paths=PackedStringArray("BagButton", "WardrobeButton", "QuestButton", "SkillsButton", "ShopButton", "LocationLabel", "PingLabel")]
+custom_minimum_size = Vector2(440, 92)
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -450.0
+offset_top = 8.0
+offset_right = -10.0
+offset_bottom = 100.0
+grow_horizontal = 0
+mouse_filter = 2
+script = ExtResource("1_topbar")
+BagButton = NodePath("HBox/ButtonsRow/BagButton")
+WardrobeButton = NodePath("HBox/ButtonsRow/WardrobeButton")
+QuestButton = NodePath("HBox/ButtonsRow/QuestButton")
+SkillsButton = NodePath("HBox/ButtonsRow/SkillsButton")
+ShopButton = NodePath("HBox/ButtonsRow/ShopButton")
+LocationLabel = NodePath("HBox/MinimapBox/BannerBox/LocationLabel")
+PingLabel = NodePath("HBox/MinimapBox/BannerBox/PingLabel")
+
+[node name="HBox" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+alignment = 2
+
+[node name="ButtonsRow" type="HBoxContainer" parent="HBox"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="ShopButton" type="Button" parent="HBox/ButtonsRow"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBox_btn")
+theme_override_styles/hover = SubResource("StyleBox_btn_pressed")
+theme_override_styles/pressed = SubResource("StyleBox_btn_pressed")
+text = ""
+
+[node name="SkillsButton" type="Button" parent="HBox/ButtonsRow"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBox_btn")
+theme_override_styles/hover = SubResource("StyleBox_btn_pressed")
+theme_override_styles/pressed = SubResource("StyleBox_btn_pressed")
+text = ""
+
+[node name="QuestButton" type="Button" parent="HBox/ButtonsRow"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBox_btn")
+theme_override_styles/hover = SubResource("StyleBox_btn_pressed")
+theme_override_styles/pressed = SubResource("StyleBox_btn_pressed")
+text = ""
+
+[node name="BagButton" type="Button" parent="HBox/ButtonsRow"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBox_btn")
+theme_override_styles/hover = SubResource("StyleBox_btn_pressed")
+theme_override_styles/pressed = SubResource("StyleBox_btn_pressed")
+text = ""
+
+[node name="WardrobeButton" type="Button" parent="HBox/ButtonsRow"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBox_btn")
+theme_override_styles/hover = SubResource("StyleBox_btn_pressed")
+theme_override_styles/pressed = SubResource("StyleBox_btn_pressed")
+text = ""
+
+[node name="MinimapBox" type="VBoxContainer" parent="HBox"]
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="MinimapCircle" type="Panel" parent="HBox/MinimapBox"]
+custom_minimum_size = Vector2(74, 74)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBox_minimap")
+
+[node name="MapTexture" type="TextureRect" parent="HBox/MinimapBox/MinimapCircle"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -33.0
+offset_top = -33.0
+offset_right = 33.0
+offset_bottom = 33.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_minimap_tex")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="NorthMarker" type="Label" parent="HBox/MinimapBox/MinimapCircle"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -6.0
+offset_top = -1.0
+offset_right = 6.0
+offset_bottom = 13.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 9
+text = "N"
+horizontal_alignment = 1
+
+[node name="RadarDot" type="ColorRect" parent="HBox/MinimapBox/MinimapCircle"]
+custom_minimum_size = Vector2(6, 6)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 0.88, 0.35, 1)
+
+[node name="BannerBox" type="PanelContainer" parent="HBox/MinimapBox"]
+custom_minimum_size = Vector2(88, 16)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_banner")
+
+[node name="LocationLabel" type="Label" parent="HBox/MinimapBox/BannerBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.92, 0.72, 1)
+theme_override_font_sizes/font_size = 9
+text = "Freja (261, 286)"
+horizontal_alignment = 1
+
+[node name="PingLabel" type="Label" parent="HBox/MinimapBox/BannerBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.5, 1)
+theme_override_font_sizes/font_size = 8
+text = "● 45ms"
+horizontal_alignment = 1

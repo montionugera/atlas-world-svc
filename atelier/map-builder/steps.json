@@ -1,0 +1,18 @@
+{ "version": 1,
+  "groups": [
+    { "id": "terrain",     "label": "Terrain",     "stages": [
+      { "name": "P1",   "label": "Premise masks" }, { "name": "P2",  "label": "Elevation" },
+      { "name": "P2b",  "label": "Substrate" },     { "name": "P3",  "label": "Sea level & rank" } ] },
+    { "id": "climate",     "label": "Climate & water", "stages": [
+      { "name": "P5",   "label": "Winds" },         { "name": "P6",  "label": "Hydrology" },
+      { "name": "P7",   "label": "Lakes, deltas, glaciers" }, { "name": "P7b", "label": "Pinned water" },
+      { "name": "P8",   "label": "Biomes" } ] },
+    { "id": "land",        "label": "Regions & landforms", "stages": [
+      { "name": "P9",   "label": "Region partition" }, { "name": "P10", "label": "Landforms" } ] },
+    { "id": "civil",       "label": "Settlements & roads", "stages": [
+      { "name": "P11p", "label": "Pinned places" },  { "name": "P11", "label": "Settlements" },
+      { "name": "P11b", "label": "Level bands" },    { "name": "P12", "label": "Roads & lanes" },
+      { "name": "P13",  "label": "Dungeon anchors" } ] },
+    { "id": "fabric",      "label": "Fabric",      "stages": [
+      { "name": "P14",  "label": "Arcs, polygons, fabric" }, { "name": "P14w", "label": "Water trunk" } ] }
+  ] }

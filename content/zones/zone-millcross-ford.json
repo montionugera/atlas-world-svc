@@ -1,5 +1,7 @@
 {
   "zone": "millcross-ford",
+  "region": "c02/r21",
+  "survey": "surveyed",
   "reasonToGo": "One crossing serves the whole land, and everything waiting on it has to be fed, stabled and ferried here.",
   "hazards": [
     {

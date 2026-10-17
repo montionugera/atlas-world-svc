@@ -1,0 +1,40 @@
+stage: P1 premise-masks 696 ms
+stage: P2 elevation 533 ms
+stage: P2b substrate 17 ms
+stage: P3 sea-level-rank 60 ms
+stage: P5 winds 579 ms
+stage: P6 hydrology 458 ms
+stage: P7 lakes-deltas-glaciers 436 ms
+stage: P8 biomes 77 ms
+stage: P9 region-partition 1164 ms
+stage: P10 landforms 2056 ms
+stage: P7b pinned-water 412 ms
+stage: P11p pinned-places 685 ms
+stage: P11 settlements 168 ms
+stage: P11b level-bands 1 ms
+stage: P11 settlements 175 ms
+stage: P11b level-bands 0 ms
+stage: P11b level-bands 0 ms
+stage: P12 roads-lanes 582 ms
+stage: P13 dungeon-anchors 3 ms
+stage: P14 arcs-polygons-fabric 260 ms
+stage: P14w water-trunk 925 ms
+stage: generate TOTAL 9118 ms (budget 6000, fail 12000)
+stage: sheets 37 ms (budget 5000, fail 8000)
+generate-world: wrote 89 files to /Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/F-052-map-builder-service-seed-generate-review/build/mapforge/mb-fixture
+generate-world: ratio 1.5 (land 63999.5 km2)
+generate-world: PROBLEM settlements: frontier reservations round 1 re-ran the placement pass with 3 reserved village(s): c02/r16, c02/r16, c09/r03
+generate-world: PROBLEM trunk rings: c02 still encloses 6 hole(s) — its polygon would contain them and G-OVERLAP measures that whole area
+generate-world: PROBLEM settlements: pinned c-town-cindervast is on c02/r11, a reported region
+generate-world: PROBLEM settlements: pinned c-town-embervale is on c02/r19, a reported region
+generate-world: PROBLEM settlements: pinned c-town-gildmark is on c02/r19, a reported region
+generate-world: PROBLEM settlements: pinned c-town-millcross is on c02/r18, a reported region
+generate-world: PROBLEM settlements: pinned c-town-netstead is on c04/r21, a reported region
+generate-world: PROBLEM settlements: pinned c-town-norhollow is on c02/r18, a reported region
+generate-world: PROBLEM settlements: pinned c-town-rooktide is on c02/r19, a reported region
+generate-world: PROBLEM settlements: pinned c-town-tallowquay is on c03/r21, a reported region
+generate-world: PROBLEM settlements: pinned c-town-embervale and c-town-norhollow are 7.10 km apart, inside the 9 km village separation
+generate-world: PROBLEM settlements: pinned c-town-millcross and c-town-norhollow are 5.10 km apart, inside the 9 km village separation
+generate-world: PROBLEM roads: c08's highest-accumulation river is a single cell at [226.25,322.25] — no trunk river emitted
+generate-world: PROBLEM roads: c11's highest-accumulation river is a single cell at [332.75,82.25] — no trunk river emitted
+generate-world: OK

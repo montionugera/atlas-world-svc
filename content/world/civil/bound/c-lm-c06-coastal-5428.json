@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-coastal-5428",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head at Lagoonbar",
+  "bind": {
+    "handle": "c06/coastal/h-915428",
+    "expect": {
+      "type": "sea-cave",
+      "sizeKm": [
+        0.06,
+        0.24
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A dark mouth in the cliff foot that the tide fills twice a day and empties again.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sea-cave.gloss"
+  },
+  "resolution": null
+}

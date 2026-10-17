@@ -1,0 +1,48 @@
+{
+  "zone": "withybar-roads",
+  "region": "c08/r08",
+  "survey": "surveyed",
+  "reasonToGo": "The thickest thorn drawn anywhere: 43.9 per cent of this region is bramble, the highest share of the eight bramble regions the world carries, all eight of which are on Wracklow. It is the fuel ground, and the marine terrace behind the beach is one of five stone exposures drawn on the island, every one of them an old shoreline. What is not thorn here is meadow, near enough share for share, and no watercourse crosses either.",
+  "hazards": [
+    {
+      "id": "the-thorn-itself",
+      "name": "The thorn itself",
+      "description": "At this density the bramble is not undergrowth, it is the ground cover, and a cut face closes again within two seasons. A party that leaves its own cut path unworked for a year comes back to no path, and cutting a new one costs what cutting the first one cost.",
+      "effect": "damage"
+    },
+    {
+      "id": "the-terrace-drop",
+      "name": "The terrace drop",
+      "description": "The old shoreline stands as a step across the whole back of this region and the thorn grows right to its lip and over it. The drop is not visible from above until a body is on it, and the workings at the foot of it are directly below.",
+      "effect": "damage"
+    }
+  ],
+  "resources": [
+    {
+      "id": "bar-faggots",
+      "name": "Bar faggots",
+      "kind": "fuel",
+      "description": "Thorn cut off the densest ground on the island and dried on the bar, which unlike the meadow beside it is bare enough to stack on. It is bound, stacked and carried out by boat. No ground on Wracklow is a denser stand than this one by share, though the reported lobe next door carries a little more of it by area."
+    },
+    {
+      "id": "terrace-slab",
+      "name": "Terrace slab",
+      "kind": "stone",
+      "description": "Split off the marine terrace and the raised beach along their own bedding, which is what makes them workable at all — no rock is drawn anywhere on this landmass, so its old shorelines are the whole of its building material. It goes for hearths, thresholds and the footings the thorn cutters' huts stand on."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "brightspit-skerry",
+      "name": "Brightspit Skerry",
+      "description": "The rock at the end of the spit, covered at every spring tide and dry at every neap, which is how the crews read the tide without a mark on a post. It is one of only four skerries drawn anywhere in the world, and all four are on Wracklow.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "stack-at-willowshallow",
+      "name": "Stack at Willowshallow",
+      "description": "The corner where the terrace turns and the fall goes over it into the sea — the one running water on this region and it runs only after rain. Nothing stands offshore here to give the place its name; the mark is the notch in the terrace lip, which is visible the length of the bar.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-fluvial-1d26",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Searwater Reach",
+  "bind": {
+    "handle": "c05/fluvial/h-2f1d26",
+    "expect": {
+      "type": "confluence-bench",
+      "sizeKm": [
+        0.41,
+        1.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The dry tongue of ground between two rivers, just before they become one.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#confluence-bench.gloss"
+  },
+  "resolution": null
+}

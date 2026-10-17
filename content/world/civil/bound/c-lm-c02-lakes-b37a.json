@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-lakes-b37a",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Stockmark Deep",
+  "bind": {
+    "handle": "c02/lakes/h-81b37a",
+    "expect": {
+      "type": "lake-terrace",
+      "sizeKm": [
+        2.49,
+        6
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "An old waterline cut round the basin, level for miles, from when the lake stood higher.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#lake-terrace.gloss"
+  },
+  "resolution": null
+}

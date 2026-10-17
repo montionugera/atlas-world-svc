@@ -5,5 +5,9 @@
       "Bash(git add *)",
       "Bash(git commit -m 'docs: narrative system v2 implementation plan \\(6 tasks\\) *)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "graft"
+  ],
+  "enableAllProjectMcpServers": true
 }

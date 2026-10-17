@@ -1,7 +1,7 @@
 // Season 1 budget measurement (I-048). Pure: every function takes an explicit
 // repo root so tests can point at a fixture instead of live content.
 // Record: docs/worldbuilding/DR-003-season-1-budget.md
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 function readJsonAt(root, rel) {
@@ -10,7 +10,10 @@ function readJsonAt(root, rel) {
 
 /** Implemented mob types, from the codegen artifact CI refreshes. */
 export function mobBases(root) {
-  const doc = readJsonAt(root, "colyseus-server/generated/mob-types.json");
+  const rel = existsSync(join(root, "content/generated/mob-types.json"))
+    ? "content/generated/mob-types.json"
+    : "colyseus-server/generated/mob-types.json";
+  const doc = readJsonAt(root, rel);
   if (!Array.isArray(doc?.mobTypes)) throw new Error("mob-types.json: expected { mobTypes: string[] }");
   return doc.mobTypes.length;
 }

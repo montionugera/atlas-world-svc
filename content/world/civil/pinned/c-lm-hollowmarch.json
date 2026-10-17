@@ -1,0 +1,26 @@
+{
+  "id": "c-lm-hollowmarch",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Hollowmarch",
+  "pin": {
+    "at": [
+      97,
+      145
+    ],
+    "toleranceKm": 1.5,
+    "why": "A1 §4: the smallest surveyed ground in the basin — a peat hollow"
+  },
+  "requires": {
+    "continent": "c02",
+    "landform": "peat-hag"
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

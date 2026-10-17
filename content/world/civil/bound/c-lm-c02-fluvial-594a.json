@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-594a",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Kellveil Reach",
+  "bind": {
+    "handle": "c02/fluvial/h-f1594a",
+    "expect": {
+      "type": "floodplain-levee",
+      "sizeKm": [
+        4,
+        14
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A low natural bank along the water, built from what the floods dropped first.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#floodplain-levee.gloss"
+  },
+  "resolution": null
+}

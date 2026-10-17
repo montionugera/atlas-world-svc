@@ -48,7 +48,11 @@ export const drawMobs = (
     }
     
     // Draw mob circle using server-provided radius (scale already applied to position)
-    drawCircle(ctx, x, y, mob.radius * scale, COLORS.mob);
+    const mobRadius = (typeof mob.radius === 'number' && !isNaN(mob.radius) && mob.radius > 0)
+      ? mob.radius
+      : (RENDER_CONFIG.mobRadius || 2.5);
+    // Dead mobs (server corpse frames before removal) are drawn grey; status shows [DEAD].
+    drawCircle(ctx, x, y, mobRadius * scale, mob.isAlive === false ? '#555555' : COLORS.mob);
     
     // Draw health bar for mobs
     if (mob.maxHealth && mob.currentHealth !== undefined) {
@@ -58,7 +62,7 @@ export const drawMobs = (
         y,
         mob.currentHealth,
         mob.maxHealth,
-        mob.radius, // use mob radius for proportional sizing
+        mobRadius, // use mob radius for proportional sizing
         scale,
         '#ff4444', // darker red background
         '#44ff44', // brighter green for health
@@ -170,16 +174,16 @@ export const drawMobs = (
       );
     }
 
-    // Draw velocity vector
+    // Draw velocity vector (capped to 3× radius so it stays readable at any world scale)
+    let lineX = mob.vx * RENDER_CONFIG.velocityVectorScale;
+    let lineY = mob.vy * RENDER_CONFIG.velocityVectorScale;
+    const lineLen = Math.hypot(lineX, lineY);
+    const maxLen = mobRadius * scale * 3;
+    if (lineLen > maxLen) {
+      lineX = (lineX / lineLen) * maxLen;
+      lineY = (lineY / lineLen) * maxLen;
+    }
     ctx.lineWidth = 2 * inverseScale;
-    drawLine(
-      ctx,
-      x,
-      y,
-      x + mob.vx * RENDER_CONFIG.velocityVectorScale,
-      y + mob.vy * RENDER_CONFIG.velocityVectorScale,
-      COLORS.mob,
-      2 * inverseScale
-    );
+    drawLine(ctx, x, y, x + lineX, y + lineY, COLORS.mob, 2 * inverseScale);
   });
 };

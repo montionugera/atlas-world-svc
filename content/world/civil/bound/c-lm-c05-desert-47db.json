@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-47db",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Charreach Yardang",
+  "bind": {
+    "handle": "c05/desert/h-4e47db",
+    "expect": {
+      "type": "salt-pan-crust",
+      "sizeKm": [
+        2.68,
+        8
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A white glaring plain that crunches underfoot and bleeds brine where it breaks.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#salt-pan-crust.gloss"
+  },
+  "resolution": null
+}

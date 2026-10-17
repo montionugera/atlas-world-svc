@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c07-coastal-ded0",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head at Tidalfall",
+  "bind": {
+    "handle": "c07/coastal/h-a3ded0",
+    "expect": {
+      "type": "tidal-flat",
+      "sizeKm": [
+        3.43,
+        10
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Ground that is mud at low water and sea at high, with no clear edge between them.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#tidal-flat.gloss"
+  },
+  "resolution": null
+}

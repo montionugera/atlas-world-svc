@@ -1,0 +1,32 @@
+{
+  "id": "dungeon-reedstrand-lobe-hollows",
+  "title": "Reedstrand Lobe Hollows",
+  "family": null,
+  "bind": {
+    "handle": "c02/fluvial/h-71b67f"
+  },
+  "entranceType": "knickpoint-gorge",
+  "floors": 2,
+  "levelBand": [
+    9,
+    23
+  ],
+  "hazards": [
+    "cold",
+    "bad-air"
+  ],
+  "roomCountCurve": [
+    8,
+    10
+  ],
+  "lore": {
+    "note": "Hollows under the dune lobes where the reed beds drain underground.",
+    "source": "content/world/premises/continent-06.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

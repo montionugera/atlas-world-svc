@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-2cc8",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head by Rookcross",
+  "bind": {
+    "handle": "c02/coastal/h-022cc8",
+    "expect": {
+      "type": "sea-waterfall",
+      "sizeKm": [
+        0.1,
+        0.3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A stream that runs off the cliff lip and never reaches a beach, because there is none.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sea-waterfall.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-5522",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Charburn Barchan",
+  "bind": {
+    "handle": "c05/desert/h-d85522",
+    "expect": {
+      "type": "ventifact-field",
+      "sizeKm": [
+        0.77,
+        3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Ground littered with stones the blown sand has cut into facets and hard edges.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#ventifact-field.gloss"
+  },
+  "resolution": null
+}

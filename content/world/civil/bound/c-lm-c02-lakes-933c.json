@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-lakes-933c",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Tarn over Norhollow",
+  "bind": {
+    "handle": "c02/lakes/h-bf933c",
+    "expect": {
+      "type": "ephemeral-pan-lake",
+      "sizeKm": [
+        0.76,
+        3.04
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A shallow sheet that appears after rain, breeds a season's life, and dries.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#ephemeral-pan-lake.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,14 @@
+{
+  "id": "n-t1", "tier": "town", "parentId": "n-r1", "title": "Fixture Town",
+  "provenance": { "authored": "hand", "generator": null, "source": "fixture" },
+  "frozen": false,
+  "seed": { "value": "aaaaaaaaaaaaaaa4", "epoch": 0, "why": null },
+  "placement": { "shape": "rect", "rect": { "x": 249, "y": 249.2, "w": 2, "h": 1.6 }, "anchor": [250, 250] },
+  "interior": { "units": "u", "perParentUnit": 100, "size": [200, 160], "originInParent": [249, 249.2], "anchorInInterior": [0, 0] },
+  "composition": { "built": 28, "river": 9, "meadow": 63 },
+  "interstitial": null, "interstitialUnsurveyed": false,
+  "compositionTolerance": null, "toleranceWhy": null,
+  "terrainKind": null, "features": [], "bands": [],
+  "runtime": { "mapIds": [], "originU": null, "spawnAreas": [], "mobSettings": null, "seedDemoNPCs": false, "collision": "none" },
+  "representsNodeId": null, "lore": {}, "tags": [], "levelBand": null
+}

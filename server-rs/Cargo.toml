@@ -1,0 +1,37 @@
+[package]
+name = "server-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy_ecs = { version = "0.15", features = ["multi_threaded"] }
+bevy_tasks = { version = "0.15", features = ["multi_threaded"] }
+rapier2d = "0.22"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+glam = "0.29"
+rand = "0.8"
+flatbuffers = "24.3"
+tokio = { version = "1.43", features = ["full"] }
+tokio-tungstenite = "0.26"
+futures-util = "0.3"
+jsonwebtoken = "9.3"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+async-trait = "0.1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "sim_scale"
+harness = false
+
+# Dev builds run the live local server (`cargo watch -x run`): optimise so a tick costs
+# ~0.3 ms instead of ~1.6 ms. Editing one source file still rebuilds in about 2 s.
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

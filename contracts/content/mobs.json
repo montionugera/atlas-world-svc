@@ -1,0 +1,99 @@
+[
+  {
+    "id": "forest_slime",
+    "name": "Forest Slime",
+    "level": 6,
+    "rank": "E",
+    "element": "Earth",
+    "race": "Plant",
+    "size": "Small",
+    "isMvp": false,
+    "hp": 36,
+    "pAtk": 3,
+    "pDef": 2,
+    "baseExp": 18,
+    "jobExp": 12,
+    "aggroRangeM": 0.0,
+    "leashRangeM": 15.0,
+    "spawnZones": ["prontera_south_field"],
+    "drops": [
+      { "itemId": "potion_minor", "chanceBps": 2500 },
+      { "itemId": "iron_ore", "chanceBps": 800 }
+    ],
+    "cardId": "card_forest_slime",
+    "assetStudioKey": "mob.forest_slime"
+  },
+  {
+    "id": "boar",
+    "name": "Wild Boar",
+    "level": 19,
+    "rank": "D",
+    "element": "Earth",
+    "race": "Brute",
+    "size": "Medium",
+    "isMvp": false,
+    "hp": 91,
+    "pAtk": 8,
+    "pDef": 5,
+    "baseExp": 54,
+    "jobExp": 38,
+    "aggroRangeM": 4.5,
+    "leashRangeM": 18.0,
+    "spawnZones": ["prontera_south_field", "forest_zone"],
+    "drops": [
+      { "itemId": "potion_minor", "chanceBps": 3000 },
+      { "itemId": "iron_ore", "chanceBps": 1500 },
+      { "itemId": "leather_armor", "chanceBps": 150 }
+    ],
+    "cardId": "card_boar",
+    "assetStudioKey": "mob.boar"
+  },
+  {
+    "id": "skeleton_soldier",
+    "name": "Skeleton Soldier",
+    "level": 33,
+    "rank": "C",
+    "element": "Undead",
+    "race": "Undead",
+    "size": "Medium",
+    "isMvp": false,
+    "hp": 204,
+    "pAtk": 19,
+    "pDef": 10,
+    "baseExp": 140,
+    "jobExp": 95,
+    "aggroRangeM": 6.0,
+    "leashRangeM": 20.0,
+    "spawnZones": ["sunken_crypt_1f"],
+    "drops": [
+      { "itemId": "iron_ore", "chanceBps": 2500 },
+      { "itemId": "basic_sword", "chanceBps": 120 }
+    ],
+    "cardId": "card_skeleton_soldier",
+    "assetStudioKey": "mob.skeleton_soldier"
+  },
+  {
+    "id": "orc_warlord",
+    "name": "Orc Warlord",
+    "level": 63,
+    "rank": "A",
+    "element": "Earth",
+    "race": "DemiHuman",
+    "size": "Large",
+    "isMvp": true,
+    "hp": 1445,
+    "pAtk": 135,
+    "pDef": 72,
+    "baseExp": 2400,
+    "jobExp": 1600,
+    "aggroRangeM": 8.5,
+    "leashRangeM": 28.0,
+    "spawnZones": ["orc_fortress_courtyard"],
+    "drops": [
+      { "itemId": "scythe", "chanceBps": 500 },
+      { "itemId": "iron_ore", "chanceBps": 8000 }
+    ],
+    "cardId": "card_orc_warlord",
+    "assetStudioKey": "mob.orc_warlord"
+  }
+]

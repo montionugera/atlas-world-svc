@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-20d9",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Limesink Fenster",
+  "bind": {
+    "handle": "c04/karst/h-0a20d9",
+    "expect": {
+      "type": "sinkhole-doline",
+      "sizeKm": [
+        0.28,
+        0.9
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A funnel in the ground where the roof of something underneath came down.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sinkhole-doline.gloss"
+  },
+  "resolution": null
+}

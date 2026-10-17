@@ -1,0 +1,13 @@
+{
+  "id": "n-badland",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "Badland",
+  "seed": { "value": "0000000000000e02", "epoch": 0, "why": null },
+  "placement": {
+    "shape": "polygon",
+    "points": [[0, 0], [0, 40], [40, 40], [40, 0]],
+    "anchor": [20, 20]
+  },
+  "composition": { "rock": 100 }
+}

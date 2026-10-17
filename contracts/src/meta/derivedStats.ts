@@ -16,9 +16,9 @@ export interface DerivedStats {
   maxMoveSpeed: number;
 }
 
-/** Per-level growth. Mirrors `P.growth` in tools/combat-lab. */
+/** Per-level growth. Mirrors `P.growth` in atelier/combat-lab. */
 export const GROWTH = 1.045;
-/** Stat coefficient C. Mirrors `P.statCoef` in tools/combat-lab. */
+/** Stat coefficient C. Mirrors `P.statCoef` in atelier/combat-lab. */
 export const STAT_COEF = 0.5;
 /** PRIMARY_MAX in colyseus-server/src/config/combat/combatStats.ts. */
 export const STAT_MAX = 99;
@@ -61,7 +61,7 @@ export const BASE_DEF = 5.94; // 6 * 99/100
  * multiplicatively would invent a constant for no gain. `agi` stays R-invisible
  * (D8).
  *
- * Tune the exported constants above; never the shape. `tools/combat-lab` owns
+ * Tune the exported constants above; never the shape. `atelier/combat-lab` owns
  * the shape and gates it (see labParity.test.ts).
  */
 export function derivedStats({

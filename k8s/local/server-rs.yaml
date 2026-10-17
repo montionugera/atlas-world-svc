@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-rs
+  namespace: atlas-world
+  labels:
+    app: server-rs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server-rs
+  template:
+    metadata:
+      labels:
+        app: server-rs
+    spec:
+      containers:
+        - name: server-rs
+          image: atlas-world-server-rs:local
+          imagePullPolicy: Never
+          ports:
+            - name: ws
+              containerPort: 2567
+          env:
+            - name: BIND_ADDR
+              value: "0.0.0.0:2567"
+            - name: AGONES_ENABLED
+              value: "false"
+            - name: NAKAMA_SERVER_KEY
+              value: "defaultkey"
+            - name: RUST_LOG
+              value: "info"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "2"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server-rs
+  namespace: atlas-world
+  labels:
+    app: server-rs
+spec:
+  type: LoadBalancer
+  selector:
+    app: server-rs
+  ports:
+    - name: ws
+      port: 2567
+      targetPort: ws
+---
+# Optional Agones GameServer template when Agones CRD is installed
+apiVersion: "agones.dev/v1"
+kind: GameServer
+metadata:
+  name: server-rs-gameserver
+  namespace: atlas-world
+spec:
+  ports:
+    - name: default
+      containerPort: 2567
+      portPolicy: Dynamic
+  template:
+    spec:
+      containers:
+        - name: server-rs
+          image: atlas-world-server-rs:local
+          imagePullPolicy: Never
+          env:
+            - name: AGONES_ENABLED
+              value: "true"
+            - name: BIND_ADDR
+              value: "0.0.0.0:2567"
+            - name: NAKAMA_SERVER_KEY
+              value: "defaultkey"

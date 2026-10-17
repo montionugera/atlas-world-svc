@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-coastal-52d8",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head among Withystrand",
+  "bind": {
+    "handle": "c06/coastal/h-5552d8",
+    "expect": {
+      "type": "tombolo",
+      "sizeKm": [
+        1.21,
+        3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A neck of sand and shingle joining an island to the shore; it drowns on the big tides.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#tombolo.gloss"
+  },
+  "resolution": null
+}

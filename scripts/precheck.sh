@@ -23,12 +23,12 @@ set -uo pipefail
 #   had just "passed". Never collapse these two sections into one.
 #
 # WHY contracts IS BUILT BEFORE ANYTHING ELSE:
-#   colyseus-server and nakama import @atlas/contracts from its dist/, so a
+#   nakama imports @atlas/contracts from its dist/, so a
 #   stale or missing dist makes tsc either report phantom TS2307s or — worse —
 #   typecheck green against the OLD types. Both failure modes are silent.
 #
-# NOTE: this repo is a pnpm workspace (colyseus-server, client, contracts,
-# nakama) whose packages use the `workspace:*` protocol — `npm install` fails
+# NOTE: this repo is a pnpm workspace (client, contracts, nakama)
+# whose packages use the `workspace:*` protocol — `npm install` fails
 # here with EUNSUPPORTEDPROTOCOL. Use pnpm at the root.
 #
 # Usage:
@@ -91,16 +91,26 @@ deps_install() {
   if [ -f "$REPO_ROOT/client/react-client/package.json" ]; then
     (cd "$REPO_ROOT/client/react-client" && npm ci) || return 1
   fi
+  if [ -f "$REPO_ROOT/scripts/package.json" ]; then
+    (cd "$REPO_ROOT/scripts" && npm ci) || return 1
+  fi
 }
 
 # Must run before any typecheck; see the header note.
 contracts_build() { (cd "$REPO_ROOT/contracts" && npm run build); }
 contracts_tests() { (cd "$REPO_ROOT/contracts" && npx jest); }
 
-# The check jest will NOT do for you. Covers src/tests/** too.
-server_typecheck() { (cd "$REPO_ROOT/colyseus-server" && npx tsc --noEmit); }
-server_tests()     { (cd "$REPO_ROOT/colyseus-server" && npm test); }
-server_format()    { (cd "$REPO_ROOT/colyseus-server" && npm run format:check); }
+
+# Rust server-rs quality gate (fmt, clippy, unit tests)
+rust_gates() {
+  if [ ! -d "$REPO_ROOT/server-rs" ]; then
+    echo "no server-rs on this branch — skipping"
+    return 0
+  fi
+  export PATH="$HOME/.cargo/bin:$PATH"
+  echo "🦀 Checking Rust server-rs formatting, lints, and tests..."
+  (cd "$REPO_ROOT/server-rs" && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test)
+}
 
 # nakama is bundled into the Nakama runtime; a type error here breaks InitModule.
 nakama_typecheck() { (cd "$REPO_ROOT/nakama" && npx tsc --noEmit); }
@@ -128,36 +138,73 @@ client_tests() {
 # The combat balance model gates itself (G1-G12) and fails on spec staleness.
 # Skipped cleanly on branches predating the combat lab rather than failing them.
 combat_lab() {
-  if [ ! -f "$REPO_ROOT/tools/combat-lab/verify.mjs" ]; then
-    echo "no tools/combat-lab on this branch — skipping"
+  if [ ! -f "$REPO_ROOT/atelier/combat-lab/verify.mjs" ]; then
+    echo "no atelier/combat-lab on this branch — skipping"
     return 0
   fi
-  node "$REPO_ROOT/tools/combat-lab/verify.mjs"
+  node "$REPO_ROOT/atelier/combat-lab/verify.mjs"
 }
 
+# F-041: the tier-spine structural gates (cycles, orphans, depth skips) are
+# the cheapest content failures to run and the most expensive to find late —
+# without this they'd surface only at Gate 2 or CI. --only=spine keeps Gate 1
+# out of the full content sweep (~1 s).
+content_spine() { node "$REPO_ROOT/scripts/check_content.mjs" --only=spine; }
+
+# Plan E / spec §9.3: the whole-world digest — what replaces the freeze once
+# coordinates are generated. Already gated in Gate 2 and CI; belongs here too
+# (~0.19 s) because a stale digest is a repo-wide invariant, not a per-feature
+# one, and Gate 1 is the check that runs on EVERY ship. commit f07dbe2 edited
+# content/spine/nodes/n-atlas.json without re-baselining the digest, and that
+# failing gate passed five consecutive review gates before being caught at
+# final-green — none of them ran repo-wide invariants.
+world_digest() { node "$REPO_ROOT/scripts/check_world_digest.mjs" --check; }
+
+# scripts/system-deps.json is the declared source of truth for system-level
+# (non-npm) binaries this repo shells out to (magick, rsvg-convert, ...).
+# Check-only here (no --install) — Gate 1 runs on a developer's own machine,
+# which CI's apt-get/shim approach has no business touching. A missing
+# REQUIRED binary (currently: magick, needed by art_forge_tests below) fails
+# with the install command for the developer's OS; an absent OPTIONAL one
+# (rsvg-convert) is reported but never fails the gate, matching the tests'
+# own self-skip behavior.
+system_deps_check() { node "$REPO_ROOT/scripts/check-system-deps.mjs"; }
+
 art_forge_tests() {
-  ( cd "$REPO_ROOT/tools/art-forge" && node --test tests/*.test.mjs )
+  # F-053: the suite must leave the committed run ledgers byte-identical —
+  # tests once appended 18 entries to runs/A1-ART-02.json.
+  local before after
+  before=$(cat "$REPO_ROOT"/atelier/art-forge/runs/*.json | shasum)
+  ( cd "$REPO_ROOT/atelier/art-forge" && node --test tests/*.test.mjs ) || return 1
+  after=$(cat "$REPO_ROOT"/atelier/art-forge/runs/*.json | shasum)
+  [ "$before" = "$after" ] || { echo "art-forge tests modified atelier/art-forge/runs/*.json"; return 1; }
 }
 
 storybook_tests() {
   # F-038: taxonomy resolution, thumb-index join, verdict store. Pure modules,
   # so they run here with no browser and no Blender.
-  ( cd "$REPO_ROOT" && node --test tools/asset-storybook/tests/*.test.mjs )
+  # F-053: plus the headless Forge smoke (skips loudly, exit 0, with no Chrome).
+  ( cd "$REPO_ROOT" && node --test atelier/asset-storybook/tests/*.test.mjs \
+      && node atelier/asset-storybook/tests/smoke/run.mjs )
 }
+
+map_builder_tests() { ( cd "$REPO_ROOT" && node --test atelier/map-builder/tests/*.test.mjs ) }
 
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace install" deps_install
 run_section "contracts: tsc build"          contracts_build
 run_section "contracts: jest suite"         contracts_tests
-run_section "server: tsc --noEmit"          server_typecheck
-run_section "server: jest suite"            server_tests
-run_section "server: prettier format"       server_format
+run_section "server-rs: cargo clippy & test" rust_gates
 run_section "nakama: tsc --noEmit"          nakama_typecheck
 run_section "nakama: jest suite"            nakama_tests
 run_section "client: react-client suite"    client_tests
+run_section "system deps: binary check (scripts/system-deps.json)" system_deps_check
 run_section "art-forge: node --test suite"  art_forge_tests
 run_section "asset-storybook: node --test suite" storybook_tests
+run_section "map-builder: node --test suite" map_builder_tests
 run_section "combat-lab: model gates"       combat_lab
+run_section "content: spine gates (--only=spine)" content_spine
+run_section "world digest (G-WORLD-DIGEST)" world_digest
 
 # --- Summary -----------------------------------------------------------------
 echo ""

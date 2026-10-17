@@ -1,0 +1,40 @@
+{
+  "id": "dungeon-rimewall-moulin-deeps",
+  "title": "Rimewall Moulin Deeps",
+  "family": null,
+  "bind": {
+    "handle": "c03/fluvial/h-71fb0a"
+  },
+  "entranceType": "plunge-pool",
+  "floors": 9,
+  "levelBand": [
+    58,
+    80
+  ],
+  "hazards": [
+    "cold",
+    "silence",
+    "dark"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20,
+    22,
+    24
+  ],
+  "lore": {
+    "note": "Nine floors of moulin, each wetter and darker than the last; nobody has mapped the bottom.",
+    "source": "content/world/premises/continent-01.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

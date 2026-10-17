@@ -1,0 +1,29 @@
+{
+  "id": "c-lm-stonemoor-shore",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Stonemoor Shore",
+  "pin": {
+    "at": [
+      272,
+      250
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §3: sea level cuts through a limestone pavement"
+  },
+  "requires": {
+    "continent": "c04",
+    "landform": "limestone-pavement",
+    "water": {
+      "kind": "sea"
+    }
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

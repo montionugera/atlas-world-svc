@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-2813",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Slatestone Pot",
+  "bind": {
+    "handle": "c04/karst/h-b02813",
+    "expect": {
+      "type": "cave-system",
+      "sizeKm": [
+        0.33,
+        1.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A network of dissolved passages, some walkable and most not, going further than anyone has.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#cave-system.gloss"
+  },
+  "resolution": null
+}

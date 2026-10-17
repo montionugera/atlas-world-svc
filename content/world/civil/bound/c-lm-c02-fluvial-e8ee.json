@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-e8ee",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Stockveil Reach",
+  "bind": {
+    "handle": "c02/fluvial/h-d2e8ee",
+    "expect": {
+      "type": "knickpoint-gorge",
+      "sizeKm": [
+        0.62,
+        2.46
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A steep-walled reach where the river is still cutting its way down through hard rock.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#knickpoint-gorge.gloss"
+  },
+  "resolution": null
+}

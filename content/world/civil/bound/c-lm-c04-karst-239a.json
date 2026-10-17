@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-239a",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Clintrake Stair",
+  "bind": {
+    "handle": "c04/karst/h-30239a",
+    "expect": {
+      "type": "karst-fenster",
+      "sizeKm": [
+        0.06,
+        0.22
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A window where an underground river shows itself for a few paces, then goes back under.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#karst-fenster.gloss"
+  },
+  "resolution": null
+}

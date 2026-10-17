@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-bca1",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Sinkmoor Fenster",
+  "bind": {
+    "handle": "c04/karst/h-edbca1",
+    "expect": {
+      "type": "cave-system",
+      "sizeKm": [
+        0.28,
+        1.12
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A network of dissolved passages, some walkable and most not, going further than anyone has.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#cave-system.gloss"
+  },
+  "resolution": null
+}

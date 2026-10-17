@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-coastal-e64e",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Skerryholt Geo",
+  "bind": {
+    "handle": "c03/coastal/h-50e64e",
+    "expect": {
+      "type": "tidal-flat",
+      "sizeKm": [
+        1.96,
+        7.84
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Ground that is mud at low water and sea at high, with no clear edge between them.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#tidal-flat.gloss"
+  },
+  "resolution": null
+}

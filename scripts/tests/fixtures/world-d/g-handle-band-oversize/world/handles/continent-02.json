@@ -1,0 +1,38 @@
+{
+  "continent": "c02",
+  "orderDigest": "sha256:c921fba3be2945b9304d19519674a05134c39255c13fe8c2bcdd15e18680aa53",
+  "handles": [
+    {
+      "handle": "c02/wetland/h-5e10",
+      "type": "tidal-mire",
+      "sizeKm": 6,
+      "region": "c02/r01",
+      "contentHash": "sha256:5e10000000000000000000000000000000000000000000000000000000000000",
+      "rank": 0
+    },
+    {
+      "handle": "c02/coastal/h-a1b2",
+      "type": "coastal-drowned-valley",
+      "sizeKm": 2.4,
+      "region": "c02/r01",
+      "contentHash": "sha256:a1b2000000000000000000000000000000000000000000000000000000000000",
+      "rank": 1
+    },
+    {
+      "handle": "c02/karst/h-77aa",
+      "type": "karst-cenote",
+      "sizeKm": 0.12,
+      "region": "c02/r02",
+      "contentHash": "sha256:77aa000000000000000000000000000000000000000000000000000000000000",
+      "rank": 3
+    },
+    {
+      "handle": "c02/karst/h-0f42",
+      "type": "karst-cenote",
+      "sizeKm": 5.42,
+      "region": "c02/r02",
+      "contentHash": "sha256:0f42000000000000000000000000000000000000000000000000000000000000",
+      "rank": 2
+    }
+  ]
+}

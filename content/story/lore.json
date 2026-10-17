@@ -110,9 +110,9 @@
     "links": []
   },
   {
-    "id": "lore-the-millcross-relay",
+    "id": "lore-the-millcross-post",
     "kind": "lore",
-    "title": "The Millcross Relay",
+    "title": "The Millcross Post",
     "summary": "Every letter that crosses the line passes through Millcross first, ledger-free, on purpose.",
     "body": "Every letter that crosses the line passes through Millcross first, whether it's addressed there or not — the only town neither side has burned yet. The postmaster keeps no ledger of who sends what. She says that's the one kindness she can still afford.",
     "anchor": "region-millcross",
@@ -194,7 +194,7 @@
     "kind": "lore",
     "title": "A Father's Second Letter",
     "summary": "Three unanswered letters later, a father chooses to believe the simplest excuse.",
-    "body": "To my son — three letters back now with no answer. The relay rider says the roads are slower this month, nothing more. I choose to believe him.",
+    "body": "To my son — three letters back now with no answer. The post rider says the roads are slower this month, nothing more. I choose to believe him.",
     "anchor": "region-norhollow",
     "thread": "a-fathers-postage",
     "links": []
@@ -204,7 +204,7 @@
     "kind": "lore",
     "title": "The Postage Paid",
     "summary": "A postage token found near the front, still unspent, still owed to someone.",
-    "body": "A postage token, still unspent, found near the old relay post at the front. Whatever letter it was meant to carry never got written, or never got sent. Either way, it's still owed to someone.",
+    "body": "A postage token, still unspent, found near the old post house at the front. Whatever letter it was meant to carry never got written, or never got sent. Either way, it's still owed to someone.",
     "anchor": "region-ashvale-front",
     "thread": "a-fathers-postage",
     "links": []
@@ -323,8 +323,8 @@
     "id": "lore-the-second-wardens-tally",
     "kind": "lore",
     "title": "The Second Warden's Tally",
-    "summary": "A different hand, same tower, the same pattern of delay stops being tracked the week it gets worse.",
-    "body": "Another tally, different hand, same tower: three proclamations sealed and read the day they arrived; two more that arrived sealed and were never read at all, no explanation logged. The warden who kept this one stopped keeping it the week the second one vanished.",
+    "summary": "A different hand, same belfry, the same pattern of delay stops being tracked the week it gets worse.",
+    "body": "Another tally, different hand, same belfry: three proclamations sealed and read the day they arrived; two more that arrived sealed and were never read at all, no explanation logged. The warden who kept this one stopped keeping it the week the second one vanished.",
     "anchor": "faction-bellfaith",
     "thread": "the-bent-bells",
     "links": []
@@ -350,11 +350,11 @@
     "links": []
   },
   {
-    "id": "lore-the-tower-that-doesnt-answer",
+    "id": "lore-the-belfry-that-doesnt-answer",
     "kind": "lore",
-    "title": "The Tower That Doesn't Answer",
-    "summary": "The bell tower district keeps its own gate and its own schedule, closed to the rest of Gildmark.",
-    "body": "The tower district keeps its own gate, separate from the harbor's, and answers to a schedule nobody outside the Bellfaith has ever seen written down. Ask why, and the answer is always the same: bells run on bell-time, not yours.",
+    "title": "The Belfry That Doesn't Answer",
+    "summary": "The belfry quarter keeps its own gate and its own schedule, closed to the rest of Gildmark.",
+    "body": "The belfry quarter keeps its own gate, separate from the harbor's, and answers to a schedule nobody outside the Bellfaith has ever seen written down. Ask why, and the answer is always the same: bells run on bell-time, not yours.",
     "anchor": "region-gildmark",
     "thread": "the-bent-bells",
     "links": []
@@ -423,8 +423,8 @@
     "id": "lore-the-first-seal",
     "kind": "lore",
     "title": "The First Seal",
-    "summary": "The oldest sealed record in the tower archive, and the honest thing a bell-warden tells her students about it.",
-    "body": "It is a grain tally. Four lines, the date we count from, and the seal. Every lease and every claim in this land measures back to this page and stops. Behind it there is nothing with a seal on it, and a paper with no seal is not a date. That is the whole of what the tower can prove. I tell the students what my warden told me. This is not the oldest thing that happened. It is the oldest thing anyone signed for.",
+    "summary": "The oldest sealed record in the belfry archive, and the honest thing a bell-warden tells her students about it.",
+    "body": "It is a grain tally. Four lines, the date we count from, and the seal. Every lease and every claim in this land measures back to this page and stops. Behind it there is nothing with a seal on it, and a paper with no seal is not a date. That is the whole of what the belfry can prove. I tell the students what my warden told me. This is not the oldest thing that happened. It is the oldest thing anyone signed for.",
     "anchor": "faction-bellfaith",
     "thread": "the-unsealed-years",
     "links": []

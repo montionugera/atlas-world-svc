@@ -1,5 +1,4 @@
 packages:
-  - 'colyseus-server'
   - 'client'
   - 'contracts'
   - 'nakama'

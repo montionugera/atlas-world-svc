@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-8287",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Thornvale Quag",
+  "bind": {
+    "handle": "c02/wetland/h-7b8287",
+    "expect": {
+      "type": "seasonal-marsh",
+      "sizeKm": [
+        0.83,
+        3.3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Ground that is meadow in one season and shallow lake in another, without warning.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#seasonal-marsh.gloss"
+  },
+  "resolution": null
+}

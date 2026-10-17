@@ -29,7 +29,6 @@ WORKDIR /repo
 # with pnpm-lock.yaml (same set the colyseus-server Dockerfile copies).
 COPY pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY contracts/package.json contracts/
-COPY colyseus-server/package.json colyseus-server/
 COPY nakama/package.json nakama/
 RUN pnpm install --frozen-lockfile --filter @atlas/nakama-runtime...
 COPY contracts contracts

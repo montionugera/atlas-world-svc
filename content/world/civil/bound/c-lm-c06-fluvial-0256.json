@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-fluvial-0256",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Marramstrand Reach",
+  "bind": {
+    "handle": "c06/fluvial/h-a90256",
+    "expect": {
+      "type": "alluvial-fan",
+      "sizeKm": [
+        2.13,
+        8
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A spread of stone and grit laid out where a steep stream hits the flat and slows.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#alluvial-fan.gloss"
+  },
+  "resolution": null
+}

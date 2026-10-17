@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-mountain-4517",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ashpan Rake",
+  "bind": {
+    "handle": "c05/mountain/h-974517",
+    "expect": {
+      "type": "cuesta",
+      "sizeKm": [
+        4.51,
+        18.02
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A long hill with one gentle back and one abrupt face, like a wave about to break.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#cuesta.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,173 @@
+[
+  {
+    "id": "msq_south_gate_patrol",
+    "title": "South Gate Perimeter",
+    "category": "main_story",
+    "minBaseLevel": 1,
+    "requiredJobId": null,
+    "giverNpcId": "npc.captain_varn",
+    "zoneId": "prontera_south_field",
+    "repeatable": false,
+    "objectives": [
+      { "id": "slay_slimes", "type": "MOB_KILLED", "targetId": "forest_slime", "required": 5 },
+      { "id": "slay_boars", "type": "MOB_KILLED", "targetId": "boar", "required": 3 }
+    ],
+    "rewards": {
+      "baseXp": 120,
+      "jobXp": 80,
+      "unlockJobId": null,
+      "unlockSkillId": null,
+      "reputation": 25,
+      "items": [{ "itemId": "potion_minor", "qty": 3 }]
+    }
+  },
+  {
+    "id": "jq_swordman_trial",
+    "title": "Trial of the Blade",
+    "category": "job_change",
+    "minBaseLevel": 10,
+    "requiredJobId": "novice",
+    "giverNpcId": "npc.master_kael",
+    "zoneId": "prontera_south_field",
+    "repeatable": false,
+    "objectives": [
+      { "id": "prove_boar_hunt", "type": "MOB_KILLED", "targetId": "boar", "required": 5 },
+      { "id": "bring_iron_ore", "type": "ITEM_PICKED_UP", "targetId": "iron_ore", "required": 3 }
+    ],
+    "rewards": {
+      "baseXp": 200,
+      "jobXp": 150,
+      "unlockJobId": "swordman",
+      "unlockSkillId": "cleave",
+      "reputation": 50,
+      "items": [{ "itemId": "basic_sword", "qty": 1 }]
+    }
+  },
+  {
+    "id": "jq_mage_academy",
+    "title": "Elemental Thesis",
+    "category": "job_change",
+    "minBaseLevel": 10,
+    "requiredJobId": "novice",
+    "giverNpcId": "npc.archmage_lyra",
+    "zoneId": "prontera_south_field",
+    "repeatable": false,
+    "objectives": [
+      { "id": "collect_slime_cores", "type": "MOB_KILLED", "targetId": "forest_slime", "required": 8 }
+    ],
+    "rewards": {
+      "baseXp": 200,
+      "jobXp": 150,
+      "unlockJobId": "mage",
+      "unlockSkillId": "fireball",
+      "reputation": 50,
+      "items": [{ "itemId": "magic_staff", "qty": 1 }]
+    }
+  },
+  {
+    "id": "jq_archer_guild",
+    "title": "Wind & Steady Aim",
+    "category": "job_change",
+    "minBaseLevel": 10,
+    "requiredJobId": "novice",
+    "giverNpcId": "npc.ranger_soren",
+    "zoneId": "forest_zone",
+    "repeatable": false,
+    "objectives": [
+      { "id": "enter_forest_range", "type": "ZONE_ENTERED", "targetId": "forest_zone", "required": 1 },
+      { "id": "hunt_boars", "type": "MOB_KILLED", "targetId": "boar", "required": 5 }
+    ],
+    "rewards": {
+      "baseXp": 200,
+      "jobXp": 150,
+      "unlockJobId": "archer",
+      "unlockSkillId": null,
+      "reputation": 50,
+      "items": [{ "itemId": "great_bow", "qty": 1 }]
+    }
+  },
+  {
+    "id": "jq_knight_chivalry",
+    "title": "Oath of the Watchtower",
+    "category": "job_change",
+    "minBaseLevel": 40,
+    "requiredJobId": "swordman",
+    "giverNpcId": "npc.commander_hermann",
+    "zoneId": "sunken_crypt_1f",
+    "repeatable": false,
+    "objectives": [
+      { "id": "purge_skeletons", "type": "MOB_KILLED", "targetId": "skeleton_soldier", "required": 15 }
+    ],
+    "rewards": {
+      "baseXp": 1500,
+      "jobXp": 1000,
+      "unlockJobId": "knight",
+      "unlockSkillId": "iron_skin",
+      "reputation": 150,
+      "items": [{ "itemId": "scythe", "qty": 1 }]
+    }
+  },
+  {
+    "id": "jq_wizard_tower",
+    "title": "Rite of the High Arcana",
+    "category": "job_change",
+    "minBaseLevel": 40,
+    "requiredJobId": "mage",
+    "giverNpcId": "npc.archmage_lyra",
+    "zoneId": "sunken_crypt_1f",
+    "repeatable": false,
+    "objectives": [
+      { "id": "purge_undead", "type": "MOB_KILLED", "targetId": "skeleton_soldier", "required": 15 }
+    ],
+    "rewards": {
+      "baseXp": 1500,
+      "jobXp": 1000,
+      "unlockJobId": "wizard",
+      "unlockSkillId": "fireball",
+      "reputation": 150,
+      "items": [{ "itemId": "magic_staff", "qty": 1 }]
+    }
+  },
+  {
+    "id": "sq_watchtower_supplies",
+    "title": "Timber & Iron for the Watchtower",
+    "category": "side_story",
+    "minBaseLevel": 8,
+    "requiredJobId": null,
+    "giverNpcId": "npc.quartermaster_bren",
+    "zoneId": "prontera_south_field",
+    "repeatable": false,
+    "objectives": [
+      { "id": "deliver_ore", "type": "ITEM_PICKED_UP", "targetId": "iron_ore", "required": 5 }
+    ],
+    "rewards": {
+      "baseXp": 90,
+      "jobXp": 60,
+      "unlockJobId": null,
+      "unlockSkillId": null,
+      "reputation": 40,
+      "items": [{ "itemId": "leather_armor", "qty": 1 }]
+    }
+  },
+  {
+    "id": "bounty_daily_boar_cull",
+    "title": "[Bounty] Cull the Boar Herd",
+    "category": "daily_bounty",
+    "minBaseLevel": 12,
+    "requiredJobId": null,
+    "giverNpcId": "npc.bounty_board_prontera",
+    "zoneId": "prontera_south_field",
+    "repeatable": true,
+    "objectives": [
+      { "id": "cull_boars_20", "type": "MOB_KILLED", "targetId": "boar", "required": 20 }
+    ],
+    "rewards": {
+      "baseXp": 450,
+      "jobXp": 350,
+      "unlockJobId": null,
+      "unlockSkillId": null,
+      "reputation": 15,
+      "items": [{ "itemId": "potion_minor", "qty": 5 }]
+    }
+  }
+]

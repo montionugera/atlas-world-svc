@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "toleranceFraction": 0.08,
+  "why": "spec §9.4 / R9. The seven canon walking distances are constraints ON the generator, not outputs of it. Each endpoint names the Tier-1 pinned civil record that fixes it (spec §5.2) and the trunk point feature the edge resolves through after the redraw. Both must be present: the pinned record is the constraint, the feature is the geometry the gate measures.",
+  "legs": {
+    "e-leg-embervale-norhollow": {
+      "from": { "pinned": "c-town-embervale", "feature": "f-town-embervale" },
+      "to":   { "pinned": "c-town-norhollow", "feature": "f-town-norhollow" }
+    },
+    "e-leg-millcross-rooktide": {
+      "from": { "pinned": "c-town-millcross", "feature": "f-town-millcross" },
+      "to":   { "pinned": "c-town-rooktide",  "feature": "f-town-rooktide" }
+    },
+    "e-leg-millcross-embervale": {
+      "from": { "pinned": "c-town-millcross", "feature": "f-town-millcross" },
+      "to":   { "pinned": "c-town-embervale", "feature": "f-town-embervale" }
+    },
+    "e-leg-embervale-gildmark": {
+      "from": { "pinned": "c-town-embervale", "feature": "f-town-embervale" },
+      "to":   { "pinned": "c-town-gildmark",  "feature": "f-town-gildmark" }
+    },
+    "e-leg-millcross-gildmark": {
+      "from": { "pinned": "c-town-millcross", "feature": "f-town-millcross" },
+      "to":   { "pinned": "c-town-gildmark",  "feature": "f-town-gildmark" }
+    },
+    "e-leg-norhollow-gildmark": {
+      "from": { "pinned": "c-town-norhollow", "feature": "f-town-norhollow" },
+      "to":   { "pinned": "c-town-gildmark",  "feature": "f-town-gildmark" }
+    },
+    "e-leg-cindervast-rooktide": {
+      "from": { "pinned": "c-town-cindervast", "feature": "f-town-cindervast" },
+      "to":   { "pinned": "c-town-rooktide",   "feature": "f-town-rooktide" }
+    }
+  }
+}

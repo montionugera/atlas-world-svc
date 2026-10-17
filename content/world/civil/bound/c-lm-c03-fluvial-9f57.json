@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-9f57",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Fasthaven Confluence",
+  "bind": {
+    "handle": "c03/fluvial/h-009f57",
+    "expect": {
+      "type": "knickpoint-gorge",
+      "sizeKm": [
+        1.64,
+        6
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A steep-walled reach where the river is still cutting its way down through hard rock.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#knickpoint-gorge.gloss"
+  },
+  "resolution": null
+}

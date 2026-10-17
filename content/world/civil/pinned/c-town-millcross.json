@@ -1,0 +1,33 @@
+{
+  "id": "c-town-millcross",
+  "kind": "town",
+  "tier": "pinned",
+  "title": "Millcross",
+  "settlementRank": "hub",
+  "pin": {
+    "at": [
+      98.2,
+      152.6
+    ],
+    "toleranceKm": 1.5,
+    "why": "canon §4: the literal hub — every road elsewhere passes through or near it; the mill, race and ford are all river facts"
+  },
+  "requires": {
+    "continent": "c02",
+    "landform": "river-terrace",
+    "water": {
+      "kind": "river"
+    },
+    "slopeMax": 0.05,
+    "freshWaterWithinKm": 0.5
+  },
+  "properties": [],
+  "coasts": [],
+  "plan": "content/towns/town-millcross.json",
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

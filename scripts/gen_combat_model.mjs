@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Generates tools/combat-lab/combat-model.json — the input data for the combat
-// balance lab (tools/combat-lab/index.html).
+// Generates atelier/combat-lab/combat-model.json — the input data for the combat
+// balance lab (atelier/combat-lab/index.html).
 //
 // This file is the I-028 combat model and NOTHING ELSE. It deliberately does not
 // read, import or scrape anything from the game.
@@ -44,8 +44,8 @@ const growth = 1.045;
 //
 // This is the one place the model deliberately mirrors something the game
 // already has, and it is a mirror rather than an import on purpose: this file
-// still reads nothing from `colyseus-server/`. The source of truth for the
-// running game is `colyseus-server/src/config/combat/elements.ts`; if that file
+// still reads nothing from the server. The source of truth for the
+// running game is `server-rs/src/combat/elements.rs`; if that file
 // changes, this must be changed to match. The rules are DERIVED from the two
 // canon statements rather than transcribed cell by cell, so a typo cannot hide
 // in 49 hand-written numbers:
@@ -596,7 +596,7 @@ const proposed = {
   // alone rather than only from this generator.
   elements: ELEMENTS,
   elementTable,
-  elementSource: "colyseus-server/src/config/combat/elements.ts",
+  elementSource: "server-rs/src/combat/elements.rs",
 
   ladder,
 
@@ -822,7 +822,7 @@ function main() {
   // is precisely what stops `git status` from answering "did the MODEL change?".
   // Git already records when the file changed, and more honestly.
   const out = { version: 3, proposed };
-  const dir = join(ROOT, "tools/combat-lab");
+  const dir = join(ROOT, "atelier/combat-lab");
   mkdirSync(dir, { recursive: true });
   const dest = join(dir, "combat-model.json");
   writeFileSync(dest, JSON.stringify(out, null, 2) + "\n");

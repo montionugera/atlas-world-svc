@@ -1,0 +1,224 @@
+[gd_scene load_steps=5 format=3 uid="uid://cwardrobemodal001"]
+
+[ext_resource type="Script" path="res://src/UI/Widgets/WardrobeModal.cs" id="1_wardrobe"]
+[ext_resource type="PackedScene" uid="uid://do4hbjbmcsjmp" path="res://assets/characters/player_knight.glb" id="2_knight"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pedestal"]
+top_radius = 0.9
+bottom_radius = 1.0
+height = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pedestal"]
+albedo_color = Color(0.2, 0.25, 0.35, 1)
+metallic = 0.3
+roughness = 0.6
+
+[node name="WardrobeModal" type="Control" node_paths=PackedStringArray("PreviewAvatar", "ViewportTouchArea", "CloseButton", "ResetRotationBtn", "ItemGrid", "SelectedItemTitle", "SelectedItemStats", "TryOnBtn", "EquipBtn", "TabWeapons", "TabArmor", "TabHair", "TabSets")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_wardrobe")
+PreviewAvatar = NodePath("ModalFrame/VBoxRoot/Body/LeftPanel/ViewportContainer/SubViewport/PreviewAvatar")
+ViewportTouchArea = NodePath("ModalFrame/VBoxRoot/Body/LeftPanel/ViewportContainer")
+CloseButton = NodePath("ModalFrame/VBoxRoot/TopBar/CloseBtn")
+ResetRotationBtn = NodePath("ModalFrame/VBoxRoot/Body/LeftPanel/ResetBtn")
+ItemGrid = NodePath("ModalFrame/VBoxRoot/Body/RightPanel/Scroll/ItemGrid")
+SelectedItemTitle = NodePath("ModalFrame/VBoxRoot/Body/RightPanel/DetailTray/VBox/ItemTitle")
+SelectedItemStats = NodePath("ModalFrame/VBoxRoot/Body/RightPanel/DetailTray/VBox/ItemStats")
+TryOnBtn = NodePath("ModalFrame/VBoxRoot/Body/RightPanel/DetailTray/VBox/BtnRow/TryOnBtn")
+EquipBtn = NodePath("ModalFrame/VBoxRoot/Body/RightPanel/DetailTray/VBox/BtnRow/EquipBtn")
+TabWeapons = NodePath("ModalFrame/VBoxRoot/Body/RightPanel/TabsRow/TabWeapons")
+TabArmor = NodePath("ModalFrame/VBoxRoot/Body/RightPanel/TabsRow/TabArmor")
+TabHair = NodePath("ModalFrame/VBoxRoot/Body/RightPanel/TabsRow/TabHair")
+TabSets = NodePath("ModalFrame/VBoxRoot/Body/RightPanel/TabsRow/TabSets")
+
+[node name="Scrim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.08, 0.13, 0.85)
+
+[node name="ModalFrame" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = 20.0
+offset_right = -32.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = "ModalDialog"
+
+[node name="VBoxRoot" type="VBoxContainer" parent="ModalFrame"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TopBar" type="HBoxContainer" parent="ModalFrame/VBoxRoot"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="ModalFrame/VBoxRoot/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "👗 ตู้เสื้อผ้า & อุปกรณ์ (Wardrobe & Equipment)"
+
+[node name="Currencies" type="Label" parent="ModalFrame/VBoxRoot/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "💎 2,414   💰 392,529   🪙 1,550,864   "
+
+[node name="CloseBtn" type="Button" parent="ModalFrame/VBoxRoot/TopBar"]
+custom_minimum_size = Vector2(36, 32)
+layout_mode = 2
+theme_type_variation = "GhostButton"
+theme_override_font_sizes/font_size = 15
+text = "✕"
+
+[node name="Body" type="HBoxContainer" parent="ModalFrame/VBoxRoot"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="LeftPanel" type="VBoxContainer" parent="ModalFrame/VBoxRoot/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.44
+theme_override_constants/separation = 6
+
+[node name="ViewportContainer" type="SubViewportContainer" parent="ModalFrame/VBoxRoot/Body/LeftPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="ModalFrame/VBoxRoot/Body/LeftPanel/ViewportContainer"]
+own_world_3d = true
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(450, 480)
+render_target_update_mode = 3
+
+[node name="Camera3D" type="Camera3D" parent="ModalFrame/VBoxRoot/Body/LeftPanel/ViewportContainer/SubViewport"]
+transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 1.1, 2.4)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="ModalFrame/VBoxRoot/Body/LeftPanel/ViewportContainer/SubViewport"]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 5, 0)
+
+[node name="Pedestal" type="MeshInstance3D" parent="ModalFrame/VBoxRoot/Body/LeftPanel/ViewportContainer/SubViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+mesh = SubResource("CylinderMesh_pedestal")
+surface_material_override/0 = SubResource("StandardMaterial3D_pedestal")
+
+[node name="PreviewAvatar" type="Node3D" parent="ModalFrame/VBoxRoot/Body/LeftPanel/ViewportContainer/SubViewport"]
+transform = Transform3D(1.15, 0, 0, 0, 1.15, 0, 0, 0, 1.15, 0, 0.1, 0)
+
+[node name="player_knight" parent="ModalFrame/VBoxRoot/Body/LeftPanel/ViewportContainer/SubViewport/PreviewAvatar" instance=ExtResource("2_knight")]
+
+[node name="HintLabel" type="Label" parent="ModalFrame/VBoxRoot/Body/LeftPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "แตะแล้วลากเพื่อหมุนตัวละคร (Touch & Drag to Rotate)"
+horizontal_alignment = 1
+
+[node name="ResetBtn" type="Button" parent="ModalFrame/VBoxRoot/Body/LeftPanel"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_type_variation = "GhostButton"
+theme_override_font_sizes/font_size = 11
+text = "🔄 รีเซ็ตมุมมอง (Reset View)"
+
+[node name="RightPanel" type="VBoxContainer" parent="ModalFrame/VBoxRoot/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.56
+theme_override_constants/separation = 10
+
+[node name="TabsRow" type="HBoxContainer" parent="ModalFrame/VBoxRoot/Body/RightPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TabWeapons" type="Button" parent="ModalFrame/VBoxRoot/Body/RightPanel/TabsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = "PrimaryButton"
+theme_override_font_sizes/font_size = 12
+text = "⚔ อาวุธ (Weapons)"
+
+[node name="TabArmor" type="Button" parent="ModalFrame/VBoxRoot/Body/RightPanel/TabsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = "GhostButton"
+theme_override_font_sizes/font_size = 12
+text = "🛡 เกราะ (Armor)"
+
+[node name="TabHair" type="Button" parent="ModalFrame/VBoxRoot/Body/RightPanel/TabsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = "GhostButton"
+theme_override_font_sizes/font_size = 12
+text = "💇 ทรงผม (Hair)"
+
+[node name="TabSets" type="Button" parent="ModalFrame/VBoxRoot/Body/RightPanel/TabsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = "GhostButton"
+theme_override_font_sizes/font_size = 12
+text = "✨ แฟชั่นเซ็ต (Sets)"
+
+[node name="Scroll" type="ScrollContainer" parent="ModalFrame/VBoxRoot/Body/RightPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ItemGrid" type="GridContainer" parent="ModalFrame/VBoxRoot/Body/RightPanel/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 3
+
+[node name="DetailTray" type="PanelContainer" parent="ModalFrame/VBoxRoot/Body/RightPanel"]
+layout_mode = 2
+theme_type_variation = "Card"
+
+[node name="VBox" type="VBoxContainer" parent="ModalFrame/VBoxRoot/Body/RightPanel/DetailTray"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ItemTitle" type="Label" parent="ModalFrame/VBoxRoot/Body/RightPanel/DetailTray/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Knight's Claymore [ดาบอัศวิน]"
+
+[node name="ItemStats" type="Label" parent="ModalFrame/VBoxRoot/Body/RightPanel/DetailTray/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.8, 0.8, 0.85, 1)
+text = "Slot: WEAPON | P.ATK +65 | STR +4"
+
+[node name="BtnRow" type="HBoxContainer" parent="ModalFrame/VBoxRoot/Body/RightPanel/DetailTray/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 2
+
+[node name="TryOnBtn" type="Button" parent="ModalFrame/VBoxRoot/Body/RightPanel/DetailTray/VBox/BtnRow"]
+custom_minimum_size = Vector2(100, 32)
+layout_mode = 2
+theme_type_variation = "GhostButton"
+theme_override_font_sizes/font_size = 11
+text = "ทดลอง (Try On)"
+
+[node name="EquipBtn" type="Button" parent="ModalFrame/VBoxRoot/Body/RightPanel/DetailTray/VBox/BtnRow"]
+custom_minimum_size = Vector2(120, 32)
+layout_mode = 2
+theme_type_variation = "PrimaryButton"
+theme_override_font_sizes/font_size = 11
+text = "สวมใส่ (Equip)"

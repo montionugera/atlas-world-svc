@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-ashen-spar-fumaroles",
+  "title": "Ashen Spar Fumaroles",
+  "family": null,
+  "bind": {
+    "handle": "c03/coastal/h-74b8b4"
+  },
+  "entranceType": "sea-arch",
+  "floors": 3,
+  "levelBand": [
+    55,
+    80
+  ],
+  "hazards": [
+    "heat",
+    "fume"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Fumarole galleries where the spar grows toward the steam.",
+    "source": "content/world/premises/continent-10.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

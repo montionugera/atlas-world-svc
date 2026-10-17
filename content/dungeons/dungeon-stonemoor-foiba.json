@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-stonemoor-foiba",
+  "title": "Stonemoor Foiba",
+  "family": null,
+  "bind": {
+    "handle": "c03/fluvial/h-0a1c30"
+  },
+  "entranceType": "plunge-pool",
+  "floors": 3,
+  "levelBand": [
+    46,
+    64
+  ],
+  "hazards": [
+    "collapse",
+    "grave-damp"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "A collapsed cavern mouth the moor keeps widening; respect the fence.",
+    "source": "content/world/premises/continent-04.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

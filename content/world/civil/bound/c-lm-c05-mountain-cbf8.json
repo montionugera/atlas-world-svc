@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-mountain-cbf8",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Spar within Fumereach",
+  "bind": {
+    "handle": "c05/mountain/h-5fcbf8",
+    "expect": {
+      "type": "tectonic-cave",
+      "sizeKm": [
+        0.05,
+        0.18
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A cave that is a split rather than a dissolved passage, opened when the rock moved.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#tectonic-cave.gloss"
+  },
+  "resolution": null
+}

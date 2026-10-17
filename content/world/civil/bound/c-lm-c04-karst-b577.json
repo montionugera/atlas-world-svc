@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-b577",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Stonestone Pot",
+  "bind": {
+    "handle": "c04/karst/h-97b577",
+    "expect": {
+      "type": "polje",
+      "sizeKm": [
+        1.36,
+        5.44
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wide flat-floored basin ringed by limestone hills, farmed in summer and flooded in winter.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#polje.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,539 @@
+// Plan A Task 1 — exact polygon intersection for the spine geometry gates.
+//
+// Replaces scripts/lib/spine.mjs's lattice-sampled gridIntersectionArea().
+// Measured on the real 133 sibling pairs: 3,038 ms -> 19.7 ms (154x), verdict
+// identical on all 133, max numeric deviation 0.00269 km2.
+//
+// Conventions (inherited from lib/spine.mjs, non-negotiable):
+//   - one options object per function, no positional overloads;
+//   - abs() appears NOWHERE. A negative signed shoelace is a G-POLY failure,
+//     not a magnitude, so every ring reaching a clip is positively wound and
+//     every clipped piece comes out positively wound by construction;
+//   - nothing throws. A degenerate or backwards ring yields [] / 0, never an
+//     exception — an uncaught throw inside a gate skips finish() and silently
+//     drops every FAIL recorded before it.
+//
+// Pure: no fs, no deps. spine.mjs imports FROM here; never the reverse.
+
+/** @typedef {[number, number]} Pt */
+/** @typedef {{x:number, y:number, w:number, h:number}} BBox */
+
+const orient = (p, q, r) =>
+  Math.sign((q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]));
+
+// q is on segment p–r, given the three are already known collinear.
+const onSeg = (p, q, r) =>
+  Math.min(p[0], r[0]) <= q[0] && q[0] <= Math.max(p[0], r[0]) &&
+  Math.min(p[1], r[1]) <= q[1] && q[1] <= Math.max(p[1], r[1]);
+
+// Proper crossing OR collinear overlap OR a shared endpoint. Deliberately
+// wider than spine.mjs:107's properCross(), which excludes touching because
+// selfIntersects() must tolerate adjacent edges sharing a vertex. Here
+// touching MUST count: it is what keeps ringsDisjoint() from declaring two
+// tiled neighbours disjoint and skipping the clip that proves their overlap
+// is exactly zero.
+export function segmentsIntersect({ p1, p2, p3, p4 }) {
+  const o1 = orient(p1, p2, p3), o2 = orient(p1, p2, p4);
+  const o3 = orient(p3, p4, p1), o4 = orient(p3, p4, p2);
+  if (o1 !== o2 && o3 !== o4) return true;
+  if (o1 === 0 && onSeg(p1, p3, p2)) return true;
+  if (o2 === 0 && onSeg(p1, p4, p2)) return true;
+  if (o3 === 0 && onSeg(p3, p1, p4)) return true;
+  if (o4 === 0 && onSeg(p3, p2, p4)) return true;
+  return false;
+}
+
+// Ray cast, half-open on edges — the same rule spine.mjs:95 pointInPolygon
+// uses, kept identical so a vertex that is "inside" for one gate is inside
+// for the other.
+export function pointInRing({ point, points }) {
+  const [px, py] = point;
+  let inside = false;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const [xi, yi] = points[i], [xj, yj] = points[j];
+    if ((yi > py) !== (yj > py) && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi)
+      inside = !inside;
+  }
+  return inside;
+}
+
+// Stage 2 of the three-stage replacement: exact disjointness. If no edge pair
+// meets and neither ring holds the other's first vertex, the intersection is
+// EXACTLY 0 and no clipping is needed. Measured: eliminates 122 of the real
+// 133 pairs in ~11 ms total.
+export function ringsDisjoint({ a, b }) {
+  for (let i = 0; i < a.length; i++) {
+    const p1 = a[i], p2 = a[(i + 1) % a.length];
+    for (let j = 0; j < b.length; j++) {
+      const p3 = b[j], p4 = b[(j + 1) % b.length];
+      if (segmentsIntersect({ p1, p2, p3, p4 })) return false;
+    }
+  }
+  if (pointInRing({ point: a[0], points: b })) return false;
+  if (pointInRing({ point: b[0], points: a })) return false;
+  return true;
+}
+
+const cross2 = (a, b, c) => (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+// Inclusive on purpose: a candidate vertex lying exactly ON an ear's edge
+// blocks the ear. Excluding it produces overlapping triangles on rings with
+// collinear runs, which double-counts area — the concave-L test is the pin.
+const pointInTriInclusive = (p, a, b, c) =>
+  cross2(a, b, p) >= 0 && cross2(b, c, p) >= 0 && cross2(c, a, p) >= 0;
+
+// Drop vertices that are EXACTLY collinear with their neighbours, and exact
+// duplicate points, to a fixed point. Area-preserving by construction: a
+// vertex with cross2 === 0 spans a zero-area triangle, so the shoelace is
+// unchanged. This is not cosmetic — content/spine/nodes/n-keelbreak.json is a
+// legal committed ring (G-POLY green: simple by properCross, shoelace
+// +67091.8) that walks x=50 down from y=58 to y=5 and straight back up to
+// y=21.8. That zero-WIDTH spike has a collinear apex, ear clipping can never
+// consume it, and the loop below would find no ear and return [] — which made
+// exactIntersectionArea report 0 for every pair touching that node and
+// silently disabled G-OVERLAP for it.
+// Exactly ONE vertex is dropped per pass, lowest index first, and the next
+// pass re-reads its neighbours from the shortened ring. Sweeping a whole pass
+// at once is wrong and silently changes area: on a ring that visits the same
+// point twice ([2,1] → [6,3] → [2,1] → …) a single sweep drops the apex as
+// collinear AND both copies of the notch — one as an adjacent duplicate, the
+// other as collinear with the copy that is about to vanish — turning a 75.5
+// ring into a 78 one. One-at-a-time keeps every removal area-preserving.
+function cleanRing(points) {
+  const ring = points.slice();
+  for (let pass = 0; pass < points.length && ring.length >= 3; pass++) {
+    let drop = -1;
+    for (let i = 0; i < ring.length; i++) {
+      const P = ring[(i - 1 + ring.length) % ring.length];
+      const C = ring[i];
+      const N = ring[(i + 1) % ring.length];
+      // Exact duplicate of its successor, or exactly collinear with its
+      // neighbours: either way this vertex spans no area.
+      if ((C[0] === N[0] && C[1] === N[1]) || cross2(P, C, N) === 0) { drop = i; break; }
+    }
+    if (drop < 0) break;
+    ring.splice(drop, 1);
+  }
+  return ring;
+}
+
+// STRICT simplicity: no two NON-ADJACENT edges may meet at all — not cross,
+// not touch, not share a vertex. This is a stronger condition than G-POLY's
+// selfIntersects() (spine.mjs:107 properCross), which tests PROPER crossings
+// only and therefore accepts a ring that touches itself. That gap is the
+// single root cause of every earClip defect found in review: a ring whose
+// vertex sits on a non-adjacent edge, or which revisits a vertex from a
+// distance, breaks ear clipping's premise, and the failure is silent —
+// either no ear is ever found (0 triangles, a 0 overlap, G-OVERLAP disabled
+// for that node) or the ears overlap each other and the area OVER-reports
+// (a false FAIL no data change can clear). Both reproduce today; see the
+// pinned rings in scripts/tests/geometry-exact.test.mjs.
+// Adjacent edges need no test: they share an endpoint by construction, and
+// cleanRing() has already removed every vertex collinear with its neighbours,
+// so a spike that folds one adjacent edge back along another cannot survive.
+function firstNonAdjacentMeet(points) {
+  const n = points.length;
+  for (let i = 0; i < n; i++)
+    for (let j = i + 1; j < n; j++) {
+      if (j === i + 1) continue;
+      if (i === 0 && j === n - 1) continue;
+      if (segmentsIntersect({
+        p1: points[i], p2: points[(i + 1) % n],
+        p3: points[j], p4: points[(j + 1) % n],
+      })) return { i, j };
+    }
+  return null;
+}
+function ringIsSimple(points) {
+  return firstNonAdjacentMeet(points) === null;
+}
+
+// ── the per-RING gate hook ─────────────────────────────────────────────────
+// Structural soundness of ONE ring, judged on its own, with no sibling in
+// sight. This exists because every earlier detector was a per-PAIR side
+// effect: exactIntersectionArea only reaches triangulation after a bbox
+// overlap AND a failed ringsDisjoint(), so an unsound ring on an only-child
+// node, or beside a sibling it does not happen to touch, was never examined at
+// all — the gate printed nothing and exited 0. Detection was an accident of
+// two rings meeting, and the world-fill programme's goal state (correctly
+// tiled, non-overlapping children) makes that accident RARER, so the hole
+// widens exactly as the plan succeeds.
+//
+// The test is STRUCTURAL, deliberately, and not the area identity that three
+// separate reviews converged on. `Sum(shoelace of each triangle) ===
+// shoelace(ring)` already runs inside triangulateOrNull and it is NOT
+// sufficient: on a ring whose lobes overlap each other
+// ([[0,0],[10,0],[10,10],[0,10],[0,0],[2,2],[8,2],[8,8],[2,8]] — G-POLY green,
+// 9 points, no repeated CONSECUTIVE point, shoelace +142, selfIntersects
+// false) splitAtRepeat cuts it into two lobes that cover the same ground
+// twice; ear clipping returns 5 positively-wound triangles summing to exactly
+// 142, so the identity HOLDS while the true covered area is 58.01. The
+// shoelace double-counts a doubly-wound region, so it cannot police itself.
+// Strict simplicity refuses the ring before any of that arithmetic runs.
+//
+// Returns null when the ring is sound, else a message. Never throws, per this
+// module's no-throw contract.
+export function ringStructureProblem({ points }) {
+  if (!Array.isArray(points) || points.length < 3) return null; // G-POLY's >= 3 rule owns this
+  const ring = cleanRing(points);
+  // Cleaning is area-preserving, so a ring that collapses below a triangle
+  // bounds exactly zero area — which G-POLY's strictly-positive shoelace rule
+  // already fails, loudly. Not this rule's business.
+  if (ring.length < 3) return null;
+  const meet = firstNonAdjacentMeet(ring);
+  if (!meet) return null;
+  const a = ring[meet.i], b = ring[meet.j];
+  return `non-adjacent edges meet — edge ${meet.i} at [${a}] and edge ${meet.j} at [${b}] share a point`;
+}
+
+// A ring that revisits a vertex is a PINCH: two lobes joined at a point. It
+// is not simple, but it is exactly repairable — cut it at the repeat and the
+// two closed sub-rings have shoelaces summing to the original's, so the split
+// is area-preserving rather than a guess. Returns [lobe, rest] or null.
+function splitAtRepeat(ring) {
+  const seen = new Map();
+  for (let i = 0; i < ring.length; i++) {
+    const key = `${ring[i][0]},${ring[i][1]}`;
+    const j = seen.get(key);
+    if (j !== undefined) return [ring.slice(j, i), [...ring.slice(0, j), ...ring.slice(i)]];
+    seen.set(key, i);
+  }
+  return null;
+}
+
+// Ear clipping proper. Requires a cleaned, STRICTLY simple, positively wound
+// ring; returns null (never a partial or a backwards triangle) if the ring
+// turns out not to be one.
+function earClipSimple(points) {
+  const n = points.length;
+  const idx = [...points.keys()];
+  const out = [];
+  let guard = 0;
+  while (idx.length > 3 && guard++ < 4 * n) {
+    let clipped = false;
+    for (let k = 0; k < idx.length; k++) {
+      const ia = idx[(k - 1 + idx.length) % idx.length];
+      const ib = idx[k];
+      const ic = idx[(k + 1) % idx.length];
+      const A = points[ia], B = points[ib], Cc = points[ic];
+      if (cross2(A, B, Cc) <= 0) continue; // reflex or collinear — not an ear
+      let ok = true;
+      for (const io of idx) {
+        if (io === ia || io === ib || io === ic) continue;
+        if (pointInTriInclusive(points[io], A, B, Cc)) { ok = false; break; }
+      }
+      if (!ok) continue;
+      out.push([A, B, Cc]);
+      idx.splice(k, 1);
+      clipped = true;
+      break;
+    }
+    if (!clipped) return null; // no ear on a ring that promised one
+  }
+  // The guard expiring with more than a triangle left would otherwise leak a
+  // PARTIAL triangle set — a quietly shrunken area, the one failure mode this
+  // module does not degrade safely into. Every other exit is [] or 0.
+  if (idx.length !== 3) return null;
+  const A = points[idx[0]], B = points[idx[1]], Cc = points[idx[2]];
+  // The residue is gated exactly like every ear above it. Without this an
+  // inverted residue ships a NEGATIVE triangle, which clipConvex (positively
+  // wound inputs only) then mis-clips into an over-report.
+  if (cross2(A, B, Cc) <= 0) return null;
+  out.push([A, B, Cc]);
+  return out;
+}
+
+// Clean -> split every pinch -> ear-clip each strictly simple lobe.
+function triangulateParts(ring) {
+  const split = splitAtRepeat(ring);
+  if (!split) {
+    if (shoelace(ring) <= 0) return null; // G-POLY owns backwards/degenerate rings
+    if (!ringIsSimple(ring)) return null;
+    return earClipSimple(ring);
+  }
+  const out = [];
+  for (const part of split) {
+    if (part.length < 3) continue; // fewer than 3 points bound no area
+    const cleaned = cleanRing(part);
+    if (cleaned.length < 3) continue;
+    const tris = triangulateParts(cleaned);
+    if (tris === null) return null;
+    out.push(...tris);
+  }
+  return out;
+}
+
+// The one triangulation entry point. Returns null — NOT [] — when the ring
+// could not be triangulated, so callers can tell "no area" from "no answer".
+// Every returned triangle is positively wound and the set's areas sum to the
+// ring's own shoelace; a triangulation that fails either invariant is
+// rejected rather than returned, because a plausible wrong number in a gate
+// is worse than a loud refusal.
+function triangulateOrNull(points) {
+  if (!Array.isArray(points) || points.length < 3) return null;
+  const ring = cleanRing(points);
+  if (ring.length < 3) return []; // area-preserving cleaning collapsed it: area 0
+  const target = shoelace(ring);
+  const tris = triangulateParts(ring);
+  if (tris === null) return null;
+  let total = 0;
+  for (const [A, B, Cc] of tris) {
+    const c = cross2(A, B, Cc);
+    if (c <= 0) return null;
+    total += c / 2;
+  }
+  // No abs(): the two-sided comparison keeps the sign meaningful.
+  const tol = 1e-9 * target + 1e-9;
+  const d = total - target;
+  if (d > tol || d < -tol) return null;
+  return tris;
+}
+
+// Positively-wound simple ring -> positively-wound triangles. `[]` for a
+// negatively wound, degenerate or untriangulable ring, never a throw and
+// never a partial set. Callers that need to distinguish "no area" from "no
+// answer" pass a `problems` collector to exactIntersectionArea().
+export function earClip({ points }) {
+  return triangulateOrNull(points) ?? [];
+}
+
+// Sutherland-Hodgman. Both arguments must be convex and positively wound;
+// the result is then convex and positively wound too, so its shoelace is
+// non-negative by construction and abs() is never needed.
+export function clipConvex({ subject, clip }) {
+  let output = subject;
+  for (let i = 0; i < clip.length && output.length; i++) {
+    const A = clip[i], B = clip[(i + 1) % clip.length];
+    const side = (p) => (B[0] - A[0]) * (p[1] - A[1]) - (B[1] - A[1]) * (p[0] - A[0]);
+    const input = output;
+    output = [];
+    for (let j = 0; j < input.length; j++) {
+      const P = input[j], Q = input[(j + 1) % input.length];
+      const sp = side(P), sq = side(Q);
+      if (sp >= 0) output.push(P);
+      if ((sp > 0 && sq < 0) || (sp < 0 && sq > 0)) {
+        const t = sp / (sp - sq);
+        output.push([P[0] + t * (Q[0] - P[0]), P[1] + t * (Q[1] - P[1])]);
+      }
+    }
+  }
+  return output;
+}
+
+// Same pinned formula as spine.mjs:73 — sum(x_i*y_{i+1} - x_{i+1}*y_i)/2 over
+// the OPEN ring. Duplicated (not imported) so this module stays leaf-level.
+//
+// TRANSLATED to the ring's own first vertex before accumulating. Algebraically
+// identical (the translation terms telescope to zero around a closed loop) and
+// exact for the ring's true area, but it removes a catastrophic cancellation
+// the untranslated form has far from the origin: triangulateOrNull compares
+// triangle areas built from cross2 — which differences its inputs and so is
+// already translation-invariant — against this sum, and the two disagree once
+// the coordinates dwarf the ring. Measured on star-shaped strictly-simple
+// rings, 8,000 samples per row: centred on (200,200) with radius 1e-5 km, 2 of
+// 7,846 legal rings were FALSELY refused (12 of 3,359 at radius 1e-6); the
+// same rings centred on the origin, 0 refusals at every radius; centred on
+// (1e6,1e6) with extent 0.01, all 19,426 were refused. A false refusal is a
+// gate FAIL no data change can clear, which is the worse of the two error
+// directions. The world frame is 400x400 km quantised to 0.01 km, so the onset
+// sits about nine orders of magnitude out of domain today — this keeps the
+// library sound if a later plan reuses it at a different coordinate origin.
+function shoelace(points) {
+  let s = 0;
+  const [ox, oy] = points[0];
+  for (let i = 0; i < points.length; i++) {
+    const [x1, y1] = points[i], [x2, y2] = points[(i + 1) % points.length];
+    s += (x1 - ox) * (y2 - oy) - (x2 - ox) * (y1 - oy);
+  }
+  return s / 2;
+}
+
+// A rect becomes a POSITIVELY wound ring: [x,y] -> [x+w,y] -> [x+w,y+h] ->
+// [x,y+h] has shoelace +w*h. The reverse order gives -w*h and every clip
+// against it silently returns nothing.
+// A ring needs 3 points to bound anything. Anything less — and any malformed
+// placement — yields null rather than a throw, per this module's no-throw
+// contract: an uncaught throw inside a gate skips finish() and silently drops
+// every FAIL recorded before it.
+function ringOf(placement) {
+  if (!placement) return null;
+  if (placement.shape === "polygon")
+    return Array.isArray(placement.points) && placement.points.length >= 3 ? placement.points : null;
+  if (placement.shape === "rect") {
+    const r = placement.rect;
+    if (!r) return null;
+    return [[r.x, r.y], [r.x + r.w, r.y], [r.x + r.w, r.y + r.h], [r.x, r.y + r.h]];
+  }
+  return null; // point placements have no area — spine.mjs:131 agrees
+}
+
+export function bboxOfPlacement({ placement }) {
+  const ring = ringOf(placement);
+  // No ring: a point placement is its own zero-extent bbox; anything else
+  // degrades to a zero-extent bbox at the origin, which the strict overlap
+  // predicate in query() can never match.
+  if (!ring) {
+    const at = placement?.at;
+    return Array.isArray(at)
+      ? { x: at[0], y: at[1], w: 0, h: 0 }
+      : { x: 0, y: 0, w: 0, h: 0 };
+  }
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const [x, y] of ring) {
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+  }
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
+export function ringVertexCount({ placement }) {
+  const ring = ringOf(placement);
+  return ring ? ring.length : 0;
+}
+
+// The drop-in replacement for gridIntersectionArea({a, b, cell}). No `cell`:
+// there is no sampling any more. Three stages, cheapest first.
+//
+// `problems` is an OPTIONAL injected collector, the same shape the sub-gate
+// helpers in check_content.mjs already take. It carries the one outcome the
+// return value cannot: a ring this kernel could not triangulate returns 0,
+// which is indistinguishable from "genuinely disjoint" and would silently
+// disable G-OVERLAP for that node. Passing the collector does not change the
+// number returned — it only makes the third case visible. Callers inside a
+// gate MUST pass it and MUST turn every entry into a FAIL.
+export function exactIntersectionArea({ a, b, problems }) {
+  const ra = ringOf(a), rb = ringOf(b);
+  if (!ra || !rb) return 0;
+  // (1) bounding-box reject — verbatim from spine.mjs:161-164.
+  const ba = bboxOfPlacement({ placement: a }), bb = bboxOfPlacement({ placement: b });
+  const x0 = Math.max(ba.x, bb.x), y0 = Math.max(ba.y, bb.y);
+  const x1 = Math.min(ba.x + ba.w, bb.x + bb.w), y1 = Math.min(ba.y + ba.h, bb.y + bb.h);
+  if (x1 <= x0 || y1 <= y0) return 0;
+  // (2) exact disjointness pre-filter.
+  if (ringsDisjoint({ a: ra, b: rb })) return 0;
+  // (3) exact clipped area for the survivors.
+  const ta = triangulateOrNull(ra), tb = triangulateOrNull(rb);
+  if (ta === null || tb === null) {
+    if (Array.isArray(problems)) {
+      const why = "not a strictly simple, positively wound ring — overlap reported as 0";
+      if (ta === null) problems.push(`ring a is not triangulable: ${why}`);
+      if (tb === null) problems.push(`ring b is not triangulable: ${why}`);
+    }
+    return 0;
+  }
+  let area = 0;
+  for (const t1 of ta)
+    for (const t2 of tb) {
+      const piece = clipConvex({ subject: t1, clip: t2 });
+      if (piece.length >= 3) area += shoelace(piece);
+    }
+  return area;
+}
+
+// Uniform-grid bbox index. Conservative where it counts: an item registers in
+// every bucket its bbox touches and a query unions every bucket its own bbox
+// touches, so the result is a SUPERSET of every pair with a non-zero exact
+// intersection area. Sorted output keeps gate message order a function of the
+// data alone.
+//
+// DECLARED DEVIATION from the plan's Step-3 listing: bucket hits are then
+// confirmed against the bboxes the item REGISTERED with, using a strict
+// overlap test. That makes the result a superset of the truly-INTERSECTING
+// set but not of the bbox-TOUCHING set — a pair whose boxes only touch is
+// dropped, and its exact area is 0 either way.
+//
+// Review fix (MINOR): the confirmation is NOT identical to
+// exactIntersectionArea's stage-1 reject, and an earlier comment here claiming
+// it was is corrected. Confirmation requires only the two CROSS conditions
+// (a.x < b.x+b.w && b.x < a.x+a.w, and likewise in y). Stage 1 additionally
+// requires each box to have positive extent, because `x1 <= x0` is false only
+// when min(a.x1,b.x1) > max(a.x0,b.x0), which fails outright for a
+// zero-extent box. So confirmation is a strict SUPERSET of stage-1-pass: a
+// zero-width box straddled by a neighbour is confirmed here and rejected by
+// stage 1. That direction is the sound one — this filter may only ever hand
+// stage 1 MORE pairs than it needs, never fewer. Do NOT "fix" the asymmetry
+// by tightening this predicate to match stage 1; that would turn a harmless
+// superset into a real false negative. geometry-exact.test.mjs pins the wider
+// behaviour directly (the zero-extent-bbox test) and pins soundness by
+// asserting against exactIntersectionArea rather than a copy of a predicate.
+//
+// CONTRACT: ids need not be unique. Every bbox registered under an id is
+// retained and a query confirms against ANY of them, so a duplicate id widens
+// the candidate set rather than silently replacing a box — the conservative
+// direction. (An earlier revision kept one bbox per id, which lost the first
+// registration and was a genuine false-negative path for callers that key on
+// instance rather than node ids.)
+const INDEX_DIVISIONS = 8;
+export function buildBBoxIndex({ items }) {
+  if (items.length === 0) return { query: () => [] };
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const { bbox } of items) {
+    if (bbox.x < minX) minX = bbox.x;
+    if (bbox.y < minY) minY = bbox.y;
+    if (bbox.x + bbox.w > maxX) maxX = bbox.x + bbox.w;
+    if (bbox.y + bbox.h > maxY) maxY = bbox.y + bbox.h;
+  }
+  // A zero-extent axis would divide by zero; collapse it to one bucket.
+  const spanX = maxX - minX, spanY = maxY - minY;
+  const cellX = spanX > 0 ? spanX / INDEX_DIVISIONS : 1;
+  const cellY = spanY > 0 ? spanY / INDEX_DIVISIONS : 1;
+  const buckets = new Map(); // "cx,cy" -> Set<id>
+  const boxOf = new Map(); // id -> every bbox REGISTERED under it, never a recomputed one
+  // Review fix (MINOR): the cell range is CLAMPED to the index extent. Items
+  // define the extent so their own range is always inside it, but a QUERY bbox
+  // is caller-supplied and unbounded — an unclamped world-sized probe box
+  // walked ~1e9 empty columns and never returned (reproduced: a 2-item index
+  // queried with {x:-1e9,y:-1e9,w:2e9,h:2e9} did not finish in 15 s). Buckets
+  // outside [0, INDEX_DIVISIONS] are empty by construction, so clamping drops
+  // no candidate. A probe entirely outside the extent clamps to an empty range
+  // (cx0 > cx1), and the loops simply do not run. NaN clamps to NaN, which
+  // likewise runs zero iterations — this function never throws.
+  const range = (bbox) => {
+    const cx0 = Math.max(0, Math.floor((bbox.x - minX) / cellX));
+    const cy0 = Math.max(0, Math.floor((bbox.y - minY) / cellY));
+    const cx1 = Math.min(INDEX_DIVISIONS, Math.floor((bbox.x + bbox.w - minX) / cellX));
+    const cy1 = Math.min(INDEX_DIVISIONS, Math.floor((bbox.y + bbox.h - minY) / cellY));
+    return { cx0, cy0, cx1, cy1 };
+  };
+  for (const { id, bbox } of items) {
+    const prior = boxOf.get(id);
+    if (prior) prior.push(bbox);
+    else boxOf.set(id, [bbox]);
+    const { cx0, cy0, cx1, cy1 } = range(bbox);
+    for (let cy = cy0; cy <= cy1; cy++)
+      for (let cx = cx0; cx <= cx1; cx++) {
+        const k = `${cx},${cy}`;
+        let s = buckets.get(k);
+        if (!s) { s = new Set(); buckets.set(k, s); }
+        s.add(id);
+      }
+  }
+  return {
+    query({ bbox }) {
+      const { cx0, cy0, cx1, cy1 } = range(bbox);
+      const hit = new Set();
+      for (let cy = cy0; cy <= cy1; cy++)
+        for (let cx = cx0; cx <= cx1; cx++)
+          for (const id of buckets.get(`${cx},${cy}`) ?? []) {
+            // Buckets are coarse, so a bucket hit is only a CANDIDATE. Confirm
+            // it against the bboxes the item registered with, strictly. Sound
+            // by construction: a pair with a non-zero exact intersection area
+            // must have strictly overlapping bounding boxes, so this can drop
+            // only pairs whose exact area is already 0 — it can never hide a
+            // real overlap. See the header for why this predicate is a strict
+            // SUPERSET of exactIntersectionArea's stage-1 pass, not a copy.
+            if (hit.has(id)) continue;
+            for (const o of boxOf.get(id))
+              if (bbox.x < o.x + o.w && o.x < bbox.x + bbox.w &&
+                  bbox.y < o.y + o.h && o.y < bbox.y + bbox.h) { hit.add(id); break; }
+          }
+      // Sorted output is a deliberate contract, not incidental: a consumer that
+      // emits one gate message per candidate needs the candidate order to be a
+      // function of the data alone, never of bucket traversal. It costs 3.2% of
+      // this index's total work (measured, 0.1331 -> 0.1288 ms/run over the real
+      // spine) and sits on no production path today.
+      return [...hit].sort();
+    },
+  };
+}

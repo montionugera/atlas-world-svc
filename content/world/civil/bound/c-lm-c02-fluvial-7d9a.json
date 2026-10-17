@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-7d9a",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Waingate Reach",
+  "bind": {
+    "handle": "c02/fluvial/h-c57d9a",
+    "expect": {
+      "type": "confluence-bench",
+      "sizeKm": [
+        0.49,
+        1.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The dry tongue of ground between two rivers, just before they become one.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#confluence-bench.gloss"
+  },
+  "resolution": null
+}

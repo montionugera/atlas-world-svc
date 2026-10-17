@@ -14,5 +14,7 @@
     <PackageReference Include="Colyseus" Version="0.17.17" />
     <!-- Official Nakama .NET client; 3.21.2 matches the running nakama:3.21.1. -->
     <PackageReference Include="NakamaClient" Version="3.21.2" />
+    <!-- Google FlatBuffers for Rust game server protocol (zero-copy, NativeAOT safe). -->
+    <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
   </ItemGroup>
 </Project>

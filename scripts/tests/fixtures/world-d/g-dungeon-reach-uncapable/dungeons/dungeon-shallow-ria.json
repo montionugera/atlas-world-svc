@@ -1,0 +1,18 @@
+{
+  "id": "dungeon-shallow-ria",
+  "title": "Shallow Ria",
+  "family": null,
+  "bind": { "handle": "c02/coastal/h-a1b2" },
+  "entranceType": "coastal-drowned-valley",
+  "floors": 2,
+  "levelBand": [1, 10],
+  "hazards": ["cold"],
+  "roomCountCurve": [6, 8],
+  "lore": {
+    "note": "A drowned valley mouth that floods at high tide.",
+    "source": "scripts/tests/fixtures/world-d overlay"
+  },
+  "prose": "frontier",
+  "spineId": null,
+  "provenance": { "authored": "hand", "generator": null }
+}

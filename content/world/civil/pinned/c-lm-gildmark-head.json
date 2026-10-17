@@ -1,0 +1,29 @@
+{
+  "id": "c-lm-gildmark-head",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Gildmark Head",
+  "pin": {
+    "at": [
+      85.4,
+      158.2
+    ],
+    "toleranceKm": 1.5,
+    "why": "A1 §4: the head above Gildmark's roads. `headland` (D-B4), not `marine-terrace`: both are coastal rock,meadow areas, but a terrace is a flat bench and this is the cliffed promontory the coast road goes over — `headland`'s slopeMin 0.04 is the difference"
+  },
+  "requires": {
+    "continent": "c02",
+    "landform": "headland",
+    "water": {
+      "kind": "sea"
+    }
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

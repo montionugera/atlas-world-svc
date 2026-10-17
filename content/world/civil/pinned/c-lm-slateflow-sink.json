@@ -1,0 +1,26 @@
+{
+  "id": "c-lm-slateflow-sink",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Slateflow Sink",
+  "pin": {
+    "at": [
+      306,
+      246
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §3: the Slateflow is a sinking river on a drowned plateau"
+  },
+  "requires": {
+    "continent": "c04",
+    "landform": "sinking-river"
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

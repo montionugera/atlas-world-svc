@@ -1,0 +1,15 @@
+{
+  "capability": "deep-design-v1",
+  "model": "claude-opus-5-5",
+  "agent": "claude",
+  "effort": "medium",
+  "timestamp": "2026-10-05T08:09:02.728997+00:00",
+  "prompt_sha256": "9cfd0f3ee839b4f9d87f8cb25c3e46d85ce76663742c08de467e8de9124ac5b7",
+  "output_sha256": "6c635eef5c0c4d41f137f12004f09d3c2659e1b228bbc4f45878142e9d03935b",
+  "context_sha256": {
+    "/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/_release/.claude/idea_backlog/I-125-rust-game-server-migration-high-density/spec.md": "ebbd83ffd93db069421460b80326ce338a2aa13059b8bc33ab130eff420ce5b6",
+    "/Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/_release/.claude/idea_backlog/I-125-rust-game-server-migration-high-density/research.md": "84506f05e77981f9a1845f717e44d618746867cee46b9df0c6c9e6aecbdb673e"
+  },
+  "exit_code": 0,
+  "status": "ATTESTED"
+}

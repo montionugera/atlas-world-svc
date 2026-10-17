@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-fluvial-d3f7",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Pumicpan Confluence",
+  "bind": {
+    "handle": "c05/fluvial/h-0dd3f7",
+    "expect": {
+      "type": "delta",
+      "sizeKm": [
+        5.03,
+        20
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The river gives up and splits, laying its load down in a fan of shifting channels.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#delta.gloss"
+  },
+  "resolution": null
+}

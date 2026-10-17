@@ -41,7 +41,7 @@ export const LEGACY_UNPAIRED = new Set([
  * @param {Array<{id: string, mobType: string, count: number}>} authoredAreas
  *   `mobSpawnAreas` from a content/maps/*.md frontmatter (extra keys ignored).
  * @param {Array<{id: string, mobType: string, count: number}>} runtimeAreas
- *   `areas` from colyseus-server/generated/spawn-areas.json.
+ *   `areas` from content/generated/spawn-areas.json.
  * @param {(msg: string) => void} failFn
  */
 export function checkSpawnPairing(authoredAreas, runtimeAreas, failFn) {

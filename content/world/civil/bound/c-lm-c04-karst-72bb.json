@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-72bb",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Flagmoor Pot",
+  "bind": {
+    "handle": "c04/karst/h-8572bb",
+    "expect": {
+      "type": "limestone-pavement",
+      "sizeKm": [
+        1.8,
+        7.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Bare rock split into blocks by deep grooves, with whole plants living down in the cracks.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#limestone-pavement.gloss"
+  },
+  "resolution": null
+}

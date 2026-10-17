@@ -1,0 +1,32 @@
+{
+  "id": "dungeon-driftholt-plunge-undercuts",
+  "title": "Driftholt Plunge Undercuts",
+  "family": null,
+  "bind": {
+    "handle": "c02/fluvial/h-4cb71e"
+  },
+  "entranceType": "plunge-pool",
+  "floors": 2,
+  "levelBand": [
+    10,
+    36
+  ],
+  "hazards": [
+    "collapse",
+    "cold"
+  ],
+  "roomCountCurve": [
+    8,
+    10
+  ],
+  "lore": {
+    "note": "Undercuts where the plunge pools have eaten the cliff from below.",
+    "source": "content/world/premises/continent-07.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

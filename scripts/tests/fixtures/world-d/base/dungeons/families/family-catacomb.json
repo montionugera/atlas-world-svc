@@ -1,0 +1,10 @@
+{
+  "id": "family-catacomb",
+  "title": "Catacomb",
+  "floors": 3,
+  "floorGraph": "branching",
+  "hazards": ["bad-air", "collapse", "grave-damp"],
+  "roomCountCurve": [8, 12, 9],
+  "levelBand": { "base": 42, "step": 3, "span": 6 },
+  "entranceTypes": ["karst-cenote", "karst-fenster", "cave-system", "sinkhole-doline"]
+}

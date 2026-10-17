@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-0a09",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Siroccspar Waste",
+  "bind": {
+    "handle": "c05/desert/h-6a0a09",
+    "expect": {
+      "type": "ventifact-field",
+      "sizeKm": [
+        1.14,
+        3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Ground littered with stones the blown sand has cut into facets and hard edges.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#ventifact-field.gloss"
+  },
+  "resolution": null
+}

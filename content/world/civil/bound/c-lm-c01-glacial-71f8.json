@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c01-glacial-71f8",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Moraine off Halereach",
+  "bind": {
+    "handle": "c01/glacial/h-4871f8",
+    "expect": {
+      "type": "moulin",
+      "sizeKm": [
+        0.01,
+        0.02
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A shaft in the ice that swallows a meltwater stream whole and drops it out of sight.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#moulin.gloss"
+  },
+  "resolution": null
+}

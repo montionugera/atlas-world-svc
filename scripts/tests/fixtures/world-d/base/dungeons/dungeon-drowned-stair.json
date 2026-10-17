@@ -1,0 +1,18 @@
+{
+  "id": "dungeon-drowned-stair",
+  "title": "The Drowned Stair",
+  "family": null,
+  "bind": { "handle": "c02/karst/h-0f42" },
+  "entranceType": "karst-cenote",
+  "floors": 3,
+  "levelBand": [8, 20],
+  "hazards": ["bad-air", "collapse"],
+  "roomCountCurve": [8, 10, 12],
+  "lore": {
+    "note": "The stair descends below the waterline; the lower landings are flooded twice a day.",
+    "source": "scripts/tests/fixtures/world-d base fixture"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": { "authored": "hand", "generator": null }
+}

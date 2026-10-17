@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "note": "Every art-forge brief (atelier/art-forge/briefs/*.json), so the Forge tab shows a pipeline row even for briefs with no run ledger yet. Hand-maintained; tests/forge-briefs-index.test.mjs enforces parity both ways.",
+  "briefs": [{ "id": "A1-ART-02" }, { "id": "A1-ART-03" }, { "id": "A1-ART-06" }, { "id": "A1-ART-07" }]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c10-volcanic-6cb8",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Cone beyond Emberwaste",
+  "bind": {
+    "handle": "c10/volcanic/h-9a6cb8",
+    "expect": {
+      "type": "lava-tube",
+      "sizeKm": [
+        0.46,
+        1.84
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A drained tunnel the flow left behind when its crust set and its middle ran on.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#lava-tube.gloss"
+  },
+  "resolution": null
+}

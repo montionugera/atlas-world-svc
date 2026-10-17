@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { EntityCard } from './EntityCard';
 import { getMobDisplayName } from '../utils/mobUtils';
 
@@ -21,6 +21,10 @@ export const EntityGrid: React.FC<EntityGridProps> = ({
     onForceDie,
     onRespawn
 }) => {
+  // Long lists push everything down and re-render with every entity: closed by default.
+  const [showPlayers, setShowPlayers] = useState(false);
+  const [showMobs, setShowMobs] = useState(false);
+
   const gridStyle: React.CSSProperties = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
@@ -37,15 +41,23 @@ export const EntityGrid: React.FC<EntityGridProps> = ({
       fontFamily: '"Inter", sans-serif',
       fontSize: '1.2rem',
       fontWeight: 'bold',
-      opacity: 0.8
+      opacity: 0.8,
+      display: 'block',
+      padding: 0,
+      border: 'none',
+      background: 'none',
+      cursor: 'pointer',
+      textAlign: 'left'
   };
 
   return (
     <div className="entity-grid-container">
       {players.length > 0 && (
           <>
-            <h3 style={sectionHeaderStyle}>Players ({players.length})</h3>
-            <div style={gridStyle}>
+            <button type="button" aria-expanded={showPlayers} style={sectionHeaderStyle} onClick={() => setShowPlayers(open => !open)}>
+              {showPlayers ? '▾' : '▸'} Players ({players.length})
+            </button>
+            {showPlayers && <div style={gridStyle}>
                 {players.map(p => {
                     const isCurrentPlayer = p.sessionId === currentPlayerId;
                     return (
@@ -71,14 +83,16 @@ export const EntityGrid: React.FC<EntityGridProps> = ({
                         />
                     );
                 })}
-            </div>
+            </div>}
           </>
       )}
 
       {mobs.length > 0 && (
           <>
-            <h3 style={sectionHeaderStyle}>Mobs ({mobs.length})</h3>
-             <div style={gridStyle}>
+            <button type="button" aria-expanded={showMobs} style={sectionHeaderStyle} onClick={() => setShowMobs(open => !open)}>
+              {showMobs ? '▾' : '▸'} Mobs ({mobs.length})
+            </button>
+             {showMobs && <div style={gridStyle}>
                 {mobs.map(m => (
                 <EntityCard
                     key={m.id}
@@ -94,7 +108,7 @@ export const EntityGrid: React.FC<EntityGridProps> = ({
                     resistances={m.resistances}
                 />
                 ))}
-            </div>
+            </div>}
           </>
       )}
 

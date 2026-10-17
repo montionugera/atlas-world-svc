@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-2b23",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ashwater Yardang",
+  "bind": {
+    "handle": "c05/desert/h-522b23",
+    "expect": {
+      "type": "transverse-dune-field",
+      "sizeKm": [
+        4.94,
+        18
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Rank after rank of sand ridges set square across the wind, like a frozen swell.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#transverse-dune-field.gloss"
+  },
+  "resolution": null
+}

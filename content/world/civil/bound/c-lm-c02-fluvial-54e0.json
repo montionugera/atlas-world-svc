@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-54e0",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ford under Harrowstead",
+  "bind": {
+    "handle": "c02/fluvial/h-3454e0",
+    "expect": {
+      "type": "river-terrace",
+      "sizeKm": [
+        2.36,
+        8
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A dry step above the present river, cut when the water ran higher than it does now.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#river-terrace.gloss"
+  },
+  "resolution": null
+}

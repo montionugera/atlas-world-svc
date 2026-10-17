@@ -1,0 +1,14 @@
+{
+  "id": "n-atlas", "tier": "world", "parentId": null, "title": "Fixture World",
+  "provenance": { "authored": "hand", "generator": null, "source": "fixture" },
+  "frozen": false,
+  "seed": { "value": "aaaaaaaaaaaaaaa1", "epoch": 0, "why": null },
+  "placement": { "shape": "rect", "rect": { "x": 0, "y": 0, "w": 2000, "h": 2000 }, "anchor": [1000, 1000] },
+  "interior": { "units": "km", "perParentUnit": 1, "size": [2000, 2000], "originInParent": [0, 0] },
+  "composition": { "ocean": 56, "meadow": 40, "rock": 2, "ice": 2 },
+  "interstitial": null, "interstitialUnsurveyed": true,
+  "compositionTolerance": null, "toleranceWhy": null,
+  "terrainKind": null, "features": [], "bands": [],
+  "runtime": { "mapIds": [], "originU": null, "spawnAreas": [], "mobSettings": null, "seedDemoNPCs": false, "collision": "none" },
+  "representsNodeId": null, "lore": {}, "tags": [], "levelBand": null
+}

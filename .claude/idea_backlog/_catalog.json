@@ -526,5 +526,689 @@
     "title": "Town plan view: top-down town map schema (boundary, road spine with widths, building footprints, plazas, landmarks) authored from A1 section 6 themes and bound to the physics scale, plus the footprint to static-collision binder",
     "created_at": "2026-08-09T01:17:20.139913+00:00",
     "promoted_to": "F-040"
+  },
+  {
+    "id": "I-089",
+    "title": "Seeded map data model: seed + derived file so cluster-1 map detail can grow without hand-authoring every point",
+    "created_at": "2026-08-09T10:12:56.396777+00:00",
+    "promoted_to": "F-041"
+  },
+  {
+    "id": "I-090",
+    "title": "World map render: spine-driven world-scale map (F-041 tier spine has no renderer; cluster1-world.svg is region-scale)",
+    "created_at": "2026-08-11T17:26:48.680292+00:00",
+    "promoted_to": "F-042"
+  },
+  {
+    "id": "I-091",
+    "title": "check_map_render --write with rsvg-convert missing leaves PNGs stale (gate byte-compares SVG only; F-042 final-review flag)",
+    "created_at": "2026-08-12T13:22:27.331789+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-092",
+    "title": "World-scale geography: seeded continent/ocean generation from n-atlas seed + composition, hand-polished into canon, so the atlas world sheet renders a complete map",
+    "created_at": "2026-08-12T16:21:51.957968+00:00",
+    "promoted_to": "F-043"
+  },
+  {
+    "id": "I-093",
+    "title": "harden G-ATLAS-ROLLUP: iterate union of committed+rolled-up biome keys so a rogue uncommitted biome (bounded ~6pp today) cannot pass silently",
+    "created_at": "2026-08-14T15:54:34.426311+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-094",
+    "title": "storybook Maps tab: serve game-client/assets/art/maps (cluster1-world, atlas-world) with pan/zoom in asset-storybook, honoring the new every-artifact-observable rule",
+    "created_at": "2026-08-15T07:39:53.582607+00:00",
+    "promoted_to": "F-044"
+  },
+  {
+    "id": "I-095",
+    "title": "world rescale to 400x400: uniform /5 geography scale, towns keep physical size, hour-scale travel \u2014 owner-approved scale model",
+    "created_at": "2026-08-15T11:12:30.592907+00:00",
+    "promoted_to": "F-045"
+  },
+  {
+    "id": "I-096",
+    "title": "check_spine_emit.mjs silently drops any region lacking lore.order, so a region can cease to exist on the chart with every gate green (found 2026-08-16 during world-fill design; see design doc R3)",
+    "created_at": "2026-08-16T01:59:48.203571+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-097",
+    "title": "World fill Plan A: unblock and afford \u2014 exact geometry, spatial index, places.mjs join authority, render lock",
+    "created_at": "2026-08-18T13:58:23.925477+00:00",
+    "promoted_to": "F-046"
+  },
+  {
+    "id": "I-098",
+    "title": "Stale references to the deleted cluster1-geography mirror and render-map.mjs survive in schema prose, three comments, and the basin sheet's drawn bytes",
+    "created_at": "2026-08-19T07:28:09.510343+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-099",
+    "title": "World fill Plan B: vocabulary and render \u2014 170-type landform lexicon, four schemas, 20 biomes, 40 glyph families, deterministic label declutter, baked-texture rasteriser",
+    "created_at": "2026-08-20T12:51:22.701533+00:00",
+    "promoted_to": "F-047"
+  },
+  {
+    "id": "I-100",
+    "title": "World fill Plan C: the fabric layer \u2014 seeded 400x400 generator, 13 landmasses / 160 regions / 1,740 landform instances / 45 settlements, committed content/world/fabric + handles, 1.5:1 sea-to-land by construction",
+    "created_at": "2026-08-22T00:16:39.345694+00:00",
+    "promoted_to": "F-048"
+  },
+  {
+    "id": "I-101",
+    "title": "World fill Plan D: pinned places, bound records and relations",
+    "created_at": "2026-08-24T17:24:54.417938+00:00",
+    "promoted_to": "F-049"
+  },
+  {
+    "id": "I-102",
+    "title": "Art-forge pipeline dashboard: pipeline view per brief with gate verdicts and per-cell re-run",
+    "created_at": "2026-08-25T04:32:40.373942+00:00",
+    "promoted_to": "F-050"
+  },
+  {
+    "id": "I-103",
+    "title": "World fill Plan E: redraw and prose",
+    "created_at": "2026-08-25T16:28:35.781558+00:00",
+    "promoted_to": "F-051"
+  },
+  {
+    "id": "I-104",
+    "title": "iceEdge is null on every resolved continent, including both ice caps",
+    "created_at": "2026-08-29T09:18:42.260001+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-105",
+    "title": "Hollowmarch's zone record claims ore no c02 region licenses",
+    "created_at": "2026-08-29T09:19:10.378318+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-106",
+    "title": "continent-11 premise register disagrees with names registers.json",
+    "created_at": "2026-08-29T09:19:10.931178+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-107",
+    "title": "Brightfall Leap canon landmark missing from names reserved.json",
+    "created_at": "2026-08-29T09:19:11.456730+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-108",
+    "title": "Nine Lava Tube dungeons named where the fabric draws only one",
+    "created_at": "2026-08-29T09:19:12.024386+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-109",
+    "title": "Design spec and fabric disagree on which continent owns the inland sea",
+    "created_at": "2026-08-29T09:19:12.565950+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-110",
+    "title": "G-POI floor downgrades are guarded only by a hardcoded warning count",
+    "created_at": "2026-08-29T09:19:13.092220+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-111",
+    "title": "canon-legs.json's feature field is never read for correctness",
+    "created_at": "2026-08-29T09:19:13.631182+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-112",
+    "title": "sheet-atlas.json's scaleBarNote field has no live reader",
+    "created_at": "2026-08-29T09:19:14.161859+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-113",
+    "title": "Freeze reasons are never verified true and reasons is unguarded",
+    "created_at": "2026-08-29T09:19:14.735675+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-114",
+    "title": "content zones spineId is unset on all 40 records",
+    "created_at": "2026-08-29T09:19:15.288657+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-115",
+    "title": "No gate binds a minted zone landmark to the drawn world's own name",
+    "created_at": "2026-08-29T09:19:15.824981+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-116",
+    "title": "Five weak gate assertions have wide headroom or cannot fail",
+    "created_at": "2026-08-29T09:19:16.354273+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-117",
+    "title": "world-d fixture budgets.json has drifted from the real budgets.json",
+    "created_at": "2026-08-29T09:19:16.883763+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-118",
+    "title": "basin-sheet.mjs and resolveWorld are permanently dead production code",
+    "created_at": "2026-08-29T09:19:17.435512+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-119",
+    "title": "A4's name-register inheritance rule is unenforced in code",
+    "created_at": "2026-08-29T09:19:17.974378+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-120",
+    "title": "c05 r12 is a second G-POI floor risk with no declaration",
+    "created_at": "2026-08-29T09:19:18.503205+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-121",
+    "title": "Map builder service: seed \u2192 generate \u2192 review \u2192 accept into storybook, with monitoring + re-run",
+    "created_at": "2026-09-13T07:53:02.390132+00:00",
+    "promoted_to": "F-052"
+  },
+  {
+    "id": "I-122",
+    "title": "asset-storybook UI/UX redesign: dashboard, list view, detail view",
+    "created_at": "2026-09-13T18:16:27.053454+00:00",
+    "promoted_to": "F-053"
+  },
+  {
+    "id": "I-123",
+    "title": "Asset Studio: settings per domain and asset, explore, generate art, MCP CRUD",
+    "created_at": "2026-09-17T00:48:15.041798+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-124",
+    "title": "AI separation and targeting query the existing spatial grid",
+    "created_at": "2026-10-05T07:42:43.114570+00:00",
+    "promoted_to": "F-054"
+  },
+  {
+    "id": "I-125",
+    "title": "Rust game server migration - high-density ECS and Rapier physics core",
+    "created_at": "2026-10-05T08:03:51.423861+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-126",
+    "title": "1",
+    "created_at": "2026-10-05T08:11:01.797087+00:00",
+    "promoted_to": "F-055",
+    "epic": "E-001"
+  },
+  {
+    "id": "I-127",
+    "title": "2",
+    "created_at": "2026-10-05T08:11:01.801611+00:00",
+    "promoted_to": "F-056",
+    "epic": "E-001"
+  },
+  {
+    "id": "I-128",
+    "title": "3",
+    "created_at": "2026-10-05T08:11:01.802363+00:00",
+    "promoted_to": "F-057",
+    "epic": "E-001"
+  },
+  {
+    "id": "I-129",
+    "title": "4",
+    "created_at": "2026-10-05T08:11:01.803031+00:00",
+    "promoted_to": "F-058",
+    "epic": "E-001"
+  },
+  {
+    "id": "I-130",
+    "title": "5",
+    "created_at": "2026-10-05T08:11:01.803733+00:00",
+    "promoted_to": "F-059",
+    "epic": "E-001"
+  },
+  {
+    "id": "I-131",
+    "title": "Client input binding and player avatar entity control in Bevy ECS",
+    "created_at": "2026-10-05T14:53:31.696472+00:00",
+    "promoted_to": "F-060",
+    "epic": "E-002"
+  },
+  {
+    "id": "I-132",
+    "title": "Elemental combat system, skill execution, and projectile kinematics in server-rs",
+    "created_at": "2026-10-05T14:53:31.697659+00:00",
+    "promoted_to": "F-061",
+    "epic": "E-002"
+  },
+  {
+    "id": "I-133",
+    "title": "Bestiary catalog ingestion, mob AI states, threat table, and respawn lifecycle in server-rs",
+    "created_at": "2026-10-05T14:53:31.698428+00:00",
+    "promoted_to": "F-062",
+    "epic": "E-002"
+  },
+  {
+    "id": "I-134",
+    "title": "Nakama persistent storage integration for player loadout, inventory, and stats in server-rs",
+    "created_at": "2026-10-05T14:53:31.699052+00:00",
+    "promoted_to": "F-063",
+    "epic": "E-002"
+  },
+  {
+    "id": "I-135",
+    "title": "Complete colyseus-server decommissioning, workspace cleanup, and Gate 1/2 gate update",
+    "created_at": "2026-10-05T14:53:31.699650+00:00",
+    "promoted_to": "F-064",
+    "epic": "E-002"
+  },
+  {
+    "id": "I-136",
+    "title": "Wire the game server to Nakama",
+    "created_at": "2026-10-11T06:59:03.748110+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-137",
+    "title": "Server accepts a real Nakama token",
+    "created_at": "2026-10-11T06:59:03.752427+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-138",
+    "title": "Client signs in with Nakama",
+    "created_at": "2026-10-11T06:59:03.754510+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-139",
+    "title": "One live session per account",
+    "created_at": "2026-10-11T06:59:03.767454+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-140",
+    "title": "Apply the saved character on join",
+    "created_at": "2026-10-11T06:59:03.783040+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-141",
+    "title": "Report match events to Nakama",
+    "created_at": "2026-10-11T06:59:03.784680+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-142",
+    "title": "Save and restore position and health",
+    "created_at": "2026-10-11T06:59:03.793886+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-143",
+    "title": "Session resume after a dropped connection",
+    "created_at": "2026-10-11T06:59:03.795224+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-144",
+    "title": "Measure capacity",
+    "created_at": "2026-10-11T06:59:04.670870+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-145",
+    "title": "Decide the world model",
+    "created_at": "2026-10-11T06:59:04.674658+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-146",
+    "title": "Send each player only what is near them",
+    "created_at": "2026-10-11T06:59:04.676842+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-147",
+    "title": "Load a generated-world region on the server",
+    "created_at": "2026-10-11T06:59:04.677927+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-148",
+    "title": "Derive client obstacles and spawn from the same source",
+    "created_at": "2026-10-11T06:59:04.679157+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-149",
+    "title": "Sleeping regions",
+    "created_at": "2026-10-11T06:59:04.683180+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-150",
+    "title": "World state store",
+    "created_at": "2026-10-11T06:59:04.684576+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-151",
+    "title": "Save and restore region state across a restart",
+    "created_at": "2026-10-11T06:59:04.686973+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-152",
+    "title": "Border ghosts",
+    "created_at": "2026-10-11T06:59:04.689376+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-153",
+    "title": "Authority handoff",
+    "created_at": "2026-10-11T06:59:04.690361+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-154",
+    "title": "Experience and levels",
+    "created_at": "2026-10-11T06:59:05.803624+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-155",
+    "title": "Minimal item catalogue",
+    "created_at": "2026-10-11T06:59:05.805693+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-156",
+    "title": "Loot drops and pickup",
+    "created_at": "2026-10-11T06:59:05.823871+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-157",
+    "title": "Idempotent server-only grants",
+    "created_at": "2026-10-11T06:59:05.825978+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-158",
+    "title": "Inventory and equipment screen",
+    "created_at": "2026-10-11T06:59:05.828097+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-159",
+    "title": "Weapon switching and skill loadout in play",
+    "created_at": "2026-10-11T06:59:05.829423+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-160",
+    "title": "Death, bind point and travel",
+    "created_at": "2026-10-11T06:59:05.832159+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-161",
+    "title": "Currency and vendor",
+    "created_at": "2026-10-11T06:59:05.834028+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-162",
+    "title": "Quests at runtime",
+    "created_at": "2026-10-11T06:59:05.834954+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-163",
+    "title": "CI for the Rust server",
+    "created_at": "2026-10-11T06:59:06.877618+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-164",
+    "title": "Protocol version",
+    "created_at": "2026-10-11T06:59:06.885280+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-165",
+    "title": "Input limits",
+    "created_at": "2026-10-11T06:59:06.887009+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-166",
+    "title": "Health, readiness and clean shutdown",
+    "created_at": "2026-10-11T06:59:06.890918+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-167",
+    "title": "Metrics endpoint",
+    "created_at": "2026-10-11T06:59:06.892965+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-168",
+    "title": "Origin check and token out of the URL",
+    "created_at": "2026-10-11T06:59:06.896071+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-169",
+    "title": "Validate target intents",
+    "created_at": "2026-10-11T06:59:06.897169+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-170",
+    "title": "Player caps per region",
+    "created_at": "2026-10-11T06:59:06.898317+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-171",
+    "title": "Mob attack wind-up and facing",
+    "created_at": "2026-10-11T06:59:07.933674+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-172",
+    "title": "Parry cost",
+    "created_at": "2026-10-11T06:59:07.937712+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-173",
+    "title": "Aimed ranged attacks",
+    "created_at": "2026-10-11T06:59:07.939822+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-174",
+    "title": "Lingering area skills",
+    "created_at": "2026-10-11T06:59:07.941356+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-175",
+    "title": "Damage-over-time statuses",
+    "created_at": "2026-10-11T06:59:07.942388+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-176",
+    "title": "Healing in a fight",
+    "created_at": "2026-10-11T06:59:07.943473+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-177",
+    "title": "Boss tier scaling at spawn",
+    "created_at": "2026-10-11T06:59:07.944897+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-178",
+    "title": "Mob attack variety",
+    "created_at": "2026-10-11T06:59:07.945984+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-179",
+    "title": "Companion spawn and follow",
+    "created_at": "2026-10-11T06:59:07.946916+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-180",
+    "title": "Companion combat and respawn",
+    "created_at": "2026-10-11T06:59:07.948224+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-181",
+    "title": "Nearby and world chat",
+    "created_at": "2026-10-11T06:59:09.180187+00:00",
+    "promoted_to": null,
+    "epic": "E-008"
+  },
+  {
+    "id": "I-182",
+    "title": "Friends list",
+    "created_at": "2026-10-11T06:59:09.182780+00:00",
+    "promoted_to": null,
+    "epic": "E-008"
+  },
+  {
+    "id": "I-183",
+    "title": "Parties",
+    "created_at": "2026-10-11T06:59:09.184126+00:00",
+    "promoted_to": null,
+    "epic": "E-008"
+  },
+  {
+    "id": "I-184",
+    "title": "Find and join friends in the world",
+    "created_at": "2026-10-11T06:59:09.185141+00:00",
+    "promoted_to": null,
+    "epic": "E-008"
+  },
+  {
+    "id": "I-185",
+    "title": "Connect and decode",
+    "created_at": "2026-10-11T06:59:10.415261+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-186",
+    "title": "Move and predict",
+    "created_at": "2026-10-11T06:59:10.418881+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-187",
+    "title": "Fight",
+    "created_at": "2026-10-11T06:59:10.421592+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-188",
+    "title": "Sign-in panel on the new flow",
+    "created_at": "2026-10-11T06:59:10.422645+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-189",
+    "title": "Inventory panel on real data",
+    "created_at": "2026-10-11T06:59:10.423593+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-190",
+    "title": "Quest panel on real data",
+    "created_at": "2026-10-11T06:59:10.426011+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-191",
+    "title": "Refresh the documents",
+    "created_at": "2026-10-11T06:59:10.428079+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
   }
 ]

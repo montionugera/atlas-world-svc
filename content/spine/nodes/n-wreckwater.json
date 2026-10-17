@@ -1,0 +1,100 @@
+{
+  "id": "n-wreckwater",
+  "tier": "sea",
+  "parentId": "n-keelbreak",
+  "title": "Wreckwater",
+  "provenance": {
+    "authored": "generated",
+    "generator": {
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/world.json"
+    },
+    "source": "content/world/manifest.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "aa92e2dae953ffe3",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [316.5, 339],
+      [317, 339],
+      [318.5, 337],
+      [319, 337],
+      [319, 336.5],
+      [322, 334],
+      [322, 333],
+      [347, 308.5],
+      [347, 309],
+      [371.5, 333],
+      [371.5, 334],
+      [384, 346],
+      [368.5, 362],
+      [347, 383],
+      [347, 383.5],
+      [342.5, 379.5],
+      [318, 354.5],
+      [317.5, 354.5],
+      [317.5, 354],
+      [317, 354],
+      [317, 353.5],
+      [316.5, 353.5],
+      [316.5, 353],
+      [316, 353],
+      [316, 352.5],
+      [315.5, 352.5],
+      [315.5, 352],
+      [315, 352],
+      [315, 351.5],
+      [314.5, 351.5],
+      [314.5, 351],
+      [314, 351],
+      [314, 350.5],
+      [313.5, 350.5],
+      [313.5, 350],
+      [313, 350],
+      [313, 349.5],
+      [312.5, 349.5],
+      [312.5, 349],
+      [312, 349],
+      [312, 348.5],
+      [311.5, 348.5],
+      [311.5, 348],
+      [311, 348],
+      [311, 347.5],
+      [310.5, 347.5],
+      [310.5, 347],
+      [310, 347],
+      [310, 346.5],
+      [309.5, 346.5]
+    ],
+    "anchor": [346.75, 346.25]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [74.5, 75],
+    "originInParent": [309.5, 308.5]
+  },
+  "composition": {
+    "ocean": 100
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": null,
+  "features": [],
+  "bands": [],
+  "runtime": null,
+  "representsNodeId": null,
+  "lore": {
+    "summary": null
+  },
+  "tags": [],
+  "levelBand": null
+}

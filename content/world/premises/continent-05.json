@@ -1,0 +1,25 @@
+{
+  "id": "c05",
+  "title": "Thirstwold",
+  "class": "major",
+  "footprint": {
+    "centreKm": [176,300],
+    "radiiKm": [73.79,55.34],
+    "warpKm": 15
+  },
+  "areaBandKm2": [9900,12100],
+  "coastClass": "rain-shadow-erg",
+  "palette": ["desert","badland","alkali","scree","rock","river"],
+  "landformKit": ["desert","erosional","mountain","fluvial"],
+  "structuralIdea": "a rain-shadow erg behind a coastal range — one wet strip along its seaward foot, then some 9,900 km² of reported sand",
+  "structures": [
+    {
+      "kind": "spine-ridge",
+      "fromKm": [112.75,263.11],
+      "toKm": [123.29,347.44],
+      "amplitude": 0.66
+    }
+  ],
+  "register": "sandtongue",
+  "levelBand": [40,80]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-64dc",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ford over Marlfield",
+  "bind": {
+    "handle": "c02/fluvial/h-f664dc",
+    "expect": {
+      "type": "ford",
+      "sizeKm": [
+        0.11,
+        0.4
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A gravel shallow where the river spreads wide enough to walk, in the right season.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#ford.gloss"
+  },
+  "resolution": null
+}

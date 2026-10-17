@@ -1,0 +1,48 @@
+{
+  "zone": "thirstvent-pan",
+  "region": "c05/r21",
+  "survey": "surveyed",
+  "reasonToGo": "No road reaches this ground and no village stands on it — one of three surveyed regions on Thirstwold with neither. Parties come in over the ridge carrying every drop they will drink, take ore off the blocks the scarp has already dropped and salvage off the landward edge of the sand, and go back out over the same ridge, which carries two crossings and no third.",
+  "hazards": [
+    {
+      "id": "the-far-rain",
+      "name": "The far rain",
+      "description": "The dry watercourse through this ground is the longest drawn anywhere in the world, and what fills it is weather nobody standing in it can see. It comes down as a front with the noise a little ahead of it, and it fills the channel bank to bank in a country where it has not rained for a year.",
+      "effect": "damage"
+    },
+    {
+      "id": "every-name-is-a-water-name",
+      "name": "Every name is a water name",
+      "description": "The sheet for this ground carries a watercourse, three lake beds and a salt floor: five marks, every one of them a shape water made, and not one of them holding any. A party that plans its crossing off the sheet plans it on water that has not been here in living memory.",
+      "note": "Absence hazard: the harm is that the water the ground is shaped by is gone. Nothing in the runtime enum expresses a feature named for what it no longer has."
+    }
+  ],
+  "resources": [
+    {
+      "id": "apron-ore",
+      "name": "Apron ore",
+      "kind": "ore",
+      "description": "Taken out of the fallen blocks heaped at the foot of the scarp rather than out of the face above them. Nobody cuts the wall on this ground: it drops enough of itself every winter to keep a party in work, and a party at the foot of it can hear what is coming."
+    },
+    {
+      "id": "erg-edge-salvage",
+      "name": "Erg-edge salvage",
+      "kind": "salvage",
+      "description": "Worked off the first mile of the sand and no further. What the dunes uncover on their landward side comes out; what is under the rest of them stays there, because nobody who has gone in to look has come back with a report worth entering."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "searwind-saddle",
+      "name": "Searwind Saddle",
+      "description": "One of the two dips the ridge carries, and the one a loaded party takes, being shallow enough to cross without putting a hand down. Everything worked on this ground was carried in over it and everything sold off this ground was carried out over it.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "barchan-across-charspar",
+      "name": "Barchan across Charspar",
+      "description": "Twenty-four kilometres of sand standing in ranks to the horizon, each crest moving a little every year. Salvage comes off the near edge of it. Nothing at all is known about the far edge, and nothing on this sheet pretends to be.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

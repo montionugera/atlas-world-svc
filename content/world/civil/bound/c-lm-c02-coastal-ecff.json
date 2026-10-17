@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-ecff",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Barrowwick Stack",
+  "bind": {
+    "handle": "c02/coastal/h-76ecff",
+    "expect": {
+      "type": "headland",
+      "sizeKm": [
+        0.76,
+        3.02
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A shoulder of cliff shoved out into the water; the coast road goes over it or not at all.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#headland.gloss"
+  },
+  "resolution": null
+}

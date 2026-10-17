@@ -1,0 +1,48 @@
+{
+  "zone": "lodereach-race",
+  "region": "c03/r22",
+  "survey": "surveyed",
+  "reasonToGo": "Wood and grain both come down to the same mile of shore here — the wood floated to the boom, the grain carted to it — so a party buys either on the beach, before the road takes it up to Tallowquay.",
+  "hazards": [
+    {
+      "id": "the-race-in-the-gut",
+      "name": "The race in the gut",
+      "description": "The tide runs through the gut faster than a boat is rowed, and it runs both ways. A laden hull that misses the slack is put on the flats or taken out past them, and neither is survivable in the wrong month.",
+      "effect": "damage"
+    },
+    {
+      "id": "the-turning-butt",
+      "name": "The turning butt",
+      "description": "The logs are held at the boom until the tide serves and then let go in a mass. A butt coming round in the current takes a man off his feet before he hears it in the water.",
+      "effect": "stun"
+    }
+  ],
+  "resources": [
+    {
+      "id": "boom-timber",
+      "name": "Boom timber",
+      "kind": "timber",
+      "description": "Wood cut on the wooded ground behind the shore and floated down to the boom, which is where it is counted, because nothing that goes past the boom is ever caught again."
+    },
+    {
+      "id": "levee-ground",
+      "name": "Levee ground",
+      "kind": "crop",
+      "description": "The banks the floods built for themselves, standing a foot higher and drier than the fields behind them, and the only ground on this shore that is ploughed two years running."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "haulholt-geo",
+      "name": "Haulholt Geo",
+      "description": "The gut between the bar and the shore: mud at low water, a running sea at high, and no clear edge between the two. It is the only water on this shore a laden hull can cross at all.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "confluence-north-of-fastbreak",
+      "name": "Confluence north of Fastbreak",
+      "description": "Where the river stops being a river — it gives up behind the bar and splits into a fan of shifting channels, and the timber booms are set across the largest of them.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

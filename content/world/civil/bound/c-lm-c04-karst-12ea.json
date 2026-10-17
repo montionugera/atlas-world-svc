@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-12ea",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Stoneshaft Stair",
+  "bind": {
+    "handle": "c04/karst/h-2312ea",
+    "expect": {
+      "type": "karst-tower",
+      "sizeKm": [
+        0.35,
+        1.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A steep-sided limestone stack rising sheer out of flat ground, wooded on top.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#karst-tower.gloss"
+  },
+  "resolution": null
+}

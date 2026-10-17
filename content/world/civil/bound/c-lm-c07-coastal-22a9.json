@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c07-coastal-22a9",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Alderspit Roads",
+  "bind": {
+    "handle": "c07/coastal/h-3422a9",
+    "expect": {
+      "type": "marine-terrace",
+      "sizeKm": [
+        2.49,
+        6
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "An old shoreline stranded above the present one, level enough to build a road on.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#marine-terrace.gloss"
+  },
+  "resolution": null
+}

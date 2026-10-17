@@ -1,0 +1,5 @@
+[
+  { "rel": "bearing", "from": "c-lm-the-trade-wind-landfall", "to": "c-town-tallowquay", "dir": "S", "toleranceDeg": 45, "cite": "docs/worldbuilding/A2-wider-world.md §2 \"The two lanes\"", "note": "\"the trade-wind lane's far terminus\" — the port sits down-coast of where the shore first rises. ERRATUM vs plan: plan authored dir E +/-45 but the resolved bearing is 168 deg (S); E would be false on today's ground. Cited prose also at canon.md §4: \"Coldreach is the far end of the trade wind.\"" },
+  { "rel": "colocated_with", "subject": "c-lm-coldreach-shore", "host": "c-town-tallowquay", "withinKm": 10.0, "cite": "docs/worldbuilding/A2-wider-world.md §3 \"The continents\"", "note": "\"The shore the lane raises first\" — the reported coast runs through the one harbor anyone tied up in. ERRATUM vs plan: plan authored withinKm 8.0, measured 8.25 km; 10 is the honest band." },
+  { "rel": "unique_in_scope", "subject": "c-town-tallowquay", "property": "lane-terminus", "scope": "continent:c03", "cite": "docs/worldbuilding/A2-wider-world.md §2 \"The two lanes\"", "note": "\"the trade-wind lane's far terminus\" — one lane, one terminus on Coldreach." }
+]

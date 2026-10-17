@@ -1,0 +1,9 @@
+{
+  "id": "n-typo",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "Typo Land",
+  "seed": { "value": "0000000000000f02", "epoch": 0, "why": null },
+  "placement": { "shape": "rect", "rect": { "x": 5, "y": 5, "w": 20, "h": 20 }, "anchor": [15, 15] },
+  "composition": { "meadow": 65, "river": 46, "built": 32, "marsh": 10, "bramble": 5.5 }
+}

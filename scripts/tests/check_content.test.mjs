@@ -243,7 +243,7 @@ test("missing mob-types.json is a single hard fail; mob checks are skipped", () 
   const r = runGate(dir);
   assert.equal(r.code, 1);
   assert.match(r.out, /FAIL.*mob-types: cannot read\/parse/);
-  assert.match(r.out, /1 failures/);
+  assert.match(r.out, /0 nodes, 1 failures/);
 });
 
 test("shape-invalid mob-types.json is a single hard fail", () => {
@@ -251,7 +251,7 @@ test("shape-invalid mob-types.json is a single hard fail", () => {
   const r = runGate(dir);
   assert.equal(r.code, 1);
   assert.match(r.out, /FAIL.*mob-types.*shape-invalid/);
-  assert.match(r.out, /1 failures/);
+  assert.match(r.out, /0 nodes, 1 failures/);
 });
 
 test("mob-types.json parsing to a JSON-falsy value (literal null) is a single hard fail, not a silent skip", () => {
@@ -262,5 +262,5 @@ test("mob-types.json parsing to a JSON-falsy value (literal null) is a single ha
   const r = runGate(dir);
   assert.equal(r.code, 1);
   assert.match(r.out, /FAIL.*mob-types.*shape-invalid/);
-  assert.match(r.out, /1 failures/);
+  assert.match(r.out, /0 nodes, 1 failures/);
 });

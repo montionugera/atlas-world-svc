@@ -1,0 +1,32 @@
+{
+  "id": "dungeon-rooktide-drowned-cellars",
+  "title": "Rooktide Drowned Cellars",
+  "family": null,
+  "bind": {
+    "handle": "c02/fluvial/h-cbd95d"
+  },
+  "entranceType": "plunge-pool",
+  "floors": 2,
+  "levelBand": [
+    16,
+    30
+  ],
+  "hazards": [
+    "cold",
+    "silence"
+  ],
+  "roomCountCurve": [
+    8,
+    10
+  ],
+  "lore": {
+    "note": "Smugglers' cellars the sea claimed; at spring tides the racks float.",
+    "source": "content/world/premises/continent-02.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

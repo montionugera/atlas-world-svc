@@ -1,0 +1,54 @@
+{
+  "zone": "grykefell-stack",
+  "region": "c04/r15",
+  "survey": "surveyed",
+  "reasonToGo": "The port road clips Grykefell's north-east corner and stops for nothing: no village stands on the region, no track branches off, and the working coast is the whole width of the region away on the west side. So the ground is taken off the water instead — a hull in the lagoon behind the bar, block stone off the benches where the sea has planed the pavement flat, ore out of the cave the swell drove along a seam in that same rock, and water carried down from the sink inland.",
+  "hazards": [
+    {
+      "id": "the-bar-shutting",
+      "name": "The bar shutting",
+      "description": "The water inside the bar is calm and the way out of it is not. On a rising swell the gap between the island and the spit breaks right across, and a crew that has waited for a full load waits until the next slack — on a shore with no shelter, no fuel and nobody to send to.",
+      "effect": "damage"
+    },
+    {
+      "id": "the-cave-breath",
+      "name": "The cave breath",
+      "description": "The cave the ore is got from is a seam in the pavement that the sea has opened the whole way in, and it takes a swell down its floor and puts it back out as a wall of air and water. It arrives with nothing in front of it and it puts a body into the rock it was working.",
+      "effect": "stun"
+    }
+  ],
+  "resources": [
+    {
+      "id": "bench-stone",
+      "name": "Bench stone",
+      "kind": "stone",
+      "description": "Levered off the benches where the sea has planed the pavement flat above the tide, in clean rectangular blocks the rock has already sized along its own beds. Nothing wheeled crosses the split rock between the benches and the road, so the stone leaves the way it came — on the water."
+    },
+    {
+      "id": "sea-cave-ore",
+      "name": "Sea-cave ore",
+      "kind": "ore",
+      "description": "Broken out of the walls of the cave the swell drove along a seam in the pavement, reachable for the two hours either side of low water and not at all in a sea. Crews work it in relays with a hand on the rock outside counting swells."
+    },
+    {
+      "id": "sink-water",
+      "name": "Sink water",
+      "kind": "water",
+      "description": "Taken from the stream above the hole it disappears into, which is the last running water on the walk in and the first on the walk out. It is carried down in skins by whoever is not carrying stone."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "karnstone-sink",
+      "name": "Karnstone Sink",
+      "description": "The hole a surface stream walks into and does not come back out of, a mile inland and audible from further than that. It is the turning point of every trip: past it there is no water to carry and no reason to be.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "roads-of-slatesink",
+      "name": "Roads of Slatesink",
+      "description": "The shallow brackish water penned behind the bar, calm when the sea outside is not. No village stands on this ground and the one road only clips its far corner, so every load the region gives up crosses this water and none of it goes by land.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

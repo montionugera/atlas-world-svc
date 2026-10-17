@@ -1,0 +1,26 @@
+{
+  "id": "c-lm-the-one-wet-strip",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "The One Wet Strip",
+  "pin": {
+    "at": [
+      134,
+      292
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §4: one wet strip, then 9,000 km2 of reported sand — the scarp IS the rain shadow's edge"
+  },
+  "requires": {
+    "continent": "c05",
+    "landform": "cuesta"
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

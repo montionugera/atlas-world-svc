@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-coastal-39aa",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Bearhold Geo",
+  "bind": {
+    "handle": "c03/coastal/h-1b39aa",
+    "expect": {
+      "type": "cuspate-foreland",
+      "sizeKm": [
+        2.23,
+        7
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A blunt triangle of shingle thrown out from the coast where two drifts meet.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#cuspate-foreland.gloss"
+  },
+  "resolution": null
+}

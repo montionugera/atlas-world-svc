@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-mountain-2332",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ashvent Horn",
+  "bind": {
+    "handle": "c05/mountain/h-ce2332",
+    "expect": {
+      "type": "butte",
+      "sizeKm": [
+        0.32,
+        1.26
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The last stump of a table left standing after the rest of it wore away.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#butte.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-7620",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ford by Weldstead",
+  "bind": {
+    "handle": "c02/fluvial/h-f27620",
+    "expect": {
+      "type": "oxbow-lake",
+      "sizeKm": [
+        0.2,
+        0.78
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A cut-off loop of river left standing on its own, going quietly green at the edges.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#oxbow-lake.gloss"
+  },
+  "resolution": null
+}

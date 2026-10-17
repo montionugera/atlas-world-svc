@@ -1,0 +1,54 @@
+{
+  "zone": "barchanburn-reach",
+  "region": "c05/r28",
+  "survey": "surveyed",
+  "reasonToGo": "The only ground on Thirstwold carrying two settlements: the landmass has five, they stand on four regions, and two of them are here, twelve kilometres of road apart. One sits at the one spring on this ground and the other within reach of the crossing, and between them the work is wheat on the old river floor, cobble off the gravel fans, and salvage off the sand sea, which at forty-six kilometres is the largest drawn anywhere in the world.",
+  "hazards": [
+    {
+      "id": "the-canyon",
+      "name": "The canyon",
+      "description": "The only canyon on the landmass runs eleven kilometres through this region and comes out beside the southern settlement. Its walls are not something a party gets out of quickly, and it is the wrong place to be standing when rain that fell somewhere else arrives.",
+      "effect": "damage"
+    },
+    {
+      "id": "the-crowd-at-the-spring",
+      "name": "The crowd at the spring",
+      "description": "There is one spring on this ground and everything alive here drinks at it. At dusk a party filling skins is not the first thing to arrive and is not the largest, and the ground around the water is trodden bare for a hundred paces in every direction by whatever was there before it.",
+      "effect": "damage"
+    }
+  ],
+  "resources": [
+    {
+      "id": "spring-wheat",
+      "name": "Spring wheat",
+      "kind": "crop",
+      "description": "Hard wheat on the old river floor between the two settlements, watered by hand a row at a time from the spring. Both settlements are built on the strength of it."
+    },
+    {
+      "id": "fan-cobble",
+      "name": "Fan cobble",
+      "kind": "stone",
+      "description": "Prised off the surface of the gravel fans where the steep streams come out of the scarp and drop what they were carrying. Nobody digs a fan: two spades down is the same fan, and there is no reason to lift the same stone twice."
+    },
+    {
+      "id": "sand-sea-salvage",
+      "name": "Sand-sea salvage",
+      "kind": "salvage",
+      "description": "Off the landward ranks of the sand only, worked in the weeks after a hard wind. Two settlements' worth of people go out for it and every one of them turns round at the same line, which is the last place a laden party can still see the scarp behind it."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "pumicsea-rake",
+      "name": "Pumicsea Rake",
+      "description": "Fourteen kilometres of long hill with one gentle back and one abrupt face, like a wave about to break. Parties camp along the back of it and never under the face, because the face is where the stone comes down.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "ford-past-fumewold",
+      "name": "Ford past Fumewold",
+      "description": "Five kilometres of old river floor between the two settlements, left in shallow curved steps by water that does not run in it now. The wheat is on the steps, and a cart coming up the region climbs one low bank after another to get through it.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

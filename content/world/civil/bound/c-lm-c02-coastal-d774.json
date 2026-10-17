@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-d774",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head beneath Marlgate",
+  "bind": {
+    "handle": "c02/coastal/h-1cd774",
+    "expect": {
+      "type": "tombolo",
+      "sizeKm": [
+        0.36,
+        1.44
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A neck of sand and shingle joining an island to the shore; it drowns on the big tides.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#tombolo.gloss"
+  },
+  "resolution": null
+}

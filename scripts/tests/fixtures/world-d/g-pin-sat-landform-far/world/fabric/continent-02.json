@@ -1,0 +1,881 @@
+{
+  "continent": "c02",
+  "premise": "content/world/premises/continent-02.json",
+  "seaLevel": 0.42,
+  "cellKm": 0.5,
+  "cellCensus": {
+    "land": 640,
+    "sea": 0,
+    "lake": 0,
+    "unowned": 0
+  },
+  "ownerHistogram": {
+    "c02/r01": 320,
+    "c02/r02": 320
+  },
+  "outerRing": [
+    [
+      136,
+      158
+    ],
+    [
+      182,
+      158
+    ],
+    [
+      182,
+      186
+    ],
+    [
+      136,
+      186
+    ]
+  ],
+  "trunkRiver": {
+    "points": [
+      [
+        141,
+        160
+      ],
+      [
+        148,
+        168
+      ],
+      [
+        152,
+        175
+      ],
+      [
+        158,
+        184
+      ]
+    ],
+    "name": null
+  },
+  "regions": [
+    {
+      "id": "c02/r01",
+      "survey": "surveyed",
+      "areaKm2": 160,
+      "terrainKind": "river-country",
+      "biomeShares": {
+        "meadow": 100
+      },
+      "levelBand": [
+        1,
+        10
+      ],
+      "adjacent": [
+        "c02/r02"
+      ],
+      "settlements": [
+        "c-town-millcross"
+      ],
+      "poi": 14,
+      "rings": [
+        [
+          [
+            140,
+            160
+          ],
+          [
+            160,
+            160
+          ],
+          [
+            160,
+            180
+          ],
+          [
+            140,
+            180
+          ]
+        ]
+      ],
+      "holes": []
+    },
+    {
+      "id": "c02/r02",
+      "survey": "surveyed",
+      "areaKm2": 160,
+      "terrainKind": "bramble",
+      "biomeShares": {
+        "bramble": 100
+      },
+      "levelBand": [
+        15,
+        28
+      ],
+      "adjacent": [
+        "c02/r01"
+      ],
+      "settlements": [],
+      "poi": 12,
+      "rings": [
+        [
+          [
+            160,
+            160
+          ],
+          [
+            180,
+            160
+          ],
+          [
+            180,
+            180
+          ],
+          [
+            160,
+            180
+          ]
+        ]
+      ],
+      "holes": []
+    }
+  ],
+  "instances": [
+    {
+      "id": "lf-c02-r01-0001",
+      "type": "coastal-drowned-valley",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          137.2,
+          182.4
+        ]
+      },
+      "sizeKm": 2.4,
+      "cell": [
+        274,
+        364
+      ],
+      "handle": "c02/coastal/h-a1b2",
+      "region": "c02/r01",
+      "named": true,
+      "glyph": "g-ria",
+      "dungeonCapable": false,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "coastal",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r02-0002",
+      "type": "karst-cenote",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          166,
+          172
+        ]
+      },
+      "sizeKm": 0.31,
+      "cell": [
+        332,
+        344
+      ],
+      "handle": "c02/karst/h-0f42",
+      "region": "c02/r02",
+      "named": true,
+      "glyph": "g-cenote",
+      "dungeonCapable": true,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "karst",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r02-0003",
+      "type": "karst-cenote",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          170,
+          175
+        ]
+      },
+      "sizeKm": 0.12,
+      "cell": [
+        340,
+        350
+      ],
+      "handle": "c02/karst/h-77aa",
+      "region": "c02/r02",
+      "named": false,
+      "glyph": "g-cenote",
+      "dungeonCapable": true,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "karst",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r01-0004",
+      "type": "tidal-mire",
+      "geometry": {
+        "shape": "area",
+        "ring": [
+          [
+            142,
+            178
+          ],
+          [
+            150,
+            178
+          ],
+          [
+            150,
+            184
+          ],
+          [
+            142,
+            184
+          ]
+        ]
+      },
+      "sizeKm": 6,
+      "cell": [
+        288,
+        362
+      ],
+      "handle": "c02/wetland/h-5e10",
+      "region": "c02/r01",
+      "named": false,
+      "glyph": "g-mire",
+      "dungeonCapable": false,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "wetland",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r01-0005",
+      "type": "tidal-mire",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          144.5,
+          165.5
+        ]
+      },
+      "sizeKm": 0.9,
+      "cell": [
+        289,
+        331
+      ],
+      "handle": null,
+      "region": "c02/r01",
+      "named": false,
+      "glyph": "g-mire",
+      "dungeonCapable": false,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "wetland",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r01-0006",
+      "type": "tidal-mire",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          147,
+          168
+        ]
+      },
+      "sizeKm": 0.7,
+      "cell": [
+        294,
+        336
+      ],
+      "handle": null,
+      "region": "c02/r01",
+      "named": false,
+      "glyph": "g-mire",
+      "dungeonCapable": false,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "wetland",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r01-0007",
+      "type": "coastal-drowned-valley",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          150.5,
+          163.5
+        ]
+      },
+      "sizeKm": 1.1,
+      "cell": [
+        301,
+        327
+      ],
+      "handle": null,
+      "region": "c02/r01",
+      "named": false,
+      "glyph": "g-ria",
+      "dungeonCapable": false,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "coastal",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r01-0008",
+      "type": "coastal-drowned-valley",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          154,
+          166
+        ]
+      },
+      "sizeKm": 0.8,
+      "cell": [
+        308,
+        332
+      ],
+      "handle": null,
+      "region": "c02/r01",
+      "named": false,
+      "glyph": "g-ria",
+      "dungeonCapable": false,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "coastal",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r01-0009",
+      "type": "tidal-mire",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          156.5,
+          170.5
+        ]
+      },
+      "sizeKm": 0.6,
+      "cell": [
+        313,
+        341
+      ],
+      "handle": null,
+      "region": "c02/r01",
+      "named": false,
+      "glyph": "g-mire",
+      "dungeonCapable": false,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "wetland",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r01-0010",
+      "type": "coastal-drowned-valley",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          159,
+          173
+        ]
+      },
+      "sizeKm": 0.5,
+      "cell": [
+        318,
+        346
+      ],
+      "handle": null,
+      "region": "c02/r01",
+      "named": false,
+      "glyph": "g-ria",
+      "dungeonCapable": false,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "coastal",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r01-0011",
+      "type": "tidal-mire",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          143,
+          171
+        ]
+      },
+      "sizeKm": 0.55,
+      "cell": [
+        286,
+        342
+      ],
+      "handle": null,
+      "region": "c02/r01",
+      "named": false,
+      "glyph": "g-mire",
+      "dungeonCapable": false,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "wetland",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r01-0012",
+      "type": "coastal-drowned-valley",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          146.5,
+          174.5
+        ]
+      },
+      "sizeKm": 0.45,
+      "cell": [
+        293,
+        349
+      ],
+      "handle": null,
+      "region": "c02/r01",
+      "named": false,
+      "glyph": "g-ria",
+      "dungeonCapable": false,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "coastal",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r02-0005",
+      "type": "karst-cenote",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          162.5,
+          162.5
+        ]
+      },
+      "sizeKm": 0.22,
+      "cell": [
+        325,
+        325
+      ],
+      "handle": null,
+      "region": "c02/r02",
+      "named": false,
+      "glyph": "g-cenote",
+      "dungeonCapable": true,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "karst",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r02-0006",
+      "type": "karst-cenote",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          164,
+          166
+        ]
+      },
+      "sizeKm": 0.18,
+      "cell": [
+        328,
+        332
+      ],
+      "handle": null,
+      "region": "c02/r02",
+      "named": false,
+      "glyph": "g-cenote",
+      "dungeonCapable": true,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "karst",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r02-0007",
+      "type": "karst-cenote",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          167.5,
+          169.5
+        ]
+      },
+      "sizeKm": 0.26,
+      "cell": [
+        335,
+        339
+      ],
+      "handle": null,
+      "region": "c02/r02",
+      "named": false,
+      "glyph": "g-cenote",
+      "dungeonCapable": true,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "karst",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r02-0008",
+      "type": "karst-cenote",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          171,
+          164
+        ]
+      },
+      "sizeKm": 0.14,
+      "cell": [
+        342,
+        328
+      ],
+      "handle": null,
+      "region": "c02/r02",
+      "named": false,
+      "glyph": "g-cenote",
+      "dungeonCapable": true,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "karst",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r02-0009",
+      "type": "karst-cenote",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          174.5,
+          167.5
+        ]
+      },
+      "sizeKm": 0.3,
+      "cell": [
+        349,
+        335
+      ],
+      "handle": null,
+      "region": "c02/r02",
+      "named": false,
+      "glyph": "g-cenote",
+      "dungeonCapable": true,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "karst",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r02-0010",
+      "type": "karst-cenote",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          177,
+          171
+        ]
+      },
+      "sizeKm": 0.2,
+      "cell": [
+        354,
+        342
+      ],
+      "handle": null,
+      "region": "c02/r02",
+      "named": false,
+      "glyph": "g-cenote",
+      "dungeonCapable": true,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "karst",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r02-0011",
+      "type": "karst-cenote",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          161.5,
+          175
+        ]
+      },
+      "sizeKm": 0.16,
+      "cell": [
+        323,
+        350
+      ],
+      "handle": null,
+      "region": "c02/r02",
+      "named": false,
+      "glyph": "g-cenote",
+      "dungeonCapable": true,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "karst",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r02-0012",
+      "type": "karst-cenote",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          165,
+          177.5
+        ]
+      },
+      "sizeKm": 0.24,
+      "cell": [
+        330,
+        355
+      ],
+      "handle": null,
+      "region": "c02/r02",
+      "named": false,
+      "glyph": "g-cenote",
+      "dungeonCapable": true,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "karst",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    },
+    {
+      "id": "lf-c02-r02-0013",
+      "type": "karst-cenote",
+      "geometry": {
+        "shape": "point",
+        "at": [
+          172.5,
+          179
+        ]
+      },
+      "sizeKm": 0.28,
+      "cell": [
+        345,
+        358
+      ],
+      "handle": null,
+      "region": "c02/r02",
+      "named": false,
+      "glyph": "g-cenote",
+      "dungeonCapable": true,
+      "provenance": {
+        "authored": "generated",
+        "generator": {
+          "pass": "karst",
+          "seedStream": "landform",
+          "epoch": 0
+        },
+        "fabric": "fabric/continent-02"
+      }
+    }
+  ],
+  "settlements": [
+    {
+      "id": "c-town-millcross",
+      "title": "Millcross",
+      "rank": "hub",
+      "atKm": [
+        152.2,
+        174.6
+      ],
+      "cell": [
+        304,
+        349
+      ],
+      "region": "c02/r01",
+      "continent": "c02",
+      "score": 0.71
+    }
+  ],
+  "roads": [],
+  "dungeonAnchors": [
+    {
+      "handle": "c02/karst/h-0f42",
+      "region": "c02/r02",
+      "hopsToSettlement": 1
+    },
+    {
+      "handle": "c02/coastal/h-a1b2",
+      "region": "c02/r01",
+      "hopsToSettlement": 0
+    },
+    {
+      "handle": "c02/karst/h-77aa",
+      "continent": "c02",
+      "region": "c02/r02",
+      "entranceType": "karst-cenote",
+      "hopsToSettlement": 1
+    }
+  ],
+  "pinReceipts": [
+    {
+      "id": "c-town-millcross",
+      "at": [
+        152.2,
+        174.6
+      ],
+      "cell": [
+        304,
+        349
+      ],
+      "continent": "c02",
+      "region": "c02/r01",
+      "measured": {
+        "landform": "river-terrace",
+        "waterKind": "river",
+        "shelterFetchKm": 0,
+        "depthM": 0,
+        "slope": 0.02,
+        "freshWaterWithinKm": 0.1,
+        "biome": "meadow",
+        "elevationM": 40,
+        "landformNearId": null,
+        "landformNearHandle": null,
+        "landformNearDistanceKm": null,
+        "nearestSeaKm": null,
+        "nearestRiverKm": 0,
+        "nearestLakeKm": null
+      }
+    },
+    {
+      "id": "c-town-gildmark",
+      "at": [
+        137.2,
+        182.4
+      ],
+      "cell": [
+        274,
+        364
+      ],
+      "continent": "c02",
+      "region": "c02/r01",
+      "measured": {
+        "landform": "coastal-drowned-valley",
+        "waterKind": "sea",
+        "shelterFetchKm": 9,
+        "depthM": 18,
+        "slope": 0.03,
+        "freshWaterWithinKm": 1.8,
+        "biome": "meadow",
+        "elevationM": 6,
+        "landformNearId": null,
+        "landformNearHandle": null,
+        "landformNearDistanceKm": 41.7,
+        "nearestSeaKm": 0,
+        "nearestRiverKm": 1.8,
+        "nearestLakeKm": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-1d60",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ford off Frostspar",
+  "bind": {
+    "handle": "c03/fluvial/h-b81d60",
+    "expect": {
+      "type": "anabranch-island",
+      "sizeKm": [
+        0.79,
+        2.5
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wooded island the river has split around and not yet decided to take back.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#anabranch-island.gloss"
+  },
+  "resolution": null
+}

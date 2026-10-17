@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-2e75",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Kellbourne Race",
+  "bind": {
+    "handle": "c02/fluvial/h-b62e75",
+    "expect": {
+      "type": "anabranch-island",
+      "sizeKm": [
+        0.38,
+        1.52
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wooded island the river has split around and not yet decided to take back.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#anabranch-island.gloss"
+  },
+  "resolution": null
+}

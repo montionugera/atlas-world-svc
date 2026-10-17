@@ -1,0 +1,38 @@
+{
+  "id": "c-town-netstead",
+  "kind": "town",
+  "tier": "pinned",
+  "title": "Netstead",
+  "settlementRank": "capital",
+  "pin": {
+    "at": [
+      274,
+      262
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §2: the other charted lane terminus, on the drowned karst coast. plan: null per E-C9, same census argument as Gildmark"
+  },
+  "requires": {
+    "continent": "c04",
+    "landform": "coastal-drowned-valley",
+    "water": {
+      "kind": "sea",
+      "shelterFetchKmMax": 15,
+      "minDepthM": 12
+    },
+    "slopeMax": 0.06,
+    "freshWaterWithinKm": 4
+  },
+  "properties": [
+    "reported-port"
+  ],
+  "coasts": [
+    "stonemoor-north"
+  ],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

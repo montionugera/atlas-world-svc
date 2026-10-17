@@ -65,6 +65,7 @@ test("--check exits 1 when CONTENT_ROOT's story content has drifted from the com
     summary: "Only exists to prove the drift gate goes red.",
     dangerTier: "safe",
     links: [],
+    spineId: "n-drift-test",
   });
   writeFileSync(regionsPath, JSON.stringify(regions, null, 2));
 

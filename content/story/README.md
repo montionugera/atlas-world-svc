@@ -246,14 +246,14 @@ node scripts/gen_story_graph.mjs --check
 cd scripts && node --test tests/*.test.mjs
 
 # Explorer smoke test: graph.mjs is the pure buildGraph() shared by
-# tools/story-explorer/index.html and this test — run from the repo root
+# atelier/story-explorer/index.html and this test — run from the repo root
 # (not from scripts/).
-cd .. && node --test tools/story-explorer/tests/*.test.mjs
+cd .. && node --test atelier/story-explorer/tests/*.test.mjs
 
 # Interactive explorer: serve the repo root (the page fetches
 # ../../content/story/*.json relative to itself) and open it in a browser.
 python3 -m http.server 7788 --bind 127.0.0.1
-# then open http://127.0.0.1:7788/tools/story-explorer/index.html
+# then open http://127.0.0.1:7788/atelier/story-explorer/index.html
 ```
 
 `node scripts/check_content.mjs` is what CI runs today (without
@@ -306,7 +306,7 @@ This is the loop a prompt-to-epic agent (or a human) should follow, matching
    promote via PR + green CI) like any other feature.
 
 The **coherence gate is the automated reviewer** in this loop; the static
-graph and the interactive explorer (`tools/story-explorer/index.html`) are the
+graph and the interactive explorer (`atelier/story-explorer/index.html`) are the
 human/agent visual check — use both, they catch different kinds of mistakes
 (the gate catches broken references and structural gaps; the visualizers
 catch narrative shape mistakes a passing gate can't see, like an arc that's

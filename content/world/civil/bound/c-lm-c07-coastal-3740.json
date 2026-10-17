@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c07-coastal-3740",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head among Aldereyot",
+  "bind": {
+    "handle": "c07/coastal/h-523740",
+    "expect": {
+      "type": "spit",
+      "sizeKm": [
+        2.51,
+        6
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A finger of shingle the drift keeps building out across open water, growing every year.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#spit.gloss"
+  },
+  "resolution": null
+}

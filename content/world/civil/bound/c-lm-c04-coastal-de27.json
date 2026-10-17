@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-coastal-de27",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Flagfell Stack",
+  "bind": {
+    "handle": "c04/coastal/h-2cde27",
+    "expect": {
+      "type": "sea-waterfall",
+      "sizeKm": [
+        0.03,
+        0.1
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A stream that runs off the cliff lip and never reaches a beach, because there is none.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sea-waterfall.gloss"
+  },
+  "resolution": null
+}

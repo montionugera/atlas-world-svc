@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-2f3d",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Embercross Carr",
+  "bind": {
+    "handle": "c02/wetland/h-ad2f3d",
+    "expect": {
+      "type": "wet-meadow",
+      "sizeKm": [
+        0.63,
+        2.5
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Grass that stays green all summer because the water is never far under it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#wet-meadow.gloss"
+  },
+  "resolution": null
+}

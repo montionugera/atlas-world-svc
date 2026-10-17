@@ -176,10 +176,10 @@
     "id": "quest-letters-already-opened",
     "kind": "quest",
     "title": "Letters Already Opened",
-    "summary": "Carry the week's mail in from the relay post, seals and all.",
+    "summary": "Carry the week's mail in from the post house, seals and all.",
     "narrative": {
       "description": "Three letters came up the coastal road this week, same as always, and all three arrived with their seals broken and pressed shut again. The Speaker reads them anyway. She stopped mentioning it to anyone but the courier a while back. Now she's mentioning it to you.",
-      "offerText": "Walk the relay road, bring the mail in, and kill anything that attacks the escort.",
+      "offerText": "Walk the post road, bring the mail in, and kill anything that attacks the escort.",
       "completeText": "The letters are on her desk, same as every week. She didn't ask who broke the seals this time either. She just reads what's left to read."
     },
     "giver": "char-speaker-of-norhollow",
@@ -387,9 +387,9 @@
     "title": "The Bell-Keeper's Price",
     "summary": "Free the Bell-Keeper's daughter, and find out what he's been trading for her safety.",
     "narrative": {
-      "description": "The ledger names an office, never a man. Warden Bright has found the man anyway — under the bell tower, the Bell-Keeper keeps a daughter closer than any daughter should be kept, and the Council keeps her closer still. Get her out, and he might finally ring something true.",
-      "offerText": "Get into the tower district. Find where Mirelle is kept. Bring her out before the Council notices the door's open.",
-      "completeText": "Mirelle came out from under the tower into open air and didn't say much for the first mile. Behind you, the assembly bell rang, and for the first time in years, the proclamation read out beneath it was the true one."
+      "description": "The ledger names an office, never a man. Warden Bright has found the man anyway — under the belfry, the Bell-Keeper keeps a daughter closer than any daughter should be kept, and the Council keeps her closer still. Get her out, and he might finally ring something true.",
+      "offerText": "Get into the belfry quarter. Find where Mirelle is kept. Bring her out before the Council notices the door's open.",
+      "completeText": "Mirelle came out from under the belfry into open air and didn't say much for the first mile. Behind you, the assembly bell rang, and for the first time in years, the proclamation read out beneath it was the true one."
     },
     "giver": "char-warden-bright",
     "region": "region-gildmark",
@@ -414,7 +414,7 @@
     "title": "Ash in the Streets",
     "summary": "The bells rang true, and the Widow's answer is fire in Millcross's streets.",
     "narrative": {
-      "description": "The proclamation reached every tower by midday, and by evening the Widow's people are burning it in the streets — and burning the ones who carried it. The refugee tents at the crossroads sit dead in the mob's path. The Quartermaster isn't asking anyone to be brave. She's asking them to stand between the tents and the fire.",
+      "description": "The proclamation reached every belfry by midday, and by evening the Widow's people are burning it in the streets — and burning the ones who carried it. The refugee tents at the crossroads sit dead in the mob's path. The Quartermaster isn't asking anyone to be brave. She's asking them to stand between the tents and the fire.",
       "offerText": "Hold the crossroads. Keep the mob off the tents until the last refugee is clear.",
       "completeText": "The tents held. The Quartermaster didn't."
     },
@@ -466,7 +466,7 @@
     "title": "The Brink",
     "summary": "The relic sale closes at high tide tonight, or it doesn't close at all.",
     "narrative": {
-      "description": "The deal is struck; Warden Bright has the schedule anyway, pulled from inside the Council's own tower. One route, one warehouse, one tide window before the crate is aboard a Gildmark ship and past anyone's reach. The Iron Regent's men move at dusk.",
+      "description": "The deal is struck; Warden Bright has the schedule anyway, pulled from inside the Council's own belfry. One route, one warehouse, one tide window before the crate is aboard a Gildmark ship and past anyone's reach. The Iron Regent's men move at dusk.",
       "offerText": "Get to the harbor warehouse before the tide turns. Stop the crate before it touches the water.",
       "completeText": "The crate never touches the water. Nobody's calling it won — the Iron Regent's men walk off the dock still standing, and so does he."
     },
@@ -493,8 +493,8 @@
     "title": "The Broker's Ledger",
     "summary": "A stopped crate isn't proof. The ledger still only names an office, and someone has to make it name a man.",
     "narrative": {
-      "description": "The crate never sailed, but the ledger still says 'the Council,' the way it always has — every hand left in the tower answers to someone the Broker pays. The Elder of Rooktide came to Gildmark to beg harbor passage for wounded that her town hasn't taken in yet, and finds herself holding the one page that names a man instead of an office. Nobody in Gildmark can buy an outsider who wants nothing from them.",
-      "offerText": "Get the ledger page out of the tower and into the harbor square, where it can be read aloud before anyone seals it shut again.",
+      "description": "The crate never sailed, but the ledger still says 'the Council,' the way it always has — every hand left in the belfry answers to someone the Broker pays. The Elder of Rooktide came to Gildmark to beg harbor passage for wounded that her town hasn't taken in yet, and finds herself holding the one page that names a man instead of an office. Nobody in Gildmark can buy an outsider who wants nothing from them.",
+      "offerText": "Get the ledger page out of the belfry and into the harbor square, where it can be read aloud before anyone seals it shut again.",
       "completeText": "The page reaches the square. It doesn't name the Council. It names a man."
     },
     "giver": "char-elder-of-rooktide",

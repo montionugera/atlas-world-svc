@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-9004",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Mire over Weldtide",
+  "bind": {
+    "handle": "c02/wetland/h-219004",
+    "expect": {
+      "type": "wet-meadow",
+      "sizeKm": [
+        1.64,
+        6.56
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Grass that stays green all summer because the water is never far under it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#wet-meadow.gloss"
+  },
+  "resolution": null
+}

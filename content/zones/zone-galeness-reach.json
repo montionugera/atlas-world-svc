@@ -1,0 +1,48 @@
+{
+  "zone": "galeness-reach",
+  "region": "c03/r12",
+  "survey": "surveyed",
+  "reasonToGo": "Wood grows on the seaward side of a drowned valley here and there is no way to take a log out of it but on foot, so anyone who needs a plank, a shaft or a mast walks in and out again inside one tide.",
+  "hazards": [
+    {
+      "id": "the-drowned-crossing",
+      "name": "The drowned crossing",
+      "description": "The valley the wood stands over is sea to its head and fills faster than a man carrying a log walks. The drownings here are all on the way out, never on the way in.",
+      "effect": "damage"
+    },
+    {
+      "id": "no-side-off-the-cut",
+      "name": "No side off the cut",
+      "description": "The inland route runs the whole length of a steep-walled cut with nothing off it — no bench, no shelf, no bank a body can get up onto — so a party that meets water coming down has only the way it came.",
+      "note": "Absence hazard: the harm is the way out that is not there. Nothing in the runtime enum expresses a route with no exit."
+    }
+  ],
+  "resources": [
+    {
+      "id": "valley-timber",
+      "name": "Valley timber",
+      "kind": "timber",
+      "description": "Cut on the seaward side of the drowned valley and rafted across at slack water, because the way round the head of it is three days with a log on your shoulder."
+    },
+    {
+      "id": "headland-greens",
+      "name": "Headland greens",
+      "kind": "forage",
+      "description": "Meadow growth taken off the open headland from thaw to frost, and the reason a cutting party feeds itself off the ground instead of out of the villages' stores."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "haulsound-stack",
+      "name": "Haulsound Stack",
+      "description": "A rib of rock left standing offshore on its own legs. Kept square off the bow it brings a raft in on the right side of the flats; let it drift and the flats have the raft.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "ford-past-cairnbreak",
+      "name": "Ford past Cairnbreak",
+      "description": "The one crossing on the river above the wood, hard-bottomed and shallow in the season the timber comes down — which is the only season anyone is here to walk it.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

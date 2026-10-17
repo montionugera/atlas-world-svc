@@ -1,0 +1,32 @@
+{
+  "id": "dungeon-coldreach-arete-shelters",
+  "title": "Coldreach Arete Shelters",
+  "family": null,
+  "bind": {
+    "handle": "c05/fluvial/h-b76d57"
+  },
+  "entranceType": "knickpoint-gorge",
+  "floors": 2,
+  "levelBand": [
+    32,
+    50
+  ],
+  "hazards": [
+    "cold",
+    "silence"
+  ],
+  "roomCountCurve": [
+    8,
+    10
+  ],
+  "lore": {
+    "note": "Shelter caves along the arete, walled with drift bone by climbers who did not all come back.",
+    "source": "content/world/premises/continent-03.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

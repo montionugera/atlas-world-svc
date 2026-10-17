@@ -1,0 +1,29 @@
+{
+  "id": "c-lm-skerryfast-fjord",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Skerryfast Fjord",
+  "pin": {
+    "at": [
+      254,
+      44
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §11: drowned glacial valleys — fjord, skerry, roche moutonnee"
+  },
+  "requires": {
+    "continent": "c12",
+    "landform": "fjord",
+    "water": {
+      "kind": "sea"
+    }
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

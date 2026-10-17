@@ -1,0 +1,23 @@
+{
+  "id": "n-r2",
+  "tier": "region",
+  "parentId": "n-c",
+  "title": "W",
+  "provenance": { "authored": "hand", "generator": null, "source": "fixture" },
+  "frozen": false,
+  "seed": { "value": "a1b2c3d4e5f60789", "epoch": 0, "why": null },
+  "placement": { "shape": "polygon", "points": [[60, 60], [80, 60], [80, 80], [60, 80]], "anchor": [70, 70] },
+  "interior": { "units": "km", "perParentUnit": 1 },
+  "composition": { "meadow": 100 },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": { "mapIds": [], "originU": null, "spawnAreas": [], "mobSettings": null, "seedDemoNPCs": false, "collision": "none" },
+  "representsNodeId": null,
+  "lore": {},
+  "tags": [],
+  "levelBand": null
+}

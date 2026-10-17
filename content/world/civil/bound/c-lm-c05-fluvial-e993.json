@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-fluvial-e993",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Duneflat Confluence",
+  "bind": {
+    "handle": "c05/fluvial/h-07e993",
+    "expect": {
+      "type": "anabranch-island",
+      "sizeKm": [
+        1.13,
+        2.5
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wooded island the river has split around and not yet decided to take back.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#anabranch-island.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,26 @@
+{
+  "id": "c-lm-expedition-camp",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Expedition Camp",
+  "pin": {
+    "at": [
+      100.6,
+      149.4
+    ],
+    "toleranceKm": 1.5,
+    "why": "canon §4: Millcross's expedition camp, on the road north to the icefield"
+  },
+  "requires": {
+    "continent": "c02",
+    "landform": "confluence-bench"
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

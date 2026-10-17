@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-0bd7",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Wainhollow Confluence",
+  "bind": {
+    "handle": "c02/fluvial/h-be0bd7",
+    "expect": {
+      "type": "braided-channel",
+      "sizeKm": [
+        1.59,
+        6.36
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wide bed of gravel bars where the river runs in a dozen shallow threads at once.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#braided-channel.gloss"
+  },
+  "resolution": null
+}

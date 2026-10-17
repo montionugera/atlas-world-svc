@@ -14,6 +14,21 @@
 // --require-complete" test below); Task 7 (act 5 — the undertow) closes the
 // last 3, so that test now pins a clean --require-complete pass again, ahead
 // of Undertow Task 9 (final coherence pass), which has no orphans left to do.
+//
+// F-043 update: story orphans are STILL all closed (this file's invariant),
+// but --require-complete stopped exiting 0 again for an unrelated reason —
+// F-043's promotion seeded 4 continents with no region children yet, and
+// that trips the SPINE completeness gate, not the story one. See the test
+// below for the exact pin.
+//
+// F-043 gate amendment (this commit): those 4 continents
+// (n-brightfall, n-driftholt, n-reedstrand, n-rimewall-cap) are mariners'
+// chart entries (`lore.reported: true`) — unsurveyed by spec, so childless is
+// correct, not an outstanding gap. checkSpineComplete now recognizes
+// lore.reported and steps a childless trunk-tier node down from FAIL to WARN
+// instead of erroring. The gate is green again; the test below now pins a
+// clean exit 0 with zero FAILs, and pins the 4 new WARN lines by exact text
+// so the reported-childless state stays covered.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -38,10 +53,19 @@ function run(scriptRelPath, args = []) {
   }
 }
 
-test("content gate is green on the real tree (no --require-complete)", () => {
+test("content gate on the real tree: zero failures — Task 9/14 re-homed the zone/town orphans, R-B closed the last one", () => {
+  // Plan D Task 11 cutover: content/world/resolved/ is the gate's only
+  // geography source, so the ten legacy zone records, the bestiary placement
+  // and the town plan orphaned LOUDLY until re-homed. Task 9/14 re-homed the
+  // zone and town records; R-B (owner ruling, 2026-08-29) closed the last
+  // one, bestiary/placement-thornveil.json's un-re-homable join, as a
+  // committed exemption (WARN) rather than a silenced FAIL. Any FAIL line at
+  // all is a regression this test still catches.
   const { status, output } = run("scripts/check_content.mjs");
-  assert.equal(status, 0, `expected exit 0, got ${status}:\n${output}`);
-  assert.match(output, /0 failures/);
+  assert.equal(status, 0, output);
+  const fails = output.split("\n").filter((l) => l.startsWith("FAIL "));
+  assert.deepEqual(fails, [], `expected zero failures:\n${fails.join("\n")}`);
+  assert.match(output, /[1-9]\d* nodes/);
 });
 
 // F-016 (Undertow) Task 2 deliberately reintroduces orphans: the plan's
@@ -82,10 +106,38 @@ test("content gate is green on the real tree (no --require-complete)", () => {
 // schedule — Task 9's "final coherence pass" no longer has any orphan left to
 // sweep, so this test now pins a clean --require-complete pass instead of an
 // expected mid-epic orphan set.
-test("content gate --require-complete: no orphans remain after Undertow Task 7", () => {
+// F-043 ("the wider world", commit 415a765) panel-promoted 4 new continents
+// (n-brightfall, n-driftholt, n-reedstrand, n-rimewall-cap) that have no
+// region children yet (they were seeded and hand-polished by the naming/
+// canon/systems panel, but tiling their interiors is out of scope for this
+// promotion). checkSpineComplete's TRUNK_TIERS rule ("a continent may not be
+// empty") escalates that from a WARN to a FAIL under --require-complete, so
+// the gate no longer exits 0 — the STORY-orphan invariant this test exists
+// to protect is untouched (still 0 orphan lines); the new exit code comes
+// entirely from spine-completeness, a different gate. Pinned by exact FAIL
+// count and exact text so a real regression (a 5th failure, a changed id, or
+// a re-opened orphan) still fails this test loudly.
+test("content gate --require-complete: zero failures; no continent is incomplete", () => {
+  // Plan D Task 11: same orphan window as above, now closed the same way —
+  // pin that no failure (of any shape) has joined it.
   const { status, output } = run("scripts/check_content.mjs", ["--require-complete"]);
-  assert.equal(status, 0, `expected exit 0 (all orphans closed by Undertow Task 7), got ${status}:\n${output}`);
-  assert.match(output, /0 failures/);
+  assert.equal(status, 0, output);
+  assert.doesNotMatch(output, /^FAIL /m);
+  // PLAN E (E-C3): F-043's four "childless by design" WARNs are GONE, and that
+  // is the constraint working rather than a rule going quiet. Post-redraw all
+  // 13 continents are childless — their regions are fabric rows, not nodes —
+  // and checkSpineComplete now settles a continent through its
+  // provenance.generator.fabric pin instead. So the assertion is inverted with
+  // its reason attached: NO continent may appear in a completeness line at all.
+  // Because a `doesNotMatch` passes just as happily when the rule is deleted,
+  // the two surviving region WARNs are asserted positively beside it — they are
+  // the proof G-SPINE-COMPLETE still runs and still prints. Those two are
+  // n-thornveil and n-northern-icefield, the only region NODES E-C4 keeps.
+  const completeness = output.split("\n").filter((l) => l.includes("G-SPINE-COMPLETE"));
+  assert.deepEqual(completeness.filter((l) => l.includes("(tier continent)")), [],
+    `a continent lost its fabric-pin completeness:\n${completeness.join("\n")}`);
+  assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-thornveil" \(tier region\) has no children yet/);
+  assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-northern-icefield" \(tier region\) has no children yet/);
   assert.doesNotMatch(output, /character ".*" is referenced by no quest, faction, event, or dialogue \(orphan\)/);
   assert.doesNotMatch(output, /faction ".*" is referenced by no quest, character, or event \(orphan\)/);
 });

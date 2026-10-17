@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-9b55",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Millstead Roads",
+  "bind": {
+    "handle": "c02/coastal/h-fc9b55",
+    "expect": {
+      "type": "sea-cave",
+      "sizeKm": [
+        0.07,
+        0.26
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A dark mouth in the cliff foot that the tide fills twice a day and empties again.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sea-cave.gloss"
+  },
+  "resolution": null
+}

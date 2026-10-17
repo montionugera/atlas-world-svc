@@ -1,0 +1,54 @@
+{
+  "zone": "siroccvent-reach",
+  "region": "c05/r17",
+  "survey": "surveyed",
+  "reasonToGo": "Three of Thirstwold's four roads meet at the village on this ground, and it is the only settlement on the landmass with three roads to it: of the other four, one has two and three have one apiece. What holds the junction together is the silt — the floods lay a levee down below the spring, and the grain grown on it is sold to everybody who has to pass through here to get anywhere. Behind the village the cut ground gives ore, and the sand on the far side gives back what it took off the old line of the road.",
+  "hazards": [
+    {
+      "id": "the-cut-ground",
+      "name": "The cut ground",
+      "description": "Better than a third of this region is badland, which is not hills but the gullies between them, cut fresh by every runoff and undercut at the foot. The rib a party walks along to keep out of the gullies is the rib that goes down into one.",
+      "effect": "damage"
+    },
+    {
+      "id": "the-brine-under-the-crust",
+      "name": "The brine under the crust",
+      "description": "The salt flat sits with its water table just under the crust, and the water anywhere near it comes up brine however clear it looks. A party that fills below the flat instead of at the spring is sick for a week and cannot work for two.",
+      "effect": "poison"
+    }
+  ],
+  "resources": [
+    {
+      "id": "levee-grain",
+      "name": "Levee grain",
+      "kind": "crop",
+      "description": "Sown on the bank the floods build out of what they drop first, and reaped in the weeks the crossing is down. It is the junction's whole reason for standing where it does: every road that meets here is a road that has to buy grain somewhere."
+    },
+    {
+      "id": "gully-ore",
+      "name": "Gully ore",
+      "kind": "ore",
+      "description": "Prised out of the badland faces the runoff has already opened, so the work is following last season's cut rather than making one. Nothing here is dug from a shaft and nothing is dug in the wet."
+    },
+    {
+      "id": "old-line-salvage",
+      "name": "Old-line salvage",
+      "kind": "salvage",
+      "description": "The road into the junction has been cut and re-cut, and the sand has the abandoned lines of it. What comes off them is cart iron, harness and dropped load, worked over by every party that has time to spare at the village."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "fumeflat-yardang",
+      "name": "Fumeflat Yardang",
+      "description": "Six kilometres of dry lake bed cracked to a tile pattern, hard enough to cart straight over for most of the year and bottomless for the weeks it is not. The junction's traffic uses it as a road whenever it will carry a wheel.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "ford-past-sabkhpan",
+      "name": "Ford past Sabkhpan",
+      "description": "The gravel shallow the whole junction exists for, and the only crossing the region carries: two hundred metres of bed wide enough to spread a train across, with all three roads coming down to it.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c03",
+  "title": "Coldreach",
+  "class": "major",
+  "footprint": {
+    "centreKm": [286,112],
+    "radiiKm": [67.86,62.64],
+    "warpKm": 17
+  },
+  "areaBandKm2": [9900,12100],
+  "coastClass": "ridge-and-fjord",
+  "palette": ["upland","forest","tundra","rock","scree","river","meadow"],
+  "landformKit": ["mountain","glacial","fluvial","coastal"],
+  "structuralIdea": "one unbroken spine ridge end to end, casting a hard rain shadow that dries the lee third",
+  "structures": [
+    {
+      "kind": "spine-ridge",
+      "fromKm": [231.19,59.8],
+      "toKm": [338.2,166.81],
+      "amplitude": 0.6
+    }
+  ],
+  "register": "north-log",
+  "levelBand": [24,64]
+}

@@ -81,6 +81,23 @@ namespace AtlasWorld.Client.UI
             public static readonly Color Danger = Palette.Danger;
             public static readonly Color OnDanger = Palette.Navy900;
             public static readonly Color Success = Palette.Success;
+
+            // Mobile HUD & Resources
+            public static readonly Color HpFill = Palette.Success;
+            public static readonly Color SpFill = Palette.Info;
+            public static readonly Color ExpFill = Palette.Warn;
+
+            // Mobile Touch Controls
+            public static Color JoystickBase => new Color(Palette.Navy900, 0.60f);
+            public static readonly Color JoystickBorder = Palette.Bronze500;
+            public static readonly Color JoystickHandle = Palette.Gold500;
+            public static Color SkillButtonBase => new Color(Palette.Navy700, 0.85f);
+            public static readonly Color SkillButtonBorder = Palette.Gold500;
+            public static readonly Color SkillButtonPrimary = Palette.Bronze500;
+
+            // Mobile Modals & Chat
+            public static Color ModalOverlayBg => new Color(Palette.Navy900, 0.85f);
+            public static Color ChatTickerBg => new Color(Palette.Navy900, 0.72f);
         }
 
         // ---- Spacing (4px base) --------------------------------------------------------
@@ -128,6 +145,13 @@ namespace AtlasWorld.Client.UI
             // Panel variants (base type "PanelContainer").
             public const string Card = "Card";
             public const string Well = "Well";
+            public const string ModalDialog = "ModalDialog";
+            public const string ChatTicker = "ChatTicker";
+            public const string ItemCard = "ItemCard";
+
+            // ProgressBar variants (base type "ProgressBar").
+            public const string HpBar = "HpBar";
+            public const string SpBar = "SpBar";
 
             // Label variants (base type "Label").
             public const string Display = "Display";

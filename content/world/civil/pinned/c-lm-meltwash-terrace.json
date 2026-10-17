@@ -1,0 +1,29 @@
+{
+  "id": "c-lm-meltwash-terrace",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Meltwash Terrace",
+  "pin": {
+    "at": [
+      101.8,
+      147
+    ],
+    "toleranceKm": 1.5,
+    "why": "A1 §4.2: the last drained ground before the crossing"
+  },
+  "requires": {
+    "continent": "c02",
+    "landform": "river-terrace",
+    "water": {
+      "kind": "river"
+    }
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

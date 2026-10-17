@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-coastal-7ef5",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Reedstrand Roads",
+  "bind": {
+    "handle": "c06/coastal/h-387ef5",
+    "expect": {
+      "type": "baymouth-bar",
+      "sizeKm": [
+        1.58,
+        4
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A bank of sand grown right across a bay mouth, shutting the water in behind it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#baymouth-bar.gloss"
+  },
+  "resolution": null
+}

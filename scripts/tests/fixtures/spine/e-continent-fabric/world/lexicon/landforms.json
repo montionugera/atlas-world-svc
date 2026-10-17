@@ -1,0 +1,10 @@
+[
+  {
+    "id": "tor",
+    "geometry": "point",
+    "biomes": [
+      "rock"
+    ],
+    "dungeonCapable": false
+  }
+]

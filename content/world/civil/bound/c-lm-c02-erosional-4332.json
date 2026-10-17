@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-erosional-4332",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Bramgate Undercut",
+  "bind": {
+    "handle": "c02/erosional/h-704332",
+    "expect": {
+      "type": "inselberg",
+      "sizeKm": [
+        0.6,
+        2.38
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A lone dome of hard rock standing out of the plain, visible a day's walk away.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#inselberg.gloss"
+  },
+  "resolution": null
+}

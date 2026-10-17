@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-a82e",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Haulspar Reach",
+  "bind": {
+    "handle": "c03/fluvial/h-b5a82e",
+    "expect": {
+      "type": "oxbow-lake",
+      "sizeKm": [
+        0.07,
+        0.26
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A cut-off loop of river left standing on its own, going quietly green at the edges.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#oxbow-lake.gloss"
+  },
+  "resolution": null
+}

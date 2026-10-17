@@ -1,0 +1,100 @@
+{
+  "id": "n-wracklow",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "Wracklow",
+  "provenance": {
+    "authored": "generated",
+    "generator": {
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/continent-08.json"
+    },
+    "source": "content/world/premises/continent-08.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "1f070bd142f87a3d",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [213.5, 332.5],
+      [214, 332.5],
+      [214, 332],
+      [218, 327.5],
+      [219, 327.5],
+      [220.5, 325.5],
+      [221.5, 325.5],
+      [222.5, 324],
+      [223.5, 324],
+      [224, 323],
+      [225.5, 322.5],
+      [226, 322.5],
+      [226, 322],
+      [226.5, 322],
+      [227, 322],
+      [227, 321.5],
+      [228, 321.5],
+      [228, 321],
+      [235, 318.5],
+      [242.5, 317],
+      [258.5, 316.5],
+      [267.5, 319],
+      [272.5, 321.5],
+      [282, 329],
+      [282, 330],
+      [285, 333],
+      [286, 336.5],
+      [287, 337.5],
+      [288, 347.5],
+      [285.5, 354.5],
+      [279.5, 361.5],
+      [278.5, 361.5],
+      [278, 362.5],
+      [273.5, 365],
+      [269, 366.5],
+      [259.5, 368],
+      [252.5, 368],
+      [244, 366.5],
+      [229, 360],
+      [228.5, 359],
+      [226.5, 358.5],
+      [223, 355.5],
+      [222, 355.5],
+      [217.5, 351],
+      [217.5, 350],
+      [214, 346],
+      [212, 340.5],
+      [212, 336.5]
+    ],
+    "anchor": [252.75, 342.25]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [76, 51.5],
+    "originInParent": [212, 316.5]
+  },
+  "composition": {
+    "meadow": 81,
+    "reef": 11,
+    "bramble": 8
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": null,
+  "features": [],
+  "bands": [],
+  "runtime": null,
+  "representsNodeId": null,
+  "lore": {
+    "summary": "an entirely erosional coast — stacks, arches, geos, blowholes; no river reaches the sea intact"
+  },
+  "tags": [],
+  "levelBand": [20, 52]
+}

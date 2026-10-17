@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-58f4",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Mire over Marlrow",
+  "bind": {
+    "handle": "c02/wetland/h-ea58f4",
+    "expect": {
+      "type": "peat-hag",
+      "sizeKm": [
+        0.09,
+        0.36
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A ragged bank of bare peat where the surface tore open and started washing away.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#peat-hag.gloss"
+  },
+  "resolution": null
+}

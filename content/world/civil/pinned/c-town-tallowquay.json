@@ -1,0 +1,38 @@
+{
+  "id": "c-town-tallowquay",
+  "kind": "town",
+  "tier": "pinned",
+  "title": "Tallowquay",
+  "settlementRank": "capital",
+  "pin": {
+    "at": [
+      252,
+      128
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §2: one of the two charted foreign lane termini — capital tier costs zero new canon. plan: null per E-C9, same census argument as Gildmark"
+  },
+  "requires": {
+    "continent": "c03",
+    "landform": "coastal-drowned-valley",
+    "water": {
+      "kind": "sea",
+      "shelterFetchKmMax": 15,
+      "minDepthM": 12
+    },
+    "slopeMax": 0.06,
+    "freshWaterWithinKm": 4
+  },
+  "properties": [
+    "lane-terminus"
+  ],
+  "coasts": [
+    "coldreach-north"
+  ],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

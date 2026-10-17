@@ -411,8 +411,8 @@ is re-derived from <code>content/zones/</code> after any hazard edit, never copi
   about routing that the land's own water contradicts. The zone with no through-stream is the zone
   whose water is worth carrying.
 - **That Millcross, being the hub, is closest to the sea.** Every road passes through it and it is
-  still **4–5 days** from the port, while a town on a side spur is **3** (A1 §5.1). The carters know
-  the day-counts and still say the hub is nearest, because the hub is where they turn around.
+  still **2.5 h** from the port, while a town on a side spur is **1.5 h** (A1 §5.1). The carters know
+  the travel times and still say the hub is nearest, because the hub is where they turn around.
 
 ---
 

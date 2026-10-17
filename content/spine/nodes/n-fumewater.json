@@ -1,0 +1,86 @@
+{
+  "id": "n-fumewater",
+  "tier": "sea",
+  "parentId": "n-tarnmark",
+  "title": "Fumewater",
+  "provenance": {
+    "authored": "generated",
+    "generator": {
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/world.json"
+    },
+    "source": "content/world/manifest.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "be956fb2e155f33e",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [335, 39.5],
+      [329.5, 33.5],
+      [330, 33.5],
+      [350.5, 12.5],
+      [355, 8.5],
+      [355, 8],
+      [377.5, 8],
+      [391.5, 22.5],
+      [392, 22.5],
+      [392, 45],
+      [390.5, 46],
+      [390.5, 46.5],
+      [389.5, 46.5],
+      [366.5, 70],
+      [366, 70],
+      [364, 67.5],
+      [363.5, 67.5],
+      [363.5, 60],
+      [363, 60],
+      [362.5, 57],
+      [362, 57],
+      [362, 56],
+      [361.5, 56],
+      [361.5, 55],
+      [361, 55],
+      [361, 54],
+      [349, 42.5],
+      [349, 42],
+      [348, 42],
+      [347.5, 41],
+      [345.5, 40.5],
+      [345.5, 40],
+      [342, 39.5],
+      [342, 39],
+      [335.5, 39],
+      [335.5, 39.5]
+    ],
+    "anchor": [366.25, 33.75]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [62.5, 62],
+    "originInParent": [329.5, 8]
+  },
+  "composition": {
+    "ocean": 100
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": null,
+  "features": [],
+  "bands": [],
+  "runtime": null,
+  "representsNodeId": null,
+  "lore": {
+    "summary": null
+  },
+  "tags": [],
+  "levelBand": null
+}

@@ -1,0 +1,26 @@
+{
+  "id": "c-lm-reedstrand-lobes",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Reedstrand Lobes",
+  "pin": {
+    "at": [
+      70,
+      268
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §5: a bird's-foot delta with no bedrock — every region is a lobe"
+  },
+  "requires": {
+    "continent": "c06",
+    "landform": "delta-lobe-marsh"
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

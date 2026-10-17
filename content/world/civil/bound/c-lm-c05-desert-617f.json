@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-617f",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Barchanwaste Yardang",
+  "bind": {
+    "handle": "c05/desert/h-c1617f",
+    "expect": {
+      "type": "sand-sheet",
+      "sizeKm": [
+        5.82,
+        23.28
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Flat wind-laid sand with no dunes at all: easy going, and the same in every direction.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sand-sheet.gloss"
+  },
+  "resolution": null
+}

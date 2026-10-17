@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-fluvial-a23b",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Regwold Confluence",
+  "bind": {
+    "handle": "c05/fluvial/h-7aa23b",
+    "expect": {
+      "type": "alluvial-fan",
+      "sizeKm": [
+        1.6,
+        6.4
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A spread of stone and grit laid out where a steep stream hits the flat and slows.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#alluvial-fan.gloss"
+  },
+  "resolution": null
+}

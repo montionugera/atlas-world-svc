@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c11-coastal-a000",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head of Chalkfell",
+  "bind": {
+    "handle": "c11/coastal/h-6aa000",
+    "expect": {
+      "type": "cuspate-foreland",
+      "sizeKm": [
+        1.42,
+        5.68
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A blunt triangle of shingle thrown out from the coast where two drifts meet.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#cuspate-foreland.gloss"
+  },
+  "resolution": null
+}

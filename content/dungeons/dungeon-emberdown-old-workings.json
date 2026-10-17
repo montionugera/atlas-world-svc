@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-emberdown-old-workings",
+  "title": "Emberdown Old Workings",
+  "family": null,
+  "bind": {
+    "handle": "c02/fluvial/h-bca81f"
+  },
+  "entranceType": "knickpoint-gorge",
+  "floors": 3,
+  "levelBand": [
+    9,
+    23
+  ],
+  "hazards": [
+    "collapse",
+    "fume"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Charcoal burners' galleries; the air still catches on a naked flame.",
+    "source": "content/world/premises/continent-02.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "c-lm-coldreach-shore",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Coldreach Shore",
+  "pin": {
+    "at": [
+      250,
+      120
+    ],
+    "toleranceKm": 1.5,
+    "why": "canon §4: Coldreach is the far end of the trade wind; the shore is what masters log"
+  },
+  "requires": {
+    "continent": "c03",
+    "landform": "wave-cut-platform",
+    "water": {
+      "kind": "sea"
+    }
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

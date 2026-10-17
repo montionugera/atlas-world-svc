@@ -20,42 +20,84 @@
       "source": "market",
       "license": "CC0",
       "tier": "seed",
-      "kind": "character"
+      "kind": "character",
+      "anims": {
+        "idle": "Idle_A",
+        "walk": "Walking_A",
+        "run": "Running_A",
+        "attack": "Melee_1H_Attack_Slice_Diagonal",
+        "death": "Death_A"
+      }
     },
     "mob:aggressive": {
       "scene": "res://assets/characters/orc_brute.glb",
       "source": "market",
       "license": "CC0",
       "tier": "seed",
-      "kind": "character"
+      "kind": "character",
+      "anims": {
+        "idle": "Idle_A",
+        "walk": "Walking_A",
+        "run": "Running_A",
+        "attack": "Melee_1H_Attack_Slice_Diagonal",
+        "death": "Death_A"
+      }
     },
     "mob:balanced": {
       "scene": "res://assets/characters/skeleton_minion.glb",
       "source": "market",
       "license": "CC0",
       "tier": "seed",
-      "kind": "character"
+      "kind": "character",
+      "anims": {
+        "idle": "Idle_A",
+        "walk": "Walking_A",
+        "run": "Running_A",
+        "attack": "Melee_1H_Attack_Slice_Diagonal",
+        "death": "Death_A"
+      }
     },
     "mob:defensive": {
       "scene": "res://assets/characters/skeleton_golem.glb",
       "source": "market",
       "license": "CC0",
       "tier": "seed",
-      "kind": "character"
+      "kind": "character",
+      "anims": {
+        "idle": "Idle_A",
+        "walk": "Walking_A",
+        "run": "Running_A",
+        "attack": "Melee_1H_Attack_Slice_Diagonal",
+        "death": "Death_A"
+      }
     },
     "mob:double_attacker": {
       "scene": "res://assets/characters/skeleton_rogue.glb",
       "source": "market",
       "license": "CC0",
       "tier": "seed",
-      "kind": "character"
+      "kind": "character",
+      "anims": {
+        "idle": "Idle_A",
+        "walk": "Walking_A",
+        "run": "Running_A",
+        "attack": "Melee_1H_Attack_Slice_Diagonal",
+        "death": "Death_A"
+      }
     },
     "mob:hybrid": {
       "scene": "res://assets/characters/skeleton_mage.glb",
       "source": "market",
       "license": "CC0",
       "tier": "seed",
-      "kind": "character"
+      "kind": "character",
+      "anims": {
+        "idle": "Idle_A",
+        "walk": "Walking_A",
+        "run": "Running_A",
+        "attack": "Melee_1H_Attack_Slice_Diagonal",
+        "death": "Death_A"
+      }
     },
     "mob:spear_thrower": {
       "scene": "res://assets/characters/mob_spear_thrower.glb",

@@ -96,14 +96,13 @@ namespace AtlasWorld.Client.Content
             }
 
             // Case 7: the real committed manifest loads. Task 7 (Stage 0.5) mapped every
-            // character key (player/npc/mob:*) to a seed asset — 8 entries — while
-            // projectiles/zones stay unmapped until a later stage, so assert "at least the
-            // character set" rather than an exact count that would drift with every stage.
+            // character key (player/npc/mob:*) to a seed/bespoke asset — 8+ entries.
             {
                 AssetManifest m = AssetManifest.Load("res://assets/manifest.json");
-                bool ok = m.Version == 1 && m.All.Count >= 8
-                    && m.TryGet("player", out AssetEntry playerEntry) && playerEntry.Tier == "seed";
-                failures += Report("real manifest.json loads (character keys mapped, Stage 0.5)", ok);
+                bool ok = m.Version >= 1 && m.All.Count >= 8
+                    && m.TryGet("player", out AssetEntry playerEntry)
+                    && (playerEntry.Tier == "seed" || playerEntry.Tier == "bespoke");
+                failures += Report("real manifest.json loads (character keys mapped, Stage 0.5+)", ok);
             }
 
             if (failures == 0)

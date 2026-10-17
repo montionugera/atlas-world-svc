@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-6069",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Rimeway Race",
+  "bind": {
+    "handle": "c03/fluvial/h-536069",
+    "expect": {
+      "type": "ford",
+      "sizeKm": [
+        0.12,
+        0.4
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A gravel shallow where the river spreads wide enough to walk, in the right season.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#ford.gloss"
+  },
+  "resolution": null
+}

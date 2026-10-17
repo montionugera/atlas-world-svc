@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c09-coastal-6cb3",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Lagoonreef Stack",
+  "bind": {
+    "handle": "c09/coastal/h-8d6cb3",
+    "expect": {
+      "type": "blowhole",
+      "sizeKm": [
+        0.02,
+        0.05
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A hole in the cliff top that spits spray and thunder whenever a big swell comes in.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#blowhole.gloss"
+  },
+  "resolution": null
+}

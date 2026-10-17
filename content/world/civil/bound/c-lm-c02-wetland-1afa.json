@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-1afa",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Cinderfield Fen",
+  "bind": {
+    "handle": "c02/wetland/h-101afa",
+    "expect": {
+      "type": "swamp-forest",
+      "sizeKm": [
+        4.74,
+        14
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Trees standing in water, with the ground somewhere below and no telling where.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#swamp-forest.gloss"
+  },
+  "resolution": null
+}

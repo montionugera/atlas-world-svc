@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-coastal-95ec",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head under Pavesink",
+  "bind": {
+    "handle": "c04/coastal/h-5f95ec",
+    "expect": {
+      "type": "raised-beach",
+      "sizeKm": [
+        0.52,
+        2.08
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A band of rounded cobbles well above the waterline, from a sea that has since dropped.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#raised-beach.gloss"
+  },
+  "resolution": null
+}

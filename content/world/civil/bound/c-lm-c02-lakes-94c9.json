@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-lakes-94c9",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Cindercross Mere",
+  "bind": {
+    "handle": "c02/lakes/h-f794c9",
+    "expect": {
+      "type": "ephemeral-pan-lake",
+      "sizeKm": [
+        0.51,
+        2.02
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A shallow sheet that appears after rain, breeds a season's life, and dries.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#ephemeral-pan-lake.gloss"
+  },
+  "resolution": null
+}

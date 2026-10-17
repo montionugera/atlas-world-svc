@@ -7,7 +7,7 @@ set -e
 #
 #   cockroachdb      StatefulSet + PVC  (Nakama's database)
 #   nakama           Deployment + migrate initContainer
-#   colyseus-server  Deployment         (authoritative game sim)
+#   server-rs        Deployment         (authoritative game sim)
 #   asset-storybook  nginx Deployment   (asset/combat-lab review page)
 #
 # Invoked automatically by ps-release-workflow `ship` after a feature merges into
@@ -18,7 +18,7 @@ set -e
 #   ./scripts/deploy-local.sh                     # full stack
 #   ./scripts/deploy-local.sh --skip-storybook    # skip the 261 MB asset image
 #   ./scripts/deploy-local.sh --skip-meta         # skip nakama + cockroachdb
-#   ./scripts/deploy-local.sh --skip-server       # skip colyseus-server
+#   ./scripts/deploy-local.sh --skip-server       # skip server-rs
 #   LOCAL_CTX_PATTERN=mylocal ./scripts/deploy-local.sh   # custom local ctx name
 # =============================================================================
 
@@ -73,7 +73,7 @@ echo "📂 Working tree: $REPO_ROOT"
 [ "$REPO_ROOT" != "$MAIN_ROOT" ] && echo "   ↳ linked worktree (primary checkout: $MAIN_ROOT)"
 
 NAMESPACE="atlas-world"
-SERVER_IMAGE="atlas-world-colyseus-server:local"
+SERVER_RS_IMAGE="atlas-world-server-rs:local"
 NAKAMA_IMAGE="atlas-world-nakama:local"
 STORYBOOK_IMAGE="atlas-world-storybook:local"
 
@@ -97,9 +97,9 @@ echo "======================================"
 
 if [ "$DO_SERVER" -eq 1 ]; then
   echo ""
-  echo "▶ Building colyseus-server image ($SERVER_IMAGE)..."
-  docker build --build-arg "GIT_SHA=$GIT_SHA" -t "$SERVER_IMAGE" \
-    -f "$REPO_ROOT/colyseus-server/Dockerfile" "$REPO_ROOT"
+  echo "▶ Building server-rs image ($SERVER_RS_IMAGE)..."
+  docker build -t "$SERVER_RS_IMAGE" \
+    -f "$REPO_ROOT/server-rs/Dockerfile" "$REPO_ROOT"
   echo "  ✓ built"
 fi
 
@@ -116,7 +116,7 @@ if [ "$DO_STORYBOOK" -eq 1 ]; then
   echo "▶ Building storybook image ($STORYBOOK_IMAGE)..."
   echo "  (~261 MB of assets — the first build is slow; later ones reuse the layer)"
   docker build -t "$STORYBOOK_IMAGE" \
-    -f "$REPO_ROOT/tools/asset-storybook/Dockerfile" "$REPO_ROOT"
+    -f "$REPO_ROOT/atelier/asset-storybook/Dockerfile" "$REPO_ROOT"
   echo "  ✓ built"
 fi
 
@@ -130,7 +130,7 @@ if [ "$DO_META" -eq 1 ]; then
   kubectl apply -f "$REPO_ROOT/k8s/local/cockroachdb.yaml"
   kubectl apply -f "$REPO_ROOT/k8s/local/nakama.yaml"
 fi
-[ "$DO_SERVER" -eq 1 ]    && kubectl apply -f "$REPO_ROOT/k8s/local/colyseus-server.yaml"
+[ "$DO_SERVER" -eq 1 ]    && kubectl apply -f "$REPO_ROOT/k8s/local/server-rs.yaml"
 [ "$DO_STORYBOOK" -eq 1 ] && kubectl apply -f "$REPO_ROOT/k8s/local/storybook.yaml"
 
 # --- Roll out -----------------------------------------------------------------
@@ -156,7 +156,7 @@ if [ "$DO_META" -eq 1 ]; then
   roll statefulset cockroachdb 180s
   roll deployment  nakama      180s
 fi
-[ "$DO_SERVER" -eq 1 ]    && roll deployment colyseus-server 120s
+[ "$DO_SERVER" -eq 1 ]    && roll deployment server-rs 120s
 [ "$DO_STORYBOOK" -eq 1 ] && roll deployment asset-storybook 120s
 
 # --- Summary ------------------------------------------------------------------
@@ -165,8 +165,8 @@ echo "======================================"
 echo " Deployment Complete!"
 echo "======================================"
 if [ "$DO_SERVER" -eq 1 ]; then
-  echo " Colyseus WS   : ws://localhost:2567/game"
-  echo " Colyseus REST : http://localhost:2567/api   (health: /health)"
+  echo " Server-RS WS  : ws://localhost:2567?token=<jwt>"
+  echo " Server-RS Pod : deployment/server-rs (port 2567)"
 fi
 [ "$DO_STORYBOOK" -eq 1 ] && \
   echo " Storybook     : http://localhost:6006/      (health: /healthz)"
@@ -176,7 +176,7 @@ if [ "$DO_META" -eq 1 ]; then
 fi
 echo ""
 echo " No LoadBalancer (e.g. kind)? Port-forward instead:"
-[ "$DO_SERVER" -eq 1 ]    && echo "   kubectl -n $NAMESPACE port-forward deployment/colyseus-server 2567:2567"
+[ "$DO_SERVER" -eq 1 ]    && echo "   kubectl -n $NAMESPACE port-forward deployment/server-rs 2567:2567"
 [ "$DO_STORYBOOK" -eq 1 ] && echo "   kubectl -n $NAMESPACE port-forward deployment/asset-storybook 6006:80"
 [ "$DO_META" -eq 1 ]      && echo "   kubectl -n $NAMESPACE port-forward deployment/nakama 7350:7350 7351:7351"
 echo "======================================"

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Godot;
 
 namespace AtlasWorld.Client.Content
@@ -107,6 +106,11 @@ namespace AtlasWorld.Client.Content
             using FileAccess? file = FileAccess.Open(resPath, FileAccess.ModeFlags.Read);
             if (file == null)
             {
+                if (resPath == AssetRegistry.DefaultManifestPath)
+                {
+                    return Parse(EmbeddedDefaultManifestJson);
+                }
+
                 Error err = FileAccess.GetOpenError();
                 throw new AssetManifestException(
                     $"AssetManifest: cannot open manifest at '{resPath}' (error={err}).");
@@ -126,16 +130,20 @@ namespace AtlasWorld.Client.Content
         }
 
         /// <summary>
-        /// Parse a manifest from a raw JSON string. Exposed (over just <see cref="Load"/>)
-        /// so the parse path is verifiable without touching the filesystem. Throws
-        /// <see cref="AssetManifestException"/> on malformed JSON.
+        /// Parse a manifest from a raw JSON string using reflection-free <see cref="JsonDocument"/>
+        /// so it works identically on Desktop JIT and iOS NativeAOT.
         /// </summary>
         public static AssetManifest Parse(string json)
         {
-            ManifestDto? dto;
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                throw new AssetManifestException("manifest JSON parsed to null (empty or 'null' document).");
+            }
+
+            JsonDocument doc;
             try
             {
-                dto = JsonSerializer.Deserialize<ManifestDto>(json, JsonOptions);
+                doc = JsonDocument.Parse(json, DocOptions);
             }
             catch (JsonException ex)
             {
@@ -143,70 +151,301 @@ namespace AtlasWorld.Client.Content
                     $"malformed manifest JSON: {ex.Message}", ex);
             }
 
-            if (dto == null)
+            using (doc)
             {
-                throw new AssetManifestException("manifest JSON parsed to null (empty or 'null' document).");
-            }
-
-            var entries = new Dictionary<string, AssetEntry>();
-            if (dto.Entries != null)
-            {
-                foreach (KeyValuePair<string, EntryDto?> kv in dto.Entries)
+                JsonElement root = doc.RootElement;
+                if (root.ValueKind == JsonValueKind.Null)
                 {
-                    EntryDto d = kv.Value ?? new EntryDto();
-                    entries[kv.Key] = new AssetEntry
-                    {
-                        TypeId = kv.Key,
-                        Scene = d.Scene ?? "",
-                        Source = d.Source ?? "",
-                        License = d.License ?? "",
-                        Tier = d.Tier ?? "",
-                        Kind = d.Kind ?? "",
-                        Anims = d.Anims ?? new Dictionary<string, string>(),
-                    };
+                    throw new AssetManifestException("manifest JSON parsed to null (empty or 'null' document).");
                 }
-            }
+                if (root.ValueKind != JsonValueKind.Object)
+                {
+                    throw new AssetManifestException($"manifest root must be a JSON object (got {root.ValueKind}).");
+                }
 
-            return new AssetManifest(dto.Version, entries);
+                int version = 0;
+                var entries = new Dictionary<string, AssetEntry>();
+
+                foreach (JsonProperty prop in root.EnumerateObject())
+                {
+                    if (string.Equals(prop.Name, "version", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (prop.Value.ValueKind == JsonValueKind.Number && prop.Value.TryGetInt32(out int v))
+                            version = v;
+                    }
+                    else if (string.Equals(prop.Name, "entries", StringComparison.OrdinalIgnoreCase) &&
+                             prop.Value.ValueKind == JsonValueKind.Object)
+                    {
+                        foreach (JsonProperty entryProp in prop.Value.EnumerateObject())
+                        {
+                            string key = entryProp.Name;
+                            string scene = "";
+                            string source = "";
+                            string license = "";
+                            string tier = "";
+                            string kind = "";
+                            var anims = new Dictionary<string, string>();
+
+                            if (entryProp.Value.ValueKind == JsonValueKind.Object)
+                            {
+                                foreach (JsonProperty field in entryProp.Value.EnumerateObject())
+                                {
+                                    if (string.Equals(field.Name, "scene", StringComparison.OrdinalIgnoreCase) &&
+                                        field.Value.ValueKind == JsonValueKind.String)
+                                    {
+                                        scene = field.Value.GetString() ?? "";
+                                    }
+                                    else if (string.Equals(field.Name, "source", StringComparison.OrdinalIgnoreCase) &&
+                                             field.Value.ValueKind == JsonValueKind.String)
+                                    {
+                                        source = field.Value.GetString() ?? "";
+                                    }
+                                    else if (string.Equals(field.Name, "license", StringComparison.OrdinalIgnoreCase) &&
+                                             field.Value.ValueKind == JsonValueKind.String)
+                                    {
+                                        license = field.Value.GetString() ?? "";
+                                    }
+                                    else if (string.Equals(field.Name, "tier", StringComparison.OrdinalIgnoreCase) &&
+                                             field.Value.ValueKind == JsonValueKind.String)
+                                    {
+                                        tier = field.Value.GetString() ?? "";
+                                    }
+                                    else if (string.Equals(field.Name, "kind", StringComparison.OrdinalIgnoreCase) &&
+                                             field.Value.ValueKind == JsonValueKind.String)
+                                    {
+                                        kind = field.Value.GetString() ?? "";
+                                    }
+                                    else if (string.Equals(field.Name, "anims", StringComparison.OrdinalIgnoreCase) &&
+                                             field.Value.ValueKind == JsonValueKind.Object)
+                                    {
+                                        foreach (JsonProperty animProp in field.Value.EnumerateObject())
+                                        {
+                                            if (animProp.Value.ValueKind == JsonValueKind.String)
+                                                anims[animProp.Name] = animProp.Value.GetString() ?? "";
+                                        }
+                                    }
+                                }
+                            }
+
+                            entries[key] = new AssetEntry
+                            {
+                                TypeId = key,
+                                Scene = scene,
+                                Source = source,
+                                License = license,
+                                Tier = tier,
+                                Kind = kind,
+                                Anims = anims,
+                            };
+                        }
+                    }
+                }
+
+                return new AssetManifest(version, entries);
+            }
         }
 
-        private static readonly JsonSerializerOptions JsonOptions = new()
+        private static readonly JsonDocumentOptions DocOptions = new()
         {
-            PropertyNameCaseInsensitive = true,
             AllowTrailingCommas = true,
-            ReadCommentHandling = JsonCommentHandling.Skip,
+            CommentHandling = JsonCommentHandling.Skip,
         };
 
-        // --- DTOs (System.Text.Json binding shapes) -------------------------------
-
-        private sealed class ManifestDto
+        private const string EmbeddedDefaultManifestJson = """
         {
-            [JsonPropertyName("version")]
-            public int Version { get; set; }
-
-            [JsonPropertyName("entries")]
-            public Dictionary<string, EntryDto?>? Entries { get; set; }
+          "version": 2,
+          "entries": {
+            "player": {
+              "scene": "res://assets/characters/player_knight.glb",
+              "source": "internal",
+              "license": "CC0",
+              "tier": "bespoke",
+              "kind": "character",
+              "anims": {
+                "idle": "Idle",
+                "walk": "Walking_A",
+                "run": "Running_A",
+                "attack": "1H_Melee_Attack_Slice_Diagonal",
+                "death": "Death_A"
+              }
+            },
+            "npc": {
+              "scene": "res://assets/characters/cleric.glb",
+              "source": "market",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "character",
+              "anims": {
+                "idle": "Idle_A",
+                "walk": "Walking_A",
+                "run": "Running_A",
+                "attack": "Melee_1H_Attack_Slice_Diagonal",
+                "death": "Death_A"
+              }
+            },
+            "mob:aggressive": {
+              "scene": "res://assets/characters/orc_brute.glb",
+              "source": "market",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "character",
+              "anims": {
+                "idle": "Idle_A",
+                "walk": "Walking_A",
+                "run": "Running_A",
+                "attack": "Melee_1H_Attack_Slice_Diagonal",
+                "death": "Death_A"
+              }
+            },
+            "mob:balanced": {
+              "scene": "res://assets/characters/skeleton_minion.glb",
+              "source": "market",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "character",
+              "anims": {
+                "idle": "Idle_A",
+                "walk": "Walking_A",
+                "run": "Running_A",
+                "attack": "Melee_1H_Attack_Slice_Diagonal",
+                "death": "Death_A"
+              }
+            },
+            "mob:defensive": {
+              "scene": "res://assets/characters/skeleton_golem.glb",
+              "source": "market",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "character",
+              "anims": {
+                "idle": "Idle_A",
+                "walk": "Walking_A",
+                "run": "Running_A",
+                "attack": "Melee_1H_Attack_Slice_Diagonal",
+                "death": "Death_A"
+              }
+            },
+            "mob:double_attacker": {
+              "scene": "res://assets/characters/skeleton_rogue.glb",
+              "source": "market",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "character",
+              "anims": {
+                "idle": "Idle_A",
+                "walk": "Walking_A",
+                "run": "Running_A",
+                "attack": "Melee_1H_Attack_Slice_Diagonal",
+                "death": "Death_A"
+              }
+            },
+            "mob:hybrid": {
+              "scene": "res://assets/characters/skeleton_mage.glb",
+              "source": "market",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "character",
+              "anims": {
+                "idle": "Idle_A",
+                "walk": "Walking_A",
+                "run": "Running_A",
+                "attack": "Melee_1H_Attack_Slice_Diagonal",
+                "death": "Death_A"
+              }
+            },
+            "mob:spear_thrower": {
+              "scene": "res://assets/characters/mob_spear_thrower.glb",
+              "source": "internal",
+              "license": "CC0",
+              "tier": "bespoke",
+              "kind": "character",
+              "anims": {
+                "idle": "Idle",
+                "walk": "Walking_A",
+                "run": "Running_A",
+                "attack": "Throw",
+                "death": "Death_A"
+              }
+            },
+            "projectile:arrow": {
+              "scene": "res://assets/vfx/projectile-arrow.glb",
+              "source": "market",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "vfx"
+            },
+            "projectile:spear": {
+              "scene": "res://assets/vfx/projectile-spear.glb",
+              "source": "market",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "vfx"
+            },
+            "projectile:magicSpear": {
+              "scene": "res://assets/vfx/projectile-spear.glb",
+              "source": "market",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "vfx"
+            },
+            "projectile:physicSpear": {
+              "scene": "res://assets/vfx/projectile-spear.glb",
+              "source": "market",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "vfx"
+            },
+            "projectile:melee": {
+              "scene": "res://assets/vfx/projectile-melee.glb",
+              "source": "market",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "vfx"
+            },
+            "projectile:smallMeelee": {
+              "scene": "res://assets/vfx/projectile-melee.glb",
+              "source": "market",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "vfx"
+            },
+            "projectile:largeMeelee": {
+              "scene": "res://assets/vfx/projectile-melee.glb",
+              "source": "market",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "vfx"
+            },
+            "zone:damage": {
+              "scene": "res://assets/vfx/zones/zone-damage.glb",
+              "source": "authored",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "vfx"
+            },
+            "zone:freeze": {
+              "scene": "res://assets/vfx/zones/zone-freeze.glb",
+              "source": "authored",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "vfx"
+            },
+            "zone:impulse_caster": {
+              "scene": "res://assets/vfx/zones/zone-impulse-caster.glb",
+              "source": "authored",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "vfx"
+            },
+            "zone:stun": {
+              "scene": "res://assets/vfx/zones/zone-stun.glb",
+              "source": "authored",
+              "license": "CC0",
+              "tier": "seed",
+              "kind": "vfx"
+            }
+          }
         }
-
-        private sealed class EntryDto
-        {
-            [JsonPropertyName("scene")]
-            public string? Scene { get; set; }
-
-            [JsonPropertyName("source")]
-            public string? Source { get; set; }
-
-            [JsonPropertyName("license")]
-            public string? License { get; set; }
-
-            [JsonPropertyName("tier")]
-            public string? Tier { get; set; }
-
-            [JsonPropertyName("kind")]
-            public string? Kind { get; set; }
-
-            [JsonPropertyName("anims")]
-            public Dictionary<string, string>? Anims { get; set; }
-        }
+        """;
     }
 }

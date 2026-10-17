@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-brightfall-plunge-caves",
+  "title": "Brightfall Plunge Caves",
+  "family": null,
+  "bind": {
+    "handle": "c04/karst/h-a661d0"
+  },
+  "entranceType": "karst-fenster",
+  "floors": 3,
+  "levelBand": [
+    30,
+    56
+  ],
+  "hazards": [
+    "cold",
+    "loose-floor"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Behind the falls the cave keeps falling; the light gives out two bends in.",
+    "source": "content/world/premises/continent-09.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-6663",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Stonegrike Pot",
+  "bind": {
+    "handle": "c04/karst/h-bf6663",
+    "expect": {
+      "type": "foiba",
+      "sizeKm": [
+        0.11,
+        0.3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A vertical shaft dropping straight into the dark, with no ledge to start from.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#foiba.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,185 @@
+{
+  "id": "n-thirstwold",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "Thirstwold",
+  "provenance": {
+    "authored": "generated",
+    "generator": {
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/continent-05.json"
+    },
+    "source": "content/world/premises/continent-05.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "aa44c9bd1543b49c",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [109, 307.5],
+      [108, 304.5],
+      [107.5, 294.5],
+      [109.5, 282],
+      [114, 273],
+      [116, 265],
+      [124, 253],
+      [130, 248],
+      [138.5, 243.5],
+      [157, 238],
+      [158.5, 238],
+      [158.5, 239],
+      [163, 241.5],
+      [173, 243.5],
+      [180.5, 244.5],
+      [185, 246],
+      [188.5, 248],
+      [194.5, 249.5],
+      [203.5, 254.5],
+      [207, 255.5],
+      [209, 257.5],
+      [211, 258],
+      [214.5, 261],
+      [217.5, 262],
+      [220, 264.5],
+      [221, 264.5],
+      [230.5, 274],
+      [236, 284],
+      [238, 294.5],
+      [238, 299],
+      [235.5, 309],
+      [232, 316],
+      [228, 321],
+      [227, 321],
+      [227, 321.5],
+      [226.5, 321.5],
+      [226.5, 322],
+      [226, 322],
+      [225.5, 322],
+      [225.5, 322.5],
+      [224, 323],
+      [223.5, 324],
+      [222.5, 324],
+      [221.5, 325.5],
+      [220.5, 325.5],
+      [219, 327.5],
+      [218, 327.5],
+      [214, 332],
+      [213.5, 332],
+      [213.5, 332.5],
+      [211, 335],
+      [186.5, 346.5],
+      [186, 347.5],
+      [182, 349.5],
+      [179.5, 350],
+      [179, 351],
+      [175.5, 352.5],
+      [175, 354],
+      [165, 354.5],
+      [159, 353.5],
+      [152, 351.5],
+      [142.5, 347],
+      [142, 346],
+      [140, 345.5],
+      [133.5, 340.5],
+      [132.5, 340.5],
+      [129.5, 337.5],
+      [128.5, 337.5],
+      [126.5, 335],
+      [125.5, 335],
+      [119, 328.5],
+      [119, 327.5],
+      [117, 326],
+      [115, 322],
+      [114, 321.5],
+      [111, 315.5]
+    ],
+    "anchor": [163.75, 297.75]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [130.5, 116.5],
+    "originInParent": [107.5, 238]
+  },
+  "composition": {
+    "desert": 77.5,
+    "alkali": 12.2,
+    "badland": 8.2,
+    "river": 2.1
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "sand-sea",
+  "features": [
+    {
+      "id": "f-town-c05-s01",
+      "kind": "point",
+      "at": [153.75, 350.75],
+      "attrs": {
+        "name": null,
+        "role": "hub",
+        "town": "c05/s01"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c05-s02",
+      "kind": "point",
+      "at": [224.75, 322.75],
+      "attrs": {
+        "name": null,
+        "role": "hub",
+        "town": "c05/s02"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c05-s03",
+      "kind": "point",
+      "at": [149.25, 340.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c05/s03"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c05-s04",
+      "kind": "point",
+      "at": [163.25, 318.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c05/s04"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c05-s05",
+      "kind": "point",
+      "at": [135.75, 313.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c05/s05"
+      },
+      "type": null
+    }
+  ],
+  "bands": [],
+  "runtime": null,
+  "representsNodeId": null,
+  "lore": {
+    "summary": "a rain-shadow erg behind a coastal range — one wet strip along its seaward foot, then some 9,900 km² of reported sand"
+  },
+  "tags": [],
+  "levelBand": [40, 80]
+}

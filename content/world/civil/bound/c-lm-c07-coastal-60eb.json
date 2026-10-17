@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c07-coastal-60eb",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Marrammere Stack",
+  "bind": {
+    "handle": "c07/coastal/h-3f60eb",
+    "expect": {
+      "type": "coastal-drowned-valley",
+      "sizeKm": [
+        2.44,
+        9.74
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A river mouth the sea has walked up, so the water is salt a long way inland.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#coastal-drowned-valley.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-98f5",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Karnpot Fenster",
+  "bind": {
+    "handle": "c04/karst/h-4498f5",
+    "expect": {
+      "type": "polje",
+      "sizeKm": [
+        4.51,
+        14
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wide flat-floored basin ringed by limestone hills, farmed in summer and flooded in winter.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#polje.gloss"
+  },
+  "resolution": null
+}

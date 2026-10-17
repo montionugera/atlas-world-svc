@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-a954",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ford over Waintide",
+  "bind": {
+    "handle": "c02/fluvial/h-2ca954",
+    "expect": {
+      "type": "anabranch-island",
+      "sizeKm": [
+        1.11,
+        2.5
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wooded island the river has split around and not yet decided to take back.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#anabranch-island.gloss"
+  },
+  "resolution": null
+}

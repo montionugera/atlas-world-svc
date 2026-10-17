@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-fccc",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Mire of the Norrow",
+  "bind": {
+    "handle": "c02/wetland/h-35fccc",
+    "expect": {
+      "type": "blanket-mire",
+      "sizeKm": [
+        4.44,
+        16
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Peat laid over everything, hill and hollow alike, wet enough to swallow a boot.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#blanket-mire.gloss"
+  },
+  "resolution": null
+}

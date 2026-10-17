@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-37ba",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Cindermark Geo",
+  "bind": {
+    "handle": "c02/coastal/h-a737ba",
+    "expect": {
+      "type": "coastal-lagoon",
+      "sizeKm": [
+        3.36,
+        8
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Shallow brackish water penned behind a bar, calm when the sea outside is not.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#coastal-lagoon.gloss"
+  },
+  "resolution": null
+}

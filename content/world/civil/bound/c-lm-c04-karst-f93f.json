@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-f93f",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Scarpot Pot",
+  "bind": {
+    "handle": "c04/karst/h-43f93f",
+    "expect": {
+      "type": "karst-cenote",
+      "sizeKm": [
+        0.11,
+        0.44
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A collapsed limestone shaft flooded to the water table.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#karst-cenote.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,26 @@
+{
+  "id": "c-lm-loamspit-bars",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Loamspit Bars",
+  "pin": {
+    "at": [
+      40,
+      344
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §12: migrating sandbars and mangrove — the chart is redrawn every decade"
+  },
+  "requires": {
+    "continent": "c13",
+    "landform": "spit"
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

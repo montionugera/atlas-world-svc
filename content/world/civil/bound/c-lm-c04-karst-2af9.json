@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-2af9",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Limestone Fenster",
+  "bind": {
+    "handle": "c04/karst/h-d42af9",
+    "expect": {
+      "type": "polje",
+      "sizeKm": [
+        3.11,
+        12.42
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wide flat-floored basin ringed by limestone hills, farmed in summer and flooded in winter.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#polje.gloss"
+  },
+  "resolution": null
+}

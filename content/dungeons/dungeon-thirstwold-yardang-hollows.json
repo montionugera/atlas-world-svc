@@ -1,0 +1,32 @@
+{
+  "id": "dungeon-thirstwold-yardang-hollows",
+  "title": "Thirstwold Yardang Hollows",
+  "family": null,
+  "bind": {
+    "handle": "c05/fluvial/h-af07e7"
+  },
+  "entranceType": "plunge-pool",
+  "floors": 2,
+  "levelBand": [
+    40,
+    58
+  ],
+  "hazards": [
+    "heat",
+    "fume"
+  ],
+  "roomCountCurve": [
+    8,
+    10
+  ],
+  "lore": {
+    "note": "Hollows carved where the wind funnels between yardangs; the sand never settles.",
+    "source": "content/world/premises/continent-05.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

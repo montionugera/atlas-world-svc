@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-coastal-4e6d",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Bitternreef Roads",
+  "bind": {
+    "handle": "c06/coastal/h-4e4e6d",
+    "expect": {
+      "type": "coastal-lagoon",
+      "sizeKm": [
+        1.31,
+        5.24
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Shallow brackish water penned behind a bar, calm when the sea outside is not.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#coastal-lagoon.gloss"
+  },
+  "resolution": null
+}

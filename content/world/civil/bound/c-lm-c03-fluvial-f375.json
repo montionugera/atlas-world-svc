@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-f375",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Wrackbreak Race",
+  "bind": {
+    "handle": "c03/fluvial/h-11f375",
+    "expect": {
+      "type": "river-terrace",
+      "sizeKm": [
+        2.84,
+        8
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A dry step above the present river, cut when the water ran higher than it does now.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#river-terrace.gloss"
+  },
+  "resolution": null
+}

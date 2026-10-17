@@ -1,0 +1,32 @@
+{
+  "id": "dungeon-reed-shallows-sea-caves",
+  "title": "Reed Shallows Sea Caves",
+  "family": null,
+  "bind": {
+    "handle": "c02/coastal/h-0296ff"
+  },
+  "entranceType": "sea-cave",
+  "floors": 2,
+  "levelBand": [
+    16,
+    30
+  ],
+  "hazards": [
+    "cold",
+    "loose-floor"
+  ],
+  "roomCountCurve": [
+    8,
+    10
+  ],
+  "lore": {
+    "note": "Sea caves at the shallows' edge; low tide opens them, high tide closes the question.",
+    "source": "content/world/premises/continent-06.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

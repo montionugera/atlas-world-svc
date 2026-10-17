@@ -201,7 +201,8 @@ function main() {
   if (failures.length) {
     for (const f of failures) console.error(`FAIL  ${f}`);
     console.error("gen_story_graph: story content failed to load — fix content-gate failures first");
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const nodes = collectNodes(story.byKind);
@@ -211,13 +212,14 @@ function main() {
   if (check) {
     let existing;
     try { existing = readFileSync(OUT_PATH, "utf8"); }
-    catch (e) { console.error(`gen_story_graph --check: cannot read ${OUT_PATH}: ${e.message}`); process.exit(1); }
+    catch (e) { console.error(`gen_story_graph --check: cannot read ${OUT_PATH}: ${e.message}`); process.exitCode = 1; return; }
     if (existing !== markdown) {
       console.error(`gen_story_graph --check: docs/story/story-graph.md is out of date — run "node scripts/gen_story_graph.mjs --write" and commit the result`);
-      process.exit(1);
+      process.exitCode = 1;
+      return;
     }
     console.log(`gen_story_graph --check: docs/story/story-graph.md is in sync (${nodes.length} nodes, ${edges.length} edges)`);
-    process.exit(0);
+    return;
   }
 
   mkdirSync(dirname(OUT_PATH), { recursive: true });

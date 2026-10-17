@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-fluvial-2d88",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ford beyond Dunecone",
+  "bind": {
+    "handle": "c05/fluvial/h-e72d88",
+    "expect": {
+      "type": "delta",
+      "sizeKm": [
+        6.28,
+        20
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The river gives up and splits, laying its load down in a fan of shifting channels.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#delta.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,9 @@
+{
+  "id": "n-loop-a",
+  "tier": "continent",
+  "parentId": "n-loop-b",
+  "title": "Loop A",
+  "seed": { "value": "0000000000000c02", "epoch": 0, "why": null },
+  "placement": { "shape": "rect", "rect": { "x": 0, "y": 0, "w": 10, "h": 10 }, "anchor": [5, 5] },
+  "composition": { "meadow": 100 }
+}

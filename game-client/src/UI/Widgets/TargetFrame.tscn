@@ -1,0 +1,127 @@
+[gd_scene load_steps=6 format=3 uid="uid://ctargetframe001"]
+
+[ext_resource type="Script" path="res://src/UI/Widgets/TargetFrame.cs" id="1_target"]
+[ext_resource type="Texture2D" uid="uid://cwn1omi4hih6h" path="res://assets/art/classes/demon-swordsman.png" id="2_boss_icon"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_panel"]
+bg_color = Color(0.06, 0.08, 0.12, 0.92)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.92, 0.78, 0.35, 1)
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_hp_bg"]
+bg_color = Color(0.12, 0.04, 0.04, 0.95)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.1, 0.1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_hp_fill"]
+bg_color = Color(0.88, 0.18, 0.18, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+border_width_top = 1
+border_width_bottom = 1
+border_color = Color(1, 0.4, 0.4, 0.8)
+
+[node name="TargetFrame" type="Control"]
+custom_minimum_size = Vector2(380, 54)
+layout_mode = 3
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -190.0
+offset_top = 12.0
+offset_right = 190.0
+offset_bottom = 66.0
+grow_horizontal = 2
+mouse_filter = 2
+script = ExtResource("1_target")
+
+[node name="Container" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBox_panel")
+
+[node name="HBox" type="HBoxContainer" parent="Container"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="AvatarFrame" type="TextureRect" parent="Container/HBox"]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("2_boss_icon")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BarBox" type="VBoxContainer" parent="Container/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_constants/separation = 3
+
+[node name="InfoRow" type="HBoxContainer" parent="Container/HBox/BarBox"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="Container/HBox/BarBox/InfoRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.92, 0.65, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 12
+text = "Lv.60 Drake  [MVP Boss]"
+
+[node name="SegmentLabel" type="Label" parent="Container/HBox/BarBox/InfoRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 11
+text = "x4  [Undead / Water]"
+
+[node name="HpBar" type="ProgressBar" parent="Container/HBox/BarBox"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBox_hp_bg")
+theme_override_styles/fill = SubResource("StyleBox_hp_fill")
+value = 85.0
+show_percentage = false
+
+[node name="HpLabel" type="Label" parent="Container/HBox/BarBox/HpBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 10
+text = "1,280,000 / 1,500,000 (85.3%)"
+horizontal_alignment = 1
+vertical_alignment = 1

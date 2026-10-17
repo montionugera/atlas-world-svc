@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-tallowquay-tide-caves",
+  "title": "Tallowquay Tide Caves",
+  "family": null,
+  "bind": {
+    "handle": "c07/coastal/h-5d8a28"
+  },
+  "entranceType": "sea-cave",
+  "floors": 3,
+  "levelBand": [
+    24,
+    40
+  ],
+  "hazards": [
+    "cold",
+    "loose-floor"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Caves the whalers used as cold stores until the tide took the last barrel.",
+    "source": "content/world/premises/continent-03.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

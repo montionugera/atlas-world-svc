@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-rimewall-nunatak-warren",
+  "title": "Rimewall Nunatak Warren",
+  "family": null,
+  "bind": {
+    "handle": "c03/fluvial/h-8f5422"
+  },
+  "entranceType": "plunge-pool",
+  "floors": 3,
+  "levelBand": [
+    58,
+    80
+  ],
+  "hazards": [
+    "cold",
+    "silence"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "A warren of shelters threaded through the nunatak's frozen root.",
+    "source": "content/world/premises/continent-01.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

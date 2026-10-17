@@ -1,0 +1,48 @@
+{
+  "zone": "brightreef-geo",
+  "region": "c07/r06",
+  "survey": "surveyed",
+  "reasonToGo": "The thinnest ground the survey has walked on Driftholt: ten landform marks on the whole region against seventeen and twelve on the other two, and the chart's own point count stops short of its floor here and is declared as doing so. What there is is meadow — more of it, at 95.2 per cent, than any other ground on the island, walked or reported — and the two flat-topped hills, whose faces are the one place on this region metal is reachable and, unusually, give no building stone with it.",
+  "hazards": [
+    {
+      "id": "the-chute",
+      "name": "The chute",
+      "description": "The gully off the summit is swept clean to the rock, which is what keeps it a gully. It is the fastest way down off the high ground and it is the way everything else on the slope comes down too, on no schedule anybody has worked out.",
+      "effect": "damage"
+    },
+    {
+      "id": "ten-marks-and-no-more",
+      "name": "Ten marks and no more",
+      "description": "There are ten drawn features on this whole region: five on the coast and five on the high ground, and nothing whatever between them. Crossing the middle a party is on open meadow in country where the cloud comes down to the grass, and the sheet cannot help because there is nothing on it to help with.",
+      "note": "Absence hazard: the harm is the missing landmark. Nothing in the runtime enum expresses ground too featureless to navigate."
+    }
+  ],
+  "resources": [
+    {
+      "id": "spur-forage",
+      "name": "Spur forage",
+      "kind": "forage",
+      "description": "Taken off the meadow and the marsh strip together, which between them are the region's entire ground cover — 95.2 and 4.8, and nothing else at all. It is gathered on the way through rather than come for; nobody camps here to forage."
+    },
+    {
+      "id": "scarp-ore",
+      "name": "Scarp ore",
+      "kind": "ore",
+      "description": "Chipped out of the faces of the mesa and the butte, the only exposures on this ground that reach metal. What comes off the faces is ore and nothing else: the same rock gives no building stone, because it breaks in pieces too small to lift a wall with and there is no bedding in it to split."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "siltbar-rake",
+      "name": "Siltbar Rake",
+      "description": "The spur running down from the summit to the shore, dividing the region's whole coast into the bar on one side and the foreland on the other. It is the longest of the five inland marks and the only one that runs rather than stands, which is why the two workings sit where they do.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "head-below-tidallobe",
+      "name": "Head below Tidallobe",
+      "description": "The blunt end of the spur where it meets the water, with the barrier island off it and the spit running back inside. All five of this region's coastal marks stand within sight of it, which is the whole reason a crew lands here.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

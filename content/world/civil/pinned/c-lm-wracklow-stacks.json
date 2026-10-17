@@ -1,0 +1,29 @@
+{
+  "id": "c-lm-wracklow-stacks",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Wracklow Stacks",
+  "pin": {
+    "at": [
+      236,
+      344
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §7: an entirely erosional coast — stacks, arches, geos, blowholes"
+  },
+  "requires": {
+    "continent": "c08",
+    "landform": "sea-stack",
+    "water": {
+      "kind": "sea"
+    }
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

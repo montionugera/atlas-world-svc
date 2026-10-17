@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-6820",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Sink below Fenclint",
+  "bind": {
+    "handle": "c04/karst/h-e56820",
+    "expect": {
+      "type": "sinkhole-doline",
+      "sizeKm": [
+        0.12,
+        0.48
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A funnel in the ground where the roof of something underneath came down.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sinkhole-doline.gloss"
+  },
+  "resolution": null
+}

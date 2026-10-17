@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-fluvial-6d57",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Barchanspar Confluence",
+  "bind": {
+    "handle": "c05/fluvial/h-b76d57",
+    "expect": {
+      "type": "knickpoint-gorge",
+      "sizeKm": [
+        2.79,
+        6
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A steep-walled reach where the river is still cutting its way down through hard rock.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#knickpoint-gorge.gloss"
+  },
+  "resolution": null
+}

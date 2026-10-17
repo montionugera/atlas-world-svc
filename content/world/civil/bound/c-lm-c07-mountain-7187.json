@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c07-mountain-7187",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Sedgerun Rake",
+  "bind": {
+    "handle": "c07/mountain/h-c07187",
+    "expect": {
+      "type": "spur-ridge",
+      "sizeKm": [
+        5.54,
+        12
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A shoulder running down off the main ridge, easy walking until it steepens.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#spur-ridge.gloss"
+  },
+  "resolution": null
+}

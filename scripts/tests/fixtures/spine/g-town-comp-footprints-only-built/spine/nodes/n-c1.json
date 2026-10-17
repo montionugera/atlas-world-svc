@@ -1,0 +1,14 @@
+{
+  "id": "n-c1", "tier": "continent", "parentId": "n-atlas", "title": "Fixture Continent",
+  "provenance": { "authored": "hand", "generator": null, "source": "fixture" },
+  "frozen": false,
+  "seed": { "value": "aaaaaaaaaaaaaaa2", "epoch": 0, "why": null },
+  "placement": { "shape": "polygon", "points": [[100, 100], [500, 100], [500, 500], [100, 500]], "anchor": [300, 300] },
+  "interior": { "units": "km", "perParentUnit": 1, "size": [400, 400], "originInParent": [100, 100] },
+  "composition": { "meadow": 100 },
+  "interstitial": null, "interstitialUnsurveyed": true,
+  "compositionTolerance": null, "toleranceWhy": null,
+  "terrainKind": null, "features": [], "bands": [],
+  "runtime": { "mapIds": [], "originU": null, "spawnAreas": [], "mobSettings": null, "seedDemoNPCs": false, "collision": "none" },
+  "representsNodeId": null, "lore": {}, "tags": [], "levelBand": null
+}

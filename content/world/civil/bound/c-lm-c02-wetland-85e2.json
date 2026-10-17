@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-85e2",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Harrowveil Fen",
+  "bind": {
+    "handle": "c02/wetland/h-1585e2",
+    "expect": {
+      "type": "reed-fen",
+      "sizeKm": [
+        2.98,
+        8
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Standing reed higher than a person, water underfoot, and paths only where it is cut.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#reed-fen.gloss"
+  },
+  "resolution": null
+}

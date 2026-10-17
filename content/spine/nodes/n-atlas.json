@@ -1,0 +1,70 @@
+{
+  "id": "n-atlas",
+  "tier": "world",
+  "parentId": null,
+  "title": "The Atlas World",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "docs/worldbuilding/A1-geography-cluster1.md"
+  },
+  "frozen": true,
+  "absoluteAnchor": [200, 200],
+  "seed": {
+    "value": "7c9e4a2f8b1d6e03",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "rect",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "w": 400,
+      "h": 400
+    },
+    "anchor": [200, 200]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [400, 400],
+    "originInParent": [0, 0]
+  },
+  "composition": {
+    "ocean": 59.1,
+    "meadow": 13.6,
+    "karst": 6.8,
+    "desert": 5.3,
+    "tundra": 4.7,
+    "ice": 4.1,
+    "forest": 1,
+    "lake": 1,
+    "alkali": 0.8,
+    "rock": 0.7,
+    "reef": 0.6,
+    "river": 0.6,
+    "badland": 0.6,
+    "upland": 0.4,
+    "ash": 0.3,
+    "bramble": 0.2,
+    "lava": 0.1,
+    "marsh": 0.1
+  },
+  "interstitial": {
+    "ocean": 100
+  },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": null,
+  "features": [],
+  "bands": [],
+  "runtime": null,
+  "representsNodeId": null,
+  "lore": {
+    "summary": "The whole charted and uncharted world. Sized 400x400 km with slack so adding cluster 2 never rebases every descendant frame (research open question 3, owner default: yes)."
+  },
+  "tags": [],
+  "levelBand": null
+}

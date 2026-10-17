@@ -1,7 +1,7 @@
 // F-038 — guard (T): every manifest `kind` must have a section in
 // content/asset-taxonomy.json.
 //
-// tools/asset-storybook groups and labels its sections by `kind` through that
+// atelier/asset-storybook groups and labels its sections by `kind` through that
 // registry. Before this guard, the storybook carried a hand-maintained label
 // lookup that fell through to a generic capitalize-and-append-s branch on a
 // miss, which is how 283 dungeon assets came to sit under a heading reading

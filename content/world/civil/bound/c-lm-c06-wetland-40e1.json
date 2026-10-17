@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-wetland-40e1",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Willowfall Carr",
+  "bind": {
+    "handle": "c06/wetland/h-3b40e1",
+    "expect": {
+      "type": "spring-mire",
+      "sizeKm": [
+        0.1,
+        0.38
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A patch kept permanently wet by water rising from below, greener than all round it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#spring-mire.gloss"
+  },
+  "resolution": null
+}

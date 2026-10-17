@@ -1,0 +1,43 @@
+{
+  "id": "dungeon-cindervast-under-city",
+  "title": "The Under-City",
+  "family": null,
+  "bind": {
+    "handle": "c02/coastal/h-5b0445"
+  },
+  "entranceType": "sea-arch",
+  "floors": 12,
+  "levelBand": [
+    16,
+    34
+  ],
+  "hazards": [
+    "collapse",
+    "ashfall",
+    "dark"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20,
+    22,
+    24,
+    26,
+    28,
+    30
+  ],
+  "lore": {
+    "note": "The fallen city did not fall far. Under the ash there are streets.",
+    "source": "content/story/canon.md §Cindervast"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

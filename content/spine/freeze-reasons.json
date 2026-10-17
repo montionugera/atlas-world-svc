@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "why": "spec §9.3. The freeze shrinks from 14 nodes to 10 because coordinates are now generated: pinning an individual anchor is both wrong and useless. What survives is the set whose POSITION is load-bearing for something outside the geometry — a runtime pointer, a canon distance, a town plan's frame, or the ratio rollup. Every entry is a sentence, and a frozen node absent from this file is a gate failure (G-FROZEN).",
+  "reasons": {
+    "n-atlas": "The 400 x 400 km frame. Every number in the design is derived from it and the Global Constraints forbid moving it; it was never unfrozen.",
+    "n-cluster1": "Wealdmarch hosts the redrawn playable basin, both alias-anchor regions (n-thornveil, n-northern-icefield), the one town-plan host (n-millcross) and — measured on the committed edges, not assumed — EVERY endpoint of ALL SEVEN canon legs: five f-town-* features on this node plus n-millcross, its own child. Moving it moves all of them at once.",
+    "n-thornveil": "Target of n-site-thornveil.representsNodeId. scripts/lib/spine.mjs:918-920 hard-FAILs G-ALIAS if the target does not resolve, so a runtime-side gate depends on this chart node standing where the site says it stands.",
+    "n-northern-icefield": "Target of n-site-icefield.representsNodeId — the same runtime-into-chart pointer, the same hard failure at scripts/lib/spine.mjs:918-920.",
+    "n-millcross": "spineId host of content/towns/town-millcross.json. The town-plan gate's T1-T7 measure a 220 x 160 u plan against this node's frame; a moved frame silently re-scores every road clearance.",
+    "n-coldreach": "Hosts Tallowquay (f-town-tallowquay), one of the two foreign sea-lane termini committed in A2-wider-world.md §2 and one of the three capitals.",
+    "n-stonemoor": "Hosts Netstead (f-town-netstead), the other committed lane terminus and the third capital.",
+    "n-galereach": "One of the three ocean polygons G-ATLAS-ROLLUP measures the sea-to-land ratio through. A silent move changes the world's answer without changing any land.",
+    "n-keelbreak": "Second of the three ocean polygons carrying the ratio rollup.",
+    "n-tarnmark": "Third of the three ocean polygons carrying the ratio rollup."
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "c-lm-the-drowned-stair",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "The Drowned Stair",
+  "at": [
+    166.0,
+    172.0
+  ],
+  "bind": {
+    "handle": "c02/karst/h-dead",
+    "expect": {
+      "type": "karst-cenote",
+      "sizeKm": [
+        0.1,
+        0.8
+      ]
+    }
+  },
+  "networkAnchor": true,
+  "prose": "authored",
+  "properties": [],
+  "lore": {
+    "note": "Cut steps run down the shaft wall and stop three fathoms under water.",
+    "labelAnchor": "north",
+    "source": "mariners' report, sworn at Gildmark harbour"
+  },
+  "resolution": null
+}

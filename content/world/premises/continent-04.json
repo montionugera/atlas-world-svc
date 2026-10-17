@@ -1,0 +1,25 @@
+{
+  "id": "c04",
+  "title": "Stonemoor",
+  "class": "major",
+  "footprint": {
+    "centreKm": [306,246],
+    "radiiKm": [70.21,70.21],
+    "warpKm": 19
+  },
+  "areaBandKm2": [9900,12100],
+  "coastClass": "karst-pavement",
+  "palette": ["karst","rock","forest","meadow","lake","river"],
+  "landformKit": ["karst","lakes","erosional","coastal"],
+  "structuralIdea": "a drowned karst plateau — sea level cuts through a pavement, so the coast is fenster, cenote and sinking river",
+  "structures": [
+    {
+      "kind": "plateau",
+      "atKm": [306,246],
+      "radiusKm": 56.16,
+      "amplitude": 0.28
+    }
+  ],
+  "register": "moorstone",
+  "levelBand": [32,70]
+}

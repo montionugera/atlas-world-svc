@@ -1,0 +1,34 @@
+{
+  "id": "dungeon-fumewater-caldera-floor",
+  "title": "Fumewater Caldera Floor",
+  "family": null,
+  "bind": {
+    "handle": "c03/coastal/h-02ab4c"
+  },
+  "entranceType": "sea-arch",
+  "floors": 3,
+  "levelBand": [
+    55,
+    80
+  ],
+  "hazards": [
+    "heat",
+    "fume",
+    "loose-floor"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Vents across the caldera floor keep the water warm enough to mist.",
+    "source": "content/world/premises/continent-10.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

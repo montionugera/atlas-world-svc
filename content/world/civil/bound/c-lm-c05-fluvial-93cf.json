@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-fluvial-93cf",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Emberwaste Confluence",
+  "bind": {
+    "handle": "c05/fluvial/h-e293cf",
+    "expect": {
+      "type": "ford",
+      "sizeKm": [
+        0.09,
+        0.36
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A gravel shallow where the river spreads wide enough to walk, in the right season.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#ford.gloss"
+  },
+  "resolution": null
+}

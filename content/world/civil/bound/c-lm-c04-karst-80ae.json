@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-80ae",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Stonesink Stair",
+  "bind": {
+    "handle": "c04/karst/h-d280ae",
+    "expect": {
+      "type": "karst-fenster",
+      "sizeKm": [
+        0.09,
+        0.3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A window where an underground river shows itself for a few paces, then goes back under.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#karst-fenster.gloss"
+  },
+  "resolution": null
+}

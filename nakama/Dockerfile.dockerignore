@@ -8,7 +8,6 @@
 !pnpm-workspace.yaml
 !pnpm-lock.yaml
 !contracts/**
-!colyseus-server/package.json
 !nakama/**
 
 # Never ship local installs or prior build output into the context.

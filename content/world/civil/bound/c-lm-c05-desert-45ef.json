@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-45ef",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Sabkhwaste Yardang",
+  "bind": {
+    "handle": "c05/desert/h-1945ef",
+    "expect": {
+      "type": "erg-dune-sea",
+      "sizeKm": [
+        18.09,
+        60
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Sand to the horizon in ranks, each crest moving a little every year.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#erg-dune-sea.gloss"
+  },
+  "resolution": null
+}

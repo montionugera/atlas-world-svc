@@ -1,0 +1,21 @@
+{
+  "id": "dungeon-lavatube-5",
+  "title": "Lava tube 6",
+  "family": "family-lavatube",
+  "familyIndex": 5,
+  "bind": {
+    "handle": "c05/mountain/h-5fcbf8"
+  },
+  "entranceType": "tectonic-cave",
+  "floors": 3,
+  "levelBand": [
+    34,
+    40
+  ],
+  "hazards": [
+    "heat",
+    "fume",
+    "loose-floor"
+  ],
+  "spineId": null
+}

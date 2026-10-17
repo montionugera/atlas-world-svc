@@ -1,0 +1,11 @@
+{
+  "town": "t1",
+  "spineId": "n-t1",
+  "extent": { "width": 200, "height": 160 },
+  "anchor": { "geographyAt": [250, 250] },
+  "water": [{ "id": "w-river", "kind": "river", "poly": [[120, 0], [152, 0], [152, 90], [120, 90]] }],
+  "roads": [],
+  "footprints": [{ "id": "big-block", "kind": "store", "rect": [0, 0, 80, 112] }],
+  "plazas": [],
+  "landmarks": [{ "id": "the-centre", "at": [100, 80], "firstSight": true }]
+}

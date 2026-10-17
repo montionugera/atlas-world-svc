@@ -1,0 +1,48 @@
+{
+  "zone": "shalegill-fenster",
+  "region": "c04/r07",
+  "survey": "surveyed",
+  "reasonToGo": "Three roads meet at Shalegill's eastern village and nowhere else on Stonemoor do more than two, so this is where the road in from the far head joins the road down to the port. Parties stop for the two things a carrying party runs out of first: sweet water standing in a flooded shaft at a depth a bucket can reach, and rock worth breaking while they wait for the road ahead to clear.",
+  "hazards": [
+    {
+      "id": "the-undercut-lip",
+      "name": "The undercut lip",
+      "description": "The flooded shaft the water is drawn from is wider at the water than it is at the rim, because the water is what cut it. The ground a drawer kneels on has nothing under it, and it goes with the drawer still holding the line.",
+      "effect": "damage"
+    },
+    {
+      "id": "the-standing-air",
+      "name": "The standing air",
+      "description": "Air that has stood all summer at the bottom of a shaft does not move when a body enters it. A lamp gutters first and a man goes down second, and there is no third warning between them.",
+      "effect": "poison"
+    }
+  ],
+  "resources": [
+    {
+      "id": "junction-ore",
+      "name": "Junction ore",
+      "kind": "ore",
+      "description": "Got out of a single short face a walk off the junction, worked by whoever is waiting rather than by anyone whose trade it is. There is no proper working here — only that one face, opened and left again by every party that has stopped."
+    },
+    {
+      "id": "shaft-water",
+      "name": "Shaft water",
+      "kind": "water",
+      "description": "Drawn on a line off the flooded shaft below the village, and tallied by the skin at the junction, because the three roads that meet there each want to leave with a full load of it."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "scarlack-geo",
+      "name": "Scarlack Geo",
+      "description": "A narrow cut back into the cliff along a weak seam, with water working at the closed end of it. It is the mark the road above uses to know it has come far enough west to turn inland.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "pot-under-sinkgrike",
+      "name": "Pot under Sinkgrike",
+      "description": "A shaft that drops straight into the dark with no ledge anywhere to start a descent from. Loads are lowered past it rather than into it, and the villages count the rope they have lost down it rather than the depth.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "id": "c-town-gildmark",
+  "kind": "town",
+  "tier": "pinned",
+  "title": "Gildmark",
+  "settlementRank": "capital",
+  "pin": {
+    "at": [
+      83.2,
+      160.4
+    ],
+    "toleranceKm": 1.5,
+    "why": "canon §4: the only deepwater port on this coast and the land's only door to the sea. plan: null per E-C9 — a town plan joins by spineId, so authoring town-gildmark.json would force a tier:\"town\" node into the trunk and red Plan C Task 10's 36-file census"
+  },
+  "requires": {
+    "continent": "c02",
+    "landform": "coastal-drowned-valley",
+    "water": {
+      "kind": "sea",
+      "shelterFetchKmMax": 15,
+      "minDepthM": 12
+    },
+    "slopeMax": 0.06,
+    "freshWaterWithinKm": 4
+  },
+  "properties": [
+    "deepwater-port"
+  ],
+  "coasts": [
+    "wealdmarch-west"
+  ],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

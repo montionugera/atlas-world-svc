@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "note": "One row per committed content/world/resolved/continent-NN.json. The storybook's Places & Meaning panel reads this for its roster and the resolved files themselves for the counts. Kept in parity with content/world/resolved/ by tests/world-index.test.mjs \u2014 this is the owner rule (every produced artifact must be observable in a review surface) made mechanical for the civil layer, exactly as maps-index.json does it for sheets.",
+  "continents": [
+    {
+      "id": "c01",
+      "title": "Rimewall Cap",
+      "resolved": "content/world/resolved/continent-01.json",
+      "register": "north-log",
+      "note": "Rime-cap landmass \u2014 glacier edge and the northern icefield."
+    },
+    {
+      "id": "c02",
+      "title": "Wealdmarch",
+      "resolved": "content/world/resolved/continent-02.json",
+      "register": "basin-anglic",
+      "note": "The redrawn playable basin \u2014 every canon town, road and leg."
+    },
+    {
+      "id": "c03",
+      "title": "Coldreach",
+      "resolved": "content/world/resolved/continent-03.json",
+      "register": "north-log",
+      "note": "Coldreach \u2014 the four pinned canon places and the karst belts."
+    },
+    {
+      "id": "c04",
+      "title": "Stonemoor",
+      "resolved": "content/world/resolved/continent-04.json",
+      "register": "moorstone",
+      "note": "Stonemoor \u2014 moorstone register, largest southern major."
+    },
+    {
+      "id": "c05",
+      "title": "Thirstwold",
+      "resolved": "content/world/resolved/continent-05.json",
+      "register": "sandtongue",
+      "note": "Thirstwold \u2014 sandtongue desert belt and the salt seas."
+    },
+    {
+      "id": "c06",
+      "title": "Reedstrand",
+      "resolved": "content/world/resolved/continent-06.json",
+      "register": "reedspeech",
+      "note": "Reedstrand \u2014 minor reedspeech coast."
+    },
+    {
+      "id": "c07",
+      "title": "Driftholt",
+      "resolved": "content/world/resolved/continent-07.json",
+      "register": "reedspeech",
+      "note": "Driftholt \u2014 minor reedspeech isle of the northwest."
+    },
+    {
+      "id": "c08",
+      "title": "Wracklow",
+      "resolved": "content/world/resolved/continent-08.json",
+      "register": "reedspeech",
+      "note": "Wracklow \u2014 minor wrack coast of the southeast."
+    },
+    {
+      "id": "c09",
+      "title": "Brightfall",
+      "resolved": "content/world/resolved/continent-09.json",
+      "register": "reedspeech",
+      "note": "Brightfall \u2014 chain island of the eastern reaches."
+    },
+    {
+      "id": "c10",
+      "title": "Ashen Spar",
+      "resolved": "content/world/resolved/continent-10.json",
+      "register": "sandtongue",
+      "note": "Ashen Spar \u2014 sandtongue chain isle of the south."
+    },
+    {
+      "id": "c11",
+      "title": "Quillreef",
+      "resolved": "content/world/resolved/continent-11.json",
+      "register": "reedspeech",
+      "note": "Quillreef \u2014 smallest chain reef, northeast."
+    },
+    {
+      "id": "c12",
+      "title": "Skerryfast",
+      "resolved": "content/world/resolved/continent-12.json",
+      "register": "north-log",
+      "note": "Skerryfast \u2014 north-log skerry of the far north."
+    },
+    {
+      "id": "c13",
+      "title": "Loamspit",
+      "resolved": "content/world/resolved/continent-13.json",
+      "register": "reedspeech",
+      "note": "Loamspit \u2014 reedspeech spit of the southwest."
+    }
+  ]
+}

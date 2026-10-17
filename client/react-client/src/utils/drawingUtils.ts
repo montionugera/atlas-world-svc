@@ -11,7 +11,7 @@ export interface Camera {
  * Calculate the scale factor to fit the game world into the canvas
  * while maintaining aspect ratio, OR for fixed viewport size
  */
-export const calculateScale = (gameState: GameState, canvas: HTMLCanvasElement, viewportSize: number = 50): number => {
+export const calculateScale = (gameState: GameState, canvas: { width: number; height: number }, viewportSize: number = 50): number => {
   // If viewportSize is provided, scale is based on fitting that many units into the smaller canvas dimension
   const scaleX = canvas.width / viewportSize;
   const scaleY = canvas.height / viewportSize;
@@ -21,7 +21,7 @@ export const calculateScale = (gameState: GameState, canvas: HTMLCanvasElement, 
 /**
  * Clear the canvas with the configured background color
  */
-export const clearCanvas = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement): void => {
+export const clearCanvas = (ctx: CanvasRenderingContext2D, canvas: { width: number; height: number }): void => {
   ctx.fillStyle = CANVAS_CONFIG.backgroundColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 };
@@ -163,7 +163,7 @@ export const drawHealthBar = (
   if (maxHealth <= 0) return;
   
   const scaledRadius = entityRadius * scale;
-  const healthPercentage = currentHealth / maxHealth;
+  const healthPercentage = Math.min(1, Math.max(0, currentHealth / maxHealth));
   const inverseScale = 1 / viewScale;
   
   // Destructure options with defaults (these are unscaled base values)

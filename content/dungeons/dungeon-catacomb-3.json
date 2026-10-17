@@ -1,0 +1,21 @@
+{
+  "id": "dungeon-catacomb-3",
+  "title": "Catacomb 4",
+  "family": "family-catacomb",
+  "familyIndex": 3,
+  "bind": {
+    "handle": "c04/karst/h-1ad65c"
+  },
+  "entranceType": "cave-system",
+  "floors": 3,
+  "levelBand": [
+    51,
+    57
+  ],
+  "hazards": [
+    "bad-air",
+    "collapse",
+    "grave-damp"
+  ],
+  "spineId": null
+}

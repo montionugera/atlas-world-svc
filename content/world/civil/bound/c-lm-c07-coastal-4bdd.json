@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c07-coastal-4bdd",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Mererun Roads",
+  "bind": {
+    "handle": "c07/coastal/h-634bdd",
+    "expect": {
+      "type": "blowhole",
+      "sizeKm": [
+        0.02,
+        0.05
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A hole in the cliff top that spits spray and thunder whenever a big swell comes in.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#blowhole.gloss"
+  },
+  "resolution": null
+}

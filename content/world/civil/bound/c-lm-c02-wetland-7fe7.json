@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-7fe7",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Bramveil Quag",
+  "bind": {
+    "handle": "c02/wetland/h-e47fe7",
+    "expect": {
+      "type": "quaking-bog",
+      "sizeKm": [
+        0.72,
+        1.5
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Ground that shivers for several paces around every footfall, because it is floating.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#quaking-bog.gloss"
+  },
+  "resolution": null
+}

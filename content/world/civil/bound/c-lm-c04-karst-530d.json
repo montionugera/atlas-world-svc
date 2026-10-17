@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-530d",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Paveclint Fenster",
+  "bind": {
+    "handle": "c04/karst/h-3b530d",
+    "expect": {
+      "type": "karst-tower",
+      "sizeKm": [
+        0.16,
+        0.64
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A steep-sided limestone stack rising sheer out of flat ground, wooded on top.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#karst-tower.gloss"
+  },
+  "resolution": null
+}

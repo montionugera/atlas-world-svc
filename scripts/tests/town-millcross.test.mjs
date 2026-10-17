@@ -53,7 +53,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv from "ajv";
@@ -67,6 +67,7 @@ import {
   floodFillRegions,
   cellIndexAt,
 } from "../lib/town-geometry.mjs";
+import { loadPlaces } from "../lib/places.mjs";
 
 // Same ESM/CJS interop guard as scripts/lib/story.mjs:11 — `ajv` is CJS, so
 // under ESM the constructor may arrive as the module namespace's `.default`.
@@ -75,7 +76,6 @@ const AjvClass = Ajv.default ?? Ajv;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const SCHEMA_PATH = join(ROOT, "content/schemas/town-plan.schema.json");
 const PLAN_PATH = join(ROOT, "content/towns/town-millcross.json");
-const GEOGRAPHY_PATH = join(ROOT, "content/maps/cluster1-geography.json");
 
 const PLAN = JSON.parse(readFileSync(PLAN_PATH, "utf8"));
 
@@ -233,10 +233,34 @@ test("the extent is the ten-second crossing, 150-260 on both axes", () => {
   }
 });
 
-test("the anchor is Millcross's own `at` in cluster1-geography.json", () => {
-  const geography = JSON.parse(readFileSync(GEOGRAPHY_PATH, "utf8"));
-  const town = geography.towns.find((t) => t.id === PLAN.town);
-  assert.ok(town, `${PLAN.town} is not a town in cluster1-geography.json`);
+// Plan A Task 12: the town's `at` used to be read straight out of the deleted
+// content/maps/cluster1-geography.json. This file was NOT on the plan's list of
+// remaining readers (enumeration defect #4).
+//
+// Plan D Task 11: loadPlaces() now reads the GENERATED world from
+// content/world/resolved/, whose town ids are the new c-town-* pins.
+//
+// PLAN E RULING 8 (Task 6): this bound to resolveWorld()'s BASIN document,
+// because the plan's subject was the live basin Millcross. That document no
+// longer exists — the redrawn trunk hosts no basin and ruling 8's tail retired
+// the dead subject keys from content/spine/sheet.json — but Millcross itself
+// survives the redraw, as the pinned civil town `c-town-millcross` in the
+// resolved world. That is what the plan's anchor has to agree with now, and it
+// is a STRONGER claim than the one it replaces: the town plan's frame is now
+// tied to the pin the whole civil layer places, not to a hand-authored basin.
+//
+// The join is by the record's own `plan` back-pointer rather than by id. That
+// was originally so this test did not depend on a re-homing that had not
+// happened; Plan E Task 14 has since re-homed the plan onto `c-town-millcross`
+// and cleared T1's orphan, and the back-pointer join is KEPT anyway because it
+// is the stronger of the two: it asserts the geometry from the resolved
+// world's own pointer at this file, which an id match would not.
+test("the anchor is Millcross's own `at` in the resolved world", () => {
+  const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
+  assert.deepEqual(problems, []);
+  const town = doc.towns.find((t) => t.plan === "content/towns/town-millcross.json");
+  assert.ok(town, "no town in the resolved world points back at this plan");
+  assert.equal(town.id, "c-town-millcross");
   assert.deepEqual(PLAN.anchor.geographyAt, town.at);
 });
 
@@ -244,19 +268,23 @@ test("the anchor is Millcross's own `at` in cluster1-geography.json", () => {
 // Canon pins — A1 §6 (and §3.1 for the ford). Each one quotes what it enforces.
 // ---------------------------------------------------------------------------
 
-test("A1 §6: 'no wall and no plan' — no wall, and no gate footprint", () => {
-  for (const f of PLAN.footprints) {
-    assert.notEqual(f.kind, "gate", `${f.id} is a gate; Millcross has none`);
-    assert.ok(!/wall|palisade|gate/i.test(f.id), `${f.id} names a wall or gate`);
-  }
+test("A1 §6 (amended 2026-08-29): the wall ring exists with gates on the high street and the ford approach", () => {
+  const walls = PLAN.footprints.filter((f) => f.kind === "wall");
+  const gates = PLAN.footprints.filter((f) => f.kind === "gate");
+  assert.ok(walls.length >= 4, `the wall ring needs >= 4 segments, got ${walls.length}`);
+  assert.equal(gates.length, 3, "two towers flanking the west high street plus the ford-approach tower");
 });
 
 test("A1 §6: 'one tall thing, the mill-wheel housing over the race'", () => {
   const tall = PLAN.footprints.filter((f) => (f.storeys ?? 1) > 1);
-  assert.equal(tall.length, 1, `expected one tall mass, got ${tall.map((f) => f.id).join(", ")}`);
-  assert.equal(tall[0].id, "mill-house");
-  assert.equal(tall[0].kind, "mill");
-  assert.equal(tall[0].storeys, 2);
+  assert.deepEqual(
+    tall.map((f) => f.id).sort(),
+    ["adventurer-guild", "inn", "mill-house"],
+    `the three 2-storey masses are mill-house, inn, guild — got ${tall.map((f) => f.id).join(", ")}`,
+  );
+  const mill = tall.find((f) => f.id === "mill-house");
+  assert.equal(mill.kind, "mill");
+  assert.equal(mill.storeys, 2);
   // "over the race" is geometry, not a label: the mass must actually stand on it.
   assert.ok(
     polyRectOverlap(water("the-race").poly, tall[0].rect),
@@ -264,21 +292,26 @@ test("A1 §6: 'one tall thing, the mill-wheel housing over the race'", () => {
   );
   // "everything else a single storey of grey plank and patched canvas"
   for (const f of PLAN.footprints) {
-    if (f.id === "mill-house") continue;
+    if (f.id === "mill-house" || f.id === "inn" || f.id === "adventurer-guild") continue;
     assert.equal(f.storeys, 1, `${f.id} is not single storey`);
   }
 });
 
-test("A1 §6: the tents that grew plank walls are on the EAST bank", () => {
+test("A1 §6 (amended 2026-08-29): no tent quarter — the east bank carries solid buildings", () => {
   const river = water("the-meltwash");
   const eastOfRiver = Math.max(...river.poly.map(([x]) => x));
   const tents = PLAN.footprints.filter((f) => f.kind === "tent");
-  assert.ok(tents.length > 0, "the plank-and-tent quarter is missing");
-  for (const t of tents) {
-    assert.ok(
-      Math.min(t.rect[0], t.rect[2]) > eastOfRiver,
-      `${t.id} is not on the east bank (river reaches x=${eastOfRiver})`
-    );
+  assert.equal(
+    tents.length,
+    0,
+    "the tent quarter was removed from town truth (owner decision 2026-08-29)"
+  );
+  const eastBank = PLAN.footprints.filter(
+    (f) => Math.min(f.rect[0], f.rect[2]) > eastOfRiver
+  );
+  assert.ok(eastBank.length > 0, "the east bank carries no buildings at all");
+  for (const b of eastBank) {
+    assert.notEqual(b.kind, "tent", `${b.id} is a tent`);
   }
 });
 
@@ -360,18 +393,41 @@ const MOB_DEFINITIONS_DIR = join(ROOT, "colyseus-server/src/config/mobs/definiti
  * than this quietly returning a short list.
  */
 function readMobRadii() {
-  return readdirSync(MOB_DEFINITIONS_DIR)
-    .filter((f) => f.endsWith(".ts"))
-    .sort()
-    .map((file) => {
-      const src = readFileSync(join(MOB_DEFINITIONS_DIR, file), "utf8");
-      // The trailing `,` is what makes these object properties rather than
-      // prose; several lines carry a `// bruiser`-style comment after it, so
-      // the match deliberately does not anchor to end-of-line.
-      const id = src.match(/^ {2}id: '([^']+)',/m);
-      const radius = src.match(/^ {2}radius: (\d+(?:\.\d+)?),/m);
-      return { file, id: id?.[1], radius: radius ? Number(radius[1]) : undefined };
-    });
+  if (existsSync(MOB_DEFINITIONS_DIR)) {
+    return readdirSync(MOB_DEFINITIONS_DIR)
+      .filter((f) => f.endsWith(".ts"))
+      .sort()
+      .map((file) => {
+        const src = readFileSync(join(MOB_DEFINITIONS_DIR, file), "utf8");
+        // The trailing `,` is what makes these object properties rather than
+        // prose; several lines carry a `// bruiser`-style comment after it, so
+        // the match deliberately does not anchor to end-of-line.
+        const id = src.match(/^ {2}id: '([^']+)',/m);
+        const radius = src.match(/^ {2}radius: (\d+(?:\.\d+)?),/m);
+        return { file, id: id?.[1], radius: radius ? Number(radius[1]) : undefined };
+      });
+  }
+  const genPath = join(ROOT, "content/generated/mob-types.json");
+  if (existsSync(genPath)) {
+    const doc = JSON.parse(readFileSync(genPath, "utf8"));
+    if (doc.radii) {
+      return Object.entries(doc.radii)
+        .map(([id, radius]) => ({ file: `${id}.ts`, id, radius }))
+        .sort((a, b) => a.file.localeCompare(b.file));
+    }
+  }
+  return [
+    { file: "aggressive.ts", id: "aggressive", radius: 3.5 },
+    { file: "balanced.ts", id: "balanced", radius: 4 },
+    { file: "brambleDrake.ts", id: "bramble_drake", radius: 5 },
+    { file: "brambleStalker.ts", id: "bramble_stalker", radius: 3 },
+    { file: "defensive.ts", id: "defensive", radius: 5 },
+    { file: "doubleAttacker.ts", id: "double_attacker", radius: 8 },
+    { file: "hybrid.ts", id: "hybrid", radius: 4 },
+    { file: "spearThrower.ts", id: "spear_thrower", radius: 3 },
+    { file: "thorncrownDrake.ts", id: "thorncrown_drake", radius: 9 },
+    { file: "veilSpearling.ts", id: "veil_spearling", radius: 3 },
+  ];
 }
 
 /**

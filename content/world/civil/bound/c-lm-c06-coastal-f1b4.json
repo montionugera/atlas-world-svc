@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-coastal-f1b4",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head between Osierbar",
+  "bind": {
+    "handle": "c06/coastal/h-e0f1b4",
+    "expect": {
+      "type": "marine-terrace",
+      "sizeKm": [
+        2.46,
+        6
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "An old shoreline stranded above the present one, level enough to build a road on.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#marine-terrace.gloss"
+  },
+  "resolution": null
+}

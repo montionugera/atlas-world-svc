@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="AtlasWorldClient"
-run/main_scene="res://Main.tscn"
+run/main_scene="res://scenes/VerticalSlice.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 
 [autoload]
@@ -20,11 +20,18 @@ MetaGateway="*res://src/Meta/MetaGateway.cs"
 AssetRegistry="*res://src/Content/AssetRegistry.cs"
 AudioRegistry="*res://src/Audio/AudioRegistry.cs"
 
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation="sensor_landscape"
+
 [dotnet]
 
 project/assembly_name="GameClient"
 
-[rendering]
+[input_devices]
 
-renderer/rendering_method="forward_plus"
-renderer/rendering_method.mobile="mobile"
+pointing/emulate_touch_from_mouse=true

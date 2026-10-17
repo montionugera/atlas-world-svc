@@ -82,7 +82,7 @@ function runGate(dir, extra = []) {
   }
 }
 
-const REGION = { id: "region-town", kind: "region", title: "Town", summary: "s", links: [], dangerTier: "safe" };
+const REGION = { id: "region-town", kind: "region", title: "Town", summary: "s", links: [], dangerTier: "safe", spineId: "n-town" };
 const FACTION_A = { id: "faction-a", kind: "faction", title: "A", summary: "s", links: [], disposition: "friendly", mobFamily: [], relationships: [] };
 // No region/assetKey: keeps fixtures that only need a valid quest.giver from
 // having to also carry a regions:[REGION] / keys entry along for the ride.

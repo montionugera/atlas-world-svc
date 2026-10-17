@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "mobTypes": [
+    "aggressive",
+    "balanced",
+    "bramble_drake",
+    "bramble_stalker",
+    "defensive",
+    "double_attacker",
+    "hybrid",
+    "spear_thrower",
+    "thorncrown_drake",
+    "veil_spearling"
+  ],
+  "elements": {
+    "bramble_drake": "earth",
+    "bramble_stalker": "earth",
+    "thorncrown_drake": "earth",
+    "veil_spearling": "wind"
+  },
+  "radii": {
+    "aggressive": 3.5,
+    "balanced": 4,
+    "bramble_drake": 5,
+    "bramble_stalker": 3,
+    "defensive": 5,
+    "double_attacker": 8,
+    "hybrid": 4,
+    "spear_thrower": 3,
+    "thorncrown_drake": 9,
+    "veil_spearling": 3
+  }
+}

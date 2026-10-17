@@ -1,0 +1,64 @@
+{
+  "id": "n-rooktide",
+  "tier": "town",
+  "parentId": "n-rooktide-reach",
+  "title": "Rooktide",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [84, 174],
+  "seed": {
+    "value": "4e123f3190b0a10d",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "rect",
+    "rect": {
+      "x": 83.75,
+      "y": 173.8,
+      "w": 0.5,
+      "h": 0.4
+    },
+    "anchor": [84, 174]
+  },
+  "interior": {
+    "units": "u",
+    "perParentUnit": 100,
+    "size": [50, 40],
+    "originInParent": [83.75, 173.8],
+    "anchorInInterior": [25, 20]
+  },
+  "composition": {
+    "built": 42,
+    "river": 26,
+    "marsh": 18,
+    "meadow": 14
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 5,
+    "emblem": "a rook in flight over a rising tideline",
+    "reason": "The head of tide — sea barges stop, river barges start, and cargo has to change hulls",
+    "labelAnchor": "east"
+  },
+  "tags": [],
+  "levelBand": null
+}

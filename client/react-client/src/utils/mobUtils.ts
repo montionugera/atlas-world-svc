@@ -1,6 +1,22 @@
+import bestiaryNames from '../data/bestiaryNames.json';
+
+const BESTIARY_NAMES: Record<string, string> = bestiaryNames;
+
+/** "mob-brand-new-thing" -> "Brand New Thing" (types not yet in the generated name table). */
+const titleFromId = (id: string): string =>
+    id
+        .replace(/^mob-/, '')
+        .split(/[-_]/)
+        .filter(Boolean)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+
 export const getMobDisplayName = (mob: any) => {
     // First try to use the type ID which maps to config
     if (mob.mobTypeId) {
+        // server-rs sends bestiary ids (content/bestiary/bestiary.json).
+        const bestiaryName = BESTIARY_NAMES[mob.mobTypeId];
+        if (bestiaryName) return bestiaryName;
         switch(mob.mobTypeId) {
             case 'spear_thrower': return 'Spear Thrower';
             case 'hybrid': return 'Hybrid Fighter';
@@ -8,7 +24,7 @@ export const getMobDisplayName = (mob: any) => {
             case 'defensive': return 'Defensive Mob';
             case 'balanced': return 'Balanced Mob';
             case 'double_attacker': return 'Double Attacker';
-            default: return mob.mobTypeId; // Fallback to ID if unknown
+            default: return mob.mobTypeId.startsWith('mob-') ? titleFromId(mob.mobTypeId) : mob.mobTypeId;
         }
     }
     

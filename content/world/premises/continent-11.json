@@ -1,0 +1,25 @@
+{
+  "id": "c11",
+  "title": "Quillreef",
+  "class": "chain",
+  "footprint": {
+    "centreKm": [338,66],
+    "radiiKm": [21.42,21.42],
+    "warpKm": 6
+  },
+  "areaBandKm2": [900,1100],
+  "coastClass": "atoll-ring",
+  "palette": ["reef","meadow","ocean"],
+  "landformKit": ["island","oceanic","coastal"],
+  "structuralIdea": "an atoll ring — every settlement a port, no interior",
+  "structures": [
+    {
+      "kind": "atoll-lagoon",
+      "atKm": [338,66],
+      "radiusKm": 12.85,
+      "amplitude": 0.5
+    }
+  ],
+  "register": "reedspeech",
+  "levelBand": [12,30]
+}

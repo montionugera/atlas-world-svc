@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-mountain-521e",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Pumicwind Horn",
+  "bind": {
+    "handle": "c05/mountain/h-9e521e",
+    "expect": {
+      "type": "ridge-spine",
+      "sizeKm": [
+        13.11,
+        40
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "One unbroken backbone of rock; the only ways over it are the notches.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#ridge-spine.gloss"
+  },
+  "resolution": null
+}

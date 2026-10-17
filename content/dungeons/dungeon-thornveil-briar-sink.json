@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-thornveil-briar-sink",
+  "title": "Thornveil Briar Sink",
+  "family": null,
+  "bind": {
+    "handle": "c02/erosional/h-70406f"
+  },
+  "entranceType": "hoodoo",
+  "floors": 3,
+  "levelBand": [
+    8,
+    20
+  ],
+  "hazards": [
+    "grave-damp",
+    "collapse"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Everything the briar swallows surfaces here, sorted by nothing anybody understands.",
+    "source": "content/world/premises/continent-02.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

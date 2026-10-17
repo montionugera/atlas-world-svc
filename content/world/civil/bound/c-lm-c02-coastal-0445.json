@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-0445",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Marlhollow Roads",
+  "bind": {
+    "handle": "c02/coastal/h-5b0445",
+    "expect": {
+      "type": "sea-arch",
+      "sizeKm": [
+        0.04,
+        0.16
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A rib of rock the waves have holed clean through, still standing on two legs.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sea-arch.gloss"
+  },
+  "resolution": null
+}

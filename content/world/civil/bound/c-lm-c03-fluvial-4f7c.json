@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-4f7c",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ford north of Wrackness",
+  "bind": {
+    "handle": "c03/fluvial/h-904f7c",
+    "expect": {
+      "type": "anabranch-island",
+      "sizeKm": [
+        0.62,
+        2.46
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wooded island the river has split around and not yet decided to take back.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#anabranch-island.gloss"
+  },
+  "resolution": null
+}

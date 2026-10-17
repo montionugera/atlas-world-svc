@@ -1,0 +1,88 @@
+{
+  "id": "n-quillreef",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "Quillreef",
+  "provenance": {
+    "authored": "generated",
+    "generator": {
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/continent-11.json"
+    },
+    "source": "content/world/premises/continent-11.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "e5fd6ffb91e88cf3",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [320, 66],
+      [320.5, 61],
+      [322.5, 56],
+      [328, 50],
+      [332, 48],
+      [335.5, 47],
+      [344, 47.5],
+      [349, 50],
+      [353, 54],
+      [355.5, 60],
+      [355.5, 68.5],
+      [352.5, 75.5],
+      [348, 80],
+      [344, 82],
+      [339.5, 83],
+      [333, 82.5],
+      [332.5, 82.5],
+      [332.5, 82],
+      [332, 82],
+      [331, 82],
+      [330.5, 81],
+      [329.5, 81],
+      [329, 80],
+      [328, 80],
+      [324.5, 76],
+      [324, 76],
+      [324, 75],
+      [323, 74.5],
+      [323, 73.5],
+      [322, 73],
+      [321.5, 71],
+      [321, 71],
+      [320.5, 68],
+      [320.5, 67.5],
+      [320, 67.5]
+    ],
+    "anchor": [337.75, 64.75]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [35.5, 36],
+    "originInParent": [320, 47]
+  },
+  "composition": {
+    "meadow": 88.2,
+    "reef": 11.8
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": null,
+  "features": [],
+  "bands": [],
+  "runtime": null,
+  "representsNodeId": null,
+  "lore": {
+    "summary": "an atoll ring — every settlement a port, no interior",
+    "reported": true,
+    "reportedAs": "hearsay"
+  },
+  "tags": [],
+  "levelBand": [12, 30]
+}

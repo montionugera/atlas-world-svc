@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-61d0",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Sink at Slatefell",
+  "bind": {
+    "handle": "c04/karst/h-a661d0",
+    "expect": {
+      "type": "karst-fenster",
+      "sizeKm": [
+        0.03,
+        0.1
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A window where an underground river shows itself for a few paces, then goes back under.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#karst-fenster.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-fluvial-5988",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ford beyond Sabkhcone",
+  "bind": {
+    "handle": "c05/fluvial/h-fe5988",
+    "expect": {
+      "type": "braided-channel",
+      "sizeKm": [
+        2.85,
+        11.38
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wide bed of gravel bars where the river runs in a dozen shallow threads at once.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#braided-channel.gloss"
+  },
+  "resolution": null
+}

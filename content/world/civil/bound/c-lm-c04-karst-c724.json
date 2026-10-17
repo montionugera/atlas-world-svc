@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-c724",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Sink below Grikefell",
+  "bind": {
+    "handle": "c04/karst/h-31c724",
+    "expect": {
+      "type": "karst-cenote",
+      "sizeKm": [
+        0.12,
+        0.48
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A collapsed limestone shaft flooded to the water table.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#karst-cenote.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,26 @@
+{
+  "id": "c-lm-the-saltmire",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "The Saltmire",
+  "pin": {
+    "at": [
+      91,
+      164.6
+    ],
+    "toleranceKm": 1.5,
+    "why": "A1 §4: the mire the trade road bends around"
+  },
+  "requires": {
+    "continent": "c02",
+    "landform": "tidal-mire"
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

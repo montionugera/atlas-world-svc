@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-b27a",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Marlbourne Geo",
+  "bind": {
+    "handle": "c02/coastal/h-b4b27a",
+    "expect": {
+      "type": "baymouth-bar",
+      "sizeKm": [
+        1.32,
+        4
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A bank of sand grown right across a bay mouth, shutting the water in behind it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#baymouth-bar.gloss"
+  },
+  "resolution": null
+}

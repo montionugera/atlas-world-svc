@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-mountain-2a48",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Spar past Regvent",
+  "bind": {
+    "handle": "c05/mountain/h-f92a48",
+    "expect": {
+      "type": "massif-dome",
+      "sizeKm": [
+        5.55,
+        22.18
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A single great swell of rock with all its valleys running off it like spokes.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#massif-dome.gloss"
+  },
+  "resolution": null
+}

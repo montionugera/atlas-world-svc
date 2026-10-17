@@ -1,0 +1,54 @@
+{
+  "zone": "yardburn-confluence",
+  "region": "c05/r20",
+  "survey": "surveyed",
+  "reasonToGo": "The east end of the road. Sixty-three kilometres of track from the junction, better than two thirds of it laid across ground no survey has been over, and at the end of it the only settlement out here. It feeds itself off the bank and the bed — barley on the levee, water dug out of the gravel rather than lifted off it — and sells stone to the trains that came the long way for it.",
+  "hazards": [
+    {
+      "id": "the-soft-fan",
+      "name": "The soft fan",
+      "description": "The channel comes onto this ground and gives up, splitting into a fan of shallow threads laid over silt. For weeks after it has run, that fan reads as firm floor in every direction and is a crust over wet sand in half of them, and a laden animal goes through it to the belly a long way from anything that could pull it out.",
+      "effect": "stun"
+    },
+    {
+      "id": "the-eastern-line",
+      "name": "The eastern line",
+      "description": "This is the one piece of surveyed ground on Thirstwold that ends against another landmass instead of against more of its own — three of the landmass's regions touch that boundary and the other two are hearsay. Nobody on this side has been over it, so a party that walks east off the sheet is not walking onto poor ground; it is walking onto no information at all.",
+      "note": "Absence hazard: the harm is the survey that stops. Nothing in the runtime enum expresses the edge of what is known."
+    }
+  ],
+  "resources": [
+    {
+      "id": "bench-barley",
+      "name": "Bench barley",
+      "kind": "crop",
+      "description": "Sown on the low bank the floods threw up along the channel, which is the only ground on this region that holds anything after a wet week. It is eaten here; nothing grown at this end of the road is worth carrying back up it."
+    },
+    {
+      "id": "bed-water",
+      "name": "Bed water",
+      "kind": "water",
+      "description": "Dug for, not drawn: the gravel keeps water under it for months after the surface of it is dust, and the settlement's wells are holes sunk into the dry bed and re-sunk every year when the bed moves."
+    },
+    {
+      "id": "bed-cobble",
+      "name": "Bed cobble",
+      "kind": "stone",
+      "description": "Lifted out of the same holes the wells are sunk in. The bed here is stone under a foot of sand, so a party digging for water brings its building material up first and its water up second, and both come out of the one hole."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "cindersea-pan",
+      "name": "Cindersea Pan",
+      "description": "Ten kilometres of flat pale ground where the channel used to run and does not now. It is dust to the ankle for most of the year and it takes a plough for a few weeks after the bed has filled, and those few weeks are the whole of this region's farming year.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    },
+    {
+      "id": "race-within-siroccwaste",
+      "name": "Race within Siroccwaste",
+      "description": "Six kilometres of gravel bed that carries a dozen threads of water in the weeks it carries anything and stands bone dry the rest of the year. Every well the settlement has is sunk into it, which is why the settlement is where it is and not on better ground.",
+      "source": "docs/worldbuilding/A4-zone-allocation.md#5"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-a81f",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Barrowfield Confluence",
+  "bind": {
+    "handle": "c02/fluvial/h-bca81f",
+    "expect": {
+      "type": "knickpoint-gorge",
+      "sizeKm": [
+        1.9,
+        6
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A steep-walled reach where the river is still cutting its way down through hard rock.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#knickpoint-gorge.gloss"
+  },
+  "resolution": null
+}

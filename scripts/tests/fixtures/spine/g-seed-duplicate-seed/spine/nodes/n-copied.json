@@ -1,0 +1,9 @@
+{
+  "id": "n-copied",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "Copied",
+  "seed": { "value": "00000000000000aa", "epoch": 0, "why": null },
+  "placement": { "shape": "rect", "rect": { "x": 5, "y": 5, "w": 10, "h": 10 }, "anchor": [10, 10] },
+  "composition": { "meadow": 100 }
+}

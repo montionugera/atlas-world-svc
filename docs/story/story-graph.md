@@ -158,6 +158,7 @@ flowchart LR
   n_lore_lisss_second_letter["lore-lisss-second-letter"]:::lore
   n_lore_millcross_by_the_numbers["lore-millcross-by-the-numbers"]:::lore
   n_lore_nothing_left_to_bury["lore-nothing-left-to-bury"]:::lore
+  n_lore_the_belfry_that_doesnt_answer["lore-the-belfry-that-doesnt-answer"]:::lore
   n_lore_the_bell_keepers_schedule["lore-the-bell-keepers-schedule"]:::lore
   n_lore_the_bite_that_wont_close["lore-the-bite-that-wont-close"]:::lore
   n_lore_the_cindered_count["lore-the-cindered-count"]:::lore
@@ -171,14 +172,13 @@ flowchart LR
   n_lore_the_ground_that_keeps_count["lore-the-ground-that-keeps-count"]:::lore
   n_lore_the_last_reply["lore-the-last-reply"]:::lore
   n_lore_the_meadows_first_count["lore-the-meadows-first-count"]:::lore
-  n_lore_the_millcross_relay["lore-the-millcross-relay"]:::lore
+  n_lore_the_millcross_post["lore-the-millcross-post"]:::lore
   n_lore_the_night_the_road_filled["lore-the-night-the-road-filled"]:::lore
   n_lore_the_riders_account["lore-the-riders-account"]:::lore
   n_lore_the_seal_log["lore-the-seal-log"]:::lore
   n_lore_the_second_harbor_entry["lore-the-second-harbor-entry"]:::lore
   n_lore_the_second_wardens_tally["lore-the-second-wardens-tally"]:::lore
   n_lore_the_shelf_still_remembers["lore-the-shelf-still-remembers"]:::lore
-  n_lore_the_tower_that_doesnt_answer["lore-the-tower-that-doesnt-answer"]:::lore
   n_lore_the_tyrants_last_order["lore-the-tyrants-last-order"]:::lore
   n_lore_the_unfinished_page["lore-the-unfinished-page"]:::lore
   n_lore_the_vacuum_holds["lore-the-vacuum-holds"]:::lore
@@ -372,6 +372,7 @@ flowchart LR
   n_lore_lisss_second_letter -->|anchor| n_char_liss_of_embervale
   n_lore_millcross_by_the_numbers -->|anchor| n_region_millcross
   n_lore_nothing_left_to_bury -->|anchor| n_region_cindervast
+  n_lore_the_belfry_that_doesnt_answer -->|anchor| n_region_gildmark
   n_lore_the_bell_keepers_schedule -->|anchor| n_char_the_bell_keeper
   n_lore_the_bite_that_wont_close -->|anchor| n_faction_bellfaith
   n_lore_the_cindered_count -->|anchor| n_region_cindervast
@@ -385,14 +386,13 @@ flowchart LR
   n_lore_the_ground_that_keeps_count -->|anchor| n_region_ashvale_front
   n_lore_the_last_reply -->|anchor| n_region_ashvale_front
   n_lore_the_meadows_first_count -->|anchor| n_region_spawn_meadow
-  n_lore_the_millcross_relay -->|anchor| n_region_millcross
+  n_lore_the_millcross_post -->|anchor| n_region_millcross
   n_lore_the_night_the_road_filled -->|anchor| n_event_refuge_at_millcross
   n_lore_the_riders_account -->|anchor| n_char_the_broker
   n_lore_the_seal_log -->|anchor| n_char_the_bell_keeper
   n_lore_the_second_harbor_entry -->|anchor| n_region_gildmark
   n_lore_the_second_wardens_tally -->|anchor| n_faction_bellfaith
   n_lore_the_shelf_still_remembers -->|anchor| n_region_icefield
-  n_lore_the_tower_that_doesnt_answer -->|anchor| n_region_gildmark
   n_lore_the_tyrants_last_order -->|anchor| n_region_cindervast
   n_lore_the_unfinished_page -->|anchor| n_char_quartermaster
   n_lore_the_vacuum_holds -->|anchor| n_char_the_ash_prophet
