@@ -830,7 +830,7 @@
     "id": "I-137",
     "title": "Server accepts a real Nakama token",
     "created_at": "2026-10-11T06:59:03.752427+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-068",
     "epic": "E-003"
   },
   {
