@@ -8,6 +8,7 @@ import type {
   QuestsDoc,
   MatchEvent,
   MatchEventBatch,
+  CharacterStateDoc,
   LoadoutSnapshot,
 } from "./types";
 
@@ -109,6 +110,17 @@ export const matchEventBatchSchema = z
   })
   .strict() satisfies z.ZodType<MatchEventBatch>;
 
+export const characterStateDocSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    mapId: z.string(),
+    x: z.number(),
+    y: z.number(),
+    health: z.number(),
+    seq: z.number(),
+  })
+  .strict() satisfies z.ZodType<CharacterStateDoc>;
+
 export const loadoutSnapshotSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -122,6 +134,7 @@ export const loadoutSnapshotSchema = z
       .strict(),
     skillLoadout: z.array(z.string()),
     activeQuestIds: z.array(z.string()),
+    characterState: characterStateDocSchema.optional(),
   })
   .strict() satisfies z.ZodType<LoadoutSnapshot>;
 

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tracing::warn;
 
 /// Default startup retry window (~60 seconds) for `NakamaClient::probe()`.
@@ -77,6 +77,10 @@ fn default_stat_one() -> u32 {
     1
 }
 
+fn default_schema_version_one() -> u32 {
+    1
+}
+
 /// Primary player attributes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct PrimaryStats {
@@ -141,8 +145,36 @@ pub struct EquippedItemIds {
     pub accessory: Option<String>,
 }
 
+/// Persisted world position and current health for a player's character.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CharacterStateSnapshot {
+    #[serde(alias = "schema_version", default = "default_schema_version_one")]
+    pub schema_version: u32,
+    #[serde(alias = "map_id", default)]
+    pub map_id: String,
+    pub x: f32,
+    pub y: f32,
+    pub health: f32,
+    #[serde(default)]
+    pub seq: u64,
+}
+
+impl Default for CharacterStateSnapshot {
+    fn default() -> Self {
+        Self {
+            schema_version: 1,
+            map_id: "map-for-play".to_string(),
+            x: 500.0,
+            y: 500.0,
+            health: 110.0,
+            seq: 0,
+        }
+    }
+}
+
 /// Consolidated player loadout snapshot returned by Nakama `get_loadout` RPC.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LoadoutSnapshot {
     #[serde(alias = "schema_version")]
@@ -154,6 +186,12 @@ pub struct LoadoutSnapshot {
     pub skill_loadout: Vec<String>,
     #[serde(alias = "active_quest_ids", default)]
     pub active_quest_ids: Vec<String>,
+    #[serde(
+        alias = "character_state",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub character_state: Option<CharacterStateSnapshot>,
 }
 
 impl Default for LoadoutSnapshot {
@@ -164,6 +202,7 @@ impl Default for LoadoutSnapshot {
             equipped_item_ids: EquippedItemIds::default(),
             skill_loadout: Vec::new(),
             active_quest_ids: Vec::new(),
+            character_state: None,
         }
     }
 }
@@ -235,6 +274,14 @@ pub trait NakamaStorage: Send + Sync {
     async fn verify_session(&self, token: &str) -> Result<Option<String>, String>;
     async fn get_loadout(&self, user_id: &str) -> Result<Option<LoadoutSnapshot>, String>;
     async fn report_match_events(&self, batch: &MatchEventBatch) -> Result<String, String>;
+    async fn save_character_state(
+        &self,
+        user_id: &str,
+        state: &CharacterStateSnapshot,
+    ) -> Result<String, String> {
+        let _ = (user_id, state);
+        Ok(r#"{"deduped":false}"#.to_string())
+    }
 }
 
 /// Production HTTP REST & RPC client for Nakama game server.
@@ -246,6 +293,7 @@ pub struct NakamaClient {
     probe_window: Duration,
     match_id: String,
     seq_counter: Arc<AtomicU64>,
+    state_seq_counter: Arc<AtomicU64>,
     client: reqwest::Client,
 }
 
@@ -263,6 +311,12 @@ impl NakamaClient {
             .build()
             .unwrap_or_else(|_| reqwest::Client::new());
 
+        let initial_state_seq = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_millis() as u64)
+            .unwrap_or(1)
+            .max(1);
+
         Self {
             base_url,
             http_key,
@@ -278,6 +332,7 @@ impl NakamaClient {
                 .filter(|s| !s.is_empty())
                 .unwrap_or_else(|| DEFAULT_NAKAMA_MATCH_ID.to_string()),
             seq_counter: Arc::new(AtomicU64::new(0)),
+            state_seq_counter: Arc::new(AtomicU64::new(initial_state_seq)),
             client,
         }
     }
@@ -564,6 +619,88 @@ impl NakamaClient {
             attempt += 1;
         }
     }
+
+    /// Persists player world position and health via Nakama `POST /v2/rpc/save_character_state?http_key=...&unwrap`.
+    pub async fn save_character_state(
+        &self,
+        user_id: &str,
+        state: &CharacterStateSnapshot,
+    ) -> Result<String, String> {
+        let url = format!(
+            "{}/v2/rpc/save_character_state?http_key={}&unwrap",
+            self.base_url, self.http_key
+        );
+        let seq = if state.seq > 0 {
+            state.seq
+        } else {
+            self.state_seq_counter.fetch_add(1, Ordering::Relaxed)
+        };
+        let map_id = if state.map_id.is_empty() {
+            "map-for-play"
+        } else {
+            state.map_id.as_str()
+        };
+        let rpc_payload = serde_json::json!({
+            "userId": user_id,
+            "mapId": map_id,
+            "x": state.x,
+            "y": state.y,
+            "health": state.health,
+            "seq": seq,
+        });
+        let payload = serde_json::to_string(&rpc_payload)
+            .map_err(|e| format!("Failed to serialize CharacterStateSnapshot: {e}"))?;
+
+        let mut attempt = 0;
+        loop {
+            let res = self
+                .client
+                .post(&url)
+                .header(reqwest::header::CONTENT_TYPE, "application/json")
+                .body(payload.clone())
+                .send()
+                .await;
+
+            match res {
+                Ok(response) => {
+                    let status = response.status();
+                    if status.is_success() {
+                        return response.text().await.map_err(|e| {
+                            format!(
+                                "Failed to read save_character_state text: {}",
+                                e.without_url()
+                            )
+                        });
+                    }
+
+                    if status.is_client_error() && status != reqwest::StatusCode::TOO_MANY_REQUESTS
+                    {
+                        let err_text = response.text().await.unwrap_or_default();
+                        return Err(format!(
+                            "Nakama save_character_state client error ({status}): {err_text}"
+                        ));
+                    }
+
+                    if attempt >= self.retries {
+                        return Err(format!(
+                            "Nakama save_character_state exhausted retries with status: {status}"
+                        ));
+                    }
+                }
+                Err(err) => {
+                    let clean_err = err.without_url();
+                    if attempt >= self.retries {
+                        return Err(format!(
+                            "Nakama save_character_state network error: {clean_err}"
+                        ));
+                    }
+                }
+            }
+
+            tokio::time::sleep(Self::backoff_duration(attempt)).await;
+            attempt += 1;
+        }
+    }
 }
 
 #[async_trait]
@@ -579,6 +716,14 @@ impl NakamaStorage for NakamaClient {
     async fn report_match_events(&self, batch: &MatchEventBatch) -> Result<String, String> {
         self.report_match_events(batch).await
     }
+
+    async fn save_character_state(
+        &self,
+        user_id: &str,
+        state: &CharacterStateSnapshot,
+    ) -> Result<String, String> {
+        self.save_character_state(user_id, state).await
+    }
 }
 
 /// Configurable in-memory mock client for tests and offline local development.
@@ -588,6 +733,8 @@ pub struct MockNakamaClient {
     loadouts: Arc<RwLock<HashMap<String, Option<LoadoutSnapshot>>>>,
     events_response: Arc<RwLock<Option<Result<String, String>>>>,
     reported_batches: Arc<RwLock<Vec<MatchEventBatch>>>,
+    saved_states: Arc<RwLock<Vec<(String, CharacterStateSnapshot)>>>,
+    latest_states: Arc<RwLock<HashMap<String, CharacterStateSnapshot>>>,
 }
 
 impl MockNakamaClient {
@@ -614,6 +761,14 @@ impl MockNakamaClient {
         self.reported_batches.read().unwrap().clone()
     }
 
+    pub fn get_saved_states(&self) -> Vec<(String, CharacterStateSnapshot)> {
+        self.saved_states.read().unwrap().clone()
+    }
+
+    pub fn get_latest_character_state(&self, user_id: &str) -> Option<CharacterStateSnapshot> {
+        self.latest_states.read().unwrap().get(user_id).cloned()
+    }
+
     pub async fn verify_session(&self, token: &str) -> Result<Option<String>, String> {
         let sessions = self.sessions.read().unwrap();
         if let Some(user_id) = sessions.get(token) {
@@ -625,8 +780,18 @@ impl MockNakamaClient {
 
     pub async fn get_loadout(&self, user_id: &str) -> Result<Option<LoadoutSnapshot>, String> {
         let loadouts = self.loadouts.read().unwrap();
-        if let Some(loadout) = loadouts.get(user_id) {
-            Ok(loadout.clone())
+        let latest_cs = self.latest_states.read().unwrap().get(user_id).cloned();
+        if let Some(loadout_opt) = loadouts.get(user_id) {
+            let mut snapshot = loadout_opt.clone();
+            if let (Some(ref mut s), Some(cs)) = (&mut snapshot, latest_cs) {
+                s.character_state = Some(cs);
+            }
+            Ok(snapshot)
+        } else if let Some(cs) = latest_cs {
+            Ok(Some(LoadoutSnapshot {
+                character_state: Some(cs),
+                ..Default::default()
+            }))
         } else {
             Ok(None)
         }
@@ -644,6 +809,32 @@ impl MockNakamaClient {
             Ok(r#"{"deduped":false}"#.to_string())
         }
     }
+
+    pub async fn save_character_state(
+        &self,
+        user_id: &str,
+        state: &CharacterStateSnapshot,
+    ) -> Result<String, String> {
+        let mut latest = self.latest_states.write().unwrap();
+        if let Some(existing) = latest.get(user_id) {
+            if state.seq > 0 && state.seq <= existing.seq {
+                return Ok(serde_json::json!({ "deduped": true, "seq": existing.seq }).to_string());
+            }
+        }
+        latest.insert(user_id.to_string(), state.clone());
+        drop(latest);
+
+        self.saved_states
+            .write()
+            .unwrap()
+            .push((user_id.to_string(), state.clone()));
+
+        if let Some(Some(ref mut loadout)) = self.loadouts.write().unwrap().get_mut(user_id) {
+            loadout.character_state = Some(state.clone());
+        }
+
+        Ok(serde_json::json!({ "deduped": false, "seq": state.seq }).to_string())
+    }
 }
 
 #[async_trait]
@@ -658,6 +849,14 @@ impl NakamaStorage for MockNakamaClient {
 
     async fn report_match_events(&self, batch: &MatchEventBatch) -> Result<String, String> {
         self.report_match_events(batch).await
+    }
+
+    async fn save_character_state(
+        &self,
+        user_id: &str,
+        state: &CharacterStateSnapshot,
+    ) -> Result<String, String> {
+        self.save_character_state(user_id, state).await
     }
 }
 
@@ -770,6 +969,7 @@ mod tests {
             },
             skill_loadout: vec!["meteor_strike".to_string()],
             active_quest_ids: vec!["q_intro".to_string()],
+            character_state: None,
         };
 
         let json = serde_json::to_string(&snapshot).unwrap();

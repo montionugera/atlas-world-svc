@@ -9,8 +9,8 @@ use server_rs::net::WsServer;
 use server_rs::protocol::{fnv1a_32, serialize_client_input};
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
 use server_rs::storage::{
-    EquippedItemIds, LoadoutSnapshot, MatchEvent, MatchEventBatch, MatchEventBuffer,
-    MockNakamaClient, NakamaClient, PrimaryStats, ProfileDoc,
+    CharacterStateBuffer, CharacterStateSnapshot, EquippedItemIds, LoadoutSnapshot, MatchEvent,
+    MatchEventBatch, MatchEventBuffer, MockNakamaClient, NakamaClient, PrimaryStats, ProfileDoc,
 };
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -584,4 +584,156 @@ async fn test_match_event_buffer_flushes_on_leave_and_on_interval_with_nakama_rp
     assert_eq!(payloads[1]["events"][0]["userId"], uid_stayer);
     assert_eq!(payloads[1]["events"][0]["targetId"], "veil_spearling");
     assert_eq!(payloads[1]["events"][0]["count"], 1);
+}
+
+#[tokio::test]
+async fn test_save_and_restore_position_and_health_on_interval_on_leave_and_across_crash() {
+    // E-003 slice 7 (F-073):
+    // 1. Periodic checkpoint saves active player position & health so an abrupt server crash
+    //    preserves the latest checkpointed state.
+    // 2. When a new server instance boots after a crash and fetches `get_loadout`, spawning
+    //    the player restores their saved `(x, y)` position and `health`.
+    // 3. When the player leaves cleanly (`live_tick` with `disconnected`), `departed_states`
+    //    captures their final `(x, y, health)` before despawn and flushes via `save_character_state`.
+    // 4. Out-of-order / stale `seq` writes are deduped.
+    let uid = "00000000-0000-4000-8000-000000000143";
+    let mock_nakama = MockNakamaClient::new();
+    mock_nakama.set_loadout(uid, Some(LoadoutSnapshot::default()));
+
+    // --- Server Instance 1 (before crash) ---
+    let mut sim1 = AtlasSimulation::live(LiveConfig {
+        bot_count: 0,
+        mob_count: 0,
+        ..Default::default()
+    });
+    let mut state_buf1 = CharacterStateBuffer::new(Duration::from_secs(5)).with_initial_seq(100);
+
+    // Player joins and moves to (312.5, 640.0) with 74.5 HP
+    let entity1 = sim1.spawn_player_avatar(uid, 312.5, 640.0);
+    sim1.world.get_mut::<Health>(entity1).unwrap().current = 74.5;
+
+    // Periodic 5s checkpoint fires before server crash
+    assert!(state_buf1.should_checkpoint(Duration::from_secs(5)));
+    state_buf1.record_all(sim1.snapshot_active_player_states());
+    let checkpoint_states = state_buf1.flush_all();
+    assert_eq!(checkpoint_states.len(), 1);
+    assert_eq!(checkpoint_states[0].0, uid);
+    assert!((checkpoint_states[0].1.x - 312.5).abs() < 1e-3);
+    assert!((checkpoint_states[0].1.y - 640.0).abs() < 1e-3);
+    assert!((checkpoint_states[0].1.health - 74.5).abs() < 1e-3);
+    assert_eq!(checkpoint_states[0].1.seq, 100);
+
+    CharacterStateBuffer::dispatch_states(&mock_nakama, &checkpoint_states).await;
+
+    // Simulate an out-of-order stale write (seq 99 < 100) arriving late -> deduped
+    let stale_res = mock_nakama
+        .save_character_state(
+            uid,
+            &CharacterStateSnapshot {
+                schema_version: 1,
+                map_id: "map-for-play".to_string(),
+                x: 10.0,
+                y: 10.0,
+                health: 10.0,
+                seq: 99,
+            },
+        )
+        .await
+        .unwrap();
+    assert!(stale_res.contains(r#""deduped":true"#));
+
+    // --- Server Instance 2 (after crash & restart) ---
+    let mut sim2 = AtlasSimulation::live(LiveConfig {
+        bot_count: 0,
+        mob_count: 0,
+        ..Default::default()
+    });
+    let mut state_buf2 = CharacterStateBuffer::new(Duration::from_secs(5)).with_initial_seq(200);
+
+    let restored_loadout = mock_nakama.get_loadout(uid).await.unwrap().unwrap();
+    assert!(restored_loadout.character_state.is_some());
+    sim2.set_session_loadout(uid, Some(restored_loadout));
+
+    // First input on Server Instance 2 spawns the player at their restored position & health
+    let join_pkt = server_rs::net::ClientPacket {
+        session_id: uid.to_string(),
+        room_id: "map-for-play".to_string(),
+        payload: serialize_client_input(1, 0.0, 0.0, false, 0, 0),
+    };
+    let frame_rejoin = sim2.live_tick(&[join_pkt], &[]);
+    let wire_player = frame_rejoin
+        .entities
+        .iter()
+        .find(|e| e.id == fnv1a_32(uid))
+        .expect("rejoined player must appear in snapshot");
+    assert!((wire_player.x - 312.5).abs() < 1e-3);
+    assert!((wire_player.y - 640.0).abs() < 1e-3);
+    assert!((wire_player.health - 74.5).abs() < 1e-3);
+
+    // Player moves to (777.0, 222.0) and heals/changes HP to 92.0, then leaves cleanly
+    let mut q = sim2
+        .world
+        .query::<(&EntityId, &mut Position, &mut Health)>();
+    for (id, mut pos, mut hp) in q.iter_mut(&mut sim2.world) {
+        if id.0 == uid {
+            pos.x = 777.0;
+            pos.y = 222.0;
+            hp.current = 92.0;
+        }
+    }
+
+    let frame_leave = sim2.live_tick(&[], &[uid.to_string()]);
+    assert_eq!(frame_leave.departed_states.len(), 1);
+    assert_eq!(frame_leave.departed_states[0].0, uid);
+    assert!((frame_leave.departed_states[0].1.x - 777.0).abs() < 1e-3);
+    assert!((frame_leave.departed_states[0].1.y - 222.0).abs() < 1e-3);
+    assert!((frame_leave.departed_states[0].1.health - 92.0).abs() < 1e-3);
+
+    // Flush on leave over real HTTP to NakamaClient
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let http_payloads: Arc<Mutex<Vec<serde_json::Value>>> = Arc::new(Mutex::new(Vec::new()));
+    let http_clone = http_payloads.clone();
+
+    tokio::spawn(async move {
+        if let Ok((mut stream, _)) = listener.accept().await {
+            let mut buf = [0u8; 4096];
+            let n = stream.read(&mut buf).await.unwrap_or(0);
+            let req = String::from_utf8_lossy(&buf[..n]);
+            if let Some(idx) = req.find("\r\n\r\n") {
+                let body_str = &req[idx + 4..];
+                if let Ok(val) = serde_json::from_str::<serde_json::Value>(body_str) {
+                    http_clone.lock().unwrap().push(val);
+                }
+            }
+            let body = r#"{"deduped":false,"seq":200}"#;
+            let resp = format!(
+                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                body.len(),
+                body
+            );
+            let _ = stream.write_all(resp.as_bytes()).await;
+        }
+    });
+
+    let http_client = NakamaClient::new(
+        format!("http://{addr}"),
+        "test_http_key".to_string(),
+        2000,
+        0,
+    );
+    state_buf2.record_all(frame_leave.departed_states);
+    let leave_states = state_buf2.flush_users(&[uid.to_string()]);
+    assert_eq!(leave_states.len(), 1);
+    let res = CharacterStateBuffer::dispatch_states(&http_client, &leave_states).await;
+    assert!(res[0].is_ok());
+
+    let received = http_payloads.lock().unwrap().clone();
+    assert_eq!(received.len(), 1);
+    assert_eq!(received[0]["userId"], uid);
+    assert_eq!(received[0]["mapId"], "map-for-play");
+    assert!((received[0]["x"].as_f64().unwrap() - 777.0).abs() < 1e-3);
+    assert!((received[0]["y"].as_f64().unwrap() - 222.0).abs() < 1e-3);
+    assert!((received[0]["health"].as_f64().unwrap() - 92.0).abs() < 1e-3);
+    assert_eq!(received[0]["seq"], 200);
 }
