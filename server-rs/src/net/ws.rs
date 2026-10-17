@@ -4,7 +4,7 @@ use futures_util::{SinkExt, StreamExt};
 use std::collections::HashMap;
 use std::net::{IpAddr, SocketAddr};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
@@ -16,6 +16,41 @@ use tokio_tungstenite::tungstenite::protocol::frame::coding::CloseCode;
 use tokio_tungstenite::tungstenite::protocol::CloseFrame;
 use tokio_tungstenite::tungstenite::Message;
 use tracing::{debug, error, info, warn};
+
+/// Process-wide cache of the most recent join-time `LoadoutSnapshot` per `session_id`
+/// so `AtlasSimulation::apply_player_input` can apply a saved character even when invoked
+/// directly in integration tests without `main.rs`'s `drain_loadouts` loop.
+fn global_session_loadouts(
+) -> &'static std::sync::RwLock<HashMap<String, crate::storage::LoadoutSnapshot>> {
+    static LOADOUTS: OnceLock<std::sync::RwLock<HashMap<String, crate::storage::LoadoutSnapshot>>> =
+        OnceLock::new();
+    LOADOUTS.get_or_init(|| std::sync::RwLock::new(HashMap::new()))
+}
+
+/// Returns the latest cached `LoadoutSnapshot` for `session_id`, if any.
+pub fn cached_session_loadout(session_id: &str) -> Option<crate::storage::LoadoutSnapshot> {
+    global_session_loadouts()
+        .read()
+        .ok()
+        .and_then(|map| map.get(session_id).cloned())
+}
+
+/// Updates or clears the process-wide cached `LoadoutSnapshot` for `session_id`.
+pub fn set_cached_session_loadout(
+    session_id: &str,
+    loadout: Option<crate::storage::LoadoutSnapshot>,
+) {
+    if let Ok(mut map) = global_session_loadouts().write() {
+        match loadout {
+            Some(l) => {
+                map.insert(session_id.to_string(), l);
+            }
+            None => {
+                map.remove(session_id);
+            }
+        }
+    }
+}
 
 /// Returns `true` when `user_id` is a canonical 36-character hyphenated UUID (`8-4-4-4-12` hex).
 /// Nakama's `storageRead` rejects non-UUID user IDs (`expects 'userId' value to be a valid id`),
@@ -76,10 +111,14 @@ struct DebugGate {
     tx: UnboundedSender<DebugRequest>,
 }
 
+pub type LoadoutNotice = (String, String, Option<crate::storage::LoadoutSnapshot>);
+
 pub struct WsServer {
     local_addr: SocketAddr,
     connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
     session_rooms: Arc<RwLock<HashMap<String, String>>>,
+    session_loadouts: Arc<std::sync::RwLock<HashMap<String, crate::storage::LoadoutSnapshot>>>,
+    loadout_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<LoadoutNotice>>>,
     auth_guard: AuthGuard,
     inbound_tx: UnboundedSender<ClientPacket>,
     inbound_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<ClientPacket>>>,
@@ -102,6 +141,9 @@ impl WsServer {
 
         let connections = Arc::new(RwLock::new(HashMap::new()));
         let session_rooms = Arc::new(RwLock::new(HashMap::new()));
+        let session_loadouts = Arc::new(std::sync::RwLock::new(HashMap::new()));
+        let (loadout_tx, loadout_rx) = unbounded_channel();
+        let loadout_rx = Arc::new(tokio::sync::Mutex::new(loadout_rx));
         let (inbound_tx, inbound_rx) = unbounded_channel();
         let inbound_rx = Arc::new(tokio::sync::Mutex::new(inbound_rx));
         let (disconnect_tx, disconnect_rx) = unbounded_channel();
@@ -115,6 +157,8 @@ impl WsServer {
             local_addr,
             connections: connections.clone(),
             session_rooms: session_rooms.clone(),
+            session_loadouts: session_loadouts.clone(),
+            loadout_rx,
             auth_guard: auth_guard.clone(),
             inbound_tx: inbound_tx.clone(),
             inbound_rx,
@@ -131,6 +175,8 @@ impl WsServer {
             listener,
             connections,
             session_rooms,
+            session_loadouts,
+            loadout_tx,
             auth_guard,
             inbound_tx,
             disconnect_tx,
@@ -143,6 +189,24 @@ impl WsServer {
         ));
 
         Ok(server)
+    }
+
+    /// Returns the most recently fetched `LoadoutSnapshot` for `session_id` on this server.
+    pub fn session_loadout(&self, session_id: &str) -> Option<crate::storage::LoadoutSnapshot> {
+        self.session_loadouts
+            .read()
+            .ok()
+            .and_then(|map| map.get(session_id).cloned())
+    }
+
+    /// Drains `(session_id, room_id, Option<LoadoutSnapshot>)` updates fetched during recent joins.
+    pub async fn drain_loadouts(&self) -> Vec<LoadoutNotice> {
+        let mut rx = self.loadout_rx.lock().await;
+        let mut out = Vec::new();
+        while let Ok(item) = rx.try_recv() {
+            out.push(item);
+        }
+        out
     }
 
     /// Number of times this server instance logged skipping a non-UUID loadout fetch (capped at 1).
@@ -285,6 +349,8 @@ impl WsServer {
         listener: TcpListener,
         connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
         session_rooms: Arc<RwLock<HashMap<String, String>>>,
+        session_loadouts: Arc<std::sync::RwLock<HashMap<String, crate::storage::LoadoutSnapshot>>>,
+        loadout_tx: UnboundedSender<LoadoutNotice>,
         auth_guard: AuthGuard,
         inbound_tx: UnboundedSender<ClientPacket>,
         disconnect_tx: UnboundedSender<(String, String)>,
@@ -304,6 +370,8 @@ impl WsServer {
             }
             let conns = connections.clone();
             let rooms = session_rooms.clone();
+            let loadouts = session_loadouts.clone();
+            let lo_tx = loadout_tx.clone();
             let auth = auth_guard.clone();
             let in_tx = inbound_tx.clone();
             let dc_tx = disconnect_tx.clone();
@@ -317,8 +385,8 @@ impl WsServer {
                     return;
                 }
                 Self::handle_connection(
-                    stream, peer_addr, conn_seq, conns, rooms, auth, in_tx, dc_tx, nakama,
-                    skip_logs,
+                    stream, peer_addr, conn_seq, conns, rooms, loadouts, lo_tx, auth, in_tx, dc_tx,
+                    nakama, skip_logs,
                 )
                 .await;
             });
@@ -394,6 +462,8 @@ impl WsServer {
         conn_seq: u64,
         connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
         session_rooms: Arc<RwLock<HashMap<String, String>>>,
+        session_loadouts: Arc<std::sync::RwLock<HashMap<String, crate::storage::LoadoutSnapshot>>>,
+        loadout_tx: UnboundedSender<LoadoutNotice>,
         auth_guard: AuthGuard,
         inbound_tx: UnboundedSender<ClientPacket>,
         disconnect_tx: UnboundedSender<(String, String)>,
@@ -502,6 +572,7 @@ impl WsServer {
         // Nakama's storageRead rejects non-UUID user IDs, so non-UUID dev tokens skip the fetch
         // and log once per server instance.
         let client_opt = nakama_ref.read().unwrap().clone();
+        let mut fetched_loadout: Option<Option<crate::storage::LoadoutSnapshot>> = None;
         if let Some(client) = client_opt {
             if !is_uuid_user_id(&session_id) {
                 if non_uuid_skip_logs
@@ -520,9 +591,11 @@ impl WsServer {
                             "Retrieved persistent loadout for user {}: level {}",
                             session_id, loadout.profile.level
                         );
+                        fetched_loadout = Some(Some(loadout));
                     }
                     Ok(None) => {
                         info!("No persistent loadout for user {}, defaulting", session_id);
+                        fetched_loadout = Some(None);
                     }
                     Err(e) => {
                         warn!(
@@ -591,6 +664,22 @@ impl WsServer {
             let _ = ws_write.send(Message::Close(Some(close_frame))).await;
             let _ = ws_write.close().await;
             return;
+        }
+
+        // Apply fetched loadout once this connection is confirmed as the active session.
+        if let Some(loadout_opt) = fetched_loadout {
+            if let Ok(mut map) = session_loadouts.write() {
+                match &loadout_opt {
+                    Some(l) => {
+                        map.insert(session_id.clone(), l.clone());
+                    }
+                    None => {
+                        map.remove(&session_id);
+                    }
+                }
+            }
+            set_cached_session_loadout(&session_id, loadout_opt.clone());
+            let _ = loadout_tx.send((session_id.clone(), room_id.clone(), loadout_opt));
         }
 
         // Task for writing outbound messages to client
