@@ -1,0 +1,535 @@
+{
+  "version": 3,
+  "mapId": "flaggrike-geo",
+  "name": "Flaggrike Geo \u2014 Stonemoor (c04/r28)",
+  "seed": 162272,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "barren_cliff",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 1.2,
+  "proceduralClutterDensity": 46,
+  "defaultTimeOfDayHours": 13.5,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c04",
+    "coastClass": "karst-pavement",
+    "levelBand": [
+      46,
+      64
+    ],
+    "primaryPinnedId": "c-town-netstead",
+    "regionId": "c04/r28",
+    "zoneId": "flaggrike-geo",
+    "spineNodeId": "n-stonemoor",
+    "townId": "c-town-netstead",
+    "storyRegionId": "",
+    "landmarkIds": [
+      "scarclint-pot",
+      "head-below-slatemoor",
+      "c-lm-stonemoor-shore",
+      "c-lm-slateflow-sink",
+      "c-lm-the-drowned-pavement"
+    ],
+    "resourceIds": [
+      "valley-head-plots",
+      "roadside-passage-ore",
+      "lip-water"
+    ],
+    "hazardIds": [
+      "the-valley-filling",
+      "the-penned-water"
+    ]
+  },
+  "concept": {
+    "biome": "stonemoor_karst_plateau",
+    "recommendedLevelRange": [
+      46,
+      64
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "Flaggrike is the first settled ground the eastern road reaches out of the port, which makes it the place everything heading further east is provisioned from. It has water that can be taken standing up, a drowned valley head with soil in it, and a passage into the pavement close enough to the road that ore can be got and loaded in the same day."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "coastal_tidal_flat": {
+      "surfaceType": "estuary_mudflat",
+      "albedoTint": "#7A8B7B",
+      "friction": 0.78,
+      "maxSlopeDeg": 28.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.28,
+          "tagPool": {
+            "biome": "coastal_estuary",
+            "role": "salt_marsh_reed",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.06,
+          "tagPool": {
+            "biome": "coastal_estuary",
+            "role": "coastal_scrub",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.58,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.02,
+          "minSpacingMeters": 5.0,
+          "tagPool": {
+            "biome": "coastal_estuary",
+            "role": "driftwood_snag",
+            "maxTrunkRadiusM": 0.85
+          },
+          "assets": [
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.95,
+            1.3
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.75
+        },
+        "boulder": {
+          "weight": 0.025,
+          "minSpacingMeters": 4.5,
+          "tagPool": {
+            "biome": "coastal_estuary",
+            "role": "tidal_shingle_rock",
+            "maxTrunkRadiusM": 1.0
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            1.1
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.72
+        }
+      }
+    }
+  },
+  "routes": [
+    {
+      "id": "flaggrike_geo_main_trunk_road",
+      "groundId": "cobble_road",
+      "width": 12.5,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          -90.0
+        ],
+        [
+          -10.5,
+          -22.0
+        ],
+        [
+          10.5,
+          22.0
+        ],
+        [
+          0.0,
+          90.0
+        ]
+      ]
+    },
+    {
+      "id": "flaggrike_geo_survey_footpath",
+      "groundId": "cobble_road",
+      "width": 4.5,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          -62.0,
+          -3.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          62.0,
+          3.0
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "flaggrike_geo_central_survey_clearing",
+      "groundId": "meadow_grass",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 28.0,
+      "innerRadius": 0.0,
+      "outerRadius": 28.0,
+      "width": 56.0,
+      "height": 56.0,
+      "feather": 4.5
+    },
+    {
+      "id": "flaggrike_geo_outer_biome_margin",
+      "groundId": "barren_cliff",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 28.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "scarclint_pot_terrace",
+      "x": 0.0,
+      "z": -18.0,
+      "radius": 16.0,
+      "height": 2.3,
+      "falloff": 0.46
+    },
+    {
+      "id": "head_below_slatemoor_bench",
+      "x": -18.0,
+      "z": 11.0,
+      "radius": 13.5,
+      "height": 2.0,
+      "falloff": 0.48
+    },
+    {
+      "id": "flaggrike_geo_sheer_scarp_cliff",
+      "x": 27.0,
+      "z": -21.0,
+      "radius": 10.0,
+      "height": 4.3,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "flaggrike_geo_watchtower_01",
+      "kind": "watchtower",
+      "x": -10.0,
+      "z": -7.0,
+      "rotY": 0.0,
+      "radius": 3.7,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "flaggrike_geo_cavern_01",
+      "kind": "crystal_cave",
+      "x": 12.0,
+      "z": -8.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_scarclint_pot_pillar_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_head_below_slatemoor_pillar_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_flaggrike_geo_survey_banner",
+      "assetPath": "res://assets/dungeon/banner_patterna_yellow.glb",
+      "x": -3.4,
+      "y": 2.0,
+      "z": -13.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "flaggrike_geo_bound_war_beast",
+      "x": 2119.0,
+      "y": 2055.6,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-bound-war-beast",
+      "count": 2
+    },
+    {
+      "id": "flaggrike_geo_crateyard_colossus",
+      "x": 1656.1,
+      "y": 2001.0,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-crateyard-colossus",
+      "count": 1
+    },
+    {
+      "id": "flaggrike_geo_ash_sermon_speaker",
+      "x": 2213.9,
+      "y": 1692.9,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-ash-sermon-speaker",
+      "count": 1
+    },
+    {
+      "id": "flaggrike_geo_deepwater_hauler",
+      "x": 1850.1,
+      "y": 2377.6,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-deepwater-hauler",
+      "count": 1
+    },
+    {
+      "id": "flaggrike_geo_frontline_devourer",
+      "x": 1489.9,
+      "y": 1699.3,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-frontline-devourer",
+      "count": 1
+    },
+    {
+      "id": "flaggrike_geo_hollow_bell_wight",
+      "x": 2536.3,
+      "y": 1935.2,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-hollow-bell-wight",
+      "count": 1
+    },
+    {
+      "id": "flaggrike_geo_scar_drake",
+      "x": 1418.4,
+      "y": 2352.2,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-scar-drake",
+      "count": 1
+    },
+    {
+      "id": "flaggrike_geo_unburied_host",
+      "x": 1691.9,
+      "y": 1249.6,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-unburied-host",
+      "count": 1
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_scarclint_pot_pillar_w",
+      "min_x": 1946.6,
+      "min_y": 1844.6,
+      "max_x": 1957.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "landmark_head_below_slatemoor_pillar_e",
+      "min_x": 2042.6,
+      "min_y": 1844.6,
+      "max_x": 2053.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "cliff_flaggrike_geo_sheer_scarp_cliff",
+      "min_x": 2188.0,
+      "min_y": 1708.0,
+      "max_x": 2352.0,
+      "max_y": 1872.0
+    }
+  ]
+}

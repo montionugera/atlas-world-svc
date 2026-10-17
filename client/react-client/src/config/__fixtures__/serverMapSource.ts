@@ -126,12 +126,21 @@ export function parseServerMaps(source: string): ServerMaps {
 
   let rectsRead = 0;
   const readZones = (body: string): ServerZone[] => {
-    const field = only(
+    let field = only(
       body,
       /terrain_zones: (.*?), player_spawn:/,
       "terrain_zones",
     )[1];
     if (field === "Vec::new()") return [];
+    const zoneHelper = field.match(/^Self::(\w+)\(\)$/);
+    if (zoneHelper) {
+      field = section(
+        src,
+        `fn ${zoneHelper[1]}() -> Vec<TerrainZone> {`,
+        "}",
+        `fn ${zoneHelper[1]}`,
+      ).trim();
+    }
     const rect = new RegExp(
       `TerrainZone::rect\\((?:TerrainType::)?(\\w+), ${NUM}, ${NUM}, ${NUM}, ${NUM}\\),?`,
       "g",

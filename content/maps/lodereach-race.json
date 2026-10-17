@@ -1,0 +1,561 @@
+{
+  "version": 3,
+  "mapId": "lodereach-race",
+  "name": "Lodereach Race \u2014 Coldreach (c03/r22)",
+  "seed": 331687,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "glacier_snow_crust",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 1.35,
+  "proceduralClutterDensity": 46,
+  "defaultTimeOfDayHours": 11.5,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c03",
+    "coastClass": "ridge-and-fjord",
+    "levelBand": [
+      24,
+      40
+    ],
+    "primaryPinnedId": "c-town-tallowquay",
+    "regionId": "c03/r22",
+    "zoneId": "lodereach-race",
+    "spineNodeId": "n-coldreach",
+    "townId": "c-town-tallowquay",
+    "storyRegionId": "",
+    "landmarkIds": [
+      "haulholt-geo",
+      "confluence-north-of-fastbreak",
+      "c-lm-coldreach-shore",
+      "c-lm-the-trade-wind-landfall",
+      "c-lm-peatrun-coast"
+    ],
+    "resourceIds": [
+      "boom-timber",
+      "levee-ground"
+    ],
+    "hazardIds": [
+      "the-race-in-the-gut",
+      "the-turning-butt"
+    ]
+  },
+  "concept": {
+    "biome": "coldreach_fjord_tundra",
+    "recommendedLevelRange": [
+      24,
+      40
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "Wood and grain both come down to the same mile of shore here \u2014 the wood floated to the boom, the grain carted to it \u2014 so a party buys either on the beach, before the road takes it up to Tallowquay."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "glacier_snow_crust": {
+      "surfaceType": "wind_scoured_ice",
+      "albedoTint": "#D9E6F2",
+      "friction": 0.72,
+      "maxSlopeDeg": 34.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.15,
+          "tagPool": {
+            "biome": "boreal_glacier",
+            "role": "frost_sedge",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.45,
+            0.75
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.28,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "boreal_glacier",
+            "role": "snow_dwarf_shrub",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.82
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.46,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.025,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "boreal_glacier",
+            "role": "rime_pine",
+            "maxTrunkRadiusM": 0.9
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.0,
+            1.38
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.8
+        },
+        "boulder": {
+          "weight": 0.03,
+          "minSpacingMeters": 4.4,
+          "tagPool": {
+            "biome": "boreal_glacier",
+            "role": "frost_boulder",
+            "maxTrunkRadiusM": 1.15
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.3
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "pine_forest_border": {
+      "surfaceType": "forest_moss",
+      "albedoTint": "#346E36",
+      "friction": 0.9,
+      "maxSlopeDeg": 30.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.35,
+          "tagPool": {
+            "biome": "forest",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.1,
+          "tagPool": {
+            "biome": "forest",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.95
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.52,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.04,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "forest",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.95
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.45
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        },
+        "boulder": {
+          "weight": 0.015,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "forest",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.1
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.25
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    }
+  },
+  "routes": [
+    {
+      "id": "lodereach_race_main_trunk_road",
+      "groundId": "cobble_road",
+      "width": 12.5,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          -90.0
+        ],
+        [
+          -12.0,
+          -22.0
+        ],
+        [
+          12.0,
+          22.0
+        ],
+        [
+          0.0,
+          90.0
+        ]
+      ]
+    },
+    {
+      "id": "lodereach_race_survey_footpath",
+      "groundId": "cobble_road",
+      "width": 4.5,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          -62.0,
+          10.5
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          62.0,
+          -10.5
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "lodereach_race_central_survey_clearing",
+      "groundId": "pine_forest_border",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 28.0,
+      "innerRadius": 0.0,
+      "outerRadius": 28.0,
+      "width": 56.0,
+      "height": 56.0,
+      "feather": 4.5
+    },
+    {
+      "id": "lodereach_race_outer_biome_margin",
+      "groundId": "glacier_snow_crust",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 28.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "haulholt_geo_terrace",
+      "x": 0.0,
+      "z": -18.0,
+      "radius": 16.0,
+      "height": 2.3,
+      "falloff": 0.46
+    },
+    {
+      "id": "confluence_north_of_fastbreak_bench",
+      "x": -18.0,
+      "z": 11.0,
+      "radius": 13.5,
+      "height": 2.0,
+      "falloff": 0.48
+    },
+    {
+      "id": "lodereach_race_sheer_scarp_cliff",
+      "x": 27.0,
+      "z": -21.0,
+      "radius": 10.0,
+      "height": 4.3,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "lodereach_race_watchtower_01",
+      "kind": "watchtower",
+      "x": -10.0,
+      "z": -7.0,
+      "rotY": 0.0,
+      "radius": 3.7,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "lodereach_race_cavern_01",
+      "kind": "crystal_cave",
+      "x": 12.0,
+      "z": -8.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_haulholt_geo_pillar_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_confluence_north_of_fastbreak_pillar_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_lodereach_race_survey_banner",
+      "assetPath": "res://assets/dungeon/banner_patterna_white.glb",
+      "x": -3.4,
+      "y": 2.0,
+      "z": -13.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "lodereach_race_frostfell_stalker",
+      "x": 2077.9,
+      "y": 2073.1,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-frostfell-stalker",
+      "count": 4
+    },
+    {
+      "id": "lodereach_race_hoarfrost_wisp",
+      "x": 1680.7,
+      "y": 2089.1,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-hoarfrost-wisp",
+      "count": 3
+    },
+    {
+      "id": "lodereach_race_ledger_hound",
+      "x": 1959.6,
+      "y": 1553.6,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-ledger-hound",
+      "count": 4
+    },
+    {
+      "id": "lodereach_race_oathtablet_sentry",
+      "x": 1936.8,
+      "y": 2377.9,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-oathtablet-sentry",
+      "count": 2
+    },
+    {
+      "id": "lodereach_race_harbor_assessor",
+      "x": 1528.1,
+      "y": 1615.9,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-harbor-assessor",
+      "count": 2
+    },
+    {
+      "id": "lodereach_race_hollowmoor_giant",
+      "x": 2480.5,
+      "y": 1706.6,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-hollowmoor-giant",
+      "count": 2
+    },
+    {
+      "id": "lodereach_race_icelocked_oathkeeper",
+      "x": 1391.2,
+      "y": 2314.4,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-icelocked-oathkeeper",
+      "count": 1
+    },
+    {
+      "id": "lodereach_race_rime_drake",
+      "x": 2017.0,
+      "y": 1199.6,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-rime-drake",
+      "count": 2
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_haulholt_geo_pillar_w",
+      "min_x": 1946.6,
+      "min_y": 1844.6,
+      "max_x": 1957.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "landmark_confluence_north_of_fastbreak_pillar_e",
+      "min_x": 2042.6,
+      "min_y": 1844.6,
+      "max_x": 2053.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "cliff_lodereach_race_sheer_scarp_cliff",
+      "min_x": 2188.0,
+      "min_y": 1708.0,
+      "max_x": 2352.0,
+      "max_y": 1872.0
+    }
+  ]
+}

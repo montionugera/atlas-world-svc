@@ -1,0 +1,521 @@
+{
+  "version": 3,
+  "mapId": "emberdown",
+  "name": "Emberdown \u2014 The Terraced Ledges & Coal Adits",
+  "seed": 790558,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "meadow_grass",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 1.15,
+  "proceduralClutterDensity": 48,
+  "defaultTimeOfDayHours": 16.8,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c02",
+    "regionId": "c02/r08",
+    "zoneId": "emberdown",
+    "spineNodeId": "n-embervale",
+    "townId": "c-town-embervale",
+    "storyRegionId": "region-embervale",
+    "landmarkIds": [
+      "the-terraced-ledges",
+      "the-adits"
+    ],
+    "resourceIds": [
+      "burning-stone",
+      "ledge-loam"
+    ],
+    "hazardIds": [
+      "seam-damp",
+      "the-ember-pits"
+    ]
+  },
+  "concept": {
+    "biome": "wealdmarch_coal_terraces",
+    "recommendedLevelRange": [
+      1,
+      50
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "The only hillside in the land where the fuel and the food come out of the same ground."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "pine_forest_border": {
+      "surfaceType": "forest_moss",
+      "albedoTint": "#346E36",
+      "friction": 0.9,
+      "maxSlopeDeg": 30.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.35,
+          "tagPool": {
+            "biome": "forest",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.1,
+          "tagPool": {
+            "biome": "forest",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.95
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.52,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.04,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "forest",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.95
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.45
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        },
+        "boulder": {
+          "weight": 0.015,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "forest",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.1
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.25
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    }
+  },
+  "routes": [
+    {
+      "id": "embervale_slate_stair_road",
+      "groundId": "cobble_road",
+      "width": 12.5,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          90.0
+        ],
+        [
+          0.0,
+          22.0
+        ],
+        [
+          0.0,
+          -22.0
+        ],
+        [
+          0.0,
+          -90.0
+        ]
+      ]
+    },
+    {
+      "id": "coal_adit_basket_footpath",
+      "groundId": "cobble_road",
+      "width": 4.5,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          -60.0,
+          -10.0
+        ],
+        [
+          0.0,
+          -10.0
+        ],
+        [
+          60.0,
+          -14.0
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "warm_ledge_loam_terrace",
+      "groundId": "meadow_grass",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 28.0,
+      "innerRadius": 0.0,
+      "outerRadius": 28.0,
+      "width": 56.0,
+      "height": 56.0,
+      "feather": 4.5
+    },
+    {
+      "id": "slag_and_seam_outcrop_ring",
+      "groundId": "barren_cliff",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 28.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "the_terraced_ledges_upper",
+      "x": 0.0,
+      "z": -18.0,
+      "radius": 16.0,
+      "height": 2.4,
+      "falloff": 0.46
+    },
+    {
+      "id": "forge_slag_bank_west",
+      "x": -18.0,
+      "z": 10.0,
+      "radius": 13.0,
+      "height": 2.0,
+      "falloff": 0.48
+    },
+    {
+      "id": "the_adits_coal_face_cliff",
+      "x": 27.0,
+      "z": -20.0,
+      "radius": 10.0,
+      "height": 4.2,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "emberdown_bell_watchtower_01",
+      "kind": "watchtower",
+      "x": -10.0,
+      "z": -6.0,
+      "rotY": 0.0,
+      "radius": 3.6,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "emberdown_seam_adit_cavern_01",
+      "kind": "crystal_cave",
+      "x": 12.0,
+      "z": -10.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_adit_mouth_pillar_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 9.5,
+      "y": 2.0,
+      "z": -14.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_adit_mouth_pillar_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 14.5,
+      "y": 2.0,
+      "z": -14.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_embervale_banner",
+      "assetPath": "res://assets/dungeon/banner_patterna_red.glb",
+      "x": -6.0,
+      "y": 1.8,
+      "z": -8.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "emberdown_cinderhen",
+      "x": 2133.7,
+      "y": 1972.3,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-cinderhen",
+      "count": 4
+    },
+    {
+      "id": "emberdown_slagheap_grub",
+      "x": 1693.0,
+      "y": 2123.4,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-slagheap-grub",
+      "count": 2
+    },
+    {
+      "id": "emberdown_emberpit_digger",
+      "x": 2221.9,
+      "y": 1666.0,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-emberpit-digger",
+      "count": 2
+    },
+    {
+      "id": "emberdown_forge_ash_hound",
+      "x": 2054.5,
+      "y": 2380.8,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-forge-ash-hound",
+      "count": 4
+    },
+    {
+      "id": "emberdown_slagpit_hulk",
+      "x": 1598.5,
+      "y": 1479.0,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-slagpit-hulk",
+      "count": 2
+    },
+    {
+      "id": "emberdown_slag_drake",
+      "x": 2540.1,
+      "y": 1688.7,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-slag-drake",
+      "count": 2
+    },
+    {
+      "id": "emberdown_mourning_cloth_wight",
+      "x": 1434.6,
+      "y": 2480.2,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-mourning-cloth-wight",
+      "count": 2
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_adit_mouth_pillar_w",
+      "min_x": 2089.6,
+      "min_y": 1854.6,
+      "max_x": 2100.4,
+      "max_y": 1865.4
+    },
+    {
+      "id": "landmark_adit_mouth_pillar_e",
+      "min_x": 2139.6,
+      "min_y": 1854.6,
+      "max_x": 2150.4,
+      "max_y": 1865.4
+    },
+    {
+      "id": "cliff_the_adits_coal_face_cliff",
+      "min_x": 2188.0,
+      "min_y": 1718.0,
+      "max_x": 2352.0,
+      "max_y": 1882.0
+    }
+  ]
+}

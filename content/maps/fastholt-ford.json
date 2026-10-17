@@ -1,0 +1,561 @@
+{
+  "version": 3,
+  "mapId": "fastholt-ford",
+  "name": "Fastholt Ford \u2014 Coldreach (c03/r06)",
+  "seed": 141629,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "glacier_snow_crust",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 1.35,
+  "proceduralClutterDensity": 46,
+  "defaultTimeOfDayHours": 11.5,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c03",
+    "coastClass": "ridge-and-fjord",
+    "levelBand": [
+      46,
+      64
+    ],
+    "primaryPinnedId": "c-town-tallowquay",
+    "regionId": "c03/r06",
+    "zoneId": "fastholt-ford",
+    "spineNodeId": "n-coldreach",
+    "townId": "c-town-tallowquay",
+    "storyRegionId": "",
+    "landmarkIds": [
+      "halehaven-roads",
+      "reach-out-of-coldwall",
+      "c-lm-coldreach-shore",
+      "c-lm-the-trade-wind-landfall",
+      "c-lm-peatrun-coast"
+    ],
+    "resourceIds": [
+      "steppe-forage",
+      "terrace-course"
+    ],
+    "hazardIds": [
+      "the-terrace-face",
+      "nothing-here-to-burn"
+    ]
+  },
+  "concept": {
+    "biome": "coldreach_fjord_tundra",
+    "recommendedLevelRange": [
+      46,
+      64
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "Cut stone comes off the stranded shoreline here in courses two men can lift, and the eastern road ends at the yard where it is stacked."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "glacier_snow_crust": {
+      "surfaceType": "wind_scoured_ice",
+      "albedoTint": "#D9E6F2",
+      "friction": 0.72,
+      "maxSlopeDeg": 34.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.15,
+          "tagPool": {
+            "biome": "boreal_glacier",
+            "role": "frost_sedge",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.45,
+            0.75
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.28,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "boreal_glacier",
+            "role": "snow_dwarf_shrub",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.82
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.46,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.025,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "boreal_glacier",
+            "role": "rime_pine",
+            "maxTrunkRadiusM": 0.9
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.0,
+            1.38
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.8
+        },
+        "boulder": {
+          "weight": 0.03,
+          "minSpacingMeters": 4.4,
+          "tagPool": {
+            "biome": "boreal_glacier",
+            "role": "frost_boulder",
+            "maxTrunkRadiusM": 1.15
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.3
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "pine_forest_border": {
+      "surfaceType": "forest_moss",
+      "albedoTint": "#346E36",
+      "friction": 0.9,
+      "maxSlopeDeg": 30.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.35,
+          "tagPool": {
+            "biome": "forest",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.1,
+          "tagPool": {
+            "biome": "forest",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.95
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.52,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.04,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "forest",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.95
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.45
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        },
+        "boulder": {
+          "weight": 0.015,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "forest",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.1
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.25
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    }
+  },
+  "routes": [
+    {
+      "id": "fastholt_ford_main_trunk_road",
+      "groundId": "cobble_road",
+      "width": 12.5,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          -90.0
+        ],
+        [
+          10.5,
+          -22.0
+        ],
+        [
+          -10.5,
+          22.0
+        ],
+        [
+          0.0,
+          90.0
+        ]
+      ]
+    },
+    {
+      "id": "fastholt_ford_survey_footpath",
+      "groundId": "cobble_road",
+      "width": 4.5,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          -62.0,
+          9.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          62.0,
+          -9.0
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "fastholt_ford_central_survey_clearing",
+      "groundId": "pine_forest_border",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 28.0,
+      "innerRadius": 0.0,
+      "outerRadius": 28.0,
+      "width": 56.0,
+      "height": 56.0,
+      "feather": 4.5
+    },
+    {
+      "id": "fastholt_ford_outer_biome_margin",
+      "groundId": "glacier_snow_crust",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 28.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "halehaven_roads_terrace",
+      "x": 0.0,
+      "z": -18.0,
+      "radius": 16.0,
+      "height": 2.3,
+      "falloff": 0.46
+    },
+    {
+      "id": "reach_out_of_coldwall_bench",
+      "x": -18.0,
+      "z": 11.0,
+      "radius": 13.5,
+      "height": 2.0,
+      "falloff": 0.48
+    },
+    {
+      "id": "fastholt_ford_sheer_scarp_cliff",
+      "x": 27.0,
+      "z": -21.0,
+      "radius": 10.0,
+      "height": 4.3,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "fastholt_ford_watchtower_01",
+      "kind": "watchtower",
+      "x": -10.0,
+      "z": -7.0,
+      "rotY": 0.0,
+      "radius": 3.7,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "fastholt_ford_cavern_01",
+      "kind": "crystal_cave",
+      "x": 12.0,
+      "z": -8.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_halehaven_roads_pillar_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_reach_out_of_coldwall_pillar_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_fastholt_ford_survey_banner",
+      "assetPath": "res://assets/dungeon/banner_patterna_white.glb",
+      "x": -3.4,
+      "y": 2.0,
+      "z": -13.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "fastholt_ford_crateyard_colossus",
+      "x": 2124.1,
+      "y": 2072.8,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-crateyard-colossus",
+      "count": 1
+    },
+    {
+      "id": "fastholt_ford_hoarfell_giant",
+      "x": 1701.0,
+      "y": 2113.5,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-hoarfell-giant",
+      "count": 2
+    },
+    {
+      "id": "fastholt_ford_snowblind_shade",
+      "x": 1992.8,
+      "y": 1571.0,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-snowblind-shade",
+      "count": 2
+    },
+    {
+      "id": "fastholt_ford_deepwater_hauler",
+      "x": 2081.8,
+      "y": 2366.2,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-deepwater-hauler",
+      "count": 1
+    },
+    {
+      "id": "fastholt_ford_hollow_bell_wight",
+      "x": 1703.6,
+      "y": 1487.7,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-hollow-bell-wight",
+      "count": 1
+    },
+    {
+      "id": "fastholt_ford_icefloe_wyrm",
+      "x": 2528.5,
+      "y": 2041.2,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-icefloe-wyrm",
+      "count": 1
+    },
+    {
+      "id": "fastholt_ford_oathgate_sentinel",
+      "x": 1461.6,
+      "y": 2402.7,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-oathgate-sentinel",
+      "count": 1
+    },
+    {
+      "id": "fastholt_ford_whitewaste_colossus",
+      "x": 1967.9,
+      "y": 1205.4,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-whitewaste-colossus",
+      "count": 1
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_halehaven_roads_pillar_w",
+      "min_x": 1946.6,
+      "min_y": 1844.6,
+      "max_x": 1957.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "landmark_reach_out_of_coldwall_pillar_e",
+      "min_x": 2042.6,
+      "min_y": 1844.6,
+      "max_x": 2053.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "cliff_fastholt_ford_sheer_scarp_cliff",
+      "min_x": 2188.0,
+      "min_y": 1708.0,
+      "max_x": 2352.0,
+      "max_y": 1872.0
+    }
+  ]
+}

@@ -660,7 +660,7 @@ pub fn effective_stats_with_job(
     job_level: u32,
 ) -> PrimaryStats {
     let Some(job) = MMORPG_CATALOG.jobs.iter().find(|j| j.id == job_id) else {
-        return allocated.clone();
+        return *allocated;
     };
     let ratio = (job_level.clamp(1, job.max_job_level) as f32) / (job.max_job_level.max(1) as f32);
     let bonus = &job.job_bonus_at_max;
@@ -859,8 +859,8 @@ pub enum SiegeHitOutcome {
 impl CastleSiegeState {
     pub fn from_catalog(castle_id: &str) -> Option<Self> {
         let c = MMORPG_CATALOG.castles.iter().find(|x| x.id == castle_id)?;
-        let total_barricades =
-            c.fortifications.outer_gate_barricade_count + c.fortifications.inner_gate_barricade_count;
+        let total_barricades = c.fortifications.outer_gate_barricade_count
+            + c.fortifications.inner_gate_barricade_count;
         Some(Self {
             castle_id: c.id.clone(),
             castle_name: c.name.clone(),
@@ -887,7 +887,8 @@ impl CastleSiegeState {
         attack_element: &str,
         attacker_guild: &str,
     ) -> SiegeHitOutcome {
-        let gvg_scaled = ((raw_damage as u64) * (self.player_damage_scaling_pct as u64) / 100).max(1) as u32;
+        let gvg_scaled =
+            ((raw_damage as u64) * (self.player_damage_scaling_pct as u64) / 100).max(1) as u32;
 
         if self.outer_barricades_remaining > 0 {
             if gvg_scaled >= self.current_barricade_hp {
@@ -956,14 +957,7 @@ pub fn simulate_castle_siege(
         int: 20,
         dex: 50,
     };
-    let knight = derived_stats_for_job(
-        avg_base_level,
-        "knight",
-        40,
-        &alloc,
-        Some("scythe"),
-        7,
-    );
+    let knight = derived_stats_for_job(avg_base_level, "knight", 40, &alloc, Some("scythe"), 7);
     let gvg_scale = (castle.pvp_rules.player_damage_scaling_pct as f32) / 100.0;
     let per_attacker_dps = knight.p_atk * gvg_scale * 1.35;
     let raid_dps = (per_attacker_dps * attackers).max(1.0);
@@ -1018,8 +1012,8 @@ mod tests {
 
     #[test]
     fn test_castle_siege_barricade_and_emperium_normal_attack_rules() {
-        let mut siege =
-            CastleSiegeState::from_catalog("castle_valkyrie_01").expect("castle_valkyrie_01 must exist");
+        let mut siege = CastleSiegeState::from_catalog("castle_valkyrie_01")
+            .expect("castle_valkyrie_01 must exist");
         assert_eq!(siege.outer_barricades_remaining, 4);
 
         // Breach all 4 barricades (each 45,000 HP; 100,000 raw * 60% GvG scaling = 60,000 > 45,000)
@@ -1075,7 +1069,12 @@ mod tests {
         let f2 = attempt_refine(7, f1.new_pity_count, 9_500);
         assert!(!f2.success && f2.new_pity_count == 2);
         let pity = attempt_refine(7, f2.new_pity_count, 9_999);
-        assert!(pity.success && pity.triggered_pity && pity.new_refine_level == 8 && pity.new_pity_count == 0);
+        assert!(
+            pity.success
+                && pity.triggered_pity
+                && pity.new_refine_level == 8
+                && pity.new_pity_count == 0
+        );
 
         // Card socketing + Handbook milestones
         let mut counts = HashMap::new();
@@ -1103,16 +1102,9 @@ mod tests {
             int: 10,
             dex: 20,
         };
-        let boar_duel = simulate_job_vs_mob(
-            "swordman",
-            20,
-            20,
-            &alloc,
-            Some("basic_sword"),
-            3,
-            "boar",
-        )
-        .expect("boar simulation should succeed");
+        let boar_duel =
+            simulate_job_vs_mob("swordman", 20, 20, &alloc, Some("basic_sword"), 3, "boar")
+                .expect("boar simulation should succeed");
         assert!(boar_duel.r_ratio > 1.5);
         assert!(boar_duel.ttk_seconds > 0.5 && boar_duel.ttk_seconds < 15.0);
 

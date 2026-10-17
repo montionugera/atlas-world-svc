@@ -1,0 +1,534 @@
+{
+  "version": 3,
+  "mapId": "yardburn-confluence",
+  "name": "Yardburn Confluence \u2014 Thirstwold (c05/r20)",
+  "seed": 746629,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "cinder_ash_waste",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 0.95,
+  "proceduralClutterDensity": 46,
+  "defaultTimeOfDayHours": 16.0,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c05",
+    "coastClass": "rain-shadow-erg",
+    "levelBand": [
+      40,
+      58
+    ],
+    "primaryPinnedId": "c-lm-the-one-wet-strip",
+    "regionId": "c05/r20",
+    "zoneId": "yardburn-confluence",
+    "spineNodeId": "n-thirstwold",
+    "townId": "",
+    "storyRegionId": "",
+    "landmarkIds": [
+      "cindersea-pan",
+      "race-within-siroccwaste",
+      "c-lm-the-one-wet-strip",
+      "c-lm-thirstwold-erg"
+    ],
+    "resourceIds": [
+      "bench-barley",
+      "bed-water",
+      "bed-cobble"
+    ],
+    "hazardIds": [
+      "the-soft-fan",
+      "the-eastern-line"
+    ]
+  },
+  "concept": {
+    "biome": "thirstwold_alkali_erg",
+    "recommendedLevelRange": [
+      40,
+      58
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "The east end of the road. Sixty-three kilometres of track from the junction, better than two thirds of it laid across ground no survey has been over, and at the end of it the only settlement out here. It feeds itself off the bank and the bed \u2014 barley on the levee, water dug out of the gravel rather than lifted off it \u2014 and sells stone to the trains that came the long way for it."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "cinder_ash_waste": {
+      "surfaceType": "scorched_basalt_ash",
+      "albedoTint": "#4B3E39",
+      "friction": 0.86,
+      "maxSlopeDeg": 36.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.12,
+          "tagPool": {
+            "biome": "cinder_ash",
+            "role": "scorched_scrub",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.45,
+            0.72
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.28,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.04,
+          "tagPool": {
+            "biome": "cinder_ash",
+            "role": "charred_understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_b_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.52,
+            0.8
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.45,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.02,
+          "minSpacingMeters": 5.2,
+          "tagPool": {
+            "biome": "cinder_ash",
+            "role": "charred_snag",
+            "maxTrunkRadiusM": 0.85
+          },
+          "assets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.95,
+            1.32
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.75
+        },
+        "boulder": {
+          "weight": 0.035,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "cinder_ash",
+            "role": "basalt_outcrop",
+            "maxTrunkRadiusM": 1.15
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.8,
+            1.3
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    }
+  },
+  "routes": [
+    {
+      "id": "yardburn_confluence_main_trunk_road",
+      "groundId": "cobble_road",
+      "width": 12.5,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          -90.0
+        ],
+        [
+          1.5,
+          -22.0
+        ],
+        [
+          -1.5,
+          22.0
+        ],
+        [
+          0.0,
+          90.0
+        ]
+      ]
+    },
+    {
+      "id": "yardburn_confluence_survey_footpath",
+      "groundId": "cobble_road",
+      "width": 4.5,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          -62.0,
+          -9.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          62.0,
+          9.0
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "yardburn_confluence_central_survey_clearing",
+      "groundId": "barren_cliff",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 28.0,
+      "innerRadius": 0.0,
+      "outerRadius": 28.0,
+      "width": 56.0,
+      "height": 56.0,
+      "feather": 4.5
+    },
+    {
+      "id": "yardburn_confluence_outer_biome_margin",
+      "groundId": "cinder_ash_waste",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 28.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "cindersea_pan_terrace",
+      "x": 0.0,
+      "z": -18.0,
+      "radius": 16.0,
+      "height": 2.3,
+      "falloff": 0.46
+    },
+    {
+      "id": "race_within_siroccwaste_bench",
+      "x": -18.0,
+      "z": 11.0,
+      "radius": 13.5,
+      "height": 2.0,
+      "falloff": 0.48
+    },
+    {
+      "id": "yardburn_confluence_sheer_scarp_cliff",
+      "x": 27.0,
+      "z": -21.0,
+      "radius": 10.0,
+      "height": 4.3,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "yardburn_confluence_watchtower_01",
+      "kind": "watchtower",
+      "x": -10.0,
+      "z": -7.0,
+      "rotY": 0.0,
+      "radius": 3.7,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "yardburn_confluence_cavern_01",
+      "kind": "crystal_cave",
+      "x": 12.0,
+      "z": -8.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_cindersea_pan_pillar_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_race_within_siroccwaste_pillar_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_yardburn_confluence_survey_banner",
+      "assetPath": "res://assets/dungeon/banner_patterna_red.glb",
+      "x": -3.4,
+      "y": 2.0,
+      "z": -13.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "yardburn_confluence_bellwarden_revenant",
+      "x": 2140.1,
+      "y": 2014.6,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-bellwarden-revenant",
+      "count": 2
+    },
+    {
+      "id": "yardburn_confluence_mourning_cloth_wight",
+      "x": 1641.2,
+      "y": 1917.8,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-mourning-cloth-wight",
+      "count": 2
+    },
+    {
+      "id": "yardburn_confluence_relic_hulk",
+      "x": 2101.1,
+      "y": 1606.0,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-relic-hulk",
+      "count": 2
+    },
+    {
+      "id": "yardburn_confluence_shroudweaver",
+      "x": 1932.4,
+      "y": 2377.8,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-shroudweaver",
+      "count": 2
+    },
+    {
+      "id": "yardburn_confluence_siege_rot_hulk",
+      "x": 1637.9,
+      "y": 1528.9,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-siege-rot-hulk",
+      "count": 1
+    },
+    {
+      "id": "yardburn_confluence_violet_ash_drake",
+      "x": 2501.1,
+      "y": 2106.1,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-violet-ash-drake",
+      "count": 2
+    },
+    {
+      "id": "yardburn_confluence_warscar_maw",
+      "x": 1530.7,
+      "y": 2463.9,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-warscar-maw",
+      "count": 2
+    },
+    {
+      "id": "yardburn_confluence_afterglow_shade",
+      "x": 1982.7,
+      "y": 1206.0,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-afterglow-shade",
+      "count": 1
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_cindersea_pan_pillar_w",
+      "min_x": 1946.6,
+      "min_y": 1844.6,
+      "max_x": 1957.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "landmark_race_within_siroccwaste_pillar_e",
+      "min_x": 2042.6,
+      "min_y": 1844.6,
+      "max_x": 2053.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "cliff_yardburn_confluence_sheer_scarp_cliff",
+      "min_x": 2188.0,
+      "min_y": 1708.0,
+      "max_x": 2352.0,
+      "max_y": 1872.0
+    }
+  ]
+}

@@ -1,8 +1,31 @@
 {
+  "playerScaleAnchor": {
+    "archetype": "chibi_toddler",
+    "heightRangeM": [0.90, 1.20],
+    "targetHeightM": 1.05,
+    "foliageCapsM": {
+      "grassMaxM": 0.35,
+      "bushMaxM": 0.65,
+      "terraceStepMaxM": 0.25
+    }
+  },
   "kinds": {
     "character": {
       "heightRange": [1.6, 2.0],
       "maxTriangles": 10000,
+      "maxTextureSize": 1024,
+      "requiredStates": ["idle", "walk", "run", "attack", "death"]
+    },
+    "chibiPlayer": {
+      "heightRange": [0.90, 1.20],
+      "targetHeight": 1.05,
+      "maxTriangles": 10000,
+      "maxTextureSize": 1024,
+      "requiredStates": ["idle", "walk", "run", "attack", "death"]
+    },
+    "mvpBoss": {
+      "heightRange": [1.90, 2.20],
+      "maxTriangles": 12000,
       "maxTextureSize": 1024,
       "requiredStates": ["idle", "walk", "run", "attack", "death"]
     }

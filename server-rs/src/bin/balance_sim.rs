@@ -18,7 +18,14 @@ fn main() {
     );
 
     println!("--- 1. DUAL-TRACK EXP CURVE (BASE LV 1..99 & JOB LV 1..50) ---");
-    for &(blv, jlv, tier) in &[(1, 1, 0), (10, 10, 0), (20, 15, 1), (40, 40, 1), (60, 30, 2), (99, 50, 2)] {
+    for &(blv, jlv, tier) in &[
+        (1, 1, 0),
+        (10, 10, 0),
+        (20, 15, 1),
+        (40, 40, 1),
+        (60, 30, 2),
+        (99, 50, 2),
+    ] {
         println!(
             "  Base Lv {:>2} -> {:>3} BaseEXP | Job Lv {:>2} (Tier {}) -> {:>4} JobEXP",
             blv,
@@ -41,7 +48,13 @@ fn main() {
             "novice",
             6,
             5,
-            PrimaryStats { str: 8, agi: 6, vit: 6, int: 1, dex: 6 },
+            PrimaryStats {
+                str: 8,
+                agi: 6,
+                vit: 6,
+                int: 1,
+                dex: 6,
+            },
             Some("dagger"),
             0,
             "forest_slime",
@@ -50,7 +63,13 @@ fn main() {
             "swordman",
             19,
             15,
-            PrimaryStats { str: 28, agi: 15, vit: 24, int: 1, dex: 15 },
+            PrimaryStats {
+                str: 28,
+                agi: 15,
+                vit: 24,
+                int: 1,
+                dex: 15,
+            },
             Some("basic_sword"),
             3,
             "boar",
@@ -59,7 +78,13 @@ fn main() {
             "mage",
             19,
             15,
-            PrimaryStats { str: 1, agi: 12, vit: 12, int: 34, dex: 20 },
+            PrimaryStats {
+                str: 1,
+                agi: 12,
+                vit: 12,
+                int: 34,
+                dex: 20,
+            },
             Some("magic_staff"),
             3,
             "boar",
@@ -68,7 +93,13 @@ fn main() {
             "archer",
             33,
             28,
-            PrimaryStats { str: 10, agi: 35, vit: 18, int: 5, dex: 45 },
+            PrimaryStats {
+                str: 10,
+                agi: 35,
+                vit: 18,
+                int: 5,
+                dex: 45,
+            },
             Some("great_bow"),
             5,
             "skeleton_soldier",
@@ -77,7 +108,13 @@ fn main() {
             "knight",
             63,
             35,
-            PrimaryStats { str: 72, agi: 40, vit: 68, int: 10, dex: 42 },
+            PrimaryStats {
+                str: 72,
+                agi: 40,
+                vit: 68,
+                int: 10,
+                dex: 42,
+            },
             Some("scythe"),
             9,
             "orc_warlord",

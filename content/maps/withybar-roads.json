@@ -1,0 +1,554 @@
+{
+  "version": 3,
+  "mapId": "withybar-roads",
+  "name": "Withybar Roads \u2014 Wracklow (c08/r08)",
+  "seed": 645343,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "coastal_tidal_flat",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 1.25,
+  "proceduralClutterDensity": 46,
+  "defaultTimeOfDayHours": 15.0,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c08",
+    "coastClass": "erosional-stack",
+    "levelBand": [
+      46,
+      64
+    ],
+    "primaryPinnedId": "c-lm-wracklow-stacks",
+    "regionId": "c08/r08",
+    "zoneId": "withybar-roads",
+    "spineNodeId": "n-wracklow",
+    "townId": "",
+    "storyRegionId": "",
+    "landmarkIds": [
+      "brightspit-skerry",
+      "stack-at-willowshallow",
+      "c-lm-wracklow-stacks",
+      "c-lm-the-blowhole-coast"
+    ],
+    "resourceIds": [
+      "bar-faggots",
+      "terrace-slab"
+    ],
+    "hazardIds": [
+      "the-thorn-itself",
+      "the-terrace-drop"
+    ]
+  },
+  "concept": {
+    "biome": "wracklow_sea_stacks",
+    "recommendedLevelRange": [
+      46,
+      64
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "The thickest thorn drawn anywhere: 43.9 per cent of this region is bramble, the highest share of the eight bramble regions the world carries, all eight of which are on Wracklow. It is the fuel ground, and the marine terrace behind the beach is one of five stone exposures drawn on the island, every one of them an old shoreline. What is not thorn here is meadow, near enough share for share, and no watercourse crosses either."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "coastal_tidal_flat": {
+      "surfaceType": "estuary_mudflat",
+      "albedoTint": "#7A8B7B",
+      "friction": 0.78,
+      "maxSlopeDeg": 28.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.28,
+          "tagPool": {
+            "biome": "coastal_estuary",
+            "role": "salt_marsh_reed",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.06,
+          "tagPool": {
+            "biome": "coastal_estuary",
+            "role": "coastal_scrub",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.58,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.02,
+          "minSpacingMeters": 5.0,
+          "tagPool": {
+            "biome": "coastal_estuary",
+            "role": "driftwood_snag",
+            "maxTrunkRadiusM": 0.85
+          },
+          "assets": [
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.95,
+            1.3
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.75
+        },
+        "boulder": {
+          "weight": 0.025,
+          "minSpacingMeters": 4.5,
+          "tagPool": {
+            "biome": "coastal_estuary",
+            "role": "tidal_shingle_rock",
+            "maxTrunkRadiusM": 1.0
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            1.1
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.72
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    },
+    "thorn_bramble_floor": {
+      "surfaceType": "bramble_root_floor",
+      "albedoTint": "#2D4F2E",
+      "friction": 0.88,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.38,
+          "tagPool": {
+            "biome": "thornveil_bramble",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.82
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "thornveil_bramble",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.92
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.5,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.05,
+          "minSpacingMeters": 4.0,
+          "tagPool": {
+            "biome": "thornveil_bramble",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.9
+          },
+          "assets": [
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.4
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.8
+        },
+        "boulder": {
+          "weight": 0.02,
+          "minSpacingMeters": 4.5,
+          "tagPool": {
+            "biome": "thornveil_bramble",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.05
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.75,
+            1.15
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.78
+        }
+      }
+    }
+  },
+  "routes": [
+    {
+      "id": "withybar_roads_main_trunk_road",
+      "groundId": "cobble_road",
+      "width": 12.5,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          -90.0
+        ],
+        [
+          3.0,
+          -22.0
+        ],
+        [
+          -3.0,
+          22.0
+        ],
+        [
+          0.0,
+          90.0
+        ]
+      ]
+    },
+    {
+      "id": "withybar_roads_survey_footpath",
+      "groundId": "cobble_road",
+      "width": 4.5,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          -62.0,
+          10.5
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          62.0,
+          -10.5
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "withybar_roads_central_survey_clearing",
+      "groundId": "barren_cliff",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 28.0,
+      "innerRadius": 0.0,
+      "outerRadius": 28.0,
+      "width": 56.0,
+      "height": 56.0,
+      "feather": 4.5
+    },
+    {
+      "id": "withybar_roads_outer_biome_margin",
+      "groundId": "coastal_tidal_flat",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 28.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "brightspit_skerry_terrace",
+      "x": 0.0,
+      "z": -18.0,
+      "radius": 16.0,
+      "height": 2.3,
+      "falloff": 0.46
+    },
+    {
+      "id": "stack_at_willowshallow_bench",
+      "x": -18.0,
+      "z": 11.0,
+      "radius": 13.5,
+      "height": 2.0,
+      "falloff": 0.48
+    },
+    {
+      "id": "withybar_roads_sheer_scarp_cliff",
+      "x": 27.0,
+      "z": -21.0,
+      "radius": 10.0,
+      "height": 4.3,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "withybar_roads_watchtower_01",
+      "kind": "watchtower",
+      "x": -10.0,
+      "z": -7.0,
+      "rotY": 0.0,
+      "radius": 3.7,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "withybar_roads_cavern_01",
+      "kind": "crystal_cave",
+      "x": 12.0,
+      "z": -8.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_brightspit_skerry_pillar_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_stack_at_willowshallow_pillar_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_withybar_roads_survey_banner",
+      "assetPath": "res://assets/dungeon/banner_patterna_blue.glb",
+      "x": -3.4,
+      "y": 2.0,
+      "z": -13.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "withybar_roads_bramble_drake",
+      "x": 2114.1,
+      "y": 2062.8,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-bramble-drake",
+      "count": 2
+    },
+    {
+      "id": "withybar_roads_bound_war_beast",
+      "x": 1645.0,
+      "y": 1985.3,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-bound-war-beast",
+      "count": 2
+    },
+    {
+      "id": "withybar_roads_bramble_mother",
+      "x": 2028.1,
+      "y": 1585.9,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-bramble-mother",
+      "count": 1
+    },
+    {
+      "id": "withybar_roads_crateyard_colossus",
+      "x": 1867.5,
+      "y": 2381.0,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-crateyard-colossus",
+      "count": 1
+    },
+    {
+      "id": "withybar_roads_deepwater_hauler",
+      "x": 1551.2,
+      "y": 1609.8,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-deepwater-hauler",
+      "count": 1
+    },
+    {
+      "id": "withybar_roads_thorncrown_drake",
+      "x": 2531.9,
+      "y": 2017.8,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-thorncrown-drake",
+      "count": 1
+    },
+    {
+      "id": "withybar_roads_harbor_war_beast",
+      "x": 1647.9,
+      "y": 2540.7,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-harbor-war-beast",
+      "count": 1
+    },
+    {
+      "id": "withybar_roads_heartwood_tyrant",
+      "x": 1864.5,
+      "y": 1209.4,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-heartwood-tyrant",
+      "count": 1
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_brightspit_skerry_pillar_w",
+      "min_x": 1946.6,
+      "min_y": 1844.6,
+      "max_x": 1957.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "landmark_stack_at_willowshallow_pillar_e",
+      "min_x": 2042.6,
+      "min_y": 1844.6,
+      "max_x": 2053.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "cliff_withybar_roads_sheer_scarp_cliff",
+      "min_x": 2188.0,
+      "min_y": 1708.0,
+      "max_x": 2352.0,
+      "max_y": 1872.0
+    }
+  ]
+}
