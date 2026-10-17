@@ -1,5 +1,6 @@
 use bevy_ecs::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 use crate::ai::ThreatTable;
 use crate::content::{derived_stats, BestiaryCatalog, MobTier};
@@ -15,7 +16,7 @@ use crate::net::ClientPacket;
 use crate::physics::world::PhysicsWorld;
 use crate::protocol::{EntitySnapshotData, EntityType, GameEventData, GameEventKind};
 use crate::spatial::grid::SpatialGrid;
-use crate::storage::{MatchEvent, MatchEventQueue, PrimaryStats};
+use crate::storage::{LoadoutSnapshot, MatchEvent, MatchEventQueue, PrimaryStats};
 use crate::systems::{
     body_collision_system, bot_steering_system, combat_system, cooldown_tick_system,
     live_bot_ai_system, mob_ai_system, mob_bundle, mob_lifecycle_system, physics_step_system,
@@ -133,6 +134,8 @@ pub struct AtlasSimulation {
     pub debug_enabled: bool,
     /// Respawn delay given to mobs spawned after start-up.
     pub mob_respawn_sec: f32,
+    /// Per-account persistent character loadout applied when spawning the player's avatar.
+    session_loadouts: HashMap<String, LoadoutSnapshot>,
     next_bot_index: usize,
     pub(crate) debug_mob_seq: u32,
 }
@@ -200,9 +203,28 @@ impl AtlasSimulation {
             player_spawn: Position::new(arena_width / 2.0, arena_height / 2.0),
             debug_enabled: false,
             mob_respawn_sec: LiveConfig::default().mob_respawn_sec,
+            session_loadouts: HashMap::new(),
             next_bot_index: 0,
             debug_mob_seq: 0,
         }
+    }
+
+    /// Stores or clears a player's saved `LoadoutSnapshot` so their avatar spawns with
+    /// their saved level, primary stats, and equipped weapon on join.
+    pub fn set_session_loadout(&mut self, session_id: &str, loadout: Option<LoadoutSnapshot>) {
+        match loadout {
+            Some(l) => {
+                self.session_loadouts.insert(session_id.to_string(), l);
+            }
+            None => {
+                self.session_loadouts.remove(session_id);
+            }
+        }
+    }
+
+    /// Returns the stored `LoadoutSnapshot` for `session_id`, if any.
+    pub fn session_loadout(&self, session_id: &str) -> Option<&LoadoutSnapshot> {
+        self.session_loadouts.get(session_id)
     }
 
     pub fn with_arena(
@@ -861,7 +883,22 @@ impl AtlasSimulation {
 
         if !found {
             let spawn = self.player_spawn;
-            let entity = self.spawn_player_avatar(session_id, spawn.x, spawn.y);
+            let loadout = self
+                .session_loadouts
+                .get(session_id)
+                .cloned()
+                .or_else(|| crate::net::cached_session_loadout(session_id));
+            if let Some(ref l) = loadout {
+                self.session_loadouts
+                    .entry(session_id.to_string())
+                    .or_insert_with(|| l.clone());
+            }
+            let entity = self.spawn_player_avatar_with_loadout(
+                session_id,
+                spawn.x,
+                spawn.y,
+                loadout.as_ref(),
+            );
             if let Some(mut state) = self.world.get_mut::<PlayerInputState>(entity) {
                 state.move_x = input.move_x();
                 state.move_y = input.move_y();

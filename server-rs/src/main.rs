@@ -267,6 +267,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ticker.tick().await;
                 let tick_start = Instant::now();
 
+                for (session_id, _room_id, loadout) in ws_server.drain_loadouts().await {
+                    for sim in rooms.values_mut() {
+                        sim.set_session_loadout(&session_id, loadout.clone());
+                    }
+                }
+
                 let inputs = ws_server.drain_inbound().await;
                 let disconnected = ws_server.drain_disconnects_with_rooms().await;
 
