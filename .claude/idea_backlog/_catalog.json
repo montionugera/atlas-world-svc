@@ -872,7 +872,7 @@
     "id": "I-143",
     "title": "Session resume after a dropped connection",
     "created_at": "2026-10-11T06:59:03.795224+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-074",
     "epic": "E-003"
   },
   {
