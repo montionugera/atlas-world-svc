@@ -12,6 +12,7 @@ import {
   authenticateNakamaDevice,
   extractTokenUserId,
   getOrCreateNakamaDeviceId,
+  RECONNECT_BASE_DELAY_MS,
 } from "./useServerRsClient";
 import {
   DUPLICATE_SESSION_CLOSE_CODE,
@@ -1295,5 +1296,69 @@ describe("useServerRsClient", () => {
     expect(MockWebSocket.instances[0].url).toContain(`token=${nakamaJwt}`);
     expect(MockWebSocket.instances[0].url).not.toContain("dev-token");
     expect(result.current.playerId).toBe(String(fnv1a32(nakamaUid)));
+  });
+
+  it("automatically reconnects with exponential backoff on unexpected socket drop and cancels on disconnect()", async () => {
+    jest.useFakeTimers();
+    const view = renderHook(() =>
+      useServerRsClient({
+        serverHost: "localhost",
+        serverPort: 2567,
+        useSSL: false,
+        token: "dev-token:resume-hero",
+      }),
+    );
+    const { result } = view;
+
+    await act(async () => {
+      const p = result.current.connect();
+      jest.advanceTimersByTime(10);
+      await p;
+    });
+
+    expect(result.current.isConnected).toBe(true);
+    expect(MockWebSocket.instances).toHaveLength(1);
+
+    // Hold movement before the connection drops
+    act(() => {
+      result.current.updatePlayerInput(1.0, -0.5);
+    });
+
+    // Simulate an unexpected network drop (close code 1006)
+    act(() => {
+      MockWebSocket.instances[0].close(1006, "abnormal closure");
+    });
+    expect(result.current.isConnected).toBe(false);
+    expect(result.current.connectionError).toBeNull();
+    // Before backoff elapses, no new socket is opened yet
+    expect(MockWebSocket.instances).toHaveLength(1);
+
+    // Advance past first backoff delay (RECONNECT_BASE_DELAY_MS = 250ms)
+    await act(async () => {
+      jest.advanceTimersByTime(RECONNECT_BASE_DELAY_MS + 10);
+      await Promise.resolve();
+      jest.advanceTimersByTime(10);
+    });
+
+    expect(MockWebSocket.instances).toHaveLength(2);
+    expect(result.current.isConnected).toBe(true);
+    expect(MockWebSocket.instances[1].url).toContain("token=dev-token:resume-hero");
+    const resumedInput = decode(MockWebSocket.instances[1].sentMessages[0]);
+    expect(resumedInput.moveX()).toBeCloseTo(1.0, 3);
+    expect(resumedInput.moveY()).toBeCloseTo(-0.5, 3);
+
+    // Drop again, then call manual disconnect() before timer fires -> cancels retry
+    act(() => {
+      MockWebSocket.instances[1].close(1006, "second drop");
+    });
+    expect(result.current.isConnected).toBe(false);
+    act(() => {
+      result.current.disconnect();
+    });
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
+    expect(MockWebSocket.instances).toHaveLength(2);
+    expect(result.current.isConnected).toBe(false);
   });
 });

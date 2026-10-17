@@ -141,6 +141,10 @@ pub struct AtlasSimulation {
     pub mob_respawn_sec: f32,
     /// Per-account persistent character loadout applied when spawning the player's avatar.
     session_loadouts: HashMap<String, LoadoutSnapshot>,
+    /// Number of simulation ticks to retain a disconnected player's avatar before despawning (0 = immediate).
+    disconnect_grace_ticks: u32,
+    /// Active disconnect grace countdowns (`session_id` -> remaining ticks).
+    pending_disconnects: HashMap<String, u32>,
     next_bot_index: usize,
     pub(crate) debug_mob_seq: u32,
 }
@@ -210,9 +214,27 @@ impl AtlasSimulation {
             debug_enabled: false,
             mob_respawn_sec: LiveConfig::default().mob_respawn_sec,
             session_loadouts: HashMap::new(),
+            disconnect_grace_ticks: 0,
+            pending_disconnects: HashMap::new(),
             next_bot_index: 0,
             debug_mob_seq: 0,
         }
+    }
+
+    /// Configures how many simulation ticks a disconnected player's avatar remains in the
+    /// world before despawning (`0` = immediate removal on the disconnect tick).
+    pub fn set_disconnect_grace_ticks(&mut self, ticks: u32) {
+        self.disconnect_grace_ticks = ticks;
+    }
+
+    /// Returns the configured disconnect grace window in simulation ticks.
+    pub fn disconnect_grace_ticks(&self) -> u32 {
+        self.disconnect_grace_ticks
+    }
+
+    /// Returns `true` if `session_id` is currently within its disconnect grace window.
+    pub fn has_pending_disconnect(&self, session_id: &str) -> bool {
+        self.pending_disconnects.contains_key(session_id)
     }
 
     /// Stores or clears a player's saved `LoadoutSnapshot` so their avatar spawns with
@@ -410,26 +432,50 @@ impl AtlasSimulation {
     }
 
     /// One live server tick, exactly as `main.rs` runs it: apply inputs, then drop avatars
-    /// whose session's last socket closed (after inputs, so a late packet cannot respawn a
-    /// ghost; skipped for sessions that sent input this tick), step, and build the wire
-    /// frame including `removed_ids`.
+    /// whose session's last socket closed (or whose disconnect grace window expired), step,
+    /// and build the wire frame including `removed_ids`.
     pub fn live_tick(&mut self, inputs: &[ClientPacket], disconnected: &[String]) -> LiveFrame {
         for packet in inputs {
+            self.pending_disconnects.remove(&packet.session_id);
             if let Ok(client_input) = crate::protocol::deserialize_client_input(&packet.payload) {
                 self.apply_player_input(&packet.session_id, &client_input);
             }
         }
         let mut departed_states = Vec::new();
+        if !self.pending_disconnects.is_empty() {
+            let mut expired = Vec::new();
+            for (session_id, remaining) in self.pending_disconnects.iter_mut() {
+                *remaining = remaining.saturating_sub(1);
+                if *remaining == 0 {
+                    expired.push(session_id.clone());
+                }
+            }
+            expired.sort();
+            for session_id in expired {
+                self.pending_disconnects.remove(&session_id);
+                if let Some(state) = self.capture_player_state(&session_id) {
+                    departed_states.push((session_id.clone(), state));
+                }
+                self.remove_player_avatar(&session_id);
+            }
+        }
         for session_id in disconnected {
             // A packet from the same session this tick means it reconnected after the
             // disconnect notice was drained: keep the avatar (no free heal / teleport).
             if inputs.iter().any(|p| &p.session_id == session_id) {
                 continue;
             }
-            if let Some(state) = self.capture_player_state(session_id) {
-                departed_states.push((session_id.clone(), state));
+            if self.disconnect_grace_ticks == 0 {
+                self.pending_disconnects.remove(session_id);
+                if let Some(state) = self.capture_player_state(session_id) {
+                    departed_states.push((session_id.clone(), state));
+                }
+                self.remove_player_avatar(session_id);
+            } else if self.halt_player_avatar(session_id) {
+                let _ = self.capture_player_state(session_id);
+                self.pending_disconnects
+                    .insert(session_id.clone(), self.disconnect_grace_ticks);
             }
-            self.remove_player_avatar(session_id);
         }
         self.step();
         LiveFrame {
@@ -832,8 +878,32 @@ impl AtlasSimulation {
         states
     }
 
+    /// Zeroes movement and attack inputs on a disconnected player's avatar so it stands still
+    /// during the disconnect grace window. Returns `true` if the avatar exists.
+    pub fn halt_player_avatar(&mut self, session_id: &str) -> bool {
+        let mut query = self.world.query::<(
+            &EntityId,
+            &PlayerAvatar,
+            &mut Velocity,
+            &mut PlayerInputState,
+        )>();
+        for (id, _avatar, mut vel, mut input_state) in query.iter_mut(&mut self.world) {
+            if id.0 == session_id {
+                *vel = Velocity::zero();
+                input_state.move_x = 0.0;
+                input_state.move_y = 0.0;
+                input_state.attack = false;
+                input_state.attack_held = false;
+                input_state.skill_slot = 0;
+                return true;
+            }
+        }
+        false
+    }
+
     /// Removes a player avatar from the ECS world when disconnected.
     pub fn remove_player_avatar(&mut self, session_id: &str) -> bool {
+        self.pending_disconnects.remove(session_id);
         let mut to_despawn = None;
         let mut query = self.world.query::<(Entity, &EntityId, &PlayerAvatar)>();
         for (entity, id, _avatar) in query.iter(&self.world) {
