@@ -210,7 +210,11 @@ impl NakamaClient {
             base_url,
             http_key,
             retries,
-            probe_window: PROBE_RETRY_WINDOW,
+            probe_window: std::env::var("NAKAMA_PROBE_RETRY_SECS")
+                .ok()
+                .and_then(|v| v.parse::<u64>().ok())
+                .map(Duration::from_secs)
+                .unwrap_or(PROBE_RETRY_WINDOW),
             client,
         }
     }
