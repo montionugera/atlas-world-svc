@@ -8,6 +8,12 @@ export const PROTOCOL_VERSION = 1;
 export const PROTOCOL_MISMATCH_CLOSE_CODE = 4001;
 
 /**
+ * WebSocket close code sent by `server-rs` when a newer connection for the same account
+ * supersedes an existing connection (`DUPLICATE_SESSION_CLOSE_CODE` in `server-rs/src/protocol/mod.rs`).
+ */
+export const DUPLICATE_SESSION_CLOSE_CODE = 4002;
+
+/**
  * Formats the player-facing message for a 4001 protocol mismatch close reason.
  * Expected server reason format: `protocol version mismatch: server=<S> client=<C>`
  */
@@ -24,4 +30,11 @@ export function formatProtocolMismatchMessage(reason?: string): string {
     return `This game client is out of date (client protocol ${clientVer}, server protocol ${serverVer}). Reload the page to update.`;
   }
   return "This game client is out of date. Reload the page to update.";
+}
+
+/**
+ * Formats the player-facing message for a 4002 duplicate session close reason.
+ */
+export function formatDuplicateSessionMessage(_reason?: string): string {
+  return "Disconnected: this account connected in another window or tab.";
 }

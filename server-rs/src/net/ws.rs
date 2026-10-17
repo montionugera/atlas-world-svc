@@ -238,7 +238,8 @@ impl WsServer {
         }
         drop(rx);
         let conns = self.connections.read().await;
-        gone.retain(|(s, _)| !has_session(&conns, s));
+        let rooms = self.session_rooms.read().await;
+        gone.retain(|(s, r)| !has_session_in_room(&conns, &rooms, s, r));
         gone
     }
 
@@ -295,7 +296,9 @@ impl WsServer {
             "WebSocket accept loop running on {}",
             listener.local_addr().unwrap()
         );
+        static ACCEPT_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
         while let Ok((stream, peer_addr)) = listener.accept().await {
+            let conn_seq = ACCEPT_SEQ.fetch_add(1, Ordering::Relaxed);
             if let Err(e) = stream.set_nodelay(true) {
                 warn!("Failed to set TCP_NODELAY for {}: {}", peer_addr, e);
             }
@@ -314,7 +317,8 @@ impl WsServer {
                     return;
                 }
                 Self::handle_connection(
-                    stream, peer_addr, conns, rooms, auth, in_tx, dc_tx, nakama, skip_logs,
+                    stream, peer_addr, conn_seq, conns, rooms, auth, in_tx, dc_tx, nakama,
+                    skip_logs,
                 )
                 .await;
             });
@@ -387,6 +391,7 @@ impl WsServer {
     async fn handle_connection(
         stream: TcpStream,
         peer_addr: SocketAddr,
+        conn_seq: u64,
         connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
         session_rooms: Arc<RwLock<HashMap<String, String>>>,
         auth_guard: AuthGuard,
@@ -532,29 +537,73 @@ impl WsServer {
         let (mut ws_write, mut ws_read) = ws_stream.split();
         let (out_tx, mut out_rx) = unbounded_channel::<Message>();
 
-        // Register under a per-connection key. Two sockets for the same session (StrictMode
-        // double-mount, reload, second tab) finish their handshakes concurrently, so
-        // registration order is arbitrary — a session-keyed map let whichever registered
-        // last evict the other, and closing the discarded one left the live tab with no feed.
-        static CONN_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-        let conn_key = format!(
-            "{}#{}",
-            session_id,
-            CONN_SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
-        );
+        // Enforce one live session per account using the accept-order sequence `conn_seq`:
+        // - If an older connection (`old_seq < conn_seq`) is active for `session_id`, remove it
+        //   and close it with `DUPLICATE_SESSION_CLOSE_CODE` (4002).
+        // - If a newer connection (`old_seq > conn_seq`) has ALREADY registered (e.g. React
+        //   StrictMode double-mount where mount-1 finished handshake/loadout after mount-2),
+        //   keep the newer connection and immediately close this stale socket with 4002.
+        let conn_key = format!("{}#{}", session_id, conn_seq);
+        let mut superseded_on_arrival = false;
         {
             let mut conns = connections.write().await;
-            conns.insert(conn_key.clone(), out_tx);
             let mut rooms = session_rooms.write().await;
-            rooms.insert(conn_key.clone(), room_id.clone());
+
+            let existing_keys: Vec<(String, u64)> = conns
+                .keys()
+                .filter_map(|k| {
+                    let (s, seq_str) = k.rsplit_once('#')?;
+                    if s == session_id {
+                        seq_str.parse::<u64>().ok().map(|seq| (k.clone(), seq))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            if existing_keys.iter().any(|(_, seq)| *seq > conn_seq) {
+                superseded_on_arrival = true;
+            } else {
+                for (old_key, _) in existing_keys {
+                    if let Some(old_tx) = conns.remove(&old_key) {
+                        let close_frame = CloseFrame {
+                            code: CloseCode::Library(crate::protocol::DUPLICATE_SESSION_CLOSE_CODE),
+                            reason: "session replaced by newer connection".into(),
+                        };
+                        let _ = old_tx.send(Message::Close(Some(close_frame)));
+                    }
+                    if let Some(old_room) = rooms.remove(&old_key) {
+                        if old_room != room_id {
+                            let _ = disconnect_tx.send((session_id.clone(), old_room));
+                        }
+                    }
+                }
+                conns.insert(conn_key.clone(), out_tx);
+                rooms.insert(conn_key.clone(), room_id.clone());
+            }
+        }
+
+        if superseded_on_arrival {
+            let close_frame = CloseFrame {
+                code: CloseCode::Library(crate::protocol::DUPLICATE_SESSION_CLOSE_CODE),
+                reason: "session replaced by newer connection".into(),
+            };
+            let _ = ws_write.send(Message::Close(Some(close_frame))).await;
+            let _ = ws_write.close().await;
+            return;
         }
 
         // Task for writing outbound messages to client
         let session_id_out = session_id.clone();
         let write_task = tokio::spawn(async move {
             while let Some(msg) = out_rx.recv().await {
+                let is_close = matches!(msg, Message::Close(_));
                 if let Err(e) = ws_write.send(msg).await {
                     debug!("WebSocket write error for {}: {}", session_id_out, e);
+                    break;
+                }
+                if is_close {
+                    let _ = ws_write.close().await;
                     break;
                 }
             }
@@ -590,18 +639,17 @@ impl WsServer {
             }
         }
 
-        // Clean up only this connection's entry; other sockets for the session stay live.
-        // Only when the session's LAST socket closes does the sim drop its avatar.
+        // Clean up only if this connection is still the active entry for `session_id`.
         {
             let mut conns = connections.write().await;
-            conns.remove(&conn_key);
+            let was_active = conns.remove(&conn_key).is_some();
             let mut rooms = session_rooms.write().await;
             rooms.remove(&conn_key);
-            if !has_session(&conns, &session_id) {
+            if was_active && !has_session_in_room(&conns, &rooms, &session_id, &room_id) {
                 let _ = disconnect_tx.send((session_id.clone(), room_id.clone()));
             }
         }
-        write_task.abort();
+        let _ = tokio::time::timeout(std::time::Duration::from_millis(50), write_task).await;
         info!("Session {} disconnected from room {}", session_id, room_id);
     }
 }
@@ -782,6 +830,18 @@ fn has_session(conns: &HashMap<String, UnboundedSender<Message>>, session_id: &s
         .any(|k| k.rsplit_once('#').is_some_and(|(s, _)| s == session_id))
 }
 
+fn has_session_in_room(
+    conns: &HashMap<String, UnboundedSender<Message>>,
+    rooms: &HashMap<String, String>,
+    session_id: &str,
+    room_id: &str,
+) -> bool {
+    conns.keys().any(|k| {
+        k.rsplit_once('#').is_some_and(|(s, _)| s == session_id)
+            && rooms.get(k).map(|r| r.as_str()) == Some(room_id)
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -917,22 +977,49 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_stale_duplicate_session_close_keeps_newer_socket() {
-        // Regression: StrictMode double-mount / page reload opens a 2nd socket for the
-        // same session; when the old one closed it unregistered the NEW one, so the
-        // live tab silently stopped receiving snapshots.
+    async fn test_duplicate_session_newest_wins_and_closes_older_with_4002() {
+        // E-003 slice 4: newest connection wins and the older one is closed with named
+        // close code DUPLICATE_SESSION_CLOSE_CODE (4002), while the newer socket stays
+        // live and the avatar is not despawned.
         let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
         let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
-        let url = format!("ws://{}/ws?token=dev-token:dup", server.local_addr());
+        let url = format!(
+            "ws://{}/ws?token=dev-token:dup&proto=1",
+            server.local_addr()
+        );
 
         let (mut old_ws, _) = connect_async(&url).await.unwrap();
         tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(server.active_connections_count().await, 1);
+
         let (mut new_ws, _) = connect_async(&url).await.unwrap();
         tokio::time::sleep(Duration::from_millis(50)).await;
-
-        old_ws.close(None).await.unwrap();
-        tokio::time::sleep(Duration::from_millis(100)).await;
         assert_eq!(server.active_connections_count().await, 1);
+
+        // Older socket must receive Close(4002)
+        let close_msg = tokio::time::timeout(Duration::from_secs(1), old_ws.next())
+            .await
+            .expect("older socket should receive close frame")
+            .expect("stream should yield close frame")
+            .expect("no websocket transport error");
+        match close_msg {
+            Message::Close(Some(frame)) => {
+                assert_eq!(
+                    frame.code,
+                    CloseCode::Library(crate::protocol::DUPLICATE_SESSION_CLOSE_CODE)
+                );
+                assert!(frame.reason.contains("replaced"));
+            }
+            other => panic!("expected Close(4002) on older socket, got {:?}", other),
+        }
+
+        let _ = old_ws.close(None).await;
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(server.active_connections_count().await, 1);
+        assert!(
+            server.drain_disconnects().await.is_empty(),
+            "evicting the older socket must not despawn the live session"
+        );
 
         server.broadcast_snapshot(&[7, 7, 7]).await;
         let msg = tokio::time::timeout(Duration::from_secs(1), new_ws.next())
@@ -945,31 +1032,92 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_closing_last_registered_duplicate_keeps_other_socket_live() {
-        // Regression: StrictMode opens two sockets whose handshakes finish in the same
-        // instant, so server registration order is arbitrary. If the socket the client
-        // discards registered LAST, a session-keyed registry dropped the live socket.
+    async fn test_strict_mode_double_mount_out_of_order_handshake_keeps_newer_socket() {
+        // Regression for React StrictMode double-mount (ws.rs:425-428):
+        // Mount 1 opens socket 1 (accepted first, conn_seq=1) and discards it;
+        // Mount 2 opens socket 2 (accepted second, conn_seq=2) and keeps it.
+        // Even if socket 1 finishes its pre-registration work (get_loadout) AFTER socket 2
+        // has already registered, socket 2 (the newer connection) must stay live and
+        // socket 1 (the older connection) must be closed with 4002.
+        let nakama_listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let nakama_addr = nakama_listener.local_addr().unwrap();
+        let req_count = Arc::new(AtomicUsize::new(0));
+        let req_count_srv = req_count.clone();
+
+        tokio::spawn(async move {
+            while let Ok((mut stream, _)) = nakama_listener.accept().await {
+                let idx = req_count_srv.fetch_add(1, Ordering::SeqCst);
+                tokio::spawn(async move {
+                    let mut buf = [0u8; 1024];
+                    let _ = stream.read(&mut buf).await;
+                    if idx == 0 {
+                        // Delay mount-1 socket so mount-2 registers first!
+                        tokio::time::sleep(Duration::from_millis(120)).await;
+                    }
+                    let body =
+                        serde_json::to_string(&crate::storage::LoadoutSnapshot::default()).unwrap();
+                    let resp = format!(
+                        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                        body.len(),
+                        body
+                    );
+                    let _ = stream.write_all(resp.as_bytes()).await;
+                });
+            }
+        });
+
+        let nakama_client = Arc::new(crate::storage::NakamaClient::new(
+            format!("http://{nakama_addr}"),
+            "test_http_key".to_string(),
+            2000,
+            0,
+        ));
         let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
-        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
-        let url = format!("ws://{}/ws?token=dev-token:dup2", server.local_addr());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone())
+            .await
+            .unwrap()
+            .with_nakama(nakama_client);
+        let uid = "00000000-0000-4000-8000-000000000042";
+        let url = format!(
+            "ws://{}/ws?token=dev-token:{uid}&proto=1",
+            server.local_addr()
+        );
 
-        let (mut kept_ws, _) = connect_async(&url).await.unwrap();
-        tokio::time::sleep(Duration::from_millis(50)).await;
-        let (mut discarded_ws, _) = connect_async(&url).await.unwrap();
-        tokio::time::sleep(Duration::from_millis(50)).await;
+        // Mount 1 connects first (accepted first, delayed 120ms in get_loadout)
+        let (mut discarded_mount1_ws, _) = connect_async(&url).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(20)).await;
+        // Mount 2 connects second (accepted second, finishes get_loadout immediately)
+        let (mut kept_mount2_ws, _) = connect_async(&url).await.unwrap();
 
-        discarded_ws.close(None).await.unwrap();
-        tokio::time::sleep(Duration::from_millis(100)).await;
+        // Wait for both handshakes and delayed get_loadout to complete
+        tokio::time::sleep(Duration::from_millis(180)).await;
         assert_eq!(server.active_connections_count().await, 1);
 
-        server.broadcast_snapshot(&[9, 9]).await;
-        let msg = tokio::time::timeout(Duration::from_secs(1), kept_ws.next())
+        // Mount 1 (older connection) must receive Close(4002)
+        let close_msg = tokio::time::timeout(Duration::from_secs(1), discarded_mount1_ws.next())
             .await
-            .expect("remaining socket must still receive snapshots")
+            .expect("mount 1 socket should receive close frame")
+            .expect("stream should yield close frame")
+            .expect("no websocket transport error");
+        match close_msg {
+            Message::Close(Some(frame)) => {
+                assert_eq!(
+                    frame.code,
+                    CloseCode::Library(crate::protocol::DUPLICATE_SESSION_CLOSE_CODE)
+                );
+            }
+            other => panic!("expected Close(4002) on mount 1 socket, got {:?}", other),
+        }
+
+        // Mount 2 (newer connection) must remain live and receive snapshots
+        server.broadcast_snapshot(&[9, 9]).await;
+        let msg = tokio::time::timeout(Duration::from_secs(1), kept_mount2_ws.next())
+            .await
+            .expect("mount 2 socket must still receive snapshots")
             .unwrap()
             .unwrap();
         assert_eq!(msg, Message::Binary(vec![9u8, 9].into()));
-        kept_ws.close(None).await.unwrap();
+        kept_mount2_ws.close(None).await.unwrap();
     }
 
     #[tokio::test]

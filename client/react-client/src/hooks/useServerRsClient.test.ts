@@ -14,7 +14,9 @@ import {
   getOrCreateNakamaDeviceId,
 } from "./useServerRsClient";
 import {
+  DUPLICATE_SESSION_CLOSE_CODE,
   PROTOCOL_VERSION,
+  formatDuplicateSessionMessage,
   formatProtocolMismatchMessage,
 } from "../protocol/protocolVersion";
 import { WorldSnapshot } from "../protocol/generated/atlas/protocol/world-snapshot";
@@ -1212,6 +1214,28 @@ describe("useServerRsClient", () => {
     );
     expect(match).not.toBeNull();
     expect(PROTOCOL_VERSION).toBe(Number(match![1]));
+  });
+
+  it("surfaces duplicate session eviction (close code 4002) in connectionError without reconnect loop", async () => {
+    const { result } = await connected();
+    act(() => {
+      MockWebSocket.instances[0].close(
+        DUPLICATE_SESSION_CLOSE_CODE,
+        "duplicate session: connected from another location",
+      );
+    });
+    expect(result.current.connectionError).toBe(
+      formatDuplicateSessionMessage(
+        "duplicate session: connected from another location",
+      ),
+    );
+    expect(result.current.isConnected).toBe(false);
+
+    // joinRoom is blocked while connectionError is set (no auto-reconnect battle)
+    await act(async () => {
+      await result.current.joinRoom("map-for-play");
+    });
+    expect(MockWebSocket.instances).toHaveLength(1);
   });
 
   it("authenticates against Nakama device endpoint and sends real session JWT instead of dev-token", async () => {
