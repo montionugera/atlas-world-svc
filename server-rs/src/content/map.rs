@@ -275,8 +275,10 @@ impl TerrainHeightfield {
             if cur_slope <= self.max_walkable_slope_deg {
                 break;
             }
-            let gx = self.sample_height_world(wx + EPS, wz) - self.sample_height_world(wx - EPS, wz);
-            let gz = self.sample_height_world(wx, wz + EPS) - self.sample_height_world(wx, wz - EPS);
+            let gx =
+                self.sample_height_world(wx + EPS, wz) - self.sample_height_world(wx - EPS, wz);
+            let gz =
+                self.sample_height_world(wx, wz + EPS) - self.sample_height_world(wx, wz - EPS);
             let glen = (gx * gx + gz * gz).sqrt();
             if glen <= 1e-4 {
                 break;
@@ -696,7 +698,10 @@ mod tests {
         assert_eq!(cfg.spawn_areas.len(), 8);
         assert_eq!(cfg.static_obstacles.len(), 12);
         assert_eq!(cfg.height_terraces.len(), 5);
-        assert!(cfg.static_obstacles.iter().any(|o| o.id == "sanctuary_pillar_w"));
+        assert!(cfg
+            .static_obstacles
+            .iter()
+            .any(|o| o.id == "sanctuary_pillar_w"));
     }
 
     #[test]
@@ -723,7 +728,10 @@ mod tests {
 
         let (mut sx, mut sy) = hf.world_to_server(cliff_rim_x, cliff_rim_z);
         let pushed = hf.resolve_against_cliffs(&mut sx, &mut sy);
-        assert!(pushed, "Entity on sheer cliff wall should be pushed back to walkable ground");
+        assert!(
+            pushed,
+            "Entity on sheer cliff wall should be pushed back to walkable ground"
+        );
         let (resolved_wx, resolved_wz) = hf.server_to_world(sx, sy);
         assert!(hf.sample_slope_deg_world(resolved_wx, resolved_wz) <= MAX_WALKABLE_SLOPE_DEG);
     }
@@ -741,7 +749,8 @@ mod tests {
                 { "id": "pillar_center", "min_x": 994.0, "min_y": 994.0, "max_x": 1006.0, "max_y": 1006.0 }
             ]
         }"#;
-        let cfg = MapConfig::from_unified_json("freja-expanded-2000", expanded_json).expect("valid expanded map");
+        let cfg = MapConfig::from_unified_json("freja-expanded-2000", expanded_json)
+            .expect("valid expanded map");
         assert_eq!(cfg.width, 2000.0);
         assert_eq!(cfg.height, 2000.0);
         assert_eq!(cfg.spawn_areas[0].x, 900.0);

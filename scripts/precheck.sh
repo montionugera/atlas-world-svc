@@ -87,11 +87,13 @@ run_section() {
 # integration.sh installs the same way.
 deps_install() {
   command -v pnpm >/dev/null 2>&1 || { echo "pnpm not found — run: corepack enable"; return 1; }
-  (cd "$REPO_ROOT" && pnpm install --frozen-lockfile) || return 1
-  if [ -f "$REPO_ROOT/client/react-client/package.json" ]; then
+  if [ ! -d "$REPO_ROOT/node_modules/.pnpm" ]; then
+    (cd "$REPO_ROOT" && CI=true pnpm install --frozen-lockfile) || return 1
+  fi
+  if [ -f "$REPO_ROOT/client/react-client/package.json" ] && [ ! -x "$REPO_ROOT/client/react-client/node_modules/.bin/react-scripts" ]; then
     (cd "$REPO_ROOT/client/react-client" && npm ci) || return 1
   fi
-  if [ -f "$REPO_ROOT/scripts/package.json" ]; then
+  if [ -f "$REPO_ROOT/scripts/package.json" ] && [ ! -d "$REPO_ROOT/scripts/node_modules/js-yaml" ]; then
     (cd "$REPO_ROOT/scripts" && npm ci) || return 1
   fi
 }
@@ -108,7 +110,10 @@ rust_gates() {
     return 0
   fi
   export PATH="$HOME/.cargo/bin:$PATH"
-  echo "🦀 Checking Rust server-rs formatting, lints, and tests..."
+  if [ -z "${CARGO_TARGET_DIR:-}" ] && [ -n "$MAIN_ROOT" ]; then
+    export CARGO_TARGET_DIR="$MAIN_ROOT/server-rs/target"
+  fi
+  echo "🦀 Checking Rust server-rs formatting, lints, and tests (target: ${CARGO_TARGET_DIR:-default})..."
   (cd "$REPO_ROOT/server-rs" && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test)
 }
 
