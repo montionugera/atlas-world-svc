@@ -1,5 +1,421 @@
 {
   "version": 1,
   "verdicts": {},
-  "workOrders": []
+  "workOrders": [],
+  "playerScaleAnchor": {
+    "archetype": "chibi_toddler",
+    "heightRangeM": [0.90, 1.20],
+    "referenceHeightM": 1.05,
+    "foliageCapsM": { "grassMaxM": 0.35, "bushMaxM": 0.65, "terraceStepMaxM": 0.25 }
+  },
+  "proposals": [
+    {
+      "id": "rq-pilot-101",
+      "kind": "db_entity",
+      "domain": "db_entity",
+      "pillar": "Pillar B · DB Entity & 3D Asset",
+      "targetId": "orc_warlord",
+      "entityId": "orc_warlord",
+      "assetStudioKey": "mob:aggressive",
+      "title": "3D Mob & Card Scale Check: Orc Warlord (MVP Boss vs 1.05m Chibi Player)",
+      "status": "pending_review",
+      "createdAt": "2026-10-17T10:08:00Z",
+      "selectedTakeIdx": 1,
+      "embeddedInputs": {
+        "playerScaleBandM": [0.90, 1.20],
+        "playerReferenceHeightM": 1.05,
+        "mobRank": "mvp",
+        "mobElement": "earth",
+        "mobRace": "demi_human",
+        "mobSize": "large",
+        "targetHeightM": 2.10,
+        "donorRig": "kaykit-adventurer.bones.json",
+        "styleGuard": "pre-industrial, matte gouache register, chunky silhouette (1.3x weapon scale)",
+        "designerPrompt": "Heavy iron shoulder plates, scarred green tusked warlord, earth-totem greataxe"
+      },
+      "machineGates": [
+        { "gate": "Khronos glTF 2.0 Conformance", "value": "0 errors, 0 warnings" },
+        { "gate": "Chibi Scale Contrast (2.0x Player)", "value": "2.10m vs 1.05m Chibi Player" },
+        { "gate": "Feet Pivot at y = 0.00m", "value": "min.y = 0.000m" },
+        { "gate": "5 Required Animation Clips", "value": "idle, walk, sprint, attack, die" },
+        { "gate": "Triangle & Texture Budget", "value": "6,420 / 10,000 tris · 1024px" }
+      ],
+      "niceToHaveChecks": [
+        "2.0x Chibi Player Silhouette Contrast",
+        "Earth-Totem Greataxe Readable from Isometric Camera",
+        "Matching 2D Card Portrait (card_orc_warlord)"
+      ],
+      "takes": [
+        {
+          "id": "take-a",
+          "label": "Take A (Orc Raider · 1.95m)",
+          "assetPath": "res://assets/creatures/orc_enemy.glb",
+          "heightM": 1.95,
+          "visualScale": 1.12,
+          "colliderRadiusM": 0.90,
+          "notes": "Compact orc raider silhouette (1.95m) with lighter shoulder armor"
+        },
+        {
+          "id": "take-b",
+          "label": "Take B (Orc Brute + Tusks · 2.10m · Recommended)",
+          "assetPath": "res://assets/characters/orc_brute.glb",
+          "heightM": 2.10,
+          "visualScale": 1.22,
+          "colliderRadiusM": 0.95,
+          "notes": "Exact 2.0x Chibi Player height (2.10m vs 1.05m), heavy pauldrons & clear weapon read"
+        },
+        {
+          "id": "take-c",
+          "label": "Take C (Colossal Golem Frame · 2.20m)",
+          "assetPath": "res://assets/characters/skeleton_golem.glb",
+          "heightM": 2.20,
+          "visualScale": 1.28,
+          "colliderRadiusM": 1.05,
+          "notes": "Maximum 2.20m boss silhouette with wide tank collider"
+        }
+      ],
+      "feedbackHistory": [],
+      "targetFile": "game-client/assets/manifest.json",
+      "patch": {
+        "entityId": "orc_warlord",
+        "manifestKey": "mob:aggressive",
+        "scene": "res://assets/characters/orc_brute.glb",
+        "visualScale": 1.22,
+        "heightM": 2.10
+      }
+    },
+    {
+      "id": "rq-pilot-102",
+      "kind": "ground_palette",
+      "domain": "ground_palette",
+      "pillar": "Pillar A · Biome Brush & Tag Pool",
+      "targetId": "pine_forest_border",
+      "entityId": "pine_forest_border",
+      "assetStudioKey": "palette:pine_forest_border",
+      "title": "Biome Brush & Chibi Foliage Cap: pine_forest_border (freja-south-gate)",
+      "status": "pending_review",
+      "createdAt": "2026-10-17T10:08:30Z",
+      "selectedTakeIdx": 1,
+      "embeddedInputs": {
+        "playerScaleBandM": [0.90, 1.20],
+        "maxGrassHeightM": 0.35,
+        "maxBushHeightM": 0.65,
+        "maxTrunkRadiusM": 0.45,
+        "minRouteClearanceM": 2.50,
+        "albedoTint": "#346E36",
+        "smartTagQuery": "biome:freja_pine + role:canopy_tree | bush | grass"
+      },
+      "machineGates": [
+        { "gate": "Chibi Grass Visibility Cap (<= 0.35m)", "value": "Grass max 0.32m (knee-high on 1.05m player)" },
+        { "gate": "Chibi Bush Visibility Cap (<= 0.65m)", "value": "Bush max 0.58m (chest-high, head visible)" },
+        { "gate": "Trunk Collider vs Canopy Overhang", "value": "Trunk r=0.45m < Walkable Canopy r=1.85m" },
+        { "gate": "Zero Route Spline Collisions", "value": "0 colliders inside cobble_road corridor" }
+      ],
+      "niceToHaveChecks": [
+        "1.05m Chibi Head Always Visible Above Bushes",
+        "Dead Pine Tree Unchecked by Default in Tag Pool",
+        "Canopy Fades to alpha 0.22 When Walking Underneath"
+      ],
+      "takes": [
+        {
+          "id": "take-a",
+          "label": "Take A (Sparse Woods · Tree 2.5%)",
+          "assetPath": "res://assets/nature/tree_1_a_color1.glb",
+          "weights": { "grass": 0.25, "bush": 0.06, "canopy_tree": 0.025, "boulder": 0.01 },
+          "notes": "Open sunlit timberline with wide sightlines (2.5% canopy density)"
+        },
+        {
+          "id": "take-b",
+          "label": "Take B (Balanced Border · Tree 4.0% · Recommended)",
+          "assetPath": "res://assets/nature/tree_2_a_color1.glb",
+          "weights": { "grass": 0.35, "bush": 0.10, "canopy_tree": 0.04, "boulder": 0.015 },
+          "notes": "Balanced Ragnarok meadow border (35% grass, 10% bush, 4% canopy tree)"
+        },
+        {
+          "id": "take-c",
+          "label": "Take C (Dense Thicket · Tree 5.5%)",
+          "assetPath": "res://assets/nature/tree_3_a_color1.glb",
+          "weights": { "grass": 0.42, "bush": 0.14, "canopy_tree": 0.055, "boulder": 0.02 },
+          "notes": "Deep forest border with heavier canopy shade (5.5% canopy density)"
+        }
+      ],
+      "feedbackHistory": [],
+      "targetFile": "content/ground_palettes.json",
+      "patchPreview": {
+        "pine_forest_border": {
+          "scatter": {
+            "grass": { "weight": 0.35 },
+            "bush": { "weight": 0.10 },
+            "canopy_tree": { "weight": 0.04 },
+            "boulder": { "weight": 0.015 }
+          }
+        }
+      }
+    },
+    {
+      "id": "rq-pilot-103",
+      "kind": "map_blueprint",
+      "domain": "map_blueprint",
+      "pillar": "Pillar C · 2D Map Blueprint & 3D Structures",
+      "targetId": "freja-south-gate",
+      "entityId": "freja-south-gate",
+      "assetStudioKey": "map:freja-south-gate",
+      "title": "Stage 2/3 Map Blueprint & Structure Sign-Off: Prontera South Gate (freja-south-gate)",
+      "status": "pending_review",
+      "createdAt": "2026-10-17T10:09:00Z",
+      "selectedTakeIdx": 0,
+      "embeddedInputs": {
+        "mapSizeM": [400, 400],
+        "levelBracket": "Lv.1 - Lv.15",
+        "playerScaleBandM": [0.90, 1.20],
+        "maxTerraceStepHeightM": 0.25,
+        "mainHighwayWidthM": 5.2,
+        "watchtowerSpurWidthM": 3.6,
+        "sanctuaryRadiusM": 22.0
+      },
+      "machineGates": [
+        { "gate": "Main Highway Clear Corridor", "value": "prontera_south_highway = 5.2m (+2.4m margin)" },
+        { "gate": "Watchtower East Spur Corridor", "value": "watchtower_east_spur = 3.6m (+1.8m margin)" },
+        { "gate": "Chibi Terrace Step Cap (<= 0.25m/step)", "value": "12 steps on Watchtower ramp (0.26m -> 0.22m)" },
+        { "gate": "3D Walkable Structures (2F & Cave)", "value": "Watchtower (+3.2m 2F) + Crystal Cave (+3.4m)" },
+        { "gate": "Sanctuary Mob Clearance (22m)", "value": "0 blocking trees inside central plaza" }
+      ],
+      "niceToHaveChecks": [
+        "Watchtower 2F Deck Cutaway Works When Standing on 1F",
+        "Crystal Cave South Portal Open & Walkable",
+        "Highway Connects North Sanctuary to South Field"
+      ],
+      "takes": [
+        {
+          "id": "take-a",
+          "label": "Take A (Standard 5.2m Highway + 3.2m Watchtower · Current)",
+          "roadWidthM": 5.2,
+          "spurWidthM": 3.6,
+          "watchtower2FM": 3.2,
+          "caveRadiusM": 4.2,
+          "notes": "5.2m cobblestone highway with 2-story Watchtower (-9.5, -2.0) and East Crystal Cave (10.5, -3.0)"
+        },
+        {
+          "id": "take-b",
+          "label": "Take B (Grand Royal Avenue 7.5m + Expanded 4.5m Watchtower)",
+          "roadWidthM": 7.5,
+          "spurWidthM": 4.8,
+          "watchtower2FM": 3.0,
+          "caveRadiusM": 4.8,
+          "notes": "Wider 7.5m royal cobblestone avenue and broader Watchtower & Crystal Cave footprints for Chibi party play"
+        }
+      ],
+      "feedbackHistory": [],
+      "targetFile": "content/maps/freja-south-gate.json"
+    },
+    {
+      "id": "rq-world-104",
+      "kind": "map_blueprint",
+      "domain": "map_blueprint",
+      "pillar": "Pillar C · 2D Map Blueprint & 3D Structures",
+      "targetId": "millcross-ford",
+      "entityId": "millcross-ford",
+      "assetStudioKey": "map:millcross-ford",
+      "title": "Millcross Ford — Town Footprints, 5 Roads & Meltwash Crossing",
+      "status": "approved",
+      "createdAt": "2026-10-17T10:12:00Z",
+      "approvedAt": "2026-10-17T10:15:00Z",
+      "selectedTakeIdx": 1,
+      "embeddedInputs": {
+        "mapSizeM": [4000, 4000],
+        "levelBracket": "Lv.1 - Lv.50",
+        "playerScaleBandM": [0.90, 1.20],
+        "maxTerraceStepHeightM": 0.25,
+        "mainHighwayWidthM": 14.0,
+        "watchtowerSpurWidthM": 12.0,
+        "sanctuaryRadiusM": 36.0
+      },
+      "machineGates": [
+        { "gate": "5 Canonical Road Splines Clear", "value": "trade-road-trunk (14m), terrace-track (14m), river-road-south (12m), mill-lane (12m), bank-lane (6m)" },
+        { "gate": "Town Clearing Sanctuary (36m)", "value": "millcross_ford_town_clearing r=36.0m, 0 blocking colliders" },
+        { "gate": "Chibi Terrace Step Cap (<= 0.25m/step)", "value": "4 terraces (east bank, millrace bluff, quarry face, meltwash bank) <= 0.24m/step" },
+        { "gate": "3D Walkable Structures (2F & Quarry Cavern)", "value": "millcross_wheel_watchtower_01 (+3.2m 2F) + millcross_quarry_cavern_01 (r=4.2m)" },
+        { "gate": "World Spine Binding Integrity", "value": "c02/r21 · n-millcross · c-town-millcross · 5 landmarks · 5 spawn areas" }
+      ],
+      "niceToHaveChecks": [
+        "Mill-Wheel Watchtower 2F Overlooks Meltwash Crossing",
+        "Quarry Cavern Portal Clear of Hedgerow Border Trees",
+        "Cart-Queue & Ford Crossing Banners Readable from Isometric Camera"
+      ],
+      "takes": [
+        {
+          "id": "take-a",
+          "label": "Take A (Compact Country Ford · 10.0m Trunk Road)",
+          "roadWidthM": 10.0,
+          "spurWidthM": 8.0,
+          "watchtower2FM": 3.0,
+          "caveRadiusM": 3.8,
+          "notes": "Narrower 10.0m trade trunk and tighter 28m town clearing around the meltwash ford"
+        },
+        {
+          "id": "take-b",
+          "label": "Take B (Canonical 5-Road Trade Hub · 14.0m Trunk + 36m Town Clearing · Approved)",
+          "roadWidthM": 14.0,
+          "spurWidthM": 12.0,
+          "watchtower2FM": 3.2,
+          "caveRadiusM": 4.2,
+          "notes": "Full 5-road Wealdmarch river crossing (14m trunk & terrace tracks, 12m river & mill lanes, 6m bank lane) with 3.2m 2F Mill-Wheel Watchtower and 4.2m Quarry Cavern"
+        },
+        {
+          "id": "take-c",
+          "label": "Take C (Fortified Caravan Staging Plaza · 16.5m Trunk Road)",
+          "roadWidthM": 16.5,
+          "spurWidthM": 13.5,
+          "watchtower2FM": 3.4,
+          "caveRadiusM": 4.8,
+          "notes": "Extra-wide 16.5m wagon queue boulevard with expanded quarry cavern mouth"
+        }
+      ],
+      "feedbackHistory": [
+        {
+          "timestamp": "2026-10-17T10:15:00Z",
+          "verdict": "approve",
+          "note": "Approved Take B as canonical Wealdmarch river ford layout with 5 roads and validated Chibi terrace steps.",
+          "takeIdx": 1
+        }
+      ],
+      "targetFile": "content/maps/millcross-ford.json"
+    },
+    {
+      "id": "rq-world-105",
+      "kind": "ground_palette",
+      "domain": "ground_palette",
+      "pillar": "Pillar A · Biome Brush & Tag Pool",
+      "targetId": "cinder_ash_waste",
+      "entityId": "cinder_ash_waste",
+      "assetStudioKey": "palette:cinder_ash_waste",
+      "title": "Cinder & Ash Waste Brush (Ashvale Front & Cindervast)",
+      "status": "pending_review",
+      "createdAt": "2026-10-17T10:18:00Z",
+      "selectedTakeIdx": 1,
+      "embeddedInputs": {
+        "playerScaleBandM": [0.90, 1.20],
+        "maxGrassHeightM": 0.35,
+        "maxBushHeightM": 0.65,
+        "maxTrunkRadiusM": 0.85,
+        "minRouteClearanceM": 2.40,
+        "albedoTint": "#4B3E39",
+        "smartTagQuery": "biome:cinder_ash + role:scorched_scrub | charred_understory | charred_snag | basalt_outcrop"
+      },
+      "machineGates": [
+        { "gate": "Chibi Grass Visibility Cap (<= 0.35m)", "value": "Scorched scrub max 0.35m (ankle-to-knee on 1.05m player)" },
+        { "gate": "Chibi Bush Visibility Cap (<= 0.65m)", "value": "Charred understory max 0.65m (chest-high, Chibi head clear)" },
+        { "gate": "Charred Snag & Basalt Spacing", "value": "Snag spacing >= 5.2m (r=0.75m), Basalt spacing >= 4.2m (r=0.85m)" },
+        { "gate": "Zero Route Spline Collisions", "value": "0 basalt or snag colliders inside cobble_road corridors" }
+      ],
+      "niceToHaveChecks": [
+        "1.05m Chibi Silhouette Contrasts Against #4B3E39 Basalt Ash Albedo",
+        "Charred Snags Use tree_dead_1_a_color1.glb Without Obscuring Isometric Camera",
+        "Basalt Outcrops Cluster Naturally Along Caldera Terrace Edges"
+      ],
+      "takes": [
+        {
+          "id": "take-a",
+          "label": "Take A (Barren Caldera Flats · Basalt 2.0%)",
+          "assetPath": "res://assets/nature/rock_2_a_color1.glb",
+          "weights": { "grass": 0.08, "bush": 0.02, "canopy_tree": 0.01, "boulder": 0.02 },
+          "notes": "Wind-swept ash plains with minimal scrub (8% grass, 2% bush, 2% basalt boulder)"
+        },
+        {
+          "id": "take-b",
+          "label": "Take B (Balanced Ashvale Front · Basalt 3.5% · Recommended)",
+          "assetPath": "res://assets/nature/tree_dead_1_a_color1.glb",
+          "weights": { "grass": 0.12, "bush": 0.04, "canopy_tree": 0.02, "boulder": 0.035 },
+          "notes": "Canonical scorched basalt & ash drift balance (12% scrub, 4% charred bush, 2% dead snag, 3.5% basalt outcrop)"
+        },
+        {
+          "id": "take-c",
+          "label": "Take C (Jagged Cindervast Crags · Basalt 5.5%)",
+          "assetPath": "res://assets/nature/rock_3_a_color1.glb",
+          "weights": { "grass": 0.16, "bush": 0.06, "canopy_tree": 0.03, "boulder": 0.055 },
+          "notes": "Dense volcanic slag field with heavy basalt boulder cover (5.5% boulder, 3% charred snag)"
+        }
+      ],
+      "feedbackHistory": [],
+      "targetFile": "content/ground_palettes.json",
+      "patchPreview": {
+        "cinder_ash_waste": {
+          "scatter": {
+            "grass": { "weight": 0.12 },
+            "bush": { "weight": 0.04 },
+            "canopy_tree": { "weight": 0.02 },
+            "boulder": { "weight": 0.035 }
+          }
+        }
+      }
+    },
+    {
+      "id": "rq-world-106",
+      "kind": "ground_palette",
+      "domain": "ground_palette",
+      "pillar": "Pillar A · Biome Brush & Tag Pool",
+      "targetId": "glacier_snow_crust",
+      "entityId": "glacier_snow_crust",
+      "assetStudioKey": "palette:glacier_snow_crust",
+      "title": "Glacier Snow Crust Brush (Northern Icefield & Boreal Shelf)",
+      "status": "pending_review",
+      "createdAt": "2026-10-17T10:20:00Z",
+      "selectedTakeIdx": 1,
+      "embeddedInputs": {
+        "playerScaleBandM": [0.90, 1.20],
+        "maxGrassHeightM": 0.35,
+        "maxBushHeightM": 0.65,
+        "maxTrunkRadiusM": 0.90,
+        "minRouteClearanceM": 2.40,
+        "albedoTint": "#D9E6F2",
+        "smartTagQuery": "biome:boreal_glacier + role:frost_sedge | snow_dwarf_shrub | rime_pine | frost_boulder"
+      },
+      "machineGates": [
+        { "gate": "Chibi Grass Visibility Cap (<= 0.35m)", "value": "Frost sedge max 0.35m (knee-high on 1.05m Chibi player)" },
+        { "gate": "Chibi Bush Visibility Cap (<= 0.65m)", "value": "Snow dwarf shrub max 0.65m (head & shoulders always visible)" },
+        { "gate": "Rime Pine & Frost Boulder Colliders", "value": "Rime pine r=0.80m (spacing 4.8m), Frost boulder r=0.85m (spacing 4.4m)" },
+        { "gate": "Ice Shelf Friction & Slope Gate", "value": "friction = 0.72, maxSlopeDeg = 34.0 deg" }
+      ],
+      "niceToHaveChecks": [
+        "High-Value #D9E6F2 Glacial Crust Keeps Chibi Drop Shadows Crisp",
+        "Dead Snags Disabled by Default in Boreal Rime Pine Pool",
+        "Frost Boulders Frame Northern Icefield Ridge Approaches"
+      ],
+      "takes": [
+        {
+          "id": "take-a",
+          "label": "Take A (Open Wind-Scoured Ice Sheet · Pine 1.5%)",
+          "assetPath": "res://assets/nature/rock_1_a_color1.glb",
+          "weights": { "grass": 0.10, "bush": 0.03, "canopy_tree": 0.015, "boulder": 0.02 },
+          "notes": "Wide glacial sightlines across Northern Icefield with sparse rime pines (1.5% canopy)"
+        },
+        {
+          "id": "take-b",
+          "label": "Take B (Balanced Boreal Snow Crust · Pine 2.5% · Recommended)",
+          "assetPath": "res://assets/nature/tree_1_b_color1.glb",
+          "weights": { "grass": 0.15, "bush": 0.05, "canopy_tree": 0.025, "boulder": 0.03 },
+          "notes": "Canonical Northern Icefield shelf balance (15% frost sedge, 5% dwarf shrub, 2.5% rime pine, 3% frost boulder)"
+        },
+        {
+          "id": "take-c",
+          "label": "Take C (Sub-Alpine Driftwood & Boulder Moraine · Pine 4.0%)",
+          "assetPath": "res://assets/nature/tree_1_a_color1.glb",
+          "weights": { "grass": 0.22, "bush": 0.08, "canopy_tree": 0.04, "boulder": 0.045 },
+          "notes": "Sheltered boreal timberline with heavier snow-laden pine and moraine boulder clusters"
+        }
+      ],
+      "feedbackHistory": [],
+      "targetFile": "content/ground_palettes.json",
+      "patchPreview": {
+        "glacier_snow_crust": {
+          "scatter": {
+            "grass": { "weight": 0.15 },
+            "bush": { "weight": 0.05 },
+            "canopy_tree": { "weight": 0.025 },
+            "boulder": { "weight": 0.03 }
+          }
+        }
+      }
+    }
+  ]
 }

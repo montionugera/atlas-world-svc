@@ -7,6 +7,84 @@ using Godot;
 
 namespace AtlasWorld.Client.World
 {
+    public sealed class UnifiedMapConcept
+    {
+        [JsonPropertyName("biome")] public string Biome { get; set; } = "freja_meadow_lush";
+        [JsonPropertyName("recommendedLevelRange")] public int[] RecommendedLevelRange { get; set; } = { 1, 15 };
+        [JsonPropertyName("skyPreset")] public string SkyPreset { get; set; } = "golden_alpine_meadow";
+        [JsonPropertyName("loreSummary")] public string LoreSummary { get; set; } =
+            "Sunlit sanctuary meadow south of Prontera bordered by pine timberlands, an ancient 2-story stone watchtower, and a crystal cavern.";
+    }
+
+    public sealed class UnifiedMapScatterRule
+    {
+        [JsonPropertyName("weight")] public float Weight { get; set; } = 0.25f;
+        [JsonPropertyName("minSpacingMeters")] public float MinSpacingMeters { get; set; } = 1.5f;
+        [JsonPropertyName("assets")] public List<string> Assets { get; set; } = new();
+        [JsonPropertyName("disabledAssets")] public List<string> DisabledAssets { get; set; } = new();
+        [JsonPropertyName("placement")] public string Placement { get; set; } = "fill";
+        [JsonPropertyName("scaleRange")] public float[] ScaleRange { get; set; } = { 0.70f, 1.05f };
+        [JsonPropertyName("blocksMovement")] public bool BlocksMovement { get; set; } = false;
+        [JsonPropertyName("colliderHalfExtent")] public float ColliderHalfExtent { get; set; } = 0.65f;
+
+        /// <summary>
+        /// Returns all assets in <see cref="Assets"/> that are not unchecked in <see cref="DisabledAssets"/>.
+        /// Used by the Smart Tag Pool + Checkbox override workflow in the Unified Asset &amp; Map Studio.
+        /// </summary>
+        public List<string> GetEnabledAssets()
+        {
+            if (Assets == null || Assets.Count == 0)
+                return new List<string>();
+            if (DisabledAssets == null || DisabledAssets.Count == 0)
+                return Assets;
+
+            var enabled = new List<string>(Assets.Count);
+            for (int i = 0; i < Assets.Count; i++)
+            {
+                string a = Assets[i];
+                if (!DisabledAssets.Contains(a))
+                    enabled.Add(a);
+            }
+            return enabled;
+        }
+    }
+
+    public sealed class UnifiedMapGroundPalette
+    {
+        [JsonPropertyName("surfaceType")] public string SurfaceType { get; set; } = "lush_grass";
+        [JsonPropertyName("albedoTint")] public string AlbedoTint { get; set; } = "#529E47";
+        [JsonPropertyName("friction")] public float Friction { get; set; } = 0.80f;
+        [JsonPropertyName("maxSlopeDeg")] public float MaxSlopeDeg { get; set; } = 32.0f;
+        [JsonPropertyName("clearColliders")] public bool ClearColliders { get; set; } = false;
+        [JsonPropertyName("playerScaleBandM")] public float[] PlayerScaleBandM { get; set; } = { 0.90f, 1.20f };
+        [JsonPropertyName("scatter")] public Dictionary<string, UnifiedMapScatterRule> Scatter { get; set; } = new();
+    }
+
+    public sealed class UnifiedMapRouteSpline
+    {
+        [JsonPropertyName("id")] public string Id { get; set; } = "";
+        [JsonPropertyName("groundId")] public string GroundId { get; set; } = "cobble_road";
+        [JsonPropertyName("width")] public float Width { get; set; } = 5.0f;
+        [JsonPropertyName("clearMargin")] public float ClearMargin { get; set; } = 2.2f;
+        [JsonPropertyName("points")] public List<float[]> Points { get; set; } = new();
+    }
+
+    public sealed class UnifiedMapGroundZone
+    {
+        [JsonPropertyName("id")] public string Id { get; set; } = "";
+        [JsonPropertyName("groundId")] public string GroundId { get; set; } = "meadow_grass";
+        [JsonPropertyName("priority")] public int Priority { get; set; } = 10;
+        [JsonPropertyName("shape")] public string Shape { get; set; } = "circle"; // "circle" | "annulus" | "rect"
+        [JsonPropertyName("x")] public float X { get; set; }
+        [JsonPropertyName("z")] public float Z { get; set; }
+        [JsonPropertyName("radius")] public float Radius { get; set; } = 24.0f;
+        [JsonPropertyName("innerRadius")] public float InnerRadius { get; set; } = 24.0f;
+        [JsonPropertyName("outerRadius")] public float OuterRadius { get; set; } = 180.0f;
+        [JsonPropertyName("width")] public float Width { get; set; } = 40.0f;
+        [JsonPropertyName("height")] public float Height { get; set; } = 40.0f;
+        [JsonPropertyName("feather")] public float Feather { get; set; } = 4.0f;
+    }
+
     public sealed class UnifiedMapProp
     {
         [JsonPropertyName("id")] public string Id { get; set; } = "";
@@ -71,18 +149,24 @@ namespace AtlasWorld.Client.World
 
     public sealed class UnifiedMapDocument
     {
-        [JsonPropertyName("version")] public int Version { get; set; } = 1;
+        [JsonPropertyName("version")] public int Version { get; set; } = 3;
         [JsonPropertyName("mapId")] public string MapId { get; set; } = "freja-south-gate";
         [JsonPropertyName("name")] public string Name { get; set; } = "Prontera South Gate \u2014 Freja Meadow";
-        [JsonPropertyName("width")] public float Width { get; set; } = 1000.0f;
-        [JsonPropertyName("height")] public float Height { get; set; } = 1000.0f;
+        [JsonPropertyName("seed")] public int Seed { get; set; } = 104729;
+        [JsonPropertyName("width")] public float Width { get; set; } = 4000.0f;
+        [JsonPropertyName("height")] public float Height { get; set; } = 4000.0f;
+        [JsonPropertyName("baseGroundId")] public string BaseGroundId { get; set; } = "meadow_grass";
         [JsonPropertyName("chunkSizeWorld")] public float ChunkSizeWorld { get; set; } = 24.0f;
         [JsonPropertyName("activeChunkRadius")] public int ActiveChunkRadius { get; set; } = 2;
         [JsonPropertyName("terrainAmplitude")] public float TerrainAmplitude { get; set; } = 1.0f;
-        [JsonPropertyName("proceduralClutterDensity")] public int ProceduralClutterDensity { get; set; } = 28;
+        [JsonPropertyName("proceduralClutterDensity")] public int ProceduralClutterDensity { get; set; } = 48;
         [JsonPropertyName("defaultTimeOfDayHours")] public float DefaultTimeOfDayHours { get; set; } = 10.5f;
         [JsonPropertyName("autoAdvanceDayNight")] public bool AutoAdvanceDayNight { get; set; } = true;
         [JsonPropertyName("dayNightSpeedHoursPerSec")] public float DayNightSpeedHoursPerSec { get; set; } = 0.10f;
+        [JsonPropertyName("concept")] public UnifiedMapConcept Concept { get; set; } = new();
+        [JsonPropertyName("groundPalettes")] public Dictionary<string, UnifiedMapGroundPalette> GroundPalettes { get; set; } = new();
+        [JsonPropertyName("routes")] public List<UnifiedMapRouteSpline> Routes { get; set; } = new();
+        [JsonPropertyName("groundZones")] public List<UnifiedMapGroundZone> GroundZones { get; set; } = new();
         [JsonPropertyName("heightTerraces")] public List<UnifiedMapHeightTerrace> HeightTerraces { get; set; } = new();
         [JsonPropertyName("structures")] public List<UnifiedMapStructureVolume> Structures { get; set; } = new();
         [JsonPropertyName("props")] public List<UnifiedMapProp> Props { get; set; } = new();
@@ -116,6 +200,192 @@ namespace AtlasWorld.Client.World
 
         public static Vector2I WorldToObstacleCell(float wx, float wz) =>
             new(Mathf.FloorToInt(wx / ObstacleCellSizeWorld), Mathf.FloorToInt(wz / ObstacleCellSizeWorld));
+
+        /// <summary>
+        /// Computes the minimum Euclidean distance from world point (wx, wz) to any polyline segment in <see cref="Routes"/>.
+        /// Returns <c>float.MaxValue</c> if no routes exist.
+        /// </summary>
+        public float SampleMinRouteDistance(
+            float wx,
+            float wz,
+            out float matchedHalfWidth,
+            out float matchedClearMargin,
+            out string matchedGroundId)
+        {
+            matchedHalfWidth = 2.5f;
+            matchedClearMargin = 2.0f;
+            matchedGroundId = "cobble_road";
+
+            if (Routes == null || Routes.Count == 0)
+                return float.MaxValue;
+
+            float bestDist = float.MaxValue;
+            Vector2 p = new(wx, wz);
+
+            for (int rIdx = 0; rIdx < Routes.Count; rIdx++)
+            {
+                var route = Routes[rIdx];
+                if (route.Points == null || route.Points.Count < 2)
+                    continue;
+
+                float halfW = Mathf.Max(0.8f, route.Width * 0.5f);
+                float clearM = Mathf.Max(0.5f, route.ClearMargin);
+
+                for (int i = 0; i < route.Points.Count - 1; i++)
+                {
+                    var p0Arr = route.Points[i];
+                    var p1Arr = route.Points[i + 1];
+                    if (p0Arr == null || p1Arr == null || p0Arr.Length < 2 || p1Arr.Length < 2)
+                        continue;
+
+                    Vector2 a = new(p0Arr[0], p0Arr[1]);
+                    Vector2 b = new(p1Arr[0], p1Arr[1]);
+                    float d = DistanceToSegment2D(p, a, b);
+                    if (d < bestDist)
+                    {
+                        bestDist = d;
+                        matchedHalfWidth = halfW;
+                        matchedClearMargin = clearM;
+                        matchedGroundId = string.IsNullOrWhiteSpace(route.GroundId) ? "cobble_road" : route.GroundId;
+                    }
+                }
+            }
+
+            return bestDist;
+        }
+
+        private static float DistanceToSegment2D(Vector2 p, Vector2 a, Vector2 b)
+        {
+            Vector2 ab = b - a;
+            float lenSq = ab.LengthSquared();
+            if (lenSq < 0.0001f)
+                return p.DistanceTo(a);
+
+            float t = Mathf.Clamp((p - a).Dot(ab) / lenSq, 0f, 1f);
+            Vector2 proj = a + ab * t;
+            return p.DistanceTo(proj);
+        }
+
+        /// <summary>
+        /// Deterministic 5-stage priority stack resolving the active <c>ground_id</c> at world coordinate (wx, wz)
+        /// without storing per-prop coordinates:
+        /// 1. Structure Footprint Mask (<c>"structure_foundation"</c>)
+        /// 2. Route Spline Corridor (<c>route.GroundId</c>, plus <paramref name="inRouteClearance"/> flag)
+        /// 3. Steep Slope Override (<c>"barren_cliff"</c> when slope exceeds palette maxSlopeDeg)
+        /// 4. Priority-ordered <see cref="GroundZones"/> with organic hash feathering
+        /// 5. Fallback <see cref="BaseGroundId"/> (<c>"meadow_grass"</c>)
+        /// </summary>
+        public string ResolveGroundIdAt(
+            float wx,
+            float wz,
+            out bool inRouteClearance,
+            out float minRouteEdgeDist)
+        {
+            inRouteClearance = false;
+            minRouteEdgeDist = float.MaxValue;
+
+            // 1. Structure Footprint Mask (keeps Watchtower & Crystal Cave interiors/ramps clean)
+            for (int i = 0; i < Structures.Count; i++)
+            {
+                var s = Structures[i];
+                if (Mathf.Abs(wx - s.X) <= s.Radius + 3.6f && Mathf.Abs(wz - s.Z) <= s.Radius + 2.2f)
+                {
+                    return "structure_foundation";
+                }
+            }
+
+            // 2. Route Spline Corridor
+            float routeDist = SampleMinRouteDistance(
+                wx,
+                wz,
+                out float routeHalfW,
+                out float routeClearMargin,
+                out string routeGroundId);
+            minRouteEdgeDist = Mathf.Abs(routeDist - routeHalfW);
+
+            if (routeDist <= routeHalfW)
+            {
+                inRouteClearance = true;
+                return routeGroundId;
+            }
+
+            if (routeDist <= routeHalfW + routeClearMargin)
+            {
+                inRouteClearance = true;
+            }
+
+            // Also keep immediate spawn plaza around (0, 0) clear of blocking trees
+            if (wx * wx + wz * wz <= 8.5f * 8.5f)
+            {
+                inRouteClearance = true;
+            }
+
+            // 3. Evaluate authored GroundZones ordered by descending priority with deterministic feather jitter
+            string resolvedGroundId = string.IsNullOrWhiteSpace(BaseGroundId) ? "meadow_grass" : BaseGroundId;
+            int bestPriority = int.MinValue;
+            float jitterUnit = SampleDeterministicFeatherNoise(wx, wz) - 0.5f; // [-0.5 .. +0.5]
+
+            for (int i = 0; i < GroundZones.Count; i++)
+            {
+                var z = GroundZones[i];
+                if (z.Priority < bestPriority)
+                    continue;
+
+                float featherOffset = jitterUnit * Mathf.Max(0f, z.Feather);
+                bool inside = false;
+                string shape = (z.Shape ?? "circle").ToLowerInvariant();
+
+                if (shape == "circle")
+                {
+                    float dist = Mathf.Sqrt((wx - z.X) * (wx - z.X) + (wz - z.Z) * (wz - z.Z));
+                    inside = dist <= (z.Radius + featherOffset);
+                }
+                else if (shape == "annulus")
+                {
+                    float dist = Mathf.Sqrt((wx - z.X) * (wx - z.X) + (wz - z.Z) * (wz - z.Z));
+                    inside = dist >= (z.InnerRadius + featherOffset) && dist <= (z.OuterRadius + featherOffset);
+                }
+                else if (shape == "rect")
+                {
+                    float halfW = z.Width * 0.5f + featherOffset;
+                    float halfH = z.Height * 0.5f + featherOffset;
+                    inside = Mathf.Abs(wx - z.X) <= halfW && Mathf.Abs(wz - z.Z) <= halfH;
+                }
+
+                if (inside)
+                {
+                    bestPriority = z.Priority;
+                    resolvedGroundId = z.GroundId;
+                }
+            }
+
+            // 4. Steep Slope Override (> maxSlopeDeg -> barren_cliff)
+            float maxSlope = 32.0f;
+            if (GroundPalettes.TryGetValue(resolvedGroundId, out var pal))
+            {
+                maxSlope = pal.MaxSlopeDeg;
+            }
+
+            if (TerrainElevation.SampleSlopeDegrees(wx, wz, this) > maxSlope)
+            {
+                return "barren_cliff";
+            }
+
+            return resolvedGroundId;
+        }
+
+        private static float SampleDeterministicFeatherNoise(float wx, float wz)
+        {
+            int qx = Mathf.FloorToInt(wx * 0.5f);
+            int qz = Mathf.FloorToInt(wz * 0.5f);
+            uint h = 2166136261u;
+            h = (h ^ (uint)qx) * 16777619u;
+            h = (h ^ (uint)qz) * 16777619u;
+            h ^= h >> 13;
+            h *= 0x5bd1e995u;
+            h ^= h >> 15;
+            return (h & 0xFFFFu) / 65535.0f;
+        }
 
         /// <summary>
         /// O(1) Height-Aware Spatial Hash Grid collision resolver for player/mob movement against solid map props and tower/cave walls.
@@ -213,11 +483,229 @@ namespace AtlasWorld.Client.World
         }
 
         /// <summary>
+        /// Loads shared ground palette presets from <c>content/ground_palettes.json</c> (or built-in defaults)
+        /// and ensures default routes and groundZones exist for v2->v3 migration.
+        /// </summary>
+        public void EnsureDefaultGroundPalettes()
+        {
+            try
+            {
+                string sharedPath = ResolveSharedPalettesFilePath();
+                if (File.Exists(sharedPath))
+                {
+                    string raw = File.ReadAllText(sharedPath);
+                    var shared = JsonSerializer.Deserialize<Dictionary<string, UnifiedMapGroundPalette>>(raw);
+                    if (shared != null)
+                    {
+                        foreach (var kv in shared)
+                        {
+                            if (!GroundPalettes.TryGetValue(kv.Key, out var existingPal))
+                            {
+                                GroundPalettes[kv.Key] = kv.Value;
+                            }
+                            else
+                            {
+                                // Sync Studio checkbox overrides (DisabledAssets) and Chibi scale caps from shared ground_palettes.json
+                                existingPal.PlayerScaleBandM = kv.Value.PlayerScaleBandM;
+                                foreach (var (ruleKey, sharedRule) in kv.Value.Scatter)
+                                {
+                                    if (existingPal.Scatter.TryGetValue(ruleKey, out var localRule))
+                                    {
+                                        localRule.DisabledAssets = sharedRule.DisabledAssets ?? new List<string>();
+                                        if (sharedRule.ScaleRange != null && sharedRule.ScaleRange.Length >= 2)
+                                            localRule.ScaleRange = sharedRule.ScaleRange;
+                                    }
+                                    else
+                                    {
+                                        existingPal.Scatter[ruleKey] = sharedRule;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                GD.Print($"[UnifiedMapDocument] Shared ground palettes fallback ({ex.Message})");
+            }
+
+            if (!GroundPalettes.ContainsKey("meadow_grass"))
+            {
+                GroundPalettes["meadow_grass"] = new UnifiedMapGroundPalette
+                {
+                    SurfaceType = "lush_grass",
+                    AlbedoTint = "#529E47",
+                    Friction = 0.80f,
+                    MaxSlopeDeg = 32.0f,
+                    Scatter = new Dictionary<string, UnifiedMapScatterRule>
+                    {
+                        ["grass"] = new()
+                        {
+                            Weight = 0.30f,
+                            Assets = new List<string> { "res://assets/nature/grass_1_a_color1.glb" },
+                            ScaleRange = new[] { 0.65f, 0.95f },
+                            BlocksMovement = false
+                        },
+                        ["bush"] = new()
+                        {
+                            Weight = 0.05f,
+                            Assets = new List<string> { "res://assets/nature/bush_2_a_color1.glb", "res://assets/nature/bush_1_a_color1.glb" },
+                            ScaleRange = new[] { 0.60f, 0.85f },
+                            BlocksMovement = false
+                        },
+                        ["pebble"] = new()
+                        {
+                            Weight = 0.02f,
+                            Assets = new List<string> { "res://assets/nature/rock_1_a_color1.glb", "res://assets/nature/rock_2_a_color1.glb" },
+                            ScaleRange = new[] { 0.38f, 0.72f },
+                            BlocksMovement = false
+                        }
+                    }
+                };
+            }
+
+            if (!GroundPalettes.ContainsKey("pine_forest_border"))
+            {
+                GroundPalettes["pine_forest_border"] = new UnifiedMapGroundPalette
+                {
+                    SurfaceType = "forest_moss",
+                    AlbedoTint = "#346E36",
+                    Friction = 0.90f,
+                    MaxSlopeDeg = 30.0f,
+                    Scatter = new Dictionary<string, UnifiedMapScatterRule>
+                    {
+                        ["grass"] = new()
+                        {
+                            Weight = 0.35f,
+                            Assets = new List<string> { "res://assets/nature/grass_1_a_color1.glb" },
+                            ScaleRange = new[] { 0.65f, 0.95f },
+                            BlocksMovement = false
+                        },
+                        ["bush"] = new()
+                        {
+                            Weight = 0.10f,
+                            Assets = new List<string> { "res://assets/nature/bush_1_a_color1.glb", "res://assets/nature/bush_2_a_color1.glb" },
+                            ScaleRange = new[] { 0.65f, 0.90f },
+                            BlocksMovement = false
+                        },
+                        ["canopy_tree"] = new()
+                        {
+                            Weight = 0.04f,
+                            MinSpacingMeters = 4.2f,
+                            Assets = new List<string>
+                            {
+                                "res://assets/nature/tree_1_a_color1.glb",
+                                "res://assets/nature/tree_2_a_color1.glb",
+                                "res://assets/nature/tree_3_a_color1.glb"
+                            },
+                            ScaleRange = new[] { 1.10f, 1.55f },
+                            BlocksMovement = true,
+                            ColliderHalfExtent = 0.45f
+                        },
+                        ["boulder"] = new()
+                        {
+                            Weight = 0.015f,
+                            MinSpacingMeters = 4.8f,
+                            Assets = new List<string> { "res://assets/nature/rock_1_a_color1.glb", "res://assets/nature/rock_2_a_color1.glb" },
+                            ScaleRange = new[] { 0.95f, 1.35f },
+                            BlocksMovement = true,
+                            ColliderHalfExtent = 0.90f
+                        }
+                    }
+                };
+            }
+
+            if (!GroundPalettes.ContainsKey("cobble_road"))
+            {
+                GroundPalettes["cobble_road"] = new UnifiedMapGroundPalette
+                {
+                    SurfaceType = "stone_path",
+                    AlbedoTint = "#C2B294",
+                    Friction = 0.85f,
+                    MaxSlopeDeg = 38.0f,
+                    ClearColliders = true,
+                    Scatter = new Dictionary<string, UnifiedMapScatterRule>
+                    {
+                        ["road_cobble_trim"] = new()
+                        {
+                            Weight = 0.14f,
+                            Assets = new List<string> { "res://assets/nature/rock_1_a_color1.glb", "res://assets/nature/rock_2_a_color1.glb" },
+                            Placement = "edge_only",
+                            ScaleRange = new[] { 0.32f, 0.58f },
+                            BlocksMovement = false
+                        }
+                    }
+                };
+            }
+
+            if (Routes.Count == 0)
+            {
+                Routes.Add(new UnifiedMapRouteSpline
+                {
+                    Id = "prontera_south_highway",
+                    GroundId = "cobble_road",
+                    Width = 5.2f,
+                    ClearMargin = 2.4f,
+                    Points = new List<float[]>
+                    {
+                        new[] { 0.0f, -95.0f },
+                        new[] { 0.0f, -20.0f },
+                        new[] { 0.0f, 20.0f },
+                        new[] { 0.0f, 95.0f }
+                    }
+                });
+                Routes.Add(new UnifiedMapRouteSpline
+                {
+                    Id = "watchtower_east_spur",
+                    GroundId = "cobble_road",
+                    Width = 3.6f,
+                    ClearMargin = 1.8f,
+                    Points = new List<float[]>
+                    {
+                        new[] { -5.5f, -2.0f },
+                        new[] { 0.0f, -2.0f },
+                        new[] { 9.5f, -3.0f }
+                    }
+                });
+            }
+
+            if (GroundZones.Count == 0)
+            {
+                GroundZones.Add(new UnifiedMapGroundZone
+                {
+                    Id = "central_sanctuary_clearing",
+                    GroundId = "meadow_grass",
+                    Priority = 20,
+                    Shape = "circle",
+                    X = 0.0f,
+                    Z = 0.0f,
+                    Radius = 22.0f,
+                    Feather = 4.0f
+                });
+                GroundZones.Add(new UnifiedMapGroundZone
+                {
+                    Id = "outer_timber_ring",
+                    GroundId = "pine_forest_border",
+                    Priority = 10,
+                    Shape = "annulus",
+                    X = 0.0f,
+                    Z = 0.0f,
+                    InnerRadius = 22.0f,
+                    OuterRadius = 190.0f,
+                    Feather = 6.0f
+                });
+            }
+        }
+
+        /// <summary>
         /// Ensures default Freja South Gate terrain plateaus and default 3D Showcase Structures
         /// (1 Multi-Floor Watchtower + 1 Underground Crystal Cave) exist so players can test them immediately.
         /// </summary>
         public void EnsureDefaultTerraces()
         {
+            EnsureDefaultGroundPalettes();
+
             if (HeightTerraces.Count == 0)
             {
                 HeightTerraces.Add(new UnifiedMapHeightTerrace
@@ -319,6 +807,13 @@ namespace AtlasWorld.Client.World
             return Path.Combine(repoRoot, "content", "maps", $"{mapId}.json");
         }
 
+        public static string ResolveSharedPalettesFilePath()
+        {
+            string projectRoot = ProjectSettings.GlobalizePath("res://").TrimEnd('/', '\\');
+            string repoRoot = Path.GetFullPath(Path.Combine(projectRoot, ".."));
+            return Path.Combine(repoRoot, "content", "ground_palettes.json");
+        }
+
         public static UnifiedMapDocument LoadOrDefault(string mapId = "freja-south-gate")
         {
             try
@@ -349,15 +844,17 @@ namespace AtlasWorld.Client.World
 
         /// <summary>
         /// Rebuilds server-rs 2D AABB staticObstacles AND the O(1) 2D Spatial Hash Grid
-        /// from all props marked BlocksMovement = true PLUS 3D structure perimeter walls.
+        /// from hero blocking props PLUS 3D structure perimeter walls and sheer cliff mesas.
         /// </summary>
         public void RebuildStaticObstacles(Vector2 serverCenter, float serverCoordScale)
         {
             StaticObstacles.Clear();
             _spatialObstacleGrid.Clear();
 
-            // Meadow trees, bushes, rocks, and torches do not create invisible AABB box walls;
-            // only 3D structure walls (Watchtower 1F pillars & Crystal Cave walls) block movement.
+            foreach (var p in Props)
+            {
+                IndexPropObstacleIncremental(p, serverCenter, serverCoordScale);
+            }
 
             foreach (var s in Structures)
             {
@@ -399,6 +896,54 @@ namespace AtlasWorld.Client.World
             float baseGroundY = TerrainElevation.SampleBaseTerrainHeight(p.X, p.Z, this);
             var worldRect = new Rect2(p.X - halfWorld, p.Z - halfWorld, halfWorld * 2f, halfWorld * 2f);
             AddWorldRectObstacle(p.Id, worldRect, baseGroundY - 1.0f, baseGroundY + 4.5f * p.Scale, serverCenter, serverCoordScale);
+        }
+
+        /// <summary>
+        /// Registers a procedural chunk collider (e.g. a deterministic <c>canopy_tree</c> or <c>boulder</c>)
+        /// into the O(1) spatial hash grid without bloating serialized <see cref="Props"/>.
+        /// </summary>
+        public void IndexProceduralObstacleInSpatialGrid(string id, float wx, float wz, float halfWorld, float baseGroundY)
+        {
+            var worldRect = new Rect2(wx - halfWorld, wz - halfWorld, halfWorld * 2f, halfWorld * 2f);
+            Vector2 serverCenter = ServerCenter;
+            const float serverCoordScale = 0.1f;
+            float sxMin = serverCenter.X + (worldRect.Position.X / serverCoordScale);
+            float syMin = serverCenter.Y + (worldRect.Position.Y / serverCoordScale);
+            float sxMax = serverCenter.X + ((worldRect.Position.X + worldRect.Size.X) / serverCoordScale);
+            float syMax = serverCenter.Y + ((worldRect.Position.Y + worldRect.Size.Y) / serverCoordScale);
+
+            var obs = new UnifiedMapStaticObstacle
+            {
+                Id = id,
+                MinX = Mathf.Round(sxMin * 10f) / 10f,
+                MinY = Mathf.Round(syMin * 10f) / 10f,
+                MaxX = Mathf.Round(sxMax * 10f) / 10f,
+                MaxY = Mathf.Round(syMax * 10f) / 10f,
+            };
+
+            var record = new SpatialObstacleRecord(id, worldRect, baseGroundY - 1.0f, baseGroundY + 5.0f, obs);
+            Vector2I minCell = WorldToObstacleCell(worldRect.Position.X, worldRect.Position.Y);
+            Vector2I maxCell = WorldToObstacleCell(worldRect.Position.X + worldRect.Size.X, worldRect.Position.Y + worldRect.Size.Y);
+
+            for (int cz = minCell.Y; cz <= maxCell.Y; cz++)
+            {
+                for (int cx = minCell.X; cx <= maxCell.X; cx++)
+                {
+                    var cellKey = new Vector2I(cx, cz);
+                    if (!_spatialObstacleGrid.TryGetValue(cellKey, out var list))
+                    {
+                        list = new List<SpatialObstacleRecord>();
+                        _spatialObstacleGrid[cellKey] = list;
+                    }
+                    // Replace if same deterministic id already registered in this cell
+                    for (int i = list.Count - 1; i >= 0; i--)
+                    {
+                        if (list[i].Id == id)
+                            list.RemoveAt(i);
+                    }
+                    list.Add(record);
+                }
+            }
         }
 
         /// <summary>
@@ -484,6 +1029,7 @@ namespace AtlasWorld.Client.World
             savedPath = ResolveMapFilePath(MapId);
             try
             {
+                Version = 3;
                 RebuildStaticObstacles(serverCenter, serverCoordScale);
                 string? dir = Path.GetDirectoryName(savedPath);
                 if (!string.IsNullOrEmpty(dir))
@@ -491,7 +1037,7 @@ namespace AtlasWorld.Client.World
 
                 var opts = new JsonSerializerOptions { WriteIndented = true };
                 File.WriteAllText(savedPath, JsonSerializer.Serialize(this, opts));
-                GD.Print($"[MapBuilder] Saved unified map ({Width:0}x{Height:0}, {Props.Count} props, {HeightTerraces.Count} terraces, {Structures.Count} 3D structures, {StaticObstacles.Count} server AABBs) -> {savedPath}");
+                GD.Print($"[MapBuilder] Saved unified map v3 ({Width:0}x{Height:0}, {Routes.Count} routes, {GroundZones.Count} groundZones, {Props.Count} hero props, {HeightTerraces.Count} terraces, {Structures.Count} 3D structures, {StaticObstacles.Count} server AABBs) -> {savedPath}");
                 return true;
             }
             catch (Exception ex)

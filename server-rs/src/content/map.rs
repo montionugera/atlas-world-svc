@@ -9,6 +9,24 @@ pub const FREJA_SOUTH_GATE_JSON: &str = include_str!("../../../content/maps/frej
 /// Slopes steeper than 38° act as impassable cliff walls that slide movement along the contour tangent.
 pub const MAX_WALKABLE_SLOPE_DEG: f32 = 38.0;
 
+/// Every room the server runs. `ROOM_IDS[0]` is where unknown or missing ids land.
+pub const ROOM_IDS: [&str; 5] = [
+    "map-for-play",
+    "map-for-test-projectile",
+    "map-for-test-deflect",
+    "map-for-test-terrain",
+    "map-for-test-large",
+];
+
+/// The room a requested map id joins.
+pub fn room_id_for(requested: &str) -> &'static str {
+    ROOM_IDS
+        .iter()
+        .copied()
+        .find(|id| *id == requested)
+        .unwrap_or(ROOM_IDS[0])
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MapSpawnArea {
     pub id: String,
@@ -52,6 +70,83 @@ fn default_terrain_amplitude() -> f32 {
 #[derive(Resource, Debug, Clone, Default)]
 pub struct StaticObstacles {
     pub obstacles: Vec<StaticObstacle>,
+}
+
+/// Ground types a map can be painted with. Each scales voluntary movement speed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum TerrainType {
+    Road,
+    Grass,
+    Forest,
+    Sand,
+    Ice,
+    Mud,
+}
+
+impl TerrainType {
+    pub const ALL: [TerrainType; 6] = [
+        TerrainType::Road,
+        TerrainType::Grass,
+        TerrainType::Forest,
+        TerrainType::Sand,
+        TerrainType::Ice,
+        TerrainType::Mud,
+    ];
+
+    /// Multiplier on voluntary movement speed (walking, chasing, wandering). Dash and
+    /// knockback impulses are not scaled.
+    pub fn speed_multiplier(self) -> f32 {
+        match self {
+            TerrainType::Road => 1.3,
+            TerrainType::Grass => 1.0,
+            TerrainType::Forest => 0.8,
+            TerrainType::Sand => 0.7,
+            TerrainType::Ice => 0.6,
+            TerrainType::Mud => 0.5,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct TerrainZone {
+    pub terrain: TerrainType,
+    pub min_x: f32,
+    pub min_y: f32,
+    pub max_x: f32,
+    pub max_y: f32,
+}
+
+impl TerrainZone {
+    fn rect(terrain: TerrainType, x: f32, y: f32, width: f32, height: f32) -> Self {
+        Self {
+            terrain,
+            min_x: x,
+            min_y: y,
+            max_x: x + width,
+            max_y: y + height,
+        }
+    }
+}
+
+/// Terrain zones of the room's map. Later zones paint over earlier ones (same as the
+/// client's draw order); ground not covered by any zone is `Grass`.
+#[derive(Resource, Debug, Clone, Default)]
+pub struct TerrainZones {
+    pub zones: Vec<TerrainZone>,
+}
+
+impl TerrainZones {
+    pub fn terrain_at(&self, x: f32, y: f32) -> TerrainType {
+        self.zones
+            .iter()
+            .rev()
+            .find(|z| x >= z.min_x && x < z.max_x && y >= z.min_y && y < z.max_y)
+            .map_or(TerrainType::Grass, |z| z.terrain)
+    }
+
+    pub fn speed_multiplier_at(&self, x: f32, y: f32) -> f32 {
+        self.terrain_at(x, y).speed_multiplier()
+    }
 }
 
 /// Authoritative 3D heightfield & steep-cliff collision solver shared between `server-rs` and `game-client`.
@@ -104,8 +199,8 @@ impl TerrainHeightfield {
         (cx + wx / self.coord_scale, cy + wz / self.coord_scale)
     }
 
-    /// Evaluates the exact 3D terrain elevation Y (in meters) at world coordinate `(wx, wz)`.
-    /// Identical formula to `TerrainElevation.SampleHeight` in C# and `stylized_grass_floor.gdshader`.
+    /// Evaluates the exact terrain height `Y` in 3D world meters at world coordinate `(wx, wz)`.
+    /// Mirrors `game-client/src/World/TerrainElevation.cs::SampleHeight(wx, wz)` 1:1.
     pub fn sample_height_world(&self, wx: f32, wz: f32) -> f32 {
         if self.terrain_amplitude <= 0.001 && self.height_terraces.is_empty() {
             return 0.0;
@@ -180,8 +275,10 @@ impl TerrainHeightfield {
             if cur_slope <= self.max_walkable_slope_deg {
                 break;
             }
-            let gx = self.sample_height_world(wx + EPS, wz) - self.sample_height_world(wx - EPS, wz);
-            let gz = self.sample_height_world(wx, wz + EPS) - self.sample_height_world(wx, wz - EPS);
+            let gx =
+                self.sample_height_world(wx + EPS, wz) - self.sample_height_world(wx - EPS, wz);
+            let gz =
+                self.sample_height_world(wx, wz + EPS) - self.sample_height_world(wx, wz - EPS);
             let glen = (gx * gx + gz * gz).sqrt();
             if glen <= 1e-4 {
                 break;
@@ -218,6 +315,9 @@ pub struct MapConfig {
     pub height_terraces: Vec<HeightTerrace>,
     pub spawn_areas: Vec<MapSpawnArea>,
     pub static_obstacles: Vec<StaticObstacle>,
+    pub terrain_zones: Vec<TerrainZone>,
+    /// Where joining players appear; `None` means the arena centre.
+    pub player_spawn: Option<(f32, f32)>,
 }
 
 #[derive(Deserialize)]
@@ -267,6 +367,108 @@ struct TownPlanJson {
 }
 
 impl MapConfig {
+    fn default_play_terrain_zones() -> Vec<TerrainZone> {
+        vec![
+            TerrainZone::rect(TerrainType::Ice, 0.0, 0.0, 1000.0, 250.0),
+            TerrainZone::rect(TerrainType::Forest, 680.0, 240.0, 320.0, 520.0),
+            TerrainZone::rect(TerrainType::Sand, 540.0, 390.0, 150.0, 220.0),
+            TerrainZone::rect(TerrainType::Mud, 390.0, 590.0, 230.0, 170.0),
+            TerrainZone::rect(TerrainType::Road, 485.0, 0.0, 30.0, 390.0),
+            TerrainZone::rect(TerrainType::Road, 485.0, 610.0, 30.0, 390.0),
+            TerrainZone::rect(TerrainType::Road, 0.0, 485.0, 390.0, 30.0),
+            TerrainZone::rect(TerrainType::Road, 610.0, 485.0, 390.0, 30.0),
+            TerrainZone::rect(TerrainType::Road, 390.0, 390.0, 220.0, 220.0),
+            // Town Trade Road and its bridge, painted over the Ice.
+            TerrainZone::rect(TerrainType::Road, 0.0, 172.0, 195.0, 16.0),
+            TerrainZone::rect(TerrainType::Road, 188.0, 170.0, 30.0, 20.0),
+        ]
+    }
+
+    /// Scale-testing map, 4000 x 4000: three big zones of each slow terrain, a road cross
+    /// through the centre plaza (the player spawn) plus a ring road, four clusters of
+    /// blocks beside the ring's corners, and a 4 x 4 grid of mob camps (12 mobs each).
+    fn large_test_map(map_id: &str) -> Self {
+        use TerrainType::*;
+        const MOB_TYPES: [&str; 6] = [
+            "mob-bramble-stalker",
+            "mob-veil-spearling",
+            "mob-chaff-crawler",
+            "mob-bramble-warden",
+            "mob-veil-cub",
+            "mob-bramble-drake",
+        ];
+        let mut spawn_areas = Vec::new();
+        let mut static_obstacles = Vec::new();
+        for row in 0..4 {
+            for col in 0..4 {
+                let n = row * 4 + col;
+                spawn_areas.push(MapSpawnArea {
+                    id: format!("large_camp_{n}"),
+                    x: 350.0 + 1000.0 * col as f32,
+                    y: 350.0 + 1000.0 * row as f32,
+                    width: 300.0,
+                    height: 300.0,
+                    mob_type: MOB_TYPES[n % MOB_TYPES.len()].to_string(),
+                    count: 12,
+                });
+            }
+        }
+        for (c, (cx, cy)) in [
+            (1200.0, 1200.0),
+            (2800.0, 1200.0),
+            (1200.0, 2800.0),
+            (2800.0, 2800.0),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            for (b, (dx, dy)) in [(0.0, 0.0), (90.0, 20.0), (30.0, 100.0), (130.0, 110.0)]
+                .into_iter()
+                .enumerate()
+            {
+                static_obstacles.push(StaticObstacle {
+                    id: format!("large_block_{c}_{b}"),
+                    min_x: cx + dx,
+                    min_y: cy + dy,
+                    max_x: cx + dx + 40.0,
+                    max_y: cy + dy + 40.0,
+                });
+            }
+        }
+        Self {
+            map_id: map_id.to_string(),
+            width: 4000.0,
+            height: 4000.0,
+            terrain_amplitude: 0.0,
+            height_terraces: Vec::new(),
+            spawn_areas,
+            static_obstacles,
+            terrain_zones: vec![
+                TerrainZone::rect(Ice, 0.0, 0.0, 1400.0, 800.0),
+                TerrainZone::rect(Ice, 2600.0, 3200.0, 1400.0, 800.0),
+                TerrainZone::rect(Ice, 1500.0, 300.0, 900.0, 500.0),
+                TerrainZone::rect(Forest, 2700.0, 100.0, 1200.0, 1100.0),
+                TerrainZone::rect(Forest, 100.0, 2700.0, 1100.0, 1200.0),
+                TerrainZone::rect(Forest, 1400.0, 3100.0, 900.0, 700.0),
+                TerrainZone::rect(Sand, 100.0, 1100.0, 800.0, 1200.0),
+                TerrainZone::rect(Sand, 3100.0, 1500.0, 800.0, 1300.0),
+                TerrainZone::rect(Sand, 2200.0, 2200.0, 600.0, 600.0),
+                TerrainZone::rect(Mud, 1200.0, 1200.0, 600.0, 600.0),
+                TerrainZone::rect(Mud, 2200.0, 1100.0, 700.0, 500.0),
+                TerrainZone::rect(Mud, 1100.0, 2200.0, 700.0, 700.0),
+                // Roads paint over everything: the cross, the ring, the plaza.
+                TerrainZone::rect(Road, 1970.0, 0.0, 60.0, 4000.0),
+                TerrainZone::rect(Road, 0.0, 1970.0, 4000.0, 60.0),
+                TerrainZone::rect(Road, 1000.0, 970.0, 2000.0, 60.0),
+                TerrainZone::rect(Road, 1000.0, 2970.0, 2000.0, 60.0),
+                TerrainZone::rect(Road, 970.0, 1000.0, 60.0, 2000.0),
+                TerrainZone::rect(Road, 2970.0, 1000.0, 60.0, 2000.0),
+                TerrainZone::rect(Road, 1850.0, 1850.0, 300.0, 300.0),
+            ],
+            player_spawn: Some((2000.0, 2000.0)),
+        }
+    }
+
     /// Loads a unified map document (created by the Mac Map Builder) from disk or embedded JSON.
     pub fn from_unified_json(map_id_fallback: &str, raw_json: &str) -> Option<Self> {
         let doc = serde_json::from_str::<UnifiedMapDoc>(raw_json).ok()?;
@@ -285,12 +487,15 @@ impl MapConfig {
             height_terraces: doc.height_terraces,
             spawn_areas: doc.spawn_areas,
             static_obstacles: doc.static_obstacles,
+            terrain_zones: Self::default_play_terrain_zones(),
+            player_spawn: None,
         })
     }
 
     /// Loads or derives map configuration, dimensions, spawn areas, and static footprints.
     pub fn load(map_id: &str) -> Self {
         match map_id {
+            "map-for-test-large" => Self::large_test_map(map_id),
             "map-for-test-deflect" => Self {
                 map_id: map_id.to_string(),
                 width: 100.0,
@@ -307,6 +512,8 @@ impl MapConfig {
                     count: 1,
                 }],
                 static_obstacles: Vec::new(),
+                terrain_zones: Vec::new(),
+                player_spawn: None,
             },
             "map-for-test-projectile" => Self {
                 map_id: map_id.to_string(),
@@ -324,6 +531,52 @@ impl MapConfig {
                     count: 6,
                 }],
                 static_obstacles: Vec::new(),
+                terrain_zones: Vec::new(),
+                player_spawn: None,
+            },
+            // Hand-testing sandbox: every terrain type as a 150-wide strip (fastest to slowest,
+            // west to east) so a run along +X from the west-edge spawn crosses them all. South
+            // of the strips: two blocks to bump into and two slow melee mobs, out of aggro
+            // range of the spawn, for knockback/AoE testing.
+            "map-for-test-terrain" => Self {
+                map_id: map_id.to_string(),
+                width: 1000.0,
+                height: 1000.0,
+                terrain_amplitude: 0.0,
+                height_terraces: Vec::new(),
+                spawn_areas: vec![MapSpawnArea {
+                    id: "terrain_sandbox_mobs".to_string(),
+                    x: 450.0,
+                    y: 880.0,
+                    width: 100.0,
+                    height: 60.0,
+                    mob_type: "mob-chaff-crawler".to_string(),
+                    count: 2,
+                }],
+                static_obstacles: vec![
+                    StaticObstacle {
+                        id: "terrain_sandbox_block_w".to_string(),
+                        min_x: 300.0,
+                        min_y: 760.0,
+                        max_x: 340.0,
+                        max_y: 800.0,
+                    },
+                    StaticObstacle {
+                        id: "terrain_sandbox_block_e".to_string(),
+                        min_x: 660.0,
+                        min_y: 760.0,
+                        max_x: 700.0,
+                        max_y: 800.0,
+                    },
+                ],
+                terrain_zones: TerrainType::ALL
+                    .iter()
+                    .enumerate()
+                    .map(|(i, &terrain)| {
+                        TerrainZone::rect(terrain, 50.0 + 150.0 * i as f32, 0.0, 150.0, 700.0)
+                    })
+                    .collect(),
+                player_spawn: Some((25.0, 350.0)),
             },
             "freja-south-gate" => {
                 for candidate in [
@@ -426,6 +679,8 @@ impl MapConfig {
             height_terraces: Vec::new(),
             spawn_areas,
             static_obstacles,
+            terrain_zones: Self::default_play_terrain_zones(),
+            player_spawn: None,
         }
     }
 }
@@ -443,7 +698,10 @@ mod tests {
         assert_eq!(cfg.spawn_areas.len(), 8);
         assert_eq!(cfg.static_obstacles.len(), 12);
         assert_eq!(cfg.height_terraces.len(), 5);
-        assert!(cfg.static_obstacles.iter().any(|o| o.id == "sanctuary_pillar_w"));
+        assert!(cfg
+            .static_obstacles
+            .iter()
+            .any(|o| o.id == "sanctuary_pillar_w"));
     }
 
     #[test]
@@ -470,7 +728,10 @@ mod tests {
 
         let (mut sx, mut sy) = hf.world_to_server(cliff_rim_x, cliff_rim_z);
         let pushed = hf.resolve_against_cliffs(&mut sx, &mut sy);
-        assert!(pushed, "Entity on sheer cliff wall should be pushed back to walkable ground");
+        assert!(
+            pushed,
+            "Entity on sheer cliff wall should be pushed back to walkable ground"
+        );
         let (resolved_wx, resolved_wz) = hf.server_to_world(sx, sy);
         assert!(hf.sample_slope_deg_world(resolved_wx, resolved_wz) <= MAX_WALKABLE_SLOPE_DEG);
     }
@@ -488,7 +749,8 @@ mod tests {
                 { "id": "pillar_center", "min_x": 994.0, "min_y": 994.0, "max_x": 1006.0, "max_y": 1006.0 }
             ]
         }"#;
-        let cfg = MapConfig::from_unified_json("freja-expanded-2000", expanded_json).expect("valid expanded map");
+        let cfg = MapConfig::from_unified_json("freja-expanded-2000", expanded_json)
+            .expect("valid expanded map");
         assert_eq!(cfg.width, 2000.0);
         assert_eq!(cfg.height, 2000.0);
         assert_eq!(cfg.spawn_areas[0].x, 900.0);

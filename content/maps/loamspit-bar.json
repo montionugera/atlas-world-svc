@@ -1,0 +1,611 @@
+{
+  "version": 3,
+  "mapId": "loamspit-bar",
+  "name": "Loamspit Bar \u2014 The Migrating Mangrove Spit",
+  "seed": 268985,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "coastal_tidal_flat",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 0.6,
+  "proceduralClutterDensity": 46,
+  "defaultTimeOfDayHours": 9.5,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c13",
+    "coastClass": "sandbar",
+    "levelBand": [
+      8,
+      24
+    ],
+    "primaryPinnedId": "c-lm-loamspit-bars",
+    "regionId": "c13/r01",
+    "zoneId": "loamspit-bar",
+    "spineNodeId": "n-loamspit",
+    "townId": "",
+    "storyRegionId": "",
+    "landmarkIds": [
+      "c-lm-loamspit-bars"
+    ],
+    "resourceIds": [],
+    "hazardIds": []
+  },
+  "concept": {
+    "biome": "coastal",
+    "recommendedLevelRange": [
+      8,
+      24
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "migrating sandbars and mangrove \u2014 the chart is redrawn every decade"
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "coastal_tidal_flat": {
+      "surfaceType": "estuary_mudflat",
+      "albedoTint": "#7A8B7B",
+      "friction": 0.78,
+      "maxSlopeDeg": 28.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.28,
+          "tagPool": {
+            "biome": "coastal_estuary",
+            "role": "salt_marsh_reed",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.06,
+          "tagPool": {
+            "biome": "coastal_estuary",
+            "role": "coastal_scrub",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.58,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.02,
+          "minSpacingMeters": 5.0,
+          "tagPool": {
+            "biome": "coastal_estuary",
+            "role": "driftwood_snag",
+            "maxTrunkRadiusM": 0.85
+          },
+          "assets": [
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.95,
+            1.3
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.75
+        },
+        "boulder": {
+          "weight": 0.025,
+          "minSpacingMeters": 4.5,
+          "tagPool": {
+            "biome": "coastal_estuary",
+            "role": "tidal_shingle_rock",
+            "maxTrunkRadiusM": 1.0
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            1.1
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.72
+        }
+      }
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "thorn_bramble_floor": {
+      "surfaceType": "bramble_root_floor",
+      "albedoTint": "#2D4F2E",
+      "friction": 0.88,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.38,
+          "tagPool": {
+            "biome": "thornveil_bramble",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.82
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "thornveil_bramble",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.92
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.5,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.05,
+          "minSpacingMeters": 4.0,
+          "tagPool": {
+            "biome": "thornveil_bramble",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.9
+          },
+          "assets": [
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.4
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.8
+        },
+        "boulder": {
+          "weight": 0.02,
+          "minSpacingMeters": 4.5,
+          "tagPool": {
+            "biome": "thornveil_bramble",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.05
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.75,
+            1.15
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.78
+        }
+      }
+    }
+  },
+  "routes": [
+    {
+      "id": "loamspit_bar_main_trunk_road",
+      "groundId": "cobble_road",
+      "width": 12.5,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          -90.0
+        ],
+        [
+          0.0,
+          -22.0
+        ],
+        [
+          -0.0,
+          22.0
+        ],
+        [
+          0.0,
+          90.0
+        ]
+      ]
+    },
+    {
+      "id": "loamspit_bar_survey_footpath",
+      "groundId": "cobble_road",
+      "width": 4.5,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          -62.0,
+          -3.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          62.0,
+          3.0
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "loamspit_bar_central_survey_clearing",
+      "groundId": "meadow_grass",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 28.0,
+      "innerRadius": 0.0,
+      "outerRadius": 28.0,
+      "width": 56.0,
+      "height": 56.0,
+      "feather": 4.5
+    },
+    {
+      "id": "loamspit_bar_outer_biome_margin",
+      "groundId": "coastal_tidal_flat",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 28.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "c_lm_loamspit_bars_terrace",
+      "x": 0.0,
+      "z": -18.0,
+      "radius": 16.0,
+      "height": 2.3,
+      "falloff": 0.46
+    },
+    {
+      "id": "loamspit_bar_west_bench",
+      "x": -18.0,
+      "z": 11.0,
+      "radius": 13.5,
+      "height": 2.0,
+      "falloff": 0.48
+    },
+    {
+      "id": "loamspit_bar_sheer_scarp_cliff",
+      "x": 27.0,
+      "z": -21.0,
+      "radius": 10.0,
+      "height": 4.3,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "loamspit_bar_watchtower_01",
+      "kind": "watchtower",
+      "x": -10.0,
+      "z": -7.0,
+      "rotY": 0.0,
+      "radius": 3.7,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "loamspit_bar_cavern_01",
+      "kind": "crystal_cave",
+      "x": 12.0,
+      "z": -8.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_c_lm_loamspit_bars_pillar_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_loamspit_bar_west_pillar_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_loamspit_bar_survey_banner",
+      "assetPath": "res://assets/dungeon/banner_patterna_green.glb",
+      "x": -3.4,
+      "y": 2.0,
+      "z": -13.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "loamspit_bar_hedgerow_thorn",
+      "x": 2124.8,
+      "y": 2046.2,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-hedgerow-thorn",
+      "count": 2
+    },
+    {
+      "id": "loamspit_bar_cordknot_effigy",
+      "x": 1631.1,
+      "y": 1910.8,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-cordknot-effigy",
+      "count": 3
+    },
+    {
+      "id": "loamspit_bar_millrace_lurker",
+      "x": 2248.6,
+      "y": 1741.3,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-millrace-lurker",
+      "count": 2
+    },
+    {
+      "id": "loamspit_bar_saltmarsh_wisp",
+      "x": 1979.8,
+      "y": 2364.5,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-saltmarsh-wisp",
+      "count": 3
+    },
+    {
+      "id": "loamspit_bar_strayling_yearling",
+      "x": 1423.7,
+      "y": 1774.6,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-strayling-yearling",
+      "count": 4
+    },
+    {
+      "id": "loamspit_bar_tideline_drowner",
+      "x": 2516.2,
+      "y": 1825.3,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-tideline-drowner",
+      "count": 2
+    },
+    {
+      "id": "loamspit_bar_tollroad_wrecker",
+      "x": 1643.9,
+      "y": 2533.7,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-tollroad-wrecker",
+      "count": 2
+    },
+    {
+      "id": "loamspit_bar_millroad_brigand",
+      "x": 1592.1,
+      "y": 1256.6,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-millroad-brigand",
+      "count": 4
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_c_lm_loamspit_bars_pillar_w",
+      "min_x": 1946.6,
+      "min_y": 1844.6,
+      "max_x": 1957.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "landmark_loamspit_bar_west_pillar_e",
+      "min_x": 2042.6,
+      "min_y": 1844.6,
+      "max_x": 2053.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "cliff_loamspit_bar_sheer_scarp_cliff",
+      "min_x": 2188.0,
+      "min_y": 1708.0,
+      "max_x": 2352.0,
+      "max_y": 1872.0
+    }
+  ]
+}

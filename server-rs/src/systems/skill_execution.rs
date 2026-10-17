@@ -1,8 +1,8 @@
 use crate::combat::get_skill;
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    CastingState, CooldownTracker, DashState, Health, MobTag, PlayerInputState, PlayerTag, Position,
-    Projectile, Velocity,
+    CastingState, CooldownTracker, DashState, Health, MobTag, PlayerInputState, PlayerTag,
+    Position, Projectile, StatusEffects, Velocity,
 };
 use bevy_ecs::prelude::*;
 
@@ -20,13 +20,24 @@ pub fn skill_execution_system(
         Has<PlayerTag>,
         Option<&Health>,
         Option<&mut DashState>,
+        Option<&StatusEffects>,
     )>,
     enemies: Query<(Entity, &Position, &Health, Has<MobTag>, Has<PlayerTag>)>,
 ) {
     let current_time = clock.current_time_seconds();
 
-    for (entity, pos, mut input, mut cooldown_tracker, mut casting, mut vel, is_player, health, mut dash_opt) in
-        &mut query
+    for (
+        entity,
+        pos,
+        mut input,
+        mut cooldown_tracker,
+        mut casting,
+        mut vel,
+        is_player,
+        health,
+        mut dash_opt,
+        status_opt,
+    ) in &mut query
     {
         // The dead cannot cast: drop any in-flight cast and swallow skill presses.
         if health.is_some_and(|h| !h.is_alive) {
@@ -126,11 +137,7 @@ pub fn skill_execution_system(
                     }
 
                     let is_aoe = skill.radius > 2.5;
-                    let aoe_radius = if is_aoe {
-                        skill.radius * 10.0
-                    } else {
-                        0.0
-                    };
+                    let aoe_radius = if is_aoe { skill.radius * 10.0 } else { 0.0 };
 
                     let (proj_pos, proj_vel, speed, max_range, lifetime) = if is_aoe {
                         // Ground-targeted AoE skill (Meteor, Blizzard, Thunder):
@@ -237,7 +244,9 @@ pub fn skill_execution_system(
 
             if let Some(skill) = get_skill(skill_id_str) {
                 let can_perform = if skill.id == "skill_dash" {
-                    cooldown_tracker.can_perform(&[skill.id.as_str()])
+                    // No dashing out of a knockback: it must neither fire nor spend cooldown.
+                    !status_opt.is_some_and(|s| s.is_knocked_back())
+                        && cooldown_tracker.can_perform(&[skill.id.as_str()])
                 } else {
                     cooldown_tracker.can_perform(&[skill.id.as_str(), "global_magic_cd"])
                 };
@@ -276,8 +285,11 @@ pub fn skill_execution_system(
                         if skill.gcd_sec > 0.0 {
                             cooldown_tracker.set_cooldown("global_magic_cd", skill.gcd_sec);
                         }
-                        vel.vx = 0.0;
-                        vel.vy = 0.0;
+                        // A cast must not cancel a knockback in progress.
+                        if !status_opt.is_some_and(|s| s.is_knocked_back()) {
+                            vel.vx = 0.0;
+                            vel.vy = 0.0;
+                        }
                     }
                 }
             }
@@ -369,6 +381,43 @@ mod tests {
         let cd = world.get::<CooldownTracker>(entity).unwrap();
         assert_eq!(cd.get_remaining("skill_dash"), 0.5);
         assert!(!cd.can_perform(&["skill_dash"]));
+    }
+
+    #[test]
+    fn test_dash_while_knocked_back_does_not_fire_or_spend_cooldown() {
+        use crate::ecs::components::StatusEffects;
+
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50));
+
+        let mut status = StatusEffects::default();
+        status.apply_knockback(0.2);
+
+        let entity = world
+            .spawn((
+                Position::new(0.0, 0.0),
+                PlayerInputState::new(1.0, 0.0, false, 5), // Slot 5 = Dash
+                CooldownTracker::new(),
+                CastingState::new(),
+                Velocity::new(-80.0, 0.0), // being knocked back toward -X
+                PlayerTag,
+                DashState::new(),
+                status,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(skill_execution_system);
+        schedule.run(&mut world);
+
+        let vel = world.get::<Velocity>(entity).unwrap();
+        assert_eq!(vel.vx, -80.0, "dash must not overwrite knockback velocity");
+        assert_eq!(vel.vy, 0.0);
+        assert!(!world.get::<DashState>(entity).unwrap().is_dashing());
+        assert!(world
+            .get::<CooldownTracker>(entity)
+            .unwrap()
+            .can_perform(&["skill_dash"]));
     }
 
     #[test]
@@ -490,6 +539,45 @@ mod tests {
         assert!(
             found,
             "Ground AoE projectile should have been spawned at target position on cast completion"
+        );
+    }
+
+    #[test]
+    fn test_cast_start_while_knocked_back_keeps_knockback_velocity() {
+        use crate::ecs::components::StatusEffects;
+
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50));
+
+        let mut status = StatusEffects::default();
+        status.apply_knockback(0.2);
+
+        let entity = world
+            .spawn((
+                Position::new(0.0, 0.0),
+                PlayerInputState::new(0.0, 0.0, false, 1), // Slot 1 = cast skill
+                CooldownTracker::new(),
+                CastingState::new(),
+                Velocity::new(-80.0, 0.0), // being knocked back toward -X
+                PlayerTag,
+                DashState::new(),
+                status,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(skill_execution_system);
+        schedule.run(&mut world);
+
+        assert!(world
+            .get::<CastingState>(entity)
+            .unwrap()
+            .skill_id
+            .is_some());
+        let vel = world.get::<Velocity>(entity).unwrap();
+        assert_eq!(
+            vel.vx, -80.0,
+            "cast start must not cancel knockback velocity"
         );
     }
 }

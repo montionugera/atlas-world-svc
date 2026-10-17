@@ -21,9 +21,16 @@ namespace AtlasWorld.Client.World
     /// </summary>
     public sealed class EntityView
     {
+        /// <summary>
+        /// Canonical Chibi Toddler Player Scale Anchor (1.05m target height inside [0.90m, 1.20m]).
+        /// Base KayKit characters are ~1.75m tall, so 0.60f yields 1.05m world height.
+        /// </summary>
+        public const float ChibiPlayerWorldHeightM = 1.05f;
+
         private readonly EntityKind _kind;
         private readonly string _typeId;
         private readonly Node3D _root;
+        private readonly float _visualScale;
         private readonly MeshInstance3D? _body;
         private readonly StandardMaterial3D? _material;
         private readonly MeshInstance3D? _hpBar;
@@ -49,6 +56,7 @@ namespace AtlasWorld.Client.World
         public Node3D Root => _root;
         public EntityKind Kind => _kind;
         public string TypeId => _typeId;
+        public float VisualScale => _visualScale;
         public float CurrentHealth => _lastHealth < 0f ? _maxHealth : _lastHealth;
         public float MaxHealth => _maxHealth;
         public string DisplayName { get; private set; } = "";
@@ -67,6 +75,7 @@ namespace AtlasWorld.Client.World
         {
             _kind = kind;
             _typeId = typeId;
+            _visualScale = ResolveChibiScaleFactor(kind, typeId);
             _root = BuildVisualRoot(kind, typeId);
 
             // Same seam as the visual node itself: ask the registry for any per-entry clip
@@ -94,6 +103,9 @@ namespace AtlasWorld.Client.World
             }
             else if (_body == null && kind is EntityKind.Player or EntityKind.Mob or EntityKind.Npc)
             {
+                // Apply Chibi / Toddler Player Scale Anchor (1.05m player, 0.55m small mob, 1.20m medium mob, 2.10m MVP boss)
+                _root.Scale = Vector3.One * _visualScale;
+
                 // Apply Ragnarok Origin anime cel-shading + warm rim light to all glTF character meshes
                 ApplyAnimeToonShading(_root, kind);
 
@@ -179,6 +191,32 @@ namespace AtlasWorld.Client.World
 
                 UpdateOverheadBarVisibility();
             }
+        }
+
+        /// <summary>
+        /// Resolves the 3D world-space scale factor anchored to the 1.05m Chibi Toddler Player standard:
+        /// - Player / Chibi Adventurer: 0.62f (~1.05m tall, head well above 0.35m grass &amp; 0.65m bushes)
+        /// - NPCs (Instructors / Prontera Guards): 0.68f (~1.18m tall)
+        /// - Small Mobs (Slime / Poring): 0.55f (~0.55m knee-to-waist height)
+        /// - Medium Mobs (Boar / Skeleton / Bramble Stalker): 0.72f (~1.25m shoulder-to-head height)
+        /// - Large / MVP Bosses (Orc Warlord / Golem): 1.22f (~2.10m, 2x Chibi player height)
+        /// </summary>
+        public static float ResolveChibiScaleFactor(EntityKind kind, string typeId)
+        {
+            if (kind == EntityKind.Player)
+                return 0.62f;
+            if (kind == EntityKind.Npc)
+                return 0.68f;
+            if (kind == EntityKind.Mob)
+            {
+                string lower = (typeId ?? "").ToLowerInvariant();
+                if (lower.Contains("orc") || lower.Contains("warlord") || lower.Contains("golem") || lower.Contains("mvp") || lower.Contains("boss"))
+                    return 1.22f;
+                if (lower.Contains("slime") || lower.Contains("poring") || lower.Contains("spore"))
+                    return 0.55f;
+                return 0.72f;
+            }
+            return 1.0f;
         }
 
         /// <summary>

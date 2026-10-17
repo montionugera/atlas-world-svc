@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { isTextEntryTarget } from "../utils/debugTools";
 
 interface UseKeyboardControlsProps {
   updatePlayerInput: (vx: number, vy: number) => void;
@@ -77,6 +78,8 @@ export const useKeyboardControls = ({
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Typing into a field must not move, attack or cast.
+      if (isTextEntryTarget(event.target)) return;
       const key = event.key.toLowerCase(); // Normalize!
       const props = latestPropsRef.current;
 

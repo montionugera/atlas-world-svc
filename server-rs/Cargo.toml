@@ -27,3 +27,11 @@ criterion = { version = "0.5", features = ["html_reports"] }
 [[bench]]
 name = "sim_scale"
 harness = false
+
+# Dev builds run the live local server (`cargo watch -x run`): optimise so a tick costs
+# ~0.3 ms instead of ~1.6 ms. Editing one source file still rebuilds in about 2 s.
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

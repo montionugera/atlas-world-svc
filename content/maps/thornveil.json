@@ -1,0 +1,573 @@
+{
+  "version": 3,
+  "mapId": "thornveil",
+  "name": "Thornveil \u2014 The Heartwood Bramble",
+  "seed": 954625,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "pine_forest_border",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 1.25,
+  "proceduralClutterDensity": 48,
+  "defaultTimeOfDayHours": 15.5,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c02",
+    "regionId": "c02/r30",
+    "zoneId": "thornveil",
+    "spineNodeId": "n-thornveil",
+    "townId": "",
+    "storyRegionId": "region-thornveil",
+    "landmarkIds": [
+      "the-heartwood",
+      "the-crown-thickets"
+    ],
+    "resourceIds": [
+      "cane-sap",
+      "spear-cane"
+    ],
+    "hazardIds": [
+      "the-thorn-wall",
+      "no-through-stream"
+    ]
+  },
+  "concept": {
+    "biome": "wealdmarch_bramble_veil",
+    "recommendedLevelRange": [
+      1,
+      70
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "The one ground no road overlooks, which is why the people who do not want to be overlooked are in it."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "pine_forest_border": {
+      "surfaceType": "forest_moss",
+      "albedoTint": "#346E36",
+      "friction": 0.9,
+      "maxSlopeDeg": 30.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.35,
+          "tagPool": {
+            "biome": "forest",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.1,
+          "tagPool": {
+            "biome": "forest",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.95
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.52,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.04,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "forest",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.95
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.45
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        },
+        "boulder": {
+          "weight": 0.015,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "forest",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.1
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.25
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    }
+  },
+  "routes": [
+    {
+      "id": "thornveil_raider_trunk",
+      "groundId": "cobble_road",
+      "width": 12.0,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          -85.0,
+          0.0
+        ],
+        [
+          -25.0,
+          -4.0
+        ],
+        [
+          25.0,
+          4.0
+        ],
+        [
+          85.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "id": "heartwood_canopy_footpath",
+      "groundId": "cobble_road",
+      "width": 4.5,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          0.0,
+          -65.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          14.0,
+          48.0
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "heartwood_central_glade",
+      "groundId": "meadow_grass",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 24.0,
+      "innerRadius": 0.0,
+      "outerRadius": 24.0,
+      "width": 48.0,
+      "height": 48.0,
+      "feather": 4.5
+    },
+    {
+      "id": "crown_thickets_bramble_ring",
+      "groundId": "pine_forest_border",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 195.0,
+      "innerRadius": 24.0,
+      "outerRadius": 195.0,
+      "width": 390.0,
+      "height": 390.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "the_heartwood_mound",
+      "x": 0.0,
+      "z": -16.0,
+      "radius": 16.0,
+      "height": 2.3,
+      "falloff": 0.46
+    },
+    {
+      "id": "crown_thickets_west_ridge",
+      "x": -20.0,
+      "z": 10.0,
+      "radius": 13.0,
+      "height": 2.1,
+      "falloff": 0.48
+    },
+    {
+      "id": "thorn_wall_sheer_crag",
+      "x": 28.0,
+      "z": -22.0,
+      "radius": 10.0,
+      "height": 4.4,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "thornveil_raider_watchtower_01",
+      "kind": "watchtower",
+      "x": -11.0,
+      "z": -4.0,
+      "rotY": 0.0,
+      "radius": 3.6,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "heartwood_root_cavern_01",
+      "kind": "crystal_cave",
+      "x": 12.0,
+      "z": -6.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_the_heartwood_tree",
+      "assetPath": "res://assets/nature/tree_3_a_color1.glb",
+      "x": 0.0,
+      "y": 2.3,
+      "z": -16.0,
+      "rotY": 0.0,
+      "scale": 1.35,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.85
+    },
+    {
+      "id": "landmark_crown_thickets_pillar",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 6.5,
+      "y": 1.4,
+      "z": -12.0,
+      "rotY": 0.4,
+      "scale": 1.1,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "thornveil_bramble_shoot",
+      "x": 2078.5,
+      "y": 2101.7,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-bramble-shoot",
+      "count": 2
+    },
+    {
+      "id": "thornveil_thicket_hopper",
+      "x": 1666.2,
+      "y": 1863.7,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-thicket-hopper",
+      "count": 4
+    },
+    {
+      "id": "thornveil_veil_cub",
+      "x": 1967.1,
+      "y": 1623.7,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-veil-cub",
+      "count": 4
+    },
+    {
+      "id": "thornveil_bramble_stalker",
+      "x": 1962.1,
+      "y": 2257.4,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-bramble-stalker",
+      "count": 4
+    },
+    {
+      "id": "thornveil_thornhusk_weaver",
+      "x": 1554.6,
+      "y": 1840.2,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-thornhusk-weaver",
+      "count": 3
+    },
+    {
+      "id": "thornveil_veil_spearling",
+      "x": 2304.1,
+      "y": 1750.1,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-veil-spearling",
+      "count": 4
+    },
+    {
+      "id": "thornveil_bramble_warden",
+      "x": 1678.1,
+      "y": 2316.6,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-bramble-warden",
+      "count": 2
+    },
+    {
+      "id": "thornveil_sapdrinker_swarm",
+      "x": 2105.9,
+      "y": 1455.9,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-sapdrinker-swarm",
+      "count": 4
+    },
+    {
+      "id": "thornveil_thornveil_spearhand",
+      "x": 2303.8,
+      "y": 2299.8,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-thornveil-spearhand",
+      "count": 4
+    },
+    {
+      "id": "thornveil_bramble_drake",
+      "x": 1356.4,
+      "y": 1895.3,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-bramble-drake",
+      "count": 2
+    },
+    {
+      "id": "thornveil_briar_caller",
+      "x": 2510.1,
+      "y": 1703.2,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-briar-caller",
+      "count": 2
+    },
+    {
+      "id": "thornveil_bramble_mother",
+      "x": 1574.5,
+      "y": 2491.2,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-bramble-mother",
+      "count": 1
+    },
+    {
+      "id": "thornveil_thorncrown_drake",
+      "x": 1643.3,
+      "y": 1313.3,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-thorncrown-drake",
+      "count": 1
+    },
+    {
+      "id": "thornveil_heartwood_tyrant",
+      "x": 2667.7,
+      "y": 1786.1,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-heartwood-tyrant",
+      "count": 1
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_the_heartwood_tree",
+      "min_x": 1991.7,
+      "min_y": 1831.7,
+      "max_x": 2008.3,
+      "max_y": 1848.3
+    },
+    {
+      "id": "landmark_crown_thickets_pillar",
+      "min_x": 2059.9,
+      "min_y": 1874.9,
+      "max_x": 2070.1,
+      "max_y": 1885.1
+    },
+    {
+      "id": "cliff_thorn_wall_sheer_crag",
+      "min_x": 2198.0,
+      "min_y": 1698.0,
+      "max_x": 2362.0,
+      "max_y": 1862.0
+    }
+  ]
+}

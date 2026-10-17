@@ -1,0 +1,693 @@
+{
+  "version": 3,
+  "mapId": "ashvale-front",
+  "name": "Ashvale Front \u2014 The Alkali Cut Lines",
+  "seed": 664176,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "meadow_grass",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 0.75,
+  "proceduralClutterDensity": 48,
+  "defaultTimeOfDayHours": 17.5,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c02",
+    "regionId": "c02/r01",
+    "zoneId": "ashvale-front",
+    "spineNodeId": "n-cluster1",
+    "townId": "c-town-embervale",
+    "storyRegionId": "region-ashvale-front",
+    "landmarkIds": [
+      "the-grave-rows",
+      "the-abandoned-cut-lines"
+    ],
+    "resourceIds": [
+      "abandoned-arms",
+      "the-southern-lip-loam"
+    ],
+    "hazardIds": [
+      "no-water-on-it",
+      "no-cover-for-a-days-crossing",
+      "the-alkali-dust"
+    ]
+  },
+  "concept": {
+    "biome": "wealdmarch_alkali_front",
+    "recommendedLevelRange": [
+      1,
+      80
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "The only ground both towns reach in a day and neither can hold, which is why four seasons of what either army carried is still lying on it."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "pine_forest_border": {
+      "surfaceType": "forest_moss",
+      "albedoTint": "#346E36",
+      "friction": 0.9,
+      "maxSlopeDeg": 30.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.35,
+          "tagPool": {
+            "biome": "forest",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.1,
+          "tagPool": {
+            "biome": "forest",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.95
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.52,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.04,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "forest",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.95
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.45
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        },
+        "boulder": {
+          "weight": 0.015,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "forest",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.1
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.25
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    }
+  },
+  "routes": [
+    {
+      "id": "embervale_norhollow_war_road",
+      "groundId": "cobble_road",
+      "width": 14.0,
+      "clearMargin": 2.6,
+      "points": [
+        [
+          0.0,
+          -95.0
+        ],
+        [
+          0.0,
+          -25.0
+        ],
+        [
+          0.0,
+          25.0
+        ],
+        [
+          0.0,
+          95.0
+        ]
+      ]
+    },
+    {
+      "id": "abandoned_cut_line_trench_path",
+      "groundId": "cobble_road",
+      "width": 5.0,
+      "clearMargin": 2.0,
+      "points": [
+        [
+          -70.0,
+          -8.0
+        ],
+        [
+          0.0,
+          -8.0
+        ],
+        [
+          70.0,
+          -8.0
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "alkali_dust_battle_flat",
+      "groundId": "barren_cliff",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 28.0,
+      "innerRadius": 0.0,
+      "outerRadius": 28.0,
+      "width": 56.0,
+      "height": 56.0,
+      "feather": 5.0
+    },
+    {
+      "id": "southern_lip_loam_verge",
+      "groundId": "meadow_grass",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 28.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "the_grave_rows_knoll",
+      "x": -18.0,
+      "z": -14.0,
+      "radius": 15.0,
+      "height": 1.9,
+      "falloff": 0.48
+    },
+    {
+      "id": "abandoned_cut_lines_redoubt",
+      "x": 18.0,
+      "z": 12.0,
+      "radius": 14.0,
+      "height": 2.2,
+      "falloff": 0.45
+    },
+    {
+      "id": "alkali_scarp_mesa",
+      "x": -28.0,
+      "z": 24.0,
+      "radius": 10.0,
+      "height": 4.1,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "ashvale_siege_watchtower_01",
+      "kind": "watchtower",
+      "x": -12.0,
+      "z": -6.0,
+      "rotY": 0.0,
+      "radius": 3.8,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "ashvale_sunken_bunker_01",
+      "kind": "crystal_cave",
+      "x": 14.0,
+      "z": -4.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_grave_rows_headstone_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -8.0,
+      "y": 1.2,
+      "z": -12.0,
+      "rotY": 0.0,
+      "scale": 1.05,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_grave_rows_headstone_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 8.0,
+      "y": 1.2,
+      "z": -12.0,
+      "rotY": 0.0,
+      "scale": 1.05,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_cut_line_banner",
+      "assetPath": "res://assets/dungeon/banner_patterna_red.glb",
+      "x": -5.0,
+      "y": 1.1,
+      "z": -8.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "ashvale_front_ashfield_crawler",
+      "x": 2140.0,
+      "y": 1920.0,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-ashfield-crawler",
+      "count": 4
+    },
+    {
+      "id": "ashvale_front_ashvale_carrion_hound",
+      "x": 1685.5,
+      "y": 1865.5,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-ashvale-carrion-hound",
+      "count": 4
+    },
+    {
+      "id": "ashvale_front_shovel_wight",
+      "x": 2075.6,
+      "y": 1714.4,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-shovel-wight",
+      "count": 2
+    },
+    {
+      "id": "ashvale_front_toll_struck_warden",
+      "x": 2008.7,
+      "y": 2207.6,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-toll-struck-warden",
+      "count": 2
+    },
+    {
+      "id": "ashvale_front_ashen_torchbearer",
+      "x": 1631.6,
+      "y": 1848.5,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-ashen-torchbearer",
+      "count": 3
+    },
+    {
+      "id": "ashvale_front_cratershell_crawler",
+      "x": 2253.4,
+      "y": 1874.9,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-cratershell-crawler",
+      "count": 2
+    },
+    {
+      "id": "ashvale_front_standard_bearer_husk",
+      "x": 1599.7,
+      "y": 2039.4,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-standard-bearer-husk",
+      "count": 3
+    },
+    {
+      "id": "ashvale_front_trench_gnawer",
+      "x": 1810.0,
+      "y": 1591.4,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-trench-gnawer",
+      "count": 2
+    },
+    {
+      "id": "ashvale_front_ashen_drum_caller",
+      "x": 2237.8,
+      "y": 2175.0,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-ashen-drum-caller",
+      "count": 2
+    },
+    {
+      "id": "ashvale_front_bell_scoured_penitent",
+      "x": 1583.4,
+      "y": 1729.7,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-bell-scoured-penitent",
+      "count": 2
+    },
+    {
+      "id": "ashvale_front_flagrot_swarm",
+      "x": 2289.9,
+      "y": 1695.8,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-flagrot-swarm",
+      "count": 2
+    },
+    {
+      "id": "ashvale_front_gravetide_wight",
+      "x": 2039.0,
+      "y": 2371.6,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-gravetide-wight",
+      "count": 2
+    },
+    {
+      "id": "ashvale_front_bellwarden_revenant",
+      "x": 1848.4,
+      "y": 1473.5,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-bellwarden-revenant",
+      "count": 2
+    },
+    {
+      "id": "ashvale_front_shroudweaver",
+      "x": 2414.3,
+      "y": 2039.0,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-shroudweaver",
+      "count": 2
+    },
+    {
+      "id": "ashvale_front_siege_rot_hulk",
+      "x": 1525.4,
+      "y": 2237.0,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-siege-rot-hulk",
+      "count": 1
+    },
+    {
+      "id": "ashvale_front_warscar_maw",
+      "x": 2127.9,
+      "y": 1439.2,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-warscar-maw",
+      "count": 2
+    },
+    {
+      "id": "ashvale_front_ash_sermon_speaker",
+      "x": 1972.9,
+      "y": 2497.1,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-ash-sermon-speaker",
+      "count": 1
+    },
+    {
+      "id": "ashvale_front_frontline_devourer",
+      "x": 1428.2,
+      "y": 1696.2,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-frontline-devourer",
+      "count": 1
+    },
+    {
+      "id": "ashvale_front_scar_drake",
+      "x": 2537.8,
+      "y": 1901.7,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-scar-drake",
+      "count": 1
+    },
+    {
+      "id": "ashvale_front_unburied_host",
+      "x": 1501.0,
+      "y": 2370.9,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-unburied-host",
+      "count": 1
+    },
+    {
+      "id": "ashvale_front_boneorchard_warden",
+      "x": 1884.4,
+      "y": 1311.9,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-boneorchard-warden",
+      "count": 1
+    },
+    {
+      "id": "ashvale_front_hallowed_toll_warden",
+      "x": 2563.4,
+      "y": 2166.4,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-hallowed-toll-warden",
+      "count": 1
+    },
+    {
+      "id": "ashvale_front_scarfield_sovereign",
+      "x": 1377.4,
+      "y": 2315.1,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-scarfield-sovereign",
+      "count": 1
+    },
+    {
+      "id": "ashvale_front_gravefield_maw",
+      "x": 2185.3,
+      "y": 1289.2,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-gravefield-maw",
+      "count": 1
+    },
+    {
+      "id": "ashvale_front_lastbell_choir",
+      "x": 2277.3,
+      "y": 2582.8,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-lastbell-choir",
+      "count": 1
+    },
+    {
+      "id": "ashvale_front_warscar_titan",
+      "x": 1333.8,
+      "y": 1527.9,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-warscar-titan",
+      "count": 1
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_grave_rows_headstone_w",
+      "min_x": 1915.1,
+      "min_y": 1875.1,
+      "max_x": 1924.9,
+      "max_y": 1884.9
+    },
+    {
+      "id": "landmark_grave_rows_headstone_e",
+      "min_x": 2075.1,
+      "min_y": 1875.1,
+      "max_x": 2084.9,
+      "max_y": 1884.9
+    },
+    {
+      "id": "cliff_alkali_scarp_mesa",
+      "min_x": 1638.0,
+      "min_y": 2158.0,
+      "max_x": 1802.0,
+      "max_y": 2322.0
+    }
+  ]
+}

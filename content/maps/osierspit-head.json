@@ -1,0 +1,625 @@
+{
+  "version": 3,
+  "mapId": "osierspit-head",
+  "name": "Osierspit Head \u2014 Driftholt (c07/r01)",
+  "seed": 697616,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "pine_forest_border",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 1.1,
+  "proceduralClutterDensity": 46,
+  "defaultTimeOfDayHours": 14.5,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c07",
+    "coastClass": "fog-forest",
+    "levelBand": [
+      16,
+      30
+    ],
+    "primaryPinnedId": "c-lm-driftholt-fog-forest",
+    "regionId": "c07/r01",
+    "zoneId": "osierspit-head",
+    "spineNodeId": "n-driftholt",
+    "townId": "",
+    "storyRegionId": "",
+    "landmarkIds": [
+      "withyshallow-saddle",
+      "geo-at-merefall",
+      "c-lm-driftholt-fog-forest"
+    ],
+    "resourceIds": [
+      "saddle-grain",
+      "marsh-greens",
+      "platform-flag"
+    ],
+    "hazardIds": [
+      "the-notch-wind",
+      "the-tectonic-cave"
+    ]
+  },
+  "concept": {
+    "biome": "driftholt_fog_forest",
+    "recommendedLevelRange": [
+      16,
+      30
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "Driftholt's crossing ground. The col here is the only one drawn on the island and the saddle beside it is one of two \u2014 the other stands on reported ground \u2014 so this is the only walked way between one coast and the other. A party comes over it for the grazing on either flank, for what the marsh yields at the edges, and for the cut platform, which is where this ground's stone is prised out."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "pine_forest_border": {
+      "surfaceType": "forest_moss",
+      "albedoTint": "#346E36",
+      "friction": 0.9,
+      "maxSlopeDeg": 30.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.35,
+          "tagPool": {
+            "biome": "forest",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.1,
+          "tagPool": {
+            "biome": "forest",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.95
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.52,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.04,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "forest",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.95
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.45
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        },
+        "boulder": {
+          "weight": 0.015,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "forest",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.1
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.25
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "thorn_bramble_floor": {
+      "surfaceType": "bramble_root_floor",
+      "albedoTint": "#2D4F2E",
+      "friction": 0.88,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.38,
+          "tagPool": {
+            "biome": "thornveil_bramble",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.82
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "thornveil_bramble",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.92
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.5,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.05,
+          "minSpacingMeters": 4.0,
+          "tagPool": {
+            "biome": "thornveil_bramble",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.9
+          },
+          "assets": [
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.4
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.8
+        },
+        "boulder": {
+          "weight": 0.02,
+          "minSpacingMeters": 4.5,
+          "tagPool": {
+            "biome": "thornveil_bramble",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.05
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.75,
+            1.15
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.78
+        }
+      }
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    }
+  },
+  "routes": [
+    {
+      "id": "osierspit_head_main_trunk_road",
+      "groundId": "cobble_road",
+      "width": 12.5,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          -90.0
+        ],
+        [
+          -10.5,
+          -22.0
+        ],
+        [
+          10.5,
+          22.0
+        ],
+        [
+          0.0,
+          90.0
+        ]
+      ]
+    },
+    {
+      "id": "osierspit_head_survey_footpath",
+      "groundId": "cobble_road",
+      "width": 4.5,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          -62.0,
+          -1.5
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          62.0,
+          1.5
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "osierspit_head_central_survey_clearing",
+      "groundId": "meadow_grass",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 28.0,
+      "innerRadius": 0.0,
+      "outerRadius": 28.0,
+      "width": 56.0,
+      "height": 56.0,
+      "feather": 4.5
+    },
+    {
+      "id": "osierspit_head_outer_biome_margin",
+      "groundId": "thorn_bramble_floor",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 28.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "withyshallow_saddle_terrace",
+      "x": 0.0,
+      "z": -18.0,
+      "radius": 16.0,
+      "height": 2.3,
+      "falloff": 0.46
+    },
+    {
+      "id": "geo_at_merefall_bench",
+      "x": -18.0,
+      "z": 11.0,
+      "radius": 13.5,
+      "height": 2.0,
+      "falloff": 0.48
+    },
+    {
+      "id": "osierspit_head_sheer_scarp_cliff",
+      "x": 27.0,
+      "z": -21.0,
+      "radius": 10.0,
+      "height": 4.3,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "osierspit_head_watchtower_01",
+      "kind": "watchtower",
+      "x": -10.0,
+      "z": -7.0,
+      "rotY": 0.0,
+      "radius": 3.7,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "osierspit_head_cavern_01",
+      "kind": "crystal_cave",
+      "x": 12.0,
+      "z": -8.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_withyshallow_saddle_pillar_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_geo_at_merefall_pillar_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_osierspit_head_survey_banner",
+      "assetPath": "res://assets/dungeon/banner_patterna_green.glb",
+      "x": -3.4,
+      "y": 2.0,
+      "z": -13.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "osierspit_head_cordknot_effigy",
+      "x": 2142.2,
+      "y": 1960.1,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-cordknot-effigy",
+      "count": 3
+    },
+    {
+      "id": "osierspit_head_stakeline_hound",
+      "x": 1670.9,
+      "y": 2076.7,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-stakeline-hound",
+      "count": 4
+    },
+    {
+      "id": "osierspit_head_bramble_warden",
+      "x": 1992.8,
+      "y": 1571.0,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-bramble-warden",
+      "count": 2
+    },
+    {
+      "id": "osierspit_head_gallows_meadow_shade",
+      "x": 2066.0,
+      "y": 2344.8,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-gallows-meadow-shade",
+      "count": 3
+    },
+    {
+      "id": "osierspit_head_millroad_brigand",
+      "x": 1706.4,
+      "y": 1449.0,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-millroad-brigand",
+      "count": 4
+    },
+    {
+      "id": "osierspit_head_palisade_breaker",
+      "x": 2500.6,
+      "y": 1762.2,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-palisade-breaker",
+      "count": 2
+    },
+    {
+      "id": "osierspit_head_sapdrinker_swarm",
+      "x": 1309.0,
+      "y": 2184.3,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-sapdrinker-swarm",
+      "count": 4
+    },
+    {
+      "id": "osierspit_head_thornveil_spearhand",
+      "x": 1766.5,
+      "y": 1196.1,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-thornveil-spearhand",
+      "count": 4
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_withyshallow_saddle_pillar_w",
+      "min_x": 1946.6,
+      "min_y": 1844.6,
+      "max_x": 1957.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "landmark_geo_at_merefall_pillar_e",
+      "min_x": 2042.6,
+      "min_y": 1844.6,
+      "max_x": 2053.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "cliff_osierspit_head_sheer_scarp_cliff",
+      "min_x": 2188.0,
+      "min_y": 1708.0,
+      "max_x": 2352.0,
+      "max_y": 1872.0
+    }
+  ]
+}

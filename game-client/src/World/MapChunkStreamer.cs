@@ -7,15 +7,16 @@ namespace AtlasWorld.Client.World
     /// <summary>
     /// On-Demand Spatial Chunk Streamer + GPU Hardware Instancer (<see cref="MultiMeshInstance3D"/>)
     /// + Multi-Floor 3D Structure Assembler (Watchtowers &amp; Walk-In Crystal Caves)
+    /// + Stage 4 Declarative <c>ground_id</c> Two-Tier Scatter Engine
     /// for massive 3D maps (1000x1000 up to 100M+ total world objects).
     ///
     /// Scaling &amp; Safety Architecture:
-    /// 1. Spatial Chunk Partitioning: Partitions authored props and 3D multi-floor structures into 24m x 24m chunks
+    /// 1. Spatial Chunk Partitioning: Partitions authored hero props and 3D multi-floor structures into 24m x 24m chunks
     ///    and only keeps chunks within <see cref="ActiveChunkRadius"/> resident in the SceneTree.
-    /// 2. GPU Hardware Instancing (<see cref="MultiMeshInstance3D"/>): Batches non-occluding ground clutter
-    ///    (grass tufts, flowers, cobblestone tiles, small shrubs) per asset type + deterministic procedural
-    ///    foliage into a single <see cref="MultiMeshInstance3D"/> per chunk (1 GPU draw call per asset type,
-    ///    0 individual <see cref="Node3D"/> overhead).
+    /// 2. Declarative <c>ground_id</c> Scatter: Evaluates <see cref="UnifiedMapDocument.ResolveGroundIdAt"/> on a two-tier
+    ///    deterministic chunk grid (Tier A 16x16 MultiMesh ground cover + Tier B 6x6 LOS-fading canopy trees/boulders)
+    ///    driven by <c>groundPalettes[groundId].scatter</c> weights (<c>grass: 0.30, bush: 0.05, canopy_tree: 0.04</c>)
+    ///    with zero hardcoded (x, y, z) coordinates stored in JSON.
     /// 3. Safe Multi-Floor 3D Structures (<see cref="UnifiedMapStructureVolume"/>): Spawns 2-Story Watchtowers
     ///    (with walkable ground chamber, wide exterior East stair ramp, and +3.2m upper battlement deck) and
     ///    Walk-In Crystal Caves (with South portal archway, glowing crystal interior, and automatic roof + wall cutaway
@@ -33,12 +34,6 @@ namespace AtlasWorld.Client.World
         private readonly Dictionary<Vector2I, Node3D> _loadedChunkNodes = new();
         private readonly Dictionary<string, PackedScene?> _sceneCache = new();
         private readonly Dictionary<string, Mesh?> _meshPrototypeCache = new();
-
-        private static readonly string[] ProceduralClutterAssets =
-        {
-            "res://assets/nature/grass_1_a_color1.glb",
-            "res://assets/nature/bush_2_a_color1.glb"
-        };
 
         private Vector2I _lastCenterChunk = new(int.MinValue, int.MinValue);
         private int _lastRadius = -1;
@@ -225,6 +220,16 @@ namespace AtlasWorld.Client.World
             }
         }
 
+        private void SyncFloorShaderIfPresent()
+        {
+            var floorNode = _chunksRoot.GetParent()?.GetParent()?.GetNodeOrNull<MeshInstance3D>("Floor");
+            if (floorNode != null)
+            {
+                var mat = floorNode.GetSurfaceOverrideMaterial(0) ?? floorNode.MaterialOverride;
+                TerrainElevation.SyncFloorShaderUniforms(mat, _doc);
+            }
+        }
+
         /// <summary>
         /// Evaluates which spatial chunks fall within [-ActiveChunkRadius .. +ActiveChunkRadius]
         /// around the focus position, unloading distant chunks and streaming in newly entered chunks.
@@ -237,6 +242,11 @@ namespace AtlasWorld.Client.World
 
             if (!forceReload && center == _lastCenterChunk && radius == _lastRadius)
                 return false;
+
+            if (forceReload || _lastRadius == -1)
+            {
+                SyncFloorShaderIfPresent();
+            }
 
             if (forceReload)
             {
@@ -352,8 +362,8 @@ namespace AtlasWorld.Client.World
                 }
             }
 
-            // 3. Deterministic Zero-Storage Procedural Meadow Clutter (GPU-instanced via MultiMeshInstance3D)
-            AddDeterministicProceduralClutter(coord, instancedBatches);
+            // 3. Stage 4 Declarative Zero-Coordinate Ground-ID Scatter (Tier A MultiMesh + Tier B Colliders/Canopy)
+            AddDeterministicProceduralClutter(coord, chunkNode, instancedBatches, ref spawnedNodeProps);
 
             // 4. Build one MultiMeshInstance3D per batched asset type in this chunk (1 GPU draw call per asset type)
             int chunkGpuInstances = 0;
@@ -754,71 +764,175 @@ namespace AtlasWorld.Client.World
             }
         }
 
-        private void AddDeterministicProceduralClutter(Vector2I coord, Dictionary<string, List<Transform3D>> batches)
+        /// <summary>
+        /// Stage 4 Declarative <c>ground_id</c> Two-Tier Scatter Engine:
+        /// - Tier A (16x16 = 256 virtual sub-cells per 24m chunk, <c>blocksMovement: false</c>):
+        ///   Samples <c>groundPalettes[groundId].scatter</c> weights (<c>grass: 0.30, bush: 0.05, pebble: 0.02</c>)
+        ///   into chunk-level <see cref="MultiMeshInstance3D"/> batches (1 GPU draw call per asset type, 0 Node3D overhead).
+        /// - Tier B (6x6 = 36 stratified sub-cells per 24m chunk, <c>blocksMovement: true</c>):
+        ///   Samples canopy trees and boulders (<c>canopy_tree: 0.04, boulder: 0.015</c>) outside route clearance corridors,
+        ///   spawning LOS-fading <see cref="Node3D"/>s and registering deterministic colliders in the O(1) spatial hash grid.
+        /// </summary>
+        private void AddDeterministicProceduralClutter(
+            Vector2I coord,
+            Node3D chunkNode,
+            Dictionary<string, List<Transform3D>> batches,
+            ref int spawnedNodeProps)
         {
             int density = ProceduralClutterPerChunk;
             if (density <= 0)
                 return;
 
+            float densityScale = Mathf.Clamp(density / 48.0f, 0.1f, 3.0f);
             float halfW = _doc.HalfWidthWorld(0.1f) - 2.0f;
             float halfH = _doc.HalfHeightWorld(0.1f) - 2.0f;
             Rect2 rect = GetChunkWorldRect(coord);
+            int seed = _doc.Seed;
 
-            for (int i = 0; i < density; i++)
+            // --- TIER A: 16x16 Micro Ground Cover Grid (blocksMovement == false -> GPU MultiMeshInstance3D) ---
+            const int tierAGrid = 16;
+            float cellW = rect.Size.X / tierAGrid;
+            float cellH = rect.Size.Y / tierAGrid;
+
+            for (int gz = 0; gz < tierAGrid; gz++)
             {
-                uint h = HashChunkItem(coord.X, coord.Y, i);
-                float u = ((h & 0xFFFFu) / 65535.0f);
-                float v = (((h >> 16) & 0xFFFFu) / 65535.0f);
-
-                float wx = rect.Position.X + u * rect.Size.X;
-                float wz = rect.Position.Y + v * rect.Size.Y;
-
-                if (Mathf.Abs(wx) > halfW || Mathf.Abs(wz) > halfH)
-                    continue;
-
-                // Keep central stone road (-2.4m .. +2.4m) and immediate combat origin clear
-                if (Mathf.Abs(wx) < 2.6f && wz > -22f && wz < 22f)
-                    continue;
-
-                // Keep 3D structure interiors & stair ramps clear of meadow grass
-                bool insideStructure = false;
-                for (int sIdx = 0; sIdx < _doc.Structures.Count; sIdx++)
+                for (int gx = 0; gx < tierAGrid; gx++)
                 {
-                    var s = _doc.Structures[sIdx];
-                    if (Mathf.Abs(wx - s.X) <= s.Radius + 3.6f && Mathf.Abs(wz - s.Z) <= s.Radius + 2.0f)
+                    int slotIdx = gz * tierAGrid + gx;
+                    uint hPos = HashChunkItem(seed, coord.X, coord.Y, slotIdx);
+                    float uJit = ((hPos & 0xFFFFu) / 65535.0f);
+                    float vJit = (((hPos >> 16) & 0xFFFFu) / 65535.0f);
+
+                    float wx = rect.Position.X + (gx + uJit) * cellW;
+                    float wz = rect.Position.Y + (gz + vJit) * cellH;
+
+                    if (Mathf.Abs(wx) > halfW || Mathf.Abs(wz) > halfH)
+                        continue;
+
+                    string groundId = _doc.ResolveGroundIdAt(wx, wz, out _, out float minRouteEdgeDist);
+                    if (!_doc.GroundPalettes.TryGetValue(groundId, out var palette) || palette.Scatter.Count == 0)
+                        continue;
+
+                    int layerIdx = 0;
+                    foreach (var (ruleName, rule) in palette.Scatter)
                     {
-                        insideStructure = true;
-                        break;
+                        layerIdx++;
+                        var enabledAssets = rule.GetEnabledAssets();
+                        if (rule.BlocksMovement || rule.Weight <= 0.0005f || enabledAssets.Count == 0)
+                            continue;
+
+                        if (string.Equals(rule.Placement, "edge_only", StringComparison.OrdinalIgnoreCase) &&
+                            minRouteEdgeDist > 0.95f)
+                        {
+                            continue;
+                        }
+
+                        uint hRoll = HashChunkItem(seed ^ (layerIdx * 7919), coord.X, coord.Y, slotIdx);
+                        float roll = (hRoll & 0xFFFFu) / 65535.0f;
+                        float effectiveWeight = Mathf.Clamp(rule.Weight * densityScale, 0f, 0.95f);
+                        if (roll >= effectiveWeight)
+                            continue;
+
+                        string assetPath = enabledAssets[(int)((hRoll >> 16) % (uint)enabledAssets.Count)];
+                        float minS = rule.ScaleRange != null && rule.ScaleRange.Length >= 1 ? rule.ScaleRange[0] : 0.65f;
+                        float maxS = rule.ScaleRange != null && rule.ScaleRange.Length >= 2 ? rule.ScaleRange[1] : 0.95f;
+                        float sLerp = ((hRoll >> 8) & 0xFFu) / 255.0f;
+                        float scale = Mathf.Lerp(minS, maxS, sLerp);
+                        float rotY = (hRoll & 0xFFu) / 255.0f * Mathf.Tau;
+                        float groundY = TerrainElevation.SampleBaseTerrainHeight(wx, wz, _doc);
+
+                        if (!batches.TryGetValue(assetPath, out var list))
+                        {
+                            list = new List<Transform3D>();
+                            batches[assetPath] = list;
+                        }
+
+                        Basis basis = Basis.FromEuler(new Vector3(0f, rotY, 0f)).Scaled(Vector3.One * scale);
+                        list.Add(new Transform3D(basis, new Vector3(wx, groundY, wz)));
+                        break; // Maximum 1 micro instance per 1.5m sub-cell
                     }
                 }
-                if (insideStructure)
-                    continue;
+            }
 
-                // Do not spawn meadow grass on sheer cliff walls (> 32 degrees)
-                if (TerrainElevation.SampleSlopeDegrees(wx, wz, _doc) > 32.0f)
-                    continue;
+            // --- TIER B: 6x6 Stratified Macro Canopy / Collider Grid (blocksMovement == true -> LOS-fading Node3D + Spatial Grid) ---
+            const int tierBGrid = 6;
+            float macroCellW = rect.Size.X / tierBGrid;
+            float macroCellH = rect.Size.Y / tierBGrid;
 
-                float groundY = TerrainElevation.SampleBaseTerrainHeight(wx, wz, _doc);
-                string assetPath = (i % 6 == 0) ? ProceduralClutterAssets[1] : ProceduralClutterAssets[0];
-                float scale = (i % 6 == 0)
-                    ? 0.72f + (u * 0.35f)
-                    : 0.95f + (v * 0.55f);
-                float rotY = ((h & 0xFFu) / 255.0f) * Mathf.Tau;
-
-                if (!batches.TryGetValue(assetPath, out var list))
+            for (int tz = 0; tz < tierBGrid; tz++)
+            {
+                for (int tx = 0; tx < tierBGrid; tx++)
                 {
-                    list = new List<Transform3D>();
-                    batches[assetPath] = list;
-                }
+                    int slotIdx = 1000 + tz * tierBGrid + tx;
+                    uint hPos = HashChunkItem(seed ^ 0x13579BDF, coord.X, coord.Y, slotIdx);
+                    float uJit = 0.15f + 0.70f * ((hPos & 0xFFFFu) / 65535.0f);
+                    float vJit = 0.15f + 0.70f * (((hPos >> 16) & 0xFFFFu) / 65535.0f);
 
-                Basis basis = Basis.FromEuler(new Vector3(0f, rotY, 0f)).Scaled(Vector3.One * scale);
-                list.Add(new Transform3D(basis, new Vector3(wx, groundY, wz)));
+                    float wx = rect.Position.X + (tx + uJit) * macroCellW;
+                    float wz = rect.Position.Y + (tz + vJit) * macroCellH;
+
+                    if (Mathf.Abs(wx) > halfW || Mathf.Abs(wz) > halfH)
+                        continue;
+
+                    string groundId = _doc.ResolveGroundIdAt(wx, wz, out bool inRouteClearance, out _);
+                    if (inRouteClearance)
+                        continue;
+
+                    if (!_doc.GroundPalettes.TryGetValue(groundId, out var palette) || palette.ClearColliders || palette.Scatter.Count == 0)
+                        continue;
+
+                    int layerIdx = 0;
+                    foreach (var (ruleName, rule) in palette.Scatter)
+                    {
+                        layerIdx++;
+                        var enabledAssets = rule.GetEnabledAssets();
+                        if (!rule.BlocksMovement || rule.Weight <= 0.0005f || enabledAssets.Count == 0)
+                            continue;
+
+                        uint hRoll = HashChunkItem(seed ^ (layerIdx * 104729), coord.X, coord.Y, slotIdx);
+                        float roll = (hRoll & 0xFFFFu) / 65535.0f;
+                        // Scale weight from 1.5m density to 4.0m macro cell area (~3.2x)
+                        float effectiveWeight = Mathf.Clamp(rule.Weight * 3.2f * densityScale, 0f, 0.85f);
+                        if (roll >= effectiveWeight)
+                            continue;
+
+                        string assetPath = enabledAssets[(int)((hRoll >> 16) % (uint)enabledAssets.Count)];
+                        float minS = rule.ScaleRange != null && rule.ScaleRange.Length >= 1 ? rule.ScaleRange[0] : 1.05f;
+                        float maxS = rule.ScaleRange != null && rule.ScaleRange.Length >= 2 ? rule.ScaleRange[1] : 1.45f;
+                        float sLerp = ((hRoll >> 8) & 0xFFu) / 255.0f;
+                        float scale = Mathf.Lerp(minS, maxS, sLerp);
+                        float rotY = (hRoll & 0xFFu) / 255.0f * Mathf.Tau;
+                        float groundY = TerrainElevation.SampleBaseTerrainHeight(wx, wz, _doc);
+
+                        string detId = $"proc_{ruleName}_{coord.X}_{coord.Y}_{tx}_{tz}";
+                        var synthProp = new UnifiedMapProp
+                        {
+                            Id = detId,
+                            AssetPath = assetPath,
+                            X = wx,
+                            Y = groundY,
+                            Z = wz,
+                            RotY = rotY,
+                            Scale = scale,
+                            BlocksMovement = true,
+                            ColliderHalfExtent = rule.ColliderHalfExtent
+                        };
+
+                        if (SpawnSinglePropIntoChunk(synthProp, chunkNode, groundY))
+                        {
+                            spawnedNodeProps++;
+                            float halfWorld = Mathf.Max(0.28f, rule.ColliderHalfExtent * scale * 0.65f);
+                            _doc.IndexProceduralObstacleInSpatialGrid(detId, wx, wz, halfWorld, groundY);
+                        }
+                        break; // Maximum 1 macro tree/boulder per 4m cell
+                    }
+                }
             }
         }
 
-        private static uint HashChunkItem(int cx, int cz, int index)
+        private static uint HashChunkItem(int seed, int cx, int cz, int index)
         {
-            uint h = 2166136261u;
+            uint h = 2166136261u ^ (uint)seed;
             h = (h ^ (uint)cx) * 16777619u;
             h = (h ^ (uint)cz) * 16777619u;
             h = (h ^ (uint)index) * 16777619u;

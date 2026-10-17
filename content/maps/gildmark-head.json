@@ -1,0 +1,548 @@
+{
+  "version": 3,
+  "mapId": "gildmark-head",
+  "name": "Gildmark Head \u2014 The Mirror Tower & Mire's Bar",
+  "seed": 176986,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "meadow_grass",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 1.05,
+  "proceduralClutterDensity": 48,
+  "defaultTimeOfDayHours": 14.0,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c02",
+    "regionId": "c02/r10",
+    "zoneId": "gildmark-head",
+    "spineNodeId": "n-gildmark",
+    "townId": "c-town-gildmark",
+    "storyRegionId": "region-gildmark",
+    "landmarkIds": [
+      "the-mirror-tower",
+      "the-mires-bar"
+    ],
+    "resourceIds": [
+      "beached-cargo",
+      "dressed-headland-stone"
+    ],
+    "hazardIds": [
+      "the-moving-sandbars",
+      "the-salt"
+    ]
+  },
+  "concept": {
+    "biome": "wealdmarch_harbour_headland",
+    "recommendedLevelRange": [
+      1,
+      70
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "The only door the sea has, with half a day of mudflat in front of it holding everything that missed the door."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "pine_forest_border": {
+      "surfaceType": "forest_moss",
+      "albedoTint": "#346E36",
+      "friction": 0.9,
+      "maxSlopeDeg": 30.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.35,
+          "tagPool": {
+            "biome": "forest",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.1,
+          "tagPool": {
+            "biome": "forest",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.95
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.52,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.04,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "forest",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.95
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.45
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        },
+        "boulder": {
+          "weight": 0.015,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "forest",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.1
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.25
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    }
+  },
+  "routes": [
+    {
+      "id": "gildmark_harbour_terrace_road",
+      "groundId": "cobble_road",
+      "width": 13.5,
+      "clearMargin": 2.5,
+      "points": [
+        [
+          0.0,
+          -90.0
+        ],
+        [
+          0.0,
+          -20.0
+        ],
+        [
+          0.0,
+          20.0
+        ],
+        [
+          0.0,
+          90.0
+        ]
+      ]
+    },
+    {
+      "id": "mires_bar_salvage_footpath",
+      "groundId": "cobble_road",
+      "width": 4.4,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          -65.0,
+          16.0
+        ],
+        [
+          0.0,
+          12.0
+        ],
+        [
+          65.0,
+          18.0
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "dressed_stone_harbour_quays",
+      "groundId": "cobble_road",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 26.0,
+      "innerRadius": 0.0,
+      "outerRadius": 26.0,
+      "width": 52.0,
+      "height": 52.0,
+      "feather": 4.0
+    },
+    {
+      "id": "salt_tarred_headland_margin",
+      "groundId": "pine_forest_border",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 26.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "the_mirror_tower_promontory",
+      "x": 0.0,
+      "z": -19.0,
+      "radius": 15.0,
+      "height": 2.4,
+      "falloff": 0.45
+    },
+    {
+      "id": "the_mires_bar_shoal_ridge",
+      "x": 18.0,
+      "z": 14.0,
+      "radius": 14.0,
+      "height": 1.7,
+      "falloff": 0.5
+    },
+    {
+      "id": "seaward_dressed_stone_cliff",
+      "x": -28.0,
+      "z": -22.0,
+      "radius": 10.5,
+      "height": 4.3,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "gildmark_mirror_watchtower_01",
+      "kind": "watchtower",
+      "x": -9.0,
+      "z": -12.0,
+      "rotY": 0.0,
+      "radius": 3.8,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "gildmark_smuggler_sea_cave_01",
+      "kind": "crystal_cave",
+      "x": 12.5,
+      "z": -6.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_mirror_tower_beacon_pillar",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 0.0,
+      "y": 2.4,
+      "z": -18.0,
+      "rotY": 0.0,
+      "scale": 1.25,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.7
+    },
+    {
+      "id": "landmark_harbour_ledger_pillar",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 5.5,
+      "y": 1.5,
+      "z": 6.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_gildmark_council_banner",
+      "assetPath": "res://assets/dungeon/banner_patterna_yellow.glb",
+      "x": -3.8,
+      "y": 2.2,
+      "z": -14.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "gildmark_head_tally_walker",
+      "x": 2076.9,
+      "y": 2103.2,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-tally-walker",
+      "count": 2
+    },
+    {
+      "id": "gildmark_head_wharf_scuttler",
+      "x": 1643.9,
+      "y": 1890.0,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-wharf-scuttler",
+      "count": 4
+    },
+    {
+      "id": "gildmark_head_bilge_crawler",
+      "x": 2186.5,
+      "y": 1716.1,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-bilge-crawler",
+      "count": 4
+    },
+    {
+      "id": "gildmark_head_cranehook_automaton",
+      "x": 2158.4,
+      "y": 2258.7,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-cranehook-automaton",
+      "count": 2
+    },
+    {
+      "id": "gildmark_head_ledger_hound",
+      "x": 1617.2,
+      "y": 1585.6,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-ledger-hound",
+      "count": 4
+    },
+    {
+      "id": "gildmark_head_harbor_assessor",
+      "x": 2425.0,
+      "y": 2072.4,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-harbor-assessor",
+      "count": 2
+    },
+    {
+      "id": "gildmark_head_bound_war_beast",
+      "x": 1573.2,
+      "y": 2371.1,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-bound-war-beast",
+      "count": 2
+    },
+    {
+      "id": "gildmark_head_crateyard_colossus",
+      "x": 1803.2,
+      "y": 1336.9,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-crateyard-colossus",
+      "count": 1
+    },
+    {
+      "id": "gildmark_head_deepwater_hauler",
+      "x": 2114.2,
+      "y": 2605.9,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-deepwater-hauler",
+      "count": 1
+    },
+    {
+      "id": "gildmark_head_harbor_war_beast",
+      "x": 1215.9,
+      "y": 2071.3,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-harbor-war-beast",
+      "count": 1
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_mirror_tower_beacon_pillar",
+      "min_x": 1993.7,
+      "min_y": 1813.7,
+      "max_x": 2006.3,
+      "max_y": 1826.3
+    },
+    {
+      "id": "landmark_harbour_ledger_pillar",
+      "min_x": 2049.9,
+      "min_y": 2054.9,
+      "max_x": 2060.1,
+      "max_y": 2065.1
+    },
+    {
+      "id": "cliff_seaward_dressed_stone_cliff",
+      "min_x": 1633.9,
+      "min_y": 1693.9,
+      "max_x": 1806.1,
+      "max_y": 1866.1
+    }
+  ]
+}

@@ -1,0 +1,533 @@
+{
+  "version": 3,
+  "mapId": "charwaste-race",
+  "name": "Charwaste Race \u2014 Thirstwold (c05/r15)",
+  "seed": 316428,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "cinder_ash_waste",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 0.95,
+  "proceduralClutterDensity": 46,
+  "defaultTimeOfDayHours": 16.0,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c05",
+    "coastClass": "rain-shadow-erg",
+    "levelBand": [
+      32,
+      50
+    ],
+    "primaryPinnedId": "c-lm-the-one-wet-strip",
+    "regionId": "c05/r15",
+    "zoneId": "charwaste-race",
+    "spineNodeId": "n-thirstwold",
+    "townId": "",
+    "storyRegionId": "",
+    "landmarkIds": [
+      "glasswold-barchan",
+      "confluence-beyond-dunespar",
+      "c-lm-the-one-wet-strip",
+      "c-lm-thirstwold-erg"
+    ],
+    "resourceIds": [
+      "front-salvage",
+      "ford-water"
+    ],
+    "hazardIds": [
+      "the-bed-that-moves",
+      "the-front-comes-down"
+    ]
+  },
+  "concept": {
+    "biome": "thirstwold_alkali_erg",
+    "recommendedLevelRange": [
+      32,
+      50
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "The road west out of the junction ends at the village here, and so does the water: this is one of three surveyed regions on Thirstwold with a spring on it, and all seven desert springs the world has charted are on this landmass. Parties work the seam where the river ground runs out into the sand \u2014 water off the two crossings, and whatever the dune front has finished with."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "cinder_ash_waste": {
+      "surfaceType": "scorched_basalt_ash",
+      "albedoTint": "#4B3E39",
+      "friction": 0.86,
+      "maxSlopeDeg": 36.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.12,
+          "tagPool": {
+            "biome": "cinder_ash",
+            "role": "scorched_scrub",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.45,
+            0.72
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.28,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.04,
+          "tagPool": {
+            "biome": "cinder_ash",
+            "role": "charred_understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_b_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.52,
+            0.8
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.45,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.02,
+          "minSpacingMeters": 5.2,
+          "tagPool": {
+            "biome": "cinder_ash",
+            "role": "charred_snag",
+            "maxTrunkRadiusM": 0.85
+          },
+          "assets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.95,
+            1.32
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.75
+        },
+        "boulder": {
+          "weight": 0.035,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "cinder_ash",
+            "role": "basalt_outcrop",
+            "maxTrunkRadiusM": 1.15
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.8,
+            1.3
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    }
+  },
+  "routes": [
+    {
+      "id": "charwaste_race_main_trunk_road",
+      "groundId": "cobble_road",
+      "width": 12.5,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          -90.0
+        ],
+        [
+          6.0,
+          -22.0
+        ],
+        [
+          -6.0,
+          22.0
+        ],
+        [
+          0.0,
+          90.0
+        ]
+      ]
+    },
+    {
+      "id": "charwaste_race_survey_footpath",
+      "groundId": "cobble_road",
+      "width": 4.5,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          -62.0,
+          7.5
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          62.0,
+          -7.5
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "charwaste_race_central_survey_clearing",
+      "groundId": "barren_cliff",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 28.0,
+      "innerRadius": 0.0,
+      "outerRadius": 28.0,
+      "width": 56.0,
+      "height": 56.0,
+      "feather": 4.5
+    },
+    {
+      "id": "charwaste_race_outer_biome_margin",
+      "groundId": "cinder_ash_waste",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 28.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "glasswold_barchan_terrace",
+      "x": 0.0,
+      "z": -18.0,
+      "radius": 16.0,
+      "height": 2.3,
+      "falloff": 0.46
+    },
+    {
+      "id": "confluence_beyond_dunespar_bench",
+      "x": -18.0,
+      "z": 11.0,
+      "radius": 13.5,
+      "height": 2.0,
+      "falloff": 0.48
+    },
+    {
+      "id": "charwaste_race_sheer_scarp_cliff",
+      "x": 27.0,
+      "z": -21.0,
+      "radius": 10.0,
+      "height": 4.3,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "charwaste_race_watchtower_01",
+      "kind": "watchtower",
+      "x": -10.0,
+      "z": -7.0,
+      "rotY": 0.0,
+      "radius": 3.7,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "charwaste_race_cavern_01",
+      "kind": "crystal_cave",
+      "x": 12.0,
+      "z": -8.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_glasswold_barchan_pillar_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_confluence_beyond_dunespar_pillar_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 4.8,
+      "y": 2.1,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_charwaste_race_survey_banner",
+      "assetPath": "res://assets/dungeon/banner_patterna_red.glb",
+      "x": -3.4,
+      "y": 2.0,
+      "z": -13.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "charwaste_race_broken_crown_sentinel",
+      "x": 2073.0,
+      "y": 2124.0,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-broken-crown-sentinel",
+      "count": 1
+    },
+    {
+      "id": "charwaste_race_cindered_revenant",
+      "x": 1641.9,
+      "y": 1961.9,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-cindered-revenant",
+      "count": 2
+    },
+    {
+      "id": "charwaste_race_flagrot_swarm",
+      "x": 2133.1,
+      "y": 1624.2,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-flagrot-swarm",
+      "count": 2
+    },
+    {
+      "id": "charwaste_race_relicslag_crawler",
+      "x": 1972.2,
+      "y": 2376.3,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-relicslag-crawler",
+      "count": 2
+    },
+    {
+      "id": "charwaste_race_mourning_cloth_wight",
+      "x": 1477.5,
+      "y": 1693.9,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-mourning-cloth-wight",
+      "count": 2
+    },
+    {
+      "id": "charwaste_race_rebellion_echo",
+      "x": 2513.0,
+      "y": 2060.3,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-rebellion-echo",
+      "count": 2
+    },
+    {
+      "id": "charwaste_race_shroudweaver",
+      "x": 1494.7,
+      "y": 2434.3,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-shroudweaver",
+      "count": 2
+    },
+    {
+      "id": "charwaste_race_warscar_maw",
+      "x": 2002.2,
+      "y": 1198.1,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-warscar-maw",
+      "count": 2
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_glasswold_barchan_pillar_w",
+      "min_x": 1946.6,
+      "min_y": 1844.6,
+      "max_x": 1957.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "landmark_confluence_beyond_dunespar_pillar_e",
+      "min_x": 2042.6,
+      "min_y": 1844.6,
+      "max_x": 2053.4,
+      "max_y": 1855.4
+    },
+    {
+      "id": "cliff_charwaste_race_sheer_scarp_cliff",
+      "min_x": 2188.0,
+      "min_y": 1708.0,
+      "max_x": 2352.0,
+      "max_y": 1872.0
+    }
+  ]
+}

@@ -1,13 +1,13 @@
 // React hook for Atlas World Colyseus Client
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { Client, Room } from '@colyseus/sdk';
-import { GameState } from '../types/game';
+import { useState, useCallback, useRef, useEffect } from "react";
+import { Client, Room } from "@colyseus/sdk";
+import { GameEventInfo, GameState } from "../types/game";
 import {
   emptyEquipmentSnapshot,
   snapshotFromEquipmentPayload,
   type EquipmentSnapshot,
-} from '../config/equipmentSlots';
+} from "../config/equipmentSlots";
 
 export interface ColyseusClientConfig {
   serverHost: string;
@@ -37,6 +37,17 @@ export interface UseColyseusClientReturn {
   joinRoom: (mapId?: string) => Promise<void>;
   updatePlayerInput: (vx: number, vy: number) => void;
   sendPlayerAction: (action: string, pressed: boolean, options?: any) => void;
+  /** server-rs: `client_tick` of the newest input sent (0: none yet). */
+  inputSeqRef?: React.MutableRefObject<number>;
+  /** server-rs: called with the `client_tick` of every input as it is sent. */
+  inputSentRef?: React.MutableRefObject<((seq: number) => void) | null>;
+  sentTargetRef?: React.MutableRefObject<{ x: number; y: number }>;
+  /** server-rs: the newest snapshot (`gameState` is published to React less often). */
+  gameStateRef?: React.RefObject<GameState | null>;
+  /** server-rs: call `listener` on every snapshot; returns the unsubscribe function. */
+  onSnapshot?: (listener: (state: GameState) => void) => () => void;
+  /** server-rs: combat events received since the last call. */
+  drainEvents?: () => GameEventInfo[];
   switchWeapon: (weaponId: string) => void;
   requestEquipment: () => void;
   /** @deprecated use requestEquipment */
@@ -45,7 +56,7 @@ export interface UseColyseusClientReturn {
   respawn: () => void;
   startSimulation: () => void;
   stopSimulation: () => void;
-  
+
   // Utilities
   disconnect: () => void;
   trackFrame: () => void;
@@ -56,17 +67,23 @@ export interface UseColyseusClientReturn {
 
 const ENABLE_STATE_DEBUG_LOG = false;
 
-export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClientReturn => {
+export const useColyseusClient = (
+  config: ColyseusClientConfig,
+): UseColyseusClientReturn => {
   // State
   const [isConnected, setIsConnected] = useState(false);
   const [roomId, setRoomId] = useState<string | null>(null);
-  const [playerId, setPlayerId] = useState(`react-player-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+  const [playerId, setPlayerId] = useState(
+    `react-player-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+  );
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [updateCount, setUpdateCount] = useState(0);
   const [isSimulating, setIsSimulating] = useState(false);
   const [fps, setFps] = useState(0);
   const [updateRate, setUpdateRate] = useState(0);
-  const [equipment, setEquipment] = useState<EquipmentSnapshot>(() => emptyEquipmentSnapshot());
+  const [equipment, setEquipment] = useState<EquipmentSnapshot>(() =>
+    emptyEquipmentSnapshot(),
+  );
   const [equipmentRequestPending, setEquipmentRequestPending] = useState(false);
 
   // Refs
@@ -78,220 +95,242 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
   const frameCountRef = useRef<number>(0);
   const lastFpsTimeRef = useRef<number>(performance.now());
   const updateTimesRef = useRef<number[]>([]);
-  
+
   // Connect to server
   const connect = useCallback(async () => {
     try {
       if (clientRef.current) {
         return; // already connected
       }
-      const protocol = config.useSSL ? 'wss' : 'ws';
+      const protocol = config.useSSL ? "wss" : "ws";
       const endpoint = `${protocol}://${config.serverHost}:${config.serverPort}`;
-      
+
       const client = new Client(endpoint);
       clientRef.current = client;
       setIsConnected(true);
-      
+
       // Expose client to window for debugging
       (window as any).client = {
         debugTeleport: (x: number, y: number) => {
           if (roomRef.current) {
-            roomRef.current.send('debug_teleport', { x, y });
+            roomRef.current.send("debug_teleport", { x, y });
           }
         },
         debugSpawnMob: (x: number, y: number) => {
           if (roomRef.current) {
-            roomRef.current.send('debug_spawn_mob', { x, y });
+            roomRef.current.send("debug_spawn_mob", { x, y });
           }
-        }
+        },
       };
-      
+
       // Store connection state in localStorage
-      localStorage.setItem('atlas-world-colyseus-connected', 'true');
-      localStorage.setItem('atlas-world-colyseus-player-id', playerId);
-      
+      localStorage.setItem("atlas-world-colyseus-connected", "true");
+      localStorage.setItem("atlas-world-colyseus-player-id", playerId);
+
       console.log(`🔗 Connected to Colyseus server at ${endpoint}`);
-      
     } catch (error) {
-      console.error('Connection failed:', error);
+      console.error("Connection failed:", error);
       throw error;
     }
   }, [config, playerId]);
-  
-  // Join room
-  const joinRoom = useCallback(async (mapId: string = 'map-01-sector-a') => {
-    if (!clientRef.current) {
-      throw new Error('Not connected');
-    }
-    
-    try {
-      if (isJoiningRef.current) {
-        console.warn('⏳ Already joining a room, skipping duplicate join');
-        return;
-      }
-      isJoiningRef.current = true;
-      setEquipment(emptyEquipmentSnapshot());
-      setEquipmentRequestPending(false);
-      // Leave existing room before joining another to prevent double subscriptions
-      if (roomRef.current) {
-        const existingId = roomRef.current.roomId;
-        await roomRef.current.leave();
-        roomRef.current = null;
-        setRoomId(null);
-        console.log(`🔄 Left previous room ${existingId} before joining a new one`);
-      }
-      const room = await clientRef.current.joinOrCreate('game_room', {
-        mapId,
-        name: `Player-${playerId.substring(0, 8)}`
-      });
-      
-      roomRef.current = room;
-      setRoomId(room.roomId);
-      setPlayerId(room.sessionId);
-      
-      // Handle room state changes
-      room.onStateChange((state: GameState) => {
-        if (ENABLE_STATE_DEBUG_LOG) {
-          console.log('State changed', state.tick);
-        }
-        setGameState(state);
-        setUpdateCount(prev => prev + 1);
-        // Expose for quick debug
-        (window as any).__gameState = state;
-        
-        // Calculate update rate using a sliding window
-        const now = Date.now();
-        updateTimesRef.current.push(now);
-        
-        // Keep only the last 10 seconds of update times
-        const tenSecondsAgo = now - 10000;
-        updateTimesRef.current = updateTimesRef.current.filter(time => time > tenSecondsAgo);
-        
-        // Calculate rate: updates per second over the last 10 seconds
-        const currentUpdateRate = updateTimesRef.current.length > 1 
-          ? Math.round((updateTimesRef.current.length - 1) * 1000 / (updateTimesRef.current[updateTimesRef.current.length - 1] - updateTimesRef.current[0]))
-          : 0;
-        
-        setUpdateRate(currentUpdateRate);
-      });
-      
-      // Handle room messages
-      room.onMessage('welcome', (message: any) => {
-        console.log('🎉 Welcome message:', message);
-        if (message?.equipment != null) {
-          setEquipment(snapshotFromEquipmentPayload(message.equipment));
-          setEquipmentRequestPending(false);
-        }
-      });
 
-      room.onMessage('equipment', (message: { equipment?: unknown }) => {
-        if (message?.equipment != null) {
-          setEquipment(snapshotFromEquipmentPayload(message.equipment));
-          setEquipmentRequestPending(false);
+  // Join room
+  const joinRoom = useCallback(
+    async (mapId: string = "map-01-sector-a") => {
+      if (!clientRef.current) {
+        throw new Error("Not connected");
+      }
+
+      try {
+        if (isJoiningRef.current) {
+          console.warn("⏳ Already joining a room, skipping duplicate join");
+          return;
         }
-      });
-      
-      // Handle room errors
-      room.onError((code: number, message?: string) => {
-        console.error('❌ Room error:', code, message);
-      });
-      
-      // Handle room leave
-      room.onLeave((code: number) => {
-        console.log('👋 Left room:', code);
-        setRoomId(null);
-        setGameState(null);
+        isJoiningRef.current = true;
         setEquipment(emptyEquipmentSnapshot());
         setEquipmentRequestPending(false);
-        (window as any).__gameState = null;
-      });
-      
-      console.log(`🎮 Joined room ${room.roomId} on map ${mapId}`);
-      isJoiningRef.current = false;
-    } catch (error) {
-      console.error('Failed to join room:', error);
-      isJoiningRef.current = false;
-      throw error;
-    }
-  }, [playerId]);
-  
+        // Leave existing room before joining another to prevent double subscriptions
+        if (roomRef.current) {
+          const existingId = roomRef.current.roomId;
+          await roomRef.current.leave();
+          roomRef.current = null;
+          setRoomId(null);
+          console.log(
+            `🔄 Left previous room ${existingId} before joining a new one`,
+          );
+        }
+        const room = await clientRef.current.joinOrCreate("game_room", {
+          mapId,
+          name: `Player-${playerId.substring(0, 8)}`,
+        });
+
+        roomRef.current = room;
+        setRoomId(room.roomId);
+        setPlayerId(room.sessionId);
+
+        // Handle room state changes
+        room.onStateChange((state: GameState) => {
+          if (ENABLE_STATE_DEBUG_LOG) {
+            console.log("State changed", state.tick);
+          }
+          setGameState(state);
+          setUpdateCount((prev) => prev + 1);
+          // Expose for quick debug
+          (window as any).__gameState = state;
+
+          // Calculate update rate using a sliding window
+          const now = Date.now();
+          updateTimesRef.current.push(now);
+
+          // Keep only the last 10 seconds of update times
+          const tenSecondsAgo = now - 10000;
+          updateTimesRef.current = updateTimesRef.current.filter(
+            (time) => time > tenSecondsAgo,
+          );
+
+          // Calculate rate: updates per second over the last 10 seconds
+          const currentUpdateRate =
+            updateTimesRef.current.length > 1
+              ? Math.round(
+                  ((updateTimesRef.current.length - 1) * 1000) /
+                    (updateTimesRef.current[updateTimesRef.current.length - 1] -
+                      updateTimesRef.current[0]),
+                )
+              : 0;
+
+          setUpdateRate(currentUpdateRate);
+        });
+
+        // Handle room messages
+        room.onMessage("welcome", (message: any) => {
+          console.log("🎉 Welcome message:", message);
+          if (message?.equipment != null) {
+            setEquipment(snapshotFromEquipmentPayload(message.equipment));
+            setEquipmentRequestPending(false);
+          }
+        });
+
+        room.onMessage("equipment", (message: { equipment?: unknown }) => {
+          if (message?.equipment != null) {
+            setEquipment(snapshotFromEquipmentPayload(message.equipment));
+            setEquipmentRequestPending(false);
+          }
+        });
+
+        // Handle room errors
+        room.onError((code: number, message?: string) => {
+          console.error("❌ Room error:", code, message);
+        });
+
+        // Handle room leave
+        room.onLeave((code: number) => {
+          console.log("👋 Left room:", code);
+          setRoomId(null);
+          setGameState(null);
+          setEquipment(emptyEquipmentSnapshot());
+          setEquipmentRequestPending(false);
+          (window as any).__gameState = null;
+        });
+
+        console.log(`🎮 Joined room ${room.roomId} on map ${mapId}`);
+        isJoiningRef.current = false;
+      } catch (error) {
+        console.error("Failed to join room:", error);
+        isJoiningRef.current = false;
+        throw error;
+      }
+    },
+    [playerId],
+  );
+
   // REMOVED: updatePlayerPosition - SECURITY VULNERABILITY!
   // Direct position setting allows teleportation hacks
   // Players should only use player_input_move for movement
-  
+
   // Update player input (velocity)
   const updatePlayerInput = useCallback((vx: number, vy: number) => {
     if (roomRef.current) {
-      roomRef.current.send('player_input_move', { vx, vy });
-    }
-  }, []);
-  
-  // Send player action (attack, etc.)
-  const sendPlayerAction = useCallback((action: string, pressed: boolean, options?: any) => {
-    if (roomRef.current) {
-      roomRef.current.send('player_input_action', { action, pressed, ...options });
+      roomRef.current.send("player_input_move", { vx, vy });
     }
   }, []);
 
+  // Send player action (attack, etc.)
+  const sendPlayerAction = useCallback(
+    (action: string, pressed: boolean, options?: any) => {
+      if (roomRef.current) {
+        roomRef.current.send("player_input_action", {
+          action,
+          pressed,
+          ...options,
+        });
+      }
+    },
+    [],
+  );
+
   const switchWeapon = useCallback((weaponId: string) => {
     if (roomRef.current) {
-      roomRef.current.send('player_switch_weapon', { weaponId });
+      roomRef.current.send("player_switch_weapon", { weaponId });
     }
   }, []);
 
   const requestEquipment = useCallback(() => {
     if (roomRef.current) {
       setEquipmentRequestPending(true);
-      roomRef.current.send('player_request_equipment', {});
+      roomRef.current.send("player_request_equipment", {});
     }
   }, []);
 
   const requestLoadout = useCallback(() => {
     requestEquipment();
   }, [requestEquipment]);
-  
+
   // Start simulation
   const startSimulation = useCallback(() => {
     if (isSimulating) return;
-    
+
     setIsSimulating(true);
-    
+
     // Start player movement simulation using input instead of direct position
     simulationIntervalRef.current = setInterval(() => {
       const movements = [
-        { vx: 1, vy: 0 },   // Move right
-        { vx: 0, vy: 1 },   // Move down
-        { vx: -1, vy: 0 },  // Move left
-        { vx: 0, vy: -1 }   // Move up
+        { vx: 1, vy: 0 }, // Move right
+        { vx: 0, vy: 1 }, // Move down
+        { vx: -1, vy: 0 }, // Move left
+        { vx: 0, vy: -1 }, // Move up
       ];
-      
+
       const step = Math.floor(updateCount / 2) % movements.length;
       const movement = movements[step];
-      
+
       updatePlayerInput(movement.vx, movement.vy);
     }, 2000);
-    
-    console.log('🚀 Started simulation');
+
+    console.log("🚀 Started simulation");
   }, [isSimulating, updateCount, updatePlayerInput]);
-  
+
   // Stop simulation
   const stopSimulation = useCallback(() => {
     setIsSimulating(false);
-    
+
     if (simulationIntervalRef.current) {
       clearInterval(simulationIntervalRef.current);
       simulationIntervalRef.current = null;
     }
-    
-    console.log('⏹️ Stopped simulation');
+
+    console.log("⏹️ Stopped simulation");
   }, []);
-  
+
   // Track frame for FPS calculation
   const trackFrame = useCallback(() => {
     const now = performance.now();
     frameCountRef.current++;
     if (now - lastFpsTimeRef.current >= 1000) {
-      setFps(Math.round((frameCountRef.current * 1000) / (now - lastFpsTimeRef.current)));
+      setFps(
+        Math.round(
+          (frameCountRef.current * 1000) / (now - lastFpsTimeRef.current),
+        ),
+      );
       frameCountRef.current = 0;
       lastFpsTimeRef.current = now;
     }
@@ -300,12 +339,12 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
   // Disconnect
   const disconnect = useCallback(() => {
     stopSimulation();
-    
+
     if (roomRef.current) {
       roomRef.current.leave();
       roomRef.current = null;
     }
-    
+
     clientRef.current = null;
     setIsConnected(false);
     setRoomId(null);
@@ -315,23 +354,26 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     setEquipmentRequestPending(false);
 
     // Clear localStorage
-    localStorage.removeItem('atlas-world-colyseus-connected');
-    localStorage.removeItem('atlas-world-colyseus-player-id');
-    
-    console.log('🔌 Disconnected from Colyseus server');
+    localStorage.removeItem("atlas-world-colyseus-connected");
+    localStorage.removeItem("atlas-world-colyseus-player-id");
+
+    console.log("🔌 Disconnected from Colyseus server");
   }, [stopSimulation]);
-  
+
   // Restore connection state on mount
   useEffect(() => {
-    const wasConnected = localStorage.getItem('atlas-world-colyseus-connected') === 'true';
-    const savedPlayerId = localStorage.getItem('atlas-world-colyseus-player-id');
-    
+    const wasConnected =
+      localStorage.getItem("atlas-world-colyseus-connected") === "true";
+    const savedPlayerId = localStorage.getItem(
+      "atlas-world-colyseus-player-id",
+    );
+
     if (wasConnected && savedPlayerId === playerId) {
       // Restore connection state
       setIsConnected(true);
     }
   }, [playerId]);
-  
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -341,7 +383,7 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
       }
     };
   }, [stopSimulation]);
-  
+
   return {
     // State
     isConnected,
@@ -366,34 +408,34 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     requestLoadout,
     toggleBotMode: (enabled: boolean) => {
       if (roomRef.current) {
-        roomRef.current.send('player_toggle_bot', { enabled });
+        roomRef.current.send("player_toggle_bot", { enabled });
       }
     },
     respawn: () => {
       if (roomRef.current) {
-        roomRef.current.send('player_respawn');
+        roomRef.current.send("player_respawn");
       }
     },
     startSimulation,
     stopSimulation,
-    
+
     // Utilities
     disconnect,
     trackFrame,
     debugTeleport: (x: number, y: number) => {
       if (roomRef.current) {
-        roomRef.current.send('debug_teleport', { x, y });
+        roomRef.current.send("debug_teleport", { x, y });
       }
     },
     debugSpawnMob: (x: number, y: number) => {
       if (roomRef.current) {
-        roomRef.current.send('debug_spawn_mob', { x, y });
+        roomRef.current.send("debug_spawn_mob", { x, y });
       }
     },
     forceDie: () => {
       if (roomRef.current) {
-        roomRef.current.send('debug_force_die');
+        roomRef.current.send("debug_force_die");
       }
-    }
+    },
   };
 };

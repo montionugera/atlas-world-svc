@@ -1,34 +1,21 @@
 import React from "react";
 
+/**
+ * Connection and room. Frame rate, snapshot rate, latency, tick and entity counts
+ * are in the debug readout (utils/debugTools.ts), the one place for those numbers.
+ */
 interface GameStatsProps {
   mapId?: string;
-  fps: number;
-  tick: number;
-  updateRate: number;
-  playerCount: number;
-  mobCount: number;
   companionCount: number;
   roomId: string | null;
   isConnected: boolean;
-  latencyMetrics?: {
-    pingMs: number;
-    snapshotIntervalMs: number;
-    jitterMs: number;
-    serverTimeDeltaMs?: number;
-  };
 }
 
 export const GameStats: React.FC<GameStatsProps> = ({
   mapId,
-  fps,
-  tick,
-  updateRate,
-  playerCount,
-  mobCount,
   companionCount,
   roomId,
   isConnected,
-  latencyMetrics,
 }) => {
   const containerStyle: React.CSSProperties = {
     backgroundColor: "rgba(0, 0, 0, 0.3)",
@@ -72,18 +59,10 @@ export const GameStats: React.FC<GameStatsProps> = ({
     fontWeight: 600,
   };
 
-  const pingColor = !latencyMetrics
-    ? "#ecf0f1"
-    : latencyMetrics.pingMs < 40
-      ? "#2ecc71"
-      : latencyMetrics.pingMs < 100
-        ? "#f1c40f"
-        : "#e74c3c";
-
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <span>Stats & Latency</span>
+        <span>Connection</span>
         <span style={{ color: isConnected ? "#2ecc71" : "#e74c3c" }}>
           {isConnected ? "ONLINE" : "OFFLINE"}
         </span>
@@ -91,50 +70,12 @@ export const GameStats: React.FC<GameStatsProps> = ({
 
       <div style={gridStyle}>
         <div style={itemStyle}>
-          <span style={labelStyle}>FPS</span>
-          <span style={valueStyle}>{fps}</span>
-        </div>
-        <div style={itemStyle}>
-          <span style={labelStyle}>Rate</span>
-          <span style={valueStyle}>{updateRate}/s</span>
-        </div>
-        <div style={itemStyle}>
-          <span style={labelStyle}>Net RTT</span>
-          <span style={{ ...valueStyle, color: pingColor }}>
-            {latencyMetrics ? `${latencyMetrics.pingMs} ms` : "-"}
-          </span>
-        </div>
-        <div style={itemStyle}>
-          <span style={labelStyle}>Snap Delta</span>
-          <span style={valueStyle}>
-            {latencyMetrics ? `${latencyMetrics.snapshotIntervalMs} ms` : "-"}
-          </span>
-        </div>
-        <div style={itemStyle}>
-          <span style={labelStyle}>Tick</span>
-          <span style={valueStyle}>{tick}</span>
-        </div>
-        <div style={itemStyle}>
           <span style={labelStyle}>Map</span>
           <span style={valueStyle}>{mapId || "-"}</span>
         </div>
         <div style={itemStyle}>
-          <span style={labelStyle}>Players</span>
-          <span style={valueStyle}>{playerCount}</span>
-        </div>
-        <div style={itemStyle}>
-          <span style={labelStyle}>Mobs</span>
-          <span style={valueStyle}>{mobCount}</span>
-        </div>
-        <div style={itemStyle}>
           <span style={labelStyle}>Companions</span>
           <span style={valueStyle}>{companionCount}</span>
-        </div>
-        <div style={itemStyle}>
-          <span style={labelStyle}>Jitter</span>
-          <span style={valueStyle}>
-            {latencyMetrics ? `±${latencyMetrics.jitterMs} ms` : "-"}
-          </span>
         </div>
       </div>
 

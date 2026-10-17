@@ -4,13 +4,18 @@ import {
   ColyseusClientConfig,
 } from "./hooks/useColyseusClient";
 import { useServerRsClient } from "./hooks/useServerRsClient";
-import { ColyseusGameCanvas } from "./components/ColyseusGameCanvas";
+import {
+  ColyseusGameCanvas,
+  DEBUG_DOCK_ID,
+} from "./components/ColyseusGameCanvas";
+import { DebugToolsPanel } from "./components/DebugToolsPanel";
 import { LogPanel } from "./components/LogPanel";
 import { EntityGrid } from "./components/EntityGrid";
 import { GameStats } from "./components/GameStats";
 import { ControlsHelp } from "./components/ControlsHelp";
 import { PLAYER_WEAPON_OPTIONS } from "./config/playerWeapons";
 import { EQUIPMENT_SLOT_IDS } from "./config/equipmentSlots";
+import { MAPS, mapDef, mapIdFromSearch } from "./config/maps";
 import { GameStateProvider } from "./contexts/GameStateContext";
 import "./App.css";
 
@@ -46,6 +51,11 @@ const clientConfig = {
   token: playerParam ? `dev-token:${playerParam}` : undefined,
 };
 
+// The debug controls are plain HTTP on the game port; `player` is the session id the
+// server derives from the token.
+const debugBaseUrl = `http://${clientConfig.serverHost}:${clientConfig.serverPort}`;
+const debugPlayer = playerParam || "dev-player";
+
 const EQUIPMENT_SLOT_LABELS: Record<
   (typeof EQUIPMENT_SLOT_IDS)[number],
   string
@@ -71,32 +81,13 @@ function App() {
   const colyseusClient = useColyseusClient(clientConfig);
   const client = useRustServer ? serverRsClient : colyseusClient;
 
-  // Frontend map picker (decides which server-side room to join). Use tabs/radio, not dropdown.
-  const AVAILABLE_MAP_IDS = [
-    "map-for-play",
-    "map-for-test-projectile",
-    "map-for-test-deflect",
-  ] as const;
-  const MAP_LABELS: Record<(typeof AVAILABLE_MAP_IDS)[number], string> = {
-    "map-for-play": "Play",
-    "map-for-test-projectile": "Projectile",
-    "map-for-test-deflect": "Deflect test",
-  };
-  const getInitialSelectedMapId = (): (typeof AVAILABLE_MAP_IDS)[number] => {
-    if (typeof window === "undefined") return AVAILABLE_MAP_IDS[0];
-    const params = new URLSearchParams(window.location.search);
-    const mapParam = params.get("map");
-    if (
-      mapParam &&
-      (AVAILABLE_MAP_IDS as readonly string[]).includes(mapParam)
-    ) {
-      return mapParam as (typeof AVAILABLE_MAP_IDS)[number];
-    }
-    return AVAILABLE_MAP_IDS[0];
-  };
-  const [selectedMapId, setSelectedMapId] = useState<
-    (typeof AVAILABLE_MAP_IDS)[number]
-  >(() => getInitialSelectedMapId());
+  // Room picker: joins the server-side room named by `?map=` (kept in the URL so a
+  // reload stays in the same room).
+  const [selectedMapId, setSelectedMapId] = useState<string>(() =>
+    typeof window === "undefined"
+      ? MAPS[0].id
+      : mapIdFromSearch(window.location.search),
+  );
 
   const addLog = useCallback(
     (message: string, type: LogEntry["type"] = "info") => {
@@ -141,17 +132,18 @@ function App() {
     async (mapId: string) => {
       try {
         if (!client.isConnected) return;
-        setSelectedMapId(mapId as (typeof AVAILABLE_MAP_IDS)[number]);
+        setSelectedMapId(mapId);
+        const url = new URL(window.location.href);
+        url.searchParams.set("map", mapId);
+        window.history.replaceState(null, "", url);
         await client.joinRoom(mapId);
-        const label =
-          MAP_LABELS[mapId as (typeof AVAILABLE_MAP_IDS)[number]] || mapId;
-        addLog(`🗺️ Switched to map: ${label}`, "info");
+        addLog(`🗺️ Switched to map: ${mapDef(mapId).label}`, "info");
       } catch (e: any) {
         console.error(e);
         addLog(`❌ Failed to join map ${mapId}: ${e?.message || e}`, "error");
       }
     },
-    [client, addLog, MAP_LABELS],
+    [client, addLog],
   );
 
   function filterDep(c: any) {
@@ -228,6 +220,41 @@ function App() {
             >
               ❓ Controls
             </button>
+            <div
+              role="group"
+              aria-label="Select room"
+              style={{ display: "flex", alignItems: "center", gap: 4 }}
+            >
+              <span style={{ fontSize: 12, opacity: 0.8 }}>Room</span>
+              {MAPS.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  title={m.id}
+                  aria-pressed={selectedMapId === m.id}
+                  disabled={!client.isConnected}
+                  onClick={() => joinMap(m.id)}
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: 4,
+                    cursor: client.isConnected ? "pointer" : "not-allowed",
+                    border:
+                      selectedMapId === m.id
+                        ? "1px solid #2ecc71"
+                        : "1px solid rgba(255,255,255,0.25)",
+                    backgroundColor:
+                      selectedMapId === m.id
+                        ? "rgba(46,204,113,0.2)"
+                        : "rgba(255,255,255,0.06)",
+                    color: "#fff",
+                    fontSize: 12,
+                    fontWeight: 600,
+                  }}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="header-status">
@@ -335,67 +362,17 @@ function App() {
           {/* Right Column: unified Info Panel */}
           <div className="info-section">
             <div className="entity-panel">
-              <div style={{ marginBottom: 12 }}>
-                <label style={{ color: "#fff", fontWeight: 700 }}>Map</label>
-                <fieldset
-                  style={{
-                    border: "none",
-                    margin: 0,
-                    marginTop: 6,
-                    padding: 0,
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 8,
-                  }}
-                  role="radiogroup"
-                  aria-label="Select map"
-                >
-                  {AVAILABLE_MAP_IDS.map((id) => (
-                    <label
-                      key={id}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        cursor: "pointer",
-                        color: "#fff",
-                      }}
-                    >
-                      <input
-                        type="radio"
-                        name="map"
-                        value={id}
-                        checked={selectedMapId === id}
-                        onChange={() => {
-                          setSelectedMapId(id);
-                          joinMap(id);
-                        }}
-                        style={{ accentColor: "rgba(255,255,255,0.8)" }}
-                      />
-                      <span>{MAP_LABELS[id]}</span>
-                    </label>
-                  ))}
-                </fieldset>
-                <button
-                  onClick={() => joinMap(selectedMapId)}
-                  disabled={!client.isConnected}
-                  style={{
-                    marginTop: 8,
-                    padding: "8px 14px",
-                    borderRadius: 10,
-                    cursor: client.isConnected ? "pointer" : "not-allowed",
-                    border: "1px solid rgba(255,255,255,0.2)",
-                    backgroundColor: client.isConnected
-                      ? "rgba(255,255,255,0.08)"
-                      : "rgba(255,255,255,0.03)",
-                    color: "#fff",
-                    fontWeight: 800,
-                  }}
-                >
-                  Join
-                </button>
-              </div>
-
+              {/* The canvas draws its debug dock here, so nothing covers the play area. */}
+              <div id={DEBUG_DOCK_ID} style={{ padding: 8 }} />
+              {useRustServer && client.isConnected && (
+                <div style={{ padding: "0 8px 8px" }}>
+                  <DebugToolsPanel
+                    baseUrl={debugBaseUrl}
+                    map={selectedMapId}
+                    player={debugPlayer}
+                  />
+                </div>
+              )}
               <div style={{ marginBottom: 12 }}>
                 <label style={{ color: "#fff", fontWeight: 700 }}>Weapon</label>
                 <div style={{ marginTop: 6, color: "#bdc3c7", fontSize: 12 }}>
@@ -464,15 +441,9 @@ function App() {
 
               <GameStats
                 mapId={client.gameState?.mapId}
-                fps={client.fps}
-                tick={client.gameState?.tick || 0}
-                updateRate={client.updateRate}
-                playerCount={players.length}
-                mobCount={mobs.length}
                 companionCount={companions.length}
                 roomId={client.roomId}
                 isConnected={client.isConnected}
-                latencyMetrics={(client as any).latencyMetrics}
               />
 
               <EntityGrid

@@ -36,6 +36,9 @@ pub struct Health {
     pub current: f32,
     pub max: f32,
     pub is_alive: bool,
+    /// Debug control: damage is ignored while set.
+    #[serde(skip)]
+    pub invulnerable: bool,
 }
 
 impl Health {
@@ -44,11 +47,12 @@ impl Health {
             current: max,
             max,
             is_alive: true,
+            invulnerable: false,
         }
     }
 
     pub fn take_damage(&mut self, amount: f32) {
-        if !self.is_alive {
+        if !self.is_alive || self.invulnerable {
             return;
         }
         self.current = (self.current - amount).max(0.0);
@@ -76,6 +80,18 @@ impl Default for Mass {
     fn default() -> Self {
         Self(15.0)
     }
+}
+
+/// Knockback velocity decay rate (1/s) while `StatusEffects::is_knocked_back()`:
+/// `vel *= exp(-rate * dt)`, so the shove eases out instead of snapping at timer end.
+pub const KNOCKBACK_DECAY_PER_SEC: f32 = 6.0;
+
+/// Speed (u/s) a hit shoves its victim away at, tuned for the 10x world scale
+/// (run speed 200, dash 450): 120..=240 for a player (mass 15), 72..=144 for a
+/// standard mob (mass 25), reaching the cap at 12 damage. With the decay above over the
+/// 0.2 s knockback timer a live mob melee hit moves a player about 18..=36 u.
+pub fn knockback_speed(damage: f32, victim_mass: f32) -> f32 {
+    (damage * 300.0).clamp(1800.0, 3600.0) / victim_mass
 }
 
 #[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -561,6 +577,11 @@ pub struct Projectile {
     #[serde(default)]
     pub detonated: bool,
 }
+
+/// Marks a projectile that a parry has already reflected. A second parry
+/// destroys it instead of reflecting it again.
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Parried;
 
 #[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PlayerInputState {
