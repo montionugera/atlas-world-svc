@@ -790,10 +790,12 @@
     "from_idea": "I-163",
     "created_at": "2026-10-17T19:31:58.632583+00:00",
     "claimed_by": "agy-studio-95f66467",
-    "status": "claimed",
-    "release_version": null,
+    "status": "shipped",
+    "release_version": "1.12",
     "epic": "E-006",
-    "claimed_at": "2026-10-17T19:37:48.141276+00:00"
+    "claimed_at": "2026-10-17T19:37:48.141276+00:00",
+    "shipped_at": "2026-10-17T19:52:49.396061+00:00",
+    "shipped_sha": "482aa9d1af9ff242299bbe2170ee3e1b06fc2bb9"
   },
   {
     "id": "F-066",
