@@ -11,6 +11,7 @@ export const STORAGE_KEY = "main" as const;
 export const RPC = {
   getLoadout: "get_loadout",
   reportMatchEvents: "report_match_events",
+  saveCharacterState: "save_character_state",
   grantLoot: "grant_loot",
   grantXp: "grant_xp",
   equipItem: "equip_item",

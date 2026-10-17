@@ -5,6 +5,8 @@ import {
   skillsDocSchema,
   questsDocSchema,
   matchEventBatchSchema,
+  characterStateDocSchema,
+  loadoutSnapshotSchema,
   DEFAULT_PROFILE,
   defaultDoc,
   defaultProfile,
@@ -140,4 +142,27 @@ test("skills loadout is capped at 4 (runtime refinement)", () => {
       loadout: ["a", "b", "c", "d", "e"],
     }),
   ).toThrow();
+});
+
+test("characterStateDocSchema validates and integrates with loadoutSnapshotSchema", () => {
+  const cs = {
+    schemaVersion: 1 as const,
+    mapId: "map-for-play",
+    x: 420.5,
+    y: 315.25,
+    health: 88,
+    seq: 1700000001,
+  };
+  expect(characterStateDocSchema.parse(cs)).toEqual(cs);
+  expect(() => characterStateDocSchema.parse({ ...cs, extra: 1 })).toThrow();
+
+  const snapshot = {
+    schemaVersion: 1 as const,
+    profile: defaultProfile(),
+    equippedItemIds: {},
+    skillLoadout: [],
+    activeQuestIds: [],
+    characterState: cs,
+  };
+  expect(loadoutSnapshotSchema.parse(snapshot)).toEqual(snapshot);
 });

@@ -4,7 +4,7 @@ use server_rs::fleet::{AgonesClient, FleetLifecycle, HeartbeatTask};
 use server_rs::net::WsServer;
 use server_rs::protocol::SnapshotBuilder;
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
-use server_rs::storage::{MatchEventBuffer, NakamaClient, NakamaConfig};
+use server_rs::storage::{CharacterStateBuffer, MatchEventBuffer, NakamaClient, NakamaConfig};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tracing::{debug, error, info, warn};
@@ -253,6 +253,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     let mut snapshot_builder = SnapshotBuilder::new();
     let mut match_event_buffer = MatchEventBuffer::default();
+    let mut character_state_buffer = CharacterStateBuffer::default();
 
     // 6. 20 Hz simulation tick loop (50ms interval)
     let tick_rate_ms = 50;
@@ -308,6 +309,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         match_event_buffer.record(user_id, event.clone());
                     }
 
+                    for (user_id, state) in &frame.departed_states {
+                        character_state_buffer.record(user_id, state.clone());
+                    }
+
                     if ws_server.active_connections_in_room(room_id).await > 0 {
                         let epoch_ms = std::time::SystemTime::now()
                             .duration_since(std::time::UNIX_EPOCH)
@@ -345,11 +350,51 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
 
+                let mut states_to_flush = character_state_buffer.flush_users(&disconnected_users);
+                if character_state_buffer.should_checkpoint(tick_dt) {
+                    for sim in rooms.values_mut() {
+                        character_state_buffer.record_all(sim.snapshot_active_player_states());
+                    }
+                    states_to_flush.extend(character_state_buffer.flush_all());
+                }
+
+                if !states_to_flush.is_empty() {
+                    if let Some(ref client) = nakama_client {
+                        let client = client.clone();
+                        tokio::spawn(async move {
+                            for res in CharacterStateBuffer::dispatch_states(
+                                client.as_ref(),
+                                &states_to_flush,
+                            )
+                            .await
+                            {
+                                if let Err(err) = res {
+                                    warn!("Failed to save character state to Nakama: {}", err);
+                                }
+                            }
+                        });
+                    }
+                }
+
                 timings.record(tick_start, tick_start.elapsed());
             }
         } => {}
         _ = wait_for_shutdown_signal() => {
             info!("Shutdown signal received. Initiating graceful shutdown...");
+        }
+    }
+
+    for sim in rooms.values_mut() {
+        character_state_buffer.record_all(sim.snapshot_active_player_states());
+    }
+    let final_states = character_state_buffer.flush_all();
+    if !final_states.is_empty() {
+        if let Some(ref client) = nakama_client {
+            for res in CharacterStateBuffer::dispatch_states(client.as_ref(), &final_states).await {
+                if let Err(err) = res {
+                    warn!("Failed to flush character state on shutdown: {}", err);
+                }
+            }
         }
     }
 

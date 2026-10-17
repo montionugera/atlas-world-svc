@@ -28,9 +28,11 @@ pub use content::{
 pub use fleet::{AgonesClient, FleetLifecycle, FleetState, HeartbeatTask, MockFleetClient};
 pub use net::{ClientPacket, WsServer};
 pub use storage::{
-    normalize_match_event_type, EquippedItemIds, LoadoutSnapshot, MatchEvent, MatchEventBatch,
-    MatchEventBuffer, MatchEventQueue, MockNakamaClient, NakamaClient, NakamaStorage, PrimaryStats,
-    ProfileDoc, DEFAULT_MATCH_EVENT_FLUSH_INTERVAL, DEFAULT_NAKAMA_MATCH_ID,
+    normalize_match_event_type, CharacterStateBuffer, CharacterStateSnapshot, EquippedItemIds,
+    LoadoutSnapshot, MatchEvent, MatchEventBatch, MatchEventBuffer, MatchEventQueue,
+    MockNakamaClient, NakamaClient, NakamaStorage, PrimaryStats, ProfileDoc,
+    DEFAULT_CHARACTER_STATE_FLUSH_INTERVAL, DEFAULT_MATCH_EVENT_FLUSH_INTERVAL,
+    DEFAULT_NAKAMA_MATCH_ID,
 };
 
 pub use core::{Lcg, Mulberry32, SimClock};

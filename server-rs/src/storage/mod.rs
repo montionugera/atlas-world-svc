@@ -1,17 +1,20 @@
 use bevy_ecs::prelude::Resource;
 use std::collections::HashMap;
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 pub mod nakama;
 
 pub use nakama::{
-    normalize_match_event_type, EquippedItemIds, LoadoutSnapshot, MatchEvent, MatchEventBatch,
-    MockNakamaClient, NakamaClient, NakamaConfig, NakamaStorage, PrimaryStats, ProfileDoc,
-    DEFAULT_NAKAMA_MATCH_ID, PROBE_RETRY_WINDOW,
+    normalize_match_event_type, CharacterStateSnapshot, EquippedItemIds, LoadoutSnapshot,
+    MatchEvent, MatchEventBatch, MockNakamaClient, NakamaClient, NakamaConfig, NakamaStorage,
+    PrimaryStats, ProfileDoc, DEFAULT_NAKAMA_MATCH_ID, PROBE_RETRY_WINDOW,
 };
 
 /// Default interval between buffered match-event flushes to Nakama (5 seconds).
 pub const DEFAULT_MATCH_EVENT_FLUSH_INTERVAL: Duration = Duration::from_secs(5);
+
+/// Default interval between periodic character-state checkpoints to Nakama (5 seconds).
+pub const DEFAULT_CHARACTER_STATE_FLUSH_INTERVAL: Duration = Duration::from_secs(5);
 
 /// In-memory queue storing player match events to be dispatched or drained by persistence tasks.
 #[derive(Resource, Default, Debug, Clone)]
@@ -131,6 +134,133 @@ impl MatchEventBuffer {
         let mut results = Vec::with_capacity(batches.len());
         for batch in batches {
             results.push(storage.report_match_events(batch).await);
+        }
+        results
+    }
+}
+
+/// Buffers latest world `(map_id, x, y, health, seq)` per authenticated UUID player
+/// and flushes immediately on leave, on a periodic checkpoint interval (crash safety),
+/// or on graceful shutdown.
+#[derive(Debug, Clone)]
+pub struct CharacterStateBuffer {
+    pending: HashMap<String, CharacterStateSnapshot>,
+    flush_interval: Duration,
+    elapsed: Duration,
+    next_seq: u64,
+}
+
+impl Default for CharacterStateBuffer {
+    fn default() -> Self {
+        Self::new(DEFAULT_CHARACTER_STATE_FLUSH_INTERVAL)
+    }
+}
+
+impl CharacterStateBuffer {
+    pub fn new(flush_interval: Duration) -> Self {
+        let initial_seq = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_millis() as u64)
+            .unwrap_or(1)
+            .max(1);
+        Self {
+            pending: HashMap::new(),
+            flush_interval,
+            elapsed: Duration::ZERO,
+            next_seq: initial_seq,
+        }
+    }
+
+    pub fn with_initial_seq(mut self, initial_seq: u64) -> Self {
+        self.next_seq = initial_seq.max(1);
+        self
+    }
+
+    /// Records the latest `CharacterStateSnapshot` for `user_id` if `user_id` is a valid UUID.
+    /// Assigns a monotonically increasing `seq` when `state.seq == 0`.
+    pub fn record(&mut self, user_id: &str, mut state: CharacterStateSnapshot) -> bool {
+        if !MatchEventBuffer::is_persistable_user_id(user_id) {
+            return false;
+        }
+        if state.seq == 0 {
+            state.seq = self.next_seq;
+            self.next_seq = self.next_seq.saturating_add(1);
+        } else if state.seq >= self.next_seq {
+            self.next_seq = state.seq.saturating_add(1);
+        }
+        if let Some(existing) = self.pending.get(user_id) {
+            if state.seq < existing.seq {
+                return false;
+            }
+        }
+        self.pending.insert(user_id.to_string(), state);
+        true
+    }
+
+    /// Records a collection of `(user_id, CharacterStateSnapshot)` entries.
+    pub fn record_all(
+        &mut self,
+        states: impl IntoIterator<Item = (String, CharacterStateSnapshot)>,
+    ) {
+        for (user_id, state) in states {
+            self.record(&user_id, state);
+        }
+    }
+
+    /// Immediately drains the buffered character state for a disconnecting/leaving player.
+    pub fn flush_user(&mut self, user_id: &str) -> Option<(String, CharacterStateSnapshot)> {
+        self.pending
+            .remove(user_id)
+            .map(|state| (user_id.to_string(), state))
+    }
+
+    /// Immediately drains buffered character states for all leaving players in `user_ids`.
+    pub fn flush_users(&mut self, user_ids: &[String]) -> Vec<(String, CharacterStateSnapshot)> {
+        user_ids
+            .iter()
+            .filter_map(|uid| self.flush_user(uid))
+            .collect()
+    }
+
+    /// Drains all buffered character states (sorted by `user_id` for determinism)
+    /// and resets the interval timer.
+    pub fn flush_all(&mut self) -> Vec<(String, CharacterStateSnapshot)> {
+        self.elapsed = Duration::ZERO;
+        if self.pending.is_empty() {
+            return Vec::new();
+        }
+        let mut keys: Vec<String> = self.pending.keys().cloned().collect();
+        keys.sort();
+        keys.into_iter()
+            .filter_map(|uid| self.flush_user(&uid))
+            .collect()
+    }
+
+    /// Advances the checkpoint timer by `dt`; when `elapsed >= flush_interval`, returns `true`
+    /// so the caller can snapshot active players and call `flush_all()`.
+    pub fn should_checkpoint(&mut self, dt: Duration) -> bool {
+        self.elapsed += dt;
+        self.elapsed >= self.flush_interval
+    }
+
+    /// Advances the buffer clock by `dt` and flushes any pending character states when the
+    /// checkpoint interval is reached.
+    pub fn tick(&mut self, dt: Duration) -> Vec<(String, CharacterStateSnapshot)> {
+        if self.should_checkpoint(dt) {
+            self.flush_all()
+        } else {
+            Vec::new()
+        }
+    }
+
+    /// Dispatches a list of `(user_id, CharacterStateSnapshot)` entries to `NakamaStorage`.
+    pub async fn dispatch_states(
+        storage: &dyn NakamaStorage,
+        states: &[(String, CharacterStateSnapshot)],
+    ) -> Vec<Result<String, String>> {
+        let mut results = Vec::with_capacity(states.len());
+        for (user_id, state) in states {
+            results.push(storage.save_character_state(user_id, state).await);
         }
         results
     }
