@@ -160,6 +160,15 @@ content_spine() { node "$REPO_ROOT/scripts/check_content.mjs" --only=spine; }
 # final-green — none of them ran repo-wide invariants.
 world_digest() { node "$REPO_ROOT/scripts/check_world_digest.mjs" --check; }
 
+# F-002: World-First L0-L4 Map Compiler invariant (44 playable maps across all
+# 13 continents, 40 surveyed zones, 10 story regions, and 116 bestiary creatures).
+world_map_compiler() {
+  if [ ! -f "$REPO_ROOT/scripts/compile_world_maps.py" ]; then
+    return 0
+  fi
+  python3 "$REPO_ROOT/scripts/compile_world_maps.py" --check
+}
+
 # scripts/system-deps.json is the declared source of truth for system-level
 # (non-npm) binaries this repo shells out to (magick, rsvg-convert, ...).
 # Check-only here (no --install) — Gate 1 runs on a developer's own machine,
@@ -205,6 +214,7 @@ run_section "map-builder: node --test suite" map_builder_tests
 run_section "combat-lab: model gates"       combat_lab
 run_section "content: spine gates (--only=spine)" content_spine
 run_section "world digest (G-WORLD-DIGEST)" world_digest
+run_section "world-first map compiler (L0-L4 44 maps)" world_map_compiler
 
 # --- Summary -----------------------------------------------------------------
 echo ""

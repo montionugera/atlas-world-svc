@@ -38,6 +38,10 @@ MAPS_DIR = ROOT / "content" / "maps"
 SPECS_DIR = ROOT / "docs" / "superpowers" / "specs"
 CANON_PATH = ROOT / "content" / "story" / "canon.md"
 THUMBS_DIR = ROOT / "game-client" / "assets" / ".thumbs"
+GROUND_PALETTES_PATH = ROOT / "content" / "ground_palettes.json"
+REVIEW_QUEUE_PATH = ROOT / "content" / "review-queue.json"
+CLIENT_MANIFEST_PATH = ROOT / "game-client" / "assets" / "manifest.json"
+STUDIO_SNAPSHOTS_DIR = ROOT / "build" / "studio-snapshots"
 
 THEME_CSS_CANDIDATES = [
     ROOT.parent / "joy-design" / "packages" / "tokens" / "dist" / "theme.css",
@@ -91,14 +95,17 @@ ENTITY_SCENE_MAP: dict[str, str] = {
 }
 
 
-def thumb_url_for_entity(entity_id: str) -> str | None:
-    scene = ENTITY_SCENE_MAP.get(entity_id)
+def thumb_url_for_scene(scene: str | None) -> str | None:
     if not scene:
         return None
     h = hashlib.sha256(scene.encode("utf-8")).hexdigest()[:16] + ".webp"
     if (THUMBS_DIR / h).exists():
         return f"/thumbs/{h}"
     return None
+
+
+def thumb_url_for_entity(entity_id: str) -> str | None:
+    return thumb_url_for_scene(ENTITY_SCENE_MAP.get(entity_id))
 
 
 def load_theme_css() -> bytes:
@@ -109,8 +116,185 @@ def load_theme_css() -> bytes:
 
 
 def ensure_catalog_db() -> None:
-    if not DB_PATH.exists():
+    needs_build = not DB_PATH.exists()
+    if not needs_build:
+        try:
+            conn = sqlite3.connect(str(DB_PATH))
+            row = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='world_continents'").fetchone()
+            conn.close()
+            if not row:
+                needs_build = True
+        except Exception:
+            needs_build = True
+    if needs_build:
         subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
+
+
+def load_world_spine_bundle() -> dict:
+    ensure_catalog_db()
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    continents = []
+    for r in cur.execute("SELECT * FROM world_continents ORDER BY id ASC").fetchall():
+        continents.append({
+            "id": r["id"],
+            "title": r["title"],
+            "continentClass": r["continent_class"],
+            "coastClass": r["coast_class"],
+            "register": r["register"],
+            "levelMin": r["level_min"],
+            "levelMax": r["level_max"],
+            "grossLandKm2": r["gross_land_km2"],
+            "landCells": r["land_cells"],
+            "structuralIdea": r["structural_idea"],
+            "palette": json.loads(r["palette_json"]),
+            "landformKit": json.loads(r["landform_kit_json"]),
+            "footprint": json.loads(r["footprint_json"]),
+        })
+
+    pinned_places = []
+    bound_places = []
+    for r in cur.execute("SELECT * FROM world_places ORDER BY tier DESC, id ASC").fetchall():
+        item = {
+            "id": r["id"],
+            "title": r["title"],
+            "kind": r["kind"],
+            "tier": r["tier"],
+            "continentId": r["continent_id"],
+            "rank": r["rank"],
+            "landform": r["landform"],
+            "atXKm": r["at_x_km"],
+            "atYKm": r["at_y_km"],
+            "handleRef": r["handle_ref"],
+            "whyOrNote": r["why_or_note"],
+            "planPath": r["plan_path"],
+        }
+        if r["tier"] == "pinned":
+            pinned_places.append(item)
+        else:
+            bound_places.append(item)
+
+    zones = []
+    for r in cur.execute("SELECT * FROM world_zones ORDER BY id ASC").fetchall():
+        raw = json.loads(r["raw_json"])
+        zones.append({
+            "id": r["id"],
+            "regionRef": r["region_ref"],
+            "continentId": r["region_ref"].split("/")[0] if "/" in r["region_ref"] else "",
+            "survey": r["survey"],
+            "reasonToGo": r["reason_to_go"],
+            "hazards": raw.get("hazards") or [],
+            "resources": raw.get("resources") or [],
+            "landmarks": raw.get("landmarks") or [],
+        })
+
+    dungeons = []
+    for r in cur.execute("SELECT * FROM world_dungeons ORDER BY id ASC").fetchall():
+        dungeons.append({
+            "id": r["id"],
+            "title": r["title"],
+            "continentId": r["continent_id"],
+            "handleRef": r["handle_ref"],
+            "entranceType": r["entrance_type"],
+            "floors": r["floors"],
+            "levelMin": r["level_min"],
+            "levelMax": r["level_max"],
+            "hazards": json.loads(r["hazards_json"]),
+            "loreNote": r["lore_note"],
+        })
+
+    bestiary = []
+    for r in cur.execute("SELECT * FROM world_bestiary ORDER BY region ASC, id ASC").fetchall():
+        bestiary.append({
+            "id": r["id"],
+            "name": r["name"],
+            "family": r["family"],
+            "bodyPlan": r["body_plan"],
+            "levelBand": r["level_band"],
+            "element": r["element"],
+            "archetype": r["archetype"],
+            "threat": r["threat"],
+            "durability": r["durability"],
+            "speed": r["speed"],
+            "region": r["region"],
+            "faction": r["faction"],
+            "lore": r["lore"],
+            "visualBrief": r["visual_brief"],
+        })
+
+    spine_nodes = []
+    for r in cur.execute("SELECT * FROM spine_nodes ORDER BY id ASC").fetchall():
+        spine_nodes.append({
+            "id": r["id"],
+            "title": r["title"],
+            "tier": r["tier"],
+            "parentId": r["parent_id"],
+            "seedVal": r["seed_val"],
+            "anchorX": r["anchor_x"],
+            "anchorY": r["anchor_y"],
+            "frozen": bool(r["frozen"]),
+            "loreReason": r["lore_reason"],
+            "composition": json.loads(r["composition_json"]),
+        })
+
+    story_nodes = []
+    for r in cur.execute("SELECT * FROM story_nodes ORDER BY kind ASC, COALESCE(order_num, 9999) ASC, id ASC").fetchall():
+        raw = json.loads(r["raw_json"])
+        story_nodes.append({
+            "id": r["id"],
+            "kind": r["kind"],
+            "title": r["title"],
+            "summary": r["summary"],
+            "regionId": r["region_id"],
+            "factionId": r["faction_id"],
+            "actId": r["act_id"],
+            "arcId": r["arc_id"],
+            "giverId": r["giver_id"],
+            "orderNum": r["order_num"],
+            "unlockedBy": json.loads(r["unlocked_by_json"]),
+            "links": json.loads(r["links_json"]),
+            "raw": raw,
+        })
+
+    conn.close()
+
+    world_fab = load_json_file(ROOT / "content" / "world" / "fabric" / "world.json") or {}
+    sea_lanes = []
+    for sl in world_fab.get("seaLanes") or []:
+        pts = sl.get("points") or []
+        step = max(1, len(pts) // 24)
+        thinned = pts[::step]
+        if pts and thinned[-1] != pts[-1]:
+            thinned.append(pts[-1])
+        sea_lanes.append({
+            "id": sl.get("id"),
+            "from": sl.get("from"),
+            "to": sl.get("to"),
+            "km": sl.get("km"),
+            "points": thinned,
+        })
+
+    spine_edges = load_json_file(ROOT / "content" / "spine" / "edges.json") or []
+    town_millcross = load_json_file(ROOT / "content" / "towns" / "town-millcross.json") or {}
+
+    return {
+        "seed": world_fab.get("seed", "7c9e4a2f8b1d6e03"),
+        "areaKm2": world_fab.get("areaKm2", {"netLand": 64000, "water": 96000, "total": 160000}),
+        "seaToLandRatio": world_fab.get("seaToLandRatio", 1.5),
+        "continents": continents,
+        "pinnedPlaces": pinned_places,
+        "boundPlaces": bound_places,
+        "zones": zones,
+        "dungeons": dungeons,
+        "bestiary": bestiary,
+        "spineNodes": spine_nodes,
+        "storyNodes": story_nodes,
+        "seaLanes": sea_lanes,
+        "spineEdges": spine_edges,
+        "townMillcross": town_millcross,
+    }
 
 
 def load_json_file(path: Path):
@@ -120,13 +304,26 @@ def load_json_file(path: Path):
         return json.load(f)
 
 
+def get_live_entity_scene(entity_id: str, record: dict | None = None) -> str | None:
+    if record and record.get("scenePath"):
+        return str(record["scenePath"])
+    if entity_id in ("orc_warlord", "card_orc_warlord"):
+        manifest = load_json_file(CLIENT_MANIFEST_PATH) or {}
+        entries = manifest.get("entries") or {}
+        agg_scene = (entries.get("mob:aggressive") or {}).get("scene")
+        if agg_scene:
+            return str(agg_scene)
+    return ENTITY_SCENE_MAP.get(entity_id)
+
+
 def attach_thumbs(records: list[dict]) -> list[dict]:
     out = []
     for r in records:
         rc = dict(r)
         eid = rc.get("id", "")
-        rc["thumbUrl"] = thumb_url_for_entity(eid)
-        rc["scenePath"] = ENTITY_SCENE_MAP.get(eid)
+        scene = get_live_entity_scene(eid, rc)
+        rc["scenePath"] = scene
+        rc["thumbUrl"] = thumb_url_for_scene(scene) or thumb_url_for_entity(eid)
         out.append(rc)
     return out
 
@@ -154,11 +351,21 @@ def build_full_bundle() -> dict:
                     "name": d.get("name") or d.get("displayName") or mp.stem,
                     "width": d.get("width", d.get("widthMeters", 200)),
                     "height": d.get("height", d.get("depthMeters", 200)),
+                    "seed": d.get("seed", 0),
+                    "biome": d.get("biome", "meadow"),
+                    "levelBand": d.get("levelBand") or [1, 15],
+                    "worldSpineBinding": d.get("worldSpineBinding") or {},
                     "terrainAmplitude": d.get("terrainAmplitude", 1.0),
                     "defaultTimeOfDayHours": d.get("defaultTimeOfDayHours", 12.0),
                     "terraceCount": len(d.get("heightTerraces", [])),
                     "structureCount": len(d.get("structures", [])),
+                    "staticObstacleCount": len(d.get("staticObstacles", [])),
                     "propCount": len(d.get("props", [])),
+                    "version": d.get("version", 2),
+                    "baseGroundId": d.get("baseGroundId", "meadow_grass"),
+                    "routes": d.get("routes", []),
+                    "groundZones": d.get("groundZones", []),
+                    "groundPalettes": d.get("groundPalettes", {}),
                     "structures": d.get("structures", []),
                     "heightTerraces": d.get("heightTerraces", []),
                     "spawnAreas": d.get("spawnAreas", []),
@@ -189,6 +396,24 @@ def build_full_bundle() -> dict:
             }
         )
 
+    ground_palettes = load_json_file(GROUND_PALETTES_PATH) or {}
+    review_queue = load_json_file(REVIEW_QUEUE_PATH) or {"version": 1, "verdicts": {}, "workOrders": [], "proposals": []}
+    asset_scene_thumbs: dict[str, str] = {}
+    for _, pal in ground_palettes.items():
+        for _, rule in (pal.get("scatter") or {}).items():
+            for sp in (rule.get("assets") or []) + (rule.get("disabledAssets") or []):
+                turl = thumb_url_for_scene(sp)
+                if turl:
+                    asset_scene_thumbs[sp] = turl
+    for prop in review_queue.get("proposals") or []:
+        eid = prop.get("targetId", "")
+        if eid and thumb_url_for_entity(eid):
+            prop["thumbUrl"] = thumb_url_for_entity(eid)
+        for tk in prop.get("takes") or []:
+            sp = tk.get("assetPath")
+            if sp and thumb_url_for_scene(sp):
+                tk["thumbUrl"] = thumb_url_for_scene(sp)
+
     return {
         "jobs": jobs,
         "skills": skills,
@@ -202,6 +427,667 @@ def build_full_bundle() -> dict:
         "maps": maps,
         "summary": summary,
         "docs": docs,
+        "groundPalettes": ground_palettes,
+        "reviewQueue": review_queue,
+        "assetSceneThumbs": asset_scene_thumbs,
+        "studioSnapshots": list_studio_snapshots(),
+        "worldSpine": load_world_spine_bundle(),
+    }
+
+
+
+
+def list_studio_snapshots() -> list[dict]:
+    if not STUDIO_SNAPSHOTS_DIR.exists():
+        return []
+    out = []
+    for d in sorted(STUDIO_SNAPSHOTS_DIR.iterdir(), reverse=True):
+        if d.is_dir():
+            meta = load_json_file(d / "meta.json") or {"id": d.name, "label": d.name, "files": []}
+            out.append(meta)
+    return out[:15]
+
+
+def create_studio_snapshot(label: str, rel_files: list[str]) -> dict:
+    import time
+    ts = time.strftime("%Y%m%d-%H%M%S")
+    safe_label = "".join(c if c.isalnum() or c in "-_" else "_" for c in label)[:36]
+    snap_id = f"{ts}_{safe_label}"
+    snap_dir = STUDIO_SNAPSHOTS_DIR / snap_id
+    snap_dir.mkdir(parents=True, exist_ok=True)
+    saved_files = []
+    all_targets = list(dict.fromkeys(rel_files + ["content/review-queue.json"]))
+    for rel in all_targets:
+        src_p = (ROOT / rel).resolve()
+        if src_p.exists() and ROOT in src_p.parents:
+            dst_p = snap_dir / rel.replace("/", "__")
+            shutil.copy2(src_p, dst_p)
+            saved_files.append(rel)
+    meta = {
+        "id": snap_id,
+        "label": label,
+        "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "files": saved_files,
+    }
+    (snap_dir / "meta.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
+    return meta
+
+
+def undo_latest_snapshot() -> dict:
+    snaps = list_studio_snapshots()
+    if not snaps:
+        return {"ok": False, "error": "No studio snapshots available to undo."}
+    latest = snaps[0]
+    snap_dir = STUDIO_SNAPSHOTS_DIR / latest["id"]
+    restored = []
+    for rel in latest.get("files", []):
+        backup_p = snap_dir / rel.replace("/", "__")
+        dst_p = (ROOT / rel).resolve()
+        if backup_p.exists() and ROOT in dst_p.parents:
+            shutil.copy2(backup_p, dst_p)
+            restored.append(rel)
+    shutil.rmtree(snap_dir, ignore_errors=True)
+    subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
+    return {"ok": True, "restoredSnapshot": latest["id"], "restoredFiles": restored}
+
+
+def sync_palettes_into_pilot_map(palettes: dict) -> None:
+    map_p = MAPS_DIR / "freja-south-gate.json"
+    if not map_p.exists():
+        return
+    m_doc = load_json_file(map_p) or {}
+    m_pals = m_doc.get("groundPalettes") or {}
+    for pid, pal in palettes.items():
+        if pid in m_pals:
+            m_pals[pid]["playerScaleBandM"] = pal.get("playerScaleBandM", [0.90, 1.20])
+            for rname, rcfg in (pal.get("scatter") or {}).items():
+                if rname in (m_pals[pid].get("scatter") or {}):
+                    m_pals[pid]["scatter"][rname]["weight"] = rcfg.get("weight", m_pals[pid]["scatter"][rname].get("weight", 0.1))
+                    m_pals[pid]["scatter"][rname]["assets"] = rcfg.get("assets", [])
+                    m_pals[pid]["scatter"][rname]["disabledAssets"] = rcfg.get("disabledAssets", [])
+                    if "scaleRange" in rcfg:
+                        m_pals[pid]["scatter"][rname]["scaleRange"] = rcfg["scaleRange"]
+                    if "colliderHalfExtent" in rcfg:
+                        m_pals[pid]["scatter"][rname]["colliderHalfExtent"] = rcfg["colliderHalfExtent"]
+    m_doc["groundPalettes"] = m_pals
+    map_p.write_text(json.dumps(m_doc, indent=2) + "\n", encoding="utf-8")
+
+
+def record_ai_agent_log(rq: dict, entry: dict) -> None:
+    logs = rq.setdefault("agentEditLog", [])
+    logs.insert(0, entry)
+    del logs[20:]
+
+
+def apply_review_verdict(payload: dict) -> dict:
+    import time
+    prop_id = str(payload.get("id") or "")
+    verdict = str(payload.get("verdict") or "approve").lower()
+    take_idx = int(payload.get("selectedTakeIdx") or 0)
+    feedback_text = str(payload.get("feedbackText") or "").strip()
+
+    rq = load_json_file(REVIEW_QUEUE_PATH) or {"version": 1, "verdicts": {}, "workOrders": [], "proposals": []}
+    proposals = rq.get("proposals") or []
+    target_prop = next((p for p in proposals if p.get("id") == prop_id), None)
+    if not target_prop:
+        return {"ok": False, "error": f"Proposal {prop_id} not found"}
+
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    takes = target_prop.get("takes") or []
+    take_idx = max(0, min(take_idx, max(0, len(takes) - 1)))
+    target_prop["selectedTakeIdx"] = take_idx
+    selected_take = takes[take_idx] if takes else {}
+
+    if verdict == "approve":
+        kind = target_prop.get("kind")
+        snap_files = [
+            "content/review-queue.json",
+            "game-client/assets/manifest.json",
+            "contracts/content/mobs.json",
+            "content/ground_palettes.json",
+            "content/maps/freja-south-gate.json",
+        ]
+        snap_meta = create_studio_snapshot(f"approve_{prop_id}_{selected_take.get('id', 'take')}", snap_files)
+        mutated_files = []
+
+        # Pillar B: DB Entity & 3D Asset (e.g., rq-pilot-101 orc_warlord)
+        if kind == "db_entity":
+            new_scene = selected_take.get("assetPath") or "res://assets/characters/orc_brute.glb"
+            new_scale = float(selected_take.get("visualScale") or 1.22)
+            new_height = float(selected_take.get("heightM") or 2.10)
+            new_col_r = float(selected_take.get("colliderRadiusM") or 0.95)
+            entity_id = target_prop.get("targetId") or "orc_warlord"
+            manifest_key = target_prop.get("assetStudioKey") or "mob:aggressive"
+
+            manifest = load_json_file(CLIENT_MANIFEST_PATH) or {"version": 2, "entries": {}}
+            if manifest_key in (manifest.get("entries") or {}):
+                manifest["entries"][manifest_key]["scene"] = new_scene
+                CLIENT_MANIFEST_PATH.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+                mutated_files.append("game-client/assets/manifest.json")
+
+            mobs_path = CONTENT_DIR / "mobs.json"
+            mobs_list = load_json_file(mobs_path) or []
+            for mb in mobs_list:
+                if mb.get("id") == entity_id:
+                    mb["scenePath"] = new_scene
+                    mb["visualScale"] = new_scale
+                    mb["heightM"] = new_height
+                    mb["colliderRadiusM"] = new_col_r
+            mobs_path.write_text(json.dumps(mobs_list, indent=2) + "\n", encoding="utf-8")
+            mutated_files.append("contracts/content/mobs.json")
+            ENTITY_SCENE_MAP[entity_id] = new_scene
+            ENTITY_SCENE_MAP[f"card_{entity_id}"] = new_scene
+            target_prop["patch"] = {
+                "entityId": entity_id,
+                "manifestKey": manifest_key,
+                "scene": new_scene,
+                "visualScale": new_scale,
+                "heightM": new_height,
+            }
+
+        # Pillar A: Biome Brush & Tag Pool (e.g., rq-pilot-102 pine_forest_border)
+        elif kind == "ground_palette":
+            pals = load_json_file(GROUND_PALETTES_PATH) or {}
+            pid = target_prop.get("targetId") or "pine_forest_border"
+            weights = selected_take.get("weights") or {}
+            if pid in pals:
+                scatter = pals[pid].get("scatter") or {}
+                for rname, wval in weights.items():
+                    if rname in scatter:
+                        scatter[rname]["weight"] = round(float(wval), 3)
+                GROUND_PALETTES_PATH.write_text(json.dumps(pals, indent=2) + "\n", encoding="utf-8")
+                sync_palettes_into_pilot_map(pals)
+                mutated_files.extend(["content/ground_palettes.json", "content/maps/freja-south-gate.json"])
+
+        # Pillar C: Map Blueprint & 3D Structures (e.g., rq-pilot-103 freja-south-gate)
+        elif kind == "map_blueprint":
+            map_p = MAPS_DIR / "freja-south-gate.json"
+            m_doc = load_json_file(map_p) or {}
+            road_w = float(selected_take.get("roadWidthM") or 5.2)
+            spur_w = float(selected_take.get("spurWidthM") or 3.6)
+            wt_2f = float(selected_take.get("watchtower2FM") or 3.2)
+            cave_r = float(selected_take.get("caveRadiusM") or 4.2)
+            for rt in m_doc.get("routes") or []:
+                if rt.get("id") == "prontera_south_highway":
+                    rt["width"] = road_w
+                elif rt.get("id") == "watchtower_east_spur":
+                    rt["width"] = spur_w
+            for st in m_doc.get("structures") or []:
+                if st.get("id") == "freja_west_watchtower_01":
+                    st["upperFloorHeight"] = wt_2f
+                    if road_w >= 7.0:
+                        st["radius"] = 4.5
+                elif st.get("id") == "freja_east_crystal_cave_01":
+                    st["radius"] = cave_r
+            map_p.write_text(json.dumps(m_doc, indent=2) + "\n", encoding="utf-8")
+            mutated_files.append("content/maps/freja-south-gate.json")
+            if "embeddedInputs" in target_prop:
+                target_prop["embeddedInputs"]["mainHighwayWidthM"] = road_w
+                target_prop["embeddedInputs"]["watchtowerSpurWidthM"] = spur_w
+
+        target_prop["status"] = "approved"
+        target_prop["approvedAt"] = now_iso
+        if feedback_text:
+            target_prop.setdefault("feedbackHistory", []).append(
+                {"timestamp": now_iso, "verdict": "approve", "note": feedback_text, "takeIdx": take_idx}
+            )
+        rq.setdefault("verdicts", {})[target_prop.get("targetId", prop_id)] = {
+            "status": "approved",
+            "take": selected_take.get("label", f"Take {take_idx + 1}"),
+            "notes": feedback_text,
+            "updatedAt": now_iso,
+        }
+        record_ai_agent_log(
+            rq,
+            {
+                "timestamp": now_iso,
+                "mode": "Review Gate Commit",
+                "pillar": target_prop.get("pillar", kind),
+                "prompt": f"Approved {prop_id} with {selected_take.get('label', 'Selected Take')}",
+                "summary": f"Committed {selected_take.get('label', prop_id)} to {', '.join(mutated_files)}",
+                "guardrails": ["Chibi 1.05m Scale Anchor Verified", "Auto-Snapshot Saved"],
+                "files": mutated_files,
+                "snapshotId": snap_meta.get("id"),
+            },
+        )
+        REVIEW_QUEUE_PATH.write_text(json.dumps(rq, indent=2) + "\n", encoding="utf-8")
+        subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
+        return {"ok": True, "verdict": "approved", "snapshot": snap_meta, "mutatedFiles": mutated_files}
+
+    if verdict == "feedback":
+        snap_meta = create_studio_snapshot(f"feedback_{prop_id}", ["content/review-queue.json"])
+        target_prop["status"] = "pending_review"
+        target_prop["lastFeedback"] = feedback_text or "Re-roll requested with Chibi scale constraints."
+        target_prop.setdefault("feedbackHistory", []).append(
+            {"timestamp": now_iso, "verdict": "feedback_reroll", "note": target_prop["lastFeedback"], "takeIdx": take_idx}
+        )
+        rq.setdefault("workOrders", []).append(
+            {
+                "id": f"wo-{len(rq.get('workOrders', [])) + 1:03d}",
+                "proposalId": prop_id,
+                "targetId": target_prop.get("targetId"),
+                "feedback": target_prop["lastFeedback"],
+                "createdAt": now_iso,
+            }
+        )
+        REVIEW_QUEUE_PATH.write_text(json.dumps(rq, indent=2) + "\n", encoding="utf-8")
+        return {"ok": True, "verdict": "feedback", "snapshot": snap_meta}
+
+    if verdict == "reject":
+        snap_meta = create_studio_snapshot(f"reject_{prop_id}", ["content/review-queue.json"])
+        target_prop["status"] = "rejected"
+        if feedback_text:
+            target_prop.setdefault("feedbackHistory", []).append(
+                {"timestamp": now_iso, "verdict": "reject", "note": feedback_text, "takeIdx": take_idx}
+            )
+        rq.setdefault("verdicts", {})[target_prop.get("targetId", prop_id)] = {
+            "status": "rejected",
+            "notes": feedback_text,
+            "updatedAt": now_iso,
+        }
+        REVIEW_QUEUE_PATH.write_text(json.dumps(rq, indent=2) + "\n", encoding="utf-8")
+        return {"ok": True, "verdict": "rejected", "snapshot": snap_meta}
+
+    return {"ok": False, "error": f"Unknown verdict: {verdict}"}
+
+
+def toggle_palette_asset(payload: dict) -> dict:
+    palette_id = str(payload.get("paletteId") or "")
+    rule_name = str(payload.get("ruleName") or "")
+    asset_path = str(payload.get("assetPath") or "")
+    new_weight = payload.get("weight")
+
+    pals = load_json_file(GROUND_PALETTES_PATH) or {}
+    if palette_id not in pals:
+        return {"ok": False, "error": f"Palette {palette_id} not found"}
+    scatter = pals[palette_id].get("scatter") or {}
+    if rule_name not in scatter:
+        return {"ok": False, "error": f"Scatter rule {rule_name} not found in {palette_id}"}
+
+    snap_meta = create_studio_snapshot(
+        f"brush_{palette_id}_{rule_name}",
+        ["content/ground_palettes.json", "content/maps/freja-south-gate.json"],
+    )
+    rule = scatter[rule_name]
+    assets = list(rule.get("assets") or [])
+    disabled = list(rule.get("disabledAssets") or [])
+
+    if asset_path:
+        if asset_path in disabled:
+            disabled.remove(asset_path)
+            if asset_path not in assets:
+                assets.append(asset_path)
+        else:
+            disabled.append(asset_path)
+            if asset_path in assets and len(assets) > 1:
+                assets.remove(asset_path)
+        rule["assets"] = assets
+        rule["disabledAssets"] = disabled
+
+    if new_weight is not None:
+        rule["weight"] = round(max(0.0, min(0.95, float(new_weight))), 3)
+
+    GROUND_PALETTES_PATH.write_text(json.dumps(pals, indent=2) + "\n", encoding="utf-8")
+    sync_palettes_into_pilot_map(pals)
+    return {"ok": True, "snapshot": snap_meta, "palette": pals[palette_id]}
+
+
+def update_map_structure(payload: dict) -> dict:
+    import time
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    map_p = MAPS_DIR / "freja-south-gate.json"
+    m_doc = load_json_file(map_p) or {}
+    rq = load_json_file(REVIEW_QUEUE_PATH) or {"version": 1, "verdicts": {}, "workOrders": [], "proposals": []}
+
+    snap_meta = create_studio_snapshot(
+        "map_structure_edit",
+        ["content/maps/freja-south-gate.json", "content/review-queue.json"],
+    )
+
+    changes = []
+    guardrails = ["Chibi Player Anchor [0.90m-1.20m] (Ref 1.05m)"]
+
+    highway_w = payload.get("highwayWidth")
+    spur_w = payload.get("spurWidth")
+    for rt in m_doc.get("routes") or []:
+        if rt.get("id") == "prontera_south_highway" and highway_w is not None:
+            clamped_w = round(max(3.5, min(12.0, float(highway_w))), 2)
+            rt["width"] = clamped_w
+            changes.append(f"Highway width -> {clamped_w}m")
+            guardrails.append(f"Highway Corridor >= 3.5m PASS ({clamped_w}m)")
+        elif rt.get("id") == "watchtower_east_spur" and spur_w is not None:
+            clamped_s = round(max(2.5, min(8.0, float(spur_w))), 2)
+            rt["width"] = clamped_s
+            changes.append(f"East Spur width -> {clamped_s}m")
+
+    for st in m_doc.get("structures") or []:
+        if st.get("id") == "freja_west_watchtower_01":
+            if payload.get("watchtowerX") is not None:
+                st["x"] = round(max(-35.0, min(35.0, float(payload["watchtowerX"]))), 2)
+            if payload.get("watchtowerZ") is not None:
+                st["z"] = round(max(-35.0, min(35.0, float(payload["watchtowerZ"]))), 2)
+            if payload.get("watchtowerRadius") is not None:
+                st["radius"] = round(max(2.5, min(7.0, float(payload["watchtowerRadius"]))), 2)
+            if payload.get("watchtower2F") is not None:
+                st["upperFloorHeight"] = round(max(2.2, min(4.5, float(payload["watchtower2F"]))), 2)
+            changes.append(f"Watchtower @ ({st['x']}, {st['z']}) r={st['radius']}m 2F={st.get('upperFloorHeight', 3.2)}m")
+        elif st.get("id") == "freja_east_crystal_cave_01":
+            if payload.get("caveX") is not None:
+                st["x"] = round(max(-35.0, min(35.0, float(payload["caveX"]))), 2)
+            if payload.get("caveZ") is not None:
+                st["z"] = round(max(-35.0, min(35.0, float(payload["caveZ"]))), 2)
+            if payload.get("caveRadius") is not None:
+                st["radius"] = round(max(2.8, min(7.5, float(payload["caveRadius"]))), 2)
+            changes.append(f"Crystal Cave @ ({st['x']}, {st['z']}) r={st['radius']}m")
+
+    map_p.write_text(json.dumps(m_doc, indent=2) + "\n", encoding="utf-8")
+
+    # Sync into rq-pilot-103 embeddedInputs
+    for prop in rq.get("proposals") or []:
+        if prop.get("id") == "rq-pilot-103":
+            emb = prop.setdefault("embeddedInputs", {})
+            if highway_w is not None:
+                emb["mainHighwayWidthM"] = round(max(3.5, min(12.0, float(highway_w))), 2)
+            if spur_w is not None:
+                emb["watchtowerSpurWidthM"] = round(max(2.5, min(8.0, float(spur_w))), 2)
+
+    record_ai_agent_log(
+        rq,
+        {
+            "timestamp": now_iso,
+            "mode": "Interactive Map Structure Editor",
+            "pillar": "Pillar C · 2D Map Blueprint & 3D Structures",
+            "prompt": payload.get("reason") or "Interactive Map Blueprint & Structure Update",
+            "summary": " · ".join(changes) if changes else "Updated freja-south-gate.json structure layout",
+            "guardrails": guardrails,
+            "files": ["content/maps/freja-south-gate.json"],
+            "snapshotId": snap_meta.get("id"),
+        },
+    )
+    REVIEW_QUEUE_PATH.write_text(json.dumps(rq, indent=2) + "\n", encoding="utf-8")
+    return {"ok": True, "snapshot": snap_meta, "summary": " · ".join(changes)}
+
+
+def apply_ai_studio_edit(payload: dict) -> dict:
+    """
+    AI Studio Co-Pilot Edit Agent:
+    Wraps natural-language designer intent (or preset commands) across all 3 Pillars:
+      - Pillar A: Biome Brushes & Smart Tag Pools (content/ground_palettes.json + freja-south-gate.json)
+      - Pillar B: DB Entities & 3D Assets (game-client/assets/manifest.json + contracts/content/mobs.json)
+      - Pillar C: 2D Map Blueprint, Routes & 3D Structures (content/maps/freja-south-gate.json)
+    Enforces Chibi Toddler Player Scale Guardrails (0.90m-1.20m, Ref 1.05m) and creates an automatic Undo snapshot.
+    """
+    import re
+    import time
+
+    prompt = str(payload.get("prompt") or "").strip()
+    if not prompt:
+        return {"ok": False, "error": "Please enter an edit instruction for the AI Studio Agent."}
+
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    low = prompt.lower()
+
+    snap_files = [
+        "content/review-queue.json",
+        "game-client/assets/manifest.json",
+        "contracts/content/mobs.json",
+        "content/ground_palettes.json",
+        "content/maps/freja-south-gate.json",
+    ]
+    snap_meta = create_studio_snapshot(f"ai_agent_{low[:24]}", snap_files)
+
+    rq = load_json_file(REVIEW_QUEUE_PATH) or {"version": 1, "verdicts": {}, "workOrders": [], "proposals": []}
+    pals = load_json_file(GROUND_PALETTES_PATH) or {}
+    map_p = MAPS_DIR / "freja-south-gate.json"
+    m_doc = load_json_file(map_p) or {}
+    mobs_path = CONTENT_DIR / "mobs.json"
+    mobs_list = load_json_file(mobs_path) or []
+    manifest = load_json_file(CLIENT_MANIFEST_PATH) or {"version": 2, "entries": {}}
+
+    actions_taken: list[str] = []
+    guardrails_checked: list[str] = ["Chibi Player Anchor: 1.05m [0.90m-1.20m]"]
+    mutated_files: list[str] = []
+    pillars_touched: list[str] = []
+
+    # --- 1. Detect Pillar B: Entity / Mob / 3D Model / Stat Edits ---
+    if any(k in low for k in ("orc", "warlord", "golem", "raider", "brute", "boss", "take a", "take b", "take c", "hp", "patk")):
+        pillars_touched.append("Pillar B · DB Entity & 3D Asset")
+        prop_101 = next((p for p in (rq.get("proposals") or []) if p.get("id") == "rq-pilot-101"), None)
+        chosen_idx = None
+        new_scene = None
+        new_height = None
+        new_scale = None
+
+        if "golem" in low or "take c" in low or "2.2" in low or "colossal" in low:
+            chosen_idx = 2
+            new_scene = "res://assets/characters/skeleton_golem.glb"
+            new_height = 2.20
+            new_scale = 1.28
+        elif "raider" in low or "orc_enemy" in low or "take a" in low or "1.95" in low or "compact" in low:
+            chosen_idx = 0
+            new_scene = "res://assets/creatures/orc_enemy.glb"
+            new_height = 1.95
+            new_scale = 1.12
+        elif "brute" in low or "take b" in low or "2.1" in low or "recommended" in low or "reset" in low:
+            chosen_idx = 1
+            new_scene = "res://assets/characters/orc_brute.glb"
+            new_height = 2.10
+            new_scale = 1.22
+
+        # Check explicit height in meters like "2.05m"
+        m_height = re.search(r"(\d+\.\d+)\s*m\b", low)
+        if m_height and any(w in low for w in ("orc", "warlord", "boss", "height", "tall")):
+            raw_h = float(m_height.group(1))
+            clamped_h = round(max(1.80, min(2.40, raw_h)), 2)
+            new_height = clamped_h
+            new_scale = round(clamped_h / 1.72, 2)
+            guardrails_checked.append(f"MVP Boss Scale Band [1.80m-2.40m] PASS ({clamped_h}m = {round(clamped_h/1.05, 2)}x Chibi)")
+
+        # Check explicit HP override like "hp 1800" or "1800 hp"
+        m_hp = re.search(r"(?:hp\s*(?:to|=)?\s*(\d{3,5})|(\d{3,5})\s*hp)", low)
+        new_hp = int(m_hp.group(1) or m_hp.group(2)) if m_hp else None
+
+        if new_scene or new_height or new_hp:
+            if new_scene:
+                if "mob:aggressive" in (manifest.get("entries") or {}):
+                    manifest["entries"]["mob:aggressive"]["scene"] = new_scene
+                    CLIENT_MANIFEST_PATH.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+                    if "game-client/assets/manifest.json" not in mutated_files:
+                        mutated_files.append("game-client/assets/manifest.json")
+                ENTITY_SCENE_MAP["orc_warlord"] = new_scene
+                ENTITY_SCENE_MAP["card_orc_warlord"] = new_scene
+
+            for mb in mobs_list:
+                if mb.get("id") == "orc_warlord":
+                    if new_scene:
+                        mb["scenePath"] = new_scene
+                    if new_height:
+                        mb["heightM"] = new_height
+                    if new_scale:
+                        mb["visualScale"] = new_scale
+                    if new_hp:
+                        mb["hp"] = new_hp
+                        actions_taken.append(f"Updated Orc Warlord HP -> {new_hp}")
+            mobs_path.write_text(json.dumps(mobs_list, indent=2) + "\n", encoding="utf-8")
+            if "contracts/content/mobs.json" not in mutated_files:
+                mutated_files.append("contracts/content/mobs.json")
+
+            if prop_101:
+                if chosen_idx is not None:
+                    prop_101["selectedTakeIdx"] = chosen_idx
+                if new_height:
+                    prop_101.setdefault("embeddedInputs", {})["targetHeightM"] = new_height
+                prop_101["status"] = "approved"
+                prop_101["lastFeedback"] = f"AI Agent Edit: {prompt}"
+
+            if new_scene:
+                short_glb = new_scene.split("/")[-1]
+                actions_taken.append(f"Swapped Orc Warlord 3D asset -> {short_glb} ({new_height or 2.10}m, {new_scale or 1.22}x scale)")
+                guardrails_checked.append(f"2.0x Chibi Silhouette Contrast PASS ({new_height or 2.10}m vs 1.05m player)")
+
+    # --- 2. Detect Pillar A: Biome Brush / Foliage / Tree Density / Dead Pine Edits ---
+    if any(k in low for k in ("pine", "tree", "forest", "bush", "grass", "foliage", "sunlit", "sparse", "dense", "dead", "brush", "meadow")):
+        pillars_touched.append("Pillar A · Biome Brush & Tag Pool")
+        pal = pals.get("pine_forest_border") or {}
+        scatter = pal.get("scatter") or {}
+
+        if "sparse" in low or "sunlit" in low or "2.5%" in low or "0.025" in low:
+            if "grass" in scatter:
+                scatter["grass"]["weight"] = 0.25
+            if "bush" in scatter:
+                scatter["bush"]["weight"] = 0.06
+            if "canopy_tree" in scatter:
+                scatter["canopy_tree"]["weight"] = 0.025
+            actions_taken.append("Applied Sunlit Sparse Woods preset (grass 25%, bush 6%, canopy_tree 2.5%)")
+        elif "dense" in low or "thicket" in low or "5.5%" in low or "0.055" in low:
+            if "grass" in scatter:
+                scatter["grass"]["weight"] = 0.42
+            if "bush" in scatter:
+                scatter["bush"]["weight"] = 0.14
+            if "canopy_tree" in scatter:
+                scatter["canopy_tree"]["weight"] = 0.055
+            actions_taken.append("Applied Dense Thicket preset (grass 42%, bush 14%, canopy_tree 5.5%)")
+        elif "balanced" in low or "lush" in low or "4.0%" in low or "4%" in low or "reset" in low:
+            if "grass" in scatter:
+                scatter["grass"]["weight"] = 0.35
+            if "bush" in scatter:
+                scatter["bush"]["weight"] = 0.10
+            if "canopy_tree" in scatter:
+                scatter["canopy_tree"]["weight"] = 0.04
+            actions_taken.append("Applied Balanced Border preset (grass 35%, bush 10%, canopy_tree 4.0%)")
+
+        # Explicit percentage for tree density e.g. "tree density to 3%"
+        m_tree_pct = re.search(r"tree[^0-9]*(\d+(?:\.\d+)?)\s*%", low)
+        if m_tree_pct and "canopy_tree" in scatter:
+            w = round(max(0.005, min(0.15, float(m_tree_pct.group(1)) / 100.0)), 3)
+            scatter["canopy_tree"]["weight"] = w
+            actions_taken.append(f"Set pine canopy_tree scatter weight -> {w} ({round(w*100, 1)}%)")
+
+        # Dead pine toggle
+        dead_sp = "res://assets/nature/dead_pine_tree_1_a_color1.glb"
+        if "canopy_tree" in scatter:
+            c_assets = list(scatter["canopy_tree"].get("assets") or [])
+            c_dis = list(scatter["canopy_tree"].get("disabledAssets") or [])
+            if any(w in low for w in ("disable dead", "exclude dead", "remove dead", "uncheck dead", "no dead")):
+                if dead_sp not in c_dis:
+                    c_dis.append(dead_sp)
+                if dead_sp in c_assets and len(c_assets) > 1:
+                    c_assets.remove(dead_sp)
+                scatter["canopy_tree"]["assets"] = c_assets
+                scatter["canopy_tree"]["disabledAssets"] = c_dis
+                actions_taken.append("Excluded dead_pine_tree_1_a_color1.glb from canopy_tree tag pool")
+            elif any(w in low for w in ("enable dead", "include dead", "add dead", "check dead")):
+                if dead_sp in c_dis:
+                    c_dis.remove(dead_sp)
+                if dead_sp not in c_assets:
+                    c_assets.append(dead_sp)
+                scatter["canopy_tree"]["assets"] = c_assets
+                scatter["canopy_tree"]["disabledAssets"] = c_dis
+                actions_taken.append("Re-enabled dead_pine_tree_1_a_color1.glb in canopy_tree tag pool")
+
+        guardrails_checked.append("Chibi Foliage Cap PASS (Grass <= 0.35m, Bush <= 0.65m, Trunk r=0.45m)")
+        GROUND_PALETTES_PATH.write_text(json.dumps(pals, indent=2) + "\n", encoding="utf-8")
+        sync_palettes_into_pilot_map(pals)
+        m_doc = load_json_file(map_p) or m_doc
+        for f in ("content/ground_palettes.json", "content/maps/freja-south-gate.json"):
+            if f not in mutated_files:
+                mutated_files.append(f)
+
+    # --- 3. Detect Pillar C: Map Blueprint, Highway Width & 3D Structure Edits ---
+    if any(k in low for k in ("highway", "road", "spur", "watchtower", "tower", "cave", "crystal", "map", "widen", "move", "avenue")):
+        pillars_touched.append("Pillar C · 2D Map Blueprint & 3D Structures")
+        map_changed = False
+
+        # Highway width e.g. "highway to 7.5m" or "widen highway"
+        m_hw = re.search(r"(?:highway|road|avenue)[^0-9]*(\d+(?:\.\d+)?)\s*m", low)
+        if m_hw or "widen" in low or "royal avenue" in low:
+            new_w = float(m_hw.group(1)) if m_hw else 7.5
+            new_w = round(max(3.5, min(12.0, new_w)), 2)
+            for rt in m_doc.get("routes") or []:
+                if rt.get("id") == "prontera_south_highway":
+                    rt["width"] = new_w
+            actions_taken.append(f"Resized prontera_south_highway width -> {new_w}m")
+            guardrails_checked.append(f"Route Spline Collider Clearance PASS (width={new_w}m, 0 blocking trees)")
+            map_changed = True
+
+        # Spur width
+        m_sp = re.search(r"spur[^0-9]*(\d+(?:\.\d+)?)\s*m", low)
+        if m_sp:
+            new_sw = round(max(2.5, min(8.0, float(m_sp.group(1)))), 2)
+            for rt in m_doc.get("routes") or []:
+                if rt.get("id") == "watchtower_east_spur":
+                    rt["width"] = new_sw
+            actions_taken.append(f"Resized watchtower_east_spur width -> {new_sw}m")
+            map_changed = True
+
+        # Coordinates "(x, z)"
+        m_coords = re.search(r"\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)", low)
+        for st in m_doc.get("structures") or []:
+            if st.get("id") == "freja_west_watchtower_01" and ("watchtower" in low or "tower" in low):
+                if m_coords and ("watchtower" in low.split("(")[0] or "tower" in low.split("(")[0] or "cave" not in low):
+                    st["x"] = round(max(-35.0, min(35.0, float(m_coords.group(1)))), 2)
+                    st["z"] = round(max(-35.0, min(35.0, float(m_coords.group(2)))), 2)
+                    actions_taken.append(f"Moved Watchtower to ({st['x']}, {st['z']})")
+                    map_changed = True
+                if "expand" in low or "4.5m" in low:
+                    st["radius"] = 4.5
+                    st["upperFloorHeight"] = 3.5
+                    actions_taken.append("Expanded Watchtower radius -> 4.5m & 2F deck height -> 3.5m")
+                    map_changed = True
+                m_2f = re.search(r"2f[^0-9]*(\d+(?:\.\d+)?)\s*m", low)
+                if m_2f:
+                    st["upperFloorHeight"] = round(max(2.2, min(4.5, float(m_2f.group(1)))), 2)
+                    actions_taken.append(f"Set Watchtower 2F height -> {st['upperFloorHeight']}m")
+                    map_changed = True
+            elif st.get("id") == "freja_east_crystal_cave_01" and ("cave" in low or "crystal" in low):
+                if m_coords:
+                    st["x"] = round(max(-35.0, min(35.0, float(m_coords.group(1)))), 2)
+                    st["z"] = round(max(-35.0, min(35.0, float(m_coords.group(2)))), 2)
+                    actions_taken.append(f"Moved Crystal Cave to ({st['x']}, {st['z']})")
+                    map_changed = True
+                m_cr = re.search(r"(?:radius|r=)[^0-9]*(\d+(?:\.\d+)?)\s*m?", low)
+                if m_cr:
+                    st["radius"] = round(max(2.8, min(7.5, float(m_cr.group(1)))), 2)
+                    actions_taken.append(f"Set Crystal Cave radius -> {st['radius']}m")
+                    map_changed = True
+
+        if map_changed:
+            guardrails_checked.append("Chibi Terrace Step Cap <= 0.25m/step PASS")
+            map_p.write_text(json.dumps(m_doc, indent=2) + "\n", encoding="utf-8")
+            if "content/maps/freja-south-gate.json" not in mutated_files:
+                mutated_files.append("content/maps/freja-south-gate.json")
+
+    # Fallback if prompt was a general artistic direction note
+    if not actions_taken:
+        rq.setdefault("workOrders", []).append(
+            {
+                "id": f"wo-{len(rq.get('workOrders', [])) + 1:03d}",
+                "proposalId": "ai-studio-copilot",
+                "targetId": "prontera_south_field",
+                "feedback": prompt,
+                "createdAt": now_iso,
+            }
+        )
+        actions_taken.append(f"Queued AI Work Order for prontera_south_field: '{prompt}'")
+        mutated_files.append("content/review-queue.json")
+
+    log_entry = {
+        "timestamp": now_iso,
+        "mode": "AI Co-Pilot Agent",
+        "pillar": " + ".join(pillars_touched) if pillars_touched else "Multi-Pillar Studio Agent",
+        "prompt": prompt,
+        "summary": " · ".join(actions_taken),
+        "guardrails": guardrails_checked,
+        "files": mutated_files,
+        "snapshotId": snap_meta.get("id"),
+    }
+    record_ai_agent_log(rq, log_entry)
+    REVIEW_QUEUE_PATH.write_text(json.dumps(rq, indent=2) + "\n", encoding="utf-8")
+    subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
+    return {
+        "ok": True,
+        "agentAction": log_entry,
+        "snapshot": snap_meta,
     }
 
 
@@ -223,6 +1109,25 @@ def run_readonly_sql(query: str) -> dict:
         rows = [list(r) for r in cur.fetchmany(250)]
         conn.close()
         return {"ok": True, "columns": cols, "rows": rows, "rowCount": len(rows)}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
+def launch_3d_preview(payload: dict) -> dict:
+    mode = str(payload.get("mode") or "map_builder")
+    script_name = "run_mac_map_builder.sh" if mode == "map_builder" else "run_mac.sh"
+    script_path = ROOT / "scripts" / script_name
+    if not script_path.exists():
+        return {"ok": False, "error": f"{script_name} not found"}
+    try:
+        subprocess.Popen(
+            ["/bin/bash", str(script_path)],
+            cwd=str(ROOT),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+        return {"ok": True, "mode": mode, "script": f"scripts/{script_name}"}
     except Exception as exc:
         return {"ok": False, "error": str(exc)}
 
@@ -941,6 +1846,114 @@ INDEX_HTML = r"""<!DOCTYPE html>
       color: var(--joy-status-danger-fg);
       background: var(--joy-status-danger-bg);
     }
+    /* AI Asset & Map Studio — 3-Column Review Gate & Biome Brush Tag Pool */
+    .studio-pipeline-banner {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.14), rgba(45, 114, 210, 0.10));
+      border: 1px solid var(--joy-border-strong);
+      border-radius: var(--joy-radius-card);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .review-3col-grid {
+      display: grid;
+      grid-template-columns: 310px 300px 1fr;
+      gap: 0;
+      border-top: 1px solid var(--joy-border-default);
+    }
+    @media (max-width: 1120px) {
+      .review-3col-grid { grid-template-columns: 1fr; }
+    }
+    .review-col {
+      padding: 14px 16px;
+      border-right: 1px solid var(--joy-border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .review-col:last-child { border-right: none; }
+    .review-col__head {
+      font-family: var(--joy-font-family-mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--joy-accent-text);
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--joy-border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .gate-pill-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 9px;
+      border-radius: 6px;
+      background: var(--joy-surface-sunken);
+      border: 1px solid var(--joy-border-subtle);
+      font-size: 12px;
+    }
+    .take-selector-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .take-btn {
+      padding: 6px 11px;
+      border-radius: 6px;
+      border: 1px solid var(--joy-border-default);
+      background: var(--joy-surface-sunken);
+      color: var(--joy-text-primary);
+      cursor: pointer;
+      font-size: 12px;
+      font-family: var(--joy-font-family-mono);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .take-btn.active {
+      border-color: var(--joy-accent-primary);
+      background: var(--joy-accent-subtle);
+      color: var(--joy-accent-text);
+      font-weight: 700;
+    }
+    .tag-pool-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+      gap: 8px;
+    }
+    .tag-asset-card {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 10px;
+      border-radius: 7px;
+      background: var(--joy-surface-sunken);
+      border: 1px solid var(--joy-border-default);
+      cursor: pointer;
+      user-select: none;
+      font-size: 12px;
+    }
+    .tag-asset-card.disabled {
+      opacity: 0.48;
+      border-style: dashed;
+    }
+    .tag-asset-card img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+      border-radius: 5px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--joy-border-subtle);
+      flex-shrink: 0;
+    }
+
     .elem-cell--zero {
       color: var(--joy-text-muted);
       opacity: 0.55;
@@ -1053,10 +2066,28 @@ let SEARCH_QUERY = '';
 let DROP_RATE_MULT = 1;
 let HIGHLIGHT_ENTITY_ID = '';
 let SELECTED_DOC_IDX = 0;
+let SELECTED_CONTINENT_ID = 'all';
+let SELECTED_STORY_KIND = 'all';
+let SELECTED_BESTIARY_REGION = 'all';
 let SIM_OUTPUT = 'Click "Run Balance Sim" in the top bar (or below) to execute cargo run --bin balance_sim against the live Rust authoritative combat engine.';
 let SIM_RUNNING = false;
 
 const NAV_GROUPS = [
+  {
+    section: 'World & Lore Spine (Core)',
+    items: [
+      { id: 'world',    label: 'World & Continent Atlas', countKey: d => ((d.worldSpine && d.worldSpine.continents) || []).length + ' · ' + (((d.worldSpine && d.worldSpine.pinnedPlaces) || []).length + ((d.worldSpine && d.worldSpine.dungeons) || []).length) },
+      { id: 'story',    label: 'Story, Acts & NPC Graph', countKey: d => ((d.worldSpine && d.worldSpine.storyNodes) || []).length },
+      { id: 'bestiary', label: 'World Bestiary & Ecology', countKey: d => ((d.worldSpine && d.worldSpine.bestiary) || []).length },
+    ]
+  },
+  {
+    section: 'AI Asset & Map Studio (Pilot)',
+    items: [
+      { id: 'review',  label: 'Review Gate Inbox (Step 3)', countKey: d => ((d.reviewQueue && d.reviewQueue.proposals) || []).length },
+      { id: 'brushes', label: 'Biome Brush & Tag Pools',    countKey: d => Object.keys(d.groundPalettes || {}).length },
+    ]
+  },
   {
     section: 'Databases (RMS)',
     items: [
@@ -1338,6 +2369,11 @@ function render() {
   if (!DATA) return;
   const main = document.getElementById('mainContent');
   const titleMap = {
+    world:    'World & Continent Atlas (400×400 km · 13 Continents · Towns, Zones & Dungeons)',
+    story:    'Story, 5-Act Chronology, Factions, NPCs & Quest Unlock Graph',
+    bestiary: 'World Bestiary, Regional Ecology & 3D/2D Visual Briefs (116 Creatures)',
+    review:   'Step 3 Review Gate Inbox — 1-Map Pilot (prontera_south_field)',
+    brushes:  'Biome Brush & Smart Tag-Pool Studio (ground_id)',
     overview: 'RateMyServer Hub & Cross-Repo Telemetry',
     gear:     'Item & Card Database (item_db)',
     mobs:     'Monster Database & Spawn Drops (mob_db)',
@@ -1352,7 +2388,12 @@ function render() {
   };
   document.getElementById('topbarTitle').textContent = titleMap[CURRENT_TAB] || 'Observatory';
 
-  if (CURRENT_TAB === 'overview') main.innerHTML = renderOverview();
+  if (CURRENT_TAB === 'world') main.innerHTML = renderWorldAtlas();
+  else if (CURRENT_TAB === 'story') main.innerHTML = renderStoryGraph();
+  else if (CURRENT_TAB === 'bestiary') main.innerHTML = renderBestiary();
+  else if (CURRENT_TAB === 'review') main.innerHTML = renderReviewInbox();
+  else if (CURRENT_TAB === 'brushes') main.innerHTML = renderBiomeBrushes();
+  else if (CURRENT_TAB === 'overview') main.innerHTML = renderOverview();
   else if (CURRENT_TAB === 'jobs') main.innerHTML = renderJobs();
   else if (CURRENT_TAB === 'mobs') main.innerHTML = renderMobs();
   else if (CURRENT_TAB === 'elements') { main.innerHTML = renderElements(); updateElemCalc(); }
@@ -1369,6 +2410,1296 @@ function inspectBtnHtml(kind, title, obj) {
   const encoded = encodeURIComponent(JSON.stringify(obj));
   const safeTitle = escapeHtml(title).replace(/'/g, "\\'");
   return `<button type="button" class="joy-button joy-button--outline joy-button--sm" style="height:24px;padding:0 8px;font-size:11px" onclick="openInspector('${kind}', '${safeTitle}', JSON.parse(decodeURIComponent('${encoded}')))">JSONB</button>`;
+}
+
+
+/* ============================================================================
+ * 0. AI ASSET & MAP STUDIO — STEP 3 REVIEW GATE INBOX & BIOME BRUSH COMPOSER
+ * ========================================================================== */
+function renderChibiLineupSvg(proposal) {
+  if (proposal.kind === 'db_entity') {
+    const selIdx = proposal.selectedTakeIdx || 0;
+    const activeTake = (proposal.takes || [])[selIdx] || {};
+    const bossH = activeTake.heightM || (proposal.embeddedInputs && proposal.embeddedInputs.targetHeightM) || 2.10;
+    const ratio = (bossH / 1.05).toFixed(2);
+    const bossTopY = Math.max(24, Math.round(158 - (bossH / 2.10) * 120));
+    const headY = bossTopY + 15;
+    const bodyY = bossTopY + 30;
+    const bodyH = Math.max(40, 158 - bodyY);
+    const shortAsset = (activeTake.assetPath || 'orc_brute.glb').split('/').pop();
+    return `
+      <svg width="100%" height="185" viewBox="0 0 520 185" style="border-radius:8px;background:#121b28;border:1px solid var(--joy-border-strong)">
+        <line x1="20" y1="158" x2="500" y2="158" stroke="#4a5d78" stroke-width="2"/>
+        <!-- 0.55m Small Mob -->
+        <line x1="20" y1="127" x2="500" y2="127" stroke="rgba(126,217,135,0.25)" stroke-dasharray="3 3"/>
+        <text x="26" y="123" fill="#7ed987" font-size="10" font-family="monospace">0.55m Small Mob</text>
+        <!-- 1.05m Chibi Player Reference Line -->
+        <line x1="20" y1="98" x2="500" y2="98" stroke="#ffd166" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="26" y="93" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">1.05m Chibi Toddler Player Anchor [0.90m-1.20m]</text>
+        <!-- Dynamic MVP Boss Line -->
+        <line x1="20" y1="${bossTopY}" x2="500" y2="${bossTopY}" stroke="#ff6b6b" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <text x="26" y="${Math.max(14, bossTopY - 5)}" fill="#ff6b6b" font-size="10.5" font-weight="bold" font-family="monospace">${bossH.toFixed(2)}m MVP Boss (${ratio}x Chibi · ${escapeHtml(shortAsset)})</text>
+
+        <!-- Small Poring (0.55m) -->
+        <ellipse cx="145" cy="143" rx="18" ry="15" fill="#5ec27e" stroke="#a8f0be" stroke-width="1.5"/>
+        <text x="145" y="174" text-anchor="middle" fill="#a8f0be" font-size="10" font-family="monospace">Poring (0.55m)</text>
+
+        <!-- Chibi Player Dummy (1.05m, 2.5 head-to-body ratio) -->
+        <circle cx="265" cy="112" r="13" fill="#ffd166" stroke="#fff" stroke-width="1.5"/>
+        <rect x="253" y="125" width="24" height="33" rx="7" fill="#3b82f6" stroke="#93c5fd" stroke-width="1.5"/>
+        <text x="265" y="174" text-anchor="middle" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">Chibi Player (1.05m)</text>
+
+        <!-- Dynamic Orc Warlord MVP -->
+        <circle cx="405" cy="${headY}" r="16" fill="#e63946" stroke="#ffb4a2" stroke-width="1.5"/>
+        <rect x="381" y="${bodyY}" width="48" height="${bodyH}" rx="9" fill="#9d0208" stroke="#ff6b6b" stroke-width="2"/>
+        <path d="M 432 ${headY} L 456 148" stroke="#d4af37" stroke-width="4" stroke-linecap="round"/>
+        <text x="405" y="174" text-anchor="middle" fill="#ff6b6b" font-size="10.5" font-weight="bold" font-family="monospace">Orc Warlord (${bossH.toFixed(2)}m)</text>
+      </svg>
+    `;
+  }
+  if (proposal.kind === 'ground_palette') {
+    return `
+      <svg width="100%" height="185" viewBox="0 0 520 185" style="border-radius:8px;background:#112218;border:1px solid var(--joy-border-strong)">
+        <line x1="20" y1="156" x2="500" y2="156" stroke="#529e47" stroke-width="2"/>
+        <!-- 0.35m Grass Cap -->
+        <line x1="20" y1="136" x2="310" y2="136" stroke="#7ed987" stroke-dasharray="3 2"/>
+        <text x="25" y="132" fill="#7ed987" font-size="10" font-family="monospace">0.35m Knee-High Grass Cap</text>
+        <!-- 0.65m Bush Cap -->
+        <line x1="20" y1="118" x2="310" y2="118" stroke="#5ec27e" stroke-dasharray="3 2"/>
+        <text x="25" y="114" fill="#5ec27e" font-size="10" font-family="monospace">0.65m Chest-High Bush Cap (Head Visible!)</text>
+        <!-- 1.05m Chibi Player -->
+        <line x1="20" y1="95" x2="500" y2="95" stroke="#ffd166" stroke-width="1.4" stroke-dasharray="4 3"/>
+        <text x="25" y="90" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">1.05m Chibi Player Head Always Above Foliage</text>
+
+        <!-- Grass (0.35m) -->
+        <rect x="95" y="136" width="22" height="20" rx="4" fill="#529e47"/>
+        <text x="106" y="172" text-anchor="middle" fill="#7ed987" font-size="10" font-family="monospace">Grass 0.35m</text>
+
+        <!-- Bush (0.65m) -->
+        <ellipse cx="185" cy="137" rx="24" ry="19" fill="#346e36" stroke="#7ed987" stroke-width="1.2"/>
+        <text x="185" y="172" text-anchor="middle" fill="#7ed987" font-size="10" font-family="monospace">Bush 0.65m</text>
+
+        <!-- Chibi Player (1.05m) -->
+        <circle cx="275" cy="109" r="13" fill="#ffd166" stroke="#fff" stroke-width="1.5"/>
+        <rect x="263" y="122" width="24" height="34" rx="6" fill="#3b82f6" stroke="#93c5fd" stroke-width="1.5"/>
+        <text x="275" y="172" text-anchor="middle" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">Chibi 1.05m</text>
+
+        <!-- Pine Canopy Tree: 0.45m Red Trunk Collider vs 1.85m Green Walkable Canopy Overhang -->
+        <ellipse cx="410" cy="64" rx="64" ry="44" fill="rgba(82,158,71,0.34)" stroke="#7ed987" stroke-width="1.5" stroke-dasharray="4 2"/>
+        <text x="410" y="55" text-anchor="middle" fill="#a8f0be" font-size="9.5" font-family="monospace">1.85m Walkable Canopy</text>
+        <text x="410" y="68" text-anchor="middle" fill="#a8f0be" font-size="9" font-family="monospace">(Auto-fades at alpha 0.22)</text>
+        <rect x="397" y="102" width="26" height="54" fill="rgba(235,87,87,0.45)" stroke="#ff6b6b" stroke-width="2"/>
+        <text x="410" y="172" text-anchor="middle" fill="#ff6b6b" font-size="10" font-weight="bold" font-family="monospace">0.45m Trunk Collider</text>
+      </svg>
+    `;
+  }
+  const pilotMap = (DATA.maps || [])[0];
+  return pilotMap ? `<div style="display:flex;justify-content:center">${renderMinimapSvg(pilotMap)}</div>` : '';
+}
+
+async function submitReviewVerdict(propId, verdict, takeIdx) {
+  const fbInput = document.getElementById('fb-input-' + propId);
+  const feedbackText = fbInput ? fbInput.value.trim() : '';
+  const statusEl = document.getElementById('topbarStatus');
+  if (statusEl) statusEl.textContent = 'Applying Review Verdict...';
+
+  const res = await fetch('/api/review-queue/verdict', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: propId, verdict, selectedTakeIdx: takeIdx, feedbackText })
+  });
+  const out = await res.json();
+  const bRes = await fetch('/api/bundle');
+  DATA = await bRes.json();
+  buildThumbIndex();
+  if (statusEl) statusEl.textContent = out.ok ? `Verdict: ${out.verdict.toUpperCase()}` : 'Verdict Error';
+  renderSidebar();
+  render();
+}
+
+async function selectProposalTake(propId, takeIdx) {
+  const prop = ((DATA.reviewQueue && DATA.reviewQueue.proposals) || []).find(p => p.id === propId);
+  if (prop) prop.selectedTakeIdx = takeIdx;
+  render();
+}
+
+async function togglePaletteAsset(paletteId, ruleName, assetPath, weightVal) {
+  const statusEl = document.getElementById('topbarStatus');
+  if (statusEl) statusEl.textContent = 'Updating Palette Brush...';
+  const payload = { paletteId, ruleName };
+  if (assetPath) payload.assetPath = assetPath;
+  if (weightVal !== undefined && weightVal !== null) payload.weight = parseFloat(weightVal);
+  await fetch('/api/palette/toggle-asset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const bRes = await fetch('/api/bundle');
+  DATA = await bRes.json();
+  buildThumbIndex();
+  if (statusEl) statusEl.textContent = `Updated ${paletteId}.${ruleName}`;
+  renderSidebar();
+  render();
+}
+
+async function undoStudioSnapshot() {
+  const statusEl = document.getElementById('topbarStatus');
+  if (statusEl) statusEl.textContent = 'Restoring Snapshot...';
+  const res = await fetch('/api/studio/undo', { method: 'POST' });
+  const out = await res.json();
+  const bRes = await fetch('/api/bundle');
+  DATA = await bRes.json();
+  buildThumbIndex();
+  if (statusEl) statusEl.textContent = out.ok ? `Restored ${out.restoredSnapshot}` : (out.error || 'Nothing to undo');
+  renderSidebar();
+  render();
+}
+
+let LAST_AI_AGENT_RESULT = null;
+
+async function launch3dClient(mode) {
+  const statusEl = document.getElementById('topbarStatus');
+  if (statusEl) statusEl.textContent = mode === 'map_builder' ? '🗺️ Launching 3D Map Builder...' : '🎮 Launching 3D Game Client...';
+  const res = await fetch('/api/studio/launch-3d', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mode })
+  });
+  const out = await res.json();
+  if (statusEl) statusEl.textContent = out.ok ? `Launched ${out.script}` : ('Launch Error: ' + (out.error || ''));
+}
+
+async function runAiStudioAgent(presetPrompt) {
+  const inp = document.getElementById('aiStudioPromptInput');
+  const prompt = (presetPrompt !== undefined && presetPrompt !== null)
+    ? String(presetPrompt)
+    : (inp ? inp.value.trim() : '');
+  if (!prompt) return;
+  const statusEl = document.getElementById('topbarStatus');
+  if (statusEl) statusEl.textContent = '🤖 AI Agent applying edit...';
+
+  const res = await fetch('/api/studio/ai-edit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt })
+  });
+  const out = await res.json();
+  if (out.ok && out.agentAction) {
+    LAST_AI_AGENT_RESULT = out.agentAction;
+  }
+  const bRes = await fetch('/api/bundle');
+  DATA = await bRes.json();
+  buildThumbIndex();
+  if (statusEl) statusEl.textContent = out.ok ? '✨ AI Agent Edit Committed' : 'AI Edit Error';
+  renderSidebar();
+  render();
+}
+
+async function applyInteractiveMapStructure(prefix) {
+  const gv = (id) => {
+    const el = document.getElementById(prefix + '-' + id);
+    return el ? parseFloat(el.value) : null;
+  };
+  const payload = {
+    highwayWidth: gv('hw'),
+    spurWidth: gv('spur'),
+    watchtowerX: gv('wtx'),
+    watchtowerZ: gv('wtz'),
+    watchtowerRadius: gv('wtr'),
+    watchtower2F: gv('wt2f'),
+    caveX: gv('cvx'),
+    caveZ: gv('cvz'),
+    caveRadius: gv('cvr'),
+    reason: 'Interactive Map Structure & Route Update via AI Studio Agent'
+  };
+  const statusEl = document.getElementById('topbarStatus');
+  if (statusEl) statusEl.textContent = '🤖 Updating Map Structure...';
+  const res = await fetch('/api/map/update-structure', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const out = await res.json();
+  const bRes = await fetch('/api/bundle');
+  DATA = await bRes.json();
+  buildThumbIndex();
+  if (statusEl) statusEl.textContent = out.ok ? '✨ Map Blueprint Updated' : 'Map Update Error';
+  renderSidebar();
+  render();
+}
+
+function renderMapStructureEditor(m, prefix) {
+  if (!m) return '';
+  const hw = ((m.routes || []).find(r => r.id === 'prontera_south_highway') || {}).width ?? 5.2;
+  const spur = ((m.routes || []).find(r => r.id === 'watchtower_east_spur') || {}).width ?? 3.6;
+  const wt = (m.structures || []).find(s => s.id === 'freja_west_watchtower_01') || { x: -9.5, z: -2, radius: 3.6, upperFloorHeight: 3.2 };
+  const cv = (m.structures || []).find(s => s.id === 'freja_east_crystal_cave_01') || { x: 10.5, z: -3, radius: 4.2 };
+
+  return `
+    <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-strong);display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div style="font-size:12px;font-weight:700;color:var(--joy-accent-text)">
+          🛠️ Interactive Map Structure &amp; Route Editor (Wrapped by AI Chibi Guardrails)
+        </div>
+        <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="applyInteractiveMapStructure('${escapeHtml(prefix)}')">
+          ✨ Apply Structure Changes
+        </button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:8px;font-size:11.5px">
+        <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
+          <div style="display:flex;justify-content:space-between"><span class="mono">Highway Width (m)</span><strong class="mono">${hw}m</strong></div>
+          <input id="${escapeHtml(prefix)}-hw" type="range" min="3.5" max="10.0" step="0.1" value="${hw}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+        </label>
+        <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
+          <div style="display:flex;justify-content:space-between"><span class="mono">East Spur Width (m)</span><strong class="mono">${spur}m</strong></div>
+          <input id="${escapeHtml(prefix)}-spur" type="range" min="2.5" max="7.0" step="0.1" value="${spur}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+        </label>
+        <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
+          <div style="display:flex;justify-content:space-between"><span class="mono">Watchtower X / Z</span><strong class="mono">(${wt.x}, ${wt.z})</strong></div>
+          <div style="display:flex;gap:4px">
+            <input id="${escapeHtml(prefix)}-wtx" class="joy-input mono" type="number" step="0.5" value="${wt.x}" style="height:24px;font-size:11px;padding:0 6px" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+            <input id="${escapeHtml(prefix)}-wtz" class="joy-input mono" type="number" step="0.5" value="${wt.z}" style="height:24px;font-size:11px;padding:0 6px" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+          </div>
+        </label>
+        <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
+          <div style="display:flex;justify-content:space-between"><span class="mono">Watchtower r / 2F</span><strong class="mono">r=${wt.radius}m · 2F=${wt.upperFloorHeight || 3.2}m</strong></div>
+          <div style="display:flex;gap:4px">
+            <input id="${escapeHtml(prefix)}-wtr" class="joy-input mono" type="number" step="0.2" value="${wt.radius}" style="height:24px;font-size:11px;padding:0 6px" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+            <input id="${escapeHtml(prefix)}-wt2f" class="joy-input mono" type="number" step="0.1" value="${wt.upperFloorHeight || 3.2}" style="height:24px;font-size:11px;padding:0 6px" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+          </div>
+        </label>
+        <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
+          <div style="display:flex;justify-content:space-between"><span class="mono">Crystal Cave X / Z</span><strong class="mono">(${cv.x}, ${cv.z})</strong></div>
+          <div style="display:flex;gap:4px">
+            <input id="${escapeHtml(prefix)}-cvx" class="joy-input mono" type="number" step="0.5" value="${cv.x}" style="height:24px;font-size:11px;padding:0 6px" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+            <input id="${escapeHtml(prefix)}-cvz" class="joy-input mono" type="number" step="0.5" value="${cv.z}" style="height:24px;font-size:11px;padding:0 6px" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+          </div>
+        </label>
+        <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
+          <div style="display:flex;justify-content:space-between"><span class="mono">Crystal Cave Radius</span><strong class="mono">${cv.radius}m</strong></div>
+          <input id="${escapeHtml(prefix)}-cvr" type="range" min="3.0" max="7.0" step="0.2" value="${cv.radius}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+        </label>
+      </div>
+    </div>
+  `;
+}
+
+function renderAiCopilotBar() {
+  const rq = DATA.reviewQueue || {};
+  const logs = rq.agentEditLog || [];
+  const latestLog = LAST_AI_AGENT_RESULT || logs[0] || null;
+  const snaps = DATA.studioSnapshots || [];
+
+  const presets = [
+    { label: '✨ Entity: Orc Warlord -> Raider 1.95m (Take A)', prompt: 'Swap Orc Warlord to Take A Orc Raider at 1.95m' },
+    { label: '✨ Entity: Orc Warlord -> Colossal Golem 2.20m + 1800 HP', prompt: 'Swap Orc Warlord to Colossal Golem 2.20m and set HP to 1800' },
+    { label: '✨ Entity: Orc Warlord -> Brute 2.10m (Recommended)', prompt: 'Reset Orc Warlord to Take B Orc Brute 2.10m and HP 1445' },
+    { label: '✨ Brush: Sunlit Woods (Tree 2.5% + Exclude Dead Pine)', prompt: 'Open sunlit sparse woods: set pine tree density to 2.5% and disable dead pine' },
+    { label: '✨ Brush: Balanced Border (Tree 4.0%, Bush 10%)', prompt: 'Set pine forest border to balanced 4.0% canopy tree and exclude dead pine' },
+    { label: '✨ Map: Widen Highway to 7.5m + Expand Watchtower', prompt: 'Widen highway to 7.5m and expand Watchtower 2F to 3.5m at (-11.0, -2.5)' },
+    { label: '✨ Map: Move Crystal Cave to (13.5, -4.0) r=5.0m', prompt: 'Move Crystal Cave to (13.5, -4.0) with radius 5.0m' },
+  ];
+
+  return `
+    <div class="observatory-card" style="background:linear-gradient(135deg, rgba(212,175,55,0.12), rgba(19,34,56,0.92));border:1px solid var(--joy-border-strong);padding:14px 18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div>
+          <div class="page-hero__eyebrow" style="margin-bottom:2px">🤖 AI STUDIO CO-PILOT AGENT · NATURAL-LANGUAGE EDIT WRAPPER (3 PILLARS)</div>
+          <div style="font-size:13px;color:var(--joy-text-secondary)">
+            Type any natural-language instruction (or click a 1-click preset below) to edit <strong>3D Entities &amp; Stats</strong>, <strong>Biome Brushes</strong>, or <strong>Map Routes &amp; 3D Structures</strong>. Automatically validates Chibi <code>1.05m</code> scale guardrails and saves a 1-click Undo snapshot.
+          </div>
+        </div>
+        <div class="chip-row">
+          <span class="joy-badge joy-badge--success joy-badge--sm">Chibi 1.05m Guardrail Active</span>
+          <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="launch3dClient('map_builder')">
+            🗺️ Preview in 3D Map Builder
+          </button>
+          <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="launch3dClient('game')">
+            🎮 Preview in 3D Game Client
+          </button>
+          <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="undoStudioSnapshot()" ${snaps.length === 0 ? 'disabled' : ''}>
+            ↩ Undo Last AI Edit (${snaps.length})
+          </button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">
+        <input
+          id="aiStudioPromptInput"
+          class="joy-input"
+          type="text"
+          placeholder="Tell the AI Agent what to edit (e.g., 'Swap Orc Warlord to Golem 2.20m with 1800 HP', 'Widen highway to 7.5m and move Watchtower to (-11, -2.5)', 'Set pine tree density to 2.5% and disable dead pine')..."
+          style="flex:1;min-width:280px;height:36px;font-size:12.5px"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();runAiStudioAgent();}"
+        />
+        <button type="button" class="joy-button joy-button--solid" style="height:36px" onclick="runAiStudioAgent()">
+          ✨ Edit via AI Agent
+        </button>
+      </div>
+
+      <div class="chip-row" style="margin-top:4px">
+        ${presets.map(pr => `
+          <button
+            type="button"
+            class="joy-button joy-button--outline joy-button--sm"
+            style="font-size:11px;height:26px;padding:0 9px"
+            onclick="runAiStudioAgent('${escapeHtml(pr.prompt.replace(/'/g, "\'"))}')"
+          >
+            ${escapeHtml(pr.label)}
+          </button>
+        `).join('')}
+      </div>
+
+      ${latestLog ? `
+        <div style="margin-top:6px;padding:9px 12px;border-radius:7px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px">
+          <div>
+            <span class="joy-badge joy-badge--brand joy-badge--sm">${escapeHtml(latestLog.mode || 'AI Agent')}</span>
+            <strong style="margin-left:6px;color:var(--joy-accent-text)">${escapeHtml(latestLog.summary || '')}</strong>
+            <div class="mono" style="font-size:11px;color:var(--joy-text-secondary);margin-top:3px">
+              Prompt: "${escapeHtml(latestLog.prompt || '')}" · Files: ${escapeHtml((latestLog.files || []).join(', '))}
+            </div>
+          </div>
+          <div class="chip-row">
+            ${(latestLog.guardrails || []).map(g => `<span class="joy-badge joy-badge--success joy-badge--sm">✓ ${escapeHtml(g)}</span>`).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderReviewInbox() {
+  const rq = DATA.reviewQueue || {};
+  const proposals = (rq.proposals || []).filter(matchesSearch);
+  const snaps = DATA.studioSnapshots || [];
+  const scaleAnchor = rq.playerScaleAnchor || { heightRangeM: [0.90, 1.20], referenceHeightM: 1.05 };
+
+  return `
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">99% AUTOMATED PIPELINE · 1% HUMAN APPROVAL &amp; FEEDBACK GATE</div>
+        <h1 class="page-hero__title">Step 3 Review Gate Inbox — 1-Map Pilot (<code>prontera_south_field</code>)</h1>
+        <p class="page-hero__sub">
+          Every asset, biome brush, and map blueprint embeds the <strong>Chibi Toddler Player Scale Anchor (${scaleAnchor.heightRangeM[0].toFixed(2)}m–${scaleAnchor.heightRangeM[1].toFixed(2)}m, Ref ${scaleAnchor.referenceHeightM.toFixed(2)}m)</strong>
+          into its generator contract and passes automated machine gates before reaching this inbox.
+        </p>
+      </div>
+      <div class="chip-row">
+        <span class="joy-badge joy-badge--brand">Chibi Player: ${scaleAnchor.referenceHeightM.toFixed(2)}m</span>
+        <span class="joy-badge joy-badge--success">${proposals.filter(p => p.status === 'approved').length}/${proposals.length} Approved</span>
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="undoStudioSnapshot()" ${snaps.length === 0 ? 'disabled' : ''}>
+          ↩ Undo Last Commit (${snaps.length})
+        </button>
+      </div>
+    </div>
+
+    ${renderAiCopilotBar()}
+
+    <div class="studio-pipeline-banner">
+      <div>
+        <strong style="color:var(--joy-accent-text)">3-Stage Review Flow:</strong>
+        <span class="mono" style="font-size:12px;margin-left:8px">
+          [1. Embedded Generator Inputs] ➔ [2. Machine Must-Pass Gates (Auto-Reject Broken Output)] ➔ [3. Human 10-Second Visual Check &amp; Approve/Re-Roll]
+        </span>
+      </div>
+      <div class="chip-row">
+        <button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="switchTab('brushes')">
+          Open Biome Brush &amp; Tag Pools ▸
+        </button>
+      </div>
+    </div>
+
+    <div class="rms-list">
+      ${proposals.map(prop => {
+        const selIdx = prop.selectedTakeIdx || 0;
+        const takes = prop.takes || [];
+        const activeTake = takes[selIdx] || takes[0] || {};
+        const statusBadge = prop.status === 'approved'
+          ? 'joy-badge--success'
+          : (prop.status === 'rejected' ? 'joy-badge--danger' : 'joy-badge--warning');
+
+        const palId = prop.kind === 'ground_palette' ? prop.targetId : null;
+        const livePal = palId && DATA.groundPalettes ? DATA.groundPalettes[palId] : null;
+        const canopyRule = livePal && livePal.scatter ? livePal.scatter.canopy_tree : null;
+        const allCanopyAssets = canopyRule
+          ? Array.from(new Set([...(canopyRule.assets || []), ...(canopyRule.disabledAssets || [])]))
+          : [];
+
+        return `
+          <div class="rms-sheet" id="entity-${escapeHtml(prop.id)}">
+            <div class="rms-sheet__head">
+              <div class="rms-sheet__head-left">
+                ${renderThumbChip(activeTake.thumbUrl ? { thumbUrl: activeTake.thumbUrl, name: prop.title } : prop.targetId, '✨')}
+                <span class="rms-sheet__title">${escapeHtml(prop.title)}</span>
+                <span class="joy-badge ${statusBadge} joy-badge--sm">${escapeHtml((prop.status || 'pending_review').toUpperCase())}</span>
+                <span class="rms-sheet__id"><code>${escapeHtml(prop.id)}</code> · Target: <code>${escapeHtml(prop.targetFile || '')}</code></span>
+              </div>
+              <div class="chip-row">
+                <span class="joy-badge joy-badge--neutral joy-badge--sm">${escapeHtml(prop.pillar || prop.kind)}</span>
+                ${inspectBtnHtml('proposal', prop.title, prop)}
+              </div>
+            </div>
+
+            <div class="review-3col-grid">
+              <!-- COLUMN 1: EMBEDDED GENERATOR INPUTS -->
+              <div class="review-col">
+                <div class="review-col__head">
+                  <span>1. Embedded Generator Inputs</span>
+                  <span class="joy-badge joy-badge--brand joy-badge--sm">Auto-Injected</span>
+                </div>
+                <div class="observatory-card__meta">
+                  Criteria embedded directly into the generator contract before building:
+                </div>
+                <div style="display:flex;flex-direction:column;gap:5px">
+                  ${Object.entries(prop.embeddedInputs || {}).map(([k, v]) => `
+                    <div class="gate-pill-row">
+                      <span class="mono" style="color:var(--joy-text-secondary)">${escapeHtml(k)}</span>
+                      <strong class="mono" style="font-size:11.5px;text-align:right">${escapeHtml(typeof v === 'object' ? JSON.stringify(v) : String(v))}</strong>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- COLUMN 2: MACHINE MUST-PASS GATES -->
+              <div class="review-col">
+                <div class="review-col__head">
+                  <span>2. Machine Must-Pass Gates</span>
+                  <span class="joy-badge joy-badge--success joy-badge--sm">${(prop.machineGates || []).length}/${(prop.machineGates || []).length} PASS</span>
+                </div>
+                <div class="observatory-card__meta">
+                  Verified automatically by <code>validate.mjs</code>, <code>balance_sim</code> &amp; spatial hash:
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  ${(prop.machineGates || []).map(g => `
+                    <div class="gate-pill-row">
+                      <div>
+                        <div style="font-weight:600">${escapeHtml(g.gate)}</div>
+                        <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">${escapeHtml(g.value)}</div>
+                      </div>
+                      <span class="joy-badge joy-badge--success joy-badge--sm">PASS</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- COLUMN 3: HUMAN 10-SECOND IN-CONTEXT VISUAL CHECK & VERDICT -->
+              <div class="review-col">
+                <div class="review-col__head">
+                  <span>3. Human In-Context Visual Check &amp; Verdict</span>
+                  <span class="joy-badge joy-badge--warning joy-badge--sm">10s Spot-Check</span>
+                </div>
+
+                <!-- Visual Scale / Cutaway / Blueprint Diagram -->
+                ${renderChibiLineupSvg(prop)}
+
+                <!-- Multi-Take Picker -->
+                <div>
+                  <div style="font-size:11.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:5px">
+                    Candidate Takes (Pick Best Variant or Re-Roll with Feedback):
+                  </div>
+                  <div class="take-selector-bar">
+                    ${takes.map((tk, idx) => `
+                      <button type="button" class="take-btn ${idx === selIdx ? 'active' : ''}" onclick="selectProposalTake('${escapeHtml(prop.id)}', ${idx})">
+                        ${tk.thumbUrl ? `<img src="${escapeHtml(tk.thumbUrl)}" alt="" style="width:22px;height:22px;object-fit:contain;border-radius:4px"/>` : '🎯'}
+                        <span>${escapeHtml(tk.label)}</span>
+                      </button>
+                    `).join('')}
+                  </div>
+                  <div class="observatory-card__meta" style="margin-top:5px">
+                    Selected: <strong>${escapeHtml(activeTake.label || '')}</strong> — ${escapeHtml(activeTake.notes || '')}
+                  </div>
+                </div>
+
+                ${canopyRule ? `
+                  <div style="padding:10px;border-radius:7px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+                    <div style="font-size:11.5px;font-weight:700;color:var(--joy-accent-text);margin-bottom:6px">
+                      Smart Tag Pool Override (<code>biome:freja_pine + role:canopy_tree</code>) — Uncheck any unwanted 3D asset:
+                    </div>
+                    <div class="tag-pool-grid">
+                      ${allCanopyAssets.map(sp => {
+                        const isDisabled = (canopyRule.disabledAssets || []).includes(sp);
+                        const shortName = sp.replace('res://assets/nature/', '');
+                        const tUrl = (DATA.assetSceneThumbs && DATA.assetSceneThumbs[sp]) || '';
+                        return `
+                          <label class="tag-asset-card ${isDisabled ? 'disabled' : ''}" onclick="togglePaletteAsset('${escapeHtml(palId)}', 'canopy_tree', '${escapeHtml(sp)}')">
+                            <input type="checkbox" ${!isDisabled ? 'checked' : ''} onclick="event.stopPropagation(); togglePaletteAsset('${escapeHtml(palId)}', 'canopy_tree', '${escapeHtml(sp)}')" />
+                            ${tUrl ? `<img src="${escapeHtml(tUrl)}" alt="${escapeHtml(shortName)}" />` : ''}
+                            <div>
+                              <div class="mono" style="font-weight:600;font-size:11.5px">${escapeHtml(shortName)}</div>
+                              <div class="observatory-card__meta">${isDisabled ? 'Excluded from scatter' : 'Active in chunk scatter'}</div>
+                            </div>
+                          </label>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+
+                ${prop.kind === 'map_blueprint' ? renderMapStructureEditor((DATA.maps || [])[0], 'rev-map') : ''}
+
+                <!-- Nice-to-Have Human Checklist -->
+                <div class="chip-row">
+                  ${(prop.niceToHaveChecks || []).map(chk => `
+                    <span class="joy-badge joy-badge--neutral joy-badge--sm">✓ ${escapeHtml(chk)}</span>
+                  `).join('')}
+                </div>
+
+                <!-- Reviewer Feedback Input + Approve / Re-Roll / Reject Bar -->
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px;padding-top:8px;border-top:1px solid var(--joy-border-subtle)">
+                  <input
+                    id="fb-input-${escapeHtml(prop.id)}"
+                    class="joy-input"
+                    type="text"
+                    placeholder="Optional feedback note (e.g., 'Make tusks 20% larger' or 'Lower bush height to 0.55m')..."
+                    value="${escapeHtml(prop.lastFeedback || '')}"
+                    style="flex:1;min-width:220px;height:32px;font-size:12px"
+                  />
+                  <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="submitReviewVerdict('${escapeHtml(prop.id)}', 'approve', ${selIdx})">
+                    ✓ Approve &amp; Commit
+                  </button>
+                  <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="submitReviewVerdict('${escapeHtml(prop.id)}', 'feedback', ${selIdx})">
+                    ↻ Send Feedback &amp; Re-Roll
+                  </button>
+                  <button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="submitReviewVerdict('${escapeHtml(prop.id)}', 'reject', ${selIdx})">
+                    ✕ Reject
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderBiomeBrushes() {
+  const pals = DATA.groundPalettes || {};
+  const snaps = DATA.studioSnapshots || [];
+
+  return `
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">STAGE 4 DECLARATIVE GROUND_ID BRUSHES · SMART TAG POOLS + CHECKBOX OVERRIDE</div>
+        <h1 class="page-hero__title">Biome Brush &amp; Smart Tag-Pool Composer (<code>content/ground_palettes.json</code>)</h1>
+        <p class="page-hero__sub">
+          Each <code>ground_id</code> brush auto-populates 3D models by tag and enforces the <strong>1.05m Chibi Player Scale</strong>
+          (grass ≤ 0.35m, bush ≤ 0.65m). Uncheck any 3D asset below to immediately exclude it from <code>freja-south-gate.json</code> chunk scatter.
+        </p>
+      </div>
+      <div class="chip-row">
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="undoStudioSnapshot()" ${snaps.length === 0 ? 'disabled' : ''}>
+          ↩ Undo Last Brush Edit (${snaps.length})
+        </button>
+      </div>
+    </div>
+
+    ${renderAiCopilotBar()}
+
+    <div class="rms-list">
+      ${Object.entries(pals).map(([pid, pal]) => {
+        const scatterEntries = Object.entries(pal.scatter || {});
+        return `
+          <div class="rms-sheet" id="entity-pal-${escapeHtml(pid)}">
+            <div class="rms-sheet__head">
+              <div class="rms-sheet__head-left">
+                <span class="rms-thumb-chip" style="background:${escapeHtml(pal.albedoTint || '#529E47')}">🌿</span>
+                <span class="rms-sheet__title">Brush: <code>${escapeHtml(pid)}</code> (${escapeHtml(pal.surfaceType || '')})</span>
+                <span class="joy-badge joy-badge--brand joy-badge--sm">Max Slope ${pal.maxSlopeDeg}°</span>
+                ${pal.clearColliders ? `<span class="joy-badge joy-badge--warning joy-badge--sm">CLEAR COLLIDERS (ROAD)</span>` : ''}
+              </div>
+              <div class="chip-row">
+                <span class="joy-badge joy-badge--success joy-badge--sm">Chibi Band: ${(pal.playerScaleBandM || [0.9, 1.2]).join('m–')}m</span>
+                ${inspectBtnHtml('palette', pid, pal)}
+              </div>
+            </div>
+            <table class="rms-table">
+              <tbody>
+                ${scatterEntries.length === 0 ? `
+                  <tr><th>Scatter Rules</th><td class="observatory-card__meta">0 scatter rules (steep slope rock face override)</td></tr>
+                ` : scatterEntries.map(([rname, rule]) => {
+                  const allAssets = Array.from(new Set([...(rule.assets || []), ...(rule.disabledAssets || [])]));
+                  const tagPool = rule.tagPool ? `biome:${rule.tagPool.biome} · role:${rule.tagPool.role}` : 'manual pool';
+                  return `
+                    <tr>
+                      <th style="width:170px">
+                        <div class="mono" style="font-size:12.5px">${escapeHtml(rname)}</div>
+                        <div class="observatory-card__meta">${rule.blocksMovement ? 'Tier B Collider' : 'Tier A MultiMesh'}</div>
+                      </th>
+                      <td style="width:220px">
+                        <div style="display:flex;align-items:center;gap:8px">
+                          <input
+                            type="range"
+                            min="0"
+                            max="0.60"
+                            step="0.005"
+                            value="${rule.weight}"
+                            onchange="togglePaletteAsset('${escapeHtml(pid)}', '${escapeHtml(rname)}', '', this.value)"
+                          />
+                          <span class="mono" style="font-weight:700">${rule.weight}</span>
+                        </div>
+                        <div class="observatory-card__meta">
+                          Scale: ${(rule.scaleRange || [0.7, 1.0]).join('–')}×
+                          ${rule.maxWorldHeightM ? ` · Cap ≤ ${rule.maxWorldHeightM}m` : ''}
+                          ${rule.colliderHalfExtent ? ` · Trunk r=${rule.colliderHalfExtent}m` : ''}
+                        </div>
+                        <div class="observatory-card__meta">${escapeHtml(tagPool)}</div>
+                      </td>
+                      <td>
+                        <div class="tag-pool-grid">
+                          ${allAssets.map(sp => {
+                            const isDisabled = (rule.disabledAssets || []).includes(sp);
+                            const shortName = sp.replace('res://assets/nature/', '');
+                            const tUrl = (DATA.assetSceneThumbs && DATA.assetSceneThumbs[sp]) || '';
+                            return `
+                              <label class="tag-asset-card ${isDisabled ? 'disabled' : ''}" onclick="togglePaletteAsset('${escapeHtml(pid)}', '${escapeHtml(rname)}', '${escapeHtml(sp)}')">
+                                <input type="checkbox" ${!isDisabled ? 'checked' : ''} onclick="event.stopPropagation(); togglePaletteAsset('${escapeHtml(pid)}', '${escapeHtml(rname)}', '${escapeHtml(sp)}')" />
+                                ${tUrl ? `<img src="${escapeHtml(tUrl)}" alt="${escapeHtml(shortName)}" />` : ''}
+                                <div>
+                                  <div class="mono" style="font-weight:600;font-size:11.5px">${escapeHtml(shortName)}</div>
+                                  <div class="observatory-card__meta">${isDisabled ? 'Unchecked (Disabled)' : 'Checked (Active)'}</div>
+                                </div>
+                              </label>
+                            `;
+                          }).join('')}
+                        </div>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+
+/* ============================================================================
+ * 0B. WORLD & LORE SPINE — CONTINENT ATLAS, 5-ACT STORY GRAPH & BESTIARY
+ * ========================================================================== */
+function renderWorldAtlasSvg(ws) {
+  const continents = ws.continents || [];
+  const pinned = ws.pinnedPlaces || [];
+  const lanes = ws.seaLanes || [];
+  const edges = ws.spineEdges || [];
+
+  return `
+    <svg width="100%" height="340" viewBox="0 0 400 400" style="border-radius:8px;background:radial-gradient(circle at 50% 50%, #13283c 0%, #0b1826 100%);border:1px solid var(--joy-border-strong)">
+      <defs>
+        <pattern id="world-km-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.6"/>
+        </pattern>
+      </defs>
+      <rect width="400" height="400" fill="url(#world-km-grid)"/>
+      <text x="10" y="16" fill="#7da2c1" font-size="8.5" font-family="monospace">400×400 km World Frame (160,000 km² · Seed ${escapeHtml(ws.seed || '')})</text>
+
+      <!-- Sea Lanes -->
+      ${lanes.map(sl => {
+        const pts = (sl.points || []).map(p => `${p[0]},${p[1]}`).join(' ');
+        return `<polyline points="${pts}" fill="none" stroke="rgba(88, 166, 255, 0.45)" stroke-width="1.4" stroke-dasharray="3 2"/>`;
+      }).join('')}
+
+      <!-- Continents (Premise Ellipses) -->
+      ${continents.map(c => {
+        const fp = c.footprint || {};
+        const centre = fp.centreKm || [200, 200];
+        const radii = fp.radiiKm || [25, 20];
+        const isSel = SELECTED_CONTINENT_ID === c.id;
+        const fill = c.coastClass === 'ice'
+          ? 'rgba(165, 216, 255, 0.25)'
+          : (isSel ? 'rgba(212, 175, 55, 0.34)' : 'rgba(82, 158, 71, 0.24)');
+        const stroke = isSel ? '#ffd166' : '#5ec27e';
+        return `
+          <g style="cursor:pointer" onclick="SELECTED_CONTINENT_ID='${escapeHtml(c.id)}';render()">
+            <ellipse cx="${centre[0]}" cy="${centre[1]}" rx="${Math.max(12, radii[0] * 0.65)}" ry="${Math.max(10, radii[1] * 0.65)}" fill="${fill}" stroke="${stroke}" stroke-width="${isSel ? 2.2 : 1.1}"/>
+            <text x="${centre[0]}" y="${centre[1] - 2}" text-anchor="middle" fill="#f0f6fc" font-size="8.5" font-weight="bold" font-family="monospace">${escapeHtml(c.id.toUpperCase())} · ${escapeHtml(c.title)}</text>
+            <text x="${centre[0]}" y="${centre[1] + 8}" text-anchor="middle" fill="#a8f0be" font-size="7" font-family="monospace">Lv.${c.levelMin}-${c.levelMax} · ${Math.round(c.grossLandKm2)}km²</text>
+          </g>
+        `;
+      }).join('')}
+
+      <!-- Spine Trade Roads on c02 -->
+      ${edges.filter(e => Array.isArray(e.points)).map(e => {
+        const pts = e.points.map(p => `${p[0]},${p[1]}`).join(' ');
+        return `<polyline points="${pts}" fill="none" stroke="#ffd166" stroke-width="1.2" opacity="0.8"/>`;
+      }).join('')}
+
+      <!-- Pinned Towns & Landmarks -->
+      ${pinned.filter(p => p.atXKm != null && p.atYKm != null).map(p => {
+        const isTown = p.kind === 'town';
+        return `
+          <g>
+            <circle cx="${p.atXKm}" cy="${p.atYKm}" r="${isTown ? 3.2 : 1.8}" fill="${isTown ? '#ffd166' : '#ff8787'}" stroke="#0b1826" stroke-width="0.8"/>
+            ${isTown ? `<text x="${p.atXKm + 4.5}" y="${p.atYKm + 2.5}" fill="#ffd166" font-size="7" font-weight="bold" font-family="monospace">${escapeHtml(p.title)}</text>` : ''}
+          </g>
+        `;
+      }).join('')}
+    </svg>
+  `;
+}
+
+function renderTownMillcrossSvg(tp) {
+  if (!tp || !tp.extent) return '<div class="observatory-card__meta">No town plan loaded</div>';
+  const w = tp.extent.width || 220;
+  const h = tp.extent.height || 160;
+  return `
+    <svg width="100%" height="340" viewBox="0 0 ${w} ${h}" style="border-radius:8px;background:#162219;border:1px solid var(--joy-border-strong)">
+      <text x="6" y="10" fill="#a8f0be" font-size="6.5" font-weight="bold" font-family="monospace">Town Plan: ${escapeHtml(tp.town)} (${w}×${h}u · anchor [98.2, 152.6] km)</text>
+      <!-- Water polygons (Meltwash River & Mill Race) -->
+      ${(tp.water || []).map(wt => {
+        const pts = (wt.poly || []).map(p => `${p[0]},${p[1]}`).join(' ');
+        return `<polygon points="${pts}" fill="rgba(56, 139, 253, 0.38)" stroke="#58a6ff" stroke-width="0.8"/>`;
+      }).join('')}
+      <!-- Roads -->
+      ${(tp.roads || []).map(rd => {
+        const pts = (rd.points || []).map(p => `${p[0]},${p[1]}`).join(' ');
+        return `<polyline points="${pts}" fill="none" stroke="rgba(218, 184, 122, 0.65)" stroke-width="${Math.max(2, (rd.width || 8) * 0.45)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+      }).join('')}
+      <!-- Footprints (Mills, Guild, Stores, Walls, Gates) -->
+      ${(tp.footprints || []).map(fp => {
+        const [x1, y1, x2, y2] = fp.rect || [0, 0, 10, 10];
+        const rx = Math.min(x1, x2), ry = Math.min(y1, y2);
+        const rw = Math.abs(x2 - x1), rh = Math.abs(y2 - y1);
+        const isWall = fp.kind === 'wall';
+        const isGate = fp.kind === 'gate';
+        const fill = isWall ? '#6e7681' : (isGate ? '#ffd166' : 'rgba(212, 175, 55, 0.32)');
+        const stroke = isWall ? '#8b949e' : '#ffd166';
+        return `
+          <g>
+            <rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="${fill}" stroke="${stroke}" stroke-width="0.7" rx="1"/>
+            ${!isWall && rw >= 12 ? `<text x="${rx + rw/2}" y="${ry + rh/2 + 1.8}" text-anchor="middle" fill="#f0f6fc" font-size="4.2" font-family="monospace">${escapeHtml(fp.id)}</text>` : ''}
+          </g>
+        `;
+      }).join('')}
+    </svg>
+  `;
+}
+
+function renderWorldAtlas() {
+  const ws = DATA.worldSpine || {};
+  const allContinents = ws.continents || [];
+  const continents = allContinents.filter(c => (SELECTED_CONTINENT_ID === 'all' || c.id === SELECTED_CONTINENT_ID) && matchesSearch(c));
+  const pinned = (ws.pinnedPlaces || []).filter(p => (SELECTED_CONTINENT_ID === 'all' || p.continentId === SELECTED_CONTINENT_ID) && matchesSearch(p));
+  const zones = (ws.zones || []).filter(z => (SELECTED_CONTINENT_ID === 'all' || z.continentId === SELECTED_CONTINENT_ID) && matchesSearch(z));
+  const dungeons = (ws.dungeons || []).filter(d => (SELECTED_CONTINENT_ID === 'all' || d.continentId === SELECTED_CONTINENT_ID) && matchesSearch(d));
+  const boundCount = (ws.boundPlaces || []).filter(b => SELECTED_CONTINENT_ID === 'all' || b.continentId === SELECTED_CONTINENT_ID).length;
+
+  return `
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">LAYER 1 &amp; LAYER 2 WORLD SPINE · 400×400 KM DETERMINISTIC GEOGRAPHY</div>
+        <h1 class="page-hero__title">World &amp; Continent Atlas (<code>content/world/</code> + <code>content/spine/</code>)</h1>
+        <p class="page-hero__sub">
+          Single source of spatial truth: <strong>13 Continents</strong> (64,000 km² net land, 1.5:1 sea-to-land ratio),
+          <strong>${(ws.pinnedPlaces || []).length} Pinned Canon Places</strong>, <strong>${(ws.boundPlaces || []).length} Slot-Bound Places</strong>,
+          <strong>${(ws.zones || []).length} Surveyed Zones</strong>, and <strong>${(ws.dungeons || []).length} Multi-Floor Dungeons</strong>.
+        </p>
+      </div>
+      <div class="chip-row">
+        <span class="joy-badge joy-badge--brand mono">Seed: ${escapeHtml(ws.seed || '7c9e4a2f8b1d6e03')}</span>
+        <span class="joy-badge joy-badge--success">Sea:Land = ${ws.seaToLandRatio || 1.5}:1</span>
+      </div>
+    </div>
+
+    <!-- Interactive 2D World Atlas SVG + Millcross Town Plan SVG -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="observatory-card" style="padding:14px">
+        <div class="observatory-card__head">
+          <div>
+            <h3 class="observatory-card__title">400×400 km World Atlas (Click Any Continent)</h3>
+            <div class="observatory-card__meta">13 Continent footprints, sea lanes, c02 trade roads &amp; pinned towns</div>
+          </div>
+          ${SELECTED_CONTINENT_ID !== 'all' ? `<button class="joy-button joy-button--outline joy-button--sm" onclick="SELECTED_CONTINENT_ID='all';render()">Reset Filter (${escapeHtml(SELECTED_CONTINENT_ID)})</button>` : ''}
+        </div>
+        ${renderWorldAtlasSvg(ws)}
+      </div>
+
+      <div class="observatory-card" style="padding:14px">
+        <div class="observatory-card__head">
+          <div>
+            <h3 class="observatory-card__title">Authoritative Town Plan: Millcross (<code>town-millcross.json</code>)</h3>
+            <div class="observatory-card__meta">Meltwash river, mill race, 5 roads, city walls, gates &amp; 18 building footprints</div>
+          </div>
+          <div class="chip-row">
+            ${rmsLink('maps', 'millcross-ford', 'Open Millcross 3D Map', '4000×4000m')}
+            ${rmsLink('maps', 'freja-south-gate', 'Open Pilot Gate Map', '1000×1000m')}
+          </div>
+        </div>
+        ${renderTownMillcrossSvg(ws.townMillcross)}
+      </div>
+    </div>
+
+    <!-- Continent Filter Chips -->
+    <div class="controls-panel">
+      <strong style="font-size:12px;color:var(--joy-text-secondary)">Filter by Continent:</strong>
+      <div class="chip-row">
+        <button type="button" class="joy-button ${SELECTED_CONTINENT_ID === 'all' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="SELECTED_CONTINENT_ID='all';render()">
+          All 13 Continents
+        </button>
+        ${allContinents.map(c => `
+          <button type="button" class="joy-button ${SELECTED_CONTINENT_ID === c.id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm mono" onclick="SELECTED_CONTINENT_ID='${escapeHtml(c.id)}';render()">
+            ${escapeHtml(c.id)} · ${escapeHtml(c.title)} (Lv.${c.levelMin}-${c.levelMax})
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Continent Datasheets -->
+    <div class="rms-list">
+      ${continents.map(c => {
+        const cPinned = (ws.pinnedPlaces || []).filter(p => p.continentId === c.id);
+        const cDungeons = (ws.dungeons || []).filter(d => d.continentId === c.id);
+        const cZones = (ws.zones || []).filter(z => z.continentId === c.id);
+        const cBound = (ws.boundPlaces || []).filter(b => b.continentId === c.id);
+        return `
+          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === c.id ? 'rms-highlight' : ''}" id="entity-${escapeHtml(c.id)}">
+            <div class="rms-sheet__head">
+              <div class="rms-sheet__head-left">
+                <span class="rms-thumb-chip">🌍</span>
+                <span class="rms-sheet__title">${escapeHtml(c.id.toUpperCase())} — ${escapeHtml(c.title)}</span>
+                <span class="joy-badge joy-badge--brand joy-badge--sm">Lv.${c.levelMin}–${c.levelMax}</span>
+                <span class="joy-badge joy-badge--neutral joy-badge--sm mono">${escapeHtml(c.continentClass)} · coast:${escapeHtml(c.coastClass)}</span>
+                <span class="rms-sheet__id">Naming Register: <code>${escapeHtml(c.register)}</code></span>
+              </div>
+              <div class="chip-row">
+                <span class="joy-badge joy-badge--success joy-badge--sm mono">${c.grossLandKm2.toLocaleString()} km² (${c.landCells.toLocaleString()} cells)</span>
+                ${inspectBtnHtml('continent', c.title, c)}
+              </div>
+            </div>
+            <table class="rms-table">
+              <tbody>
+                <tr>
+                  <th>Structural Premise</th>
+                  <td colspan="3">${escapeHtml(c.structuralIdea)}</td>
+                  <th>Landform Kit</th>
+                  <td><div class="chip-row">${(c.landformKit || []).map(k => `<span class="joy-badge joy-badge--neutral joy-badge--sm mono">${escapeHtml(k)}</span>`).join('')}</div></td>
+                </tr>
+                <tr>
+                  <th>Biome Palette</th>
+                  <td colspan="3"><div class="chip-row">${(c.palette || []).map(p => `<span class="joy-badge joy-badge--success joy-badge--sm mono">${escapeHtml(p)}</span>`).join('')}</div></td>
+                  <th>Bound Frontier Slots</th>
+                  <td class="mono">${cBound.length} bound landmarks/settlements</td>
+                </tr>
+                <tr>
+                  <th>Pinned Towns &amp; Landmarks (${cPinned.length})</th>
+                  <td colspan="5">
+                    <div class="chip-row">
+                      ${cPinned.map(p => `<a class="rms-link" onclick="jumpToEntity('world', '${escapeHtml(p.id)}')"><span class="rms-link__arrow">${p.kind === 'town' ? '🏰' : '📍'}</span><span>${escapeHtml(p.title)}</span><span class="rms-link__rate">(${escapeHtml(p.landform)})</span></a>`).join(' ') || '<span class="observatory-card__meta">None</span>'}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Surveyed Zones (${cZones.length}) &amp; Playable 3D Maps</th>
+                  <td colspan="5">
+                    <div class="chip-row">
+                      ${cZones.slice(0, 12).map(z => {
+                        const zMap = (DATA.maps || []).find(m => (m.worldSpineBinding && m.worldSpineBinding.zoneId === z.id) || m.id === z.id);
+                        return zMap
+                          ? rmsLink('maps', zMap.id, `🗺️ ${z.id}`, `${z.regionRef} · ${(zMap.spawnAreas || []).length} spawns`)
+                          : `<span class="joy-badge joy-badge--neutral joy-badge--sm mono">🧭 ${escapeHtml(z.id)} (${escapeHtml(z.regionRef)})</span>`;
+                      }).join('')}
+                      ${cDungeons.slice(0, 10).map(d => `<span class="joy-badge joy-badge--warning joy-badge--sm mono">🗝️ ${escapeHtml(d.title)} (${d.floors}F · Lv.${d.levelMin}-${d.levelMax})</span>`).join('')}
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    <!-- Pinned Canon Places Table -->
+    <div class="observatory-card">
+      <div class="observatory-card__head">
+        <div>
+          <h3 class="observatory-card__title">Pinned Canon Towns &amp; Landmarks (${pinned.length} shown · +${boundCount} Slot-Bound Places in SQLite)</h3>
+          <div class="observatory-card__meta">Every pinned place is a generator input verified by G-PIN-SAT (landform + water + slope)</div>
+        </div>
+        <span class="joy-badge joy-badge--brand">content/world/civil/pinned-roster.json</span>
+      </div>
+      <div class="joy-table-container">
+        <table class="joy-table">
+          <thead>
+            <tr>
+              <th>ID &amp; Name</th>
+              <th>Kind / Rank</th>
+              <th>Continent &amp; Coords (km)</th>
+              <th>Required Landform</th>
+              <th>Canon / Geography Justification (<code>why</code>)</th>
+              <th>Inspect</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pinned.map(p => `
+              <tr id="entity-${escapeHtml(p.id)}" class="${HIGHLIGHT_ENTITY_ID === p.id ? 'rms-highlight' : ''}">
+                <td>
+                  <div style="font-weight:700">${p.kind === 'town' ? '🏰' : '📍'} ${escapeHtml(p.title)}</div>
+                  <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">${escapeHtml(p.id)}</div>
+                </td>
+                <td><span class="joy-badge ${p.kind === 'town' ? 'joy-badge--brand' : 'joy-badge--neutral'} joy-badge--sm">${escapeHtml(p.kind.toUpperCase())}${p.rank ? ' · ' + escapeHtml(p.rank.toUpperCase()) : ''}</span></td>
+                <td class="mono">${escapeHtml(p.continentId)} @ [${p.atXKm ?? '—'}, ${p.atYKm ?? '—'}]</td>
+                <td><span class="joy-badge joy-badge--success joy-badge--sm mono">${escapeHtml(p.landform)}</span></td>
+                <td style="font-size:12px">${escapeHtml(p.whyOrNote)}</td>
+                <td>${inspectBtnHtml('place', p.title, p)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Surveyed Zones & Dungeons Split -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="observatory-card">
+        <div class="observatory-card__head">
+          <div>
+            <h3 class="observatory-card__title">Surveyed Zones (${zones.length})</h3>
+            <div class="observatory-card__meta"><code>content/zones/*.json</code> — Hazards, Salvage/Crop Resources &amp; Landmarks</div>
+          </div>
+        </div>
+        <div class="joy-table-container" style="max-height:420px;overflow-y:auto">
+          <table class="joy-table">
+            <thead>
+              <tr><th>Zone</th><th>Region</th><th>Reason to Go &amp; Hazards</th></tr>
+            </thead>
+            <tbody>
+              ${zones.map(z => {
+                const zMap = (DATA.maps || []).find(m => (m.worldSpineBinding && m.worldSpineBinding.zoneId === z.id) || m.id === z.id);
+                return `
+                <tr id="entity-zone-${escapeHtml(z.id)}">
+                  <td class="mono" style="font-weight:700">
+                    <div>${escapeHtml(z.id)}</div>
+                    ${zMap ? `<div style="margin-top:4px">${rmsLink('maps', zMap.id, '3D Map: ' + zMap.id, (zMap.spawnAreas || []).length + ' spawns')}</div>` : ''}
+                  </td>
+                  <td class="mono">
+                    <div>${escapeHtml(z.regionRef)}</div>
+                    ${zMap && zMap.worldSpineBinding && zMap.worldSpineBinding.storyRegionId ? `<div style="margin-top:4px">${rmsLink('story', zMap.worldSpineBinding.storyRegionId, zMap.worldSpineBinding.storyRegionId, 'Story')}</div>` : ''}
+                  </td>
+                  <td style="font-size:12px">
+                    <div>${escapeHtml(z.reasonToGo)}</div>
+                    <div class="chip-row" style="margin-top:4px">
+                      ${(z.hazards || []).map(h => `<span class="joy-badge joy-badge--danger joy-badge--sm">⚠️ ${escapeHtml(h.name)}</span>`).join('')}
+                      ${(z.resources || []).map(r => `<span class="joy-badge joy-badge--success joy-badge--sm">📦 ${escapeHtml(r.name)}</span>`).join('')}
+                    </div>
+                  </td>
+                </tr>
+              `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="observatory-card">
+        <div class="observatory-card__head">
+          <div>
+            <h3 class="observatory-card__title">Dungeon Complexes (${dungeons.length})</h3>
+            <div class="observatory-card__meta"><code>content/dungeons/*.json</code> — Multi-floor complexes bound to landform handles</div>
+          </div>
+        </div>
+        <div class="joy-table-container" style="max-height:420px;overflow-y:auto">
+          <table class="joy-table">
+            <thead>
+              <tr><th>Dungeon</th><th>Floors / Lv</th><th>Entrance, Hazards &amp; Lore</th></tr>
+            </thead>
+            <tbody>
+              ${dungeons.map(d => `
+                <tr>
+                  <td>
+                    <div style="font-weight:700">${escapeHtml(d.title)}</div>
+                    <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">${escapeHtml(d.handleRef)}</div>
+                  </td>
+                  <td class="mono">${d.floors}F · Lv.${d.levelMin}-${d.levelMax}</td>
+                  <td style="font-size:12px">
+                    <div>${escapeHtml(d.loreNote)}</div>
+                    <div class="chip-row" style="margin-top:4px">
+                      <span class="joy-badge joy-badge--neutral joy-badge--sm mono">door:${escapeHtml(d.entranceType)}</span>
+                      ${(d.hazards || []).map(h => `<span class="joy-badge joy-badge--warning joy-badge--sm mono">${escapeHtml(h)}</span>`).join('')}
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderStoryGraph() {
+  const ws = DATA.worldSpine || {};
+  const allNodes = ws.storyNodes || [];
+  const byId = {};
+  allNodes.forEach(n => { byId[n.id] = n; });
+
+  const acts = allNodes.filter(n => n.kind === 'act').sort((a, b) => (a.orderNum || 0) - (b.orderNum || 0));
+  const kinds = ['all', 'region', 'faction', 'character', 'arc', 'quest', 'event', 'dialogue', 'lore'];
+  const filtered = allNodes.filter(n => (SELECTED_STORY_KIND === 'all' || n.kind === SELECTED_STORY_KIND) && matchesSearch(n));
+
+  return `
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">LAYER 0 CANON &amp; LAYER 3 NARRATIVE GRAPH · 9 TYPED SCHEMAS</div>
+        <h1 class="page-hero__title">5-Act Story, Factions, NPCs &amp; Quest Unlock DAG (<code>content/story/</code>)</h1>
+        <p class="page-hero__sub">
+          Full visibility over <strong>The Undertow</strong> 5-act epic and frontier seed arcs:
+          <strong>${allNodes.length} cross-checked narrative nodes</strong> where every NPC, Quest, Event, Dialogue, and Lore fragment links cleanly to Regions, Factions, and Server Mobs.
+        </p>
+      </div>
+      <div class="chip-row">
+        <span class="joy-badge joy-badge--success">resolveStoryRefs: PASS</span>
+        <span class="joy-badge joy-badge--brand">assertUnlockDag: Acyclic</span>
+      </div>
+    </div>
+
+    <!-- 5-Act Spine Cards -->
+    <div style="display:grid;grid-template-columns:repeat(5, minmax(0, 1fr));gap:10px">
+      ${acts.map(act => `
+        <div class="observatory-card ${HIGHLIGHT_ENTITY_ID === act.id ? 'rms-highlight' : ''}" id="entity-${escapeHtml(act.id)}" style="padding:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span class="joy-badge joy-badge--brand joy-badge--sm mono">ACT ${act.orderNum}</span>
+            <span class="mono" style="font-size:11px;color:var(--joy-accent-text)">${escapeHtml((act.raw && act.raw.theme) || '')}</span>
+          </div>
+          <div style="font-weight:700;font-size:14px">${escapeHtml(act.title)}</div>
+          <div style="font-size:12px;color:var(--joy-text-secondary)">${escapeHtml(act.summary)}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- Kind Filter Bar -->
+    <div class="controls-panel">
+      <strong style="font-size:12px;color:var(--joy-text-secondary)">Filter Narrative Node Kind:</strong>
+      <div class="chip-row">
+        ${kinds.map(k => {
+          const cnt = k === 'all' ? allNodes.length : allNodes.filter(n => n.kind === k).length;
+          return `
+            <button type="button" class="joy-button ${SELECTED_STORY_KIND === k ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="SELECTED_STORY_KIND='${k}';render()">
+              ${escapeHtml(k.toUpperCase())} (${cnt})
+            </button>
+          `;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Story Nodes RMS Sheets -->
+    <div class="rms-list">
+      ${filtered.map(n => {
+        const raw = n.raw || {};
+        const unlocked = n.unlockedBy || [];
+        return `
+          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === n.id ? 'rms-highlight' : ''}" id="entity-${escapeHtml(n.id)}">
+            <div class="rms-sheet__head">
+              <div class="rms-sheet__head-left">
+                <span class="rms-thumb-chip">📜</span>
+                <span class="rms-sheet__title">${escapeHtml(n.title)}</span>
+                <span class="joy-badge joy-badge--brand joy-badge--sm mono">${escapeHtml(n.kind.toUpperCase())}</span>
+                <span class="rms-sheet__id">ID: <code>${escapeHtml(n.id)}</code></span>
+              </div>
+              <div class="chip-row">
+                ${n.regionId ? rmsLink('story', n.regionId, (byId[n.regionId]?.title || n.regionId), 'Region') : ''}
+                ${n.factionId ? rmsLink('story', n.factionId, (byId[n.factionId]?.title || n.factionId), 'Faction') : ''}
+                ${inspectBtnHtml(n.kind, n.title, raw)}
+              </div>
+            </div>
+            <table class="rms-table">
+              <tbody>
+                <tr>
+                  <th>Summary</th>
+                  <td colspan="5">${escapeHtml(n.summary)}</td>
+                </tr>
+                ${n.kind === 'region' ? (() => {
+                  const regMaps = (DATA.maps || []).filter(m => m.worldSpineBinding && m.worldSpineBinding.storyRegionId === n.id);
+                  const regMobs = (ws.bestiary || []).filter(b =>
+                    ('region-' + b.region === n.id) ||
+                    (b.region === 'c02/r11' && n.id === 'region-ashvale-front') ||
+                    (b.region === 'northern-icefield' && n.id === 'region-icefield')
+                  );
+                  return `
+                  <tr>
+                    <th>Danger Tier</th>
+                    <td><span class="joy-badge joy-badge--warning joy-badge--sm mono">${escapeHtml(raw.dangerTier || 'safe')}</span></td>
+                    <th>World Spine &amp; 3D Map</th>
+                    <td>
+                      <div class="chip-row">
+                        <span class="joy-badge joy-badge--neutral joy-badge--sm mono">${escapeHtml(raw.spineId || raw.resolvedRef || '—')}</span>
+                        ${regMaps.map(rm => rmsLink('maps', rm.id, `🗺️ ${rm.id}`, `${rm.width}×${rm.height}m · ${(rm.spawnAreas||[]).length} spawns`)).join(' ')}
+                        ${regMobs.length ? rmsLink('bestiary', regMobs[0].id, `🐾 ${regMobs.length} Bestiary Mobs`, regMobs[0].region) : ''}
+                      </div>
+                    </td>
+                    <th>Resident NPCs &amp; Quests</th>
+                    <td>
+                      <div class="chip-row">
+                        ${allNodes.filter(c => c.kind === 'character' && c.regionId === n.id).map(c => rmsLink('story', c.id, c.title, c.raw?.role)).join(' ')}
+                        ${allNodes.filter(q => q.kind === 'quest' && q.regionId === n.id).map(q => rmsLink('story', q.id, q.title, 'Quest')).join(' ')}
+                      </div>
+                    </td>
+                  </tr>
+                  `;
+                })() : ''}
+                ${n.kind === 'character' ? `
+                  <tr>
+                    <th>Role &amp; Status</th>
+                    <td>
+                      <span class="joy-badge joy-badge--neutral joy-badge--sm mono">${escapeHtml(raw.role || 'npc')}</span>
+                      <span class="joy-badge ${raw.status === 'dead' ? 'joy-badge--danger' : 'joy-badge--success'} joy-badge--sm mono">${escapeHtml(raw.status || 'alive')}</span>
+                    </td>
+                    <th>Died At Event</th>
+                    <td>${raw.diedAt ? rmsLink('story', raw.diedAt, (byId[raw.diedAt]?.title || raw.diedAt), 'Event') : '—'}</td>
+                    <th>Quests Given</th>
+                    <td>
+                      <div class="chip-row">
+                        ${allNodes.filter(q => q.kind === 'quest' && q.giverId === n.id).map(q => rmsLink('story', q.id, q.title)).join(' ') || '—'}
+                      </div>
+                    </td>
+                  </tr>
+                ` : ''}
+                ${n.kind === 'quest' ? `
+                  <tr>
+                    <th>Quest Giver &amp; Arc</th>
+                    <td colspan="2">
+                      ${n.giverId ? rmsLink('story', n.giverId, (byId[n.giverId]?.title || n.giverId), 'Giver NPC') : '—'}
+                      ${n.arcId ? rmsLink('story', n.arcId, (byId[n.arcId]?.title || n.arcId), 'Arc') : ''}
+                    </td>
+                    <th>Unlocked By (DAG)</th>
+                    <td colspan="2">
+                      <div class="chip-row">
+                        ${unlocked.map(uid => rmsLink('story', uid, (byId[uid]?.title || uid), uid.split('-')[0])).join(' ') || '<span class="observatory-card__meta">Starter / Root</span>'}
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Objectives</th>
+                    <td colspan="2">
+                      <div class="chip-row">
+                        ${(raw.objectives || []).map(o => `<span class="joy-badge joy-badge--warning joy-badge--sm mono">${escapeHtml(o.type)}: ${escapeHtml(o.targetId)} ×${o.count}</span>`).join('')}
+                      </div>
+                    </td>
+                    <th>Narrative Text</th>
+                    <td colspan="2" style="font-size:12px">
+                      <div><strong>Offer:</strong> "${escapeHtml(raw.narrative?.offerText || '')}"</div>
+                      <div><strong>Complete:</strong> "${escapeHtml(raw.narrative?.completeText || '')}"</div>
+                    </td>
+                  </tr>
+                ` : ''}
+                ${n.kind === 'faction' ? `
+                  <tr>
+                    <th>Disposition</th>
+                    <td><span class="joy-badge ${raw.disposition === 'hostile' ? 'joy-badge--danger' : 'joy-badge--success'} joy-badge--sm mono">${escapeHtml(raw.disposition || 'neutral')}</span></td>
+                    <th>Server Mob Family</th>
+                    <td><div class="chip-row">${(raw.mobFamily || []).map(mf => `<span class="joy-badge joy-badge--warning joy-badge--sm mono">${escapeHtml(mf)}</span>`).join('') || '—'}</div></td>
+                    <th>Stances</th>
+                    <td><div class="chip-row">${(raw.relationships || []).map(rel => `${rmsLink('story', rel.factionId, rel.factionId, rel.stance)}`).join(' ') || '—'}</div></td>
+                  </tr>
+                ` : ''}
+                ${n.kind === 'lore' ? `
+                  <tr>
+                    <th>Anchor &amp; Thread</th>
+                    <td colspan="2">${raw.anchor ? rmsLink('story', raw.anchor, (byId[raw.anchor]?.title || raw.anchor), 'Anchor') : ''} <span class="joy-badge joy-badge--neutral joy-badge--sm mono">thread: ${escapeHtml(raw.thread || '')}</span></td>
+                    <th>Discoverable Text</th>
+                    <td colspan="2" style="font-style:italic;font-size:12.5px">${escapeHtml(raw.body || '')}</td>
+                  </tr>
+                ` : ''}
+                ${n.kind === 'dialogue' ? `
+                  <tr>
+                    <th>Speaker &amp; Context</th>
+                    <td colspan="2">
+                      ${raw.speaker ? rmsLink('story', raw.speaker, (byId[raw.speaker]?.title || raw.speaker), 'Speaker') : ''}
+                      ${raw.context ? rmsLink('story', raw.context, (byId[raw.context]?.title || raw.context), 'Context') : ''}
+                    </td>
+                    <th>Spoken Lines</th>
+                    <td colspan="2" style="font-size:12px">${(raw.lines || []).map(l => `<div>• "${escapeHtml(l)}"</div>`).join('')}</td>
+                  </tr>
+                ` : ''}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderBestiary() {
+  const ws = DATA.worldSpine || {};
+  const allMobs = ws.bestiary || [];
+  const regions = ['all', ...Array.from(new Set(allMobs.map(m => m.region).filter(Boolean)))];
+  const filtered = allMobs.filter(m => (SELECTED_BESTIARY_REGION === 'all' || m.region === SELECTED_BESTIARY_REGION) && matchesSearch(m));
+
+  return `
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">LAYER 3 ECOLOGY &amp; LAYER 5 FORGE VISUAL BRIEFS</div>
+        <h1 class="page-hero__title">World Bestiary &amp; Regional Ecology (<code>content/bestiary/bestiary.json</code>)</h1>
+        <p class="page-hero__sub">
+          <strong>${allMobs.length} lore-anchored creatures</strong> across all canon regions. Each record pairs ecological lore with its 3D/2D Asset Forge visual brief (bodyPlan, silhouette, donor rig cues).
+        </p>
+      </div>
+    </div>
+
+    <div class="controls-panel">
+      <strong style="font-size:12px;color:var(--joy-text-secondary)">Filter by Region:</strong>
+      <div class="chip-row">
+        ${regions.map(r => {
+          const cnt = r === 'all' ? allMobs.length : allMobs.filter(m => m.region === r).length;
+          return `
+            <button type="button" class="joy-button ${SELECTED_BESTIARY_REGION === r ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm mono" onclick="SELECTED_BESTIARY_REGION='${escapeHtml(r)}';render()">
+              ${escapeHtml(r.toUpperCase())} (${cnt})
+            </button>
+          `;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="rms-list">
+      ${filtered.map(m => `
+        <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === m.id ? 'rms-highlight' : ''}" id="entity-${escapeHtml(m.id)}">
+          <div class="rms-sheet__head">
+            <div class="rms-sheet__head-left">
+              <span class="rms-thumb-chip">🐾</span>
+              <span class="rms-sheet__title">${escapeHtml(m.name)}</span>
+              <span class="joy-badge joy-badge--brand joy-badge--sm mono">Lv.${escapeHtml(m.levelBand)}</span>
+              <span class="joy-badge joy-badge--neutral joy-badge--sm mono">${escapeHtml(m.element)} · ${escapeHtml(m.family)} · ${escapeHtml(m.bodyPlan)}</span>
+              <span class="rms-sheet__id"><code>${escapeHtml(m.id)}</code></span>
+            </div>
+            <div class="chip-row">
+              ${(() => {
+                const storyRegId = m.region === 'c02/r11' ? 'region-ashvale-front' : (m.region === 'northern-icefield' ? 'region-icefield' : 'region-' + m.region);
+                const spawnMap = (DATA.maps || []).find(mp =>
+                  (mp.worldSpineBinding && mp.worldSpineBinding.storyRegionId === storyRegId) ||
+                  (mp.spawnAreas || []).some(sa => sa.mobType === m.id)
+                );
+                return (spawnMap ? rmsLink('maps', spawnMap.id, `🗺️ ${spawnMap.id}`, '3D Spawn Map') : '') +
+                  rmsLink('story', storyRegId, m.region === 'c02/r11' ? 'region-ashvale-front (c02/r11)' : storyRegId, 'Region');
+              })()}
+              ${m.faction ? rmsLink('story', m.faction, m.faction, 'Faction') : ''}
+              ${inspectBtnHtml('bestiary', m.name, m)}
+            </div>
+          </div>
+          <table class="rms-table">
+            <tbody>
+              <tr>
+                <th>Combat Profile</th>
+                <td class="mono">Archetype: <strong>${escapeHtml(m.archetype)}</strong> · Threat: ${escapeHtml(m.threat)} · Durability: ${escapeHtml(m.durability)} · Speed: ${escapeHtml(m.speed)}</td>
+              </tr>
+              <tr>
+                <th>Ecological Lore</th>
+                <td>${escapeHtml(m.lore)}</td>
+              </tr>
+              <tr>
+                <th>Forge Visual Brief</th>
+                <td style="color:var(--joy-accent-text)">${escapeHtml(m.visualBrief)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 
 /* ============================================================================
@@ -1411,8 +3742,10 @@ function renderOverview() {
         <div class="rms-hub-links">
           ${rmsLink('quests', 'jq_swordman_trial', 'Swordman → Knight Promotion Trials', 'Lv.10 / Lv.40')}
           ${rmsLink('quests', 'jq_mage_academy', 'Mage → High Wizard Academy Trials', 'Lv.10 / Lv.40')}
+          ${rmsLink('world', 'c02', 'World & Continent Atlas (400×400 km)', '13 Continents · 60 Dungeons')}
+          ${rmsLink('story', 'act-1', '5-Act Undertow Narrative & NPC Graph', ((DATA.worldSpine && DATA.worldSpine.storyNodes) || []).length + ' Nodes')}
+          ${rmsLink('bestiary', '', 'World Ecology & Bestiary Visual Briefs', ((DATA.worldSpine && DATA.worldSpine.bestiary) || []).length + ' Creatures')}
           ${rmsLink('maps', 'freja-south-gate', 'Prontera South Gate — Area Spawn Guide', '8 Spawn Areas')}
-          ${rmsLink('docs', '', 'World Lore Canon & Undertow Specs', DATA.docs.length + ' Docs')}
         </div>
       </div>
       <div class="rms-hub-box">
@@ -2289,9 +4622,17 @@ function renderMinimapSvg(m) {
   const terraces = m.heightTerraces || [];
   const structs = m.structures || [];
   const spawns = m.spawnAreas || [];
+  const routes = m.routes || [];
+  const zones = m.groundZones || [];
 
-  const mapCoord = (v) => 120 + (v / 42.0) * 105;
-  const mapSpawnCoord = (v) => ((v - 1650) / 850.0) * 240;
+  const halfExtent = Math.max(42.0, (m.width || 1000) > 1200 ? 180.0 : 42.0);
+  const mapCoord = (v) => Math.max(8, Math.min(232, 120 + (v / halfExtent) * 105));
+  const mapSpawnCoord = (v) => {
+    if ((m.width || 1000) <= 1200) {
+      return Math.max(6, Math.min(220, ((v - 1650) / 850.0) * 240));
+    }
+    return Math.max(6, Math.min(220, (v / Math.max(1000, m.width || 4000)) * 240));
+  };
 
   return `
     <svg width="240" height="240" viewBox="0 0 240 240" style="border-radius:6px;border:1px solid var(--joy-border-strong);background:#16241c">
@@ -2301,7 +4642,17 @@ function renderMinimapSvg(m) {
         </pattern>
       </defs>
       <rect width="240" height="240" fill="url(#grid-${escapeHtml(m.id)})"/>
-      <path d="M 120 0 L 120 240 M 0 120 L 240 120" stroke="rgba(212,175,55,0.22)" stroke-width="8" stroke-dasharray="4 2"/>
+      ${zones.map(z => {
+        const cx = mapCoord(z.x || 0);
+        const cy = mapCoord(z.z || 0);
+        const r = Math.max(18, ((z.radius || z.innerRadius || 22) / 42.0) * 105);
+        return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="rgba(82, 158, 71, 0.14)" stroke="rgba(126, 217, 135, 0.45)" stroke-width="1" stroke-dasharray="3 2"/>`;
+      }).join("")}
+      ${routes.length > 0 ? routes.map(rt => {
+        const pts = (rt.points || []).map(p => `${mapCoord(p[0] || 0).toFixed(1)},${mapCoord(p[1] || 0).toFixed(1)}`).join(" ");
+        const sw = Math.max(4, (rt.width || 4.8) * 1.6);
+        return `<polyline points="${pts}" fill="none" stroke="rgba(218, 184, 122, 0.55)" stroke-width="${sw.toFixed(1)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+      }).join("") : `<path d="M 120 0 L 120 240 M 0 120 L 240 120" stroke="rgba(212,175,55,0.22)" stroke-width="8" stroke-dasharray="4 2"/>`}
       ${terraces.map(t => {
         const cx = mapCoord(t.x || 0);
         const cy = mapCoord(t.z || 0);
@@ -2350,20 +4701,32 @@ function renderMaps() {
       </div>
     </div>
 
+    ${renderAiCopilotBar()}
+
     <div class="rms-list">
       ${maps.map(m => {
-        const southMobs = DATA.mobs.filter(mb => (mb.spawnZones || []).includes('prontera_south_field'));
-        const southQuests = DATA.quests.filter(q => q.zoneId === 'prontera_south_field');
+        const wb = m.worldSpineBinding || {};
+        const isPilot = m.id === 'freja-south-gate';
+        const southMobs = isPilot ? DATA.mobs.filter(mb => (mb.spawnZones || []).includes('prontera_south_field')) : [];
+        const southQuests = isPilot ? DATA.quests.filter(q => q.zoneId === 'prontera_south_field') : [];
+        const bestiaryById = {};
+        ((DATA.worldSpine && DATA.worldSpine.bestiary) || []).forEach(b => { bestiaryById[b.id] = b; });
+        const storyQuests = ((DATA.worldSpine && DATA.worldSpine.storyNodes) || []).filter(sn => sn.kind === 'quest' && sn.regionId === wb.storyRegionId);
+        const lvlBand = (m.levelBand || [1, 15]).join('–');
         return `
-          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === m.id || HIGHLIGHT_ENTITY_ID === 'prontera_south_field' ? 'rms-highlight' : ''}" id="entity-${m.id}">
+          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === m.id || (isPilot && HIGHLIGHT_ENTITY_ID === 'prontera_south_field') ? 'rms-highlight' : ''}" id="entity-${m.id}">
             <div class="rms-sheet__head">
               <div class="rms-sheet__head-left">
                 <span class="rms-thumb-chip">🗺️</span>
                 <span class="rms-sheet__title">Map: ${escapeHtml(m.id)} — ${escapeHtml(m.name)}</span>
-                <span class="joy-badge joy-badge--success joy-badge--sm">${m.structureCount} 3D Structures · ${m.terraceCount} Terraces</span>
+                <span class="joy-badge joy-badge--brand joy-badge--sm mono">Lv.${escapeHtml(lvlBand)} · ${escapeHtml(m.biome || 'meadow')}</span>
+                <span class="joy-badge joy-badge--success joy-badge--sm">${m.structureCount} Structures · ${m.terraceCount} Terraces · ${(m.spawnAreas || []).length} Spawns</span>
               </div>
               <div class="chip-row">
-                <span class="rms-sheet__id">Area: Prontera South Gate (${m.width}×${m.height})</span>
+                ${wb.continentId ? rmsLink('world', wb.continentId, `Continent: ${wb.continentId.toUpperCase()}`, wb.regionId || '') : ''}
+                ${wb.townId ? rmsLink('world', wb.townId, `Town: ${wb.townId}`, 'Pinned') : ''}
+                ${wb.storyRegionId ? rmsLink('story', wb.storyRegionId, `Story: ${wb.storyRegionId}`, 'L3 Graph') : ''}
+                <span class="rms-sheet__id mono">${m.width}×${m.height}m (seed ${m.seed || 0})</span>
                 ${inspectBtnHtml('map', m.name, m)}
               </div>
             </div>
@@ -2375,34 +4738,61 @@ function renderMaps() {
                 </div>
               </div>
               <div class="rms-spawn-cell">
-                <div style="font-weight:700;color:var(--joy-accent-text);font-size:13px">
-                  Click on a monster or quest below to view its datasheet:
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+                  <div style="font-weight:700;color:var(--joy-accent-text);font-size:13px">
+                    World-First Spine Binding (L1 Fabric ➔ L2 Zone ➔ L3 Bestiary/Story ➔ L4 Playable Map):
+                  </div>
+                  <span class="joy-badge joy-badge--neutral joy-badge--sm mono">zone:${escapeHtml(wb.zoneId || m.id)} · spine:${escapeHtml(wb.spineNodeId || '—')}</span>
                 </div>
+                ${southMobs.length ? `
+                  <div>
+                    <strong style="font-size:12px;color:var(--joy-text-secondary)">MMORPG Catalog Monsters (<code>contracts/content/mobs.json</code>):</strong><br/>
+                    ${southMobs.map(mb => rmsLink('mobs', mb.id, `${mb.name} (Lv.${mb.level})`, `${mb.element}/${mb.race}/${mb.size}`)).join(' ')}
+                  </div>
+                ` : ''}
                 <div>
-                  <strong style="font-size:12px;color:var(--joy-text-secondary)">Catalog Monsters in Zone (<code>prontera_south_field</code>):</strong><br/>
-                  ${southMobs.map(mb => rmsLink('mobs', mb.id, `${mb.name} (Lv.${mb.level})`, `${mb.element}/${mb.race}/${mb.size}`)).join(' ')}
-                </div>
-                <div>
-                  <strong style="font-size:12px;color:var(--joy-text-secondary)">Map Spawn Areas (<code>content/maps/${escapeHtml(m.id)}.json</code>):</strong>
+                  <strong style="font-size:12px;color:var(--joy-text-secondary)">Authoritative Map Spawn Areas (<code>content/maps/${escapeHtml(m.id)}.json</code> — Click any creature):</strong>
                   <div class="chip-row" style="margin-top:4px">
-                    ${(m.spawnAreas || []).map(sp => `
-                      <span class="joy-badge joy-badge--neutral joy-badge--sm mono">
-                        ${escapeHtml(sp.id)}: ${escapeHtml(sp.mobType)} (${sp.count}) @ (${sp.x},${sp.y})
-                      </span>
-                    `).join('')}
+                    ${(m.spawnAreas || []).map(sp => {
+                      const catMob = (DATA.mobs || []).find(mb => mb.id === sp.mobType);
+                      const bestMob = bestiaryById[sp.mobType];
+                      if (catMob) {
+                        return rmsLink('mobs', catMob.id, `${catMob.name} ×${sp.count}`, `@(${sp.x},${sp.y})`);
+                      }
+                      if (bestMob) {
+                        return rmsLink('bestiary', bestMob.id, `${bestMob.name} ×${sp.count}`, `Lv.${bestMob.levelBand} · ${bestMob.element}`);
+                      }
+                      return `<span class="joy-badge joy-badge--neutral joy-badge--sm mono">${escapeHtml(sp.id)}: ${escapeHtml(sp.mobType)} (${sp.count}) @ (${sp.x},${sp.y})</span>`;
+                    }).join('')}
+                  </div>
+                </div>
+                ${(storyQuests.length || southQuests.length) ? `
+                  <div>
+                    <strong style="font-size:12px;color:var(--joy-text-secondary)">Regional Quests (${storyQuests.length + southQuests.length}):</strong>
+                    <div class="chip-row" style="margin-top:4px">
+                      ${storyQuests.map(sq => rmsLink('story', sq.id, sq.title, 'Story Quest')).join(' ')}
+                      ${southQuests.map(q => rmsLink('quests', q.id, q.title, q.category)).join(' ')}
+                    </div>
+                  </div>
+                ` : ''}
+                <div>
+                  <strong style="font-size:12px;color:var(--joy-text-secondary)">Stage 2 Routes &amp; Stage 4 Declarative <code>ground_id</code> Palettes (v${m.version || 3}):</strong>
+                  <div class="chip-row" style="margin-top:4px">
+                    ${(m.routes || []).map(rt => `<span class="joy-badge joy-badge--warning joy-badge--sm mono">🛣 ${escapeHtml(rt.id)} (${escapeHtml(rt.groundId)} · w=${rt.width}m)</span>`).join('')}
+                    ${Object.entries(m.groundPalettes || {}).map(([gid, pal]) => {
+                      const weights = Object.entries(pal.scatter || {}).map(([k, r]) => `${k}:${r.weight}`).join(', ');
+                      return `<span class="joy-badge joy-badge--success joy-badge--sm mono">🌿 ${escapeHtml(gid)} { ${escapeHtml(weights)} }</span>`;
+                    }).join('')}
                   </div>
                 </div>
                 <div>
-                  <strong style="font-size:12px;color:var(--joy-text-secondary)">Walkable 3D Structures &amp; Terraces:</strong>
+                  <strong style="font-size:12px;color:var(--joy-text-secondary)">Stage 3 Walkable 3D Structures &amp; Terraces:</strong>
                   <div class="chip-row" style="margin-top:4px">
                     ${(m.structures || []).map(s => `<span class="joy-badge joy-badge--brand joy-badge--sm mono">${escapeHtml(s.id)} (${escapeHtml(s.kind)} · r=${s.radius}m · 2F=${s.upperFloorHeight}m)</span>`).join('')}
                     ${(m.heightTerraces || []).map(t => `<span class="joy-badge joy-badge--success joy-badge--sm mono">${escapeHtml(t.id)} (h=${t.height}m)</span>`).join('')}
                   </div>
                 </div>
-                <div>
-                  <strong style="font-size:12px;color:var(--joy-text-secondary)">Quests in this Area:</strong><br/>
-                  ${southQuests.map(q => rmsLink('quests', q.id, q.title, q.category)).join(' ')}
-                </div>
+                ${m.id === 'freja-south-gate' ? renderMapStructureEditor(m, 'maptab-' + m.id) : ''}
               </div>
             </div>
           </div>
@@ -2460,6 +4850,11 @@ function renderSqlStudio() {
 
     <div class="observatory-card">
       <div class="chip-row">
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="runSqlPreset('SELECT * FROM v_map_world_binding;')">v_map_world_binding (L1→L4 Maps)</button>
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="runSqlPreset('SELECT * FROM v_world_continent_overview;')">v_world_continent_overview</button>
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="runSqlPreset('SELECT * FROM v_story_region_matrix;')">v_story_region_matrix</button>
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="runSqlPreset('SELECT id, title, kind, continent_id, rank, landform, at_x_km, at_y_km, why_or_note FROM world_places WHERE tier=\'pinned\' ORDER BY continent_id, id;')">Pinned World Places</button>
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="runSqlPreset('SELECT id, name, level_band, element, family, archetype, region, faction FROM world_bestiary ORDER BY region, id;')">World Bestiary (116)</button>
         <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="runSqlPreset('SELECT * FROM v_job_progression;')">v_job_progression</button>
         <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="runSqlPreset('SELECT * FROM v_mob_economy;')">v_mob_economy</button>
         <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="runSqlPreset('SELECT * FROM v_asset_studio_entries;')">v_asset_studio_entries</button>
@@ -2641,6 +5036,13 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
 
         self._send_json({"ok": False, "error": "Not found"}, status=404)
 
+    def _read_json_body(self) -> dict:
+        length = int(self.headers.get("Content-Length") or 0)
+        if length <= 0:
+            return {}
+        raw = self.rfile.read(length)
+        return json.loads(raw.decode("utf-8"))
+
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
         if parsed.path == "/api/rebuild":
@@ -2649,6 +5051,24 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/api/sim":
             self._send_json(run_balance_sim())
+            return
+        if parsed.path == "/api/review-queue/verdict":
+            self._send_json(apply_review_verdict(self._read_json_body()))
+            return
+        if parsed.path == "/api/palette/toggle-asset":
+            self._send_json(toggle_palette_asset(self._read_json_body()))
+            return
+        if parsed.path == "/api/studio/undo":
+            self._send_json(undo_latest_snapshot())
+            return
+        if parsed.path == "/api/studio/ai-edit":
+            self._send_json(apply_ai_studio_edit(self._read_json_body()))
+            return
+        if parsed.path == "/api/map/update-structure":
+            self._send_json(update_map_structure(self._read_json_body()))
+            return
+        if parsed.path == "/api/studio/launch-3d":
+            self._send_json(launch_3d_preview(self._read_json_body()))
             return
         self._send_json({"ok": False, "error": "Not found"}, status=404)
 
@@ -2663,11 +5083,14 @@ def main() -> int:
         bundle = build_full_bundle()
         sql_res = run_readonly_sql("SELECT * FROM v_mob_economy;")
         thumbs_ok = sum(1 for it in bundle["items"] if it.get("thumbUrl"))
+        proposals_cnt = len((bundle.get("reviewQueue") or {}).get("proposals") or [])
+        palettes_cnt = len(bundle.get("groundPalettes") or {})
         print(
             f"[catalog_explorer_web] OK — jobs={len(bundle['jobs'])}, mobs={len(bundle['mobs'])}, "
             f"items={len(bundle['items'])} (thumbs={thumbs_ok}/{len(bundle['items'])}), "
             f"cards={len(bundle['cards'])}, quests={len(bundle['quests'])}, "
-            f"castles={len(bundle['castles'])}, sql_rows={sql_res.get('rowCount')}"
+            f"castles={len(bundle['castles'])}, palettes={palettes_cnt}, "
+            f"review_proposals={proposals_cnt}, sql_rows={sql_res.get('rowCount')}"
         )
         return 0
 

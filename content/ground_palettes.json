@@ -1,0 +1,418 @@
+{
+  "cobble_road": {
+    "surfaceType": "stone_path",
+    "albedoTint": "#C2B294",
+    "friction": 0.85,
+    "maxSlopeDeg": 38.0,
+    "clearColliders": true,
+    "playerScaleBandM": [0.90, 1.20],
+    "scatter": {
+      "road_cobble_trim": {
+        "weight": 0.14,
+        "tagPool": { "biome": "road", "role": "pebble_trim", "maxHeightM": 0.25 },
+        "assets": [
+          "res://assets/nature/rock_1_a_color1.glb",
+          "res://assets/nature/rock_2_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "edge_only",
+        "scaleRange": [0.28, 0.48],
+        "blocksMovement": false,
+        "colliderHalfExtent": 0.30
+      }
+    }
+  },
+  "meadow_grass": {
+    "surfaceType": "lush_grass",
+    "albedoTint": "#529E47",
+    "friction": 0.80,
+    "maxSlopeDeg": 32.0,
+    "clearColliders": false,
+    "playerScaleBandM": [0.90, 1.20],
+    "scatter": {
+      "grass": {
+        "weight": 0.30,
+        "tagPool": { "biome": "meadow", "role": "ground_cover", "maxHeightM": 0.35 },
+        "assets": [
+          "res://assets/nature/grass_1_a_color1.glb",
+          "res://assets/nature/grass_1_b_color1.glb",
+          "res://assets/nature/grass_2_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.55, 0.85],
+        "blocksMovement": false,
+        "colliderHalfExtent": 0.30
+      },
+      "bush": {
+        "weight": 0.05,
+        "tagPool": { "biome": "meadow", "role": "understory", "maxHeightM": 0.65 },
+        "assets": [
+          "res://assets/nature/bush_2_a_color1.glb",
+          "res://assets/nature/bush_1_a_color1.glb",
+          "res://assets/nature/bush_1_b_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.60, 0.88],
+        "blocksMovement": false,
+        "colliderHalfExtent": 0.48
+      },
+      "pebble": {
+        "weight": 0.02,
+        "tagPool": { "biome": "meadow", "role": "pebble", "maxHeightM": 0.30 },
+        "assets": [
+          "res://assets/nature/rock_1_a_color1.glb",
+          "res://assets/nature/rock_2_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.32, 0.58],
+        "blocksMovement": false,
+        "colliderHalfExtent": 0.40
+      }
+    }
+  },
+  "pine_forest_border": {
+    "surfaceType": "forest_moss",
+    "albedoTint": "#346E36",
+    "friction": 0.90,
+    "maxSlopeDeg": 30.0,
+    "clearColliders": false,
+    "playerScaleBandM": [0.90, 1.20],
+    "scatter": {
+      "grass": {
+        "weight": 0.35,
+        "tagPool": { "biome": "forest", "role": "ground_cover", "maxHeightM": 0.35 },
+        "assets": [
+          "res://assets/nature/grass_1_a_color1.glb",
+          "res://assets/nature/grass_2_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.55, 0.85],
+        "blocksMovement": false,
+        "colliderHalfExtent": 0.30
+      },
+      "bush": {
+        "weight": 0.10,
+        "tagPool": { "biome": "forest", "role": "understory", "maxHeightM": 0.65 },
+        "assets": [
+          "res://assets/nature/bush_1_a_color1.glb",
+          "res://assets/nature/bush_2_a_color1.glb",
+          "res://assets/nature/bush_2_b_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.65, 0.95],
+        "blocksMovement": false,
+        "colliderHalfExtent": 0.52
+      },
+      "canopy_tree": {
+        "weight": 0.04,
+        "minSpacingMeters": 4.2,
+        "tagPool": { "biome": "forest", "role": "canopy", "maxTrunkRadiusM": 0.95 },
+        "assets": [
+          "res://assets/nature/tree_1_a_color1.glb",
+          "res://assets/nature/tree_2_a_color1.glb",
+          "res://assets/nature/tree_3_a_color1.glb",
+          "res://assets/nature/tree_1_b_color1.glb"
+        ],
+        "disabledAssets": [
+          "res://assets/nature/tree_dead_1_a_color1.glb"
+        ],
+        "placement": "fill",
+        "scaleRange": [1.05, 1.45],
+        "blocksMovement": true,
+        "colliderHalfExtent": 0.85
+      },
+      "boulder": {
+        "weight": 0.015,
+        "minSpacingMeters": 4.8,
+        "tagPool": { "biome": "forest", "role": "boulder", "maxTrunkRadiusM": 1.10 },
+        "assets": [
+          "res://assets/nature/rock_1_a_color1.glb",
+          "res://assets/nature/rock_2_a_color1.glb",
+          "res://assets/nature/rock_3_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.85, 1.25],
+        "blocksMovement": true,
+        "colliderHalfExtent": 0.85
+      }
+    }
+  },
+  "barren_cliff": {
+    "surfaceType": "sheer_rock",
+    "albedoTint": "#756E63",
+    "friction": 1.0,
+    "maxSlopeDeg": 90.0,
+    "clearColliders": false,
+    "playerScaleBandM": [0.90, 1.20],
+    "scatter": {}
+  },
+  "thorn_bramble_floor": {
+    "surfaceType": "bramble_root_floor",
+    "albedoTint": "#2D4F2E",
+    "friction": 0.88,
+    "maxSlopeDeg": 32.0,
+    "clearColliders": false,
+    "playerScaleBandM": [0.90, 1.20],
+    "scatter": {
+      "grass": {
+        "weight": 0.38,
+        "tagPool": { "biome": "thornveil_bramble", "role": "ground_cover", "maxHeightM": 0.35 },
+        "assets": [
+          "res://assets/nature/grass_1_a_color1.glb",
+          "res://assets/nature/grass_2_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.55, 0.82],
+        "blocksMovement": false,
+        "colliderHalfExtent": 0.30
+      },
+      "bush": {
+        "weight": 0.14,
+        "tagPool": { "biome": "thornveil_bramble", "role": "understory", "maxHeightM": 0.65 },
+        "assets": [
+          "res://assets/nature/bush_1_a_color1.glb",
+          "res://assets/nature/bush_2_a_color1.glb",
+          "res://assets/nature/bush_2_b_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.65, 0.92],
+        "blocksMovement": false,
+        "colliderHalfExtent": 0.50
+      },
+      "canopy_tree": {
+        "weight": 0.05,
+        "minSpacingMeters": 4.0,
+        "tagPool": { "biome": "thornveil_bramble", "role": "canopy", "maxTrunkRadiusM": 0.90 },
+        "assets": [
+          "res://assets/nature/tree_2_a_color1.glb",
+          "res://assets/nature/tree_3_a_color1.glb",
+          "res://assets/nature/tree_dead_1_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [1.05, 1.40],
+        "blocksMovement": true,
+        "colliderHalfExtent": 0.80
+      },
+      "boulder": {
+        "weight": 0.02,
+        "minSpacingMeters": 4.5,
+        "tagPool": { "biome": "thornveil_bramble", "role": "boulder", "maxTrunkRadiusM": 1.05 },
+        "assets": [
+          "res://assets/nature/rock_1_a_color1.glb",
+          "res://assets/nature/rock_2_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.75, 1.15],
+        "blocksMovement": true,
+        "colliderHalfExtent": 0.78
+      }
+    }
+  },
+  "cinder_ash_waste": {
+    "surfaceType": "scorched_basalt_ash",
+    "albedoTint": "#4B3E39",
+    "friction": 0.86,
+    "maxSlopeDeg": 36.0,
+    "clearColliders": false,
+    "playerScaleBandM": [0.90, 1.20],
+    "scatter": {
+      "grass": {
+        "weight": 0.12,
+        "tagPool": { "biome": "cinder_ash", "role": "scorched_scrub", "maxHeightM": 0.35 },
+        "assets": [
+          "res://assets/nature/grass_1_b_color1.glb",
+          "res://assets/nature/grass_2_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.45, 0.72],
+        "blocksMovement": false,
+        "colliderHalfExtent": 0.28
+      },
+      "bush": {
+        "weight": 0.04,
+        "tagPool": { "biome": "cinder_ash", "role": "charred_understory", "maxHeightM": 0.65 },
+        "assets": [
+          "res://assets/nature/bush_1_b_color1.glb",
+          "res://assets/nature/bush_2_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.52, 0.80],
+        "blocksMovement": false,
+        "colliderHalfExtent": 0.45
+      },
+      "canopy_tree": {
+        "weight": 0.02,
+        "minSpacingMeters": 5.2,
+        "tagPool": { "biome": "cinder_ash", "role": "charred_snag", "maxTrunkRadiusM": 0.85 },
+        "assets": [
+          "res://assets/nature/tree_dead_1_a_color1.glb",
+          "res://assets/nature/tree_3_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.95, 1.32],
+        "blocksMovement": true,
+        "colliderHalfExtent": 0.75
+      },
+      "boulder": {
+        "weight": 0.035,
+        "minSpacingMeters": 4.2,
+        "tagPool": { "biome": "cinder_ash", "role": "basalt_outcrop", "maxTrunkRadiusM": 1.15 },
+        "assets": [
+          "res://assets/nature/rock_1_a_color1.glb",
+          "res://assets/nature/rock_2_a_color1.glb",
+          "res://assets/nature/rock_3_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.80, 1.30],
+        "blocksMovement": true,
+        "colliderHalfExtent": 0.85
+      }
+    }
+  },
+  "glacier_snow_crust": {
+    "surfaceType": "wind_scoured_ice",
+    "albedoTint": "#D9E6F2",
+    "friction": 0.72,
+    "maxSlopeDeg": 34.0,
+    "clearColliders": false,
+    "playerScaleBandM": [0.90, 1.20],
+    "scatter": {
+      "grass": {
+        "weight": 0.15,
+        "tagPool": { "biome": "boreal_glacier", "role": "frost_sedge", "maxHeightM": 0.35 },
+        "assets": [
+          "res://assets/nature/grass_1_a_color1.glb",
+          "res://assets/nature/grass_1_b_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.45, 0.75],
+        "blocksMovement": false,
+        "colliderHalfExtent": 0.28
+      },
+      "bush": {
+        "weight": 0.05,
+        "tagPool": { "biome": "boreal_glacier", "role": "snow_dwarf_shrub", "maxHeightM": 0.65 },
+        "assets": [
+          "res://assets/nature/bush_1_a_color1.glb",
+          "res://assets/nature/bush_1_b_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.55, 0.82],
+        "blocksMovement": false,
+        "colliderHalfExtent": 0.46
+      },
+      "canopy_tree": {
+        "weight": 0.025,
+        "minSpacingMeters": 4.8,
+        "tagPool": { "biome": "boreal_glacier", "role": "rime_pine", "maxTrunkRadiusM": 0.90 },
+        "assets": [
+          "res://assets/nature/tree_1_a_color1.glb",
+          "res://assets/nature/tree_1_b_color1.glb"
+        ],
+        "disabledAssets": [
+          "res://assets/nature/tree_dead_1_a_color1.glb"
+        ],
+        "placement": "fill",
+        "scaleRange": [1.00, 1.38],
+        "blocksMovement": true,
+        "colliderHalfExtent": 0.80
+      },
+      "boulder": {
+        "weight": 0.03,
+        "minSpacingMeters": 4.4,
+        "tagPool": { "biome": "boreal_glacier", "role": "frost_boulder", "maxTrunkRadiusM": 1.15 },
+        "assets": [
+          "res://assets/nature/rock_1_a_color1.glb",
+          "res://assets/nature/rock_2_a_color1.glb",
+          "res://assets/nature/rock_3_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.85, 1.30],
+        "blocksMovement": true,
+        "colliderHalfExtent": 0.85
+      }
+    }
+  },
+  "coastal_tidal_flat": {
+    "surfaceType": "estuary_mudflat",
+    "albedoTint": "#7A8B7B",
+    "friction": 0.78,
+    "maxSlopeDeg": 28.0,
+    "clearColliders": false,
+    "playerScaleBandM": [0.90, 1.20],
+    "scatter": {
+      "grass": {
+        "weight": 0.28,
+        "tagPool": { "biome": "coastal_estuary", "role": "salt_marsh_reed", "maxHeightM": 0.35 },
+        "assets": [
+          "res://assets/nature/grass_1_a_color1.glb",
+          "res://assets/nature/grass_1_b_color1.glb",
+          "res://assets/nature/grass_2_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.55, 0.85],
+        "blocksMovement": false,
+        "colliderHalfExtent": 0.30
+      },
+      "bush": {
+        "weight": 0.06,
+        "tagPool": { "biome": "coastal_estuary", "role": "coastal_scrub", "maxHeightM": 0.65 },
+        "assets": [
+          "res://assets/nature/bush_1_a_color1.glb",
+          "res://assets/nature/bush_2_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.58, 0.85],
+        "blocksMovement": false,
+        "colliderHalfExtent": 0.48
+      },
+      "canopy_tree": {
+        "weight": 0.02,
+        "minSpacingMeters": 5.0,
+        "tagPool": { "biome": "coastal_estuary", "role": "driftwood_snag", "maxTrunkRadiusM": 0.85 },
+        "assets": [
+          "res://assets/nature/tree_2_a_color1.glb",
+          "res://assets/nature/tree_dead_1_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.95, 1.30],
+        "blocksMovement": true,
+        "colliderHalfExtent": 0.75
+      },
+      "boulder": {
+        "weight": 0.025,
+        "minSpacingMeters": 4.5,
+        "tagPool": { "biome": "coastal_estuary", "role": "tidal_shingle_rock", "maxTrunkRadiusM": 1.00 },
+        "assets": [
+          "res://assets/nature/rock_1_a_color1.glb",
+          "res://assets/nature/rock_2_a_color1.glb"
+        ],
+        "disabledAssets": [],
+        "placement": "fill",
+        "scaleRange": [0.65, 1.10],
+        "blocksMovement": true,
+        "colliderHalfExtent": 0.72
+      }
+    }
+  }
+}

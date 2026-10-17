@@ -1,30 +1,369 @@
 {
-  "version": 2,
+  "version": 3,
   "mapId": "freja-south-gate",
-  "name": "Prontera South Gate — Freja Meadow",
+  "name": "Prontera South Gate \u2014 Freja Meadow",
+  "seed": 104729,
   "width": 1000.0,
   "height": 1000.0,
-  "chunkSizeWorld": 24.0,
+  "baseGroundId": "meadow_grass",
+  "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
+  "terrainAmplitude": 1,
   "proceduralClutterDensity": 48,
-  "terrainAmplitude": 1.0,
-  "defaultTimeOfDayHours": 10.5,
-  "autoAdvanceDayNight": false,
+  "defaultTimeOfDayHours": 20.02,
+  "autoAdvanceDayNight": true,
   "dayNightSpeedHoursPerSec": 0.12,
+  "concept": {
+    "biome": "freja_meadow_lush",
+    "recommendedLevelRange": [
+      1,
+      15
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "Sunlit sanctuary meadow south of Prontera bordered by pine timberlands, an ancient 2-story stone watchtower, and a crystal cavern."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "pine_forest_border": {
+      "surfaceType": "forest_moss",
+      "albedoTint": "#346E36",
+      "friction": 0.9,
+      "maxSlopeDeg": 30.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.35,
+          "tagPool": {
+            "biome": "forest",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.1,
+          "tagPool": {
+            "biome": "forest",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.95
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.52,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.04,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "forest",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.95
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.45
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        },
+        "boulder": {
+          "weight": 0.015,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "forest",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.1
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.25
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    }
+  },
+  "routes": [
+    {
+      "id": "prontera_south_highway",
+      "groundId": "cobble_road",
+      "width": 5.2,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          -95.0
+        ],
+        [
+          0.0,
+          -20.0
+        ],
+        [
+          0.0,
+          20.0
+        ],
+        [
+          0.0,
+          95.0
+        ]
+      ]
+    },
+    {
+      "id": "watchtower_east_spur",
+      "groundId": "cobble_road",
+      "width": 3.6,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          -5.5,
+          -2.0
+        ],
+        [
+          0.0,
+          -2.0
+        ],
+        [
+          9.5,
+          -3.0
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "central_sanctuary_clearing",
+      "groundId": "meadow_grass",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 22.0,
+      "innerRadius": 0.0,
+      "outerRadius": 22.0,
+      "width": 44.0,
+      "height": 44.0,
+      "feather": 4.0
+    },
+    {
+      "id": "outer_timber_ring",
+      "groundId": "pine_forest_border",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 22.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
   "heightTerraces": [
-    { "id": "sanctuary_north_acropolis", "x": 0.0, "z": -18.0, "radius": 15.0, "height": 2.4, "falloff": 0.45 },
-    { "id": "west_watchtower_hill", "x": -17.5, "z": -8.0, "radius": 11.5, "height": 2.1, "falloff": 0.48 },
-    { "id": "east_wind_bluff", "x": 17.5, "z": -7.0, "radius": 12.0, "height": 2.3, "falloff": 0.46 },
-    { "id": "south_grove_knoll", "x": 14.0, "z": 14.0, "radius": 11.0, "height": 1.75, "falloff": 0.50 },
-    { "id": "northwest_sheer_cliff_mesa", "x": -29.0, "z": -22.0, "radius": 9.5, "height": 4.2, "falloff": 0.16 }
+    {
+      "id": "sanctuary_north_acropolis",
+      "x": 0.0,
+      "z": -18.0,
+      "radius": 15.0,
+      "height": 2.4,
+      "falloff": 0.45
+    },
+    {
+      "id": "west_watchtower_hill",
+      "x": -17.5,
+      "z": -8.0,
+      "radius": 11.5,
+      "height": 2.1,
+      "falloff": 0.48
+    },
+    {
+      "id": "east_wind_bluff",
+      "x": 17.5,
+      "z": -7.0,
+      "radius": 12.0,
+      "height": 2.3,
+      "falloff": 0.46
+    },
+    {
+      "id": "south_grove_knoll",
+      "x": 14.0,
+      "z": 14.0,
+      "radius": 11.0,
+      "height": 1.75,
+      "falloff": 0.5
+    },
+    {
+      "id": "northwest_sheer_cliff_mesa",
+      "x": -29.0,
+      "z": -22.0,
+      "radius": 9.5,
+      "height": 4.2,
+      "falloff": 0.16
+    }
   ],
   "structures": [
     {
       "id": "freja_west_watchtower_01",
       "kind": "watchtower",
       "x": -9.5,
-      "z": -2.0,
-      "rotY": 0.0,
+      "z": -2,
+      "rotY": 0,
       "radius": 3.6,
       "upperFloorHeight": 3.2,
       "ceilingHeight": 3.4
@@ -33,57 +372,237 @@
       "id": "freja_east_crystal_cave_01",
       "kind": "crystal_cave",
       "x": 10.5,
-      "z": -3.0,
-      "rotY": 0.0,
+      "z": -3,
+      "rotY": 0,
       "radius": 4.2,
       "upperFloorHeight": 3.2,
       "ceilingHeight": 3.4
     }
   ],
   "props": [
-    { "id": "tree_ring_01", "assetPath": "res://assets/nature/tree_1_a_color1.glb", "x": -16.0, "y": 1.82, "z": -14.0, "rotY": 0.4, "scale": 1.55, "blocksMovement": true, "colliderHalfExtent": 1.1 },
-    { "id": "tree_ring_02", "assetPath": "res://assets/nature/tree_2_a_color1.glb", "x": 15.0, "y": 1.94, "z": -15.0, "rotY": 1.8, "scale": 1.45, "blocksMovement": true, "colliderHalfExtent": 1.1 },
-    { "id": "tree_ring_03", "assetPath": "res://assets/nature/tree_2_a_color1.glb", "x": -20.0, "y": 2.05, "z": -4.0, "rotY": 2.5, "scale": 1.65, "blocksMovement": true, "colliderHalfExtent": 1.2 },
-    { "id": "tree_ring_04", "assetPath": "res://assets/nature/tree_1_a_color1.glb", "x": 19.0, "y": 2.18, "z": -2.0, "rotY": 0.9, "scale": 1.50, "blocksMovement": true, "colliderHalfExtent": 1.1 },
-    { "id": "tree_ring_05", "assetPath": "res://assets/nature/tree_1_a_color1.glb", "x": -15.0, "y": 0.65, "z": 13.0, "rotY": 3.1, "scale": 1.40, "blocksMovement": true, "colliderHalfExtent": 1.0 },
-    { "id": "tree_ring_06", "assetPath": "res://assets/nature/tree_2_a_color1.glb", "x": 16.0, "y": 1.68, "z": 14.0, "rotY": 1.2, "scale": 1.60, "blocksMovement": true, "colliderHalfExtent": 1.15 },
-    { "id": "tree_ring_07", "assetPath": "res://assets/nature/tree_2_a_color1.glb", "x": -6.0, "y": 0.42, "z": 18.0, "rotY": 2.1, "scale": 1.50, "blocksMovement": true, "colliderHalfExtent": 1.1 },
-    { "id": "tree_ring_08", "assetPath": "res://assets/nature/tree_1_a_color1.glb", "x": 8.0, "y": 3.25, "z": -22.0, "rotY": 0.6, "scale": 1.75, "blocksMovement": true, "colliderHalfExtent": 1.25 },
-    { "id": "bush_mid_01", "assetPath": "res://assets/nature/bush_1_a_color1.glb", "x": -14.8, "y": 0.45, "z": 3.5, "rotY": 0.2, "scale": 1.25, "blocksMovement": false, "colliderHalfExtent": 0.6 },
-    { "id": "bush_mid_02", "assetPath": "res://assets/nature/bush_1_a_color1.glb", "x": 15.8, "y": 0.48, "z": 3.5, "rotY": 1.1, "scale": 1.15, "blocksMovement": false, "colliderHalfExtent": 0.6 },
-    { "id": "bush_mid_03", "assetPath": "res://assets/nature/bush_1_a_color1.glb", "x": -7.8, "y": 0.12, "z": 7.5, "rotY": 2.0, "scale": 1.30, "blocksMovement": false, "colliderHalfExtent": 0.6 },
-    { "id": "bush_mid_04", "assetPath": "res://assets/nature/bush_1_a_color1.glb", "x": 8.4, "y": 0.62, "z": 8.2, "rotY": 0.7, "scale": 1.20, "blocksMovement": false, "colliderHalfExtent": 0.6 },
-    { "id": "rock_mid_01", "assetPath": "res://assets/nature/rock_1_a_color1.glb", "x": -12.5, "y": 1.75, "z": -10.5, "rotY": 0.5, "scale": 1.35, "blocksMovement": true, "colliderHalfExtent": 0.9 },
-    { "id": "rock_mid_02", "assetPath": "res://assets/nature/rock_1_a_color1.glb", "x": 12.0, "y": 1.88, "z": -11.0, "rotY": 1.4, "scale": 1.25, "blocksMovement": true, "colliderHalfExtent": 0.85 },
-    { "id": "bush_mid_05", "assetPath": "res://assets/nature/bush_1_a_color1.glb", "x": -3.5, "y": 0.15, "z": 11.5, "rotY": 1.7, "scale": 1.10, "blocksMovement": false, "colliderHalfExtent": 0.55 },
-    { "id": "bush_mid_06", "assetPath": "res://assets/nature/bush_1_a_color1.glb", "x": 4.5, "y": 1.42, "z": -12.5, "rotY": 2.4, "scale": 1.25, "blocksMovement": false, "colliderHalfExtent": 0.6 },
-    { "id": "sanctuary_pillar_w", "assetPath": "res://assets/dungeon/pillar.glb", "x": -4.6, "y": 1.18, "z": -10.5, "rotY": 0.0, "scale": 1.15, "blocksMovement": true, "colliderHalfExtent": 0.65 },
-    { "id": "sanctuary_pillar_e", "assetPath": "res://assets/dungeon/pillar.glb", "x": 4.6, "y": 1.18, "z": -10.5, "rotY": 0.0, "scale": 1.15, "blocksMovement": true, "colliderHalfExtent": 0.65 },
-    { "id": "sanctuary_banner_w", "assetPath": "res://assets/dungeon/banner_shield_blue.glb", "x": -3.4, "y": 0.95, "z": -9.8, "rotY": 0.0, "scale": 1.1, "blocksMovement": false, "colliderHalfExtent": 0.4 },
-    { "id": "sanctuary_banner_e", "assetPath": "res://assets/dungeon/banner_shield_blue.glb", "x": 3.4, "y": 0.95, "z": -9.8, "rotY": 0.0, "scale": 1.1, "blocksMovement": false, "colliderHalfExtent": 0.4 }
+    {
+      "id": "sanctuary_pillar_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -4.6,
+      "y": 1.72,
+      "z": -10.5,
+      "rotY": 0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "sanctuary_pillar_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 4.6,
+      "y": 2.44,
+      "z": -10.5,
+      "rotY": 0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "sanctuary_banner_w",
+      "assetPath": "res://assets/dungeon/banner_shield_blue.glb",
+      "x": -3.4,
+      "y": 2.03,
+      "z": -9.8,
+      "rotY": 0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    },
+    {
+      "id": "sanctuary_banner_e",
+      "assetPath": "res://assets/dungeon/banner_shield_blue.glb",
+      "x": 3.4,
+      "y": 2.3,
+      "z": -9.8,
+      "rotY": 0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
   ],
   "spawnAreas": [
-    { "id": "boss_area", "x": 450.0, "y": 450.0, "width": 100.0, "height": 100.0, "mobType": "mob-thorncrown-drake", "count": 1 },
-    { "id": "center_courtyard", "x": 400.0, "y": 400.0, "width": 200.0, "height": 200.0, "mobType": "mob-bramble-stalker", "count": 3 },
-    { "id": "east_dunes", "x": 550.0, "y": 400.0, "width": 150.0, "height": 200.0, "mobType": "mob-veil-spearling", "count": 4 },
-    { "id": "north_ice_fields", "x": 400.0, "y": 250.0, "width": 200.0, "height": 150.0, "mobType": "mob-bramble-stalker", "count": 2 },
-    { "id": "south_mud_pit", "x": 400.0, "y": 600.0, "width": 200.0, "height": 150.0, "mobType": "mob-bramble-warden", "count": 2 },
-    { "id": "thornveil_interior", "x": 820.0, "y": 420.0, "width": 150.0, "height": 150.0, "mobType": "mob-bramble-drake", "count": 1 },
-    { "id": "thornveil_route_spearlings", "x": 700.0, "y": 550.0, "width": 150.0, "height": 200.0, "mobType": "mob-veil-spearling", "count": 2 },
-    { "id": "thornveil_route_stalkers", "x": 700.0, "y": 300.0, "width": 150.0, "height": 200.0, "mobType": "mob-bramble-stalker", "count": 2 }
+    {
+      "id": "boss_area",
+      "x": 450.0,
+      "y": 450.0,
+      "width": 100.0,
+      "height": 100.0,
+      "mobType": "mob-thorncrown-drake",
+      "count": 1
+    },
+    {
+      "id": "center_courtyard",
+      "x": 400.0,
+      "y": 400.0,
+      "width": 200.0,
+      "height": 200.0,
+      "mobType": "mob-bramble-stalker",
+      "count": 3
+    },
+    {
+      "id": "east_dunes",
+      "x": 550.0,
+      "y": 400.0,
+      "width": 150.0,
+      "height": 200.0,
+      "mobType": "mob-veil-spearling",
+      "count": 4
+    },
+    {
+      "id": "north_ice_fields",
+      "x": 400.0,
+      "y": 250.0,
+      "width": 200.0,
+      "height": 150.0,
+      "mobType": "mob-bramble-stalker",
+      "count": 2
+    },
+    {
+      "id": "south_mud_pit",
+      "x": 400.0,
+      "y": 600.0,
+      "width": 200.0,
+      "height": 150.0,
+      "mobType": "mob-bramble-warden",
+      "count": 2
+    },
+    {
+      "id": "thornveil_interior",
+      "x": 820.0,
+      "y": 420.0,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-bramble-drake",
+      "count": 1
+    },
+    {
+      "id": "thornveil_route_spearlings",
+      "x": 700.0,
+      "y": 550.0,
+      "width": 150.0,
+      "height": 200.0,
+      "mobType": "mob-veil-spearling",
+      "count": 2
+    },
+    {
+      "id": "thornveil_route_stalkers",
+      "x": 700.0,
+      "y": 300.0,
+      "width": 150.0,
+      "height": 200.0,
+      "mobType": "mob-bramble-stalker",
+      "count": 2
+    }
   ],
   "staticObstacles": [
-    { "id": "tree_ring_01", "min_x": 329.0, "min_y": 349.0, "max_x": 351.0, "max_y": 371.0 },
-    { "id": "tree_ring_02", "min_x": 639.0, "min_y": 339.0, "max_x": 661.0, "max_y": 361.0 },
-    { "id": "tree_ring_03", "min_x": 288.0, "min_y": 448.0, "max_x": 312.0, "max_y": 472.0 },
-    { "id": "tree_ring_04", "min_x": 679.0, "min_y": 469.0, "max_x": 701.0, "max_y": 491.0 },
-    { "id": "tree_ring_05", "min_x": 340.0, "min_y": 620.0, "max_x": 360.0, "max_y": 640.0 },
-    { "id": "tree_ring_06", "min_x": 648.5, "min_y": 628.5, "max_x": 671.5, "max_y": 651.5 },
-    { "id": "tree_ring_07", "min_x": 429.0, "min_y": 669.0, "max_x": 451.0, "max_y": 691.0 },
-    { "id": "tree_ring_08", "min_x": 567.5, "min_y": 267.5, "max_x": 592.5, "max_y": 292.5 },
-    { "id": "rock_mid_01", "min_x": 366.0, "min_y": 386.0, "max_x": 384.0, "max_y": 404.0 },
-    { "id": "rock_mid_02", "min_x": 611.5, "min_y": 381.5, "max_x": 628.5, "max_y": 398.5 },
-    { "id": "sanctuary_pillar_w", "min_x": 447.5, "min_y": 388.5, "max_x": 460.5, "max_y": 401.5 },
-    { "id": "sanctuary_pillar_e", "min_x": 539.5, "min_y": 388.5, "max_x": 552.5, "max_y": 401.5 }
-  ]
+    {
+      "id": "tree_ring_01",
+      "min_x": 329.0,
+      "min_y": 349.0,
+      "max_x": 351.0,
+      "max_y": 371.0
+    },
+    {
+      "id": "tree_ring_02",
+      "min_x": 639.0,
+      "min_y": 339.0,
+      "max_x": 661.0,
+      "max_y": 361.0
+    },
+    {
+      "id": "tree_ring_03",
+      "min_x": 288.0,
+      "min_y": 448.0,
+      "max_x": 312.0,
+      "max_y": 472.0
+    },
+    {
+      "id": "tree_ring_04",
+      "min_x": 679.0,
+      "min_y": 469.0,
+      "max_x": 701.0,
+      "max_y": 491.0
+    },
+    {
+      "id": "tree_ring_05",
+      "min_x": 340.0,
+      "min_y": 620.0,
+      "max_x": 360.0,
+      "max_y": 640.0
+    },
+    {
+      "id": "tree_ring_06",
+      "min_x": 648.5,
+      "min_y": 628.5,
+      "max_x": 671.5,
+      "max_y": 651.5
+    },
+    {
+      "id": "tree_ring_07",
+      "min_x": 429.0,
+      "min_y": 669.0,
+      "max_x": 451.0,
+      "max_y": 691.0
+    },
+    {
+      "id": "tree_ring_08",
+      "min_x": 567.5,
+      "min_y": 267.5,
+      "max_x": 592.5,
+      "max_y": 292.5
+    },
+    {
+      "id": "rock_mid_01",
+      "min_x": 366.0,
+      "min_y": 386.0,
+      "max_x": 384.0,
+      "max_y": 404.0
+    },
+    {
+      "id": "rock_mid_02",
+      "min_x": 611.5,
+      "min_y": 381.5,
+      "max_x": 628.5,
+      "max_y": 398.5
+    },
+    {
+      "id": "sanctuary_pillar_w",
+      "min_x": 447.5,
+      "min_y": 388.5,
+      "max_x": 460.5,
+      "max_y": 401.5
+    },
+    {
+      "id": "sanctuary_pillar_e",
+      "min_x": 539.5,
+      "min_y": 388.5,
+      "max_x": 552.5,
+      "max_y": 401.5
+    }
+  ],
+  "worldSpineBinding": {
+    "continentId": "c02",
+    "regionId": "c02/r16",
+    "zoneId": "meltwash-terrace",
+    "spineNodeId": "n-frontier-shelf",
+    "townId": "c-town-millcross",
+    "storyRegionId": "region-spawn-meadow",
+    "landmarkIds": [
+      "the-expedition-camp",
+      "the-gravel-bars"
+    ],
+    "resourceIds": [
+      "cropped-grass",
+      "the-braided-heads"
+    ],
+    "hazardIds": [
+      "meltwater-cold",
+      "the-thaw-rise"
+    ]
+  }
 }

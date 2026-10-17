@@ -3,11 +3,16 @@
 Builds build/catalog.sqlite and build/catalog_summary.json from:
 - contracts/content/*.json (jobs, skills, items, mobs, cards, quests, quest_board, handbook, castles, elements)
 - content/maps/*.json
+- content/world/** (premises, fabric/world.json, civil/pinned-roster.json, civil/pinned, civil/bound)
+- content/spine/nodes/*.json
+- content/story/*.json (acts, regions, factions, characters, arcs, quests, events, dialogue, lore)
+- content/zones/*.json, content/dungeons/*.json, content/bestiary/bestiary.json
 
 Provides a single observable SQLite + JSONB-style catalog database for:
 1. Cross-table balance queries (Zone XP/hr, Mob drop tables, Job progression, Item power budget)
-2. Asset Studio entry synchronization (v_asset_studio_entries)
-3. CI referential integrity verification
+2. World-First Spine traceability (Continent -> Region/Zone -> Town/Dungeon -> Story/NPC/Quest -> 3D Map & Assets)
+3. Asset Studio entry synchronization (v_asset_studio_entries)
+4. CI referential integrity verification
 """
 
 import json
@@ -18,6 +23,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CONTENT_DIR = ROOT / "contracts" / "content"
 MAPS_DIR = ROOT / "content" / "maps"
+WORLD_DIR = ROOT / "content" / "world"
+SPINE_DIR = ROOT / "content" / "spine"
+STORY_DIR = ROOT / "content" / "story"
+ZONES_DIR = ROOT / "content" / "zones"
+DUNGEONS_DIR = ROOT / "content" / "dungeons"
+BESTIARY_PATH = ROOT / "content" / "bestiary" / "bestiary.json"
 BUILD_DIR = ROOT / "build"
 DB_PATH = BUILD_DIR / "catalog.sqlite"
 SUMMARY_PATH = BUILD_DIR / "catalog_summary.json"
@@ -47,6 +58,9 @@ def main() -> int:
     if MAPS_DIR.exists():
         for mp in sorted(MAPS_DIR.glob("*.json")):
             data = load_json(mp)
+            wsb = data.get("worldSpineBinding") or {}
+            concept = data.get("concept") or {}
+            rec_lvl = concept.get("recommendedLevelRange") or [1, 15]
             maps.append(
                 {
                     "id": data.get("mapId") or mp.stem,
@@ -56,7 +70,219 @@ def main() -> int:
                     "terraceCount": len(data.get("heightTerraces", [])),
                     "structureCount": len(data.get("structures", [])),
                     "propCount": len(data.get("props", [])),
+                    "spawnAreaCount": len(data.get("spawnAreas", [])),
+                    "continentId": wsb.get("continentId", "c02"),
+                    "regionId": wsb.get("regionId", ""),
+                    "zoneId": wsb.get("zoneId", ""),
+                    "spineNodeId": wsb.get("spineNodeId", ""),
+                    "townId": wsb.get("townId", ""),
+                    "storyRegionId": wsb.get("storyRegionId", ""),
+                    "biome": concept.get("biome", ""),
+                    "levelMin": rec_lvl[0] if len(rec_lvl) > 0 else 1,
+                    "levelMax": rec_lvl[1] if len(rec_lvl) > 1 else 15,
                     "rawJson": json.dumps(data),
+                }
+            )
+
+    # Load World Continents (premises + fabric/world.json census)
+    world_fabric = load_json(WORLD_DIR / "fabric" / "world.json") if (WORLD_DIR / "fabric" / "world.json").exists() else {}
+    fabric_by_cid = {c["id"]: c for c in world_fabric.get("continents", [])}
+    world_continents = []
+    premises_dir = WORLD_DIR / "premises"
+    if premises_dir.exists():
+        for pf in sorted(premises_dir.glob("continent-*.json")):
+            p = load_json(pf)
+            cid = p["id"]
+            fab = fabric_by_cid.get(cid, {})
+            lvl = p.get("levelBand") or [1, 1]
+            world_continents.append(
+                {
+                    "id": cid,
+                    "title": p.get("title", cid),
+                    "continentClass": p.get("class", ""),
+                    "coastClass": p.get("coastClass", ""),
+                    "register": p.get("register", ""),
+                    "levelMin": lvl[0] if len(lvl) > 0 else 1,
+                    "levelMax": lvl[1] if len(lvl) > 1 else lvl[0],
+                    "grossLandKm2": fab.get("grossLandKm2", 0.0),
+                    "landCells": fab.get("landCells", 0),
+                    "structuralIdea": p.get("structuralIdea", ""),
+                    "paletteJson": json.dumps(p.get("palette", [])),
+                    "landformKitJson": json.dumps(p.get("landformKit", [])),
+                    "footprintJson": json.dumps(p.get("footprint", {})),
+                }
+            )
+
+    # Load Pinned + Bound Civil Places
+    world_places = []
+    roster_path = WORLD_DIR / "civil" / "pinned-roster.json"
+    roster_by_id = {}
+    if roster_path.exists():
+        roster_data = load_json(roster_path)
+        for r in roster_data.get("rows", []):
+            roster_by_id[r["id"]] = r
+
+    pinned_dir = WORLD_DIR / "civil" / "pinned"
+    if pinned_dir.exists():
+        for pf in sorted(pinned_dir.glob("*.json")):
+            d = load_json(pf)
+            pid = d["id"]
+            rost = roster_by_id.get(pid, {})
+            pin = d.get("pin") or {}
+            at = pin.get("at") or rost.get("at") or [None, None]
+            req = d.get("requires") or rost.get("requires") or {}
+            world_places.append(
+                {
+                    "id": pid,
+                    "title": d.get("title") or pid,
+                    "kind": d.get("kind") or rost.get("kind") or "place",
+                    "tier": "pinned",
+                    "continentId": req.get("continent") or rost.get("continent") or "",
+                    "rank": d.get("rank") or rost.get("rank") or "",
+                    "landform": req.get("landform") or "",
+                    "atXKm": at[0] if len(at) > 0 else None,
+                    "atYKm": at[1] if len(at) > 1 else None,
+                    "handleRef": None,
+                    "whyOrNote": pin.get("why") or rost.get("why") or "",
+                    "planPath": rost.get("plan"),
+                    "rawJson": json.dumps(d),
+                }
+            )
+
+    bound_dir = WORLD_DIR / "civil" / "bound"
+    if bound_dir.exists():
+        for bf in sorted(bound_dir.glob("*.json")):
+            d = load_json(bf)
+            bind = d.get("bind") or {}
+            handle = bind.get("handle") or ""
+            cid = handle.split("/")[0] if "/" in handle else ""
+            expect = bind.get("expect") or {}
+            lore = d.get("lore") or {}
+            world_places.append(
+                {
+                    "id": d["id"],
+                    "title": d.get("title") or d["id"],
+                    "kind": d.get("kind") or "place",
+                    "tier": "bound",
+                    "continentId": cid,
+                    "rank": d.get("rank") or "",
+                    "landform": expect.get("type") or "",
+                    "atXKm": None,
+                    "atYKm": None,
+                    "handleRef": handle,
+                    "whyOrNote": lore.get("note") or "",
+                    "planPath": None,
+                    "rawJson": json.dumps(d),
+                }
+            )
+
+    # Load Surveyed Zones (content/zones/*.json)
+    world_zones = []
+    if ZONES_DIR.exists():
+        for zf in sorted(ZONES_DIR.glob("*.json")):
+            d = load_json(zf)
+            zid = d.get("zone") or zf.stem
+            world_zones.append(
+                {
+                    "id": zid,
+                    "regionRef": d.get("region") or "",
+                    "survey": d.get("survey") or "surveyed",
+                    "reasonToGo": d.get("reasonToGo") or "",
+                    "hazardCount": len(d.get("hazards") or []),
+                    "resourceCount": len(d.get("resources") or []),
+                    "landmarkCount": len(d.get("landmarks") or []),
+                    "rawJson": json.dumps(d),
+                }
+            )
+
+    # Load Dungeons (content/dungeons/*.json)
+    world_dungeons = []
+    if DUNGEONS_DIR.exists():
+        for df in sorted(DUNGEONS_DIR.glob("*.json")):
+            d = load_json(df)
+            bind = d.get("bind") or {}
+            handle = bind.get("handle") or ""
+            cid = handle.split("/")[0] if "/" in handle else ""
+            lvl = d.get("levelBand") or [1, 1]
+            lore = d.get("lore") or {}
+            world_dungeons.append(
+                {
+                    "id": d.get("id") or df.stem,
+                    "title": d.get("title") or df.stem,
+                    "continentId": cid,
+                    "handleRef": handle,
+                    "entranceType": d.get("entranceType") or "",
+                    "floors": d.get("floors") or 1,
+                    "levelMin": lvl[0] if len(lvl) > 0 else 1,
+                    "levelMax": lvl[1] if len(lvl) > 1 else lvl[0],
+                    "hazardsJson": json.dumps(d.get("hazards") or []),
+                    "loreNote": lore.get("note") or "",
+                    "rawJson": json.dumps(d),
+                }
+            )
+
+    # Load World Bestiary (content/bestiary/bestiary.json)
+    world_bestiary = load_json(BESTIARY_PATH) if BESTIARY_PATH.exists() else []
+
+    # Load Spine Nodes (content/spine/nodes/*.json)
+    spine_nodes = []
+    spine_nodes_dir = SPINE_DIR / "nodes"
+    if spine_nodes_dir.exists():
+        for sf in sorted(spine_nodes_dir.glob("*.json")):
+            d = load_json(sf)
+            anchor = d.get("absoluteAnchor") or (d.get("placement") or {}).get("anchor") or [None, None]
+            seed_obj = d.get("seed") or {}
+            lore_obj = d.get("lore") or {}
+            spine_nodes.append(
+                {
+                    "id": d["id"],
+                    "title": d.get("title") or d["id"],
+                    "tier": d.get("tier") or "",
+                    "parentId": d.get("parentId"),
+                    "seedVal": seed_obj.get("value") or "",
+                    "anchorX": anchor[0] if len(anchor) > 0 else None,
+                    "anchorY": anchor[1] if len(anchor) > 1 else None,
+                    "frozen": 1 if d.get("frozen") else 0,
+                    "loreReason": lore_obj.get("reason") or "",
+                    "compositionJson": json.dumps(d.get("composition") or {}),
+                    "rawJson": json.dumps(d),
+                }
+            )
+
+    # Load Story Narrative Graph (content/story/*.json)
+    story_nodes = []
+    story_files = [
+        "acts.json",
+        "regions.json",
+        "factions.json",
+        "characters.json",
+        "arcs.json",
+        "quests.json",
+        "events.json",
+        "dialogue.json",
+        "lore.json",
+    ]
+    for fname in story_files:
+        fpath = STORY_DIR / fname
+        if not fpath.exists():
+            continue
+        rows = load_json(fpath)
+        for r in rows:
+            story_nodes.append(
+                {
+                    "id": r["id"],
+                    "kind": r.get("kind") or "",
+                    "title": r.get("title") or r["id"],
+                    "summary": r.get("summary") or "",
+                    "regionId": r.get("region"),
+                    "factionId": r.get("faction"),
+                    "actId": r.get("actId"),
+                    "arcId": r.get("arcId"),
+                    "giverId": r.get("giver") or r.get("speaker") or r.get("anchor"),
+                    "orderNum": r.get("order") or r.get("timelineOrder"),
+                    "unlockedByJson": json.dumps(r.get("unlockedBy") or []),
+                    "linksJson": json.dumps(r.get("links") or []),
+                    "rawJson": json.dumps(r),
                 }
             )
 
@@ -187,6 +413,120 @@ def main() -> int:
             terrace_count INTEGER NOT NULL,
             structure_count INTEGER NOT NULL,
             prop_count INTEGER NOT NULL,
+            spawn_area_count INTEGER NOT NULL,
+            continent_id TEXT NOT NULL,
+            region_id TEXT NOT NULL,
+            zone_id TEXT NOT NULL,
+            spine_node_id TEXT NOT NULL,
+            town_id TEXT NOT NULL,
+            story_region_id TEXT NOT NULL,
+            biome TEXT NOT NULL,
+            level_min INTEGER NOT NULL,
+            level_max INTEGER NOT NULL,
+            raw_json TEXT NOT NULL
+        );
+
+        CREATE TABLE world_continents (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            continent_class TEXT NOT NULL,
+            coast_class TEXT NOT NULL,
+            register TEXT NOT NULL,
+            level_min INTEGER NOT NULL,
+            level_max INTEGER NOT NULL,
+            gross_land_km2 REAL NOT NULL,
+            land_cells INTEGER NOT NULL,
+            structural_idea TEXT NOT NULL,
+            palette_json TEXT NOT NULL,
+            landform_kit_json TEXT NOT NULL,
+            footprint_json TEXT NOT NULL
+        );
+
+        CREATE TABLE world_places (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            kind TEXT NOT NULL,
+            tier TEXT NOT NULL,
+            continent_id TEXT NOT NULL,
+            rank TEXT NOT NULL,
+            landform TEXT NOT NULL,
+            at_x_km REAL,
+            at_y_km REAL,
+            handle_ref TEXT,
+            why_or_note TEXT NOT NULL,
+            plan_path TEXT,
+            raw_json TEXT NOT NULL
+        );
+
+        CREATE TABLE world_zones (
+            id TEXT PRIMARY KEY,
+            region_ref TEXT NOT NULL,
+            survey TEXT NOT NULL,
+            reason_to_go TEXT NOT NULL,
+            hazard_count INTEGER NOT NULL,
+            resource_count INTEGER NOT NULL,
+            landmark_count INTEGER NOT NULL,
+            raw_json TEXT NOT NULL
+        );
+
+        CREATE TABLE world_dungeons (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            continent_id TEXT NOT NULL,
+            handle_ref TEXT NOT NULL,
+            entrance_type TEXT NOT NULL,
+            floors INTEGER NOT NULL,
+            level_min INTEGER NOT NULL,
+            level_max INTEGER NOT NULL,
+            hazards_json TEXT NOT NULL,
+            lore_note TEXT NOT NULL,
+            raw_json TEXT NOT NULL
+        );
+
+        CREATE TABLE world_bestiary (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            family TEXT NOT NULL,
+            body_plan TEXT NOT NULL,
+            level_band TEXT NOT NULL,
+            element TEXT NOT NULL,
+            archetype TEXT NOT NULL,
+            threat TEXT NOT NULL,
+            durability TEXT NOT NULL,
+            speed TEXT NOT NULL,
+            region TEXT NOT NULL,
+            faction TEXT NOT NULL,
+            lore TEXT NOT NULL,
+            visual_brief TEXT NOT NULL
+        );
+
+        CREATE TABLE spine_nodes (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            tier TEXT NOT NULL,
+            parent_id TEXT,
+            seed_val TEXT NOT NULL,
+            anchor_x REAL,
+            anchor_y REAL,
+            frozen INTEGER NOT NULL,
+            lore_reason TEXT NOT NULL,
+            composition_json TEXT NOT NULL,
+            raw_json TEXT NOT NULL
+        );
+
+        CREATE TABLE story_nodes (
+            id TEXT PRIMARY KEY,
+            kind TEXT NOT NULL,
+            title TEXT NOT NULL,
+            summary TEXT NOT NULL,
+            region_id TEXT,
+            faction_id TEXT,
+            act_id TEXT,
+            arc_id TEXT,
+            giver_id TEXT,
+            order_num INTEGER,
+            unlocked_by_json TEXT NOT NULL,
+            links_json TEXT NOT NULL,
             raw_json TEXT NOT NULL
         );
         """
@@ -332,7 +672,7 @@ def main() -> int:
 
     for mp in maps:
         cur.execute(
-            "INSERT INTO maps VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO maps VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 mp["id"],
                 mp["name"],
@@ -341,7 +681,149 @@ def main() -> int:
                 mp["terraceCount"],
                 mp["structureCount"],
                 mp["propCount"],
+                mp["spawnAreaCount"],
+                mp["continentId"],
+                mp["regionId"],
+                mp["zoneId"],
+                mp["spineNodeId"],
+                mp["townId"],
+                mp["storyRegionId"],
+                mp["biome"],
+                mp["levelMin"],
+                mp["levelMax"],
                 mp["rawJson"],
+            ),
+        )
+
+    for wc in world_continents:
+        cur.execute(
+            "INSERT INTO world_continents VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                wc["id"],
+                wc["title"],
+                wc["continentClass"],
+                wc["coastClass"],
+                wc["register"],
+                wc["levelMin"],
+                wc["levelMax"],
+                wc["grossLandKm2"],
+                wc["landCells"],
+                wc["structuralIdea"],
+                wc["paletteJson"],
+                wc["landformKitJson"],
+                wc["footprintJson"],
+            ),
+        )
+
+    for wp in world_places:
+        cur.execute(
+            "INSERT INTO world_places VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                wp["id"],
+                wp["title"],
+                wp["kind"],
+                wp["tier"],
+                wp["continentId"],
+                wp["rank"],
+                wp["landform"],
+                wp["atXKm"],
+                wp["atYKm"],
+                wp["handleRef"],
+                wp["whyOrNote"],
+                wp["planPath"],
+                wp["rawJson"],
+            ),
+        )
+
+    for wz in world_zones:
+        cur.execute(
+            "INSERT INTO world_zones VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                wz["id"],
+                wz["regionRef"],
+                wz["survey"],
+                wz["reasonToGo"],
+                wz["hazardCount"],
+                wz["resourceCount"],
+                wz["landmarkCount"],
+                wz["rawJson"],
+            ),
+        )
+
+    for wd in world_dungeons:
+        cur.execute(
+            "INSERT INTO world_dungeons VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                wd["id"],
+                wd["title"],
+                wd["continentId"],
+                wd["handleRef"],
+                wd["entranceType"],
+                wd["floors"],
+                wd["levelMin"],
+                wd["levelMax"],
+                wd["hazardsJson"],
+                wd["loreNote"],
+                wd["rawJson"],
+            ),
+        )
+
+    for wb in world_bestiary:
+        cur.execute(
+            "INSERT INTO world_bestiary VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                wb["id"],
+                wb.get("name", wb["id"]),
+                wb.get("family", ""),
+                wb.get("bodyPlan", ""),
+                wb.get("levelBand", ""),
+                wb.get("element", ""),
+                wb.get("archetype", ""),
+                wb.get("threat", ""),
+                wb.get("durability", ""),
+                wb.get("speed", ""),
+                wb.get("region", ""),
+                wb.get("faction", ""),
+                wb.get("lore", ""),
+                wb.get("visualBrief", ""),
+            ),
+        )
+
+    for sn in spine_nodes:
+        cur.execute(
+            "INSERT INTO spine_nodes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                sn["id"],
+                sn["title"],
+                sn["tier"],
+                sn["parentId"],
+                sn["seedVal"],
+                sn["anchorX"],
+                sn["anchorY"],
+                sn["frozen"],
+                sn["loreReason"],
+                sn["compositionJson"],
+                sn["rawJson"],
+            ),
+        )
+
+    for st in story_nodes:
+        cur.execute(
+            "INSERT INTO story_nodes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                st["id"],
+                st["kind"],
+                st["title"],
+                st["summary"],
+                st["regionId"],
+                st["factionId"],
+                st["actId"],
+                st["arcId"],
+                st["giverId"],
+                st["orderNum"],
+                st["unlockedByJson"],
+                st["linksJson"],
+                st["rawJson"],
             ),
         )
 
@@ -391,6 +873,59 @@ def main() -> int:
             LEFT JOIN mob_drops d ON m.id = d.mob_id
             GROUP BY m.id
             ORDER BY m.level ASC;
+
+        CREATE VIEW v_world_continent_overview AS
+            SELECT
+                c.id AS continent_id,
+                c.title,
+                c.continent_class,
+                c.coast_class,
+                c.level_min || '-' || c.level_max AS level_band,
+                c.gross_land_km2,
+                (SELECT COUNT(*) FROM world_places p WHERE p.continent_id = c.id AND p.tier = 'pinned') AS pinned_places,
+                (SELECT COUNT(*) FROM world_places p WHERE p.continent_id = c.id AND p.tier = 'bound') AS bound_places,
+                (SELECT COUNT(*) FROM world_dungeons d WHERE d.continent_id = c.id) AS dungeons,
+                (SELECT COUNT(*) FROM world_zones z WHERE z.region_ref LIKE c.id || '/%') AS surveyed_zones,
+                (SELECT COUNT(*) FROM maps m WHERE m.continent_id = c.id) AS playable_maps
+            FROM world_continents c
+            ORDER BY c.id ASC;
+
+        CREATE VIEW v_story_region_matrix AS
+            SELECT
+                r.id AS region_id,
+                r.title AS region_title,
+                r.summary,
+                (SELECT COUNT(*) FROM story_nodes c WHERE c.kind = 'character' AND c.region_id = r.id) AS characters,
+                (SELECT COUNT(*) FROM story_nodes q WHERE q.kind = 'quest' AND q.region_id = r.id) AS story_quests,
+                (SELECT COUNT(*) FROM world_bestiary b WHERE
+                    ('region-' || b.region = r.id)
+                    OR (b.region = 'c02/r11' AND r.id = 'region-ashvale-front')
+                    OR (b.region = 'northern-icefield' AND r.id = 'region-icefield')
+                ) AS bestiary_mobs,
+                COALESCE((SELECT GROUP_CONCAT(m.id, ',') FROM maps m WHERE m.story_region_id = r.id), '') AS playable_map_ids
+            FROM story_nodes r
+            WHERE r.kind = 'region'
+            ORDER BY r.id ASC;
+
+        CREATE VIEW v_map_world_binding AS
+            SELECT
+                m.id AS map_id,
+                m.name AS map_name,
+                m.continent_id,
+                m.region_id,
+                m.zone_id,
+                m.spine_node_id,
+                m.town_id,
+                m.story_region_id,
+                m.biome,
+                m.level_min || '-' || m.level_max AS level_band,
+                CAST(m.width_m AS INT) || 'x' || CAST(m.depth_m AS INT) AS dimensions_m,
+                m.terrace_count,
+                m.structure_count,
+                m.prop_count,
+                m.spawn_area_count
+            FROM maps m
+            ORDER BY m.level_min ASC, m.id ASC;
         """
     )
 
@@ -445,9 +980,36 @@ def main() -> int:
             "castles": len(castles),
             "maps": len(maps),
             "elements": len(elements.get("elements", [])),
+            "worldContinents": len(world_continents),
+            "worldPlaces": len(world_places),
+            "worldZones": len(world_zones),
+            "worldDungeons": len(world_dungeons),
+            "worldBestiary": len(world_bestiary),
+            "spineNodes": len(spine_nodes),
+            "storyNodes": len(story_nodes),
         },
         "jobProgression": job_prog,
         "mobEconomy": mob_econ,
+        "mapWorldBindings": [
+            {
+                "mapId": r[0],
+                "mapName": r[1],
+                "continentId": r[2],
+                "regionId": r[3],
+                "zoneId": r[4],
+                "spineNodeId": r[5],
+                "townId": r[6],
+                "storyRegionId": r[7],
+                "biome": r[8],
+                "levelBand": r[9],
+                "dimensionsM": r[10],
+                "terraceCount": r[11],
+                "structureCount": r[12],
+                "propCount": r[13],
+                "spawnAreaCount": r[14],
+            }
+            for r in cur.execute("SELECT * FROM v_map_world_binding").fetchall()
+        ],
         "assetStudioEntries": asset_entries,
     }
 
@@ -457,8 +1019,10 @@ def main() -> int:
     conn.close()
     print(
         f"[catalog_db] Built {DB_PATH.relative_to(ROOT)} and {SUMMARY_PATH.relative_to(ROOT)} "
-        f"(jobs={len(jobs)}, skills={len(skills)}, items={len(items)}, mobs={len(mobs)}, "
-        f"cards={len(cards)}, quests={len(quest_board)}, handbook={len(handbook)}, castles={len(castles)}, maps={len(maps)})"
+        f"(continents={len(world_continents)}, places={len(world_places)}, zones={len(world_zones)}, "
+        f"dungeons={len(world_dungeons)}, bestiary={len(world_bestiary)}, spine={len(spine_nodes)}, "
+        f"story={len(story_nodes)}, jobs={len(jobs)}, skills={len(skills)}, items={len(items)}, "
+        f"mobs={len(mobs)}, cards={len(cards)}, quests={len(quest_board)}, maps={len(maps)})"
     )
     return 0
 
