@@ -29,8 +29,10 @@ import {
   STATE_FLAG_BOT,
 } from "../protocol/BinaryDeltaDecoder";
 import {
+  DUPLICATE_SESSION_CLOSE_CODE,
   PROTOCOL_MISMATCH_CLOSE_CODE,
   PROTOCOL_VERSION,
+  formatDuplicateSessionMessage,
   formatProtocolMismatchMessage,
 } from "../protocol/protocolVersion";
 import { ClientInput } from "../protocol/generated/atlas/protocol/client-input";
@@ -842,6 +844,27 @@ export const useServerRsClient = (
               const mismatchMsg = formatProtocolMismatchMessage(event.reason);
               connectionErrorRef.current = mismatchMsg;
               setConnectionError(mismatchMsg);
+              if (wsRef.current === ws) {
+                wsRef.current = null;
+              }
+              cancelTrailingPublish();
+              setIsConnected(false);
+              setRoomId(null);
+              gameStateRef.current = null;
+              publishedRef.current.at = -Infinity;
+              setGameState(null);
+              isConnectingRef.current = false;
+              settle();
+              return;
+            }
+            if (event?.code === DUPLICATE_SESSION_CLOSE_CODE) {
+              if (wsRef.current !== ws && wsRef.current !== null) {
+                settle();
+                return;
+              }
+              const duplicateMsg = formatDuplicateSessionMessage(event.reason);
+              connectionErrorRef.current = duplicateMsg;
+              setConnectionError(duplicateMsg);
               if (wsRef.current === ws) {
                 wsRef.current = null;
               }

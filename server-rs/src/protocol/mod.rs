@@ -7,6 +7,9 @@ pub use generated::atlas::protocol::*;
 /// Wire protocol version exchanged during the WebSocket handshake (`?proto=<u32>`).
 pub const PROTOCOL_VERSION: u32 = 1;
 
+/// WebSocket close code sent when a newer connection for the same account replaces an older one.
+pub const DUPLICATE_SESSION_CLOSE_CODE: u16 = 4002;
+
 /// `state_flags` bit: the entity is alive.
 pub const STATE_FLAG_ALIVE: u16 = 1;
 /// `state_flags` bit: the entity is a server-driven bot (`BotAgent`), not a human.
