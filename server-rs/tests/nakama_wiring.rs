@@ -52,7 +52,7 @@ async fn probe_retries_twice_then_succeeds() {
     assert_eq!(attempts.load(Ordering::SeqCst), 3);
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn probe_retries_for_up_to_60_seconds_before_returning_err() {
     // Grab an unused port and immediately drop the listener so connection attempts fail
     // with ECONNREFUSED, exercising the full 60-second retry window under paused Tokio time.
@@ -283,6 +283,109 @@ async fn ws_with_nakama_fetches_loadout_for_uuid_and_skips_non_uuid_once() {
     uuid_ws.close(None).await.unwrap();
 }
 
+#[tokio::test]
+async fn ws_accepts_real_nakama_session_token_and_rejects_dev_token_in_strict_mode() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let nakama_addr = listener.local_addr().unwrap();
+    let captured_requests: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
+    let captured_srv = captured_requests.clone();
+
+    tokio::spawn(async move {
+        if let Ok((mut stream, _)) = listener.accept().await {
+            let mut raw = Vec::new();
+            let mut buf = [0u8; 2048];
+            loop {
+                match stream.read(&mut buf).await {
+                    Ok(0) | Err(_) => break,
+                    Ok(n) => {
+                        raw.extend_from_slice(&buf[..n]);
+                        if let Some(hdr_end) = raw.windows(4).position(|w| w == b"\r\n\r\n") {
+                            let head = String::from_utf8_lossy(&raw[..hdr_end]);
+                            let content_len = head
+                                .lines()
+                                .find_map(|line| {
+                                    let (k, v) = line.split_once(':')?;
+                                    if k.trim().eq_ignore_ascii_case("content-length") {
+                                        v.trim().parse::<usize>().ok()
+                                    } else {
+                                        None
+                                    }
+                                })
+                                .unwrap_or(0);
+                            if raw.len() >= hdr_end + 4 + content_len {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            captured_srv
+                .lock()
+                .unwrap()
+                .push(String::from_utf8_lossy(&raw).into_owned());
+
+            let body = serde_json::to_string(&LoadoutSnapshot::default()).unwrap();
+            let resp = format!(
+                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                body.len(),
+                body
+            );
+            let _ = stream.write_all(resp.as_bytes()).await;
+        }
+    });
+
+    let http_key = "atlas_dev_http_key";
+    let nakama_client = Arc::new(NakamaClient::new(
+        format!("http://{nakama_addr}"),
+        http_key.to_string(),
+        2000,
+        1,
+    ));
+
+    let session_key = b"atlas_dev_session_key_change_me_please_32".to_vec();
+    let auth = AuthGuard::new_strict(session_key.clone());
+    let token_minter = AuthGuard::new_strict(session_key);
+    let server = WsServer::bind("127.0.0.1:0", auth)
+        .await
+        .unwrap()
+        .with_nakama(nakama_client);
+    let ws_addr = server.local_addr();
+
+    // 1. In strict/release mode, dev-token must be rejected with HTTP 401 Unauthorized.
+    let dev_err = connect_async(format!(
+        "ws://{ws_addr}/ws?token=dev-token:00000000-0000-4000-8000-000000000001&proto=1"
+    ))
+    .await
+    .expect_err("dev-token must be rejected in strict mode");
+    assert!(
+        dev_err.to_string().contains("401"),
+        "expected HTTP 401 on rejected dev-token, got: {dev_err}"
+    );
+
+    // 2. Real Nakama session token (with uid/usn/tid signed by session.encryption_key) connects
+    // and triggers get_loadout for the UUID uid.
+    let uid = "e560e7e0-6767-4287-bb3c-e89b555659a4";
+    let nakama_jwt = token_minter.generate_nakama_token(
+        uid,
+        "GkLijrIgcc",
+        "a7245236-451d-4184-8556-cdd8371014ce",
+        7200,
+    );
+    let (mut ws, _) = connect_async(format!("ws://{ws_addr}/ws?token={nakama_jwt}&proto=1"))
+        .await
+        .expect("real Nakama session token must be accepted");
+    tokio::time::sleep(Duration::from_millis(100)).await;
+
+    let reqs = captured_requests.lock().unwrap().clone();
+    assert_eq!(reqs.len(), 1, "expected 1 get_loadout request");
+    assert!(
+        reqs[0].contains(&format!(r#""userId":"{uid}""#)),
+        "expected uid {uid} in get_loadout request body: {}",
+        reqs[0]
+    );
+    ws.close(None).await.unwrap();
+}
+
 #[test]
 fn server_rs_binary_offline_and_closed_port_startup() {
     let bin = env!("CARGO_BIN_EXE_server-rs");
@@ -353,6 +456,7 @@ fn server_rs_binary_offline_and_closed_port_startup() {
         .env("NO_COLOR", "1")
         .env("NAKAMA_URL", format!("http://{closed_addr}"))
         .env("NAKAMA_HTTP_KEY", secret)
+        .env("NAKAMA_PROBE_RETRY_SECS", "2")
         .output()
         .expect("failed to execute server-rs with closed NAKAMA_URL");
     let elapsed = start.elapsed();
@@ -375,7 +479,7 @@ fn server_rs_binary_offline_and_closed_port_startup() {
         "expected output to show startup probe retries, got:\n{combined}"
     );
     assert!(
-        elapsed >= Duration::from_secs(55),
+        elapsed >= Duration::from_secs(1),
         "expected binary to retry for ~60s before exiting, elapsed={elapsed:?}"
     );
     assert!(
