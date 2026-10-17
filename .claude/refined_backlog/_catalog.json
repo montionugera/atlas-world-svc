@@ -883,9 +883,10 @@
     "title": "Report match events to Nakama",
     "from_idea": "I-141",
     "created_at": "2026-10-17T22:22:40.697427+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-003"
+    "epic": "E-003",
+    "claimed_at": "2026-10-17T22:22:46.693302+00:00"
   }
 ]
