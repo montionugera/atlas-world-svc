@@ -1012,7 +1012,7 @@
     "id": "I-163",
     "title": "CI for the Rust server",
     "created_at": "2026-10-11T06:59:06.877618+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-065",
     "epic": "E-006"
   },
   {
