@@ -7,14 +7,12 @@ namespace AtlasWorld.Client.UI.Widgets
 {
     /// <summary>
     /// Native macOS / Godot 4 In-Engine 3D Map Builder Dock &amp; Viewport Controller.
-    /// Supports:
-    /// 1. Dynamic Map Size Expansion (1000x1000 / 2000x2000 / 4000x4000 server units)
-    /// 2. On-Demand Spatial Chunk Streaming + GPU Hardware Instancing (MultiMeshInstance3D) &amp; Procedural Clutter Density
-    /// 3. 3D Altitude, Multi-Floor Watchtowers &amp; Walk-In Crystal Caves (+Hill, +Cliff, +Valley, +Tower 2F, +Crystal Cave)
-    /// 4. Peaceful Exploration Mode Toggle (🕊️ MOBS: OFF [P]) for monster-free 3D terrain &amp; structure testing
-    /// 5. Smart Auto-Transparent Camera LOS &amp; Interior Roof Cutaway (SmartCameraOccluder) with live opacity slider
-    /// 6. World Time &amp; Day/Night Atmosphere Control (24h Slider, Dawn/Noon/Sunset/Night presets, Auto-Advance &amp; Speed, Top Banner Quick Pill)
-    /// 7. Browsing 3D glTF assets from res://assets/nature &amp; res://assets/dungeon and exporting to content/maps/freja-south-gate.json
+    /// Supports the 4-Stage Systematic Map Creation Pipeline:
+    /// - Stage 1 (Concept): Zone Identity, World Scale (1000²..4000²), Day/Night Atmosphere &amp; Seed
+    /// - Stage 2 (Outline &amp; Route): 2D Polyline Route Splines (<c>routes[]</c>), <c>groundZones[]</c> &amp; Spawn Areas
+    /// - Stage 3 (Build 3D Macro): Height Terraces (+Hill, +Cliff, +Valley), 2-Story Watchtowers &amp; Walk-In Crystal Caves
+    /// - Stage 4 (Fill Detail via <c>ground_id</c>): Declarative scatter weights (<c>grass: 0.30, bush: 0.05, canopy_tree: 0.04</c>)
+    ///   rendered via chunk-level <see cref="MultiMeshInstance3D"/> and LOS-fading <see cref="SmartCameraOccluder"/>.
     /// </summary>
     public partial class MapBuilderDock : Control
     {
@@ -58,6 +56,7 @@ namespace AtlasWorld.Client.UI.Widgets
         private MeshInstance3D? _cursorRingMesh;
 
         private bool _builderActive = false;
+        private int _activePipelineStage = 0; // 0 = All, 1 = Concept, 2 = Outline & Route, 3 = 3D Macro, 4 = Ground Detail
         private int _selectedAssetIndex = 0;
         private float _placementRotY = 0f;
         private float _placementScale = 1.4f;
@@ -96,6 +95,12 @@ namespace AtlasWorld.Client.UI.Widgets
         private Label? _chunkRadiusValLabel;
         private HSlider? _clutterDensitySlider;
         private Label? _clutterDensityValLabel;
+        private HSlider? _grassWeightSlider;
+        private Label? _grassWeightValLabel;
+        private HSlider? _bushWeightSlider;
+        private Label? _bushWeightValLabel;
+        private HSlider? _treeWeightSlider;
+        private Label? _treeWeightValLabel;
         private HSlider? _terrainAmpSlider;
         private Label? _terrainAmpValLabel;
         private HSlider? _occlusionAlphaSlider;
@@ -106,6 +111,12 @@ namespace AtlasWorld.Client.UI.Widgets
         private HSlider? _timeSpeedSlider;
         private Label? _timeSpeedValLabel;
         private bool _suppressTimeSliderSignal = false;
+
+        private VBoxContainer? _stage1Container;
+        private VBoxContainer? _stage2And4Container;
+        private VBoxContainer? _stage3Container;
+        private VBoxContainer? _heroPropsContainer;
+        private readonly List<(int stage, Button btn)> _stageButtons = new();
         private readonly List<Button> _catalogButtons = new();
         private readonly List<(float size, Button btn)> _mapSizeButtons = new();
         private readonly List<(WorldDayPhase phase, Button btn)> _timePresetButtons = new();
@@ -140,6 +151,7 @@ namespace AtlasWorld.Client.UI.Widgets
             RebuildChunkGridGizmos();
             SelectCatalogAsset(0);
             RefreshMapSizeButtons();
+            SelectPipelineStage(0);
             SyncTimeControlsFromCycle();
 
             if (OS.GetEnvironment("ATLAS_MAP_BUILDER") == "1")
@@ -154,8 +166,9 @@ namespace AtlasWorld.Client.UI.Widgets
             {
                 Vector3 p = _root.PlayerAvatar.Position;
                 string floorTag = ResolvePlayerFloorTag(p);
+                string groundId = _doc != null ? _doc.ResolveGroundIdAt(p.X, p.Z, out _, out _) : "meadow_grass";
                 _cursorCoordLabel.Text =
-                    $"Pos ({p.X:0.1}, Alt {p.Y:+0.00;-0.00}m [{floorTag}], {p.Z:0.1})";
+                    $"Pos ({p.X:0.1}, Alt {p.Y:+0.00;-0.00}m [{floorTag}], {p.Z:0.1}) | Ground: {groundId}";
             }
         }
 
@@ -169,7 +182,6 @@ namespace AtlasWorld.Client.UI.Widgets
                 float baseY = TerrainElevation.SampleBaseTerrainHeight(s.X, s.Z, _doc);
                 if (s.Kind == "watchtower")
                 {
-                    float deckY = baseY + Mathf.Max(2.2f, s.UpperFloorHeight);
                     if (Mathf.Abs(p.X - s.X) <= r * 1.06f && Mathf.Abs(p.Z - s.Z) <= r * 1.06f)
                     {
                         return p.Y >= baseY + s.UpperFloorHeight * 0.45f ? "2F TOWER DECK" : "1F TOWER";
@@ -204,20 +216,42 @@ namespace AtlasWorld.Client.UI.Widgets
                 : new Color(1.0f, 0.72f, 0.42f);
         }
 
+        private float GetScatterRuleWeight(string groundId, string ruleKey, float fallback)
+        {
+            if (_doc.GroundPalettes.TryGetValue(groundId, out var pal) &&
+                pal.Scatter.TryGetValue(ruleKey, out var rule))
+            {
+                return rule.Weight;
+            }
+            return fallback;
+        }
+
+        private void SetScatterRuleWeight(string groundId, string ruleKey, float newWeight)
+        {
+            _doc.EnsureDefaultGroundPalettes();
+            if (_doc.GroundPalettes.TryGetValue(groundId, out var pal) &&
+                pal.Scatter.TryGetValue(ruleKey, out var rule))
+            {
+                rule.Weight = Mathf.Round(newWeight * 1000f) / 1000f;
+            }
+            _streamer.UpdateStreaming(_camFocus, forceReload: true);
+            UpdateStatsLabel();
+        }
+
         private void BuildUi()
         {
             AnchorsPreset = (int)LayoutPreset.FullRect;
             MouseFilter = MouseFilterEnum.Ignore;
 
-            // 1. Top-Center Map Builder Toggle Pill & Live Altitude / Floor / Peaceful Mobs / World Time Status Banner
+            // 1. Top-Center Map Builder Toggle Pill & Live Altitude / Floor / Ground-ID / Peaceful Mobs / World Time Status Banner
             _topBanner = new PanelContainer
             {
                 Name = "BuilderTopBanner",
                 AnchorLeft = 0.5f,
                 AnchorRight = 0.5f,
-                OffsetLeft = -520f,
+                OffsetLeft = -540f,
                 OffsetTop = 10f,
-                OffsetRight = 520f,
+                OffsetRight = 540f,
                 OffsetBottom = 46f,
                 MouseFilter = MouseFilterEnum.Stop
             };
@@ -255,7 +289,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
             _cursorCoordLabel = new Label
             {
-                Text = "Pos (-2.4, Alt +0.38m [GROUND], -2.0)",
+                Text = "Pos (-2.4, Alt +0.38m [GROUND], -2.0) | Ground: meadow_grass",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill
             };
             _cursorCoordLabel.AddThemeFontSizeOverride("font_size", 11);
@@ -300,8 +334,8 @@ namespace AtlasWorld.Client.UI.Widgets
                 Visible = false,
                 OffsetLeft = 14f,
                 OffsetTop = 52f,
-                OffsetRight = 374f,
-                OffsetBottom = 905f,
+                OffsetRight = 388f,
+                OffsetBottom = 935f,
                 MouseFilter = MouseFilterEnum.Stop
             };
             var dockStyle = new StyleBoxFlat
@@ -332,15 +366,42 @@ namespace AtlasWorld.Client.UI.Widgets
 
             var title = new Label
             {
-                Text = "ATLAS 3D MAP BUILDER (100M+ GPU + 3D STRUCTURES)",
+                Text = "4-STAGE SYSTEMATIC 3D MAP PIPELINE (v3)",
                 Modulate = new Color(0.98f, 0.85f, 0.45f)
             };
             title.AddThemeFontSizeOverride("font_size", 11);
             vbox.AddChild(title);
 
+            // 4-Stage Pipeline Stepper Tabs
+            var stageRow = new HBoxContainer();
+            stageRow.AddThemeConstantOverride("separation", 3);
+            (int stageId, string stageLabel)[] stages =
+            {
+                (0, "All"),
+                (1, "1.Concept"),
+                (2, "2.Routes"),
+                (3, "3.3D Macro"),
+                (4, "4.Ground ID")
+            };
+            foreach (var (sId, sLbl) in stages)
+            {
+                int targetStage = sId;
+                var stBtn = new Button
+                {
+                    Text = sLbl,
+                    SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                    CustomMinimumSize = new Vector2(0, 21)
+                };
+                stBtn.AddThemeFontSizeOverride("font_size", 9);
+                stBtn.Pressed += () => SelectPipelineStage(targetStage);
+                _stageButtons.Add((targetStage, stBtn));
+                stageRow.AddChild(stBtn);
+            }
+            vbox.AddChild(stageRow);
+
             _statsSummaryLabel = new Label
             {
-                Text = "Map: freja-south-gate (1000x1000)",
+                Text = "Map: freja-south-gate (4000x4000)",
                 Modulate = new Color(0.72f, 0.86f, 0.98f)
             };
             _statsSummaryLabel.AddThemeFontSizeOverride("font_size", 10);
@@ -364,14 +425,18 @@ namespace AtlasWorld.Client.UI.Widgets
 
             vbox.AddChild(new HSeparator());
 
-            // Section 1: Map Size Expansion, On-Demand Chunk Streaming & MultiMesh GPU Clutter
+            // === STAGE 1: Draft Concept, Map Bounds, Chunks & World Time ===
+            _stage1Container = new VBoxContainer();
+            _stage1Container.AddThemeConstantOverride("separation", 3);
+            vbox.AddChild(_stage1Container);
+
             var scaleHeader = new Label
             {
-                Text = "1. MAP EXPANSION, CHUNKS & GPU INSTANCING",
+                Text = "STAGE 1: CONCEPT, BOUNDS & WORLD TIME [T]",
                 Modulate = new Color(0.95f, 0.88f, 0.65f)
             };
             scaleHeader.AddThemeFontSizeOverride("font_size", 10);
-            vbox.AddChild(scaleHeader);
+            _stage1Container.AddChild(scaleHeader);
 
             var sizeBtnRow = new HBoxContainer();
             sizeBtnRow.AddThemeConstantOverride("separation", 5);
@@ -388,14 +453,14 @@ namespace AtlasWorld.Client.UI.Widgets
                 {
                     Text = lbl,
                     SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                    CustomMinimumSize = new Vector2(0, 22)
+                    CustomMinimumSize = new Vector2(0, 21)
                 };
                 sBtn.AddThemeFontSizeOverride("font_size", 10);
                 sBtn.Pressed += () => ApplyMapResize(targetSize);
                 _mapSizeButtons.Add((targetSize, sBtn));
                 sizeBtnRow.AddChild(sBtn);
             }
-            vbox.AddChild(sizeBtnRow);
+            _stage1Container.AddChild(sizeBtnRow);
 
             var radiusRow = new HBoxContainer();
             var radiusLbl = new Label { Text = "Load Radius:", CustomMinimumSize = new Vector2(82, 0) };
@@ -430,193 +495,7 @@ namespace AtlasWorld.Client.UI.Widgets
             radiusRow.AddChild(radiusLbl);
             radiusRow.AddChild(_chunkRadiusSlider);
             radiusRow.AddChild(_chunkRadiusValLabel);
-            vbox.AddChild(radiusRow);
-
-            var clutterRow = new HBoxContainer();
-            var clutterLbl = new Label { Text = "GPU Clutter:", CustomMinimumSize = new Vector2(82, 0) };
-            clutterLbl.AddThemeFontSizeOverride("font_size", 10);
-            _clutterDensitySlider = new HSlider
-            {
-                MinValue = 0,
-                MaxValue = 120,
-                Step = 4,
-                Value = _streamer.ProceduralClutterPerChunk,
-                SizeFlagsHorizontal = SizeFlags.ExpandFill
-            };
-            _clutterDensityValLabel = new Label
-            {
-                Text = $"{_streamer.ProceduralClutterPerChunk}/chunk",
-                CustomMinimumSize = new Vector2(64, 0),
-                HorizontalAlignment = HorizontalAlignment.Right
-            };
-            _clutterDensityValLabel.AddThemeFontSizeOverride("font_size", 10);
-            _clutterDensitySlider.ValueChanged += val =>
-            {
-                int density = (int)Math.Round(val);
-                _streamer.ProceduralClutterPerChunk = density;
-                _clutterDensityValLabel.Text = $"{density}/chunk";
-                _streamer.UpdateStreaming(_camFocus, forceReload: true);
-                UpdateStatsLabel();
-            };
-            clutterRow.AddChild(clutterLbl);
-            clutterRow.AddChild(_clutterDensitySlider);
-            clutterRow.AddChild(_clutterDensityValLabel);
-            vbox.AddChild(clutterRow);
-
-            vbox.AddChild(new HSeparator());
-
-            // Section 2: 3D Altitude, Multi-Floor Watchtowers, Crystal Caves & Smart Roof Cutaway
-            var altHeader = new Label
-            {
-                Text = "2. 3D ALTITUDE, TOWERS/CAVES & ROOF CUTAWAY",
-                Modulate = new Color(0.95f, 0.88f, 0.65f)
-            };
-            altHeader.AddThemeFontSizeOverride("font_size", 10);
-            vbox.AddChild(altHeader);
-
-            var ampRow = new HBoxContainer();
-            var ampLbl = new Label { Text = "Hill Height:", CustomMinimumSize = new Vector2(82, 0) };
-            ampLbl.AddThemeFontSizeOverride("font_size", 10);
-            _terrainAmpSlider = new HSlider
-            {
-                MinValue = 0.0,
-                MaxValue = 2.5,
-                Step = 0.1,
-                Value = _doc.TerrainAmplitude,
-                SizeFlagsHorizontal = SizeFlags.ExpandFill
-            };
-            _terrainAmpValLabel = new Label
-            {
-                Text = $"{_doc.TerrainAmplitude:0.1}x",
-                CustomMinimumSize = new Vector2(48, 0),
-                HorizontalAlignment = HorizontalAlignment.Right
-            };
-            _terrainAmpValLabel.AddThemeFontSizeOverride("font_size", 10);
-            _terrainAmpSlider.ValueChanged += val =>
-            {
-                _doc.TerrainAmplitude = (float)val;
-                _terrainAmpValLabel.Text = $"{_doc.TerrainAmplitude:0.1}x";
-                _root.SyncMapFloorAndBounds();
-                _streamer.RefreshLoadedPropsAltitude();
-                RebuildGizmoOverlays();
-                UpdateCursorPreviewTransform();
-            };
-            ampRow.AddChild(ampLbl);
-            ampRow.AddChild(_terrainAmpSlider);
-            ampRow.AddChild(_terrainAmpValLabel);
-            vbox.AddChild(ampRow);
-
-            var terraceBtnRow = new HBoxContainer();
-            terraceBtnRow.AddThemeConstantOverride("separation", 4);
-            var addHillBtn = new Button
-            {
-                Text = "\u25b2 +Hill (+2.2m)",
-                SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 21)
-            };
-            addHillBtn.AddThemeFontSizeOverride("font_size", 10);
-            addHillBtn.Pressed += () => SculptTerraceAtCursor(2.2f, 11.5f, 0.48f);
-
-            var addCliffBtn = new Button
-            {
-                Text = "\u26f0 +Cliff (+4.2m)",
-                SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 21)
-            };
-            addCliffBtn.AddThemeFontSizeOverride("font_size", 10);
-            addCliffBtn.Pressed += () => SculptTerraceAtCursor(4.2f, 9.5f, 0.16f);
-
-            var addValleyBtn = new Button
-            {
-                Text = "\u25bc +Valley (-1.6m)",
-                SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 21)
-            };
-            addValleyBtn.AddThemeFontSizeOverride("font_size", 10);
-            addValleyBtn.Pressed += () => SculptTerraceAtCursor(-1.6f, 11.0f, 0.48f);
-
-            terraceBtnRow.AddChild(addHillBtn);
-            terraceBtnRow.AddChild(addCliffBtn);
-            terraceBtnRow.AddChild(addValleyBtn);
-            vbox.AddChild(terraceBtnRow);
-
-            var structBtnRow = new HBoxContainer();
-            structBtnRow.AddThemeConstantOverride("separation", 5);
-            var addTowerBtn = new Button
-            {
-                Text = "\ud83c\udff0 +Watchtower (2-Floor)",
-                SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 22),
-                TooltipText = "Spawns a 2-story Watchtower with 1F chamber, East stair ramp, +3.2m 2F deck & auto roof cutaway"
-            };
-            addTowerBtn.AddThemeFontSizeOverride("font_size", 10);
-            addTowerBtn.Pressed += () => PlaceStructureAtCursor("watchtower");
-
-            var addCaveBtn = new Button
-            {
-                Text = "\ud83d\udc8e +Crystal Cave",
-                SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 22),
-                TooltipText = "Spawns a Walk-In Crystal Cavern with South archway, glowing crystal interior & auto roof cutaway"
-            };
-            addCaveBtn.AddThemeFontSizeOverride("font_size", 10);
-            addCaveBtn.Pressed += () => PlaceStructureAtCursor("crystal_cave");
-
-            structBtnRow.AddChild(addTowerBtn);
-            structBtnRow.AddChild(addCaveBtn);
-            vbox.AddChild(structBtnRow);
-
-            var occToggle = new CheckBox
-            {
-                Text = "Auto-Cutaway Roofs & Blocking Trees (LOS)",
-                ButtonPressed = _occluder.Enabled
-            };
-            occToggle.AddThemeFontSizeOverride("font_size", 10);
-            occToggle.Toggled += on =>
-            {
-                _occluder.Enabled = on;
-                UpdateStatsLabel();
-            };
-            vbox.AddChild(occToggle);
-
-            var occSliderRow = new HBoxContainer();
-            var occLbl = new Label { Text = "Block Fade:", CustomMinimumSize = new Vector2(82, 0) };
-            occLbl.AddThemeFontSizeOverride("font_size", 10);
-            _occlusionAlphaSlider = new HSlider
-            {
-                MinValue = 0.25,
-                MaxValue = 0.88,
-                Step = 0.03,
-                Value = _occluder.OccludedTransparency,
-                SizeFlagsHorizontal = SizeFlags.ExpandFill
-            };
-            _occlusionAlphaValLabel = new Label
-            {
-                Text = $"{(int)Math.Round((1f - _occluder.OccludedTransparency) * 100f)}% Vis",
-                CustomMinimumSize = new Vector2(54, 0),
-                HorizontalAlignment = HorizontalAlignment.Right
-            };
-            _occlusionAlphaValLabel.AddThemeFontSizeOverride("font_size", 10);
-            _occlusionAlphaSlider.ValueChanged += val =>
-            {
-                _occluder.OccludedTransparency = (float)val;
-                _occlusionAlphaValLabel.Text = $"{(int)Math.Round((1f - _occluder.OccludedTransparency) * 100f)}% Vis";
-            };
-            occSliderRow.AddChild(occLbl);
-            occSliderRow.AddChild(_occlusionAlphaSlider);
-            occSliderRow.AddChild(_occlusionAlphaValLabel);
-            vbox.AddChild(occSliderRow);
-
-            vbox.AddChild(new HSeparator());
-
-            // Section 3: World Time & Day/Night Atmosphere Control
-            var timeHeader = new Label
-            {
-                Text = "3. WORLD TIME & DAY/NIGHT ATMOSPHERE [T]",
-                Modulate = new Color(0.98f, 0.85f, 0.45f)
-            };
-            timeHeader.AddThemeFontSizeOverride("font_size", 10);
-            vbox.AddChild(timeHeader);
+            _stage1Container.AddChild(radiusRow);
 
             var timeRow = new HBoxContainer();
             var timeLbl = new Label { Text = "World Clock:", CustomMinimumSize = new Vector2(80, 0) };
@@ -648,7 +527,7 @@ namespace AtlasWorld.Client.UI.Widgets
             timeRow.AddChild(timeLbl);
             timeRow.AddChild(_timeSlider);
             timeRow.AddChild(_timeValLabel);
-            vbox.AddChild(timeRow);
+            _stage1Container.AddChild(timeRow);
 
             var timePresetRow = new HBoxContainer();
             timePresetRow.AddThemeConstantOverride("separation", 4);
@@ -666,7 +545,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 {
                     Text = lbl,
                     SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                    CustomMinimumSize = new Vector2(0, 21)
+                    CustomMinimumSize = new Vector2(0, 20)
                 };
                 pBtn.AddThemeFontSizeOverride("font_size", 9);
                 pBtn.Pressed += () =>
@@ -685,7 +564,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 _timePresetButtons.Add((phase, pBtn));
                 timePresetRow.AddChild(pBtn);
             }
-            vbox.AddChild(timePresetRow);
+            _stage1Container.AddChild(timePresetRow);
 
             var timeSpeedRow = new HBoxContainer();
             timeSpeedRow.AddThemeConstantOverride("separation", 6);
@@ -730,25 +609,348 @@ namespace AtlasWorld.Client.UI.Widgets
             timeSpeedRow.AddChild(speedLbl);
             timeSpeedRow.AddChild(_timeSpeedSlider);
             timeSpeedRow.AddChild(_timeSpeedValLabel);
-            vbox.AddChild(timeSpeedRow);
+            _stage1Container.AddChild(timeSpeedRow);
+            _stage1Container.AddChild(new HSeparator());
 
-            vbox.AddChild(new HSeparator());
+            // === STAGE 2 & STAGE 4: Map Outline & Routes + Declarative Ground-ID Scatter Weights ===
+            _stage2And4Container = new VBoxContainer();
+            _stage2And4Container.AddThemeConstantOverride("separation", 3);
+            vbox.AddChild(_stage2And4Container);
 
-            // Section 4: Asset Palette
+            var stage24Header = new Label
+            {
+                Text = "STAGE 2 & 4: ROUTES + GROUND_ID WEIGHTS (0 COORDS)",
+                Modulate = new Color(0.48f, 1.0f, 0.72f)
+            };
+            stage24Header.AddThemeFontSizeOverride("font_size", 10);
+            _stage2And4Container.AddChild(stage24Header);
+
+            var routeZoneBtnRow = new HBoxContainer();
+            routeZoneBtnRow.AddThemeConstantOverride("separation", 4);
+            var addRouteSpurBtn = new Button
+            {
+                Text = "🛣 +Route->Cursor",
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                CustomMinimumSize = new Vector2(0, 21),
+                TooltipText = "Extends or adds a cobblestone route spline to the cursor, auto-flattening terrain & clearing trees"
+            };
+            addRouteSpurBtn.AddThemeFontSizeOverride("font_size", 9);
+            addRouteSpurBtn.Pressed += AddRouteSpurToCursor;
+
+            var addForestZoneBtn = new Button
+            {
+                Text = "🌲 +Forest Zone",
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                CustomMinimumSize = new Vector2(0, 21),
+                TooltipText = "Stamps a pine_forest_border ground_id zone (R=18m) at cursor"
+            };
+            addForestZoneBtn.AddThemeFontSizeOverride("font_size", 9);
+            addForestZoneBtn.Pressed += () => AddGroundZoneAtCursor("pine_forest_border", 18.0f, 15);
+
+            var addClearingZoneBtn = new Button
+            {
+                Text = "🌿 +Clearing",
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                CustomMinimumSize = new Vector2(0, 21),
+                TooltipText = "Stamps a meadow_grass clearing zone (R=14m) at cursor"
+            };
+            addClearingZoneBtn.AddThemeFontSizeOverride("font_size", 9);
+            addClearingZoneBtn.Pressed += () => AddGroundZoneAtCursor("meadow_grass", 14.0f, 25);
+
+            routeZoneBtnRow.AddChild(addRouteSpurBtn);
+            routeZoneBtnRow.AddChild(addForestZoneBtn);
+            routeZoneBtnRow.AddChild(addClearingZoneBtn);
+            _stage2And4Container.AddChild(routeZoneBtnRow);
+
+            // Declarative ground_id weight sliders (grass: 0.30, bush: 0.05, canopy_tree: 0.04)
+            float initGrassW = GetScatterRuleWeight("meadow_grass", "grass", 0.30f);
+            var grassWRow = new HBoxContainer();
+            var grassWLbl = new Label { Text = "grass wt:", CustomMinimumSize = new Vector2(82, 0) };
+            grassWLbl.AddThemeFontSizeOverride("font_size", 10);
+            _grassWeightSlider = new HSlider
+            {
+                MinValue = 0.0,
+                MaxValue = 0.80,
+                Step = 0.02,
+                Value = initGrassW,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill
+            };
+            _grassWeightValLabel = new Label
+            {
+                Text = $"{initGrassW:0.00}",
+                CustomMinimumSize = new Vector2(48, 0),
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            _grassWeightValLabel.AddThemeFontSizeOverride("font_size", 10);
+            _grassWeightSlider.ValueChanged += val =>
+            {
+                float w = (float)val;
+                if (_grassWeightValLabel != null) _grassWeightValLabel.Text = $"{w:0.00}";
+                SetScatterRuleWeight("meadow_grass", "grass", w);
+            };
+            grassWRow.AddChild(grassWLbl);
+            grassWRow.AddChild(_grassWeightSlider);
+            grassWRow.AddChild(_grassWeightValLabel);
+            _stage2And4Container.AddChild(grassWRow);
+
+            float initBushW = GetScatterRuleWeight("meadow_grass", "bush", 0.05f);
+            var bushWRow = new HBoxContainer();
+            var bushWLbl = new Label { Text = "bush wt:", CustomMinimumSize = new Vector2(82, 0) };
+            bushWLbl.AddThemeFontSizeOverride("font_size", 10);
+            _bushWeightSlider = new HSlider
+            {
+                MinValue = 0.0,
+                MaxValue = 0.35,
+                Step = 0.01,
+                Value = initBushW,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill
+            };
+            _bushWeightValLabel = new Label
+            {
+                Text = $"{initBushW:0.00}",
+                CustomMinimumSize = new Vector2(48, 0),
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            _bushWeightValLabel.AddThemeFontSizeOverride("font_size", 10);
+            _bushWeightSlider.ValueChanged += val =>
+            {
+                float w = (float)val;
+                if (_bushWeightValLabel != null) _bushWeightValLabel.Text = $"{w:0.00}";
+                SetScatterRuleWeight("meadow_grass", "bush", w);
+            };
+            bushWRow.AddChild(bushWLbl);
+            bushWRow.AddChild(_bushWeightSlider);
+            bushWRow.AddChild(_bushWeightValLabel);
+            _stage2And4Container.AddChild(bushWRow);
+
+            float initTreeW = GetScatterRuleWeight("pine_forest_border", "canopy_tree", 0.04f);
+            var treeWRow = new HBoxContainer();
+            var treeWLbl = new Label { Text = "forest tree:", CustomMinimumSize = new Vector2(82, 0) };
+            treeWLbl.AddThemeFontSizeOverride("font_size", 10);
+            _treeWeightSlider = new HSlider
+            {
+                MinValue = 0.0,
+                MaxValue = 0.20,
+                Step = 0.005,
+                Value = initTreeW,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill
+            };
+            _treeWeightValLabel = new Label
+            {
+                Text = $"{initTreeW:0.000}",
+                CustomMinimumSize = new Vector2(48, 0),
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            _treeWeightValLabel.AddThemeFontSizeOverride("font_size", 10);
+            _treeWeightSlider.ValueChanged += val =>
+            {
+                float w = (float)val;
+                if (_treeWeightValLabel != null) _treeWeightValLabel.Text = $"{w:0.000}";
+                SetScatterRuleWeight("pine_forest_border", "canopy_tree", w);
+            };
+            treeWRow.AddChild(treeWLbl);
+            treeWRow.AddChild(_treeWeightSlider);
+            treeWRow.AddChild(_treeWeightValLabel);
+            _stage2And4Container.AddChild(treeWRow);
+
+            var clutterRow = new HBoxContainer();
+            var clutterLbl = new Label { Text = "Density Mult:", CustomMinimumSize = new Vector2(82, 0) };
+            clutterLbl.AddThemeFontSizeOverride("font_size", 10);
+            _clutterDensitySlider = new HSlider
+            {
+                MinValue = 0,
+                MaxValue = 120,
+                Step = 4,
+                Value = _streamer.ProceduralClutterPerChunk,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill
+            };
+            _clutterDensityValLabel = new Label
+            {
+                Text = $"{_streamer.ProceduralClutterPerChunk / 48.0f:0.0}x",
+                CustomMinimumSize = new Vector2(48, 0),
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            _clutterDensityValLabel.AddThemeFontSizeOverride("font_size", 10);
+            _clutterDensitySlider.ValueChanged += val =>
+            {
+                int density = (int)Math.Round(val);
+                _streamer.ProceduralClutterPerChunk = density;
+                _clutterDensityValLabel.Text = $"{density / 48.0f:0.0}x";
+                _streamer.UpdateStreaming(_camFocus, forceReload: true);
+                UpdateStatsLabel();
+            };
+            clutterRow.AddChild(clutterLbl);
+            clutterRow.AddChild(_clutterDensitySlider);
+            clutterRow.AddChild(_clutterDensityValLabel);
+            _stage2And4Container.AddChild(clutterRow);
+            _stage2And4Container.AddChild(new HSeparator());
+
+            // === STAGE 3: Build 3D Macro Geometry (Height Terraces, Watchtowers, Crystal Caves & Cutaway) ===
+            _stage3Container = new VBoxContainer();
+            _stage3Container.AddThemeConstantOverride("separation", 3);
+            vbox.AddChild(_stage3Container);
+
+            var altHeader = new Label
+            {
+                Text = "STAGE 3: 3D MACRO GEOMETRY (TERRACES & STRUCTURES)",
+                Modulate = new Color(0.95f, 0.88f, 0.65f)
+            };
+            altHeader.AddThemeFontSizeOverride("font_size", 10);
+            _stage3Container.AddChild(altHeader);
+
+            var ampRow = new HBoxContainer();
+            var ampLbl = new Label { Text = "Hill Height:", CustomMinimumSize = new Vector2(82, 0) };
+            ampLbl.AddThemeFontSizeOverride("font_size", 10);
+            _terrainAmpSlider = new HSlider
+            {
+                MinValue = 0.0,
+                MaxValue = 2.5,
+                Step = 0.1,
+                Value = _doc.TerrainAmplitude,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill
+            };
+            _terrainAmpValLabel = new Label
+            {
+                Text = $"{_doc.TerrainAmplitude:0.1}x",
+                CustomMinimumSize = new Vector2(48, 0),
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            _terrainAmpValLabel.AddThemeFontSizeOverride("font_size", 10);
+            _terrainAmpSlider.ValueChanged += val =>
+            {
+                _doc.TerrainAmplitude = (float)val;
+                _terrainAmpValLabel.Text = $"{_doc.TerrainAmplitude:0.1}x";
+                _root.SyncMapFloorAndBounds();
+                _streamer.RefreshLoadedPropsAltitude();
+                RebuildGizmoOverlays();
+                UpdateCursorPreviewTransform();
+            };
+            ampRow.AddChild(ampLbl);
+            ampRow.AddChild(_terrainAmpSlider);
+            ampRow.AddChild(_terrainAmpValLabel);
+            _stage3Container.AddChild(ampRow);
+
+            var terraceBtnRow = new HBoxContainer();
+            terraceBtnRow.AddThemeConstantOverride("separation", 4);
+            var addHillBtn = new Button
+            {
+                Text = "\u25b2 +Hill (+2.2m)",
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                CustomMinimumSize = new Vector2(0, 21)
+            };
+            addHillBtn.AddThemeFontSizeOverride("font_size", 10);
+            addHillBtn.Pressed += () => SculptTerraceAtCursor(2.2f, 11.5f, 0.48f);
+
+            var addCliffBtn = new Button
+            {
+                Text = "\u26f0 +Cliff (+4.2m)",
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                CustomMinimumSize = new Vector2(0, 21)
+            };
+            addCliffBtn.AddThemeFontSizeOverride("font_size", 10);
+            addCliffBtn.Pressed += () => SculptTerraceAtCursor(4.2f, 9.5f, 0.16f);
+
+            var addValleyBtn = new Button
+            {
+                Text = "\u25bc +Valley (-1.6m)",
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                CustomMinimumSize = new Vector2(0, 21)
+            };
+            addValleyBtn.AddThemeFontSizeOverride("font_size", 10);
+            addValleyBtn.Pressed += () => SculptTerraceAtCursor(-1.6f, 11.0f, 0.48f);
+
+            terraceBtnRow.AddChild(addHillBtn);
+            terraceBtnRow.AddChild(addCliffBtn);
+            terraceBtnRow.AddChild(addValleyBtn);
+            _stage3Container.AddChild(terraceBtnRow);
+
+            var structBtnRow = new HBoxContainer();
+            structBtnRow.AddThemeConstantOverride("separation", 5);
+            var addTowerBtn = new Button
+            {
+                Text = "\ud83c\udff0 +Watchtower (2-Floor)",
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                CustomMinimumSize = new Vector2(0, 22),
+                TooltipText = "Spawns a 2-story Watchtower with 1F chamber, East stair ramp, +3.2m 2F deck & auto roof cutaway"
+            };
+            addTowerBtn.AddThemeFontSizeOverride("font_size", 10);
+            addTowerBtn.Pressed += () => PlaceStructureAtCursor("watchtower");
+
+            var addCaveBtn = new Button
+            {
+                Text = "\ud83d\udc8e +Crystal Cave",
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                CustomMinimumSize = new Vector2(0, 22),
+                TooltipText = "Spawns a Walk-In Crystal Cavern with South archway, glowing crystal interior & auto roof cutaway"
+            };
+            addCaveBtn.AddThemeFontSizeOverride("font_size", 10);
+            addCaveBtn.Pressed += () => PlaceStructureAtCursor("crystal_cave");
+
+            structBtnRow.AddChild(addTowerBtn);
+            structBtnRow.AddChild(addCaveBtn);
+            _stage3Container.AddChild(structBtnRow);
+
+            var occToggle = new CheckBox
+            {
+                Text = "Auto-Cutaway Roofs & Blocking Trees (LOS)",
+                ButtonPressed = _occluder.Enabled
+            };
+            occToggle.AddThemeFontSizeOverride("font_size", 10);
+            occToggle.Toggled += on =>
+            {
+                _occluder.Enabled = on;
+                UpdateStatsLabel();
+            };
+            _stage3Container.AddChild(occToggle);
+
+            var occSliderRow = new HBoxContainer();
+            var occLbl = new Label { Text = "Block Fade:", CustomMinimumSize = new Vector2(82, 0) };
+            occLbl.AddThemeFontSizeOverride("font_size", 10);
+            _occlusionAlphaSlider = new HSlider
+            {
+                MinValue = 0.25,
+                MaxValue = 0.88,
+                Step = 0.03,
+                Value = _occluder.OccludedTransparency,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill
+            };
+            _occlusionAlphaValLabel = new Label
+            {
+                Text = $"{(int)Math.Round((1f - _occluder.OccludedTransparency) * 100f)}% Vis",
+                CustomMinimumSize = new Vector2(54, 0),
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            _occlusionAlphaValLabel.AddThemeFontSizeOverride("font_size", 10);
+            _occlusionAlphaSlider.ValueChanged += val =>
+            {
+                _occluder.OccludedTransparency = (float)val;
+                _occlusionAlphaValLabel.Text = $"{(int)Math.Round((1f - _occluder.OccludedTransparency) * 100f)}% Vis";
+            };
+            occSliderRow.AddChild(occLbl);
+            occSliderRow.AddChild(_occlusionAlphaSlider);
+            occSliderRow.AddChild(_occlusionAlphaValLabel);
+            _stage3Container.AddChild(occSliderRow);
+            _stage3Container.AddChild(new HSeparator());
+
+            // === Hero Landmark Overrides (Sparse One-Off Props) ===
+            _heroPropsContainer = new VBoxContainer();
+            _heroPropsContainer.AddThemeConstantOverride("separation", 3);
+            vbox.AddChild(_heroPropsContainer);
+
             var paletteHeader = new Label
             {
-                Text = "4. 3D GLB ASSET PALETTE (Click to Arm Brush)",
+                Text = "HERO LANDMARK OVERRIDES (Sparse Setpiece Brush)",
                 Modulate = new Color(0.95f, 0.88f, 0.65f)
             };
             paletteHeader.AddThemeFontSizeOverride("font_size", 10);
-            vbox.AddChild(paletteHeader);
+            _heroPropsContainer.AddChild(paletteHeader);
 
             var scroll = new ScrollContainer
             {
-                CustomMinimumSize = new Vector2(320f, 100f),
+                CustomMinimumSize = new Vector2(320f, 82f),
                 HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
             };
-            vbox.AddChild(scroll);
+            _heroPropsContainer.AddChild(scroll);
 
             var grid = new GridContainer
             {
@@ -766,7 +968,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 var btn = new Button
                 {
                     Text = $"{item.Label}\n[{item.Category}]",
-                    CustomMinimumSize = new Vector2(152f, 29f),
+                    CustomMinimumSize = new Vector2(152f, 28f),
                     ClipText = true
                 };
                 btn.AddThemeFontSizeOverride("font_size", 10);
@@ -781,18 +983,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 Modulate = new Color(0.45f, 1.0f, 0.65f)
             };
             _selectedAssetLabel.AddThemeFontSizeOverride("font_size", 10);
-            vbox.AddChild(_selectedAssetLabel);
-
-            vbox.AddChild(new HSeparator());
-
-            // Section 5: Brush Transform & Server Collision Controls
-            var brushHeader = new Label
-            {
-                Text = "5. BRUSH TRANSFORM & GIZMOS",
-                Modulate = new Color(0.95f, 0.88f, 0.65f)
-            };
-            brushHeader.AddThemeFontSizeOverride("font_size", 10);
-            vbox.AddChild(brushHeader);
+            _heroPropsContainer.AddChild(_selectedAssetLabel);
 
             var scaleRow = new HBoxContainer();
             var scaleLbl = new Label { Text = "Scale ([ / ]):", CustomMinimumSize = new Vector2(82, 0) };
@@ -816,7 +1007,7 @@ namespace AtlasWorld.Client.UI.Widgets
             scaleRow.AddChild(scaleLbl);
             scaleRow.AddChild(_scaleSlider);
             scaleRow.AddChild(_scaleValLabel);
-            vbox.AddChild(scaleRow);
+            _heroPropsContainer.AddChild(scaleRow);
 
             var rotRow = new HBoxContainer();
             var rotLbl = new Label { Text = "Rotate (R):", CustomMinimumSize = new Vector2(82, 0) };
@@ -840,7 +1031,7 @@ namespace AtlasWorld.Client.UI.Widgets
             rotRow.AddChild(rotLbl);
             rotRow.AddChild(_rotSlider);
             rotRow.AddChild(_rotValLabel);
-            vbox.AddChild(rotRow);
+            _heroPropsContainer.AddChild(rotRow);
 
             _blocksMoveCheck = new CheckBox
             {
@@ -853,7 +1044,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 _placementBlocksMovement = on;
                 UpdateCursorPreviewTransform();
             };
-            vbox.AddChild(_blocksMoveCheck);
+            _heroPropsContainer.AddChild(_blocksMoveCheck);
 
             var gizmoTogglesRow = new HBoxContainer();
             gizmoTogglesRow.AddThemeConstantOverride("separation", 8);
@@ -884,7 +1075,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
             var spawnToggle = new CheckBox
             {
-                Text = "Spawns",
+                Text = "Routes/Zones",
                 ButtonPressed = true
             };
             spawnToggle.AddThemeFontSizeOverride("font_size", 10);
@@ -916,7 +1107,7 @@ namespace AtlasWorld.Client.UI.Widgets
             actRow1.AddThemeConstantOverride("separation", 6);
             var stampBtn = new Button
             {
-                Text = "\uff0b Place Prop (L-Click)",
+                Text = "\uff0b Place Hero Prop (L-Click)",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
                 CustomMinimumSize = new Vector2(0, 22)
             };
@@ -940,7 +1131,7 @@ namespace AtlasWorld.Client.UI.Widgets
             actRow2.AddThemeConstantOverride("separation", 6);
             var saveBtn = new Button
             {
-                Text = "\ud83d\udcbe Save Map JSON",
+                Text = "\ud83d\udcbe Save Map v3 JSON",
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
                 CustomMinimumSize = new Vector2(0, 23)
             };
@@ -962,7 +1153,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
             _saveFeedbackLabel = new Label
             {
-                Text = "WASD Pan | R-Drag Orbit | L-Click Place | [T] Cycle Time | Cmd+S Save",
+                Text = "4-Stage Pipeline: 1.Concept -> 2.Routes -> 3.3D Macro -> 4.ground_id Weights",
                 Modulate = new Color(0.75f, 0.84f, 0.96f),
                 AutowrapMode = TextServer.AutowrapMode.WordSmart
             };
@@ -970,6 +1161,84 @@ namespace AtlasWorld.Client.UI.Widgets
             vbox.AddChild(_saveFeedbackLabel);
 
             UpdateStatsLabel();
+        }
+
+        private void SelectPipelineStage(int stage)
+        {
+            _activePipelineStage = stage;
+            if (_stage1Container != null) _stage1Container.Visible = stage == 0 || stage == 1;
+            if (_stage2And4Container != null) _stage2And4Container.Visible = stage == 0 || stage == 2 || stage == 4;
+            if (_stage3Container != null) _stage3Container.Visible = stage == 0 || stage == 3;
+            if (_heroPropsContainer != null) _heroPropsContainer.Visible = stage == 0 || stage == 3;
+
+            foreach (var (sId, btn) in _stageButtons)
+            {
+                btn.Modulate = (sId == stage)
+                    ? new Color(0.45f, 1.0f, 0.68f)
+                    : Colors.White;
+            }
+        }
+
+        private void AddRouteSpurToCursor()
+        {
+            float tx = Mathf.Round(_cursorWorldPos.X * 10f) / 10f;
+            float tz = Mathf.Round(_cursorWorldPos.Z * 10f) / 10f;
+            string routeId = $"route_spur_{_doc.Routes.Count + 1:00}";
+
+            _doc.Routes.Add(new UnifiedMapRouteSpline
+            {
+                Id = routeId,
+                GroundId = "cobble_road",
+                Width = 4.0f,
+                ClearMargin = 2.0f,
+                Points = new List<float[]>
+                {
+                    new[] { 0.0f, Mathf.Clamp(tz * 0.35f, -35f, 35f) },
+                    new[] { tx, tz }
+                }
+            });
+
+            _root.SyncMapFloorAndBounds();
+            _streamer.UpdateStreaming(_camFocus, forceReload: true);
+            RebuildGizmoOverlays();
+            UpdateStatsLabel();
+
+            if (_saveFeedbackLabel != null)
+            {
+                _saveFeedbackLabel.Text =
+                    $"Added Stage 2 Route '{routeId}' -> ({tx:0.0}, {tz:0.0}): terrain leveled, shader painted & trees cleared.";
+                _saveFeedbackLabel.Modulate = new Color(0.45f, 1.0f, 0.68f);
+            }
+        }
+
+        private void AddGroundZoneAtCursor(string groundId, float radius, int priority)
+        {
+            float zx = Mathf.Round(_cursorWorldPos.X * 10f) / 10f;
+            float zz = Mathf.Round(_cursorWorldPos.Z * 10f) / 10f;
+            string zoneId = $"{groundId}_{_doc.GroundZones.Count + 1:00}";
+
+            _doc.GroundZones.Add(new UnifiedMapGroundZone
+            {
+                Id = zoneId,
+                GroundId = groundId,
+                Priority = priority,
+                Shape = "circle",
+                X = zx,
+                Z = zz,
+                Radius = radius,
+                Feather = 3.5f
+            });
+
+            _streamer.UpdateStreaming(_camFocus, forceReload: true);
+            RebuildGizmoOverlays();
+            UpdateStatsLabel();
+
+            if (_saveFeedbackLabel != null)
+            {
+                _saveFeedbackLabel.Text =
+                    $"Stamped '{groundId}' Zone (R={radius:0}m) at ({zx:0.0}, {zz:0.0}) with 0 hardcoded prop coordinates.";
+                _saveFeedbackLabel.Modulate = new Color(0.45f, 1.0f, 0.68f);
+            }
         }
 
         public void SyncTimeControlsFromCycle()
@@ -1281,7 +1550,7 @@ namespace AtlasWorld.Client.UI.Widgets
             if (_saveFeedbackLabel != null)
             {
                 _saveFeedbackLabel.Text =
-                    $"Placed '{item.Label}' at ({newProp.X:0.0}, Alt {newProp.Y:+0.0;-0.0}m, {newProp.Z:0.0}) in Chunk ({chunk.X},{chunk.Y}).";
+                    $"Placed Hero Override '{item.Label}' at ({newProp.X:0.0}, Alt {newProp.Y:+0.0;-0.0}m, {newProp.Z:0.0}) in Chunk ({chunk.X},{chunk.Y}).";
                 _saveFeedbackLabel.Modulate = new Color(0.55f, 1.0f, 0.68f);
             }
         }
@@ -1300,7 +1569,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
             if (_saveFeedbackLabel != null)
             {
-                _saveFeedbackLabel.Text = $"Removed '{removed.Id}'. ({_doc.Props.Count} props remaining)";
+                _saveFeedbackLabel.Text = $"Removed '{removed.Id}'. ({_doc.Props.Count} hero props remaining)";
                 _saveFeedbackLabel.Modulate = new Color(1.0f, 0.84f, 0.45f);
             }
         }
@@ -1318,7 +1587,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 if (_saveFeedbackLabel != null)
                 {
                     _saveFeedbackLabel.Text =
-                        $"\u2713 Saved {_doc.Width:0}\u00d7{_doc.Height:0} map ({_doc.Props.Count} props, {_doc.Structures.Count} structures, {_doc.HeightTerraces.Count} terraces) to content/maps/{_doc.MapId}.json";
+                        $"\u2713 Saved v3 {_doc.Width:0}\u00d7{_doc.Height:0} map ({_doc.Routes.Count} routes, {_doc.GroundZones.Count} groundZones, {_doc.Props.Count} hero props) to content/maps/{_doc.MapId}.json";
                     _saveFeedbackLabel.Modulate = new Color(0.45f, 1.0f, 0.65f);
                 }
             }
@@ -1331,13 +1600,13 @@ namespace AtlasWorld.Client.UI.Widgets
                 float worldW = _doc.Width * VerticalSliceRoot.ServerCoordScale;
                 float worldH = _doc.Height * VerticalSliceRoot.ServerCoordScale;
                 _statsSummaryLabel.Text =
-                    $"Size: {_doc.Width:0}\u00d7{_doc.Height:0} ({worldW:0}m\u00d7{worldH:0}m) | Structures: {_doc.Structures.Count} | O(1) Grid: {_doc.SpatialObstacleCellCount} cells ({_doc.StaticObstacles.Count} AABBs)";
+                    $"v{_doc.Version}: {worldW:0}m\u00d7{worldH:0}m | Routes: {_doc.Routes.Count} | Zones: {_doc.GroundZones.Count} | Palettes: {_doc.GroundPalettes.Count}";
             }
             if (_streamingStatusLabel != null)
             {
                 Vector2I c = _streamer.CurrentCenterChunk;
                 _streamingStatusLabel.Text =
-                    $"Chunks: {_streamer.LoadedChunkCount} Active @ ({c.X},{c.Y}) | Node3Ds: {_streamer.LoadedPropCount} | GPU MultiMesh: {_streamer.ActiveGpuInstanceCount} ({_streamer.ActiveMultiMeshBatchCount} draws)";
+                    $"Chunks: {_streamer.LoadedChunkCount} @ ({c.X},{c.Y}) | Node3Ds: {_streamer.LoadedPropCount} | GPU MultiMesh: {_streamer.ActiveGpuInstanceCount} ({_streamer.ActiveMultiMeshBatchCount} draws)";
             }
             if (_occlusionStatusLabel != null)
             {
@@ -1506,9 +1775,61 @@ namespace AtlasWorld.Client.UI.Widgets
                 }
             }
 
-            // 3. Render Cyan/Gold Server-RS Spawn Area Zones with 3D Labels (snapped to 3D Terrain Altitude!)
+            // 3. Render Stage 2 Route Splines, Ground-ID Zones & Spawn Areas
             if (_showSpawnZones)
             {
+                var routeMat = new StandardMaterial3D
+                {
+                    Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                    ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                    AlbedoColor = new Color(0.96f, 0.78f, 0.38f, 0.28f)
+                };
+
+                foreach (var route in _doc.Routes)
+                {
+                    if (route.Points == null || route.Points.Count < 2)
+                        continue;
+
+                    for (int i = 0; i < route.Points.Count - 1; i++)
+                    {
+                        var p0 = route.Points[i];
+                        var p1 = route.Points[i + 1];
+                        if (p0 == null || p1 == null || p0.Length < 2 || p1.Length < 2)
+                            continue;
+
+                        Vector2 a = new(p0[0], p0[1]);
+                        Vector2 b = new(p1[0], p1[1]);
+                        Vector2 mid = (a + b) * 0.5f;
+                        float segLen = a.DistanceTo(b);
+                        if (segLen < 0.2f)
+                            continue;
+
+                        float angleY = Mathf.Atan2(b.X - a.X, b.Y - a.Y);
+                        float midY = TerrainElevation.SampleBaseTerrainHeight(mid.X, mid.Y, _doc);
+                        var ribbon = new MeshInstance3D
+                        {
+                            Mesh = new BoxMesh { Size = new Vector3(route.Width, 0.05f, segLen) },
+                            MaterialOverride = routeMat,
+                            Position = new Vector3(mid.X, midY + 0.06f, mid.Y),
+                            Rotation = new Vector3(0f, angleY, 0f)
+                        };
+                        if (i == 0)
+                        {
+                            var rLabel = new Label3D
+                            {
+                                Text = $"[ROUTE: {route.Id}]\nground_id: {route.GroundId} (W={route.Width:0.1}m)",
+                                Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+                                FontSize = 20,
+                                OutlineSize = 6,
+                                Modulate = new Color(1.0f, 0.88f, 0.52f),
+                                Position = new Vector3(0f, 0.95f, 0f)
+                            };
+                            ribbon.AddChild(rLabel);
+                        }
+                        _gizmoRoot.AddChild(ribbon);
+                    }
+                }
+
                 var zoneMat = new StandardMaterial3D
                 {
                     Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
@@ -1655,9 +1976,10 @@ namespace AtlasWorld.Client.UI.Widgets
                         if (_cursorCoordLabel != null)
                         {
                             float slopeDeg = TerrainElevation.SampleSlopeDegrees(hit.X, hit.Z, _doc);
-                            string slopeTag = slopeDeg > TerrainElevation.MaxWalkableSlopeDeg ? "CLIFF BLOCKED >38\u00b0" : "WALKABLE";
+                            string slopeTag = slopeDeg > TerrainElevation.MaxWalkableSlopeDeg ? "CLIFF >35\u00b0" : "WALKABLE";
+                            string groundId = _doc.ResolveGroundIdAt(hit.X, hit.Z, out _, out _);
                             _cursorCoordLabel.Text =
-                                $"World ({hit.X:0.0}, Alt {hit.Y:+0.0;-0.0}m, {hit.Z:0.0}) | Slope {slopeDeg:0.0}\u00b0 [{slopeTag}] | Chunk ({chunk.X},{chunk.Y})";
+                                $"({hit.X:0.0}, Alt {hit.Y:+0.0;-0.0}m, {hit.Z:0.0}) | Ground: {groundId} | {slopeDeg:0.0}\u00b0 [{slopeTag}] | Chunk ({chunk.X},{chunk.Y})";
                         }
                     }
                 }
@@ -1698,10 +2020,10 @@ namespace AtlasWorld.Client.UI.Widgets
                 p = rayOrigin + rayDir * Mathf.Clamp(t, 0.5f, 600f);
             }
 
-            float maxHalfX = _doc.HalfWidthWorld(VerticalSliceRoot.ServerCoordScale) - 1.5f;
-            float maxHalfZ = _doc.HalfHeightWorld(VerticalSliceRoot.ServerCoordScale) - 1.5f;
-            float clampedX = Mathf.Clamp(p.X, -maxHalfX, maxHalfX);
-            float clampedZ = Mathf.Clamp(p.Z, -maxHalfZ, maxHalfZ);
+            float halfW = _doc.HalfWidthWorld(VerticalSliceRoot.ServerCoordScale) - 1.0f;
+            float halfH = _doc.HalfHeightWorld(VerticalSliceRoot.ServerCoordScale) - 1.0f;
+            float clampedX = Mathf.Clamp(p.X, -halfW, halfW);
+            float clampedZ = Mathf.Clamp(p.Z, -halfH, halfH);
             float finalY = TerrainElevation.SampleHeight(clampedX, clampedZ, _doc);
 
             hitPoint = new Vector3(clampedX, finalY, clampedZ);

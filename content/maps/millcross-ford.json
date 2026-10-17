@@ -1,0 +1,823 @@
+{
+  "version": 3,
+  "mapId": "millcross-ford",
+  "name": "Millcross Ford \u2014 The Meltwash Crossing",
+  "seed": 749135,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "meadow_grass",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 0.85,
+  "proceduralClutterDensity": 44,
+  "defaultTimeOfDayHours": 10.5,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c02",
+    "regionId": "c02/r21",
+    "zoneId": "millcross-ford",
+    "spineNodeId": "n-millcross",
+    "townId": "c-town-millcross",
+    "storyRegionId": "region-millcross",
+    "landmarkIds": [
+      "the-cart-queue",
+      "the-mill-wheel-housing",
+      "cart-queue",
+      "the-ford",
+      "mill-wheel"
+    ],
+    "resourceIds": [
+      "race-milled-grain",
+      "the-quarry-face"
+    ],
+    "hazardIds": [
+      "high-water-at-the-ford",
+      "the-millrace"
+    ]
+  },
+  "concept": {
+    "biome": "wealdmarch_river_ford",
+    "recommendedLevelRange": [
+      1,
+      50
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "One crossing serves the whole land, and everything waiting on it has to be fed, stabled and ferried here."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "pine_forest_border": {
+      "surfaceType": "forest_moss",
+      "albedoTint": "#346E36",
+      "friction": 0.9,
+      "maxSlopeDeg": 30.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.35,
+          "tagPool": {
+            "biome": "forest",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.1,
+          "tagPool": {
+            "biome": "forest",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.95
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.52,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.04,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "forest",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.95
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.45
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        },
+        "boulder": {
+          "weight": 0.015,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "forest",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.1
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.25
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    }
+  },
+  "routes": [
+    {
+      "id": "trade-road-trunk",
+      "groundId": "cobble_road",
+      "width": 14.0,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          -18.0,
+          4.0
+        ],
+        [
+          -46.0,
+          8.0
+        ],
+        [
+          -110.0,
+          8.0
+        ]
+      ]
+    },
+    {
+      "id": "terrace-track",
+      "groundId": "cobble_road",
+      "width": 14.0,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          20.0,
+          -10.0
+        ],
+        [
+          44.0,
+          -26.0
+        ],
+        [
+          110.0,
+          -26.0
+        ]
+      ]
+    },
+    {
+      "id": "river-road-south",
+      "groundId": "cobble_road",
+      "width": 12.0,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          12.0,
+          16.0
+        ],
+        [
+          18.0,
+          40.0
+        ],
+        [
+          18.0,
+          80.0
+        ]
+      ]
+    },
+    {
+      "id": "mill-lane",
+      "groundId": "cobble_road",
+      "width": 12.0,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          -8.0,
+          4.0
+        ],
+        [
+          -22.0,
+          -16.0
+        ],
+        [
+          -22.0,
+          -34.0
+        ]
+      ]
+    },
+    {
+      "id": "bank-lane",
+      "groundId": "cobble_road",
+      "width": 6.0,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          12.0,
+          8.0
+        ],
+        [
+          110.0,
+          8.0
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "millcross_ford_town_clearing",
+      "groundId": "meadow_grass",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 36.0,
+      "innerRadius": 0.0,
+      "outerRadius": 36.0,
+      "width": 72.0,
+      "height": 72.0,
+      "feather": 5.0
+    },
+    {
+      "id": "millcross_outer_hedgerow_border",
+      "groundId": "pine_forest_border",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 36.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "millcross_east_terrace_bank",
+      "x": 24.0,
+      "z": -14.0,
+      "radius": 18.0,
+      "height": 2.2,
+      "falloff": 0.48
+    },
+    {
+      "id": "millrace_north_head_bluff",
+      "x": -16.0,
+      "z": -22.0,
+      "radius": 14.0,
+      "height": 2.4,
+      "falloff": 0.45
+    },
+    {
+      "id": "west_quarry_face_cliff",
+      "x": -34.0,
+      "z": -18.0,
+      "radius": 10.5,
+      "height": 4.2,
+      "falloff": 0.16
+    },
+    {
+      "id": "south_meltwash_ford_bank",
+      "x": 12.0,
+      "z": 18.0,
+      "radius": 15.0,
+      "height": 1.6,
+      "falloff": 0.52
+    }
+  ],
+  "structures": [
+    {
+      "id": "millcross_wheel_watchtower_01",
+      "kind": "watchtower",
+      "x": -12.0,
+      "z": -16.0,
+      "rotY": 0.0,
+      "radius": 3.8,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "millcross_quarry_cavern_01",
+      "kind": "crystal_cave",
+      "x": -22.0,
+      "z": 12.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_the_cart_queue_pillar",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -28.0,
+      "y": 1.2,
+      "z": 4.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_mill_wheel_banner",
+      "assetPath": "res://assets/dungeon/banner_shield_blue.glb",
+      "x": -8.0,
+      "y": 1.8,
+      "z": -14.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    },
+    {
+      "id": "landmark_ford_crossing_banner",
+      "assetPath": "res://assets/dungeon/banner_shield_brown.glb",
+      "x": 2.0,
+      "y": 1.0,
+      "z": 0.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "millcross_ford_chaff_crawler",
+      "x": 2101.8,
+      "y": 2078.4,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-chaff-crawler",
+      "count": 2
+    },
+    {
+      "id": "millcross_ford_ditchlight_wisp",
+      "x": 1676.2,
+      "y": 1920.4,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-ditchlight-wisp",
+      "count": 3
+    },
+    {
+      "id": "millcross_ford_hedgerow_thorn",
+      "x": 2055.2,
+      "y": 1684.6,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-hedgerow-thorn",
+      "count": 2
+    },
+    {
+      "id": "millcross_ford_lampwing_moth",
+      "x": 1993.1,
+      "y": 2224.0,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-lampwing-moth",
+      "count": 3
+    },
+    {
+      "id": "millcross_ford_millpond_gnawer",
+      "x": 1602.0,
+      "y": 1812.8,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-millpond-gnawer",
+      "count": 4
+    },
+    {
+      "id": "millcross_ford_roadcrow_flock",
+      "x": 2278.3,
+      "y": 1986.5,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-roadcrow-flock",
+      "count": 4
+    },
+    {
+      "id": "millcross_ford_sackrat_swarm",
+      "x": 1553.0,
+      "y": 2061.6,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-sackrat-swarm",
+      "count": 4
+    },
+    {
+      "id": "millcross_ford_strayling_pup",
+      "x": 2126.5,
+      "y": 1551.7,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-strayling-pup",
+      "count": 4
+    },
+    {
+      "id": "millcross_ford_tallgrass_tick",
+      "x": 2342.2,
+      "y": 2079.0,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-tallgrass-tick",
+      "count": 4
+    },
+    {
+      "id": "millcross_ford_cordknot_effigy",
+      "x": 1451.8,
+      "y": 1844.5,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-cordknot-effigy",
+      "count": 3
+    },
+    {
+      "id": "millcross_ford_millrace_lurker",
+      "x": 2238.0,
+      "y": 1526.1,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-millrace-lurker",
+      "count": 2
+    },
+    {
+      "id": "millcross_ford_strayling_yearling",
+      "x": 1970.4,
+      "y": 2455.4,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-strayling-yearling",
+      "count": 4
+    },
+    {
+      "id": "millcross_ford_tollroad_wrecker",
+      "x": 1594.1,
+      "y": 1482.4,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-tollroad-wrecker",
+      "count": 2
+    },
+    {
+      "id": "millcross_ford_gallows_meadow_shade",
+      "x": 2520.3,
+      "y": 1909.3,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-gallows-meadow-shade",
+      "count": 3
+    },
+    {
+      "id": "millcross_ford_millroad_brigand",
+      "x": 1309.0,
+      "y": 2049.0,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-millroad-brigand",
+      "count": 4
+    },
+    {
+      "id": "millcross_ford_quarrystone_beetle",
+      "x": 2282.7,
+      "y": 1381.9,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-quarrystone-beetle",
+      "count": 2
+    },
+    {
+      "id": "millcross_ford_ashfang_pack_leader",
+      "x": 2353.5,
+      "y": 2473.7,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-ashfang-pack-leader",
+      "count": 2
+    },
+    {
+      "id": "millcross_ford_millstone_warden",
+      "x": 1428.9,
+      "y": 1455.8,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-millstone-warden",
+      "count": 1
+    },
+    {
+      "id": "millcross_ford_crossroads_reaver",
+      "x": 2489.9,
+      "y": 1445.4,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-crossroads-reaver",
+      "count": 2
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "mill-house",
+      "min_x": 1954.0,
+      "min_y": 1954.0,
+      "max_x": 1972.0,
+      "max_y": 1968.0
+    },
+    {
+      "id": "victual-shed",
+      "min_x": 1924.0,
+      "min_y": 1987.0,
+      "max_x": 1946.0,
+      "max_y": 2001.0
+    },
+    {
+      "id": "ford-stable",
+      "min_x": 1924.0,
+      "min_y": 2015.0,
+      "max_x": 1948.0,
+      "max_y": 2029.0
+    },
+    {
+      "id": "west-row-a",
+      "min_x": 1898.0,
+      "min_y": 2015.0,
+      "max_x": 1918.0,
+      "max_y": 2027.0
+    },
+    {
+      "id": "west-row-b",
+      "min_x": 1898.0,
+      "min_y": 1985.0,
+      "max_x": 1918.0,
+      "max_y": 2001.0
+    },
+    {
+      "id": "ford-store",
+      "min_x": 2029.0,
+      "min_y": 1996.0,
+      "max_x": 2049.0,
+      "max_y": 2005.0
+    },
+    {
+      "id": "ferry-shed",
+      "min_x": 2024.0,
+      "min_y": 2011.0,
+      "max_x": 2040.0,
+      "max_y": 2021.0
+    },
+    {
+      "id": "terrace-row-a",
+      "min_x": 2050.0,
+      "min_y": 1953.0,
+      "max_x": 2070.0,
+      "max_y": 1967.0
+    },
+    {
+      "id": "terrace-row-b",
+      "min_x": 2080.0,
+      "min_y": 1953.0,
+      "max_x": 2100.0,
+      "max_y": 1967.0
+    },
+    {
+      "id": "terrace-row-c",
+      "min_x": 2054.0,
+      "min_y": 1981.0,
+      "max_x": 2074.0,
+      "max_y": 1995.0
+    },
+    {
+      "id": "terrace-row-d",
+      "min_x": 2084.0,
+      "min_y": 1981.0,
+      "max_x": 2098.0,
+      "max_y": 1993.0
+    },
+    {
+      "id": "inn",
+      "min_x": 1918.0,
+      "min_y": 1987.0,
+      "max_x": 1924.0,
+      "max_y": 2001.0
+    },
+    {
+      "id": "weapon-smithy",
+      "min_x": 1918.0,
+      "min_y": 2015.0,
+      "max_x": 1924.0,
+      "max_y": 2027.0
+    },
+    {
+      "id": "general-store",
+      "min_x": 2051.0,
+      "min_y": 1996.0,
+      "max_x": 2067.0,
+      "max_y": 2005.0
+    },
+    {
+      "id": "bakehouse",
+      "min_x": 2069.0,
+      "min_y": 1996.0,
+      "max_x": 2085.0,
+      "max_y": 2005.0
+    },
+    {
+      "id": "herbalist",
+      "min_x": 2087.0,
+      "min_y": 1996.0,
+      "max_x": 2103.0,
+      "max_y": 2005.0
+    },
+    {
+      "id": "adventurer-guild",
+      "min_x": 2069.0,
+      "min_y": 2011.0,
+      "max_x": 2085.0,
+      "max_y": 2022.0
+    },
+    {
+      "id": "provisioner",
+      "min_x": 2103.0,
+      "min_y": 1996.0,
+      "max_x": 2109.0,
+      "max_y": 2005.0
+    },
+    {
+      "id": "landmark_the_cart_queue_pillar",
+      "min_x": 1714.9,
+      "min_y": 2034.9,
+      "max_x": 1725.1,
+      "max_y": 2045.1
+    },
+    {
+      "id": "cliff_west_quarry_face_cliff",
+      "min_x": 1573.9,
+      "min_y": 1733.9,
+      "max_x": 1746.1,
+      "max_y": 1906.1
+    }
+  ]
+}

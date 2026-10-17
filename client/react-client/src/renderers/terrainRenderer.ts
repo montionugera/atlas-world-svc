@@ -101,6 +101,8 @@ export const MILLCROSS_BUILDINGS: TownBuilding[] = [
 
 /**
  * Draw complete ground terrain, regional biomes, roads, river, buildings, and labels.
+ * Only the river moves: the ground under it and the town over it can be drawn once and
+ * reused (see staticLayers.ts).
  */
 export const drawTerrain = (
   ctx: CanvasRenderingContext2D,
@@ -109,6 +111,19 @@ export const drawTerrain = (
   scale: number,
   viewScale: number = 1,
   timeMs: number = Date.now(),
+): void => {
+  drawTerrainGround(ctx, width, height, scale, viewScale);
+  drawTerrainRiver(ctx, scale, viewScale, timeMs);
+  drawTerrainTown(ctx, scale, viewScale);
+};
+
+/** Everything under the river: meadow, biomes, courtyard and walkways. */
+export const drawTerrainGround = (
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  scale: number,
+  viewScale: number = 1,
 ): void => {
   const inverseScale = 1 / viewScale;
 
@@ -269,6 +284,16 @@ export const drawTerrain = (
   ctx.fill();
   ctx.strokeStyle = "#7c92a6";
   ctx.stroke();
+};
+
+/** The animated river "The Meltwash". */
+export const drawTerrainRiver = (
+  ctx: CanvasRenderingContext2D,
+  scale: number,
+  viewScale: number = 1,
+  timeMs: number = Date.now(),
+): void => {
+  const inverseScale = 1 / viewScale;
 
   // 4. Town of Millcross
   // River "The Meltwash"
@@ -289,6 +314,15 @@ export const drawTerrain = (
   ctx.moveTo((208 + waveShift) * scale, 20 * scale);
   ctx.lineTo((205 - waveShift) * scale, 240 * scale);
   ctx.stroke();
+};
+
+/** Everything over the river: trade road, bridge, buildings and region labels. */
+export const drawTerrainTown = (
+  ctx: CanvasRenderingContext2D,
+  scale: number,
+  viewScale: number = 1,
+): void => {
+  const inverseScale = 1 / viewScale;
 
   // Town Trade Road
   ctx.fillStyle = "#463e33";

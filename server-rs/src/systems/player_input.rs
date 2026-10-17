@@ -1,15 +1,20 @@
+use crate::content::map::TerrainZones;
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    CastingState, DashState, Health, PlayerAvatar, PlayerInputState, StatusEffects, Velocity,
+    CastingState, DashState, Health, PlayerAvatar, PlayerInputState, Position, StatusEffects,
+    Velocity, KNOCKBACK_DECAY_PER_SEC,
 };
 use bevy_ecs::prelude::*;
 
 /// System that applies player movement inputs to velocities,
 /// respecting avatar speed, status effects (stun, freeze), active casting, and dash impulses.
+/// Walking speed is scaled by the terrain underfoot; dash and knockback are not.
 #[allow(clippy::type_complexity)]
 pub fn player_input_system(
     clock: Res<SimClock>,
+    terrain: Option<Res<TerrainZones>>,
     mut query: Query<(
+        Option<&Position>,
         Option<&PlayerAvatar>,
         &PlayerInputState,
         &mut Velocity,
@@ -22,7 +27,9 @@ pub fn player_input_system(
     let current_time = clock.current_time_seconds();
     let dt = clock.delta_seconds();
 
-    for (avatar_opt, input, mut vel, status_opt, casting_opt, health, mut dash_opt) in &mut query {
+    for (pos_opt, avatar_opt, input, mut vel, status_opt, casting_opt, health, mut dash_opt) in
+        &mut query
+    {
         // 0. The dead do not move.
         if health.is_some_and(|h| !h.is_alive) {
             vel.vx = 0.0;
@@ -45,9 +52,10 @@ pub fn player_input_system(
             }
         }
 
-        // 2. Check CastingState: active casting locks movement
+        // 2. Check CastingState: active casting locks movement (a knockback still plays out, 2b)
         if let Some(casting) = casting_opt {
-            if casting.is_casting(current_time) {
+            if casting.is_casting(current_time) && !status_opt.is_some_and(|s| s.is_knocked_back())
+            {
                 vel.vx = 0.0;
                 vel.vy = 0.0;
                 if let Some(ref mut dash) = dash_opt {
@@ -57,12 +65,29 @@ pub fn player_input_system(
             }
         }
 
+        // 2b. Knocked back: keep the impulse velocity (easing out); input (and any dash)
+        // must not overwrite it
+        if status_opt.is_some_and(|s| s.is_knocked_back()) {
+            let decay = (-KNOCKBACK_DECAY_PER_SEC * dt).exp();
+            vel.vx *= decay;
+            vel.vy *= decay;
+            if let Some(ref mut dash) = dash_opt {
+                dash.remaining_sec = 0.0;
+            }
+            continue;
+        }
+
+        let terrain_mult = match (&terrain, pos_opt) {
+            (Some(t), Some(p)) => t.speed_multiplier_at(p.x, p.y),
+            _ => 1.0,
+        };
+
         // 3. Check DashState: active dash impulse overrides normal movement
         if let Some(ref mut dash) = dash_opt {
             if dash.is_dashing() {
                 dash.remaining_sec -= dt;
                 if dash.remaining_sec > 0.0 {
-                    let base_speed = avatar_opt.map_or(20.0, |a| a.speed);
+                    let base_speed = avatar_opt.map_or(20.0, |a| a.speed) * terrain_mult;
                     let dash_progress = (dash.remaining_sec / 0.22).clamp(0.0, 1.0);
                     let current_speed = base_speed + (dash.speed - base_speed) * dash_progress;
                     vel.vx = dash.dir_x * current_speed;
@@ -74,10 +99,10 @@ pub fn player_input_system(
             }
         }
 
-        // 4. Process movement input (respecting avatar speed and freeze multiplier)
+        // 4. Process movement input (respecting avatar speed, freeze and terrain multipliers)
         let base_speed = avatar_opt.map_or(20.0, |a| a.speed);
         let speed_mult = status_opt.map_or(1.0, |s| s.speed_multiplier());
-        let speed = base_speed * speed_mult;
+        let speed = base_speed * speed_mult * terrain_mult;
 
         let len_sq = input.move_x * input.move_x + input.move_y * input.move_y;
         if len_sq > 0.0001 {
@@ -245,6 +270,141 @@ mod tests {
     }
 
     #[test]
+    fn test_knockback_velocity_survives_held_movement_input() {
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50));
+
+        let mut status = StatusEffects::default();
+        status.apply_knockback(0.2);
+
+        let entity = world
+            .spawn((
+                PlayerAvatar::new("p1", 200.0),
+                PlayerInputState::new(1.0, 0.0, false, 0), // holding +X
+                Velocity::new(-80.0, 30.0),                // knocked back toward -X
+                status,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(player_input_system);
+        schedule.run(&mut world);
+
+        let vel = world.get::<Velocity>(entity).unwrap();
+        // Direction is kept and the speed eases out by exp(-KNOCKBACK_DECAY_PER_SEC * dt).
+        let decay = (-KNOCKBACK_DECAY_PER_SEC * 0.05).exp();
+        assert!(
+            (vel.vx - -80.0 * decay).abs() < 1e-3,
+            "movement input must not erase knockback"
+        );
+        assert!((vel.vy - 30.0 * decay).abs() < 1e-3);
+
+        // Knockback ends: normal movement control resumes.
+        world
+            .get_mut::<StatusEffects>(entity)
+            .unwrap()
+            .knockback_timer = 0.0;
+        schedule.run(&mut world);
+
+        let vel = world.get::<Velocity>(entity).unwrap();
+        assert_eq!(vel.vx, 200.0);
+        assert_eq!(vel.vy, 0.0);
+    }
+
+    #[test]
+    fn test_knockback_velocity_survives_cast_lock() {
+        use crate::ecs::components::CastingState;
+
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50));
+
+        let mut status = StatusEffects::default();
+        status.apply_knockback(0.2);
+        let mut casting = CastingState::new();
+        casting.start_cast("skill_1", 1.5, 0.0);
+
+        let entity = world
+            .spawn((
+                PlayerAvatar::new("p1", 200.0),
+                PlayerInputState::new(0.0, 0.0, false, 0),
+                Velocity::new(-80.0, 0.0), // knocked back toward -X mid-cast
+                status,
+                casting,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(player_input_system);
+        schedule.run(&mut world);
+
+        let decay = (-KNOCKBACK_DECAY_PER_SEC * 0.05).exp();
+        let vel = world.get::<Velocity>(entity).unwrap();
+        assert!(
+            (vel.vx - -80.0 * decay).abs() < 1e-3,
+            "cast lock must not erase knockback"
+        );
+
+        // Knockback ends: the cast lock holds the caster still again.
+        world
+            .get_mut::<StatusEffects>(entity)
+            .unwrap()
+            .knockback_timer = 0.0;
+        schedule.run(&mut world);
+        assert_eq!(world.get::<Velocity>(entity).unwrap().vx, 0.0);
+    }
+
+    #[test]
+    fn test_dash_glide_persists_decays_then_returns_control() {
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50)); // dt = 0.05s
+
+        let mut dash = DashState::new();
+        dash.remaining_sec = 0.22;
+        dash.dir_x = 1.0;
+        dash.dir_y = 0.0;
+        dash.speed = 450.0;
+
+        let entity = world
+            .spawn((
+                PlayerAvatar::new("p1", 200.0),
+                PlayerInputState::new(0.0, 1.0, false, 0), // holding +Y throughout
+                Velocity::zero(),
+                dash,
+            ))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(player_input_system);
+
+        // 0.22s glide at dt 0.05s: ticks 1-4 are dash-driven, tick 5 expires.
+        let mut prev_vx = f32::MAX;
+        for tick in 1..=4 {
+            schedule.run(&mut world);
+            let vel = world.get::<Velocity>(entity).unwrap();
+            assert!(
+                vel.vx > 200.0,
+                "tick {tick}: still above run speed, got {}",
+                vel.vx
+            );
+            assert!(vel.vx < prev_vx, "tick {tick}: dash speed must decay");
+            assert_eq!(
+                vel.vy, 0.0,
+                "tick {tick}: held input must not steer the glide"
+            );
+            prev_vx = vel.vx;
+        }
+
+        schedule.run(&mut world);
+        let vel = world.get::<Velocity>(entity).unwrap();
+        assert_eq!(vel.vx, 0.0);
+        assert_eq!(
+            vel.vy, 200.0,
+            "movement control returns once the glide expires"
+        );
+        assert!(!world.get::<DashState>(entity).unwrap().is_dashing());
+    }
+
+    #[test]
     fn test_dash_overrides_movement_and_decelerates() {
         let mut world = World::new();
         let clock = SimClock::new(50); // dt = 0.05s
@@ -273,5 +433,114 @@ mod tests {
         let vel = world.get::<Velocity>(entity).unwrap();
         assert!(vel.vx > 300.0, "expected dash speed > 300, got {}", vel.vx);
         assert_eq!(vel.vy, 0.0, "dash overrides WASD input during dash window");
+    }
+
+    #[test]
+    fn test_terrain_scales_walking_but_not_dash_or_knockback() {
+        use crate::content::map::{TerrainType, TerrainZone, TerrainZones};
+
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50)); // dt = 0.05s
+        world.insert_resource(TerrainZones {
+            zones: vec![TerrainZone {
+                terrain: TerrainType::Mud,
+                min_x: 0.0,
+                min_y: 0.0,
+                max_x: 100.0,
+                max_y: 100.0,
+            }],
+        });
+
+        let mut dash = DashState::new();
+        dash.remaining_sec = 0.22;
+        dash.dir_x = 1.0;
+        dash.speed = 450.0;
+        let mut knocked = StatusEffects::new();
+        knocked.apply_knockback(0.2);
+
+        let on_mud = Position::new(50.0, 50.0);
+        let avatar = || PlayerAvatar::new("p", 200.0);
+        let held = || PlayerInputState::new(1.0, 0.0, false, 0);
+        let walker = world
+            .spawn((on_mud, avatar(), held(), Velocity::zero()))
+            .id();
+        let off_mud = world
+            .spawn((
+                Position::new(500.0, 50.0),
+                avatar(),
+                held(),
+                Velocity::zero(),
+            ))
+            .id();
+        let dasher = world
+            .spawn((on_mud, avatar(), held(), Velocity::zero(), dash))
+            .id();
+        let shoved = world
+            .spawn((on_mud, avatar(), held(), Velocity::new(-80.0, 0.0), knocked))
+            .id();
+
+        let mut schedule = Schedule::default();
+        schedule.add_systems(player_input_system);
+        schedule.run(&mut world);
+
+        let vx = |e| world.get::<Velocity>(e).unwrap().vx;
+        assert_eq!(vx(off_mud), 200.0);
+        assert_eq!(vx(walker), 200.0 * TerrainType::Mud.speed_multiplier());
+        assert!(
+            vx(dasher) > 300.0,
+            "dash keeps full speed on mud, got {}",
+            vx(dasher)
+        );
+        let decay = (-KNOCKBACK_DECAY_PER_SEC * 0.05).exp();
+        assert!(
+            (vx(shoved) - -80.0 * decay).abs() < 1e-3,
+            "knockback unscaled"
+        );
+    }
+
+    #[test]
+    fn test_dash_ends_without_speed_pop_on_mud() {
+        use crate::content::map::{TerrainType, TerrainZone, TerrainZones};
+
+        let mut world = World::new();
+        world.insert_resource(SimClock::new(50));
+        world.insert_resource(TerrainZones {
+            zones: vec![TerrainZone {
+                terrain: TerrainType::Mud,
+                min_x: 0.0,
+                min_y: 0.0,
+                max_x: 1000.0,
+                max_y: 1000.0,
+            }],
+        });
+        let mut dash = DashState::new();
+        dash.remaining_sec = 0.22;
+        dash.dir_x = 1.0;
+        dash.speed = 450.0;
+        let entity = world
+            .spawn((
+                Position::new(50.0, 50.0),
+                PlayerAvatar::new("p", 200.0),
+                PlayerInputState::new(1.0, 0.0, false, 0),
+                Velocity::zero(),
+                dash,
+            ))
+            .id();
+        let mut schedule = Schedule::default();
+        schedule.add_systems(player_input_system);
+
+        // Ticks 1-4 are dash-driven, tick 5 is the first walking tick (100 on mud).
+        let mut last_dash_vx = 0.0;
+        for _ in 1..=4 {
+            schedule.run(&mut world);
+            last_dash_vx = world.get::<Velocity>(entity).unwrap().vx;
+        }
+        schedule.run(&mut world);
+        let walk_vx = world.get::<Velocity>(entity).unwrap().vx;
+        assert_eq!(walk_vx, 100.0);
+        assert!(
+            (last_dash_vx - walk_vx).abs() < 60.0,
+            "speed pop {last_dash_vx} -> {walk_vx}"
+        );
     }
 }

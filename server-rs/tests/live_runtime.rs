@@ -10,7 +10,8 @@ use server_rs::ai::ThreatTable;
 use server_rs::auth::AuthGuard;
 use server_rs::content::{derive_mob_stats, BestiaryCatalog};
 use server_rs::ecs::components::{
-    CombatStats, EntityId, Health, MobAi, MobSpawnAnchor, MobTag, PlayerAvatar, Position, Velocity,
+    CombatStats, EntityId, Health, MobAi, MobSpawnAnchor, MobTag, PlayerAvatar, Position,
+    StatusEffects, Velocity,
 };
 use server_rs::net::{ClientPacket, WsServer};
 use server_rs::protocol::{fnv1a_32, serialize_client_input};
@@ -196,11 +197,68 @@ fn row2_melee_mob_closes_distance_and_damages_player() {
     make_melee(&mut sim, mob);
     let p = player_near_mob(&mut sim, mob_pos, 120.0);
     let max = sim.world.get::<Health>(p).unwrap().max;
-    ticks(&mut sim, 100);
+    // Each hit shoves the player out of reach (see the shove test below), so the mob has
+    // to close again: one hit followed by leashing or walking home must fail here.
+    let (mut hp, mut hits) = (max, 0);
+    for _ in 0..100 {
+        tick(&mut sim);
+        let now = sim.world.get::<Health>(p).unwrap().current;
+        if now < hp {
+            hits += 1;
+        }
+        hp = now;
+    }
+    // A healthy mob lands 5 hits here and ends ~50 u away; one that walks home and
+    // re-aggros between hits manages only 2 hits and ends ~84 u away.
+    assert!(
+        hits >= 4,
+        "mob did not keep engaging after its shove: {hits} hit(s)"
+    );
     let d = dist(pos(&sim, mob), pos(&sim, p));
-    assert!(d <= 46.0, "melee mob did not close to reach: {d}");
-    let hp = sim.world.get::<Health>(p).unwrap().current;
-    assert!(hp < max, "mob never damaged the player ({hp}/{max})");
+    assert!(d <= 60.0, "melee mob did not stay on the player: {d}");
+}
+
+/// Distance one real mob melee hit (projectile, live schedule) shoves a stationary avatar.
+fn mob_melee_shove(attack_power: f32) -> f32 {
+    let mut sim = live(0, 1);
+    let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
+    make_melee(&mut sim, mob);
+    sim.world.get_mut::<CombatStats>(mob).unwrap().attack_power = attack_power;
+    let p = player_near_mob(&mut sim, mob_pos, 44.0);
+    let max = sim.world.get::<Health>(p).unwrap().max;
+    let mut before = pos(&sim, p);
+    for _ in 0..40 {
+        tick(&mut sim);
+        if sim.world.get::<Health>(p).unwrap().current < max {
+            break;
+        }
+        before = pos(&sim, p);
+    }
+    assert!(
+        sim.world.get::<Health>(p).unwrap().current < max,
+        "mob never hit the player"
+    );
+    for _ in 0..10 {
+        if !sim.world.get::<StatusEffects>(p).unwrap().is_knocked_back() {
+            break;
+        }
+        tick(&mut sim);
+    }
+    dist(before, pos(&sim, p))
+}
+
+#[test]
+fn row2_mob_melee_hit_shoves_player_a_short_step() {
+    // Weakest and strongest shove (below and above the knockback_speed clamp). The player
+    // must visibly move, yet stay about one short step from melee: mob reach is 46, the
+    // avatar's 40, so a 44 -> ~98 fling is far too much.
+    for attack_power in [1.0, 40.0] {
+        let moved = mob_melee_shove(attack_power);
+        assert!(
+            (12.0..=40.0).contains(&moved),
+            "attack_power {attack_power}: player shoved {moved} u, want 12..=40"
+        );
+    }
 }
 
 #[test]
@@ -317,6 +375,11 @@ fn row8_human_avatar_only_melees_while_attack_held() {
     let mut sim = live(0, 1);
     let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
     player_near_mob(&mut sim, mob_pos, 30.0);
+    // Keep the mob from swinging: its hit would shove the avatar out of melee reach.
+    sim.world
+        .get_mut::<CombatStats>(mob)
+        .unwrap()
+        .cooldown_timer = 60.0;
     let max = sim.world.get::<Health>(mob).unwrap().max;
     for _ in 0..10 {
         sim.live_tick(&[input("p1", 0.0, 0.0, false)], &[]);
@@ -512,6 +575,12 @@ fn review5_bot_hits_mob_standing_at_mob_melee_reach() {
     // Mob at 44px: inside mob melee reach (20 + 12 + 14), beyond the old 30px bot range.
     *sim.world.get_mut::<Velocity>(bot).unwrap() = Velocity::zero();
     *sim.world.get_mut::<Position>(mob).unwrap() = Position::new(bot_pos.x + 44.0, bot_pos.y);
+    // The mob must not swing first: its hit now shoves the bot out of melee reach,
+    // which is not what this range check is about.
+    sim.world
+        .get_mut::<CombatStats>(mob)
+        .unwrap()
+        .cooldown_timer = 5.0;
     let max = sim.world.get::<Health>(mob).unwrap().max;
     tick(&mut sim);
     assert!(sim.world.get::<Health>(mob).unwrap().current < max);
@@ -949,6 +1018,7 @@ fn test_manual_respawn_revives_dead_player_immediately() {
     use server_rs::protocol::serialize_client_input_full;
 
     let mut sim = live(0, 0);
+    sim.debug_enabled = true;
     let p_ent = sim.spawn_player_avatar("p-revive-test", 250.0, 350.0);
 
     // Kill player
@@ -990,6 +1060,48 @@ fn test_manual_respawn_revives_dead_player_immediately() {
     let pos = sim.world.get::<Position>(p_ent).unwrap();
     assert_eq!(pos.x, 250.0);
     assert_eq!(pos.y, 350.0);
+}
+
+#[test]
+fn respawn_requests_are_ignored_outside_development_mode() {
+    use server_rs::protocol::serialize_client_input_full;
+
+    let mut sim = live(0, 0); // debug_enabled is false unless the server turns it on
+    let p_ent = sim.spawn_player_avatar("p-no-debug", 250.0, 350.0);
+    let respawn = || ClientPacket {
+        session_id: "p-no-debug".to_string(),
+        room_id: "map-for-play".to_string(),
+        payload: serialize_client_input_full(1, 0.0, 0.0, false, 0, 0, 0.0, 0.0, true),
+    };
+
+    // Alive and away from the spawn point: no free heal, no teleport home.
+    *sim.world.get_mut::<Position>(p_ent).unwrap() = Position::new(600.0, 600.0);
+    sim.world
+        .get_mut::<Health>(p_ent)
+        .unwrap()
+        .take_damage(10.0);
+    let hurt = sim.world.get::<Health>(p_ent).unwrap().current;
+    sim.live_tick(&[respawn()], &[]);
+    assert_eq!(sim.world.get::<Health>(p_ent).unwrap().current, hurt);
+    assert_eq!(
+        *sim.world.get::<Position>(p_ent).unwrap(),
+        Position::new(600.0, 600.0)
+    );
+
+    // Dead: asking does not skip the respawn delay (1.0 s = 20 ticks here).
+    sim.world.get_mut::<Health>(p_ent).unwrap().take_damage(1e9);
+    for _ in 0..10 {
+        sim.live_tick(&[respawn()], &[]);
+    }
+    assert!(
+        !sim.world.get::<Health>(p_ent).unwrap().is_alive,
+        "revived early"
+    );
+    ticks(&mut sim, 15);
+    assert!(
+        sim.world.get::<Health>(p_ent).unwrap().is_alive,
+        "the timer never revived"
+    );
 }
 
 #[test]
@@ -1041,4 +1153,145 @@ fn test_client_input_target_pos_and_entity_aiming() {
         Some(Position::new(300.0, 400.0)),
         "target_x and target_y should populate target_pos"
     );
+}
+
+// ---- Parry needs a live attack input ---------------------------------------------------
+
+/// A melee mob with a stationary avatar 44 u away: inside the mob's reach (46) but outside
+/// the avatar's own (40), so an avatar swing finds no target. The mob holds its first swing
+/// for `mob_delay` seconds.
+fn parry_setup(mob_delay: f32) -> (AtlasSimulation, Entity, Entity) {
+    let mut sim = live(0, 1);
+    let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
+    make_melee(&mut sim, mob);
+    sim.world
+        .get_mut::<CombatStats>(mob)
+        .unwrap()
+        .cooldown_timer = mob_delay;
+    let p = player_near_mob(&mut sim, mob_pos, 44.0);
+    (sim, mob, p)
+}
+
+/// Ticks until the avatar loses health (true) or `n` ticks pass (false).
+fn hit_within(sim: &mut AtlasSimulation, p: Entity, n: usize) -> bool {
+    let max = sim.world.get::<Health>(p).unwrap().max;
+    for _ in 0..n {
+        tick(sim);
+        if sim.world.get::<Health>(p).unwrap().current < max {
+            return true;
+        }
+    }
+    false
+}
+
+#[test]
+fn parry_idle_avatar_with_no_input_takes_mob_melee_damage() {
+    let (mut sim, _, p) = parry_setup(0.0);
+    assert!(
+        hit_within(&mut sim, p, 40),
+        "an avatar that never sent input parried the mob's melee"
+    );
+}
+
+#[test]
+fn parry_released_tap_that_found_no_target_does_not_parry_later() {
+    let (mut sim, _, p) = parry_setup(0.5);
+    // One click with the mob outside the avatar's reach, then release.
+    sim.live_tick(&[input("p1", 0.0, 0.0, true)], &[]);
+    sim.live_tick(&[input("p1", 0.0, 0.0, false)], &[]);
+    assert!(
+        hit_within(&mut sim, p, 40),
+        "a tap released long ago still parried the mob's melee"
+    );
+    assert!(
+        !sim.world
+            .get::<server_rs::ecs::components::PlayerInputState>(p)
+            .unwrap()
+            .attack,
+        "attack stayed latched after the button was released"
+    );
+}
+
+#[test]
+fn parry_tap_released_within_one_tick_still_swings_once() {
+    let mut sim = live(0, 1);
+    let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
+    let p = player_near_mob(&mut sim, mob_pos, 30.0);
+    sim.world
+        .get_mut::<CombatStats>(mob)
+        .unwrap()
+        .cooldown_timer = 60.0;
+    let max = sim.world.get::<Health>(mob).unwrap().max;
+    sim.live_tick(
+        &[input("p1", 0.0, 0.0, true), input("p1", 0.0, 0.0, false)],
+        &[],
+    );
+    assert!(
+        sim.world.get::<Health>(mob).unwrap().current < max,
+        "a tap released in the same tick did not swing"
+    );
+    assert!(
+        !sim.world
+            .get::<server_rs::ecs::components::PlayerInputState>(p)
+            .unwrap()
+            .attack,
+        "attack stayed latched after the tap swung"
+    );
+}
+
+fn seq_input(session: &str, client_tick: u32, mx: f32) -> ClientPacket {
+    ClientPacket {
+        session_id: session.to_string(),
+        room_id: "map-for-play".to_string(),
+        payload: serialize_client_input(client_tick, mx, 0.0, false, 0, 0),
+    }
+}
+
+/// `input_ack` of `session`'s avatar, read back from the encoded frame.
+fn wire_ack(frame: &LiveFrame, session: &str) -> u32 {
+    let bytes = wire(frame);
+    let snap = root_as_world_snapshot(&bytes).unwrap();
+    let ack = snap
+        .entities()
+        .unwrap()
+        .iter()
+        .find(|e| e.id() == fnv1a_32(session))
+        .expect("avatar on the wire")
+        .input_ack();
+    ack
+}
+
+#[test]
+fn input_ack_is_the_last_input_the_tick_ran_on() {
+    let mut sim = live(0, 0);
+    // The frame of the tick that applied an input carries that input's number.
+    let frame = sim.live_tick(&[seq_input("p1", 1, 1.0)], &[]);
+    assert_eq!(wire_ack(&frame, "p1"), 1);
+    // No new input: the same one is still in effect.
+    assert_eq!(wire_ack(&tick(&mut sim), "p1"), 1);
+    // An input that arrived between two ticks is applied by, and echoed in, the next.
+    let frame = sim.live_tick(&[seq_input("p1", 2, 0.0)], &[]);
+    assert_eq!(wire_ack(&frame, "p1"), 2);
+    // Two inputs in one tick: the later one is what the tick ran on.
+    let frame = sim.live_tick(&[seq_input("p1", 3, 1.0), seq_input("p1", 4, 0.0)], &[]);
+    assert_eq!(wire_ack(&frame, "p1"), 4);
+    let p1 = avatar(&mut sim, "p1").unwrap();
+    assert_eq!(sim.world.get::<Velocity>(p1).unwrap().vx, 0.0);
+}
+
+#[test]
+fn input_ack_is_per_player_and_zero_without_client_input() {
+    let mut sim = live(2, 2);
+    let frame = sim.live_tick(&[seq_input("p1", 5, 0.0), seq_input("p2", 9, 0.0)], &[]);
+    assert_eq!(wire_ack(&frame, "p1"), 5);
+    assert_eq!(wire_ack(&frame, "p2"), 9);
+    // Bots and mobs never had a client input: 0, which is also "no input yet".
+    let humans = [fnv1a_32("p1"), fnv1a_32("p2")];
+    let others: Vec<_> = frame
+        .entities
+        .iter()
+        .filter(|e| !humans.contains(&e.id))
+        .collect();
+    assert_eq!(others.len(), 4);
+    assert!(others.iter().all(|e| e.input_ack == 0));
 }

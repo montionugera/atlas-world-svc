@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Godot;
 
 namespace AtlasWorld.Client.World
@@ -41,6 +42,71 @@ namespace AtlasWorld.Client.World
         /// so CPU height queries interpolate the exact same triangles rendered by the GPU.
         /// </summary>
         public static float ActiveMeshCellSize { get; private set; } = 1.0f;
+
+        /// <summary>
+        /// Uploads Stage 2 declarative <see cref="UnifiedMapRouteSpline"/> segments and <see cref="UnifiedMapGroundZone"/>
+        /// radii to <c>stylized_grass_floor.gdshader</c> so authored routes and forest borders shade automatically.
+        /// </summary>
+        public static void SyncFloorShaderUniforms(Material? material, UnifiedMapDocument? doc)
+        {
+            if (material is not ShaderMaterial shaderMat || doc == null)
+                return;
+
+            var segArray = new Godot.Collections.Array<Vector4>();
+            var widthList = new List<float>();
+            int segCount = 0;
+
+            if (doc.Routes != null)
+            {
+                for (int r = 0; r < doc.Routes.Count && segCount < 16; r++)
+                {
+                    var route = doc.Routes[r];
+                    if (route.Points == null || route.Points.Count < 2)
+                        continue;
+
+                    float halfW = Mathf.Max(1.2f, route.Width * 0.5f);
+                    for (int i = 0; i < route.Points.Count - 1 && segCount < 16; i++)
+                    {
+                        var p0 = route.Points[i];
+                        var p1 = route.Points[i + 1];
+                        if (p0 == null || p1 == null || p0.Length < 2 || p1.Length < 2)
+                            continue;
+
+                        segArray.Add(new Vector4(p0[0], p0[1], p1[0], p1[1]));
+                        widthList.Add(halfW);
+                        segCount++;
+                    }
+                }
+            }
+
+            while (segArray.Count < 16)
+            {
+                segArray.Add(Vector4.Zero);
+                widthList.Add(2.4f);
+            }
+
+            shaderMat.SetShaderParameter("route_segment_count", segCount);
+            shaderMat.SetShaderParameter("route_segments", segArray);
+            shaderMat.SetShaderParameter("route_half_widths", widthList.ToArray());
+
+            float forestInnerRadius = 22.0f;
+            if (doc.GroundZones != null)
+            {
+                foreach (var z in doc.GroundZones)
+                {
+                    if (z.Shape == "annulus" && z.InnerRadius > 1.0f)
+                    {
+                        forestInnerRadius = z.InnerRadius;
+                        break;
+                    }
+                    if (z.Shape == "circle" && z.GroundId == "meadow_grass" && z.Radius > 1.0f)
+                    {
+                        forestInnerRadius = z.Radius;
+                    }
+                }
+            }
+            shaderMat.SetShaderParameter("forest_inner_radius", forestInnerRadius);
+        }
 
         /// <summary>
         /// Returns true if a sculpted <see cref="UnifiedMapHeightTerrace"/> has a cliff wall steeper than
@@ -96,8 +162,8 @@ namespace AtlasWorld.Client.World
 
         /// <summary>
         /// Evaluates the continuous analytical terrain height at a grid vertex (wx, wz), including
-        /// harmonic rolling hills, sculpted Map Builder <see cref="UnifiedMapHeightTerrace"/> plateaus,
-        /// and automatic footprint leveling under 3D structures (Watchtowers &amp; Crystal Caves).
+        /// harmonic rolling hills, Stage 2 route spline cross-slope leveling, sculpted Map Builder
+        /// <see cref="UnifiedMapHeightTerrace"/> plateaus, and automatic footprint leveling under 3D structures.
         /// </summary>
         public static float SampleAnalyticalTerrainHeight(float wx, float wz, UnifiedMapDocument? doc = null)
         {
@@ -131,12 +197,26 @@ namespace AtlasWorld.Client.World
 
         private static float SampleRawUnflattenedHeight(float wx, float wz, float amp, UnifiedMapDocument? doc)
         {
-            // Keep central spawn plaza & road corridor near (0, -2..+4) gently flattened so combat & spawning feel grounded
+            // Keep central spawn plaza near (0, 0) gently flattened so combat & spawning feel grounded
             float distFromSpawn = Mathf.Sqrt(wx * wx + wz * wz);
             float spawnFlatMask = SmoothStep(5.5f, 15.0f, distFromSpawn);
 
-            // Keep the N-S cobblestone road (|x| < 2.6m) smooth and walkable
-            float roadFlatMask = SmoothStep(2.2f, 6.2f, Mathf.Abs(wx));
+            // Stage 2 Route Spline Flattening: evaluate distance to authored polyline routes in doc.Routes
+            // (with automatic fallback to N-S highway |wx| < 2.2m if no routes are defined)
+            float roadDist = Mathf.Abs(wx);
+            float roadHalfW = 2.2f;
+            float roadFeatherEnd = 6.2f;
+            if (doc != null && doc.Routes != null && doc.Routes.Count > 0)
+            {
+                float d = doc.SampleMinRouteDistance(wx, wz, out float matchedHalfW, out float matchedClearMargin, out _);
+                if (d < float.MaxValue * 0.5f)
+                {
+                    roadDist = d;
+                    roadHalfW = matchedHalfW;
+                    roadFeatherEnd = matchedHalfW + Mathf.Max(2.5f, matchedClearMargin * 1.5f);
+                }
+            }
+            float roadFlatMask = SmoothStep(roadHalfW, roadFeatherEnd, roadDist);
 
             // Layered harmonic rolling hills
             float wave1 = Mathf.Sin(wx * 0.075f) * Mathf.Cos(wz * 0.075f) * 1.35f;

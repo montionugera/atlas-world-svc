@@ -3,17 +3,36 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import * as flatbuffers from "flatbuffers";
-import { GameState, Player, Mob, Projectile } from "../types/game";
+import {
+  GameEventInfo,
+  GameState,
+  Player,
+  Mob,
+  Projectile,
+} from "../types/game";
 import {
   emptyEquipmentSnapshot,
   type EquipmentSnapshot,
 } from "../config/equipmentSlots";
+import { mapDef } from "../config/maps";
+import {
+  MAX_BEHIND_MS,
+  SNAPSHOT_INTERVAL_MS,
+  observeSnapshot,
+  pushSample,
+} from "../utils/snapshotInterpolation";
+import { perfTimings, recordTiming, timingGate } from "../utils/frameTiming";
 import {
   BinaryDeltaDecoder,
   EntityType,
   STATE_FLAG_ALIVE,
   STATE_FLAG_BOT,
 } from "../protocol/BinaryDeltaDecoder";
+import {
+  PROTOCOL_MISMATCH_CLOSE_CODE,
+  PROTOCOL_VERSION,
+  formatProtocolMismatchMessage,
+} from "../protocol/protocolVersion";
 import { ClientInput } from "../protocol/generated/atlas/protocol/client-input";
 
 export interface ServerRsClientConfig {
@@ -26,6 +45,9 @@ export interface ServerRsClientConfig {
 export interface LatencyMetrics {
   pingMs: number;
   snapshotIntervalMs: number;
+  /** Median / worst gap over the last 20 snapshots. */
+  snapshotP50Ms: number;
+  snapshotMaxMs: number;
   jitterMs: number;
   serverTimeDeltaMs: number;
   fps: number;
@@ -34,9 +56,15 @@ export interface LatencyMetrics {
 export interface UseServerRsClientReturn {
   // State
   isConnected: boolean;
+  connectionError: string | null;
   roomId: string | null;
   playerId: string;
+  /** Published to React a few times a second (see UI_PUBLISH_INTERVAL_MS). */
   gameState: GameState | null;
+  /** The newest snapshot, every snapshot: what the canvas draws. Never re-renders. */
+  gameStateRef: React.RefObject<GameState | null>;
+  /** Call `listener` on every snapshot; returns the unsubscribe function. */
+  onSnapshot: (listener: (state: GameState) => void) => () => void;
   updateCount: number;
   isSimulating: boolean;
   fps: number;
@@ -47,10 +75,18 @@ export interface UseServerRsClientReturn {
   equippedWeaponId: string;
 
   // Actions
-  connect: () => Promise<void>;
+  connect: (mapIdOverride?: string) => Promise<void>;
   joinRoom: (mapId?: string) => Promise<void>;
   updatePlayerInput: (vx: number, vy: number) => void;
   sendPlayerAction: (action: string, pressed: boolean, options?: any) => void;
+  /** `client_tick` of the newest input sent (0: none yet). */
+  inputSeqRef: React.MutableRefObject<number>;
+  /** Called with the `client_tick` of every input as it is sent. */
+  inputSentRef: React.MutableRefObject<((seq: number) => void) | null>;
+  /** Last non-zero target sent to the server (it holds this for AoE impact). */
+  sentTargetRef: React.MutableRefObject<{ x: number; y: number }>;
+  /** Combat events received since the last call (the renderer drains it per frame). */
+  drainEvents: () => GameEventInfo[];
   switchWeapon: (weaponId: string) => void;
   requestEquipment: () => void;
   requestLoadout: () => void;
@@ -87,6 +123,19 @@ export const SERVER_RS_MOB_RADIUS = 14;
 /** Drawn projectile radius (the wire carries no radius). */
 export const SERVER_RS_PROJECTILE_RADIUS = 4;
 
+/**
+ * Snapshots arrive 20 times a second; React state (HUD, entity cards, stats) follows
+ * at this pace. The canvas does not wait for it: it reads `gameStateRef`.
+ */
+const UI_PUBLISH_INTERVAL_MS = 150;
+
+/** A respawn is a cut, however short the hop: it starts a new position history. */
+const revived = (existing: { isAlive?: boolean } | undefined, alive: boolean) =>
+  alive && existing?.isAlive === false;
+
+/** Undrained combat events kept (a hidden tab must not replay thousands on return). */
+const MAX_QUEUED_EVENTS = 64;
+
 /** Skill id → server-rs skill slot (see server-rs/src/systems/skill_execution.rs). */
 const SKILL_SLOTS: Record<string, number> = {
   skill_1: 1,
@@ -110,6 +159,7 @@ export const useServerRsClient = (
 ): UseServerRsClientReturn => {
   // State
   const [isConnected, setIsConnected] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
   const [roomId, setRoomId] = useState<string | null>(null);
   const sessionName = config.token?.startsWith("dev-token:")
     ? config.token.replace("dev-token:", "")
@@ -130,7 +180,10 @@ export const useServerRsClient = (
 
   // Refs
   const wsRef = useRef<WebSocket | null>(null);
-  const clientTickRef = useRef<number>(0);
+  const connectionErrorRef = useRef<string | null>(null);
+  // `client_tick` of the newest input sent; the first is 1, so 0 means none.
+  const inputSeqRef = useRef<number>(0);
+  const inputSentRef = useRef<((seq: number) => void) | null>(null);
   const isConnectingRef = useRef<boolean>(false);
   // Currently-held input, re-sent with every packet (server input is full-state).
   const moveRef = useRef<{ vx: number; vy: number }>({ vx: 0, vy: 0 });
@@ -147,10 +200,40 @@ export const useServerRsClient = (
   const [latencyMetrics, setLatencyMetrics] = useState<LatencyMetrics>({
     pingMs: 0,
     snapshotIntervalMs: 50,
+    snapshotP50Ms: 50,
+    snapshotMaxMs: 50,
     jitterMs: 0,
     serverTimeDeltaMs: 0,
     fps: 0,
   });
+
+  const gameStateRef = useRef<GameState | null>(null);
+  const snapshotListenersRef = useRef(new Set<(state: GameState) => void>());
+  const onSnapshot = useCallback((listener: (state: GameState) => void) => {
+    snapshotListenersRef.current.add(listener);
+    return () => {
+      snapshotListenersRef.current.delete(listener);
+    };
+  }, []);
+  // What React last saw: when, and the things it must not see late.
+  const publishedRef = useRef({ at: -Infinity, mapId: "", dead: false });
+  const updateCountRef = useRef(0);
+  // The catch-up publish for snapshots that React has not seen yet.
+  const trailingRef = useRef<{
+    timer: ReturnType<typeof setTimeout> | null;
+    flush: () => void;
+  }>({ timer: null, flush: () => undefined });
+  const cancelTrailingPublish = useCallback(() => {
+    const trailing = trailingRef.current;
+    if (trailing.timer) clearTimeout(trailing.timer);
+    trailing.timer = null;
+  }, []);
+  const eventQueueRef = useRef<GameEventInfo[]>([]);
+  const drainEvents = useCallback(() => {
+    const queued = eventQueueRef.current;
+    if (queued.length > 0) eventQueueRef.current = [];
+    return queued;
+  }, []);
 
   const stateRef = useRef<GameState>({
     players: new Map(),
@@ -180,6 +263,7 @@ export const useServerRsClient = (
 
   // Disconnect WebSocket
   const disconnect = useCallback(() => {
+    cancelTrailingPublish();
     if (simulationIntervalRef.current) {
       clearInterval(simulationIntervalRef.current);
       simulationIntervalRef.current = null;
@@ -196,13 +280,19 @@ export const useServerRsClient = (
     attackHeldRef.current = false;
     stateRef.current.players.clear();
     stateRef.current.mobs.clear();
+    stateRef.current.projectiles = undefined;
+    stateRef.current.renderClock = undefined;
+    eventQueueRef.current = [];
 
     setIsConnected(false);
     setRoomId(null);
+    gameStateRef.current = null;
+    publishedRef.current.at = -Infinity;
     setGameState(null);
+    updateCountRef.current = 0;
     setUpdateCount(0);
     localStorage.removeItem("atlas-world-server-rs-connected");
-  }, []);
+  }, [cancelTrailingPublish]);
 
   // Connect to server-rs WebSocket gateway
   const connect = useCallback(
@@ -220,6 +310,9 @@ export const useServerRsClient = (
         return;
       }
 
+      cancelTrailingPublish();
+      connectionErrorRef.current = null;
+      setConnectionError(null);
       return new Promise<void>((resolve, reject) => {
         try {
           isConnectingRef.current = true;
@@ -232,7 +325,7 @@ export const useServerRsClient = (
               : "dev-player";
           const localPlayerId = String(fnv1a32(sessionName));
           setPlayerId(localPlayerId);
-          const url = `${protocol}://${config.serverHost}:${config.serverPort}?token=${token}&map=${activeMap}`;
+          const url = `${protocol}://${config.serverHost}:${config.serverPort}?token=${token}&map=${activeMap}&proto=${PROTOCOL_VERSION}`;
 
           const ws = new WebSocket(url);
           ws.binaryType = "arraybuffer";
@@ -249,7 +342,11 @@ export const useServerRsClient = (
           };
 
           ws.onopen = () => {
-            if (wsRef.current !== ws) {
+            if (
+              wsRef.current !== ws ||
+              ws.readyState === WebSocket.CLOSED ||
+              ws.readyState === WebSocket.CLOSING
+            ) {
               // Superseded (StrictMode remount / disconnect during CONNECTING): not an error.
               ws.close();
               settle();
@@ -264,7 +361,7 @@ export const useServerRsClient = (
             const builder = new flatbuffers.Builder(64);
             const offset = ClientInput.createClientInput(
               builder,
-              clientTickRef.current++,
+              ++inputSeqRef.current,
               0,
               0,
               false,
@@ -293,8 +390,12 @@ export const useServerRsClient = (
 
             try {
               if (wsRef.current !== ws) return; // superseded while awaiting a Blob
+              const decodeStart = timingGate.on ? performance.now() : 0;
               const snapshot = BinaryDeltaDecoder.decode(buffer);
               const arrivalTime = performance.now();
+              if (timingGate.on) {
+                recordTiming(perfTimings, "decode", arrivalTime - decodeStart);
+              }
               const prevArrivalTime = lastSnapshotReceivedTimeRef.current;
               lastSnapshotReceivedTimeRef.current = arrivalTime;
               const interval = arrivalTime - prevArrivalTime;
@@ -303,6 +404,9 @@ export const useServerRsClient = (
                 snapshotIntervalsRef.current.shift();
               }
               const jitter = Math.abs(interval - 50);
+              const sortedIntervals = [...snapshotIntervalsRef.current].sort(
+                (a, b) => a - b,
+              );
               const serverDelta = snapshot.serverTimeMs
                 ? Date.now() - Number(snapshot.serverTimeMs)
                 : 0;
@@ -310,15 +414,32 @@ export const useServerRsClient = (
               const nextMetrics: LatencyMetrics = {
                 pingMs: Math.max(0, Math.round(serverDelta)),
                 snapshotIntervalMs: Math.round(interval * 10) / 10,
+                snapshotP50Ms: Math.round(
+                  sortedIntervals[sortedIntervals.length >> 1],
+                ),
+                snapshotMaxMs: Math.round(
+                  sortedIntervals[sortedIntervals.length - 1],
+                ),
                 jitterMs: Math.round(jitter * 10) / 10,
                 serverTimeDeltaMs: serverDelta,
                 fps: frameCountRef.current || 60,
               };
-              setLatencyMetrics(nextMetrics);
               (window as any).__latencyMetrics = nextMetrics;
 
               const current = stateRef.current;
               current.tick = snapshot.tick;
+              // Entities are drawn on the server timeline, not at arrival time.
+              const simTime = snapshot.tick * SNAPSHOT_INTERVAL_MS;
+              current.renderClock = observeSnapshot(
+                current.renderClock,
+                simTime,
+                arrivalTime,
+              );
+              const sampleOf = (e: { x: number; y: number }) => ({
+                t: simTime,
+                x: e.x,
+                y: e.y,
+              });
               // Snapshots are full state: projectiles are ephemeral, so rebuild the set each
               // frame (they never go through removed_ids).
               const projectiles = new Map<string, Projectile>();
@@ -357,6 +478,13 @@ export const useServerRsClient = (
                     y: entity.y,
                     vx: entity.vx,
                     vy: entity.vy,
+                    receivedAt: arrivalTime,
+                    samples: pushSample(
+                      revived(existing, isAlive)
+                        ? undefined
+                        : existing?.samples,
+                      sampleOf(entity),
+                    ),
                     radius: SERVER_RS_PLAYER_RADIUS,
                     name: isLocalPlayer
                       ? "Player (YOU)"
@@ -370,6 +498,7 @@ export const useServerRsClient = (
                     attackRange: 40,
                     // Only server-driven BotAgents are bots; other humans are not.
                     isBotMode: (entity.stateFlags & STATE_FLAG_BOT) !== 0,
+                    inputAck: entity.inputAck,
                     currentAttackTarget: entity.targetId
                       ? String(entity.targetId)
                       : undefined,
@@ -384,6 +513,13 @@ export const useServerRsClient = (
                     y: entity.y,
                     vx: entity.vx,
                     vy: entity.vy,
+                    receivedAt: arrivalTime,
+                    samples: pushSample(
+                      revived(existing, isAlive)
+                        ? undefined
+                        : existing?.samples,
+                      sampleOf(entity),
+                    ),
                     radius: SERVER_RS_MOB_RADIUS,
                     tag: isAlive ? "mob" : "dead",
                     // Older servers send no mob_type: keep whatever we already had.
@@ -400,6 +536,13 @@ export const useServerRsClient = (
                     y: entity.y,
                     vx: entity.vx,
                     vy: entity.vy,
+                    receivedAt: arrivalTime,
+                    // With its velocity: the heading is drawn from the same moment as
+                    // the position, or a parried spear turns round before it flies back.
+                    samples: pushSample(
+                      current.projectiles?.get(idStr)?.samples,
+                      { ...sampleOf(entity), vx: entity.vx, vy: entity.vy },
+                    ),
                     radius: SERVER_RS_PROJECTILE_RADIUS,
                     ownerId: String(entity.ownerId),
                     isStuck: false,
@@ -414,14 +557,78 @@ export const useServerRsClient = (
                 current.mobs.delete(idStr);
               }
 
+              // One that just left the snapshot is still in flight in the picture, which
+              // runs behind: keep it until render time has surely passed its last sample.
+              current.projectiles?.forEach((p, id) => {
+                if (projectiles.has(id)) return;
+                const endsAt = p.endsAt ?? p.samples?.[p.samples.length - 1]?.t;
+                if (endsAt !== undefined && simTime - endsAt <= MAX_BEHIND_MS) {
+                  projectiles.set(id, { ...p, endsAt });
+                }
+              });
+              current.projectiles = projectiles;
+              if (snapshot.events.length > 0) {
+                eventQueueRef.current = [
+                  ...eventQueueRef.current,
+                  ...snapshot.events,
+                ].slice(-MAX_QUEUED_EVENTS);
+              }
               const nextState: GameState = {
                 ...current,
                 players: new Map(current.players),
                 mobs: new Map(current.mobs),
-                projectiles,
                 events: snapshot.events,
               };
-              setGameState(nextState);
+              gameStateRef.current = nextState;
+              snapshotListenersRef.current.forEach((listen) =>
+                listen(nextState),
+              );
+              updateCountRef.current++;
+              // React follows at a slower pace, except for what must show at once:
+              // the first state of a room and the local player dying or reviving.
+              const me = nextState.players.get(localPlayerId);
+              const dead = !!me && (!me.isAlive || (me.health ?? 1) <= 0);
+              const published = publishedRef.current;
+              const publish =
+                arrivalTime - published.at >= UI_PUBLISH_INTERVAL_MS ||
+                published.mapId !== nextState.mapId ||
+                published.dead !== dead;
+              if (publish) {
+                cancelTrailingPublish();
+                publishedRef.current = {
+                  at: arrivalTime,
+                  mapId: nextState.mapId,
+                  dead,
+                };
+                setGameState(nextState);
+                setLatencyMetrics(nextMetrics);
+                setUpdateCount(updateCountRef.current);
+              } else {
+                // If no snapshot follows, React still gets this one on time.
+                const trailing = trailingRef.current;
+                trailing.flush = () => {
+                  publishedRef.current = {
+                    at: performance.now(),
+                    mapId: nextState.mapId,
+                    dead,
+                  };
+                  setGameState(nextState);
+                  setLatencyMetrics(nextMetrics);
+                  setUpdateCount(updateCountRef.current);
+                };
+                if (!trailing.timer) {
+                  trailing.timer = setTimeout(
+                    () => {
+                      trailing.timer = null;
+                      trailing.flush();
+                    },
+                    Math.max(
+                      0,
+                      UI_PUBLISH_INTERVAL_MS - (arrivalTime - published.at),
+                    ),
+                  );
+                }
+              }
               // Expose for quick debug / e2e (parity with useColyseusClient)
               (window as any).__gameState = nextState;
               (window as any).__playerId = localPlayerId;
@@ -442,8 +649,6 @@ export const useServerRsClient = (
                   ...snapshot.events,
                 ].slice(-500);
               }
-              setUpdateCount((prev) => prev + 1);
-
               // Calculate update rate over a sliding 10s window
               const now = Date.now();
               updateTimesRef.current.push(now);
@@ -455,13 +660,20 @@ export const useServerRsClient = (
                 const span =
                   updateTimesRef.current[updateTimesRef.current.length - 1] -
                   updateTimesRef.current[0];
-                if (span > 0) {
+                if (span > 0 && publish) {
                   setUpdateRate(
                     Math.round(
                       ((updateTimesRef.current.length - 1) * 1000) / span,
                     ),
                   );
                 }
+              }
+              if (timingGate.on) {
+                recordTiming(
+                  perfTimings,
+                  "update",
+                  performance.now() - arrivalTime,
+                );
               }
             } catch (decodeErr) {
               console.error(
@@ -478,7 +690,24 @@ export const useServerRsClient = (
             settle(err);
           };
 
-          ws.onclose = () => {
+          ws.onclose = (event?: { code?: number; reason?: string }) => {
+            if (event?.code === PROTOCOL_MISMATCH_CLOSE_CODE) {
+              const mismatchMsg = formatProtocolMismatchMessage(event.reason);
+              connectionErrorRef.current = mismatchMsg;
+              setConnectionError(mismatchMsg);
+              if (wsRef.current === ws) {
+                wsRef.current = null;
+              }
+              cancelTrailingPublish();
+              setIsConnected(false);
+              setRoomId(null);
+              gameStateRef.current = null;
+              publishedRef.current.at = -Infinity;
+              setGameState(null);
+              isConnectingRef.current = false;
+              settle();
+              return;
+            }
             // A superseded socket (StrictMode remount, reconnect) must not wipe the live session's state.
             if (wsRef.current !== ws) {
               // Superseded, or deliberately disconnect()ed (wsRef already null): not an error.
@@ -488,8 +717,11 @@ export const useServerRsClient = (
               wsRef.current = null;
               settle(new Error("WebSocket closed before it opened"));
             }
+            cancelTrailingPublish();
             setIsConnected(false);
             setRoomId(null);
+            gameStateRef.current = null;
+            publishedRef.current.at = -Infinity;
             setGameState(null);
             isConnectingRef.current = false;
           };
@@ -499,8 +731,11 @@ export const useServerRsClient = (
         }
       });
     },
-    [config],
+    [config, cancelTrailingPublish],
   );
+
+  // Last non-zero target we actually sent (mirrors the target the server holds)
+  const sentTargetRef = useRef({ x: 0, y: 0 });
 
   // Send binary input frame
   const sendInput = useCallback(
@@ -518,10 +753,15 @@ export const useServerRsClient = (
         return;
       }
 
+      // The server overwrites its held target on any non-zero target packet.
+      if (targetX !== 0 || targetY !== 0) {
+        sentTargetRef.current = { x: targetX, y: targetY };
+      }
+
       const builder = new flatbuffers.Builder(64);
       const offset = ClientInput.createClientInput(
         builder,
-        clientTickRef.current++,
+        ++inputSeqRef.current,
         vx,
         vy,
         attack,
@@ -534,6 +774,7 @@ export const useServerRsClient = (
       builder.finish(offset);
       const bytes = builder.asUint8Array();
       wsRef.current.send(bytes);
+      inputSentRef.current?.(inputSeqRef.current);
     },
     [],
   );
@@ -541,15 +782,17 @@ export const useServerRsClient = (
   // Join room (maps seamlessly to server-rs ready connection)
   const joinRoom = useCallback(
     async (mapId: string = "map-for-play") => {
+      if (connectionErrorRef.current) return;
       const isSwitchingMap = mapId !== currentMapRef.current;
       currentMapRef.current = mapId;
       const targetRoomId = `server-rs-${mapId}`;
       setRoomId(targetRoomId);
 
-      const isDeflectMap = mapId === "map-for-test-deflect";
-      const width = isDeflectMap ? 100 : 1000;
-      const height = isDeflectMap ? 100 : 1000;
-      const viewportSize = isDeflectMap ? 100 : SERVER_RS_VIEWPORT;
+      const {
+        width,
+        height,
+        viewportSize = SERVER_RS_VIEWPORT,
+      } = mapDef(mapId);
 
       stateRef.current.mapId = mapId;
       stateRef.current.roomId = targetRoomId;
@@ -557,26 +800,38 @@ export const useServerRsClient = (
       stateRef.current.height = height;
       stateRef.current.viewportSize = viewportSize;
 
-      if (
-        isSwitchingMap &&
-        wsRef.current &&
-        wsRef.current.readyState === WebSocket.OPEN
-      ) {
+      if (isSwitchingMap) {
+        // Nothing from the old room may leak into the new one.
         stateRef.current.players.clear();
         stateRef.current.mobs.clear();
+        stateRef.current.projectiles = undefined;
+        stateRef.current.renderClock = undefined;
+        eventQueueRef.current = [];
+        targetIdRef.current = 0;
+        aimRef.current = { x: 0, y: 0 };
+        sentTargetRef.current = { x: 0, y: 0 };
         const oldWs = wsRef.current;
-        wsRef.current = null;
-        oldWs.close();
-        await connect(mapId);
-      } else if (
-        !wsRef.current ||
-        wsRef.current.readyState !== WebSocket.OPEN
-      ) {
+        if (
+          oldWs &&
+          (oldWs.readyState === WebSocket.OPEN ||
+            oldWs.readyState === WebSocket.CONNECTING)
+        ) {
+          // Detach first: handlers are guarded by wsRef identity, so the abandoned
+          // socket's late open/message/close cannot write state or reconnect.
+          wsRef.current = null;
+          oldWs.close();
+        }
+      }
+      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
         await connect(mapId);
       }
+      if (connectionErrorRef.current) return;
+      // A newer joinRoom took over while we awaited: it owns the state now.
+      if (currentMapRef.current !== mapId) return;
 
-      setGameState((prev) =>
-        prev
+      const prev = gameStateRef.current;
+      const joined: GameState =
+        prev && !isSwitchingMap
           ? {
               ...prev,
               mapId,
@@ -594,8 +849,9 @@ export const useServerRsClient = (
               width,
               height,
               viewportSize,
-            },
-      );
+            };
+      gameStateRef.current = joined;
+      setGameState(joined);
       sendInput(
         moveRef.current.vx,
         moveRef.current.vy,
@@ -676,7 +932,16 @@ export const useServerRsClient = (
   }, []);
 
   const respawn = useCallback(() => {
-    sendInput(0, 0, false, 0, 0, 0, 0, true);
+    sendInput(
+      moveRef.current.vx,
+      moveRef.current.vy,
+      attackHeldRef.current,
+      0,
+      0,
+      0,
+      0,
+      true,
+    );
   }, [sendInput]);
 
   const startSimulation = useCallback(() => {
@@ -713,9 +978,12 @@ export const useServerRsClient = (
 
   return {
     isConnected,
+    connectionError,
     roomId,
     playerId,
     gameState,
+    gameStateRef,
+    onSnapshot,
     updateCount,
     isSimulating,
     fps,
@@ -729,6 +997,10 @@ export const useServerRsClient = (
     joinRoom,
     updatePlayerInput,
     sendPlayerAction,
+    inputSeqRef,
+    inputSentRef,
+    sentTargetRef,
+    drainEvents,
     switchWeapon,
     requestEquipment,
     requestLoadout,

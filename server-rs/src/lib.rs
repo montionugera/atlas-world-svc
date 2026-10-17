@@ -3,6 +3,7 @@ pub mod auth;
 pub mod combat;
 pub mod content;
 pub mod core;
+pub mod debug;
 pub mod ecs;
 pub mod fleet;
 pub mod net;

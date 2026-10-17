@@ -1,0 +1,576 @@
+{
+  "version": 3,
+  "mapId": "northern-icefield",
+  "name": "Northern Icefield \u2014 The Oath-Gate Shelf",
+  "seed": 573196,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "barren_cliff",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 1.45,
+  "proceduralClutterDensity": 48,
+  "defaultTimeOfDayHours": 11.5,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c02",
+    "regionId": "c02/r24",
+    "zoneId": "northern-icefield",
+    "spineNodeId": "n-northern-icefield",
+    "townId": "",
+    "storyRegionId": "region-icefield",
+    "landmarkIds": [
+      "the-oath-gate",
+      "the-crevasse-shelf"
+    ],
+    "resourceIds": [
+      "the-meltwater-heads",
+      "the-gravel-head"
+    ],
+    "hazardIds": [
+      "the-cold",
+      "the-white-weather",
+      "the-crevasses"
+    ]
+  },
+  "concept": {
+    "biome": "wealdmarch_glacial_shelf",
+    "recommendedLevelRange": [
+      11,
+      80
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "Every river in the land starts under this shelf, and the company at the gate on its lip has been standing there since the city behind it fell."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "pine_forest_border": {
+      "surfaceType": "forest_moss",
+      "albedoTint": "#346E36",
+      "friction": 0.9,
+      "maxSlopeDeg": 30.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.35,
+          "tagPool": {
+            "biome": "forest",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.1,
+          "tagPool": {
+            "biome": "forest",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.95
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.52,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.04,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "forest",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.95
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.45
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        },
+        "boulder": {
+          "weight": 0.015,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "forest",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.1
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.25
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    }
+  },
+  "routes": [
+    {
+      "id": "oath_gate_sled_road",
+      "groundId": "cobble_road",
+      "width": 12.5,
+      "clearMargin": 2.5,
+      "points": [
+        [
+          0.0,
+          90.0
+        ],
+        [
+          0.0,
+          20.0
+        ],
+        [
+          0.0,
+          -25.0
+        ],
+        [
+          0.0,
+          -85.0
+        ]
+      ]
+    },
+    {
+      "id": "meltwater_head_footpath",
+      "groundId": "cobble_road",
+      "width": 4.2,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          -55.0,
+          12.0
+        ],
+        [
+          0.0,
+          4.0
+        ],
+        [
+          55.0,
+          -10.0
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "oath_gate_gravel_head",
+      "groundId": "barren_cliff",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 30.0,
+      "innerRadius": 0.0,
+      "outerRadius": 30.0,
+      "width": 60.0,
+      "height": 60.0,
+      "feather": 5.0
+    },
+    {
+      "id": "sub_shelf_tundra_margin",
+      "groundId": "pine_forest_border",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 30.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "the_oath_gate_lip",
+      "x": 0.0,
+      "z": -18.0,
+      "radius": 16.0,
+      "height": 2.4,
+      "falloff": 0.45
+    },
+    {
+      "id": "meltwater_head_terrace",
+      "x": 19.0,
+      "z": 10.0,
+      "radius": 13.0,
+      "height": 2.0,
+      "falloff": 0.48
+    },
+    {
+      "id": "the_crevasse_shelf_wall",
+      "x": -27.0,
+      "z": -20.0,
+      "radius": 11.0,
+      "height": 4.5,
+      "falloff": 0.15
+    }
+  ],
+  "structures": [
+    {
+      "id": "oath_gate_sentinel_watchtower_01",
+      "kind": "watchtower",
+      "x": -9.5,
+      "z": -12.0,
+      "rotY": 0.0,
+      "radius": 3.8,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "crevasse_shelf_ice_cavern_01",
+      "kind": "crystal_cave",
+      "x": 11.5,
+      "z": -8.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_oath_gate_pillar_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -4.8,
+      "y": 2.4,
+      "z": -16.0,
+      "rotY": 0.0,
+      "scale": 1.2,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_oath_gate_pillar_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 4.8,
+      "y": 2.4,
+      "z": -16.0,
+      "rotY": 0.0,
+      "scale": 1.2,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_stoneguard_banner",
+      "assetPath": "res://assets/dungeon/banner_patterna_white.glb",
+      "x": -3.5,
+      "y": 2.4,
+      "z": -15.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "northern_icefield_frostbitten_ox",
+      "x": 2155.0,
+      "y": 1935.0,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-frostbitten-ox",
+      "count": 2
+    },
+    {
+      "id": "northern_icefield_rime_shrike",
+      "x": 1690.4,
+      "y": 2048.9,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-rime-shrike",
+      "count": 4
+    },
+    {
+      "id": "northern_icefield_frostfell_stalker",
+      "x": 2121.6,
+      "y": 1688.9,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-frostfell-stalker",
+      "count": 4
+    },
+    {
+      "id": "northern_icefield_hoarfrost_wisp",
+      "x": 1912.4,
+      "y": 2274.8,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-hoarfrost-wisp",
+      "count": 3
+    },
+    {
+      "id": "northern_icefield_oathtablet_sentry",
+      "x": 1635.5,
+      "y": 1680.1,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-oathtablet-sentry",
+      "count": 2
+    },
+    {
+      "id": "northern_icefield_icelocked_oathkeeper",
+      "x": 2375.8,
+      "y": 2016.1,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-icelocked-oathkeeper",
+      "count": 1
+    },
+    {
+      "id": "northern_icefield_rime_drake",
+      "x": 1782.8,
+      "y": 2390.2,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-rime-drake",
+      "count": 2
+    },
+    {
+      "id": "northern_icefield_hoarfell_giant",
+      "x": 2129.6,
+      "y": 1449.2,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-hoarfell-giant",
+      "count": 2
+    },
+    {
+      "id": "northern_icefield_snowblind_shade",
+      "x": 2392.8,
+      "y": 2268.9,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-snowblind-shade",
+      "count": 2
+    },
+    {
+      "id": "northern_icefield_icefloe_wyrm",
+      "x": 1380.5,
+      "y": 1713.9,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-icefloe-wyrm",
+      "count": 1
+    },
+    {
+      "id": "northern_icefield_oathgate_sentinel",
+      "x": 2483.1,
+      "y": 1574.4,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-oathgate-sentinel",
+      "count": 1
+    },
+    {
+      "id": "northern_icefield_whitewaste_colossus",
+      "x": 1975.6,
+      "y": 2641.0,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-whitewaste-colossus",
+      "count": 1
+    },
+    {
+      "id": "northern_icefield_deepfrost_wyrm",
+      "x": 1511.7,
+      "y": 1345.1,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-deepfrost-wyrm",
+      "count": 1
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_oath_gate_pillar_w",
+      "min_x": 1946.4,
+      "min_y": 1834.4,
+      "max_x": 1957.6,
+      "max_y": 1845.6
+    },
+    {
+      "id": "landmark_oath_gate_pillar_e",
+      "min_x": 2042.4,
+      "min_y": 1834.4,
+      "max_x": 2053.6,
+      "max_y": 1845.6
+    },
+    {
+      "id": "cliff_the_crevasse_shelf_wall",
+      "min_x": 1639.8,
+      "min_y": 1709.8,
+      "max_x": 1820.2,
+      "max_y": 1890.2
+    }
+  ]
+}

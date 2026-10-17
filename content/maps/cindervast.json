@@ -1,0 +1,600 @@
+{
+  "version": 3,
+  "mapId": "cindervast",
+  "name": "Cindervast \u2014 The Intact Ruin & Dead Gate",
+  "seed": 278693,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "cobble_road",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 0.65,
+  "proceduralClutterDensity": 48,
+  "defaultTimeOfDayHours": 19.2,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c02",
+    "regionId": "c02/r02",
+    "zoneId": "cindervast",
+    "spineNodeId": "n-cluster1",
+    "townId": "c-town-cindervast",
+    "storyRegionId": "region-cindervast",
+    "landmarkIds": [
+      "the-giving-king-statues",
+      "the-dead-gate"
+    ],
+    "resourceIds": [
+      "relic-scrap",
+      "district-fuel"
+    ],
+    "hazardIds": [
+      "the-afterglow",
+      "a-city-with-nobody-in-it"
+    ]
+  },
+  "concept": {
+    "biome": "wealdmarch_relic_ruin",
+    "recommendedLevelRange": [
+      21,
+      80
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "A city the weapon took without knocking it down: intact mortar, no rubble in the streets, and what the people in it were carrying still where they dropped it."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "pine_forest_border": {
+      "surfaceType": "forest_moss",
+      "albedoTint": "#346E36",
+      "friction": 0.9,
+      "maxSlopeDeg": 30.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.35,
+          "tagPool": {
+            "biome": "forest",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.1,
+          "tagPool": {
+            "biome": "forest",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.95
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.52,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.04,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "forest",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.95
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.45
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        },
+        "boulder": {
+          "weight": 0.015,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "forest",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.1
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.25
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    }
+  },
+  "routes": [
+    {
+      "id": "dead_gate_grand_avenue",
+      "groundId": "cobble_road",
+      "width": 14.0,
+      "clearMargin": 2.8,
+      "points": [
+        [
+          0.0,
+          95.0
+        ],
+        [
+          0.0,
+          20.0
+        ],
+        [
+          0.0,
+          -20.0
+        ],
+        [
+          0.0,
+          -95.0
+        ]
+      ]
+    },
+    {
+      "id": "giving_king_square_crossway",
+      "groundId": "cobble_road",
+      "width": 6.0,
+      "clearMargin": 2.0,
+      "points": [
+        [
+          -65.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          65.0,
+          0.0
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "giving_king_statue_plaza",
+      "groundId": "cobble_road",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 32.0,
+      "innerRadius": 0.0,
+      "outerRadius": 32.0,
+      "width": 64.0,
+      "height": 64.0,
+      "feather": 4.0
+    },
+    {
+      "id": "afterglow_outer_districts",
+      "groundId": "barren_cliff",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 32.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "the_dead_gate_bastion",
+      "x": 0.0,
+      "z": 22.0,
+      "radius": 16.0,
+      "height": 2.3,
+      "falloff": 0.46
+    },
+    {
+      "id": "giving_king_north_dais",
+      "x": 0.0,
+      "z": -18.0,
+      "radius": 14.0,
+      "height": 2.1,
+      "falloff": 0.48
+    },
+    {
+      "id": "relic_crater_sheer_rim",
+      "x": 28.0,
+      "z": -24.0,
+      "radius": 10.0,
+      "height": 4.3,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "dead_gate_outer_watchtower_01",
+      "kind": "watchtower",
+      "x": -10.5,
+      "z": 12.0,
+      "rotY": 0.0,
+      "radius": 3.8,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "cindervast_relic_vault_01",
+      "kind": "crystal_cave",
+      "x": 11.5,
+      "z": -10.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_giving_king_statue_plinth",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 0.0,
+      "y": 2.1,
+      "z": -16.0,
+      "rotY": 0.0,
+      "scale": 1.25,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.7
+    },
+    {
+      "id": "landmark_dead_gate_pillar_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -5.2,
+      "y": 2.3,
+      "z": 20.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_dead_gate_pillar_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 5.2,
+      "y": 2.3,
+      "z": 20.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "cindervast_relicglow_moth",
+      "x": 2144.8,
+      "y": 1933.8,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-relicglow-moth",
+      "count": 3
+    },
+    {
+      "id": "cindervast_soot_wrapped_scavenger",
+      "x": 1662.9,
+      "y": 1920.4,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-soot-wrapped-scavenger",
+      "count": 4
+    },
+    {
+      "id": "cindervast_broken_crown_sentinel",
+      "x": 2008.5,
+      "y": 1657.7,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-broken-crown-sentinel",
+      "count": 1
+    },
+    {
+      "id": "cindervast_cindered_revenant",
+      "x": 1959.5,
+      "y": 2265.5,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-cindered-revenant",
+      "count": 2
+    },
+    {
+      "id": "cindervast_relicslag_crawler",
+      "x": 1756.4,
+      "y": 1612.6,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-relicslag-crawler",
+      "count": 2
+    },
+    {
+      "id": "cindervast_rebellion_echo",
+      "x": 2328.4,
+      "y": 1836.0,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-rebellion-echo",
+      "count": 2
+    },
+    {
+      "id": "cindervast_relic_hulk",
+      "x": 1604.5,
+      "y": 2229.7,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-relic-hulk",
+      "count": 2
+    },
+    {
+      "id": "cindervast_violet_ash_drake",
+      "x": 1935.5,
+      "y": 1455.0,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-violet-ash-drake",
+      "count": 2
+    },
+    {
+      "id": "cindervast_afterglow_shade",
+      "x": 2206.7,
+      "y": 2391.0,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-afterglow-shade",
+      "count": 1
+    },
+    {
+      "id": "cindervast_cinderfall_giant",
+      "x": 1402.7,
+      "y": 1830.3,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-cinderfall-giant",
+      "count": 1
+    },
+    {
+      "id": "cindervast_crownfall_automaton",
+      "x": 2368.3,
+      "y": 1532.0,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-crownfall-automaton",
+      "count": 1
+    },
+    {
+      "id": "cindervast_ashcrown_drake",
+      "x": 1891.0,
+      "y": 2571.2,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-ashcrown-drake",
+      "count": 1
+    },
+    {
+      "id": "cindervast_relicdrawn_siege_hulk",
+      "x": 1855.0,
+      "y": 1285.4,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-relicdrawn-siege-hulk",
+      "count": 1
+    },
+    {
+      "id": "cindervast_crownash_wyrm",
+      "x": 2635.7,
+      "y": 1814.7,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-crownash-wyrm",
+      "count": 1
+    },
+    {
+      "id": "cindervast_relicshell_colossus",
+      "x": 1392.6,
+      "y": 2437.4,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-relicshell-colossus",
+      "count": 1
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_giving_king_statue_plinth",
+      "min_x": 1993.7,
+      "min_y": 1833.7,
+      "max_x": 2006.3,
+      "max_y": 1846.3
+    },
+    {
+      "id": "landmark_dead_gate_pillar_w",
+      "min_x": 1942.6,
+      "min_y": 2194.6,
+      "max_x": 1953.4,
+      "max_y": 2205.4
+    },
+    {
+      "id": "landmark_dead_gate_pillar_e",
+      "min_x": 2046.6,
+      "min_y": 2194.6,
+      "max_x": 2057.4,
+      "max_y": 2205.4
+    },
+    {
+      "id": "cliff_relic_crater_sheer_rim",
+      "min_x": 2198.0,
+      "min_y": 1678.0,
+      "max_x": 2362.0,
+      "max_y": 1842.0
+    }
+  ]
+}

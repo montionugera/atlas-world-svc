@@ -1,0 +1,522 @@
+{
+  "version": 3,
+  "mapId": "hollowmarch",
+  "name": "Hollowmarch \u2014 The Palisade Line & Tally Boards",
+  "seed": 338034,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "pine_forest_border",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 1.1,
+  "proceduralClutterDensity": 48,
+  "defaultTimeOfDayHours": 13.2,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c02",
+    "regionId": "c02/r14",
+    "zoneId": "hollowmarch",
+    "spineNodeId": "n-norhollow",
+    "townId": "c-town-norhollow",
+    "storyRegionId": "region-norhollow",
+    "landmarkIds": [
+      "the-tally-boards",
+      "the-palisade-line"
+    ],
+    "resourceIds": [
+      "the-timber-line",
+      "the-ore-heads"
+    ],
+    "hazardIds": [
+      "the-open-moor",
+      "the-outer-fields",
+      "hollow-stakes"
+    ]
+  },
+  "concept": {
+    "biome": "wealdmarch_palisade_moor",
+    "recommendedLevelRange": [
+      1,
+      60
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "Where the timber and the ore both start, behind the only wall in the land that was never taken down."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "pine_forest_border": {
+      "surfaceType": "forest_moss",
+      "albedoTint": "#346E36",
+      "friction": 0.9,
+      "maxSlopeDeg": 30.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.35,
+          "tagPool": {
+            "biome": "forest",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.1,
+          "tagPool": {
+            "biome": "forest",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.95
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.52,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.04,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "forest",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.95
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.45
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        },
+        "boulder": {
+          "weight": 0.015,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "forest",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.1
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.25
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    }
+  },
+  "routes": [
+    {
+      "id": "norhollow_timber_ore_dragway",
+      "groundId": "cobble_road",
+      "width": 12.5,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          -90.0
+        ],
+        [
+          0.0,
+          -20.0
+        ],
+        [
+          0.0,
+          20.0
+        ],
+        [
+          0.0,
+          90.0
+        ]
+      ]
+    },
+    {
+      "id": "palisade_rim_patrol_footpath",
+      "groundId": "cobble_road",
+      "width": 4.5,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          -70.0,
+          -4.0
+        ],
+        [
+          0.0,
+          -4.0
+        ],
+        [
+          70.0,
+          -4.0
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "tally_boards_gate_clearing",
+      "groundId": "meadow_grass",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 26.0,
+      "innerRadius": 0.0,
+      "outerRadius": 26.0,
+      "width": 52.0,
+      "height": 52.0,
+      "feather": 4.5
+    },
+    {
+      "id": "standing_timber_and_moor_ring",
+      "groundId": "pine_forest_border",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 26.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "the_palisade_line_rim",
+      "x": 0.0,
+      "z": -17.0,
+      "radius": 16.0,
+      "height": 2.2,
+      "falloff": 0.46
+    },
+    {
+      "id": "the_timber_line_ridge",
+      "x": -19.0,
+      "z": 11.0,
+      "radius": 13.5,
+      "height": 2.1,
+      "falloff": 0.48
+    },
+    {
+      "id": "the_ore_heads_crag",
+      "x": 27.0,
+      "z": -21.0,
+      "radius": 10.0,
+      "height": 4.2,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "norhollow_palisade_watchtower_01",
+      "kind": "watchtower",
+      "x": -10.0,
+      "z": -5.0,
+      "rotY": 0.0,
+      "radius": 3.6,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "hollowmarch_ore_head_adit_01",
+      "kind": "crystal_cave",
+      "x": 12.0,
+      "z": -7.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_the_tally_boards_post_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -4.5,
+      "y": 1.8,
+      "z": -12.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_the_tally_boards_post_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 4.5,
+      "y": 1.8,
+      "z": -12.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_norhollow_banner",
+      "assetPath": "res://assets/dungeon/banner_patterna_green.glb",
+      "x": -3.2,
+      "y": 1.8,
+      "z": -10.5,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "hollowmarch_graveturf_creeper",
+      "x": 2042.5,
+      "y": 2102.7,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-graveturf-creeper",
+      "count": 4
+    },
+    {
+      "id": "hollowmarch_palisade_borer",
+      "x": 1628.7,
+      "y": 1920.2,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-palisade-borer",
+      "count": 2
+    },
+    {
+      "id": "hollowmarch_stakeline_hound",
+      "x": 2057.7,
+      "y": 1551.5,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-stakeline-hound",
+      "count": 4
+    },
+    {
+      "id": "hollowmarch_tallyknot_wight",
+      "x": 1946.2,
+      "y": 2404.5,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-tallyknot-wight",
+      "count": 3
+    },
+    {
+      "id": "hollowmarch_palisade_breaker",
+      "x": 1617.0,
+      "y": 1465.9,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-palisade-breaker",
+      "count": 2
+    },
+    {
+      "id": "hollowmarch_hollowmoor_giant",
+      "x": 2558.5,
+      "y": 2130.2,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-hollowmoor-giant",
+      "count": 2
+    },
+    {
+      "id": "hollowmarch_hollow_bell_wight",
+      "x": 1355.1,
+      "y": 2391.8,
+      "width": 110.0,
+      "height": 110.0,
+      "mobType": "mob-hollow-bell-wight",
+      "count": 1
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_the_tally_boards_post_w",
+      "min_x": 1949.6,
+      "min_y": 1874.6,
+      "max_x": 1960.4,
+      "max_y": 1885.4
+    },
+    {
+      "id": "landmark_the_tally_boards_post_e",
+      "min_x": 2039.6,
+      "min_y": 1874.6,
+      "max_x": 2050.4,
+      "max_y": 1885.4
+    },
+    {
+      "id": "cliff_the_ore_heads_crag",
+      "min_x": 2188.0,
+      "min_y": 1708.0,
+      "max_x": 2352.0,
+      "max_y": 1872.0
+    }
+  ]
+}

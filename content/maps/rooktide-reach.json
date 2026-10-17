@@ -1,0 +1,503 @@
+{
+  "version": 3,
+  "mapId": "rooktide-reach",
+  "name": "Rooktide Reach \u2014 The Barge-Cranes & Rook Flats",
+  "seed": 148660,
+  "width": 4000.0,
+  "height": 4000.0,
+  "baseGroundId": "meadow_grass",
+  "chunkSizeWorld": 24,
+  "activeChunkRadius": 2,
+  "terrainAmplitude": 0.7,
+  "proceduralClutterDensity": 48,
+  "defaultTimeOfDayHours": 9.8,
+  "autoAdvanceDayNight": true,
+  "dayNightSpeedHoursPerSec": 0.12,
+  "worldSpineBinding": {
+    "continentId": "c02",
+    "regionId": "c02/r28",
+    "zoneId": "rooktide-reach",
+    "spineNodeId": "n-rooktide",
+    "townId": "c-town-rooktide",
+    "storyRegionId": "region-rooktide",
+    "landmarkIds": [
+      "the-barge-cranes",
+      "the-rook-flats"
+    ],
+    "resourceIds": [
+      "old-plank",
+      "cut-reed"
+    ],
+    "hazardIds": [
+      "the-turning-tide",
+      "the-low-water-mud"
+    ]
+  },
+  "concept": {
+    "biome": "wealdmarch_tidal_reach",
+    "recommendedLevelRange": [
+      1,
+      20
+    ],
+    "skyPreset": "golden_alpine_meadow",
+    "loreSummary": "Everything moving between sea and river changes hulls here, and whatever goes over the side in the change stays on the flats."
+  },
+  "groundPalettes": {
+    "cobble_road": {
+      "surfaceType": "stone_path",
+      "albedoTint": "#C2B294",
+      "friction": 0.85,
+      "maxSlopeDeg": 38.0,
+      "clearColliders": true,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "road_cobble_trim": {
+          "weight": 0.14,
+          "tagPool": {
+            "biome": "road",
+            "role": "pebble_trim",
+            "maxHeightM": 0.25
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "edge_only",
+          "scaleRange": [
+            0.28,
+            0.48
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "meadow_grass": {
+      "surfaceType": "lush_grass",
+      "albedoTint": "#529E47",
+      "friction": 0.8,
+      "maxSlopeDeg": 32.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.3,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_1_b_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.05,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_1_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.6,
+            0.88
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.48,
+          "minSpacingMeters": 1.5
+        },
+        "pebble": {
+          "weight": 0.02,
+          "tagPool": {
+            "biome": "meadow",
+            "role": "pebble",
+            "maxHeightM": 0.3
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.32,
+            0.58
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.4,
+          "minSpacingMeters": 1.5
+        }
+      }
+    },
+    "pine_forest_border": {
+      "surfaceType": "forest_moss",
+      "albedoTint": "#346E36",
+      "friction": 0.9,
+      "maxSlopeDeg": 30.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {
+        "grass": {
+          "weight": 0.35,
+          "tagPool": {
+            "biome": "forest",
+            "role": "ground_cover",
+            "maxHeightM": 0.35
+          },
+          "assets": [
+            "res://assets/nature/grass_1_a_color1.glb",
+            "res://assets/nature/grass_2_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.55,
+            0.85
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.3,
+          "minSpacingMeters": 1.5
+        },
+        "bush": {
+          "weight": 0.1,
+          "tagPool": {
+            "biome": "forest",
+            "role": "understory",
+            "maxHeightM": 0.65
+          },
+          "assets": [
+            "res://assets/nature/bush_1_a_color1.glb",
+            "res://assets/nature/bush_2_a_color1.glb",
+            "res://assets/nature/bush_2_b_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.65,
+            0.95
+          ],
+          "blocksMovement": false,
+          "colliderHalfExtent": 0.52,
+          "minSpacingMeters": 1.5
+        },
+        "canopy_tree": {
+          "weight": 0.04,
+          "minSpacingMeters": 4.2,
+          "tagPool": {
+            "biome": "forest",
+            "role": "canopy",
+            "maxTrunkRadiusM": 0.95
+          },
+          "assets": [
+            "res://assets/nature/tree_1_a_color1.glb",
+            "res://assets/nature/tree_2_a_color1.glb",
+            "res://assets/nature/tree_3_a_color1.glb",
+            "res://assets/nature/tree_1_b_color1.glb"
+          ],
+          "disabledAssets": [
+            "res://assets/nature/tree_dead_1_a_color1.glb"
+          ],
+          "placement": "fill",
+          "scaleRange": [
+            1.05,
+            1.45
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        },
+        "boulder": {
+          "weight": 0.015,
+          "minSpacingMeters": 4.8,
+          "tagPool": {
+            "biome": "forest",
+            "role": "boulder",
+            "maxTrunkRadiusM": 1.1
+          },
+          "assets": [
+            "res://assets/nature/rock_1_a_color1.glb",
+            "res://assets/nature/rock_2_a_color1.glb",
+            "res://assets/nature/rock_3_a_color1.glb"
+          ],
+          "disabledAssets": [],
+          "placement": "fill",
+          "scaleRange": [
+            0.85,
+            1.25
+          ],
+          "blocksMovement": true,
+          "colliderHalfExtent": 0.85
+        }
+      }
+    },
+    "barren_cliff": {
+      "surfaceType": "sheer_rock",
+      "albedoTint": "#756E63",
+      "friction": 1.0,
+      "maxSlopeDeg": 90.0,
+      "clearColliders": false,
+      "playerScaleBandM": [
+        0.9,
+        1.2
+      ],
+      "scatter": {}
+    }
+  },
+  "routes": [
+    {
+      "id": "rooktide_hull_change_causeway",
+      "groundId": "cobble_road",
+      "width": 12.0,
+      "clearMargin": 2.4,
+      "points": [
+        [
+          0.0,
+          -88.0
+        ],
+        [
+          0.0,
+          -18.0
+        ],
+        [
+          0.0,
+          18.0
+        ],
+        [
+          0.0,
+          88.0
+        ]
+      ]
+    },
+    {
+      "id": "cut_reed_tidal_footpath",
+      "groundId": "cobble_road",
+      "width": 4.2,
+      "clearMargin": 1.8,
+      "points": [
+        [
+          -58.0,
+          10.0
+        ],
+        [
+          0.0,
+          6.0
+        ],
+        [
+          58.0,
+          14.0
+        ]
+      ]
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "barge_cranes_landing_apron",
+      "groundId": "cobble_road",
+      "priority": 20,
+      "shape": "circle",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 24.0,
+      "innerRadius": 0.0,
+      "outerRadius": 24.0,
+      "width": 48.0,
+      "height": 48.0,
+      "feather": 4.0
+    },
+    {
+      "id": "brackish_reed_and_rook_flats",
+      "groundId": "meadow_grass",
+      "priority": 10,
+      "shape": "annulus",
+      "x": 0.0,
+      "z": 0.0,
+      "radius": 190.0,
+      "innerRadius": 24.0,
+      "outerRadius": 190.0,
+      "width": 380.0,
+      "height": 380.0,
+      "feather": 6.0
+    }
+  ],
+  "heightTerraces": [
+    {
+      "id": "the_barge_cranes_quay",
+      "x": 0.0,
+      "z": -16.0,
+      "radius": 15.0,
+      "height": 1.9,
+      "falloff": 0.48
+    },
+    {
+      "id": "the_rook_flats_bank",
+      "x": 16.0,
+      "z": 14.0,
+      "radius": 14.0,
+      "height": 1.5,
+      "falloff": 0.52
+    },
+    {
+      "id": "tidal_headland_sheer_stack",
+      "x": -26.0,
+      "z": -20.0,
+      "radius": 9.5,
+      "height": 4.0,
+      "falloff": 0.16
+    }
+  ],
+  "structures": [
+    {
+      "id": "rooktide_harbour_watchtower_01",
+      "kind": "watchtower",
+      "x": -9.5,
+      "z": -8.0,
+      "rotY": 0.0,
+      "radius": 3.6,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    },
+    {
+      "id": "rooktide_tidal_hold_cavern_01",
+      "kind": "crystal_cave",
+      "x": 11.5,
+      "z": -6.0,
+      "rotY": 0.0,
+      "radius": 4.2,
+      "upperFloorHeight": 3.2,
+      "ceilingHeight": 3.4
+    }
+  ],
+  "props": [
+    {
+      "id": "landmark_barge_crane_piling_w",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": -4.2,
+      "y": 1.9,
+      "z": -14.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_barge_crane_piling_e",
+      "assetPath": "res://assets/dungeon/pillar.glb",
+      "x": 4.2,
+      "y": 1.9,
+      "z": -14.0,
+      "rotY": 0.0,
+      "scale": 1.15,
+      "blocksMovement": true,
+      "colliderHalfExtent": 0.65
+    },
+    {
+      "id": "landmark_rooktide_reed_banner",
+      "assetPath": "res://assets/dungeon/banner_patterna_blue.glb",
+      "x": -3.0,
+      "y": 1.8,
+      "z": -12.0,
+      "rotY": 0.0,
+      "scale": 1.1,
+      "blocksMovement": false,
+      "colliderHalfExtent": 0.4
+    }
+  ],
+  "spawnAreas": [
+    {
+      "id": "rooktide_reach_rookshade",
+      "x": 2144.7,
+      "y": 1936.0,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-rookshade",
+      "count": 3
+    },
+    {
+      "id": "rooktide_reach_thatch_mite",
+      "x": 1572.4,
+      "y": 1878.7,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-thatch-mite",
+      "count": 4
+    },
+    {
+      "id": "rooktide_reach_tideflat_nipper",
+      "x": 1985.8,
+      "y": 1444.5,
+      "width": 160.0,
+      "height": 160.0,
+      "mobType": "mob-tideflat-nipper",
+      "count": 4
+    },
+    {
+      "id": "rooktide_reach_saltmarsh_wisp",
+      "x": 1903.1,
+      "y": 2534.6,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-saltmarsh-wisp",
+      "count": 3
+    },
+    {
+      "id": "rooktide_reach_tideline_drowner",
+      "x": 1287.4,
+      "y": 1576.9,
+      "width": 130.0,
+      "height": 130.0,
+      "mobType": "mob-tideline-drowner",
+      "count": 2
+    }
+  ],
+  "staticObstacles": [
+    {
+      "id": "landmark_barge_crane_piling_w",
+      "min_x": 1952.6,
+      "min_y": 1854.6,
+      "max_x": 1963.4,
+      "max_y": 1865.4
+    },
+    {
+      "id": "landmark_barge_crane_piling_e",
+      "min_x": 2036.6,
+      "min_y": 1854.6,
+      "max_x": 2047.4,
+      "max_y": 1865.4
+    },
+    {
+      "id": "cliff_tidal_headland_sheer_stack",
+      "min_x": 1662.1,
+      "min_y": 1722.1,
+      "max_x": 1817.9,
+      "max_y": 1877.9
+    }
+  ]
+}

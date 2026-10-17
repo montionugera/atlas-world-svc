@@ -1,9 +1,10 @@
 use crate::ai::ThreatTable;
 use crate::combat::{DamageType, Element};
+use crate::content::map::TerrainZones;
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
     AiState, CombatStats, ElementalAttributes, Health, MobAi, PlayerTag, Position, Projectile,
-    StatusEffects, Velocity,
+    StatusEffects, Velocity, KNOCKBACK_DECAY_PER_SEC,
 };
 use bevy_ecs::prelude::*;
 
@@ -11,6 +12,7 @@ use bevy_ecs::prelude::*;
 pub fn mob_ai_system(
     mut commands: Commands,
     clock: Res<SimClock>,
+    terrain: Option<Res<TerrainZones>>,
     mut mobs: Query<(
         Entity,
         &Position,
@@ -23,7 +25,14 @@ pub fn mob_ai_system(
         Option<&StatusEffects>,
     )>,
     players: Query<(Entity, &Position, &Health, Has<PlayerTag>)>,
+    toggles: Option<Res<crate::debug::DebugToggles>>,
 ) {
+    if toggles.is_some_and(|t| t.mobs_paused) {
+        for (_, _, mut vel, ..) in &mut mobs {
+            *vel = Velocity::zero();
+        }
+        return;
+    }
     let current_time = clock.current_time_seconds();
     let dt = clock.delta_seconds();
 
@@ -47,10 +56,19 @@ pub fn mob_ai_system(
             stats.cooldown_timer = (stats.cooldown_timer - dt).max(0.0);
         }
 
-        // If knocked back from an attack, preserve knockback velocity and skip AI override
+        // If knocked back from an attack, preserve knockback velocity (easing out) and skip AI override
         if opt_status.is_some_and(|s| s.is_knocked_back()) {
+            let decay = (-KNOCKBACK_DECAY_PER_SEC * dt).exp();
+            vel.vx *= decay;
+            vel.vy *= decay;
             continue;
         }
+
+        // Voluntary movement (chase, return home, wander) is scaled by the terrain underfoot.
+        let move_speed = mob_ai.move_speed
+            * terrain
+                .as_ref()
+                .map_or(1.0, |t| t.speed_multiplier_at(pos.x, pos.y));
 
         // Update threat table: if a top target exists, check if target is alive.
         let mut active_target: Option<(Entity, Position)> = None;
@@ -174,8 +192,8 @@ pub fn mob_ai_system(
                     mob_ai.state = AiState::Chase;
                     let dir_x = if dist > 0.001 { dx / dist } else { 0.0 };
                     let dir_y = if dist > 0.001 { dy / dist } else { 0.0 };
-                    vel.vx = dir_x * mob_ai.move_speed;
-                    vel.vy = dir_y * mob_ai.move_speed;
+                    vel.vx = dir_x * move_speed;
+                    vel.vy = dir_y * move_speed;
                 } else {
                     // Outside chase range: clear target, switch to ReturnHome
                     threat.clear_target(target_entity);
@@ -197,7 +215,7 @@ pub fn mob_ai_system(
             } else {
                 let dir_x = home_dx / home_dist;
                 let dir_y = home_dy / home_dist;
-                let return_speed = mob_ai.move_speed;
+                let return_speed = move_speed;
                 vel.vx = dir_x * return_speed;
                 vel.vy = dir_y * return_speed;
             }
@@ -235,7 +253,7 @@ pub fn mob_ai_system(
                     vel.vy = 0.0;
                 } else {
                     // Legacy WanderBehavior strolls below full speed; half move speed.
-                    let wander_speed = mob_ai.move_speed * 0.5;
+                    let wander_speed = move_speed * 0.5;
                     vel.vx = (wdx / wdist) * wander_speed;
                     vel.vy = (wdy / wdist) * wander_speed;
                 }

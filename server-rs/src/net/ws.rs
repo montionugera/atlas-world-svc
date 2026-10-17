@@ -1,14 +1,19 @@
 use crate::auth::AuthGuard;
+use crate::debug::{DebugCommand, DebugCommandBody, MAX_COMMANDS_PER_TICK};
 use futures_util::{SinkExt, StreamExt};
 use std::collections::HashMap;
-use std::net::SocketAddr;
+use std::net::{IpAddr, SocketAddr};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
-use tokio::sync::RwLock;
+use tokio::sync::{oneshot, RwLock};
 use tokio_tungstenite::accept_hdr_async;
 use tokio_tungstenite::tungstenite::handshake::server::{ErrorResponse, Request, Response};
 use tokio_tungstenite::tungstenite::http::StatusCode;
+use tokio_tungstenite::tungstenite::protocol::frame::coding::CloseCode;
+use tokio_tungstenite::tungstenite::protocol::CloseFrame;
 use tokio_tungstenite::tungstenite::Message;
 use tracing::{debug, error, info, warn};
 
@@ -36,6 +41,21 @@ impl ClientPacket {
 }
 
 /// WebSocket Gateway server managing active client sessions and snapshot broadcasting.
+/// One debug command waiting for the tick loop; the answer goes back through `reply`.
+pub struct DebugRequest {
+    pub map: String,
+    pub player: Option<String>,
+    pub command: DebugCommand,
+    pub reply: oneshot::Sender<Result<serde_json::Value, String>>,
+}
+
+/// What a connection needs to serve `/debug/*`: the switch and the queue to the tick loop.
+#[derive(Clone)]
+struct DebugGate {
+    enabled: Arc<AtomicBool>,
+    tx: UnboundedSender<DebugRequest>,
+}
+
 pub struct WsServer {
     local_addr: SocketAddr,
     connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
@@ -46,6 +66,8 @@ pub struct WsServer {
     disconnect_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<(String, String)>>>,
     pub nakama_client: Option<Arc<crate::storage::NakamaClient>>,
     nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
+    debug_enabled: Arc<AtomicBool>,
+    debug_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<DebugRequest>>>,
 }
 
 impl WsServer {
@@ -64,6 +86,8 @@ impl WsServer {
         let (disconnect_tx, disconnect_rx) = unbounded_channel();
         let disconnect_rx = Arc::new(tokio::sync::Mutex::new(disconnect_rx));
         let nakama_ref = Arc::new(std::sync::RwLock::new(None));
+        let debug_enabled = Arc::new(AtomicBool::new(false));
+        let (debug_tx, debug_rx) = unbounded_channel();
 
         let server = Self {
             local_addr,
@@ -75,6 +99,8 @@ impl WsServer {
             disconnect_rx,
             nakama_client: None,
             nakama_ref: nakama_ref.clone(),
+            debug_enabled: debug_enabled.clone(),
+            debug_rx: Arc::new(tokio::sync::Mutex::new(debug_rx)),
         };
 
         // Spawn accept loop
@@ -86,9 +112,33 @@ impl WsServer {
             inbound_tx,
             disconnect_tx,
             nakama_ref,
+            DebugGate {
+                enabled: debug_enabled,
+                tx: debug_tx,
+            },
         ));
 
         Ok(server)
+    }
+
+    /// Turns the `/debug/*` HTTP routes on or off (off until called).
+    pub fn set_debug_enabled(&self, enabled: bool) {
+        self.debug_enabled.store(enabled, Ordering::Relaxed);
+    }
+
+    /// Up to `MAX_COMMANDS_PER_TICK` waiting debug commands, for the tick loop to apply and
+    /// answer; the rest stay queued. Requests whose client stopped waiting are discarded.
+    pub async fn drain_debug(&self) -> Vec<DebugRequest> {
+        let mut rx = self.debug_rx.lock().await;
+        let mut requests = Vec::new();
+        while requests.len() < MAX_COMMANDS_PER_TICK {
+            match rx.try_recv() {
+                Ok(request) if request.reply.is_closed() => {}
+                Ok(request) => requests.push(request),
+                Err(_) => break,
+            }
+        }
+        requests
     }
 
     pub fn with_nakama(mut self, client: Arc<crate::storage::NakamaClient>) -> Self {
@@ -200,6 +250,7 @@ impl WsServer {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     async fn accept_loop(
         listener: TcpListener,
         connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
@@ -208,20 +259,29 @@ impl WsServer {
         inbound_tx: UnboundedSender<ClientPacket>,
         disconnect_tx: UnboundedSender<(String, String)>,
         nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
+        debug: DebugGate,
     ) {
         info!(
             "WebSocket accept loop running on {}",
             listener.local_addr().unwrap()
         );
         while let Ok((stream, peer_addr)) = listener.accept().await {
+            if let Err(e) = stream.set_nodelay(true) {
+                warn!("Failed to set TCP_NODELAY for {}: {}", peer_addr, e);
+            }
             let conns = connections.clone();
             let rooms = session_rooms.clone();
             let auth = auth_guard.clone();
             let in_tx = inbound_tx.clone();
             let dc_tx = disconnect_tx.clone();
             let nakama = nakama_ref.clone();
+            let debug = debug.clone();
 
             tokio::spawn(async move {
+                if is_debug_http(&stream).await {
+                    serve_debug_http(stream, peer_addr.ip(), debug).await;
+                    return;
+                }
                 Self::handle_connection(
                     stream, peer_addr, conns, rooms, auth, in_tx, dc_tx, nakama,
                 )
@@ -279,6 +339,19 @@ impl WsServer {
         None
     }
 
+    fn extract_proto(req: &Request) -> Option<String> {
+        if let Some(query) = req.uri().query() {
+            for pair in query.split('&') {
+                if let Some((k, v)) = pair.split_once('=') {
+                    if k == "proto" {
+                        return Some(v.to_string());
+                    }
+                }
+            }
+        }
+        None
+    }
+
     #[allow(clippy::result_large_err, clippy::too_many_arguments)]
     async fn handle_connection(
         stream: TcpStream,
@@ -292,6 +365,7 @@ impl WsServer {
     ) {
         let mut session_id = String::new();
         let mut room_id = "map-for-play".to_string();
+        let mut req_proto: Option<String> = None;
         let auth_ref = &auth_guard;
 
         let callback = |req: &Request, response: Response| -> Result<Response, ErrorResponse> {
@@ -309,11 +383,8 @@ impl WsServer {
             };
 
             let req_map = Self::extract_map(req).unwrap_or_else(|| "map-for-play".to_string());
-            room_id = match req_map.as_str() {
-                "map-for-test-deflect" => "map-for-test-deflect".to_string(),
-                "map-for-test-projectile" => "map-for-test-projectile".to_string(),
-                _ => "map-for-play".to_string(),
-            };
+            room_id = crate::content::map::room_id_for(&req_map).to_string();
+            req_proto = Self::extract_proto(req);
 
             match auth_ref.validate_token(&token) {
                 Ok(claims) => {
@@ -336,13 +407,59 @@ impl WsServer {
             }
         };
 
-        let ws_stream = match accept_hdr_async(stream, callback).await {
+        let mut ws_stream = match accept_hdr_async(stream, callback).await {
             Ok(ws) => ws,
             Err(e) => {
                 debug!("WebSocket handshake failed with {}: {}", peer_addr, e);
                 return;
             }
         };
+
+        // Check protocol version before fetching persistent loadout or registering connection.
+        let server_ver = crate::protocol::PROTOCOL_VERSION;
+        match req_proto.as_deref() {
+            Some(raw) => match raw.parse::<u32>() {
+                Ok(client_ver) if client_ver == server_ver => {}
+                Ok(client_ver) => {
+                    let reason = format!(
+                        "protocol version mismatch: server={} client={}",
+                        server_ver, client_ver
+                    );
+                    warn!(
+                        "Rejecting WebSocket connection for user={} from {}: {}",
+                        session_id, peer_addr, reason
+                    );
+                    let frame = CloseFrame {
+                        code: CloseCode::Library(4001),
+                        reason: reason.into(),
+                    };
+                    let _ = ws_stream.close(Some(frame)).await;
+                    return;
+                }
+                Err(_) => {
+                    let reason = format!(
+                        "protocol version mismatch: server={} client=invalid",
+                        server_ver
+                    );
+                    warn!(
+                        "Rejecting WebSocket connection for user={} from {}: invalid proto parameter",
+                        session_id, peer_addr
+                    );
+                    let frame = CloseFrame {
+                        code: CloseCode::Library(4001),
+                        reason: reason.into(),
+                    };
+                    let _ = ws_stream.close(Some(frame)).await;
+                    return;
+                }
+            },
+            None => {
+                warn!(
+                    "WebSocket connection from {} (user={}) missing proto query parameter; admitting under rollout allowance",
+                    peer_addr, session_id
+                );
+            }
+        }
 
         // When token is validated, if nakama_client is configured, fetch get_loadout(&session_id)
         let client_opt = nakama_ref.read().unwrap().clone();
@@ -444,6 +561,175 @@ impl WsServer {
 }
 
 /// True if any registered `session#seq` connection key belongs to `session_id`.
+/// True when the connection opens with a plain HTTP request for `/debug/...` rather than a
+/// WebSocket upgrade (which the client sends to `/` or `/ws`).
+async fn is_debug_http(stream: &TcpStream) -> bool {
+    let mut head = [0u8; 15];
+    let n = stream.peek(&mut head).await.unwrap_or(0);
+    [&b"GET /debug/"[..], b"POST /debug/", b"OPTIONS /debug/"]
+        .iter()
+        .any(|prefix| head[..n].starts_with(prefix))
+}
+
+/// Largest debug request head and body accepted.
+const DEBUG_HEAD_MAX_BYTES: usize = 16 * 1024;
+const DEBUG_BODY_MAX_BYTES: usize = 64 * 1024;
+
+/// `localhost`, `127.0.0.1` or `[::1]`, with an optional port.
+fn is_local_authority(authority: &str) -> bool {
+    ["localhost", "127.0.0.1", "[::1]"].iter().any(|host| {
+        authority.strip_prefix(host).is_some_and(|rest| {
+            rest.is_empty()
+                || rest
+                    .strip_prefix(':')
+                    .is_some_and(|p| p.parse::<u16>().is_ok())
+        })
+    })
+}
+
+/// The debug routes exist only with the gate on, for a loopback peer that addressed this
+/// host by a local name (a page that rebinds its DNS name here still sends its own `Host`).
+fn debug_request_allowed(enabled: bool, peer: IpAddr, host: Option<&str>) -> bool {
+    enabled && peer.to_canonical().is_loopback() && host.is_some_and(is_local_authority)
+}
+
+/// The request's `Origin` when it is a local page: `http://localhost` or `http://127.0.0.1`,
+/// any port. Only these are named in the CORS headers.
+fn local_origin(origin: Option<&str>) -> Option<&str> {
+    origin.filter(|origin| {
+        origin
+            .strip_prefix("http://")
+            .is_some_and(|authority| !authority.starts_with('[') && is_local_authority(authority))
+    })
+}
+
+/// Serves one `/debug/*` request and closes: `GET /debug/state?map=<room>` and
+/// `POST /debug/command` (JSON body, see `debug::DebugCommandBody`). Every route is 404
+/// unless `debug_request_allowed`. Commands are queued for the tick loop, never applied here.
+async fn serve_debug_http(mut stream: TcpStream, peer: IpAddr, debug: DebugGate) {
+    let mut raw = Vec::new();
+    let mut chunk = [0u8; 2048];
+    let head_end = loop {
+        if let Some(head_end) = raw.windows(4).position(|w| w == b"\r\n\r\n") {
+            break head_end;
+        }
+        match stream.read(&mut chunk).await {
+            Ok(n) if n > 0 && raw.len() < DEBUG_HEAD_MAX_BYTES => {
+                raw.extend_from_slice(&chunk[..n])
+            }
+            _ => return,
+        }
+    };
+    let head = String::from_utf8_lossy(&raw[..head_end]).into_owned();
+    let header = |name: &str| {
+        head.lines()
+            .skip(1)
+            .filter_map(|line| line.split_once(':'))
+            .find(|(key, _)| key.trim().eq_ignore_ascii_case(name))
+            .map(|(_, value)| value.trim())
+    };
+    let mut request_line = head.lines().next().unwrap_or("").split(' ');
+    let method = request_line.next().unwrap_or("");
+    let target = request_line.next().unwrap_or("");
+    let (path, query) = target.split_once('?').unwrap_or((target, ""));
+
+    // Refuse before reading the body: a closed gate or an absurd length costs nothing.
+    let length = header("content-length").map(|value| value.parse::<usize>());
+    let allowed =
+        debug_request_allowed(debug.enabled.load(Ordering::Relaxed), peer, header("host"));
+    let refused = match &length {
+        _ if !allowed => Some(("404 Not Found", "not found")),
+        Some(Err(_)) => Some(("400 Bad Request", "malformed Content-Length")),
+        Some(Ok(n)) if *n > DEBUG_BODY_MAX_BYTES => {
+            Some(("413 Content Too Large", "request body too large"))
+        }
+        _ => None,
+    };
+    let body_len = match (refused, length) {
+        (None, Some(Ok(n))) => n,
+        _ => 0,
+    };
+    let body_start = head_end + 4;
+    while raw.len() < body_start + body_len {
+        match stream.read(&mut chunk).await {
+            Ok(n) if n > 0 => raw.extend_from_slice(&chunk[..n]),
+            _ => return,
+        }
+    }
+    let body = &raw[body_start..body_start + body_len];
+    // A cross-origin page can send JSON only after a preflight, which `local_origin` decides.
+    let is_json = header("content-type").is_some_and(|value| {
+        let media_type = value.split(';').next().unwrap_or("").trim();
+        media_type.eq_ignore_ascii_case("application/json")
+    });
+
+    let error = |message: &str| serde_json::json!({ "ok": false, "error": message });
+    let (status, payload) = if let Some((status, message)) = refused {
+        (status, error(message))
+    } else if method == "OPTIONS" {
+        ("204 No Content", serde_json::Value::Null)
+    } else {
+        let parsed = match (method, path) {
+            ("GET", "/debug/state") => Ok(DebugCommandBody {
+                map: query
+                    .split('&')
+                    .find_map(|pair| pair.strip_prefix("map="))
+                    .unwrap_or("")
+                    .to_string(),
+                player: None,
+                command: DebugCommand::State,
+            }),
+            ("POST", "/debug/command") if !is_json => Err((
+                "415 Unsupported Media Type",
+                "Content-Type must be application/json".to_string(),
+            )),
+            ("POST", "/debug/command") => serde_json::from_slice::<DebugCommandBody>(body)
+                .map_err(|e| ("400 Bad Request", e.to_string())),
+            _ => Err(("400 Bad Request", "unknown debug route".to_string())),
+        };
+        match parsed {
+            Err((status, message)) => (status, error(&message)),
+            Ok(parsed) => {
+                let (reply, answer) = oneshot::channel();
+                let _ = debug.tx.send(DebugRequest {
+                    map: parsed.map,
+                    player: parsed.player,
+                    command: parsed.command,
+                    reply,
+                });
+                match tokio::time::timeout(std::time::Duration::from_secs(2), answer).await {
+                    Ok(Ok(Ok(state))) => {
+                        ("200 OK", serde_json::json!({ "ok": true, "state": state }))
+                    }
+                    Ok(Ok(Err(message))) => ("400 Bad Request", error(&message)),
+                    _ => ("503 Service Unavailable", error("tick loop did not answer")),
+                }
+            }
+        }
+    };
+    let payload = if payload.is_null() {
+        String::new()
+    } else {
+        payload.to_string()
+    };
+    let cors = local_origin(header("origin"))
+        .map(|origin| {
+            format!(
+                "Access-Control-Allow-Origin: {origin}\r\nVary: Origin\r\n\
+                 Access-Control-Allow-Methods: GET, POST, OPTIONS\r\n\
+                 Access-Control-Allow-Headers: content-type\r\n"
+            )
+        })
+        .unwrap_or_default();
+    let response = format!(
+        "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\
+         {cors}Connection: close\r\n\r\n{payload}",
+        payload.len()
+    );
+    let _ = stream.write_all(response.as_bytes()).await;
+    let _ = stream.shutdown().await;
+}
+
 fn has_session(conns: &HashMap<String, UnboundedSender<Message>>, session_id: &str) -> bool {
     conns
         .keys()
@@ -457,6 +743,52 @@ mod tests {
     use tokio_tungstenite::connect_async;
     use tokio_tungstenite::tungstenite::handshake::client::generate_key;
     use tokio_tungstenite::tungstenite::handshake::client::Request as ClientRequest;
+
+    #[test]
+    fn debug_routes_need_an_open_gate_a_loopback_peer_and_a_local_host() {
+        let allowed = |enabled: bool, peer: &str, host: Option<&str>| {
+            debug_request_allowed(enabled, peer.parse().unwrap(), host)
+        };
+        assert!(allowed(true, "127.0.0.1", Some("localhost:2567")));
+        assert!(allowed(true, "127.0.0.1", Some("127.0.0.1")));
+        assert!(allowed(true, "::1", Some("[::1]:2567")));
+        assert!(allowed(true, "::ffff:127.0.0.1", Some("localhost")));
+        assert!(!allowed(false, "127.0.0.1", Some("localhost:2567")));
+        for peer in ["192.168.1.20", "10.0.0.5", "fe80::1", "::ffff:192.168.1.20"] {
+            assert!(!allowed(true, peer, Some("localhost:2567")), "peer {peer}");
+        }
+        for host in [
+            "evil.example",
+            "localhost.evil.example",
+            "127.0.0.1.evil.example:80",
+            "localhost:port",
+            "",
+        ] {
+            assert!(!allowed(true, "127.0.0.1", Some(host)), "host {host}");
+        }
+        assert!(!allowed(true, "127.0.0.1", None));
+    }
+
+    #[test]
+    fn only_local_http_origins_are_named_in_cors_headers() {
+        for origin in [
+            "http://localhost:3000",
+            "http://127.0.0.1:3001",
+            "http://localhost",
+        ] {
+            assert_eq!(local_origin(Some(origin)), Some(origin));
+        }
+        for origin in [
+            "http://evil.example",
+            "http://localhost.evil.example",
+            "https://localhost:3000",
+            "http://[::1]:3000",
+            "null",
+        ] {
+            assert_eq!(local_origin(Some(origin)), None, "origin {origin}");
+        }
+        assert_eq!(local_origin(None), None);
+    }
 
     #[tokio::test]
     async fn test_ws_server_valid_token_handshake_and_bidirectional() {
@@ -660,5 +992,148 @@ mod tests {
 
         client_deflect.close(None).await.unwrap();
         client_play.close(None).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_ws_server_routes_terrain_test_map() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let token = auth.generate_test_token("terrain-player", "Tester", 3600);
+        let url = format!(
+            "ws://{}/ws?token={}&map=map-for-test-terrain",
+            server.local_addr(),
+            token
+        );
+
+        let (mut client, _) = connect_async(&url).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(
+            server
+                .active_connections_in_room("map-for-test-terrain")
+                .await,
+            1
+        );
+        assert_eq!(server.active_connections_in_room("map-for-play").await, 0);
+        client.close(None).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_ws_protocol_version_mismatch_closes_with_4001() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let token = auth.generate_test_token("mismatch-player", "Tester", 3600);
+        let server_ver = crate::protocol::PROTOCOL_VERSION;
+        let client_ver = server_ver + 1;
+        let url = format!(
+            "ws://{}/ws?token={}&proto={}",
+            server.local_addr(),
+            token,
+            client_ver
+        );
+
+        let (mut client, _) = connect_async(&url).await.unwrap();
+        let msg = tokio::time::timeout(Duration::from_secs(1), client.next())
+            .await
+            .expect("timeout waiting for close frame")
+            .expect("stream ended without close frame")
+            .expect("websocket error");
+
+        match msg {
+            Message::Close(Some(frame)) => {
+                assert_eq!(frame.code, CloseCode::Library(4001));
+                let reason = frame.reason.as_str();
+                assert!(
+                    reason.contains(&format!("server={}", server_ver))
+                        && reason.contains(&format!("client={}", client_ver)),
+                    "unexpected close reason: {}",
+                    reason
+                );
+            }
+            other => panic!("expected Close(4001) frame, got {:?}", other),
+        }
+        assert_eq!(server.active_connections_count().await, 0);
+    }
+
+    #[tokio::test]
+    async fn test_ws_protocol_version_non_numeric_200_chars_closes_with_4001_invalid() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let token = auth.generate_test_token("bad-proto-player", "Tester", 3600);
+        let bad_proto = "x".repeat(200);
+        let url = format!(
+            "ws://{}/ws?token={}&proto={}",
+            server.local_addr(),
+            token,
+            bad_proto
+        );
+
+        let (mut client, _) = connect_async(&url).await.unwrap();
+        let msg = tokio::time::timeout(Duration::from_secs(1), client.next())
+            .await
+            .expect("timeout waiting for close frame")
+            .expect("stream ended without close frame")
+            .expect("websocket error");
+
+        match msg {
+            Message::Close(Some(frame)) => {
+                assert_eq!(frame.code, CloseCode::Library(4001));
+                let reason = frame.reason.as_str();
+                assert!(
+                    reason.len() <= 123,
+                    "close reason exceeds 123 bytes: len={}",
+                    reason.len()
+                );
+                assert!(
+                    reason.contains("client=invalid"),
+                    "close reason must contain client=invalid, got: {}",
+                    reason
+                );
+                assert!(!reason.contains(&bad_proto));
+            }
+            other => panic!("expected Close(4001) frame, got {:?}", other),
+        }
+        assert_eq!(server.active_connections_count().await, 0);
+    }
+
+    #[tokio::test]
+    async fn test_ws_protocol_version_matching_and_absent_admitted() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let token1 = auth.generate_test_token("match-player", "Tester1", 3600);
+        let token2 = auth.generate_test_token("legacy-player", "Tester2", 3600);
+        let server_ver = crate::protocol::PROTOCOL_VERSION;
+
+        let url_matching = format!(
+            "ws://{}/ws?token={}&proto={}",
+            server.local_addr(),
+            token1,
+            server_ver
+        );
+        let url_absent = format!("ws://{}/ws?token={}", server.local_addr(), token2);
+
+        let (mut client_match, _) = connect_async(&url_matching).await.unwrap();
+        let (mut client_absent, _) = connect_async(&url_absent).await.unwrap();
+
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(server.active_connections_count().await, 2);
+
+        let snapshot = [1u8, 2, 3, 4];
+        server.broadcast_snapshot(&snapshot).await;
+
+        let msg_match = tokio::time::timeout(Duration::from_secs(1), client_match.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+        let msg_absent = tokio::time::timeout(Duration::from_secs(1), client_absent.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+        assert_eq!(msg_match, Message::Binary(snapshot.to_vec().into()));
+        assert_eq!(msg_absent, Message::Binary(snapshot.to_vec().into()));
+
+        client_match.close(None).await.unwrap();
+        client_absent.close(None).await.unwrap();
     }
 }

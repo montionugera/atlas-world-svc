@@ -17,22 +17,22 @@ body {
 }
 
 .App {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 .app-header {
   background: rgba(0, 0, 0, 0.2);
-  padding: 1rem 2rem;
+  padding: 0.4rem 1rem; /* compact: keep the canvas and skill bar above the fold */
   text-align: center;
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .app-header h1 {
-  margin: 0 0 0.5rem 0;
-  font-size: 2.5rem;
+  margin: 0;
+  font-size: 1.4rem;
   font-weight: 700;
   background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
   -webkit-background-clip: text;
@@ -47,22 +47,32 @@ body {
 }
 
 .app-main {
+  /* Whatever the header leaves: the canvas sizes itself to this box. */
   flex: 1;
-  padding: 1.5rem;
+  min-height: 0;
+  padding: 0.5rem;
   display: grid;
-  grid-template-columns: 1fr 400px;
-  grid-template-rows: auto;
-  gap: 1.5rem;
-  max-width: 1900px;
-  margin: 0 auto;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 0.5rem;
   width: 100%;
-  height: calc(100vh - 100px);
   overflow: hidden;
+}
+
+/* Play mode (H): nothing but the canvas and the skill bar, on the whole window. */
+.play-focus .app-header,
+.play-focus .info-section {
+  display: none;
+}
+
+.play-focus .app-main {
+  grid-template-columns: minmax(0, 1fr);
+  padding: 0;
 }
 
 @media (max-width: 1200px) {
   .app-main {
-    grid-template-columns: 1fr 350px;
+    grid-template-columns: minmax(0, 1fr) 350px;
   }
 }
 
@@ -70,8 +80,12 @@ body {
   .app-main {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
-    height: auto;
     overflow-y: auto;
+  }
+
+  /* Stacked: the column has no height of its own to give the canvas. */
+  .app-main .game-section {
+    height: 70vh;
   }
 }
 

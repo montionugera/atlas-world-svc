@@ -818,5 +818,397 @@
     "created_at": "2026-10-05T14:53:31.699650+00:00",
     "promoted_to": "F-064",
     "epic": "E-002"
+  },
+  {
+    "id": "I-136",
+    "title": "Wire the game server to Nakama",
+    "created_at": "2026-10-11T06:59:03.748110+00:00",
+    "promoted_to": "F-067",
+    "epic": "E-003"
+  },
+  {
+    "id": "I-137",
+    "title": "Server accepts a real Nakama token",
+    "created_at": "2026-10-11T06:59:03.752427+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-138",
+    "title": "Client signs in with Nakama",
+    "created_at": "2026-10-11T06:59:03.754510+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-139",
+    "title": "One live session per account",
+    "created_at": "2026-10-11T06:59:03.767454+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-140",
+    "title": "Apply the saved character on join",
+    "created_at": "2026-10-11T06:59:03.783040+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-141",
+    "title": "Report match events to Nakama",
+    "created_at": "2026-10-11T06:59:03.784680+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-142",
+    "title": "Save and restore position and health",
+    "created_at": "2026-10-11T06:59:03.793886+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-143",
+    "title": "Session resume after a dropped connection",
+    "created_at": "2026-10-11T06:59:03.795224+00:00",
+    "promoted_to": null,
+    "epic": "E-003"
+  },
+  {
+    "id": "I-144",
+    "title": "Measure capacity",
+    "created_at": "2026-10-11T06:59:04.670870+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-145",
+    "title": "Decide the world model",
+    "created_at": "2026-10-11T06:59:04.674658+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-146",
+    "title": "Send each player only what is near them",
+    "created_at": "2026-10-11T06:59:04.676842+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-147",
+    "title": "Load a generated-world region on the server",
+    "created_at": "2026-10-11T06:59:04.677927+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-148",
+    "title": "Derive client obstacles and spawn from the same source",
+    "created_at": "2026-10-11T06:59:04.679157+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-149",
+    "title": "Sleeping regions",
+    "created_at": "2026-10-11T06:59:04.683180+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-150",
+    "title": "World state store",
+    "created_at": "2026-10-11T06:59:04.684576+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-151",
+    "title": "Save and restore region state across a restart",
+    "created_at": "2026-10-11T06:59:04.686973+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-152",
+    "title": "Border ghosts",
+    "created_at": "2026-10-11T06:59:04.689376+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-153",
+    "title": "Authority handoff",
+    "created_at": "2026-10-11T06:59:04.690361+00:00",
+    "promoted_to": null,
+    "epic": "E-004"
+  },
+  {
+    "id": "I-154",
+    "title": "Experience and levels",
+    "created_at": "2026-10-11T06:59:05.803624+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-155",
+    "title": "Minimal item catalogue",
+    "created_at": "2026-10-11T06:59:05.805693+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-156",
+    "title": "Loot drops and pickup",
+    "created_at": "2026-10-11T06:59:05.823871+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-157",
+    "title": "Idempotent server-only grants",
+    "created_at": "2026-10-11T06:59:05.825978+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-158",
+    "title": "Inventory and equipment screen",
+    "created_at": "2026-10-11T06:59:05.828097+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-159",
+    "title": "Weapon switching and skill loadout in play",
+    "created_at": "2026-10-11T06:59:05.829423+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-160",
+    "title": "Death, bind point and travel",
+    "created_at": "2026-10-11T06:59:05.832159+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-161",
+    "title": "Currency and vendor",
+    "created_at": "2026-10-11T06:59:05.834028+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-162",
+    "title": "Quests at runtime",
+    "created_at": "2026-10-11T06:59:05.834954+00:00",
+    "promoted_to": null,
+    "epic": "E-005"
+  },
+  {
+    "id": "I-163",
+    "title": "CI for the Rust server",
+    "created_at": "2026-10-11T06:59:06.877618+00:00",
+    "promoted_to": "F-065",
+    "epic": "E-006"
+  },
+  {
+    "id": "I-164",
+    "title": "Protocol version",
+    "created_at": "2026-10-11T06:59:06.885280+00:00",
+    "promoted_to": "F-066",
+    "epic": "E-006"
+  },
+  {
+    "id": "I-165",
+    "title": "Input limits",
+    "created_at": "2026-10-11T06:59:06.887009+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-166",
+    "title": "Health, readiness and clean shutdown",
+    "created_at": "2026-10-11T06:59:06.890918+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-167",
+    "title": "Metrics endpoint",
+    "created_at": "2026-10-11T06:59:06.892965+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-168",
+    "title": "Origin check and token out of the URL",
+    "created_at": "2026-10-11T06:59:06.896071+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-169",
+    "title": "Validate target intents",
+    "created_at": "2026-10-11T06:59:06.897169+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-170",
+    "title": "Player caps per region",
+    "created_at": "2026-10-11T06:59:06.898317+00:00",
+    "promoted_to": null,
+    "epic": "E-006"
+  },
+  {
+    "id": "I-171",
+    "title": "Mob attack wind-up and facing",
+    "created_at": "2026-10-11T06:59:07.933674+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-172",
+    "title": "Parry cost",
+    "created_at": "2026-10-11T06:59:07.937712+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-173",
+    "title": "Aimed ranged attacks",
+    "created_at": "2026-10-11T06:59:07.939822+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-174",
+    "title": "Lingering area skills",
+    "created_at": "2026-10-11T06:59:07.941356+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-175",
+    "title": "Damage-over-time statuses",
+    "created_at": "2026-10-11T06:59:07.942388+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-176",
+    "title": "Healing in a fight",
+    "created_at": "2026-10-11T06:59:07.943473+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-177",
+    "title": "Boss tier scaling at spawn",
+    "created_at": "2026-10-11T06:59:07.944897+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-178",
+    "title": "Mob attack variety",
+    "created_at": "2026-10-11T06:59:07.945984+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-179",
+    "title": "Companion spawn and follow",
+    "created_at": "2026-10-11T06:59:07.946916+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-180",
+    "title": "Companion combat and respawn",
+    "created_at": "2026-10-11T06:59:07.948224+00:00",
+    "promoted_to": null,
+    "epic": "E-007"
+  },
+  {
+    "id": "I-181",
+    "title": "Nearby and world chat",
+    "created_at": "2026-10-11T06:59:09.180187+00:00",
+    "promoted_to": null,
+    "epic": "E-008"
+  },
+  {
+    "id": "I-182",
+    "title": "Friends list",
+    "created_at": "2026-10-11T06:59:09.182780+00:00",
+    "promoted_to": null,
+    "epic": "E-008"
+  },
+  {
+    "id": "I-183",
+    "title": "Parties",
+    "created_at": "2026-10-11T06:59:09.184126+00:00",
+    "promoted_to": null,
+    "epic": "E-008"
+  },
+  {
+    "id": "I-184",
+    "title": "Find and join friends in the world",
+    "created_at": "2026-10-11T06:59:09.185141+00:00",
+    "promoted_to": null,
+    "epic": "E-008"
+  },
+  {
+    "id": "I-185",
+    "title": "Connect and decode",
+    "created_at": "2026-10-11T06:59:10.415261+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-186",
+    "title": "Move and predict",
+    "created_at": "2026-10-11T06:59:10.418881+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-187",
+    "title": "Fight",
+    "created_at": "2026-10-11T06:59:10.421592+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-188",
+    "title": "Sign-in panel on the new flow",
+    "created_at": "2026-10-11T06:59:10.422645+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-189",
+    "title": "Inventory panel on real data",
+    "created_at": "2026-10-11T06:59:10.423593+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-190",
+    "title": "Quest panel on real data",
+    "created_at": "2026-10-11T06:59:10.426011+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
+  },
+  {
+    "id": "I-191",
+    "title": "Refresh the documents",
+    "created_at": "2026-10-11T06:59:10.428079+00:00",
+    "promoted_to": null,
+    "epic": "E-009"
   }
 ]
