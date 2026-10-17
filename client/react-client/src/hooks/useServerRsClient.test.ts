@@ -5,9 +5,19 @@ import fs from "fs";
 import path from "path";
 import * as flatbuffers from "flatbuffers";
 import App from "../App";
-import { useServerRsClient, skillSlotFor, fnv1a32 } from "./useServerRsClient";
 import {
+  useServerRsClient,
+  skillSlotFor,
+  fnv1a32,
+  authenticateNakamaDevice,
+  extractTokenUserId,
+  getOrCreateNakamaDeviceId,
+  RECONNECT_BASE_DELAY_MS,
+} from "./useServerRsClient";
+import {
+  DUPLICATE_SESSION_CLOSE_CODE,
   PROTOCOL_VERSION,
+  formatDuplicateSessionMessage,
   formatProtocolMismatchMessage,
 } from "../protocol/protocolVersion";
 import { WorldSnapshot } from "../protocol/generated/atlas/protocol/world-snapshot";
@@ -122,6 +132,11 @@ describe("useServerRsClient", () => {
     MockWebSocket.instances = [];
     MockWebSocket.manualOpen = false;
     localStorage.clear();
+    (global as any).fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0aWQiOiJhNzI0NTIzNi00NTFkLTQxODQtODU1Ni1jZGQ4MzcxMDE0Y2UiLCJ1aWQiOiJlNTYwZTdlMC02NzY3LTQyODctYmIzYy1lODliNTU1NjU5YTQiLCJ1c24iOiJHa0xpanJJZ2NjIiwiZXhwIjoxNzkyMjc5MjMzfQ.k663Qar6bS1dzoZgbUFH_n3nCAEJWjfXonYYYWagaPs" }),
+    });
     // Snapshots reach React state at most every 150 ms; unless a test drives the
     // clock itself, every look at it is a second later, so each one is published.
     clock = 0;
@@ -1200,5 +1215,150 @@ describe("useServerRsClient", () => {
     );
     expect(match).not.toBeNull();
     expect(PROTOCOL_VERSION).toBe(Number(match![1]));
+  });
+
+  it("surfaces duplicate session eviction (close code 4002) in connectionError without reconnect loop", async () => {
+    const { result } = await connected();
+    act(() => {
+      MockWebSocket.instances[0].close(
+        DUPLICATE_SESSION_CLOSE_CODE,
+        "duplicate session: connected from another location",
+      );
+    });
+    expect(result.current.connectionError).toBe(
+      formatDuplicateSessionMessage(
+        "duplicate session: connected from another location",
+      ),
+    );
+    expect(result.current.isConnected).toBe(false);
+
+    // joinRoom is blocked while connectionError is set (no auto-reconnect battle)
+    await act(async () => {
+      await result.current.joinRoom("map-for-play");
+    });
+    expect(MockWebSocket.instances).toHaveLength(1);
+  });
+
+  it("authenticates against Nakama device endpoint and sends real session JWT instead of dev-token", async () => {
+    const nakamaUid = "e560e7e0-6767-4287-bb3c-e89b555659a4";
+    const nakamaJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0aWQiOiJhNzI0NTIzNi00NTFkLTQxODQtODU1Ni1jZGQ4MzcxMDE0Y2UiLCJ1aWQiOiJlNTYwZTdlMC02NzY3LTQyODctYmIzYy1lODliNTU1NjU5YTQiLCJ1c24iOiJHa0xpanJJZ2NjIiwiZXhwIjoxNzkyMjc5MjMzfQ.k663Qar6bS1dzoZgbUFH_n3nCAEJWjfXonYYYWagaPs";
+
+    expect(extractTokenUserId(nakamaJwt)).toBe(nakamaUid);
+
+    const devId1 = getOrCreateNakamaDeviceId("hero");
+    const devId2 = getOrCreateNakamaDeviceId("hero");
+    expect(devId1).toBe(devId2);
+    expect(devId1.length).toBeGreaterThanOrEqual(10);
+
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ token: nakamaJwt }),
+    });
+    (global as any).fetch = fetchMock;
+
+    const authRes = await authenticateNakamaDevice({
+      nakamaUrl: "http://localhost:7350/",
+      deviceId: devId1,
+      fetchImpl: fetchMock as any,
+    });
+    expect(authRes.token).toBe(nakamaJwt);
+    expect(authRes.userId).toBe(nakamaUid);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:7350/v2/account/authenticate/device?create=true",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Basic ZGVmYXVsdGtleTo=",
+        }),
+        body: JSON.stringify({ id: devId1 }),
+      }),
+    );
+
+    MockWebSocket.instances = [];
+    const { result } = renderHook(() =>
+      useServerRsClient({
+        serverHost: "localhost",
+        serverPort: 2567,
+        useSSL: false,
+        nakamaUrl: "http://localhost:7350",
+        deviceId: devId1,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.connect();
+    });
+
+    expect(result.current.isConnected).toBe(true);
+    expect(MockWebSocket.instances).toHaveLength(1);
+    expect(MockWebSocket.instances[0].url).toContain(`token=${nakamaJwt}`);
+    expect(MockWebSocket.instances[0].url).not.toContain("dev-token");
+    expect(result.current.playerId).toBe(String(fnv1a32(nakamaUid)));
+  });
+
+  it("automatically reconnects with exponential backoff on unexpected socket drop and cancels on disconnect()", async () => {
+    jest.useFakeTimers();
+    const view = renderHook(() =>
+      useServerRsClient({
+        serverHost: "localhost",
+        serverPort: 2567,
+        useSSL: false,
+        token: "dev-token:resume-hero",
+      }),
+    );
+    const { result } = view;
+
+    await act(async () => {
+      const p = result.current.connect();
+      jest.advanceTimersByTime(10);
+      await p;
+    });
+
+    expect(result.current.isConnected).toBe(true);
+    expect(MockWebSocket.instances).toHaveLength(1);
+
+    // Hold movement before the connection drops
+    act(() => {
+      result.current.updatePlayerInput(1.0, -0.5);
+    });
+
+    // Simulate an unexpected network drop (close code 1006)
+    act(() => {
+      MockWebSocket.instances[0].close(1006, "abnormal closure");
+    });
+    expect(result.current.isConnected).toBe(false);
+    expect(result.current.connectionError).toBeNull();
+    // Before backoff elapses, no new socket is opened yet
+    expect(MockWebSocket.instances).toHaveLength(1);
+
+    // Advance past first backoff delay (RECONNECT_BASE_DELAY_MS = 250ms)
+    await act(async () => {
+      jest.advanceTimersByTime(RECONNECT_BASE_DELAY_MS + 10);
+      await Promise.resolve();
+      jest.advanceTimersByTime(10);
+    });
+
+    expect(MockWebSocket.instances).toHaveLength(2);
+    expect(result.current.isConnected).toBe(true);
+    expect(MockWebSocket.instances[1].url).toContain("token=dev-token:resume-hero");
+    const resumedInput = decode(MockWebSocket.instances[1].sentMessages[0]);
+    expect(resumedInput.moveX()).toBeCloseTo(1.0, 3);
+    expect(resumedInput.moveY()).toBeCloseTo(-0.5, 3);
+
+    // Drop again, then call manual disconnect() before timer fires -> cancels retry
+    act(() => {
+      MockWebSocket.instances[1].close(1006, "second drop");
+    });
+    expect(result.current.isConnected).toBe(false);
+    act(() => {
+      result.current.disconnect();
+    });
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
+    expect(MockWebSocket.instances).toHaveLength(2);
+    expect(result.current.isConnected).toBe(false);
   });
 });

@@ -4,9 +4,10 @@ use server_rs::fleet::{AgonesClient, FleetLifecycle, HeartbeatTask};
 use server_rs::net::WsServer;
 use server_rs::protocol::SnapshotBuilder;
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
+use server_rs::storage::{CharacterStateBuffer, MatchEventBuffer, NakamaClient, NakamaConfig};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tracing::{debug, error, info};
+use tracing::{debug, error, info, warn};
 use tracing_subscriber::EnvFilter;
 
 /// Fixed-rate simulation timer. After a stall the default behaviour fires every missed
@@ -104,6 +105,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 2. Auth Guard
     let auth_guard = AuthGuard::from_env();
 
+    // 2b. Nakama persistent storage client & startup probe (before Agones Ready)
+    let nakama_client = match NakamaConfig::from_env() {
+        Ok(Some(cfg)) => {
+            info!("Configuring Nakama client for {}", cfg.base_url);
+            let client = Arc::new(NakamaClient::new(
+                cfg.base_url.clone(),
+                cfg.http_key,
+                5000,
+                3,
+            ));
+            if let Err(err) = client.probe().await {
+                error!("Nakama startup probe failed for {}: {}", cfg.base_url, err);
+                eprintln!("Nakama startup probe failed for {}: {}", cfg.base_url, err);
+                std::process::exit(1);
+            }
+            info!("Nakama startup probe succeeded ({})", cfg.base_url);
+            Some(client)
+        }
+        Ok(None) => {
+            info!("Nakama not configured (NAKAMA_URL and NAKAMA_HTTP_KEY unset); running in offline mode");
+            None
+        }
+        Err(err) => {
+            error!("Nakama configuration error: {}", err);
+            eprintln!("Nakama configuration error: {}", err);
+            std::process::exit(1);
+        }
+    };
+
     // 3. Agones lifecycle & heartbeat
     let agones = Arc::new(AgonesClient::from_env());
     if let Err(e) = agones.ready().await {
@@ -115,11 +145,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Agones 2-second heartbeat loop initiated");
 
     // 4. WebSocket Server
-    let ws_server = Arc::new(
-        WsServer::bind(&bind_addr, auth_guard)
-            .await
-            .map_err(std::io::Error::other)?,
-    );
+    let mut ws_server_inner = WsServer::bind(&bind_addr, auth_guard)
+        .await
+        .map_err(std::io::Error::other)?;
+    if let Some(ref client) = nakama_client {
+        ws_server_inner = ws_server_inner.with_nakama(client.clone());
+    }
+    let ws_server = Arc::new(ws_server_inner);
     info!("WebSocket gateway listening on {}", ws_server.local_addr());
 
     // 5. Simulation initialization — initialize rooms for play and test maps
@@ -212,18 +244,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     let debug_enabled = server_rs::debug::debug_enabled_from_env();
     ws_server.set_debug_enabled(debug_enabled);
-    for sim in rooms.values_mut() {
-        sim.debug_enabled = debug_enabled;
-    }
-    info!(
-        "Debug controls (/debug/*) {}",
-        if debug_enabled { "ENABLED" } else { "disabled" }
-    );
-    let mut snapshot_builder = SnapshotBuilder::new();
 
     // 6. 20 Hz simulation tick loop (50ms interval)
     let tick_rate_ms = 50;
-    let mut ticker = sim_ticker(Duration::from_millis(tick_rate_ms));
+    let disconnect_grace_sec = env_f32("ATLAS_DISCONNECT_GRACE_SEC", 5.0).max(0.0);
+    let disconnect_grace_ticks =
+        ((disconnect_grace_sec * 1000.0) / tick_rate_ms as f32).round() as u32;
+    for sim in rooms.values_mut() {
+        sim.debug_enabled = debug_enabled;
+        sim.set_disconnect_grace_ticks(disconnect_grace_ticks);
+    }
+    info!(
+        "Debug controls (/debug/*) {}, disconnect grace window = {:.1}s ({} ticks)",
+        if debug_enabled { "ENABLED" } else { "disabled" },
+        disconnect_grace_sec,
+        disconnect_grace_ticks,
+    );
+    let mut snapshot_builder = SnapshotBuilder::new();
+    let mut match_event_buffer = MatchEventBuffer::default();
+    let mut character_state_buffer = CharacterStateBuffer::default();
+
+    let tick_dt = Duration::from_millis(tick_rate_ms);
+    let mut ticker = sim_ticker(tick_dt);
 
     let mut timings = TickTimings::default();
 
@@ -234,6 +276,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             loop {
                 ticker.tick().await;
                 let tick_start = Instant::now();
+
+                for (session_id, _room_id, loadout) in ws_server.drain_loadouts().await {
+                    for sim in rooms.values_mut() {
+                        sim.set_session_loadout(&session_id, loadout.clone());
+                    }
+                }
 
                 let inputs = ws_server.drain_inbound().await;
                 let disconnected = ws_server.drain_disconnects_with_rooms().await;
@@ -247,6 +295,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     );
                     let _ = request.reply.send(result);
                 }
+
+                let mut departed_users: Vec<String> =
+                    disconnected.iter().map(|(s, _)| s.clone()).collect();
 
                 for (room_id, sim) in rooms.iter_mut() {
                     let room_inputs: Vec<server_rs::net::ClientPacket> = inputs
@@ -265,6 +316,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                     for (user_id, event) in &frame.match_events {
                         debug!(user_id = %user_id, room = %room_id, event = ?event, "match event");
+                        match_event_buffer.record(user_id, event.clone());
+                    }
+
+                    for (user_id, state) in &frame.departed_states {
+                        character_state_buffer.record(user_id, state.clone());
+                        if !departed_users.contains(user_id) {
+                            departed_users.push(user_id.clone());
+                        }
                     }
 
                     if ws_server.active_connections_in_room(room_id).await > 0 {
@@ -282,11 +341,82 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         ws_server.broadcast_snapshot_to_room(room_id, snapshot_bytes).await;
                     }
                 }
+
+                let mut batches_to_flush = match_event_buffer.flush_users(&departed_users);
+                batches_to_flush.extend(match_event_buffer.tick(tick_dt));
+
+                if !batches_to_flush.is_empty() {
+                    if let Some(ref client) = nakama_client {
+                        let client = client.clone();
+                        tokio::spawn(async move {
+                            for res in
+                                MatchEventBuffer::dispatch_batches(client.as_ref(), &batches_to_flush)
+                                    .await
+                            {
+                                if let Err(err) = res {
+                                    warn!("Failed to report match events to Nakama: {}", err);
+                                }
+                            }
+                        });
+                    }
+                }
+
+                let mut states_to_flush = character_state_buffer.flush_users(&departed_users);
+                if character_state_buffer.should_checkpoint(tick_dt) {
+                    for sim in rooms.values_mut() {
+                        character_state_buffer.record_all(sim.snapshot_active_player_states());
+                    }
+                    states_to_flush.extend(character_state_buffer.flush_all());
+                }
+
+                if !states_to_flush.is_empty() {
+                    if let Some(ref client) = nakama_client {
+                        let client = client.clone();
+                        tokio::spawn(async move {
+                            for res in CharacterStateBuffer::dispatch_states(
+                                client.as_ref(),
+                                &states_to_flush,
+                            )
+                            .await
+                            {
+                                if let Err(err) = res {
+                                    warn!("Failed to save character state to Nakama: {}", err);
+                                }
+                            }
+                        });
+                    }
+                }
+
                 timings.record(tick_start, tick_start.elapsed());
             }
         } => {}
         _ = wait_for_shutdown_signal() => {
             info!("Shutdown signal received. Initiating graceful shutdown...");
+        }
+    }
+
+    for sim in rooms.values_mut() {
+        character_state_buffer.record_all(sim.snapshot_active_player_states());
+    }
+    let final_states = character_state_buffer.flush_all();
+    if !final_states.is_empty() {
+        if let Some(ref client) = nakama_client {
+            for res in CharacterStateBuffer::dispatch_states(client.as_ref(), &final_states).await {
+                if let Err(err) = res {
+                    warn!("Failed to flush character state on shutdown: {}", err);
+                }
+            }
+        }
+    }
+
+    let final_batches = match_event_buffer.flush_all();
+    if !final_batches.is_empty() {
+        if let Some(ref client) = nakama_client {
+            for res in MatchEventBuffer::dispatch_batches(client.as_ref(), &final_batches).await {
+                if let Err(err) = res {
+                    warn!("Failed to flush final match events on shutdown: {}", err);
+                }
+            }
         }
     }
 

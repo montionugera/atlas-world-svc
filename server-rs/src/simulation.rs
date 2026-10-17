@@ -1,5 +1,6 @@
 use bevy_ecs::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 use crate::ai::ThreatTable;
 use crate::content::{derived_stats, BestiaryCatalog, MobTier};
@@ -15,7 +16,9 @@ use crate::net::ClientPacket;
 use crate::physics::world::PhysicsWorld;
 use crate::protocol::{EntitySnapshotData, EntityType, GameEventData, GameEventKind};
 use crate::spatial::grid::SpatialGrid;
-use crate::storage::{MatchEvent, MatchEventQueue, PrimaryStats};
+use crate::storage::{
+    CharacterStateSnapshot, LoadoutSnapshot, MatchEvent, MatchEventQueue, PrimaryStats,
+};
 use crate::systems::{
     body_collision_system, bot_steering_system, combat_system, cooldown_tick_system,
     live_bot_ai_system, mob_ai_system, mob_bundle, mob_lifecycle_system, physics_step_system,
@@ -118,6 +121,8 @@ pub struct LiveFrame {
     pub events: Vec<GameEventData>,
     /// Drained `MatchEventQueue` (user id, event) for persistence; not sent to clients.
     pub match_events: Vec<(String, MatchEvent)>,
+    /// Captured position and health of players who disconnected this tick (before despawn).
+    pub departed_states: Vec<(String, CharacterStateSnapshot)>,
 }
 
 pub struct AtlasSimulation {
@@ -125,6 +130,7 @@ pub struct AtlasSimulation {
     pub schedule: Schedule,
     pub clock: SimClock,
     pub prng: Mulberry32,
+    pub map_id: String,
     pub arena_width: f32,
     pub arena_height: f32,
     /// Where a joining player's avatar appears (arena centre unless the map says otherwise).
@@ -133,6 +139,12 @@ pub struct AtlasSimulation {
     pub debug_enabled: bool,
     /// Respawn delay given to mobs spawned after start-up.
     pub mob_respawn_sec: f32,
+    /// Per-account persistent character loadout applied when spawning the player's avatar.
+    session_loadouts: HashMap<String, LoadoutSnapshot>,
+    /// Number of simulation ticks to retain a disconnected player's avatar before despawning (0 = immediate).
+    disconnect_grace_ticks: u32,
+    /// Active disconnect grace countdowns (`session_id` -> remaining ticks).
+    pending_disconnects: HashMap<String, u32>,
     next_bot_index: usize,
     pub(crate) debug_mob_seq: u32,
 }
@@ -195,14 +207,52 @@ impl AtlasSimulation {
             schedule,
             clock,
             prng,
+            map_id: "map-for-play".to_string(),
             arena_width,
             arena_height,
             player_spawn: Position::new(arena_width / 2.0, arena_height / 2.0),
             debug_enabled: false,
             mob_respawn_sec: LiveConfig::default().mob_respawn_sec,
+            session_loadouts: HashMap::new(),
+            disconnect_grace_ticks: 0,
+            pending_disconnects: HashMap::new(),
             next_bot_index: 0,
             debug_mob_seq: 0,
         }
+    }
+
+    /// Configures how many simulation ticks a disconnected player's avatar remains in the
+    /// world before despawning (`0` = immediate removal on the disconnect tick).
+    pub fn set_disconnect_grace_ticks(&mut self, ticks: u32) {
+        self.disconnect_grace_ticks = ticks;
+    }
+
+    /// Returns the configured disconnect grace window in simulation ticks.
+    pub fn disconnect_grace_ticks(&self) -> u32 {
+        self.disconnect_grace_ticks
+    }
+
+    /// Returns `true` if `session_id` is currently within its disconnect grace window.
+    pub fn has_pending_disconnect(&self, session_id: &str) -> bool {
+        self.pending_disconnects.contains_key(session_id)
+    }
+
+    /// Stores or clears a player's saved `LoadoutSnapshot` so their avatar spawns with
+    /// their saved level, primary stats, and equipped weapon on join.
+    pub fn set_session_loadout(&mut self, session_id: &str, loadout: Option<LoadoutSnapshot>) {
+        match loadout {
+            Some(l) => {
+                self.session_loadouts.insert(session_id.to_string(), l);
+            }
+            None => {
+                self.session_loadouts.remove(session_id);
+            }
+        }
+    }
+
+    /// Returns the stored `LoadoutSnapshot` for `session_id`, if any.
+    pub fn session_loadout(&self, session_id: &str) -> Option<&LoadoutSnapshot> {
+        self.session_loadouts.get(session_id)
     }
 
     pub fn with_arena(
@@ -239,6 +289,9 @@ impl AtlasSimulation {
         };
 
         let mut sim = Self::new(cfg.seed, arena_width, arena_height);
+        if let Some(ref map_id) = cfg.map_id {
+            sim.map_id = map_id.clone();
+        }
         if let (Some(_), Some((x, y))) = (&cfg.map_id, map_cfg.player_spawn) {
             sim.player_spawn = Position::new(x, y);
         }
@@ -379,13 +432,31 @@ impl AtlasSimulation {
     }
 
     /// One live server tick, exactly as `main.rs` runs it: apply inputs, then drop avatars
-    /// whose session's last socket closed (after inputs, so a late packet cannot respawn a
-    /// ghost; skipped for sessions that sent input this tick), step, and build the wire
-    /// frame including `removed_ids`.
+    /// whose session's last socket closed (or whose disconnect grace window expired), step,
+    /// and build the wire frame including `removed_ids`.
     pub fn live_tick(&mut self, inputs: &[ClientPacket], disconnected: &[String]) -> LiveFrame {
         for packet in inputs {
+            self.pending_disconnects.remove(&packet.session_id);
             if let Ok(client_input) = crate::protocol::deserialize_client_input(&packet.payload) {
                 self.apply_player_input(&packet.session_id, &client_input);
+            }
+        }
+        let mut departed_states = Vec::new();
+        if !self.pending_disconnects.is_empty() {
+            let mut expired = Vec::new();
+            for (session_id, remaining) in self.pending_disconnects.iter_mut() {
+                *remaining = remaining.saturating_sub(1);
+                if *remaining == 0 {
+                    expired.push(session_id.clone());
+                }
+            }
+            expired.sort();
+            for session_id in expired {
+                self.pending_disconnects.remove(&session_id);
+                if let Some(state) = self.capture_player_state(&session_id) {
+                    departed_states.push((session_id.clone(), state));
+                }
+                self.remove_player_avatar(&session_id);
             }
         }
         for session_id in disconnected {
@@ -394,7 +465,17 @@ impl AtlasSimulation {
             if inputs.iter().any(|p| &p.session_id == session_id) {
                 continue;
             }
-            self.remove_player_avatar(session_id);
+            if self.disconnect_grace_ticks == 0 {
+                self.pending_disconnects.remove(session_id);
+                if let Some(state) = self.capture_player_state(session_id) {
+                    departed_states.push((session_id.clone(), state));
+                }
+                self.remove_player_avatar(session_id);
+            } else if self.halt_player_avatar(session_id) {
+                let _ = self.capture_player_state(session_id);
+                self.pending_disconnects
+                    .insert(session_id.clone(), self.disconnect_grace_ticks);
+            }
         }
         self.step();
         LiveFrame {
@@ -408,6 +489,7 @@ impl AtlasSimulation {
                 .collect(),
             events: self.drain_wire_events(),
             match_events: self.drain_match_events(),
+            departed_states,
         }
     }
 
@@ -665,13 +747,30 @@ impl AtlasSimulation {
 
         let derived = derived_stats(level, &allocated, weapon_id);
 
+        let saved_cs = loadout
+            .and_then(|l| l.character_state.as_ref())
+            .filter(|cs| cs.map_id.is_empty() || cs.map_id == self.map_id);
+        let (spawn_x, spawn_y) = match saved_cs {
+            Some(cs) if cs.x.is_finite() && cs.y.is_finite() => (
+                cs.x.clamp(0.0, self.arena_width),
+                cs.y.clamp(0.0, self.arena_height),
+            ),
+            _ => (x, y),
+        };
+        let mut initial_health = Health::new(derived.max_health);
+        if let Some(cs) = saved_cs {
+            if cs.health.is_finite() && cs.health > 0.0 {
+                initial_health.current = cs.health.min(derived.max_health);
+            }
+        }
+
         let entity = self
             .world
             .spawn((
                 EntityId(session_id.to_string()),
-                Position::new(x, y),
+                Position::new(spawn_x, spawn_y),
                 Velocity::zero(),
-                Health::new(derived.max_health),
+                initial_health,
                 PlayerTag,
                 PlayerAvatar::new(session_id, derived.max_move_speed * 10.0),
                 PlayerInputState::default(),
@@ -715,8 +814,96 @@ impl AtlasSimulation {
             .unwrap_or_default()
     }
 
+    /// Captures a player's current position and health into a `CharacterStateSnapshot` and
+    /// updates the simulation's cached loadout for that session.
+    pub fn capture_player_state(&mut self, session_id: &str) -> Option<CharacterStateSnapshot> {
+        let mut query = self
+            .world
+            .query::<(&EntityId, &Position, &Health, &PlayerAvatar)>();
+        let mut captured = None;
+        for (id, pos, health, _avatar) in query.iter(&self.world) {
+            if id.0 == session_id {
+                captured = Some(CharacterStateSnapshot {
+                    schema_version: 1,
+                    map_id: self.map_id.clone(),
+                    x: pos.x,
+                    y: pos.y,
+                    health: if health.is_alive {
+                        health.current.max(0.0)
+                    } else {
+                        0.0
+                    },
+                    seq: 0,
+                });
+                break;
+            }
+        }
+        if let Some(ref state) = captured {
+            let entry = self
+                .session_loadouts
+                .entry(session_id.to_string())
+                .or_default();
+            entry.character_state = Some(state.clone());
+            crate::net::set_cached_session_loadout(session_id, Some(entry.clone()));
+        }
+        captured
+    }
+
+    /// Snapshots all live player avatars' position and health for periodic crash-safe checkpointing.
+    pub fn snapshot_active_player_states(&mut self) -> Vec<(String, CharacterStateSnapshot)> {
+        let mut query = self
+            .world
+            .query::<(&EntityId, &Position, &Health, &PlayerAvatar)>();
+        let mut states = Vec::new();
+        for (id, pos, health, _avatar) in query.iter(&self.world) {
+            let state = CharacterStateSnapshot {
+                schema_version: 1,
+                map_id: self.map_id.clone(),
+                x: pos.x,
+                y: pos.y,
+                health: if health.is_alive {
+                    health.current.max(0.0)
+                } else {
+                    0.0
+                },
+                seq: 0,
+            };
+            states.push((id.0.clone(), state));
+        }
+        for (session_id, state) in &states {
+            let entry = self.session_loadouts.entry(session_id.clone()).or_default();
+            entry.character_state = Some(state.clone());
+            crate::net::set_cached_session_loadout(session_id, Some(entry.clone()));
+        }
+        states
+    }
+
+    /// Zeroes movement and attack inputs on a disconnected player's avatar so it stands still
+    /// during the disconnect grace window. Returns `true` if the avatar exists.
+    pub fn halt_player_avatar(&mut self, session_id: &str) -> bool {
+        let mut query = self.world.query::<(
+            &EntityId,
+            &PlayerAvatar,
+            &mut Velocity,
+            &mut PlayerInputState,
+        )>();
+        for (id, _avatar, mut vel, mut input_state) in query.iter_mut(&mut self.world) {
+            if id.0 == session_id {
+                *vel = Velocity::zero();
+                input_state.move_x = 0.0;
+                input_state.move_y = 0.0;
+                input_state.attack = false;
+                input_state.attack_held = false;
+                input_state.skill_slot = 0;
+                return true;
+            }
+        }
+        false
+    }
+
     /// Removes a player avatar from the ECS world when disconnected.
     pub fn remove_player_avatar(&mut self, session_id: &str) -> bool {
+        self.pending_disconnects.remove(session_id);
         let mut to_despawn = None;
         let mut query = self.world.query::<(Entity, &EntityId, &PlayerAvatar)>();
         for (entity, id, _avatar) in query.iter(&self.world) {
@@ -861,7 +1048,22 @@ impl AtlasSimulation {
 
         if !found {
             let spawn = self.player_spawn;
-            let entity = self.spawn_player_avatar(session_id, spawn.x, spawn.y);
+            let loadout = self
+                .session_loadouts
+                .get(session_id)
+                .cloned()
+                .or_else(|| crate::net::cached_session_loadout(session_id));
+            if let Some(ref l) = loadout {
+                self.session_loadouts
+                    .entry(session_id.to_string())
+                    .or_insert_with(|| l.clone());
+            }
+            let entity = self.spawn_player_avatar_with_loadout(
+                session_id,
+                spawn.x,
+                spawn.y,
+                loadout.as_ref(),
+            );
             if let Some(mut state) = self.world.get_mut::<PlayerInputState>(entity) {
                 state.move_x = input.move_x();
                 state.move_y = input.move_y();

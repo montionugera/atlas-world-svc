@@ -130,7 +130,13 @@ if [ "$DO_META" -eq 1 ]; then
   kubectl apply -f "$REPO_ROOT/k8s/local/cockroachdb.yaml"
   kubectl apply -f "$REPO_ROOT/k8s/local/nakama.yaml"
 fi
-[ "$DO_SERVER" -eq 1 ]    && kubectl apply -f "$REPO_ROOT/k8s/local/server-rs.yaml"
+if [ "$DO_SERVER" -eq 1 ]; then
+  kubectl apply -f "$REPO_ROOT/k8s/local/server-rs.yaml"
+  if [ "$DO_META" -eq 0 ]; then
+    verify_local_ctx
+    kubectl -n "$NAMESPACE" set env deployment/server-rs NAKAMA_URL- NAKAMA_HTTP_KEY-
+  fi
+fi
 [ "$DO_STORYBOOK" -eq 1 ] && kubectl apply -f "$REPO_ROOT/k8s/local/storybook.yaml"
 
 # --- Roll out -----------------------------------------------------------------

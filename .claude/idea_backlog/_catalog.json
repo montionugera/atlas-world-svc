@@ -830,49 +830,49 @@
     "id": "I-137",
     "title": "Server accepts a real Nakama token",
     "created_at": "2026-10-11T06:59:03.752427+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-068",
     "epic": "E-003"
   },
   {
     "id": "I-138",
     "title": "Client signs in with Nakama",
     "created_at": "2026-10-11T06:59:03.754510+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-069",
     "epic": "E-003"
   },
   {
     "id": "I-139",
     "title": "One live session per account",
     "created_at": "2026-10-11T06:59:03.767454+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-070",
     "epic": "E-003"
   },
   {
     "id": "I-140",
     "title": "Apply the saved character on join",
     "created_at": "2026-10-11T06:59:03.783040+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-071",
     "epic": "E-003"
   },
   {
     "id": "I-141",
     "title": "Report match events to Nakama",
     "created_at": "2026-10-11T06:59:03.784680+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-072",
     "epic": "E-003"
   },
   {
     "id": "I-142",
     "title": "Save and restore position and health",
     "created_at": "2026-10-11T06:59:03.793886+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-073",
     "epic": "E-003"
   },
   {
     "id": "I-143",
     "title": "Session resume after a dropped connection",
     "created_at": "2026-10-11T06:59:03.795224+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-074",
     "epic": "E-003"
   },
   {

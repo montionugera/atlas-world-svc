@@ -67,10 +67,20 @@ export interface MatchEventBatch {
   events: MatchEvent[];
 }
 
+export interface CharacterStateDoc {
+  schemaVersion: 1;
+  mapId: string;
+  x: number;
+  y: number;
+  health: number;
+  seq: number;
+}
+
 export interface LoadoutSnapshot {
   schemaVersion: 1;
   profile: ProfileDoc;
   equippedItemIds: { weapon?: string; armor?: string; accessory?: string };
   skillLoadout: string[];
   activeQuestIds: string[];
+  characterState?: CharacterStateDoc;
 }

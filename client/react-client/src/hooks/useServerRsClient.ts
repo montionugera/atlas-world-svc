@@ -29,8 +29,10 @@ import {
   STATE_FLAG_BOT,
 } from "../protocol/BinaryDeltaDecoder";
 import {
+  DUPLICATE_SESSION_CLOSE_CODE,
   PROTOCOL_MISMATCH_CLOSE_CODE,
   PROTOCOL_VERSION,
+  formatDuplicateSessionMessage,
   formatProtocolMismatchMessage,
 } from "../protocol/protocolVersion";
 import { ClientInput } from "../protocol/generated/atlas/protocol/client-input";
@@ -40,6 +42,137 @@ export interface ServerRsClientConfig {
   serverPort: number;
   useSSL: boolean;
   token?: string;
+  nakamaUrl?: string;
+  nakamaServerKey?: string;
+  deviceId?: string;
+}
+
+export const RECONNECT_BASE_DELAY_MS = 250;
+export const RECONNECT_MAX_DELAY_MS = 4000;
+export const RECONNECT_MAX_ATTEMPTS = 5;
+
+export function getOrCreateNakamaDeviceId(playerSeed?: string | null): string {
+  const storageKey = playerSeed
+    ? `atlas-world-device-id:${playerSeed}`
+    : "atlas-world-device-id";
+  try {
+    const existing = localStorage.getItem(storageKey);
+    if (existing && existing.length >= 10) {
+      return existing;
+    }
+  } catch {
+    // ignore storage errors in restricted contexts
+  }
+
+  const normalizedSeed = playerSeed
+    ? playerSeed.replace(/[^a-zA-Z0-9_-]/g, "")
+    : "";
+  const generated = normalizedSeed
+    ? `atlas-device-${normalizedSeed.padEnd(12, "0")}`
+    : `atlas-device-${Date.now().toString(36)}-${Math.random()
+        .toString(36)
+        .slice(2, 12)
+        .padEnd(8, "0")}`;
+
+  try {
+    localStorage.setItem(storageKey, generated);
+  } catch {
+    // ignore storage errors
+  }
+  return generated;
+}
+
+function decodeBase64Url(input: string): string {
+  const base64 = input.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+  if (typeof atob === "function") {
+    return atob(padded);
+  }
+  return Buffer.from(padded, "base64").toString("utf8");
+}
+
+export function extractTokenUserId(token?: string | null): string {
+  const trimmed = (token || "").trim();
+  if (!trimmed || trimmed === "dev-token") {
+    return "dev-player";
+  }
+  if (trimmed.startsWith("dev-token:")) {
+    return trimmed.slice("dev-token:".length).trim() || "dev-player";
+  }
+  const parts = trimmed.split(".");
+  if (parts.length === 3) {
+    try {
+      const payload = JSON.parse(decodeBase64Url(parts[1]));
+      const claimId =
+        typeof payload?.uid === "string" && payload.uid.trim()
+          ? payload.uid.trim()
+          : typeof payload?.sub === "string" && payload.sub.trim()
+            ? payload.sub.trim()
+            : null;
+      if (claimId) {
+        return claimId;
+      }
+    } catch {
+      // fall through to raw token if not valid base64 JSON
+    }
+  }
+  return trimmed;
+}
+
+export async function authenticateNakamaDevice(options: {
+  nakamaUrl: string;
+  serverKey?: string;
+  deviceId?: string;
+  playerSeed?: string | null;
+  fetchImpl?: typeof fetch;
+}): Promise<{ token: string; userId: string }> {
+  const baseUrl = options.nakamaUrl.replace(/\/+$/, "");
+  const serverKey = options.serverKey || "defaultkey";
+  const deviceId =
+    options.deviceId || getOrCreateNakamaDeviceId(options.playerSeed);
+  const fetchFn = options.fetchImpl || globalThis.fetch;
+  if (typeof fetchFn !== "function") {
+    throw new Error("fetch is not available for Nakama authentication");
+  }
+
+  const basicAuth =
+    typeof btoa === "function"
+      ? btoa(`${serverKey}:`)
+      : Buffer.from(`${serverKey}:`).toString("base64");
+
+  const response = await fetchFn(
+    `${baseUrl}/v2/account/authenticate/device?create=true`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${basicAuth}`,
+      },
+      body: JSON.stringify({ id: deviceId }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Nakama device authentication failed (${response.status})`);
+  }
+
+  const data = await response.json();
+  if (!data || typeof data.token !== "string" || !data.token.trim()) {
+    throw new Error("Nakama device authentication response missing token");
+  }
+
+  const token = data.token.trim();
+  const userId = extractTokenUserId(token);
+  try {
+    const tokenKey = options.playerSeed
+      ? `atlas-world-nakama-token:${options.playerSeed}`
+      : "atlas-world-nakama-token";
+    localStorage.setItem(tokenKey, token);
+  } catch {
+    // ignore storage errors
+  }
+
+  return { token, userId };
 }
 
 export interface LatencyMetrics {
@@ -161,12 +294,8 @@ export const useServerRsClient = (
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [roomId, setRoomId] = useState<string | null>(null);
-  const sessionName = config.token?.startsWith("dev-token:")
-    ? config.token.replace("dev-token:", "")
-    : config.token && config.token !== "dev-token"
-      ? config.token
-      : "dev-player";
-  const initialPlayerId = String(fnv1a32(sessionName));
+  const initialSessionName = extractTokenUserId(config.token);
+  const initialPlayerId = String(fnv1a32(initialSessionName));
   const [playerId, setPlayerId] = useState(initialPlayerId);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [updateCount, setUpdateCount] = useState(0);
@@ -180,7 +309,17 @@ export const useServerRsClient = (
 
   // Refs
   const wsRef = useRef<WebSocket | null>(null);
+  const nakamaTokenRef = useRef<string | null>(null);
+  const connectGenRef = useRef<number>(0);
   const connectionErrorRef = useRef<string | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptsRef = useRef<number>(0);
+  const cancelReconnectTimer = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+  }, []);
   // `client_tick` of the newest input sent; the first is 1, so 0 means none.
   const inputSeqRef = useRef<number>(0);
   const inputSentRef = useRef<((seq: number) => void) | null>(null);
@@ -263,6 +402,9 @@ export const useServerRsClient = (
 
   // Disconnect WebSocket
   const disconnect = useCallback(() => {
+    connectGenRef.current++;
+    cancelReconnectTimer();
+    reconnectAttemptsRef.current = 0;
     cancelTrailingPublish();
     if (simulationIntervalRef.current) {
       clearInterval(simulationIntervalRef.current);
@@ -292,7 +434,7 @@ export const useServerRsClient = (
     updateCountRef.current = 0;
     setUpdateCount(0);
     localStorage.removeItem("atlas-world-server-rs-connected");
-  }, [cancelTrailingPublish]);
+  }, [cancelReconnectTimer, cancelTrailingPublish]);
 
   // Connect to server-rs WebSocket gateway
   const connect = useCallback(
@@ -310,19 +452,41 @@ export const useServerRsClient = (
         return;
       }
 
+      cancelReconnectTimer();
       cancelTrailingPublish();
       connectionErrorRef.current = null;
       setConnectionError(null);
+      const myGen = ++connectGenRef.current;
+
+      let resolvedToken = config.token || nakamaTokenRef.current || "";
+      if (!resolvedToken && config.nakamaUrl) {
+        isConnectingRef.current = true;
+        try {
+          const auth = await authenticateNakamaDevice({
+            nakamaUrl: config.nakamaUrl,
+            serverKey: config.nakamaServerKey,
+            deviceId: config.deviceId,
+          });
+          nakamaTokenRef.current = auth.token;
+          resolvedToken = auth.token;
+        } catch (err) {
+          isConnectingRef.current = false;
+          throw err;
+        }
+        if (connectGenRef.current !== myGen) {
+          // Superseded by disconnect() or a newer connect() while awaiting Nakama
+          isConnectingRef.current = false;
+          return;
+        }
+      }
+
+      const token = resolvedToken || "dev-token";
+
       return new Promise<void>((resolve, reject) => {
         try {
           isConnectingRef.current = true;
           const protocol = config.useSSL ? "wss" : "ws";
-          const token = config.token || "dev-token";
-          const sessionName = token.startsWith("dev-token:")
-            ? token.replace("dev-token:", "")
-            : token !== "dev-token"
-              ? token
-              : "dev-player";
+          const sessionName = extractTokenUserId(token);
           const localPlayerId = String(fnv1a32(sessionName));
           setPlayerId(localPlayerId);
           const url = `${protocol}://${config.serverHost}:${config.serverPort}?token=${token}&map=${activeMap}&proto=${PROTOCOL_VERSION}`;
@@ -332,6 +496,7 @@ export const useServerRsClient = (
           // Track immediately so a disconnect() during CONNECTING (e.g. React
           // StrictMode double-mount) closes this socket instead of leaking it.
           wsRef.current = ws;
+          let opened = false;
           // Settle the connect() promise exactly once, whatever happens first.
           let settled = false;
           const settle = (err?: unknown) => {
@@ -352,23 +517,25 @@ export const useServerRsClient = (
               settle();
               return;
             }
+            opened = true;
+            reconnectAttemptsRef.current = 0;
             setIsConnected(true);
             setRoomId(`server-rs-${activeMap}`);
             isConnectingRef.current = false;
             localStorage.setItem("atlas-world-server-rs-connected", "true");
 
-            // Send initial input frame so avatar spawns immediately
+            // Send initial input frame (preserving any held input on session resume)
             const builder = new flatbuffers.Builder(64);
             const offset = ClientInput.createClientInput(
               builder,
               ++inputSeqRef.current,
+              moveRef.current.vx,
+              moveRef.current.vy,
+              attackHeldRef.current,
               0,
-              0,
-              false,
-              0,
-              0,
-              0,
-              0,
+              targetIdRef.current,
+              aimRef.current.x,
+              aimRef.current.y,
               false,
             );
             builder.finish(offset);
@@ -692,9 +859,34 @@ export const useServerRsClient = (
 
           ws.onclose = (event?: { code?: number; reason?: string }) => {
             if (event?.code === PROTOCOL_MISMATCH_CLOSE_CODE) {
+              cancelReconnectTimer();
+              reconnectAttemptsRef.current = 0;
               const mismatchMsg = formatProtocolMismatchMessage(event.reason);
               connectionErrorRef.current = mismatchMsg;
               setConnectionError(mismatchMsg);
+              if (wsRef.current === ws) {
+                wsRef.current = null;
+              }
+              cancelTrailingPublish();
+              setIsConnected(false);
+              setRoomId(null);
+              gameStateRef.current = null;
+              publishedRef.current.at = -Infinity;
+              setGameState(null);
+              isConnectingRef.current = false;
+              settle();
+              return;
+            }
+            if (event?.code === DUPLICATE_SESSION_CLOSE_CODE) {
+              if (wsRef.current !== ws && wsRef.current !== null) {
+                settle();
+                return;
+              }
+              cancelReconnectTimer();
+              reconnectAttemptsRef.current = 0;
+              const duplicateMsg = formatDuplicateSessionMessage(event.reason);
+              connectionErrorRef.current = duplicateMsg;
+              setConnectionError(duplicateMsg);
               if (wsRef.current === ws) {
                 wsRef.current = null;
               }
@@ -715,7 +907,34 @@ export const useServerRsClient = (
               if (wsRef.current !== null) return;
             } else {
               wsRef.current = null;
-              settle(new Error("WebSocket closed before it opened"));
+              if (!opened) {
+                settle(new Error("WebSocket closed before it opened"));
+              } else {
+                settle();
+              }
+              if (
+                (opened || reconnectAttemptsRef.current > 0) &&
+                reconnectAttemptsRef.current < RECONNECT_MAX_ATTEMPTS &&
+                !connectionErrorRef.current
+              ) {
+                cancelTrailingPublish();
+                setIsConnected(false);
+                isConnectingRef.current = false;
+                const attempt = reconnectAttemptsRef.current;
+                reconnectAttemptsRef.current = attempt + 1;
+                const delayMs = Math.min(
+                  RECONNECT_MAX_DELAY_MS,
+                  RECONNECT_BASE_DELAY_MS * Math.pow(2, attempt),
+                );
+                const retryMap = currentMapRef.current;
+                reconnectTimerRef.current = setTimeout(() => {
+                  reconnectTimerRef.current = null;
+                  connect(retryMap).catch(() => {
+                    // Retry failures continue exponential backoff up to RECONNECT_MAX_ATTEMPTS
+                  });
+                }, delayMs);
+                return;
+              }
             }
             cancelTrailingPublish();
             setIsConnected(false);
@@ -731,7 +950,7 @@ export const useServerRsClient = (
         }
       });
     },
-    [config, cancelTrailingPublish],
+    [config, cancelReconnectTimer, cancelTrailingPublish],
   );
 
   // Last non-zero target we actually sent (mirrors the target the server holds)
@@ -783,6 +1002,8 @@ export const useServerRsClient = (
   const joinRoom = useCallback(
     async (mapId: string = "map-for-play") => {
       if (connectionErrorRef.current) return;
+      cancelReconnectTimer();
+      reconnectAttemptsRef.current = 0;
       const isSwitchingMap = mapId !== currentMapRef.current;
       currentMapRef.current = mapId;
       const targetRoomId = `server-rs-${mapId}`;
@@ -863,7 +1084,7 @@ export const useServerRsClient = (
         false,
       );
     },
-    [connect, sendInput],
+    [connect, cancelReconnectTimer, sendInput],
   );
 
   // server-rs treats every ClientInput as the FULL input state (it overwrites

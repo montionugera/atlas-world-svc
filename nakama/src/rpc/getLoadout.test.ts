@@ -51,4 +51,24 @@ describe('assembleLoadout', () => {
 
     expect(snapshot.equippedItemIds.weapon).toBeUndefined();
   });
+
+  it('attaches characterState when saved position and health exist', () => {
+    const equipment = defaultDoc(COLLECTIONS.equipment);
+    const inventory = defaultDoc(COLLECTIONS.inventory);
+    const skills = defaultDoc(COLLECTIONS.skills);
+    const quests = defaultDoc(COLLECTIONS.quests);
+    const characterState = {
+      schemaVersion: 1 as const,
+      mapId: 'map-for-play',
+      x: 412.5,
+      y: 289.75,
+      health: 77,
+      seq: 42,
+    };
+
+    const snapshot = assembleLoadout(DEFAULT_PROFILE, equipment, inventory, skills, quests, characterState);
+
+    expect(snapshot.characterState).toEqual(characterState);
+    expect(() => loadoutSnapshotSchema.parse(snapshot)).not.toThrow();
+  });
 });
