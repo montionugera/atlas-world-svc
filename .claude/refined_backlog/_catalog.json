@@ -884,9 +884,11 @@
     "from_idea": "I-141",
     "created_at": "2026-10-17T22:22:40.697427+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
+    "status": "shipped",
+    "release_version": "1.13",
     "epic": "E-003",
-    "claimed_at": "2026-10-17T22:22:46.693302+00:00"
+    "claimed_at": "2026-10-17T22:22:46.693302+00:00",
+    "shipped_at": "2026-10-17T22:36:15.653390+00:00",
+    "shipped_sha": "2aac65247db6d8613ff1586e65eb6c0ff877806a"
   }
 ]
