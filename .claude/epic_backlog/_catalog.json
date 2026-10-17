@@ -25,11 +25,12 @@
     "id": "E-003",
     "title": "Persistent accounts and characters",
     "created_at": "2026-10-11T06:40:06.314809+00:00",
-    "status": "open",
+    "status": "verifying",
     "release_version": null,
     "verified_sha": null,
     "verified_at": null,
-    "split_approved_by": null
+    "split_approved_by": null,
+    "verifying_sha": "6092a195467453f53c7c41354e44093e8796fc13"
   },
   {
     "id": "E-004",
