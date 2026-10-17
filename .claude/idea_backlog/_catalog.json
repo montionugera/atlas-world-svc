@@ -837,7 +837,7 @@
     "id": "I-138",
     "title": "Client signs in with Nakama",
     "created_at": "2026-10-11T06:59:03.754510+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-069",
     "epic": "E-003"
   },
   {
