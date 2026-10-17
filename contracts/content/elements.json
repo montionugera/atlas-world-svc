@@ -1,0 +1,19 @@
+{
+  "elements": ["Neutral", "Water", "Earth", "Fire", "Wind", "Poison", "Holy", "Shadow", "Ghost", "Undead"],
+  "damageMatrixPct": {
+    "Neutral": { "Neutral": 100, "Ghost": 25 },
+    "Fire":    { "Earth": 150, "Undead": 125, "Water": 50, "Fire": 25 },
+    "Water":   { "Fire": 150, "Wind": 50, "Water": 25 },
+    "Wind":    { "Water": 150, "Earth": 50, "Wind": 25 },
+    "Earth":   { "Wind": 150, "Fire": 50, "Earth": 25 },
+    "Holy":    { "Shadow": 150, "Undead": 150, "Holy": 0 },
+    "Shadow":  { "Holy": 150, "Undead": 0, "Shadow": 0 }
+  },
+  "weaponSizePenaltyPct": {
+    "dagger":      { "Small": 100, "Medium": 75,  "Large": 50 },
+    "basic_sword": { "Small": 75,  "Medium": 100, "Large": 75 },
+    "scythe":      { "Small": 75,  "Medium": 75,  "Large": 100 },
+    "great_bow":   { "Small": 100, "Medium": 100, "Large": 75 },
+    "magic_staff": { "Small": 100, "Medium": 100, "Large": 100 }
+  }
+}

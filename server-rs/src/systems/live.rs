@@ -63,6 +63,7 @@ fn resolve_against_statics(
 pub fn body_collision_system(
     bounds: Res<ArenaBounds>,
     statics: Option<Res<crate::content::map::StaticObstacles>>,
+    heightfield: Option<Res<crate::content::map::TerrainHeightfield>>,
     mut query: Query<(Entity, &mut Position, &BodyRadius, &Health)>,
 ) {
     let mut bodies: Vec<(Entity, f32, f32, f32)> = query
@@ -71,7 +72,7 @@ pub fn body_collision_system(
         .map(|(e, p, r, _)| (e, p.x, p.y, r.0))
         .collect();
 
-    // 1. Resolve static obstacle collisions first for all bodies
+    // 1. Resolve static obstacle & 3D sheer cliff collisions first for all bodies
     if let Some(statics) = &statics {
         for body in &mut bodies {
             resolve_against_statics(
@@ -81,6 +82,15 @@ pub fn body_collision_system(
                 &mut body.2,
                 body.3,
             );
+        }
+    }
+    if let Some(hf) = &heightfield {
+        for body in &mut bodies {
+            if hf.resolve_against_cliffs(&mut body.1, &mut body.2) {
+                let (cx, cy) = clamp_to(&bounds, body.1, body.2);
+                body.1 = cx;
+                body.2 = cy;
+            }
         }
     }
 

@@ -1,0 +1,318 @@
+[gd_scene load_steps=26 format=3 uid="uid://vverticallicepoc123"]
+
+[ext_resource type="Script" path="res://src/VerticalSliceRoot.cs" id="1_root"]
+[ext_resource type="Script" path="res://src/Net/ServerRsConnection.cs" id="2_net"]
+[ext_resource type="PackedScene" uid="uid://cchatboxwidget123" path="res://src/UI/Widgets/ChatBox.tscn" id="3_chat"]
+[ext_resource type="PackedScene" uid="uid://moboverlay12345" path="res://src/UI/Widgets/MobileControlsOverlay.tscn" id="4_touch"]
+[ext_resource type="PackedScene" uid="uid://cplayerframe001" path="res://src/UI/Widgets/PlayerFrame.tscn" id="5_pframe"]
+[ext_resource type="PackedScene" uid="uid://ctopbar001" path="res://src/UI/Widgets/TopBar.tscn" id="6_topbar"]
+[ext_resource type="PackedScene" uid="uid://cwardrobemodal001" path="res://src/UI/Widgets/WardrobeModal.tscn" id="7_wardrobe"]
+[ext_resource type="PackedScene" uid="uid://do4hbjbmcsjmp" path="res://assets/characters/player_knight.glb" id="8_knight"]
+[ext_resource type="PackedScene" uid="uid://lcps5h83obs4" path="res://assets/nature/tree_1_a_color1.glb" id="9_tree1"]
+[ext_resource type="PackedScene" uid="uid://bgky0q6cw7c1q" path="res://assets/nature/tree_2_a_color1.glb" id="10_tree2"]
+[ext_resource type="PackedScene" uid="uid://desj2sb426tbe" path="res://assets/nature/rock_1_a_color1.glb" id="11_rock1"]
+[ext_resource type="PackedScene" uid="uid://cce50d1vewayi" path="res://assets/nature/rock_2_a_color1.glb" id="12_rock2"]
+[ext_resource type="PackedScene" uid="uid://bi3umajlyqm8y" path="res://assets/nature/bush_1_a_color1.glb" id="13_bush1"]
+[ext_resource type="PackedScene" uid="uid://dfosy32pcjkb0" path="res://assets/dungeon/floor_tile_large.glb" id="14_tile"]
+[ext_resource type="PackedScene" uid="uid://dx50rsj0iiecf" path="res://assets/dungeon/barrel_large.glb" id="15_barrel"]
+[ext_resource type="PackedScene" uid="uid://ckltjnav6v8m7" path="res://assets/dungeon/crate_large.glb" id="16_crate"]
+[ext_resource type="PackedScene" uid="uid://bn7lmbeig57t7" path="res://assets/dungeon/torch_lit.glb" id="17_torch"]
+[ext_resource type="PackedScene" uid="uid://ctargetframe001" path="res://src/UI/Widgets/TargetFrame.tscn" id="18_target"]
+[ext_resource type="PackedScene" uid="uid://cexpbar0001" path="res://src/UI/Widgets/ExpBar.tscn" id="19_exp"]
+[ext_resource type="Script" path="res://src/UI/Widgets/FloatingCombatText.cs" id="20_fct"]
+[ext_resource type="Shader" path="res://assets/shaders/stylized_grass_floor.gdshader" id="21_grass_shader"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
+sky_top_color = Color(0.28, 0.58, 0.96, 1)
+sky_horizon_color = Color(0.82, 0.92, 1.0, 1)
+ground_bottom_color = Color(0.24, 0.42, 0.22, 1)
+ground_horizon_color = Color(0.78, 0.9, 0.96, 1)
+sun_angle_max = 35.0
+
+[sub_resource type="Sky" id="Sky_env"]
+sky_material = SubResource("ProceduralSkyMaterial_sky")
+
+[sub_resource type="Environment" id="Environment_slice"]
+background_mode = 2
+sky = SubResource("Sky_env")
+ambient_light_source = 3
+ambient_light_color = Color(0.95, 0.92, 0.88, 1)
+ambient_light_sky_contribution = 0.55
+ambient_light_energy = 1.15
+tonemap_mode = 2
+tonemap_exposure = 1.08
+glow_enabled = true
+glow_intensity = 0.45
+glow_strength = 0.85
+glow_bloom = 0.08
+fog_enabled = true
+fog_light_color = Color(0.78, 0.9, 0.98, 1)
+fog_sun_scatter = 0.22
+fog_density = 0.0038
+adjustment_enabled = true
+adjustment_brightness = 1.03
+adjustment_contrast = 1.06
+adjustment_saturation = 1.16
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_shadow"]
+top_radius = 0.55
+bottom_radius = 0.55
+height = 0.02
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shadow"]
+transparency = 1
+albedo_color = Color(0.06, 0.12, 0.08, 0.42)
+roughness = 1.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_quest"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.07, 0.1, 0.16, 0.88)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.95, 0.82, 0.42, 0.95)
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_status"]
+content_margin_left = 10.0
+content_margin_top = 3.0
+content_margin_right = 10.0
+content_margin_bottom = 3.0
+bg_color = Color(0.06, 0.09, 0.15, 0.86)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.45, 0.72, 0.88, 0.75)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
+size = Vector2(200, 200)
+subdivide_width = 64
+subdivide_depth = 64
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_floor"]
+render_priority = 0
+shader = ExtResource("21_grass_shader")
+shader_parameter/grass_base_color = Color(0.32, 0.6, 0.25, 1)
+shader_parameter/grass_highlight_color = Color(0.58, 0.8, 0.3, 1)
+shader_parameter/grass_shadow_color = Color(0.2, 0.44, 0.22, 1)
+shader_parameter/path_dirt_color = Color(0.7, 0.58, 0.44, 1)
+shader_parameter/path_stone_color = Color(0.82, 0.78, 0.7, 1)
+
+[node name="VerticalSlice" type="Node3D" node_paths=PackedStringArray("Connection", "PlayerAvatar", "MainCamera", "ChatWidget", "StatusLabel", "MobileControls", "PlayerStatusFrame", "NavigationTopBar", "EquipmentWardrobeModal", "TargetBossFrame", "CombatText", "PlayerExpBar")]
+script = ExtResource("1_root")
+Connection = NodePath("ServerRsConnection")
+PlayerAvatar = NodePath("PlayerAvatar")
+MainCamera = NodePath("Camera3D")
+ChatWidget = NodePath("UI/ChatBox")
+StatusLabel = NodePath("UI/HUD/StatusLabel")
+MobileControls = NodePath("UI/MobileControlsOverlay")
+PlayerStatusFrame = NodePath("UI/PlayerFrame")
+NavigationTopBar = NodePath("UI/TopBar")
+EquipmentWardrobeModal = NodePath("UI/WardrobeModal")
+TargetBossFrame = NodePath("UI/TargetFrame")
+CombatText = NodePath("UI/FloatingCombatText")
+PlayerExpBar = NodePath("UI/ExpBar")
+
+[node name="ServerRsConnection" type="Node" parent="."]
+script = ExtResource("2_net")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_slice")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 18, 0)
+light_color = Color(1, 0.95, 0.84, 1)
+light_energy = 1.28
+shadow_enabled = true
+shadow_opacity = 0.68
+shadow_blur = 1.4
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.927184, 0.374607, 0, -0.374607, 0.927184, 0, 3.8, 5.5)
+fov = 60.0
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_floor")
+surface_material_override/0 = SubResource("ShaderMaterial_floor")
+
+[node name="EnvironmentProps" type="Node3D" parent="."]
+
+[node name="CobblestonePath" type="Node3D" parent="EnvironmentProps"]
+
+[node name="Tile1" parent="EnvironmentProps/CobblestonePath" instance=ExtResource("14_tile")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+
+[node name="Tile2" parent="EnvironmentProps/CobblestonePath" instance=ExtResource("14_tile")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -2)
+
+[node name="Tile3" parent="EnvironmentProps/CobblestonePath" instance=ExtResource("14_tile")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -4)
+
+[node name="Tile4" parent="EnvironmentProps/CobblestonePath" instance=ExtResource("14_tile")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -6)
+
+[node name="Tile5" parent="EnvironmentProps/CobblestonePath" instance=ExtResource("14_tile")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -8)
+
+[node name="Tile6" parent="EnvironmentProps/CobblestonePath" instance=ExtResource("14_tile")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 2)
+
+[node name="Tile7" parent="EnvironmentProps/CobblestonePath" instance=ExtResource("14_tile")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 4)
+
+[node name="Trees" type="Node3D" parent="EnvironmentProps"]
+
+[node name="Tree1" parent="EnvironmentProps/Trees" instance=ExtResource("9_tree1")]
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, -7.5, 0, -8.0)
+
+[node name="Tree2" parent="EnvironmentProps/Trees" instance=ExtResource("10_tree2")]
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, 8.5, 0, -9.5)
+
+[node name="Tree3" parent="EnvironmentProps/Trees" instance=ExtResource("9_tree1")]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, -11.0, 0, 3.0)
+
+[node name="Tree4" parent="EnvironmentProps/Trees" instance=ExtResource("10_tree2")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 10.0, 0, 5.0)
+
+[node name="Tree5" parent="EnvironmentProps/Trees" instance=ExtResource("9_tree1")]
+transform = Transform3D(1.6, 0, 0, 0, 1.6, 0, 0, 0, 1.6, -1.0, 0, -16.0)
+
+[node name="Rocks" type="Node3D" parent="EnvironmentProps"]
+
+[node name="Rock1" parent="EnvironmentProps/Rocks" instance=ExtResource("11_rock1")]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, -5.0, 0, -4.5)
+
+[node name="Rock2" parent="EnvironmentProps/Rocks" instance=ExtResource("12_rock2")]
+transform = Transform3D(1.1, 0, 0, 0, 1.1, 0, 0, 0, 1.1, 6.5, 0, -3.5)
+
+[node name="Rock3" parent="EnvironmentProps/Rocks" instance=ExtResource("11_rock1")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 4.0, 0, 7.0)
+
+[node name="Bushes" type="Node3D" parent="EnvironmentProps"]
+
+[node name="Bush1" parent="EnvironmentProps/Bushes" instance=ExtResource("13_bush1")]
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, -4.2, 0, -7.0)
+
+[node name="Bush2" parent="EnvironmentProps/Bushes" instance=ExtResource("13_bush1")]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, 5.5, 0, -8.0)
+
+[node name="Props" type="Node3D" parent="EnvironmentProps"]
+
+[node name="Barrel1" parent="EnvironmentProps/Props" instance=ExtResource("15_barrel")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 0, 0.8)
+
+[node name="Crate1" parent="EnvironmentProps/Props" instance=ExtResource("16_crate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 0, 1.0)
+
+[node name="Torch1" parent="EnvironmentProps/Props" instance=ExtResource("17_torch")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 0, -2.5)
+
+[node name="Torch2" parent="EnvironmentProps/Props" instance=ExtResource("17_torch")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 0, -2.5)
+
+[node name="PlayerAvatar" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="player_knight" parent="PlayerAvatar" instance=ExtResource("8_knight")]
+
+[node name="DropShadow" type="MeshInstance3D" parent="PlayerAvatar"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+mesh = SubResource("CylinderMesh_shadow")
+surface_material_override/0 = SubResource("StandardMaterial3D_shadow")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="PlayerFrame" parent="UI" instance=ExtResource("5_pframe")]
+offset_left = 18.0
+offset_top = 12.0
+offset_right = 338.0
+offset_bottom = 104.0
+
+[node name="TopBar" parent="UI" instance=ExtResource("6_topbar")]
+
+[node name="HUD" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StatusLabel" type="RichTextLabel" parent="UI/HUD"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 184.0
+offset_right = 258.0
+offset_bottom = 206.0
+mouse_filter = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_status")
+bbcode_enabled = true
+scroll_active = false
+theme_override_font_sizes/normal_font_size = 9
+text = "[color=#7fb3d5]● Initializing MMORPG slice...[/color]"
+
+[node name="QuestTracker" type="PanelContainer" parent="UI/HUD"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 106.0
+offset_right = 258.0
+offset_bottom = 178.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_quest")
+
+[node name="VBox" type="VBoxContainer" parent="UI/HUD/QuestTracker"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="QuestTitle" type="Label" parent="UI/HUD/QuestTracker/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(1, 0.9, 0.45, 1)
+text = "[Main] Ch.1 Midnight Bells"
+
+[node name="QuestTarget" type="Label" parent="UI/HUD/QuestTracker/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.95, 0.96, 0.98, 0.98)
+text = "Purge Freja Monsters (0 / 5)"
+
+[node name="QuestHint" type="Label" parent="UI/HUD/QuestTracker/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+theme_override_colors/font_color = Color(0.45, 0.96, 0.58, 0.95)
+text = "▸ Tap or [AUTO] to auto-hunt"
+
+[node name="ChatBox" parent="UI" instance=ExtResource("3_chat")]
+
+[node name="MobileControlsOverlay" parent="UI" instance=ExtResource("4_touch")]
+
+[node name="WardrobeModal" parent="UI" instance=ExtResource("7_wardrobe")]
+visible = false
+
+[node name="TargetFrame" parent="UI" instance=ExtResource("18_target")]
+
+[node name="ExpBar" parent="UI" instance=ExtResource("19_exp")]
+
+[node name="FloatingCombatText" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("20_fct")

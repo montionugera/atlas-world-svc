@@ -24,6 +24,19 @@ A high-performance real-time multiplayer game built with a modern high-density a
 - **Skill Execution:** Full player and mob skills (`skill_1` Meteor Strike, `skill_2` Precision Strike, `skill_3` Blizzard with Freeze, `skill_4` Thunder Strike with Stun, `skill_dash` Dash with 160.0 velocity impulse).
 - **Projectile Kinematics:** Integrated kinematic projectile integration, lifetime/range limits, and spatial grid collision detection.
 
+### Mobile MMORPG Client (Godot 4.7 C# NativeAOT / iOS)
+- **Engine & Runtime:** Godot Engine 4.7 with C# / .NET 8 compiled to 100% NativeAOT for zero JIT latency, strict iOS App Store compliance, and immediate 60 FPS Metal rendering on Apple Silicon.
+- **Zero-Reflection Architecture:** Built without runtime reflection or dynamic code generation. All UI events communicate through decoupled Godot C# signals (`[Signal] delegate void ...`).
+- **Mobile MMORPG HUD (Ragnarok-Style Ergonomics):**
+  - **PlayerFrame (Top-Left):** Circular portrait badge, Level 90 tag, green HP progress bar (`14,850 / 14,850`), blue SP progress bar (`3,200 / 3,200`).
+  - **TopBar & Radar (Top-Right):** Circular minimap radar with coordinate readout (`Atlas Spar 120, 240`), ping status, and quick menu buttons (`[🎒 Bag]`, `[👗 Wardrobe]`, `[📜 Quests]`).
+  - **Compact Dual-State ChatBox (Bottom-Center):** Default collapsed translucent single-line ticker pill (`[System] Welcome to Atlas World`) that expands into a multi-tab modal (`[All]`, `[World]`, `[Party]`, `[System]`) upon tap.
+  - **Dual-Thumb Combat Controls:** Dynamic virtual joystick on the bottom-left with touch clamping, paired with a radial skill action cluster on the bottom-right (`[ATK]`, `[DASH]`, `[S1] Meteor`, `[S2] Blizzard`).
+- **Split-Screen Wardrobe & Equipment Modal:**
+  - **Interactive 3D SubViewport (Left 45%):** Live 3D character preview mounted on a pedestal with camera and omni lighting. Supports 360° touch drag rotation.
+  - **Tabbed Equipment Grid (Right 55%):** Category tabs (`Weapons`, `Armor`, `Hair`, `Sets`) with rarity color borders (Epic purple, Rare blue), level requirements, stat diffs (`+140 M.ATK`, `+65 P.ATK`), **[Try On]** tween preview, and **[Equip]** real-time avatar mutation.
+  - **Input Isolation:** Disables background joystick and hero movement while typing in chat or inspecting gear in modals.
+
 ### Legacy Core Simulation Engine (Colyseus TypeScript — Migration to Rust in progress)
 - **Authoritative 2.5D Model:** Per-floor 2D physics using `Planck.js`. Being replaced by `server-rs` in release 1.11 (Epic E-002).
 
@@ -37,7 +50,7 @@ A high-performance real-time multiplayer game built with a modern high-density a
 - **Cold Boot Time:** $< 5\text{ ms}$ (budget: $< 50\text{ ms}$).
 
 ### Meta-Systems & Token Authentication (Nakama — Epic E-001 Slice 4)
-- **Session Authentication:** `AuthGuard` validates HS256-signed JWT tokens from Nakama against `NAKAMA_SERVER_KEY`.
+- **Session Authentication:** `AuthGuard` validates HS256-signed JWT tokens from Nakama against `NAKAMA_SERVER_KEY` rationale.
 - **Zero-Leeway Verification:** Rejects unauthenticated connections, expired sessions, and forged tokens before establishing WebSocket session.
 - **WebSocket Gateway:** Native `tokio-tungstenite` server accepting binary FlatBuffers frames and broadcasting `WorldSnapshot` frames.
 
@@ -49,6 +62,7 @@ A high-performance real-time multiplayer game built with a modern high-density a
 - Docker & Docker Compose
 - Node.js 18+
 - Rust 1.98+ & Cargo (`~/.cargo/bin`)
+- .NET 8 SDK & Xcode 16+ (for Godot C# iOS Client)
 
 ### 1. Start High-Density Rust Game Server (`server-rs`)
 ```bash
@@ -73,12 +87,19 @@ npm start
 ```
 Play the game at `http://localhost:3001` (Use WASD/Arrows to move).
 
-### 3. C# Unity Client Integration (Optional)
+### 4. Build & Run Godot Mobile MMORPG Client (iOS / iPad)
 ```bash
-# Copy C# API generator models to Unity
-cp -r colyseus-server/generated/csharp/* /path/to/your/unity/project/Assets/Scripts/
+# 1. Export Godot PCK pack
+godot --headless --path game-client --export-pack "iOS" game-client/builds/AtlasWorld.pck
+
+# 2. Publish NativeAOT dylib for arm64
+dotnet publish game-client/GameClient.csproj -c ExportRelease-ios-arm64 -r ios-arm64
+
+# 3. Build & Deploy via Xcode / devicectl
+xcodebuild -project game-client/builds/ios/AtlasWorld.xcodeproj -scheme AtlasWorld -destination 'id=<DEVICE_UUID>' build
+xcrun devicectl device install app --device <DEVICE_UUID> <PATH_TO_APP>/AtlasWorld.app
+xcrun devicectl device process launch --device <DEVICE_UUID> com.atlasworld.client
 ```
-Attach the `AtlasWorldUnityClient` to a Unity GameObject and configure the server URL (`ws://localhost:2567`).
 
 ---
 
@@ -104,9 +125,10 @@ Attach the `AtlasWorldUnityClient` to a Unity GameObject and configure the serve
 | ---| --- |
 | `.cursor/` | Project rules and roadmap implementation plans. |
 | `docs/` | Architecture specs and API documentation. |
-| `colyseus-server/` | The core Node.js authoritative game server. |
-| `colyseus-server/src/rooms/` | Colyseus room handlers. |
-| `colyseus-server/src/schemas/`| Networked data models & structs. |
+| `game-client/` | Godot 4.7 C# NativeAOT Mobile MMORPG client (scenes, scripts, shaders, assets). |
+| `game-client/src/UI/Widgets/` | Ragnarok-style UI components: `PlayerFrame`, `TopBar`, `ChatBox`, `WardrobeModal`, `MobileControlsOverlay`. |
+| `server-rs/` | Authoritative Rust ECS simulation engine with Bevy ECS, Rapier2D, and FlatBuffers delta streaming. |
+| `colyseus-server/` | Legacy Node.js authoritative game server. |
 | `client/react-client/` | Web-based client implementation for quick prototyping. |
 | `monitoring/` | Prometheus & Grafana configuration stacks. |
 | `docker-compose.yml` | Complete local orchestration setup. |

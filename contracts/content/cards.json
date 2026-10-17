@@ -1,0 +1,38 @@
+[
+  {
+    "id": "card_forest_slime",
+    "name": "Forest Slime Card",
+    "slot": "armor",
+    "mobId": "forest_slime",
+    "equipStats": { "maxHpFlat": 120, "vit": 1 },
+    "handbookDepositStats": { "maxHpFlat": 30 },
+    "assetStudioKey": "card.forest_slime"
+  },
+  {
+    "id": "card_boar",
+    "name": "Wild Boar Card",
+    "slot": "weapon",
+    "mobId": "boar",
+    "equipStats": { "pAtkFlat": 8, "str": 1 },
+    "handbookDepositStats": { "pAtkFlat": 2 },
+    "assetStudioKey": "card.boar"
+  },
+  {
+    "id": "card_skeleton_soldier",
+    "name": "Skeleton Soldier Card",
+    "slot": "weapon",
+    "mobId": "skeleton_soldier",
+    "equipStats": { "critRatePct": 9, "pAtkFlat": 10 },
+    "handbookDepositStats": { "pAtkFlat": 3 },
+    "assetStudioKey": "card.skeleton_soldier"
+  },
+  {
+    "id": "card_orc_warlord",
+    "name": "Orc Warlord MVP Card",
+    "slot": "armor",
+    "mobId": "orc_warlord",
+    "equipStats": { "maxHpFlat": 800, "demiHumanResistPct": 15 },
+    "handbookDepositStats": { "maxHpFlat": 100, "pAtkFlat": 5 },
+    "assetStudioKey": "card.orc_warlord"
+  }
+]

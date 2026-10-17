@@ -252,6 +252,9 @@ impl AtlasSimulation {
             .insert_resource(crate::content::map::StaticObstacles {
                 obstacles: map_cfg.static_obstacles.clone(),
             });
+        sim.world.insert_resource(
+            crate::content::map::TerrainHeightfield::from_map_config(&map_cfg),
+        );
 
         // Like the arena size, terrain belongs to a named map: a config without `map_id`
         // (anonymous test arenas) is all default ground.

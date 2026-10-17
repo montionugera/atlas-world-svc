@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 using AtlasWorld.Client.Meta;
@@ -27,8 +28,18 @@ namespace AtlasWorld.Client.UI.Panels
 
         private readonly List<Tab> _tabs = new();
         private readonly List<Button> _navButtons = new();
+        private HandbookSiegePanel? _handbookSiegePanel;
+        private MmorpgGrowthManager? _boundGrowth;
+        private Action<string>? _boundBannerCallback;
         private int _active = -1;
         private bool _wideLayout = true;
+
+        public void BindGrowthManager(MmorpgGrowthManager growth, Action<string>? onBanner = null)
+        {
+            _boundGrowth = growth;
+            _boundBannerCallback = onBanner;
+            _handbookSiegePanel?.BindGrowthManager(growth, onBanner);
+        }
 
         public override void _Ready()
         {
@@ -84,6 +95,13 @@ namespace AtlasWorld.Client.UI.Panels
             AddTab("Quests", new QuestPanel());
             AddTab("Loadout", new LoadoutPanel());
 
+            _handbookSiegePanel = new HandbookSiegePanel();
+            if (_boundGrowth != null)
+            {
+                _handbookSiegePanel.BindGrowthManager(_boundGrowth, _boundBannerCallback);
+            }
+            AddTab("Handbook & WoE", _handbookSiegePanel);
+
             for (int i = 0; i < _tabs.Count; i++)
             {
                 int index = i;
@@ -98,6 +116,18 @@ namespace AtlasWorld.Client.UI.Panels
                 _navButtons.Add(btn);
                 _nav.AddChild(btn);
             }
+
+            // Close button in nav rail / bar for mobile touch accessibility
+            var closeBtn = new Button
+            {
+                Text = "\u2715 Close",
+                ThemeTypeVariation = Design.Variants.GhostButton,
+                SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+                CustomMinimumSize = new Vector2(0, 40),
+            };
+            closeBtn.Pressed += () => SetOpen(false);
+            _navButtons.Add(closeBtn);
+            _nav.AddChild(closeBtn);
         }
 
         private void AddTab(string title, MetaPanel panel)
@@ -120,6 +150,19 @@ namespace AtlasWorld.Client.UI.Panels
                     : Design.Variants.GhostButton;
             }
             if (Visible) _tabs[index].Panel.Refresh();
+        }
+
+        public void OpenTab(string tabTitle)
+        {
+            for (int i = 0; i < _tabs.Count; i++)
+            {
+                if (_tabs[i].Title.Equals(tabTitle, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    SetActive(i);
+                    break;
+                }
+            }
+            SetOpen(true);
         }
 
         /// <summary>Swap between nav rail (wide) and bottom tab bar (narrow) at the breakpoint.</summary>
@@ -192,10 +235,6 @@ namespace AtlasWorld.Client.UI.Panels
             if (@event is not InputEventKey { Pressed: true, Echo: false } key) return;
             switch (key.Keycode)
             {
-                case Key.Tab:
-                    Toggle();
-                    GetViewport().SetInputAsHandled();
-                    break;
                 case Key.Escape when Visible:
                     SetOpen(false);
                     GetViewport().SetInputAsHandled();

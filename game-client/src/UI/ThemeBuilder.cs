@@ -9,9 +9,9 @@ namespace AtlasWorld.Client.UI
     /// in-memory Theme (used at runtime by the shell); <see cref="ThemeGeneratorTool"/>
     /// saves the same Theme to <c>res://ui/atlas_theme.tres</c> as an inspectable artifact.
     ///
-    /// The two user-mandated widgets — <b>Button</b> (Primary/Ghost/Danger, all of
-    /// normal/hover/pressed/focus/disabled) and <b>LineEdit</b> (normal + gold focus ring
-    /// + caret) — are styled in full below.
+    /// Button variants (Primary/Ghost/Danger), LineEdit (normal + gold focus ring + caret),
+    /// Panels (Card, Well, ModalDialog, ChatTicker, ItemCard), and ProgressBars (Default, HpBar, SpBar)
+    /// are all centralized here.
     /// </summary>
     public static class ThemeBuilder
     {
@@ -86,7 +86,7 @@ namespace AtlasWorld.Client.UI
             Variant(Design.Variants.Value, Design.Type.Value, Design.Colors.Primary);
         }
 
-        // ---- Panels (Card / Well) ------------------------------------------------------
+        // ---- Panels (Card / Well / ModalDialog / ChatTicker / ItemCard) ----------------
         private static void StylePanels(Theme theme)
         {
             // Base PanelContainer = the shell surface.
@@ -99,6 +99,21 @@ namespace AtlasWorld.Client.UI
 
             theme.SetTypeVariation(Design.Variants.Well, "PanelContainer");
             theme.SetStylebox("panel", Design.Variants.Well,
+                Filled(Design.Colors.Well, Design.Radius.R2, Design.Colors.Border, 1));
+
+            // Mobile ModalDialog
+            theme.SetTypeVariation(Design.Variants.ModalDialog, "PanelContainer");
+            theme.SetStylebox("panel", Design.Variants.ModalDialog,
+                Filled(Design.Colors.Surface, Design.Radius.R3, Design.Colors.BorderStrong, 2));
+
+            // Mobile ChatTicker
+            theme.SetTypeVariation(Design.Variants.ChatTicker, "PanelContainer");
+            theme.SetStylebox("panel", Design.Variants.ChatTicker,
+                Filled(Design.Colors.ChatTickerBg, Design.Radius.R3, Design.Colors.Border, 1));
+
+            // Mobile ItemCard
+            theme.SetTypeVariation(Design.Variants.ItemCard, "PanelContainer");
+            theme.SetStylebox("panel", Design.Variants.ItemCard,
                 Filled(Design.Colors.Well, Design.Radius.R2, Design.Colors.Border, 1));
 
             // Plain Panel node too (used for scrim / backdrops).
@@ -218,7 +233,7 @@ namespace AtlasWorld.Client.UI
             theme.SetFontSize("font_size", "LineEdit", Design.Type.Body);
         }
 
-        // ---- ScrollContainer + separators ----------------------------------------------
+        // ---- ScrollContainer + separators + progress bars ------------------------------
         private static void StyleScrollAndSeparators(Theme theme)
         {
             var sep = new StyleBoxFlat { BgColor = Design.Colors.Border };
@@ -227,11 +242,23 @@ namespace AtlasWorld.Client.UI
             theme.SetStylebox("separator", "HSeparator", sep);
             theme.SetConstant("separation", "HSeparator", 2);
 
+            // Base ProgressBar
             var progressBg = Filled(Design.Colors.Well, Design.Radius.R1, Design.Colors.Border, 1);
             var progressFill = Filled(Design.Colors.Primary, Design.Radius.R1);
             theme.SetStylebox("background", "ProgressBar", progressBg);
             theme.SetStylebox("fill", "ProgressBar", progressFill);
             theme.SetColor("font_color", "ProgressBar", Design.Colors.TextPrimary);
+
+            // Mobile MMORPG Resource Bar Variations (HpBar & SpBar)
+            theme.SetTypeVariation(Design.Variants.HpBar, "ProgressBar");
+            theme.SetStylebox("background", Design.Variants.HpBar, Filled(Design.Colors.Well, Design.Radius.R1, Design.Colors.Border, 1));
+            theme.SetStylebox("fill", Design.Variants.HpBar, Filled(Design.Colors.HpFill, Design.Radius.R1));
+            theme.SetColor("font_color", Design.Variants.HpBar, Design.Colors.TextPrimary);
+
+            theme.SetTypeVariation(Design.Variants.SpBar, "ProgressBar");
+            theme.SetStylebox("background", Design.Variants.SpBar, Filled(Design.Colors.Well, Design.Radius.R1, Design.Colors.Border, 1));
+            theme.SetStylebox("fill", Design.Variants.SpBar, Filled(Design.Colors.SpFill, Design.Radius.R1));
+            theme.SetColor("font_color", Design.Variants.SpBar, Design.Colors.TextPrimary);
         }
     }
 }
