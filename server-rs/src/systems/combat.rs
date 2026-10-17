@@ -215,9 +215,9 @@ pub fn combat_system(
                 if killed {
                     if let Some(user_id) = attacker_user_id {
                         if let Some(ref mut queue) = event_queue {
-                            let mob_id = target_id
-                                .map(|id| id.0.clone())
-                                .or_else(|| target_anchor.map(|a| a.mob_id.clone()))
+                            let mob_id = target_anchor
+                                .map(|a| a.mob_id.clone())
+                                .or_else(|| target_id.map(|id| id.0.clone()))
                                 .unwrap_or_else(|| "mob".to_string());
                             queue.push(
                                 user_id,
