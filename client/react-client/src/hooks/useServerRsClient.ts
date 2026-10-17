@@ -47,6 +47,10 @@ export interface ServerRsClientConfig {
   deviceId?: string;
 }
 
+export const RECONNECT_BASE_DELAY_MS = 250;
+export const RECONNECT_MAX_DELAY_MS = 4000;
+export const RECONNECT_MAX_ATTEMPTS = 5;
+
 export function getOrCreateNakamaDeviceId(playerSeed?: string | null): string {
   const storageKey = playerSeed
     ? `atlas-world-device-id:${playerSeed}`
@@ -308,6 +312,14 @@ export const useServerRsClient = (
   const nakamaTokenRef = useRef<string | null>(null);
   const connectGenRef = useRef<number>(0);
   const connectionErrorRef = useRef<string | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptsRef = useRef<number>(0);
+  const cancelReconnectTimer = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+  }, []);
   // `client_tick` of the newest input sent; the first is 1, so 0 means none.
   const inputSeqRef = useRef<number>(0);
   const inputSentRef = useRef<((seq: number) => void) | null>(null);
@@ -391,6 +403,8 @@ export const useServerRsClient = (
   // Disconnect WebSocket
   const disconnect = useCallback(() => {
     connectGenRef.current++;
+    cancelReconnectTimer();
+    reconnectAttemptsRef.current = 0;
     cancelTrailingPublish();
     if (simulationIntervalRef.current) {
       clearInterval(simulationIntervalRef.current);
@@ -420,7 +434,7 @@ export const useServerRsClient = (
     updateCountRef.current = 0;
     setUpdateCount(0);
     localStorage.removeItem("atlas-world-server-rs-connected");
-  }, [cancelTrailingPublish]);
+  }, [cancelReconnectTimer, cancelTrailingPublish]);
 
   // Connect to server-rs WebSocket gateway
   const connect = useCallback(
@@ -438,6 +452,7 @@ export const useServerRsClient = (
         return;
       }
 
+      cancelReconnectTimer();
       cancelTrailingPublish();
       connectionErrorRef.current = null;
       setConnectionError(null);
@@ -481,6 +496,7 @@ export const useServerRsClient = (
           // Track immediately so a disconnect() during CONNECTING (e.g. React
           // StrictMode double-mount) closes this socket instead of leaking it.
           wsRef.current = ws;
+          let opened = false;
           // Settle the connect() promise exactly once, whatever happens first.
           let settled = false;
           const settle = (err?: unknown) => {
@@ -501,23 +517,25 @@ export const useServerRsClient = (
               settle();
               return;
             }
+            opened = true;
+            reconnectAttemptsRef.current = 0;
             setIsConnected(true);
             setRoomId(`server-rs-${activeMap}`);
             isConnectingRef.current = false;
             localStorage.setItem("atlas-world-server-rs-connected", "true");
 
-            // Send initial input frame so avatar spawns immediately
+            // Send initial input frame (preserving any held input on session resume)
             const builder = new flatbuffers.Builder(64);
             const offset = ClientInput.createClientInput(
               builder,
               ++inputSeqRef.current,
+              moveRef.current.vx,
+              moveRef.current.vy,
+              attackHeldRef.current,
               0,
-              0,
-              false,
-              0,
-              0,
-              0,
-              0,
+              targetIdRef.current,
+              aimRef.current.x,
+              aimRef.current.y,
               false,
             );
             builder.finish(offset);
@@ -841,6 +859,8 @@ export const useServerRsClient = (
 
           ws.onclose = (event?: { code?: number; reason?: string }) => {
             if (event?.code === PROTOCOL_MISMATCH_CLOSE_CODE) {
+              cancelReconnectTimer();
+              reconnectAttemptsRef.current = 0;
               const mismatchMsg = formatProtocolMismatchMessage(event.reason);
               connectionErrorRef.current = mismatchMsg;
               setConnectionError(mismatchMsg);
@@ -862,6 +882,8 @@ export const useServerRsClient = (
                 settle();
                 return;
               }
+              cancelReconnectTimer();
+              reconnectAttemptsRef.current = 0;
               const duplicateMsg = formatDuplicateSessionMessage(event.reason);
               connectionErrorRef.current = duplicateMsg;
               setConnectionError(duplicateMsg);
@@ -885,7 +907,34 @@ export const useServerRsClient = (
               if (wsRef.current !== null) return;
             } else {
               wsRef.current = null;
-              settle(new Error("WebSocket closed before it opened"));
+              if (!opened) {
+                settle(new Error("WebSocket closed before it opened"));
+              } else {
+                settle();
+              }
+              if (
+                (opened || reconnectAttemptsRef.current > 0) &&
+                reconnectAttemptsRef.current < RECONNECT_MAX_ATTEMPTS &&
+                !connectionErrorRef.current
+              ) {
+                cancelTrailingPublish();
+                setIsConnected(false);
+                isConnectingRef.current = false;
+                const attempt = reconnectAttemptsRef.current;
+                reconnectAttemptsRef.current = attempt + 1;
+                const delayMs = Math.min(
+                  RECONNECT_MAX_DELAY_MS,
+                  RECONNECT_BASE_DELAY_MS * Math.pow(2, attempt),
+                );
+                const retryMap = currentMapRef.current;
+                reconnectTimerRef.current = setTimeout(() => {
+                  reconnectTimerRef.current = null;
+                  connect(retryMap).catch(() => {
+                    // Retry failures continue exponential backoff up to RECONNECT_MAX_ATTEMPTS
+                  });
+                }, delayMs);
+                return;
+              }
             }
             cancelTrailingPublish();
             setIsConnected(false);
@@ -901,7 +950,7 @@ export const useServerRsClient = (
         }
       });
     },
-    [config, cancelTrailingPublish],
+    [config, cancelReconnectTimer, cancelTrailingPublish],
   );
 
   // Last non-zero target we actually sent (mirrors the target the server holds)
@@ -953,6 +1002,8 @@ export const useServerRsClient = (
   const joinRoom = useCallback(
     async (mapId: string = "map-for-play") => {
       if (connectionErrorRef.current) return;
+      cancelReconnectTimer();
+      reconnectAttemptsRef.current = 0;
       const isSwitchingMap = mapId !== currentMapRef.current;
       currentMapRef.current = mapId;
       const targetRoomId = `server-rs-${mapId}`;
@@ -1033,7 +1084,7 @@ export const useServerRsClient = (
         false,
       );
     },
-    [connect, sendInput],
+    [connect, cancelReconnectTimer, sendInput],
   );
 
   // server-rs treats every ClientInput as the FULL input state (it overwrites

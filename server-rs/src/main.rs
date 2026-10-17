@@ -244,19 +244,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     let debug_enabled = server_rs::debug::debug_enabled_from_env();
     ws_server.set_debug_enabled(debug_enabled);
+
+    // 6. 20 Hz simulation tick loop (50ms interval)
+    let tick_rate_ms = 50;
+    let disconnect_grace_sec = env_f32("ATLAS_DISCONNECT_GRACE_SEC", 5.0).max(0.0);
+    let disconnect_grace_ticks =
+        ((disconnect_grace_sec * 1000.0) / tick_rate_ms as f32).round() as u32;
     for sim in rooms.values_mut() {
         sim.debug_enabled = debug_enabled;
+        sim.set_disconnect_grace_ticks(disconnect_grace_ticks);
     }
     info!(
-        "Debug controls (/debug/*) {}",
-        if debug_enabled { "ENABLED" } else { "disabled" }
+        "Debug controls (/debug/*) {}, disconnect grace window = {:.1}s ({} ticks)",
+        if debug_enabled { "ENABLED" } else { "disabled" },
+        disconnect_grace_sec,
+        disconnect_grace_ticks,
     );
     let mut snapshot_builder = SnapshotBuilder::new();
     let mut match_event_buffer = MatchEventBuffer::default();
     let mut character_state_buffer = CharacterStateBuffer::default();
 
-    // 6. 20 Hz simulation tick loop (50ms interval)
-    let tick_rate_ms = 50;
     let tick_dt = Duration::from_millis(tick_rate_ms);
     let mut ticker = sim_ticker(tick_dt);
 
@@ -289,6 +296,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let _ = request.reply.send(result);
                 }
 
+                let mut departed_users: Vec<String> =
+                    disconnected.iter().map(|(s, _)| s.clone()).collect();
+
                 for (room_id, sim) in rooms.iter_mut() {
                     let room_inputs: Vec<server_rs::net::ClientPacket> = inputs
                         .iter()
@@ -311,6 +321,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                     for (user_id, state) in &frame.departed_states {
                         character_state_buffer.record(user_id, state.clone());
+                        if !departed_users.contains(user_id) {
+                            departed_users.push(user_id.clone());
+                        }
                     }
 
                     if ws_server.active_connections_in_room(room_id).await > 0 {
@@ -329,9 +342,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
 
-                let disconnected_users: Vec<String> =
-                    disconnected.iter().map(|(s, _)| s.clone()).collect();
-                let mut batches_to_flush = match_event_buffer.flush_users(&disconnected_users);
+                let mut batches_to_flush = match_event_buffer.flush_users(&departed_users);
                 batches_to_flush.extend(match_event_buffer.tick(tick_dt));
 
                 if !batches_to_flush.is_empty() {
@@ -350,7 +361,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
 
-                let mut states_to_flush = character_state_buffer.flush_users(&disconnected_users);
+                let mut states_to_flush = character_state_buffer.flush_users(&departed_users);
                 if character_state_buffer.should_checkpoint(tick_dt) {
                     for sim in rooms.values_mut() {
                         character_state_buffer.record_all(sim.snapshot_active_player_states());

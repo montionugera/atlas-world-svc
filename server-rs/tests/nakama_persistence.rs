@@ -737,3 +737,103 @@ async fn test_save_and_restore_position_and_health_on_interval_on_leave_and_acro
     assert!((received[0]["health"].as_f64().unwrap() - 92.0).abs() < 1e-3);
     assert_eq!(received[0]["seq"], 200);
 }
+
+#[test]
+fn test_session_resume_within_grace_window_and_expiry_after_grace() {
+    // E-003 slice 8 (F-074):
+    // 1. With `disconnect_grace_ticks = 3`, a dropped connection keeps the player's avatar
+    //    in the simulation with zeroed movement velocity instead of despawning immediately.
+    // 2. If the player reconnects (sends input) within the grace window, the pending disconnect
+    //    is cancelled and the existing avatar resumes from its exact position and health.
+    // 3. If the player disconnects again and does NOT reconnect before the grace window expires,
+    //    `departed_states` captures their final state and the avatar is despawned into `removed_ids`.
+    let uid = "00000000-0000-4000-8000-000000000144";
+    let mut sim = AtlasSimulation::live(LiveConfig {
+        bot_count: 0,
+        mob_count: 0,
+        ..Default::default()
+    });
+    sim.set_disconnect_grace_ticks(3);
+    assert_eq!(sim.disconnect_grace_ticks(), 3);
+
+    // 1. Spawn player and move them to (420.0, 580.0) with 63.0 HP while holding movement
+    let entity = sim.spawn_player_avatar(uid, 420.0, 580.0);
+    sim.world.get_mut::<Health>(entity).unwrap().current = 63.0;
+    let move_pkt = server_rs::net::ClientPacket {
+        session_id: uid.to_string(),
+        room_id: "map-for-play".to_string(),
+        payload: serialize_client_input(1, 1.0, 0.0, true, 0, 0),
+    };
+    let frame1 = sim.live_tick(&[move_pkt], &[]);
+    let after_move_x = frame1
+        .entities
+        .iter()
+        .find(|e| e.id == fnv1a_32(uid))
+        .unwrap()
+        .x;
+    assert!(after_move_x > 420.0);
+
+    // 2. Connection drops on tick 2 -> enters 3-tick grace window; velocity is zeroed; avatar stays
+    let frame_drop = sim.live_tick(&[], &[uid.to_string()]);
+    assert!(sim.has_pending_disconnect(uid));
+    assert!(frame_drop.removed_ids.is_empty());
+    assert!(frame_drop.departed_states.is_empty());
+    let wire_during_grace = frame_drop
+        .entities
+        .iter()
+        .find(|e| e.id == fnv1a_32(uid))
+        .expect("avatar must remain in world during grace window");
+    assert_eq!(wire_during_grace.vx, 0.0);
+    assert_eq!(wire_during_grace.vy, 0.0);
+    assert!((wire_during_grace.x - after_move_x).abs() < 1e-3);
+    assert!((wire_during_grace.health - 63.0).abs() < 1e-3);
+
+    // Tick 3 (1 grace tick elapsed, 2 remaining): still in world, standing still
+    let frame_grace1 = sim.live_tick(&[], &[]);
+    assert!(sim.has_pending_disconnect(uid));
+    assert!(frame_grace1.removed_ids.is_empty());
+
+    // 3. Player reconnects on Tick 4 (within grace window) -> reattaches to same entity without reset
+    let resume_pkt = server_rs::net::ClientPacket {
+        session_id: uid.to_string(),
+        room_id: "map-for-play".to_string(),
+        payload: serialize_client_input(2, 0.0, 0.0, false, 0, 0),
+    };
+    let frame_resume = sim.live_tick(&[resume_pkt], &[]);
+    assert!(!sim.has_pending_disconnect(uid));
+    assert!(frame_resume.removed_ids.is_empty());
+    let wire_resumed = frame_resume
+        .entities
+        .iter()
+        .find(|e| e.id == fnv1a_32(uid))
+        .expect("resumed avatar must remain in snapshot");
+    assert!((wire_resumed.x - after_move_x).abs() < 1e-3);
+    assert!((wire_resumed.y - 580.0).abs() < 1e-3);
+    assert!((wire_resumed.health - 63.0).abs() < 1e-3);
+
+    // Tick 5 & 6 after resume: avatar does NOT expire because grace countdown was cancelled
+    sim.live_tick(&[], &[]);
+    let frame_after = sim.live_tick(&[], &[]);
+    assert!(frame_after.removed_ids.is_empty());
+    assert!(sim.world.get_entity(entity).is_ok());
+
+    // 4. Connection drops again and player does NOT return -> expires after 3 grace ticks
+    sim.live_tick(&[], &[uid.to_string()]);
+    assert!(sim.has_pending_disconnect(uid));
+
+    // Grace countdown: 3 -> 2
+    let f1 = sim.live_tick(&[], &[]);
+    assert!(f1.removed_ids.is_empty());
+    // Grace countdown: 2 -> 1
+    let f2 = sim.live_tick(&[], &[]);
+    assert!(f2.removed_ids.is_empty());
+    // Grace countdown: 1 -> 0 -> expires! State captured and avatar removed
+    let f3 = sim.live_tick(&[], &[]);
+    assert!(!sim.has_pending_disconnect(uid));
+    assert!(f3.removed_ids.contains(&fnv1a_32(uid)));
+    assert_eq!(f3.departed_states.len(), 1);
+    assert_eq!(f3.departed_states[0].0, uid);
+    assert!((f3.departed_states[0].1.x - after_move_x).abs() < 1e-3);
+    assert!((f3.departed_states[0].1.health - 63.0).abs() < 1e-3);
+    assert!(sim.world.get_entity(entity).is_err());
+}
