@@ -4,7 +4,7 @@ pub mod nakama;
 
 pub use nakama::{
     EquippedItemIds, LoadoutSnapshot, MatchEvent, MatchEventBatch, MockNakamaClient, NakamaClient,
-    NakamaStorage, PrimaryStats, ProfileDoc,
+    NakamaConfig, NakamaStorage, PrimaryStats, ProfileDoc, PROBE_RETRY_WINDOW,
 };
 
 /// In-memory queue storing player match events to be dispatched or drained by persistence tasks.

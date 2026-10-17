@@ -7,6 +7,7 @@ metadata:
     app: server-rs
 spec:
   replicas: 1
+  minReadySeconds: 10
   selector:
     matchLabels:
       app: server-rs
@@ -29,6 +30,10 @@ spec:
               value: "false"
             - name: NAKAMA_SERVER_KEY
               value: "defaultkey"
+            - name: NAKAMA_URL
+              value: "http://nakama:7350"
+            - name: NAKAMA_HTTP_KEY
+              value: "atlas_dev_http_key"
             - name: RUST_LOG
               value: "info"
           resources:
@@ -79,3 +84,7 @@ spec:
               value: "0.0.0.0:2567"
             - name: NAKAMA_SERVER_KEY
               value: "defaultkey"
+            - name: NAKAMA_URL
+              value: "http://nakama:7350"
+            - name: NAKAMA_HTTP_KEY
+              value: "atlas_dev_http_key"

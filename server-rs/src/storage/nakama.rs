@@ -3,6 +3,60 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
+use tracing::warn;
+
+/// Default startup retry window (~60 seconds) for `NakamaClient::probe()`.
+pub const PROBE_RETRY_WINDOW: Duration = Duration::from_secs(60);
+
+/// Environment configuration for connecting `server-rs` to Nakama.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NakamaConfig {
+    pub base_url: String,
+    pub http_key: String,
+}
+
+impl NakamaConfig {
+    /// Pure parser for `NAKAMA_URL` and `NAKAMA_HTTP_KEY`.
+    /// - Both absent or empty -> `Ok(None)` (offline mode)
+    /// - Both set -> `Ok(Some(NakamaConfig))` with trailing slashes stripped from `base_url`
+    /// - Only one set -> `Err` describing the incomplete Nakama configuration
+    pub fn from_vars(url: Option<&str>, key: Option<&str>) -> Result<Option<Self>, String> {
+        let clean_url = url.map(str::trim).filter(|s| !s.is_empty());
+        let clean_key = key.map(str::trim).filter(|s| !s.is_empty());
+
+        match (clean_url, clean_key) {
+            (None, None) => Ok(None),
+            (Some(u), Some(k)) => {
+                let base_url = u.trim_end_matches('/').to_string();
+                if base_url.is_empty() {
+                    return Err(
+                        "Invalid Nakama configuration: NAKAMA_URL must not be only slashes"
+                            .to_string(),
+                    );
+                }
+                Ok(Some(Self {
+                    base_url,
+                    http_key: k.to_string(),
+                }))
+            }
+            (Some(_), None) => Err(
+                "Incomplete Nakama configuration: NAKAMA_URL is set but NAKAMA_HTTP_KEY is missing"
+                    .to_string(),
+            ),
+            (None, Some(_)) => Err(
+                "Incomplete Nakama configuration: NAKAMA_HTTP_KEY is set but NAKAMA_URL is missing"
+                    .to_string(),
+            ),
+        }
+    }
+
+    /// Reads `NAKAMA_URL` and `NAKAMA_HTTP_KEY` from the process environment.
+    pub fn from_env() -> Result<Option<Self>, String> {
+        let url = std::env::var("NAKAMA_URL").ok();
+        let key = std::env::var("NAKAMA_HTTP_KEY").ok();
+        Self::from_vars(url.as_deref(), key.as_deref())
+    }
+}
 
 fn default_stat_one() -> u32 {
     1
@@ -134,6 +188,7 @@ pub struct NakamaClient {
     base_url: String,
     http_key: String,
     retries: u32,
+    probe_window: Duration,
     client: reqwest::Client,
 }
 
@@ -155,13 +210,72 @@ impl NakamaClient {
             base_url,
             http_key,
             retries,
+            probe_window: PROBE_RETRY_WINDOW,
             client,
         }
+    }
+
+    pub fn with_probe_window(mut self, probe_window: Duration) -> Self {
+        self.probe_window = probe_window;
+        self
     }
 
     fn backoff_duration(attempt: u32) -> Duration {
         let factor = 1u64.checked_shl(attempt.min(6)).unwrap_or(64);
         Duration::from_millis(250 * factor)
+    }
+
+    /// Probes `{base}/v2/rpc/healthcheck?http_key={key}` at startup.
+    /// Retries transient/network/5xx failures across `self.probe_window` (~60s) before
+    /// returning `Err`. Fast-fails on 4xx client errors (such as 401 Unauthorized)
+    /// and strips the request URL (`err.without_url()`) so `http_key` never leaks.
+    pub async fn probe(&self) -> Result<(), String> {
+        let url = format!(
+            "{}/v2/rpc/healthcheck?http_key={}",
+            self.base_url, self.http_key
+        );
+        let start = tokio::time::Instant::now();
+        let mut attempt = 0u32;
+
+        loop {
+            let res = self.client.get(&url).send().await;
+
+            let last_err = match res {
+                Ok(response) => {
+                    let status = response.status();
+                    if status.is_success() {
+                        return Ok(());
+                    }
+
+                    if status.is_client_error() && status != reqwest::StatusCode::TOO_MANY_REQUESTS
+                    {
+                        return Err(format!("Nakama healthcheck probe client error: {status}"));
+                    }
+
+                    format!("Nakama healthcheck probe exhausted retries with status: {status}")
+                }
+                Err(err) => {
+                    let clean_err = err.without_url();
+                    format!("Nakama healthcheck probe network error: {clean_err}")
+                }
+            };
+
+            let elapsed = start.elapsed();
+            if elapsed >= self.probe_window {
+                return Err(last_err);
+            }
+
+            let remaining = self.probe_window - elapsed;
+            let sleep_dur = Self::backoff_duration(attempt).min(remaining);
+            warn!(
+                attempt = attempt + 1,
+                retry_in_ms = sleep_dur.as_millis() as u64,
+                "Nakama startup probe failed ({}); retrying...",
+                last_err
+            );
+            tokio::time::sleep(sleep_dur).await;
+            attempt += 1;
+        }
     }
 
     /// Verifies session JWT with Nakama `GET /v2/account`.
@@ -183,10 +297,9 @@ impl NakamaClient {
                 Ok(response) => {
                     let status = response.status();
                     if status.is_success() {
-                        let body: serde_json::Value = response
-                            .json()
-                            .await
-                            .map_err(|e| format!("Failed to parse account JSON: {e}"))?;
+                        let body: serde_json::Value = response.json().await.map_err(|e| {
+                            format!("Failed to parse account JSON: {}", e.without_url())
+                        })?;
 
                         let user_id = body
                             .get("user")
@@ -221,8 +334,9 @@ impl NakamaClient {
                     }
                 }
                 Err(err) => {
+                    let clean_err = err.without_url();
                     if attempt >= self.retries {
-                        return Err(format!("Nakama account check network error: {err}"));
+                        return Err(format!("Nakama account check network error: {clean_err}"));
                     }
                 }
             }
@@ -256,7 +370,10 @@ impl NakamaClient {
                     let status = response.status();
                     if status.is_success() {
                         let text = response.text().await.map_err(|e| {
-                            format!("Failed to read get_loadout response text: {e}")
+                            format!(
+                                "Failed to read get_loadout response text: {}",
+                                e.without_url()
+                            )
                         })?;
 
                         // Try direct deserialization
@@ -302,8 +419,9 @@ impl NakamaClient {
                     }
                 }
                 Err(err) => {
+                    let clean_err = err.without_url();
                     if attempt >= self.retries {
-                        return Err(format!("Nakama get_loadout network error: {err}"));
+                        return Err(format!("Nakama get_loadout network error: {clean_err}"));
                     }
                 }
             }
@@ -336,10 +454,12 @@ impl NakamaClient {
                 Ok(response) => {
                     let status = response.status();
                     if status.is_success() {
-                        return response
-                            .text()
-                            .await
-                            .map_err(|e| format!("Failed to read report_match_events text: {e}"));
+                        return response.text().await.map_err(|e| {
+                            format!(
+                                "Failed to read report_match_events text: {}",
+                                e.without_url()
+                            )
+                        });
                     }
 
                     if status.is_client_error() && status != reqwest::StatusCode::TOO_MANY_REQUESTS
@@ -357,8 +477,11 @@ impl NakamaClient {
                     }
                 }
                 Err(err) => {
+                    let clean_err = err.without_url();
                     if attempt >= self.retries {
-                        return Err(format!("Nakama report_match_events network error: {err}"));
+                        return Err(format!(
+                            "Nakama report_match_events network error: {clean_err}"
+                        ));
                     }
                 }
             }
@@ -469,6 +592,49 @@ mod tests {
     use super::*;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpListener;
+
+    #[test]
+    fn nakama_config_from_vars_absent_and_empty_return_none() {
+        assert_eq!(NakamaConfig::from_vars(None, None), Ok(None));
+        assert_eq!(NakamaConfig::from_vars(Some(""), None), Ok(None));
+        assert_eq!(NakamaConfig::from_vars(None, Some("   ")), Ok(None));
+        assert_eq!(NakamaConfig::from_vars(Some(""), Some("")), Ok(None));
+    }
+
+    #[test]
+    fn nakama_config_from_vars_both_set_and_strips_trailing_slash() {
+        let cfg = NakamaConfig::from_vars(Some("http://nakama:7350/"), Some("atlas_dev_http_key"))
+            .unwrap()
+            .unwrap();
+        assert_eq!(cfg.base_url, "http://nakama:7350");
+        assert_eq!(cfg.http_key, "atlas_dev_http_key");
+
+        let cfg2 =
+            NakamaConfig::from_vars(Some("  http://localhost:7350/// "), Some("  secret_key  "))
+                .unwrap()
+                .unwrap();
+        assert_eq!(cfg2.base_url, "http://localhost:7350");
+        assert_eq!(cfg2.http_key, "secret_key");
+    }
+
+    #[test]
+    fn nakama_config_from_vars_partial_returns_err() {
+        let missing_key = NakamaConfig::from_vars(Some("http://nakama:7350"), None);
+        assert!(missing_key.is_err());
+        assert!(missing_key.unwrap_err().contains("NAKAMA_HTTP_KEY"));
+
+        let empty_key = NakamaConfig::from_vars(Some("http://nakama:7350"), Some("  "));
+        assert!(empty_key.is_err());
+        assert!(empty_key.unwrap_err().contains("NAKAMA_HTTP_KEY"));
+
+        let missing_url = NakamaConfig::from_vars(None, Some("atlas_dev_http_key"));
+        assert!(missing_url.is_err());
+        assert!(missing_url.unwrap_err().contains("NAKAMA_URL"));
+
+        let empty_url = NakamaConfig::from_vars(Some(""), Some("atlas_dev_http_key"));
+        assert!(empty_url.is_err());
+        assert!(empty_url.unwrap_err().contains("NAKAMA_URL"));
+    }
 
     #[test]
     fn test_primary_stats_default_and_serialization() {

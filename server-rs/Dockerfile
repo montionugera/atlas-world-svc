@@ -1,5 +1,5 @@
 # Multi-stage production Dockerfile for server-rs
-FROM rust:1.85-slim-bookworm AS builder
+FROM rust:1.95-slim-bookworm AS builder
 
 WORKDIR /usr/src/server-rs
 
@@ -10,18 +10,23 @@ COPY server-rs/Cargo.toml server-rs/Cargo.lock ./
 RUN mkdir src \
     && echo "fn main() {}" > src/main.rs \
     && echo "" > src/lib.rs \
-    && cargo build --release || true \
+    && cargo build --release --locked || true \
     && rm -rf src
 
-# Copy real sources
+# Copy real sources and embedded content
 COPY schemas /usr/src/schemas
+COPY contracts/content /usr/src/contracts/content
+COPY content/bestiary /usr/src/content/bestiary
+COPY content/generated /usr/src/content/generated
+COPY content/towns /usr/src/content/towns
+COPY content/maps /usr/src/content/maps
 COPY server-rs/src ./src
 COPY server-rs/benches ./benches
 COPY server-rs/tests ./tests
 
 # Build release binary
 RUN touch src/main.rs src/lib.rs \
-    && cargo build --release --bin server-rs
+    && cargo build --release --locked --bin server-rs
 
 # Runtime image
 FROM debian:bookworm-slim AS runtime
