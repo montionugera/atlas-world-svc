@@ -40,6 +40,133 @@ export interface ServerRsClientConfig {
   serverPort: number;
   useSSL: boolean;
   token?: string;
+  nakamaUrl?: string;
+  nakamaServerKey?: string;
+  deviceId?: string;
+}
+
+export function getOrCreateNakamaDeviceId(playerSeed?: string | null): string {
+  const storageKey = playerSeed
+    ? `atlas-world-device-id:${playerSeed}`
+    : "atlas-world-device-id";
+  try {
+    const existing = localStorage.getItem(storageKey);
+    if (existing && existing.length >= 10) {
+      return existing;
+    }
+  } catch {
+    // ignore storage errors in restricted contexts
+  }
+
+  const normalizedSeed = playerSeed
+    ? playerSeed.replace(/[^a-zA-Z0-9_-]/g, "")
+    : "";
+  const generated = normalizedSeed
+    ? `atlas-device-${normalizedSeed.padEnd(12, "0")}`
+    : `atlas-device-${Date.now().toString(36)}-${Math.random()
+        .toString(36)
+        .slice(2, 12)
+        .padEnd(8, "0")}`;
+
+  try {
+    localStorage.setItem(storageKey, generated);
+  } catch {
+    // ignore storage errors
+  }
+  return generated;
+}
+
+function decodeBase64Url(input: string): string {
+  const base64 = input.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+  if (typeof atob === "function") {
+    return atob(padded);
+  }
+  return Buffer.from(padded, "base64").toString("utf8");
+}
+
+export function extractTokenUserId(token?: string | null): string {
+  const trimmed = (token || "").trim();
+  if (!trimmed || trimmed === "dev-token") {
+    return "dev-player";
+  }
+  if (trimmed.startsWith("dev-token:")) {
+    return trimmed.slice("dev-token:".length).trim() || "dev-player";
+  }
+  const parts = trimmed.split(".");
+  if (parts.length === 3) {
+    try {
+      const payload = JSON.parse(decodeBase64Url(parts[1]));
+      const claimId =
+        typeof payload?.uid === "string" && payload.uid.trim()
+          ? payload.uid.trim()
+          : typeof payload?.sub === "string" && payload.sub.trim()
+            ? payload.sub.trim()
+            : null;
+      if (claimId) {
+        return claimId;
+      }
+    } catch {
+      // fall through to raw token if not valid base64 JSON
+    }
+  }
+  return trimmed;
+}
+
+export async function authenticateNakamaDevice(options: {
+  nakamaUrl: string;
+  serverKey?: string;
+  deviceId?: string;
+  playerSeed?: string | null;
+  fetchImpl?: typeof fetch;
+}): Promise<{ token: string; userId: string }> {
+  const baseUrl = options.nakamaUrl.replace(/\/+$/, "");
+  const serverKey = options.serverKey || "defaultkey";
+  const deviceId =
+    options.deviceId || getOrCreateNakamaDeviceId(options.playerSeed);
+  const fetchFn = options.fetchImpl || globalThis.fetch;
+  if (typeof fetchFn !== "function") {
+    throw new Error("fetch is not available for Nakama authentication");
+  }
+
+  const basicAuth =
+    typeof btoa === "function"
+      ? btoa(`${serverKey}:`)
+      : Buffer.from(`${serverKey}:`).toString("base64");
+
+  const response = await fetchFn(
+    `${baseUrl}/v2/account/authenticate/device?create=true`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${basicAuth}`,
+      },
+      body: JSON.stringify({ id: deviceId }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Nakama device authentication failed (${response.status})`);
+  }
+
+  const data = await response.json();
+  if (!data || typeof data.token !== "string" || !data.token.trim()) {
+    throw new Error("Nakama device authentication response missing token");
+  }
+
+  const token = data.token.trim();
+  const userId = extractTokenUserId(token);
+  try {
+    const tokenKey = options.playerSeed
+      ? `atlas-world-nakama-token:${options.playerSeed}`
+      : "atlas-world-nakama-token";
+    localStorage.setItem(tokenKey, token);
+  } catch {
+    // ignore storage errors
+  }
+
+  return { token, userId };
 }
 
 export interface LatencyMetrics {
@@ -161,12 +288,8 @@ export const useServerRsClient = (
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [roomId, setRoomId] = useState<string | null>(null);
-  const sessionName = config.token?.startsWith("dev-token:")
-    ? config.token.replace("dev-token:", "")
-    : config.token && config.token !== "dev-token"
-      ? config.token
-      : "dev-player";
-  const initialPlayerId = String(fnv1a32(sessionName));
+  const initialSessionName = extractTokenUserId(config.token);
+  const initialPlayerId = String(fnv1a32(initialSessionName));
   const [playerId, setPlayerId] = useState(initialPlayerId);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [updateCount, setUpdateCount] = useState(0);
@@ -180,6 +303,8 @@ export const useServerRsClient = (
 
   // Refs
   const wsRef = useRef<WebSocket | null>(null);
+  const nakamaTokenRef = useRef<string | null>(null);
+  const connectGenRef = useRef<number>(0);
   const connectionErrorRef = useRef<string | null>(null);
   // `client_tick` of the newest input sent; the first is 1, so 0 means none.
   const inputSeqRef = useRef<number>(0);
@@ -263,6 +388,7 @@ export const useServerRsClient = (
 
   // Disconnect WebSocket
   const disconnect = useCallback(() => {
+    connectGenRef.current++;
     cancelTrailingPublish();
     if (simulationIntervalRef.current) {
       clearInterval(simulationIntervalRef.current);
@@ -313,16 +439,37 @@ export const useServerRsClient = (
       cancelTrailingPublish();
       connectionErrorRef.current = null;
       setConnectionError(null);
+      const myGen = ++connectGenRef.current;
+
+      let resolvedToken = config.token || nakamaTokenRef.current || "";
+      if (!resolvedToken && config.nakamaUrl) {
+        isConnectingRef.current = true;
+        try {
+          const auth = await authenticateNakamaDevice({
+            nakamaUrl: config.nakamaUrl,
+            serverKey: config.nakamaServerKey,
+            deviceId: config.deviceId,
+          });
+          nakamaTokenRef.current = auth.token;
+          resolvedToken = auth.token;
+        } catch (err) {
+          isConnectingRef.current = false;
+          throw err;
+        }
+        if (connectGenRef.current !== myGen) {
+          // Superseded by disconnect() or a newer connect() while awaiting Nakama
+          isConnectingRef.current = false;
+          return;
+        }
+      }
+
+      const token = resolvedToken || "dev-token";
+
       return new Promise<void>((resolve, reject) => {
         try {
           isConnectingRef.current = true;
           const protocol = config.useSSL ? "wss" : "ws";
-          const token = config.token || "dev-token";
-          const sessionName = token.startsWith("dev-token:")
-            ? token.replace("dev-token:", "")
-            : token !== "dev-token"
-              ? token
-              : "dev-player";
+          const sessionName = extractTokenUserId(token);
           const localPlayerId = String(fnv1a32(sessionName));
           setPlayerId(localPlayerId);
           const url = `${protocol}://${config.serverHost}:${config.serverPort}?token=${token}&map=${activeMap}&proto=${PROTOCOL_VERSION}`;
