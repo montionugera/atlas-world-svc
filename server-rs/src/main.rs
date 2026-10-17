@@ -4,6 +4,7 @@ use server_rs::fleet::{AgonesClient, FleetLifecycle, HeartbeatTask};
 use server_rs::net::WsServer;
 use server_rs::protocol::SnapshotBuilder;
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
+use server_rs::storage::{NakamaClient, NakamaConfig};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tracing::{debug, error, info};
@@ -104,6 +105,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 2. Auth Guard
     let auth_guard = AuthGuard::from_env();
 
+    // 2b. Nakama persistent storage client & startup probe (before Agones Ready)
+    let nakama_client = match NakamaConfig::from_env() {
+        Ok(Some(cfg)) => {
+            info!("Configuring Nakama client for {}", cfg.base_url);
+            let client = Arc::new(NakamaClient::new(
+                cfg.base_url.clone(),
+                cfg.http_key,
+                5000,
+                3,
+            ));
+            if let Err(err) = client.probe().await {
+                error!("Nakama startup probe failed for {}: {}", cfg.base_url, err);
+                eprintln!("Nakama startup probe failed for {}: {}", cfg.base_url, err);
+                std::process::exit(1);
+            }
+            info!("Nakama startup probe succeeded ({})", cfg.base_url);
+            Some(client)
+        }
+        Ok(None) => {
+            info!("Nakama not configured (NAKAMA_URL and NAKAMA_HTTP_KEY unset); running in offline mode");
+            None
+        }
+        Err(err) => {
+            error!("Nakama configuration error: {}", err);
+            eprintln!("Nakama configuration error: {}", err);
+            std::process::exit(1);
+        }
+    };
+
     // 3. Agones lifecycle & heartbeat
     let agones = Arc::new(AgonesClient::from_env());
     if let Err(e) = agones.ready().await {
@@ -115,11 +145,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Agones 2-second heartbeat loop initiated");
 
     // 4. WebSocket Server
-    let ws_server = Arc::new(
-        WsServer::bind(&bind_addr, auth_guard)
-            .await
-            .map_err(std::io::Error::other)?,
-    );
+    let mut ws_server_inner = WsServer::bind(&bind_addr, auth_guard)
+        .await
+        .map_err(std::io::Error::other)?;
+    if let Some(client) = nakama_client {
+        ws_server_inner = ws_server_inner.with_nakama(client);
+    }
+    let ws_server = Arc::new(ws_server_inner);
     info!("WebSocket gateway listening on {}", ws_server.local_addr());
 
     // 5. Simulation initialization — initialize rooms for play and test maps

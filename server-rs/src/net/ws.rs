@@ -3,7 +3,7 @@ use crate::debug::{DebugCommand, DebugCommandBody, MAX_COMMANDS_PER_TICK};
 use futures_util::{SinkExt, StreamExt};
 use std::collections::HashMap;
 use std::net::{IpAddr, SocketAddr};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
@@ -16,6 +16,26 @@ use tokio_tungstenite::tungstenite::protocol::frame::coding::CloseCode;
 use tokio_tungstenite::tungstenite::protocol::CloseFrame;
 use tokio_tungstenite::tungstenite::Message;
 use tracing::{debug, error, info, warn};
+
+/// Returns `true` when `user_id` is a canonical 36-character hyphenated UUID (`8-4-4-4-12` hex).
+/// Nakama's `storageRead` rejects non-UUID user IDs (`expects 'userId' value to be a valid id`),
+/// so join-time loadout fetches are skipped for non-UUID dev tokens.
+pub fn is_uuid_user_id(user_id: &str) -> bool {
+    let bytes = user_id.as_bytes();
+    if bytes.len() != 36 {
+        return false;
+    }
+    for (i, &b) in bytes.iter().enumerate() {
+        if i == 8 || i == 13 || i == 18 || i == 23 {
+            if b != b'-' {
+                return false;
+            }
+        } else if !b.is_ascii_hexdigit() {
+            return false;
+        }
+    }
+    true
+}
 
 /// Inbound client message packet received from an authenticated session.
 #[derive(Debug, Clone, PartialEq)]
@@ -66,6 +86,7 @@ pub struct WsServer {
     disconnect_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<(String, String)>>>,
     pub nakama_client: Option<Arc<crate::storage::NakamaClient>>,
     nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
+    non_uuid_skip_logs: Arc<AtomicUsize>,
     debug_enabled: Arc<AtomicBool>,
     debug_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<DebugRequest>>>,
 }
@@ -86,6 +107,7 @@ impl WsServer {
         let (disconnect_tx, disconnect_rx) = unbounded_channel();
         let disconnect_rx = Arc::new(tokio::sync::Mutex::new(disconnect_rx));
         let nakama_ref = Arc::new(std::sync::RwLock::new(None));
+        let non_uuid_skip_logs = Arc::new(AtomicUsize::new(0));
         let debug_enabled = Arc::new(AtomicBool::new(false));
         let (debug_tx, debug_rx) = unbounded_channel();
 
@@ -99,6 +121,7 @@ impl WsServer {
             disconnect_rx,
             nakama_client: None,
             nakama_ref: nakama_ref.clone(),
+            non_uuid_skip_logs: non_uuid_skip_logs.clone(),
             debug_enabled: debug_enabled.clone(),
             debug_rx: Arc::new(tokio::sync::Mutex::new(debug_rx)),
         };
@@ -112,6 +135,7 @@ impl WsServer {
             inbound_tx,
             disconnect_tx,
             nakama_ref,
+            non_uuid_skip_logs,
             DebugGate {
                 enabled: debug_enabled,
                 tx: debug_tx,
@@ -119,6 +143,11 @@ impl WsServer {
         ));
 
         Ok(server)
+    }
+
+    /// Number of times this server instance logged skipping a non-UUID loadout fetch (capped at 1).
+    pub fn non_uuid_skip_log_count(&self) -> usize {
+        self.non_uuid_skip_logs.load(Ordering::Relaxed)
     }
 
     /// Turns the `/debug/*` HTTP routes on or off (off until called).
@@ -259,6 +288,7 @@ impl WsServer {
         inbound_tx: UnboundedSender<ClientPacket>,
         disconnect_tx: UnboundedSender<(String, String)>,
         nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
+        non_uuid_skip_logs: Arc<AtomicUsize>,
         debug: DebugGate,
     ) {
         info!(
@@ -275,6 +305,7 @@ impl WsServer {
             let in_tx = inbound_tx.clone();
             let dc_tx = disconnect_tx.clone();
             let nakama = nakama_ref.clone();
+            let skip_logs = non_uuid_skip_logs.clone();
             let debug = debug.clone();
 
             tokio::spawn(async move {
@@ -283,7 +314,7 @@ impl WsServer {
                     return;
                 }
                 Self::handle_connection(
-                    stream, peer_addr, conns, rooms, auth, in_tx, dc_tx, nakama,
+                    stream, peer_addr, conns, rooms, auth, in_tx, dc_tx, nakama, skip_logs,
                 )
                 .await;
             });
@@ -362,6 +393,7 @@ impl WsServer {
         inbound_tx: UnboundedSender<ClientPacket>,
         disconnect_tx: UnboundedSender<(String, String)>,
         nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
+        non_uuid_skip_logs: Arc<AtomicUsize>,
     ) {
         let mut session_id = String::new();
         let mut room_id = "map-for-play".to_string();
@@ -461,24 +493,38 @@ impl WsServer {
             }
         }
 
-        // When token is validated, if nakama_client is configured, fetch get_loadout(&session_id)
+        // When token is validated, if nakama_client is configured, fetch get_loadout(&session_id).
+        // Nakama's storageRead rejects non-UUID user IDs, so non-UUID dev tokens skip the fetch
+        // and log once per server instance.
         let client_opt = nakama_ref.read().unwrap().clone();
         if let Some(client) = client_opt {
-            match client.get_loadout(&session_id).await {
-                Ok(Some(loadout)) => {
+            if !is_uuid_user_id(&session_id) {
+                if non_uuid_skip_logs
+                    .compare_exchange(0, 1, Ordering::Relaxed, Ordering::Relaxed)
+                    .is_ok()
+                {
                     info!(
-                        "Retrieved persistent loadout for user {}: level {}",
-                        session_id, loadout.profile.level
+                        "Skipping persistent loadout fetch for non-UUID user {} (Nakama requires UUID userIds; logging once)",
+                        session_id
                     );
                 }
-                Ok(None) => {
-                    info!("No persistent loadout for user {}, defaulting", session_id);
-                }
-                Err(e) => {
-                    warn!(
-                        "Failed to fetch persistent loadout for user {}: {}",
-                        session_id, e
-                    );
+            } else {
+                match client.get_loadout(&session_id).await {
+                    Ok(Some(loadout)) => {
+                        info!(
+                            "Retrieved persistent loadout for user {}: level {}",
+                            session_id, loadout.profile.level
+                        );
+                    }
+                    Ok(None) => {
+                        info!("No persistent loadout for user {}, defaulting", session_id);
+                    }
+                    Err(e) => {
+                        warn!(
+                            "Failed to fetch persistent loadout for user {}: {}",
+                            session_id, e
+                        );
+                    }
                 }
             }
         }

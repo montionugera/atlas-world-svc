@@ -3,6 +3,10 @@
 !pnpm-workspace.yaml
 !pnpm-lock.yaml
 !contracts/**
+!content/bestiary/**
+!content/generated/**
+!content/towns/**
+!content/maps/**
 !server-rs/**
 !schemas/**
 !nakama/package.json
