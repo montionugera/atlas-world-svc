@@ -395,6 +395,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    // Mark readiness probe not-ready and send CloseCode::Away (1001) to all active clients
+    ws_server.shutdown().await;
+
     for sim in rooms.values_mut() {
         character_state_buffer.record_all(sim.snapshot_active_player_states());
     }
