@@ -29,7 +29,24 @@
   },
   "portals": {
     "North": null,
-    "South": null,
+    "South": {
+      "portal_id": "portal-kilnwatch-bastion-south-firebrick",
+      "direction": "South",
+      "target_node_id": "hunting-area-firebrick-duct",
+      "target_map_id": "firebrick-duct",
+      "target_direction": "North",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3800.0
+      }
+    },
     "East": {
       "portal_id": "portal-kilnwatch-bastion-east",
       "direction": "East",
@@ -87,7 +104,7 @@
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Anchors district-kilnfire-terraces at [0, 1] and links West to hunting-area-kiln-east-orchard in Teacup Meadows."
+      "evidence": "Anchors district-kilnfire-terraces at [0, 1] and links West to Teacup Meadows and South to Ash-Bellows Trench."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -99,7 +116,7 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Peaceful garrison safe zone with zero hostile spawns and symmetric West/East portals."
+      "evidence": "Peaceful garrison safe zone with zero hostile spawns and symmetric West, East, and South portals."
     },
     "intentional_mystery_discipline": {
       "verified": true,

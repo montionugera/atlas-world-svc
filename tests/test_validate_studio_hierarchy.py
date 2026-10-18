@@ -69,7 +69,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
     def test_rejects_mystery_node_without_mystery_hook(self) -> None:
         with self._mutated_files(
             {
-                "districts/continent-03-shattered-halo/district-perigee-abyss.json": lambda d: d.pop(
+                "districts/continent-01-hearthbloom-basin/district-porcelain-cradle.json": lambda d: d.pop(
                     "mystery_hook", None
                 )
             }
@@ -211,6 +211,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
             [
                 "ash-valve-vault-b1",
                 "chronometer-foundry-b1",
+                "ember-bellows-chamber-b1",
                 "inverted-belfry-b1",
                 "kiln-cellar-b1",
                 "mercury-reservoir-b1",
@@ -224,6 +225,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "caldera-rim",
                 "cinder-apron",
                 "clover-south-gate",
+                "firebrick-duct",
                 "flue-causeway",
                 "kelp-spiral-reef",
                 "kiln-east-orchard",
@@ -232,6 +234,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "tether-causeway",
                 "bellows-hearth",
                 "crown-beacon-citadel",
+                "draft-kiln-post",
                 "escapement-anvil",
                 "kilnwatch-bastion",
                 "lantern-hollow",

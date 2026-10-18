@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-stalactite-plunge",
+  "name": "Stalactite Plunge Causeway",
+  "map_id": null,
+  "parent_district_id": "district-perigee-abyss",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western inverted basalt stalactite causeway of Perigee Abyss at [0, 1] descending from Starfall Anchorage toward the lowest gravity anchor above the maelstrom.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "level_range": [
+    48,
+    49
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Anchor-smiths claim the upward sea-spray along Stalactite Plunge freezes into glowing salt-pearls at midnight.",
+    "visual_silhouette": "A spiral walkway carved around an upside-down basalt spire dripping upward into the clouds.",
+    "unanswered_question": "Where does the upper winch-stair of Stalactite Plunge connect into Starfall Anchorage?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Serves as the western entry causeway of Perigee Abyss inside scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Upside-down basalt stalactites dripping luminous sea-spray upward toward the floating islands."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-perigee-abyss."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until Perigee Abyss is promoted to Canon."
+    }
+  }
+}
