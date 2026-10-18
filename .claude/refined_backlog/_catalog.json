@@ -1522,9 +1522,10 @@
     "title": "Healing in a fight",
     "from_idea": "I-176",
     "created_at": "2026-10-18T11:43:42.701190+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-007"
+    "epic": "E-007",
+    "claimed_at": "2026-10-18T11:44:46.846709+00:00"
   }
 ]
