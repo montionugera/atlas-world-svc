@@ -125,6 +125,24 @@
       ]
     },
     {
+      "mapId": "epicyclic-pinion-vault-b1",
+      "nodeId": "dungeon-epicyclic-pinion-vault",
+      "name": "Epicyclic Pinion Vault",
+      "districtId": "district-differential-spur-gorge",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
       "mapId": "faraday-dynamo-vault-b1",
       "nodeId": "dungeon-faraday-dynamo-vault",
       "name": "Faraday Dynamo Vault B1",
@@ -701,6 +719,24 @@
       ]
     },
     {
+      "mapId": "planetary-carrier-span",
+      "nodeId": "hunting-area-planetary-carrier-span",
+      "name": "Planetary Carrier Span",
+      "districtId": "district-differential-spur-gorge",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
       "mapId": "resin-arch-tunnel",
       "nodeId": "hunting-area-resin-arch-tunnel",
       "name": "Resin-Arch Tunnel",
@@ -1187,6 +1223,24 @@
       ]
     },
     {
+      "mapId": "torque-balance-citadel",
+      "nodeId": "town-torque-balance-citadel",
+      "name": "Torque-Balance Citadel",
+      "districtId": "district-differential-spur-gorge",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
       "mapId": "umbrage-focal-sanctum",
       "nodeId": "town-umbrage-focal-sanctum",
       "name": "Umbrage Focal Sanctum",
@@ -1347,6 +1401,27 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 3760.0
+      },
+      "lockMessage": null
+    },
+    "portal-pinion-vault-exit-citadel": {
+      "portalId": "portal-pinion-vault-exit-citadel",
+      "sourceNodeId": "dungeon-epicyclic-pinion-vault",
+      "sourceMapId": "epicyclic-pinion-vault-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-torque-balance-citadel",
+      "targetMapId": "torque-balance-citadel",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
       },
       "lockMessage": null
     },
@@ -2400,6 +2475,48 @@
       },
       "lockMessage": null
     },
+    "portal-carrier-span-east-citadel": {
+      "portalId": "portal-carrier-span-east-citadel",
+      "sourceNodeId": "hunting-area-planetary-carrier-span",
+      "sourceMapId": "planetary-carrier-span",
+      "direction": "East",
+      "targetNodeId": "town-torque-balance-citadel",
+      "targetMapId": "torque-balance-citadel",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-carrier-span-west-torque-hub": {
+      "portalId": "portal-carrier-span-west-torque-hub",
+      "sourceNodeId": "hunting-area-planetary-carrier-span",
+      "sourceMapId": "planetary-carrier-span",
+      "direction": "West",
+      "targetNodeId": "town-helical-torque-hub",
+      "targetMapId": "helical-torque-hub",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-resin-arch-east-roundhouse": {
       "portalId": "portal-resin-arch-east-roundhouse",
       "sourceNodeId": "hunting-area-resin-arch-tunnel",
@@ -3281,6 +3398,27 @@
         "y": 200.0
       },
       "lockMessage": "Unclutched bevel-pinion teeth spin at gale-force speeds across the northern Bevel-Pinion Overlook; Torque-Master Helix requires the Bronze Worm-Clutch Key before engaging the safety brake."
+    },
+    "portal-torque-hub-east-carrier-span": {
+      "portalId": "portal-torque-hub-east-carrier-span",
+      "sourceNodeId": "town-helical-torque-hub",
+      "sourceMapId": "helical-torque-hub",
+      "direction": "East",
+      "targetNodeId": "hunting-area-planetary-carrier-span",
+      "targetMapId": "planetary-carrier-span",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-torque-hub-west-wormway": {
       "portalId": "portal-torque-hub-west-wormway",
@@ -4276,6 +4414,69 @@
       "direction": "Dungeon",
       "targetNodeId": "dungeon-inverted-belfry",
       "targetMapId": "inverted-belfry-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-torque-citadel-north-fog": {
+      "portalId": "portal-torque-citadel-north-fog",
+      "sourceNodeId": "town-torque-balance-citadel",
+      "sourceMapId": "torque-balance-citadel",
+      "direction": "North",
+      "targetNodeId": "hunting-area-sun-gear-escarpment",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Counter-rotating sun-gear teeth across Sun-Gear Escarpment shear unshielded gliders; Carrier-Warden Bram requires the Epicyclic Carrier Pin before locking the northern gear-bridge."
+    },
+    "portal-torque-citadel-west-carrier-span": {
+      "portalId": "portal-torque-citadel-west-carrier-span",
+      "sourceNodeId": "town-torque-balance-citadel",
+      "sourceMapId": "torque-balance-citadel",
+      "direction": "West",
+      "targetNodeId": "hunting-area-planetary-carrier-span",
+      "targetMapId": "planetary-carrier-span",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-torque-citadel-dungeon-pinion-vault": {
+      "portalId": "portal-torque-citadel-dungeon-pinion-vault",
+      "sourceNodeId": "town-torque-balance-citadel",
+      "sourceMapId": "torque-balance-citadel",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-epicyclic-pinion-vault",
+      "targetMapId": "epicyclic-pinion-vault-b1",
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {

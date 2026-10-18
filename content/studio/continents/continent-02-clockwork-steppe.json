@@ -57,9 +57,9 @@
     "district-differential-spur-gorge"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Tinkers say the twin bridges of Differential Spur Gorge rotate in opposite directions whenever the Clock-Gale shifts.",
+    "in_world_rumor": "Tinkers say the northern Sun-Gear Escarpment in Differential Spur Gorge meshes directly with Krono's buried solar flywheel.",
     "visual_silhouette": "Colossal brass wheel-rims rising two hundred meters above golden short-grass plains.",
-    "unanswered_question": "What torque-balancing citadel anchors the central carrier hub of Differential Spur Gorge?"
+    "unanswered_question": "What solar flywheel chamber turns beyond Sun-Gear Escarpment?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -76,11 +76,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes seven Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin, West Pendulum Steppe, Helical-Gear Trench) plus Differential Spur Gorge (Draft)."
+      "evidence": "Organizes all eight Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin, West Pendulum Steppe, Helical-Gear Trench, Differential Spur Gorge)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Differential Spur Gorge to Draft while preserving Planetary Carrier Span in Mystery status."
+      "evidence": "Promotes Differential Spur Gorge to Canon while preserving leaf Mystery frontier Sun-Gear Escarpment behind a Fog of Lore portal."
     }
   }
 }
