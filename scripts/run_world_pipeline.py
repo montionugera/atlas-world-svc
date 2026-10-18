@@ -113,7 +113,6 @@ def run_step(label: str, cmd: list[str], env: dict[str, str] | None = None, cach
         "cached": False,
         "exitCode": proc.returncode,
         "elapsedMs": elapsed_ms,
-        "output": out.strip(),
     }
 
 
@@ -322,9 +321,17 @@ def main() -> int:
     cache = load_cache() if args.fast else {}
     maps_digest = compute_dir_digest([STUDIO_DIR, ROOT / "content" / "maps", ROOT / "scripts" / "compile_world_maps.py"])
     db_digest = compute_dir_digest([ROOT / "contracts" / "content", ROOT / "scripts" / "build_catalog_db.py"])
+    web_digest = compute_dir_digest(
+        [
+            STUDIO_DIR,
+            ROOT / "scripts" / "catalog_explorer_web.py",
+            ROOT / "scripts" / "validate_studio_hierarchy.py",
+        ]
+    )
 
     skip_compile = bool(args.fast and cache.get("maps_digest") == maps_digest and RUNTIME_MANIFEST_PATH.exists())
     skip_db = bool(args.fast and cache.get("db_digest") == db_digest and DB_PATH.exists())
+    skip_web = bool(args.fast and cache.get("web_digest") == web_digest and RUNTIME_MANIFEST_PATH.exists())
 
     steps_spec = [
         (
@@ -355,7 +362,7 @@ def main() -> int:
         (
             "Stage 5 · Verify Observatory Web Bundle & Four-Level Perspectives",
             [sys.executable, "-B", "scripts/catalog_explorer_web.py", "--dump-check"],
-            False,
+            skip_web,
         ),
         (
             "Stage 6 · Run Studio Hierarchy & Perspectives Unit Tests",
@@ -402,6 +409,7 @@ def main() -> int:
             {
                 "maps_digest": maps_digest,
                 "db_digest": db_digest,
+                "web_digest": web_digest,
                 "coverageAudit": coverage,
                 "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
             }

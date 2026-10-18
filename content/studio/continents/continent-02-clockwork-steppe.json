@@ -51,12 +51,13 @@
     "district-mainspring-caldera",
     "district-verdigris-siphon",
     "district-gilded-exhaust",
-    "district-thunder-coil-basin"
+    "district-thunder-coil-basin",
+    "district-pendulum-steppe-west"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Tinkers say the deepest canyon gear still ticks once every midnight, echoing a lullaby from the lightning-charged eastern rim.",
+    "in_world_rumor": "Tinkers say the deepest canyon gear in West Pendulum Steppe swings a hundred-meter brass bob that parts the tall copper-grass once every hour.",
     "visual_silhouette": "Colossal brass wheel-rims rising two hundred meters above golden short-grass plains.",
-    "unanswered_question": "What sleeps beyond the Corona-Arc Cliff at the easternmost edge of Thunder-Coil Basin?"
+    "unanswered_question": "What ancient wind-chronometer is regulated by the buried pendulum canyon of West Pendulum Steppe?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -73,11 +74,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes all five Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin) across [15, 36]."
+      "evidence": "Organizes five Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin) plus West Pendulum Steppe (Mystery)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Mystery leaf nodes (Sun-Coil Spire, Teal Spillway, Cinder Chimney, Corona-Arc Cliff) behind fog_of_lore gates while keeping the Astrolabe Gate open to Continent 03."
+      "evidence": "Preserves West Pendulum Steppe in Mystery status and leaf Mystery nodes behind fog_of_lore gates while keeping the Astrolabe Gate open to Continent 03."
     }
   }
 }

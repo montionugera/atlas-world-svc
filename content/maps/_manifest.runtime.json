@@ -53,6 +53,24 @@
       ]
     },
     {
+      "mapId": "comet-core-geode-b1",
+      "nodeId": "dungeon-comet-core-geode",
+      "name": "Comet-Core Geode B1",
+      "districtId": "district-aphelion-halo-rim",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        50,
+        50
+      ]
+    },
+    {
       "mapId": "ember-bellows-chamber-b1",
       "nodeId": "dungeon-ember-bellows-chamber",
       "name": "Ember-Bellows Chamber",
@@ -377,6 +395,24 @@
       ]
     },
     {
+      "mapId": "comet-tether-span",
+      "nodeId": "hunting-area-comet-tether-span",
+      "name": "Comet-Tether Span",
+      "districtId": "district-aphelion-halo-rim",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
       "mapId": "firebrick-duct",
       "nodeId": "hunting-area-firebrick-duct",
       "name": "Firebrick Intake Duct",
@@ -536,6 +572,24 @@
       "levelRange": [
         30,
         36
+      ]
+    },
+    {
+      "mapId": "aphelion-buoy-haven",
+      "nodeId": "town-aphelion-buoy-haven",
+      "name": "Aphelion Buoy Haven",
+      "districtId": "district-aphelion-halo-rim",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
       ]
     },
     {
@@ -831,6 +885,27 @@
       "arrivalPointMeters": {
         "x": 500.0,
         "y": 860.0
+      },
+      "lockMessage": null
+    },
+    "portal-comet-geode-exit-buoy": {
+      "portalId": "portal-comet-geode-exit-buoy",
+      "sourceNodeId": "dungeon-comet-core-geode",
+      "sourceMapId": "comet-core-geode-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-aphelion-buoy-haven",
+      "targetMapId": "aphelion-buoy-haven",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
       },
       "lockMessage": null
     },
@@ -1380,6 +1455,48 @@
       },
       "lockMessage": null
     },
+    "portal-comet-tether-east-buoy": {
+      "portalId": "portal-comet-tether-east-buoy",
+      "sourceNodeId": "hunting-area-comet-tether-span",
+      "sourceMapId": "comet-tether-span",
+      "direction": "East",
+      "targetNodeId": "town-aphelion-buoy-haven",
+      "targetMapId": "aphelion-buoy-haven",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-comet-tether-west-perigee": {
+      "portalId": "portal-comet-tether-west-perigee",
+      "sourceNodeId": "hunting-area-comet-tether-span",
+      "sourceMapId": "comet-tether-span",
+      "direction": "West",
+      "targetNodeId": "town-perigee-diving-station",
+      "targetMapId": "perigee-diving-station",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-firebrick-duct-north-kilnwatch": {
       "portalId": "portal-firebrick-duct-north-kilnwatch",
       "sourceNodeId": "hunting-area-firebrick-duct",
@@ -1755,6 +1872,69 @@
       "arrivalPointMeters": {
         "x": 3800.0,
         "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-aphelion-buoy-north-fog": {
+      "portalId": "portal-aphelion-buoy-north-fog",
+      "sourceNodeId": "town-aphelion-buoy-haven",
+      "sourceMapId": "aphelion-buoy-haven",
+      "direction": "North",
+      "targetNodeId": "hunting-area-outer-orbit-drift",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Sub-zero comet-tail shear sweeps the northern Outer Orbit Drift; Buoy-Keeper Astraea requires the Geode Resonance Prism before unlocking the outer mooring."
+    },
+    "portal-aphelion-buoy-west-comet": {
+      "portalId": "portal-aphelion-buoy-west-comet",
+      "sourceNodeId": "town-aphelion-buoy-haven",
+      "sourceMapId": "aphelion-buoy-haven",
+      "direction": "West",
+      "targetNodeId": "hunting-area-comet-tether-span",
+      "targetMapId": "comet-tether-span",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-aphelion-buoy-dungeon-geode": {
+      "portalId": "portal-aphelion-buoy-dungeon-geode",
+      "sourceNodeId": "town-aphelion-buoy-haven",
+      "sourceMapId": "aphelion-buoy-haven",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-comet-core-geode",
+      "targetMapId": "comet-core-geode-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
       },
       "lockMessage": null
     },
@@ -2408,6 +2588,27 @@
         "y": 200.0
       },
       "lockMessage": "Crushing inverted tidal shear along the Maelstrom Eye Lip snaps unreinforced tether-lines; Dive-Master Corin requires the Keel Gyro-Compass before opening the northern sea-lip."
+    },
+    "portal-perigee-station-east-comet": {
+      "portalId": "portal-perigee-station-east-comet",
+      "sourceNodeId": "town-perigee-diving-station",
+      "sourceMapId": "perigee-diving-station",
+      "direction": "East",
+      "targetNodeId": "hunting-area-comet-tether-span",
+      "targetMapId": "comet-tether-span",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-perigee-station-west-plunge": {
       "portalId": "portal-perigee-station-west-plunge",
