@@ -1362,9 +1362,10 @@
     "title": "Authority handoff",
     "from_idea": "I-153",
     "created_at": "2026-10-18T09:48:32.593120+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-004"
+    "epic": "E-004",
+    "claimed_at": "2026-10-18T09:49:22.939947+00:00"
   }
 ]
