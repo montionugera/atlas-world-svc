@@ -578,12 +578,25 @@ impl DashState {
     }
 }
 
+/// Default duration in seconds (`5.0s`) for damage-over-time statuses (`Burn`, `Poison`) (E-007 Slice 5).
+pub const DOT_DEFAULT_DURATION_SEC: f32 = 5.0;
+/// Default damage per second (`8.0`) for damage-over-time statuses.
+pub const DOT_DEFAULT_DPS: f32 = 8.0;
+
 #[derive(Component, Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct StatusEffects {
     pub freeze_timer: f32,
     pub freeze_speed_multiplier: f32,
     pub stun_timer: f32,
     pub knockback_timer: f32,
+    #[serde(default)]
+    pub burn_timer: f32,
+    #[serde(default)]
+    pub burn_dps: f32,
+    #[serde(default)]
+    pub poison_timer: f32,
+    #[serde(default)]
+    pub poison_dps: f32,
 }
 
 impl StatusEffects {
@@ -597,6 +610,14 @@ impl StatusEffects {
 
     pub fn is_knocked_back(&self) -> bool {
         self.knockback_timer > 0.0
+    }
+
+    pub fn is_burning(&self) -> bool {
+        self.burn_timer > 0.0 && self.burn_dps > 0.0
+    }
+
+    pub fn is_poisoned(&self) -> bool {
+        self.poison_timer > 0.0 && self.poison_dps > 0.0
     }
 
     pub fn apply_knockback(&mut self, duration_sec: f32) {
@@ -626,6 +647,32 @@ impl StatusEffects {
         if duration_sec > self.stun_timer {
             self.stun_timer = duration_sec;
         }
+    }
+
+    pub fn apply_burn(&mut self, duration_sec: f32, dps: f32) {
+        if duration_sec > self.burn_timer {
+            self.burn_timer = duration_sec;
+        }
+        if dps > self.burn_dps {
+            self.burn_dps = dps;
+        }
+    }
+
+    pub fn apply_default_burn(&mut self, dps: f32) {
+        self.apply_burn(DOT_DEFAULT_DURATION_SEC, dps);
+    }
+
+    pub fn apply_poison(&mut self, duration_sec: f32, dps: f32) {
+        if duration_sec > self.poison_timer {
+            self.poison_timer = duration_sec;
+        }
+        if dps > self.poison_dps {
+            self.poison_dps = dps;
+        }
+    }
+
+    pub fn apply_default_poison(&mut self, dps: f32) {
+        self.apply_poison(DOT_DEFAULT_DURATION_SEC, dps);
     }
 }
 

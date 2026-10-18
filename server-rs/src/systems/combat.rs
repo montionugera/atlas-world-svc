@@ -316,12 +316,15 @@ pub fn parry_tick_system(
     }
 }
 
-pub fn status_effect_tick_system(clock: Res<SimClock>, mut query: Query<&mut StatusEffects>) {
+pub fn status_effect_tick_system(
+    clock: Res<SimClock>,
+    mut query: Query<(&mut StatusEffects, Option<&mut Health>)>,
+) {
     let dt = clock.delta_seconds();
     if dt <= 0.0 {
         return;
     }
-    for mut effects in &mut query {
+    for (mut effects, mut opt_health) in &mut query {
         if effects.freeze_timer > 0.0 {
             effects.freeze_timer = (effects.freeze_timer - dt).max(0.0);
             if effects.freeze_timer == 0.0 {
@@ -333,6 +336,32 @@ pub fn status_effect_tick_system(clock: Res<SimClock>, mut query: Query<&mut Sta
         }
         if effects.knockback_timer > 0.0 {
             effects.knockback_timer = (effects.knockback_timer - dt).max(0.0);
+        }
+        if effects.burn_timer > 0.0 {
+            let active_dt = dt.min(effects.burn_timer);
+            if let Some(ref mut health) = opt_health {
+                if effects.burn_dps > 0.0 {
+                    health.take_damage(effects.burn_dps * active_dt);
+                }
+            }
+            effects.burn_timer = (effects.burn_timer - dt).max(0.0);
+            if effects.burn_timer <= 1e-4 {
+                effects.burn_timer = 0.0;
+                effects.burn_dps = 0.0;
+            }
+        }
+        if effects.poison_timer > 0.0 {
+            let active_dt = dt.min(effects.poison_timer);
+            if let Some(ref mut health) = opt_health {
+                if effects.poison_dps > 0.0 {
+                    health.take_damage(effects.poison_dps * active_dt);
+                }
+            }
+            effects.poison_timer = (effects.poison_timer - dt).max(0.0);
+            if effects.poison_timer <= 1e-4 {
+                effects.poison_timer = 0.0;
+                effects.poison_dps = 0.0;
+            }
         }
     }
 }
