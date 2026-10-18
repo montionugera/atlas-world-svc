@@ -1412,8 +1412,9 @@
     "title": "District West Pendulum Steppe Canon Promotion, Metronome Bridge Connection, and Libration Mirror Shoals Draft",
     "from_idea": "I-213",
     "created_at": "2026-10-18T10:27:47.228376+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-18T10:28:02.890920+00:00"
   }
 ]
