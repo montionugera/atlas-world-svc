@@ -1053,9 +1053,10 @@
     "title": "Load a generated-world region on the server",
     "from_idea": "I-147",
     "created_at": "2026-10-18T02:09:52.899905+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-004"
+    "epic": "E-004",
+    "claimed_at": "2026-10-18T02:10:02.468889+00:00"
   }
 ]
