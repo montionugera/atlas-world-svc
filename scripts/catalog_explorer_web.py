@@ -490,9 +490,9 @@ def list_studio_snapshots() -> list[dict]:
     return out[:15]
 
 
-def create_studio_snapshot(label: str, rel_files: list[str]) -> dict:
+def create_studio_snapshot(label: str, rel_files: list[str], created_files: list[str] | None = None) -> dict:
     import time
-    ts = time.strftime("%Y%m%d-%H%M%S")
+    ts = f"{time.strftime('%Y%m%d-%H%M%S')}-{int((time.time() % 1) * 1000):03d}"
     safe_label = "".join(c if c.isalnum() or c in "-_" else "_" for c in label)[:36]
     snap_id = f"{ts}_{safe_label}"
     snap_dir = STUDIO_SNAPSHOTS_DIR / snap_id
@@ -510,6 +510,7 @@ def create_studio_snapshot(label: str, rel_files: list[str]) -> dict:
         "label": label,
         "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "files": saved_files,
+        "createdFiles": list(created_files or []),
     }
     (snap_dir / "meta.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
     return meta
@@ -528,9 +529,295 @@ def undo_latest_snapshot() -> dict:
         if backup_p.exists() and ROOT in dst_p.parents:
             shutil.copy2(backup_p, dst_p)
             restored.append(rel)
+    removed = []
+    for rel in latest.get("createdFiles", []):
+        dst_p = (ROOT / rel).resolve()
+        if dst_p.exists() and ROOT in dst_p.parents:
+            dst_p.unlink()
+            removed.append(rel)
     shutil.rmtree(snap_dir, ignore_errors=True)
     subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
-    return {"ok": True, "restoredSnapshot": latest["id"], "restoredFiles": restored}
+    return {"ok": True, "restoredSnapshot": latest["id"], "restoredFiles": restored, "removedFiles": removed}
+
+
+STUDIO_QUALITY_PILLARS = (
+    "causal_continuity",
+    "fantasy_and_wonder",
+    "character_scale_consistency",
+    "spatial_and_ecological_consistency",
+    "intentional_mystery_discipline",
+)
+
+
+def find_studio_node_and_path(node_id: str) -> tuple[str | None, dict | None, Path | None]:
+    target_id = (node_id or "").strip()
+    if not target_id:
+        return None, None, None
+    whc_path = STUDIO_DIR / "world_history_and_concept.json"
+    whc_doc = load_json_file(whc_path)
+    if whc_doc and whc_doc.get("id") == target_id:
+        return "world-history-and-concept", whc_doc, whc_path
+
+    continents_dir = STUDIO_DIR / "continents"
+    if continents_dir.exists():
+        for cp in sorted(continents_dir.glob("*.json")):
+            doc = load_json_file(cp)
+            if doc and doc.get("id") == target_id:
+                return "continent", doc, cp
+
+    districts_dir = STUDIO_DIR / "districts"
+    if districts_dir.exists():
+        for dp in sorted(districts_dir.rglob("*.json")):
+            doc = load_json_file(dp)
+            if doc and doc.get("id") == target_id:
+                return "district", doc, dp
+
+    nodes_dir = STUDIO_DIR / "nodes"
+    if nodes_dir.exists():
+        for np in sorted(nodes_dir.rglob("*.json")):
+            doc = load_json_file(np)
+            if doc and doc.get("id") == target_id:
+                return "town-or-hunting-area", doc, np
+
+    return None, None, None
+
+
+def get_parent_studio_doc(layer: str, doc: dict) -> dict | None:
+    if layer == "world-history-and-concept":
+        return None
+    if layer == "continent":
+        return load_json_file(STUDIO_DIR / "world_history_and_concept.json")
+    if layer == "district":
+        parent_id = doc.get("parent_continent_id") or ""
+        _, pdoc, _ = find_studio_node_and_path(parent_id)
+        return pdoc
+    if layer == "town-or-hunting-area":
+        parent_id = doc.get("parent_district_id") or ""
+        _, pdoc, _ = find_studio_node_and_path(parent_id)
+        return pdoc
+    return None
+
+
+def check_five_quality_pillars(qc: dict | None) -> tuple[bool, list[str]]:
+    if not isinstance(qc, dict):
+        return False, list(STUDIO_QUALITY_PILLARS)
+    failed = []
+    for k in STUDIO_QUALITY_PILLARS:
+        item = qc.get(k)
+        if not isinstance(item, dict) or item.get("verified") is not True or len(str(item.get("evidence") or "").strip()) < 15:
+            failed.append(k)
+    return len(failed) == 0, failed
+
+
+def update_studio_rationale(payload: dict) -> tuple[dict, int]:
+    node_id = str(payload.get("nodeId") or payload.get("node_id") or payload.get("id") or "").strip()
+    layer, doc, path = find_studio_node_and_path(node_id)
+    if not doc or not path or not layer:
+        return {"ok": False, "error": f"Studio node '{node_id}' not found."}, 404
+
+    updated = json.loads(json.dumps(doc))
+    if "core_rationale" in payload and payload["core_rationale"] is not None:
+        rationale = str(payload["core_rationale"]).strip()
+        if len(rationale) < 20:
+            return {"ok": False, "error": "core_rationale must be at least 20 characters long."}, 400
+        updated["core_rationale"] = rationale
+
+    if "quality_checklist" in payload and isinstance(payload["quality_checklist"], dict):
+        qc = updated.setdefault("quality_checklist", {})
+        for k, v in payload["quality_checklist"].items():
+            if k in STUDIO_QUALITY_PILLARS and isinstance(v, dict):
+                cur_item = qc.setdefault(k, {"verified": False, "evidence": "Verified by studio designer."})
+                if "verified" in v:
+                    cur_item["verified"] = bool(v["verified"])
+                if "evidence" in v and v["evidence"] is not None:
+                    cur_item["evidence"] = str(v["evidence"]).strip()
+
+    if "mystery_hook" in payload and isinstance(payload["mystery_hook"], dict):
+        mh = updated.setdefault("mystery_hook", {})
+        for mk in ("in_world_rumor", "visual_silhouette", "unanswered_question"):
+            if mk in payload["mystery_hook"] and payload["mystery_hook"][mk] is not None:
+                mh[mk] = str(payload["mystery_hook"][mk]).strip()
+
+    new_status = str(payload.get("status") or updated.get("status") or "draft").strip().lower()
+    if new_status not in ("canon", "draft", "mystery"):
+        return {"ok": False, "error": f"Invalid status '{new_status}'. Must be canon, draft, or mystery."}, 400
+
+    parent_doc = get_parent_studio_doc(layer, updated)
+    if new_status == "canon":
+        if parent_doc is not None and parent_doc.get("status") != "canon":
+            return {
+                "ok": False,
+                "error": f"Cannot promote '{node_id}' to canon because parent '{parent_doc.get('id')}' has status '{parent_doc.get('status')}' (must be canon).",
+            }, 400
+        all_ok, failed_pillars = check_five_quality_pillars(updated.get("quality_checklist"))
+        if not all_ok:
+            return {
+                "ok": False,
+                "error": f"Cannot promote '{node_id}' to canon until all 5 quality_checklist pillars are verified. Pending: {', '.join(failed_pillars)}",
+                "failedPillars": failed_pillars,
+            }, 400
+
+    if new_status == "mystery":
+        mh = updated.get("mystery_hook") or {}
+        updated["mystery_hook"] = {
+            "in_world_rumor": str(mh.get("in_world_rumor") or f"Travelers speak of uncharted phenomena beyond {updated.get('name', node_id)}.").strip(),
+            "visual_silhouette": str(mh.get("visual_silhouette") or f"Shrouded horizon silhouette bordering {updated.get('name', node_id)}.").strip(),
+            "unanswered_question": str(mh.get("unanswered_question") or f"What ancient force sleeps within {updated.get('name', node_id)}?").strip(),
+        }
+
+    updated["status"] = new_status
+    rel_file = str(path.relative_to(ROOT))
+    snap_meta = create_studio_snapshot(f"rationale_{node_id}", [rel_file])
+    path.write_text(json.dumps(updated, indent=2) + "\n", encoding="utf-8")
+
+    return {
+        "ok": True,
+        "layer": layer,
+        "node": updated,
+        "snapshot": snap_meta,
+        "studioPerspectives": load_studio_perspectives_bundle(),
+    }, 200
+
+
+def generate_studio_children(payload: dict) -> tuple[dict, int]:
+    parent_id = str(payload.get("parentId") or payload.get("parent_id") or payload.get("id") or "").strip()
+    parent_layer, parent_doc, _ = find_studio_node_and_path(parent_id)
+    if not parent_doc or not parent_layer:
+        return {"ok": False, "error": f"Parent studio node '{parent_id}' not found."}, 404
+
+    if parent_layer == "town-or-hunting-area":
+        return {"ok": False, "error": "Town or Hunting Area is a leaf layer and cannot generate child layers."}, 400
+
+    if parent_doc.get("status") != "canon":
+        return {
+            "ok": False,
+            "error": f"Top-down generation blocked: parent '{parent_id}' has status '{parent_doc.get('status')}' (must be 'canon').",
+        }, 400
+
+    if len(str(parent_doc.get("core_rationale") or "").strip()) < 20:
+        return {
+            "ok": False,
+            "error": f"Top-down generation blocked: parent '{parent_id}' lacks a valid core_rationale.",
+        }, 400
+
+    all_ok, failed_pillars = check_five_quality_pillars(parent_doc.get("quality_checklist"))
+    if not all_ok:
+        return {
+            "ok": False,
+            "error": f"Top-down generation blocked: parent '{parent_id}' has unverified quality_checklist pillars: {', '.join(failed_pillars)}",
+            "failedPillars": failed_pillars,
+        }, 400
+
+    child_status = str(payload.get("childStatus") or payload.get("status") or "mystery").strip().lower()
+    if child_status not in ("draft", "mystery"):
+        child_status = "mystery"
+
+    child_name = str(payload.get("childName") or payload.get("name") or "Uncharted Frontier Sector").strip()
+    rationale = str(
+        payload.get("coreRationale")
+        or payload.get("core_rationale")
+        or f"Directly extends canon parent '{parent_doc.get('name', parent_id)}' ({parent_id}) as a top-down child region."
+    ).strip()
+    persist = bool(payload.get("persist", False))
+
+    default_checklist = {
+        k: {
+            "verified": False,
+            "evidence": f"Pending human verification for child of {parent_id}.",
+        }
+        for k in STUDIO_QUALITY_PILLARS
+    }
+    default_mystery_hook = {
+        "in_world_rumor": f"Scouts from {parent_doc.get('name', parent_id)} report warm lantern-mist drifting across {child_name}.",
+        "visual_silhouette": f"Distant ceramic arches and glowing horizon silhouettes beyond {parent_doc.get('name', parent_id)}.",
+        "unanswered_question": f"What untouched remnants of the Primordial Gods await inside {child_name}?",
+    }
+
+    created_rel_path = None
+    if parent_layer == "world-history-and-concept":
+        child_layer = "continent"
+        cid = str(payload.get("childId") or "continent-04-uncharted-horizon").strip()
+        child_doc = {
+            "schema_version": "1.0.0",
+            "id": cid,
+            "name": child_name,
+            "status": child_status,
+            "core_rationale": rationale,
+            "parent_world_history_causes": {
+                "world_history_id": parent_id,
+                "god_patron_ids": ["god-vesper-lantern-weaver"],
+                "war_scar_ids": ["scar-shattered-halo-archipelago"],
+                "causal_summary": rationale,
+            },
+            "mystery_hook": default_mystery_hook,
+            "quality_checklist": default_checklist,
+        }
+        target_path = STUDIO_DIR / "continents" / f"{cid}.json"
+    elif parent_layer == "continent":
+        child_layer = "district"
+        cid = str(payload.get("childId") or f"district-{parent_id.replace('continent-', '')}-frontier").strip()
+        child_doc = {
+            "schema_version": "1.0.0",
+            "id": cid,
+            "name": child_name,
+            "parent_continent_id": parent_id,
+            "status": child_status,
+            "core_rationale": rationale,
+            "local_conflict": f"Frontier tremors along the outer rim of {parent_doc.get('name', parent_id)}.",
+            "level_band_label": "Levels 1 to 20",
+            "level_range": [10, 20],
+            "ecological_monster_families": ["spirit", "construct"],
+            "grid_dimensions": {"columns": 3, "rows": 3},
+            "grid_nodes": [],
+            "portal_edges": [],
+            "mystery_hook": default_mystery_hook,
+            "quality_checklist": default_checklist,
+        }
+        target_path = STUDIO_DIR / "districts" / parent_id / f"{cid}.json"
+    else:
+        child_layer = "town-or-hunting-area"
+        cid = str(payload.get("childId") or "hunting-area-uncharted-glade").strip()
+        cont_id = parent_doc.get("parent_continent_id") or "continent-01-hearthbloom-basin"
+        child_doc = {
+            "schema_version": "1.0.0",
+            "id": cid,
+            "name": child_name,
+            "map_id": None,
+            "parent_district_id": parent_id,
+            "parent_continent_id": cont_id,
+            "node_type": "hunting_area",
+            "status": "mystery",
+            "core_rationale": rationale,
+            "is_starter_town": False,
+            "grid_coordinates": [2, 2],
+            "level_range": [12, 18],
+            "mystery_hook": default_mystery_hook,
+            "quality_checklist": default_checklist,
+        }
+        target_path = STUDIO_DIR / "nodes" / cont_id / parent_id / f"{cid}.json"
+
+    snap_meta = None
+    if persist:
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        created_rel_path = str(target_path.relative_to(ROOT))
+        existed = target_path.exists()
+        snap_meta = create_studio_snapshot(
+            f"generate_{cid}",
+            [created_rel_path] if existed else [],
+            created_files=[] if existed else [created_rel_path],
+        )
+        target_path.write_text(json.dumps(child_doc, indent=2) + "\n", encoding="utf-8")
+
+    return {
+        "ok": True,
+        "parentId": parent_id,
+        "parentLayer": parent_layer,
+        "childLayer": child_layer,
+        "persisted": persist,
+        "createdFile": created_rel_path,
+        "childNode": child_doc,
+        "snapshot": snap_meta,
+    }, 200
 
 
 def sync_palettes_into_pilot_map(palettes: dict) -> None:
@@ -3099,8 +3386,109 @@ function renderStatusBadgeHtml(status) {
   return '<span class="joy-badge joy-badge--warning joy-badge--sm">🟡 Draft</span>';
 }
 
+async function submitStudioRationaleUpdate(nodeId, patchPayload) {
+  const statusEl = document.getElementById('studioDrawerStatusMsg');
+  if (statusEl) statusEl.textContent = 'Saving studio update...';
+  const res = await fetch('/api/studio/rationale/update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nodeId, ...patchPayload })
+  });
+  const data = await res.json();
+  if (!res.ok || !data.ok) {
+    if (statusEl) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = data.error || 'Failed to update studio node.';
+    }
+    return;
+  }
+  if (data.studioPerspectives) {
+    DATA.studioPerspectives = data.studioPerspectives;
+  }
+  render();
+  const afterEl = document.getElementById('studioDrawerStatusMsg');
+  if (afterEl) {
+    afterEl.style.color = '#34d399';
+    afterEl.textContent = 'Saved & snapshot recorded (' + ((data.snapshot && data.snapshot.id) || 'ok') + ').';
+  }
+}
+
+async function saveStudioRationaleForm(nodeId) {
+  const ratEl = document.getElementById('studioRationaleTextarea');
+  const stEl = document.getElementById('studioStatusSelect');
+  const rumorEl = document.getElementById('studioMysteryRumorInput');
+  const silEl = document.getElementById('studioMysterySilhouetteInput');
+  const qEl = document.getElementById('studioMysteryQuestionInput');
+  const payload = {};
+  if (ratEl) payload.core_rationale = ratEl.value;
+  if (stEl) payload.status = stEl.value;
+  if (rumorEl || silEl || qEl) {
+    payload.mystery_hook = {
+      in_world_rumor: rumorEl ? rumorEl.value : '',
+      visual_silhouette: silEl ? silEl.value : '',
+      unanswered_question: qEl ? qEl.value : ''
+    };
+  }
+  await submitStudioRationaleUpdate(nodeId, payload);
+}
+
+async function toggleStudioQualityPillar(nodeId, pillarKey, verified, currentEvidence) {
+  const ev = (currentEvidence && currentEvidence.length >= 15)
+    ? currentEvidence
+    : 'Verified against 90 to 120 centimeter scale and parent rationale.';
+  await submitStudioRationaleUpdate(nodeId, {
+    quality_checklist: {
+      [pillarKey]: { verified: !!verified, evidence: ev }
+    }
+  });
+}
+
+async function triggerStudioChildGeneration(parentId) {
+  const statusEl = document.getElementById('studioDrawerStatusMsg');
+  const childNameEl = document.getElementById('studioChildNameInput');
+  const childName = (childNameEl && childNameEl.value.trim()) || 'Uncharted Horizon Sector';
+  if (statusEl) statusEl.textContent = 'Validating parent Canon & 5-pillar gate...';
+  const res = await fetch('/api/studio/generate-children', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ parentId, childName, childStatus: 'mystery', persist: false })
+  });
+  const data = await res.json();
+  if (!res.ok || !data.ok) {
+    if (statusEl) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = data.error || 'Child generation blocked.';
+    }
+    return;
+  }
+  if (statusEl) {
+    statusEl.style.color = '#34d399';
+    statusEl.textContent = 'Generated ' + data.childLayer + ' candidate: ' + data.childNode.id + ' (' + data.childNode.status + ')';
+  }
+  openInspector(data.childLayer, 'Generated Child Preview: ' + data.childNode.name, data.childNode);
+}
+
+async function undoStudioSnapshotAction() {
+  const res = await fetch('/api/studio/undo', { method: 'POST' });
+  const data = await res.json();
+  const bundleRes = await fetch('/api/studio/perspectives');
+  const bundleData = await bundleRes.json();
+  if (bundleData.ok) {
+    DATA.studioPerspectives = bundleData;
+  }
+  render();
+  const statusEl = document.getElementById('studioDrawerStatusMsg');
+  if (statusEl) {
+    statusEl.style.color = data.ok ? '#34d399' : '#f87171';
+    statusEl.textContent = data.ok ? ('Reverted snapshot ' + data.restoredSnapshot) : (data.error || 'Nothing to undo.');
+  }
+}
+
 function renderQualityChecklistCardHtml(node) {
+  const nodeId = (node && node.id) || '';
+  const curStatus = (node && node.status) || 'draft';
   const qc = (node && node.quality_checklist) || {};
+  const mh = (node && node.mystery_hook) || {};
   const labels = [
     ['causal_continuity', '1. Causal Continuity (Parent-to-Child Link)'],
     ['fantasy_and_wonder', '2. Fantasy and Wonder (Distinct High-Fantasy Hook)'],
@@ -3109,26 +3497,80 @@ function renderQualityChecklistCardHtml(node) {
     ['intentional_mystery_discipline', '5. Intentional Mystery Discipline (Zero Filler Slop)'],
   ];
   const passedCount = labels.filter(([k]) => qc[k] && qc[k].verified).length;
+  const isLeaf = Boolean(node && node.node_type);
+
   return `
-    <div style="margin-top:12px;padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <strong style="font-size:12px">Step-by-Step Five-Pillar Quality Checklist</strong>
-        <span class="joy-badge ${passedCount === 5 ? 'joy-badge--success' : 'joy-badge--warning'} joy-badge--sm">${passedCount} / 5 Verified</span>
+    <div style="margin-top:12px;display:flex;flex-direction:column;gap:12px">
+      <!-- Interactive Core Rationale & Status Editor -->
+      <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong style="font-size:12px">Human-in-the-Loop Rationale &amp; Status Gate</strong>
+          <button type="button" class="joy-button joy-button--ghost joy-button--sm" style="height:22px;font-size:10.5px" onclick="undoStudioSnapshotAction()">
+            ↶ Undo Last Snapshot
+          </button>
+        </div>
+
+        <label class="mono" style="display:block;font-size:10px;color:var(--joy-text-secondary);margin-bottom:4px">NODE STATUS (CANON REQUIRES 5/5 CHECKLIST + CANON PARENT)</label>
+        <select id="studioStatusSelect" class="joy-select" style="width:100%;margin-bottom:8px;font-size:12px">
+          <option value="canon" ${curStatus === 'canon' ? 'selected' : ''}>🟢 Canon (Approved for Downward Generation)</option>
+          <option value="draft" ${curStatus === 'draft' ? 'selected' : ''}>🟡 Draft (Work in Progress)</option>
+          <option value="mystery" ${curStatus === 'mystery' ? 'selected' : ''}>🟣 Mystery / Fog of Lore (Intentional Uncharted Hook)</option>
+        </select>
+
+        <label class="mono" style="display:block;font-size:10px;color:var(--joy-text-secondary);margin-bottom:4px">CORE RATIONALE (MINIMUM 20 CHARACTERS)</label>
+        <textarea id="studioRationaleTextarea" rows="3" style="width:100%;padding:8px;border-radius:6px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-default);font-size:11.5px;margin-bottom:8px">${escapeHtml((node && node.core_rationale) || '')}</textarea>
+
+        <div style="padding:8px;border-radius:6px;background:rgba(168,85,247,0.08);border:1px dashed rgba(168,85,247,0.4);margin-bottom:8px">
+          <div class="mono" style="font-size:10px;color:#c084fc;margin-bottom:4px">INTENTIONAL MYSTERY / FOG OF LORE HOOK</div>
+          <input id="studioMysteryRumorInput" type="text" placeholder="In-world rumor..." value="${escapeHtml(mh.in_world_rumor || '')}" style="width:100%;padding:5px 7px;border-radius:4px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-subtle);font-size:11px;margin-bottom:4px" />
+          <input id="studioMysterySilhouetteInput" type="text" placeholder="Visual silhouette..." value="${escapeHtml(mh.visual_silhouette || '')}" style="width:100%;padding:5px 7px;border-radius:4px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-subtle);font-size:11px;margin-bottom:4px" />
+          <input id="studioMysteryQuestionInput" type="text" placeholder="Unanswered question..." value="${escapeHtml(mh.unanswered_question || '')}" style="width:100%;padding:5px 7px;border-radius:4px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-subtle);font-size:11px" />
+        </div>
+
+        <button type="button" class="joy-button joy-button--solid joy-button--sm" style="width:100%" onclick="saveStudioRationaleForm('${escapeHtml(nodeId)}')">
+          Save Rationale, Mystery Hook &amp; Status
+        </button>
+        <div id="studioDrawerStatusMsg" class="mono" style="font-size:10.5px;margin-top:6px;min-height:14px;color:var(--joy-text-secondary)"></div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        ${labels.map(([k, title]) => {
-          const item = qc[k] || { verified: false, evidence: 'Not verified yet.' };
-          return `
-            <div style="padding:7px 9px;border-radius:6px;background:var(--joy-surface-card);border:1px solid var(--joy-border-subtle);font-size:11.5px">
-              <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
-                <span style="font-weight:700;color:${item.verified ? '#34d399' : '#fbbf24'}">${item.verified ? '✓' : '○'} ${escapeHtml(title)}</span>
-                <span class="mono" style="font-size:10px">${item.verified ? 'VERIFIED' : 'PENDING'}</span>
-              </div>
-              <div style="color:var(--joy-text-secondary);margin-top:3px;font-size:11px">${escapeHtml(item.evidence || '')}</div>
-            </div>
-          `;
-        }).join('')}
+
+      <!-- Step-by-Step Five-Pillar Quality Checklist -->
+      <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong style="font-size:12px">Step-by-Step Five-Pillar Quality Checklist</strong>
+          <span class="joy-badge ${passedCount === 5 ? 'joy-badge--success' : 'joy-badge--warning'} joy-badge--sm">${passedCount} / 5 Verified</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${labels.map(([k, title]) => {
+            const item = qc[k] || { verified: false, evidence: 'Not verified yet.' };
+            const safeEv = escapeHtml(item.evidence || '').replace(/'/g, "\'");
+            return `
+              <label style="padding:7px 9px;border-radius:6px;background:var(--joy-surface-card);border:1px solid var(--joy-border-subtle);font-size:11.5px;cursor:pointer;display:block">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                  <span style="font-weight:700;color:${item.verified ? '#34d399' : '#fbbf24'};display:flex;align-items:center;gap:6px">
+                    <input type="checkbox" ${item.verified ? 'checked' : ''} onchange="toggleStudioQualityPillar('${escapeHtml(nodeId)}', '${k}', this.checked, '${safeEv}')" />
+                    ${escapeHtml(title)}
+                  </span>
+                  <span class="mono" style="font-size:10px">${item.verified ? 'VERIFIED' : 'PENDING'}</span>
+                </div>
+                <div style="color:var(--joy-text-secondary);margin-top:3px;font-size:11px">${escapeHtml(item.evidence || '')}</div>
+              </label>
+            `;
+          }).join('')}
+        </div>
       </div>
+
+      <!-- Top-Down Child Layer Generation Gate -->
+      ${!isLeaf ? `
+        <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+          <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">
+            TOP-DOWN CHILD LAYER GENERATION GATE
+          </div>
+          <input id="studioChildNameInput" type="text" placeholder="New child region name..." value="Uncharted Horizon Sector" style="width:100%;padding:6px 8px;border-radius:6px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-subtle);font-size:11.5px;margin-bottom:8px" />
+          <button type="button" class="joy-button ${curStatus === 'canon' && passedCount === 5 ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" style="width:100%" onclick="triggerStudioChildGeneration('${escapeHtml(nodeId)}')">
+            ${curStatus === 'canon' && passedCount === 5 ? '✨ Generate Child Layer Candidate ➔' : '🔒 Child Generation Locked (Requires Canon + 5/5 Checklist)'}
+          </button>
+        </div>
+      ` : ''}
     </div>
   `;
 }
@@ -6978,6 +7420,14 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/api/studio/launch-3d":
             self._send_json(launch_3d_preview(self._read_json_body()))
+            return
+        if parsed.path == "/api/studio/rationale/update":
+            res_payload, status_code = update_studio_rationale(self._read_json_body())
+            self._send_json(res_payload, status=status_code)
+            return
+        if parsed.path == "/api/studio/generate-children":
+            res_payload, status_code = generate_studio_children(self._read_json_body())
+            self._send_json(res_payload, status=status_code)
             return
         self._send_json({"ok": False, "error": "Not found"}, status=404)
 
