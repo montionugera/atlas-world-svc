@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-spiral-wormway-ramp",
+  "name": "Spiral Wormway Ramp",
+  "map_id": null,
+  "parent_district_id": "district-helical-gear-trench",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western helical brass thread-ramp of Helical-Gear Trench at [0, 1] linking Metronome Pivot Citadel down into the rotating worm-gear canyon.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    38,
+    39
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Tinkers say the brass threads of Spiral Wormway Ramp are grooved with non-slip herringbone patterns wide enough for two root-carts abreast.",
+    "visual_silhouette": "Curving bronze worm-gear threads descending into a mist of warm clock-oil.",
+    "unanswered_question": "Where does the eastern thread of Spiral Wormway Ramp meet Helical Torque Hub?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Serves as the western entry ramp of Helical-Gear Trench along scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Curving bronze worm-gear threads descending into a terraced copper canyon."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-helical-gear-trench."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until Helical-Gear Trench is promoted to Canon."
+    }
+  }
+}

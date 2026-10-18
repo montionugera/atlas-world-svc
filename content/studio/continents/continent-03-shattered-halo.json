@@ -53,13 +53,14 @@
     "district-zenith-crown",
     "district-perigee-abyss",
     "district-aphelion-halo-rim",
-    "district-libration-mirror-shoals"
+    "district-libration-mirror-shoals",
+    "district-umbrage-prism-atoll"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Airship captains say the northern Crescent Reflector Reef in Libration Mirror Shoals focuses starlight into a single beam during the midnight libration.",
+    "in_world_rumor": "Airship captains say Umbrage Prism Atoll casts seven-colored lunar shadows upward onto the underside of the floating islands.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
-    "unanswered_question": "What sleeps beyond the Crescent Reflector Reef of Libration Mirror Shoals?",
-    "discovery_trigger_hint": "All seven Districts on Continent 03 are now Canon; Crescent Reflector Reef is preserved as an intentional leaf Mystery frontier."
+    "unanswered_question": "What sleeps inside the shadow-prism core of Umbrage Prism Atoll?",
+    "discovery_trigger_hint": "Seven core Districts on Continent 03 are Canon; Umbrage Prism Atoll is preserved as an intentional Mystery frontier."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -76,11 +77,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes all seven Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss, Aphelion Halo Rim, Libration Mirror Shoals)."
+      "evidence": "Organizes seven Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss, Aphelion Halo Rim, Libration Mirror Shoals) plus Umbrage Prism Atoll (Mystery)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Libration Mirror Shoals to Canon while preserving leaf Mystery frontier Crescent Reflector Reef behind a Fog of Lore portal."
+      "evidence": "Preserves Umbrage Prism Atoll in Mystery status and leaf Mystery nodes behind fog_of_lore gates."
     }
   }
 }
