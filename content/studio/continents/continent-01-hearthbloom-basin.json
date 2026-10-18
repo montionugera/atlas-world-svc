@@ -68,11 +68,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Spans Levels 1 to 18 across four Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench, Porcelain Cradle) plus Amber-Root Hollows (Draft)."
+      "evidence": "Spans Levels 1 to 18 across all five Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench, Porcelain Cradle, Amber-Root Hollows)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Amber-Root Hollows in Draft status with Mystery child Resin-Arch Tunnel while connecting Continent 01 to Continents 02 and 03."
+      "evidence": "Preserves Mystery leaf nodes (Whispering Mire, Slag Chasm, Glaze Flue Vent, Lotus Kiln Rim, Banyan Canopy Spur) behind fog_of_lore gates."
     }
   }
 }
