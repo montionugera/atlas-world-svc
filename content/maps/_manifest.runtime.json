@@ -431,6 +431,24 @@
       ]
     },
     {
+      "mapId": "twilight-coral-crypt-b1",
+      "nodeId": "dungeon-twilight-coral-crypt",
+      "name": "Twilight Coral Crypt",
+      "districtId": "district-penumbra-prism-reef",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
       "mapId": "vesper-cradle-b1",
       "nodeId": "dungeon-vesper-cradle",
       "name": "Vesper's Cradle Vault",
@@ -806,6 +824,24 @@
       "levelRange": [
         36,
         42
+      ]
+    },
+    {
+      "mapId": "penumbra-refraction-causeway",
+      "nodeId": "hunting-area-penumbra-refraction-causeway",
+      "name": "Penumbra Refraction Causeway",
+      "districtId": "district-penumbra-prism-reef",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
       ]
     },
     {
@@ -1256,6 +1292,24 @@
       "levelRange": [
         26,
         30
+      ]
+    },
+    {
+      "mapId": "penumbra-prism-haven",
+      "nodeId": "town-penumbra-prism-haven",
+      "name": "Penumbra Prism Haven",
+      "districtId": "district-penumbra-prism-reef",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
       ]
     },
     {
@@ -1920,6 +1974,27 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-coral-crypt-exit-prism-haven": {
+      "portalId": "portal-coral-crypt-exit-prism-haven",
+      "sourceNodeId": "dungeon-twilight-coral-crypt",
+      "sourceMapId": "twilight-coral-crypt-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-penumbra-prism-haven",
+      "targetMapId": "penumbra-prism-haven",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
       },
       "lockMessage": null
     },
@@ -2784,6 +2859,48 @@
       },
       "lockMessage": null
     },
+    "portal-penumbra-causeway-east-prism-haven": {
+      "portalId": "portal-penumbra-causeway-east-prism-haven",
+      "sourceNodeId": "hunting-area-penumbra-refraction-causeway",
+      "sourceMapId": "penumbra-refraction-causeway",
+      "direction": "East",
+      "targetNodeId": "town-penumbra-prism-haven",
+      "targetMapId": "penumbra-prism-haven",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-penumbra-causeway-west-bell-sanctuary": {
+      "portalId": "portal-penumbra-causeway-west-bell-sanctuary",
+      "sourceNodeId": "hunting-area-penumbra-refraction-causeway",
+      "sourceMapId": "penumbra-refraction-causeway",
+      "direction": "West",
+      "targetNodeId": "town-aurora-bell-sanctuary",
+      "targetMapId": "aurora-bell-sanctuary",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-carrier-span-east-citadel": {
       "portalId": "portal-carrier-span-east-citadel",
       "sourceNodeId": "hunting-area-planetary-carrier-span",
@@ -3266,6 +3383,27 @@
         "y": 200.0
       },
       "lockMessage": "Charged solar-wind curtains across Magnetosphere Ribbon Arch repel unshielded gliders; Chime-Keeper Aether requires the Stalactite Bell-Clapper before opening the northern arch."
+    },
+    "portal-bell-sanctuary-east-penumbra-causeway": {
+      "portalId": "portal-bell-sanctuary-east-penumbra-causeway",
+      "sourceNodeId": "town-aurora-bell-sanctuary",
+      "sourceMapId": "aurora-bell-sanctuary",
+      "direction": "East",
+      "targetNodeId": "hunting-area-penumbra-refraction-causeway",
+      "targetMapId": "penumbra-refraction-causeway",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-bell-sanctuary-west-resonance-causeway": {
       "portalId": "portal-bell-sanctuary-west-resonance-causeway",
@@ -4440,6 +4578,69 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-prism-haven-north-corona-fog": {
+      "portalId": "portal-prism-haven-north-corona-fog",
+      "sourceNodeId": "town-penumbra-prism-haven",
+      "sourceMapId": "penumbra-prism-haven",
+      "direction": "North",
+      "targetNodeId": "hunting-area-corona-flare-arch",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Blinding corona-glare across Corona-Flare Arch disorients unshielded gliders; Prism-Navigator Lyra requires the Penumbral Filter Lens before opening the northern arch."
+    },
+    "portal-prism-haven-west-penumbra-causeway": {
+      "portalId": "portal-prism-haven-west-penumbra-causeway",
+      "sourceNodeId": "town-penumbra-prism-haven",
+      "sourceMapId": "penumbra-prism-haven",
+      "direction": "West",
+      "targetNodeId": "hunting-area-penumbra-refraction-causeway",
+      "targetMapId": "penumbra-refraction-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-prism-haven-dungeon-coral-crypt": {
+      "portalId": "portal-prism-haven-dungeon-coral-crypt",
+      "sourceNodeId": "town-penumbra-prism-haven",
+      "sourceMapId": "penumbra-prism-haven",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-twilight-coral-crypt",
+      "targetMapId": "twilight-coral-crypt-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
       },
       "lockMessage": null
     },

@@ -69,7 +69,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
     def test_rejects_mystery_node_without_mystery_hook(self) -> None:
         with self._mutated_files(
             {
-                "districts/continent-01-hearthbloom-basin/district-cinnamon-bellows-bluff.json": lambda d: d.pop(
+                "districts/continent-02-clockwork-steppe/district-bimetallic-escapement-mesa.json": lambda d: d.pop(
                     "mystery_hook", None
                 )
             }
@@ -232,6 +232,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "submerged-orrery-keel-b1",
                 "sunken-potter-hold-b1",
                 "sunken-syzygy-dome-b1",
+                "twilight-coral-crypt-b1",
                 "vesper-cradle-b1",
                 "worm-drive-gearbox-b1",
                 "apricot-aqueduct-terrace",
@@ -253,6 +254,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "leyden-causeway",
                 "metronome-bridge",
                 "orrery-bridge",
+                "penumbra-refraction-causeway",
                 "planetary-carrier-span",
                 "resin-arch-tunnel",
                 "resonance-tether-causeway",
@@ -278,6 +280,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "libration-balance-haven",
                 "metronome-pivot-citadel",
                 "patina-lock",
+                "penumbra-prism-haven",
                 "perigee-diving-station",
                 "pinion-terminus",
                 "porcelain-loom-sanctuary",

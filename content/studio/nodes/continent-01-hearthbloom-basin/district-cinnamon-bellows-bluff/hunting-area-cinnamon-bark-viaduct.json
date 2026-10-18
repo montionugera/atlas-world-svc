@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-cinnamon-bark-viaduct",
+  "name": "Cinnamon-Bark Viaduct",
+  "map_id": null,
+  "parent_district_id": "district-cinnamon-bellows-bluff",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western terracotta spice-viaduct of Cinnamon-Bellows Bluff at [0, 1] linking Saffron-Press Village to the warm cinnamon-drying towers.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    14,
+    15
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Spice-couriers say the terracotta arches of Cinnamon-Bark Viaduct stay warm enough to toast bread rolls even in evening mist.",
+    "visual_silhouette": "Glazed brick viaduct arches draped in giant curled cinnamon-bark awnings.",
+    "unanswered_question": "How do the spice-millers channel Sola's warm hearth-drafts along Cinnamon-Bark Viaduct?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Connects Saffron Kiln Orchards east into Cinnamon-Bellows Bluff along scar-kiln-basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Glazed brick viaduct arches draped in giant curled cinnamon-bark awnings."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Cinnamon-Bellows Bluff with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until Cinnamon-Bellows Bluff is promoted to Canon."
+    }
+  }
+}

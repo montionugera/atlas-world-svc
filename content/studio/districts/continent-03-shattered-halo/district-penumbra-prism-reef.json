@@ -3,7 +3,7 @@
   "id": "district-penumbra-prism-reef",
   "name": "Penumbra Prism Reef",
   "parent_continent_id": "continent-03-shattered-halo",
-  "status": "draft",
+  "status": "canon",
   "core_rationale": "Tenth floating basalt-and-crystal reef of Continent 03 where Vesper's half-shadowed gravity lens bends twilight starlight into shimmering penumbral coral arches.",
   "local_conflict": "Penumbral glass-manta rays and crystal-shelled hermit constructs drift between the half-lit prism arches.",
   "level_band_label": "Levels 41 to 60",
@@ -22,9 +22,9 @@
   "grid_nodes": [
     {
       "node_id": "hunting-area-penumbra-refraction-causeway",
-      "map_id": null,
+      "map_id": "penumbra-refraction-causeway",
       "node_type": "hunting_area",
-      "status": "mystery",
+      "status": "canon",
       "grid_coordinates": [
         0,
         1
@@ -35,18 +35,89 @@
         50
       ],
       "is_starter_town": false
+    },
+    {
+      "node_id": "town-penumbra-prism-haven",
+      "map_id": "penumbra-prism-haven",
+      "node_type": "town",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        49,
+        50
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "dungeon-twilight-coral-crypt",
+      "map_id": "twilight-coral-crypt-b1",
+      "node_type": "dungeon",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": -1,
+      "level_range": [
+        49,
+        50
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-corona-flare-arch",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        1,
+        0
+      ],
+      "floor_index": 0,
+      "level_range": [
+        50,
+        50
+      ],
+      "is_starter_town": false
     }
   ],
-  "portal_edges": [],
+  "portal_edges": [
+    {
+      "from_node_id": "hunting-area-penumbra-refraction-causeway",
+      "from_direction": "East",
+      "to_node_id": "town-penumbra-prism-haven",
+      "to_direction": "West",
+      "gate_state": "open"
+    },
+    {
+      "from_node_id": "town-penumbra-prism-haven",
+      "from_direction": "Dungeon",
+      "to_node_id": "dungeon-twilight-coral-crypt",
+      "to_direction": "Exit",
+      "gate_state": "open"
+    },
+    {
+      "from_node_id": "town-penumbra-prism-haven",
+      "from_direction": "North",
+      "to_node_id": "hunting-area-corona-flare-arch",
+      "to_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_reason": "Blinding corona-glare across Corona-Flare Arch requires Prism-Navigator Lyra's Penumbral Filter Lens."
+    }
+  ],
   "mystery_hook": {
     "in_world_rumor": "Star-navigators whisper that Penumbra Prism Reef casts two simultaneous shadows—one pointing toward the Zenith Crown and one pointing into the abyssal whirlpool below.",
     "visual_silhouette": "A floating reef of smoky violet prism-spires and inverted silver coral arches along the outer twilight ring.",
-    "unanswered_question": "What twilight observatory town anchors the half-shadowed arches of Penumbra Prism Reef?"
+    "unanswered_question": "What eclipse-corona beacon crowns Corona-Flare Arch?"
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater along the outer penumbral ring of Continent 03."
+      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater along the outer penumbral ring of Continent 03 and connects west to Aurora Bell Sanctuary."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -57,12 +128,12 @@
       "evidence": "Specifies 12.5m prism-bridge walkways, 0.58m astrolabe consoles, and 0.14m basalt risers tailored to 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Draft status: seeds Penumbra Refraction Causeway at [0, 1] while the central town, dungeon, and northern arch remain queued."
+      "verified": true,
+      "evidence": "2x2 connected matrix at [0,1], [1,1], [1,1] floor -1, and [1,0] with void_spawn and construct monster families."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Maintains Penumbra Refraction Causeway in Mystery status with zero filler maps."
+      "evidence": "Preserves hunting-area-corona-flare-arch in Mystery status behind a Fog of Lore portal with explicit lock_reason."
     }
   }
 }

@@ -59,10 +59,10 @@
     "district-penumbra-prism-reef"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Star-navigators whisper that Penumbra Prism Reef casts two simultaneous shadows—one pointing toward the Zenith Crown and one pointing into the abyssal whirlpool below.",
+    "in_world_rumor": "Star-navigators whisper that Corona-Flare Arch in Penumbra Prism Reef bends eclipse-light into a shimmering corona bridge toward the outer void.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and smoky-violet prism arches glowing softly on the northern horizon.",
-    "unanswered_question": "What twilight observatory town anchors the half-shadowed arches of Penumbra Prism Reef?",
-    "discovery_trigger_hint": "Nine Districts on Continent 03 are Canon while Penumbra Prism Reef is in Draft with Penumbra Refraction Causeway."
+    "unanswered_question": "What eclipse-corona beacon crowns Corona-Flare Arch?",
+    "discovery_trigger_hint": "All ten Districts on Continent 03 are now Canon; Corona-Flare Arch remains guarded by a Fog of Lore portal."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -79,11 +79,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes nine Canon Districts plus Penumbra Prism Reef (Draft) on Continent 03."
+      "evidence": "Organizes all ten Canon Districts on Continent 03."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Advances Penumbra Prism Reef to Draft while preserving Penumbra Refraction Causeway in Mystery status."
+      "evidence": "Promotes Penumbra Prism Reef to Canon while preserving leaf Mystery frontier Corona-Flare Arch behind a Fog of Lore portal."
     }
   }
 }
