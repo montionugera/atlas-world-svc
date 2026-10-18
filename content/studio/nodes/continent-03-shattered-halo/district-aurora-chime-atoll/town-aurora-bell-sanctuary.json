@@ -1,0 +1,159 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-aurora-bell-sanctuary",
+  "name": "Aurora Bell Sanctuary",
+  "map_id": "aurora-bell-sanctuary",
+  "parent_district_id": "district-aurora-chime-atoll",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Central resonant starlight-bell sanctuary of Aurora Chime Atoll at [1, 1] where sky-acousticians tune the crystal stalactite chimes above the Stalactite Carillon Nave.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    49,
+    50
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_roof_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_aurora_bell_sanctuary",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Luminous violet-green aurora pools that ripple in sympathy with the hanging crystal bells"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-bell-sanctuary-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-magnetosphere-ribbon-arch",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Charged solar-wind curtains across Magnetosphere Ribbon Arch repel unshielded gliders; Chime-Keeper Aether requires the Stalactite Bell-Clapper before opening the northern arch.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": null,
+    "West": {
+      "portal_id": "portal-bell-sanctuary-west-resonance-causeway",
+      "direction": "West",
+      "target_node_id": "hunting-area-resonance-tether-causeway",
+      "target_map_id": "resonance-tether-causeway",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-bell-sanctuary-dungeon-carillon-nave",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-stalactite-carillon-nave",
+      "target_map_id": "stalactite-carillon-nave-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-chime-keeper-aether",
+      "name": "Chime-Keeper Aether",
+      "role": "Aurora Sanctuary Director",
+      "position_meters": {
+        "x": 1975.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Welcome to Aurora Bell Sanctuary! Touch the tuning forks on my 0.58 meter basalt desk and feel the aurora sing through the stone."
+    },
+    {
+      "npc_id": "npc-bell-carver-cyra",
+      "name": "Bell-Carver Cyra",
+      "role": "Stalactite Chime Artisan",
+      "position_meters": {
+        "x": 2065.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.6,
+      "dialogue_greeting": "Down in the Stalactite Carillon Nave, a resonant seraph-choir guards the Stalactite Bell-Clapper needed to cross Magnetosphere Ribbon Arch!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.42,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_roof_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Aurora Chime Atoll at [1, 1] directly above Vesper's Stalactite Carillon Nave."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Floating basalt plaza crowned by luminous crystal stalactite bells beneath violet-green aurora ribbons."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.58 to 0.60m tuning desks, 0.14m basalt risers, 2.20m x 1.65m doorways, and 13.0m plazas for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, Dungeon, and North (fog_of_lore) portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Guards the northern Magnetosphere Ribbon Arch behind a Fog of Lore portal with explicit lock_message."
+    }
+  }
+}

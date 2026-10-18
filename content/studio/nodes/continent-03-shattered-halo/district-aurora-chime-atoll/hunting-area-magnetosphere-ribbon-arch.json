@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-magnetosphere-ribbon-arch",
+  "name": "Magnetosphere Ribbon Arch",
+  "map_id": null,
+  "parent_district_id": "district-aurora-chime-atoll",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northernmost aurora-curtain sky-arch of Aurora Chime Atoll at [1, 0] where Vesper's magnetic field lines weave solar-wind currents into a luminous bridge.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    50,
+    50
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Star-navigators say the northern Magnetosphere Ribbon Arch weaves solar-wind currents into a walkable sky-highway.",
+    "visual_silhouette": "A shimmering violet-green aurora arch anchored between twin basalt bell-towers.",
+    "unanswered_question": "What astral resonance spire anchors Magnetosphere Ribbon Arch?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Extends north from Aurora Bell Sanctuary at [1, 0] along scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Shimmering violet-green aurora arch anchored between twin basalt bell-towers."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Aurora Bell Sanctuary with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind the Aurora Bell Sanctuary North Fog of Lore gate."
+    }
+  }
+}

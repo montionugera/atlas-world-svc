@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-flywheel-dynamo-canyon",
+  "name": "Flywheel Dynamo Canyon",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "status": "mystery",
+  "core_rationale": "Eastern kinetic-storage gorge of Continent 02 where Krono's hundred-meter brass flywheels store surplus wind-torque from the steppe windmills.",
+  "local_conflict": "Centrifugal spark-automatons and copper-armored Pangolins patrol the spinning flywheel rim-bridges.",
+  "level_band_label": "Levels 21 to 40",
+  "level_range": [
+    29,
+    30
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "carapace"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Tinkers say the great flywheels of Flywheel Dynamo Canyon spin so smoothly that a coin balanced on the axle housing never tips over.",
+    "visual_silhouette": "Colossal solid-brass flywheel discs spinning inside a terraced copper canyon.",
+    "unanswered_question": "What kinetic governor sanctuary sits between the twin flywheels of Flywheel Dynamo Canyon?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-krono-brass-titan and scar-brass-faultline along the eastern kinetic-storage gorge of Continent 02."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Colossal solid-brass flywheel discs storing wind-torque inside a terraced copper canyon."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: flywheel gantry and governor console metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the ninth District frontier on Continent 02 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}

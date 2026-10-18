@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-apricot-aqueduct-terrace",
+  "name": "Apricot Aqueduct Terrace",
+  "map_id": null,
+  "parent_district_id": "district-saffron-kiln-orchards",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western ceramic aqueduct approach of Saffron Kiln Orchards at [0, 1] linking Carillon Hearth Belfry to the central honey-glaze press town.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    19,
+    20
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Orchard keepers say warm honey-scented water flows through the glazed troughs of Apricot Aqueduct Terrace even at midnight.",
+    "visual_silhouette": "Golden-brick aqueduct arches draped in blooming apricot boughs.",
+    "unanswered_question": "Where does the eastern sluice of Apricot Aqueduct Terrace enter the central honey-press town?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Serves as the western aqueduct approach of Saffron Kiln Orchards along scar-kiln-basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Golden-brick aqueduct arches draped in blooming apricot boughs and warm honey-scented water troughs."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-saffron-kiln-orchards."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until Saffron Kiln Orchards is promoted to Canon."
+    }
+  }
+}

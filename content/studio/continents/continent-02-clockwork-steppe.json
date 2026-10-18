@@ -54,12 +54,13 @@
     "district-thunder-coil-basin",
     "district-pendulum-steppe-west",
     "district-helical-gear-trench",
-    "district-differential-spur-gorge"
+    "district-differential-spur-gorge",
+    "district-flywheel-dynamo-canyon"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Tinkers say the northern Sun-Gear Escarpment in Differential Spur Gorge meshes directly with Krono's buried solar flywheel.",
+    "in_world_rumor": "Tinkers say the great flywheels of Flywheel Dynamo Canyon spin so smoothly that a coin balanced on the axle housing never tips over.",
     "visual_silhouette": "Colossal brass wheel-rims rising two hundred meters above golden short-grass plains.",
-    "unanswered_question": "What solar flywheel chamber turns beyond Sun-Gear Escarpment?"
+    "unanswered_question": "What kinetic governor sanctuary sits between the twin flywheels of Flywheel Dynamo Canyon?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -76,11 +77,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes all eight Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin, West Pendulum Steppe, Helical-Gear Trench, Differential Spur Gorge)."
+      "evidence": "Organizes eight Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin, West Pendulum Steppe, Helical-Gear Trench, Differential Spur Gorge) plus Flywheel Dynamo Canyon (Mystery)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Differential Spur Gorge to Canon while preserving leaf Mystery frontier Sun-Gear Escarpment behind a Fog of Lore portal."
+      "evidence": "Seeds Flywheel Dynamo Canyon in Mystery status while preserving leaf Mystery frontier Sun-Gear Escarpment behind a Fog of Lore portal."
     }
   }
 }
