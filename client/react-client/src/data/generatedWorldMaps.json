@@ -1,0 +1,1869 @@
+{
+  "millcrossTownFootprints": [
+    {
+      "id": "mill-house",
+      "kind": "mill",
+      "x": 164.0,
+      "y": 134.0,
+      "width": 18.0,
+      "height": 14.0,
+      "min_x": 164.0,
+      "min_y": 134.0,
+      "max_x": 182.0,
+      "max_y": 148.0
+    },
+    {
+      "id": "victual-shed",
+      "kind": "store",
+      "x": 134.0,
+      "y": 167.0,
+      "width": 22.0,
+      "height": 14.0,
+      "min_x": 134.0,
+      "min_y": 167.0,
+      "max_x": 156.0,
+      "max_y": 181.0
+    },
+    {
+      "id": "ford-stable",
+      "kind": "stable",
+      "x": 134.0,
+      "y": 195.0,
+      "width": 24.0,
+      "height": 14.0,
+      "min_x": 134.0,
+      "min_y": 195.0,
+      "max_x": 158.0,
+      "max_y": 209.0
+    },
+    {
+      "id": "west-row-a",
+      "kind": "dwelling",
+      "x": 108.0,
+      "y": 195.0,
+      "width": 20.0,
+      "height": 12.0,
+      "min_x": 108.0,
+      "min_y": 195.0,
+      "max_x": 128.0,
+      "max_y": 207.0
+    },
+    {
+      "id": "west-row-b",
+      "kind": "dwelling",
+      "x": 108.0,
+      "y": 165.0,
+      "width": 20.0,
+      "height": 16.0,
+      "min_x": 108.0,
+      "min_y": 165.0,
+      "max_x": 128.0,
+      "max_y": 181.0
+    },
+    {
+      "id": "ford-store",
+      "kind": "store",
+      "x": 239.0,
+      "y": 176.0,
+      "width": 20.0,
+      "height": 9.0,
+      "min_x": 239.0,
+      "min_y": 176.0,
+      "max_x": 259.0,
+      "max_y": 185.0
+    },
+    {
+      "id": "ferry-shed",
+      "kind": "store",
+      "x": 234.0,
+      "y": 191.0,
+      "width": 16.0,
+      "height": 10.0,
+      "min_x": 234.0,
+      "min_y": 191.0,
+      "max_x": 250.0,
+      "max_y": 201.0
+    },
+    {
+      "id": "terrace-row-a",
+      "kind": "dwelling",
+      "x": 260.0,
+      "y": 133.0,
+      "width": 20.0,
+      "height": 14.0,
+      "min_x": 260.0,
+      "min_y": 133.0,
+      "max_x": 280.0,
+      "max_y": 147.0
+    },
+    {
+      "id": "terrace-row-b",
+      "kind": "dwelling",
+      "x": 290.0,
+      "y": 133.0,
+      "width": 20.0,
+      "height": 14.0,
+      "min_x": 290.0,
+      "min_y": 133.0,
+      "max_x": 310.0,
+      "max_y": 147.0
+    },
+    {
+      "id": "terrace-row-c",
+      "kind": "dwelling",
+      "x": 264.0,
+      "y": 161.0,
+      "width": 20.0,
+      "height": 14.0,
+      "min_x": 264.0,
+      "min_y": 161.0,
+      "max_x": 284.0,
+      "max_y": 175.0
+    },
+    {
+      "id": "terrace-row-d",
+      "kind": "dwelling",
+      "x": 294.0,
+      "y": 161.0,
+      "width": 14.0,
+      "height": 12.0,
+      "min_x": 294.0,
+      "min_y": 161.0,
+      "max_x": 308.0,
+      "max_y": 173.0
+    },
+    {
+      "id": "inn",
+      "kind": "inn",
+      "x": 128.0,
+      "y": 167.0,
+      "width": 6.0,
+      "height": 14.0,
+      "min_x": 128.0,
+      "min_y": 167.0,
+      "max_x": 134.0,
+      "max_y": 181.0
+    },
+    {
+      "id": "weapon-smithy",
+      "kind": "store",
+      "x": 128.0,
+      "y": 195.0,
+      "width": 6.0,
+      "height": 12.0,
+      "min_x": 128.0,
+      "min_y": 195.0,
+      "max_x": 134.0,
+      "max_y": 207.0
+    },
+    {
+      "id": "general-store",
+      "kind": "store",
+      "x": 261.0,
+      "y": 176.0,
+      "width": 16.0,
+      "height": 9.0,
+      "min_x": 261.0,
+      "min_y": 176.0,
+      "max_x": 277.0,
+      "max_y": 185.0
+    },
+    {
+      "id": "bakehouse",
+      "kind": "store",
+      "x": 279.0,
+      "y": 176.0,
+      "width": 16.0,
+      "height": 9.0,
+      "min_x": 279.0,
+      "min_y": 176.0,
+      "max_x": 295.0,
+      "max_y": 185.0
+    },
+    {
+      "id": "herbalist",
+      "kind": "store",
+      "x": 297.0,
+      "y": 176.0,
+      "width": 16.0,
+      "height": 9.0,
+      "min_x": 297.0,
+      "min_y": 176.0,
+      "max_x": 313.0,
+      "max_y": 185.0
+    },
+    {
+      "id": "adventurer-guild",
+      "kind": "guild",
+      "x": 279.0,
+      "y": 191.0,
+      "width": 16.0,
+      "height": 11.0,
+      "min_x": 279.0,
+      "min_y": 191.0,
+      "max_x": 295.0,
+      "max_y": 202.0
+    },
+    {
+      "id": "west-wall-n",
+      "kind": "wall",
+      "x": 102.0,
+      "y": 152.0,
+      "width": 6.0,
+      "height": 21.0,
+      "min_x": 102.0,
+      "min_y": 152.0,
+      "max_x": 108.0,
+      "max_y": 173.0
+    },
+    {
+      "id": "west-gate-n",
+      "kind": "gate",
+      "x": 102.0,
+      "y": 173.0,
+      "width": 6.0,
+      "height": 7.0,
+      "min_x": 102.0,
+      "min_y": 173.0,
+      "max_x": 108.0,
+      "max_y": 180.0
+    },
+    {
+      "id": "west-gate-s",
+      "kind": "gate",
+      "x": 102.0,
+      "y": 196.0,
+      "width": 6.0,
+      "height": 7.0,
+      "min_x": 102.0,
+      "min_y": 196.0,
+      "max_x": 108.0,
+      "max_y": 203.0
+    },
+    {
+      "id": "west-wall-s",
+      "kind": "wall",
+      "x": 102.0,
+      "y": 203.0,
+      "width": 6.0,
+      "height": 19.0,
+      "min_x": 102.0,
+      "min_y": 203.0,
+      "max_x": 108.0,
+      "max_y": 222.0
+    },
+    {
+      "id": "north-wall",
+      "kind": "wall",
+      "x": 102.0,
+      "y": 146.0,
+      "width": 60.0,
+      "height": 6.0,
+      "min_x": 102.0,
+      "min_y": 146.0,
+      "max_x": 162.0,
+      "max_y": 152.0
+    },
+    {
+      "id": "north-gate",
+      "kind": "gate",
+      "x": 176.0,
+      "y": 148.0,
+      "width": 6.0,
+      "height": 6.0,
+      "min_x": 176.0,
+      "min_y": 148.0,
+      "max_x": 182.0,
+      "max_y": 154.0
+    },
+    {
+      "id": "south-wall",
+      "kind": "wall",
+      "x": 102.0,
+      "y": 222.0,
+      "width": 92.0,
+      "height": 6.0,
+      "min_x": 102.0,
+      "min_y": 222.0,
+      "max_x": 194.0,
+      "max_y": 228.0
+    },
+    {
+      "id": "provisioner",
+      "kind": "store",
+      "x": 313.0,
+      "y": 176.0,
+      "width": 6.0,
+      "height": 9.0,
+      "min_x": 313.0,
+      "min_y": 176.0,
+      "max_x": 319.0,
+      "max_y": 185.0
+    }
+  ],
+  "playMapPlayerSpawn": {
+    "x": 500.0,
+    "y": 500.0
+  },
+  "playMapSpawnAreas": [
+    {
+      "id": "boss_area",
+      "x": 450.0,
+      "y": 450.0,
+      "width": 100.0,
+      "height": 100.0,
+      "mobType": "mob-thorncrown-drake",
+      "count": 1
+    },
+    {
+      "id": "center_courtyard",
+      "x": 400.0,
+      "y": 400.0,
+      "width": 200.0,
+      "height": 200.0,
+      "mobType": "mob-bramble-stalker",
+      "count": 3
+    },
+    {
+      "id": "east_dunes",
+      "x": 550.0,
+      "y": 400.0,
+      "width": 150.0,
+      "height": 200.0,
+      "mobType": "mob-veil-spearling",
+      "count": 4
+    },
+    {
+      "id": "north_ice_fields",
+      "x": 400.0,
+      "y": 250.0,
+      "width": 200.0,
+      "height": 150.0,
+      "mobType": "mob-bramble-stalker",
+      "count": 2
+    },
+    {
+      "id": "south_mud_pit",
+      "x": 400.0,
+      "y": 600.0,
+      "width": 200.0,
+      "height": 150.0,
+      "mobType": "mob-bramble-warden",
+      "count": 2
+    },
+    {
+      "id": "thornveil_interior",
+      "x": 820.0,
+      "y": 420.0,
+      "width": 150.0,
+      "height": 150.0,
+      "mobType": "mob-bramble-drake",
+      "count": 1
+    },
+    {
+      "id": "thornveil_route_spearlings",
+      "x": 700.0,
+      "y": 550.0,
+      "width": 150.0,
+      "height": 200.0,
+      "mobType": "mob-veil-spearling",
+      "count": 2
+    },
+    {
+      "id": "thornveil_route_stalkers",
+      "x": 700.0,
+      "y": 300.0,
+      "width": 150.0,
+      "height": 200.0,
+      "mobType": "mob-bramble-stalker",
+      "count": 2
+    }
+  ],
+  "regions": {
+    "millcross-ford": {
+      "id": "millcross-ford",
+      "name": "Millcross Ford \u2014 The Meltwash Crossing",
+      "width": 4000.0,
+      "height": 4000.0,
+      "playerSpawn": {
+        "x": 2000.0,
+        "y": 2000.0
+      },
+      "staticObstacles": [
+        {
+          "id": "mill-house",
+          "min_x": 1954.0,
+          "min_y": 1954.0,
+          "max_x": 1972.0,
+          "max_y": 1968.0
+        },
+        {
+          "id": "victual-shed",
+          "min_x": 1924.0,
+          "min_y": 1987.0,
+          "max_x": 1946.0,
+          "max_y": 2001.0
+        },
+        {
+          "id": "ford-stable",
+          "min_x": 1924.0,
+          "min_y": 2015.0,
+          "max_x": 1948.0,
+          "max_y": 2029.0
+        },
+        {
+          "id": "west-row-a",
+          "min_x": 1898.0,
+          "min_y": 2015.0,
+          "max_x": 1918.0,
+          "max_y": 2027.0
+        },
+        {
+          "id": "west-row-b",
+          "min_x": 1898.0,
+          "min_y": 1985.0,
+          "max_x": 1918.0,
+          "max_y": 2001.0
+        },
+        {
+          "id": "ford-store",
+          "min_x": 2029.0,
+          "min_y": 1996.0,
+          "max_x": 2049.0,
+          "max_y": 2005.0
+        },
+        {
+          "id": "ferry-shed",
+          "min_x": 2024.0,
+          "min_y": 2011.0,
+          "max_x": 2040.0,
+          "max_y": 2021.0
+        },
+        {
+          "id": "terrace-row-a",
+          "min_x": 2050.0,
+          "min_y": 1953.0,
+          "max_x": 2070.0,
+          "max_y": 1967.0
+        },
+        {
+          "id": "terrace-row-b",
+          "min_x": 2080.0,
+          "min_y": 1953.0,
+          "max_x": 2100.0,
+          "max_y": 1967.0
+        },
+        {
+          "id": "terrace-row-c",
+          "min_x": 2054.0,
+          "min_y": 1981.0,
+          "max_x": 2074.0,
+          "max_y": 1995.0
+        },
+        {
+          "id": "terrace-row-d",
+          "min_x": 2084.0,
+          "min_y": 1981.0,
+          "max_x": 2098.0,
+          "max_y": 1993.0
+        },
+        {
+          "id": "inn",
+          "min_x": 1918.0,
+          "min_y": 1987.0,
+          "max_x": 1924.0,
+          "max_y": 2001.0
+        },
+        {
+          "id": "weapon-smithy",
+          "min_x": 1918.0,
+          "min_y": 2015.0,
+          "max_x": 1924.0,
+          "max_y": 2027.0
+        },
+        {
+          "id": "general-store",
+          "min_x": 2051.0,
+          "min_y": 1996.0,
+          "max_x": 2067.0,
+          "max_y": 2005.0
+        },
+        {
+          "id": "bakehouse",
+          "min_x": 2069.0,
+          "min_y": 1996.0,
+          "max_x": 2085.0,
+          "max_y": 2005.0
+        },
+        {
+          "id": "herbalist",
+          "min_x": 2087.0,
+          "min_y": 1996.0,
+          "max_x": 2103.0,
+          "max_y": 2005.0
+        },
+        {
+          "id": "adventurer-guild",
+          "min_x": 2069.0,
+          "min_y": 2011.0,
+          "max_x": 2085.0,
+          "max_y": 2022.0
+        },
+        {
+          "id": "provisioner",
+          "min_x": 2103.0,
+          "min_y": 1996.0,
+          "max_x": 2109.0,
+          "max_y": 2005.0
+        },
+        {
+          "id": "landmark_the_cart_queue_pillar",
+          "min_x": 1714.9,
+          "min_y": 2034.9,
+          "max_x": 1725.1,
+          "max_y": 2045.1
+        },
+        {
+          "id": "cliff_west_quarry_face_cliff",
+          "min_x": 1573.9,
+          "min_y": 1733.9,
+          "max_x": 1746.1,
+          "max_y": 1906.1
+        }
+      ],
+      "spawnAreas": [
+        {
+          "id": "millcross_ford_chaff_crawler",
+          "x": 2101.8,
+          "y": 2078.4,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-chaff-crawler",
+          "count": 2
+        },
+        {
+          "id": "millcross_ford_ditchlight_wisp",
+          "x": 1676.2,
+          "y": 1920.4,
+          "width": 150.0,
+          "height": 150.0,
+          "mobType": "mob-ditchlight-wisp",
+          "count": 3
+        },
+        {
+          "id": "millcross_ford_hedgerow_thorn",
+          "x": 2055.2,
+          "y": 1684.6,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-hedgerow-thorn",
+          "count": 2
+        },
+        {
+          "id": "millcross_ford_lampwing_moth",
+          "x": 1993.1,
+          "y": 2224.0,
+          "width": 150.0,
+          "height": 150.0,
+          "mobType": "mob-lampwing-moth",
+          "count": 3
+        },
+        {
+          "id": "millcross_ford_millpond_gnawer",
+          "x": 1602.0,
+          "y": 1812.8,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-millpond-gnawer",
+          "count": 4
+        },
+        {
+          "id": "millcross_ford_roadcrow_flock",
+          "x": 2278.3,
+          "y": 1986.5,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-roadcrow-flock",
+          "count": 4
+        },
+        {
+          "id": "millcross_ford_sackrat_swarm",
+          "x": 1553.0,
+          "y": 2061.6,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-sackrat-swarm",
+          "count": 4
+        },
+        {
+          "id": "millcross_ford_strayling_pup",
+          "x": 2126.5,
+          "y": 1551.7,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-strayling-pup",
+          "count": 4
+        },
+        {
+          "id": "millcross_ford_tallgrass_tick",
+          "x": 2342.2,
+          "y": 2079.0,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-tallgrass-tick",
+          "count": 4
+        },
+        {
+          "id": "millcross_ford_cordknot_effigy",
+          "x": 1451.8,
+          "y": 1844.5,
+          "width": 150.0,
+          "height": 150.0,
+          "mobType": "mob-cordknot-effigy",
+          "count": 3
+        },
+        {
+          "id": "millcross_ford_millrace_lurker",
+          "x": 2238.0,
+          "y": 1526.1,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-millrace-lurker",
+          "count": 2
+        },
+        {
+          "id": "millcross_ford_strayling_yearling",
+          "x": 1970.4,
+          "y": 2455.4,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-strayling-yearling",
+          "count": 4
+        },
+        {
+          "id": "millcross_ford_tollroad_wrecker",
+          "x": 1594.1,
+          "y": 1482.4,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-tollroad-wrecker",
+          "count": 2
+        },
+        {
+          "id": "millcross_ford_gallows_meadow_shade",
+          "x": 2520.3,
+          "y": 1909.3,
+          "width": 150.0,
+          "height": 150.0,
+          "mobType": "mob-gallows-meadow-shade",
+          "count": 3
+        },
+        {
+          "id": "millcross_ford_millroad_brigand",
+          "x": 1309.0,
+          "y": 2049.0,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-millroad-brigand",
+          "count": 4
+        },
+        {
+          "id": "millcross_ford_quarrystone_beetle",
+          "x": 2282.7,
+          "y": 1381.9,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-quarrystone-beetle",
+          "count": 2
+        },
+        {
+          "id": "millcross_ford_ashfang_pack_leader",
+          "x": 2353.5,
+          "y": 2473.7,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-ashfang-pack-leader",
+          "count": 2
+        },
+        {
+          "id": "millcross_ford_millstone_warden",
+          "x": 1428.9,
+          "y": 1455.8,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-millstone-warden",
+          "count": 1
+        },
+        {
+          "id": "millcross_ford_crossroads_reaver",
+          "x": 2489.9,
+          "y": 1445.4,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-crossroads-reaver",
+          "count": 2
+        }
+      ]
+    },
+    "thornveil": {
+      "id": "thornveil",
+      "name": "Thornveil \u2014 The Heartwood Bramble",
+      "width": 4000.0,
+      "height": 4000.0,
+      "playerSpawn": {
+        "x": 2000.0,
+        "y": 2000.0
+      },
+      "staticObstacles": [
+        {
+          "id": "landmark_the_heartwood_tree",
+          "min_x": 1991.7,
+          "min_y": 1831.7,
+          "max_x": 2008.3,
+          "max_y": 1848.3
+        },
+        {
+          "id": "landmark_crown_thickets_pillar",
+          "min_x": 2059.9,
+          "min_y": 1874.9,
+          "max_x": 2070.1,
+          "max_y": 1885.1
+        },
+        {
+          "id": "cliff_thorn_wall_sheer_crag",
+          "min_x": 2198.0,
+          "min_y": 1698.0,
+          "max_x": 2362.0,
+          "max_y": 1862.0
+        }
+      ],
+      "spawnAreas": [
+        {
+          "id": "thornveil_bramble_shoot",
+          "x": 2078.5,
+          "y": 2101.7,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-bramble-shoot",
+          "count": 2
+        },
+        {
+          "id": "thornveil_thicket_hopper",
+          "x": 1666.2,
+          "y": 1863.7,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-thicket-hopper",
+          "count": 4
+        },
+        {
+          "id": "thornveil_veil_cub",
+          "x": 1967.1,
+          "y": 1623.7,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-veil-cub",
+          "count": 4
+        },
+        {
+          "id": "thornveil_bramble_stalker",
+          "x": 1962.1,
+          "y": 2257.4,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-bramble-stalker",
+          "count": 4
+        },
+        {
+          "id": "thornveil_thornhusk_weaver",
+          "x": 1554.6,
+          "y": 1840.2,
+          "width": 150.0,
+          "height": 150.0,
+          "mobType": "mob-thornhusk-weaver",
+          "count": 3
+        },
+        {
+          "id": "thornveil_veil_spearling",
+          "x": 2304.1,
+          "y": 1750.1,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-veil-spearling",
+          "count": 4
+        },
+        {
+          "id": "thornveil_bramble_warden",
+          "x": 1678.1,
+          "y": 2316.6,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-bramble-warden",
+          "count": 2
+        },
+        {
+          "id": "thornveil_sapdrinker_swarm",
+          "x": 2105.9,
+          "y": 1455.9,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-sapdrinker-swarm",
+          "count": 4
+        },
+        {
+          "id": "thornveil_thornveil_spearhand",
+          "x": 2303.8,
+          "y": 2299.8,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-thornveil-spearhand",
+          "count": 4
+        },
+        {
+          "id": "thornveil_bramble_drake",
+          "x": 1356.4,
+          "y": 1895.3,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-bramble-drake",
+          "count": 2
+        },
+        {
+          "id": "thornveil_briar_caller",
+          "x": 2510.1,
+          "y": 1703.2,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-briar-caller",
+          "count": 2
+        },
+        {
+          "id": "thornveil_bramble_mother",
+          "x": 1574.5,
+          "y": 2491.2,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-bramble-mother",
+          "count": 1
+        },
+        {
+          "id": "thornveil_thorncrown_drake",
+          "x": 1643.3,
+          "y": 1313.3,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-thorncrown-drake",
+          "count": 1
+        },
+        {
+          "id": "thornveil_heartwood_tyrant",
+          "x": 2667.7,
+          "y": 1786.1,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-heartwood-tyrant",
+          "count": 1
+        }
+      ]
+    },
+    "ashvale-front": {
+      "id": "ashvale-front",
+      "name": "Ashvale Front \u2014 The Alkali Cut Lines",
+      "width": 4000.0,
+      "height": 4000.0,
+      "playerSpawn": {
+        "x": 2000.0,
+        "y": 2000.0
+      },
+      "staticObstacles": [
+        {
+          "id": "landmark_grave_rows_headstone_w",
+          "min_x": 1915.1,
+          "min_y": 1875.1,
+          "max_x": 1924.9,
+          "max_y": 1884.9
+        },
+        {
+          "id": "landmark_grave_rows_headstone_e",
+          "min_x": 2075.1,
+          "min_y": 1875.1,
+          "max_x": 2084.9,
+          "max_y": 1884.9
+        },
+        {
+          "id": "cliff_alkali_scarp_mesa",
+          "min_x": 1638.0,
+          "min_y": 2158.0,
+          "max_x": 1802.0,
+          "max_y": 2322.0
+        }
+      ],
+      "spawnAreas": [
+        {
+          "id": "ashvale_front_ashfield_crawler",
+          "x": 2140.0,
+          "y": 1920.0,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-ashfield-crawler",
+          "count": 4
+        },
+        {
+          "id": "ashvale_front_ashvale_carrion_hound",
+          "x": 1685.5,
+          "y": 1865.5,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-ashvale-carrion-hound",
+          "count": 4
+        },
+        {
+          "id": "ashvale_front_shovel_wight",
+          "x": 2075.6,
+          "y": 1714.4,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-shovel-wight",
+          "count": 2
+        },
+        {
+          "id": "ashvale_front_toll_struck_warden",
+          "x": 2008.7,
+          "y": 2207.6,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-toll-struck-warden",
+          "count": 2
+        },
+        {
+          "id": "ashvale_front_ashen_torchbearer",
+          "x": 1631.6,
+          "y": 1848.5,
+          "width": 150.0,
+          "height": 150.0,
+          "mobType": "mob-ashen-torchbearer",
+          "count": 3
+        },
+        {
+          "id": "ashvale_front_cratershell_crawler",
+          "x": 2253.4,
+          "y": 1874.9,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-cratershell-crawler",
+          "count": 2
+        },
+        {
+          "id": "ashvale_front_standard_bearer_husk",
+          "x": 1599.7,
+          "y": 2039.4,
+          "width": 150.0,
+          "height": 150.0,
+          "mobType": "mob-standard-bearer-husk",
+          "count": 3
+        },
+        {
+          "id": "ashvale_front_trench_gnawer",
+          "x": 1810.0,
+          "y": 1591.4,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-trench-gnawer",
+          "count": 2
+        },
+        {
+          "id": "ashvale_front_ashen_drum_caller",
+          "x": 2237.8,
+          "y": 2175.0,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-ashen-drum-caller",
+          "count": 2
+        },
+        {
+          "id": "ashvale_front_bell_scoured_penitent",
+          "x": 1583.4,
+          "y": 1729.7,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-bell-scoured-penitent",
+          "count": 2
+        },
+        {
+          "id": "ashvale_front_flagrot_swarm",
+          "x": 2289.9,
+          "y": 1695.8,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-flagrot-swarm",
+          "count": 2
+        },
+        {
+          "id": "ashvale_front_gravetide_wight",
+          "x": 2039.0,
+          "y": 2371.6,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-gravetide-wight",
+          "count": 2
+        },
+        {
+          "id": "ashvale_front_bellwarden_revenant",
+          "x": 1848.4,
+          "y": 1473.5,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-bellwarden-revenant",
+          "count": 2
+        },
+        {
+          "id": "ashvale_front_shroudweaver",
+          "x": 2414.3,
+          "y": 2039.0,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-shroudweaver",
+          "count": 2
+        },
+        {
+          "id": "ashvale_front_siege_rot_hulk",
+          "x": 1525.4,
+          "y": 2237.0,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-siege-rot-hulk",
+          "count": 1
+        },
+        {
+          "id": "ashvale_front_warscar_maw",
+          "x": 2127.9,
+          "y": 1439.2,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-warscar-maw",
+          "count": 2
+        },
+        {
+          "id": "ashvale_front_ash_sermon_speaker",
+          "x": 1972.9,
+          "y": 2497.1,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-ash-sermon-speaker",
+          "count": 1
+        },
+        {
+          "id": "ashvale_front_frontline_devourer",
+          "x": 1428.2,
+          "y": 1696.2,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-frontline-devourer",
+          "count": 1
+        },
+        {
+          "id": "ashvale_front_scar_drake",
+          "x": 2537.8,
+          "y": 1901.7,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-scar-drake",
+          "count": 1
+        },
+        {
+          "id": "ashvale_front_unburied_host",
+          "x": 1501.0,
+          "y": 2370.9,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-unburied-host",
+          "count": 1
+        },
+        {
+          "id": "ashvale_front_boneorchard_warden",
+          "x": 1884.4,
+          "y": 1311.9,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-boneorchard-warden",
+          "count": 1
+        },
+        {
+          "id": "ashvale_front_hallowed_toll_warden",
+          "x": 2563.4,
+          "y": 2166.4,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-hallowed-toll-warden",
+          "count": 1
+        },
+        {
+          "id": "ashvale_front_scarfield_sovereign",
+          "x": 1377.4,
+          "y": 2315.1,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-scarfield-sovereign",
+          "count": 1
+        },
+        {
+          "id": "ashvale_front_gravefield_maw",
+          "x": 2185.3,
+          "y": 1289.2,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-gravefield-maw",
+          "count": 1
+        },
+        {
+          "id": "ashvale_front_lastbell_choir",
+          "x": 2277.3,
+          "y": 2582.8,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-lastbell-choir",
+          "count": 1
+        },
+        {
+          "id": "ashvale_front_warscar_titan",
+          "x": 1333.8,
+          "y": 1527.9,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-warscar-titan",
+          "count": 1
+        }
+      ]
+    },
+    "northern-icefield": {
+      "id": "northern-icefield",
+      "name": "Northern Icefield \u2014 The Oath-Gate Shelf",
+      "width": 4000.0,
+      "height": 4000.0,
+      "playerSpawn": {
+        "x": 2000.0,
+        "y": 2000.0
+      },
+      "staticObstacles": [
+        {
+          "id": "landmark_oath_gate_pillar_w",
+          "min_x": 1946.4,
+          "min_y": 1834.4,
+          "max_x": 1957.6,
+          "max_y": 1845.6
+        },
+        {
+          "id": "landmark_oath_gate_pillar_e",
+          "min_x": 2042.4,
+          "min_y": 1834.4,
+          "max_x": 2053.6,
+          "max_y": 1845.6
+        },
+        {
+          "id": "cliff_the_crevasse_shelf_wall",
+          "min_x": 1639.8,
+          "min_y": 1709.8,
+          "max_x": 1820.2,
+          "max_y": 1890.2
+        }
+      ],
+      "spawnAreas": [
+        {
+          "id": "northern_icefield_frostbitten_ox",
+          "x": 2155.0,
+          "y": 1935.0,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-frostbitten-ox",
+          "count": 2
+        },
+        {
+          "id": "northern_icefield_rime_shrike",
+          "x": 1690.4,
+          "y": 2048.9,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-rime-shrike",
+          "count": 4
+        },
+        {
+          "id": "northern_icefield_frostfell_stalker",
+          "x": 2121.6,
+          "y": 1688.9,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-frostfell-stalker",
+          "count": 4
+        },
+        {
+          "id": "northern_icefield_hoarfrost_wisp",
+          "x": 1912.4,
+          "y": 2274.8,
+          "width": 150.0,
+          "height": 150.0,
+          "mobType": "mob-hoarfrost-wisp",
+          "count": 3
+        },
+        {
+          "id": "northern_icefield_oathtablet_sentry",
+          "x": 1635.5,
+          "y": 1680.1,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-oathtablet-sentry",
+          "count": 2
+        },
+        {
+          "id": "northern_icefield_icelocked_oathkeeper",
+          "x": 2375.8,
+          "y": 2016.1,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-icelocked-oathkeeper",
+          "count": 1
+        },
+        {
+          "id": "northern_icefield_rime_drake",
+          "x": 1782.8,
+          "y": 2390.2,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-rime-drake",
+          "count": 2
+        },
+        {
+          "id": "northern_icefield_hoarfell_giant",
+          "x": 2129.6,
+          "y": 1449.2,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-hoarfell-giant",
+          "count": 2
+        },
+        {
+          "id": "northern_icefield_snowblind_shade",
+          "x": 2392.8,
+          "y": 2268.9,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-snowblind-shade",
+          "count": 2
+        },
+        {
+          "id": "northern_icefield_icefloe_wyrm",
+          "x": 1380.5,
+          "y": 1713.9,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-icefloe-wyrm",
+          "count": 1
+        },
+        {
+          "id": "northern_icefield_oathgate_sentinel",
+          "x": 2483.1,
+          "y": 1574.4,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-oathgate-sentinel",
+          "count": 1
+        },
+        {
+          "id": "northern_icefield_whitewaste_colossus",
+          "x": 1975.6,
+          "y": 2641.0,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-whitewaste-colossus",
+          "count": 1
+        },
+        {
+          "id": "northern_icefield_deepfrost_wyrm",
+          "x": 1511.7,
+          "y": 1345.1,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-deepfrost-wyrm",
+          "count": 1
+        }
+      ]
+    },
+    "cindervast": {
+      "id": "cindervast",
+      "name": "Cindervast \u2014 The Intact Ruin & Dead Gate",
+      "width": 4000.0,
+      "height": 4000.0,
+      "playerSpawn": {
+        "x": 2000.0,
+        "y": 2000.0
+      },
+      "staticObstacles": [
+        {
+          "id": "landmark_giving_king_statue_plinth",
+          "min_x": 1993.7,
+          "min_y": 1833.7,
+          "max_x": 2006.3,
+          "max_y": 1846.3
+        },
+        {
+          "id": "landmark_dead_gate_pillar_w",
+          "min_x": 1942.6,
+          "min_y": 2194.6,
+          "max_x": 1953.4,
+          "max_y": 2205.4
+        },
+        {
+          "id": "landmark_dead_gate_pillar_e",
+          "min_x": 2046.6,
+          "min_y": 2194.6,
+          "max_x": 2057.4,
+          "max_y": 2205.4
+        },
+        {
+          "id": "cliff_relic_crater_sheer_rim",
+          "min_x": 2198.0,
+          "min_y": 1678.0,
+          "max_x": 2362.0,
+          "max_y": 1842.0
+        }
+      ],
+      "spawnAreas": [
+        {
+          "id": "cindervast_relicglow_moth",
+          "x": 2144.8,
+          "y": 1933.8,
+          "width": 150.0,
+          "height": 150.0,
+          "mobType": "mob-relicglow-moth",
+          "count": 3
+        },
+        {
+          "id": "cindervast_soot_wrapped_scavenger",
+          "x": 1662.9,
+          "y": 1920.4,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-soot-wrapped-scavenger",
+          "count": 4
+        },
+        {
+          "id": "cindervast_broken_crown_sentinel",
+          "x": 2008.5,
+          "y": 1657.7,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-broken-crown-sentinel",
+          "count": 1
+        },
+        {
+          "id": "cindervast_cindered_revenant",
+          "x": 1959.5,
+          "y": 2265.5,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-cindered-revenant",
+          "count": 2
+        },
+        {
+          "id": "cindervast_relicslag_crawler",
+          "x": 1756.4,
+          "y": 1612.6,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-relicslag-crawler",
+          "count": 2
+        },
+        {
+          "id": "cindervast_rebellion_echo",
+          "x": 2328.4,
+          "y": 1836.0,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-rebellion-echo",
+          "count": 2
+        },
+        {
+          "id": "cindervast_relic_hulk",
+          "x": 1604.5,
+          "y": 2229.7,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-relic-hulk",
+          "count": 2
+        },
+        {
+          "id": "cindervast_violet_ash_drake",
+          "x": 1935.5,
+          "y": 1455.0,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-violet-ash-drake",
+          "count": 2
+        },
+        {
+          "id": "cindervast_afterglow_shade",
+          "x": 2206.7,
+          "y": 2391.0,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-afterglow-shade",
+          "count": 1
+        },
+        {
+          "id": "cindervast_cinderfall_giant",
+          "x": 1402.7,
+          "y": 1830.3,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-cinderfall-giant",
+          "count": 1
+        },
+        {
+          "id": "cindervast_crownfall_automaton",
+          "x": 2368.3,
+          "y": 1532.0,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-crownfall-automaton",
+          "count": 1
+        },
+        {
+          "id": "cindervast_ashcrown_drake",
+          "x": 1891.0,
+          "y": 2571.2,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-ashcrown-drake",
+          "count": 1
+        },
+        {
+          "id": "cindervast_relicdrawn_siege_hulk",
+          "x": 1855.0,
+          "y": 1285.4,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-relicdrawn-siege-hulk",
+          "count": 1
+        },
+        {
+          "id": "cindervast_crownash_wyrm",
+          "x": 2635.7,
+          "y": 1814.7,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-crownash-wyrm",
+          "count": 1
+        },
+        {
+          "id": "cindervast_relicshell_colossus",
+          "x": 1392.6,
+          "y": 2437.4,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-relicshell-colossus",
+          "count": 1
+        }
+      ]
+    },
+    "emberdown": {
+      "id": "emberdown",
+      "name": "Emberdown \u2014 The Terraced Ledges & Coal Adits",
+      "width": 4000.0,
+      "height": 4000.0,
+      "playerSpawn": {
+        "x": 2000.0,
+        "y": 2000.0
+      },
+      "staticObstacles": [
+        {
+          "id": "landmark_adit_mouth_pillar_w",
+          "min_x": 2089.6,
+          "min_y": 1854.6,
+          "max_x": 2100.4,
+          "max_y": 1865.4
+        },
+        {
+          "id": "landmark_adit_mouth_pillar_e",
+          "min_x": 2139.6,
+          "min_y": 1854.6,
+          "max_x": 2150.4,
+          "max_y": 1865.4
+        },
+        {
+          "id": "cliff_the_adits_coal_face_cliff",
+          "min_x": 2188.0,
+          "min_y": 1718.0,
+          "max_x": 2352.0,
+          "max_y": 1882.0
+        }
+      ],
+      "spawnAreas": [
+        {
+          "id": "emberdown_cinderhen",
+          "x": 2133.7,
+          "y": 1972.3,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-cinderhen",
+          "count": 4
+        },
+        {
+          "id": "emberdown_slagheap_grub",
+          "x": 1693.0,
+          "y": 2123.4,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-slagheap-grub",
+          "count": 2
+        },
+        {
+          "id": "emberdown_emberpit_digger",
+          "x": 2221.9,
+          "y": 1666.0,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-emberpit-digger",
+          "count": 2
+        },
+        {
+          "id": "emberdown_forge_ash_hound",
+          "x": 2054.5,
+          "y": 2380.8,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-forge-ash-hound",
+          "count": 4
+        },
+        {
+          "id": "emberdown_slagpit_hulk",
+          "x": 1598.5,
+          "y": 1479.0,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-slagpit-hulk",
+          "count": 2
+        },
+        {
+          "id": "emberdown_slag_drake",
+          "x": 2540.1,
+          "y": 1688.7,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-slag-drake",
+          "count": 2
+        },
+        {
+          "id": "emberdown_mourning_cloth_wight",
+          "x": 1434.6,
+          "y": 2480.2,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-mourning-cloth-wight",
+          "count": 2
+        }
+      ]
+    },
+    "gildmark-head": {
+      "id": "gildmark-head",
+      "name": "Gildmark Head \u2014 The Mirror Tower & Mire's Bar",
+      "width": 4000.0,
+      "height": 4000.0,
+      "playerSpawn": {
+        "x": 2000.0,
+        "y": 2000.0
+      },
+      "staticObstacles": [
+        {
+          "id": "landmark_mirror_tower_beacon_pillar",
+          "min_x": 1993.7,
+          "min_y": 1813.7,
+          "max_x": 2006.3,
+          "max_y": 1826.3
+        },
+        {
+          "id": "landmark_harbour_ledger_pillar",
+          "min_x": 2049.9,
+          "min_y": 2054.9,
+          "max_x": 2060.1,
+          "max_y": 2065.1
+        },
+        {
+          "id": "cliff_seaward_dressed_stone_cliff",
+          "min_x": 1633.9,
+          "min_y": 1693.9,
+          "max_x": 1806.1,
+          "max_y": 1866.1
+        }
+      ],
+      "spawnAreas": [
+        {
+          "id": "gildmark_head_tally_walker",
+          "x": 2076.9,
+          "y": 2103.2,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-tally-walker",
+          "count": 2
+        },
+        {
+          "id": "gildmark_head_wharf_scuttler",
+          "x": 1643.9,
+          "y": 1890.0,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-wharf-scuttler",
+          "count": 4
+        },
+        {
+          "id": "gildmark_head_bilge_crawler",
+          "x": 2186.5,
+          "y": 1716.1,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-bilge-crawler",
+          "count": 4
+        },
+        {
+          "id": "gildmark_head_cranehook_automaton",
+          "x": 2158.4,
+          "y": 2258.7,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-cranehook-automaton",
+          "count": 2
+        },
+        {
+          "id": "gildmark_head_ledger_hound",
+          "x": 1617.2,
+          "y": 1585.6,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-ledger-hound",
+          "count": 4
+        },
+        {
+          "id": "gildmark_head_harbor_assessor",
+          "x": 2425.0,
+          "y": 2072.4,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-harbor-assessor",
+          "count": 2
+        },
+        {
+          "id": "gildmark_head_bound_war_beast",
+          "x": 1573.2,
+          "y": 2371.1,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-bound-war-beast",
+          "count": 2
+        },
+        {
+          "id": "gildmark_head_crateyard_colossus",
+          "x": 1803.2,
+          "y": 1336.9,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-crateyard-colossus",
+          "count": 1
+        },
+        {
+          "id": "gildmark_head_deepwater_hauler",
+          "x": 2114.2,
+          "y": 2605.9,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-deepwater-hauler",
+          "count": 1
+        },
+        {
+          "id": "gildmark_head_harbor_war_beast",
+          "x": 1215.9,
+          "y": 2071.3,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-harbor-war-beast",
+          "count": 1
+        }
+      ]
+    },
+    "hollowmarch": {
+      "id": "hollowmarch",
+      "name": "Hollowmarch \u2014 The Palisade Line & Tally Boards",
+      "width": 4000.0,
+      "height": 4000.0,
+      "playerSpawn": {
+        "x": 2000.0,
+        "y": 2000.0
+      },
+      "staticObstacles": [
+        {
+          "id": "landmark_the_tally_boards_post_w",
+          "min_x": 1949.6,
+          "min_y": 1874.6,
+          "max_x": 1960.4,
+          "max_y": 1885.4
+        },
+        {
+          "id": "landmark_the_tally_boards_post_e",
+          "min_x": 2039.6,
+          "min_y": 1874.6,
+          "max_x": 2050.4,
+          "max_y": 1885.4
+        },
+        {
+          "id": "cliff_the_ore_heads_crag",
+          "min_x": 2188.0,
+          "min_y": 1708.0,
+          "max_x": 2352.0,
+          "max_y": 1872.0
+        }
+      ],
+      "spawnAreas": [
+        {
+          "id": "hollowmarch_graveturf_creeper",
+          "x": 2042.5,
+          "y": 2102.7,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-graveturf-creeper",
+          "count": 4
+        },
+        {
+          "id": "hollowmarch_palisade_borer",
+          "x": 1628.7,
+          "y": 1920.2,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-palisade-borer",
+          "count": 2
+        },
+        {
+          "id": "hollowmarch_stakeline_hound",
+          "x": 2057.7,
+          "y": 1551.5,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-stakeline-hound",
+          "count": 4
+        },
+        {
+          "id": "hollowmarch_tallyknot_wight",
+          "x": 1946.2,
+          "y": 2404.5,
+          "width": 150.0,
+          "height": 150.0,
+          "mobType": "mob-tallyknot-wight",
+          "count": 3
+        },
+        {
+          "id": "hollowmarch_palisade_breaker",
+          "x": 1617.0,
+          "y": 1465.9,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-palisade-breaker",
+          "count": 2
+        },
+        {
+          "id": "hollowmarch_hollowmoor_giant",
+          "x": 2558.5,
+          "y": 2130.2,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-hollowmoor-giant",
+          "count": 2
+        },
+        {
+          "id": "hollowmarch_hollow_bell_wight",
+          "x": 1355.1,
+          "y": 2391.8,
+          "width": 110.0,
+          "height": 110.0,
+          "mobType": "mob-hollow-bell-wight",
+          "count": 1
+        }
+      ]
+    },
+    "rooktide-reach": {
+      "id": "rooktide-reach",
+      "name": "Rooktide Reach \u2014 The Barge-Cranes & Rook Flats",
+      "width": 4000.0,
+      "height": 4000.0,
+      "playerSpawn": {
+        "x": 2000.0,
+        "y": 2000.0
+      },
+      "staticObstacles": [
+        {
+          "id": "landmark_barge_crane_piling_w",
+          "min_x": 1952.6,
+          "min_y": 1854.6,
+          "max_x": 1963.4,
+          "max_y": 1865.4
+        },
+        {
+          "id": "landmark_barge_crane_piling_e",
+          "min_x": 2036.6,
+          "min_y": 1854.6,
+          "max_x": 2047.4,
+          "max_y": 1865.4
+        },
+        {
+          "id": "cliff_tidal_headland_sheer_stack",
+          "min_x": 1662.1,
+          "min_y": 1722.1,
+          "max_x": 1817.9,
+          "max_y": 1877.9
+        }
+      ],
+      "spawnAreas": [
+        {
+          "id": "rooktide_reach_rookshade",
+          "x": 2144.7,
+          "y": 1936.0,
+          "width": 150.0,
+          "height": 150.0,
+          "mobType": "mob-rookshade",
+          "count": 3
+        },
+        {
+          "id": "rooktide_reach_thatch_mite",
+          "x": 1572.4,
+          "y": 1878.7,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-thatch-mite",
+          "count": 4
+        },
+        {
+          "id": "rooktide_reach_tideflat_nipper",
+          "x": 1985.8,
+          "y": 1444.5,
+          "width": 160.0,
+          "height": 160.0,
+          "mobType": "mob-tideflat-nipper",
+          "count": 4
+        },
+        {
+          "id": "rooktide_reach_saltmarsh_wisp",
+          "x": 1903.1,
+          "y": 2534.6,
+          "width": 150.0,
+          "height": 150.0,
+          "mobType": "mob-saltmarsh-wisp",
+          "count": 3
+        },
+        {
+          "id": "rooktide_reach_tideline_drowner",
+          "x": 1287.4,
+          "y": 1576.9,
+          "width": 130.0,
+          "height": 130.0,
+          "mobType": "mob-tideline-drowner",
+          "count": 2
+        }
+      ]
+    }
+  }
+}

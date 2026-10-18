@@ -78,7 +78,40 @@ pub fn load_generated_region_config(region_id: &str) -> Option<MapConfig> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::content::map::{MapSpawnArea, StaticObstacle};
     use crate::simulation::AtlasSimulation;
+    use serde::Deserialize;
+    use std::collections::HashMap;
+
+    const CLIENT_GENERATED_WORLD_MAPS_JSON: &str =
+        include_str!("../../../client/react-client/src/data/generatedWorldMaps.json");
+
+    #[derive(Deserialize)]
+    struct ClientWorldMapsManifest {
+        #[serde(rename = "millcrossTownFootprints")]
+        millcross_town_footprints: Vec<StaticObstacle>,
+        #[serde(rename = "playMapSpawnAreas")]
+        play_map_spawn_areas: Vec<MapSpawnArea>,
+        regions: HashMap<String, ClientRegionManifest>,
+    }
+
+    #[derive(Deserialize)]
+    struct ClientRegionManifest {
+        width: f32,
+        height: f32,
+        #[serde(rename = "playerSpawn")]
+        player_spawn: ClientSpawnPoint,
+        #[serde(rename = "staticObstacles")]
+        static_obstacles: Vec<StaticObstacle>,
+        #[serde(rename = "spawnAreas")]
+        spawn_areas: Vec<MapSpawnArea>,
+    }
+
+    #[derive(Deserialize)]
+    struct ClientSpawnPoint {
+        x: f32,
+        y: f32,
+    }
 
     #[test]
     fn resolves_and_loads_generated_world_regions_with_authored_spawns_and_obstacles() {
@@ -112,5 +145,34 @@ mod tests {
             "expected millcross-ford mobs to spawn, got {}",
             frame.entities.len()
         );
+    }
+
+    #[test]
+    fn client_manifest_matches_server_obstacles_and_spawns_with_zero_diff() {
+        let client_manifest: ClientWorldMapsManifest =
+            serde_json::from_str(CLIENT_GENERATED_WORLD_MAPS_JSON).unwrap();
+
+        let play_cfg = MapConfig::load("map-for-play");
+        assert_eq!(
+            client_manifest.millcross_town_footprints,
+            play_cfg.static_obstacles
+        );
+        assert_eq!(client_manifest.play_map_spawn_areas, play_cfg.spawn_areas);
+
+        for &region_id in &GENERATED_REGION_IDS {
+            let server_cfg = MapConfig::load(region_id);
+            let client_reg = client_manifest
+                .regions
+                .get(region_id)
+                .unwrap_or_else(|| panic!("client manifest missing region {region_id}"));
+            assert_eq!(client_reg.width, server_cfg.width);
+            assert_eq!(client_reg.height, server_cfg.height);
+            assert_eq!(
+                Some((client_reg.player_spawn.x, client_reg.player_spawn.y)),
+                server_cfg.player_spawn
+            );
+            assert_eq!(client_reg.static_obstacles, server_cfg.static_obstacles);
+            assert_eq!(client_reg.spawn_areas, server_cfg.spawn_areas);
+        }
     }
 }
