@@ -52,7 +52,7 @@ pub use protocol::{
 pub use simulation::{
     AtlasSimulation, EntityTraceSnapshot, FinalSummary, SimulationTrace, TickTraceSnapshot,
 };
-pub use spatial::SpatialGrid;
+pub use spatial::{AoiTracker, SpatialGrid};
 pub use systems::{
     bot_steering_system, combat_system, cooldown_tick_system, mob_ai_system, mob_lifecycle_system,
     physics_step_system, player_input_system, projectile_collision_system,
