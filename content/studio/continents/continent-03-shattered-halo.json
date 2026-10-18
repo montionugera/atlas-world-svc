@@ -58,7 +58,7 @@
     "in_world_rumor": "Airship captains refuse to fly beyond the Aphelion Halo Rim; they claim the outermost starlight chains drift into a silent sea of crystallized comets.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
     "unanswered_question": "What sleeps along the Aphelion Halo Rim where Vesper's outermost gravity ring meets the comet drift?",
-    "discovery_trigger_hint": "Five core Districts on Continent 03 are Canon; Aphelion Halo Rim is preserved as an intentional Mystery frontier."
+    "discovery_trigger_hint": "Five core Districts on Continent 03 are Canon; Aphelion Halo Rim is in Draft."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -75,11 +75,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes five Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss) plus Aphelion Halo Rim (Mystery)."
+      "evidence": "Organizes five Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss) plus Aphelion Halo Rim (Draft)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Aphelion Halo Rim in Mystery status and leaf Mystery nodes behind fog_of_lore gates."
+      "evidence": "Preserves Aphelion Halo Rim in Draft status with Mystery child Comet-Tether Span and leaf Mystery nodes behind fog_of_lore gates."
     }
   }
 }

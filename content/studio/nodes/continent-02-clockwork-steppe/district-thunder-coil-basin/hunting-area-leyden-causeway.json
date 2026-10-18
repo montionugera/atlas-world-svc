@@ -2,12 +2,12 @@
   "schema_version": "1.0.0",
   "id": "hunting-area-leyden-causeway",
   "name": "Leyden Capacitor Causeway",
-  "map_id": null,
+  "map_id": "leyden-causeway",
   "parent_district_id": "district-thunder-coil-basin",
   "parent_continent_id": "continent-02-clockwork-steppe",
   "node_type": "hunting_area",
-  "status": "mystery",
-  "core_rationale": "Western glass-and-copper inductor causeway of Thunder-Coil Basin at [0, 1] linking The Gilded Exhaust Flues to Krono's eastern Leyden-jar towers.",
+  "status": "canon",
+  "core_rationale": "Western glass-and-copper inductor causeway of Thunder-Coil Basin at [0, 1] linking Bellows Hearth in The Gilded Exhaust Flues to Krono's eastern Leyden-jar towers.",
   "is_starter_town": false,
   "grid_coordinates": [
     0,
@@ -18,31 +18,154 @@
     32,
     34
   ],
-  "mystery_hook": {
-    "in_world_rumor": "Spark-wrights claim the glass Leyden rails glow bright cyan three seconds before a Clock-Gale sweeps the plateau.",
-    "visual_silhouette": "Elevated copper viaducts lined with glowing blue glass capacitor bottles.",
-    "unanswered_question": "Where does the western grounding rail of Leyden Capacitor Causeway join Bellows Hearth?"
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/nature/rock_tall_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_leyden_causeway",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Insulated glass cooling-troughs where cyan static sparks dance harmlessly across distilled water"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-leyden-causeway-east-switchyard",
+      "direction": "East",
+      "target_node_id": "town-inductor-switchyard",
+      "target_map_id": "inductor-switchyard",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-leyden-causeway-west-bellows",
+      "direction": "West",
+      "target_node_id": "town-bellows-hearth",
+      "target_map_id": "bellows-hearth",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-leyden-causeway-beetle",
+      "monster_id": "monster-leyden-bottle-beetle",
+      "monster_name": "Leyden Bottle-Beetle",
+      "spawn_count": 12,
+      "respawn_seconds": 25,
+      "level": 32,
+      "element": "Wind",
+      "size": "Small",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-charged-copper-foil",
+          "item_name": "Charged Copper-Foil",
+          "drop_chance_percent": 45.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-leyden-bottle-beetle",
+        "card_name": "Leyden Bottle-Beetle Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Accessory",
+        "modifier_summary": "Increases Attack Speed by 4% and Wind resistance by 10%."
+      }
+    },
+    {
+      "spawn_id": "spawn-leyden-causeway-mote",
+      "monster_id": "monster-corona-arc-mote",
+      "monster_name": "Corona-Arc Mote",
+      "spawn_count": 10,
+      "respawn_seconds": 30,
+      "level": 34,
+      "element": "Wind",
+      "size": "Small",
+      "race": "Formless",
+      "family": "elemental",
+      "item_drops": [
+        {
+          "item_id": "item-static-amber-bead",
+          "item_name": "Static Amber-Bead",
+          "drop_chance_percent": 40.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-corona-arc-mote",
+        "card_name": "Corona-Arc Mote Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Garment",
+        "modifier_summary": "Adds +6 Dodge and 15% resistance to Wind elemental attacks."
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.22,
+    "max_bush_height_meters": 0.46,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.15,
+      "width": 1.65
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/nature/rock_tall_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/barrel.glb"
+    ]
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Serves as the western entry causeway of Thunder-Coil Basin along scar-brass-faultline."
+      "evidence": "Connects Bellows Hearth (West) to Inductor Switchyard (East) along Krono's eastern copper grounding fault."
     },
     "fantasy_and_wonder": {
       "verified": true,
       "evidence": "Elevated copper viaducts flanked by singing cyan glass Leyden-jar towers."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+      "verified": true,
+      "evidence": "Enforces 0.22m copper-grass, 0.46m static-shrubs, 0.14m cog-steps, and 12.5m catwalks for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-thunder-coil-basin."
+      "verified": true,
+      "evidence": "Symmetric West/East portals and Level 32 to 34 construct/elemental spawns matching district-thunder-coil-basin."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Maintains map_id: null and complete mystery_hook until Thunder-Coil Basin is promoted to Canon."
+      "evidence": "Promoted cleanly from Mystery to Canon with full five-pillar verification."
     }
   }
 }

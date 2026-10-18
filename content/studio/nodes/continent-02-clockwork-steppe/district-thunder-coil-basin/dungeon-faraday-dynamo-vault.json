@@ -1,0 +1,154 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-faraday-dynamo-vault",
+  "name": "Faraday Dynamo Vault B1",
+  "map_id": "faraday-dynamo-vault-b1",
+  "parent_district_id": "district-thunder-coil-basin",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Subterranean copper-coil dynamo chamber beneath Inductor Switchyard at [1, 1] floor -1 where Krono the Brass Titan's grounded fingers spin a perpetual electromagnetic rotor.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    34,
+    36
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_faraday_dynamo_dungeon",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Insulated oil-and-water cooling trenches ringing the central copper dynamo rotor"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-faraday-dynamo-exit-switchyard",
+      "direction": "Exit",
+      "target_node_id": "town-inductor-switchyard",
+      "target_map_id": "inductor-switchyard",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3780.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-faraday-dynamo-coil",
+      "monster_id": "monster-inductor-coil-automaton",
+      "monster_name": "Inductor Coil-Automaton",
+      "spawn_count": 10,
+      "respawn_seconds": 28,
+      "level": 34,
+      "element": "Wind",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-braided-stator-wire",
+          "item_name": "Braided Stator-Wire",
+          "drop_chance_percent": 42.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-inductor-coil-automaton",
+        "card_name": "Inductor Coil-Automaton Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Weapon",
+        "modifier_summary": "Adds +10% Wind elemental damage and +5 Hit."
+      }
+    },
+    {
+      "spawn_id": "spawn-faraday-dynamo-archon",
+      "monster_id": "monster-faraday-arc-sentinel",
+      "monster_name": "Faraday Arc-Sentinel",
+      "spawn_count": 8,
+      "respawn_seconds": 35,
+      "level": 36,
+      "element": "Wind",
+      "size": "Large",
+      "race": "Formless",
+      "family": "elemental",
+      "item_drops": [
+        {
+          "item_id": "item-faraday-grounding-rod-core",
+          "item_name": "Faraday Grounding-Rod Core",
+          "drop_chance_percent": 35.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-faraday-arc-sentinel",
+        "card_name": "Faraday Arc-Sentinel Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Armor",
+        "modifier_summary": "Reduces Wind damage by 20% and grants +8 Defense."
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.38,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Houses Krono's grounded copper-finger dynamo beneath Inductor Switchyard at [1, 1] floor -1."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A spinning copper-coil dynamo chamber lit by harmless cyan Faraday cages."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 0.14m risers, 2.20m x 1.65m Faraday archways, and 12.5m catwalks for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric Exit portal to town-inductor-switchyard and Level 34 to 36 construct/elemental spawns."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops Faraday Grounding-Rod Cores referenced by the Corona-Arc Cliff fog_of_lore gate."
+    }
+  }
+}
