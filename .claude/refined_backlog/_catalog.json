@@ -1216,9 +1216,11 @@
     "from_idea": "I-204",
     "created_at": "2026-10-18T08:21:51.800444+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
-    "claimed_at": "2026-10-18T08:21:57.978589+00:00"
+    "status": "shipped",
+    "release_version": "1.15",
+    "claimed_at": "2026-10-18T08:21:57.978589+00:00",
+    "shipped_at": "2026-10-18T08:37:27.476559+00:00",
+    "shipped_sha": "c53285c1ccb071a8c7f8ffebce5711b1fc5a357f"
   },
   {
     "id": "F-098",
