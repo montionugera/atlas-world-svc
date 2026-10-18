@@ -56,9 +56,9 @@
     "district-helical-gear-trench"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Tinkers say the spiral worm-drives of Helical-Gear Trench bore fifty meters into the copper bedrock, turning underground wind-turbines that never stall.",
+    "in_world_rumor": "Tinkers say the northern Bevel-Pinion Overlook in Helical-Gear Trench transfers torque at a ninety-degree angle straight into the cliffside.",
     "visual_silhouette": "Colossal brass wheel-rims rising two hundred meters above golden short-grass plains.",
-    "unanswered_question": "What subterranean worm-gear foundry turns at the bottom of Helical-Gear Trench?"
+    "unanswered_question": "What subterranean worm-gear foundry turns beyond Bevel-Pinion Overlook?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -75,11 +75,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes six Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin, West Pendulum Steppe) plus Helical-Gear Trench (Draft)."
+      "evidence": "Organizes all seven Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin, West Pendulum Steppe, Helical-Gear Trench)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Helical-Gear Trench to Draft while keeping Spiral Wormway Ramp in Mystery status."
+      "evidence": "Promotes Helical-Gear Trench to Canon while preserving leaf Mystery frontier Bevel-Pinion Overlook behind a Fog of Lore portal."
     }
   }
 }

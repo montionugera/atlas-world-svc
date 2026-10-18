@@ -1,0 +1,151 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-worm-drive-gearbox",
+  "name": "Worm-Drive Gearbox B1",
+  "map_id": "worm-drive-gearbox-b1",
+  "parent_district_id": "district-helical-gear-trench",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Subterranean bronze reduction-gear vault beneath Helical Torque Hub at [1, 1] (floor -1) where interlocking helical shafts step down Krono's mainspring torque.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    39,
+    40
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_worm_drive_gearbox_dungeon",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Warm amber lubrication channels beneath the interlocking bronze worm-gears"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-worm-gearbox-exit-torque-hub",
+      "direction": "Exit",
+      "target_node_id": "town-helical-torque-hub",
+      "target_map_id": "helical-torque-hub",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 2040.0
+      }
+    }
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-worm-clutch-automaton",
+      "monster_id": "monster-worm-clutch-automaton",
+      "monster_name": "Worm-Clutch Automaton",
+      "spawn_count": 7,
+      "respawn_seconds": 32,
+      "level": 39,
+      "element": "Earth",
+      "size": "Large",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-bronze-clutch-plate",
+          "item_name": "Bronze Clutch Plate",
+          "drop_chance_percent": 38.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-worm-clutch-automaton",
+        "card_name": "Worm-Clutch Automaton Card",
+        "drop_chance_percent": 0.05,
+        "card_effect": "Increases Physical Defense by 6% and reduces Stun duration by 20%."
+      }
+    },
+    {
+      "spawn_id": "spawn-gearbox-salamander",
+      "monster_id": "monster-gearbox-salamander",
+      "monster_name": "Gearbox Oil-Salamander",
+      "spawn_count": 5,
+      "respawn_seconds": 36,
+      "level": 40,
+      "element": "Fire",
+      "size": "Medium",
+      "race": "Dragon",
+      "family": "reptile",
+      "item_drops": [
+        {
+          "item_id": "item-warm-gear-grease-gland",
+          "item_name": "Warm Gear-Grease Gland",
+          "drop_chance_percent": 32.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-gearbox-salamander",
+        "card_name": "Gearbox Oil-Salamander Card",
+        "drop_chance_percent": 0.04,
+        "card_effect": "Grants +5% Fire resistance and +5% Attack Speed inside mechanical dungeons."
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.14,
+    "max_bush_height_meters": 0.35,
+    "stair_riser_height_meters": 0.15,
+    "shop_counter_height_meters": 0.6,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/dungeon/pillar.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Subterranean reduction-gear vault beneath Helical Torque Hub powered by Krono's threaded drive shafts."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Interlocking bronze worm-gears and amber oil channels patrolled by clockwork automatons."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.15m catwalk risers, 2.20m x 1.65m bulkhead hatches, and 12.5m service galleries for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Floor -1 dungeon at [1, 1] with symmetric Exit portal to town-helical-torque-hub and construct/reptile spawns."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Houses the Bronze Worm-Clutch Key lore hook required to unlock the northern Bevel-Pinion Overlook."
+    }
+  }
+}
