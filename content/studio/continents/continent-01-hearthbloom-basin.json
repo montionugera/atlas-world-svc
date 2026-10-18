@@ -51,7 +51,8 @@
     "district-kilnfire-terraces",
     "district-ash-bellows-trench",
     "district-porcelain-cradle",
-    "district-amber-root-hollows"
+    "district-amber-root-hollows",
+    "district-glaze-river-delta"
   ],
   "quality_checklist": {
     "causal_continuity": {
@@ -68,11 +69,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Spans Levels 1 to 18 across all five Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench, Porcelain Cradle, Amber-Root Hollows)."
+      "evidence": "Spans five Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench, Porcelain Cradle, Amber-Root Hollows) plus Glaze-River Delta (Mystery)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Mystery leaf nodes (Whispering Mire, Slag Chasm, Glaze Flue Vent, Lotus Kiln Rim, Banyan Canopy Spur) behind fog_of_lore gates."
+      "evidence": "Preserves Glaze-River Delta in Mystery status and leaf Mystery nodes behind fog_of_lore gates."
     }
   }
 }

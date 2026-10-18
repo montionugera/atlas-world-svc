@@ -55,9 +55,9 @@
     "district-pendulum-steppe-west"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Tinkers say the deepest canyon gear in West Pendulum Steppe swings a hundred-meter brass bob that parts the tall copper-grass once every hour.",
+    "in_world_rumor": "Tinkers say the northern Deadbeat Escapement Bluff in West Pendulum Steppe locks its hundred-meter brass pallet-arms once every full second, shaking copper dew off the grass.",
     "visual_silhouette": "Colossal brass wheel-rims rising two hundred meters above golden short-grass plains.",
-    "unanswered_question": "What ancient wind-chronometer is regulated by the buried pendulum canyon of West Pendulum Steppe?"
+    "unanswered_question": "What ancient wind-chronometer is regulated by the northern Deadbeat Escapement Bluff of West Pendulum Steppe?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -74,11 +74,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes five Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin) plus West Pendulum Steppe (Draft)."
+      "evidence": "Organizes six Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin, and West Pendulum Steppe) in a connected brass plateau ring."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves West Pendulum Steppe in Draft status with Mystery child Metronome Suspension Bridge while keeping the Astrolabe Gate open to Continent 03."
+      "evidence": "Promotes West Pendulum Steppe to Canon while preserving leaf Mystery frontier Deadbeat Escapement Bluff behind a Fog of Lore portal."
     }
   }
 }

@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-deadbeat-escapement-bluff",
+  "name": "Deadbeat Escapement Bluff",
+  "map_id": null,
+  "parent_district_id": "district-pendulum-steppe-west",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern cliff-top escapement ridge of West Pendulum Steppe at [1, 0] where hundred-meter brass pallet-arms lock and release the Great Pendulum once per second.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    37,
+    38
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Tinkers say that standing on Deadbeat Escapement Bluff when the brass pallet-arms lock makes every pocket-watch in your pack chime in harmony.",
+    "visual_silhouette": "Twin curved brass pallet-arms thirty meters tall biting into a notched escapement wheel on the northern cliff rim.",
+    "unanswered_question": "What wind-chronometer citadel lies beyond the locked pallet-arms of Deadbeat Escapement Bluff?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Forms the northern escapement ridge of West Pendulum Steppe along scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Thirty-meter brass pallet-arms locking a notched escapement wheel once every second on the cliff rim."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of town-metronome-pivot-citadel behind a Fog of Lore portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind portal-pivot-citadel-north-fog."
+    }
+  }
+}

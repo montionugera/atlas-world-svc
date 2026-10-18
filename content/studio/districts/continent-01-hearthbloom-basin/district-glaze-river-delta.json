@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-glaze-river-delta",
+  "name": "Glaze-River Delta",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "status": "mystery",
+  "core_rationale": "Southern warm ceramic-silt river delta of Continent 01 where Sola's kiln-heated streams fan out across iridescent cobalt-and-gold glaze sandbars.",
+  "local_conflict": "Glaze-shell river turtles and ceramic-silt sprites guard the sunken potter-barges along the delta channels.",
+  "level_band_label": "Levels 1 to 20",
+  "level_range": [
+    18,
+    20
+  ],
+  "ecological_monster_families": [
+    "aquatic",
+    "construct"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Barge-potters say the warm river-clay in Glaze-River Delta hardens into waterproof blue porcelain the moment the noon sun touches the sandbars.",
+    "visual_silhouette": "Braided warm-water channels winding between shimmering cobalt-glazed sandbars and giant terracotta waterwheels.",
+    "unanswered_question": "What ancient kiln-barge lighthouse anchors the outer mouth of Glaze-River Delta?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin along the southern thermal outflow of Continent 01."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Warm thermal river channels winding through iridescent cobalt-and-gold ceramic sandbars."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: barge-dock counter and terracotta stepping-stone metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the southern delta District frontier on Continent 01 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}
