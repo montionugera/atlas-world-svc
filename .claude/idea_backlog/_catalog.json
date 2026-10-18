@@ -1431,5 +1431,11 @@
     "title": "Promote district-celestial-astrolabe-atoll to Canon on Continent 03 with 4 leaf nodes and seed district-thermal-compensator-basin on Continent 02",
     "created_at": "2026-10-18T14:39:30.994114+00:00",
     "promoted_to": "F-137"
+  },
+  {
+    "id": "I-228",
+    "title": "Cap Gate 1 test and build worker concurrency in scripts/precheck.sh to prevent OOM freezes",
+    "created_at": "2026-10-18T15:55:04.767773+00:00",
+    "promoted_to": null
   }
 ]
