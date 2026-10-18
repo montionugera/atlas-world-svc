@@ -1354,7 +1354,10 @@ impl AtlasSimulation {
             ))
             .id();
 
-        self.world.entity_mut(entity).insert(DashState::default());
+        self.world.entity_mut(entity).insert((
+            DashState::default(),
+            crate::ecs::components::ParryState::default(),
+        ));
         entity
     }
 

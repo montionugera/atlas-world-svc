@@ -45,8 +45,10 @@ pub use core::{Lcg, Mulberry32, SimClock};
 pub use ecs::{
     AiAgent, AiState, AttackFacingCone, BotAgent, CastingState, CombatStats, CooldownTracker,
     DashState, DeadMobTracker, ElementalAttributes, EntityId, Health, Mass, MobAi, MobSpawnAnchor,
-    MobTag, MobWindupConfig, PlayerInputState, PlayerTag, Position, Projectile, StatusEffects,
-    Velocity, MOB_FACING_CONE_HALF_ANGLE_COS, MOB_WINDUP_DURATION_SEC,
+    MobTag, MobWindupConfig, Parried, ParryState, PlayerInputState, PlayerTag, Position,
+    Projectile, StatusEffects, Velocity, MAX_PARRY_CHARGES, MAX_PARRY_HOLD_WINDOW_SEC,
+    MOB_FACING_CONE_HALF_ANGLE_COS, MOB_WINDUP_DURATION_SEC, PARRY_COOLDOWN_SEC,
+    PARRY_REFLECT_STAGGER_SEC,
 };
 pub use physics::{PhysicsWorld, RapierBodyHandle, RapierColliderHandle};
 pub use protocol::{
@@ -58,7 +60,7 @@ pub use simulation::{
 pub use spatial::{AoiTracker, SpatialGrid};
 pub use systems::{
     bot_steering_system, combat_system, cooldown_tick_system, mob_ai_system, mob_lifecycle_system,
-    physics_step_system, player_input_system, projectile_collision_system,
+    parry_tick_system, physics_step_system, player_input_system, projectile_collision_system,
     projectile_kinematics_system, separation_system, skill_execution_system,
     spatial_grid_rebuild_system, status_effect_tick_system, ArenaBounds,
 };

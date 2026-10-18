@@ -3,7 +3,8 @@ use crate::combat::{DamageCalculator, DamageOptions, SkillEffect};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
     knockback_speed, AttackFacingCone, ElementalAttributes, Health, HitLog, HitRecord, Mass,
-    MobTag, Parried, PlayerInputState, PlayerTag, Position, Projectile, StatusEffects, Velocity,
+    MobTag, Parried, ParryState, PlayerInputState, PlayerTag, Position, Projectile, StatusEffects,
+    Velocity, PARRY_REFLECT_STAGGER_SEC,
 };
 use crate::spatial::grid::SpatialGrid;
 use bevy_ecs::prelude::*;
@@ -55,6 +56,7 @@ pub fn projectile_collision_system(
             Option<&mut Velocity>,
             Option<&Mass>,
             Option<&PlayerInputState>,
+            Option<&mut ParryState>,
         ),
         Without<Projectile>,
     >,
@@ -99,7 +101,7 @@ pub fn projectile_collision_system(
 
         // Fallback for isolated tests where spatial grid was not rebuilt
         if hit_target.is_none() {
-            for (t_entity, t_pos, t_health, _, _, is_player, is_mob, _, _, _, _) in &targets {
+            for (t_entity, t_pos, t_health, _, _, is_player, is_mob, _, _, _, _, _) in &targets {
                 if t_entity == proj.owner || !t_health.is_alive {
                     continue;
                 }
@@ -130,6 +132,7 @@ pub fn projectile_collision_system(
                 mut opt_vel,
                 opt_mass,
                 opt_input,
+                mut opt_parry,
             )) = targets.get_mut(target_entity)
             {
                 if !health.is_alive {
@@ -148,7 +151,8 @@ pub fn projectile_collision_system(
 
                 // Check for Melee Attack Parry / Deflection:
                 // If projectile is an enemy projectile and target is a player swinging an attack:
-                let is_parry = if !proj.is_player_projectile && is_player {
+                let can_parry_now = opt_parry.as_ref().is_none_or(|p| p.can_parry());
+                let is_parry = if !proj.is_player_projectile && is_player && can_parry_now {
                     if let Some(input) = opt_input {
                         if input.attack {
                             let dx = pos.x - t_pos.x;
@@ -192,6 +196,9 @@ pub fn projectile_collision_system(
                 }
 
                 if is_parry {
+                    if let Some(ref mut parry) = opt_parry {
+                        parry.record_parry();
+                    }
                     commands.entity(proj_entity).insert(Parried);
 
                     let dx = pos.x - t_pos.x;
@@ -292,7 +299,7 @@ pub fn projectile_collision_system(
                     }
 
                     if aoe_victims.is_empty() {
-                        for (v_entity, v_pos, v_health, _, _, is_p, is_m, _, _, _, _) in
+                        for (v_entity, v_pos, v_health, _, _, is_p, is_m, _, _, _, _, _) in
                             targets.iter()
                         {
                             if v_entity == proj.owner || !v_health.is_alive {
@@ -326,6 +333,7 @@ pub fn projectile_collision_system(
                             v_threat,
                             mut v_vel,
                             v_mass,
+                            _,
                             _,
                         )) = targets.get_mut(victim)
                         {
@@ -482,6 +490,9 @@ pub fn projectile_collision_system(
 
                     if let Some(ref mut status) = opt_status {
                         status.apply_knockback(0.2);
+                        if already_parried && _is_mob {
+                            status.apply_stun(PARRY_REFLECT_STAGGER_SEC);
+                        }
                         for effect in &proj.effects {
                             match effect {
                                 SkillEffect::Freeze {
@@ -499,6 +510,9 @@ pub fn projectile_collision_system(
                     } else {
                         let mut status = StatusEffects::default();
                         status.apply_knockback(0.2);
+                        if already_parried && _is_mob {
+                            status.apply_stun(PARRY_REFLECT_STAGGER_SEC);
+                        }
                         for effect in &proj.effects {
                             match effect {
                                 SkillEffect::Freeze {

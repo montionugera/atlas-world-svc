@@ -4,7 +4,7 @@ use crate::combat::{DamageType, Element};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
     knockback_speed, CombatStats, CooldownTracker, ElementalAttributes, EntityId, Health, HitLog,
-    HitRecord, Mass, MobAi, MobSpawnAnchor, PlayerAvatar, PlayerInputState, Position,
+    HitRecord, Mass, MobAi, MobSpawnAnchor, ParryState, PlayerAvatar, PlayerInputState, Position,
     StatusEffects, Velocity,
 };
 use crate::spatial::grid::SpatialGrid;
@@ -29,6 +29,7 @@ pub fn combat_system(
                 Option<&PlayerAvatar>,
                 Option<&mut PlayerInputState>,
                 Option<&ElementalAttributes>,
+                Option<&mut ParryState>,
             ),
             Without<MobAi>,
         >,
@@ -53,12 +54,17 @@ pub fn combat_system(
         // Mobs with MobAi are excluded: mob_ai_system owns their attacks and their single
         // per-tick cooldown decrement.
         let mut attackers = params.p0();
-        for (entity, pos, mut stats, health, entity_id, avatar, mut input, attrs) in &mut attackers
+        for (entity, pos, mut stats, health, entity_id, avatar, mut input, attrs, mut opt_parry) in
+            &mut attackers
         {
             // Consume the attack latch every tick, whether or not a swing happens. Clearing
             // it only on a landed swing left a released tap armed forever when nothing was in
             // reach, and projectile_collision_system reads that flag as "parrying".
             let wants_attack = input.as_ref().is_some_and(|i| i.attack);
+            let holding_attack = input.as_ref().is_some_and(|i| i.attack || i.attack_held);
+            if let Some(ref mut parry) = opt_parry {
+                parry.tick_hold(dt, holding_attack);
+            }
             if let Some(ref mut inp) = input {
                 inp.attack = inp.attack_held;
             }
@@ -245,6 +251,19 @@ pub fn cooldown_tick_system(clock: Res<SimClock>, mut query: Query<&mut Cooldown
             *remaining -= dt;
             *remaining > 0.0
         });
+    }
+}
+
+pub fn parry_tick_system(
+    clock: Res<SimClock>,
+    mut query: Query<(&PlayerInputState, &mut ParryState)>,
+) {
+    let dt = clock.delta_seconds();
+    if dt <= 0.0 {
+        return;
+    }
+    for (input, mut parry) in &mut query {
+        parry.tick_hold(dt, input.attack || input.attack_held);
     }
 }
 

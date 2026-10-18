@@ -701,6 +701,85 @@ pub struct Projectile {
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Parried;
 
+/// Maximum continuous hold window (seconds) during which holding attack can parry incoming projectiles.
+pub const MAX_PARRY_HOLD_WINDOW_SEC: f32 = 0.4;
+/// Maximum consecutive parry deflections before parry stamina enters recovery cooldown.
+pub const MAX_PARRY_CHARGES: u8 = 2;
+/// Recovery cooldown (seconds) after exhausting parry charges or exceeding the active hold window.
+pub const PARRY_COOLDOWN_SEC: f32 = 1.5;
+/// Stagger/stun duration (seconds) applied to a mob struck by its own reflected projectile.
+pub const PARRY_REFLECT_STAGGER_SEC: f32 = 0.6;
+
+/// Tracks active parry window, remaining deflection charges, and recovery cooldown for a player (E-007 Slice 2).
+#[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ParryState {
+    pub max_hold_window_sec: f32,
+    pub active_hold_sec: f32,
+    pub max_charges: u8,
+    pub charges: u8,
+    pub cooldown_sec: f32,
+    pub cooldown_timer: f32,
+    pub reflect_stagger_sec: f32,
+}
+
+impl Default for ParryState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl ParryState {
+    pub fn new() -> Self {
+        Self {
+            max_hold_window_sec: MAX_PARRY_HOLD_WINDOW_SEC,
+            active_hold_sec: 0.0,
+            max_charges: MAX_PARRY_CHARGES,
+            charges: MAX_PARRY_CHARGES,
+            cooldown_sec: PARRY_COOLDOWN_SEC,
+            cooldown_timer: 0.0,
+            reflect_stagger_sec: PARRY_REFLECT_STAGGER_SEC,
+        }
+    }
+
+    /// True when the player is within the active parry window, has at least one parry charge,
+    /// and is not on parry recovery cooldown.
+    pub fn can_parry(&self) -> bool {
+        self.cooldown_timer <= 0.0
+            && self.charges > 0
+            && self.active_hold_sec <= self.max_hold_window_sec
+    }
+
+    /// Consumes one parry charge and enters recovery cooldown when charges reach zero.
+    pub fn record_parry(&mut self) {
+        self.charges = self.charges.saturating_sub(1);
+        if self.charges == 0 {
+            self.cooldown_timer = self.cooldown_sec;
+        }
+    }
+
+    /// Advances the active hold timer and recovery cooldown for a simulation tick (`dt` seconds).
+    pub fn tick_hold(&mut self, dt: f32, attack_held: bool) {
+        if self.cooldown_timer > 0.0 {
+            self.cooldown_timer = (self.cooldown_timer - dt).max(0.0);
+            if self.cooldown_timer <= 0.0 && !attack_held {
+                self.charges = self.max_charges;
+                self.active_hold_sec = 0.0;
+            }
+        }
+        if attack_held {
+            self.active_hold_sec += dt;
+            if self.active_hold_sec > self.max_hold_window_sec && self.cooldown_timer <= 0.0 {
+                self.cooldown_timer = self.cooldown_sec;
+            }
+        } else {
+            self.active_hold_sec = 0.0;
+            if self.cooldown_timer <= 0.0 {
+                self.charges = self.max_charges;
+            }
+        }
+    }
+}
+
 #[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PlayerInputState {
     pub move_x: f32,
