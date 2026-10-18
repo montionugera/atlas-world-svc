@@ -74,11 +74,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes five Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin) plus West Pendulum Steppe (Mystery)."
+      "evidence": "Organizes five Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin) plus West Pendulum Steppe (Draft)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves West Pendulum Steppe in Mystery status and leaf Mystery nodes behind fog_of_lore gates while keeping the Astrolabe Gate open to Continent 03."
+      "evidence": "Preserves West Pendulum Steppe in Draft status with Mystery child Metronome Suspension Bridge while keeping the Astrolabe Gate open to Continent 03."
     }
   }
 }

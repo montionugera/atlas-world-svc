@@ -3,7 +3,7 @@
   "id": "district-pendulum-steppe-west",
   "name": "West Pendulum Steppe",
   "parent_continent_id": "continent-02-clockwork-steppe",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Western wind-swept pendulum gorge of Continent 02 where Krono the Brass Titan's metronome counterweight swings across a chasm of singing copper reeds.",
   "local_conflict": "Wind-up gale-hounds and metronome-constructs patrol the brass suspension cables spanning the pendulum gorge.",
   "level_band_label": "Levels 21 to 40",
@@ -19,7 +19,24 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-metronome-bridge",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        34,
+        36
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Glider scouts claim that if you catch the updraft of the Great Pendulum's swing at noon, you can soar straight across the chasm without flapping once.",
@@ -36,16 +53,16 @@
       "evidence": "A colossal sun-burnished brass pendulum swinging between twin copper cliffs of singing reeds."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: brass suspension-bridge and wind-shelter doorway metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Specifies 12.5m brass suspension-bridges, 0.60m chronometer benches, and 0.14m cog-steps for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the western pendulum gorge District frontier on Continent 02 with zero filler maps."
+      "evidence": "Draft status: awaiting playable leaf map authoring for Metronome Bridge and Pendulum Anchor Town."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Provides complete mystery_hook and reserves hunting-area-metronome-bridge as a Mystery frontier."
     }
   }
 }

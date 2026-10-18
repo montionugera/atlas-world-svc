@@ -52,13 +52,14 @@
     "district-nebula-undertide",
     "district-zenith-crown",
     "district-perigee-abyss",
-    "district-aphelion-halo-rim"
+    "district-aphelion-halo-rim",
+    "district-libration-mirror-shoals"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Airship captains refuse to fly beyond the Outer Orbit Drift; they claim the outermost starlight chains drift into a silent sea of crystallized comets.",
+    "in_world_rumor": "Airship captains say the mirror-flat tide pools of Libration Mirror Shoals reflect constellations from before the Clockspring War.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
-    "unanswered_question": "What sleeps beyond the Outer Orbit Drift where Vesper's outermost gravity ring meets the comet drift?",
-    "discovery_trigger_hint": "All six Districts on Continent 03 (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss, Aphelion Halo Rim) are Canon."
+    "unanswered_question": "What sleeps beneath the silver tide-mirrors of Libration Mirror Shoals?",
+    "discovery_trigger_hint": "Six core Districts on Continent 03 are Canon; Libration Mirror Shoals is preserved as an intentional Mystery frontier."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -75,11 +76,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes all six Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss, Aphelion Halo Rim) across Levels 30 to 50."
+      "evidence": "Organizes six Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss, Aphelion Halo Rim) plus Libration Mirror Shoals (Mystery)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Mystery leaf nodes (Mirror Cascade, Apogee Spire, Abyssal Barometer, Solstice Anchor, Maelstrom Eye Lip, Outer Orbit Drift) behind fog_of_lore gates."
+      "evidence": "Preserves Libration Mirror Shoals in Mystery status and leaf Mystery nodes behind fog_of_lore gates."
     }
   }
 }

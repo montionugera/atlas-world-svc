@@ -215,6 +215,24 @@
       ]
     },
     {
+      "mapId": "sap-heart-cistern-b1",
+      "nodeId": "dungeon-sap-heart-cistern",
+      "name": "Sap-Heart Cistern B1",
+      "districtId": "district-amber-root-hollows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        16,
+        18
+      ]
+    },
+    {
       "mapId": "star-heart-nave-b1",
       "nodeId": "dungeon-star-heart-nave",
       "name": "Star-Heart Nave",
@@ -521,6 +539,24 @@
       ]
     },
     {
+      "mapId": "resin-arch-tunnel",
+      "nodeId": "hunting-area-resin-arch-tunnel",
+      "name": "Resin-Arch Tunnel",
+      "districtId": "district-amber-root-hollows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        14,
+        16
+      ]
+    },
+    {
       "mapId": "siphon-sluice",
       "nodeId": "hunting-area-siphon-sluice",
       "name": "The Verdigris Siphon Sluiceway",
@@ -809,6 +845,24 @@
       ]
     },
     {
+      "mapId": "root-train-roundhouse",
+      "nodeId": "town-root-train-roundhouse",
+      "name": "Root-Train Roundhouse",
+      "districtId": "district-amber-root-hollows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        15,
+        17
+      ]
+    },
+    {
       "mapId": "starfall-haven",
       "nodeId": "town-starfall-haven",
       "name": "Starfall Haven",
@@ -1074,6 +1128,27 @@
       "arrivalPointMeters": {
         "x": 500.0,
         "y": 860.0
+      },
+      "lockMessage": null
+    },
+    "portal-sap-cistern-exit-roundhouse": {
+      "portalId": "portal-sap-cistern-exit-roundhouse",
+      "sourceNodeId": "dungeon-sap-heart-cistern",
+      "sourceMapId": "sap-heart-cistern-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-root-train-roundhouse",
+      "targetMapId": "root-train-roundhouse",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
       },
       "lockMessage": null
     },
@@ -1735,6 +1810,48 @@
       "direction": "West",
       "targetNodeId": "town-starfall-haven",
       "targetMapId": "starfall-haven",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-resin-arch-east-roundhouse": {
+      "portalId": "portal-resin-arch-east-roundhouse",
+      "sourceNodeId": "hunting-area-resin-arch-tunnel",
+      "sourceMapId": "resin-arch-tunnel",
+      "direction": "East",
+      "targetNodeId": "town-root-train-roundhouse",
+      "targetMapId": "root-train-roundhouse",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-resin-arch-west-sanctuary": {
+      "portalId": "portal-resin-arch-west-sanctuary",
+      "sourceNodeId": "hunting-area-resin-arch-tunnel",
+      "sourceMapId": "resin-arch-tunnel",
+      "direction": "West",
+      "targetNodeId": "town-porcelain-loom-sanctuary",
+      "targetMapId": "porcelain-loom-sanctuary",
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
@@ -2736,6 +2853,27 @@
       },
       "lockMessage": "Boiling lotus-glaze steam curtains seal the northern Lotus Kiln Rim; Loom-Mother Cera requires the Medallion Heart-Chime before opening the northern terrace."
     },
+    "portal-porcelain-sanctuary-east-resin": {
+      "portalId": "portal-porcelain-sanctuary-east-resin",
+      "sourceNodeId": "town-porcelain-loom-sanctuary",
+      "sourceMapId": "porcelain-loom-sanctuary",
+      "direction": "East",
+      "targetNodeId": "hunting-area-resin-arch-tunnel",
+      "targetMapId": "resin-arch-tunnel",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-porcelain-sanctuary-west-celadon": {
       "portalId": "portal-porcelain-sanctuary-west-celadon",
       "sourceNodeId": "town-porcelain-loom-sanctuary",
@@ -2848,6 +2986,69 @@
       "direction": "Dungeon",
       "targetNodeId": "dungeon-pendulum-sanctum",
       "targetMapId": "pendulum-sanctum-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-root-roundhouse-north-fog": {
+      "portalId": "portal-root-roundhouse-north-fog",
+      "sourceNodeId": "town-root-train-roundhouse",
+      "sourceMapId": "root-train-roundhouse",
+      "direction": "North",
+      "targetNodeId": "hunting-area-banyan-canopy-spur",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Thick golden resin webs curtain the northern Banyan Canopy Spur; Stationmaster Bramble requires the Cistern Sap-Valve Key before opening the canopy turntable."
+    },
+    "portal-root-roundhouse-west-resin": {
+      "portalId": "portal-root-roundhouse-west-resin",
+      "sourceNodeId": "town-root-train-roundhouse",
+      "sourceMapId": "root-train-roundhouse",
+      "direction": "West",
+      "targetNodeId": "hunting-area-resin-arch-tunnel",
+      "targetMapId": "resin-arch-tunnel",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-root-roundhouse-dungeon-cistern": {
+      "portalId": "portal-root-roundhouse-dungeon-cistern",
+      "sourceNodeId": "town-root-train-roundhouse",
+      "sourceMapId": "root-train-roundhouse",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-sap-heart-cistern",
+      "targetMapId": "sap-heart-cistern-b1",
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
