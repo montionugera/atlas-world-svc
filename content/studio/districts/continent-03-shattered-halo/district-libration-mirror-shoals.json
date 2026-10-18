@@ -3,7 +3,7 @@
   "id": "district-libration-mirror-shoals",
   "name": "Libration Mirror Shoals",
   "parent_continent_id": "continent-03-shattered-halo",
-  "status": "draft",
+  "status": "canon",
   "core_rationale": "Western oscillating tide-mirror shoals of Continent 03 where Vesper's lunar libration rocks shallow silver-water atolls in a slow twelve-hour tilt.",
   "local_conflict": "Mirror-shell crabs and reflection-wisps guard the tilting star-glass tide pools.",
   "level_band_label": "Levels 41 to 60",
@@ -22,9 +22,9 @@
   "grid_nodes": [
     {
       "node_id": "hunting-area-silver-tide-causeway",
-      "map_id": null,
+      "map_id": "silver-tide-causeway",
       "node_type": "hunting_area",
-      "status": "mystery",
+      "status": "canon",
       "grid_coordinates": [
         0,
         1
@@ -35,13 +35,87 @@
         49
       ],
       "is_starter_town": false
+    },
+    {
+      "node_id": "town-libration-balance-haven",
+      "map_id": "libration-balance-haven",
+      "node_type": "town",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        49,
+        50
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "dungeon-sunken-syzygy-dome",
+      "map_id": "sunken-syzygy-dome-b1",
+      "node_type": "dungeon",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": -1,
+      "level_range": [
+        49,
+        50
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-crescent-reflector-reef",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        1,
+        0
+      ],
+      "floor_index": 0,
+      "level_range": [
+        50,
+        50
+      ],
+      "is_starter_town": false
     }
   ],
-  "portal_edges": [],
+  "portal_edges": [
+    {
+      "edge_id": "edge-silver-tide-to-balance-haven",
+      "from_node_id": "hunting-area-silver-tide-causeway",
+      "from_direction": "East",
+      "to_node_id": "town-libration-balance-haven",
+      "to_direction": "West",
+      "gate_state": "open"
+    },
+    {
+      "edge_id": "edge-balance-haven-to-syzygy-dome",
+      "from_node_id": "town-libration-balance-haven",
+      "from_direction": "Dungeon",
+      "to_node_id": "dungeon-sunken-syzygy-dome",
+      "to_direction": "Exit",
+      "gate_state": "open"
+    },
+    {
+      "edge_id": "edge-balance-haven-to-crescent-reef-fog",
+      "from_node_id": "town-libration-balance-haven",
+      "from_direction": "North",
+      "to_node_id": "hunting-area-crescent-reflector-reef",
+      "to_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_reason": "Focused starlight glare from Crescent Reflector Reef blinds unshielded navigators; Tide-Balancer Selene requires the Syzygy Smoked-Glass Lens before unlocking the northern reef."
+    }
+  ],
   "mystery_hook": {
-    "in_world_rumor": "Cartographers say that when Libration Mirror Shoals tilts toward the twilight horizon, a dry causeway of silver coral rises out of the mirror-pools.",
+    "in_world_rumor": "Cartographers say that when Libration Mirror Shoals tilts toward the northern horizon, Crescent Reflector Reef focuses starlight into a solid bridge.",
     "visual_silhouette": "Stepped basalt atolls holding sheet-silver tide pools that tilt in unison like a giant balance scale.",
-    "unanswered_question": "What sunken observatory dome emerges only when Libration Mirror Shoals reaches maximum western tilt?"
+    "unanswered_question": "What constellation archive lies beyond Crescent Reflector Reef at maximum libration tilt?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -57,12 +131,12 @@
       "evidence": "Specifies 12.5m silver-coral causeways, 0.58m tide-gauge benches, and 0.14m basalt risers for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Draft status: awaiting playable leaf map authoring for Silver-Tide Causeway and Libration Balance Haven."
+      "verified": true,
+      "evidence": "Complete 2x2 connected District matrix (hunting-area-silver-tide-causeway, town-libration-balance-haven, dungeon-sunken-syzygy-dome, and Mystery hunting-area-crescent-reflector-reef) with aquatic and spirit families."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook and reserves hunting-area-silver-tide-causeway as a Mystery frontier."
+      "evidence": "Promotes Libration Mirror Shoals to Canon while preserving leaf Mystery frontier Crescent Reflector Reef behind a Fog of Lore portal."
     }
   }
 }

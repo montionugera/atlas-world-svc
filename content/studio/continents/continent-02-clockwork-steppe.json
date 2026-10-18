@@ -52,12 +52,13 @@
     "district-verdigris-siphon",
     "district-gilded-exhaust",
     "district-thunder-coil-basin",
-    "district-pendulum-steppe-west"
+    "district-pendulum-steppe-west",
+    "district-helical-gear-trench"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Tinkers say the northern Deadbeat Escapement Bluff in West Pendulum Steppe locks its hundred-meter brass pallet-arms once every full second, shaking copper dew off the grass.",
+    "in_world_rumor": "Tinkers say the spiral worm-drives of Helical-Gear Trench bore fifty meters into the copper bedrock, turning underground wind-turbines that never stall.",
     "visual_silhouette": "Colossal brass wheel-rims rising two hundred meters above golden short-grass plains.",
-    "unanswered_question": "What ancient wind-chronometer is regulated by the northern Deadbeat Escapement Bluff of West Pendulum Steppe?"
+    "unanswered_question": "What subterranean worm-gear foundry turns at the bottom of Helical-Gear Trench?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -74,11 +75,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes six Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin, and West Pendulum Steppe) in a connected brass plateau ring."
+      "evidence": "Organizes six Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin, West Pendulum Steppe) plus Helical-Gear Trench (Mystery)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes West Pendulum Steppe to Canon while preserving leaf Mystery frontier Deadbeat Escapement Bluff behind a Fog of Lore portal."
+      "evidence": "Preserves Helical-Gear Trench in Mystery status and leaf Mystery frontiers behind Fog of Lore portals."
     }
   }
 }

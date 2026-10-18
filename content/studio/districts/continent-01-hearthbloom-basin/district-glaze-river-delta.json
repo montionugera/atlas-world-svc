@@ -3,7 +3,7 @@
   "id": "district-glaze-river-delta",
   "name": "Glaze-River Delta",
   "parent_continent_id": "continent-01-hearthbloom-basin",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Southern warm ceramic-silt river delta of Continent 01 where Sola's kiln-heated streams fan out across iridescent cobalt-and-gold glaze sandbars.",
   "local_conflict": "Glaze-shell river turtles and ceramic-silt sprites guard the sunken potter-barges along the delta channels.",
   "level_band_label": "Levels 1 to 20",
@@ -19,7 +19,24 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-cobalt-sandbar-ford",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        18,
+        19
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Barge-potters say the warm river-clay in Glaze-River Delta hardens into waterproof blue porcelain the moment the noon sun touches the sandbars.",
@@ -36,16 +53,16 @@
       "evidence": "Warm thermal river channels winding through iridescent cobalt-and-gold ceramic sandbars."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: barge-dock counter and terracotta stepping-stone metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Specifies 12.5m cobalt-tile barge causeways, 0.58m ferry counters, and 0.14m terracotta risers for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the southern delta District frontier on Continent 01 with zero filler maps."
+      "evidence": "Draft status: awaiting playable leaf map authoring for Cobalt Sandbar Ford and Glaze-Barge Quay."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Provides complete mystery_hook and reserves hunting-area-cobalt-sandbar-ford as a Mystery frontier."
     }
   }
 }

@@ -1,0 +1,159 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-libration-balance-haven",
+  "name": "Libration Balance Haven",
+  "map_id": "libration-balance-haven",
+  "parent_district_id": "district-libration-mirror-shoals",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Central gimbal-mounted basalt atoll town of Libration Mirror Shoals at [1, 1] where tide-cartographers balance the lunar mirror-pools above the Sunken Syzygy Dome.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    49,
+    50
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_roof_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_libration_balance_haven",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Counter-weighted silver mercury basins that keep the town plaza level during lunar tilt"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-balance-haven-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-crescent-reflector-reef",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Focused starlight glare from Crescent Reflector Reef blinds unshielded navigators; Tide-Balancer Selene requires the Syzygy Smoked-Glass Lens before unlocking the northern reef.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": null,
+    "West": {
+      "portal_id": "portal-balance-haven-west-silver-tide",
+      "direction": "West",
+      "target_node_id": "hunting-area-silver-tide-causeway",
+      "target_map_id": "silver-tide-causeway",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-balance-haven-dungeon-syzygy",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-sunken-syzygy-dome",
+      "target_map_id": "sunken-syzygy-dome-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-tide-balancer-selene",
+      "name": "Tide-Balancer Selene",
+      "role": "Libration Gimbal Director",
+      "position_meters": {
+        "x": 1975.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Welcome to Libration Balance Haven! Even when the outer shoals tilt twelve degrees, my 0.58 meter tide-gauge desk stays perfectly level."
+    },
+    {
+      "npc_id": "npc-lens-grinder-nyx",
+      "name": "Lens-Grinder Nyx",
+      "role": "Syzygy Optics Artisan",
+      "position_meters": {
+        "x": 2065.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.6,
+      "dialogue_greeting": "Down in the Sunken Syzygy Dome, an abyssal prism-ray holds the Syzygy Smoked-Glass Lens needed to cross the northern Crescent Reflector Reef!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.42,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_roof_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Libration Mirror Shoals at [1, 1] directly above Vesper's Sunken Syzygy Dome."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Gimbal-balanced basalt atoll plaza surrounded by sheet-silver tide mirrors."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.58 to 0.60m tide-gauge desks, 0.14m basalt risers, 2.20m x 1.65m doorways, and 13.0m plazas for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, Dungeon, and North (fog_of_lore) portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Guards the northern Crescent Reflector Reef behind a Fog of Lore portal with explicit lock_message."
+    }
+  }
+}
