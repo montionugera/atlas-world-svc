@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-verdigris-siphon",
+  "name": "Verdigris Siphon",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "status": "draft",
+  "core_rationale": "Eastern patinated-copper aqueduct terrace of Continent 02 where Krono's alchemical coolant pipes drain into turquoise mineral basins and water-driven gear-looms.",
+  "local_conflict": "Oxidized siphon-constructs and brine-striders are clogging the main coolant sluices, threatening to overheat the eastern Mainspring Caldera vents.",
+  "level_band_label": "Levels 21 to 40",
+  "level_range": [
+    25,
+    30
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "insect",
+    "plant"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-siphon-sluice",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "level_range": [
+        25,
+        30
+      ],
+      "is_starter_town": false
+    }
+  ],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Dyers and alchemists whisper that the lowest siphon basin empties into an underground sea of liquid mercury beneath the eastern cliffs.",
+    "visual_silhouette": "Tiered turquoise-patinated copper aqueduct arches spilling shimmering coolant waterfalls across golden grass steppes.",
+    "unanswered_question": "What ancient mechanism sleeps inside the Siphon Reservoir intake vault?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-krono-brass-titan and forms the eastern coolant drainage terrace of Mainspring Caldera on Continent 02."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Turquoise-patinated copper aqueducts and water-driven clockwork looms above mineral pools."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Uses 14.0 meter aqueduct causeways, 0.15 meter sluice steps, and 0.60 meter dye-vat counters for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Draft status: awaiting leaf node topology and coolant sluice monster spawns before Canon promotion."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Includes complete mystery_hook for the Siphon Reservoir intake vault with zero filler maps."
+    }
+  }
+}

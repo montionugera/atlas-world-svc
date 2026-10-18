@@ -48,12 +48,13 @@
   ],
   "district_ids": [
     "district-rustcog-downs",
-    "district-mainspring-caldera"
+    "district-mainspring-caldera",
+    "district-verdigris-siphon"
   ],
   "mystery_hook": {
     "in_world_rumor": "Tinkers say the deepest canyon gear still ticks once every midnight, echoing a lullaby from the north.",
     "visual_silhouette": "Colossal brass wheel-rims rising two hundred meters above golden short-grass plains.",
-    "unanswered_question": "Which faction controls the central Mainspring Foundry dungeon?"
+    "unanswered_question": "What lies beyond the eastern Verdigris Siphon aqueducts where Krono's coolant pipes drain?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -70,11 +71,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Connected via the Kettle-Whistle Viaduct to Pinion Terminus [0, 1] in canon District Rustcog Downs, with Brass Spur Ridge [1, 1], Pendulum Shaft [0, 1, floor -1], and Draft District Mainspring Caldera."
+      "evidence": "Connected via the Kettle-Whistle Viaduct to Canon Districts Rustcog Downs and Mainspring Caldera, plus Draft District Verdigris Siphon."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Includes mystery_hook for the unbuilt Mainspring Foundry and locks the Astrolabe Gate to Continent 03."
+      "evidence": "Includes mystery_hook for the eastern Verdigris Siphon coolant frontier and locks the Astrolabe Gate to Continent 03."
     }
   }
 }

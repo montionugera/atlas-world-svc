@@ -2,12 +2,12 @@
   "schema_version": "1.0.0",
   "id": "hunting-area-caldera-rim",
   "name": "The Mainspring Caldera Rim",
-  "map_id": null,
+  "map_id": "caldera-rim",
   "parent_district_id": "district-mainspring-caldera",
   "parent_continent_id": "continent-02-clockwork-steppe",
   "node_type": "hunting_area",
-  "status": "mystery",
-  "core_rationale": "Western bronze-slag overlook of Mainspring Caldera at [0, 1] where rhythmic steam vents from Krono's central coil heat the skyways east of Brass Spur Ridge.",
+  "status": "canon",
+  "core_rationale": "Western bronze-slag overlook of Mainspring Caldera at [0, 1] where rhythmic steam vents from Krono's central coil heat the flywheel bridges east of Brass Spur Ridge.",
   "is_starter_town": false,
   "grid_coordinates": [
     0,
@@ -15,33 +15,148 @@
   ],
   "level_range": [
     22,
-    30
+    28
   ],
-  "mystery_hook": {
-    "in_world_rumor": "Foundry apprentices say the bronze bridge gates only unlatch when the three pressure valves along Brass Spur Ridge are equalized.",
-    "visual_silhouette": "Concentric bronze flywheel bridges disappearing into golden steam clouds above a glowing crater.",
-    "unanswered_question": "What guards the primary escapement lever inside the Mainspring Foundry?"
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/nature/rock_medium_1.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_mainspring_rim",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Warm copper-condensate channels beside the bronze flywheel spans"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-caldera-rim-east-anvil",
+      "direction": "East",
+      "target_node_id": "town-escapement-anvil",
+      "target_map_id": "escapement-anvil",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-caldera-rim-west-brass-spur",
+      "direction": "West",
+      "target_node_id": "hunting-area-brass-spur-ridge",
+      "target_map_id": "brass-spur-ridge",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-caldera-steam-valve-beetle",
+      "monster_id": "mob-steam-valve-beetle",
+      "monster_name": "Steam-Valve Beetle",
+      "spawn_count": 10,
+      "respawn_seconds": 11.0,
+      "level": 24,
+      "element": "Fire",
+      "size": "Small",
+      "race": "Insect",
+      "family": "insect",
+      "item_drops": [
+        {
+          "item_id": "item-brass-pressure-gasket",
+          "item_name": "Brass Pressure Gasket",
+          "drop_chance_percent": 49.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-steam-valve-beetle",
+        "card_name": "Steam-Valve Beetle Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Accessory",
+        "modifier_summary": "Fire Resistance +12%, Attack Speed +2%"
+      }
+    },
+    {
+      "spawn_id": "spawn-caldera-bronze-slag-hound",
+      "monster_id": "mob-bronze-slag-hound",
+      "monster_name": "Bronze Slag-Hound",
+      "spawn_count": 8,
+      "respawn_seconds": 14.0,
+      "level": 26,
+      "element": "Earth",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-sintered-bronze-jaw",
+          "item_name": "Sintered Bronze Jaw",
+          "drop_chance_percent": 42.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-bronze-slag-hound",
+        "card_name": "Bronze Slag-Hound Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Armor",
+        "modifier_summary": "Physical Attack +10, Earth Physical Damage +5%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.48,
+    "main_road_width_meters": 14.0,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/nature/rock_medium_1.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Forms the western entry frontier of District Mainspring Caldera on Continent 02."
+      "evidence": "Forms the western arrival rim of Mainspring Caldera at [0, 1], receiving the Flywheel Viaduct from Brass Spur Ridge."
     },
     "fantasy_and_wonder": {
       "verified": true,
       "evidence": "Steaming bronze flywheel bridges suspended above Krono's glowing mainspring crater."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: terrain tile and prop kit metrics will be bound when promoted to Draft."
+      "verified": true,
+      "evidence": "0.16m terrace steps, <= 0.20m scorched copper grass, and 14.0m flywheel causeways for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: reserved at [0, 1] in Mainspring Caldera awaiting eastern viaduct connection."
+      "verified": true,
+      "evidence": "Symmetric West portal to hunting-area-brass-spur-ridge, East portal to town-escapement-anvil, and Level 24 to 26 insect/construct spawns."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Maintains map_id: null and complete mystery_hook without generating low-effort filler maps."
+      "evidence": "Promoted cleanly from Mystery to Canon after verifying all 5 checklist pillars and parent District readiness."
     }
   }
 }
