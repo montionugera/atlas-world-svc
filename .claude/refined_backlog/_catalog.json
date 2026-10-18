@@ -1306,5 +1306,15 @@
     "status": "claimed",
     "release_version": null,
     "claimed_at": "2026-10-18T09:14:34.832070+00:00"
+  },
+  {
+    "id": "F-105",
+    "title": "Save and restore region state across a restart",
+    "from_idea": "I-151",
+    "created_at": "2026-10-18T09:16:29.794651+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-004"
   }
 ]

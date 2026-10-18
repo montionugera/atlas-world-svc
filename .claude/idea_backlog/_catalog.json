@@ -928,7 +928,7 @@
     "id": "I-151",
     "title": "Save and restore region state across a restart",
     "created_at": "2026-10-11T06:59:04.686973+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-105",
     "epic": "E-004"
   },
   {
