@@ -1466,5 +1466,15 @@
     "status": "claimed",
     "release_version": null,
     "claimed_at": "2026-10-18T11:05:02.933125+00:00"
+  },
+  {
+    "id": "F-118",
+    "title": "Lingering area skills",
+    "from_idea": "I-174",
+    "created_at": "2026-10-18T11:11:15.940194+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-007"
   }
 ]
