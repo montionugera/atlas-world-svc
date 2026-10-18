@@ -56,8 +56,18 @@ pub fn combat_system(
         // Mobs with MobAi are excluded: mob_ai_system owns their attacks and their single
         // per-tick cooldown decrement.
         let mut attackers = params.p0();
-        for (entity, pos, mut stats, health, entity_id, avatar, mut input, attrs, mut opt_parry) in
-            &mut attackers
+        for (
+            entity,
+            pos,
+            mut stats,
+            health,
+            entity_id,
+            avatar,
+            mut input,
+            attrs,
+            mut opt_parry,
+            opt_weapon,
+        ) in &mut attackers
         {
             // Consume the attack latch every tick, whether or not a swing happens. Clearing
             // it only on a landed swing left a released tap armed forever when nothing was in

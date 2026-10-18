@@ -1,8 +1,9 @@
 use bevy_ecs::prelude::*;
+use server_rs::ecs::components::PlayerAvatar;
 use server_rs::{
     combat_system, projectile_collision_system, projectile_kinematics_system,
-    spatial_grid_rebuild_system, CombatStats, EquippedWeapon, Health, MobTag, PlayerAvatar,
-    PlayerInputState, PlayerTag, Position, Projectile, SimClock, SpatialGrid, Velocity, WeaponKind,
+    spatial_grid_rebuild_system, CombatStats, EquippedWeapon, Health, MobTag, PlayerInputState,
+    PlayerTag, Position, Projectile, SimClock, SpatialGrid, Velocity, WeaponKind,
 };
 
 fn build_ranged_world(
