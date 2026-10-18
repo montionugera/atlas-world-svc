@@ -1736,9 +1736,11 @@
     "from_idea": "I-156",
     "created_at": "2026-10-18T16:49:44.220212+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
+    "status": "shipped",
+    "release_version": "1.15",
     "epic": "E-005",
-    "claimed_at": "2026-10-18T16:49:55.454736+00:00"
+    "claimed_at": "2026-10-18T16:49:55.454736+00:00",
+    "shipped_at": "2026-10-18T17:00:21.964012+00:00",
+    "shipped_sha": "89030175b97c540b7c7cc80dcc6e93cf4610dd9e"
   }
 ]
