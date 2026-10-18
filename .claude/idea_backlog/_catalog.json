@@ -970,7 +970,7 @@
     "id": "I-157",
     "title": "Idempotent server-only grants",
     "created_at": "2026-10-11T06:59:05.825978+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-140",
     "epic": "E-005"
   },
   {
