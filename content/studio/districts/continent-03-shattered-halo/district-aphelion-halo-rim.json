@@ -3,7 +3,7 @@
   "id": "district-aphelion-halo-rim",
   "name": "Aphelion Halo Rim",
   "parent_continent_id": "continent-03-shattered-halo",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Outermost high-altitude comet-drift ring of Continent 03 where Vesper's farthest gravity-anchors capture frost-coated star-shards at the edge of the twilight sky.",
   "local_conflict": "Rime-winged comet-drakes and astral-echoes circle the outer tether-buoys beyond the reach of standard sky-skiffs.",
   "level_band_label": "Levels 41 to 60",
@@ -19,7 +19,24 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-comet-tether-span",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        49,
+        50
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Star-navigators say the buoys along the Aphelion Halo Rim chime whenever a shooting star passes beneath the archipelago.",
@@ -36,16 +53,16 @@
       "evidence": "Frost-silver basalt islets moored to captured comet-shards by threads of violet starlight."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: starlight buoy-deck and wind-screen metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Specifies 12.5m frost-basalt tether-bridges, 0.60m astrolabe sighting-desks, and 0.14m risers for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the outermost orbital District frontier on Continent 03 with zero filler maps."
+      "evidence": "Draft status: awaiting playable leaf map authoring for Comet-Tether Span and Aphelion Buoy Haven."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Provides complete mystery_hook and reserves hunting-area-comet-tether-span as a Mystery frontier."
     }
   }
 }

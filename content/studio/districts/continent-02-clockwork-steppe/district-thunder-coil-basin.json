@@ -3,7 +3,7 @@
   "id": "district-thunder-coil-basin",
   "name": "Thunder-Coil Basin",
   "parent_continent_id": "continent-02-clockwork-steppe",
-  "status": "draft",
+  "status": "canon",
   "core_rationale": "Eastern lightning-inductor basin of Continent 02 where Krono the Brass Titan's copper fingers grounded atmospheric storms into a ring of humming Leyden-jar towers.",
   "local_conflict": "Arc-charged copper automatons and storm-elementals surge along the inductor rails whenever the Steppe gales peak.",
   "level_band_label": "Levels 21 to 40",
@@ -22,9 +22,9 @@
   "grid_nodes": [
     {
       "node_id": "hunting-area-leyden-causeway",
-      "map_id": null,
+      "map_id": "leyden-causeway",
       "node_type": "hunting_area",
-      "status": "mystery",
+      "status": "canon",
       "grid_coordinates": [
         0,
         1
@@ -35,18 +35,89 @@
         34
       ],
       "is_starter_town": false
+    },
+    {
+      "node_id": "town-inductor-switchyard",
+      "map_id": "inductor-switchyard",
+      "node_type": "town",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        33,
+        35
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "dungeon-faraday-dynamo-vault",
+      "map_id": "faraday-dynamo-vault-b1",
+      "node_type": "dungeon",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": -1,
+      "level_range": [
+        34,
+        36
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-corona-arc-cliff",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        1,
+        0
+      ],
+      "floor_index": 0,
+      "level_range": [
+        35,
+        36
+      ],
+      "is_starter_town": false
     }
   ],
-  "portal_edges": [],
+  "portal_edges": [
+    {
+      "from_node_id": "hunting-area-leyden-causeway",
+      "from_direction": "East",
+      "to_node_id": "town-inductor-switchyard",
+      "to_direction": "West",
+      "gate_state": "open"
+    },
+    {
+      "from_node_id": "town-inductor-switchyard",
+      "from_direction": "Dungeon",
+      "to_node_id": "dungeon-faraday-dynamo-vault",
+      "to_direction": "Exit",
+      "gate_state": "open"
+    },
+    {
+      "from_node_id": "town-inductor-switchyard",
+      "from_direction": "North",
+      "to_node_id": "hunting-area-corona-arc-cliff",
+      "to_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_reason": "Unshielded cyan corona arcs bridge the northern Corona-Arc Cliff; Switch-Master Voltair requires the Faraday Grounding Rod before opening the northern gate."
+    }
+  ],
   "mystery_hook": {
     "in_world_rumor": "Glider couriers say that flying within a league of Thunder-Coil Basin makes every brass button on your coat hum in three-part harmony.",
     "visual_silhouette": "Five colossal glass-and-copper Leyden-jar towers joined by harmless blue corona arcs above the eastern steppe.",
-    "unanswered_question": "What ancient dynamo beneath Thunder-Coil Basin is still drawing power from Krono's grounded fingers?"
+    "unanswered_question": "What sleeps beyond the Corona-Arc Cliff where Krono's lightning-rod fingers struck the eastern cliffside?"
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Directly inherits god-krono-brass-titan and scar-brass-faultline along the eastern storm-inductor rim of Continent 02."
+      "evidence": "Directly inherits god-krono-brass-titan and scar-brass-faultline along the eastern storm-inductor rim of Continent 02 and connects West to Bellows Hearth."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -57,12 +128,12 @@
       "evidence": "Specifies 12.5m rubber-insulated copper catwalks, 0.60m capacitor test-benches, and 0.14m cog-steps for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Draft status: awaiting playable leaf map authoring for Leyden Causeway and Inductor Switchyard Town."
+      "verified": true,
+      "evidence": "2x2 grid connects Leyden Capacitor Causeway, Inductor Switchyard, and Faraday Dynamo Vault B1 across [32, 36] with construct and elemental families."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook and reserves hunting-area-leyden-causeway as a Mystery frontier."
+      "evidence": "Preserves hunting-area-corona-arc-cliff at [1, 0] as a Mystery frontier behind a fog_of_lore portal on Inductor Switchyard."
     }
   }
 }

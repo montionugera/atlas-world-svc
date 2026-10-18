@@ -71,6 +71,24 @@
       ]
     },
     {
+      "mapId": "faraday-dynamo-vault-b1",
+      "nodeId": "dungeon-faraday-dynamo-vault",
+      "name": "Faraday Dynamo Vault B1",
+      "districtId": "district-thunder-coil-basin",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        34,
+        36
+      ]
+    },
+    {
       "mapId": "inverted-belfry-b1",
       "nodeId": "dungeon-inverted-belfry",
       "name": "The Inverted Belfry",
@@ -431,6 +449,24 @@
       ]
     },
     {
+      "mapId": "leyden-causeway",
+      "nodeId": "hunting-area-leyden-causeway",
+      "name": "Leyden Capacitor Causeway",
+      "districtId": "district-thunder-coil-basin",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        32,
+        34
+      ]
+    },
+    {
       "mapId": "orrery-bridge",
       "nodeId": "hunting-area-orrery-bridge",
       "name": "The Orrery Bridge",
@@ -572,6 +608,24 @@
       "levelRange": [
         24,
         30
+      ]
+    },
+    {
+      "mapId": "inductor-switchyard",
+      "nodeId": "town-inductor-switchyard",
+      "name": "Inductor Switchyard",
+      "districtId": "district-thunder-coil-basin",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        33,
+        35
       ]
     },
     {
@@ -798,6 +852,27 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 3760.0
+      },
+      "lockMessage": null
+    },
+    "portal-faraday-dynamo-exit-switchyard": {
+      "portalId": "portal-faraday-dynamo-exit-switchyard",
+      "sourceNodeId": "dungeon-faraday-dynamo-vault",
+      "sourceMapId": "faraday-dynamo-vault-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-inductor-switchyard",
+      "targetMapId": "inductor-switchyard",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
       },
       "lockMessage": null
     },
@@ -1473,6 +1548,48 @@
       },
       "lockMessage": null
     },
+    "portal-leyden-causeway-east-switchyard": {
+      "portalId": "portal-leyden-causeway-east-switchyard",
+      "sourceNodeId": "hunting-area-leyden-causeway",
+      "sourceMapId": "leyden-causeway",
+      "direction": "East",
+      "targetNodeId": "town-inductor-switchyard",
+      "targetMapId": "inductor-switchyard",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-leyden-causeway-west-bellows": {
+      "portalId": "portal-leyden-causeway-west-bellows",
+      "sourceNodeId": "hunting-area-leyden-causeway",
+      "sourceMapId": "leyden-causeway",
+      "direction": "West",
+      "targetNodeId": "town-bellows-hearth",
+      "targetMapId": "bellows-hearth",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-orrery-bridge-east-prism-zenith": {
       "portalId": "portal-orrery-bridge-east-prism-zenith",
       "sourceNodeId": "hunting-area-orrery-bridge",
@@ -1661,6 +1778,27 @@
         "y": 200.0
       },
       "lockMessage": "Scalding golden exhaust plumes vent through the Cinder Chimney Damper; the Bellows Guild requires the Master Damper Crank from Ash-Valve Vault before opening the northern flue."
+    },
+    "portal-bellows-hearth-east-leyden": {
+      "portalId": "portal-bellows-hearth-east-leyden",
+      "sourceNodeId": "town-bellows-hearth",
+      "sourceMapId": "bellows-hearth",
+      "direction": "East",
+      "targetNodeId": "hunting-area-leyden-causeway",
+      "targetMapId": "leyden-causeway",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-bellows-hearth-west-flue": {
       "portalId": "portal-bellows-hearth-west-flue",
@@ -1953,6 +2091,69 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-inductor-switchyard-north-fog": {
+      "portalId": "portal-inductor-switchyard-north-fog",
+      "sourceNodeId": "town-inductor-switchyard",
+      "sourceMapId": "inductor-switchyard",
+      "direction": "North",
+      "targetNodeId": "hunting-area-corona-arc-cliff",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Unshielded cyan corona arcs bridge the northern Corona-Arc Cliff; Switch-Master Voltair requires the Faraday Grounding Rod before opening the northern gate."
+    },
+    "portal-inductor-switchyard-west-leyden": {
+      "portalId": "portal-inductor-switchyard-west-leyden",
+      "sourceNodeId": "town-inductor-switchyard",
+      "sourceMapId": "inductor-switchyard",
+      "direction": "West",
+      "targetNodeId": "hunting-area-leyden-causeway",
+      "targetMapId": "leyden-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-inductor-switchyard-dungeon-dynamo": {
+      "portalId": "portal-inductor-switchyard-dungeon-dynamo",
+      "sourceNodeId": "town-inductor-switchyard",
+      "sourceMapId": "inductor-switchyard",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-faraday-dynamo-vault",
+      "targetMapId": "faraday-dynamo-vault-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
       },
       "lockMessage": null
     },

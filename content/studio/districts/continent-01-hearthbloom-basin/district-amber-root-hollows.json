@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-amber-root-hollows",
+  "name": "Amber-Root Hollows",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "status": "mystery",
+  "core_rationale": "Eastern root-train tunnel network of Continent 01 where colossal amber-sap banyan roots wrap around Sola's ceramic shield rim to support the Kettle-Whistle Viaduct.",
+  "local_conflict": "Sap-crusted root-beetles and drowsy ember-moles burrow around the warm resin pillars supporting the root-train tracks.",
+  "level_band_label": "Levels 1 to 20",
+  "level_range": [
+    14,
+    18
+  ],
+  "ecological_monster_families": [
+    "flora_fauna",
+    "construct"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Root-train conductors say the golden resin lanterns inside Amber-Root Hollows preserve the footprints of the first Sprouts who crossed into the Clockwork Steppe.",
+    "visual_silhouette": "Cathedral-like arches of glowing amber tree-roots framing the eastern brick viaduct piers.",
+    "unanswered_question": "What ancient root-train roundhouse lies sealed beneath the amber sap-falls of Amber-Root Hollows?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin along the eastern root-train viaduct rim of Continent 01."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Cathedral-like arches of glowing golden amber tree-roots warmed by Sola's ceramic shield."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: root-bridge walkway and resin-lantern doorway metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the eastern root-train District frontier on Continent 01 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}
