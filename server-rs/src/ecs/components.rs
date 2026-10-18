@@ -780,6 +780,85 @@ impl ParryState {
     }
 }
 
+/// Weapon archetype controlling whether a primary attack is a melee strike or an aimed projectile (E-007 Slice 3).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub enum WeaponKind {
+    #[default]
+    Melee,
+    Bow,
+    Staff,
+}
+
+/// Equipped weapon profile attached to a player or combatant entity.
+#[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EquippedWeapon {
+    pub weapon_id: String,
+    pub kind: WeaponKind,
+    pub projectile_speed: f32,
+    pub projectile_range: f32,
+    pub projectile_radius: f32,
+}
+
+impl Default for EquippedWeapon {
+    fn default() -> Self {
+        Self::sword()
+    }
+}
+
+impl EquippedWeapon {
+    pub fn sword() -> Self {
+        Self {
+            weapon_id: "w_sword".to_string(),
+            kind: WeaponKind::Melee,
+            projectile_speed: 0.0,
+            projectile_range: 40.0,
+            projectile_radius: 0.0,
+        }
+    }
+
+    pub fn bow() -> Self {
+        Self {
+            weapon_id: "w_bow".to_string(),
+            kind: WeaponKind::Bow,
+            projectile_speed: 250.0,
+            projectile_range: 300.0,
+            projectile_radius: 4.0,
+        }
+    }
+
+    pub fn staff() -> Self {
+        Self {
+            weapon_id: "w_staff".to_string(),
+            kind: WeaponKind::Staff,
+            projectile_speed: 200.0,
+            projectile_range: 280.0,
+            projectile_radius: 5.0,
+        }
+    }
+
+    pub fn from_weapon_id(weapon_id: Option<&str>) -> Self {
+        let id = weapon_id.unwrap_or("basic_sword");
+        let lower = id.to_ascii_lowercase();
+        if lower.contains("bow") {
+            let mut w = Self::bow();
+            w.weapon_id = id.to_string();
+            w
+        } else if lower.contains("staff") || lower.contains("wand") {
+            let mut w = Self::staff();
+            w.weapon_id = id.to_string();
+            w
+        } else {
+            let mut w = Self::sword();
+            w.weapon_id = id.to_string();
+            w
+        }
+    }
+
+    pub fn is_ranged(&self) -> bool {
+        matches!(self.kind, WeaponKind::Bow | WeaponKind::Staff)
+    }
+}
+
 #[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PlayerInputState {
     pub move_x: f32,
@@ -842,6 +921,30 @@ impl PlayerInputState {
     pub fn with_target_pos(mut self, x: f32, y: f32) -> Self {
         self.target_pos = Some(Position::new(x, y));
         self
+    }
+
+    /// Computes the unit aim vector from `origin` toward `target_pos` (if set),
+    /// otherwise along the movement input vector, falling back to `last_facing`.
+    pub fn aim_direction(&self, origin: Position) -> (f32, f32) {
+        if let Some(t_pos) = self.target_pos {
+            let dx = t_pos.x - origin.x;
+            let dy = t_pos.y - origin.y;
+            let dist = (dx * dx + dy * dy).sqrt();
+            if dist > 1e-4 {
+                return (dx / dist, dy / dist);
+            }
+        }
+        let move_len = (self.move_x * self.move_x + self.move_y * self.move_y).sqrt();
+        if move_len > 1e-4 {
+            return (self.move_x / move_len, self.move_y / move_len);
+        }
+        let (fx, fy) = self.last_facing;
+        let face_len = (fx * fx + fy * fy).sqrt();
+        if face_len > 1e-4 {
+            (fx / face_len, fy / face_len)
+        } else {
+            (1.0, 0.0)
+        }
     }
 }
 
