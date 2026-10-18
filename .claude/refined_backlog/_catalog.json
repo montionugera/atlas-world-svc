@@ -1041,9 +1041,11 @@
     "from_idea": "I-146",
     "created_at": "2026-10-18T01:59:17.512791+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
+    "status": "shipped",
+    "release_version": "1.15",
     "epic": "E-004",
-    "claimed_at": "2026-10-18T01:59:25.475127+00:00"
+    "claimed_at": "2026-10-18T01:59:25.475127+00:00",
+    "shipped_at": "2026-10-18T02:07:43.237227+00:00",
+    "shipped_sha": "c2579b1f1cd22531e49484f6f56d613feb5413e3"
   }
 ]
