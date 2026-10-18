@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-penumbra-prism-reef",
+  "name": "Penumbra Prism Reef",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "status": "mystery",
+  "core_rationale": "Tenth floating basalt-and-crystal reef of Continent 03 where Vesper's half-shadowed gravity lens bends twilight starlight into shimmering penumbral coral arches.",
+  "local_conflict": "Penumbral glass-manta rays and crystal-shelled hermit constructs drift between the half-lit prism arches.",
+  "level_band_label": "Levels 41 to 60",
+  "level_range": [
+    49,
+    50
+  ],
+  "ecological_monster_families": [
+    "void_spawn",
+    "construct"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Star-navigators whisper that Penumbra Prism Reef casts two simultaneous shadows—one pointing toward the Zenith Crown and one pointing into the abyssal whirlpool below.",
+    "visual_silhouette": "A floating reef of smoky violet prism-spires and inverted silver coral arches along the outer twilight ring.",
+    "unanswered_question": "What twilight observatory town anchors the half-shadowed arches of Penumbra Prism Reef?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater along the outer penumbral ring of Continent 03."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Floating smoky-violet prism reefs and inverted silver coral arches bending twilight starlight."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: prism-bridge walkways and chart-table metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the tenth District frontier on Continent 03 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}

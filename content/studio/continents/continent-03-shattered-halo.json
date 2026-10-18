@@ -55,13 +55,14 @@
     "district-aphelion-halo-rim",
     "district-libration-mirror-shoals",
     "district-umbrage-prism-atoll",
-    "district-aurora-chime-atoll"
+    "district-aurora-chime-atoll",
+    "district-penumbra-prism-reef"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Star-navigators say the northern Magnetosphere Ribbon Arch in Aurora Chime Atoll weaves solar-wind currents into a walkable sky-highway.",
-    "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
-    "unanswered_question": "What astral resonance spire anchors Magnetosphere Ribbon Arch?",
-    "discovery_trigger_hint": "All nine Districts on Continent 03 are now Canon; Magnetosphere Ribbon Arch remains guarded by a Fog of Lore portal."
+    "in_world_rumor": "Star-navigators whisper that Penumbra Prism Reef casts two simultaneous shadows—one pointing toward the Zenith Crown and one pointing into the abyssal whirlpool below.",
+    "visual_silhouette": "A crescent halo of floating dark-stone islands and smoky-violet prism arches glowing softly on the northern horizon.",
+    "unanswered_question": "What twilight observatory town anchors the half-shadowed arches of Penumbra Prism Reef?",
+    "discovery_trigger_hint": "Nine Districts on Continent 03 are Canon while Penumbra Prism Reef awaits exploration on the outer twilight ring."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -78,11 +79,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes all nine Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss, Aphelion Halo Rim, Libration Mirror Shoals, Umbrage Prism Atoll, Aurora Chime Atoll)."
+      "evidence": "Organizes nine Canon Districts plus Penumbra Prism Reef (Mystery) on Continent 03."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Aurora Chime Atoll to Canon while preserving leaf Mystery frontier Magnetosphere Ribbon Arch behind a Fog of Lore portal."
+      "evidence": "Seeds Penumbra Prism Reef in Mystery status while preserving leaf Mystery frontier Magnetosphere Ribbon Arch behind a Fog of Lore portal."
     }
   }
 }

@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-nectar-glaze-vat",
+  "name": "Nectar-Glaze Vat",
+  "map_id": "nectar-glaze-vat-b1",
+  "parent_district_id": "district-saffron-kiln-orchards",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Sub-surface ceramic fermentation and glaze-firing cellar at [1, 1] floor -1 beneath Saffron-Press Village where Sola's hearth-vents caramelize orchard nectar into luminous amber glaze.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    19,
+    20
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_base.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_nectar_glaze_vat",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Warm caramel-amber glaze cisterns bubbling over glazed hearth-tiles"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-nectar-vat-exit-saffron-press",
+      "direction": "Exit",
+      "target_node_id": "town-saffron-press-village",
+      "target_map_id": "saffron-press-village",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3780.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-nectar-glaze-slime",
+      "monster_id": "monster-nectar-glaze-slime",
+      "monster_name": "Nectar-Glaze Slime",
+      "spawn_count": 12,
+      "respawn_seconds": 26,
+      "level": 19,
+      "element": "Fire",
+      "size": "Small",
+      "race": "Plant",
+      "family": "flora_fauna",
+      "item_drops": [
+        {
+          "item_id": "item-caramelized-glaze-drop",
+          "item_name": "Caramelized Glaze Drop",
+          "drop_chance_percent": 40.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-nectar-glaze-slime",
+        "card_name": "Nectar-Glaze Slime Card",
+        "drop_chance_percent": 0.04
+      }
+    },
+    {
+      "spawn_id": "spawn-amber-amphora-beetle",
+      "monster_id": "monster-amber-amphora-beetle",
+      "monster_name": "Amber Amphora Beetle",
+      "spawn_count": 6,
+      "respawn_seconds": 42,
+      "level": 20,
+      "element": "Earth",
+      "size": "Large",
+      "race": "Insect",
+      "family": "carapace",
+      "item_drops": [
+        {
+          "item_id": "item-golden-comb-seal",
+          "item_name": "Golden Comb Seal",
+          "drop_chance_percent": 26.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-amber-amphora-beetle",
+        "card_name": "Amber Amphora Beetle Card",
+        "drop_chance_percent": 0.03
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.35,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_base.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Sits at [1, 1] floor -1 directly beneath Saffron-Press Village and yields the Golden Comb Seal."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Subterranean ceramic glaze-vat chamber glowing with warm caramelized saffron-amber cisterns."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 12.5m cellar aisles, 0.14m terracotta risers, and 2.20m x 1.65m archways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Populated by flora_fauna and carapace monster families with symmetric Exit portal back to Saffron-Press Village."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops the Golden Comb Seal referenced in the Honeycomb-Kiln Ridge Fog of Lore lock_message."
+    }
+  }
+}

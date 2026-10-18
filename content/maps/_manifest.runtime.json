@@ -233,6 +233,24 @@
       ]
     },
     {
+      "mapId": "nectar-glaze-vat-b1",
+      "nodeId": "dungeon-nectar-glaze-vat",
+      "name": "Nectar-Glaze Vat",
+      "districtId": "district-saffron-kiln-orchards",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
+      ]
+    },
+    {
       "mapId": "pendulum-sanctum-b1",
       "nodeId": "dungeon-pendulum-sanctum",
       "name": "The Pendulum Sanctum",
@@ -428,6 +446,24 @@
       "levelRange": [
         39,
         40
+      ]
+    },
+    {
+      "mapId": "apricot-aqueduct-terrace",
+      "nodeId": "hunting-area-apricot-aqueduct-terrace",
+      "name": "Apricot Aqueduct Terrace",
+      "districtId": "district-saffron-kiln-orchards",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
       ]
     },
     {
@@ -1259,6 +1295,24 @@
       ]
     },
     {
+      "mapId": "saffron-press-village",
+      "nodeId": "town-saffron-press-village",
+      "name": "Saffron-Press Village",
+      "districtId": "district-saffron-kiln-orchards",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
+      ]
+    },
+    {
       "mapId": "starfall-haven",
       "nodeId": "town-starfall-haven",
       "name": "Starfall Haven",
@@ -1584,6 +1638,27 @@
       },
       "lockMessage": null
     },
+    "portal-nectar-vat-exit-saffron-press": {
+      "portalId": "portal-nectar-vat-exit-saffron-press",
+      "sourceNodeId": "dungeon-nectar-glaze-vat",
+      "sourceMapId": "nectar-glaze-vat-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-saffron-press-village",
+      "targetMapId": "saffron-press-village",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
     "portal-pendulum-sanctum-exit-zenith": {
       "portalId": "portal-pendulum-sanctum-exit-zenith",
       "sourceNodeId": "dungeon-pendulum-sanctum",
@@ -1812,6 +1887,48 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-apricot-terrace-east-press-village": {
+      "portalId": "portal-apricot-terrace-east-press-village",
+      "sourceNodeId": "hunting-area-apricot-aqueduct-terrace",
+      "sourceMapId": "apricot-aqueduct-terrace",
+      "direction": "East",
+      "targetNodeId": "town-saffron-press-village",
+      "targetMapId": "saffron-press-village",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-apricot-terrace-west-belfry": {
+      "portalId": "portal-apricot-terrace-west-belfry",
+      "sourceNodeId": "hunting-area-apricot-aqueduct-terrace",
+      "sourceMapId": "apricot-aqueduct-terrace",
+      "direction": "West",
+      "targetNodeId": "town-carillon-hearth-belfry",
+      "targetMapId": "carillon-hearth-belfry",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
       },
       "lockMessage": null
     },
@@ -3180,6 +3297,27 @@
       },
       "lockMessage": "Harmonic gale-shear across Flute-Crest Promontory buffets unshielded travelers; Carillon-Master Elian requires the Porcelain Tuning Fork before opening the northern promontory."
     },
+    "portal-carillon-belfry-east-apricot-terrace": {
+      "portalId": "portal-carillon-belfry-east-apricot-terrace",
+      "sourceNodeId": "town-carillon-hearth-belfry",
+      "sourceMapId": "carillon-hearth-belfry",
+      "direction": "East",
+      "targetNodeId": "hunting-area-apricot-aqueduct-terrace",
+      "targetMapId": "apricot-aqueduct-terrace",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-carillon-belfry-west-colonnade": {
       "portalId": "portal-carillon-belfry-west-colonnade",
       "sourceNodeId": "town-carillon-hearth-belfry",
@@ -4510,6 +4648,69 @@
       "direction": "Dungeon",
       "targetNodeId": "dungeon-sap-heart-cistern",
       "targetMapId": "sap-heart-cistern-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-saffron-press-north-honeycomb-fog": {
+      "portalId": "portal-saffron-press-north-honeycomb-fog",
+      "sourceNodeId": "town-saffron-press-village",
+      "sourceMapId": "saffron-press-village",
+      "direction": "North",
+      "targetNodeId": "hunting-area-honeycomb-kiln-ridge",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Boiling amber glaze-steam vents across Honeycomb-Kiln Ridge; Orchard-Steward Marigold requires the Golden Comb Seal before unsealing the northern kiln ridge."
+    },
+    "portal-saffron-press-west-apricot-terrace": {
+      "portalId": "portal-saffron-press-west-apricot-terrace",
+      "sourceNodeId": "town-saffron-press-village",
+      "sourceMapId": "saffron-press-village",
+      "direction": "West",
+      "targetNodeId": "hunting-area-apricot-aqueduct-terrace",
+      "targetMapId": "apricot-aqueduct-terrace",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-saffron-press-dungeon-nectar-vat": {
+      "portalId": "portal-saffron-press-dungeon-nectar-vat",
+      "sourceNodeId": "town-saffron-press-village",
+      "sourceMapId": "saffron-press-village",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-nectar-glaze-vat",
+      "targetMapId": "nectar-glaze-vat-b1",
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {

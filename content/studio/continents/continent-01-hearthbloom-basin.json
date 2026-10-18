@@ -71,11 +71,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Spans seven Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench, Porcelain Cradle, Amber-Root Hollows, Glaze-River Delta, Terracotta Wind-Chime Ridge) plus Saffron Kiln Orchards (Draft)."
+      "evidence": "Spans all eight Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench, Porcelain Cradle, Amber-Root Hollows, Glaze-River Delta, Terracotta Wind-Chime Ridge, Saffron Kiln Orchards)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Saffron Kiln Orchards to Draft while preserving Apricot Aqueduct Terrace and leaf Mystery nodes behind fog_of_lore gates."
+      "evidence": "Promotes Saffron Kiln Orchards to Canon while preserving Honeycomb Kiln Ridge and leaf Mystery nodes behind fog_of_lore gates."
     }
   }
 }
