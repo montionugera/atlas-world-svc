@@ -1040,7 +1040,7 @@
     "id": "I-167",
     "title": "Metrics endpoint",
     "created_at": "2026-10-11T06:59:06.892965+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-077",
     "epic": "E-006"
   },
   {
