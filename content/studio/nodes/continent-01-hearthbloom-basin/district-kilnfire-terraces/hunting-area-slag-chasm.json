@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-slag-chasm",
+  "name": "The Vitrified Slag Chasm",
+  "map_id": null,
+  "parent_district_id": "district-kilnfire-terraces",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Uncharted northern glass-slag gorge of Kilnfire Terraces where over-fired porcelain magma from the Great Lantern Eclipse cooled into singing crystal bridges.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "level_range": [
+    16,
+    20
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Superheated porcelain glaze-steam billows from the northern Slag Chasm; the Guild of Potters has sealed the bridge until the Great Damper is cooled.",
+    "visual_silhouette": "Iridescent cobalt-glass arches rising out of shimmering white steam.",
+    "unanswered_question": "What ancient kiln-spirit is singing beneath the vitrified glass bridges?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors the northern [1, 0] cell of district-kilnfire-terraces and links to Cinder Apron's North portal."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Singing cobalt-glass bridges suspended above a steaming porcelain gorge."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: 3D terrain tile not yet compiled."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: monster spawn table deferred until Great Damper chapter."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Preserved as intentional Fog of Lore with a locked North boundary portal on Cinder Apron."
+    }
+  }
+}

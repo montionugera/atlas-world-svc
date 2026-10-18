@@ -7,7 +7,7 @@
   "parent_continent_id": "continent-01-hearthbloom-basin",
   "node_type": "hunting_area",
   "status": "canon",
-  "core_rationale": "Terraced apricot and teacup-berry orchard east of Lantern Hollow where cracked clay watering-constructs and nectar-thieving beetles challenge Level 6 to 15 adventurers.",
+  "core_rationale": "Terraced apricot and teacup-berry orchard east of Lantern Hollow where cracked clay watering-constructs and nectar-thieving beetles challenge Level 6 to 15 adventurers along the road to Kilnwatch Bastion.",
   "is_starter_town": false,
   "grid_coordinates": [
     2,
@@ -30,7 +30,24 @@
   "portals": {
     "North": null,
     "South": null,
-    "East": null,
+    "East": {
+      "portal_id": "portal-kiln-east-orchard-east",
+      "direction": "East",
+      "target_node_id": "town-kilnwatch-bastion",
+      "target_map_id": "kilnwatch-bastion",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
     "West": {
       "portal_id": "portal-kiln-east-orchard-west",
       "direction": "West",
@@ -102,7 +119,7 @@
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Connects directly to Lantern Hollow East Gate at grid [2, 1] and dramatizes the clogged irrigation sluice conflict."
+      "evidence": "Connects Lantern Hollow East Gate at [2, 1] directly to Kilnwatch Bastion in district-kilnfire-terraces."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -114,7 +131,7 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Symmetric West portal back to town-lantern-hollow and Level 9 construct fauna within District's Level 1 to 15 range."
+      "evidence": "Symmetric West portal to town-lantern-hollow and East portal to town-kilnwatch-bastion with Level 9 construct fauna."
     },
     "intentional_mystery_discipline": {
       "verified": true,
