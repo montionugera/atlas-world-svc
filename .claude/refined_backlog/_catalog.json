@@ -1454,5 +1454,14 @@
     "release_version": null,
     "epic": "E-007",
     "claimed_at": "2026-10-18T10:57:03.229845+00:00"
+  },
+  {
+    "id": "F-117",
+    "title": "District Glaze-River Delta Canon Promotion, Cobalt Sandbar Ford Connection, and Helical-Gear Trench Draft",
+    "from_idea": "I-216",
+    "created_at": "2026-10-18T11:04:45.287845+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
