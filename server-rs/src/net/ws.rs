@@ -194,6 +194,7 @@ pub struct WsServer {
     non_uuid_skip_logs: Arc<AtomicUsize>,
     debug_enabled: Arc<AtomicBool>,
     debug_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<DebugRequest>>>,
+    ready: Arc<AtomicBool>,
     limits: ConnectionLimits,
 }
 
@@ -219,6 +220,7 @@ impl WsServer {
         let non_uuid_skip_logs = Arc::new(AtomicUsize::new(0));
         let debug_enabled = Arc::new(AtomicBool::new(false));
         let (debug_tx, debug_rx) = unbounded_channel();
+        let ready = Arc::new(AtomicBool::new(true));
         let limits = ConnectionLimits {
             rate_limit: Arc::new(std::sync::RwLock::new((
                 DEFAULT_MAX_INPUTS_PER_SEC,
@@ -245,6 +247,7 @@ impl WsServer {
             non_uuid_skip_logs: non_uuid_skip_logs.clone(),
             debug_enabled: debug_enabled.clone(),
             debug_rx: Arc::new(tokio::sync::Mutex::new(debug_rx)),
+            ready: ready.clone(),
             limits: limits.clone(),
         };
 
@@ -264,10 +267,56 @@ impl WsServer {
                 enabled: debug_enabled,
                 tx: debug_tx,
             },
+            ready,
             limits,
         ));
 
         Ok(server)
+    }
+
+    /// Sets whether the `/readyz` probe reports `200 OK` (`true`) or `503 Service Unavailable` (`false`).
+    pub fn set_ready(&self, ready: bool) {
+        self.ready.store(ready, Ordering::SeqCst);
+    }
+
+    /// Returns whether the server is currently marked ready for `/readyz`.
+    pub fn is_ready(&self) -> bool {
+        self.ready.load(Ordering::SeqCst)
+    }
+
+    /// Initiates graceful WebSocket shutdown: marks `/readyz` not-ready (`503`) and sends
+    /// `CloseCode::Away` (`1001 Going Away`) frames to all active client connections.
+    pub async fn shutdown(&self) {
+        self.set_ready(false);
+        let drained: Vec<(String, Sender<Message>, String)> = {
+            let mut conns = self.connections.write().await;
+            let mut rooms = self.session_rooms.write().await;
+            conns
+                .drain()
+                .map(|(conn_key, tx)| {
+                    let room = rooms
+                        .remove(&conn_key)
+                        .unwrap_or_else(|| "map-for-play".to_string());
+                    (conn_key, tx, room)
+                })
+                .collect()
+        };
+
+        if drained.is_empty() {
+            return;
+        }
+
+        let close_frame = CloseFrame {
+            code: CloseCode::Away,
+            reason: "server shutting down".into(),
+        };
+        for (conn_key, tx, room) in drained {
+            let _ = tx.try_send(Message::Close(Some(close_frame.clone())));
+            if let Some((session_id, _)) = conn_key.rsplit_once('#') {
+                let _ = self.disconnect_tx.send((session_id.to_string(), room));
+            }
+        }
+        tokio::time::sleep(Duration::from_millis(25)).await;
     }
 
     /// Configures the per-connection input rate limit (`max_per_sec` and `burst_capacity`).
@@ -508,6 +557,7 @@ impl WsServer {
         nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
         non_uuid_skip_logs: Arc<AtomicUsize>,
         debug: DebugGate,
+        ready: Arc<AtomicBool>,
         limits: ConnectionLimits,
     ) {
         info!(
@@ -530,9 +580,14 @@ impl WsServer {
             let nakama = nakama_ref.clone();
             let skip_logs = non_uuid_skip_logs.clone();
             let debug = debug.clone();
+            let ready = ready.clone();
             let limits = limits.clone();
 
             tokio::spawn(async move {
+                if is_probe_http(&stream).await {
+                    serve_probe_http(stream, ready).await;
+                    return;
+                }
                 if is_debug_http(&stream).await {
                     serve_debug_http(stream, peer_addr.ip(), debug).await;
                     return;
@@ -946,6 +1001,68 @@ impl WsServer {
         let _ = tokio::time::timeout(std::time::Duration::from_millis(50), write_task).await;
         info!("Session {} disconnected from room {}", session_id, room_id);
     }
+}
+
+/// True when the connection opens with a plain HTTP liveness/readiness request (`/healthz` or `/readyz`).
+async fn is_probe_http(stream: &TcpStream) -> bool {
+    let mut head = [0u8; 16];
+    let n = stream.peek(&mut head).await.unwrap_or(0);
+    [&b"GET /healthz"[..], &b"GET /readyz"[..]]
+        .iter()
+        .any(|prefix| head[..n].starts_with(prefix))
+}
+
+/// Serves `/healthz` (`200 OK`) and `/readyz` (`200 OK` when ready, `503 Service Unavailable` when not ready).
+async fn serve_probe_http(mut stream: TcpStream, ready: Arc<AtomicBool>) {
+    let mut raw = Vec::new();
+    let mut chunk = [0u8; 1024];
+    let head_end = loop {
+        if let Some(head_end) = raw.windows(4).position(|w| w == b"\r\n\r\n") {
+            break head_end;
+        }
+        match stream.read(&mut chunk).await {
+            Ok(n) if n > 0 && raw.len() < DEBUG_HEAD_MAX_BYTES => {
+                raw.extend_from_slice(&chunk[..n])
+            }
+            _ => return,
+        }
+    };
+    let head = String::from_utf8_lossy(&raw[..head_end]);
+    let mut request_line = head.lines().next().unwrap_or("").split(' ');
+    let method = request_line.next().unwrap_or("");
+    let target = request_line.next().unwrap_or("");
+    let (path, _) = target.split_once('?').unwrap_or((target, ""));
+
+    let (status, payload) = match (method, path) {
+        ("GET", "/healthz") => (
+            "200 OK",
+            serde_json::json!({ "ok": true, "status": "healthy" }).to_string(),
+        ),
+        ("GET", "/readyz") => {
+            if ready.load(Ordering::SeqCst) {
+                (
+                    "200 OK",
+                    serde_json::json!({ "ok": true, "ready": true }).to_string(),
+                )
+            } else {
+                (
+                    "503 Service Unavailable",
+                    serde_json::json!({ "ok": false, "ready": false }).to_string(),
+                )
+            }
+        }
+        _ => (
+            "404 Not Found",
+            serde_json::json!({ "ok": false, "error": "not found" }).to_string(),
+        ),
+    };
+
+    let response = format!(
+        "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{payload}",
+        payload.len()
+    );
+    let _ = stream.write_all(response.as_bytes()).await;
+    let _ = stream.shutdown().await;
 }
 
 /// True if any registered `session#seq` connection key belongs to `session_id`.
@@ -1786,5 +1903,75 @@ mod tests {
             server.drain_disconnects().await,
             vec!["idle-player".to_string()]
         );
+    }
+
+    async fn http_get(addr: SocketAddr, path: &str) -> (u16, String) {
+        let mut stream = TcpStream::connect(addr).await.unwrap();
+        let req = format!("GET {path} HTTP/1.1\r\nHost: {addr}\r\nConnection: close\r\n\r\n");
+        stream.write_all(req.as_bytes()).await.unwrap();
+        let mut buf = Vec::new();
+        stream.read_to_end(&mut buf).await.unwrap();
+        let text = String::from_utf8_lossy(&buf).into_owned();
+        let (head, body) = text.split_once("\r\n\r\n").unwrap_or((&text, ""));
+        let code = head
+            .lines()
+            .next()
+            .unwrap_or("")
+            .split_whitespace()
+            .nth(1)
+            .unwrap_or("0")
+            .parse::<u16>()
+            .unwrap_or(0);
+        (code, body.to_string())
+    }
+
+    #[tokio::test]
+    async fn test_healthz_readyz_and_graceful_shutdown_close_frames() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let addr = server.local_addr();
+
+        // /healthz and /readyz return 200 OK while running
+        let (health_code, health_body) = http_get(addr, "/healthz").await;
+        assert_eq!(health_code, 200);
+        assert!(health_body.contains("\"healthy\""));
+
+        let (ready_code, ready_body) = http_get(addr, "/readyz").await;
+        assert_eq!(ready_code, 200);
+        assert!(ready_body.contains("\"ready\":true"));
+
+        // Connect two active WebSocket clients
+        let url1 = format!("ws://{addr}/ws?token=dev-token:shut-1&proto=1");
+        let url2 = format!("ws://{addr}/ws?token=dev-token:shut-2&proto=1");
+        let (mut ws1, _) = connect_async(&url1).await.unwrap();
+        let (mut ws2, _) = connect_async(&url2).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(40)).await;
+        assert_eq!(server.active_connections_count().await, 2);
+
+        // Initiate graceful shutdown
+        server.shutdown().await;
+        assert!(!server.is_ready());
+        assert_eq!(server.active_connections_count().await, 0);
+
+        // /readyz now returns 503 Service Unavailable while /healthz remains 200
+        let (ready_code_after, ready_body_after) = http_get(addr, "/readyz").await;
+        assert_eq!(ready_code_after, 503);
+        assert!(ready_body_after.contains("\"ready\":false"));
+
+        // Both connected clients receive CloseCode::Away (1001)
+        for ws in [&mut ws1, &mut ws2] {
+            let msg = tokio::time::timeout(Duration::from_secs(1), ws.next())
+                .await
+                .expect("client should receive shutdown close frame")
+                .expect("stream should yield close frame")
+                .expect("no transport error");
+            match msg {
+                Message::Close(Some(frame)) => {
+                    assert_eq!(frame.code, CloseCode::Away);
+                    assert!(frame.reason.contains("shutting down"));
+                }
+                other => panic!("expected Close(Away) on shutdown, got {:?}", other),
+            }
+        }
     }
 }
