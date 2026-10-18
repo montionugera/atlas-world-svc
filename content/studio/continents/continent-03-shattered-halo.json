@@ -51,13 +51,14 @@
     "district-eclipse-observatory",
     "district-nebula-undertide",
     "district-zenith-crown",
-    "district-perigee-abyss"
+    "district-perigee-abyss",
+    "district-aphelion-halo-rim"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Airship captains refuse to fly below the Maelstrom Eye Lip; they claim waterfalls pour upward into the stars and lost toys float back down.",
+    "in_world_rumor": "Airship captains refuse to fly beyond the Aphelion Halo Rim; they claim the outermost starlight chains drift into a silent sea of crystallized comets.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
-    "unanswered_question": "What sleeps beyond the Maelstrom Eye Lip beneath the lowest basalt anchor of Perigee Abyss?",
-    "discovery_trigger_hint": "All five Districts on Continent 03 (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss) are Canon."
+    "unanswered_question": "What sleeps along the Aphelion Halo Rim where Vesper's outermost gravity ring meets the comet drift?",
+    "discovery_trigger_hint": "Five core Districts on Continent 03 are Canon; Aphelion Halo Rim is preserved as an intentional Mystery frontier."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -74,11 +75,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes all five Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss) across Levels 30 to 50."
+      "evidence": "Organizes five Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss) plus Aphelion Halo Rim (Mystery)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Mystery leaf nodes (Mirror Cascade, Apogee Spire, Abyssal Barometer, Solstice Anchor, Maelstrom Eye Lip) behind fog_of_lore gates."
+      "evidence": "Preserves Aphelion Halo Rim in Mystery status and leaf Mystery nodes behind fog_of_lore gates."
     }
   }
 }

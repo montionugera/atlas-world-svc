@@ -2,46 +2,170 @@
   "schema_version": "1.0.0",
   "id": "hunting-area-celadon-causeway",
   "name": "Celadon Causeway",
-  "map_id": null,
+  "map_id": "celadon-causeway",
   "parent_district_id": "district-porcelain-cradle",
   "parent_continent_id": "continent-01-hearthbloom-basin",
   "node_type": "hunting_area",
-  "status": "mystery",
-  "core_rationale": "Western celadon-glazed stepping-stone causeway of Porcelain Cradle Sanctuary at [0, 1] leading from Ash-Bellows Trench across warm shallow mineral pools toward Sola's central medallion.",
+  "status": "canon",
+  "core_rationale": "Western celadon-glazed stepping-stone causeway of Porcelain Cradle Sanctuary at [0, 1] leading from Draft-Kiln Post across warm shallow mineral pools toward Sola's central medallion.",
   "is_starter_town": false,
   "grid_coordinates": [
     0,
     1
   ],
+  "floor_index": 0,
   "level_range": [
     10,
     12
   ],
-  "mystery_hook": {
-    "in_world_rumor": "Potters say every celadon tile along the causeway rings with a different musical note when a Sprout hops across it.",
-    "visual_silhouette": "Arched sea-green porcelain bridges skimming inches above steaming mirror-flat mineral pools.",
-    "unanswered_question": "Which melody of stepping-stones unlocks the inner dome of Porcelain Cradle Sanctuary?"
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/nature/rock_tall_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_celadon_causeway",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Steaming mirror-flat mineral pools crossed by musical sea-green celadon arches"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-celadon-causeway-east-sanctuary",
+      "direction": "East",
+      "target_node_id": "town-porcelain-loom-sanctuary",
+      "target_map_id": "porcelain-loom-sanctuary",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-celadon-causeway-west-kiln-post",
+      "direction": "West",
+      "target_node_id": "town-draft-kiln-post",
+      "target_map_id": "draft-kiln-post",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-celadon-causeway-sprite",
+      "monster_id": "monster-celadon-ripple-sprite",
+      "monster_name": "Celadon Ripple-Sprite",
+      "spawn_count": 12,
+      "respawn_seconds": 20,
+      "level": 10,
+      "element": "Water",
+      "size": "Small",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-celadon-glaze-droplet",
+          "item_name": "Celadon Glaze-Droplet",
+          "drop_chance_percent": 48.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-celadon-ripple-sprite",
+        "card_name": "Celadon Ripple-Sprite Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Footgear",
+        "modifier_summary": "Increases Health Points recovery by 10% and grants +4 Dodge in shallow water."
+      }
+    },
+    {
+      "spawn_id": "spawn-celadon-causeway-chime",
+      "monster_id": "monster-porcelain-chime-doll",
+      "monster_name": "Porcelain Chime-Doll",
+      "spawn_count": 10,
+      "respawn_seconds": 25,
+      "level": 12,
+      "element": "Earth",
+      "size": "Small",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-resonant-porcelain-petal",
+          "item_name": "Resonant Porcelain-Petal",
+          "drop_chance_percent": 42.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-porcelain-chime-doll",
+        "card_name": "Porcelain Chime-Doll Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Accessory",
+        "modifier_summary": "Adds +5 Magic Defense and 3% cast-time reduction."
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.45,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_Clearance_meters": {
+      "height": 2.1,
+      "width": 1.55
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/nature/rock_tall_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/barrel.glb"
+    ]
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Serves as the western entry causeway of Porcelain Cradle Sanctuary inside scar-kiln-basin."
+      "evidence": "Connects Draft-Kiln Post (West) to Porcelain Loom Sanctuary (East) across the warm mineral pools of scar-kiln-basin."
     },
     "fantasy_and_wonder": {
       "verified": true,
-      "evidence": "Musical celadon-glazed porcelain bridges skimming across steaming mirror-flat mineral pools."
+      "evidence": "Musical sea-green celadon porcelain arches that ring with soft chimes as Sprouts hop across steaming pools."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+      "verified": true,
+      "evidence": "Enforces 0.20m water-clover, 0.45m tea-shrubs, 0.14m stepping-stones, and 12.5m causeways for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-porcelain-cradle."
+      "verified": true,
+      "evidence": "Symmetric West/East portals and Level 10 to 12 spirit/construct spawns matching district-porcelain-cradle."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Maintains map_id: null and complete mystery_hook until Porcelain Cradle Sanctuary is promoted to Canon."
+      "evidence": "Promoted cleanly from Mystery to Canon with full five-pillar verification."
     }
   }
 }

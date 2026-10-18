@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-lotus-kiln-rim",
+  "name": "Lotus Kiln Rim",
+  "map_id": null,
+  "parent_district_id": "district-porcelain-cradle",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northernmost vitrified porcelain lotus-petal rim of Porcelain Cradle Sanctuary at [1, 0] where Sola's inner shield-ridge meets the high thermal geysers.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    14,
+    15
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Weavers claim that once every solstice, the giant porcelain lotus petals on the northern rim unfold to reveal a crystal stair into the clouds.",
+    "visual_silhouette": "Curving white porcelain lotus petals rising out of golden geothermal mist on the northern horizon.",
+    "unanswered_question": "What celestial observatory did Sola's porcelain lotus petals originally shelter before the Clockspring War?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Forms the northernmost vitrified crest of scar-kiln-basin inside Porcelain Cradle Sanctuary."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Colossal white porcelain lotus petals wreathed in golden geothermal mist."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: gated behind the North fog_of_lore portal on town-porcelain-loom-sanctuary."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook without generating filler map geometry."
+    }
+  }
+}

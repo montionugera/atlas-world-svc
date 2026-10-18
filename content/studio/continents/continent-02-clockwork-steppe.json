@@ -73,11 +73,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes four Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues) plus Thunder-Coil Basin (Mystery)."
+      "evidence": "Organizes four Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues) plus Thunder-Coil Basin (Draft)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Thunder-Coil Basin in Mystery status and leaf Mystery nodes behind fog_of_lore gates while keeping the Astrolabe Gate open to Continent 03."
+      "evidence": "Preserves Thunder-Coil Basin in Draft status with Mystery child Leyden Capacitor Causeway while keeping the Astrolabe Gate open to Continent 03."
     }
   }
 }

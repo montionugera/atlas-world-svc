@@ -1,0 +1,159 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-porcelain-loom-sanctuary",
+  "name": "Porcelain Loom Sanctuary",
+  "map_id": "porcelain-loom-sanctuary",
+  "parent_district_id": "district-porcelain-cradle",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Innermost translucent white-porcelain sanctuary town of Continent 01 at [1, 1] where Lantern-Keepers tend Sola's Hearth-Loom above the Medallion Heart Vault.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    11,
+    14
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_roof_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_porcelain_sanctuary",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Warm luminous spring-canals reflecting translucent white-gold porcelain domes"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-porcelain-sanctuary-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-lotus-kiln-rim",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Boiling lotus-glaze steam curtains seal the northern Lotus Kiln Rim; Loom-Mother Cera requires the Medallion Heart-Chime before opening the northern terrace.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": null,
+    "West": {
+      "portal_id": "portal-porcelain-sanctuary-west-celadon",
+      "direction": "West",
+      "target_node_id": "hunting-area-celadon-causeway",
+      "target_map_id": "celadon-causeway",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-porcelain-sanctuary-dungeon-vault",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-medallion-heart-vault",
+      "target_map_id": "medallion-heart-vault-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-loom-mother-cera",
+      "name": "Loom-Mother Cera",
+      "role": "Hearth-Loom High Keeper",
+      "position_meters": {
+        "x": 1975.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Welcome to Porcelain Loom Sanctuary! Here at our 0.58 meter celadon weaving-table, Sola's warmth spins new spirit-lanterns for every Sprout."
+    },
+    {
+      "npc_id": "npc-chime-warden-orin",
+      "name": "Chime-Warden Orin",
+      "role": "Medallion Vault Custodian",
+      "position_meters": {
+        "x": 2065.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Beneath our sanctuary lies the Medallion Heart Vault. Retrieve the Medallion Heart-Chime below if you wish to part the steam curtains of Lotus Kiln Rim!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.42,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_Clearance_meters": {
+      "height": 2.1,
+      "width": 1.55
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_roof_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Porcelain Cradle Sanctuary at [1, 1] directly above Sola's unbroken ceramic boss-medallion."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Translucent white-gold porcelain domes glowing softly over warm spring-canals."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Weaving-tables at 0.58m, porcelain risers at 0.14m, doorways 2.10m x 1.55m, and 13.0m walkways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric West portal to hunting-area-celadon-causeway, Dungeon portal to dungeon-medallion-heart-vault, and North fog_of_lore portal to hunting-area-lotus-kiln-rim."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Seals the northern Lotus Kiln Rim behind a fog_of_lore boundary portal and Loom-Mother lock message."
+    }
+  }
+}
