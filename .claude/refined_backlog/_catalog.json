@@ -1219,5 +1219,15 @@
     "status": "claimed",
     "release_version": null,
     "claimed_at": "2026-10-18T08:21:57.978589+00:00"
+  },
+  {
+    "id": "F-098",
+    "title": "Derive client obstacles and spawn from the same source",
+    "from_idea": "I-148",
+    "created_at": "2026-10-18T08:26:01.648458+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-004"
   }
 ]

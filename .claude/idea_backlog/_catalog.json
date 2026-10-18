@@ -907,7 +907,7 @@
     "id": "I-148",
     "title": "Derive client obstacles and spawn from the same source",
     "created_at": "2026-10-11T06:59:04.679157+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-098",
     "epic": "E-004"
   },
   {
