@@ -6,7 +6,7 @@ As part of the continuous 4-hour Autonomous Product Owner loop on `release/1.15`
 2. Promote `[District] district-thunder-coil-basin (Thunder-Coil Basin)` on Continent 02 (`The Clockwork Steppe`) from `mystery` to `draft` (`4/5` pillars) and seed its initial Mystery child `hunting-area-leyden-causeway`.
 3. Seed a new `mystery` District on Continent 03 (`The Shattered Halo`), `district-aphelion-halo-rim` (`3/5` pillars), so the repository continues to maintain at least 1 `canon`, 1 `draft`, and 1 `mystery` District for full Four-Level Studio verification.
 
-## Success Criteria
+## Acceptance criteria
 1. All 7 invariants (`INV-01..INV-07`) pass with 0 errors.
 2. `content/maps/_manifest.runtime.json` compiles 40 playable maps (`+3` new Canon maps: `celadon-causeway`, `porcelain-loom-sanctuary`, `medallion-heart-vault-b1`).
 3. `python3 scripts/run_world_pipeline.py --fast --auto-tune` achieves `100.0%` Quality Score and `A+` (`< 1,000 ms`) warm turn speed across 72 total Studio nodes.
