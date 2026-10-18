@@ -1195,5 +1195,14 @@
     "claimed_at": "2026-10-18T07:51:42.700055+00:00",
     "shipped_at": "2026-10-18T08:06:05.816010+00:00",
     "shipped_sha": "c7e7d25642f6d67339b64e290ddacf3fd193f052"
+  },
+  {
+    "id": "F-096",
+    "title": "District The Eclipse Observatory Canon Promotion, Orrery Bridge Connection, and Nebula Undertide Draft",
+    "from_idea": "I-203",
+    "created_at": "2026-10-18T08:07:15.745714+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
