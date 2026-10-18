@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-terracotta-wind-chimes",
+  "name": "Terracotta Wind-Chime Ridge",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "status": "mystery",
+  "core_rationale": "High western ceramic-bell ridge of Continent 01 where Sola's shield-rim arches hang thousands of hollow terracotta wind-pipes that sing when thermal breezes rise.",
+  "local_conflict": "Breeze-piping clay sprites and bell-crest finches nest inside the resonant ceramic wind-organs.",
+  "level_band_label": "Levels 1 to 20",
+  "level_range": [
+    19,
+    20
+  ],
+  "ecological_monster_families": [
+    "sky_kin",
+    "construct"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Lantern-Keepers say that when the evening breeze blows through Terracotta Wind-Chime Ridge, the clay pipes play Sola's ancient lullaby across the entire basin.",
+    "visual_silhouette": "Glazed terracotta arches along the western shield-rim hung with thousands of swaying ceramic bell-pipes.",
+    "unanswered_question": "What carillon sanctuary crowns the highest arch of Terracotta Wind-Chime Ridge?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin along the western acoustic rim of Continent 01."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Glazed terracotta arches hung with thousands of singing ceramic wind-pipes."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: wind-organ bench and ceramic stair metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the western acoustic District frontier on Continent 01 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}

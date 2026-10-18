@@ -60,7 +60,7 @@
     "in_world_rumor": "Airship captains say Umbrage Prism Atoll casts seven-colored lunar shadows upward onto the underside of the floating islands.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
     "unanswered_question": "What sleeps inside the shadow-prism core of Umbrage Prism Atoll?",
-    "discovery_trigger_hint": "Seven core Districts on Continent 03 are Canon; Umbrage Prism Atoll is preserved as an intentional Mystery frontier."
+    "discovery_trigger_hint": "Seven core Districts on Continent 03 are Canon; Umbrage Prism Atoll is promoted to Draft with Mystery border Violet Spectrum Span."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -77,11 +77,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes seven Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss, Aphelion Halo Rim, Libration Mirror Shoals) plus Umbrage Prism Atoll (Mystery)."
+      "evidence": "Organizes seven Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss, Aphelion Halo Rim, Libration Mirror Shoals) plus Umbrage Prism Atoll (Draft)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Umbrage Prism Atoll in Mystery status and leaf Mystery nodes behind fog_of_lore gates."
+      "evidence": "Promotes Umbrage Prism Atoll to Draft while keeping Violet Spectrum Span in Mystery status."
     }
   }
 }

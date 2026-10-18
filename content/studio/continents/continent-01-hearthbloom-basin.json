@@ -52,7 +52,8 @@
     "district-ash-bellows-trench",
     "district-porcelain-cradle",
     "district-amber-root-hollows",
-    "district-glaze-river-delta"
+    "district-glaze-river-delta",
+    "district-terracotta-wind-chimes"
   ],
   "quality_checklist": {
     "causal_continuity": {
@@ -69,11 +70,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Spans all six Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench, Porcelain Cradle, Amber-Root Hollows, Glaze-River Delta)."
+      "evidence": "Spans six Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench, Porcelain Cradle, Amber-Root Hollows, Glaze-River Delta) plus Terracotta Wind-Chime Ridge (Mystery)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Glaze-River Delta to Canon while preserving leaf Mystery frontier Kiln-Lighthouse Spit behind a Fog of Lore portal."
+      "evidence": "Preserves Terracotta Wind-Chime Ridge in Mystery status and leaf Mystery nodes behind fog_of_lore gates."
     }
   }
 }
