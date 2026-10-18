@@ -148,6 +148,55 @@ impl PlayerAvatar {
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct MobTag;
 
+/// Default follow distance in units (`<= 5.0`) within which a companion settles near its owner (E-007 Slice 9).
+pub const COMPANION_FOLLOW_DISTANCE: f32 = 4.0;
+/// Default delay in seconds (`10.0s`) before a defeated companion respawns near its owner (E-007 Slice 10).
+pub const COMPANION_RESPAWN_DELAY_SEC: f32 = 10.0;
+
+/// Identifies an allied companion entity belonging to a player (E-007 Slice 9).
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct CompanionTag;
+
+/// Allied companion AI state and configuration (E-007 Slices 9 & 10).
+#[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CompanionAi {
+    #[serde(with = "entity_serde")]
+    pub owner: Entity,
+    pub follow_distance: f32,
+    pub move_speed: f32,
+    pub aggro_range: f32,
+    pub respawn_delay_sec: f32,
+    pub respawn_timer_sec: f32,
+}
+
+impl CompanionAi {
+    pub fn new(owner: Entity) -> Self {
+        Self {
+            owner,
+            follow_distance: COMPANION_FOLLOW_DISTANCE,
+            move_speed: 220.0,
+            aggro_range: 180.0,
+            respawn_delay_sec: COMPANION_RESPAWN_DELAY_SEC,
+            respawn_timer_sec: 0.0,
+        }
+    }
+
+    pub fn with_follow_distance(mut self, follow_distance: f32) -> Self {
+        self.follow_distance = follow_distance.max(0.5);
+        self
+    }
+
+    pub fn with_move_speed(mut self, move_speed: f32) -> Self {
+        self.move_speed = move_speed.max(10.0);
+        self
+    }
+
+    pub fn with_respawn_delay(mut self, respawn_delay_sec: f32) -> Self {
+        self.respawn_delay_sec = respawn_delay_sec.max(0.5);
+        self
+    }
+}
+
 /// Player body radius (px). Matches the client's `SERVER_RS_PLAYER_RADIUS`.
 pub const PLAYER_BODY_RADIUS: f32 = 12.0;
 /// Mob body radius (px). Matches the client's `SERVER_RS_MOB_RADIUS`.
