@@ -25,8 +25,14 @@ pub use mob_lifecycle::{mob_bundle, mob_lifecycle_system};
 pub use physics::physics_step_system;
 pub use player_input::player_input_system;
 pub use progression::{
-    experience_on_kill_system, grant_xp_and_scale_stats, mob_xp_reward, ATK_GAIN_PER_LEVEL,
-    HP_GAIN_PER_LEVEL,
+    apply_death_penalty_and_bind_respawn, claim_quest_reward, configure_skill_loadout,
+    discover_waypoint, equip_item_from_inventory, experience_on_kill_system,
+    fast_travel_to_waypoint, grant_xp_and_scale_stats, loot_drop_on_kill_system,
+    loot_pickup_system, mob_xp_reward, recalculate_equipment_stats, set_bind_point,
+    switch_active_weapon, vendor_buy_item, vendor_sell_item, ActiveQuestProgress, GrantLedger,
+    PlayerQuestTracker, QuestStatus, RuntimeQuestCatalog, RuntimeQuestEntry, RuntimeQuestObjective,
+    ATK_GAIN_PER_LEVEL, DEATH_XP_PENALTY_PERCENT, HP_GAIN_PER_LEVEL, LOOT_PICKUP_RADIUS,
+    STORY_QUESTS_JSON,
 };
 pub use projectile::{projectile_collision_system, projectile_kinematics_system};
 pub use separation::separation_system;
