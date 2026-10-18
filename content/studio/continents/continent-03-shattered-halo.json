@@ -62,7 +62,7 @@
     "in_world_rumor": "Star-navigators whisper that Penumbra Prism Reef casts two simultaneous shadows—one pointing toward the Zenith Crown and one pointing into the abyssal whirlpool below.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and smoky-violet prism arches glowing softly on the northern horizon.",
     "unanswered_question": "What twilight observatory town anchors the half-shadowed arches of Penumbra Prism Reef?",
-    "discovery_trigger_hint": "Nine Districts on Continent 03 are Canon while Penumbra Prism Reef awaits exploration on the outer twilight ring."
+    "discovery_trigger_hint": "Nine Districts on Continent 03 are Canon while Penumbra Prism Reef is in Draft with Penumbra Refraction Causeway."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -79,11 +79,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes nine Canon Districts plus Penumbra Prism Reef (Mystery) on Continent 03."
+      "evidence": "Organizes nine Canon Districts plus Penumbra Prism Reef (Draft) on Continent 03."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Seeds Penumbra Prism Reef in Mystery status while preserving leaf Mystery frontier Magnetosphere Ribbon Arch behind a Fog of Lore portal."
+      "evidence": "Advances Penumbra Prism Reef to Draft while preserving Penumbra Refraction Causeway in Mystery status."
     }
   }
 }

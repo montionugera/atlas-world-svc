@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-cinnamon-bellows-bluff",
+  "name": "Cinnamon-Bellows Bluff",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "status": "mystery",
+  "core_rationale": "Ninth warm terracotta spice-drying bluff of Continent 01 where Sola's aromatic hearth-drafts cure cinnamon-bark windbreaks above the eastern orchard rim.",
+  "local_conflict": "Cinnamon-bark beetles and playful ember-tail foxes nest inside the warm spice-drying flues.",
+  "level_band_label": "Levels 1 to 20",
+  "level_range": [
+    14,
+    15
+  ],
+  "ecological_monster_families": [
+    "flora_fauna",
+    "carapace"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Bakers in Saffron-Press Village say the warm breezes from Cinnamon-Bellows Bluff smell of toasted cinnamon-sugar before every sunrise.",
+    "visual_silhouette": "Terraced terracotta spice-towers with curling cinnamon-bark louvers along the eastern basin rim.",
+    "unanswered_question": "What spice-mill sanctuary crowns the warm updrafts of Cinnamon-Bellows Bluff?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin along the eastern spice-drying bluffs of Continent 01."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Terraced terracotta spice-towers with curling cinnamon-bark louvers venting warm aromatic drafts."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: spice-mill counter and terrace riser metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the ninth District frontier on Continent 01 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}
