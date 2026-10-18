@@ -43,18 +43,19 @@
       "travel_mode": "dimensional_rift",
       "hub_name": "The Astrolabe Gate",
       "status": "locked_by_mystery",
-      "unlock_rationale": "Requires the unauthored Star-Pendulum key from Continent 03."
+      "unlock_rationale": "Requires the Star-Pendulum key from Starfall Anchorage on Continent 03."
     }
   ],
   "district_ids": [
     "district-rustcog-downs",
     "district-mainspring-caldera",
-    "district-verdigris-siphon"
+    "district-verdigris-siphon",
+    "district-gilded-exhaust"
   ],
   "mystery_hook": {
     "in_world_rumor": "Tinkers say the deepest canyon gear still ticks once every midnight, echoing a lullaby from the north.",
     "visual_silhouette": "Colossal brass wheel-rims rising two hundred meters above golden short-grass plains.",
-    "unanswered_question": "What lies beyond the eastern Verdigris Siphon aqueducts where Krono's coolant pipes drain?"
+    "unanswered_question": "What sleeps beneath the southern Gilded Exhaust flue vents where Krono's furnace breath escapes?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -71,11 +72,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Connected via the Kettle-Whistle Viaduct to Canon Districts Rustcog Downs and Mainspring Caldera, plus Draft District Verdigris Siphon."
+      "evidence": "Three connected Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon) spanning [15, 35] plus Mystery District Gilded Exhaust."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Includes mystery_hook for the eastern Verdigris Siphon coolant frontier and locks the Astrolabe Gate to Continent 03."
+      "evidence": "Preserves Gilded Exhaust as a Mystery District frontier and locks the Astrolabe Gate to Continent 03."
     }
   }
 }

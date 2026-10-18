@@ -2,11 +2,11 @@
   "schema_version": "1.0.0",
   "id": "hunting-area-siphon-sluice",
   "name": "The Verdigris Siphon Sluiceway",
-  "map_id": null,
+  "map_id": "siphon-sluice",
   "parent_district_id": "district-verdigris-siphon",
   "parent_continent_id": "continent-02-clockwork-steppe",
   "node_type": "hunting_area",
-  "status": "mystery",
+  "status": "canon",
   "core_rationale": "Western turquoise-copper sluice gate of Verdigris Siphon at [0, 1] where coolant channels from Escapement Anvil cascade into tiered mineral dye-basins.",
   "is_starter_town": false,
   "grid_coordinates": [
@@ -15,33 +15,148 @@
   ],
   "level_range": [
     25,
-    30
+    29
   ],
-  "mystery_hook": {
-    "in_world_rumor": "Sluice-keepers say the patinated bronze floodgates East of Escapement Anvil only open when the foundry quenching vats reach full pressure.",
-    "visual_silhouette": "Arched turquoise copper aqueducts pouring steaming emerald coolant into terraced stone basins.",
-    "unanswered_question": "What oxidized construct patrols the lower Siphon Sluiceway?"
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/nature/rock_medium_1.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_verdigris_sluice",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Tiered turquoise copper aqueduct channels and mineral cooling pools"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-siphon-sluice-east-patina",
+      "direction": "East",
+      "target_node_id": "town-patina-lock",
+      "target_map_id": "patina-lock",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-siphon-sluice-west-anvil",
+      "direction": "West",
+      "target_node_id": "town-escapement-anvil",
+      "target_map_id": "escapement-anvil",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-siphon-oxidized-construct",
+      "monster_id": "mob-oxidized-siphon-construct",
+      "monster_name": "Oxidized Siphon-Construct",
+      "spawn_count": 9,
+      "respawn_seconds": 13.0,
+      "level": 26,
+      "element": "Water",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-verdigris-valve-ring",
+          "item_name": "Verdigris Valve Ring",
+          "drop_chance_percent": 47.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-oxidized-siphon-construct",
+        "card_name": "Oxidized Siphon-Construct Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Garment",
+        "modifier_summary": "Water Resistance +15%, Physical Defense +5"
+      }
+    },
+    {
+      "spawn_id": "spawn-siphon-brine-strider",
+      "monster_id": "mob-copper-brine-strider",
+      "monster_name": "Copper Brine-Strider",
+      "spawn_count": 10,
+      "respawn_seconds": 10.0,
+      "level": 28,
+      "element": "Water",
+      "size": "Small",
+      "race": "Insect",
+      "family": "insect",
+      "item_drops": [
+        {
+          "item_id": "item-turquoise-salt-crystal",
+          "item_name": "Turquoise Salt Crystal",
+          "drop_chance_percent": 50.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-copper-brine-strider",
+        "card_name": "Copper Brine-Strider Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Footgear",
+        "modifier_summary": "Movement Speed +5%, Water Magic Damage +6%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.24,
+    "max_bush_height_meters": 0.52,
+    "main_road_width_meters": 14.0,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/nature/rock_medium_1.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Forms the western arrival sluiceway of District Verdigris Siphon East of Escapement Anvil."
+      "evidence": "Receives the eastern coolant aqueduct from Escapement Anvil at [0, 1] and leads East to Patina Lock."
     },
     "fantasy_and_wonder": {
       "verified": true,
       "evidence": "Arched turquoise copper aqueducts pouring shimmering coolant into terraced mineral basins."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: terrain tile and prop kit metrics will be bound when promoted to Draft."
+      "verified": true,
+      "evidence": "0.16m sluice steps, <= 0.24m grass, <= 0.52m bushes, and 14.0m aqueduct causeways for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: reserved at [0, 1] in Verdigris Siphon East of Escapement Anvil."
+      "verified": true,
+      "evidence": "Symmetric West portal to town-escapement-anvil, East portal to town-patina-lock, and Level 26 to 28 construct/insect spawns."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Maintains map_id: null and compiles to a fog_of_lore boundary portal on Escapement Anvil East Gate."
+      "evidence": "Promoted cleanly from Mystery to Canon after verifying all 5 checklist pillars and parent District readiness."
     }
   }
 }

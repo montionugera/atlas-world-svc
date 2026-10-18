@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-patina-lock",
+  "name": "Patina Lock",
+  "map_id": "patina-lock",
+  "parent_district_id": "district-verdigris-siphon",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Canal-lock town at [1, 1] built inside a tiered turquoise copper reservoir where water-wheels drive clockwork dye-looms and alchemical coolant stills.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "level_range": [
+    26,
+    30
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_patina_canal_town",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Turquoise mineral lock-basins and brass water-wheel raceways"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-patina-lock-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-teal-spillway",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Pressurized turquoise coolant cascades over the northern Teal Spillway; the Lock-Keepers Guild has bolted the weir gate until the monsoon sluices subside.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": null,
+    "West": {
+      "portal_id": "portal-patina-lock-west-sluice",
+      "direction": "West",
+      "target_node_id": "hunting-area-siphon-sluice",
+      "target_map_id": "siphon-sluice",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-patina-lock-dungeon-mercury",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-mercury-reservoir",
+      "target_map_id": "mercury-reservoir-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 2040.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.48,
+    "main_road_width_meters": 14.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors the eastern canal-lock hub of Verdigris Siphon at [1, 1] directly above the Mercury Reservoir intake vault."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Turquoise copper lock-town where giant brass water-wheels spin alchemical dye-looms."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.15m sluice risers, 0.60m dye-vat counters, and 14.0m lock-side avenues for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Peaceful Safe Zone (0 resident_spawns) at [1, 1] with West portal to Siphon Sluiceway, Dungeon portal to Mercury Reservoir, and North fog_of_lore portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Seals the northern Teal Spillway weir gate behind a fog_of_lore boundary portal."
+    }
+  }
+}

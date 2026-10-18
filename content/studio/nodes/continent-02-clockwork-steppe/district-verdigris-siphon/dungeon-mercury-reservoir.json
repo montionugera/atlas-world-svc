@@ -1,0 +1,146 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-mercury-reservoir",
+  "name": "The Mercury Reservoir Vault (Floor -1)",
+  "map_id": "mercury-reservoir-b1",
+  "parent_district_id": "district-verdigris-siphon",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Subterranean coolant intake vault beneath Patina Lock [1, 1] where silvery alchemical mercury-slimes and intake wardens guard Krono's deep siphon pumps.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    28,
+    35
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 1000.0,
+      "height": 1000.0
+    },
+    "biome_palette": "clockwork_mercury_vault",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Mirror-bright alchemical coolant basins and bronze turbine sumps"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-mercury-reservoir-exit-patina",
+      "direction": "Exit",
+      "target_node_id": "town-patina-lock",
+      "target_map_id": "patina-lock",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 500.0,
+        "y": 900.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrival_point_meters": {
+        "x": 500.0,
+        "y": 860.0
+      }
+    }
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-mercury-alchemical-slime",
+      "monster_id": "mob-alchemical-mercury-slime",
+      "monster_name": "Alchemical Mercury-Slime",
+      "spawn_count": 10,
+      "respawn_seconds": 11.0,
+      "level": 30,
+      "element": "Poison",
+      "size": "Small",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-quicksilver-coolant-vial",
+          "item_name": "Quicksilver Coolant Vial",
+          "drop_chance_percent": 46.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-alchemical-mercury-slime",
+        "card_name": "Alchemical Mercury-Slime Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Accessory",
+        "modifier_summary": "Poison Resistance +15%, Magic Defense +6"
+      }
+    },
+    {
+      "spawn_id": "spawn-mercury-intake-warden",
+      "monster_id": "mob-verdigris-intake-warden",
+      "monster_name": "Verdigris Intake-Warden",
+      "spawn_count": 6,
+      "respawn_seconds": 19.0,
+      "level": 34,
+      "element": "Water",
+      "size": "Large",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-patinated-impeller-blade",
+          "item_name": "Patinated Impeller Blade",
+          "drop_chance_percent": 35.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-verdigris-intake-warden",
+        "card_name": "Verdigris Intake-Warden Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Shield",
+        "modifier_summary": "Max Health Points +10%, Water Resistance +10%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.14,
+    "max_bush_height_meters": 0.32,
+    "main_road_width_meters": 12.0,
+    "footpath_width_meters": 4.0,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Resolves the Verdigris Siphon mystery hook of what sleeps inside the Siphon Reservoir intake vault beneath Patina Lock."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Mirror-bright subterranean quicksilver basins and patinated bronze turbine chambers."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.16m terrace steps, 12.0m dungeon walkways, and 4.0m side catwalks for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric Exit <-> Dungeon portal to town-patina-lock at [1, 1] floor_index -1 with Level 30 to 34 construct fauna (+5 dungeon bleed)."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "All 5 checklist pillars verified before promoting the subterranean reservoir hook to Canon."
+    }
+  }
+}

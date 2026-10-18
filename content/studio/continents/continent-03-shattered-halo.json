@@ -2,8 +2,8 @@
   "schema_version": "1.0.0",
   "id": "continent-03-shattered-halo",
   "name": "The Shattered Halo",
-  "status": "mystery",
-  "core_rationale": "Born from scar-vesper-crater where Vesper the Dream-Eater's tear inverted gravity during the Clockspring War, reserving a high-level (Level 30+) vertical sky-archipelago without needing districts or towns authored today.",
+  "status": "draft",
+  "core_rationale": "Born from scar-vesper-crater where Vesper the Dream-Eater's tear inverted gravity during the Clockspring War, forming a Level 30 to 50 vertical sky-archipelago of tethered basalt islands.",
   "parent_world_history_causes": {
     "world_history_id": "world-history-cradle-of-embers",
     "god_patron_ids": [
@@ -12,13 +12,48 @@
     "war_scar_ids": [
       "scar-vesper-crater"
     ],
-    "causal_summary": "Vesper's slumbering gravity field holds broken ocean chunks suspended in a ring above the northern whirlpool."
+    "causal_summary": "Vesper's slumbering gravity field holds broken ocean chunks suspended in a luminous ring above the northern whirlpool."
   },
+  "level_band": {
+    "min_level": 30,
+    "max_level": 50
+  },
+  "climate_profile": {
+    "macro_biome": "Inverted-gravity basalt sky-islands linked by starlight tether-bridges and upward waterfalls",
+    "weather_phenomena": [
+      "Luminous Star-Tide updrafts that slow fall speed and illuminate crystal buoys"
+    ],
+    "skybox_palette": "Deep indigo twilight with a crescent ring of floating islands and upward-flowing silver cascades"
+  },
+  "civilization_style": {
+    "culture_archetype": "Star-navigators, tether-weavers, and dream-glass cartographers",
+    "architecture_motif": "Lantern-lit basalt anchor-piers and brass tether-winches carved into floating island rims",
+    "character_scale_adaptation": "Tether-bridges maintain 12.0 meter wide decked walkways (>= 3.5 meter law) with 0.65 meter safety rails, 0.15 meter basalt risers, and 0.60 meter astrolabe chart tables for 1.05 meter characters."
+  },
+  "travel_links": [
+    {
+      "target_continent_id": "continent-02-clockwork-steppe",
+      "travel_mode": "dimensional_rift",
+      "hub_name": "Starfall Anchorage Rift-Dock",
+      "status": "locked_by_mystery",
+      "unlock_rationale": "Awaiting calibration of the Star-Pendulum key between Astrolabe Rift Promontory and Starfall Anchorage."
+    },
+    {
+      "target_continent_id": "continent-01-hearthbloom-basin",
+      "travel_mode": "airship",
+      "hub_name": "Hearthbloom Sky-Spire",
+      "status": "locked_by_mystery",
+      "unlock_rationale": "Sealed until the Violet Squall barometer beacons on Continent 03 are lit."
+    }
+  ],
+  "district_ids": [
+    "district-starfall-anchorage"
+  ],
   "mystery_hook": {
     "in_world_rumor": "Airship captains refuse to fly past the Violet Squall; they claim waterfalls pour upward into the stars and lost toys float back down.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
-    "unanswered_question": "What civilization survived on the underside of the floating islands, and how do 1.05 meter Sprouts traverse inverted gravity?",
-    "discovery_trigger_hint": "Will transition to draft once Continent 02 Clockwork Steppe is canonized and the Astrolabe Gate is calibrated."
+    "unanswered_question": "What guards the Star-Pendulum key inside the inverted cathedral of Starfall Anchorage?",
+    "discovery_trigger_hint": "Transitioned to draft after Continent 02 Clockwork Steppe reached full Canon status; awaits Starfall Anchorage leaf maps for Canon promotion."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -30,16 +65,16 @@
       "evidence": "Inverted waterfalls pouring upward into a crescent halo of floating basalt islands."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Intentional mystery: inverted-gravity tether-bridge metrics for 1.05m characters will be specified upon transition to draft."
+      "verified": true,
+      "evidence": "Specifies 12.0m tether-bridge walkways, 0.65m safety rails, 0.15m basalt risers, and 0.60m chart tables for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Intentional mystery: no districts or hunting areas authored yet; sealed behind locked_by_mystery airship and rift links."
+      "evidence": "Draft status: awaiting completion of child District district-starfall-anchorage playable leaf maps and rift unlock."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete in_world_rumor, visual_silhouette, and unanswered_question with zero low-quality filler maps."
+      "evidence": "Provides complete mystery_hook and keeps travel links locked_by_mystery until Starfall Anchorage is canonized."
     }
   }
 }

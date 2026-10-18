@@ -49,13 +49,12 @@
     },
     "South": null,
     "East": {
-      "portal_id": "portal-escapement-anvil-east-siphon-fog",
+      "portal_id": "portal-escapement-anvil-east-siphon",
       "direction": "East",
       "target_node_id": "hunting-area-siphon-sluice",
-      "target_map_id": null,
+      "target_map_id": "siphon-sluice",
       "target_direction": "West",
-      "gate_state": "fog_of_lore",
-      "lock_message": "Sluice-keepers say the patinated bronze floodgates to Verdigris Siphon only open when the foundry quenching vats reach full pressure.",
+      "gate_state": "open",
       "trigger_box_meters": {
         "x": 3840.0,
         "y": 2000.0,
@@ -123,7 +122,7 @@
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Anchors the civic foundry heart of Mainspring Caldera at [1, 1] directly above the Chronometer Foundry dungeon."
+      "evidence": "Anchors the civic foundry heart of Mainspring Caldera at [1, 1] and connects East across the Siphon Aqueduct to Verdigris Siphon."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -135,11 +134,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Peaceful Safe Zone (0 resident_spawns) at [1, 1] with West portal to Caldera Rim, Dungeon portal to Chronometer Foundry, and North/East fog_of_lore portals."
+      "evidence": "Peaceful Safe Zone (0 resident_spawns) at [1, 1] with West portal to Caldera Rim, East open portal to Siphon Sluiceway, Dungeon portal to Chronometer Foundry, and North fog_of_lore portal."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Seals the northern Sun-Coil Spire lift and eastern Verdigris Siphon sluicegate behind fog_of_lore boundary portals."
+      "evidence": "Seals the northern Sun-Coil Spire lift behind a fog_of_lore boundary portal while opening the eastern Siphon Aqueduct."
     }
   }
 }

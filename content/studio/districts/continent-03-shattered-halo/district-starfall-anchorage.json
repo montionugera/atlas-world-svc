@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-starfall-anchorage",
+  "name": "Starfall Anchorage",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "status": "draft",
+  "core_rationale": "Southernmost tethered basalt sky-island of Continent 03 where bronze anchor-chains and upward waterfalls greet airships and dimensional rift travelers arriving from Continent 02.",
+  "local_conflict": "Dream-glass wraiths and gravity-leech wyrms are loosening the primary starlight tether-winches that hold the anchorage level.",
+  "level_band_label": "Levels 21 to 40",
+  "level_range": [
+    30,
+    40
+  ],
+  "ecological_monster_families": [
+    "spirit",
+    "construct",
+    "dragon"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-tether-causeway",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "level_range": [
+        30,
+        36
+      ],
+      "is_starter_town": false
+    }
+  ],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Navigators say the lighthouse bell at Starfall Anchorage rings backward three seconds before a meteor shower strikes the tether-chains.",
+    "visual_silhouette": "A crescent basalt sky-island moored by glowing starlight chains above an upward-falling silver waterfall.",
+    "unanswered_question": "How can adventurers align the Star-Pendulum receiver to open the rift from Brass Spur Ridge?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater as the southern arrival district of Continent 03."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Floating basalt anchorage moored by glowing starlight chains and upward-pouring silver waterfalls."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Uses 12.0m decked tether-causeways, 0.65m safety rails, and 0.15m basalt steps for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Draft status: awaiting Continent 03 Canon readiness and playable leaf maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Includes complete mystery_hook and reserves hunting-area-tether-causeway as a Mystery frontier."
+    }
+  }
+}
