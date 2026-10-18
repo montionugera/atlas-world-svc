@@ -49,7 +49,24 @@
       }
     },
     "South": null,
-    "East": null,
+    "East": {
+      "portal_id": "portal-focal-sanctum-east-resonance-causeway",
+      "direction": "East",
+      "target_node_id": "hunting-area-resonance-tether-causeway",
+      "target_map_id": "resonance-tether-causeway",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
     "West": {
       "portal_id": "portal-focal-sanctum-west-violet-span",
       "direction": "West",
@@ -137,7 +154,7 @@
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Anchors Umbrage Prism Atoll at [1, 1] directly above Vesper's Shadow Refraction Crypt."
+      "evidence": "Anchors Umbrage Prism Atoll at [1, 1] directly above Vesper's Shadow Refraction Crypt and connects east into Aurora Chime Atoll."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -149,11 +166,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, Dungeon, and North (fog_of_lore) portals."
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, East, Dungeon, and North (fog_of_lore) portals."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Guards the northern Indigo Caustic Arch behind a Fog of Lore portal with explicit lock_message."
+      "evidence": "Guards the northern Indigo Caustic Arch behind a Fog of Lore portal while opening East to Resonance Tether Causeway."
     }
   }
 }

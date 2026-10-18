@@ -3,7 +3,7 @@
   "id": "district-saffron-kiln-orchards",
   "name": "Saffron Kiln Orchards",
   "parent_continent_id": "continent-01-hearthbloom-basin",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Sun-warmed southeastern glaze-terrace orchards of Continent 01 where Sola's golden ceramic aqueducts irrigate saffron-apricot groves and honey-glaze vats.",
   "local_conflict": "Nectar-sipping glaze beetles and warm-clay orchard sprites raid the saffron drying racks.",
   "level_band_label": "Levels 1 to 20",
@@ -19,7 +19,24 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-apricot-aqueduct-terrace",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        19,
+        20
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Bakers in Lantern Hollow say a single drop of honey-glaze from Saffron Kiln Orchards keeps hearth-loaves warm for seven days.",
@@ -36,16 +53,16 @@
       "evidence": "Stepped golden-brick orchard terraces irrigated by warm ceramic aqueducts and teapot honey presses."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: orchard footpath and honey-press counter metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Specifies 12.5m orchard terrace roads, 0.58m honey-press counters, and 0.14m brick risers for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the eighth District frontier on Continent 01 with zero filler maps."
+      "evidence": "Draft status: awaiting playable leaf map authoring for Apricot Aqueduct Terrace and Saffron Press Village."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Provides complete mystery_hook and reserves hunting-area-apricot-aqueduct-terrace as a Mystery frontier."
     }
   }
 }

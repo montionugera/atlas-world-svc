@@ -2,12 +2,12 @@
   "schema_version": "1.0.0",
   "id": "hunting-area-resonance-tether-causeway",
   "name": "Resonance Tether Causeway",
-  "map_id": null,
+  "map_id": "resonance-tether-causeway",
   "parent_district_id": "district-aurora-chime-atoll",
   "parent_continent_id": "continent-03-shattered-halo",
   "node_type": "hunting_area",
-  "status": "mystery",
-  "core_rationale": "Western starlight-bell suspension bridge of Aurora Chime Atoll at [0, 1] linking Umbrage Focal Sanctum to the central aurora bell-foundry.",
+  "status": "canon",
+  "core_rationale": "Western starlight-bell suspension bridge of Aurora Chime Atoll at [0, 1] linking Umbrage Focal Sanctum to Aurora Bell Sanctuary.",
   "is_starter_town": false,
   "grid_coordinates": [
     0,
@@ -18,31 +18,150 @@
     49,
     50
   ],
-  "mystery_hook": {
-    "in_world_rumor": "Tether-weavers say the chains of Resonance Tether Causeway hum in a fifth-interval chord whenever a player sprints across the basalt planks.",
-    "visual_silhouette": "A starlight-moored basalt bridge flanked by hanging crystal stalactite chimes.",
-    "unanswered_question": "Where does the eastern pier of Resonance Tether Causeway enter the central aurora bell town?"
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_resonance_tether_causeway",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Upward-streaming aurora mist chiming against crystal stalactite piers"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-resonance-causeway-east-bell-sanctuary",
+      "direction": "East",
+      "target_node_id": "town-aurora-bell-sanctuary",
+      "target_map_id": "aurora-bell-sanctuary",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-resonance-causeway-west-focal-sanctum",
+      "direction": "West",
+      "target_node_id": "town-umbrage-focal-sanctum",
+      "target_map_id": "umbrage-focal-sanctum",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-aurora-chime-wisp",
+      "monster_id": "monster-aurora-chime-wisp",
+      "monster_name": "Aurora Chime Wisp",
+      "spawn_count": 14,
+      "respawn_seconds": 24,
+      "level": 49,
+      "element": "Ghost",
+      "size": "Small",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-aurora-bell-shard",
+          "item_name": "Aurora Bell Shard",
+          "drop_chance_percent": 44.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-aurora-chime-wisp",
+        "card_name": "Aurora Chime Wisp Card",
+        "drop_chance_percent": 0.05
+      }
+    },
+    {
+      "spawn_id": "spawn-harmonic-aurora-seraph",
+      "monster_id": "monster-harmonic-aurora-seraph",
+      "monster_name": "Harmonic Aurora Seraph",
+      "spawn_count": 10,
+      "respawn_seconds": 34,
+      "level": 50,
+      "element": "Holy",
+      "size": "Medium",
+      "race": "Angel",
+      "family": "celestial",
+      "item_drops": [
+        {
+          "item_id": "item-resonant-starlight-plume",
+          "item_name": "Resonant Starlight Plume",
+          "drop_chance_percent": 33.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-harmonic-aurora-seraph",
+        "card_name": "Harmonic Aurora Seraph Card",
+        "drop_chance_percent": 0.04
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.45,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/buildings/tower_round_base.glb",
+      "res://assets/props/barrel.glb"
+    ]
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Serves as the western entry span of Aurora Chime Atoll along scar-vesper-crater."
+      "evidence": "Connects Umbrage Focal Sanctum on the west to Aurora Bell Sanctuary on the east along scar-vesper-crater."
     },
     "fantasy_and_wonder": {
       "verified": true,
       "evidence": "Starlight-moored basalt bridge flanked by hanging crystal stalactite chimes."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+      "verified": true,
+      "evidence": "Enforces 12.5m resonance tether walkways, 0.14m basalt risers, and 0.20m crystal moss for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-aurora-chime-atoll."
+      "verified": true,
+      "evidence": "Populated by spirit and celestial monster families matching parent District ecological_monster_families with symmetric West/East portals."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Maintains map_id: null and complete mystery_hook until Aurora Chime Atoll is promoted to Canon."
+      "evidence": "Promoted from Mystery to Canon with full terrain_tile, asset_kit_bindings, and symmetric portals."
     }
   }
 }

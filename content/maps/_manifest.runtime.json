@@ -305,6 +305,24 @@
       ]
     },
     {
+      "mapId": "stalactite-carillon-nave-b1",
+      "nodeId": "dungeon-stalactite-carillon-nave",
+      "name": "Stalactite Carillon Nave",
+      "districtId": "district-aurora-chime-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
       "mapId": "star-heart-nave-b1",
       "nodeId": "dungeon-star-heart-nave",
       "name": "Star-Heart Nave",
@@ -755,6 +773,24 @@
       ]
     },
     {
+      "mapId": "resonance-tether-causeway",
+      "nodeId": "hunting-area-resonance-tether-causeway",
+      "name": "Resonance Tether Causeway",
+      "districtId": "district-aurora-chime-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
       "mapId": "silver-tide-causeway",
       "nodeId": "hunting-area-silver-tide-causeway",
       "name": "Silver-Tide Causeway",
@@ -867,6 +903,24 @@
       "nodeId": "town-aphelion-buoy-haven",
       "name": "Aphelion Buoy Haven",
       "districtId": "district-aphelion-halo-rim",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "aurora-bell-sanctuary",
+      "nodeId": "town-aurora-bell-sanctuary",
+      "name": "Aurora Bell Sanctuary",
+      "districtId": "district-aurora-chime-atoll",
       "continentId": "continent-03-shattered-halo",
       "nodeType": "town",
       "status": "canon",
@@ -1600,6 +1654,27 @@
       "direction": "Exit",
       "targetNodeId": "town-umbrage-focal-sanctum",
       "targetMapId": "umbrage-focal-sanctum",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-carillon-nave-exit-bell-sanctuary": {
+      "portalId": "portal-carillon-nave-exit-bell-sanctuary",
+      "sourceNodeId": "dungeon-stalactite-carillon-nave",
+      "sourceMapId": "stalactite-carillon-nave-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-aurora-bell-sanctuary",
+      "targetMapId": "aurora-bell-sanctuary",
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
@@ -2559,6 +2634,48 @@
       },
       "lockMessage": null
     },
+    "portal-resonance-causeway-east-bell-sanctuary": {
+      "portalId": "portal-resonance-causeway-east-bell-sanctuary",
+      "sourceNodeId": "hunting-area-resonance-tether-causeway",
+      "sourceMapId": "resonance-tether-causeway",
+      "direction": "East",
+      "targetNodeId": "town-aurora-bell-sanctuary",
+      "targetMapId": "aurora-bell-sanctuary",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-resonance-causeway-west-focal-sanctum": {
+      "portalId": "portal-resonance-causeway-west-focal-sanctum",
+      "sourceNodeId": "hunting-area-resonance-tether-causeway",
+      "sourceMapId": "resonance-tether-causeway",
+      "direction": "West",
+      "targetNodeId": "town-umbrage-focal-sanctum",
+      "targetMapId": "umbrage-focal-sanctum",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-silver-tide-east-balance-haven": {
       "portalId": "portal-silver-tide-east-balance-haven",
       "sourceNodeId": "hunting-area-silver-tide-causeway",
@@ -2881,6 +2998,69 @@
       "direction": "Dungeon",
       "targetNodeId": "dungeon-comet-core-geode",
       "targetMapId": "comet-core-geode-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-bell-sanctuary-north-fog": {
+      "portalId": "portal-bell-sanctuary-north-fog",
+      "sourceNodeId": "town-aurora-bell-sanctuary",
+      "sourceMapId": "aurora-bell-sanctuary",
+      "direction": "North",
+      "targetNodeId": "hunting-area-magnetosphere-ribbon-arch",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Charged solar-wind curtains across Magnetosphere Ribbon Arch repel unshielded gliders; Chime-Keeper Aether requires the Stalactite Bell-Clapper before opening the northern arch."
+    },
+    "portal-bell-sanctuary-west-resonance-causeway": {
+      "portalId": "portal-bell-sanctuary-west-resonance-causeway",
+      "sourceNodeId": "town-aurora-bell-sanctuary",
+      "sourceMapId": "aurora-bell-sanctuary",
+      "direction": "West",
+      "targetNodeId": "hunting-area-resonance-tether-causeway",
+      "targetMapId": "resonance-tether-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-bell-sanctuary-dungeon-carillon-nave": {
+      "portalId": "portal-bell-sanctuary-dungeon-carillon-nave",
+      "sourceNodeId": "town-aurora-bell-sanctuary",
+      "sourceMapId": "aurora-bell-sanctuary",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-stalactite-carillon-nave",
+      "targetMapId": "stalactite-carillon-nave-b1",
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
@@ -4511,6 +4691,27 @@
         "y": 200.0
       },
       "lockMessage": "Standing indigo caustic beams across Indigo Caustic Arch blind unshielded travelers; Prism-Warden Lyra requires the Umbral Diffraction Grating before opening the northern arch."
+    },
+    "portal-focal-sanctum-east-resonance-causeway": {
+      "portalId": "portal-focal-sanctum-east-resonance-causeway",
+      "sourceNodeId": "town-umbrage-focal-sanctum",
+      "sourceMapId": "umbrage-focal-sanctum",
+      "direction": "East",
+      "targetNodeId": "hunting-area-resonance-tether-causeway",
+      "targetMapId": "resonance-tether-causeway",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-focal-sanctum-west-violet-span": {
       "portalId": "portal-focal-sanctum-west-violet-span",
