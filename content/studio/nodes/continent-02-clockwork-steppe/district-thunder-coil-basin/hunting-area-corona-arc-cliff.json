@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-corona-arc-cliff",
+  "name": "Corona-Arc Cliff",
+  "map_id": null,
+  "parent_district_id": "district-thunder-coil-basin",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northernmost lightning-glass escarpment of Thunder-Coil Basin at [1, 0] where Krono's index-finger spire discharges cyan corona ribbons into the upper clouds.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    35,
+    36
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Storm-spotters say the fulgurite glass trees along Corona-Arc Cliff ring like crystal bells whenever a cloud-ship passes overhead.",
+    "visual_silhouette": "A sheer copper cliff crowned by a hundred-meter brass finger-spire wreathed in violet-blue St. Elmo's fire.",
+    "unanswered_question": "Does Krono's index-finger spire on Corona-Arc Cliff point toward a hidden sky-dock in the clouds?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Marks the easternmost termination of scar-brass-faultline in Thunder-Coil Basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Fulgurite lightning-glass groves surrounding a colossal brass finger-spire glowing with St. Elmo's fire."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: gated behind the North fog_of_lore portal on town-inductor-switchyard."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook without generating filler map geometry."
+    }
+  }
+}

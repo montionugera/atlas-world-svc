@@ -56,7 +56,7 @@
   "mystery_hook": {
     "in_world_rumor": "Tinkers say the deepest canyon gear still ticks once every midnight, echoing a lullaby from the lightning-charged eastern rim.",
     "visual_silhouette": "Colossal brass wheel-rims rising two hundred meters above golden short-grass plains.",
-    "unanswered_question": "What sleeps inside the Thunder-Coil Basin where Krono's lightning-rod fingers struck the eastern cliffside?"
+    "unanswered_question": "What sleeps beyond the Corona-Arc Cliff at the easternmost edge of Thunder-Coil Basin?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -73,11 +73,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes four Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues) plus Thunder-Coil Basin (Draft)."
+      "evidence": "Organizes all five Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin) across [15, 36]."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Thunder-Coil Basin in Draft status with Mystery child Leyden Capacitor Causeway while keeping the Astrolabe Gate open to Continent 03."
+      "evidence": "Preserves Mystery leaf nodes (Sun-Coil Spire, Teal Spillway, Cinder Chimney, Corona-Arc Cliff) behind fog_of_lore gates while keeping the Astrolabe Gate open to Continent 03."
     }
   }
 }

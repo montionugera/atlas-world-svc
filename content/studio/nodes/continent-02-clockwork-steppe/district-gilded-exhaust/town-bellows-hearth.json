@@ -48,7 +48,24 @@
       }
     },
     "South": null,
-    "East": null,
+    "East": {
+      "portal_id": "portal-bellows-hearth-east-leyden",
+      "direction": "East",
+      "target_node_id": "hunting-area-leyden-causeway",
+      "target_map_id": "leyden-causeway",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
     "West": {
       "portal_id": "portal-bellows-hearth-west-flue",
       "direction": "West",
@@ -108,7 +125,7 @@
         "y": 1965.0
       },
       "counter_height_meters": 0.58,
-      "dialogue_greeting": "A rogue furnace-automaton down in the Ash-Valve Vault jammed the Master Damper Crank. Retrieve it so we can vent the northern Cinder Chimney!"
+      "dialogue_greeting": "Our eastern copper viaduct now connects directly to Leyden Capacitor Causeway in Thunder-Coil Basin!"
     }
   ],
   "resident_spawns": [],
@@ -136,7 +153,7 @@
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Anchors The Gilded Exhaust Flues at [1, 1] directly above Krono's Ash-Valve Vault."
+      "evidence": "Anchors The Gilded Exhaust Flues at [1, 1] above Krono's Ash-Valve Vault and connects East to Thunder-Coil Basin."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -148,7 +165,7 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Symmetric West portal to hunting-area-flue-causeway, Dungeon portal to dungeon-ash-valve-vault, and North fog_of_lore portal to hunting-area-cinder-chimney."
+      "evidence": "Symmetric West portal to hunting-area-flue-causeway, East portal to hunting-area-leyden-causeway, Dungeon portal to dungeon-ash-valve-vault, and North fog_of_lore portal."
     },
     "intentional_mystery_discipline": {
       "verified": true,
