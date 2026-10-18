@@ -313,7 +313,7 @@ def main() -> int:
     if cargo_bin not in env.get("PATH", ""):
         env["PATH"] = f"{cargo_bin}:{env.get('PATH', '')}"
     if not (ROOT / "scripts" / "node_modules").exists():
-        for base_cand in [ROOT.parent.parent.parent, ROOT.parent / "_release"]:
+        for base_cand in [ROOT.parent.parent.parent, ROOT.parent / "_release", Path("/Users/pasitnusso/workspace/repos/atlas-world-svc")]:
             cand = base_cand / "scripts" / "node_modules"
             if cand.exists():
                 (ROOT / "scripts" / "node_modules").symlink_to(cand)
