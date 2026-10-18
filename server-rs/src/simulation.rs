@@ -8,6 +8,7 @@ use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
     AiAgent, BodyRadius, BotAgent, CastingState, CombatStats, CooldownTracker, DashState,
+    DeadMobTracker,
     DespawnedIds, ElementalAttributes, EntityId, Health, HitLog, LiveRules, Mass, MobSpawnAnchor,
     MobTag, PlayerAvatar, PlayerInputState, PlayerTag, Position, Projectile, SpawnPoint,
     StatusEffects, Velocity, MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
@@ -145,6 +146,8 @@ pub struct AtlasSimulation {
     disconnect_grace_ticks: u32,
     /// Active disconnect grace countdowns (`session_id` -> remaining ticks).
     pending_disconnects: HashMap<String, u32>,
+    /// Wall-clock/simulation timestamp (ms) when this region entered sleep (`None` = awake).
+    sleeping_since_ms: Option<u64>,
     next_bot_index: usize,
     pub(crate) debug_mob_seq: u32,
 }
@@ -216,6 +219,7 @@ impl AtlasSimulation {
             session_loadouts: HashMap::new(),
             disconnect_grace_ticks: 0,
             pending_disconnects: HashMap::new(),
+            sleeping_since_ms: None,
             next_bot_index: 0,
             debug_mob_seq: 0,
         }
@@ -445,6 +449,105 @@ impl AtlasSimulation {
             Mass(15.0),
             SpawnPoint(pos),
         ));
+    }
+
+    /// Returns the number of human-controlled `PlayerAvatar` entities currently in the region.
+    pub fn active_player_count(&mut self) -> usize {
+        self.world
+            .query::<&PlayerAvatar>()
+            .iter(&self.world)
+            .count()
+    }
+
+    /// Returns `true` when this region is currently sleeping (0 active players, tick loop paused).
+    pub fn is_sleeping(&self) -> bool {
+        self.sleeping_since_ms.is_some()
+    }
+
+    /// Returns the millisecond timestamp when this region entered sleep, or `None` if awake.
+    pub fn sleeping_since_ms(&self) -> Option<u64> {
+        self.sleeping_since_ms
+    }
+
+    /// Transitions the region into the sleeping state at `now_ms` if not already asleep.
+    pub fn sleep(&mut self, now_ms: u64) {
+        if self.sleeping_since_ms.is_none() {
+            self.sleeping_since_ms = Some(now_ms);
+        }
+    }
+
+    /// Wakes a sleeping region at `now_ms`, fast-forwarding all `DeadMobTracker` respawn timers
+    /// by the elapsed sleep duration (`(now_ms - sleeping_since_ms) / 1000.0`) and immediately
+    /// respawning any mob whose remaining timer reaches `<= 0.0` at its `MobSpawnAnchor`.
+    /// Returns the elapsed sleep duration in seconds (`0.0` if already awake).
+    pub fn wake(&mut self, now_ms: u64) -> f32 {
+        let Some(sleep_start_ms) = self.sleeping_since_ms.take() else {
+            return 0.0;
+        };
+        let elapsed_sec = (now_ms.saturating_sub(sleep_start_ms) as f32) / 1000.0;
+        if elapsed_sec <= 0.0 {
+            return 0.0;
+        }
+
+        let current_time = self.clock.current_time_seconds();
+        let catalog = self
+            .world
+            .get_resource::<BestiaryCatalog>()
+            .cloned()
+            .unwrap_or_default();
+
+        let mut ready_to_respawn: Vec<(Entity, MobSpawnAnchor)> = Vec::new();
+        {
+            let mut tracker_q = self.world.query::<(Entity, &mut DeadMobTracker)>();
+            for (entity, mut tracker) in tracker_q.iter_mut(&mut self.world) {
+                tracker.respawn_at -= elapsed_sec;
+                if current_time >= tracker.respawn_at {
+                    ready_to_respawn.push((entity, tracker.anchor.clone()));
+                }
+            }
+        }
+
+        let tick = self.clock.tick();
+        for (tracker_entity, anchor) in ready_to_respawn {
+            let id = format!("{}-{}-{}", anchor.mob_id, tick, tracker_entity.index());
+            self.world.spawn(mob_bundle(&catalog, &anchor, id));
+            self.world.despawn(tracker_entity);
+        }
+
+        elapsed_sec
+    }
+
+    /// Steps the region only when awake or woken by incoming player packets.
+    /// When 0 human players remain and no packets/disconnects are pending, transitions to
+    /// `Sleeping` and returns `None` without advancing `clock.tick()`.
+    pub fn step_if_awake(
+        &mut self,
+        now_ms: u64,
+        inputs: &[ClientPacket],
+        disconnected: &[String],
+    ) -> Option<LiveFrame> {
+        if !inputs.is_empty() && self.is_sleeping() {
+            self.wake(now_ms);
+        }
+
+        let has_work = !inputs.is_empty()
+            || !disconnected.is_empty()
+            || !self.pending_disconnects.is_empty();
+
+        if self.is_sleeping() && !has_work {
+            return None;
+        }
+
+        if !self.is_sleeping() && !has_work && self.active_player_count() == 0 {
+            self.sleep(now_ms);
+            return None;
+        }
+
+        let frame = self.live_tick(inputs, disconnected);
+        if self.active_player_count() == 0 && self.pending_disconnects.is_empty() {
+            self.sleep(now_ms);
+        }
+        Some(frame)
     }
 
     /// One live server tick, exactly as `main.rs` runs it: apply inputs, then drop avatars
