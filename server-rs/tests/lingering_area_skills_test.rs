@@ -73,7 +73,10 @@ fn standing_in_blizzard_field_takes_damage_across_three_distinct_intervals() {
         "casting Blizzard must spawn 1 LingeringZone"
     );
     assert_eq!(zones[0].1, Position::new(100.0, 0.0));
-    assert_eq!(zones[0].2.remaining_duration_sec, LINGERING_ZONE_DURATION_SEC);
+    assert_eq!(
+        zones[0].2.remaining_duration_sec,
+        LINGERING_ZONE_DURATION_SEC
+    );
     assert_eq!(
         zones[0].2.tick_interval_sec,
         LINGERING_ZONE_TICK_INTERVAL_SEC
@@ -95,7 +98,10 @@ fn standing_in_blizzard_field_takes_damage_across_three_distinct_intervals() {
         hp_after_interval_1
     );
     assert_eq!(
-        world.get::<StatusEffects>(mob_inside).unwrap().speed_multiplier(),
+        world
+            .get::<StatusEffects>(mob_inside)
+            .unwrap()
+            .speed_multiplier(),
         0.2,
         "Blizzard lingering zone must apply freeze slow to mob inside"
     );
