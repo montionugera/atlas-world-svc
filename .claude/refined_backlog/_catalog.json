@@ -1626,9 +1626,11 @@
     "from_idea": "I-222",
     "created_at": "2026-10-18T12:37:07.182461+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
-    "claimed_at": "2026-10-18T12:37:25.235229+00:00"
+    "status": "shipped",
+    "release_version": "1.15",
+    "claimed_at": "2026-10-18T12:37:25.235229+00:00",
+    "shipped_at": "2026-10-18T12:57:35.014677+00:00",
+    "shipped_sha": "2f95a5ed974975af53afdd295e1793d2489f25a8"
   },
   {
     "id": "F-131",
