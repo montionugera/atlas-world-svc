@@ -287,6 +287,24 @@
       ]
     },
     {
+      "mapId": "sunken-syzygy-dome-b1",
+      "nodeId": "dungeon-sunken-syzygy-dome",
+      "name": "Sunken Syzygy Dome B1",
+      "districtId": "district-libration-mirror-shoals",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
       "mapId": "vesper-cradle-b1",
       "nodeId": "dungeon-vesper-cradle",
       "name": "Vesper's Cradle Vault",
@@ -593,6 +611,24 @@
       ]
     },
     {
+      "mapId": "silver-tide-causeway",
+      "nodeId": "hunting-area-silver-tide-causeway",
+      "name": "Silver-Tide Causeway",
+      "districtId": "district-libration-mirror-shoals",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        48,
+        49
+      ]
+    },
+    {
       "mapId": "siphon-sluice",
       "nodeId": "hunting-area-siphon-sluice",
       "name": "The Verdigris Siphon Sluiceway",
@@ -788,6 +824,24 @@
       "levelRange": [
         1,
         5
+      ]
+    },
+    {
+      "mapId": "libration-balance-haven",
+      "nodeId": "town-libration-balance-haven",
+      "name": "Libration Balance Haven",
+      "districtId": "district-libration-mirror-shoals",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
       ]
     },
     {
@@ -1266,6 +1320,27 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-sunken-syzygy-exit-balance-haven": {
+      "portalId": "portal-sunken-syzygy-exit-balance-haven",
+      "sourceNodeId": "dungeon-sunken-syzygy-dome",
+      "sourceMapId": "sunken-syzygy-dome-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-libration-balance-haven",
+      "targetMapId": "libration-balance-haven",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
       },
       "lockMessage": null
     },
@@ -1983,6 +2058,48 @@
       },
       "lockMessage": null
     },
+    "portal-silver-tide-east-balance-haven": {
+      "portalId": "portal-silver-tide-east-balance-haven",
+      "sourceNodeId": "hunting-area-silver-tide-causeway",
+      "sourceMapId": "silver-tide-causeway",
+      "direction": "East",
+      "targetNodeId": "town-libration-balance-haven",
+      "targetMapId": "libration-balance-haven",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-silver-tide-west-aphelion": {
+      "portalId": "portal-silver-tide-west-aphelion",
+      "sourceNodeId": "hunting-area-silver-tide-causeway",
+      "sourceMapId": "silver-tide-causeway",
+      "direction": "West",
+      "targetNodeId": "town-aphelion-buoy-haven",
+      "targetMapId": "aphelion-buoy-haven",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-siphon-sluice-east-patina": {
       "portalId": "portal-siphon-sluice-east-patina",
       "sourceNodeId": "hunting-area-siphon-sluice",
@@ -2129,6 +2246,27 @@
         "y": 200.0
       },
       "lockMessage": "Sub-zero comet-tail shear sweeps the northern Outer Orbit Drift; Buoy-Keeper Astraea requires the Geode Resonance Prism before unlocking the outer mooring."
+    },
+    "portal-aphelion-buoy-east-silver-tide": {
+      "portalId": "portal-aphelion-buoy-east-silver-tide",
+      "sourceNodeId": "town-aphelion-buoy-haven",
+      "sourceMapId": "aphelion-buoy-haven",
+      "direction": "East",
+      "targetNodeId": "hunting-area-silver-tide-causeway",
+      "targetMapId": "silver-tide-causeway",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-aphelion-buoy-west-comet": {
       "portalId": "portal-aphelion-buoy-west-comet",
@@ -2736,6 +2874,69 @@
       "arrivalPointMeters": {
         "x": 2110.0,
         "y": 1880.0
+      },
+      "lockMessage": null
+    },
+    "portal-balance-haven-north-fog": {
+      "portalId": "portal-balance-haven-north-fog",
+      "sourceNodeId": "town-libration-balance-haven",
+      "sourceMapId": "libration-balance-haven",
+      "direction": "North",
+      "targetNodeId": "hunting-area-crescent-reflector-reef",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Focused starlight glare from Crescent Reflector Reef blinds unshielded navigators; Tide-Balancer Selene requires the Syzygy Smoked-Glass Lens before unlocking the northern reef."
+    },
+    "portal-balance-haven-west-silver-tide": {
+      "portalId": "portal-balance-haven-west-silver-tide",
+      "sourceNodeId": "town-libration-balance-haven",
+      "sourceMapId": "libration-balance-haven",
+      "direction": "West",
+      "targetNodeId": "hunting-area-silver-tide-causeway",
+      "targetMapId": "silver-tide-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-balance-haven-dungeon-syzygy": {
+      "portalId": "portal-balance-haven-dungeon-syzygy",
+      "sourceNodeId": "town-libration-balance-haven",
+      "sourceMapId": "libration-balance-haven",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-sunken-syzygy-dome",
+      "targetMapId": "sunken-syzygy-dome-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
       },
       "lockMessage": null
     },
