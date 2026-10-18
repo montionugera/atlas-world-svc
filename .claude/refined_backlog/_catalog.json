@@ -1864,9 +1864,10 @@
     "title": "Parties",
     "from_idea": "I-183",
     "created_at": "2026-10-18T20:10:25.380993+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-008"
+    "epic": "E-008",
+    "claimed_at": "2026-10-18T20:10:30.703507+00:00"
   }
 ]
