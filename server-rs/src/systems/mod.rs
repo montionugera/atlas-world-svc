@@ -1,4 +1,5 @@
 pub mod combat;
+pub mod companion;
 pub mod live;
 pub mod mob_ai;
 pub mod mob_lifecycle;
@@ -14,6 +15,7 @@ pub use combat::{
     combat_system, cooldown_tick_system, health_regen_system, parry_tick_system,
     status_effect_tick_system,
 };
+pub use companion::{companion_follow_system, spawn_companion};
 pub use live::{body_collision_system, live_bot_ai_system, player_respawn_system};
 pub use mob_ai::mob_ai_system;
 pub use mob_lifecycle::{mob_bundle, mob_lifecycle_system};
