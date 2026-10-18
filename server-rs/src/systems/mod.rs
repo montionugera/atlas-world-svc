@@ -5,6 +5,7 @@ pub mod mob_ai;
 pub mod mob_lifecycle;
 pub mod physics;
 pub mod player_input;
+pub mod progression;
 pub mod projectile;
 pub mod separation;
 pub mod skill_execution;
@@ -23,6 +24,10 @@ pub use mob_ai::mob_ai_system;
 pub use mob_lifecycle::{mob_bundle, mob_lifecycle_system};
 pub use physics::physics_step_system;
 pub use player_input::player_input_system;
+pub use progression::{
+    experience_on_kill_system, grant_xp_and_scale_stats, mob_xp_reward, ATK_GAIN_PER_LEVEL,
+    HP_GAIN_PER_LEVEL,
+};
 pub use projectile::{projectile_collision_system, projectile_kinematics_system};
 pub use separation::separation_system;
 pub use skill_execution::{lingering_zone_system, skill_execution_system};

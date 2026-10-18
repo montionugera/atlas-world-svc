@@ -9,8 +9,8 @@ use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
     AiAgent, BodyRadius, BotAgent, CastingState, CombatStats, CooldownTracker, DashState,
     DeadMobTracker, DespawnedIds, ElementalAttributes, EntityId, Health, HitLog, LiveRules, Mass,
-    MobSpawnAnchor, MobTag, PlayerAvatar, PlayerInputState, PlayerTag, Position, Projectile,
-    SpawnPoint, StatusEffects, Velocity, MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
+    MobSpawnAnchor, MobTag, PlayerAvatar, PlayerInputState, PlayerProgression, PlayerTag, Position,
+    Projectile, SpawnPoint, StatusEffects, Velocity, MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
 };
 use crate::net::ClientPacket;
 use crate::physics::world::PhysicsWorld;
@@ -1072,11 +1072,12 @@ impl AtlasSimulation {
             Option<&MobSpawnAnchor>,
             Option<&ThreatTable>,
             Option<&PlayerInputState>,
+            Option<&PlayerProgression>,
         ), Or<(With<PlayerTag>, With<MobTag>)>>();
         let mut entities: Vec<(String, EntitySnapshotData)> = query
             .iter(&self.world)
             .map(
-                |(id, pos, vel, health, is_player, bot, anchor, threat, input)| {
+                |(id, pos, vel, health, is_player, bot, anchor, threat, input, prog)| {
                     let mut flags = 0;
                     if health.is_alive {
                         flags |= STATE_FLAG_ALIVE;
@@ -1111,6 +1112,8 @@ impl AtlasSimulation {
                             owner_id: 0,
                             // Bots keep the default 0: only client packets set it.
                             input_ack: input.map_or(0, |i| i.client_tick),
+                            level: prog.map_or(0, |p| p.level),
+                            xp: prog.map_or(0, |p| p.xp),
                         },
                     )
                 },
@@ -1158,6 +1161,8 @@ impl AtlasSimulation {
                         mob_type: p_type,
                         owner_id: id_of(Some(proj.owner)),
                         input_ack: 0,
+                        level: 0,
+                        xp: 0,
                     },
                 )
             })
