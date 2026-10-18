@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-gyroscope-rim-overlook",
+  "name": "Gyroscope-Rim Overlook",
+  "map_id": null,
+  "parent_district_id": "district-flywheel-dynamo-canyon",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northernmost triple-gimbal brass cliff of Flywheel Dynamo Canyon at [1, 0] where Krono's stabilizing gyroscope rings keep the eastern steppe plateau level.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    30,
+    30
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Tinkers say the northern Gyroscope-Rim Overlook spins with such balanced angular momentum that gliders can hover motionless in its slipstream.",
+    "visual_silhouette": "Three concentric brass gimbal rings rotating silently above the northern canyon rim.",
+    "unanswered_question": "What celestial gyroscope relay crowns Gyroscope-Rim Overlook?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Extends north from Flywheel-Governor Hub at [1, 0] along scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Three concentric brass gimbal rings rotating silently above the northern canyon rim."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Flywheel-Governor Hub with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind the Flywheel-Governor Hub North Fog of Lore gate."
+    }
+  }
+}

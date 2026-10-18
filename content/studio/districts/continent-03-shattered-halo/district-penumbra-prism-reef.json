@@ -3,7 +3,7 @@
   "id": "district-penumbra-prism-reef",
   "name": "Penumbra Prism Reef",
   "parent_continent_id": "continent-03-shattered-halo",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Tenth floating basalt-and-crystal reef of Continent 03 where Vesper's half-shadowed gravity lens bends twilight starlight into shimmering penumbral coral arches.",
   "local_conflict": "Penumbral glass-manta rays and crystal-shelled hermit constructs drift between the half-lit prism arches.",
   "level_band_label": "Levels 41 to 60",
@@ -19,7 +19,24 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-penumbra-refraction-causeway",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        49,
+        50
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Star-navigators whisper that Penumbra Prism Reef casts two simultaneous shadows—one pointing toward the Zenith Crown and one pointing into the abyssal whirlpool below.",
@@ -36,16 +53,16 @@
       "evidence": "Floating smoky-violet prism reefs and inverted silver coral arches bending twilight starlight."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: prism-bridge walkways and chart-table metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Specifies 12.5m prism-bridge walkways, 0.58m astrolabe consoles, and 0.14m basalt risers tailored to 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the tenth District frontier on Continent 03 with zero filler maps."
+      "evidence": "Draft status: seeds Penumbra Refraction Causeway at [0, 1] while the central town, dungeon, and northern arch remain queued."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Maintains Penumbra Refraction Causeway in Mystery status with zero filler maps."
     }
   }
 }

@@ -197,6 +197,24 @@
       ]
     },
     {
+      "mapId": "kinetic-ballast-vault-b1",
+      "nodeId": "dungeon-kinetic-ballast-vault",
+      "name": "Kinetic Ballast Vault",
+      "districtId": "district-flywheel-dynamo-canyon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
       "mapId": "medallion-heart-vault-b1",
       "nodeId": "dungeon-medallion-heart-vault",
       "name": "Medallion Heart Vault B1",
@@ -554,6 +572,24 @@
       "levelRange": [
         10,
         12
+      ]
+    },
+    {
+      "mapId": "centrifugal-gantry-span",
+      "nodeId": "hunting-area-centrifugal-gantry-span",
+      "name": "Centrifugal Gantry Span",
+      "districtId": "district-flywheel-dynamo-canyon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
       ]
     },
     {
@@ -1057,6 +1093,24 @@
       ],
       "levelRange": [
         24,
+        30
+      ]
+    },
+    {
+      "mapId": "flywheel-governor-hub",
+      "nodeId": "town-flywheel-governor-hub",
+      "name": "Flywheel-Governor Hub",
+      "districtId": "district-flywheel-dynamo-canyon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        29,
         30
       ]
     },
@@ -1593,6 +1647,27 @@
       "arrivalPointMeters": {
         "x": 1000.0,
         "y": 1800.0
+      },
+      "lockMessage": null
+    },
+    "portal-ballast-vault-exit-governor-hub": {
+      "portalId": "portal-ballast-vault-exit-governor-hub",
+      "sourceNodeId": "dungeon-kinetic-ballast-vault",
+      "sourceMapId": "kinetic-ballast-vault-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-flywheel-governor-hub",
+      "targetMapId": "flywheel-governor-hub",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
       },
       "lockMessage": null
     },
@@ -2149,6 +2224,48 @@
       "direction": "West",
       "targetNodeId": "town-draft-kiln-post",
       "targetMapId": "draft-kiln-post",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-centrifugal-gantry-east-governor-hub": {
+      "portalId": "portal-centrifugal-gantry-east-governor-hub",
+      "sourceNodeId": "hunting-area-centrifugal-gantry-span",
+      "sourceMapId": "centrifugal-gantry-span",
+      "direction": "East",
+      "targetNodeId": "town-flywheel-governor-hub",
+      "targetMapId": "flywheel-governor-hub",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-centrifugal-gantry-west-torque-citadel": {
+      "portalId": "portal-centrifugal-gantry-west-torque-citadel",
+      "sourceNodeId": "hunting-area-centrifugal-gantry-span",
+      "sourceMapId": "centrifugal-gantry-span",
+      "direction": "West",
+      "targetNodeId": "town-torque-balance-citadel",
+      "targetMapId": "torque-balance-citadel",
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
@@ -3612,6 +3729,69 @@
       },
       "lockMessage": null
     },
+    "portal-governor-hub-north-gyroscope-fog": {
+      "portalId": "portal-governor-hub-north-gyroscope-fog",
+      "sourceNodeId": "town-flywheel-governor-hub",
+      "sourceMapId": "flywheel-governor-hub",
+      "direction": "North",
+      "targetNodeId": "hunting-area-gyroscope-rim-overlook",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Centrifugal wind-shear across Gyroscope-Rim Overlook buffets uncalibrated gliders; Governor-Master Torque requires the Flywheel Ballast Key before unlocking the northern rim bridge."
+    },
+    "portal-governor-hub-west-centrifugal-gantry": {
+      "portalId": "portal-governor-hub-west-centrifugal-gantry",
+      "sourceNodeId": "town-flywheel-governor-hub",
+      "sourceMapId": "flywheel-governor-hub",
+      "direction": "West",
+      "targetNodeId": "hunting-area-centrifugal-gantry-span",
+      "targetMapId": "centrifugal-gantry-span",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-governor-hub-dungeon-ballast-vault": {
+      "portalId": "portal-governor-hub-dungeon-ballast-vault",
+      "sourceNodeId": "town-flywheel-governor-hub",
+      "sourceMapId": "flywheel-governor-hub",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-kinetic-ballast-vault",
+      "targetMapId": "kinetic-ballast-vault-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
     "portal-barge-quay-north-fog": {
       "portalId": "portal-barge-quay-north-fog",
       "sourceNodeId": "town-glaze-barge-quay",
@@ -4829,6 +5009,27 @@
         "y": 200.0
       },
       "lockMessage": "Counter-rotating sun-gear teeth across Sun-Gear Escarpment shear unshielded gliders; Carrier-Warden Bram requires the Epicyclic Carrier Pin before locking the northern gear-bridge."
+    },
+    "portal-torque-citadel-east-centrifugal-gantry": {
+      "portalId": "portal-torque-citadel-east-centrifugal-gantry",
+      "sourceNodeId": "town-torque-balance-citadel",
+      "sourceMapId": "torque-balance-citadel",
+      "direction": "East",
+      "targetNodeId": "hunting-area-centrifugal-gantry-span",
+      "targetMapId": "centrifugal-gantry-span",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-torque-citadel-west-carrier-span": {
       "portalId": "portal-torque-citadel-west-carrier-span",

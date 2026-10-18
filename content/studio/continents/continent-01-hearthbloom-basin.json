@@ -54,7 +54,8 @@
     "district-amber-root-hollows",
     "district-glaze-river-delta",
     "district-terracotta-wind-chimes",
-    "district-saffron-kiln-orchards"
+    "district-saffron-kiln-orchards",
+    "district-cinnamon-bellows-bluff"
   ],
   "quality_checklist": {
     "causal_continuity": {
@@ -71,11 +72,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Spans all eight Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench, Porcelain Cradle, Amber-Root Hollows, Glaze-River Delta, Terracotta Wind-Chime Ridge, Saffron Kiln Orchards)."
+      "evidence": "Spans eight Canon Districts plus Cinnamon-Bellows Bluff (Mystery) on Continent 01."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Saffron Kiln Orchards to Canon while preserving Honeycomb Kiln Ridge and leaf Mystery nodes behind fog_of_lore gates."
+      "evidence": "Seeds Cinnamon-Bellows Bluff in Mystery status while preserving leaf Mystery nodes behind fog_of_lore gates."
     }
   }
 }

@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-penumbra-refraction-causeway",
+  "name": "Penumbra Refraction Causeway",
+  "map_id": null,
+  "parent_district_id": "district-penumbra-prism-reef",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western smoky-violet prism causeway of Penumbra Prism Reef at [0, 1] linking Aurora Bell Sanctuary to the outer twilight coral arches.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    49,
+    50
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Tether-weavers say every footstep on Penumbra Refraction Causeway echoes twice—once in violet light and once in silver shadow.",
+    "visual_silhouette": "Smoky crystal bridge-spans suspended between floating basalt coral spires.",
+    "unanswered_question": "How do star-navigators align the dual shadows of Penumbra Refraction Causeway?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Connects Aurora Chime Atoll east into Penumbra Prism Reef along scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Smoky crystal bridge-spans casting dual violet-and-silver shadows across upward waterfalls."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Penumbra Prism Reef with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until Penumbra Prism Reef is promoted to Canon."
+    }
+  }
+}
