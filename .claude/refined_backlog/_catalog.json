@@ -1674,8 +1674,10 @@
     "from_idea": "I-224",
     "created_at": "2026-10-18T13:30:56.429373+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
-    "claimed_at": "2026-10-18T13:31:08.064486+00:00"
+    "status": "shipped",
+    "release_version": "1.15",
+    "claimed_at": "2026-10-18T13:31:08.064486+00:00",
+    "shipped_at": "2026-10-18T14:06:40.980741+00:00",
+    "shipped_sha": "3e7fd27b4387871b22b6694e38e0e11de788df93"
   }
 ]
