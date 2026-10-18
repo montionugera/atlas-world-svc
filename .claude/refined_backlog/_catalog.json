@@ -1129,8 +1129,9 @@
     "title": "Autonomous Product Owner Multi-Agent Studio Pipeline, Self-Evaluation Telemetry, and Kilnfire Terraces Increment",
     "from_idea": "I-197",
     "created_at": "2026-10-18T05:04:33.492516+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-18T05:04:40.082333+00:00"
   }
 ]
