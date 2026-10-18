@@ -32,8 +32,10 @@ import {
   DUPLICATE_SESSION_CLOSE_CODE,
   PROTOCOL_MISMATCH_CLOSE_CODE,
   PROTOCOL_VERSION,
+  REGION_FULL_CLOSE_CODE,
   formatDuplicateSessionMessage,
   formatProtocolMismatchMessage,
+  formatRegionFullMessage,
 } from "../protocol/protocolVersion";
 import { ClientInput } from "../protocol/generated/atlas/protocol/client-input";
 
@@ -887,6 +889,29 @@ export const useServerRsClient = (
               const duplicateMsg = formatDuplicateSessionMessage(event.reason);
               connectionErrorRef.current = duplicateMsg;
               setConnectionError(duplicateMsg);
+              if (wsRef.current === ws) {
+                wsRef.current = null;
+              }
+              cancelTrailingPublish();
+              setIsConnected(false);
+              setRoomId(null);
+              gameStateRef.current = null;
+              publishedRef.current.at = -Infinity;
+              setGameState(null);
+              isConnectingRef.current = false;
+              settle();
+              return;
+            }
+            if (event?.code === REGION_FULL_CLOSE_CODE) {
+              if (wsRef.current !== ws && wsRef.current !== null) {
+                settle();
+                return;
+              }
+              cancelReconnectTimer();
+              reconnectAttemptsRef.current = 0;
+              const regionFullMsg = formatRegionFullMessage(event.reason);
+              connectionErrorRef.current = regionFullMsg;
+              setConnectionError(regionFullMsg);
               if (wsRef.current === ws) {
                 wsRef.current = null;
               }

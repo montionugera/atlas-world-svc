@@ -35,6 +35,8 @@ pub const MAX_OUTBOUND_QUEUE_DEPTH: usize = 64;
 pub const MAX_INBOUND_QUEUE_DEPTH: usize = 4096;
 /// Default idle timeout before a silent connection is closed.
 pub const DEFAULT_IDLE_TIMEOUT: Duration = Duration::from_secs(60);
+/// Default maximum active player connections allowed per region room.
+pub const DEFAULT_MAX_PLAYERS_PER_ROOM: usize = 100;
 
 /// Token-bucket rate limiter enforced per WebSocket connection.
 #[derive(Debug, Clone)]
@@ -175,6 +177,7 @@ struct ConnectionLimits {
     idle_timeout: Arc<std::sync::RwLock<Duration>>,
     rate_limited_drops: Arc<AtomicUsize>,
     allowed_origins: Arc<std::sync::RwLock<Vec<String>>>,
+    max_players_per_room: Arc<AtomicUsize>,
 }
 
 /// Live server metrics shared with the `/metrics` HTTP endpoint.
@@ -293,6 +296,11 @@ impl WsServer {
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())
             .collect();
+        let env_max_players_per_room = std::env::var("ATLAS_MAX_PLAYERS_PER_ROOM")
+            .ok()
+            .and_then(|v| v.trim().parse::<usize>().ok())
+            .filter(|&n| n > 0)
+            .unwrap_or(DEFAULT_MAX_PLAYERS_PER_ROOM);
         let limits = ConnectionLimits {
             rate_limit: Arc::new(std::sync::RwLock::new((
                 DEFAULT_MAX_INPUTS_PER_SEC,
@@ -302,6 +310,7 @@ impl WsServer {
             idle_timeout: Arc::new(std::sync::RwLock::new(DEFAULT_IDLE_TIMEOUT)),
             rate_limited_drops: Arc::new(AtomicUsize::new(0)),
             allowed_origins: Arc::new(std::sync::RwLock::new(env_origins)),
+            max_players_per_room: Arc::new(AtomicUsize::new(env_max_players_per_room)),
         };
 
         let server = Self {
@@ -417,6 +426,14 @@ impl WsServer {
     /// Configures the additional allowed `Origin` values for WebSocket upgrades.
     pub fn with_allowed_origins(self, origins: Vec<String>) -> Self {
         *self.limits.allowed_origins.write().unwrap() = origins;
+        self
+    }
+
+    /// Configures the maximum number of active player connections allowed per region (`room_id`).
+    pub fn with_max_players_per_room(self, max_players: usize) -> Self {
+        self.limits
+            .max_players_per_room
+            .store(max_players.max(1), Ordering::Relaxed);
         self
     }
 
@@ -978,6 +995,7 @@ impl WsServer {
         //   keep the newer connection and immediately close this stale socket with 4002.
         let conn_key = format!("{}#{}", session_id, conn_seq);
         let mut superseded_on_arrival = false;
+        let mut region_full_on_arrival: Option<(usize, usize)> = None;
         {
             let mut conns = connections.write().await;
             let mut rooms = session_rooms.write().await;
@@ -997,22 +1015,34 @@ impl WsServer {
             if existing_keys.iter().any(|(_, seq)| *seq > conn_seq) {
                 superseded_on_arrival = true;
             } else {
-                for (old_key, _) in existing_keys {
-                    if let Some(old_tx) = conns.remove(&old_key) {
-                        let close_frame = CloseFrame {
-                            code: CloseCode::Library(crate::protocol::DUPLICATE_SESSION_CLOSE_CODE),
-                            reason: "session replaced by newer connection".into(),
-                        };
-                        let _ = old_tx.try_send(Message::Close(Some(close_frame)));
-                    }
-                    if let Some(old_room) = rooms.remove(&old_key) {
-                        if old_room != room_id {
-                            let _ = disconnect_tx.send((session_id.clone(), old_room));
+                let already_in_target_room = existing_keys.iter().any(|(old_key, _)| {
+                    rooms.get(old_key).map(|r| r.as_str()) == Some(room_id.as_str())
+                });
+                let current_in_room = rooms.values().filter(|r| r.as_str() == room_id).count();
+                let max_in_room = limits.max_players_per_room.load(Ordering::Relaxed).max(1);
+
+                if !already_in_target_room && current_in_room >= max_in_room {
+                    region_full_on_arrival = Some((current_in_room, max_in_room));
+                } else {
+                    for (old_key, _) in existing_keys {
+                        if let Some(old_tx) = conns.remove(&old_key) {
+                            let close_frame = CloseFrame {
+                                code: CloseCode::Library(
+                                    crate::protocol::DUPLICATE_SESSION_CLOSE_CODE,
+                                ),
+                                reason: "session replaced by newer connection".into(),
+                            };
+                            let _ = old_tx.try_send(Message::Close(Some(close_frame)));
+                        }
+                        if let Some(old_room) = rooms.remove(&old_key) {
+                            if old_room != room_id {
+                                let _ = disconnect_tx.send((session_id.clone(), old_room));
+                            }
                         }
                     }
+                    conns.insert(conn_key.clone(), out_tx);
+                    rooms.insert(conn_key.clone(), room_id.clone());
                 }
-                conns.insert(conn_key.clone(), out_tx);
-                rooms.insert(conn_key.clone(), room_id.clone());
             }
         }
 
@@ -1020,6 +1050,24 @@ impl WsServer {
             let close_frame = CloseFrame {
                 code: CloseCode::Library(crate::protocol::DUPLICATE_SESSION_CLOSE_CODE),
                 reason: "session replaced by newer connection".into(),
+            };
+            let _ = ws_write.send(Message::Close(Some(close_frame))).await;
+            let _ = ws_write.close().await;
+            return;
+        }
+
+        if let Some((current_in_room, max_in_room)) = region_full_on_arrival {
+            let reason = format!(
+                "region full: {} is at capacity ({}/{})",
+                room_id, current_in_room, max_in_room
+            );
+            warn!(
+                "Rejecting WebSocket connection for user={} in {}: {}",
+                session_id, room_id, reason
+            );
+            let close_frame = CloseFrame {
+                code: CloseCode::Library(crate::protocol::REGION_FULL_CLOSE_CODE),
+                reason: reason.into(),
             };
             let _ = ws_write.send(Message::Close(Some(close_frame))).await;
             let _ = ws_write.close().await;
@@ -2239,5 +2287,69 @@ mod tests {
             Some("atlas-v1")
         );
         ws.close(None).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_ws_player_cap_per_region_rejects_excess_with_4003_and_allows_other_regions() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone())
+            .await
+            .unwrap()
+            .with_max_players_per_room(2);
+        let addr = server.local_addr();
+
+        // 1. Connect 2 distinct players to map-for-play (reaches cap = 2)
+        let url1 = format!("ws://{addr}/ws?token=dev-token:cap-p1&map=map-for-play&proto=1");
+        let url2 = format!("ws://{addr}/ws?token=dev-token:cap-p2&map=map-for-play&proto=1");
+        let (mut ws1, _) = connect_async(&url1).await.unwrap();
+        let (mut ws2, _) = connect_async(&url2).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(server.active_connections_in_room("map-for-play").await, 2);
+
+        // 2. 3rd distinct player in map-for-play is rejected with Close(4003) "region full"
+        let url3 = format!("ws://{addr}/ws?token=dev-token:cap-p3&map=map-for-play&proto=1");
+        let (mut ws3, _) = connect_async(&url3).await.unwrap();
+        let close_msg = tokio::time::timeout(Duration::from_secs(1), ws3.next())
+            .await
+            .expect("excess player should receive close frame")
+            .expect("stream should yield close frame")
+            .expect("no transport error");
+        match close_msg {
+            Message::Close(Some(frame)) => {
+                assert_eq!(
+                    frame.code,
+                    CloseCode::Library(crate::protocol::REGION_FULL_CLOSE_CODE)
+                );
+                assert!(
+                    frame.reason.contains("region full"),
+                    "unexpected close reason: {}",
+                    frame.reason
+                );
+            }
+            other => panic!("expected Close(4003) for region full, got {:?}", other),
+        }
+        assert_eq!(server.active_connections_in_room("map-for-play").await, 2);
+
+        // 3. Reconnecting an already-admitted session (cap-p1) in the same region replaces its own slot
+        let (mut ws1_reconn, _) = connect_async(&url1).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(server.active_connections_in_room("map-for-play").await, 2);
+        let _ = ws1.close(None).await;
+
+        // 4. Another region (map-for-test-deflect) still accepts new players while map-for-play is full
+        let url_other =
+            format!("ws://{addr}/ws?token=dev-token:cap-p3&map=map-for-test-deflect&proto=1");
+        let (mut ws_other, _) = connect_async(&url_other).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(
+            server
+                .active_connections_in_room("map-for-test-deflect")
+                .await,
+            1
+        );
+
+        ws1_reconn.close(None).await.unwrap();
+        ws2.close(None).await.unwrap();
+        ws_other.close(None).await.unwrap();
     }
 }
