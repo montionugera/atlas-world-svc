@@ -71,6 +71,24 @@
       ]
     },
     {
+      "mapId": "counterweight-shaft-b1",
+      "nodeId": "dungeon-counterweight-shaft",
+      "name": "Counterweight Shaft B1",
+      "districtId": "district-pendulum-steppe-west",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        36,
+        38
+      ]
+    },
+    {
       "mapId": "ember-bellows-chamber-b1",
       "nodeId": "dungeon-ember-bellows-chamber",
       "name": "Ember-Bellows Chamber",
@@ -521,6 +539,24 @@
       ]
     },
     {
+      "mapId": "metronome-bridge",
+      "nodeId": "hunting-area-metronome-bridge",
+      "name": "Metronome Suspension Bridge",
+      "districtId": "district-pendulum-steppe-west",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        34,
+        36
+      ]
+    },
+    {
       "mapId": "orrery-bridge",
       "nodeId": "hunting-area-orrery-bridge",
       "name": "The Orrery Bridge",
@@ -755,6 +791,24 @@
       ]
     },
     {
+      "mapId": "metronome-pivot-citadel",
+      "nodeId": "town-metronome-pivot-citadel",
+      "name": "Metronome Pivot Citadel",
+      "districtId": "district-pendulum-steppe-west",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        35,
+        37
+      ]
+    },
+    {
       "mapId": "patina-lock",
       "nodeId": "town-patina-lock",
       "name": "Patina Lock",
@@ -960,6 +1014,27 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-counterweight-shaft-exit-pivot": {
+      "portalId": "portal-counterweight-shaft-exit-pivot",
+      "sourceNodeId": "dungeon-counterweight-shaft",
+      "sourceMapId": "counterweight-shaft-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-metronome-pivot-citadel",
+      "targetMapId": "metronome-pivot-citadel",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
       },
       "lockMessage": null
     },
@@ -1782,6 +1857,48 @@
       },
       "lockMessage": null
     },
+    "portal-metronome-bridge-east-pivot": {
+      "portalId": "portal-metronome-bridge-east-pivot",
+      "sourceNodeId": "hunting-area-metronome-bridge",
+      "sourceMapId": "metronome-bridge",
+      "direction": "East",
+      "targetNodeId": "town-metronome-pivot-citadel",
+      "targetMapId": "metronome-pivot-citadel",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-metronome-bridge-west-inductor": {
+      "portalId": "portal-metronome-bridge-west-inductor",
+      "sourceNodeId": "hunting-area-metronome-bridge",
+      "sourceMapId": "metronome-bridge",
+      "direction": "West",
+      "targetNodeId": "town-inductor-switchyard",
+      "targetMapId": "inductor-switchyard",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-orrery-bridge-east-prism-zenith": {
       "portalId": "portal-orrery-bridge-east-prism-zenith",
       "sourceNodeId": "hunting-area-orrery-bridge",
@@ -2412,6 +2529,27 @@
       },
       "lockMessage": "Unshielded cyan corona arcs bridge the northern Corona-Arc Cliff; Switch-Master Voltair requires the Faraday Grounding Rod before opening the northern gate."
     },
+    "portal-inductor-switchyard-east-metronome": {
+      "portalId": "portal-inductor-switchyard-east-metronome",
+      "sourceNodeId": "town-inductor-switchyard",
+      "sourceMapId": "inductor-switchyard",
+      "direction": "East",
+      "targetNodeId": "hunting-area-metronome-bridge",
+      "targetMapId": "metronome-bridge",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-inductor-switchyard-west-leyden": {
       "portalId": "portal-inductor-switchyard-west-leyden",
       "sourceNodeId": "town-inductor-switchyard",
@@ -2598,6 +2736,69 @@
       "arrivalPointMeters": {
         "x": 2110.0,
         "y": 1880.0
+      },
+      "lockMessage": null
+    },
+    "portal-pivot-citadel-north-fog": {
+      "portalId": "portal-pivot-citadel-north-fog",
+      "sourceNodeId": "town-metronome-pivot-citadel",
+      "sourceMapId": "metronome-pivot-citadel",
+      "direction": "North",
+      "targetNodeId": "hunting-area-deadbeat-escapement-bluff",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "The hundred-meter brass pallet-arms of Deadbeat Escapement Bluff slam shut every second; Pendulum-Keeper Horolog requires the Ruby Pallet Pin before unlocking the northern gate."
+    },
+    "portal-pivot-citadel-west-bridge": {
+      "portalId": "portal-pivot-citadel-west-bridge",
+      "sourceNodeId": "town-metronome-pivot-citadel",
+      "sourceMapId": "metronome-pivot-citadel",
+      "direction": "West",
+      "targetNodeId": "hunting-area-metronome-bridge",
+      "targetMapId": "metronome-bridge",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-pivot-citadel-dungeon-counterweight": {
+      "portalId": "portal-pivot-citadel-dungeon-counterweight",
+      "sourceNodeId": "town-metronome-pivot-citadel",
+      "sourceMapId": "metronome-pivot-citadel",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-counterweight-shaft",
+      "targetMapId": "counterweight-shaft-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
       },
       "lockMessage": null
     },
