@@ -69,7 +69,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
     def test_rejects_mystery_node_without_mystery_hook(self) -> None:
         with self._mutated_files(
             {
-                "districts/continent-01-hearthbloom-basin/district-amber-root-hollows.json": lambda d: d.pop(
+                "districts/continent-02-clockwork-steppe/district-pendulum-steppe-west.json": lambda d: d.pop(
                     "mystery_hook", None
                 )
             }
@@ -211,6 +211,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
             [
                 "ash-valve-vault-b1",
                 "chronometer-foundry-b1",
+                "comet-core-geode-b1",
                 "ember-bellows-chamber-b1",
                 "faraday-dynamo-vault-b1",
                 "inverted-belfry-b1",
@@ -229,6 +230,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "celadon-causeway",
                 "cinder-apron",
                 "clover-south-gate",
+                "comet-tether-span",
                 "firebrick-duct",
                 "flue-causeway",
                 "kelp-spiral-reef",
@@ -238,6 +240,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "siphon-sluice",
                 "stalactite-plunge",
                 "tether-causeway",
+                "aphelion-buoy-haven",
                 "bellows-hearth",
                 "crown-beacon-citadel",
                 "draft-kiln-post",

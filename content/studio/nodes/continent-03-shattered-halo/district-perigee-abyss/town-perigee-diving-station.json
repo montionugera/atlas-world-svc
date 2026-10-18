@@ -48,7 +48,24 @@
       }
     },
     "South": null,
-    "East": null,
+    "East": {
+      "portal_id": "portal-perigee-station-east-comet",
+      "direction": "East",
+      "target_node_id": "hunting-area-comet-tether-span",
+      "target_map_id": "comet-tether-span",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
     "West": {
       "portal_id": "portal-perigee-station-west-plunge",
       "direction": "West",
@@ -108,7 +125,7 @@
         "y": 1970.0
       },
       "counter_height_meters": 0.58,
-      "dialogue_greeting": "The salt-pearls that float up from the maelstrom hold Vesper's calmest dreams—perfect for reinforcing 1.05 meter diving suits!"
+      "dialogue_greeting": "Our eastern starlight tether-bridge now ascends directly to Comet-Tether Span in the Aphelion Halo Rim!"
     }
   ],
   "resident_spawns": [],
@@ -136,7 +153,7 @@
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Anchors Perigee Abyss at [1, 1] directly above Vesper's northern whirlpool scar."
+      "evidence": "Anchors Perigee Abyss at [1, 1] directly above Vesper's northern whirlpool scar and connects East to Aphelion Halo Rim."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -148,7 +165,7 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Symmetric West portal to hunting-area-stalactite-plunge, Dungeon portal to dungeon-submerged-orrery-keel, and North fog_of_lore portal to hunting-area-maelstrom-eye-lip."
+      "evidence": "Symmetric West portal to hunting-area-stalactite-plunge, East portal to hunting-area-comet-tether-span, Dungeon portal to dungeon-submerged-orrery-keel, and North fog_of_lore portal."
     },
     "intentional_mystery_discipline": {
       "verified": true,

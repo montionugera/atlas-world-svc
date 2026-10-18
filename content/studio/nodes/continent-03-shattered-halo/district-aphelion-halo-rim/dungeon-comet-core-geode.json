@@ -1,0 +1,154 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-comet-core-geode",
+  "name": "Comet-Core Geode B1",
+  "map_id": "comet-core-geode-b1",
+  "parent_district_id": "district-aphelion-halo-rim",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Hollow star-crystal geode inside the captured comet beneath Aphelion Buoy Haven at [1, 1] floor -1 where Vesper's outermost gravity-anchor hums inside a cathedral of violet quartz.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    50,
+    50
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_comet_geode_dungeon",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Mirror-still liquid starlight pools inside a hollow violet-quartz comet geode"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-comet-geode-exit-buoy",
+      "direction": "Exit",
+      "target_node_id": "town-aphelion-buoy-haven",
+      "target_map_id": "aphelion-buoy-haven",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3780.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-comet-geode-wyrmling",
+      "monster_id": "monster-quartz-comet-wyrmling",
+      "monster_name": "Quartz Comet-Wyrmling",
+      "spawn_count": 10,
+      "respawn_seconds": 30,
+      "level": 50,
+      "element": "Wind",
+      "size": "Medium",
+      "race": "Dragon",
+      "family": "sky_kin",
+      "item_drops": [
+        {
+          "item_id": "item-violet-comet-quartz",
+          "item_name": "Violet Comet-Quartz",
+          "drop_chance_percent": 42.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-quartz-comet-wyrmling",
+        "card_name": "Quartz Comet-Wyrmling Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Weapon",
+        "modifier_summary": "Adds +12% Critical Damage and +6 Attack."
+      }
+    },
+    {
+      "spawn_id": "spawn-comet-geode-seraph",
+      "monster_id": "monster-geode-resonance-seraph",
+      "monster_name": "Geode Resonance-Seraph",
+      "spawn_count": 8,
+      "respawn_seconds": 35,
+      "level": 50,
+      "element": "Ghost",
+      "size": "Large",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-geode-resonance-prism-shard",
+          "item_name": "Geode Resonance-Prism Shard",
+          "drop_chance_percent": 35.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-geode-resonance-seraph",
+        "card_name": "Geode Resonance-Seraph Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Headgear",
+        "modifier_summary": "Increases Magic Attack by 8% and reduces variable cast time by 5%."
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.38,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.25,
+      "width": 1.7
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Houses Vesper's outermost gravity-anchor inside the hollow comet geode beneath Aphelion Buoy Haven at [1, 1] floor -1."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A cathedral of glowing violet comet-quartz and mirror-still liquid starlight pools."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 0.14m risers, 2.25m x 1.70m crystal archways, and 12.5m galleries for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric Exit portal to town-aphelion-buoy-haven and Level 50 sky_kin/spirit spawns."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops Geode Resonance-Prism Shards referenced by the Outer Orbit Drift fog_of_lore gate."
+    }
+  }
+}
