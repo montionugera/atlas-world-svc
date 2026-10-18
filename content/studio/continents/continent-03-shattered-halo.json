@@ -54,10 +54,10 @@
     "district-perigee-abyss"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Airship captains refuse to fly below the Perigee Abyss trench; they claim waterfalls pour upward into the stars and lost toys float back down.",
+    "in_world_rumor": "Airship captains refuse to fly below the Maelstrom Eye Lip; they claim waterfalls pour upward into the stars and lost toys float back down.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
-    "unanswered_question": "What sleeps inside the inverted Perigee Abyss trench beneath the lowest gravity anchor of the Shattered Halo?",
-    "discovery_trigger_hint": "Four core Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown) are Canon; Perigee Abyss is in Draft."
+    "unanswered_question": "What sleeps beyond the Maelstrom Eye Lip beneath the lowest basalt anchor of Perigee Abyss?",
+    "discovery_trigger_hint": "All five Districts on Continent 03 (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss) are Canon."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -74,11 +74,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes four Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown) plus Perigee Abyss (Draft)."
+      "evidence": "Organizes all five Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss) across Levels 30 to 50."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Perigee Abyss in Draft status with Mystery child Stalactite Plunge while keeping the airship loop open to Continent 01."
+      "evidence": "Preserves Mystery leaf nodes (Mirror Cascade, Apogee Spire, Abyssal Barometer, Solstice Anchor, Maelstrom Eye Lip) behind fog_of_lore gates."
     }
   }
 }

@@ -1,0 +1,154 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-submerged-orrery-keel",
+  "name": "Submerged Orrery Keel B1",
+  "map_id": "submerged-orrery-keel-b1",
+  "parent_district_id": "district-perigee-abyss",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Half-flooded brass-and-basalt astronomical keel beneath Perigee Diving-Station at [1, 1] floor -1 where Vesper's lowest tide-gears stabilize the Shattered Halo above the maelstrom.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    49,
+    50
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_orrery_keel_dungeon",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Bioluminescent tide-chambers where inverted whirlpool currents spin brass gyroscope rings"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-orrery-keel-exit-station",
+      "direction": "Exit",
+      "target_node_id": "town-perigee-diving-station",
+      "target_map_id": "perigee-diving-station",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3780.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-orrery-keel-nautilus",
+      "monster_id": "monster-keel-gyro-nautilus",
+      "monster_name": "Keel Gyro-Nautilus",
+      "spawn_count": 10,
+      "respawn_seconds": 30,
+      "level": 49,
+      "element": "Water",
+      "size": "Medium",
+      "race": "Fish",
+      "family": "aquatic",
+      "item_drops": [
+        {
+          "item_id": "item-nautilus-brass-chamber",
+          "item_name": "Nautilus Brass-Chamber",
+          "drop_chance_percent": 42.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-keel-gyro-nautilus",
+        "card_name": "Keel Gyro-Nautilus Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Shield",
+        "modifier_summary": "Reduces damage from Fish and Formless monsters by 15% and grants +5 Defense."
+      }
+    },
+    {
+      "spawn_id": "spawn-orrery-keel-specter",
+      "monster_id": "monster-maelstrom-anchor-specter",
+      "monster_name": "Maelstrom Anchor-Specter",
+      "spawn_count": 8,
+      "respawn_seconds": 35,
+      "level": 50,
+      "element": "Ghost",
+      "size": "Large",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-keel-gyro-compass-shard",
+          "item_name": "Keel Gyro-Compass Shard",
+          "drop_chance_percent": 35.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-maelstrom-anchor-specter",
+        "card_name": "Maelstrom Anchor-Specter Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Armor",
+        "modifier_summary": "Increases Maximum Health Points by 12% and grants immunity to Knockback in water currents."
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.38,
+    "stair_riser_height_meters": 0.15,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.25,
+      "width": 1.7
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Houses Vesper's lowest astronomical tide-keel beneath Perigee Diving-Station at [1, 1] floor -1."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Half-submerged brass gyroscope rings spinning inside bioluminescent tide-chambers above the whirlpool."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 0.15m risers, 2.25m x 1.70m bulkhead doorways, and 12.5m catwalks for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric Exit portal to town-perigee-diving-station and Level 49 to 50 aquatic/spirit spawns."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops Keel Gyro-Compass Shards referenced by the Maelstrom Eye Lip fog_of_lore gate."
+    }
+  }
+}

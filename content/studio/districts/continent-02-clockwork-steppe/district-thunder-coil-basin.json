@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-thunder-coil-basin",
+  "name": "Thunder-Coil Basin",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "status": "mystery",
+  "core_rationale": "Eastern lightning-inductor basin of Continent 02 where Krono the Brass Titan's copper fingers grounded atmospheric storms into a ring of humming Leyden-jar towers.",
+  "local_conflict": "Arc-charged copper automatons and storm-elementals surge along the inductor rails whenever the Steppe gales peak.",
+  "level_band_label": "Levels 21 to 40",
+  "level_range": [
+    32,
+    36
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "elemental"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Glider couriers say that flying within a league of Thunder-Coil Basin makes every brass button on your coat hum in three-part harmony.",
+    "visual_silhouette": "Five colossal glass-and-copper Leyden-jar towers joined by harmless blue corona arcs above the eastern steppe.",
+    "unanswered_question": "What ancient dynamo beneath Thunder-Coil Basin is still drawing power from Krono's grounded fingers?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-krono-brass-titan and scar-brass-faultline along the eastern storm-inductor rim of Continent 02."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Colossal glass-and-copper Leyden-jar towers linked by singing blue corona arcs across the copper steppe."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: rubber-insulated catwalk and Faraday-cage doorway metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the eastern storm-inductor District frontier on Continent 02 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}

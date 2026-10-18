@@ -1,0 +1,158 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-perigee-diving-station",
+  "name": "Perigee Diving-Station",
+  "map_id": "perigee-diving-station",
+  "parent_district_id": "district-perigee-abyss",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Lowest inhabited brass-and-basalt diving-bell sanctuary of Continent 03 at [1, 1] where tether-divers winch salvage cages down toward the northern ocean maelstrom.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "level_range": [
+    48,
+    50
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_roof_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_perigee_station",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Pressurized moon-pool basins where upward sea-foam condenses into calm lantern-lit canals"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-perigee-station-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-maelstrom-eye-lip",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Crushing inverted tidal shear along the Maelstrom Eye Lip snaps unreinforced tether-lines; Dive-Master Corin requires the Keel Gyro-Compass before opening the northern sea-lip.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": null,
+    "West": {
+      "portal_id": "portal-perigee-station-west-plunge",
+      "direction": "West",
+      "target_node_id": "hunting-area-stalactite-plunge",
+      "target_map_id": "stalactite-plunge",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-perigee-station-dungeon-keel",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-submerged-orrery-keel",
+      "target_map_id": "submerged-orrery-keel-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-dive-master-corin",
+      "name": "Dive-Master Corin",
+      "role": "Perigee Winch Commander",
+      "position_meters": {
+        "x": 1975.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.6,
+      "dialogue_greeting": "Mind the upward spray! Check your diving-bell seals at my 0.60 meter winch desk before descending into the Submerged Orrery Keel."
+    },
+    {
+      "npc_id": "npc-pearl-wright-naia",
+      "name": "Pearl-Wright Naia",
+      "role": "Salt-Pearl Quartermaster",
+      "position_meters": {
+        "x": 2065.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "The salt-pearls that float up from the maelstrom hold Vesper's calmest dreams—perfect for reinforcing 1.05 meter diving suits!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.42,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_roof_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Perigee Abyss at [1, 1] directly above Vesper's northern whirlpool scar."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A brass-and-basalt diving-bell sanctuary suspended over an inverted ocean maelstrom with glowing moon-pools."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Winch desks at 0.58 to 0.60m, basalt risers at 0.14m, doorways 2.20m x 1.65m, and 13.0m boardwalks for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric West portal to hunting-area-stalactite-plunge, Dungeon portal to dungeon-submerged-orrery-keel, and North fog_of_lore portal to hunting-area-maelstrom-eye-lip."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Seals the northern Maelstrom Eye Lip behind a fog_of_lore boundary portal and Dive-Master lock message."
+    }
+  }
+}

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Automated test suite for E-010 / F-087 / F-088 / F-089 / F-090 / F-092 / F-093 / F-094 / F-095 / F-096 / F-097 / F-099 / F-101 / F-102:
+Automated test suite for E-010 / F-087 / F-088 / F-089 / F-090 / F-092 / F-093 / F-094 / F-095 / F-096 / F-097 / F-099 / F-101 / F-102 / F-104:
   - 4-Level Unabbreviated Perspective Switcher (World History and Concept -> Continent -> District -> Town or Hunting Area)
   - District Connected 2D Map Matrix + Maxion Level-Band Monster Pinning
   - Town or Hunting Area Inspector + Monster/1035 Detail Sheet
   - Human-in-the-Loop Core Rationale, Five-Pillar Quality Checklist Gate, Mystery Toggle, and Downward Child Generation API
-  - Autonomous Product Owner Self-Evaluation Telemetry & Continent 01 Ash-Bellows Trench Canon Increment
+  - Autonomous Product Owner Self-Evaluation Telemetry & Continent 03 Perigee Abyss Canon Increment
 """
 
 from __future__ import annotations
@@ -37,8 +37,8 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertTrue(ok, f"Expected all 5 pillars verified on WHC, failed: {failed}")
 
         self.assertEqual(len(bundle["continents"]), 3)
-        self.assertEqual(len(bundle["districts"]), 13)
-        self.assertEqual(len(bundle["nodes"]), 45)
+        self.assertEqual(len(bundle["districts"]), 14)
+        self.assertEqual(len(bundle["nodes"]), 49)
 
     def test_index_html_renders_unabbreviated_four_perspectives_and_benchmarks(self) -> None:
         html = web.INDEX_HTML
@@ -56,10 +56,10 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("/api/studio/generate-children", html)
 
     def test_rationale_update_blocks_canon_when_parent_not_canon_or_checklist_incomplete(self) -> None:
-        # 1. hunting-area-stalactite-plunge has parent district-perigee-abyss (status: draft)
+        # 1. hunting-area-celadon-causeway has parent district-porcelain-cradle (status: draft)
         res, code = web.update_studio_rationale(
             {
-                "nodeId": "hunting-area-stalactite-plunge",
+                "nodeId": "hunting-area-celadon-causeway",
                 "status": "canon",
             }
         )
@@ -67,10 +67,10 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertFalse(res["ok"])
         self.assertIn("parent", res["error"].lower())
 
-        # 2. district-perigee-abyss has parent continent-03-shattered-halo (canon), but incomplete checklist pillars
+        # 2. district-porcelain-cradle has parent continent-01-hearthbloom-basin (canon), but incomplete checklist pillars
         res2, code2 = web.update_studio_rationale(
             {
-                "nodeId": "district-perigee-abyss",
+                "nodeId": "district-porcelain-cradle",
                 "status": "canon",
             }
         )
@@ -79,16 +79,16 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("quality_checklist", res2["error"])
 
     def test_rationale_update_and_undo_snapshot_roundtrip(self) -> None:
-        _, orig_doc, _ = web.find_studio_node_and_path("district-perigee-abyss")
+        _, orig_doc, _ = web.find_studio_node_and_path("district-porcelain-cradle")
         self.assertIsNotNone(orig_doc)
         orig_rationale = orig_doc["core_rationale"]
 
         new_rationale = (
-            "Lowest inverted gravity trench of Continent 03 where Vesper's sunken basalt anchors hang above the ocean maelstrom."
+            "Innermost vitrified white-clay amphitheater of Continent 01 where Sola's unbroken ceramic medallion glows beneath the lake."
         )
         res, code = web.update_studio_rationale(
             {
-                "nodeId": "district-perigee-abyss",
+                "nodeId": "district-porcelain-cradle",
                 "core_rationale": new_rationale,
                 "status": "draft",
             }
@@ -100,38 +100,38 @@ class TestStudioWebPerspectives(unittest.TestCase):
         # Undo snapshot to restore original file state cleanly
         undo_res = web.undo_latest_snapshot()
         self.assertTrue(undo_res["ok"])
-        _, restored_doc, _ = web.find_studio_node_and_path("district-perigee-abyss")
+        _, restored_doc, _ = web.find_studio_node_and_path("district-porcelain-cradle")
         self.assertEqual(restored_doc["core_rationale"], orig_rationale)
 
     def test_generate_children_enforces_canon_and_five_pillar_checklist_gate(self) -> None:
-        # 1. Mystery parent district-porcelain-cradle must fail with 400
+        # 1. Mystery parent district-thunder-coil-basin must fail with 400
         res_mystery, code_mystery = web.generate_studio_children(
             {
-                "parentId": "district-porcelain-cradle",
-                "childName": "Forbidden Cradle Dome",
+                "parentId": "district-thunder-coil-basin",
+                "childName": "Forbidden Dynamo Spire",
                 "persist": False,
             }
         )
         self.assertEqual(code_mystery, 400)
         self.assertFalse(res_mystery["ok"])
 
-        # 2. Draft parent district-perigee-abyss must fail with 400
+        # 2. Draft parent district-porcelain-cradle must fail with 400
         res_draft, code_draft = web.generate_studio_children(
             {
-                "parentId": "district-perigee-abyss",
-                "childName": "Perigee Diving-Station",
+                "parentId": "district-porcelain-cradle",
+                "childName": "Porcelain Sanctuary Town",
                 "persist": False,
             }
         )
         self.assertEqual(code_draft, 400)
         self.assertFalse(res_draft["ok"])
 
-        # 3. Canon parent district-ash-bellows-trench (with 5/5 checklist verified) must succeed with 200
+        # 3. Canon parent district-perigee-abyss (with 5/5 checklist verified) must succeed with 200
         res_canon, code_canon = web.generate_studio_children(
             {
-                "parentId": "district-ash-bellows-trench",
-                "childId": "hunting-area-bellows-east-flue",
-                "childName": "Bellows East Flue",
+                "parentId": "district-perigee-abyss",
+                "childId": "hunting-area-perigee-east-trench",
+                "childName": "Perigee East Trench",
                 "childStatus": "mystery",
                 "persist": False,
             }
@@ -139,7 +139,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertEqual(code_canon, 200)
         self.assertTrue(res_canon["ok"])
         self.assertEqual(res_canon["childLayer"], "town-or-hunting-area")
-        self.assertEqual(res_canon["childNode"]["parent_district_id"], "district-ash-bellows-trench")
+        self.assertEqual(res_canon["childNode"]["parent_district_id"], "district-perigee-abyss")
         self.assertEqual(res_canon["childNode"]["status"], "mystery")
 
 

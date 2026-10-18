@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-celadon-causeway",
+  "name": "Celadon Causeway",
+  "map_id": null,
+  "parent_district_id": "district-porcelain-cradle",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western celadon-glazed stepping-stone causeway of Porcelain Cradle Sanctuary at [0, 1] leading from Ash-Bellows Trench across warm shallow mineral pools toward Sola's central medallion.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "level_range": [
+    10,
+    12
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Potters say every celadon tile along the causeway rings with a different musical note when a Sprout hops across it.",
+    "visual_silhouette": "Arched sea-green porcelain bridges skimming inches above steaming mirror-flat mineral pools.",
+    "unanswered_question": "Which melody of stepping-stones unlocks the inner dome of Porcelain Cradle Sanctuary?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Serves as the western entry causeway of Porcelain Cradle Sanctuary inside scar-kiln-basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Musical celadon-glazed porcelain bridges skimming across steaming mirror-flat mineral pools."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-porcelain-cradle."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until Porcelain Cradle Sanctuary is promoted to Canon."
+    }
+  }
+}

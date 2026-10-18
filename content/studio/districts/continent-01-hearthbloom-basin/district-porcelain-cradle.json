@@ -3,7 +3,7 @@
   "id": "district-porcelain-cradle",
   "name": "Porcelain Cradle Sanctuary",
   "parent_continent_id": "continent-01-hearthbloom-basin",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Innermost vitrified white-clay amphitheater of Continent 01 where Sola's unbroken ceramic boss-medallion radiates warm hearth-light beneath the central lake.",
   "local_conflict": "Luminous glaze-sprites and ancient kiln-wardens guard the sealed inner sanctuary where Hearth-Sparks first condense.",
   "level_band_label": "Levels 1 to 20",
@@ -19,7 +19,23 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-celadon-causeway",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "level_range": [
+        10,
+        12
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Lantern-Keepers say that when the central pond in Lantern Hollow is completely still, you can see the white-gold roofs of Porcelain Cradle reflected below.",
@@ -36,16 +52,16 @@
       "evidence": "Translucent white porcelain domes glowing beneath warm spring-water at the center of Sola's shield."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: porcelain stepping-stone and doorway metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Specifies 12.5m celadon-glazed causeways, 0.58m porcelain tea-counters, and 0.14m stepping-stones for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the inner sanctuary District frontier on Continent 01 with zero filler maps."
+      "evidence": "Draft status: awaiting playable leaf map authoring for Celadon Causeway and Porcelain Sanctuary Town."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Provides complete mystery_hook and reserves hunting-area-celadon-causeway as a Mystery frontier."
     }
   }
 }
