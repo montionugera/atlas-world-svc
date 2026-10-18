@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-teapot-steam-cistern",
+  "name": "Teapot Steam Cistern",
+  "map_id": "teapot-steam-cistern-b1",
+  "parent_district_id": "district-ginger-steam-terraces",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Sub-surface glazed-porcelain geothermal cistern at [1, 1] floor -1 beneath Ginger-Bathhouse Haven where Sola's ember vents boil mineral spring water for the upper terraces.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    14,
+    15
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_base.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_teapot_steam_cistern",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Simmering ginger-mineral reservoirs ringed by whistling celadon pressure domes"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-teapot-cistern-exit-bathhouse-haven",
+      "direction": "Exit",
+      "target_node_id": "town-ginger-bathhouse-haven",
+      "target_map_id": "ginger-bathhouse-haven",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3780.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-simmering-ginger-bloom",
+      "monster_id": "monster-simmering-ginger-bloom",
+      "monster_name": "Simmering Ginger-Bloom",
+      "spawn_count": 12,
+      "respawn_seconds": 26,
+      "level": 14,
+      "element": "Water",
+      "size": "Small",
+      "race": "Plant",
+      "family": "flora",
+      "item_drops": [
+        {
+          "item_id": "item-ginger-steam-nectar",
+          "item_name": "Ginger-Steam Nectar",
+          "drop_chance_percent": 40.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-simmering-ginger-bloom",
+        "card_name": "Simmering Ginger-Bloom Card",
+        "drop_chance_percent": 0.04
+      }
+    },
+    {
+      "spawn_id": "spawn-porcelain-boiler-golem",
+      "monster_id": "monster-porcelain-boiler-golem",
+      "monster_name": "Porcelain Boiler Golem",
+      "spawn_count": 6,
+      "respawn_seconds": 42,
+      "level": 15,
+      "element": "Fire",
+      "size": "Large",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-porcelain-whistle-valve",
+          "item_name": "Porcelain Whistle Valve",
+          "drop_chance_percent": 26.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-porcelain-boiler-golem",
+        "card_name": "Porcelain Boiler Golem Card",
+        "drop_chance_percent": 0.03
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.35,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.1,
+      "width": 1.55
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_base.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Sits at [1, 1] floor -1 directly beneath Ginger-Bathhouse Haven and yields the Porcelain Whistle Valve."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Subterranean porcelain boiler cistern glowing with warm mineral springs and whistling teapot domes."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 12.5m cistern walkways, 0.14m ceramic risers, and 2.10m x 1.55m archways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Populated by flora and construct monster families with symmetric Exit portal back to Ginger-Bathhouse Haven."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops the Porcelain Whistle Valve referenced in the Cardamom-Cloud Overlook Fog of Lore lock_message."
+    }
+  }
+}

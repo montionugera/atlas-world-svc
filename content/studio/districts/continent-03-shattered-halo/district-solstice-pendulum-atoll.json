@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-solstice-pendulum-atoll",
+  "name": "Solstice Pendulum Atoll",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "status": "mystery",
+  "core_rationale": "Twelfth floating basalt-and-starlight pendulum island of Continent 03 where Vesper's longest inverted gravity chain swings between the summer and winter solstice beacons.",
+  "local_conflict": "Solstice chime-wraiths and pendulum-weight constructs patrol the swinging starlight anchor-piers.",
+  "level_band_label": "Levels 41 to 60",
+  "level_range": [
+    49,
+    50
+  ],
+  "ecological_monster_families": [
+    "celestial",
+    "construct"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Astrolabe keepers in Celestial Astrolabe Sanctuary say Solstice Pendulum Atoll swings across a two-kilometer arc of open sky once every twelve hours.",
+    "visual_silhouette": "A floating basalt atoll suspended from a colossal starlight pendulum chain beyond the eastern rim of Celestial Astrolabe Atoll.",
+    "unanswered_question": "What counter-gravity anchor prevents Solstice Pendulum Atoll from colliding with the outer halo ring?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater along the outer solstice arc of Continent 03."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A floating basalt atoll swinging on a colossal starlight pendulum chain between twin solstice beacons."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: pendulum-pier walkway and solstice beacon metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the twelfth District frontier on Continent 03 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}

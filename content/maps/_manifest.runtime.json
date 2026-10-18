@@ -485,6 +485,24 @@
       ]
     },
     {
+      "mapId": "teapot-steam-cistern-b1",
+      "nodeId": "dungeon-teapot-steam-cistern",
+      "name": "Teapot Steam Cistern",
+      "districtId": "district-ginger-steam-terraces",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        14,
+        15
+      ]
+    },
+    {
       "mapId": "twilight-coral-crypt-b1",
       "nodeId": "dungeon-twilight-coral-crypt",
       "name": "Twilight Coral Crypt",
@@ -842,6 +860,24 @@
       "levelRange": [
         26,
         28
+      ]
+    },
+    {
+      "mapId": "ginger-aqueduct-bridge",
+      "nodeId": "hunting-area-ginger-aqueduct-bridge",
+      "name": "Ginger Aqueduct Bridge",
+      "districtId": "district-ginger-steam-terraces",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        14,
+        15
       ]
     },
     {
@@ -1310,6 +1346,24 @@
       "levelRange": [
         29,
         30
+      ]
+    },
+    {
+      "mapId": "ginger-bathhouse-haven",
+      "nodeId": "town-ginger-bathhouse-haven",
+      "name": "Ginger-Bathhouse Haven",
+      "districtId": "district-ginger-steam-terraces",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        14,
+        15
       ]
     },
     {
@@ -2202,6 +2256,27 @@
       },
       "lockMessage": null
     },
+    "portal-teapot-cistern-exit-bathhouse-haven": {
+      "portalId": "portal-teapot-cistern-exit-bathhouse-haven",
+      "sourceNodeId": "dungeon-teapot-steam-cistern",
+      "sourceMapId": "teapot-steam-cistern-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-ginger-bathhouse-haven",
+      "targetMapId": "ginger-bathhouse-haven",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
     "portal-coral-crypt-exit-prism-haven": {
       "portalId": "portal-coral-crypt-exit-prism-haven",
       "sourceNodeId": "dungeon-twilight-coral-crypt",
@@ -2986,6 +3061,48 @@
       "direction": "West",
       "targetNodeId": "town-patina-lock",
       "targetMapId": "patina-lock",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-ginger-aqueduct-east-bathhouse-haven": {
+      "portalId": "portal-ginger-aqueduct-east-bathhouse-haven",
+      "sourceNodeId": "hunting-area-ginger-aqueduct-bridge",
+      "sourceMapId": "ginger-aqueduct-bridge",
+      "direction": "East",
+      "targetNodeId": "town-ginger-bathhouse-haven",
+      "targetMapId": "ginger-bathhouse-haven",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-ginger-aqueduct-west-cinnamon-mill": {
+      "portalId": "portal-ginger-aqueduct-west-cinnamon-mill",
+      "sourceNodeId": "hunting-area-ginger-aqueduct-bridge",
+      "sourceMapId": "ginger-aqueduct-bridge",
+      "direction": "West",
+      "targetNodeId": "town-cinnamon-mill-haven",
+      "targetMapId": "cinnamon-mill-haven",
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
@@ -4113,6 +4230,27 @@
       },
       "lockMessage": "Swirling aromatic spice-drafts across Star-Anise Promontory cloud unshielded sightlines; Mill-Steward Clove requires the Star-Pod Lantern before opening the northern promontory."
     },
+    "portal-cinnamon-mill-east-ginger-aqueduct": {
+      "portalId": "portal-cinnamon-mill-east-ginger-aqueduct",
+      "sourceNodeId": "town-cinnamon-mill-haven",
+      "sourceMapId": "cinnamon-mill-haven",
+      "direction": "East",
+      "targetNodeId": "hunting-area-ginger-aqueduct-bridge",
+      "targetMapId": "ginger-aqueduct-bridge",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-cinnamon-mill-west-viaduct": {
       "portalId": "portal-cinnamon-mill-west-viaduct",
       "sourceNodeId": "town-cinnamon-mill-haven",
@@ -4477,6 +4615,69 @@
       "direction": "Dungeon",
       "targetNodeId": "dungeon-kinetic-ballast-vault",
       "targetMapId": "kinetic-ballast-vault-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-bathhouse-haven-north-cardamom-fog": {
+      "portalId": "portal-bathhouse-haven-north-cardamom-fog",
+      "sourceNodeId": "town-ginger-bathhouse-haven",
+      "sourceMapId": "ginger-bathhouse-haven",
+      "direction": "North",
+      "targetNodeId": "hunting-area-cardamom-cloud-overlook",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Dense aromatic steam clouds across Cardamom-Cloud Overlook obscure the upper travertine ledges; Bathhouse-Matron Yuzu requires the Porcelain Whistle Valve before opening the northern gate."
+    },
+    "portal-bathhouse-haven-west-ginger-aqueduct": {
+      "portalId": "portal-bathhouse-haven-west-ginger-aqueduct",
+      "sourceNodeId": "town-ginger-bathhouse-haven",
+      "sourceMapId": "ginger-bathhouse-haven",
+      "direction": "West",
+      "targetNodeId": "hunting-area-ginger-aqueduct-bridge",
+      "targetMapId": "ginger-aqueduct-bridge",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-bathhouse-haven-dungeon-teapot-cistern": {
+      "portalId": "portal-bathhouse-haven-dungeon-teapot-cistern",
+      "sourceNodeId": "town-ginger-bathhouse-haven",
+      "sourceMapId": "ginger-bathhouse-haven",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-teapot-steam-cistern",
+      "targetMapId": "teapot-steam-cistern-b1",
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
