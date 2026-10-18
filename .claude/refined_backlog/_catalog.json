@@ -1839,9 +1839,10 @@
     "title": "Nearby and world chat",
     "from_idea": "I-181",
     "created_at": "2026-10-18T19:23:00.871171+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-008"
+    "epic": "E-008",
+    "claimed_at": "2026-10-18T19:23:21.377648+00:00"
   }
 ]
