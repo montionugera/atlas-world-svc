@@ -998,7 +998,7 @@
     "id": "I-161",
     "title": "Currency and vendor",
     "created_at": "2026-10-11T06:59:05.834028+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-145",
     "epic": "E-005"
   },
   {
