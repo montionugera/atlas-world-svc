@@ -1497,8 +1497,9 @@
     "title": "District Umbrage Prism Atoll Canon Promotion, Violet Spectrum Span Connection, and Terracotta Wind-Chime Ridge Draft",
     "from_idea": "I-218",
     "created_at": "2026-10-18T11:30:31.661866+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-18T11:30:51.892491+00:00"
   }
 ]
