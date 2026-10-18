@@ -1768,5 +1768,15 @@
     "claimed_at": "2026-10-18T17:10:33.893672+00:00",
     "shipped_at": "2026-10-18T17:18:58.562156+00:00",
     "shipped_sha": "7a761df94a3f6e9305cdbec41cb5a31c5c47894d"
+  },
+  {
+    "id": "F-142",
+    "title": "Weapon switching and skill loadout in play",
+    "from_idea": "I-159",
+    "created_at": "2026-10-18T17:19:21.291438+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-005"
   }
 ]
