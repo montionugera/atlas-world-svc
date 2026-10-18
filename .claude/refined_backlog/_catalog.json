@@ -1094,5 +1094,15 @@
     "status": "open",
     "release_version": null,
     "epic": "E-010"
+  },
+  {
+    "id": "F-088",
+    "title": "District Connected Map Matrix and Town or Hunting Area plus Monster Detail Inspector",
+    "from_idea": "I-195",
+    "created_at": "2026-10-18T04:24:10.817489+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-010"
   }
 ]
