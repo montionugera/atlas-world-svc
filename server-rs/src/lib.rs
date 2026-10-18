@@ -7,6 +7,7 @@ pub mod debug;
 pub mod ecs;
 pub mod fleet;
 pub mod load_harness;
+pub mod meta;
 pub mod net;
 pub mod physics;
 pub mod protocol;
@@ -34,9 +35,10 @@ pub use load_harness::{
 pub use net::{ClientPacket, WsServer};
 pub use storage::{
     normalize_match_event_type, CharacterStateBuffer, CharacterStateSnapshot, EquippedItemIds,
-    LoadoutSnapshot, MatchEvent, MatchEventBuffer, MatchEventQueue, MockNakamaClient, NakamaClient,
-    NakamaStorage, PrimaryStats, ProfileDoc, DEFAULT_CHARACTER_STATE_FLUSH_INTERVAL,
-    DEFAULT_MATCH_EVENT_FLUSH_INTERVAL, DEFAULT_NAKAMA_MATCH_ID,
+    LoadoutSnapshot, MatchEvent, MatchEventBatch, MatchEventBuffer, MatchEventQueue,
+    MockNakamaClient, NakamaClient, NakamaStorage, PrimaryStats, ProfileDoc, SkillUnlock,
+    DEFAULT_CHARACTER_STATE_FLUSH_INTERVAL, DEFAULT_MATCH_EVENT_FLUSH_INTERVAL,
+    DEFAULT_NAKAMA_MATCH_ID,
 };
 
 pub use core::{Lcg, Mulberry32, SimClock};

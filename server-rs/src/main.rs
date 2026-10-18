@@ -1,10 +1,16 @@
 use server_rs::auth::AuthGuard;
 use server_rs::content::world_regions::{resolve_room_or_region_id, GENERATED_REGION_IDS};
 use server_rs::fleet::{AgonesClient, FleetLifecycle, HeartbeatTask};
+use server_rs::meta::{
+    spawn_meta_http_listener, InMemoryMetaStore, MetaDocStore, MetaHttpConfig, PostgresMetaStore,
+    RustMetaEngine, SqliteMetaStore,
+};
 use server_rs::net::WsServer;
 use server_rs::protocol::SnapshotBuilder;
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
-use server_rs::storage::{CharacterStateBuffer, MatchEventBuffer, NakamaClient, NakamaConfig};
+use server_rs::storage::{
+    CharacterStateBuffer, MatchEventBuffer, NakamaClient, NakamaConfig, NakamaStorage,
+};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tracing::{debug, error, info, warn};
@@ -65,6 +71,36 @@ fn summarize(micros: &mut [u64]) -> String {
     )
 }
 
+fn build_meta_doc_store_from_env() -> Result<Arc<dyn MetaDocStore>, String> {
+    if let Some(db_path) = std::env::var("META_DB_PATH")
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+    {
+        if db_path == ":memory:" {
+            info!("Initializing SqliteMetaStore (:memory:)");
+            let store = SqliteMetaStore::in_memory().map_err(|e| e.to_string())?;
+            return Ok(Arc::new(store));
+        }
+        info!("Initializing SqliteMetaStore at {}", db_path);
+        let store = SqliteMetaStore::open(&db_path).map_err(|e| e.to_string())?;
+        return Ok(Arc::new(store));
+    }
+
+    if let Some(pg_url) = std::env::var("META_POSTGRES_URL")
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+    {
+        info!("Initializing PostgresMetaStore");
+        let store = PostgresMetaStore::from_url(&pg_url).map_err(|e| e.to_string())?;
+        return Ok(Arc::new(store));
+    }
+
+    info!("Initializing InMemoryMetaStore (META_DB_PATH unset)");
+    Ok(Arc::new(InMemoryMetaStore::new()))
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Initialize tracing subscriber
@@ -105,8 +141,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 2. Auth Guard
     let auth_guard = AuthGuard::from_env();
 
-    // 2b. Nakama persistent storage client & startup probe (before Agones Ready)
-    let nakama_client = match NakamaConfig::from_env() {
+    // 2b. Persistent storage backend: external Nakama S2S client when NAKAMA_URL/NAKAMA_HTTP_KEY
+    // are configured, or native in-process RustMetaEngine by default.
+    let mut nakama_client: Option<Arc<NakamaClient>> = None;
+    let mut in_process_meta: Option<Arc<RustMetaEngine>> = None;
+
+    match NakamaConfig::from_env() {
         Ok(Some(cfg)) => {
             info!("Configuring Nakama client for {}", cfg.base_url);
             let client = Arc::new(NakamaClient::new(
@@ -121,18 +161,59 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 std::process::exit(1);
             }
             info!("Nakama startup probe succeeded ({})", cfg.base_url);
-            Some(client)
+            nakama_client = Some(client);
         }
         Ok(None) => {
-            info!("Nakama not configured (NAKAMA_URL and NAKAMA_HTTP_KEY unset); running in offline mode");
-            None
+            info!(
+                "Nakama not configured (NAKAMA_URL and NAKAMA_HTTP_KEY unset); running in-process RustMetaEngine"
+            );
+            let store = match build_meta_doc_store_from_env() {
+                Ok(s) => s,
+                Err(err) => {
+                    error!("Failed to initialize MetaDocStore: {}", err);
+                    eprintln!("Failed to initialize MetaDocStore: {}", err);
+                    std::process::exit(1);
+                }
+            };
+            let engine = match RustMetaEngine::new(store) {
+                Ok(eng) => Arc::new(eng),
+                Err(err) => {
+                    error!("Failed to initialize RustMetaEngine catalogs: {}", err);
+                    eprintln!("Failed to initialize RustMetaEngine catalogs: {}", err);
+                    std::process::exit(1);
+                }
+            };
+            in_process_meta = Some(engine);
         }
         Err(err) => {
             error!("Nakama configuration error: {}", err);
             eprintln!("Nakama configuration error: {}", err);
             std::process::exit(1);
         }
+    }
+
+    let storage_backend: Option<Arc<dyn NakamaStorage>> = if let Some(ref client) = nakama_client {
+        Some(client.clone())
+    } else if let Some(ref engine) = in_process_meta {
+        Some(engine.clone())
+    } else {
+        None
     };
+
+    // Optional secondary HTTP listener for Nakama `/v2/*` compatibility (e.g. `:7350`)
+    if let Some(meta_bind) = std::env::var("META_BIND_ADDR")
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+    {
+        if let Some(ref engine) = in_process_meta {
+            let meta_cfg = MetaHttpConfig::from_env(engine.clone(), auth_guard.clone());
+            let bound = spawn_meta_http_listener(&meta_bind, meta_cfg)
+                .await
+                .map_err(std::io::Error::other)?;
+            info!("Secondary Meta HTTP gateway listening on {}", bound);
+        }
+    }
 
     // 3. Agones lifecycle & heartbeat
     let agones = Arc::new(AgonesClient::from_env());
@@ -150,6 +231,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map_err(std::io::Error::other)?;
     if let Some(ref client) = nakama_client {
         ws_server_inner = ws_server_inner.with_nakama(client.clone());
+    } else if let Some(ref engine) = in_process_meta {
+        ws_server_inner = ws_server_inner.with_meta_engine_from_env(engine.clone());
     }
     let ws_server = Arc::new(ws_server_inner);
     info!("WebSocket gateway listening on {}", ws_server.local_addr());
@@ -367,15 +450,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 batches_to_flush.extend(match_event_buffer.tick(tick_dt));
 
                 if !batches_to_flush.is_empty() {
-                    if let Some(ref client) = nakama_client {
-                        let client = client.clone();
+                    if let Some(ref storage) = storage_backend {
+                        let storage = storage.clone();
                         tokio::spawn(async move {
                             for res in
-                                MatchEventBuffer::dispatch_batches(client.as_ref(), &batches_to_flush)
+                                MatchEventBuffer::dispatch_batches(storage.as_ref(), &batches_to_flush)
                                     .await
                             {
                                 if let Err(err) = res {
-                                    warn!("Failed to report match events to Nakama: {}", err);
+                                    warn!("Failed to report match events to storage backend: {}", err);
                                 }
                             }
                         });
@@ -391,17 +474,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
 
                 if !states_to_flush.is_empty() {
-                    if let Some(ref client) = nakama_client {
-                        let client = client.clone();
+                    if let Some(ref storage) = storage_backend {
+                        let storage = storage.clone();
                         tokio::spawn(async move {
                             for res in CharacterStateBuffer::dispatch_states(
-                                client.as_ref(),
+                                storage.as_ref(),
                                 &states_to_flush,
                             )
                             .await
                             {
                                 if let Err(err) = res {
-                                    warn!("Failed to save character state to Nakama: {}", err);
+                                    warn!("Failed to save character state to storage backend: {}", err);
                                 }
                             }
                         });
@@ -426,8 +509,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let final_states = character_state_buffer.flush_all();
     if !final_states.is_empty() {
-        if let Some(ref client) = nakama_client {
-            for res in CharacterStateBuffer::dispatch_states(client.as_ref(), &final_states).await {
+        if let Some(ref storage) = storage_backend {
+            for res in CharacterStateBuffer::dispatch_states(storage.as_ref(), &final_states).await
+            {
                 if let Err(err) = res {
                     warn!("Failed to flush character state on shutdown: {}", err);
                 }
@@ -437,8 +521,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let final_batches = match_event_buffer.flush_all();
     if !final_batches.is_empty() {
-        if let Some(ref client) = nakama_client {
-            for res in MatchEventBuffer::dispatch_batches(client.as_ref(), &final_batches).await {
+        if let Some(ref storage) = storage_backend {
+            for res in MatchEventBuffer::dispatch_batches(storage.as_ref(), &final_batches).await {
                 if let Err(err) = res {
                     warn!("Failed to flush final match events on shutdown: {}", err);
                 }

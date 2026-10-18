@@ -245,6 +245,8 @@ impl ServerMetrics {
 }
 
 pub type LoadoutNotice = (String, String, Option<crate::storage::LoadoutSnapshot>);
+type SharedStorageRef = Arc<std::sync::RwLock<Option<Arc<dyn crate::storage::NakamaStorage>>>>;
+type SharedMetaHttpRef = Arc<std::sync::RwLock<Option<crate::meta::MetaHttpConfig>>>;
 
 pub struct WsServer {
     local_addr: SocketAddr,
@@ -258,7 +260,8 @@ pub struct WsServer {
     disconnect_tx: UnboundedSender<(String, String)>,
     disconnect_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<(String, String)>>>,
     pub nakama_client: Option<Arc<crate::storage::NakamaClient>>,
-    nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
+    storage_ref: SharedStorageRef,
+    meta_http_ref: SharedMetaHttpRef,
     non_uuid_skip_logs: Arc<AtomicUsize>,
     debug_enabled: Arc<AtomicBool>,
     debug_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<DebugRequest>>>,
@@ -285,7 +288,8 @@ impl WsServer {
         let inbound_rx = Arc::new(tokio::sync::Mutex::new(inbound_rx));
         let (disconnect_tx, disconnect_rx) = unbounded_channel();
         let disconnect_rx = Arc::new(tokio::sync::Mutex::new(disconnect_rx));
-        let nakama_ref = Arc::new(std::sync::RwLock::new(None));
+        let storage_ref: SharedStorageRef = Arc::new(std::sync::RwLock::new(None));
+        let meta_http_ref: SharedMetaHttpRef = Arc::new(std::sync::RwLock::new(None));
         let non_uuid_skip_logs = Arc::new(AtomicUsize::new(0));
         let debug_enabled = Arc::new(AtomicBool::new(false));
         let (debug_tx, debug_rx) = unbounded_channel();
@@ -327,7 +331,8 @@ impl WsServer {
             disconnect_tx: disconnect_tx.clone(),
             disconnect_rx,
             nakama_client: None,
-            nakama_ref: nakama_ref.clone(),
+            storage_ref: storage_ref.clone(),
+            meta_http_ref: meta_http_ref.clone(),
             non_uuid_skip_logs: non_uuid_skip_logs.clone(),
             debug_enabled: debug_enabled.clone(),
             debug_rx: Arc::new(tokio::sync::Mutex::new(debug_rx)),
@@ -346,7 +351,8 @@ impl WsServer {
             auth_guard,
             inbound_tx,
             disconnect_tx,
-            nakama_ref,
+            storage_ref,
+            meta_http_ref,
             non_uuid_skip_logs,
             DebugGate {
                 enabled: debug_enabled,
@@ -500,8 +506,42 @@ impl WsServer {
     }
 
     pub fn with_nakama(mut self, client: Arc<crate::storage::NakamaClient>) -> Self {
-        *self.nakama_ref.write().unwrap() = Some(client.clone());
+        let storage: Arc<dyn crate::storage::NakamaStorage> = client.clone();
+        *self.storage_ref.write().unwrap() = Some(storage);
         self.nakama_client = Some(client);
+        self
+    }
+
+    /// Configures a generic `NakamaStorage` implementation (e.g. `RustMetaEngine` or `NakamaClient`)
+    /// for join-time `get_loadout` hydration.
+    pub fn with_storage(self, storage: Arc<dyn crate::storage::NakamaStorage>) -> Self {
+        *self.storage_ref.write().unwrap() = Some(storage);
+        self
+    }
+
+    /// Configures an in-process [`crate::meta::RustMetaEngine`] for both join-time `get_loadout`
+    /// hydration and Nakama-compatible `/v2/*` HTTP endpoints on this listener.
+    pub fn with_meta_engine(
+        self,
+        engine: Arc<crate::meta::RustMetaEngine>,
+        http_key: impl Into<String>,
+        server_key: impl Into<String>,
+    ) -> Self {
+        let storage: Arc<dyn crate::storage::NakamaStorage> = engine.clone();
+        *self.storage_ref.write().unwrap() = Some(storage);
+        let cfg =
+            crate::meta::MetaHttpConfig::new(engine, self.auth_guard.clone(), http_key, server_key);
+        *self.meta_http_ref.write().unwrap() = Some(cfg);
+        self
+    }
+
+    /// Configures an in-process [`crate::meta::RustMetaEngine`] using `NAKAMA_HTTP_KEY` and
+    /// `NAKAMA_SERVER_KEY` from the environment (falling back to local dev defaults).
+    pub fn with_meta_engine_from_env(self, engine: Arc<crate::meta::RustMetaEngine>) -> Self {
+        let storage: Arc<dyn crate::storage::NakamaStorage> = engine.clone();
+        *self.storage_ref.write().unwrap() = Some(storage);
+        let cfg = crate::meta::MetaHttpConfig::from_env(engine, self.auth_guard.clone());
+        *self.meta_http_ref.write().unwrap() = Some(cfg);
         self
     }
 
@@ -768,7 +808,8 @@ impl WsServer {
         auth_guard: AuthGuard,
         inbound_tx: Sender<ClientPacket>,
         disconnect_tx: UnboundedSender<(String, String)>,
-        nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
+        storage_ref: SharedStorageRef,
+        meta_http_ref: SharedMetaHttpRef,
         non_uuid_skip_logs: Arc<AtomicUsize>,
         debug: DebugGate,
         ready: Arc<AtomicBool>,
@@ -792,7 +833,8 @@ impl WsServer {
             let auth = auth_guard.clone();
             let in_tx = inbound_tx.clone();
             let dc_tx = disconnect_tx.clone();
-            let nakama = nakama_ref.clone();
+            let storage = storage_ref.clone();
+            let meta_http = meta_http_ref.clone();
             let skip_logs = non_uuid_skip_logs.clone();
             let debug = debug.clone();
             let ready = ready.clone();
@@ -810,9 +852,20 @@ impl WsServer {
                     serve_debug_http(stream, peer_addr.ip(), debug).await;
                     return;
                 }
+                if crate::meta::is_nakama_socket_probe(&stream).await {
+                    crate::meta::serve_nakama_socket_404(stream).await;
+                    return;
+                }
+                if crate::meta::is_meta_http(&stream).await {
+                    let cfg_opt = meta_http.read().unwrap().clone();
+                    if let Some(cfg) = cfg_opt {
+                        crate::meta::serve_meta_http(stream, cfg).await;
+                        return;
+                    }
+                }
                 Self::handle_connection(
                     stream, peer_addr, conn_seq, conns, rooms, loadouts, lo_tx, auth, in_tx, dc_tx,
-                    nakama, skip_logs, limits,
+                    storage, skip_logs, limits,
                 )
                 .await;
             });
@@ -911,7 +964,7 @@ impl WsServer {
         auth_guard: AuthGuard,
         inbound_tx: Sender<ClientPacket>,
         disconnect_tx: UnboundedSender<(String, String)>,
-        nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
+        storage_ref: SharedStorageRef,
         non_uuid_skip_logs: Arc<AtomicUsize>,
         limits: ConnectionLimits,
     ) {
@@ -1038,12 +1091,12 @@ impl WsServer {
             }
         }
 
-        // When token is validated, if nakama_client is configured, fetch get_loadout(&session_id).
+        // When token is validated, if storage backend is configured, fetch get_loadout(&session_id).
         // Nakama's storageRead rejects non-UUID user IDs, so non-UUID dev tokens skip the fetch
         // and log once per server instance.
-        let client_opt = nakama_ref.read().unwrap().clone();
+        let storage_opt = storage_ref.read().unwrap().clone();
         let mut fetched_loadout: Option<Option<crate::storage::LoadoutSnapshot>> = None;
-        if let Some(client) = client_opt {
+        if let Some(storage) = storage_opt {
             if !is_uuid_user_id(&session_id) {
                 if non_uuid_skip_logs
                     .compare_exchange(0, 1, Ordering::Relaxed, Ordering::Relaxed)
@@ -1055,7 +1108,7 @@ impl WsServer {
                     );
                 }
             } else {
-                match client.get_loadout(&session_id).await {
+                match storage.get_loadout(&session_id).await {
                     Ok(Some(loadout)) => {
                         info!(
                             "Retrieved persistent loadout for user {}: level {}",

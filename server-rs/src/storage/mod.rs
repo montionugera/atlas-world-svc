@@ -7,7 +7,7 @@ pub mod nakama;
 pub use nakama::{
     normalize_match_event_type, CharacterStateSnapshot, EquippedItemIds, LoadoutSnapshot,
     MatchEvent, MatchEventBatch, MockNakamaClient, NakamaClient, NakamaConfig, NakamaStorage,
-    PrimaryStats, ProfileDoc, DEFAULT_NAKAMA_MATCH_ID, PROBE_RETRY_WINDOW,
+    PrimaryStats, ProfileDoc, SkillUnlock, DEFAULT_NAKAMA_MATCH_ID, PROBE_RETRY_WINDOW,
 };
 
 /// Default interval between buffered match-event flushes to Nakama (5 seconds).

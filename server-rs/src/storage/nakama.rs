@@ -145,6 +145,15 @@ pub struct EquippedItemIds {
     pub accessory: Option<String>,
 }
 
+/// Unlocked skill entry stored in a player's skills document.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillUnlock {
+    #[serde(alias = "skill_id")]
+    pub skill_id: String,
+    pub level: u32,
+}
+
 /// Persisted world position and current health for a player's character.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
