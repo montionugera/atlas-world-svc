@@ -17,8 +17,10 @@ import {
 import {
   DUPLICATE_SESSION_CLOSE_CODE,
   PROTOCOL_VERSION,
+  REGION_FULL_CLOSE_CODE,
   formatDuplicateSessionMessage,
   formatProtocolMismatchMessage,
+  formatRegionFullMessage,
 } from "../protocol/protocolVersion";
 import { WorldSnapshot } from "../protocol/generated/atlas/protocol/world-snapshot";
 import { EntityDelta } from "../protocol/generated/atlas/protocol/entity-delta";
@@ -1239,6 +1241,29 @@ describe("useServerRsClient", () => {
     expect(result.current.isConnected).toBe(false);
 
     // joinRoom is blocked while connectionError is set (no auto-reconnect battle)
+    await act(async () => {
+      await result.current.joinRoom("map-for-play");
+    });
+    expect(MockWebSocket.instances).toHaveLength(1);
+  });
+
+  it("surfaces region full rejection (close code 4003) in connectionError without reconnect loop", async () => {
+    const { result } = await connected();
+    act(() => {
+      MockWebSocket.instances[0].close(
+        REGION_FULL_CLOSE_CODE,
+        "region full: map-for-play is at capacity (100/100)",
+      );
+    });
+    expect(result.current.connectionError).toBe(
+      "Region map-for-play is full (100/100 players). Try another region or wait a moment.",
+    );
+    expect(formatRegionFullMessage("region full")).toBe(
+      "This region is full. Try another region or wait a moment.",
+    );
+    expect(result.current.isConnected).toBe(false);
+
+    // joinRoom does not enter an auto-reconnect loop while connectionError is set
     await act(async () => {
       await result.current.joinRoom("map-for-play");
     });

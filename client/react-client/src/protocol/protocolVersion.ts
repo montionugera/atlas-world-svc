@@ -14,6 +14,12 @@ export const PROTOCOL_MISMATCH_CLOSE_CODE = 4001;
 export const DUPLICATE_SESSION_CLOSE_CODE = 4002;
 
 /**
+ * WebSocket close code sent by `server-rs` when a region room has reached its player capacity
+ * (`REGION_FULL_CLOSE_CODE` in `server-rs/src/protocol/mod.rs`).
+ */
+export const REGION_FULL_CLOSE_CODE = 4003;
+
+/**
  * Formats the player-facing message for a 4001 protocol mismatch close reason.
  * Expected server reason format: `protocol version mismatch: server=<S> client=<C>`
  */
@@ -37,4 +43,17 @@ export function formatProtocolMismatchMessage(reason?: string): string {
  */
 export function formatDuplicateSessionMessage(_reason?: string): string {
   return "Disconnected: this account connected in another window or tab.";
+}
+
+/**
+ * Formats the player-facing message for a 4003 region full close reason.
+ */
+export function formatRegionFullMessage(reason?: string): string {
+  const match = reason?.match(
+    /region full:\s*([^\s]+)\s+is at capacity\s*\((\d+)\/(\d+)\)/i,
+  );
+  if (match) {
+    return `Region ${match[1]} is full (${match[2]}/${match[3]} players). Try another region or wait a moment.`;
+  }
+  return "This region is full. Try another region or wait a moment.";
 }
