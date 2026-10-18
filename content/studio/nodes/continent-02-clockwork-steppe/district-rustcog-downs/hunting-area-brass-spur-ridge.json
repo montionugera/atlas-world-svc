@@ -29,13 +29,12 @@
   },
   "portals": {
     "North": {
-      "portal_id": "portal-brass-spur-north-fog",
+      "portal_id": "portal-brass-spur-north-astrolabe",
       "direction": "North",
       "target_node_id": "hunting-area-astrolabe-rift",
-      "target_map_id": null,
+      "target_map_id": "astrolabe-rift",
       "target_direction": "South",
-      "gate_state": "fog_of_lore",
-      "lock_message": "Inverted gravity eddies from the Astrolabe Gate tear at copper gliders; the Tinker Guild has chained the northern bridge until the Star-Pendulum key is recovered.",
+      "gate_state": "open",
       "trigger_box_meters": {
         "x": 2000.0,
         "y": 160.0,
@@ -158,7 +157,7 @@
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Connects Pinion Terminus East Gate at [1, 1] to the Mainspring Caldera Rim across the eastern Flywheel Viaduct."
+      "evidence": "Connects Pinion Terminus East Gate at [1, 1] to the Mainspring Caldera Rim (East) and Astrolabe Rift Promontory (North)."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -170,11 +169,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Symmetric West portal to town-pinion-terminus, East open portal to hunting-area-caldera-rim, North fog_of_lore portal to hunting-area-astrolabe-rift, and Level 21 to 25 construct/insect fauna."
+      "evidence": "Symmetric West portal to town-pinion-terminus, East open portal to hunting-area-caldera-rim, North open portal to hunting-area-astrolabe-rift, and Level 21 to 25 construct/insect fauna."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Compiles a fog_of_lore boundary portal on the North Astrolabe Rift bridge while opening the eastern Flywheel Viaduct."
+      "evidence": "Opens the northern bridge to Astrolabe Rift Promontory with zero placeholder text."
     }
   }
 }

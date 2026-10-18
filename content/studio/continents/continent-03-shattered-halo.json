@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "id": "continent-03-shattered-halo",
   "name": "The Shattered Halo",
-  "status": "draft",
+  "status": "canon",
   "core_rationale": "Born from scar-vesper-crater where Vesper the Dream-Eater's tear inverted gravity during the Clockspring War, forming a Level 30 to 50 vertical sky-archipelago of tethered basalt islands.",
   "parent_world_history_causes": {
     "world_history_id": "world-history-cradle-of-embers",
@@ -35,46 +35,48 @@
       "target_continent_id": "continent-02-clockwork-steppe",
       "travel_mode": "dimensional_rift",
       "hub_name": "Starfall Anchorage Rift-Dock",
-      "status": "locked_by_mystery",
-      "unlock_rationale": "Awaiting calibration of the Star-Pendulum key between Astrolabe Rift Promontory and Starfall Anchorage."
+      "status": "open",
+      "unlock_rationale": "Inbound dimensional rift from The Astrolabe Rift Promontory in Rustcog Downs (Continent 02) to Tether Causeway."
     },
     {
       "target_continent_id": "continent-01-hearthbloom-basin",
       "travel_mode": "airship",
       "hub_name": "Hearthbloom Sky-Spire",
       "status": "locked_by_mystery",
-      "unlock_rationale": "Sealed until the Violet Squall barometer beacons on Continent 03 are lit."
+      "unlock_rationale": "Sealed until the Violet Squall barometer beacons in Nebula Undertide are lit."
     }
   ],
   "district_ids": [
-    "district-starfall-anchorage"
+    "district-starfall-anchorage",
+    "district-eclipse-observatory",
+    "district-nebula-undertide"
   ],
   "mystery_hook": {
     "in_world_rumor": "Airship captains refuse to fly past the Violet Squall; they claim waterfalls pour upward into the stars and lost toys float back down.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
-    "unanswered_question": "What guards the Star-Pendulum key inside the inverted cathedral of Starfall Anchorage?",
-    "discovery_trigger_hint": "Transitioned to draft after Continent 02 Clockwork Steppe reached full Canon status; awaits Starfall Anchorage leaf maps for Canon promotion."
+    "unanswered_question": "What sleeps inside the inverted Nebula Undertide whirlpool at the center of the Shattered Halo?",
+    "discovery_trigger_hint": "Promoted to Canon alongside Starfall Anchorage and the Astrolabe Rift Bridge."
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Traces directly to god-vesper-dream-eater and scar-vesper-crater in world-history-cradle-of-embers."
+      "evidence": "Traces directly to god-vesper-dream-eater and scar-vesper-crater in world-history-cradle-of-embers and receives the open Astrolabe Gate rift from Continent 02."
     },
     "fantasy_and_wonder": {
       "verified": true,
-      "evidence": "Inverted waterfalls pouring upward into a crescent halo of floating basalt islands."
+      "evidence": "Inverted waterfalls pouring upward into a crescent halo of floating basalt islands moored by starlight chains."
     },
     "character_scale_consistency": {
       "verified": true,
       "evidence": "Specifies 12.0m tether-bridge walkways, 0.65m safety rails, 0.15m basalt risers, and 0.60m chart tables for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Draft status: awaiting completion of child District district-starfall-anchorage playable leaf maps and rift unlock."
+      "verified": true,
+      "evidence": "Organizes Starfall Anchorage (Canon, [30, 42]), Eclipse Observatory (Draft, [38, 46]), and Nebula Undertide (Mystery, [44, 50]) across the sky-archipelago."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook and keeps travel links locked_by_mystery until Starfall Anchorage is canonized."
+      "evidence": "Preserves Eclipse Observatory in Draft and Nebula Undertide in Mystery while keeping the direct airship link to Continent 01 locked_by_mystery."
     }
   }
 }

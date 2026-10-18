@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-orrery-bridge",
+  "name": "The Orrery Bridge",
+  "map_id": null,
+  "parent_district_id": "district-eclipse-observatory",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western approach causeway of The Eclipse Observatory at [0, 1] where rotating brass planetarium rings form a stepping-stone bridge from Starfall Anchorage.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "level_range": [
+    36,
+    42
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Cartographers warn that the Orrery Bridge only aligns its planetary walkways when the three moons of Aethelgard cross the zenith.",
+    "visual_silhouette": "Orbiting brass and crystal spheres linked by ribbons of solid starlight.",
+    "unanswered_question": "How can travelers lock the orbiting spheres in place to cross into the Eclipse Observatory?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Links the eastern rim of Starfall Anchorage to the central lens dome of The Eclipse Observatory."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Orbiting brass planetarium spheres linked by solid starlight walkways."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics will be bound when promoted to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-eclipse-observatory."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until Eclipse Observatory is promoted."
+    }
+  }
+}

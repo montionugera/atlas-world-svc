@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0.0",
   "id": "hunting-area-tether-causeway",
-  "name": "The Starlight Tether Causeway",
-  "map_id": null,
+  "name": "Tether Causeway",
+  "map_id": "tether-causeway",
   "parent_district_id": "district-starfall-anchorage",
   "parent_continent_id": "continent-03-shattered-halo",
   "node_type": "hunting_area",
-  "status": "mystery",
-  "core_rationale": "Southern suspended basalt causeway of Starfall Anchorage at [0, 1] where luminous starlight chains moor the outer rift-dock against inverted gravity currents.",
+  "status": "canon",
+  "core_rationale": "Southern bronze-and-starlight tether bridge of Starfall Anchorage at [0, 1] where travelers emerge from the Astrolabe Gate dimensional rift above upward-pouring waterfalls.",
   "is_starter_town": false,
   "grid_coordinates": [
     0,
@@ -17,31 +17,146 @@
     30,
     36
   ],
-  "mystery_hook": {
-    "in_world_rumor": "Tether-guards claim that dropped lanterns drift along the underside of the causeway like glowing barnacles until a glider scoop retrieves them.",
-    "visual_silhouette": "A twelve-meter-wide basalt bridge lashed with glowing starlight anchor-chains above an upward waterfall.",
-    "unanswered_question": "Which star-navigator holds the cipher to unlock the Astrolabe Rift gate?"
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/archway.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_tether_causeway",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Upward-streaming silver waterfalls rising past bronze mooring chains into twilight clouds"
+  },
+  "portals": {
+    "North": null,
+    "South": {
+      "portal_id": "portal-tether-causeway-south-astrolabe-rift",
+      "direction": "South",
+      "target_node_id": "hunting-area-astrolabe-rift",
+      "target_map_id": "astrolabe-rift",
+      "target_direction": "North",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3800.0
+      }
+    },
+    "East": {
+      "portal_id": "portal-tether-causeway-east-starfall-haven",
+      "direction": "East",
+      "target_node_id": "town-starfall-haven",
+      "target_map_id": "starfall-haven",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": null,
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-tether-causeway-starlight-wisp",
+      "monster_id": "mob-starlight-tether-wisp",
+      "monster_name": "Starlight Tether-Wisp",
+      "spawn_count": 10,
+      "respawn_seconds": 12.0,
+      "level": 31,
+      "element": "Ghost",
+      "size": "Small",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-braided-starlight-filament",
+          "item_name": "Braided Starlight Filament",
+          "drop_chance_percent": 46.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-starlight-tether-wisp",
+        "card_name": "Starlight Tether-Wisp Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Garment",
+        "modifier_summary": "Ghost Elemental Resistance +15%, Flee Rate +10"
+      }
+    },
+    {
+      "spawn_id": "spawn-tether-causeway-basalt-gargoyle",
+      "monster_id": "mob-inverted-basalt-buoy",
+      "monster_name": "Inverted Basalt Buoy-Golem",
+      "spawn_count": 8,
+      "respawn_seconds": 15.0,
+      "level": 35,
+      "element": "Wind",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-weightless-basalt-shackle",
+          "item_name": "Weightless Basalt Shackle",
+          "drop_chance_percent": 39.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-inverted-basalt-buoy",
+        "card_name": "Inverted Basalt Buoy-Golem Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Shield",
+        "modifier_summary": "Maximum Health Points +450, Formless Race Resistance +10%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.22,
+    "max_bush_height_meters": 0.5,
+    "main_road_width_meters": 13.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/archway.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Forms the southern arrival causeway of District Starfall Anchorage on Continent 03."
+      "evidence": "Receives the Astrolabe Gate dimensional rift from hunting-area-astrolabe-rift on Continent 02 and leads east into Starfall Haven."
     },
     "fantasy_and_wonder": {
       "verified": true,
-      "evidence": "Basalt bridge lashed with glowing starlight anchor-chains above upward-flowing waterfalls."
+      "evidence": "Decked bronze-and-starlight suspension causeway flanked by upward-falling silver waterfalls and floating basalt buoys."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: terrain tile and prop kit metrics will be bound when promoted to Draft."
+      "verified": true,
+      "evidence": "Grass <= 0.22m, bushes <= 0.50m, terrace steps <= 0.15m, and 13.5m decked tether-causeway for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: reserved at [0, 1] in Starfall Anchorage awaiting Continent 03 Canon promotion."
+      "verified": true,
+      "evidence": "Symmetric South cross-continent portal to hunting-area-astrolabe-rift, East portal to town-starfall-haven, and Level 31 to 35 spirit/construct fauna."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Maintains map_id: null and complete mystery_hook without generating low-effort filler maps."
+      "evidence": "Promoted from Mystery to full Canon arrival hunting area on Continent 03."
     }
   }
 }

@@ -35,6 +35,24 @@
       ]
     },
     {
+      "mapId": "inverted-belfry-b1",
+      "nodeId": "dungeon-inverted-belfry",
+      "name": "The Inverted Belfry",
+      "districtId": "district-starfall-anchorage",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        34,
+        42
+      ]
+    },
+    {
       "mapId": "kiln-cellar-b1",
       "nodeId": "dungeon-kiln-cellar",
       "name": "The Under-Hearth Kiln Cellar",
@@ -85,6 +103,24 @@
       ],
       "levelRange": [
         20,
+        30
+      ]
+    },
+    {
+      "mapId": "astrolabe-rift",
+      "nodeId": "hunting-area-astrolabe-rift",
+      "name": "The Astrolabe Rift Promontory",
+      "districtId": "district-rustcog-downs",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        0
+      ],
+      "levelRange": [
+        25,
         30
       ]
     },
@@ -197,6 +233,24 @@
       ]
     },
     {
+      "mapId": "tether-causeway",
+      "nodeId": "hunting-area-tether-causeway",
+      "name": "Tether Causeway",
+      "districtId": "district-starfall-anchorage",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        30,
+        36
+      ]
+    },
+    {
       "mapId": "escapement-anvil",
       "nodeId": "town-escapement-anvil",
       "name": "Escapement Anvil",
@@ -285,6 +339,24 @@
         15,
         22
       ]
+    },
+    {
+      "mapId": "starfall-haven",
+      "nodeId": "town-starfall-haven",
+      "name": "Starfall Haven",
+      "districtId": "district-starfall-anchorage",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        32,
+        38
+      ]
     }
   ],
   "portalRoutingTable": {
@@ -306,6 +378,27 @@
       "arrivalPointMeters": {
         "x": 500.0,
         "y": 860.0
+      },
+      "lockMessage": null
+    },
+    "portal-inverted-belfry-exit-haven": {
+      "portalId": "portal-inverted-belfry-exit-haven",
+      "sourceNodeId": "dungeon-inverted-belfry",
+      "sourceMapId": "inverted-belfry-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-starfall-haven",
+      "targetMapId": "starfall-haven",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 1600.0,
+        "y": 2980.0,
+        "width": 20.0,
+        "height": 20.0
+      },
+      "arrivalPointMeters": {
+        "x": 1600.0,
+        "y": 2920.0
       },
       "lockMessage": null
     },
@@ -372,15 +465,15 @@
       },
       "lockMessage": null
     },
-    "portal-brass-spur-north-fog": {
-      "portalId": "portal-brass-spur-north-fog",
-      "sourceNodeId": "hunting-area-brass-spur-ridge",
-      "sourceMapId": "brass-spur-ridge",
+    "portal-astrolabe-rift-north-tether-causeway": {
+      "portalId": "portal-astrolabe-rift-north-tether-causeway",
+      "sourceNodeId": "hunting-area-astrolabe-rift",
+      "sourceMapId": "astrolabe-rift",
       "direction": "North",
-      "targetNodeId": "hunting-area-astrolabe-rift",
-      "targetMapId": null,
+      "targetNodeId": "hunting-area-tether-causeway",
+      "targetMapId": "tether-causeway",
       "targetDirection": "South",
-      "gateState": "fog_of_lore",
+      "gateState": "open",
       "triggerBoxMeters": {
         "x": 2000.0,
         "y": 160.0,
@@ -391,7 +484,49 @@
         "x": 2000.0,
         "y": 200.0
       },
-      "lockMessage": "Inverted gravity eddies from the Astrolabe Gate tear at copper gliders; the Tinker Guild has chained the northern bridge until the Star-Pendulum key is recovered."
+      "lockMessage": null
+    },
+    "portal-astrolabe-rift-south-brass-spur": {
+      "portalId": "portal-astrolabe-rift-south-brass-spur",
+      "sourceNodeId": "hunting-area-astrolabe-rift",
+      "sourceMapId": "astrolabe-rift",
+      "direction": "South",
+      "targetNodeId": "hunting-area-brass-spur-ridge",
+      "targetMapId": "brass-spur-ridge",
+      "targetDirection": "North",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3800.0
+      },
+      "lockMessage": null
+    },
+    "portal-brass-spur-north-astrolabe": {
+      "portalId": "portal-brass-spur-north-astrolabe",
+      "sourceNodeId": "hunting-area-brass-spur-ridge",
+      "sourceMapId": "brass-spur-ridge",
+      "direction": "North",
+      "targetNodeId": "hunting-area-astrolabe-rift",
+      "targetMapId": "astrolabe-rift",
+      "targetDirection": "South",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": null
     },
     "portal-brass-spur-east-caldera": {
       "portalId": "portal-brass-spur-east-caldera",
@@ -641,6 +776,48 @@
       },
       "arrivalPointMeters": {
         "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-tether-causeway-south-astrolabe-rift": {
+      "portalId": "portal-tether-causeway-south-astrolabe-rift",
+      "sourceNodeId": "hunting-area-tether-causeway",
+      "sourceMapId": "tether-causeway",
+      "direction": "South",
+      "targetNodeId": "hunting-area-astrolabe-rift",
+      "targetMapId": "astrolabe-rift",
+      "targetDirection": "North",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3800.0
+      },
+      "lockMessage": null
+    },
+    "portal-tether-causeway-east-starfall-haven": {
+      "portalId": "portal-tether-causeway-east-starfall-haven",
+      "sourceNodeId": "hunting-area-tether-causeway",
+      "sourceMapId": "tether-causeway",
+      "direction": "East",
+      "targetNodeId": "town-starfall-haven",
+      "targetMapId": "starfall-haven",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
         "y": 2000.0
       },
       "lockMessage": null
@@ -978,6 +1155,69 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-starfall-haven-north-fog": {
+      "portalId": "portal-starfall-haven-north-fog",
+      "sourceNodeId": "town-starfall-haven",
+      "sourceMapId": "starfall-haven",
+      "direction": "North",
+      "targetNodeId": "hunting-area-mirror-cascade",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Upward-pouring silver cataracts at Mirror Cascade Basin have frozen the northern tether-lock; the Cartographer Guild requires the Belfry Star-Chime before unsealing the gate."
+    },
+    "portal-starfall-haven-west-tether": {
+      "portalId": "portal-starfall-haven-west-tether",
+      "sourceNodeId": "town-starfall-haven",
+      "sourceMapId": "starfall-haven",
+      "direction": "West",
+      "targetNodeId": "hunting-area-tether-causeway",
+      "targetMapId": "tether-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-starfall-haven-dungeon-belfry": {
+      "portalId": "portal-starfall-haven-dungeon-belfry",
+      "sourceNodeId": "town-starfall-haven",
+      "sourceMapId": "starfall-haven",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-inverted-belfry",
+      "targetMapId": "inverted-belfry-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
       },
       "lockMessage": null
     }
