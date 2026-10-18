@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-abyssal-barometer",
+  "name": "Abyssal Barometer Ridge",
+  "map_id": null,
+  "parent_district_id": "district-nebula-undertide",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern barometer-beacon ridge of Nebula Undertide at [1, 0] where mercury-filled crystal columns regulate the Violet Squall airship corridor back toward Hearthbloom Basin.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "level_range": [
+    48,
+    50
+  ],
+  "portals": {
+    "North": null,
+    "South": {
+      "portal_id": "portal-abyssal-barometer-south-fog",
+      "direction": "South",
+      "target_node_id": "town-undertide-sanctuary",
+      "target_map_id": "undertide-sanctuary",
+      "target_direction": "North",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Inverted tidal pressure along the Abyssal Barometer Ridge crushes uncalibrated diving bells; the Undertide Bell-Keepers require the Cradle Star-Heart before unsealing the northern coral lock."
+    },
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": null
+  },
+  "mystery_hook": {
+    "in_world_rumor": "Bell-Keepers say that when all three crystal barometers on the northern ridge turn gold, the Violet Squall parts to reveal Hearthbloom Sky-Spire.",
+    "visual_silhouette": "Three towering crystal barometer tubes glowing violet above a ridge of inverted black coral.",
+    "unanswered_question": "Who extinguished the Violet Squall barometer beacons during the final night of the Clockspring War?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Links Nebula Undertide's northern coral lock to the Violet Squall airship beacons referenced in Continent 03 travel_links."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Towering crystal barometer tubes glowing violet above a ridge of inverted black coral."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: barometer catwalk and coral step metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Undertide Sanctuary behind a fog_of_lore portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null, fog_of_lore portal symmetry with town-undertide-sanctuary, and complete mystery_hook."
+    }
+  }
+}

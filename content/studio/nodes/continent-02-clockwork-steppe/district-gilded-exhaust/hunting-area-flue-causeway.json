@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-flue-causeway",
+  "name": "Flue Causeway",
+  "map_id": null,
+  "parent_district_id": "district-gilded-exhaust",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western brass grating causeway of The Gilded Exhaust Flues at [0, 1] spanning the warm thermal vents between Verdigris Siphon and Bellows Hearth.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "level_range": [
+    26,
+    28
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Glider couriers say the warm updrafts along Flue Causeway smell of roasted chestnuts and polished copper.",
+    "visual_silhouette": "A riveted brass grating bridge suspended between two whistling golden smokestacks.",
+    "unanswered_question": "Where does the western flue grating connect back to Patina Lock in Verdigris Siphon?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Serves as the western entry causeway into The Gilded Exhaust Flues along scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Riveted brass grating bridge suspended between whistling golden smokestacks and warm updrafts."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-gilded-exhaust."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until The Gilded Exhaust Flues is promoted to Canon."
+    }
+  }
+}

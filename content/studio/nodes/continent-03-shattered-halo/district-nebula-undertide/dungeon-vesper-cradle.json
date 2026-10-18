@@ -1,0 +1,158 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-vesper-cradle",
+  "name": "Vesper's Cradle Vault",
+  "map_id": "vesper-cradle-b1",
+  "parent_district_id": "district-nebula-undertide",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Subterranean gravity-core vault beneath Undertide Sanctuary at [1, 1] (floor -1) where Vesper's crystallized tear pulses inside a ring of sunken astral galleon ribs.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    46,
+    50
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_vesper_cradle_vault",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Zero-gravity star-tear droplets orbiting the central nautilus cradle"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-vesper-cradle-exit-sanctuary",
+      "direction": "Exit",
+      "target_node_id": "town-undertide-sanctuary",
+      "target_map_id": "undertide-sanctuary",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 20.0,
+        "height": 14.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3760.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-vesper-cradle-astral-petite",
+      "monster_id": "mob-astral-tide-petite",
+      "monster_name": "Astral Tide Petite",
+      "spawn_count": 7,
+      "respawn_seconds": 18.0,
+      "level": 48,
+      "element": "Wind",
+      "size": "Medium",
+      "race": "Dragon",
+      "family": "dragon",
+      "item_drops": [
+        {
+          "item_id": "item-astral-drake-scale",
+          "item_name": "Astral Drake Scale",
+          "drop_chance_percent": 34.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-astral-tide-petite",
+        "card_name": "Astral Tide Petite Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Shield",
+        "modifier_summary": "Damage from Dragon Race Monsters -20%"
+      }
+    },
+    {
+      "spawn_id": "spawn-vesper-cradle-slumber-wyrm-detale",
+      "monster_id": "mob-slumber-wyrm-detale",
+      "monster_name": "Slumber-Wyrm Detale",
+      "spawn_count": 1,
+      "respawn_seconds": 180.0,
+      "level": 50,
+      "element": "Shadow",
+      "size": "Large",
+      "race": "Dragon",
+      "family": "dragon",
+      "item_drops": [
+        {
+          "item_id": "item-cradle-star-heart",
+          "item_name": "Cradle Star-Heart",
+          "drop_chance_percent": 45.0
+        },
+        {
+          "item_id": "item-vesper-tear-signet",
+          "item_name": "Vesper Tear Signet",
+          "drop_chance_percent": 15.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-slumber-wyrm-detale",
+        "card_name": "Slumber-Wyrm Detale Card",
+        "drop_chance_percent": 0.005,
+        "equipment_slot": "Armor",
+        "modifier_summary": "Maximum Health Points +12%, Immune to Freeze Status"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.16,
+    "max_bush_height_meters": 0.4,
+    "stair_riser_height_meters": 0.15,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.25,
+      "width": 1.7
+    },
+    "main_road_width_meters": 12.0,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Houses Vesper's crystallized tear at the deepest core of scar-vesper-crater beneath Undertide Sanctuary."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Zero-gravity star-tear droplets orbiting a sunken astral galleon ribcage in violet twilight."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Maintains 0.15m stair risers, 0.16m terrace steps, 12.0m vault aisles, and 2.25m x 1.70m arched doorways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric Exit portal to town-undertide-sanctuary; dragon spawns at Levels 48 to 50."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops the Cradle Star-Heart required to unseal the northern Abyssal Barometer Ridge mystery portal."
+    }
+  }
+}

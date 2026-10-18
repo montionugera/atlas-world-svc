@@ -69,7 +69,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
     def test_rejects_mystery_node_without_mystery_hook(self) -> None:
         with self._mutated_files(
             {
-                "districts/continent-02-clockwork-steppe/district-gilded-exhaust.json": lambda d: d.pop(
+                "districts/continent-03-shattered-halo/district-zenith-crown.json": lambda d: d.pop(
                     "mystery_hook", None
                 )
             }
@@ -215,11 +215,13 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "mercury-reservoir-b1",
                 "pendulum-sanctum-b1",
                 "pendulum-shaft-b1",
+                "vesper-cradle-b1",
                 "astrolabe-rift",
                 "brass-spur-ridge",
                 "caldera-rim",
                 "cinder-apron",
                 "clover-south-gate",
+                "kelp-spiral-reef",
                 "kiln-east-orchard",
                 "orrery-bridge",
                 "siphon-sluice",
@@ -231,6 +233,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "pinion-terminus",
                 "prism-zenith",
                 "starfall-haven",
+                "undertide-sanctuary",
             ],
         )
         fog_portal = manifest["portalRoutingTable"]["portal-lantern-hollow-west-fog"]

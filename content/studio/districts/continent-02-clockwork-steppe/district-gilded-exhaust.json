@@ -3,9 +3,9 @@
   "id": "district-gilded-exhaust",
   "name": "The Gilded Exhaust Flues",
   "parent_continent_id": "continent-02-clockwork-steppe",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Southern brass chimney canyon of Continent 02 where Krono's deep furnace flues vent golden soot-clouds and warm thermal currents across the border cliffs.",
-  "local_conflict": "Uncharted soot-gremlins and cinder-drakes nest inside the sealed southern flue dampers.",
+  "local_conflict": "Uncharted soot-gremlins and cinder-drakes nest inside the sealed southern flue dampers, threatening to choke the steppe wind-turbines.",
   "level_band_label": "Levels 21 to 40",
   "level_range": [
     26,
@@ -19,7 +19,23 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-flue-causeway",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "level_range": [
+        26,
+        28
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Chimney-sweeps from Pinion Terminus claim that golden gear-coins rain from the southern flues whenever Krono's deep furnace sighs.",
@@ -36,16 +52,16 @@
       "evidence": "Fluted brass smokestacks venting golden mist and warm thermal updrafts along the southern canyon rim."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: catwalk and flue-damper prop metrics for 1.05m characters will be bound upon transition to Draft."
+      "verified": true,
+      "evidence": "Uses 12.5m riveted brass flue catwalks, 0.60m damper-wheel benches, and 0.15m grate-steps for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as an unbuilt southern District frontier on Continent 02 with zero filler maps."
+      "evidence": "Draft status: awaiting playable leaf map authoring for Flue Causeway and Bellows Hearth."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Includes complete mystery_hook and reserves hunting-area-flue-causeway as a Mystery frontier."
     }
   }
 }
