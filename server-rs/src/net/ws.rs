@@ -185,6 +185,7 @@ struct ConnectionLimits {
 struct ServerMetrics {
     bytes_sent: Arc<AtomicU64>,
     frames_sent: Arc<AtomicU64>,
+    snapshot_bytes_last: Arc<AtomicUsize>,
     ticks_completed: Arc<AtomicU64>,
     entities_count: Arc<AtomicUsize>,
     last_tick_us: Arc<AtomicU64>,
@@ -236,6 +237,7 @@ impl ServerMetrics {
             "entities": self.entities_count.load(Ordering::Relaxed),
             "bytes_sent": self.bytes_sent.load(Ordering::Relaxed),
             "frames_sent": self.frames_sent.load(Ordering::Relaxed),
+            "snapshot_bytes_last": self.snapshot_bytes_last.load(Ordering::Relaxed),
             "ticks_completed": self.ticks_completed.load(Ordering::Relaxed),
             "rate_limited_drops": rate_limited_drops,
         })
@@ -520,6 +522,95 @@ impl WsServer {
         rooms.values().filter(|r| r.as_str() == room_id).count()
     }
 
+    /// Returns the distinct active `session_id`s currently connected in `room_id`.
+    pub async fn active_sessions_in_room(&self, room_id: &str) -> Vec<String> {
+        let rooms = self.session_rooms.read().await;
+        let mut sessions = Vec::new();
+        for (conn_key, r) in rooms.iter() {
+            if r.as_str() == room_id {
+                if let Some((session_id, _)) = conn_key.rsplit_once('#') {
+                    let s = session_id.to_string();
+                    if !sessions.contains(&s) {
+                        sessions.push(s);
+                    }
+                }
+            }
+        }
+        sessions.sort();
+        sessions
+    }
+
+    /// Sends a serialized snapshot frame to a single session in `room_id`, evicting stalled sockets.
+    pub async fn send_snapshot_to_session_in_room(
+        &self,
+        room_id: &str,
+        session_id: &str,
+        bytes: &[u8],
+    ) {
+        let mut stalled = Vec::new();
+        {
+            let conns = self.connections.read().await;
+            let rooms = self.session_rooms.read().await;
+            let msg = Message::Binary(bytes.to_vec().into());
+            for (conn_key, tx) in conns.iter() {
+                let matches_session = conn_key
+                    .rsplit_once('#')
+                    .is_some_and(|(s, _)| s == session_id);
+                let conn_room = rooms
+                    .get(conn_key)
+                    .map(|s| s.as_str())
+                    .unwrap_or("map-for-play");
+                if matches_session && conn_room == room_id {
+                    match tx.try_send(msg.clone()) {
+                        Ok(()) => {
+                            self.metrics
+                                .bytes_sent
+                                .fetch_add(bytes.len() as u64, Ordering::Relaxed);
+                            self.metrics.frames_sent.fetch_add(1, Ordering::Relaxed);
+                            self.metrics
+                                .snapshot_bytes_last
+                                .store(bytes.len(), Ordering::Relaxed);
+                        }
+                        Err(TrySendError::Full(_)) | Err(TrySendError::Closed(_)) => {
+                            stalled.push(conn_key.clone());
+                        }
+                    }
+                }
+            }
+        }
+        self.evict_stalled_connections(stalled).await;
+    }
+
+    /// Broadcasts per-viewer AOI-filtered snapshots to every connected session in `room_id`.
+    #[allow(clippy::too_many_arguments)]
+    pub async fn broadcast_aoi_snapshots_to_room(
+        &self,
+        room_id: &str,
+        aoi: &mut crate::spatial::AoiTracker,
+        snapshot_builder: &mut crate::protocol::SnapshotBuilder,
+        tick: u32,
+        time_ms: u64,
+        entities: &[crate::protocol::EntitySnapshotData],
+        removed_ids: &[u32],
+        events: &[crate::protocol::GameEventData],
+    ) {
+        let sessions = self.active_sessions_in_room(room_id).await;
+        for session_id in sessions {
+            let viewer_id = crate::protocol::fnv1a_32(&session_id);
+            let (vis_entities, vis_removed, vis_events) =
+                aoi.filter_for_viewer(viewer_id, entities, removed_ids, events);
+            let bytes = snapshot_builder.build_frame(
+                tick,
+                time_ms,
+                &vis_entities,
+                &vis_removed,
+                &vis_events,
+            );
+            self.send_snapshot_to_session_in_room(room_id, &session_id, bytes)
+                .await;
+        }
+    }
+
     pub fn auth_guard(&self) -> &AuthGuard {
         &self.auth_guard
     }
@@ -612,6 +703,9 @@ impl WsServer {
                             .bytes_sent
                             .fetch_add(bytes.len() as u64, Ordering::Relaxed);
                         self.metrics.frames_sent.fetch_add(1, Ordering::Relaxed);
+                        self.metrics
+                            .snapshot_bytes_last
+                            .store(bytes.len(), Ordering::Relaxed);
                     }
                     Err(TrySendError::Full(_)) | Err(TrySendError::Closed(_)) => {
                         debug!(
@@ -2351,5 +2445,90 @@ mod tests {
         ws1_reconn.close(None).await.unwrap();
         ws2.close(None).await.unwrap();
         ws_other.close(None).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_ws_broadcast_aoi_snapshots_to_room_sends_each_player_only_nearby_entities() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let addr = server.local_addr();
+
+        let url1 = format!("ws://{addr}/ws?token=dev-token:aoi-west&map=map-for-play&proto=1");
+        let url2 = format!("ws://{addr}/ws?token=dev-token:aoi-east&map=map-for-play&proto=1");
+        let (mut ws_west, _) = connect_async(&url1).await.unwrap();
+        let (mut ws_east, _) = connect_async(&url2).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(50)).await;
+
+        let west_id = crate::protocol::fnv1a_32("aoi-west");
+        let east_id = crate::protocol::fnv1a_32("aoi-east");
+        let entities = vec![
+            crate::protocol::EntitySnapshotData {
+                id: west_id,
+                x: 200.0,
+                y: 200.0,
+                ..Default::default()
+            },
+            crate::protocol::EntitySnapshotData {
+                id: 1001,
+                x: 350.0,
+                y: 200.0,
+                ..Default::default()
+            },
+            crate::protocol::EntitySnapshotData {
+                id: east_id,
+                x: 3500.0,
+                y: 3500.0,
+                ..Default::default()
+            },
+            crate::protocol::EntitySnapshotData {
+                id: 2002,
+                x: 3600.0,
+                y: 3500.0,
+                ..Default::default()
+            },
+        ];
+
+        let mut aoi = crate::spatial::AoiTracker::default();
+        let mut builder = crate::protocol::SnapshotBuilder::new();
+        server
+            .broadcast_aoi_snapshots_to_room(
+                "map-for-play",
+                &mut aoi,
+                &mut builder,
+                1,
+                1000,
+                &entities,
+                &[],
+                &[],
+            )
+            .await;
+
+        let west_msg = tokio::time::timeout(Duration::from_secs(1), ws_west.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+        let east_msg = tokio::time::timeout(Duration::from_secs(1), ws_east.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+
+        let decode_ids = |msg: Message| -> Vec<u32> {
+            let Message::Binary(bin) = msg else {
+                panic!("expected binary snapshot");
+            };
+            let snap = crate::protocol::root_as_world_snapshot(&bin).unwrap();
+            let ents = snap.entities().unwrap();
+            (0..ents.len()).map(|i| ents.get(i).id()).collect()
+        };
+
+        let west_ids = decode_ids(west_msg);
+        let east_ids = decode_ids(east_msg);
+        assert_eq!(west_ids, vec![west_id, 1001]);
+        assert_eq!(east_ids, vec![east_id, 2002]);
+
+        ws_west.close(None).await.unwrap();
+        ws_east.close(None).await.unwrap();
     }
 }

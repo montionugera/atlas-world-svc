@@ -879,28 +879,28 @@
     "id": "I-144",
     "title": "Measure capacity",
     "created_at": "2026-10-11T06:59:04.670870+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-081",
     "epic": "E-004"
   },
   {
     "id": "I-145",
     "title": "Decide the world model",
     "created_at": "2026-10-11T06:59:04.674658+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-082",
     "epic": "E-004"
   },
   {
     "id": "I-146",
     "title": "Send each player only what is near them",
     "created_at": "2026-10-11T06:59:04.676842+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-083",
     "epic": "E-004"
   },
   {
     "id": "I-147",
     "title": "Load a generated-world region on the server",
     "created_at": "2026-10-11T06:59:04.677927+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-084",
     "epic": "E-004"
   },
   {
@@ -1210,5 +1210,40 @@
     "created_at": "2026-10-11T06:59:10.428079+00:00",
     "promoted_to": null,
     "epic": "E-009"
+  },
+  {
+    "id": "I-192",
+    "title": "World History and Concept and Continent Studio Schemas, Mystery State Machine, and Quality Checklists",
+    "created_at": "2026-10-18T03:51:50.399715+00:00",
+    "promoted_to": "F-085",
+    "epic": "E-010"
+  },
+  {
+    "id": "I-193",
+    "title": "District and Town or Hunting Area Topology, Ecology, and Map Compiler Upgrade",
+    "created_at": "2026-10-18T03:51:50.401927+00:00",
+    "promoted_to": null,
+    "epic": "E-010"
+  },
+  {
+    "id": "I-194",
+    "title": "Four-Level Perspective Switcher (World History and Concept to Continent) in Observatory Web Studio",
+    "created_at": "2026-10-18T03:51:50.403195+00:00",
+    "promoted_to": null,
+    "epic": "E-010"
+  },
+  {
+    "id": "I-195",
+    "title": "District Connected Map Matrix and Town or Hunting Area plus Monster Detail Inspector",
+    "created_at": "2026-10-18T03:51:50.404021+00:00",
+    "promoted_to": null,
+    "epic": "E-010"
+  },
+  {
+    "id": "I-196",
+    "title": "Human-in-the-Loop Core Rationale, Quality Checklist Gate, Mystery Toggle, and Top-Down Generation Drawer",
+    "created_at": "2026-10-18T03:51:50.405254+00:00",
+    "promoted_to": null,
+    "epic": "E-010"
   }
 ]

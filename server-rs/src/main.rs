@@ -261,6 +261,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         disconnect_grace_ticks,
     );
     let mut snapshot_builder = SnapshotBuilder::new();
+    let mut aoi_trackers: std::collections::HashMap<String, server_rs::spatial::AoiTracker> =
+        std::collections::HashMap::new();
     let mut match_event_buffer = MatchEventBuffer::default();
     let mut character_state_buffer = CharacterStateBuffer::default();
 
@@ -333,14 +335,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             .duration_since(std::time::UNIX_EPOCH)
                             .map(|d| d.as_millis() as u64)
                             .unwrap_or(frame.sim_time_ms);
-                        let snapshot_bytes = snapshot_builder.build_frame(
-                            frame.tick,
-                            epoch_ms,
-                            &frame.entities,
-                            &frame.removed_ids,
-                            &frame.events,
-                        );
-                        ws_server.broadcast_snapshot_to_room(room_id, snapshot_bytes).await;
+                        let aoi = aoi_trackers.entry(room_id.clone()).or_default();
+                        for departed in &room_disconnects {
+                            aoi.remove_viewer(server_rs::protocol::fnv1a_32(departed));
+                        }
+                        ws_server
+                            .broadcast_aoi_snapshots_to_room(
+                                room_id,
+                                aoi,
+                                &mut snapshot_builder,
+                                frame.tick,
+                                epoch_ms,
+                                &frame.entities,
+                                &frame.removed_ids,
+                                &frame.events,
+                            )
+                            .await;
                     }
                 }
 

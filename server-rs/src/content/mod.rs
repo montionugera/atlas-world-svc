@@ -3,6 +3,7 @@ pub mod map;
 pub mod mmorpg;
 pub mod stats;
 pub mod weapons;
+pub mod world_model;
 
 pub use bestiary::{
     derive_mob_stats, BestiaryCatalog, BestiaryEntry, DerivedMobStats, MobTier, BASE_MOB_ATK,
@@ -22,3 +23,8 @@ pub use stats::{
     derived_stats, DerivedStats, BASE_ATK, BASE_DEF, BASE_HP, GROWTH, STAT_COEF, STAT_MAX,
 };
 pub use weapons::{weapon_offence, AtkStat, WeaponOffence, GEAR_REFERENCE, UNARMED_GEAR};
+pub use world_model::{
+    WorldModelConfig, AOI_ENTER_RADIUS_UNITS, AOI_EXIT_RADIUS_UNITS, BORDER_GHOST_BAND_UNITS,
+    CROSSING_MECHANISM, HANDOFF_HYSTERESIS_UNITS, REGION_SIZE_UNITS, SIM_WARN_BUDGET_MS,
+    WORLD_STATE_STORE_KIND, WORLD_TICK_BUDGET_MS, WORLD_TICK_RATE_HZ,
+};
