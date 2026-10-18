@@ -1799,9 +1799,10 @@
     "title": "Death, bind point and travel",
     "from_idea": "I-160",
     "created_at": "2026-10-18T18:42:26.641441+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-005"
+    "epic": "E-005",
+    "claimed_at": "2026-10-18T18:42:38.759938+00:00"
   }
 ]
