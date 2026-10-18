@@ -185,6 +185,7 @@ struct ConnectionLimits {
 struct ServerMetrics {
     bytes_sent: Arc<AtomicU64>,
     frames_sent: Arc<AtomicU64>,
+    snapshot_bytes_last: Arc<AtomicUsize>,
     ticks_completed: Arc<AtomicU64>,
     entities_count: Arc<AtomicUsize>,
     last_tick_us: Arc<AtomicU64>,
@@ -236,6 +237,7 @@ impl ServerMetrics {
             "entities": self.entities_count.load(Ordering::Relaxed),
             "bytes_sent": self.bytes_sent.load(Ordering::Relaxed),
             "frames_sent": self.frames_sent.load(Ordering::Relaxed),
+            "snapshot_bytes_last": self.snapshot_bytes_last.load(Ordering::Relaxed),
             "ticks_completed": self.ticks_completed.load(Ordering::Relaxed),
             "rate_limited_drops": rate_limited_drops,
         })
@@ -612,6 +614,9 @@ impl WsServer {
                             .bytes_sent
                             .fetch_add(bytes.len() as u64, Ordering::Relaxed);
                         self.metrics.frames_sent.fetch_add(1, Ordering::Relaxed);
+                        self.metrics
+                            .snapshot_bytes_last
+                            .store(bytes.len(), Ordering::Relaxed);
                     }
                     Err(TrySendError::Full(_)) | Err(TrySendError::Closed(_)) => {
                         debug!(

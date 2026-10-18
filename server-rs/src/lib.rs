@@ -6,6 +6,7 @@ pub mod core;
 pub mod debug;
 pub mod ecs;
 pub mod fleet;
+pub mod load_harness;
 pub mod net;
 pub mod physics;
 pub mod protocol;
@@ -26,13 +27,16 @@ pub use content::{
     BASE_MOB_ATK, BESTIARY_JSON, GEAR_REFERENCE, GROWTH, STAT_COEF, STAT_MAX, UNARMED_GEAR,
 };
 pub use fleet::{AgonesClient, FleetLifecycle, FleetState, HeartbeatTask, MockFleetClient};
+pub use load_harness::{
+    measure_tier, run_capacity_sweep, CapacitySweepReport, CapacityTierReport,
+    DEFAULT_CAPACITY_TIERS,
+};
 pub use net::{ClientPacket, WsServer};
 pub use storage::{
     normalize_match_event_type, CharacterStateBuffer, CharacterStateSnapshot, EquippedItemIds,
-    LoadoutSnapshot, MatchEvent, MatchEventBatch, MatchEventBuffer, MatchEventQueue,
-    MockNakamaClient, NakamaClient, NakamaStorage, PrimaryStats, ProfileDoc,
-    DEFAULT_CHARACTER_STATE_FLUSH_INTERVAL, DEFAULT_MATCH_EVENT_FLUSH_INTERVAL,
-    DEFAULT_NAKAMA_MATCH_ID,
+    LoadoutSnapshot, MatchEvent, MatchEventBuffer, MatchEventQueue, MockNakamaClient, NakamaClient,
+    NakamaStorage, PrimaryStats, ProfileDoc, DEFAULT_CHARACTER_STATE_FLUSH_INTERVAL,
+    DEFAULT_MATCH_EVENT_FLUSH_INTERVAL, DEFAULT_NAKAMA_MATCH_ID,
 };
 
 pub use core::{Lcg, Mulberry32, SimClock};
