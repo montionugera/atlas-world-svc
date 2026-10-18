@@ -14,6 +14,19 @@ cargo test --manifest-path server-rs/Cargo.toml \
   --test border_ghosts_test \
   --test authority_handoff_test
 
+echo "[epic-check] Verifying E-007 (Combat Depth: Wind-up & Facing, Parry Cost, Aimed Ranged, Lingering Zones, DoT Statuses, Healing, Boss Scaling, Mob Variety, Companions)"
+cargo test --manifest-path server-rs/Cargo.toml \
+  --test mob_windup_facing_test \
+  --test parry_cost_test \
+  --test aimed_ranged_attacks_test \
+  --test lingering_area_skills_test \
+  --test dot_status_test \
+  --test healing_in_fight_test \
+  --test boss_tier_scaling_test \
+  --test mob_attack_variety_test \
+  --test companion_spawn_follow_test \
+  --test companion_combat_respawn_test
+
 echo "[epic-check] Verifying E-010 & Autonomous Product Owner Studio Pipeline (World History and Concept -> Continent -> District -> Town or Hunting Area)"
 
 python3 scripts/run_world_pipeline.py --fast --auto-tune
@@ -21,4 +34,4 @@ python3 scripts/run_world_pipeline.py --fast --auto-tune
 rm -rf tests/__pycache__
 git checkout -- scripts/__pycache__/ 2>/dev/null || true
 
-echo "[epic-check] PASS — All E-004, E-010, and Product Owner Self-Evaluation assertions verified."
+echo "[epic-check] PASS — All E-004, E-007, E-010, and Product Owner Self-Evaluation assertions verified."
