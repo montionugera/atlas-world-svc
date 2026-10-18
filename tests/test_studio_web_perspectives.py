@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Automated test suite for E-010 / F-087 / F-088 / F-089 / F-090 / F-092:
+Automated test suite for E-010 / F-087 / F-088 / F-089 / F-090 / F-092 / F-093:
   - 4-Level Unabbreviated Perspective Switcher (World History and Concept -> Continent -> District -> Town or Hunting Area)
   - District Connected 2D Map Matrix + Maxion Level-Band Monster Pinning
   - Town or Hunting Area Inspector + Monster/1035 Detail Sheet
   - Human-in-the-Loop Core Rationale, Five-Pillar Quality Checklist Gate, Mystery Toggle, and Downward Child Generation API
-  - Autonomous Product Owner Self-Evaluation Telemetry & Continent 02 / Rustcog Downs Canon Increment
+  - Autonomous Product Owner Self-Evaluation Telemetry & Mainspring Caldera Canon Increment
 """
 
 from __future__ import annotations
@@ -37,8 +37,8 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertTrue(ok, f"Expected all 5 pillars verified on WHC, failed: {failed}")
 
         self.assertEqual(len(bundle["continents"]), 3)
-        self.assertEqual(len(bundle["districts"]), 4)
-        self.assertEqual(len(bundle["nodes"]), 13)
+        self.assertEqual(len(bundle["districts"]), 5)
+        self.assertEqual(len(bundle["nodes"]), 17)
 
     def test_index_html_renders_unabbreviated_four_perspectives_and_benchmarks(self) -> None:
         html = web.INDEX_HTML
@@ -56,10 +56,10 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("/api/studio/generate-children", html)
 
     def test_rationale_update_blocks_canon_when_parent_not_canon_or_checklist_incomplete(self) -> None:
-        # 1. hunting-area-caldera-rim has parent district-mainspring-caldera (status: draft)
+        # 1. hunting-area-siphon-sluice has parent district-verdigris-siphon (status: draft)
         res, code = web.update_studio_rationale(
             {
-                "nodeId": "hunting-area-caldera-rim",
+                "nodeId": "hunting-area-siphon-sluice",
                 "status": "canon",
             }
         )
@@ -67,10 +67,10 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertFalse(res["ok"])
         self.assertIn("parent", res["error"].lower())
 
-        # 2. district-mainspring-caldera has parent continent-02-clockwork-steppe (canon), but incomplete checklist pillars
+        # 2. district-verdigris-siphon has parent continent-02-clockwork-steppe (canon), but incomplete checklist pillars
         res2, code2 = web.update_studio_rationale(
             {
-                "nodeId": "district-mainspring-caldera",
+                "nodeId": "district-verdigris-siphon",
                 "status": "canon",
             }
         )
@@ -79,16 +79,16 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("quality_checklist", res2["error"])
 
     def test_rationale_update_and_undo_snapshot_roundtrip(self) -> None:
-        _, orig_doc, _ = web.find_studio_node_and_path("district-mainspring-caldera")
+        _, orig_doc, _ = web.find_studio_node_and_path("district-verdigris-siphon")
         self.assertIsNotNone(orig_doc)
         orig_rationale = orig_doc["core_rationale"]
 
         new_rationale = (
-            "Central volcanic-brass crater of Continent 02 where Krono's primary mainspring coil beats beneath bronze flywheel bridges."
+            "Eastern patinated-copper aqueduct terrace of Continent 02 where Krono's alchemical coolant pipes drain into turquoise basins."
         )
         res, code = web.update_studio_rationale(
             {
-                "nodeId": "district-mainspring-caldera",
+                "nodeId": "district-verdigris-siphon",
                 "core_rationale": new_rationale,
                 "status": "draft",
             }
@@ -100,7 +100,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         # Undo snapshot to restore original file state cleanly
         undo_res = web.undo_latest_snapshot()
         self.assertTrue(undo_res["ok"])
-        _, restored_doc, _ = web.find_studio_node_and_path("district-mainspring-caldera")
+        _, restored_doc, _ = web.find_studio_node_and_path("district-verdigris-siphon")
         self.assertEqual(restored_doc["core_rationale"], orig_rationale)
 
     def test_generate_children_enforces_canon_and_five_pillar_checklist_gate(self) -> None:
@@ -115,31 +115,31 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertEqual(code_mystery, 400)
         self.assertFalse(res_mystery["ok"])
 
-        # 2. Draft parent district-mainspring-caldera must fail with 400
+        # 2. Draft parent district-verdigris-siphon must fail with 400
         res_draft, code_draft = web.generate_studio_children(
             {
-                "parentId": "district-mainspring-caldera",
-                "childName": "Escapement Bridge",
+                "parentId": "district-verdigris-siphon",
+                "childName": "Siphon Reservoir",
                 "persist": False,
             }
         )
         self.assertEqual(code_draft, 400)
         self.assertFalse(res_draft["ok"])
 
-        # 3. Canon parent continent-02-clockwork-steppe (with 5/5 checklist verified) must succeed with 200
+        # 3. Canon parent district-mainspring-caldera (with 5/5 checklist verified) must succeed with 200
         res_canon, code_canon = web.generate_studio_children(
             {
-                "parentId": "continent-02-clockwork-steppe",
-                "childId": "district-glimmer-springs",
-                "childName": "Glimmer Springs",
+                "parentId": "district-mainspring-caldera",
+                "childId": "hunting-area-anvil-west-terrace",
+                "childName": "Anvil West Terrace",
                 "childStatus": "mystery",
                 "persist": False,
             }
         )
         self.assertEqual(code_canon, 200)
         self.assertTrue(res_canon["ok"])
-        self.assertEqual(res_canon["childLayer"], "district")
-        self.assertEqual(res_canon["childNode"]["parent_continent_id"], "continent-02-clockwork-steppe")
+        self.assertEqual(res_canon["childLayer"], "town-or-hunting-area")
+        self.assertEqual(res_canon["childNode"]["parent_district_id"], "district-mainspring-caldera")
         self.assertEqual(res_canon["childNode"]["status"], "mystery")
 
 

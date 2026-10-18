@@ -190,12 +190,15 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
         self.assertEqual(
             playable_ids,
             [
+                "chronometer-foundry-b1",
                 "kiln-cellar-b1",
                 "pendulum-shaft-b1",
                 "brass-spur-ridge",
+                "caldera-rim",
                 "cinder-apron",
                 "clover-south-gate",
                 "kiln-east-orchard",
+                "escapement-anvil",
                 "kilnwatch-bastion",
                 "lantern-hollow",
                 "pinion-terminus",

@@ -17,6 +17,24 @@
   },
   "playableMaps": [
     {
+      "mapId": "chronometer-foundry-b1",
+      "nodeId": "dungeon-chronometer-foundry",
+      "name": "The Chronometer Foundry (Floor -1)",
+      "districtId": "district-mainspring-caldera",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        26,
+        35
+      ]
+    },
+    {
       "mapId": "kiln-cellar-b1",
       "nodeId": "dungeon-kiln-cellar",
       "name": "The Under-Hearth Kiln Cellar",
@@ -67,6 +85,24 @@
       ],
       "levelRange": [
         18,
+        28
+      ]
+    },
+    {
+      "mapId": "caldera-rim",
+      "nodeId": "hunting-area-caldera-rim",
+      "name": "The Mainspring Caldera Rim",
+      "districtId": "district-mainspring-caldera",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        22,
         28
       ]
     },
@@ -125,6 +161,24 @@
       ]
     },
     {
+      "mapId": "escapement-anvil",
+      "nodeId": "town-escapement-anvil",
+      "name": "Escapement Anvil",
+      "districtId": "district-mainspring-caldera",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        24,
+        30
+      ]
+    },
+    {
       "mapId": "kilnwatch-bastion",
       "nodeId": "town-kilnwatch-bastion",
       "name": "Kilnwatch Bastion",
@@ -180,6 +234,27 @@
     }
   ],
   "portalRoutingTable": {
+    "portal-chronometer-foundry-exit-anvil": {
+      "portalId": "portal-chronometer-foundry-exit-anvil",
+      "sourceNodeId": "dungeon-chronometer-foundry",
+      "sourceMapId": "chronometer-foundry-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-escapement-anvil",
+      "targetMapId": "escapement-anvil",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 500.0,
+        "y": 900.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 500.0,
+        "y": 860.0
+      },
+      "lockMessage": null
+    },
     "portal-kiln-cellar-exit": {
       "portalId": "portal-kiln-cellar-exit",
       "sourceNodeId": "dungeon-kiln-cellar",
@@ -243,15 +318,15 @@
       },
       "lockMessage": "Inverted gravity eddies from the Astrolabe Gate tear at copper gliders; the Tinker Guild has chained the northern bridge until the Star-Pendulum key is recovered."
     },
-    "portal-brass-spur-east-caldera-fog": {
-      "portalId": "portal-brass-spur-east-caldera-fog",
+    "portal-brass-spur-east-caldera": {
+      "portalId": "portal-brass-spur-east-caldera",
       "sourceNodeId": "hunting-area-brass-spur-ridge",
       "sourceMapId": "brass-spur-ridge",
       "direction": "East",
       "targetNodeId": "hunting-area-caldera-rim",
-      "targetMapId": null,
+      "targetMapId": "caldera-rim",
       "targetDirection": "West",
-      "gateState": "fog_of_lore",
+      "gateState": "open",
       "triggerBoxMeters": {
         "x": 3840.0,
         "y": 2000.0,
@@ -262,7 +337,7 @@
         "x": 3800.0,
         "y": 2000.0
       },
-      "lockMessage": "Foundry apprentices say the bronze bridge gates to Mainspring Caldera only unlatch when the three pressure valves along Brass Spur Ridge are equalized."
+      "lockMessage": null
     },
     "portal-brass-spur-west": {
       "portalId": "portal-brass-spur-west",
@@ -271,6 +346,48 @@
       "direction": "West",
       "targetNodeId": "town-pinion-terminus",
       "targetMapId": "pinion-terminus",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-caldera-rim-east-anvil": {
+      "portalId": "portal-caldera-rim-east-anvil",
+      "sourceNodeId": "hunting-area-caldera-rim",
+      "sourceMapId": "caldera-rim",
+      "direction": "East",
+      "targetNodeId": "town-escapement-anvil",
+      "targetMapId": "escapement-anvil",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-caldera-rim-west-brass-spur": {
+      "portalId": "portal-caldera-rim-west-brass-spur",
+      "sourceNodeId": "hunting-area-caldera-rim",
+      "sourceMapId": "caldera-rim",
+      "direction": "West",
+      "targetNodeId": "hunting-area-brass-spur-ridge",
+      "targetMapId": "brass-spur-ridge",
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
@@ -408,6 +525,90 @@
       "arrivalPointMeters": {
         "x": 200.0,
         "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-escapement-anvil-north-fog": {
+      "portalId": "portal-escapement-anvil-north-fog",
+      "sourceNodeId": "town-escapement-anvil",
+      "sourceMapId": "escapement-anvil",
+      "direction": "North",
+      "targetNodeId": "hunting-area-sun-coil-spire",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Superheated solar-brass updrafts swirl around the Sun-Coil Spire; the Master Clockmakers have locked the lift until the barometer stabilizers are calibrated."
+    },
+    "portal-escapement-anvil-east-siphon-fog": {
+      "portalId": "portal-escapement-anvil-east-siphon-fog",
+      "sourceNodeId": "town-escapement-anvil",
+      "sourceMapId": "escapement-anvil",
+      "direction": "East",
+      "targetNodeId": "hunting-area-siphon-sluice",
+      "targetMapId": null,
+      "targetDirection": "West",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": "Sluice-keepers say the patinated bronze floodgates to Verdigris Siphon only open when the foundry quenching vats reach full pressure."
+    },
+    "portal-escapement-anvil-west-rim": {
+      "portalId": "portal-escapement-anvil-west-rim",
+      "sourceNodeId": "town-escapement-anvil",
+      "sourceMapId": "escapement-anvil",
+      "direction": "West",
+      "targetNodeId": "hunting-area-caldera-rim",
+      "targetMapId": "caldera-rim",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-escapement-anvil-dungeon-chronometer": {
+      "portalId": "portal-escapement-anvil-dungeon-chronometer",
+      "sourceNodeId": "town-escapement-anvil",
+      "sourceMapId": "escapement-anvil",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-chronometer-foundry",
+      "targetMapId": "chronometer-foundry-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
       },
       "lockMessage": null
     },

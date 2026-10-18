@@ -49,13 +49,12 @@
     },
     "South": null,
     "East": {
-      "portal_id": "portal-brass-spur-east-caldera-fog",
+      "portal_id": "portal-brass-spur-east-caldera",
       "direction": "East",
       "target_node_id": "hunting-area-caldera-rim",
-      "target_map_id": null,
+      "target_map_id": "caldera-rim",
       "target_direction": "West",
-      "gate_state": "fog_of_lore",
-      "lock_message": "Foundry apprentices say the bronze bridge gates to Mainspring Caldera only unlatch when the three pressure valves along Brass Spur Ridge are equalized.",
+      "gate_state": "open",
       "trigger_box_meters": {
         "x": 3840.0,
         "y": 2000.0,
@@ -159,7 +158,7 @@
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Connects directly to Pinion Terminus East Gate at [1, 1] and dramatizes the wind-pirate and rogue construct conflict along Krono's gear-ribs."
+      "evidence": "Connects Pinion Terminus East Gate at [1, 1] to the Mainspring Caldera Rim across the eastern Flywheel Viaduct."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -171,11 +170,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Symmetric West portal to town-pinion-terminus, North fog_of_lore portal to hunting-area-astrolabe-rift, East fog_of_lore portal to hunting-area-caldera-rim, and Level 21 to 25 construct/insect fauna."
+      "evidence": "Symmetric West portal to town-pinion-terminus, East open portal to hunting-area-caldera-rim, North fog_of_lore portal to hunting-area-astrolabe-rift, and Level 21 to 25 construct/insect fauna."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Compiles fog_of_lore boundary portals on both the North Astrolabe Rift bridge and the East Mainspring Caldera bridge."
+      "evidence": "Compiles a fog_of_lore boundary portal on the North Astrolabe Rift bridge while opening the eastern Flywheel Viaduct."
     }
   }
 }

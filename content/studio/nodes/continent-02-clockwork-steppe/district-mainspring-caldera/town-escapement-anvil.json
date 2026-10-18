@@ -1,0 +1,145 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-escapement-anvil",
+  "name": "Escapement Anvil",
+  "map_id": "escapement-anvil",
+  "parent_district_id": "district-mainspring-caldera",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Foundry-town suspended on a concentric bronze flywheel platform at [1, 1] where the Guild of Master Clockmakers tempers spring-steel weapons over Krono's thermal vents.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "level_range": [
+    24,
+    30
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_escapement_town",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Quenching oil and cool mineral water basins ringing the central anvil plaza"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-escapement-anvil-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-sun-coil-spire",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Superheated solar-brass updrafts swirl around the Sun-Coil Spire; the Master Clockmakers have locked the lift until the barometer stabilizers are calibrated.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-escapement-anvil-east-siphon-fog",
+      "direction": "East",
+      "target_node_id": "hunting-area-siphon-sluice",
+      "target_map_id": null,
+      "target_direction": "West",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Sluice-keepers say the patinated bronze floodgates to Verdigris Siphon only open when the foundry quenching vats reach full pressure.",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-escapement-anvil-west-rim",
+      "direction": "West",
+      "target_node_id": "hunting-area-caldera-rim",
+      "target_map_id": "caldera-rim",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-escapement-anvil-dungeon-chronometer",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-chronometer-foundry",
+      "target_map_id": "chronometer-foundry-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 2040.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.45,
+    "main_road_width_meters": 14.0,
+    "footpath_width_meters": 4.5,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors the civic foundry heart of Mainspring Caldera at [1, 1] directly above the Chronometer Foundry dungeon."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Suspended bronze flywheel town where giant clockwork hammers strike in time with Krono's buried mainspring."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.15m cog-risers, 0.60m anvil counters, and 14.0m bronze main avenues for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Peaceful Safe Zone (0 resident_spawns) at [1, 1] with West portal to Caldera Rim, Dungeon portal to Chronometer Foundry, and North/East fog_of_lore portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Seals the northern Sun-Coil Spire lift and eastern Verdigris Siphon sluicegate behind fog_of_lore boundary portals."
+    }
+  }
+}
