@@ -55,12 +55,13 @@
     "district-pendulum-steppe-west",
     "district-helical-gear-trench",
     "district-differential-spur-gorge",
-    "district-flywheel-dynamo-canyon"
+    "district-flywheel-dynamo-canyon",
+    "district-bimetallic-escapement-mesa"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Tinkers say the northern Gyroscope-Rim Overlook in Flywheel Dynamo Canyon spins with such balanced angular momentum that gliders can hover motionless in its slipstream.",
-    "visual_silhouette": "Colossal brass wheel-rims rising two hundred meters above golden short-grass plains.",
-    "unanswered_question": "What celestial gyroscope relay crowns Gyroscope-Rim Overlook?"
+    "in_world_rumor": "Tinkers say the bridges of Bimetallic Escapement Mesa arch three meters higher at noon than at midnight as the twin metals expand and contract.",
+    "visual_silhouette": "Laminated copper-and-silver balance coils curving over a sun-drenched brass mesa.",
+    "unanswered_question": "What thermal chronometer sanctuary sits atop Bimetallic Escapement Mesa?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -77,11 +78,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes all nine Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin, West Pendulum Steppe, Helical-Gear Trench, Differential Spur Gorge, Flywheel Dynamo Canyon)."
+      "evidence": "Organizes nine Canon Districts plus Bimetallic Escapement Mesa (Mystery) on Continent 02."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Flywheel Dynamo Canyon to Canon while preserving leaf Mystery frontier Gyroscope-Rim Overlook behind a Fog of Lore portal."
+      "evidence": "Seeds Bimetallic Escapement Mesa in Mystery status while preserving leaf Mystery frontiers behind Fog of Lore portals."
     }
   }
 }

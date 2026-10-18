@@ -3,7 +3,7 @@
   "id": "district-cinnamon-bellows-bluff",
   "name": "Cinnamon-Bellows Bluff",
   "parent_continent_id": "continent-01-hearthbloom-basin",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Ninth warm terracotta spice-drying bluff of Continent 01 where Sola's aromatic hearth-drafts cure cinnamon-bark windbreaks above the eastern orchard rim.",
   "local_conflict": "Cinnamon-bark beetles and playful ember-tail foxes nest inside the warm spice-drying flues.",
   "level_band_label": "Levels 1 to 20",
@@ -19,7 +19,24 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-cinnamon-bark-viaduct",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        14,
+        15
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Bakers in Saffron-Press Village say the warm breezes from Cinnamon-Bellows Bluff smell of toasted cinnamon-sugar before every sunrise.",
@@ -36,16 +53,16 @@
       "evidence": "Terraced terracotta spice-towers with curling cinnamon-bark louvers venting warm aromatic drafts."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: spice-mill counter and terrace riser metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Specifies 12.5m spice-viaduct roads, 0.58m spice-mill counters, and 0.14m terracotta risers tailored to 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the ninth District frontier on Continent 01 with zero filler maps."
+      "evidence": "Draft status: seeds Cinnamon-Bark Viaduct at [0, 1] while the central spice-mill town, dungeon, and northern bluff remain queued."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Maintains Cinnamon-Bark Viaduct in Mystery status with zero filler maps."
     }
   }
 }

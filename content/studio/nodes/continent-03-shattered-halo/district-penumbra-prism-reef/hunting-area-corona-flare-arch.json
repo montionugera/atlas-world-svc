@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-corona-flare-arch",
+  "name": "Corona-Flare Arch",
+  "map_id": null,
+  "parent_district_id": "district-penumbra-prism-reef",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northernmost eclipse-corona crystal arch of Penumbra Prism Reef at [1, 0] where Vesper's outer gravity ring bends eclipse-light into a blazing silver-gold corona.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    50,
+    50
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Star-navigators whisper that Corona-Flare Arch bends eclipse-light into a shimmering corona bridge toward the outer void.",
+    "visual_silhouette": "A towering arch of dark basalt crowned by a halo of silver-gold eclipse fire.",
+    "unanswered_question": "What eclipse-corona beacon crowns Corona-Flare Arch?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Extends north from Penumbra Prism Haven at [1, 0] along scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Towering dark-basalt arch crowned by a halo of silver-gold eclipse fire."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Penumbra Prism Haven with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind the Penumbra Prism Haven North Fog of Lore gate."
+    }
+  }
+}

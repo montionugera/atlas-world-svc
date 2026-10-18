@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Automated test suite for E-010 / F-087..F-132:
+Automated test suite for E-010 / F-087..F-134:
   - 4-Level Unabbreviated Perspective Switcher (World History and Concept -> Continent -> District -> Town or Hunting Area)
   - District Connected 2D Map Matrix + Maxion Level-Band Monster Pinning
   - Town or Hunting Area Inspector + Monster/1035 Detail Sheet
   - Human-in-the-Loop Core Rationale, Five-Pillar Quality Checklist Gate, Mystery Toggle, and Downward Child Generation API
-  - Autonomous Product Owner Self-Evaluation Telemetry & Continent 02 Flywheel Dynamo Canyon Canon Increment
+  - Autonomous Product Owner Self-Evaluation Telemetry & Continent 03 Penumbra Prism Reef Canon Increment
 """
 
 from __future__ import annotations
@@ -37,8 +37,8 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertTrue(ok, f"Expected all 5 pillars verified on WHC, failed: {failed}")
 
         self.assertEqual(len(bundle["continents"]), 3)
-        self.assertEqual(len(bundle["districts"]), 28)
-        self.assertEqual(len(bundle["nodes"]), 105)
+        self.assertEqual(len(bundle["districts"]), 29)
+        self.assertEqual(len(bundle["nodes"]), 109)
 
     def test_index_html_renders_unabbreviated_four_perspectives_and_benchmarks(self) -> None:
         html = web.INDEX_HTML
@@ -56,10 +56,10 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("/api/studio/generate-children", html)
 
     def test_rationale_update_blocks_canon_when_parent_not_canon_or_checklist_incomplete(self) -> None:
-        # 1. hunting-area-penumbra-refraction-causeway has parent district-penumbra-prism-reef (status: draft)
+        # 1. hunting-area-cinnamon-bark-viaduct has parent district-cinnamon-bellows-bluff (status: draft)
         res, code = web.update_studio_rationale(
             {
-                "nodeId": "hunting-area-penumbra-refraction-causeway",
+                "nodeId": "hunting-area-cinnamon-bark-viaduct",
                 "status": "canon",
             }
         )
@@ -67,10 +67,10 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertFalse(res["ok"])
         self.assertIn("parent", res["error"].lower())
 
-        # 2. district-penumbra-prism-reef has parent continent-03-shattered-halo (canon), but incomplete checklist pillars
+        # 2. district-cinnamon-bellows-bluff has parent continent-01-hearthbloom-basin (canon), but incomplete checklist pillars
         res2, code2 = web.update_studio_rationale(
             {
-                "nodeId": "district-penumbra-prism-reef",
+                "nodeId": "district-cinnamon-bellows-bluff",
                 "status": "canon",
             }
         )
@@ -79,16 +79,16 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("quality_checklist", res2["error"])
 
     def test_rationale_update_and_undo_snapshot_roundtrip(self) -> None:
-        _, orig_doc, _ = web.find_studio_node_and_path("district-penumbra-prism-reef")
+        _, orig_doc, _ = web.find_studio_node_and_path("district-cinnamon-bellows-bluff")
         self.assertIsNotNone(orig_doc)
         orig_rationale = orig_doc["core_rationale"]
 
         new_rationale = (
-            "Tenth floating basalt-and-crystal reef of Continent 03 where Vesper's half-shadowed gravity lens bends twilight starlight into shimmering penumbral coral arches."
+            "Ninth warm terracotta spice-drying bluff of Continent 01 where Sola's aromatic hearth-drafts cure cinnamon-bark windbreaks above the eastern orchard rim."
         )
         res, code = web.update_studio_rationale(
             {
-                "nodeId": "district-penumbra-prism-reef",
+                "nodeId": "district-cinnamon-bellows-bluff",
                 "core_rationale": new_rationale,
                 "status": "draft",
             }
@@ -100,38 +100,38 @@ class TestStudioWebPerspectives(unittest.TestCase):
         # Undo snapshot to restore original file state cleanly
         undo_res = web.undo_latest_snapshot()
         self.assertTrue(undo_res["ok"])
-        _, restored_doc, _ = web.find_studio_node_and_path("district-penumbra-prism-reef")
+        _, restored_doc, _ = web.find_studio_node_and_path("district-cinnamon-bellows-bluff")
         self.assertEqual(restored_doc["core_rationale"], orig_rationale)
 
     def test_generate_children_enforces_canon_and_five_pillar_checklist_gate(self) -> None:
-        # 1. Mystery parent district-cinnamon-bellows-bluff must fail with 400
+        # 1. Mystery parent district-bimetallic-escapement-mesa must fail with 400
         res_mystery, code_mystery = web.generate_studio_children(
             {
-                "parentId": "district-cinnamon-bellows-bluff",
-                "childName": "Forbidden Cinnamon Bridge",
+                "parentId": "district-bimetallic-escapement-mesa",
+                "childName": "Forbidden Bimetallic Bridge",
                 "persist": False,
             }
         )
         self.assertEqual(code_mystery, 400)
         self.assertFalse(res_mystery["ok"])
 
-        # 2. Draft parent district-penumbra-prism-reef must fail with 400
+        # 2. Draft parent district-cinnamon-bellows-bluff must fail with 400
         res_draft, code_draft = web.generate_studio_children(
             {
-                "parentId": "district-penumbra-prism-reef",
-                "childName": "Penumbra Observatory Sanctuary",
+                "parentId": "district-cinnamon-bellows-bluff",
+                "childName": "Cinnamon Mill Village",
                 "persist": False,
             }
         )
         self.assertEqual(code_draft, 400)
         self.assertFalse(res_draft["ok"])
 
-        # 3. Canon parent district-flywheel-dynamo-canyon (with 5/5 checklist verified) must succeed with 200
+        # 3. Canon parent district-penumbra-prism-reef (with 5/5 checklist verified) must succeed with 200
         res_canon, code_canon = web.generate_studio_children(
             {
-                "parentId": "district-flywheel-dynamo-canyon",
-                "childId": "hunting-area-flywheel-east-spur",
-                "childName": "Flywheel East Spur",
+                "parentId": "district-penumbra-prism-reef",
+                "childId": "hunting-area-penumbra-east-atoll",
+                "childName": "Penumbra East Atoll",
                 "childStatus": "mystery",
                 "persist": False,
             }
@@ -139,7 +139,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertEqual(code_canon, 200)
         self.assertTrue(res_canon["ok"])
         self.assertEqual(res_canon["childLayer"], "town-or-hunting-area")
-        self.assertEqual(res_canon["childNode"]["parent_district_id"], "district-flywheel-dynamo-canyon")
+        self.assertEqual(res_canon["childNode"]["parent_district_id"], "district-penumbra-prism-reef")
         self.assertEqual(res_canon["childNode"]["status"], "mystery")
 
 
