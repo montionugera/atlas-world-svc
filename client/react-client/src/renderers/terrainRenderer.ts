@@ -3,6 +3,7 @@
  * Renders regional biomes, stone roads, cobblestone courtyard, rivers, and town buildings
  * for the Atlas frontier world map.
  */
+import generatedWorldMaps from "../data/generatedWorldMaps.json";
 
 export interface FloatingText {
   id: string;
@@ -26,78 +27,62 @@ export interface TownBuilding {
   roofColor: string;
 }
 
-export const MILLCROSS_BUILDINGS: TownBuilding[] = [
-  {
-    id: "mill-house",
-    name: "Mill",
-    x: 164,
-    y: 134,
-    width: 24,
-    height: 18,
-    color: "#4a3b32",
-    roofColor: "#7a3e2e",
-  },
-  {
-    id: "victual-shed",
-    name: "Store",
-    x: 134,
-    y: 167,
-    width: 24,
-    height: 16,
-    color: "#3d332a",
-    roofColor: "#5c4333",
-  },
-  {
-    id: "ford-stable",
-    name: "Stable",
-    x: 134,
-    y: 195,
-    width: 26,
-    height: 18,
-    color: "#3d332a",
-    roofColor: "#614736",
-  },
-  {
-    id: "granary",
-    name: "Granary",
-    x: 230,
-    y: 140,
-    width: 26,
-    height: 20,
-    color: "#4a3b32",
-    roofColor: "#824b35",
-  },
-  {
-    id: "blacksmith",
-    name: "Forge",
-    x: 235,
-    y: 180,
-    width: 22,
-    height: 18,
-    color: "#383838",
-    roofColor: "#502820",
-  },
-  {
-    id: "brewery",
-    name: "Brewery",
-    x: 170,
-    y: 220,
-    width: 26,
-    height: 18,
-    color: "#42362b",
-    roofColor: "#6b4531",
-  },
-  {
-    id: "guard-post",
-    name: "Guard",
-    x: 100,
-    y: 165,
-    width: 18,
-    height: 18,
-    color: "#4f555c",
-    roofColor: "#39434d",
-  },
-];
+const BUILDING_PALETTE_BY_KIND: Record<
+  string,
+  { color: string; roofColor: string }
+> = {
+  mill: { color: "#4a3b32", roofColor: "#7a3e2e" },
+  store: { color: "#3d332a", roofColor: "#5c4333" },
+  stable: { color: "#3d332a", roofColor: "#614736" },
+  dwelling: { color: "#42362b", roofColor: "#6b4531" },
+  inn: { color: "#4a3b32", roofColor: "#824b35" },
+  guild: { color: "#383838", roofColor: "#502820" },
+  wall: { color: "#4f555c", roofColor: "#39434d" },
+  gate: { color: "#4f555c", roofColor: "#39434d" },
+};
+
+const BUILDING_LABEL_BY_ID: Record<string, string> = {
+  "mill-house": "Mill",
+  "victual-shed": "Store",
+  "ford-stable": "Stable",
+  "ford-store": "Store",
+  "ferry-shed": "Ferry",
+  inn: "Inn",
+  "weapon-smithy": "Forge",
+  "general-store": "Goods",
+  bakehouse: "Bakery",
+  herbalist: "Herbs",
+  "adventurer-guild": "Guild",
+  provisioner: "Supply",
+};
+
+/**
+ * Derived directly from `content/towns/town-millcross.json` via `generatedWorldMaps.json`
+ * so client building footprints and `server-rs` `MapConfig::load("map-for-play").static_obstacles`
+ * share the exact same coordinates with zero hand copies.
+ */
+export const MILLCROSS_BUILDINGS: TownBuilding[] =
+  generatedWorldMaps.millcrossTownFootprints.map((fp) => {
+    const palette = BUILDING_PALETTE_BY_KIND[fp.kind] ?? {
+      color: "#42362b",
+      roofColor: "#6b4531",
+    };
+    return {
+      id: fp.id,
+      name:
+        BUILDING_LABEL_BY_ID[fp.id] ??
+        fp.id
+          .split("-")
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" "),
+      x: fp.x,
+      y: fp.y,
+      width: fp.width,
+      height: fp.height,
+      color: palette.color,
+      roofColor: palette.roofColor,
+    };
+  });
 
 /**
  * Draw complete ground terrain, regional biomes, roads, river, buildings, and labels.

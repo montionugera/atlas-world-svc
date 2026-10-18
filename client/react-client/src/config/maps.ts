@@ -1,7 +1,9 @@
+import generatedWorldMaps from "../data/generatedWorldMaps.json";
+
 /**
  * Rooms the server-rs gateway accepts via `?map=` (server-rs/src/net/ws.rs) with the
- * world sizes from `MapConfig::load` (server-rs/src/content/map.rs). The gateway is a
- * bare WebSocket with no room-listing endpoint, so this list is maintained by hand.
+ * world sizes from `MapConfig::load` (server-rs/src/content/map.rs) and the compiled
+ * Wealdmarch world regions (`server-rs/src/content/world_regions.rs`).
  */
 export interface MapDef {
   id: string;
@@ -53,16 +55,29 @@ export const MAPS: readonly MapDef[] = [
   },
 ];
 
+/** Generated-world regions derived from `content/maps/*.json` via `generatedWorldMaps.json`. */
+export const GENERATED_REGION_MAPS: readonly MapDef[] = Object.values(
+  generatedWorldMaps.regions,
+).map((region) => ({
+  id: region.id,
+  label: region.name,
+  width: region.width,
+  height: region.height,
+  art: "plain" as const,
+}));
+
+export const ALL_MAPS: readonly MapDef[] = [...MAPS, ...GENERATED_REGION_MAPS];
+
 export const DEFAULT_MAP_ID = MAPS[0].id;
 
 export function mapDef(mapId: string): MapDef {
-  return MAPS.find((m) => m.id === mapId) ?? MAPS[0];
+  return ALL_MAPS.find((m) => m.id === mapId) ?? MAPS[0];
 }
 
 /** Room named by the page's `?map=` query, or the default room. */
 export function mapIdFromSearch(search: string): string {
   const requested = new URLSearchParams(search).get("map");
-  return MAPS.some((m) => m.id === requested)
+  return ALL_MAPS.some((m) => m.id === requested)
     ? (requested as string)
     : DEFAULT_MAP_ID;
 }

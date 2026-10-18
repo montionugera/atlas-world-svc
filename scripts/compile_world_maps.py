@@ -1855,6 +1855,114 @@ def update_freja_south_gate(palettes_doc: dict[str, Any], check_only: bool = Fal
     return updated
 
 
+
+
+CLIENT_WORLD_MAPS_PATH = ROOT / "client" / "react-client" / "src" / "data" / "generatedWorldMaps.json"
+SPAWN_AREAS_PATH = CONTENT_DIR / "generated" / "spawn-areas.json"
+
+
+def build_client_world_maps_manifest(
+    compiled_docs: list[dict[str, Any]],
+    town_millcross: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Compiles the shared client world-map manifest (`client/react-client/src/data/generatedWorldMaps.json`)
+    directly from `content/towns/town-millcross.json`, `content/generated/spawn-areas.json`, and
+    the compiled v3 world region documents (`content/maps/<regionId>.json`) with zero hand copies.
+    """
+    origin_x = 100.0
+    origin_y = 100.0
+    footprints: list[dict[str, Any]] = []
+    for fp in town_millcross.get("footprints", []):
+        rect = fp.get("rect", [])
+        if len(rect) >= 4:
+            x0 = float(rect[0]) + origin_x
+            y0 = float(rect[1]) + origin_y
+            x1 = float(rect[2]) + origin_x
+            y1 = float(rect[3]) + origin_y
+            min_x = round(min(x0, x1), 1)
+            min_y = round(min(y0, y1), 1)
+            max_x = round(max(x0, x1), 1)
+            max_y = round(max(y0, y1), 1)
+            footprints.append(
+                {
+                    "id": fp["id"],
+                    "kind": fp.get("kind", "dwelling"),
+                    "x": min_x,
+                    "y": min_y,
+                    "width": round(max_x - min_x, 1),
+                    "height": round(max_y - min_y, 1),
+                    "min_x": min_x,
+                    "min_y": min_y,
+                    "max_x": max_x,
+                    "max_y": max_y,
+                }
+            )
+
+    play_geometry = {
+        "boss_area": (450.0, 450.0, 100.0, 100.0),
+        "center_courtyard": (400.0, 400.0, 200.0, 200.0),
+        "east_dunes": (550.0, 400.0, 150.0, 200.0),
+        "north_ice_fields": (400.0, 250.0, 200.0, 150.0),
+        "south_mud_pit": (400.0, 600.0, 200.0, 150.0),
+        "thornveil_route_stalkers": (700.0, 300.0, 150.0, 200.0),
+        "thornveil_route_spearlings": (700.0, 550.0, 150.0, 200.0),
+        "thornveil_interior": (820.0, 420.0, 150.0, 150.0),
+    }
+    mob_type_map = {
+        "balanced": "mob-bramble-stalker",
+        "bramble_stalker": "mob-bramble-stalker",
+        "aggressive": "mob-bramble-stalker",
+        "defensive": "mob-bramble-warden",
+        "spear_thrower": "mob-veil-spearling",
+        "veil_spearling": "mob-veil-spearling",
+        "bramble_drake": "mob-bramble-drake",
+        "thorncrown_drake": "mob-thorncrown-drake",
+    }
+    play_spawns: list[dict[str, Any]] = []
+    if SPAWN_AREAS_PATH.exists():
+        raw_spawns = load_json(SPAWN_AREAS_PATH)
+        for entry in raw_spawns.get("areas", []):
+            aid = entry["id"]
+            x, y, w, h = play_geometry.get(aid, (400.0, 400.0, 200.0, 200.0))
+            raw_mob = entry["mobType"]
+            play_spawns.append(
+                {
+                    "id": aid,
+                    "x": x,
+                    "y": y,
+                    "width": w,
+                    "height": h,
+                    "mobType": mob_type_map.get(raw_mob, raw_mob),
+                    "count": int(entry["count"]),
+                }
+            )
+
+    docs_by_id = {d["mapId"]: d for d in compiled_docs}
+    regions: dict[str, Any] = {}
+    for cfg in ZONE_CONFIGS:
+        rid = cfg["mapId"]
+        doc = docs_by_id[rid]
+        w = float(doc["width"])
+        h = float(doc["height"])
+        regions[rid] = {
+            "id": rid,
+            "name": doc["name"],
+            "width": w,
+            "height": h,
+            "playerSpawn": {"x": round(w * 0.5, 1), "y": round(h * 0.5, 1)},
+            "staticObstacles": doc.get("staticObstacles", []),
+            "spawnAreas": doc.get("spawnAreas", []),
+        }
+
+    return {
+        "millcrossTownFootprints": footprints,
+        "playMapPlayerSpawn": {"x": 500.0, "y": 500.0},
+        "playMapSpawnAreas": play_spawns,
+        "regions": regions,
+    }
+
+
 def verify_compiled_maps(
     compiled_docs: list[dict[str, Any]],
     bestiary: list[dict[str, Any]],
@@ -2059,6 +2167,22 @@ def main() -> int:
         compiled.append(doc)
 
     errors = verify_compiled_maps(compiled, bestiary, continents, check_on_disk=True)
+
+    # 4b. Compile/verify shared client world-map manifest (F-098)
+    client_world_manifest = build_client_world_maps_manifest(compiled, town_millcross)
+    if not args.check:
+        save_json(CLIENT_WORLD_MAPS_PATH, client_world_manifest)
+    elif CLIENT_WORLD_MAPS_PATH.exists():
+        disk_client_raw = CLIENT_WORLD_MAPS_PATH.read_text(encoding="utf-8")
+        expected_client_raw = json.dumps(client_world_manifest, indent=2) + "\n"
+        if disk_client_raw != expected_client_raw:
+            errors.append(
+                f"Drift detected in {CLIENT_WORLD_MAPS_PATH.relative_to(ROOT)} (run python3 scripts/compile_world_maps.py)"
+            )
+    else:
+        errors.append(
+            f"Missing shared client world-map manifest on disk: {CLIENT_WORLD_MAPS_PATH.relative_to(ROOT)}"
+        )
 
     # 5. Validate Top-Down Studio Hierarchy (World History and Concept -> Continent -> District -> Town or Hunting Area)
     #    and compile/verify content/maps/_manifest.runtime.json
