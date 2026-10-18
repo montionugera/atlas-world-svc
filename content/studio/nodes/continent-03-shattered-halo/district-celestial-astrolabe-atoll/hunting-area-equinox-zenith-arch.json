@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-equinox-zenith-arch",
+  "name": "Equinox-Zenith Arch",
+  "map_id": null,
+  "parent_district_id": "district-celestial-astrolabe-atoll",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northernmost orbital starlight-and-brass meridian arch of Celestial Astrolabe Atoll at [1, 0] where Vesper's equinox alignment beam projects into the unmapped upper halo.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    50,
+    50
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Star-navigators whisper that when Equinox-Zenith Arch aligns with the Zenith Crown, a bridge of solid starlight extends toward a fourth, uncharted sky-ring.",
+    "visual_silhouette": "A towering twin-ringed brass meridian arch crowned by a suspended starlight prism north of Celestial Astrolabe Sanctuary.",
+    "unanswered_question": "What celestial chart-chamber sits at the apex of Equinox-Zenith Arch?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Extends north from Celestial Astrolabe Sanctuary at [1, 0] along scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Twin-ringed brass meridian arch crowned by a suspended starlight prism."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Celestial Astrolabe Sanctuary with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind the Celestial Astrolabe Sanctuary North Fog of Lore gate."
+    }
+  }
+}

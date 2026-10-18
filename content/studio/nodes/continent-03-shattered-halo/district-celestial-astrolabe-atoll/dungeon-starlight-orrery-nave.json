@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-starlight-orrery-nave",
+  "name": "Starlight Orrery Nave",
+  "map_id": "starlight-orrery-nave-b1",
+  "parent_district_id": "district-celestial-astrolabe-atoll",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Inverted-gravity basalt-and-brass planetarium chamber at [1, 1] floor -1 beneath Celestial Astrolabe Sanctuary where Vesper's master orbital gearwork turns the outer atoll rings.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    49,
+    50
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_base.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_starlight_orrery_nave",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Subterranean pools of liquid starlight reflecting the revolving brass planetarium gears"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-orrery-nave-exit-astrolabe-sanctuary",
+      "direction": "Exit",
+      "target_node_id": "town-celestial-astrolabe-sanctuary",
+      "target_map_id": "celestial-astrolabe-sanctuary",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3780.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-orrery-starlight-seraph",
+      "monster_id": "monster-orrery-starlight-seraph",
+      "monster_name": "Orrery Starlight Seraph",
+      "spawn_count": 12,
+      "respawn_seconds": 26,
+      "level": 49,
+      "element": "Holy",
+      "size": "Small",
+      "race": "Angel",
+      "family": "celestial",
+      "item_drops": [
+        {
+          "item_id": "item-starlight-ephemeris-shard",
+          "item_name": "Starlight Ephemeris Shard",
+          "drop_chance_percent": 40.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-orrery-starlight-seraph",
+        "card_name": "Orrery Starlight Seraph Card",
+        "drop_chance_percent": 0.04
+      }
+    },
+    {
+      "spawn_id": "spawn-celestial-astrolabe-colossus",
+      "monster_id": "monster-celestial-astrolabe-colossus",
+      "monster_name": "Celestial Astrolabe Colossus",
+      "spawn_count": 6,
+      "respawn_seconds": 42,
+      "level": 50,
+      "element": "Wind",
+      "size": "Large",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-celestial-vernier-key",
+          "item_name": "Celestial Vernier Key",
+          "drop_chance_percent": 26.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-celestial-astrolabe-colossus",
+        "card_name": "Celestial Astrolabe Colossus Card",
+        "drop_chance_percent": 0.03
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.35,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_base.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Sits at [1, 1] floor -1 directly beneath Celestial Astrolabe Sanctuary and yields the Celestial Vernier Key."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Inverted-gravity planetarium nave glowing with revolving brass constellations and liquid starlight pools."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 12.5m nave aisles, 0.14m basalt risers, and 2.20m x 1.65m archways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Populated by celestial and construct monster families with symmetric Exit portal back to Celestial Astrolabe Sanctuary."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops the Celestial Vernier Key referenced in the Equinox-Zenith Arch Fog of Lore lock_message."
+    }
+  }
+}
