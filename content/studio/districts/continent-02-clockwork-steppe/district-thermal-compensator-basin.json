@@ -3,7 +3,7 @@
   "id": "district-thermal-compensator-basin",
   "name": "Thermal Compensator Basin",
   "parent_continent_id": "continent-02-clockwork-steppe",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Eleventh mercury-and-brass thermal expansion basin of Continent 02 where Krono's subterranean heat-exchanger tubes stabilize the eastern escapement mesas.",
   "local_conflict": "Pressurized mercury-piston constructs and thermal-scale beetles patrol the gleaming brass expansion manifolds.",
   "level_band_label": "Levels 21 to 40",
@@ -19,7 +19,24 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-radiator-manifold-span",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        29,
+        30
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Horologists in Bimetallic-Chronometer Hub say the eastern Thermal Compensator Basin rises and falls by two full meters between dawn and dusk as its mercury bellows breathe.",
@@ -36,16 +53,16 @@
       "evidence": "Concentric brass bellows-towers and silver thermal radiator fins breathing in rhythm with the desert sun."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: radiator catwalk and bellows valve metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Specifies 12.5m radiator catwalks, 0.58m bellows valve consoles, and 0.14m brass risers tailored to 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the eleventh District frontier on Continent 02 with zero filler maps."
+      "evidence": "Draft status: seeds hunting-area-radiator-manifold-span at [0, 1] ahead of full 2x2 District promotion."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Preserves hunting-area-radiator-manifold-span in Mystery status with complete mystery_hook."
     }
   }
 }

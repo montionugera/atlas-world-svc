@@ -63,7 +63,7 @@
     "in_world_rumor": "Horologists in Bimetallic-Chronometer Hub say the eastern Thermal Compensator Basin rises and falls by two full meters between dawn and dusk as its mercury bellows breathe.",
     "visual_silhouette": "Concentric brass bellows-towers and silver thermal radiator fins shimmering beyond the eastern rim of Bimetallic Escapement Mesa.",
     "unanswered_question": "What deep-crust geothermal spring feeds the primary heat exchanger of Thermal Compensator Basin?",
-    "discovery_trigger_hint": "Ten Districts on Continent 02 are Canon while Thermal Compensator Basin awaits exploration along the eastern thermal rim."
+    "discovery_trigger_hint": "Ten Districts on Continent 02 are Canon while Thermal Compensator Basin is now in Draft status with Radiator Manifold Span seeded."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -80,11 +80,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes ten Canon Districts plus Thermal Compensator Basin (Mystery) on Continent 02."
+      "evidence": "Organizes ten Canon Districts plus Thermal Compensator Basin (Draft) on Continent 02."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Seeds Thermal Compensator Basin in Mystery status while preserving leaf Mystery nodes behind Fog of Lore portals."
+      "evidence": "Advances Thermal Compensator Basin to Draft while preserving Radiator Manifold Span and leaf Mystery nodes behind Fog of Lore portals."
     }
   }
 }

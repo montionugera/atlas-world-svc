@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-cardamom-cloud-overlook",
+  "name": "Cardamom-Cloud Overlook",
+  "map_id": null,
+  "parent_district_id": "district-ginger-steam-terraces",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northernmost high-altitude travertine steam ledge of Ginger-Steam Terraces at [1, 0] where Sola's warmest mineral geysers vent fragrant cardamom clouds toward the Kettle-Whistle Viaduct.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    15,
+    15
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Bathhouse keepers in Ginger-Bathhouse Haven say the northern travertine vents release warm cardamom-scented clouds that lift paper lanterns straight into the sky.",
+    "visual_silhouette": "Stepped golden-ochre travertine pools and glazed ceramic steam-chimneys rising toward Cardamom-Cloud Overlook.",
+    "unanswered_question": "Which ancient Kiln-Master sealed the master pressure-valve beneath Cardamom-Cloud Overlook?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Extends north from Ginger-Bathhouse Haven at [1, 0] along scar-kiln-basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Stepped golden-ochre travertine pools and whistling ceramic steam-chimneys."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Ginger-Bathhouse Haven with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind the Ginger-Bathhouse Haven North Fog of Lore gate."
+    }
+  }
+}
