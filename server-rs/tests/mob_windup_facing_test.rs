@@ -30,12 +30,7 @@ fn build_windup_world(player_pos: Position) -> (World, Schedule, Entity, Entity)
         .id();
 
     let player = world
-        .spawn((
-            player_pos,
-            Velocity::zero(),
-            Health::new(100.0),
-            PlayerTag,
-        ))
+        .spawn((player_pos, Velocity::zero(), Health::new(100.0), PlayerTag))
         .id();
 
     world
