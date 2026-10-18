@@ -64,10 +64,10 @@
       "id": "god-vesper-dream-eater",
       "name": "Vesper, the Dream-Eater",
       "domain": "Gravity, starlight, and silence",
-      "status": "mystery",
-      "core_rationale": "Anchors the late-game northern anomaly and explains why the northern sea floats upward into storm clouds.",
+      "status": "canon",
+      "core_rationale": "Anchors the late-game northern anomaly and explains why the northern sea floats upward into storm clouds across The Shattered Halo.",
       "geographical_scar": "Cracked the planetary crust into inverted floating islands shrouded in violet static.",
-      "architectural_imprint": "Inverted basalt spires and weightless tether-bridges.",
+      "architectural_imprint": "Inverted basalt spires, 0.15 meter basalt risers, and weightless 12.0 meter wide starlight tether-bridges.",
       "mystery_hook": {
         "in_world_rumor": "Sailors swear compasses spin backward north of the Brass Strait, pointing up at the clouds instead of the horizon.",
         "visual_silhouette": "A ring of levitating black monoliths suspended inside a permanent aurora borealis.",
@@ -142,11 +142,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Connects the sheltered Kiln-Basin starter caldera (Levels 1 to 15) outward to the wind-swept Clockwork Steppe (Levels 15 to 30) and northern Shattered Halo (Levels 30+)."
+      "evidence": "Connects the sheltered Kiln-Basin starter caldera (Levels 1 to 15) outward to the wind-swept Clockwork Steppe (Levels 15 to 30) and northern Shattered Halo (Levels 30 to 50)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Marks Vesper the Dream-Eater as intentional mystery with rumor, visual silhouette, and unanswered question while keeping zero deprecated proof-of-concept lore."
+      "evidence": "Preserves Vesper's slumbering core unanswered question while promoting all three Primordial Gods to Canon with zero deprecated proof-of-concept lore."
     }
   }
 }

@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-eclipse-observatory",
+  "name": "The Eclipse Observatory",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "status": "draft",
+  "core_rationale": "Central floating prism-island of Continent 03 where Vesper's shattered astrolabe lenses focus starlight beams across the sky-archipelago.",
+  "local_conflict": "Eclipse-moths and prism-golems have misaligned the primary starlight lenses, casting frozen twilight shadows across the tether-lanes.",
+  "level_band_label": "Levels 21 to 40",
+  "level_range": [
+    36,
+    46
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "spirit",
+    "insect"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-orrery-bridge",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "level_range": [
+        36,
+        42
+      ],
+      "is_starter_town": false
+    }
+  ],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Astronomers say the great brass-and-quartz telescope inside the Eclipse Observatory points inward at Vesper's dreams rather than outward at the stars.",
+    "visual_silhouette": "Concentric crystal lens-rings rotating slowly around a floating basalt observatory dome.",
+    "unanswered_question": "What constellation must be aligned on the Orrery Bridge to unlock the inner prism sanctum?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater on Continent 03 east of Starfall Anchorage."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Rotating crystal lens-rings and floating brass-and-quartz telescopes suspended in perpetual twilight."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Uses 12.5m starlight lens-bridges, 0.60m eyepiece platforms, and 0.14m basalt risers for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Draft status: awaiting playable leaf map authoring for Orrery Bridge and the Observatory dome."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Includes complete mystery_hook and reserves hunting-area-orrery-bridge as a Mystery frontier."
+    }
+  }
+}

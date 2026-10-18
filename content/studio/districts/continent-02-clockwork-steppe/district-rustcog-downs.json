@@ -69,9 +69,9 @@
     },
     {
       "node_id": "hunting-area-astrolabe-rift",
-      "map_id": null,
+      "map_id": "astrolabe-rift",
       "node_type": "hunting_area",
-      "status": "mystery",
+      "status": "canon",
       "grid_coordinates": [
         1,
         0
@@ -111,24 +111,23 @@
       "to_node_id": "hunting-area-astrolabe-rift",
       "to_direction": "South",
       "bidirectional": true,
-      "gate_state": "fog_of_lore",
-      "road_width_meters": 12.0,
-      "lock_reason": "Inverted gravity eddies from the Astrolabe Gate tear at copper gliders; the Tinker Guild has chained the northern bridge until the Star-Pendulum key is recovered."
+      "gate_state": "open",
+      "road_width_meters": 12.0
     }
   ],
   "mystery_hook": {
     "in_world_rumor": "Couriers say the brass canyons shift their alignment every full moon when the buried mainspring slips a tooth.",
     "visual_silhouette": "Rolling copper prairies pierced by hundred-meter oxidized brass gear arches.",
-    "unanswered_question": "Where does the northern Astrolabe Rift bridge lead once the gravity eddies subside?"
+    "unanswered_question": "What deeper subterranean gear-chambers lie beneath the Pendulum Shaft?"
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Directly inherits scar-brass-faultline and receives the Kettle-Whistle Viaduct and root-train from Continent 01 at Pinion Terminus."
+      "evidence": "Directly inherits scar-brass-faultline, receives the Kettle-Whistle Viaduct from Continent 01, and links north via Astrolabe Rift to Continent 03."
     },
     "fantasy_and_wonder": {
       "verified": true,
-      "evidence": "Hundred-meter brass gear arches rising over wind-swept copper prairies with ticking pendulum shafts."
+      "evidence": "Hundred-meter brass gear arches rising over wind-swept copper prairies and the hovering Astrolabe Rift Promontory."
     },
     "character_scale_consistency": {
       "verified": true,
@@ -136,11 +135,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Orthogonal 2x2 grid with Pinion Terminus [0,1], Brass Spur Ridge [1,1], Pendulum Shaft Dungeon [0,1, floor -1], and Astrolabe Rift [1,0] (Fog of Lore) plus Level 20 to 28 construct/insect spawns."
+      "evidence": "Complete 2x2 Canon grid with Pinion Terminus [0,1], Brass Spur Ridge [1,1], Pendulum Shaft Dungeon [0,1, floor -1], and Astrolabe Rift Promontory [1,0] bridging to Continent 03."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Seals the northern Astrolabe Rift frontier with a fog_of_lore portal and Tinker Guild gravity-eddy warning."
+      "evidence": "All four Rustcog Downs nodes are now Canon and connected with symmetric portals and zero placeholder text."
     }
   }
 }

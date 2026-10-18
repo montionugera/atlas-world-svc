@@ -42,8 +42,8 @@
       "target_continent_id": "continent-03-shattered-halo",
       "travel_mode": "dimensional_rift",
       "hub_name": "The Astrolabe Gate",
-      "status": "locked_by_mystery",
-      "unlock_rationale": "Requires the Star-Pendulum key from Starfall Anchorage on Continent 03."
+      "status": "open",
+      "unlock_rationale": "Stabilized after calibrating the Star-Pendulum key between Astrolabe Rift Promontory and Tether Causeway on Continent 03."
     }
   ],
   "district_ids": [
@@ -72,11 +72,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Three connected Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon) spanning [15, 35] plus Mystery District Gilded Exhaust."
+      "evidence": "Three connected Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon) spanning [15, 35] with an open Astrolabe Gate rift to Continent 03."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Gilded Exhaust as a Mystery District frontier and locks the Astrolabe Gate to Continent 03."
+      "evidence": "Preserves Gilded Exhaust as a Mystery District frontier while opening the northern Astrolabe Gate to Continent 03."
     }
   }
 }
