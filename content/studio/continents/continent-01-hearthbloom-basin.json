@@ -55,8 +55,15 @@
     "district-glaze-river-delta",
     "district-terracotta-wind-chimes",
     "district-saffron-kiln-orchards",
-    "district-cinnamon-bellows-bluff"
+    "district-cinnamon-bellows-bluff",
+    "district-ginger-steam-terraces"
   ],
+  "mystery_hook": {
+    "in_world_rumor": "Bathhouse keepers in Cinnamon-Bellows Sanctuary say the eastern mineral aqueducts carry warm ginger-scented steam from a hidden terrace of whistling teapot domes.",
+    "visual_silhouette": "Stepped golden-ochre travertine pools and glazed ceramic steam-chimneys rising beyond the eastern ridge of Cinnamon-Bellows Bluff.",
+    "unanswered_question": "Which ancient Kiln-Master sealed the master pressure-valve beneath the Ginger-Steam Terraces?",
+    "discovery_trigger_hint": "Nine Districts on Continent 01 are Canon while Ginger-Steam Terraces awaits exploration along the eastern geothermal rim."
+  },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
@@ -72,11 +79,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Spans all nine Canon Districts on Continent 01."
+      "evidence": "Organizes nine Canon Districts plus Ginger-Steam Terraces (Mystery) on Continent 01."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Cinnamon-Bellows Bluff to Canon while preserving Star-Anise Promontory and leaf Mystery nodes behind fog_of_lore gates."
+      "evidence": "Seeds Ginger-Steam Terraces in Mystery status while preserving leaf Mystery nodes behind fog_of_lore gates."
     }
   }
 }

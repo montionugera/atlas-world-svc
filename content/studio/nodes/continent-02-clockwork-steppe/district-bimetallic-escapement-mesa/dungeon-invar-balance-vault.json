@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-invar-balance-vault",
+  "name": "Invar Balance Vault",
+  "map_id": "invar-balance-vault-b1",
+  "parent_district_id": "district-bimetallic-escapement-mesa",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Sub-surface cryogenic invar-and-copper pendulum chamber at [1, 1] floor -1 beneath Bimetallic-Chronometer Hub where Krono's zero-expansion reference balance wheels oscillate in frost-rimmed silence.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    29,
+    30
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_base.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_invar_balance_vault",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Subterranean invar cooling sumps circulating chilled mineral oil around the reference balance wheels"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-invar-vault-exit-chronometer-hub",
+      "direction": "Exit",
+      "target_node_id": "town-bimetallic-chronometer-hub",
+      "target_map_id": "bimetallic-chronometer-hub",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3780.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-invar-pendulum-beetle",
+      "monster_id": "monster-invar-pendulum-beetle",
+      "monster_name": "Invar Pendulum Beetle",
+      "spawn_count": 12,
+      "respawn_seconds": 26,
+      "level": 29,
+      "element": "Earth",
+      "size": "Small",
+      "race": "Insect",
+      "family": "carapace",
+      "item_drops": [
+        {
+          "item_id": "item-invar-hairspring-coil",
+          "item_name": "Invar Hairspring Coil",
+          "drop_chance_percent": 40.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-invar-pendulum-beetle",
+        "card_name": "Invar Pendulum Beetle Card",
+        "drop_chance_percent": 0.04
+      }
+    },
+    {
+      "spawn_id": "spawn-bimetallic-balance-colossus",
+      "monster_id": "monster-bimetallic-balance-colossus",
+      "monster_name": "Bimetallic Balance Colossus",
+      "spawn_count": 6,
+      "respawn_seconds": 42,
+      "level": 30,
+      "element": "Fire",
+      "size": "Large",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-zero-expansion-invar-key",
+          "item_name": "Zero-Expansion Invar Key",
+          "drop_chance_percent": 26.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-bimetallic-balance-colossus",
+        "card_name": "Bimetallic Balance Colossus Card",
+        "drop_chance_percent": 0.03
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.35,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_base.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Sits at [1, 1] floor -1 directly beneath Bimetallic-Chronometer Hub and yields the Zero-Expansion Invar Key."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Subterranean invar pendulum chamber humming with zero-expansion balance wheels and chilled oil sumps."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 12.5m vault aisles, 0.14m invar risers, and 2.20m x 1.65m archways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Populated by carapace and construct monster families with symmetric Exit portal back to Bimetallic-Chronometer Hub."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops the Zero-Expansion Invar Key referenced in the Solar-Coil Overlook Fog of Lore lock_message."
+    }
+  }
+}

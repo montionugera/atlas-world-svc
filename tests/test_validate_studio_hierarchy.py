@@ -69,7 +69,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
     def test_rejects_mystery_node_without_mystery_hook(self) -> None:
         with self._mutated_files(
             {
-                "districts/continent-03-shattered-halo/district-celestial-astrolabe-atoll.json": lambda d: d.pop(
+                "districts/continent-01-hearthbloom-basin/district-ginger-steam-terraces.json": lambda d: d.pop(
                     "mystery_hook", None
                 )
             }
@@ -217,6 +217,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "ember-bellows-chamber-b1",
                 "epicyclic-pinion-vault-b1",
                 "faraday-dynamo-vault-b1",
+                "invar-balance-vault-b1",
                 "inverted-belfry-b1",
                 "kiln-cellar-b1",
                 "kinetic-ballast-vault-b1",
@@ -239,6 +240,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "apricot-aqueduct-terrace",
                 "astrolabe-rift",
                 "aurora-tether",
+                "bimetallic-expansion-span",
                 "brass-spur-ridge",
                 "caldera-rim",
                 "celadon-causeway",
@@ -269,6 +271,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "aphelion-buoy-haven",
                 "aurora-bell-sanctuary",
                 "bellows-hearth",
+                "bimetallic-chronometer-hub",
                 "carillon-hearth-belfry",
                 "cinnamon-mill-haven",
                 "crown-beacon-citadel",

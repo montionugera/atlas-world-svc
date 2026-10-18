@@ -59,9 +59,9 @@
     "district-bimetallic-escapement-mesa"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Tinkers say the bridges of Bimetallic Escapement Mesa arch three meters higher at noon than at midnight as the twin metals expand and contract.",
+    "in_world_rumor": "Tinkers say Solar-Coil Overlook on Bimetallic Escapement Mesa stores noon sunlight as pure mechanical spring-tension.",
     "visual_silhouette": "Laminated copper-and-silver balance coils curving over a sun-drenched brass mesa.",
-    "unanswered_question": "What thermal chronometer sanctuary sits atop Bimetallic Escapement Mesa?"
+    "unanswered_question": "What solar chronometer relay crowns Solar-Coil Overlook?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -78,11 +78,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes nine Canon Districts plus Bimetallic Escapement Mesa (Draft) on Continent 02."
+      "evidence": "Organizes all ten Canon Districts on Continent 02."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Advances Bimetallic Escapement Mesa to Draft while preserving Bimetallic Expansion Span in Mystery status."
+      "evidence": "Promotes Bimetallic Escapement Mesa to Canon while preserving Solar-Coil Overlook behind a Fog of Lore portal."
     }
   }
 }
