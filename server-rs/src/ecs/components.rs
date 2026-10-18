@@ -696,6 +696,63 @@ pub struct Projectile {
     pub detonated: bool,
 }
 
+/// Default lingering hazard field duration in seconds (`3.0s`) (E-007 Slice 4).
+pub const LINGERING_ZONE_DURATION_SEC: f32 = 3.0;
+/// Default interval between lingering hazard field damage ticks (`1.0s`).
+pub const LINGERING_ZONE_TICK_INTERVAL_SEC: f32 = 1.0;
+/// Default number of damage ticks delivered across a lingering hazard field's lifetime (`3`).
+pub const LINGERING_ZONE_MAX_TICKS: u32 = 3;
+
+/// Persistent ground hazard field spawned by area skills (`Meteor Strike` / `Blizzard`)
+/// that ticks damage across 3 distinct intervals over its lifetime (E-007 Slice 4).
+#[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LingeringZone {
+    #[serde(with = "entity_serde")]
+    pub owner: Entity,
+    pub skill_id: String,
+    pub radius: f32,
+    pub damage_per_tick: f32,
+    pub damage_type: DamageType,
+    pub element: Element,
+    pub effects: Vec<SkillEffect>,
+    pub is_player_zone: bool,
+    pub remaining_duration_sec: f32,
+    pub tick_interval_sec: f32,
+    pub tick_accumulator_sec: f32,
+    pub ticks_applied: u32,
+    pub max_ticks: u32,
+}
+
+impl LingeringZone {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        owner: Entity,
+        skill_id: impl Into<String>,
+        radius: f32,
+        damage_per_tick: f32,
+        damage_type: DamageType,
+        element: Element,
+        effects: Vec<SkillEffect>,
+        is_player_zone: bool,
+    ) -> Self {
+        Self {
+            owner,
+            skill_id: skill_id.into(),
+            radius,
+            damage_per_tick,
+            damage_type,
+            element,
+            effects,
+            is_player_zone,
+            remaining_duration_sec: LINGERING_ZONE_DURATION_SEC,
+            tick_interval_sec: LINGERING_ZONE_TICK_INTERVAL_SEC,
+            tick_accumulator_sec: 0.0,
+            ticks_applied: 0,
+            max_ticks: LINGERING_ZONE_MAX_TICKS,
+        }
+    }
+}
+
 /// Marks a projectile that a parry has already reflected. A second parry
 /// destroys it instead of reflecting it again.
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq)]
