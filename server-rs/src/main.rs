@@ -298,6 +298,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 let mut departed_users: Vec<String> =
                     disconnected.iter().map(|(s, _)| s.clone()).collect();
+                let mut total_entities: usize = 0;
 
                 for (room_id, sim) in rooms.iter_mut() {
                     let room_inputs: Vec<server_rs::net::ClientPacket> = inputs
@@ -313,6 +314,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         .collect();
 
                     let frame = sim.live_tick(&room_inputs, &room_disconnects);
+                    total_entities += frame.entities.len();
 
                     for (user_id, event) in &frame.match_events {
                         debug!(user_id = %user_id, room = %room_id, event = ?event, "match event");
@@ -387,7 +389,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
 
-                timings.record(tick_start, tick_start.elapsed());
+                let tick_work = tick_start.elapsed();
+                ws_server.record_tick_metrics(tick_work, total_entities);
+                timings.record(tick_start, tick_work);
             }
         } => {}
         _ = wait_for_shutdown_signal() => {

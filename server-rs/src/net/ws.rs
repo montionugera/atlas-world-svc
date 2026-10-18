@@ -3,7 +3,7 @@ use crate::debug::{DebugCommand, DebugCommandBody, MAX_COMMANDS_PER_TICK};
 use futures_util::{SinkExt, StreamExt};
 use std::collections::HashMap;
 use std::net::{IpAddr, SocketAddr};
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, OnceLock};
 use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -176,6 +176,68 @@ struct ConnectionLimits {
     rate_limited_drops: Arc<AtomicUsize>,
 }
 
+/// Live server metrics shared with the `/metrics` HTTP endpoint.
+#[derive(Clone, Default)]
+struct ServerMetrics {
+    bytes_sent: Arc<AtomicU64>,
+    frames_sent: Arc<AtomicU64>,
+    ticks_completed: Arc<AtomicU64>,
+    entities_count: Arc<AtomicUsize>,
+    last_tick_us: Arc<AtomicU64>,
+    tick_samples_us: Arc<std::sync::Mutex<Vec<u64>>>,
+}
+
+impl ServerMetrics {
+    fn record_tick(&self, work: Duration, entities: usize) {
+        let us = work.as_micros() as u64;
+        self.last_tick_us.store(us, Ordering::Relaxed);
+        self.ticks_completed.fetch_add(1, Ordering::Relaxed);
+        self.entities_count.store(entities, Ordering::Relaxed);
+        if let Ok(mut samples) = self.tick_samples_us.lock() {
+            if samples.len() >= 200 {
+                samples.remove(0);
+            }
+            samples.push(us);
+        }
+    }
+
+    fn snapshot_json(&self, players: usize, rate_limited_drops: usize) -> serde_json::Value {
+        let last_ms = self.last_tick_us.load(Ordering::Relaxed) as f64 / 1000.0;
+        let (p50_ms, p95_ms, max_ms) = if let Ok(samples) = self.tick_samples_us.lock() {
+            if samples.is_empty() {
+                (0.0, 0.0, 0.0)
+            } else {
+                let mut sorted = samples.clone();
+                sorted.sort_unstable();
+                let at = |pct: usize| sorted[(sorted.len() * pct / 100).min(sorted.len() - 1)];
+                (
+                    at(50) as f64 / 1000.0,
+                    at(95) as f64 / 1000.0,
+                    sorted[sorted.len() - 1] as f64 / 1000.0,
+                )
+            }
+        } else {
+            (0.0, 0.0, 0.0)
+        };
+
+        serde_json::json!({
+            "ok": true,
+            "tick_time_ms": {
+                "last": last_ms,
+                "p50": p50_ms,
+                "p95": p95_ms,
+                "max": max_ms,
+            },
+            "players": players,
+            "entities": self.entities_count.load(Ordering::Relaxed),
+            "bytes_sent": self.bytes_sent.load(Ordering::Relaxed),
+            "frames_sent": self.frames_sent.load(Ordering::Relaxed),
+            "ticks_completed": self.ticks_completed.load(Ordering::Relaxed),
+            "rate_limited_drops": rate_limited_drops,
+        })
+    }
+}
+
 pub type LoadoutNotice = (String, String, Option<crate::storage::LoadoutSnapshot>);
 
 pub struct WsServer {
@@ -196,6 +258,7 @@ pub struct WsServer {
     debug_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<DebugRequest>>>,
     ready: Arc<AtomicBool>,
     limits: ConnectionLimits,
+    metrics: ServerMetrics,
 }
 
 impl WsServer {
@@ -221,6 +284,7 @@ impl WsServer {
         let debug_enabled = Arc::new(AtomicBool::new(false));
         let (debug_tx, debug_rx) = unbounded_channel();
         let ready = Arc::new(AtomicBool::new(true));
+        let metrics = ServerMetrics::default();
         let limits = ConnectionLimits {
             rate_limit: Arc::new(std::sync::RwLock::new((
                 DEFAULT_MAX_INPUTS_PER_SEC,
@@ -249,6 +313,7 @@ impl WsServer {
             debug_rx: Arc::new(tokio::sync::Mutex::new(debug_rx)),
             ready: ready.clone(),
             limits: limits.clone(),
+            metrics: metrics.clone(),
         };
 
         // Spawn accept loop
@@ -269,6 +334,7 @@ impl WsServer {
             },
             ready,
             limits,
+            metrics,
         ));
 
         Ok(server)
@@ -342,6 +408,18 @@ impl WsServer {
     /// Returns the total number of inbound packets dropped due to per-connection rate limiting.
     pub fn rate_limited_drop_count(&self) -> usize {
         self.limits.rate_limited_drops.load(Ordering::Relaxed)
+    }
+
+    /// Records a completed simulation tick's work duration and total simulated entity count.
+    pub fn record_tick_metrics(&self, work_duration: Duration, total_entities: usize) {
+        self.metrics.record_tick(work_duration, total_entities);
+    }
+
+    /// Returns a JSON snapshot of the server's current metrics (`/metrics`).
+    pub async fn metrics_snapshot(&self) -> serde_json::Value {
+        let players = self.active_connections_count().await;
+        self.metrics
+            .snapshot_json(players, self.rate_limited_drop_count())
     }
 
     /// Returns the most recently fetched `LoadoutSnapshot` for `session_id` on this server.
@@ -497,7 +575,12 @@ impl WsServer {
             let msg = Message::Binary(bytes.to_vec().into());
             for (conn_key, tx) in conns.iter() {
                 match tx.try_send(msg.clone()) {
-                    Ok(()) => {}
+                    Ok(()) => {
+                        self.metrics
+                            .bytes_sent
+                            .fetch_add(bytes.len() as u64, Ordering::Relaxed);
+                        self.metrics.frames_sent.fetch_add(1, Ordering::Relaxed);
+                    }
                     Err(TrySendError::Full(_)) | Err(TrySendError::Closed(_)) => {
                         debug!(
                             "Outbound queue full/closed for session {}; marking for eviction",
@@ -529,7 +612,12 @@ impl WsServer {
                     .unwrap_or("map-for-play");
                 if conn_room == room_id {
                     match tx.try_send(msg.clone()) {
-                        Ok(()) => {}
+                        Ok(()) => {
+                            self.metrics
+                                .bytes_sent
+                                .fetch_add(bytes.len() as u64, Ordering::Relaxed);
+                            self.metrics.frames_sent.fetch_add(1, Ordering::Relaxed);
+                        }
                         Err(TrySendError::Full(_)) | Err(TrySendError::Closed(_)) => {
                             debug!(
                                 "Outbound queue full/closed for session {}; marking for eviction",
@@ -559,6 +647,7 @@ impl WsServer {
         debug: DebugGate,
         ready: Arc<AtomicBool>,
         limits: ConnectionLimits,
+        metrics: ServerMetrics,
     ) {
         info!(
             "WebSocket accept loop running on {}",
@@ -582,10 +671,13 @@ impl WsServer {
             let debug = debug.clone();
             let ready = ready.clone();
             let limits = limits.clone();
+            let metrics = metrics.clone();
 
             tokio::spawn(async move {
                 if is_probe_http(&stream).await {
-                    serve_probe_http(stream, ready).await;
+                    let players = conns.read().await.len();
+                    let drops = limits.rate_limited_drops.load(Ordering::Relaxed);
+                    serve_probe_http(stream, ready, metrics, players, drops).await;
                     return;
                 }
                 if is_debug_http(&stream).await {
@@ -1007,13 +1099,23 @@ impl WsServer {
 async fn is_probe_http(stream: &TcpStream) -> bool {
     let mut head = [0u8; 16];
     let n = stream.peek(&mut head).await.unwrap_or(0);
-    [&b"GET /healthz"[..], &b"GET /readyz"[..]]
-        .iter()
-        .any(|prefix| head[..n].starts_with(prefix))
+    [
+        &b"GET /healthz"[..],
+        &b"GET /readyz"[..],
+        &b"GET /metrics"[..],
+    ]
+    .iter()
+    .any(|prefix| head[..n].starts_with(prefix))
 }
 
-/// Serves `/healthz` (`200 OK`) and `/readyz` (`200 OK` when ready, `503 Service Unavailable` when not ready).
-async fn serve_probe_http(mut stream: TcpStream, ready: Arc<AtomicBool>) {
+/// Serves `/healthz`, `/readyz`, and `/metrics`.
+async fn serve_probe_http(
+    mut stream: TcpStream,
+    ready: Arc<AtomicBool>,
+    metrics: ServerMetrics,
+    players: usize,
+    rate_limited_drops: usize,
+) {
     let mut raw = Vec::new();
     let mut chunk = [0u8; 1024];
     let head_end = loop {
@@ -1051,6 +1153,12 @@ async fn serve_probe_http(mut stream: TcpStream, ready: Arc<AtomicBool>) {
                 )
             }
         }
+        ("GET", "/metrics") => (
+            "200 OK",
+            metrics
+                .snapshot_json(players, rate_limited_drops)
+                .to_string(),
+        ),
         _ => (
             "404 Not Found",
             serde_json::json!({ "ok": false, "error": "not found" }).to_string(),
@@ -1973,5 +2081,36 @@ mod tests {
                 other => panic!("expected Close(Away) on shutdown, got {:?}", other),
             }
         }
+    }
+
+    #[tokio::test]
+    async fn test_metrics_endpoint_reports_tick_time_players_entities_and_bytes_sent() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let addr = server.local_addr();
+
+        let url = format!("ws://{addr}/ws?token=dev-token:metrics-p1&proto=1");
+        let (mut ws1, _) = connect_async(&url).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(40)).await;
+
+        server.record_tick_metrics(Duration::from_micros(2500), 37);
+        server.record_tick_metrics(Duration::from_micros(4500), 42);
+        server
+            .broadcast_snapshot(&[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+            .await;
+
+        let (code, body) = http_get(addr, "/metrics").await;
+        assert_eq!(code, 200);
+        let parsed: serde_json::Value = serde_json::from_str(&body).unwrap();
+        assert_eq!(parsed["ok"], true);
+        assert_eq!(parsed["players"], 1);
+        assert_eq!(parsed["entities"], 42);
+        assert_eq!(parsed["bytes_sent"], 10);
+        assert_eq!(parsed["frames_sent"], 1);
+        assert_eq!(parsed["ticks_completed"], 2);
+        assert!(parsed["tick_time_ms"]["last"].as_f64().unwrap() >= 4.0);
+        assert!(parsed["tick_time_ms"]["max"].as_f64().unwrap() >= 4.0);
+
+        ws1.close(None).await.unwrap();
     }
 }
