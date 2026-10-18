@@ -67,11 +67,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Spans Levels 1 to 18 across three Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench) plus Porcelain Cradle (Draft)."
+      "evidence": "Spans Levels 1 to 18 across all four Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench, Porcelain Cradle Sanctuary)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Porcelain Cradle in Draft status with Mystery child Celadon Causeway while connecting Continent 01 to both Continent 02 and Continent 03."
+      "evidence": "Preserves Mystery leaf nodes (Whispering Mire, Slag Chasm, Glaze Flue Vent, Lotus Kiln Rim) behind fog_of_lore gates while connecting Continent 01 to Continents 02 and 03."
     }
   }
 }

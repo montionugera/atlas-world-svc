@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-leyden-causeway",
+  "name": "Leyden Capacitor Causeway",
+  "map_id": null,
+  "parent_district_id": "district-thunder-coil-basin",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western glass-and-copper inductor causeway of Thunder-Coil Basin at [0, 1] linking The Gilded Exhaust Flues to Krono's eastern Leyden-jar towers.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    32,
+    34
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Spark-wrights claim the glass Leyden rails glow bright cyan three seconds before a Clock-Gale sweeps the plateau.",
+    "visual_silhouette": "Elevated copper viaducts lined with glowing blue glass capacitor bottles.",
+    "unanswered_question": "Where does the western grounding rail of Leyden Capacitor Causeway join Bellows Hearth?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Serves as the western entry causeway of Thunder-Coil Basin along scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Elevated copper viaducts flanked by singing cyan glass Leyden-jar towers."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-thunder-coil-basin."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until Thunder-Coil Basin is promoted to Canon."
+    }
+  }
+}

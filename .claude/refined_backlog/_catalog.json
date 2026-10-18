@@ -1328,9 +1328,11 @@
     "from_idea": "I-209",
     "created_at": "2026-10-18T09:30:11.411519+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
-    "claimed_at": "2026-10-18T09:30:29.692805+00:00"
+    "status": "shipped",
+    "release_version": "1.15",
+    "claimed_at": "2026-10-18T09:30:29.692805+00:00",
+    "shipped_at": "2026-10-18T09:41:17.896565+00:00",
+    "shipped_sha": "2cd9a544ce752c1498cbd24ca1cf220771cfeeb4"
   },
   {
     "id": "F-107",
