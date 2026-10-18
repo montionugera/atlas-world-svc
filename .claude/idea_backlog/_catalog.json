@@ -1251,5 +1251,11 @@
     "title": "Autonomous Product Owner Multi-Agent Studio Pipeline, Self-Evaluation Telemetry, and Kilnfire Terraces Increment",
     "created_at": "2026-10-18T05:03:54.014139+00:00",
     "promoted_to": "F-090"
+  },
+  {
+    "id": "I-198",
+    "title": "Native Rust Meta Engine and Trait-Backed Persistence (Nakama Replacement)",
+    "created_at": "2026-10-18T05:28:14.258916+00:00",
+    "promoted_to": null
   }
 ]
