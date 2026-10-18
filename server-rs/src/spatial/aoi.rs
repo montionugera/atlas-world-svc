@@ -2,14 +2,15 @@ use crate::content::world_model::{AOI_ENTER_RADIUS_UNITS, AOI_EXIT_RADIUS_UNITS}
 use crate::protocol::{EntitySnapshotData, GameEventData};
 use std::collections::{HashMap, HashSet};
 
-/// Per-room Area-of-Interest (AOI) tracker with enter/exit hysteresis (`E-004` Slice 3).
+/// Per-room Area-of-Interest (AOI) tracker with enter/exit hysteresis (`E-004` Slice 3 & Slice 9).
 ///
 /// Tracks which entity IDs were replicated to each viewer (`viewer_id = fnv1a_32(session_id)`)
 /// on the previous tick so that:
-/// - New entities enter the viewer's snapshot when `distance <= enter_radius` (`600.0`).
+/// - New entities (including cross-border ghosts projected from adjacent regions) enter the
+///   viewer's snapshot when `distance <= enter_radius` (`600.0`).
 /// - Already-visible entities remain in the viewer's snapshot while `distance <= exit_radius` (`640.0`).
-/// - Entities that move past `exit_radius` (or despawn globally) are emitted in the viewer's
-///   `removed_ids` on the transition tick and omitted from subsequent snapshots.
+/// - Entities that move past `exit_radius` (or leave the 250-unit border ghost band or despawn)
+///   are emitted in the viewer's `removed_ids` on the transition tick and omitted from subsequent snapshots.
 #[derive(Debug, Clone)]
 pub struct AoiTracker {
     enter_radius_sq: f32,
@@ -42,8 +43,7 @@ impl AoiTracker {
     /// Filters a room tick's `entities`, `global_removed`, and `events` for `viewer_id`.
     ///
     /// If `viewer_id` is not present in `entities` yet (e.g., before their first input spawns
-    /// their avatar), returns the unfiltered slice around `(500.0, 500.0)` or full room so
-    /// initial join snapshots work seamlessly.
+    /// their avatar), returns the unfiltered slice so initial join snapshots work seamlessly.
     pub fn filter_for_viewer(
         &mut self,
         viewer_id: u32,
@@ -51,8 +51,29 @@ impl AoiTracker {
         global_removed: &[u32],
         events: &[GameEventData],
     ) -> (Vec<EntitySnapshotData>, Vec<u32>, Vec<GameEventData>) {
-        let Some(viewer) = entities.iter().find(|e| e.id == viewer_id).copied() else {
-            return (entities.to_vec(), global_removed.to_vec(), events.to_vec());
+        self.filter_for_viewer_with_ghosts(viewer_id, entities, &[], global_removed, events)
+    }
+
+    /// Filters a room tick's `local_entities`, projected `border_ghosts` from adjacent regions,
+    /// `global_removed`, and `events` for `viewer_id` (`E-004` Slice 9).
+    ///
+    /// Border ghosts use the same enter/exit hysteresis (`600.0` / `640.0` units) as local
+    /// entities and automatically emit `removed_ids` when they leave the 250-unit border band
+    /// or move beyond `exit_radius` from the viewer.
+    pub fn filter_for_viewer_with_ghosts(
+        &mut self,
+        viewer_id: u32,
+        local_entities: &[EntitySnapshotData],
+        border_ghosts: &[EntitySnapshotData],
+        global_removed: &[u32],
+        events: &[GameEventData],
+    ) -> (Vec<EntitySnapshotData>, Vec<u32>, Vec<GameEventData>) {
+        let Some(viewer) = local_entities.iter().find(|e| e.id == viewer_id).copied() else {
+            return (
+                local_entities.to_vec(),
+                global_removed.to_vec(),
+                events.to_vec(),
+            );
         };
 
         let prev_visible = self
@@ -62,7 +83,10 @@ impl AoiTracker {
         let mut next_visible = HashSet::with_capacity(prev_visible.len().max(16));
         let mut filtered_entities = Vec::with_capacity(prev_visible.len().max(16));
 
-        for entity in entities {
+        for entity in local_entities.iter().chain(border_ghosts.iter()) {
+            if next_visible.contains(&entity.id) {
+                continue;
+            }
             if entity.id == viewer_id {
                 next_visible.insert(entity.id);
                 filtered_entities.push(*entity);
@@ -84,7 +108,8 @@ impl AoiTracker {
         }
 
         // Any entity that was visible last tick and is no longer visible this tick
-        // (either stepped outside exit_radius or despawned) must be sent in removed_ids once.
+        // (either stepped outside exit_radius, left the border ghost band, or despawned)
+        // must be sent in removed_ids once.
         let mut removed_ids: Vec<u32> = prev_visible
             .iter()
             .copied()
@@ -134,9 +159,6 @@ mod tests {
         let mut aoi = AoiTracker::new(600.0, 640.0);
         let viewer_id = 1;
 
-        // Tick 1: viewer at (1000, 1000), near_mob at (1500, 1000) [dist 500 <= 600],
-        // band_mob at (1620, 1000) [dist 620 > 600 -> not entered yet],
-        // far_mob at (2500, 2500) [dist > 640].
         let entities_t1 = vec![
             make_entity(viewer_id, 1000.0, 1000.0),
             make_entity(10, 1500.0, 1000.0),
@@ -164,8 +186,6 @@ mod tests {
         assert_eq!(ev1.len(), 1);
         assert_eq!(ev1[0].target_id, 10);
 
-        // Tick 2: entity 10 moves to (1625, 1000) [dist 625, inside 600..640 hysteresis band].
-        // Because entity 10 was already visible, it STAYS visible (no flicker).
         let entities_t2 = vec![
             make_entity(viewer_id, 1000.0, 1000.0),
             make_entity(10, 1625.0, 1000.0),
@@ -176,8 +196,6 @@ mod tests {
         assert_eq!(vis2_ids, vec![viewer_id, 10]);
         assert!(rem2.is_empty());
 
-        // Tick 3: entity 10 moves to (1650, 1000) [dist 650 > 640 exit radius].
-        // Entity 10 leaves AOI and its ID (10) is emitted in removed_ids once.
         let entities_t3 = vec![
             make_entity(viewer_id, 1000.0, 1000.0),
             make_entity(10, 1650.0, 1000.0),
@@ -187,7 +205,6 @@ mod tests {
         assert_eq!(vis3_ids, vec![viewer_id]);
         assert_eq!(rem3, vec![10]);
 
-        // Tick 4: entity 10 stays at (1650, 1000); removed_ids is NOT repeated.
         let (vis4, rem4, _) = aoi.filter_for_viewer(viewer_id, &entities_t3, &[], &[]);
         let vis4_ids: Vec<u32> = vis4.iter().map(|e| e.id).collect();
         assert_eq!(vis4_ids, vec![viewer_id]);

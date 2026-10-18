@@ -634,11 +634,45 @@ impl WsServer {
         removed_ids: &[u32],
         events: &[crate::protocol::GameEventData],
     ) {
+        self.broadcast_aoi_snapshots_with_ghosts_to_room(
+            room_id,
+            aoi,
+            snapshot_builder,
+            tick,
+            time_ms,
+            entities,
+            &[],
+            removed_ids,
+            events,
+        )
+        .await;
+    }
+
+    /// Broadcasts per-viewer AOI-filtered snapshots including projected `border_ghosts`
+    /// from adjacent regions (`E-004` Slice 9).
+    #[allow(clippy::too_many_arguments)]
+    pub async fn broadcast_aoi_snapshots_with_ghosts_to_room(
+        &self,
+        room_id: &str,
+        aoi: &mut crate::spatial::AoiTracker,
+        snapshot_builder: &mut crate::protocol::SnapshotBuilder,
+        tick: u32,
+        time_ms: u64,
+        entities: &[crate::protocol::EntitySnapshotData],
+        border_ghosts: &[crate::protocol::EntitySnapshotData],
+        removed_ids: &[u32],
+        events: &[crate::protocol::GameEventData],
+    ) {
         let sessions = self.active_sessions_in_room(room_id).await;
         for session_id in sessions {
             let viewer_id = crate::protocol::fnv1a_32(&session_id);
-            let (vis_entities, vis_removed, vis_events) =
-                aoi.filter_for_viewer(viewer_id, entities, removed_ids, events);
+            let (vis_entities, vis_removed, vis_events) = aoi.filter_for_viewer_with_ghosts(
+                viewer_id,
+                entities,
+                border_ghosts,
+                removed_ids,
+                events,
+            );
             let bytes = snapshot_builder.build_frame(
                 tick,
                 time_ms,
