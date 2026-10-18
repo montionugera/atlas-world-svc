@@ -42,6 +42,45 @@ GROUND_PALETTES_PATH = ROOT / "content" / "ground_palettes.json"
 REVIEW_QUEUE_PATH = ROOT / "content" / "review-queue.json"
 CLIENT_MANIFEST_PATH = ROOT / "game-client" / "assets" / "manifest.json"
 STUDIO_SNAPSHOTS_DIR = ROOT / "build" / "studio-snapshots"
+STUDIO_DIR = ROOT / "content" / "studio"
+RUNTIME_MANIFEST_PATH = MAPS_DIR / "_manifest.runtime.json"
+
+
+def load_studio_perspectives_bundle() -> dict:
+    whc_path = STUDIO_DIR / "world_history_and_concept.json"
+    whc = load_json_file(whc_path) or {}
+    continents = []
+    continents_dir = STUDIO_DIR / "continents"
+    if continents_dir.exists():
+        for cp in sorted(continents_dir.glob("*.json")):
+            doc = load_json_file(cp)
+            if doc:
+                continents.append(doc)
+
+    districts = []
+    districts_dir = STUDIO_DIR / "districts"
+    if districts_dir.exists():
+        for dp in sorted(districts_dir.rglob("*.json")):
+            doc = load_json_file(dp)
+            if doc:
+                districts.append(doc)
+
+    nodes = []
+    nodes_dir = STUDIO_DIR / "nodes"
+    if nodes_dir.exists():
+        for np in sorted(nodes_dir.rglob("*.json")):
+            doc = load_json_file(np)
+            if doc:
+                nodes.append(doc)
+
+    runtime_manifest = load_json_file(RUNTIME_MANIFEST_PATH) or {}
+    return {
+        "worldHistoryAndConcept": whc,
+        "continents": continents,
+        "districts": districts,
+        "nodes": nodes,
+        "runtimeManifest": runtime_manifest,
+    }
 
 THEME_CSS_CANDIDATES = [
     ROOT.parent / "joy-design" / "packages" / "tokens" / "dist" / "theme.css",
@@ -344,6 +383,8 @@ def build_full_bundle() -> dict:
     maps = []
     if MAPS_DIR.exists():
         for mp in sorted(MAPS_DIR.glob("*.json")):
+            if mp.name.startswith("_"):
+                continue
             d = load_json_file(mp) or {}
             maps.append(
                 {
@@ -432,6 +473,7 @@ def build_full_bundle() -> dict:
         "assetSceneThumbs": asset_scene_thumbs,
         "studioSnapshots": list_studio_snapshots(),
         "worldSpine": load_world_spine_bundle(),
+        "studioPerspectives": load_studio_perspectives_bundle(),
     }
 
 
@@ -2618,6 +2660,12 @@ let DROP_RATE_MULT = 1;
 let HIGHLIGHT_ENTITY_ID = '';
 let SELECTED_DOC_IDX = 0;
 let SELECTED_CONTINENT_ID = 'all';
+let STUDIO_PERSPECTIVE = 'world-history-and-concept';
+let STUDIO_STATUS_FILTER = 'all';
+let STUDIO_SELECTED_CONTINENT_ID = 'continent-01-hearthbloom-basin';
+let STUDIO_SELECTED_DISTRICT_ID = 'district-teacup-meadows';
+let STUDIO_SELECTED_NODE_ID = 'town-lantern-hollow';
+let STUDIO_ACTIVE_INSPECT_ID = 'world-history-cradle-of-embers';
 let SELECTED_STORY_KIND = 'all';
 let SELECTED_BESTIARY_REGION = 'all';
 let MAXION_LEVEL_BAND = '1-20';
@@ -2630,6 +2678,12 @@ let SIM_OUTPUT = 'Click "Run Balance Sim" in the top bar (or below) to execute c
 let SIM_RUNNING = false;
 
 const NAV_GROUPS = [
+  {
+    section: 'Systematic Top-Down World Studio',
+    items: [
+      { id: 'studio', label: '🌌 Top-Down World Studio (4 Perspectives)', countKey: d => ((d.studioPerspectives && d.studioPerspectives.continents) || []).length + ' Continents' },
+    ]
+  },
   {
     section: 'World Map & Atlas (Maxion / Lineage)',
     items: [
@@ -2722,6 +2776,17 @@ function syncUrlState() {
   const mob = params.get('mob');
   const tile = params.get('tile');
   const band = params.get('band');
+  const perspective = params.get('perspective');
+  const studioCont = params.get('continent');
+  const studioDist = params.get('district');
+  const studioNode = params.get('node') || params.get('map');
+  if (perspective) {
+    CURRENT_TAB = 'studio';
+    STUDIO_PERSPECTIVE = perspective;
+  }
+  if (studioCont) STUDIO_SELECTED_CONTINENT_ID = studioCont;
+  if (studioDist) STUDIO_SELECTED_DISTRICT_ID = studioDist;
+  if (studioNode) STUDIO_SELECTED_NODE_ID = studioNode;
   if (t) CURRENT_TAB = t;
   if (q !== null) {
     SEARCH_QUERY = q;
@@ -2749,6 +2814,12 @@ function writeUrlState(pushHistory = true) {
   if (CURRENT_TAB === 'mobs' && MAXION_SELECTED_MOB_ID) params.set('mob', MAXION_SELECTED_MOB_ID);
   if (CURRENT_TAB === 'world' && MAXION_PINNED_MOB_ID) params.set('mob', MAXION_PINNED_MOB_ID);
   if (CURRENT_TAB === 'world' && MAXION_SELECTED_TILE_ID) params.set('tile', MAXION_SELECTED_TILE_ID);
+  if (CURRENT_TAB === 'studio') {
+    params.set('perspective', STUDIO_PERSPECTIVE);
+    if (STUDIO_SELECTED_CONTINENT_ID) params.set('continent', STUDIO_SELECTED_CONTINENT_ID);
+    if (STUDIO_SELECTED_DISTRICT_ID) params.set('district', STUDIO_SELECTED_DISTRICT_ID);
+    if (STUDIO_SELECTED_NODE_ID) params.set('node', STUDIO_SELECTED_NODE_ID);
+  }
   const newHash = '#' + params.toString();
   if (window.location.hash !== newHash) {
     if (pushHistory) history.pushState(null, '', newHash);
@@ -2945,6 +3016,7 @@ function render() {
   if (!DATA) return;
   const main = document.getElementById('mainContent');
   const titleMap = {
+    studio:   'Systematic Top-Down World and Map Studio (World History and Concept ➔ Continent ➔ District ➔ Town or Hunting Area)',
     world:    'World & Continent Atlas (400×400 km · 13 Continents · Towns, Zones & Dungeons)',
     story:    'Story, 5-Act Chronology, Factions, NPCs & Quest Unlock Graph',
     bestiary: 'World Bestiary, Regional Ecology & 3D/2D Visual Briefs (116 Creatures)',
@@ -2964,7 +3036,8 @@ function render() {
   };
   document.getElementById('topbarTitle').textContent = titleMap[CURRENT_TAB] || 'Observatory';
 
-  if (CURRENT_TAB === 'world') main.innerHTML = renderWorldAtlas();
+  if (CURRENT_TAB === 'studio') main.innerHTML = renderTopDownStudio();
+  else if (CURRENT_TAB === 'world') main.innerHTML = renderWorldAtlas();
   else if (CURRENT_TAB === 'story') main.innerHTML = renderStoryGraph();
   else if (CURRENT_TAB === 'bestiary') main.innerHTML = renderBestiary();
   else if (CURRENT_TAB === 'review') main.innerHTML = renderReviewInbox();
@@ -2980,6 +3053,407 @@ function render() {
   else if (CURRENT_TAB === 'sql') { main.innerHTML = renderSqlStudio(); executeSql(); }
   else if (CURRENT_TAB === 'sim') main.innerHTML = renderSim();
   else if (CURRENT_TAB === 'docs') main.innerHTML = renderDocs();
+}
+
+
+function setStudioPerspective(perspective, opts = {}) {
+  CURRENT_TAB = 'studio';
+  STUDIO_PERSPECTIVE = perspective;
+  if (opts.continentId) STUDIO_SELECTED_CONTINENT_ID = opts.continentId;
+  if (opts.districtId) STUDIO_SELECTED_DISTRICT_ID = opts.districtId;
+  if (opts.nodeId) STUDIO_SELECTED_NODE_ID = opts.nodeId;
+  if (opts.inspectId) STUDIO_ACTIVE_INSPECT_ID = opts.inspectId;
+  writeUrlState();
+  renderSidebar();
+  render();
+}
+
+function setStudioStatusFilter(status) {
+  STUDIO_STATUS_FILTER = status;
+  render();
+}
+
+function renderStatusBadgeHtml(status) {
+  const s = (status || 'draft').toLowerCase();
+  if (s === 'canon') {
+    return '<span class="joy-badge joy-badge--success joy-badge--sm">🟢 Canon</span>';
+  }
+  if (s === 'mystery') {
+    return '<span class="joy-badge joy-badge--neutral joy-badge--sm" style="background:rgba(168,85,247,0.18);color:#c084fc;border:1px solid rgba(168,85,247,0.45)">🟣 Mystery (Fog of Lore)</span>';
+  }
+  return '<span class="joy-badge joy-badge--warning joy-badge--sm">🟡 Draft</span>';
+}
+
+function renderQualityChecklistCardHtml(node) {
+  const qc = (node && node.quality_checklist) || {};
+  const labels = [
+    ['causal_continuity', '1. Causal Continuity (Parent-to-Child Link)'],
+    ['fantasy_and_wonder', '2. Fantasy and Wonder (Distinct High-Fantasy Hook)'],
+    ['character_scale_consistency', '3. Character Scale Consistency (90 to 120 Centimeter Law)'],
+    ['spatial_and_ecological_consistency', '4. Spatial and Ecological Consistency'],
+    ['intentional_mystery_discipline', '5. Intentional Mystery Discipline (Zero Filler Slop)'],
+  ];
+  const passedCount = labels.filter(([k]) => qc[k] && qc[k].verified).length;
+  return `
+    <div style="margin-top:12px;padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong style="font-size:12px">Step-by-Step Five-Pillar Quality Checklist</strong>
+        <span class="joy-badge ${passedCount === 5 ? 'joy-badge--success' : 'joy-badge--warning'} joy-badge--sm">${passedCount} / 5 Verified</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${labels.map(([k, title]) => {
+          const item = qc[k] || { verified: false, evidence: 'Not verified yet.' };
+          return `
+            <div style="padding:7px 9px;border-radius:6px;background:var(--joy-surface-card);border:1px solid var(--joy-border-subtle);font-size:11.5px">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                <span style="font-weight:700;color:${item.verified ? '#34d399' : '#fbbf24'}">${item.verified ? '✓' : '○'} ${escapeHtml(title)}</span>
+                <span class="mono" style="font-size:10px">${item.verified ? 'VERIFIED' : 'PENDING'}</span>
+              </div>
+              <div style="color:var(--joy-text-secondary);margin-top:3px;font-size:11px">${escapeHtml(item.evidence || '')}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderTopDownStudio() {
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const whc = sp.worldHistoryAndConcept || {};
+  const continents = sp.continents || [];
+  const districts = sp.districts || [];
+  const nodes = sp.nodes || [];
+
+  const activeContinent = continents.find(c => c.id === STUDIO_SELECTED_CONTINENT_ID) || continents[0] || {};
+  const activeDistrict = districts.find(d => d.id === STUDIO_SELECTED_DISTRICT_ID) || districts[0] || {};
+  const activeNode = nodes.find(n => n.id === STUDIO_SELECTED_NODE_ID) || nodes[0] || {};
+
+  const perspectiveBar = `
+    <div id="perspectiveBar" style="position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;margin-bottom:16px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+        <span class="mono" style="font-size:11px;font-weight:700;color:var(--joy-text-secondary)">PERSPECTIVE:</span>
+        <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'world-history-and-concept' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('world-history-and-concept', { inspectId: '${escapeHtml(whc.id || '')}' })">
+          🌌 World History and Concept
+        </button>
+        <span style="color:var(--joy-text-muted);font-weight:700">➔</span>
+        <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'continent' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('continent', { inspectId: '${escapeHtml(activeContinent.id || '')}' })">
+          🌍 Continent (${escapeHtml(activeContinent.name || 'Continent')})
+        </button>
+        <span style="color:var(--joy-text-muted);font-weight:700">➔</span>
+        <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'district' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('district', { inspectId: '${escapeHtml(activeDistrict.id || '')}' })">
+          🗺️ District (${escapeHtml(activeDistrict.name || 'District')})
+        </button>
+        <span style="color:var(--joy-text-muted);font-weight:700">➔</span>
+        <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'town-or-hunting-area' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { inspectId: '${escapeHtml(activeNode.id || '')}' })">
+          📍 Town or Hunting Area (${escapeHtml(activeNode.name || 'Map')})
+        </button>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="mono" style="font-size:11px;color:var(--joy-text-secondary)">Filter Status:</span>
+        ${['all', 'canon', 'draft', 'mystery'].map(st => `
+          <button type="button" class="joy-button ${STUDIO_STATUS_FILTER === st ? 'joy-button--solid' : 'joy-button--ghost'} joy-button--sm" onclick="setStudioStatusFilter('${st}')">
+            ${st === 'all' ? 'All' : st.charAt(0).toUpperCase() + st.slice(1)}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  let canvasHtml = '';
+  if (STUDIO_PERSPECTIVE === 'world-history-and-concept') {
+    canvasHtml = renderStudioWorldHistoryPerspective(whc, continents);
+  } else if (STUDIO_PERSPECTIVE === 'continent') {
+    canvasHtml = renderStudioContinentPerspective(whc, continents, districts, activeContinent);
+  } else if (STUDIO_PERSPECTIVE === 'district') {
+    canvasHtml = renderStudioDistrictPerspective(activeContinent, districts, nodes, activeDistrict);
+  } else {
+    canvasHtml = renderStudioTownOrHuntingAreaPerspective(activeDistrict, nodes, activeNode);
+  }
+
+  return `${perspectiveBar}${canvasHtml}`;
+}
+
+function renderStudioWorldHistoryPerspective(whc, continents) {
+  const scale = whc.character_scale_law || {};
+  const metrics = scale.environment_metrics || {};
+  const premise = whc.player_arrival_premise || {};
+  const gods = (whc.primordial_gods || []).filter(g => STUDIO_STATUS_FILTER === 'all' || g.status === STUDIO_STATUS_FILTER);
+  const epochs = whc.historical_epochs || [];
+  const bindings = whc.starter_town_bindings || [];
+
+  return `
+    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div>
+              <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 1 · WORLD HISTORY AND CONCEPT</div>
+              <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(whc.world_title || whc.name || '')}</h2>
+            </div>
+            ${renderStatusBadgeHtml(whc.status)}
+          </div>
+          <p style="margin:8px 0 14px;color:var(--joy-text-secondary);line-height:1.5">${escapeHtml(whc.core_rationale || '')}</p>
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+            <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+              <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">PLAYER IDENTITY</div>
+              <div style="font-size:12px;margin-top:4px;font-weight:600">${escapeHtml(premise.player_identity || '')}</div>
+            </div>
+            <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+              <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">WHY PLAYERS ENTER THE WORLD</div>
+              <div style="font-size:12px;margin-top:4px">${escapeHtml(premise.why_enter_world || '')}</div>
+            </div>
+            <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+              <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">INCITING PHENOMENON</div>
+              <div style="font-size:12px;margin-top:4px">${escapeHtml(premise.inciting_phenomenon || '')}</div>
+            </div>
+          </div>
+
+          <h3 style="margin:0 0 10px;font-size:1rem">Primordial Gods and Planetary Scars</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+            ${gods.map(g => `
+              <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px ${g.status === 'mystery' ? 'dashed rgba(168,85,247,0.55)' : 'solid var(--joy-border-default)'}">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px">
+                  <strong>${escapeHtml(g.name)}</strong>
+                  ${renderStatusBadgeHtml(g.status)}
+                </div>
+                <div class="mono" style="font-size:11px;color:var(--joy-text-secondary);margin-bottom:6px">Domain: ${escapeHtml(g.domain)}</div>
+                <div style="font-size:12px;margin-bottom:6px"><strong>Core Rationale:</strong> ${escapeHtml(g.core_rationale)}</div>
+                <div style="font-size:11.5px;color:var(--joy-text-secondary)"><strong>Geographical Scar:</strong> ${escapeHtml(g.geographical_scar)}</div>
+                <div style="font-size:11.5px;color:var(--joy-text-secondary);margin-top:4px"><strong>Architectural Imprint:</strong> ${escapeHtml(g.architectural_imprint)}</div>
+                ${g.mystery_hook ? `
+                  <div style="margin-top:8px;padding:8px;border-radius:6px;background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.35);font-size:11px">
+                    <div><strong>🌫️ In-World Rumor:</strong> ${escapeHtml(g.mystery_hook.in_world_rumor)}</div>
+                    <div style="margin-top:3px"><strong>Unanswered Question:</strong> ${escapeHtml(g.mystery_hook.unanswered_question)}</div>
+                  </div>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </section>
+
+        <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+          <h3 style="margin:0 0 10px;font-size:1rem">Historical Epochs and Great War Scars (Click to Drill into Continent)</h3>
+          ${epochs.map(ep => `
+            <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default);margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <strong>Era ${ep.era_order}: ${escapeHtml(ep.name)} (${escapeHtml(ep.kind)})</strong>
+                ${renderStatusBadgeHtml(ep.status)}
+              </div>
+              <p style="font-size:12px;color:var(--joy-text-secondary);margin:6px 0 10px">${escapeHtml(ep.core_rationale)}</p>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px">
+                ${(ep.world_scars || []).map(sc => `
+                  <div style="padding:10px;border-radius:6px;background:var(--joy-surface-card);border:1px solid var(--joy-border-subtle)">
+                    <div style="font-weight:700;font-size:12px">${escapeHtml(sc.name)}</div>
+                    <div class="mono" style="font-size:10px;color:var(--joy-text-secondary);margin:2px 0 6px">${escapeHtml(sc.scar_id)}</div>
+                    <div style="font-size:11.5px;color:var(--joy-text-secondary);margin-bottom:8px">${escapeHtml(sc.description)}</div>
+                    ${(sc.spawned_continent_ids || []).map(cid => `
+                      <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(cid)}', inspectId: '${escapeHtml(cid)}' })">
+                        Drill into ${escapeHtml(cid)} ➔
+                      </button>
+                    `).join(' ')}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </section>
+
+        <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+          <h3 style="margin:0 0 8px;font-size:1rem">90 to 120 Centimeter Cute Toddler and Kid Character Scale Law Visualizer</h3>
+          <p style="font-size:12px;color:var(--joy-text-secondary);margin:0 0 10px">${escapeHtml(scale.head_to_body_ratio || '')}</p>
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;align-items:end;height:130px;padding:14px;background:var(--joy-surface-sunken);border-radius:8px;border:1px solid var(--joy-border-subtle)">
+            <div style="text-align:center"><div style="height:22px;background:#22c55e;border-radius:4px 4px 0 0"></div><div style="font-size:10px;margin-top:4px">Grass ≤ ${metrics.max_grass_height_meters || 0.35}m</div></div>
+            <div style="text-align:center"><div style="height:38px;background:#10b981;border-radius:4px 4px 0 0"></div><div style="font-size:10px;margin-top:4px">Bush ≤ ${metrics.max_bush_height_meters || 0.65}m</div></div>
+            <div style="text-align:center"><div style="height:36px;background:#eab308;border-radius:4px 4px 0 0"></div><div style="font-size:10px;margin-top:4px">Counter 0.60m</div></div>
+            <div style="text-align:center"><div style="height:64px;background:#3b82f6;border-radius:4px 4px 0 0"></div><div style="font-size:10px;font-weight:700;margin-top:4px">Kid ${scale.reference_height_meters || 1.05}m</div></div>
+            <div style="text-align:center"><div style="height:95px;background:#6366f1;border-radius:4px 4px 0 0"></div><div style="font-size:10px;margin-top:4px">Door ≥ ${metrics.min_doorway_height_meters || 2.0}m</div></div>
+            <div style="text-align:center"><div style="height:18px;background:#f97316;border-radius:4px 4px 0 0"></div><div style="font-size:10px;margin-top:4px">Step ≤ ${metrics.max_stair_riser_meters || 0.15}m</div></div>
+          </div>
+          <div style="margin-top:12px">
+            <strong style="font-size:12px">Starter Town Arrival Bindings:</strong>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+              ${bindings.map(b => `
+                <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default);font-size:12px">
+                  <div><strong>🏰 ${escapeHtml(b.town_name)}</strong> (${escapeHtml(b.town_id)}) · ${renderStatusBadgeHtml(b.status)}</div>
+                  <div style="color:var(--joy-text-secondary);font-size:11.5px;margin:4px 0">${escapeHtml(b.spawn_rationale)}</div>
+                  <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { continentId: '${escapeHtml(b.continent_id)}', districtId: '${escapeHtml(b.district_id)}', nodeId: '${escapeHtml(b.town_id)}', inspectId: '${escapeHtml(b.town_id)}' })">
+                    Inspect Starter Town ${escapeHtml(b.town_name)} ➔
+                  </button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px;position:sticky;top:72px">
+        <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">CORE RATIONALE AND QUALITY GATE</div>
+        <h3 style="margin:4px 0 8px;font-size:1.1rem">${escapeHtml(whc.name || '')}</h3>
+        ${renderStatusBadgeHtml(whc.status)}
+        <div style="margin-top:10px;padding:10px;border-radius:6px;background:var(--joy-surface-sunken);font-size:12px">
+          <strong>Core Rationale:</strong> ${escapeHtml(whc.core_rationale || '')}
+        </div>
+        ${renderQualityChecklistCardHtml(whc)}
+      </aside>
+    </div>
+  `;
+}
+
+function renderStudioContinentPerspective(whc, continents, districts, activeContinent) {
+  const filteredContinents = continents.filter(c => STUDIO_STATUS_FILTER === 'all' || c.status === STUDIO_STATUS_FILTER);
+  const childDistricts = districts.filter(d => d.parent_continent_id === activeContinent.id);
+  const causes = activeContinent.parent_world_history_causes || {};
+
+  return `
+    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+            <div>
+              <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 2 · CONTINENT MACRO ATLAS</div>
+              <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(activeContinent.name || '')}</h2>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              ${filteredContinents.map(c => `
+                <button type="button" class="joy-button ${c.id === activeContinent.id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c.id)}', inspectId: '${escapeHtml(c.id)}' })">
+                  ${escapeHtml(c.name)} (${escapeHtml(c.status)})
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle);margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <strong>Parent World History Scar Provenance</strong>
+              ${renderStatusBadgeHtml(activeContinent.status)}
+            </div>
+            <div style="font-size:12px;margin-bottom:4px"><strong>Core Rationale:</strong> ${escapeHtml(activeContinent.core_rationale || '')}</div>
+            <div style="font-size:12px;color:var(--joy-text-secondary)"><strong>Causal Summary:</strong> ${escapeHtml(causes.causal_summary || '')} (Scars: ${escapeHtml((causes.war_scar_ids || []).join(', '))})</div>
+          </div>
+
+          ${activeContinent.status === 'mystery' && activeContinent.mystery_hook ? `
+            <div style="padding:16px;border-radius:10px;background:rgba(168,85,247,0.12);border:1px dashed rgba(168,85,247,0.55);margin-bottom:14px">
+              <div style="font-weight:700;font-size:13px;color:#c084fc;margin-bottom:6px">🌫️ Intentional Mystery / Fog of Lore Continent</div>
+              <div style="font-size:12px;margin-bottom:6px"><strong>In-World Rumor:</strong> ${escapeHtml(activeContinent.mystery_hook.in_world_rumor)}</div>
+              <div style="font-size:12px;margin-bottom:6px"><strong>Visual Silhouette:</strong> ${escapeHtml(activeContinent.mystery_hook.visual_silhouette)}</div>
+              <div style="font-size:12px"><strong>Unanswered Question:</strong> ${escapeHtml(activeContinent.mystery_hook.unanswered_question)}</div>
+            </div>
+          ` : `
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px">
+              <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">CLIMATE AND LEVEL BAND</div>
+                <div style="font-size:12px;font-weight:700;margin-top:4px">Levels ${(activeContinent.level_band || {}).min_level || 1} to ${(activeContinent.level_band || {}).max_level || 15}</div>
+                <div style="font-size:12px;margin-top:4px">${escapeHtml((activeContinent.climate_profile || {}).macro_biome || '')}</div>
+                <div style="font-size:11px;color:var(--joy-text-secondary);margin-top:4px">Skybox: ${escapeHtml((activeContinent.climate_profile || {}).skybox_palette || '')}</div>
+              </div>
+              <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">90 TO 120 CENTIMETER ARCHITECTURE ADAPTATION</div>
+                <div style="font-size:12px;font-weight:700;margin-top:4px">${escapeHtml((activeContinent.civilization_style || {}).architecture_motif || '')}</div>
+                <div style="font-size:11.5px;color:var(--joy-text-secondary);margin-top:4px">${escapeHtml((activeContinent.civilization_style || {}).character_scale_adaptation || '')}</div>
+              </div>
+            </div>
+          `}
+
+          <h3 style="margin:0 0 8px;font-size:1rem">Child Districts in ${escapeHtml(activeContinent.name || '')}</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px">
+            ${childDistricts.length ? childDistricts.map(d => `
+              <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <strong>${escapeHtml(d.name)}</strong>
+                  ${renderStatusBadgeHtml(d.status)}
+                </div>
+                <div class="mono" style="font-size:11px;color:var(--joy-text-secondary);margin-bottom:6px">${escapeHtml(d.level_band_label || '')} · Families: ${escapeHtml((d.ecological_monster_families || []).join(', '))}</div>
+                <div style="font-size:12px;margin-bottom:8px">${escapeHtml(d.core_rationale)}</div>
+                <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="setStudioPerspective('district', { continentId: '${escapeHtml(activeContinent.id)}', districtId: '${escapeHtml(d.id)}', inspectId: '${escapeHtml(d.id)}' })">
+                  Drill into District ${escapeHtml(d.name)} ➔
+                </button>
+              </div>
+            `).join('') : '<div style="padding:12px;color:var(--joy-text-secondary);font-size:12px">No child Districts required while Continent status is Mystery (Fog of Lore).</div>'}
+          </div>
+        </section>
+      </div>
+
+      <aside class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px;position:sticky;top:72px">
+        <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">CORE RATIONALE AND QUALITY GATE</div>
+        <h3 style="margin:4px 0 8px;font-size:1.1rem">${escapeHtml(activeContinent.name || '')}</h3>
+        ${renderStatusBadgeHtml(activeContinent.status)}
+        <div style="margin-top:10px;padding:10px;border-radius:6px;background:var(--joy-surface-sunken);font-size:12px">
+          <strong>Core Rationale:</strong> ${escapeHtml(activeContinent.core_rationale || '')}
+        </div>
+        ${renderQualityChecklistCardHtml(activeContinent)}
+      </aside>
+    </div>
+  `;
+}
+
+function renderStudioDistrictPerspective(activeContinent, districts, nodes, activeDistrict) {
+  const districtNodes = nodes.filter(n => n.parent_district_id === activeDistrict.id);
+  return `
+    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
+      <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div>
+            <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 3 · DISTRICT CONNECTED GRID (${escapeHtml(activeDistrict.level_band_label || '')})</div>
+            <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(activeDistrict.name || '')}</h2>
+          </div>
+          ${renderStatusBadgeHtml(activeDistrict.status)}
+        </div>
+        <p style="font-size:12px;color:var(--joy-text-secondary);margin:0 0 12px">${escapeHtml(activeDistrict.core_rationale || '')}</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+          ${districtNodes.map(n => `
+            <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px ${n.status === 'mystery' ? 'dashed rgba(168,85,247,0.55)' : 'solid var(--joy-border-default)'}">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <strong>[${(n.grid_coordinates || [0,0]).join(', ')}] ${escapeHtml(n.name)}</strong>
+                ${renderStatusBadgeHtml(n.status)}
+              </div>
+              <div class="mono" style="font-size:11px;color:var(--joy-text-secondary);margin-bottom:6px">Type: ${escapeHtml(n.node_type)} · Levels ${(n.level_range || [1,1]).join(' to ')}</div>
+              <div style="font-size:12px;margin-bottom:8px">${escapeHtml(n.core_rationale)}</div>
+              <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(n.id)}', inspectId: '${escapeHtml(n.id)}' })">
+                Inspect ${escapeHtml(n.name)} ➔
+              </button>
+            </div>
+          `).join('')}
+        </div>
+      </section>
+      <aside class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px;position:sticky;top:72px">
+        <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">CORE RATIONALE AND QUALITY GATE</div>
+        <h3 style="margin:4px 0 8px;font-size:1.1rem">${escapeHtml(activeDistrict.name || '')}</h3>
+        ${renderStatusBadgeHtml(activeDistrict.status)}
+        <div style="margin-top:10px;padding:10px;border-radius:6px;background:var(--joy-surface-sunken);font-size:12px">
+          <strong>Core Rationale:</strong> ${escapeHtml(activeDistrict.core_rationale || '')}
+        </div>
+        ${renderQualityChecklistCardHtml(activeDistrict)}
+      </aside>
+    </div>
+  `;
+}
+
+function renderStudioTownOrHuntingAreaPerspective(activeDistrict, nodes, activeNode) {
+  return `
+    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
+      <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div>
+            <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 4 · TOWN OR HUNTING AREA INSPECTOR</div>
+            <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(activeNode.name || '')}</h2>
+          </div>
+          ${renderStatusBadgeHtml(activeNode.status)}
+        </div>
+        <p style="font-size:12px;color:var(--joy-text-secondary);margin:0 0 12px">${escapeHtml(activeNode.core_rationale || '')}</p>
+      </section>
+      <aside class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px;position:sticky;top:72px">
+        <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">CORE RATIONALE AND QUALITY GATE</div>
+        <h3 style="margin:4px 0 8px;font-size:1.1rem">${escapeHtml(activeNode.name || '')}</h3>
+        ${renderStatusBadgeHtml(activeNode.status)}
+        <div style="margin-top:10px;padding:10px;border-radius:6px;background:var(--joy-surface-sunken);font-size:12px">
+          <strong>Core Rationale:</strong> ${escapeHtml(activeNode.core_rationale || '')}
+        </div>
+        ${renderQualityChecklistCardHtml(activeNode)}
+      </aside>
+    </div>
+  `;
 }
 
 function inspectBtnHtml(kind, title, obj) {
@@ -5997,6 +6471,10 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
 
         if parsed.path == "/api/bundle":
             self._send_json(build_full_bundle())
+            return
+
+        if parsed.path == "/api/studio/perspectives":
+            self._send_json({"ok": True, **load_studio_perspectives_bundle()})
             return
 
         if parsed.path == "/api/sql":
