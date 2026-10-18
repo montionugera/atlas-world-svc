@@ -125,6 +125,24 @@
       ]
     },
     {
+      "mapId": "vesper-cradle-b1",
+      "nodeId": "dungeon-vesper-cradle",
+      "name": "Vesper's Cradle Vault",
+      "districtId": "district-nebula-undertide",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        46,
+        50
+      ]
+    },
+    {
       "mapId": "astrolabe-rift",
       "nodeId": "hunting-area-astrolabe-rift",
       "name": "The Astrolabe Rift Promontory",
@@ -212,6 +230,24 @@
       "levelRange": [
         1,
         10
+      ]
+    },
+    {
+      "mapId": "kelp-spiral-reef",
+      "nodeId": "hunting-area-kelp-spiral-reef",
+      "name": "Kelp Spiral Reef",
+      "districtId": "district-nebula-undertide",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        42,
+        46
       ]
     },
     {
@@ -411,6 +447,24 @@
         32,
         38
       ]
+    },
+    {
+      "mapId": "undertide-sanctuary",
+      "nodeId": "town-undertide-sanctuary",
+      "name": "Undertide Sanctuary",
+      "districtId": "district-nebula-undertide",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        44,
+        48
+      ]
     }
   ],
   "portalRoutingTable": {
@@ -537,6 +591,27 @@
       "arrivalPointMeters": {
         "x": 500.0,
         "y": 860.0
+      },
+      "lockMessage": null
+    },
+    "portal-vesper-cradle-exit-sanctuary": {
+      "portalId": "portal-vesper-cradle-exit-sanctuary",
+      "sourceNodeId": "dungeon-vesper-cradle",
+      "sourceMapId": "vesper-cradle-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-undertide-sanctuary",
+      "targetMapId": "undertide-sanctuary",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 20.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3760.0
       },
       "lockMessage": null
     },
@@ -768,6 +843,48 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 200.0
+      },
+      "lockMessage": null
+    },
+    "portal-kelp-spiral-east-sanctuary": {
+      "portalId": "portal-kelp-spiral-east-sanctuary",
+      "sourceNodeId": "hunting-area-kelp-spiral-reef",
+      "sourceMapId": "kelp-spiral-reef",
+      "direction": "East",
+      "targetNodeId": "town-undertide-sanctuary",
+      "targetMapId": "undertide-sanctuary",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-kelp-spiral-west-prism": {
+      "portalId": "portal-kelp-spiral-west-prism",
+      "sourceNodeId": "hunting-area-kelp-spiral-reef",
+      "sourceMapId": "kelp-spiral-reef",
+      "direction": "West",
+      "targetNodeId": "town-prism-zenith",
+      "targetMapId": "prism-zenith",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
       },
       "lockMessage": null
     },
@@ -1296,6 +1413,27 @@
       },
       "lockMessage": "Unfocused solar-eclipse rays at Apogee Lens Spire burn through unshielded gliders; the Zenith Astronomers require the Sanctum Prism-Gyro before opening the northern stair."
     },
+    "portal-prism-zenith-east-kelp": {
+      "portalId": "portal-prism-zenith-east-kelp",
+      "sourceNodeId": "town-prism-zenith",
+      "sourceMapId": "prism-zenith",
+      "direction": "East",
+      "targetNodeId": "hunting-area-kelp-spiral-reef",
+      "targetMapId": "kelp-spiral-reef",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-prism-zenith-west-orrery": {
       "portalId": "portal-prism-zenith-west-orrery",
       "sourceNodeId": "town-prism-zenith",
@@ -1408,6 +1546,69 @@
       "direction": "Dungeon",
       "targetNodeId": "dungeon-inverted-belfry",
       "targetMapId": "inverted-belfry-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-undertide-sanctuary-north-fog": {
+      "portalId": "portal-undertide-sanctuary-north-fog",
+      "sourceNodeId": "town-undertide-sanctuary",
+      "sourceMapId": "undertide-sanctuary",
+      "direction": "North",
+      "targetNodeId": "hunting-area-abyssal-barometer",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Inverted tidal pressure along the Abyssal Barometer Ridge crushes uncalibrated diving bells; the Undertide Bell-Keepers require the Cradle Star-Heart before unsealing the northern coral lock."
+    },
+    "portal-undertide-sanctuary-west-kelp": {
+      "portalId": "portal-undertide-sanctuary-west-kelp",
+      "sourceNodeId": "town-undertide-sanctuary",
+      "sourceMapId": "undertide-sanctuary",
+      "direction": "West",
+      "targetNodeId": "hunting-area-kelp-spiral-reef",
+      "targetMapId": "kelp-spiral-reef",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-undertide-sanctuary-dungeon-cradle": {
+      "portalId": "portal-undertide-sanctuary-dungeon-cradle",
+      "sourceNodeId": "town-undertide-sanctuary",
+      "sourceMapId": "undertide-sanctuary",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-vesper-cradle",
+      "targetMapId": "vesper-cradle-b1",
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {

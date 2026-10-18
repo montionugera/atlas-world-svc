@@ -48,7 +48,24 @@
       }
     },
     "South": null,
-    "East": null,
+    "East": {
+      "portal_id": "portal-prism-zenith-east-kelp",
+      "direction": "East",
+      "target_node_id": "hunting-area-kelp-spiral-reef",
+      "target_map_id": "kelp-spiral-reef",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
     "West": {
       "portal_id": "portal-prism-zenith-west-orrery",
       "direction": "West",
@@ -108,7 +125,7 @@
         "y": 1965.0
       },
       "counter_height_meters": 0.58,
-      "dialogue_greeting": "Rogue refraction spirits in the Pendulum Sanctum below stole our Sanctum Prism-Gyro. Recover it and we can realign the northern lens toward Nebula Undertide!"
+      "dialogue_greeting": "With the Sanctum Prism-Gyro aligned, the eastern coral causeway to Kelp Spiral Reef in Nebula Undertide is now open!"
     }
   ],
   "resident_spawns": [],
@@ -148,7 +165,7 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Symmetric West portal to hunting-area-orrery-bridge, Dungeon portal to dungeon-pendulum-sanctum, and North fog_of_lore portal to hunting-area-apogee-spire."
+      "evidence": "Symmetric West portal to hunting-area-orrery-bridge, East portal to hunting-area-kelp-spiral-reef, Dungeon portal to dungeon-pendulum-sanctum, and North fog_of_lore portal."
     },
     "intentional_mystery_discipline": {
       "verified": true,

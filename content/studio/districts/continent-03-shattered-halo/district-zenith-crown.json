@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-zenith-crown",
+  "name": "The Zenith Crown",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "status": "mystery",
+  "core_rationale": "Highest apogee ring of Continent 03 where crystallized star-anchors and inverted aurora bridges crown the Shattered Halo above Nebula Undertide.",
+  "local_conflict": "Celestial aurora-wyrms and silent star-wardens guard the upper airship beacon that links back to Hearthbloom Sky-Spire.",
+  "level_band_label": "Levels 41 to 60",
+  "level_range": [
+    46,
+    50
+  ],
+  "ecological_monster_families": [
+    "dragon",
+    "spirit"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Glider-scouts who rode a Star-Tide updraft above Undertide Sanctuary swear they saw a ring of white-gold anchor towers floating inside the aurora.",
+    "visual_silhouette": "A crown of white-gold star-anchors and shimmering aurora bridges high above the violet whirlpool.",
+    "unanswered_question": "Who holds the master ignition key to the Hearthbloom Sky-Spire airship beacon atop the Zenith Crown?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater at the upper apogee of Continent 03 The Shattered Halo."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A floating crown of white-gold star-anchors and aurora bridges suspended above the inverted ocean whirlpool."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: aurora bridge railing and beacon console metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the upper apogee District frontier on Continent 03 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}
