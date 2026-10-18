@@ -42,10 +42,15 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
         )
 
     def test_rejects_mystery_node_without_mystery_hook(self) -> None:
-        c03_path = self.studio_dir / "continents" / "continent-03-shattered-halo.json"
-        data = json.loads(c03_path.read_text(encoding="utf-8"))
+        m_path = (
+            self.studio_dir
+            / "districts"
+            / "continent-02-clockwork-steppe"
+            / "district-gilded-exhaust.json"
+        )
+        data = json.loads(m_path.read_text(encoding="utf-8"))
         del data["mystery_hook"]
-        c03_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        m_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
         errors = validate_studio_directory(self.studio_dir)
         self.assertTrue(
@@ -192,15 +197,18 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
             [
                 "chronometer-foundry-b1",
                 "kiln-cellar-b1",
+                "mercury-reservoir-b1",
                 "pendulum-shaft-b1",
                 "brass-spur-ridge",
                 "caldera-rim",
                 "cinder-apron",
                 "clover-south-gate",
                 "kiln-east-orchard",
+                "siphon-sluice",
                 "escapement-anvil",
                 "kilnwatch-bastion",
                 "lantern-hollow",
+                "patina-lock",
                 "pinion-terminus",
             ],
         )

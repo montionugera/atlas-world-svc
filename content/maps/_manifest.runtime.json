@@ -53,6 +53,24 @@
       ]
     },
     {
+      "mapId": "mercury-reservoir-b1",
+      "nodeId": "dungeon-mercury-reservoir",
+      "name": "The Mercury Reservoir Vault (Floor -1)",
+      "districtId": "district-verdigris-siphon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        28,
+        35
+      ]
+    },
+    {
       "mapId": "pendulum-shaft-b1",
       "nodeId": "dungeon-pendulum-shaft",
       "name": "The Pendulum Shaft (Floor -1)",
@@ -161,6 +179,24 @@
       ]
     },
     {
+      "mapId": "siphon-sluice",
+      "nodeId": "hunting-area-siphon-sluice",
+      "name": "The Verdigris Siphon Sluiceway",
+      "districtId": "district-verdigris-siphon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        25,
+        29
+      ]
+    },
+    {
       "mapId": "escapement-anvil",
       "nodeId": "town-escapement-anvil",
       "name": "Escapement Anvil",
@@ -212,6 +248,24 @@
       "levelRange": [
         1,
         5
+      ]
+    },
+    {
+      "mapId": "patina-lock",
+      "nodeId": "town-patina-lock",
+      "name": "Patina Lock",
+      "districtId": "district-verdigris-siphon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        26,
+        30
       ]
     },
     {
@@ -273,6 +327,27 @@
       "arrivalPointMeters": {
         "x": 1000.0,
         "y": 1800.0
+      },
+      "lockMessage": null
+    },
+    "portal-mercury-reservoir-exit-patina": {
+      "portalId": "portal-mercury-reservoir-exit-patina",
+      "sourceNodeId": "dungeon-mercury-reservoir",
+      "sourceMapId": "mercury-reservoir-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-patina-lock",
+      "targetMapId": "patina-lock",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 500.0,
+        "y": 900.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 500.0,
+        "y": 860.0
       },
       "lockMessage": null
     },
@@ -528,6 +603,48 @@
       },
       "lockMessage": null
     },
+    "portal-siphon-sluice-east-patina": {
+      "portalId": "portal-siphon-sluice-east-patina",
+      "sourceNodeId": "hunting-area-siphon-sluice",
+      "sourceMapId": "siphon-sluice",
+      "direction": "East",
+      "targetNodeId": "town-patina-lock",
+      "targetMapId": "patina-lock",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-siphon-sluice-west-anvil": {
+      "portalId": "portal-siphon-sluice-west-anvil",
+      "sourceNodeId": "hunting-area-siphon-sluice",
+      "sourceMapId": "siphon-sluice",
+      "direction": "West",
+      "targetNodeId": "town-escapement-anvil",
+      "targetMapId": "escapement-anvil",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-escapement-anvil-north-fog": {
       "portalId": "portal-escapement-anvil-north-fog",
       "sourceNodeId": "town-escapement-anvil",
@@ -549,15 +666,15 @@
       },
       "lockMessage": "Superheated solar-brass updrafts swirl around the Sun-Coil Spire; the Master Clockmakers have locked the lift until the barometer stabilizers are calibrated."
     },
-    "portal-escapement-anvil-east-siphon-fog": {
-      "portalId": "portal-escapement-anvil-east-siphon-fog",
+    "portal-escapement-anvil-east-siphon": {
+      "portalId": "portal-escapement-anvil-east-siphon",
       "sourceNodeId": "town-escapement-anvil",
       "sourceMapId": "escapement-anvil",
       "direction": "East",
       "targetNodeId": "hunting-area-siphon-sluice",
-      "targetMapId": null,
+      "targetMapId": "siphon-sluice",
       "targetDirection": "West",
-      "gateState": "fog_of_lore",
+      "gateState": "open",
       "triggerBoxMeters": {
         "x": 3840.0,
         "y": 2000.0,
@@ -568,7 +685,7 @@
         "x": 3800.0,
         "y": 2000.0
       },
-      "lockMessage": "Sluice-keepers say the patinated bronze floodgates to Verdigris Siphon only open when the foundry quenching vats reach full pressure."
+      "lockMessage": null
     },
     "portal-escapement-anvil-west-rim": {
       "portalId": "portal-escapement-anvil-west-rim",
@@ -735,6 +852,69 @@
       "arrivalPointMeters": {
         "x": 2110.0,
         "y": 1880.0
+      },
+      "lockMessage": null
+    },
+    "portal-patina-lock-north-fog": {
+      "portalId": "portal-patina-lock-north-fog",
+      "sourceNodeId": "town-patina-lock",
+      "sourceMapId": "patina-lock",
+      "direction": "North",
+      "targetNodeId": "hunting-area-teal-spillway",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Pressurized turquoise coolant cascades over the northern Teal Spillway; the Lock-Keepers Guild has bolted the weir gate until the monsoon sluices subside."
+    },
+    "portal-patina-lock-west-sluice": {
+      "portalId": "portal-patina-lock-west-sluice",
+      "sourceNodeId": "town-patina-lock",
+      "sourceMapId": "patina-lock",
+      "direction": "West",
+      "targetNodeId": "hunting-area-siphon-sluice",
+      "targetMapId": "siphon-sluice",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-patina-lock-dungeon-mercury": {
+      "portalId": "portal-patina-lock-dungeon-mercury",
+      "sourceNodeId": "town-patina-lock",
+      "sourceMapId": "patina-lock",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-mercury-reservoir",
+      "targetMapId": "mercury-reservoir-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
       },
       "lockMessage": null
     },

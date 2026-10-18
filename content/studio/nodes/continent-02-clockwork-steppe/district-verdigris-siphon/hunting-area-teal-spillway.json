@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-teal-spillway",
+  "name": "The Teal Spillway Cliffs",
+  "map_id": null,
+  "parent_district_id": "district-verdigris-siphon",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern sea-cliff cataract of Verdigris Siphon at [1, 0] where excess turquoise coolant plunges over oxidized brass weirs toward a hidden submarine cove.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "level_range": [
+    28,
+    30
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Dyers and alchemists whisper that the northern Teal Spillway drops into an uncharted sea-cliff cavern where pre-war clockwork submarines are dry-docked.",
+    "visual_silhouette": "A hundred-meter turquoise waterfall plunging over patinated brass weir-gates into silver sea-mist.",
+    "unanswered_question": "Where does the northern Teal Spillway canal empty once the weir gate is raised?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Forms the northern sea-cliff overflow spillway of District Verdigris Siphon on Continent 02."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Hundred-meter turquoise coolant waterfall plunging over patinated brass weir-gates into sea-mist."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics will be bound when promoted to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] North of Patina Lock via a fog_of_lore boundary portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and compiles to a fog_of_lore boundary portal on Patina Lock North Gate."
+    }
+  }
+}
