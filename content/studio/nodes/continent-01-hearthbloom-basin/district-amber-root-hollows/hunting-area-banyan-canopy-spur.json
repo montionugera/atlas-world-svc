@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-banyan-canopy-spur",
+  "name": "Banyan Canopy Spur",
+  "map_id": null,
+  "parent_district_id": "district-amber-root-hollows",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northernmost elevated banyan-crown rail spur of Amber-Root Hollows at [1, 0] climbing toward the upper cloud-trellis above the Kettle-Whistle Viaduct.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    17,
+    18
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Conductors whisper that an old brass observation car is still parked at the top of Banyan Canopy Spur, overgrown with singing starlight-orchids.",
+    "visual_silhouette": "Wooden trestle tracks spiraling up into a golden canopy of giant banyan leaves.",
+    "unanswered_question": "Where did the upper canopy rail spur lead before the Clockspring War?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Forms the northernmost high-canopy rail frontier of scar-kiln-basin in Amber-Root Hollows."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Wooden trestle tracks spiraling into a golden banyan canopy of singing starlight-orchids."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: gated behind the North fog_of_lore portal on town-root-train-roundhouse."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook without generating filler map geometry."
+    }
+  }
+}

@@ -69,7 +69,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
     def test_rejects_mystery_node_without_mystery_hook(self) -> None:
         with self._mutated_files(
             {
-                "districts/continent-02-clockwork-steppe/district-pendulum-steppe-west.json": lambda d: d.pop(
+                "districts/continent-03-shattered-halo/district-libration-mirror-shoals.json": lambda d: d.pop(
                     "mystery_hook", None
                 )
             }
@@ -220,6 +220,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "mercury-reservoir-b1",
                 "pendulum-sanctum-b1",
                 "pendulum-shaft-b1",
+                "sap-heart-cistern-b1",
                 "star-heart-nave-b1",
                 "submerged-orrery-keel-b1",
                 "vesper-cradle-b1",
@@ -237,6 +238,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "kiln-east-orchard",
                 "leyden-causeway",
                 "orrery-bridge",
+                "resin-arch-tunnel",
                 "siphon-sluice",
                 "stalactite-plunge",
                 "tether-causeway",
@@ -253,6 +255,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "pinion-terminus",
                 "porcelain-loom-sanctuary",
                 "prism-zenith",
+                "root-train-roundhouse",
                 "starfall-haven",
                 "undertide-sanctuary",
             ],

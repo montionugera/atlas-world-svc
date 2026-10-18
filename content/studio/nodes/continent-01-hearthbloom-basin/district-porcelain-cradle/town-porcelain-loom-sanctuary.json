@@ -49,7 +49,24 @@
       }
     },
     "South": null,
-    "East": null,
+    "East": {
+      "portal_id": "portal-porcelain-sanctuary-east-resin",
+      "direction": "East",
+      "target_node_id": "hunting-area-resin-arch-tunnel",
+      "target_map_id": "resin-arch-tunnel",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
     "West": {
       "portal_id": "portal-porcelain-sanctuary-west-celadon",
       "direction": "West",
@@ -109,7 +126,7 @@
         "y": 1970.0
       },
       "counter_height_meters": 0.58,
-      "dialogue_greeting": "Beneath our sanctuary lies the Medallion Heart Vault. Retrieve the Medallion Heart-Chime below if you wish to part the steam curtains of Lotus Kiln Rim!"
+      "dialogue_greeting": "Our eastern porcelain bridge now leads directly into Resin-Arch Tunnel in Amber-Root Hollows!"
     }
   ],
   "resident_spawns": [],
@@ -137,7 +154,7 @@
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Anchors Porcelain Cradle Sanctuary at [1, 1] directly above Sola's unbroken ceramic boss-medallion."
+      "evidence": "Anchors Porcelain Cradle Sanctuary at [1, 1] above Sola's boss-medallion and connects East to Amber-Root Hollows."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -149,7 +166,7 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Symmetric West portal to hunting-area-celadon-causeway, Dungeon portal to dungeon-medallion-heart-vault, and North fog_of_lore portal to hunting-area-lotus-kiln-rim."
+      "evidence": "Symmetric West portal to hunting-area-celadon-causeway, East portal to hunting-area-resin-arch-tunnel, Dungeon portal to dungeon-medallion-heart-vault, and North fog_of_lore portal."
     },
     "intentional_mystery_discipline": {
       "verified": true,

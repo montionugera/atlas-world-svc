@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-metronome-bridge",
+  "name": "Metronome Suspension Bridge",
+  "map_id": null,
+  "parent_district_id": "district-pendulum-steppe-west",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western braided-copper suspension bridge of West Pendulum Steppe at [0, 1] linking Thunder-Coil Basin across the pendulum gorge.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    34,
+    36
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Tinkers say the suspension cables of Metronome Bridge hum a steady sixty-beat-per-minute rhythm that calms skittish mounts.",
+    "visual_silhouette": "Braided copper suspension cables arching across a canyon of golden reeds.",
+    "unanswered_question": "Where does the western abutment of Metronome Suspension Bridge join Inductor Switchyard?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Serves as the western entry bridge of West Pendulum Steppe along scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Braided copper suspension cables humming in sixty-beat rhythm above a canyon of golden reeds."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-pendulum-steppe-west."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until West Pendulum Steppe is promoted to Canon."
+    }
+  }
+}
