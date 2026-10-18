@@ -35,6 +35,42 @@
       ]
     },
     {
+      "mapId": "pendulum-shaft-b1",
+      "nodeId": "dungeon-pendulum-shaft",
+      "name": "The Pendulum Shaft (Floor -1)",
+      "districtId": "district-rustcog-downs",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        20,
+        30
+      ]
+    },
+    {
+      "mapId": "brass-spur-ridge",
+      "nodeId": "hunting-area-brass-spur-ridge",
+      "name": "Brass Spur Ridge",
+      "districtId": "district-rustcog-downs",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        18,
+        28
+      ]
+    },
+    {
       "mapId": "cinder-apron",
       "nodeId": "hunting-area-cinder-apron",
       "name": "Cinder Apron Terraces",
@@ -123,6 +159,24 @@
         1,
         5
       ]
+    },
+    {
+      "mapId": "pinion-terminus",
+      "nodeId": "town-pinion-terminus",
+      "name": "Pinion Terminus",
+      "districtId": "district-rustcog-downs",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        15,
+        22
+      ]
     }
   ],
   "portalRoutingTable": {
@@ -147,6 +201,90 @@
       },
       "lockMessage": null
     },
+    "portal-pendulum-shaft-exit-pinion": {
+      "portalId": "portal-pendulum-shaft-exit-pinion",
+      "sourceNodeId": "dungeon-pendulum-shaft",
+      "sourceMapId": "pendulum-shaft-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-pinion-terminus",
+      "targetMapId": "pinion-terminus",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 500.0,
+        "y": 900.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 500.0,
+        "y": 860.0
+      },
+      "lockMessage": null
+    },
+    "portal-brass-spur-north-fog": {
+      "portalId": "portal-brass-spur-north-fog",
+      "sourceNodeId": "hunting-area-brass-spur-ridge",
+      "sourceMapId": "brass-spur-ridge",
+      "direction": "North",
+      "targetNodeId": "hunting-area-astrolabe-rift",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Inverted gravity eddies from the Astrolabe Gate tear at copper gliders; the Tinker Guild has chained the northern bridge until the Star-Pendulum key is recovered."
+    },
+    "portal-brass-spur-east-caldera-fog": {
+      "portalId": "portal-brass-spur-east-caldera-fog",
+      "sourceNodeId": "hunting-area-brass-spur-ridge",
+      "sourceMapId": "brass-spur-ridge",
+      "direction": "East",
+      "targetNodeId": "hunting-area-caldera-rim",
+      "targetMapId": null,
+      "targetDirection": "West",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": "Foundry apprentices say the bronze bridge gates to Mainspring Caldera only unlatch when the three pressure valves along Brass Spur Ridge are equalized."
+    },
+    "portal-brass-spur-west": {
+      "portalId": "portal-brass-spur-west",
+      "sourceNodeId": "hunting-area-brass-spur-ridge",
+      "sourceMapId": "brass-spur-ridge",
+      "direction": "West",
+      "targetNodeId": "town-pinion-terminus",
+      "targetMapId": "pinion-terminus",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-cinder-apron-north-fog": {
       "portalId": "portal-cinder-apron-north-fog",
       "sourceNodeId": "hunting-area-cinder-apron",
@@ -167,6 +305,27 @@
         "y": 200.0
       },
       "lockMessage": "Superheated porcelain glaze-steam billows from the northern Slag Chasm; the Guild of Potters has sealed the bridge until the Great Damper is cooled."
+    },
+    "portal-cinder-apron-east-pinion": {
+      "portalId": "portal-cinder-apron-east-pinion",
+      "sourceNodeId": "hunting-area-cinder-apron",
+      "sourceMapId": "cinder-apron",
+      "direction": "East",
+      "targetNodeId": "town-pinion-terminus",
+      "targetMapId": "pinion-terminus",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-cinder-apron-west": {
       "portalId": "portal-cinder-apron-west",
@@ -375,6 +534,69 @@
       "arrivalPointMeters": {
         "x": 2110.0,
         "y": 1880.0
+      },
+      "lockMessage": null
+    },
+    "portal-pinion-terminus-east": {
+      "portalId": "portal-pinion-terminus-east",
+      "sourceNodeId": "town-pinion-terminus",
+      "sourceMapId": "pinion-terminus",
+      "direction": "East",
+      "targetNodeId": "hunting-area-brass-spur-ridge",
+      "targetMapId": "brass-spur-ridge",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-pinion-terminus-west-cinder": {
+      "portalId": "portal-pinion-terminus-west-cinder",
+      "sourceNodeId": "town-pinion-terminus",
+      "sourceMapId": "pinion-terminus",
+      "direction": "West",
+      "targetNodeId": "hunting-area-cinder-apron",
+      "targetMapId": "cinder-apron",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-pinion-terminus-dungeon-pendulum": {
+      "portalId": "portal-pinion-terminus-dungeon-pendulum",
+      "sourceNodeId": "town-pinion-terminus",
+      "sourceMapId": "pinion-terminus",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-pendulum-shaft",
+      "targetMapId": "pendulum-shaft-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
       },
       "lockMessage": null
     }

@@ -48,7 +48,24 @@
       }
     },
     "South": null,
-    "East": null,
+    "East": {
+      "portal_id": "portal-cinder-apron-east-pinion",
+      "direction": "East",
+      "target_node_id": "town-pinion-terminus",
+      "target_map_id": "pinion-terminus",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
     "West": {
       "portal_id": "portal-cinder-apron-west",
       "direction": "West",
@@ -141,7 +158,7 @@
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Connects directly to Kilnwatch Bastion East Gate at [1, 1] and dramatizes the blocked Kettle-Whistle Viaduct conflict."
+      "evidence": "Connects directly to Kilnwatch Bastion East Gate at [1, 1] and bridges Continent 01 to Pinion Terminus on Continent 02 via the Kettle-Whistle Viaduct."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -153,7 +170,7 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Symmetric West portal to town-kilnwatch-bastion, North fog_of_lore portal to hunting-area-slag-chasm, and Level 15 to 18 construct/spirit fauna."
+      "evidence": "Symmetric West portal to town-kilnwatch-bastion, East viaduct portal to town-pinion-terminus, North fog_of_lore portal to hunting-area-slag-chasm, and Level 15 to 18 construct/spirit fauna."
     },
     "intentional_mystery_discipline": {
       "verified": true,

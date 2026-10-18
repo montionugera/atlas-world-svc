@@ -191,11 +191,14 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
             playable_ids,
             [
                 "kiln-cellar-b1",
+                "pendulum-shaft-b1",
+                "brass-spur-ridge",
                 "cinder-apron",
                 "clover-south-gate",
                 "kiln-east-orchard",
                 "kilnwatch-bastion",
                 "lantern-hollow",
+                "pinion-terminus",
             ],
         )
         fog_portal = manifest["portalRoutingTable"]["portal-lantern-hollow-west-fog"]

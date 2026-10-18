@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-astrolabe-rift",
+  "name": "The Astrolabe Rift Promontory",
+  "map_id": null,
+  "parent_district_id": "district-rustcog-downs",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern cliff-edge promontory of Rustcog Downs at [1, 0] where Krono's outermost astrolabe ring points skyward toward the shattered gravity halo of Continent 03.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "level_range": [
+    25,
+    30
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Glider scouts swear that brass bolts dropped from the Astrolabe Promontory fall upward into the violet clouds whenever the three moons align.",
+    "visual_silhouette": "A fractured thirty-meter brass astrolabe ring hovering half-detached above a sheer copper canyon rim.",
+    "unanswered_question": "Where is the Star-Pendulum key required to stabilize the dimensional rift to Continent 03?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors the locked Astrolabe Gate travel link between Continent 02 (The Clockwork Steppe) and Continent 03 (The Shattered Halo)."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Hovering brass astrolabe ring where bolts and pebbles drift upward into violet storm clouds."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics will be bound when promoted to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] North of Brass Spur Ridge via a fog_of_lore boundary portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and compiles to a fog_of_lore boundary portal on Brass Spur Ridge North Gate."
+    }
+  }
+}

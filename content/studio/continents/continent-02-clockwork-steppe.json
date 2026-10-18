@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "id": "continent-02-clockwork-steppe",
   "name": "The Clockwork Steppe",
-  "status": "draft",
+  "status": "canon",
   "core_rationale": "Created where Krono the Brass Titan's mainspring uncoiled across the eastern plateau (scar-brass-faultline), forming a Level 15 to 30 wind-swept frontier of giant half-buried gears.",
   "parent_world_history_causes": {
     "world_history_id": "world-history-cradle-of-embers",
@@ -36,7 +36,7 @@
       "travel_mode": "root_train",
       "hub_name": "Pinion Terminus",
       "status": "open",
-      "unlock_rationale": "Inbound root-train connection from Hearthbloom Basin."
+      "unlock_rationale": "Inbound root-train and Kettle-Whistle Viaduct connection from Hearthbloom Basin."
     },
     {
       "target_continent_id": "continent-03-shattered-halo",
@@ -47,7 +47,8 @@
     }
   ],
   "district_ids": [
-    "district-rustcog-downs"
+    "district-rustcog-downs",
+    "district-mainspring-caldera"
   ],
   "mystery_hook": {
     "in_world_rumor": "Tinkers say the deepest canyon gear still ticks once every midnight, echoing a lullaby from the north.",
@@ -68,8 +69,8 @@
       "evidence": "Uses 4.0m gear-tooth highways, 0.60m tinker workbenches, and 0.15m cog-steps tailored to 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Draft status: awaiting completion of child District district-rustcog-downs monster ecology and dungeon layout."
+      "verified": true,
+      "evidence": "Connected via the Kettle-Whistle Viaduct to Pinion Terminus [0, 1] in canon District Rustcog Downs, with Brass Spur Ridge [1, 1], Pendulum Shaft [0, 1, floor -1], and Draft District Mainspring Caldera."
     },
     "intentional_mystery_discipline": {
       "verified": true,
