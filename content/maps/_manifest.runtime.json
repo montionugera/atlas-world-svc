@@ -251,6 +251,24 @@
       ]
     },
     {
+      "mapId": "shadow-refraction-crypt-b1",
+      "nodeId": "dungeon-shadow-refraction-crypt",
+      "name": "Shadow Refraction Crypt",
+      "districtId": "district-umbrage-prism-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
       "mapId": "star-heart-nave-b1",
       "nodeId": "dungeon-star-heart-nave",
       "name": "Star-Heart Nave",
@@ -755,6 +773,24 @@
       ]
     },
     {
+      "mapId": "violet-spectrum-span",
+      "nodeId": "hunting-area-violet-spectrum-span",
+      "name": "Violet Spectrum Span",
+      "districtId": "district-umbrage-prism-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
       "mapId": "aphelion-buoy-haven",
       "nodeId": "town-aphelion-buoy-haven",
       "name": "Aphelion Buoy Haven",
@@ -1097,6 +1133,24 @@
       ]
     },
     {
+      "mapId": "umbrage-focal-sanctum",
+      "nodeId": "town-umbrage-focal-sanctum",
+      "name": "Umbrage Focal Sanctum",
+      "districtId": "district-umbrage-prism-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
       "mapId": "undertide-sanctuary",
       "nodeId": "town-undertide-sanctuary",
       "name": "Undertide Sanctuary",
@@ -1382,6 +1436,27 @@
         "y": 3820.0,
         "width": 16.0,
         "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-refraction-crypt-exit-focal-sanctum": {
+      "portalId": "portal-refraction-crypt-exit-focal-sanctum",
+      "sourceNodeId": "dungeon-shadow-refraction-crypt",
+      "sourceMapId": "shadow-refraction-crypt-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-umbrage-focal-sanctum",
+      "targetMapId": "umbrage-focal-sanctum",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
       },
       "arrivalPointMeters": {
         "x": 2000.0,
@@ -2460,6 +2535,48 @@
       },
       "lockMessage": null
     },
+    "portal-violet-span-east-focal-sanctum": {
+      "portalId": "portal-violet-span-east-focal-sanctum",
+      "sourceNodeId": "hunting-area-violet-spectrum-span",
+      "sourceMapId": "violet-spectrum-span",
+      "direction": "East",
+      "targetNodeId": "town-umbrage-focal-sanctum",
+      "targetMapId": "umbrage-focal-sanctum",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-violet-span-west-balance-haven": {
+      "portalId": "portal-violet-span-west-balance-haven",
+      "sourceNodeId": "hunting-area-violet-spectrum-span",
+      "sourceMapId": "violet-spectrum-span",
+      "direction": "West",
+      "targetNodeId": "town-libration-balance-haven",
+      "targetMapId": "libration-balance-haven",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-aphelion-buoy-north-fog": {
       "portalId": "portal-aphelion-buoy-north-fog",
       "sourceNodeId": "town-aphelion-buoy-haven",
@@ -3258,6 +3375,27 @@
       },
       "lockMessage": "Focused starlight glare from Crescent Reflector Reef blinds unshielded navigators; Tide-Balancer Selene requires the Syzygy Smoked-Glass Lens before unlocking the northern reef."
     },
+    "portal-balance-haven-east-violet-span": {
+      "portalId": "portal-balance-haven-east-violet-span",
+      "sourceNodeId": "town-libration-balance-haven",
+      "sourceMapId": "libration-balance-haven",
+      "direction": "East",
+      "targetNodeId": "hunting-area-violet-spectrum-span",
+      "targetMapId": "violet-spectrum-span",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-balance-haven-west-silver-tide": {
       "portalId": "portal-balance-haven-west-silver-tide",
       "sourceNodeId": "town-libration-balance-haven",
@@ -3937,6 +4075,69 @@
       "direction": "Dungeon",
       "targetNodeId": "dungeon-inverted-belfry",
       "targetMapId": "inverted-belfry-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-focal-sanctum-north-fog": {
+      "portalId": "portal-focal-sanctum-north-fog",
+      "sourceNodeId": "town-umbrage-focal-sanctum",
+      "sourceMapId": "umbrage-focal-sanctum",
+      "direction": "North",
+      "targetNodeId": "hunting-area-indigo-caustic-arch",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Standing indigo caustic beams across Indigo Caustic Arch blind unshielded travelers; Prism-Warden Lyra requires the Umbral Diffraction Grating before opening the northern arch."
+    },
+    "portal-focal-sanctum-west-violet-span": {
+      "portalId": "portal-focal-sanctum-west-violet-span",
+      "sourceNodeId": "town-umbrage-focal-sanctum",
+      "sourceMapId": "umbrage-focal-sanctum",
+      "direction": "West",
+      "targetNodeId": "hunting-area-violet-spectrum-span",
+      "targetMapId": "violet-spectrum-span",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-focal-sanctum-dungeon-refraction-crypt": {
+      "portalId": "portal-focal-sanctum-dungeon-refraction-crypt",
+      "sourceNodeId": "town-umbrage-focal-sanctum",
+      "sourceMapId": "umbrage-focal-sanctum",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-shadow-refraction-crypt",
+      "targetMapId": "shadow-refraction-crypt-b1",
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {

@@ -57,10 +57,10 @@
     "district-umbrage-prism-atoll"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Airship captains say Umbrage Prism Atoll casts seven-colored lunar shadows upward onto the underside of the floating islands.",
+    "in_world_rumor": "Optics weavers say the northern Indigo Caustic Arch in Umbrage Prism Atoll bends twilight into a standing curtain of violet aurora.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
-    "unanswered_question": "What sleeps inside the shadow-prism core of Umbrage Prism Atoll?",
-    "discovery_trigger_hint": "Seven core Districts on Continent 03 are Canon; Umbrage Prism Atoll is promoted to Draft with Mystery border Violet Spectrum Span."
+    "unanswered_question": "What sleeping eclipse-spire lies beyond Indigo Caustic Arch?",
+    "discovery_trigger_hint": "All eight Districts on Continent 03 are now Canon; Indigo Caustic Arch remains guarded by a Fog of Lore portal."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -77,11 +77,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes seven Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss, Aphelion Halo Rim, Libration Mirror Shoals) plus Umbrage Prism Atoll (Draft)."
+      "evidence": "Organizes all eight Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss, Aphelion Halo Rim, Libration Mirror Shoals, Umbrage Prism Atoll)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Umbrage Prism Atoll to Draft while keeping Violet Spectrum Span in Mystery status."
+      "evidence": "Promotes Umbrage Prism Atoll to Canon while preserving leaf Mystery frontier Indigo Caustic Arch behind a Fog of Lore portal."
     }
   }
 }

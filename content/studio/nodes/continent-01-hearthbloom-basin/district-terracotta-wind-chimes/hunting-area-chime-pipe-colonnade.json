@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-chime-pipe-colonnade",
+  "name": "Chime-Pipe Colonnade",
+  "map_id": null,
+  "parent_district_id": "district-terracotta-wind-chimes",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western ceramic bell-arch approach of Terracotta Wind-Chime Ridge at [0, 1] linking Glaze-Barge Quay to the singing shield-rim colonnade.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    19,
+    20
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Potters say every archway in Chime-Pipe Colonnade is tuned to a pentatonic chord that calms stray ember-sprites.",
+    "visual_silhouette": "A sun-baked terracotta colonnade hung with rows of glazed ceramic wind-pipes overlooking the delta.",
+    "unanswered_question": "Where does the eastern stair of Chime-Pipe Colonnade enter the central carillon town?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Serves as the western acoustic approach of Terracotta Wind-Chime Ridge along scar-kiln-basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Sun-baked terracotta colonnade hung with pentatonic rows of glazed ceramic wind-pipes."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-terracotta-wind-chimes."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until Terracotta Wind-Chime Ridge is promoted to Canon."
+    }
+  }
+}
