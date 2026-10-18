@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas-world.joymify.com/studio/schemas/continent.schema.json",
+  "title": "StudioContinent",
+  "allOf": [
+    {
+      "$ref": "common-mystery.schema.json"
+    }
+  ],
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "name",
+    "status",
+    "core_rationale",
+    "parent_world_history_causes",
+    "quality_checklist"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^continent-[0-9]{2}-[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 2
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "canon",
+        "draft",
+        "mystery"
+      ]
+    },
+    "core_rationale": {
+      "type": "string",
+      "minLength": 20
+    },
+    "parent_world_history_causes": {
+      "type": "object",
+      "required": [
+        "world_history_id",
+        "god_patron_ids",
+        "war_scar_ids",
+        "causal_summary"
+      ],
+      "properties": {
+        "world_history_id": {
+          "type": "string",
+          "pattern": "^world-history-[a-z0-9-]+$"
+        },
+        "god_patron_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^god-[a-z0-9-]+$"
+          }
+        },
+        "war_scar_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^scar-[a-z0-9-]+$"
+          }
+        },
+        "causal_summary": {
+          "type": "string",
+          "minLength": 20
+        }
+      }
+    },
+    "level_band": {
+      "type": "object",
+      "required": [
+        "min_level",
+        "max_level"
+      ],
+      "properties": {
+        "min_level": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_level": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "climate_profile": {
+      "type": "object",
+      "required": [
+        "macro_biome",
+        "weather_phenomena",
+        "skybox_palette"
+      ],
+      "properties": {
+        "macro_biome": {
+          "type": "string",
+          "minLength": 10
+        },
+        "weather_phenomena": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "skybox_palette": {
+          "type": "string",
+          "minLength": 10
+        }
+      }
+    },
+    "civilization_style": {
+      "type": "object",
+      "required": [
+        "culture_archetype",
+        "architecture_motif",
+        "character_scale_adaptation"
+      ],
+      "properties": {
+        "culture_archetype": {
+          "type": "string",
+          "minLength": 10
+        },
+        "architecture_motif": {
+          "type": "string",
+          "minLength": 10
+        },
+        "character_scale_adaptation": {
+          "type": "string",
+          "minLength": 20,
+          "description": "How this continent's architecture honors the 90 to 120 centimeter character scale law."
+        }
+      }
+    },
+    "travel_links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "target_continent_id",
+          "travel_mode",
+          "hub_name",
+          "status",
+          "unlock_rationale"
+        ],
+        "properties": {
+          "target_continent_id": {
+            "type": "string",
+            "pattern": "^continent-[0-9]{2}-[a-z0-9-]+$"
+          },
+          "travel_mode": {
+            "type": "string",
+            "enum": [
+              "port_ferry",
+              "airship",
+              "dimensional_rift",
+              "ancient_bridge",
+              "root_train"
+            ]
+          },
+          "hub_name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "locked_by_story",
+              "locked_by_mystery"
+            ]
+          },
+          "unlock_rationale": {
+            "type": "string",
+            "minLength": 10
+          }
+        }
+      }
+    },
+    "district_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^district-[a-z0-9-]+$"
+      }
+    }
+  },
+  "if": {
+    "properties": {
+      "status": {
+        "enum": [
+          "canon",
+          "draft"
+        ]
+      }
+    }
+  },
+  "then": {
+    "required": [
+      "level_band",
+      "climate_profile",
+      "civilization_style",
+      "travel_links",
+      "district_ids"
+    ]
+  }
+}
