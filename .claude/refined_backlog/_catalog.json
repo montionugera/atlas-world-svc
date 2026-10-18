@@ -937,5 +937,15 @@
     "claimed_at": "2026-10-17T23:59:37.585222+00:00",
     "shipped_at": "2026-10-18T00:10:45.339720+00:00",
     "shipped_sha": "237ec1155f9fae1f415676a75e13727c9dec8ae2"
+  },
+  {
+    "id": "F-076",
+    "title": "Health, readiness and clean shutdown",
+    "from_idea": "I-166",
+    "created_at": "2026-10-18T00:11:12.518782+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-006"
   }
 ]

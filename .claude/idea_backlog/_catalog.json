@@ -1033,7 +1033,7 @@
     "id": "I-166",
     "title": "Health, readiness and clean shutdown",
     "created_at": "2026-10-11T06:59:06.890918+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-076",
     "epic": "E-006"
   },
   {
