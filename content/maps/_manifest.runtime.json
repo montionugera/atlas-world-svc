@@ -35,6 +35,24 @@
       ]
     },
     {
+      "mapId": "ceramic-resonator-crypt-b1",
+      "nodeId": "dungeon-ceramic-resonator-crypt",
+      "name": "Ceramic Resonator Crypt",
+      "districtId": "district-terracotta-wind-chimes",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
+      ]
+    },
+    {
       "mapId": "chronometer-foundry-b1",
       "nodeId": "dungeon-chronometer-foundry",
       "name": "The Chronometer Foundry (Floor -1)",
@@ -467,6 +485,24 @@
       ]
     },
     {
+      "mapId": "chime-pipe-colonnade",
+      "nodeId": "hunting-area-chime-pipe-colonnade",
+      "name": "Chime-Pipe Colonnade",
+      "districtId": "district-terracotta-wind-chimes",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
+      ]
+    },
+    {
       "mapId": "cinder-apron",
       "nodeId": "hunting-area-cinder-apron",
       "name": "Cinder Apron Terraces",
@@ -824,6 +860,24 @@
       "levelRange": [
         27,
         30
+      ]
+    },
+    {
+      "mapId": "carillon-hearth-belfry",
+      "nodeId": "town-carillon-hearth-belfry",
+      "name": "Carillon Hearth Belfry",
+      "districtId": "district-terracotta-wind-chimes",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
       ]
     },
     {
@@ -1188,6 +1242,27 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 3760.0
+      },
+      "lockMessage": null
+    },
+    "portal-resonator-crypt-exit-belfry": {
+      "portalId": "portal-resonator-crypt-exit-belfry",
+      "sourceNodeId": "dungeon-ceramic-resonator-crypt",
+      "sourceMapId": "ceramic-resonator-crypt-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-carillon-hearth-belfry",
+      "targetMapId": "carillon-hearth-belfry",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
       },
       "lockMessage": null
     },
@@ -1807,6 +1882,48 @@
       "direction": "West",
       "targetNodeId": "town-draft-kiln-post",
       "targetMapId": "draft-kiln-post",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-chime-colonnade-east-belfry": {
+      "portalId": "portal-chime-colonnade-east-belfry",
+      "sourceNodeId": "hunting-area-chime-pipe-colonnade",
+      "sourceMapId": "chime-pipe-colonnade",
+      "direction": "East",
+      "targetNodeId": "town-carillon-hearth-belfry",
+      "targetMapId": "carillon-hearth-belfry",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-chime-colonnade-west-barge-quay": {
+      "portalId": "portal-chime-colonnade-west-barge-quay",
+      "sourceNodeId": "hunting-area-chime-pipe-colonnade",
+      "sourceMapId": "chime-pipe-colonnade",
+      "direction": "West",
+      "targetNodeId": "town-glaze-barge-quay",
+      "targetMapId": "glaze-barge-quay",
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
@@ -2745,6 +2862,69 @@
       },
       "lockMessage": null
     },
+    "portal-carillon-belfry-north-fog": {
+      "portalId": "portal-carillon-belfry-north-fog",
+      "sourceNodeId": "town-carillon-hearth-belfry",
+      "sourceMapId": "carillon-hearth-belfry",
+      "direction": "North",
+      "targetNodeId": "hunting-area-flute-crest-promontory",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Harmonic gale-shear across Flute-Crest Promontory buffets unshielded travelers; Carillon-Master Elian requires the Porcelain Tuning Fork before opening the northern promontory."
+    },
+    "portal-carillon-belfry-west-colonnade": {
+      "portalId": "portal-carillon-belfry-west-colonnade",
+      "sourceNodeId": "town-carillon-hearth-belfry",
+      "sourceMapId": "carillon-hearth-belfry",
+      "direction": "West",
+      "targetNodeId": "hunting-area-chime-pipe-colonnade",
+      "targetMapId": "chime-pipe-colonnade",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-carillon-belfry-dungeon-resonator-crypt": {
+      "portalId": "portal-carillon-belfry-dungeon-resonator-crypt",
+      "sourceNodeId": "town-carillon-hearth-belfry",
+      "sourceMapId": "carillon-hearth-belfry",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-ceramic-resonator-crypt",
+      "targetMapId": "ceramic-resonator-crypt-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
     "portal-crown-beacon-north-fog": {
       "portalId": "portal-crown-beacon-north-fog",
       "sourceNodeId": "town-crown-beacon-citadel",
@@ -3017,6 +3197,27 @@
         "y": 200.0
       },
       "lockMessage": "Boiling glaze-steam geysers curtain the northern Kiln-Lighthouse Spit; Barge-Master Cobalt requires the Porcelain Rudder Pin before opening the spit causeway."
+    },
+    "portal-barge-quay-east-chime-colonnade": {
+      "portalId": "portal-barge-quay-east-chime-colonnade",
+      "sourceNodeId": "town-glaze-barge-quay",
+      "sourceMapId": "glaze-barge-quay",
+      "direction": "East",
+      "targetNodeId": "hunting-area-chime-pipe-colonnade",
+      "targetMapId": "chime-pipe-colonnade",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-barge-quay-west-cobalt": {
       "portalId": "portal-barge-quay-west-cobalt",

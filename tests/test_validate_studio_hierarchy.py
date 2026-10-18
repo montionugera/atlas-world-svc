@@ -69,7 +69,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
     def test_rejects_mystery_node_without_mystery_hook(self) -> None:
         with self._mutated_files(
             {
-                "districts/continent-02-clockwork-steppe/district-differential-spur-gorge.json": lambda d: d.pop(
+                "districts/continent-03-shattered-halo/district-aurora-chime-atoll.json": lambda d: d.pop(
                     "mystery_hook", None
                 )
             }
@@ -210,6 +210,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
             playable_ids,
             [
                 "ash-valve-vault-b1",
+                "ceramic-resonator-crypt-b1",
                 "chronometer-foundry-b1",
                 "comet-core-geode-b1",
                 "counterweight-shaft-b1",
@@ -234,6 +235,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "brass-spur-ridge",
                 "caldera-rim",
                 "celadon-causeway",
+                "chime-pipe-colonnade",
                 "cinder-apron",
                 "clover-south-gate",
                 "cobalt-sandbar-ford",
@@ -254,6 +256,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "violet-spectrum-span",
                 "aphelion-buoy-haven",
                 "bellows-hearth",
+                "carillon-hearth-belfry",
                 "crown-beacon-citadel",
                 "draft-kiln-post",
                 "escapement-anvil",

@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-ceramic-resonator-crypt",
+  "name": "Ceramic Resonator Crypt",
+  "map_id": "ceramic-resonator-crypt-b1",
+  "parent_district_id": "district-terracotta-wind-chimes",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Sub-surface acoustic amphora vault at [1, 1] floor -1 beneath Carillon Hearth Belfry where Sola's hollow kiln-chambers amplify wind-organ harmonies.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    19,
+    20
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_base.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_ceramic_resonator_crypt",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Subterranean thermal sound-wells lined with glazed acoustic jars"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-resonator-crypt-exit-belfry",
+      "direction": "Exit",
+      "target_node_id": "town-carillon-hearth-belfry",
+      "target_map_id": "carillon-hearth-belfry",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3780.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-echo-pipe-swift",
+      "monster_id": "monster-echo-pipe-swift",
+      "monster_name": "Echo-Pipe Swift",
+      "spawn_count": 12,
+      "respawn_seconds": 26,
+      "level": 19,
+      "element": "Wind",
+      "size": "Small",
+      "race": "Brute",
+      "family": "sky_kin",
+      "item_drops": [
+        {
+          "item_id": "item-acoustic-clay-reed",
+          "item_name": "Acoustic Clay Reed",
+          "drop_chance_percent": 40.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-echo-pipe-swift",
+        "card_name": "Echo-Pipe Swift Card",
+        "drop_chance_percent": 0.04
+      }
+    },
+    {
+      "spawn_id": "spawn-carillon-resonator-colossus",
+      "monster_id": "monster-carillon-resonator-colossus",
+      "monster_name": "Carillon Resonator Colossus",
+      "spawn_count": 6,
+      "respawn_seconds": 42,
+      "level": 20,
+      "element": "Earth",
+      "size": "Large",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-porcelain-tuning-fork",
+          "item_name": "Porcelain Tuning Fork",
+          "drop_chance_percent": 26.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-carillon-resonator-colossus",
+        "card_name": "Carillon Resonator Colossus Card",
+        "drop_chance_percent": 0.03
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.35,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_base.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Sits at [1, 1] floor -1 directly beneath Carillon Hearth Belfry and yields the Porcelain Tuning Fork."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Subterranean acoustic amphora chamber vibrating with warm thermal harmonies."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 12.5m crypt aisles, 0.14m terracotta risers, and 2.20m x 1.65m archways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Populated by sky_kin and construct monster families with symmetric Exit portal back to Carillon Hearth Belfry."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops the Porcelain Tuning Fork referenced in the Flute-Crest Promontory Fog of Lore lock_message."
+    }
+  }
+}

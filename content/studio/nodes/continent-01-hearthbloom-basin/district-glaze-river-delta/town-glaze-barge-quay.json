@@ -49,7 +49,24 @@
       }
     },
     "South": null,
-    "East": null,
+    "East": {
+      "portal_id": "portal-barge-quay-east-chime-colonnade",
+      "direction": "East",
+      "target_node_id": "hunting-area-chime-pipe-colonnade",
+      "target_map_id": "chime-pipe-colonnade",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
     "West": {
       "portal_id": "portal-barge-quay-west-cobalt",
       "direction": "West",
@@ -137,7 +154,7 @@
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Anchors Glaze-River Delta at [1, 1] directly above the Sunken Potter Hold."
+      "evidence": "Anchors Glaze-River Delta at [1, 1] directly above the Sunken Potter Hold and connects east into Terracotta Wind-Chime Ridge."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -149,11 +166,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, Dungeon, and North (fog_of_lore) portals."
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, East, Dungeon, and North (fog_of_lore) portals."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Guards the northern Kiln-Lighthouse Spit behind a Fog of Lore portal with explicit lock_message."
+      "evidence": "Guards the northern Kiln-Lighthouse Spit behind a Fog of Lore portal while opening East to Chime-Pipe Colonnade."
     }
   }
 }

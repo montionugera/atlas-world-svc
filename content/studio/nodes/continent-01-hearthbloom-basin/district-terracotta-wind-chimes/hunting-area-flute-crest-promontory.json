@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-flute-crest-promontory",
+  "name": "Flute-Crest Promontory",
+  "map_id": null,
+  "parent_district_id": "district-terracotta-wind-chimes",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northernmost ceramic wind-organ cliff of Terracotta Wind-Chime Ridge at [1, 0] where Sola's highest shield-flutes project thermal updrafts toward the upper sky-lanes.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    20,
+    20
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Carillon ringers say Flute-Crest Promontory hums with a chord so pure it can lift feathered gliders straight into the cloud-layer.",
+    "visual_silhouette": "Towering glazed flute-spires jutting from the northern shield-rim into golden afternoon clouds.",
+    "unanswered_question": "What wind-organ amphitheater crowns Flute-Crest Promontory?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Extends north from Carillon Hearth Belfry at [1, 0] along scar-kiln-basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Towering glazed flute-spires projecting thermal updrafts into golden afternoon clouds."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Carillon Hearth Belfry with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind the Carillon Hearth Belfry North Fog of Lore gate."
+    }
+  }
+}
