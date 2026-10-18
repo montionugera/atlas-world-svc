@@ -360,20 +360,24 @@
       "clearMargin": 2.4,
       "points": [
         [
-          0.0,
-          -90.0
+          -35.0,
+          -160.0
         ],
         [
-          0.0,
-          -22.0
+          -75.0,
+          -40.0
         ],
         [
-          -0.0,
-          22.0
+          37.8,
+          -21.0
         ],
         [
-          0.0,
-          90.0
+          80.0,
+          45.0
+        ],
+        [
+          45.0,
+          160.0
         ]
       ]
     },
@@ -384,16 +388,16 @@
       "clearMargin": 1.8,
       "points": [
         [
-          -62.0,
-          -3.0
+          -155.0,
+          -35.0
         ],
         [
-          0.0,
-          0.0
+          37.8,
+          -21.0
         ],
         [
-          62.0,
-          3.0
+          150.0,
+          -45.0
         ]
       ]
     }
@@ -404,13 +408,13 @@
       "groundId": "meadow_grass",
       "priority": 20,
       "shape": "circle",
-      "x": 0.0,
-      "z": 0.0,
-      "radius": 28.0,
+      "x": 37.8,
+      "z": -21.0,
+      "radius": 38.0,
       "innerRadius": 0.0,
-      "outerRadius": 28.0,
-      "width": 56.0,
-      "height": 56.0,
+      "outerRadius": 38.0,
+      "width": 76.0,
+      "height": 76.0,
       "feather": 4.5
     },
     {
@@ -418,38 +422,38 @@
       "groundId": "coastal_tidal_flat",
       "priority": 10,
       "shape": "annulus",
-      "x": 0.0,
-      "z": 0.0,
-      "radius": 190.0,
-      "innerRadius": 28.0,
-      "outerRadius": 190.0,
-      "width": 380.0,
-      "height": 380.0,
+      "x": -18.9,
+      "z": 10.5,
+      "radius": 155.0,
+      "innerRadius": 42.0,
+      "outerRadius": 155.0,
+      "width": 310.0,
+      "height": 310.0,
       "feather": 6.0
     }
   ],
   "heightTerraces": [
     {
       "id": "c_lm_loamspit_bars_terrace",
-      "x": 0.0,
-      "z": -18.0,
-      "radius": 16.0,
+      "x": -37.0,
+      "z": -75.0,
+      "radius": 22.0,
       "height": 2.3,
       "falloff": 0.46
     },
     {
       "id": "loamspit_bar_west_bench",
-      "x": -18.0,
-      "z": 11.0,
-      "radius": 13.5,
+      "x": 83.0,
+      "z": 88.0,
+      "radius": 19.5,
       "height": 2.0,
       "falloff": 0.48
     },
     {
       "id": "loamspit_bar_sheer_scarp_cliff",
-      "x": 27.0,
-      "z": -21.0,
-      "radius": 10.0,
+      "x": -51.0,
+      "z": 91.0,
+      "radius": 16.0,
       "height": 4.3,
       "falloff": 0.16
     }
@@ -458,8 +462,8 @@
     {
       "id": "loamspit_bar_watchtower_01",
       "kind": "watchtower",
-      "x": -10.0,
-      "z": -7.0,
+      "x": -49.0,
+      "z": -39.0,
       "rotY": 0.0,
       "radius": 3.7,
       "upperFloorHeight": 3.2,
@@ -468,8 +472,8 @@
     {
       "id": "loamspit_bar_cavern_01",
       "kind": "crystal_cave",
-      "x": 12.0,
-      "z": -8.0,
+      "x": 83.0,
+      "z": 42.0,
       "rotY": 0.0,
       "radius": 4.2,
       "upperFloorHeight": 3.2,
@@ -602,10 +606,10 @@
     },
     {
       "id": "cliff_loamspit_bar_sheer_scarp_cliff",
-      "min_x": 2188.0,
-      "min_y": 1708.0,
-      "max_x": 2352.0,
-      "max_y": 1872.0
+      "min_x": 1358.8,
+      "min_y": 2778.8,
+      "max_x": 1621.2,
+      "max_y": 3041.2
     }
   ]
 }

@@ -261,20 +261,24 @@
       "clearMargin": 2.4,
       "points": [
         [
-          0.0,
-          -90.0
+          135.0,
+          -145.0
         ],
         [
-          1.5,
-          -22.0
+          45.0,
+          -45.0
         ],
         [
-          -1.5,
-          22.0
+          12.6,
+          42.0
         ],
         [
-          0.0,
-          90.0
+          -55.0,
+          50.0
+        ],
+        [
+          -140.0,
+          145.0
         ]
       ]
     },
@@ -285,16 +289,16 @@
       "clearMargin": 1.8,
       "points": [
         [
-          -62.0,
-          -10.5
+          -120.0,
+          -85.0
         ],
         [
-          0.0,
-          0.0
+          12.6,
+          42.0
         ],
         [
-          62.0,
-          10.5
+          130.0,
+          95.0
         ]
       ]
     }
@@ -305,13 +309,13 @@
       "groundId": "meadow_grass",
       "priority": 20,
       "shape": "circle",
-      "x": 0.0,
-      "z": 0.0,
-      "radius": 28.0,
+      "x": 12.6,
+      "z": 42.0,
+      "radius": 38.0,
       "innerRadius": 0.0,
-      "outerRadius": 28.0,
-      "width": 56.0,
-      "height": 56.0,
+      "outerRadius": 38.0,
+      "width": 76.0,
+      "height": 76.0,
       "feather": 4.5
     },
     {
@@ -319,38 +323,38 @@
       "groundId": "coastal_tidal_flat",
       "priority": 10,
       "shape": "annulus",
-      "x": 0.0,
-      "z": 0.0,
-      "radius": 190.0,
-      "innerRadius": 28.0,
-      "outerRadius": 190.0,
-      "width": 380.0,
-      "height": 380.0,
+      "x": -6.3,
+      "z": -21.0,
+      "radius": 155.0,
+      "innerRadius": 42.0,
+      "outerRadius": 155.0,
+      "width": 310.0,
+      "height": 310.0,
       "feather": 6.0
     }
   ],
   "heightTerraces": [
     {
       "id": "c_lm_quillreef_ring_terrace",
-      "x": 0.0,
-      "z": -18.0,
-      "radius": 16.0,
+      "x": -45.0,
+      "z": -54.0,
+      "radius": 22.0,
       "height": 2.3,
       "falloff": 0.46
     },
     {
       "id": "quillreef_atoll_west_bench",
-      "x": -18.0,
-      "z": 11.0,
-      "radius": 13.5,
+      "x": 85.0,
+      "z": 75.0,
+      "radius": 19.5,
       "height": 2.0,
       "falloff": 0.48
     },
     {
       "id": "quillreef_atoll_sheer_scarp_cliff",
-      "x": 27.0,
-      "z": -21.0,
-      "radius": 10.0,
+      "x": -42.0,
+      "z": 59.0,
+      "radius": 16.0,
       "height": 4.3,
       "falloff": 0.16
     }
@@ -359,8 +363,8 @@
     {
       "id": "quillreef_atoll_watchtower_01",
       "kind": "watchtower",
-      "x": -10.0,
-      "z": -7.0,
+      "x": -53.0,
+      "z": -38.0,
       "rotY": 0.0,
       "radius": 3.7,
       "upperFloorHeight": 3.2,
@@ -369,8 +373,8 @@
     {
       "id": "quillreef_atoll_cavern_01",
       "kind": "crystal_cave",
-      "x": 12.0,
-      "z": -8.0,
+      "x": 56.0,
+      "z": 74.0,
       "rotY": 0.0,
       "radius": 4.2,
       "upperFloorHeight": 3.2,
@@ -503,10 +507,10 @@
     },
     {
       "id": "cliff_quillreef_atoll_sheer_scarp_cliff",
-      "min_x": 2188.0,
-      "min_y": 1708.0,
-      "max_x": 2352.0,
-      "max_y": 1872.0
+      "min_x": 1448.8,
+      "min_y": 2458.8,
+      "max_x": 1711.2,
+      "max_y": 2721.2
     }
   ]
 }

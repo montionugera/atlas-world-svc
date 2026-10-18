@@ -1958,6 +1958,553 @@ INDEX_HTML = r"""<!DOCTYPE html>
       color: var(--joy-text-muted);
       opacity: 0.55;
     }
+  
+    /* =========================================================================
+     * ROLTH MAXION WORLD MAP + MONSTER/1035 + LINEAGE MAP ATLAS STYLES
+     * ======================================================================= */
+    .maxion-world-shell {
+      display: grid;
+      grid-template-columns: 375px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 1180px) {
+      .maxion-world-shell { grid-template-columns: 1fr; }
+    }
+    .maxion-sidebar {
+      background: #0d1119;
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+      display: flex;
+      flex-direction: column;
+    }
+    .maxion-sidebar__top {
+      padding: 14px 14px 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: linear-gradient(180deg, rgba(255, 209, 102, 0.06), transparent);
+    }
+    .maxion-sidebar__title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 15px;
+      color: #f8fafc;
+    }
+    .maxion-cat-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .maxion-cat-btn {
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #161c28;
+      color: #cbd5e1;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .maxion-cat-btn:hover {
+      border-color: rgba(255, 209, 102, 0.55);
+      color: #fff;
+    }
+    .maxion-cat-btn.active {
+      background: linear-gradient(135deg, rgba(255, 209, 102, 0.22), rgba(212, 175, 55, 0.12));
+      border-color: #ffd166;
+      color: #ffd166;
+      box-shadow: 0 0 12px rgba(255, 209, 102, 0.18);
+    }
+    .maxion-sidebar__body {
+      display: grid;
+      grid-template-columns: 74px 1fr;
+      min-height: 610px;
+      max-height: 700px;
+    }
+    .maxion-lvl-rail {
+      background: #090d14;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+    }
+    .maxion-lvl-btn {
+      padding: 13px 6px;
+      border: none;
+      border-left: 3px solid transparent;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background: transparent;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      line-height: 1.3;
+      transition: all 0.15s ease;
+    }
+    .maxion-lvl-btn:hover {
+      color: #f8fafc;
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .maxion-lvl-btn.active {
+      border-left-color: #eab308;
+      background: rgba(234, 179, 8, 0.13);
+      color: #fef08a;
+    }
+    .maxion-mob-grid {
+      padding: 10px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      align-content: start;
+      background: #101520;
+    }
+    .maxion-mob-tile {
+      position: relative;
+      background: #182030;
+      border: 1.5px solid rgba(255, 255, 255, 0.09);
+      border-radius: 10px;
+      padding: 8px 6px 7px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      user-select: none;
+    }
+    .maxion-mob-tile:hover {
+      transform: translateY(-2px);
+      border-color: rgba(125, 211, 252, 0.65);
+      background: #1e293b;
+    }
+    .maxion-mob-tile.pinned {
+      border-color: #eab308;
+      background: linear-gradient(180deg, rgba(234, 179, 8, 0.22), rgba(24, 32, 48, 0.95));
+      box-shadow: 0 0 14px rgba(234, 179, 8, 0.32);
+    }
+    .maxion-mob-tile__pin {
+      position: absolute;
+      top: 4px;
+      left: 5px;
+      font-size: 11px;
+    }
+    .maxion-mob-tile__mvp {
+      position: absolute;
+      top: 4px;
+      right: 5px;
+      font-size: 10px;
+      background: rgba(234, 179, 8, 0.25);
+      border: 1px solid #eab308;
+      color: #fde047;
+      border-radius: 4px;
+      padding: 0 4px;
+      font-weight: 800;
+    }
+    .maxion-mob-tile__img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
+    }
+    .maxion-mob-tile__lvl {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: rgba(9, 13, 20, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-family: var(--joy-font-family-mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .maxion-mob-tile__name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #e2e8f0;
+      text-align: center;
+      line-height: 1.2;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* World Map Tile Matrix Stage */
+    .maxion-map-stage {
+      background: radial-gradient(circle at 50% 42%, #1a2e26 0%, #0d1b2a 62%, #070d16 100%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      padding: 16px;
+      position: relative;
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.6);
+      overflow-x: auto;
+    }
+    .maxion-grid-matrix {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(126px, 1fr));
+      gap: 12px;
+      min-width: 780px;
+      padding: 8px 4px;
+      position: relative;
+    }
+    .maxion-grid-cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 8px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .maxion-grid-cell--ocean {
+      border: 1px dashed rgba(56, 189, 248, 0.08);
+      background: radial-gradient(circle, rgba(14, 38, 64, 0.28), rgba(7, 15, 26, 0.15));
+      pointer-events: none;
+    }
+    .maxion-tile-card {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+      border: 2px solid rgba(255, 255, 255, 0.22);
+      background: #111c17;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
+    }
+    .maxion-tile-card:hover {
+      transform: scale(1.045);
+      z-index: 6;
+      border-color: #fde047;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.75), 0 0 16px rgba(250, 204, 21, 0.35);
+    }
+    .maxion-tile-card.selected {
+      border: 2.5px solid #fde047;
+      box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.28), 0 12px 28px rgba(0, 0, 0, 0.8);
+      z-index: 5;
+    }
+    .maxion-tile-card.mob-pinned {
+      border: 2.5px dashed #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.32), 0 0 22px rgba(56, 189, 248, 0.55);
+      z-index: 7;
+      animation: maxionPulse 1.8s infinite ease-in-out;
+    }
+    @keyframes maxionPulse {
+      0%, 100% { box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35), 0 0 18px rgba(56, 189, 248, 0.45); }
+      50% { box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.55), 0 0 26px rgba(56, 189, 248, 0.75); }
+    }
+    .maxion-tile-overlay-pin {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(15, 23, 42, 0.58) 0%, rgba(15, 23, 42, 0.18) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      pointer-events: none;
+    }
+    .maxion-tile-overlay-pin img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.85));
+    }
+    .maxion-tile-overlay-pin span {
+      background: rgba(9, 13, 22, 0.92);
+      border: 1px solid #38bdf8;
+      color: #e0f2fe;
+      font-family: var(--joy-font-family-mono);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 99px;
+    }
+    .maxion-tile-label {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 4px 5px 3px 5px;
+      background: linear-gradient(180deg, transparent, rgba(7, 11, 18, 0.94) 42%);
+      color: #f8fafc;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      pointer-events: none;
+    }
+    .maxion-tile-code {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(7, 11, 18, 0.84);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #cbd5e1;
+      font-family: var(--joy-font-family-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+    .maxion-tile-kind {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      font-size: 12px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+      pointer-events: none;
+    }
+    /* Bridge connectors between grid tiles */
+    .tile-bridge-e {
+      position: absolute;
+      right: -14px;
+      top: 50%;
+      width: 14px;
+      height: 5px;
+      transform: translateY(-50%);
+      background: linear-gradient(90deg, #facc15, #38bdf8);
+      border-top: 1px solid #090d16;
+      border-bottom: 1px solid #090d16;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .tile-bridge-s {
+      position: absolute;
+      bottom: -14px;
+      left: 50%;
+      width: 5px;
+      height: 14px;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, #facc15, #38bdf8);
+      border-left: 1px solid #090d16;
+      border-right: 1px solid #090d16;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    /* =========================================================================
+     * MAXION MONSTER/1035 HERO DETAIL SHEET STYLES
+     * ======================================================================= */
+    .maxion-monster-hero {
+      background: radial-gradient(circle at 80% 20%, rgba(34, 62, 46, 0.42) 0%, rgba(11, 15, 23, 0.97) 68%);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 16px;
+      padding: 26px 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .maxion-monster-top {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+    .maxion-portrait-box {
+      width: 192px;
+      height: 192px;
+      border-radius: 16px;
+      background: radial-gradient(circle at 50% 50%, rgba(250, 204, 21, 0.18) 0%, rgba(17, 24, 39, 0.95) 75%);
+      border: 1.5px solid rgba(250, 204, 21, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.65);
+      flex-shrink: 0;
+    }
+    .maxion-portrait-box img {
+      width: 148px;
+      height: 148px;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.75));
+    }
+    .maxion-monster-title {
+      font-size: 2.35rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin: 0 0 10px 0;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .maxion-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .maxion-pill {
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: #262b36;
+      color: #f1f5f9;
+    }
+    .maxion-pill--rank {
+      background: rgba(30, 58, 138, 0.45);
+      border-color: rgba(96, 165, 250, 0.55);
+      color: #93c5fd;
+    }
+    .maxion-pill--mvp {
+      background: rgba(161, 98, 7, 0.45);
+      border-color: #facc15;
+      color: #fef08a;
+    }
+    .maxion-stat-boxes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .maxion-stat-box {
+      min-width: 138px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      background: rgba(24, 30, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .maxion-stat-box__label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+    .maxion-stat-box__val {
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: #ffffff;
+      font-variant-numeric: tabular-nums;
+    }
+    .maxion-section-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.09);
+    }
+    .maxion-section-head::before {
+      content: "";
+      display: inline-block;
+      width: 18px;
+      height: 3px;
+      border-radius: 2px;
+      background: #eab308;
+    }
+    .maxion-elem-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(150px, 1fr));
+      gap: 10px;
+    }
+    @media (max-width: 980px) {
+      .maxion-elem-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .maxion-elem-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #0c1018;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .maxion-elem-pill--weak {
+      border-color: rgba(74, 222, 128, 0.45);
+      background: linear-gradient(90deg, rgba(22, 101, 52, 0.25), #0c1018);
+    }
+    .maxion-elem-pill--resist {
+      opacity: 0.62;
+    }
+    .maxion-drop-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .maxion-drop-card {
+      width: 122px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      transition: transform 0.14s ease;
+    }
+    .maxion-drop-card:hover {
+      transform: translateY(-4px);
+    }
+    .maxion-drop-card__frame {
+      width: 122px;
+      height: 138px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.08), #121621 75%);
+      border: 1.5px solid #f97316;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 8px 8px 8px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    }
+    .maxion-drop-card__frame--purple { border-color: #a855f7; }
+    .maxion-drop-card__frame--common { border-color: rgba(148, 163, 184, 0.45); }
+    .maxion-drop-card__img {
+      width: 68px;
+      height: 68px;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.65));
+    }
+    .maxion-drop-card__rate {
+      width: 100%;
+      text-align: center;
+      padding: 3px 0;
+      border-radius: 6px;
+      background: rgba(7, 10, 16, 0.9);
+      font-family: var(--joy-font-family-mono);
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .maxion-drop-card__name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #cbd5e1;
+      text-align: center;
+      line-height: 1.25;
+    }
+
   </style>
 </head>
 <body>
@@ -2006,7 +2553,11 @@ INDEX_HTML = r"""<!DOCTYPE html>
   <div class="main">
     <header class="topbar">
       <div class="topbar__start">
-        <span class="topbar__title" id="topbarTitle">Overview &amp; Telemetry</span>
+        <div style="display:inline-flex;gap:4px;margin-right:6px">
+          <button type="button" class="joy-button joy-button--outline joy-button--sm" style="height:28px;padding:0 9px;font-size:11.5px" onclick="window.history.back()" title="Browser Back">← Back</button>
+          <button type="button" class="joy-button joy-button--outline joy-button--sm" style="height:28px;padding:0 9px;font-size:11.5px" onclick="window.history.forward()" title="Browser Forward">Forward →</button>
+        </div>
+        <span class="topbar__title" id="topbarTitle">Interactive World Map &amp; Monster Atlas</span>
         <span class="joy-badge joy-badge--neutral joy-badge--sm" id="topbarStatus">Ready</span>
       </div>
       <div class="topbar__end">
@@ -2061,7 +2612,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
 <script>
 let DATA = null;
 let THUMB_INDEX = {};
-let CURRENT_TAB = 'overview';
+let CURRENT_TAB = 'world';
 let SEARCH_QUERY = '';
 let DROP_RATE_MULT = 1;
 let HIGHLIGHT_ENTITY_ID = '';
@@ -2069,44 +2620,48 @@ let SELECTED_DOC_IDX = 0;
 let SELECTED_CONTINENT_ID = 'all';
 let SELECTED_STORY_KIND = 'all';
 let SELECTED_BESTIARY_REGION = 'all';
+let MAXION_LEVEL_BAND = '1-20';
+let MAXION_CAT_FILTER = 'all';
+let MAXION_PINNED_MOB_ID = 'poring';
+let MAXION_SELECTED_TILE_ID = 'freja-south-gate';
+let MAXION_SELECTED_MOB_ID = 'hunter_fly';
+let MAP_DIR_FILTER = 'all';
 let SIM_OUTPUT = 'Click "Run Balance Sim" in the top bar (or below) to execute cargo run --bin balance_sim against the live Rust authoritative combat engine.';
 let SIM_RUNNING = false;
 
 const NAV_GROUPS = [
   {
-    section: 'World & Lore Spine (Core)',
+    section: 'World Map & Atlas (Maxion / Lineage)',
     items: [
-      { id: 'world',    label: 'World & Continent Atlas', countKey: d => ((d.worldSpine && d.worldSpine.continents) || []).length + ' · ' + (((d.worldSpine && d.worldSpine.pinnedPlaces) || []).length + ((d.worldSpine && d.worldSpine.dungeons) || []).length) },
-      { id: 'story',    label: 'Story, Acts & NPC Graph', countKey: d => ((d.worldSpine && d.worldSpine.storyNodes) || []).length },
-      { id: 'bestiary', label: 'World Bestiary & Ecology', countKey: d => ((d.worldSpine && d.worldSpine.bestiary) || []).length },
+      { id: 'world', label: '🧭 Interactive World Map', countKey: () => '25 Tiles' },
+      { id: 'maps',  label: '🗺️ Connected Map Directory', countKey: () => '25 Maps' },
+      { id: 'mobs',  label: '👾 Monster Detail (mob_db)', countKey: () => '36 Mobs' },
     ]
   },
   {
-    section: 'AI Asset & Map Studio (Pilot)',
+    section: 'MMORPG Databases (RMS)',
     items: [
-      { id: 'review',  label: 'Review Gate Inbox (Step 3)', countKey: d => ((d.reviewQueue && d.reviewQueue.proposals) || []).length },
-      { id: 'brushes', label: 'Biome Brush & Tag Pools',    countKey: d => Object.keys(d.groundPalettes || {}).length },
+      { id: 'gear',     label: '⚔️ Item & Card DB (item_db)', countKey: d => d.items.length + d.cards.length },
+      { id: 'jobs',     label: '🛡️ Job & Skill DB (skill_db)', countKey: d => d.jobs.length + d.skills.length },
+      { id: 'quests',   label: '📜 Quest Database (quest_db)', countKey: d => d.quests.length },
+      { id: 'overview', label: '📊 Database Hub & Matrix', countKey: () => 9 },
     ]
   },
   {
-    section: 'Databases (RMS)',
+    section: 'AI Asset & Map Studio',
     items: [
-      { id: 'overview', label: 'Database Hub & Matrix', countKey: () => 9 },
-      { id: 'gear',     label: 'Item Database (item_db)', countKey: d => d.items.length + d.cards.length },
-      { id: 'mobs',     label: 'Monster Database (mob_db)', countKey: d => d.mobs.length },
-      { id: 'jobs',     label: 'Skill & Job DB (skill_db)', countKey: d => d.jobs.length + d.skills.length },
-      { id: 'maps',     label: 'Map & Spawn DB (map_db)', countKey: d => d.maps.length + 4 },
-      { id: 'quests',   label: 'Quest Database (quest_db)', countKey: d => d.quests.length },
+      { id: 'review',  label: '✨ Review Gate Inbox (Step 3)', countKey: d => ((d.reviewQueue && d.reviewQueue.proposals) || []).length },
+      { id: 'brushes', label: '🌿 Biome Brush & Tag Pools',    countKey: d => Object.keys(d.groundPalettes || {}).length },
     ]
   },
   {
     section: 'Tools & Calculators',
     items: [
-      { id: 'elements', label: 'Property & Size Chart', countKey: d => (d.elements.elements || []).length },
-      { id: 'siege',    label: 'WoE Castle Calculator', countKey: d => d.castles.length },
-      { id: 'sql',      label: 'SQLite Query Studio', countKey: () => 'SQL' },
-      { id: 'sim',      label: 'Rust Balance Simulator', countKey: () => 'RS' },
-      { id: 'docs',     label: 'RO Writings & Specs', countKey: d => d.docs.length },
+      { id: 'elements', label: '🔥 Property & Size Chart', countKey: d => (d.elements.elements || []).length },
+      { id: 'siege',    label: '🏰 WoE Castle Calculator', countKey: d => d.castles.length },
+      { id: 'sql',      label: '🗄️ SQLite Query Studio', countKey: () => 'SQL' },
+      { id: 'sim',      label: '⚙️ Rust Balance Simulator', countKey: () => 'RS' },
+      { id: 'docs',     label: '📖 Architecture Specs', countKey: d => d.docs.length },
     ]
   }
 ];
@@ -2164,21 +2719,41 @@ function syncUrlState() {
   const t = params.get('tab');
   const q = params.get('q');
   const focus = params.get('focus');
+  const mob = params.get('mob');
+  const tile = params.get('tile');
+  const band = params.get('band');
   if (t) CURRENT_TAB = t;
   if (q !== null) {
     SEARCH_QUERY = q;
     const inp = document.getElementById('globalSearch');
     if (inp) inp.value = q;
   }
+  if (mob) {
+    MAXION_SELECTED_MOB_ID = mob;
+    MAXION_PINNED_MOB_ID = mob;
+  }
+  if (tile) {
+    MAXION_SELECTED_TILE_ID = tile;
+  }
+  if (band) {
+    MAXION_LEVEL_BAND = band;
+  }
   HIGHLIGHT_ENTITY_ID = focus || '';
 }
 
-function writeUrlState() {
+function writeUrlState(pushHistory = true) {
   const params = new URLSearchParams();
   params.set('tab', CURRENT_TAB);
   if (SEARCH_QUERY) params.set('q', SEARCH_QUERY);
   if (HIGHLIGHT_ENTITY_ID) params.set('focus', HIGHLIGHT_ENTITY_ID);
-  history.replaceState(null, '', '#' + params.toString());
+  if (CURRENT_TAB === 'mobs' && MAXION_SELECTED_MOB_ID) params.set('mob', MAXION_SELECTED_MOB_ID);
+  if (CURRENT_TAB === 'world' && MAXION_PINNED_MOB_ID) params.set('mob', MAXION_PINNED_MOB_ID);
+  if (CURRENT_TAB === 'world' && MAXION_SELECTED_TILE_ID) params.set('tile', MAXION_SELECTED_TILE_ID);
+  const newHash = '#' + params.toString();
+  if (window.location.hash !== newHash) {
+    if (pushHistory) history.pushState(null, '', newHash);
+    else history.replaceState(null, '', newHash);
+  }
 }
 
 function setDropRate(val) {
@@ -2248,6 +2823,7 @@ async function init() {
 
   syncUrlState();
   window.addEventListener('hashchange', () => { syncUrlState(); renderSidebar(); render(); });
+  window.addEventListener('popstate', () => { syncUrlState(); renderSidebar(); render(); });
   const res = await fetch('/api/bundle');
   DATA = await res.json();
   buildThumbIndex();
@@ -3080,356 +3656,819 @@ function renderBiomeBrushes() {
 /* ============================================================================
  * 0B. WORLD & LORE SPINE — CONTINENT ATLAS, 5-ACT STORY GRAPH & BESTIARY
  * ========================================================================== */
-function renderWorldAtlasSvg(ws) {
-  const continents = ws.continents || [];
-  const pinned = ws.pinnedPlaces || [];
-  const lanes = ws.seaLanes || [];
-  const edges = ws.spineEdges || [];
+// =========================================================================
+// MAXION WORLD MAP + LINEAGE CONNECTED MAP ATLAS + MONSTER/1035 ENGINE
+// =========================================================================
 
-  return `
-    <svg width="100%" height="340" viewBox="0 0 400 400" style="border-radius:8px;background:radial-gradient(circle at 50% 50%, #13283c 0%, #0b1826 100%);border:1px solid var(--joy-border-strong)">
-      <defs>
-        <pattern id="world-km-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.6"/>
-        </pattern>
-      </defs>
-      <rect width="400" height="400" fill="url(#world-km-grid)"/>
-      <text x="10" y="16" fill="#7da2c1" font-size="8.5" font-family="monospace">400×400 km World Frame (160,000 km² · Seed ${escapeHtml(ws.seed || '')})</text>
+const MAXION_WORLD_TILES = [
+  // Row 0 (Far North — Lv.61-100)
+  { id: 'c01-frost-spire', col: 1, row: 0, code: 'ice_dun02', name: 'Frost Spire Keep', biome: 'glacier', lv: '65 - 85', kind: 'dungeon',
+    neighbors: { S: 'c03-coldreach-tundra', E: 'c01-glacier-vault' },
+    spawns: [{ id: 'ice_titan', count: 35 }, { id: 'sasquatch', count: 50 }, { id: 'hunter_fly', count: 25 }] },
+  { id: 'c01-glacier-vault', col: 2, row: 0, code: 'ice_dun03', name: 'Glacier Vault F3', biome: 'glacier', lv: '75 - 95', kind: 'dungeon',
+    neighbors: { W: 'c01-frost-spire', S: 'c02-high-pass' },
+    spawns: [{ id: 'ice_titan', count: 45 }, { id: 'abysmal_knight', count: 20 }, { id: 'baphomet', count: 1 }] },
+  { id: 'c04-clock-belfry', col: 3, row: 0, code: 'alde_dun04', name: 'Clock Tower Belfry', biome: 'castle', lv: '61 - 80', kind: 'dungeon',
+    neighbors: { S: 'c02-capital-freja', E: 'c10-magma-caldera' },
+    spawns: [{ id: 'clock_manager', count: 30 }, { id: 'joker', count: 45 }, { id: 'hunter_fly', count: 35 }] },
+  { id: 'c10-magma-caldera', col: 4, row: 0, code: 'mag_dun02', name: 'Nogg Road Caldera', biome: 'volcano', lv: '81 - 100', kind: 'dungeon',
+    neighbors: { W: 'c04-clock-belfry', S: 'c10-ash-citadel', E: 'c10-core-reactor' },
+    spawns: [{ id: 'magma_kaho', count: 60 }, { id: 'pyroclast_wyrm', count: 1 }, { id: 'abysmal_knight', count: 25 }] },
+  { id: 'c10-core-reactor', col: 5, row: 0, code: 'ein_dun02', name: 'Einbroch Core Vault', biome: 'volcano', lv: '85 - 100', kind: 'dungeon',
+    neighbors: { W: 'c10-magma-caldera', S: 'c09-iron-quarry' },
+    spawns: [{ id: 'rsx_colossus', count: 1 }, { id: 'magma_kaho', count: 40 }, { id: 'bone_golem', count: 35 }] },
 
-      <!-- Sea Lanes -->
-      ${lanes.map(sl => {
-        const pts = (sl.points || []).map(p => `${p[0]},${p[1]}`).join(' ');
-        return `<polyline points="${pts}" fill="none" stroke="rgba(88, 166, 255, 0.45)" stroke-width="1.4" stroke-dasharray="3 2"/>`;
-      }).join('')}
+  // Row 1 (Northern Highlands — Lv.41-80)
+  { id: 'c07-glast-abbey', col: 0, row: 1, code: 'gl_church', name: 'Glast Heim Abbey', biome: 'crypt', lv: '55 - 78', kind: 'dungeon',
+    neighbors: { E: 'c03-coldreach-tundra', S: 'c07-chivalry-hall' },
+    spawns: [{ id: 'evil_druid', count: 55 }, { id: 'abysmal_knight', count: 25 }, { id: 'dracula', count: 1 }] },
+  { id: 'c03-coldreach-tundra', col: 1, row: 1, code: 'lasa_fild01', name: 'Lutie Snowfield', biome: 'glacier', lv: '45 - 65', kind: 'field',
+    neighbors: { N: 'c01-frost-spire', W: 'c07-glast-abbey', E: 'c02-high-pass', S: 'c02-west-pinewood' },
+    spawns: [{ id: 'sasquatch', count: 65 }, { id: 'ice_titan', count: 20 }, { id: 'desert_wolf', count: 30 }] },
+  { id: 'c02-high-pass', col: 2, row: 1, code: 'mjolnir_06', name: 'Mt. Mjolnir North Pass', biome: 'mountain', lv: '35 - 55', kind: 'field',
+    neighbors: { N: 'c01-glacier-vault', W: 'c03-coldreach-tundra', E: 'c02-capital-freja', S: 'c02-floral-valley' },
+    spawns: [{ id: 'flora', count: 60 }, { id: 'hunter_fly', count: 40 }, { id: 'wild_boar', count: 45 }] },
+  { id: 'c02-capital-freja', col: 3, row: 1, code: 'prontera', name: 'Prontera Royal Capital', biome: 'town', lv: '1 - 100', kind: 'town',
+    neighbors: { N: 'c04-clock-belfry', W: 'c02-high-pass', S: 'freja-south-gate', E: 'c10-ash-citadel', D: 'c02-culvert-sewer' },
+    spawns: [{ id: 'poring', count: 15 }, { id: 'lunatic', count: 15 }] },
+  { id: 'c10-ash-citadel', col: 4, row: 1, code: 'yuno_fild08', name: 'Schwartzvald Plateau', biome: 'mountain', lv: '52 - 72', kind: 'field',
+    neighbors: { N: 'c10-magma-caldera', W: 'c02-capital-freja', E: 'c09-iron-quarry', S: 'c04-orc-fortress' },
+    spawns: [{ id: 'bone_golem', count: 50 }, { id: 'hunter_fly', count: 30 }, { id: 'bathory', count: 40 }] },
+  { id: 'c09-iron-quarry', col: 5, row: 1, code: 'ein_fild04', name: 'Einbech Mining Ridge', biome: 'mountain', lv: '60 - 80', kind: 'field',
+    neighbors: { N: 'c10-core-reactor', W: 'c10-ash-citadel', S: 'c04-coal-caverns' },
+    spawns: [{ id: 'bone_golem', count: 60 }, { id: 'clock_manager', count: 20 }, { id: 'rsx_colossus', count: 1 }] },
 
-      <!-- Continents (Premise Ellipses) -->
-      ${continents.map(c => {
-        const fp = c.footprint || {};
-        const centre = fp.centreKm || [200, 200];
-        const radii = fp.radiiKm || [25, 20];
-        const isSel = SELECTED_CONTINENT_ID === c.id;
-        const fill = c.coastClass === 'ice'
-          ? 'rgba(165, 216, 255, 0.25)'
-          : (isSel ? 'rgba(212, 175, 55, 0.34)' : 'rgba(82, 158, 71, 0.24)');
-        const stroke = isSel ? '#ffd166' : '#5ec27e';
-        return `
-          <g style="cursor:pointer" onclick="SELECTED_CONTINENT_ID='${escapeHtml(c.id)}';render()">
-            <ellipse cx="${centre[0]}" cy="${centre[1]}" rx="${Math.max(12, radii[0] * 0.65)}" ry="${Math.max(10, radii[1] * 0.65)}" fill="${fill}" stroke="${stroke}" stroke-width="${isSel ? 2.2 : 1.1}"/>
-            <text x="${centre[0]}" y="${centre[1] - 2}" text-anchor="middle" fill="#f0f6fc" font-size="8.5" font-weight="bold" font-family="monospace">${escapeHtml(c.id.toUpperCase())} · ${escapeHtml(c.title)}</text>
-            <text x="${centre[0]}" y="${centre[1] + 8}" text-anchor="middle" fill="#a8f0be" font-size="7" font-family="monospace">Lv.${c.levelMin}-${c.levelMax} · ${Math.round(c.grossLandKm2)}km²</text>
-          </g>
-        `;
-      }).join('')}
+  // Row 2 (Central Midgard — Lv.1-60)
+  { id: 'c07-chivalry-hall', col: 0, row: 2, code: 'gl_knt01', name: 'Glast Heim Chivalry', biome: 'crypt', lv: '61 - 85', kind: 'dungeon',
+    neighbors: { N: 'c07-glast-abbey', E: 'c02-west-pinewood', S: 'c06-geffen-tower' },
+    spawns: [{ id: 'abysmal_knight', count: 45 }, { id: 'evil_druid', count: 40 }, { id: 'baphomet', count: 1 }] },
+  { id: 'c02-west-pinewood', col: 1, row: 2, code: 'prt_fild05', name: 'Prontera West Culvert Edge', biome: 'forest', lv: '8 - 22', kind: 'field',
+    neighbors: { N: 'c03-coldreach-tundra', W: 'c07-chivalry-hall', E: 'c02-floral-valley', S: 'c02-culvert-sewer' },
+    spawns: [{ id: 'thief_bug', count: 70 }, { id: 'spore', count: 55 }, { id: 'poring', count: 40 }] },
+  { id: 'c02-floral-valley', col: 2, row: 2, code: 'prt_fild03', name: 'Yoyo & Rocker Meadow', biome: 'meadow', lv: '12 - 28', kind: 'field',
+    neighbors: { N: 'c02-high-pass', W: 'c02-west-pinewood', E: 'freja-south-gate', S: 'c02-willow-grove' },
+    spawns: [{ id: 'wild_boar', count: 60 }, { id: 'spore', count: 50 }, { id: 'flora', count: 35 }] },
+  { id: 'freja-south-gate', col: 3, row: 2, code: 'prt_fild08', name: 'Prontera South Gate', biome: 'meadow', lv: '1 - 15', kind: 'field',
+    neighbors: { N: 'c02-capital-freja', W: 'c02-floral-valley', E: 'c04-orc-fortress', S: 'c05-sograt-border' },
+    spawns: [{ id: 'poring', count: 80 }, { id: 'lunatic', count: 65 }, { id: 'forest_slime', count: 50 }, { id: 'drops', count: 35 }] },
+  { id: 'c04-orc-fortress', col: 4, row: 2, code: 'gef_fild10', name: 'Orc Village Stronghold', biome: 'forest', lv: '25 - 45', kind: 'field',
+    neighbors: { N: 'c10-ash-citadel', W: 'freja-south-gate', E: 'c04-coal-caverns', S: 'c04-orc-dungeon' },
+    spawns: [{ id: 'orc_warrior', count: 75 }, { id: 'orc_spear', count: 50 }, { id: 'high_orc', count: 30 }, { id: 'orc_lord', count: 1 }] },
+  { id: 'c04-coal-caverns', col: 5, row: 2, code: 'mjo_dun03', name: 'Mjolnir Dead Pit B3', biome: 'crypt', lv: '32 - 52', kind: 'dungeon',
+    neighbors: { N: 'c09-iron-quarry', W: 'c04-orc-fortress', S: 'c08-payon-shrine' },
+    spawns: [{ id: 'skel_soldier', count: 55 }, { id: 'drainliar', count: 65 }, { id: 'mummy', count: 40 }] },
 
-      <!-- Spine Trade Roads on c02 -->
-      ${edges.filter(e => Array.isArray(e.points)).map(e => {
-        const pts = e.points.map(p => `${p[0]},${p[1]}`).join(' ');
-        return `<polyline points="${pts}" fill="none" stroke="#ffd166" stroke-width="1.2" opacity="0.8"/>`;
-      }).join('')}
+  // Row 3 (Southern Kingdoms & Dungeons — Lv.15-55)
+  { id: 'c06-geffen-tower', col: 0, row: 3, code: 'gef_tower', name: 'Geffen Magic Spire B2', biome: 'castle', lv: '35 - 58', kind: 'dungeon',
+    neighbors: { N: 'c07-chivalry-hall', E: 'c02-culvert-sewer', S: 'c13-sunken-galleon' },
+    spawns: [{ id: 'whisper', count: 60 }, { id: 'bathory', count: 50 }, { id: 'joker', count: 35 }, { id: 'dracula', count: 1 }] },
+  { id: 'c02-culvert-sewer', col: 1, row: 3, code: 'prt_sewb3', name: 'Prontera Culvert B3', biome: 'crypt', lv: '15 - 32', kind: 'dungeon',
+    neighbors: { N: 'c02-west-pinewood', W: 'c06-geffen-tower', E: 'c02-willow-grove', S: 'c05-pyramid-vault' },
+    spawns: [{ id: 'thief_bug', count: 85 }, { id: 'drainliar', count: 60 }, { id: 'poison_toad', count: 45 }] },
+  { id: 'c02-willow-grove', col: 2, row: 3, code: 'pay_fild02', name: 'Payon Bamboo Woods', biome: 'forest', lv: '10 - 25', kind: 'field',
+    neighbors: { N: 'c02-floral-valley', W: 'c02-culvert-sewer', E: 'c05-sograt-border', S: 'c05-morroc-oasis' },
+    spawns: [{ id: 'spore', count: 75 }, { id: 'forest_slime', count: 60 }, { id: 'mushroom_king', count: 1 }] },
+  { id: 'c05-sograt-border', col: 3, row: 3, code: 'moc_fild01', name: 'Sograt Desert Border', biome: 'desert', lv: '14 - 30', kind: 'field',
+    neighbors: { N: 'freja-south-gate', W: 'c02-willow-grove', E: 'c04-orc-dungeon', S: 'c05-sphinx-crypt' },
+    spawns: [{ id: 'drops', count: 70 }, { id: 'desert_wolf', count: 65 }, { id: 'flora', count: 35 }] },
+  { id: 'c04-orc-dungeon', col: 4, row: 3, code: 'orcsdun02', name: 'Orc Underground Cave B2', biome: 'crypt', lv: '35 - 55', kind: 'dungeon',
+    neighbors: { N: 'c04-orc-fortress', W: 'c05-sograt-border', E: 'c08-payon-shrine', S: 'c08-alberta-port' },
+    spawns: [{ id: 'high_orc', count: 70 }, { id: 'orc_spear', count: 55 }, { id: 'skel_archer', count: 45 }, { id: 'orc_lord', count: 1 }] },
+  { id: 'c08-payon-shrine', col: 5, row: 3, code: 'pay_dun03', name: 'Payon Ancestral Cave F3', biome: 'crypt', lv: '24 - 42', kind: 'dungeon',
+    neighbors: { N: 'c04-coal-caverns', W: 'c04-orc-dungeon', S: 'c08-byalan-trench' },
+    spawns: [{ id: 'skel_soldier', count: 65 }, { id: 'skel_archer', count: 55 }, { id: 'whisper', count: 40 }] },
 
-      <!-- Pinned Towns & Landmarks -->
-      ${pinned.filter(p => p.atXKm != null && p.atYKm != null).map(p => {
-        const isTown = p.kind === 'town';
-        return `
-          <g>
-            <circle cx="${p.atXKm}" cy="${p.atYKm}" r="${isTown ? 3.2 : 1.8}" fill="${isTown ? '#ffd166' : '#ff8787'}" stroke="#0b1826" stroke-width="0.8"/>
-            ${isTown ? `<text x="${p.atXKm + 4.5}" y="${p.atYKm + 2.5}" fill="#ffd166" font-size="7" font-weight="bold" font-family="monospace">${escapeHtml(p.title)}</text>` : ''}
-          </g>
-        `;
-      }).join('')}
-    </svg>
-  `;
+  // Row 4 (Southern Desert & Ocean — Lv.21-60)
+  { id: 'c13-sunken-galleon', col: 0, row: 4, code: 'treasure02', name: 'Sunken Pirate Galleon', biome: 'undersea', lv: '38 - 58', kind: 'dungeon',
+    neighbors: { N: 'c06-geffen-tower', E: 'c05-pyramid-vault' },
+    spawns: [{ id: 'whisper', count: 55 }, { id: 'skel_archer', count: 50 }, { id: 'drake_captain', count: 1 }] },
+  { id: 'c05-pyramid-vault', col: 1, row: 4, code: 'moc_pryd04', name: 'Morroc Pyramid B4', biome: 'pyramid', lv: '35 - 55', kind: 'dungeon',
+    neighbors: { N: 'c02-culvert-sewer', W: 'c13-sunken-galleon', E: 'c05-morroc-oasis' },
+    spawns: [{ id: 'mummy', count: 75 }, { id: 'skel_soldier', count: 50 }, { id: 'drainliar', count: 45 }] },
+  { id: 'c05-morroc-oasis', col: 2, row: 4, code: 'morocc', name: 'Morroc Jewel Oasis', biome: 'town', lv: '20 - 60', kind: 'town',
+    neighbors: { N: 'c02-willow-grove', W: 'c05-pyramid-vault', E: 'c05-sphinx-crypt' },
+    spawns: [{ id: 'drops', count: 35 }, { id: 'desert_wolf', count: 25 }] },
+  { id: 'c05-sphinx-crypt', col: 3, row: 4, code: 'in_sphinx4', name: 'Sphinx Tomb F4', biome: 'pyramid', lv: '42 - 62', kind: 'dungeon',
+    neighbors: { N: 'c05-sograt-border', W: 'c05-morroc-oasis', E: 'c08-alberta-port' },
+    spawns: [{ id: 'mummy', count: 65 }, { id: 'whisper', count: 50 }, { id: 'hunter_fly', count: 45 }] },
+  { id: 'c08-alberta-port', col: 4, row: 4, code: 'alberta', name: 'Alberta Harbor & Docks', biome: 'port', lv: '15 - 50', kind: 'town',
+    neighbors: { N: 'c04-orc-dungeon', W: 'c05-sphinx-crypt', E: 'c08-byalan-trench' },
+    spawns: [{ id: 'poison_toad', count: 30 }, { id: 'poring', count: 25 }] },
+  { id: 'c08-byalan-trench', col: 5, row: 4, code: 'iz_dun04', name: 'Byalan Undersea Trench', biome: 'undersea', lv: '40 - 60', kind: 'dungeon',
+    neighbors: { N: 'c08-payon-shrine', W: 'c08-alberta-port' },
+    spawns: [{ id: 'strouf', count: 65 }, { id: 'poison_toad', count: 50 }, { id: 'drake_captain', count: 1 }] },
+];
+
+const MAXION_MONSTERS = [
+  // Band 1 - 20
+  { id: 'poring', code: 1002, name: 'Poring', band: '1-20', lv: 1, hp: 60, hit: 22, flee: 7, exp: 15, job: 10,
+    type: 'Normal', element: 'Water', elIcon: '💧', race: 'Plant', size: 'Medium',
+    thumb: '/thumbs/a1b1790b90da69a2c0cf82dbba35f9bfac6b54f4.webp',
+    modifiers: { Earth: 100, Poison: 100, Neutral: 100, Fire: 50, Holy: 100, Dark: 100, Water: 25, Ghost: 100, Undead: 100, Wind: 175 },
+    drops: [
+      { name: 'Poring Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/d80a5e2bf28ff9d976c8ddbe7bbadbe3de36fa34.webp' },
+      { name: 'Oridecon Shard', rate: '0.24%', rarity: 'epic', thumb: '/thumbs/6bc740826ef36d8d9113022a92f64e5ac8f68f7f.webp' },
+      { name: 'Sticky Mucus', rate: '4.00%', rarity: 'rare', thumb: '/thumbs/a85f10fd2e0dc3de29a2eb157d7ff68c19e39d7b.webp' },
+      { name: 'Apple', rate: '12.50%', rarity: 'common', thumb: '/thumbs/a2dc61a37f57dd28c834dfda271aa671cb77b0fb.webp' },
+      { name: 'Jellopy', rate: '70.00%', rarity: 'common', thumb: '/thumbs/9f7f9bf3a0db1c2f74de5f53fa74c8be4e3f2737.webp' }
+    ]
+  },
+  { id: 'forest_slime', code: 1003, name: 'Forest Slime', band: '1-20', lv: 4, hp: 115, hit: 28, flee: 12, exp: 28, job: 18,
+    type: 'Normal', element: 'Earth', elIcon: '🌿', race: 'Plant', size: 'Small',
+    thumb: '/thumbs/ca1ba005a8948653bc49573b3aaab272d0aa79ca.webp',
+    modifiers: { Fire: 175, Poison: 125, Neutral: 100, Water: 100, Holy: 100, Dark: 100, Earth: 25, Ghost: 100, Undead: 100, Wind: 80 },
+    drops: [
+      { name: 'Poporing Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/86703da3a727a7be5e77f7d99ac533c297131637.webp' },
+      { name: 'Emerald Herb', rate: '1.50%', rarity: 'rare', thumb: '/thumbs/17557a29b4d4916ab7da5168b7a5bf978ef076df.webp' },
+      { name: 'Garlet', rate: '35.00%', rarity: 'common', thumb: '/thumbs/a832db41d46e8fc4be809823730be62f00786c08.webp' }
+    ]
+  },
+  { id: 'lunatic', code: 1063, name: 'Lunatic', band: '1-20', lv: 3, hp: 78, hit: 26, flee: 16, exp: 20, job: 14,
+    type: 'Normal', element: 'Neutral', elIcon: '⚪', race: 'Brute', size: 'Small',
+    thumb: '/thumbs/703711cd587687f00cb6acfa2ba7f82f70a1869f.webp',
+    modifiers: { Neutral: 100, Fire: 100, Water: 100, Wind: 100, Earth: 100, Poison: 100, Holy: 100, Dark: 100, Undead: 100, Ghost: 25 },
+    drops: [
+      { name: 'Lunatic Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/eb790bb0da73869ca8f6c5633da2cfdd43fc912f.webp' },
+      { name: 'Four-Leaf Clover', rate: '0.15%', rarity: 'epic', thumb: '/thumbs/267f361547c7e74de3d59c9c33c2531be79ca02a.webp' },
+      { name: 'Clover', rate: '65.00%', rarity: 'common', thumb: '/thumbs/c217669ddcc06081a0d6a36026f901db5219d26b.webp' }
+    ]
+  },
+  { id: 'drops', code: 1113, name: 'Drops', band: '1-20', lv: 7, hp: 165, hit: 33, flee: 18, exp: 42, job: 26,
+    type: 'Normal', element: 'Fire', elIcon: '🔥', race: 'Plant', size: 'Medium',
+    thumb: '/thumbs/641f0b1fdde03455dc9934144c8f68c087ba66f8.webp',
+    modifiers: { Water: 175, Wind: 100, Neutral: 100, Poison: 100, Holy: 100, Dark: 100, Earth: 80, Ghost: 100, Undead: 100, Fire: 25 },
+    drops: [
+      { name: 'Drops Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/740b422ddfd39069bc1a396f73e20309561cb35d.webp' },
+      { name: 'Orange Juice', rate: '6.50%', rarity: 'rare', thumb: '/thumbs/a85f10fd2e0dc3de29a2eb157d7ff68c19e39d7b.webp' },
+      { name: 'Jellopy', rate: '55.00%', rarity: 'common', thumb: '/thumbs/9f7f9bf3a0db1c2f74de5f53fa74c8be4e3f2737.webp' }
+    ]
+  },
+  { id: 'spore', code: 1014, name: 'Spore', band: '1-20', lv: 16, hp: 510, hit: 46, flee: 29, exp: 150, job: 98,
+    type: 'Normal', element: 'Water', elIcon: '💧', race: 'Plant', size: 'Medium',
+    thumb: '/thumbs/1db575bd084764c9bd6bfbe525d36295770fd52b.webp',
+    modifiers: { Wind: 175, Earth: 100, Neutral: 100, Poison: 100, Holy: 100, Dark: 100, Fire: 50, Ghost: 100, Undead: 100, Water: 25 },
+    drops: [
+      { name: 'Spore Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/17557a29b4d4916ab7da5168b7a5bf978ef076df.webp' },
+      { name: 'Blue Herb', rate: '2.50%', rarity: 'rare', thumb: '/thumbs/a2dc61a37f57dd28c834dfda271aa671cb77b0fb.webp' },
+      { name: 'Mushroom Spore', rate: '68.00%', rarity: 'common', thumb: '/thumbs/a832db41d46e8fc4be809823730be62f00786c08.webp' }
+    ]
+  },
+  { id: 'thief_bug', code: 1051, name: 'Thief Bug', band: '1-20', lv: 13, hp: 380, hit: 42, flee: 34, exp: 112, job: 65,
+    type: 'Normal', element: 'Dark', elIcon: '🌑', race: 'Insect', size: 'Small',
+    thumb: '/thumbs/343b102f697254e6092ba27a8b9a3da85963e802.webp',
+    modifiers: { Holy: 150, Neutral: 100, Fire: 100, Water: 100, Wind: 100, Earth: 100, Poison: 75, Ghost: 75, Undead: 100, Dark: 0 },
+    drops: [
+      { name: 'Thief Bug Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/392c709d2c598431ef4c6ab60d1be80c249f0365.webp' },
+      { name: 'Iron Ore', rate: '4.50%', rarity: 'rare', thumb: '/thumbs/4dcfa6cb49dc3449fd8ca9b5b6795636895312c8.webp' },
+      { name: 'Worm Peeling', rate: '55.00%', rarity: 'common', thumb: '/thumbs/372b28558cf194dfeb6fc5c809704be7e3932125.webp' }
+    ]
+  },
+  { id: 'wild_boar', code: 1067, name: 'Savage Boar', band: '1-20', lv: 19, hp: 820, hit: 52, flee: 31, exp: 235, job: 140,
+    type: 'Normal', element: 'Earth', elIcon: '🌿', race: 'Brute', size: 'Large',
+    thumb: '/thumbs/3a3be2d4c2368da2283d13dc0e79850d99e0eb73.webp',
+    modifiers: { Fire: 150, Poison: 125, Neutral: 100, Water: 100, Holy: 100, Dark: 100, Wind: 80, Ghost: 100, Undead: 100, Earth: 50 },
+    drops: [
+      { name: 'Savage Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/6bc740826ef36d8d9113022a92f64e5ac8f68f7f.webp' },
+      { name: 'Boar Mane', rate: '62.00%', rarity: 'common', thumb: '/thumbs/c217669ddcc06081a0d6a36026f901db5219d26b.webp' }
+    ]
+  },
+  { id: 'mushroom_king', code: 1084, name: 'Golden Spore Boss', band: '1-20', lv: 20, hp: 6400, hit: 75, flee: 45, exp: 2100, job: 1250,
+    type: 'MVP', element: 'Poison', elIcon: '☠️', race: 'Plant', size: 'Large',
+    thumb: '/thumbs/793e05e1274e79d1527fa96bd27a921fc2f86b86.webp',
+    modifiers: { Holy: 125, Fire: 125, Neutral: 100, Water: 100, Wind: 100, Earth: 100, Dark: 50, Ghost: 75, Undead: 50, Poison: 0 },
+    drops: [
+      { name: 'Golden Spore Crown', rate: '0.25%', rarity: 'legend', thumb: '/thumbs/267f361547c7e74de3d59c9c33c2531be79ca02a.webp' },
+      { name: 'Elunium', rate: '8.50%', rarity: 'rare', thumb: '/thumbs/d80a5e2bf28ff9d976c8ddbe7bbadbe3de36fa34.webp' }
+    ]
+  },
+
+  // Band 21 - 40
+  { id: 'desert_wolf', code: 1106, name: 'Desert Wolf', band: '21-40', lv: 25, hp: 1480, hit: 68, flee: 48, exp: 390, job: 245,
+    type: 'Normal', element: 'Fire', elIcon: '🔥', race: 'Brute', size: 'Medium',
+    thumb: '/thumbs/2fd08a991dfba974a49bf166865e322df7e12d9d.webp',
+    modifiers: { Water: 150, Neutral: 100, Wind: 100, Poison: 125, Holy: 100, Dark: 100, Earth: 90, Ghost: 100, Undead: 100, Fire: 25 },
+    drops: [
+      { name: 'Desert Wolf Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/86703da3a727a7be5e77f7d99ac533c297131637.webp' },
+      { name: 'Katar [2]', rate: '0.20%', rarity: 'epic', thumb: '/thumbs/96f2d8a68cb0be4f05b74a22327be62d38bd99b8.webp' },
+      { name: 'Wolf Claw', rate: '58.00%', rarity: 'common', thumb: '/thumbs/392c709d2c598431ef4c6ab60d1be80c249f0365.webp' }
+    ]
+  },
+  { id: 'flora', code: 1118, name: 'Flora', band: '21-40', lv: 27, hp: 1890, hit: 71, flee: 35, exp: 485, job: 310,
+    type: 'Normal', element: 'Earth', elIcon: '🌿', race: 'Plant', size: 'Large',
+    thumb: '/thumbs/bf5fb962417dc860e8e36fb5ab4f8470e8fb7c0f.webp',
+    modifiers: { Fire: 175, Poison: 125, Neutral: 100, Water: 100, Holy: 100, Dark: 100, Wind: 80, Ghost: 100, Undead: 100, Earth: 25 },
+    drops: [
+      { name: 'Flora Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/17557a29b4d4916ab7da5168b7a5bf978ef076df.webp' },
+      { name: 'Maneater Blossom', rate: '48.00%', rarity: 'common', thumb: '/thumbs/a2dc61a37f57dd28c834dfda271aa671cb77b0fb.webp' }
+    ]
+  },
+  { id: 'poison_toad', code: 1089, name: 'Roda Poison Toad', band: '21-40', lv: 23, hp: 1190, hit: 61, flee: 43, exp: 310, job: 195,
+    type: 'Normal', element: 'Water', elIcon: '💧', race: 'Fish', size: 'Medium',
+    thumb: '/thumbs/2f54e98965d902267b36b8b150bd97df1ca27912.webp',
+    modifiers: { Wind: 175, Neutral: 100, Earth: 100, Poison: 100, Holy: 100, Dark: 100, Fire: 60, Ghost: 100, Undead: 100, Water: 25 },
+    drops: [
+      { name: 'Toad Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/740b422ddfd39069bc1a396f73e20309561cb35d.webp' },
+      { name: 'Spawn Webfoot', rate: '65.00%', rarity: 'common', thumb: '/thumbs/a832db41d46e8fc4be809823730be62f00786c08.webp' }
+    ]
+  },
+  { id: 'skel_soldier', code: 1028, name: 'Soldier Skeleton', band: '21-40', lv: 29, hp: 2340, hit: 82, flee: 56, exp: 640, job: 410,
+    type: 'Normal', element: 'Undead', elIcon: '💀', race: 'Undead', size: 'Medium',
+    thumb: '/thumbs/d80a5e2bf28ff9d976c8ddbe7bbadbe3de36fa34.webp',
+    modifiers: { Holy: 175, Fire: 150, Neutral: 100, Water: 100, Wind: 100, Earth: 100, Ghost: 100, Dark: 0, Poison: 0, Undead: 0 },
+    drops: [
+      { name: 'Soldier Skeleton Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/96f2d8a68cb0be4f05b74a22327be62d38bd99b8.webp' },
+      { name: 'Stiletto [3]', rate: '0.15%', rarity: 'epic', thumb: '/thumbs/392c709d2c598431ef4c6ab60d1be80c249f0365.webp' },
+      { name: 'Skel-Bone', rate: '52.00%', rarity: 'common', thumb: '/thumbs/4dcfa6cb49dc3449fd8ca9b5b6795636895312c8.webp' }
+    ]
+  },
+  { id: 'skel_archer', code: 1016, name: 'Archer Skeleton', band: '21-40', lv: 31, hp: 2650, hit: 94, flee: 60, exp: 780, job: 490,
+    type: 'Normal', element: 'Undead', elIcon: '💀', race: 'Undead', size: 'Medium',
+    thumb: '/thumbs/7c04df1bf5db7f47abfd93beeead9cc98bbdb7b6.webp',
+    modifiers: { Holy: 175, Fire: 150, Neutral: 100, Water: 100, Wind: 100, Earth: 100, Ghost: 100, Dark: 0, Poison: 0, Undead: 0 },
+    drops: [
+      { name: 'Archer Skeleton Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/bc881728ff9dc9924276d210df909a76a7c87cb1.webp' },
+      { name: 'Arbalest [2]', rate: '0.20%', rarity: 'epic', thumb: '/thumbs/bc881728ff9dc9924276d210df909a76a7c87cb1.webp' },
+      { name: 'Fire Arrow', rate: '45.00%', rarity: 'common', thumb: '/thumbs/372b28558cf194dfeb6fc5c809704be7e3932125.webp' }
+    ]
+  },
+  { id: 'drainliar', code: 1111, name: 'Drainliar', band: '21-40', lv: 33, hp: 2890, hit: 88, flee: 72, exp: 840, job: 520,
+    type: 'Normal', element: 'Dark', elIcon: '🌑', race: 'Brute', size: 'Small',
+    thumb: '/thumbs/d6c6b868557d3fc3f33144fc3a1d28e92ebde3cf.webp',
+    modifiers: { Holy: 150, Neutral: 100, Fire: 100, Water: 100, Wind: 100, Earth: 100, Poison: 75, Ghost: 75, Undead: 100, Dark: 0 },
+    drops: [
+      { name: 'Drainliar Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/d80a5e2bf28ff9d976c8ddbe7bbadbe3de36fa34.webp' },
+      { name: 'Tooth of Bat', rate: '56.00%', rarity: 'common', thumb: '/thumbs/9f7f9bf3a0db1c2f74de5f53fa74c8be4e3f2737.webp' }
+    ]
+  },
+  { id: 'orc_warrior', code: 1023, name: 'Orc Warrior', band: '21-40', lv: 35, hp: 3450, hit: 92, flee: 64, exp: 980, job: 610,
+    type: 'Normal', element: 'Earth', elIcon: '🌿', race: 'Demi-Human', size: 'Medium',
+    thumb: '/thumbs/0e1fc9249dfee10a44eb3817ebdebf10abdb9634.webp',
+    modifiers: { Fire: 150, Poison: 125, Neutral: 100, Water: 100, Holy: 100, Dark: 100, Wind: 80, Ghost: 100, Undead: 100, Earth: 50 },
+    drops: [
+      { name: 'Orc Warrior Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/eb790bb0da73869ca8f6c5633da2cfdd43fc912f.webp' },
+      { name: 'Battle Axe [4]', rate: '0.35%', rarity: 'epic', thumb: '/thumbs/6bc740826ef36d8d9113022a92f64e5ac8f68f7f.webp' },
+      { name: 'Orcish Voucher', rate: '68.00%', rarity: 'common', thumb: '/thumbs/c217669ddcc06081a0d6a36026f901db5219d26b.webp' }
+    ]
+  },
+  { id: 'orc_spear', code: 1189, name: 'Orc Archer', band: '21-40', lv: 38, hp: 3920, hit: 105, flee: 74, exp: 1190, job: 760,
+    type: 'Normal', element: 'Earth', elIcon: '🌿', race: 'Demi-Human', size: 'Medium',
+    thumb: '/thumbs/0be24bc75b3e1fa9a5e9bd9268ebcb612bd6d94f.webp',
+    modifiers: { Fire: 150, Poison: 125, Neutral: 100, Water: 100, Holy: 100, Dark: 100, Wind: 80, Ghost: 100, Undead: 100, Earth: 50 },
+    drops: [
+      { name: 'Orc Archer Bow', rate: '0.25%', rarity: 'epic', thumb: '/thumbs/bc881728ff9dc9924276d210df909a76a7c87cb1.webp' },
+      { name: 'Steel Arrow Quiver', rate: '8.50%', rarity: 'rare', thumb: '/thumbs/372b28558cf194dfeb6fc5c809704be7e3932125.webp' }
+    ]
+  },
+
+  // Band 41 - 60
+  { id: 'mummy', code: 1041, name: 'Mummy', band: '41-60', lv: 42, hp: 5176, hit: 108, flee: 67, exp: 1650, job: 1020,
+    type: 'Normal', element: 'Undead', elIcon: '💀', race: 'Undead', size: 'Medium',
+    thumb: '/thumbs/740b422ddfd39069bc1a396f73e20309561cb35d.webp',
+    modifiers: { Holy: 175, Fire: 150, Neutral: 100, Water: 100, Wind: 100, Earth: 100, Ghost: 100, Dark: 0, Poison: 0, Undead: 0 },
+    drops: [
+      { name: 'Mummy Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/86703da3a727a7be5e77f7d99ac533c297131637.webp' },
+      { name: 'Glove [1]', rate: '0.10%', rarity: 'epic', thumb: '/thumbs/267f361547c7e74de3d59c9c33c2531be79ca02a.webp' },
+      { name: 'Rotten Bandage', rate: '62.00%', rarity: 'common', thumb: '/thumbs/9f7f9bf3a0db1c2f74de5f53fa74c8be4e3f2737.webp' }
+    ]
+  },
+  { id: 'whisper', code: 1179, name: 'Whisper', band: '41-60', lv: 46, hp: 4790, hit: 118, flee: 112, exp: 1890, job: 1320,
+    type: 'Normal', element: 'Ghost', elIcon: '👻', race: 'Demon', size: 'Small',
+    thumb: '/thumbs/8351df7d2e7bc809b527cc0df4dfee4e263bb06d.webp',
+    modifiers: { Ghost: 175, Fire: 100, Water: 100, Wind: 100, Earth: 100, Poison: 100, Holy: 100, Dark: 100, Undead: 100, Neutral: 0 },
+    drops: [
+      { name: 'Whisper Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/d80a5e2bf28ff9d976c8ddbe7bbadbe3de36fa34.webp' },
+      { name: 'Fabric', rate: '52.00%', rarity: 'common', thumb: '/thumbs/a832db41d46e8fc4be809823730be62f00786c08.webp' }
+    ]
+  },
+  { id: 'high_orc', code: 1213, name: 'High Orc', band: '41-60', lv: 52, hp: 6900, hit: 134, flee: 95, exp: 2960, job: 1840,
+    type: 'Normal', element: 'Fire', elIcon: '🔥', race: 'Demi-Human', size: 'Large',
+    thumb: '/thumbs/4dcfa6cb49dc3449fd8ca9b5b6795636895312c8.webp',
+    modifiers: { Water: 175, Neutral: 100, Wind: 100, Poison: 125, Holy: 100, Dark: 100, Earth: 80, Ghost: 100, Undead: 100, Fire: 25 },
+    drops: [
+      { name: 'High Orc Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/eb790bb0da73869ca8f6c5633da2cfdd43fc912f.webp' },
+      { name: 'Orcish Axe [4]', rate: '0.20%', rarity: 'epic', thumb: '/thumbs/6bc740826ef36d8d9113022a92f64e5ac8f68f7f.webp' },
+      { name: 'Orcish Fang', rate: '60.00%', rarity: 'common', thumb: '/thumbs/c217669ddcc06081a0d6a36026f901db5219d26b.webp' }
+    ]
+  },
+  { id: 'strouf', code: 1065, name: 'Strouf', band: '41-60', lv: 48, hp: 6250, hit: 126, flee: 98, exp: 2450, job: 1620,
+    type: 'Normal', element: 'Water', elIcon: '💧', race: 'Fish', size: 'Large',
+    thumb: '/thumbs/86703da3a727a7be5e77f7d99ac533c297131637.webp',
+    modifiers: { Wind: 175, Neutral: 100, Earth: 100, Poison: 100, Holy: 100, Dark: 100, Fire: 50, Ghost: 100, Undead: 100, Water: 0 },
+    drops: [
+      { name: 'Strouf Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/740b422ddfd39069bc1a396f73e20309561cb35d.webp' },
+      { name: 'Trident [3]', rate: '0.25%', rarity: 'epic', thumb: '/thumbs/96f2d8a68cb0be4f05b74a22327be62d38bd99b8.webp' },
+      { name: 'Fin', rate: '48.00%', rarity: 'common', thumb: '/thumbs/a85f10fd2e0dc3de29a2eb157d7ff68c19e39d7b.webp' }
+    ]
+  },
+  { id: 'bathory', code: 1102, name: 'Bathory', band: '41-60', lv: 54, hp: 6915, hit: 138, flee: 116, exp: 3120, job: 2150,
+    type: 'Normal', element: 'Dark', elIcon: '🌑', race: 'Demi-Human', size: 'Medium',
+    thumb: '/thumbs/17557a29b4d4916ab7da5168b7a5bf978ef076df.webp',
+    modifiers: { Holy: 150, Neutral: 100, Fire: 100, Water: 100, Wind: 100, Earth: 100, Poison: 75, Ghost: 75, Undead: 100, Dark: 0 },
+    drops: [
+      { name: 'Bathory Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/d80a5e2bf28ff9d976c8ddbe7bbadbe3de36fa34.webp' },
+      { name: 'Star Dust', rate: '8.50%', rarity: 'rare', thumb: '/thumbs/267f361547c7e74de3d59c9c33c2531be79ca02a.webp' },
+      { name: 'Witch Starsand', rate: '52.00%', rarity: 'common', thumb: '/thumbs/9f7f9bf3a0db1c2f74de5f53fa74c8be4e3f2737.webp' }
+    ]
+  },
+  { id: 'orc_lord', code: 1190, name: 'Orc Lord [MVP]', band: '41-60', lv: 55, hp: 398000, hit: 188, flee: 142, exp: 48200, job: 26500,
+    type: 'MVP', element: 'Earth', elIcon: '🌿', race: 'Demi-Human', size: 'Large',
+    thumb: '/thumbs/eb790bb0da73869ca8f6c5633da2cfdd43fc912f.webp',
+    modifiers: { Fire: 200, Poison: 125, Neutral: 100, Water: 100, Holy: 100, Dark: 100, Wind: 50, Ghost: 100, Undead: 100, Earth: 0 },
+    drops: [
+      { name: 'Orc Lord Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/eb790bb0da73869ca8f6c5633da2cfdd43fc912f.webp' },
+      { name: 'Grandelt [1]', rate: '0.50%', rarity: 'epic', thumb: '/thumbs/6bc740826ef36d8d9113022a92f64e5ac8f68f7f.webp' },
+      { name: 'Bloody Axe', rate: '2.50%', rarity: 'rare', thumb: '/thumbs/96f2d8a68cb0be4f05b74a22327be62d38bd99b8.webp' }
+    ]
+  },
+  { id: 'drake_captain', code: 1112, name: 'Drake [MVP]', band: '41-60', lv: 58, hp: 446000, hit: 196, flee: 148, exp: 52000, job: 31000,
+    type: 'MVP', element: 'Undead', elIcon: '💀', race: 'Undead', size: 'Medium',
+    thumb: '/thumbs/96f2d8a68cb0be4f05b74a22327be62d38bd99b8.webp',
+    modifiers: { Holy: 200, Fire: 175, Neutral: 100, Water: 100, Wind: 100, Earth: 100, Ghost: 100, Dark: 0, Poison: 0, Undead: 0 },
+    drops: [
+      { name: 'Drake Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/96f2d8a68cb0be4f05b74a22327be62d38bd99b8.webp' },
+      { name: 'Corsair Hat', rate: '0.50%', rarity: 'epic', thumb: '/thumbs/267f361547c7e74de3d59c9c33c2531be79ca02a.webp' },
+      { name: 'Cutlass', rate: '1.50%', rarity: 'rare', thumb: '/thumbs/392c709d2c598431ef4c6ab60d1be80c249f0365.webp' }
+    ]
+  },
+
+  // Band 61 - 80 (Includes Screenshot 5 Benchmark: Hunter Fly #1035!)
+  { id: 'hunter_fly', code: 1035, name: 'Hunter Fly', band: '61-80', lv: 63, hp: 5940, hit: 168, flee: 193, exp: 2642, job: 1518,
+    type: 'Normal', element: 'Wind', elIcon: '🌪️', race: 'Insect', size: 'Small',
+    thumb: '/thumbs/392c709d2c598431ef4c6ab60d1be80c249f0365.webp',
+    modifiers: { Earth: 175, Poison: 125, Neutral: 100, Fire: 100, Holy: 100, Dark: 100, Water: 80, Ghost: 75, Undead: 75, Wind: 0 },
+    drops: [
+      { name: 'Hunter Fly Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/d80a5e2bf28ff9d976c8ddbe7bbadbe3de36fa34.webp' },
+      { name: 'Elementary Whip', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/bc881728ff9dc9924276d210df909a76a7c87cb1.webp' },
+      { name: 'Damascus [1]', rate: '0.02%', rarity: 'legend', thumb: '/thumbs/392c709d2c598431ef4c6ab60d1be80c249f0365.webp' },
+      { name: 'Mini Furnace', rate: '0.15%', rarity: 'epic', thumb: '/thumbs/4dcfa6cb49dc3449fd8ca9b5b6795636895312c8.webp' },
+      { name: 'Oridecon', rate: '0.24%', rarity: 'epic', thumb: '/thumbs/6bc740826ef36d8d9113022a92f64e5ac8f68f7f.webp' },
+      { name: 'Wind of Verdure', rate: '0.50%', rarity: 'epic', thumb: '/thumbs/267f361547c7e74de3d59c9c33c2531be79ca02a.webp' },
+      { name: 'Steel', rate: '6.50%', rarity: 'rare', thumb: '/thumbs/9f7f9bf3a0db1c2f74de5f53fa74c8be4e3f2737.webp' },
+      { name: 'Solid Shell', rate: '26.68%', rarity: 'common', thumb: '/thumbs/a832db41d46e8fc4be809823730be62f00786c08.webp' }
+    ]
+  },
+  { id: 'sasquatch', code: 1243, name: 'Sasquatch', band: '61-80', lv: 64, hp: 9420, hit: 152, flee: 118, exp: 3920, job: 2450,
+    type: 'Normal', element: 'Water', elIcon: '💧', race: 'Brute', size: 'Large',
+    thumb: '/thumbs/bc881728ff9dc9924276d210df909a76a7c87cb1.webp',
+    modifiers: { Wind: 175, Neutral: 100, Earth: 100, Poison: 100, Holy: 100, Dark: 100, Fire: 50, Ghost: 100, Undead: 100, Water: 25 },
+    drops: [
+      { name: 'Sasquatch Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/86703da3a727a7be5e77f7d99ac533c297131637.webp' },
+      { name: 'Mystic Frozen', rate: '1.20%', rarity: 'rare', thumb: '/thumbs/a85f10fd2e0dc3de29a2eb157d7ff68c19e39d7b.webp' }
+    ]
+  },
+  { id: 'joker', code: 1131, name: 'Joker', band: '61-80', lv: 67, hp: 8250, hit: 174, flee: 185, exp: 4280, job: 2910,
+    type: 'Normal', element: 'Wind', elIcon: '🌪️', race: 'Demi-Human', size: 'Large',
+    thumb: '/thumbs/372b28558cf194dfeb6fc5c809704be7e3932125.webp',
+    modifiers: { Earth: 175, Poison: 125, Neutral: 100, Fire: 100, Holy: 100, Dark: 100, Water: 80, Ghost: 75, Undead: 75, Wind: 0 },
+    drops: [
+      { name: 'Joker Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/d80a5e2bf28ff9d976c8ddbe7bbadbe3de36fa34.webp' },
+      { name: 'Old Card Album', rate: '0.05%', rarity: 'legend', thumb: '/thumbs/267f361547c7e74de3d59c9c33c2531be79ca02a.webp' }
+    ]
+  },
+  { id: 'evil_druid', code: 1117, name: 'Evil Druid', band: '61-80', lv: 72, hp: 14200, hit: 168, flee: 132, exp: 5840, job: 4120,
+    type: 'Normal', element: 'Undead', elIcon: '💀', race: 'Undead', size: 'Large',
+    thumb: '/thumbs/267f361547c7e74de3d59c9c33c2531be79ca02a.webp',
+    modifiers: { Holy: 200, Fire: 175, Neutral: 100, Water: 100, Wind: 100, Earth: 100, Ghost: 100, Dark: 0, Poison: 0, Undead: 0 },
+    drops: [
+      { name: 'Evil Druid Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/17557a29b4d4916ab7da5168b7a5bf978ef076df.webp' },
+      { name: 'Biretta [1]', rate: '0.25%', rarity: 'epic', thumb: '/thumbs/267f361547c7e74de3d59c9c33c2531be79ca02a.webp' },
+      { name: 'White Herb', rate: '18.00%', rarity: 'common', thumb: '/thumbs/a2dc61a37f57dd28c834dfda271aa671cb77b0fb.webp' }
+    ]
+  },
+  { id: 'clock_manager', code: 1270, name: 'Clock Tower Manager', band: '61-80', lv: 76, hp: 18600, hit: 184, flee: 146, exp: 6950, job: 4680,
+    type: 'Normal', element: 'Neutral', elIcon: '⚪', race: 'Formless', size: 'Large',
+    thumb: '/thumbs/6bc740826ef36d8d9113022a92f64e5ac8f68f7f.webp',
+    modifiers: { Neutral: 100, Fire: 100, Water: 100, Wind: 100, Earth: 100, Poison: 100, Holy: 100, Dark: 100, Undead: 100, Ghost: 25 },
+    drops: [
+      { name: 'Tower Manager Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/6bc740826ef36d8d9113022a92f64e5ac8f68f7f.webp' },
+      { name: 'Key of Underground', rate: '3.50%', rarity: 'rare', thumb: '/thumbs/4dcfa6cb49dc3449fd8ca9b5b6795636895312c8.webp' }
+    ]
+  },
+  { id: 'bone_golem', code: 1278, name: 'Stalactic Golem', band: '61-80', lv: 78, hp: 22400, hit: 175, flee: 112, exp: 7420, job: 4850,
+    type: 'Normal', element: 'Earth', elIcon: '🌿', race: 'Formless', size: 'Large',
+    thumb: '/thumbs/a832db41d46e8fc4be809823730be62f00786c08.webp',
+    modifiers: { Fire: 200, Poison: 125, Neutral: 100, Water: 100, Holy: 100, Dark: 100, Wind: 50, Ghost: 100, Undead: 100, Earth: 0 },
+    drops: [
+      { name: 'Stalactic Golem Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/86703da3a727a7be5e77f7d99ac533c297131637.webp' },
+      { name: 'Elunium', rate: '3.15%', rarity: 'rare', thumb: '/thumbs/d80a5e2bf28ff9d976c8ddbe7bbadbe3de36fa34.webp' }
+    ]
+  },
+  { id: 'dracula', code: 1389, name: 'Dracula [MVP]', band: '61-80', lv: 75, hp: 520096, hit: 215, flee: 178, exp: 112000, job: 64000,
+    type: 'MVP', element: 'Dark', elIcon: '🌑', race: 'Demon', size: 'Large',
+    thumb: '/thumbs/a2dc61a37f57dd28c834dfda271aa671cb77b0fb.webp',
+    modifiers: { Holy: 200, Neutral: 100, Fire: 100, Water: 100, Wind: 100, Earth: 100, Poison: 50, Ghost: 50, Undead: 100, Dark: 0 },
+    drops: [
+      { name: 'Dracula Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/d80a5e2bf28ff9d976c8ddbe7bbadbe3de36fa34.webp' },
+      { name: 'Dragon Vest [1]', rate: '0.50%', rarity: 'epic', thumb: '/thumbs/6bc740826ef36d8d9113022a92f64e5ac8f68f7f.webp' }
+    ]
+  },
+
+  // Band 81 - 100
+  { id: 'ice_titan', code: 1777, name: 'Ice Titan', band: '81-100', lv: 84, hp: 38600, hit: 196, flee: 158, exp: 12800, job: 8400,
+    type: 'Normal', element: 'Water', elIcon: '💧', race: 'Formless', size: 'Large',
+    thumb: '/thumbs/a85f10fd2e0dc3de29a2eb157d7ff68c19e39d7b.webp',
+    modifiers: { Wind: 200, Neutral: 100, Earth: 100, Poison: 100, Holy: 100, Dark: 100, Fire: 50, Ghost: 100, Undead: 100, Water: 0 },
+    drops: [
+      { name: 'Ice Titan Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/740b422ddfd39069bc1a396f73e20309561cb35d.webp' },
+      { name: 'Ice Cubic', rate: '45.00%', rarity: 'common', thumb: '/thumbs/a85f10fd2e0dc3de29a2eb157d7ff68c19e39d7b.webp' }
+    ]
+  },
+  { id: 'abysmal_knight', code: 1219, name: 'Abysmal Knight', band: '81-100', lv: 88, hp: 46500, hit: 212, flee: 172, exp: 16400, job: 11200,
+    type: 'Normal', element: 'Dark', elIcon: '🌑', race: 'Demi-Human', size: 'Large',
+    thumb: '/thumbs/9f7f9bf3a0db1c2f74de5f53fa74c8be4e3f2737.webp',
+    modifiers: { Holy: 175, Neutral: 100, Fire: 100, Water: 100, Wind: 100, Earth: 100, Poison: 50, Ghost: 50, Undead: 100, Dark: 0 },
+    drops: [
+      { name: 'Abysmal Knight Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/d80a5e2bf28ff9d976c8ddbe7bbadbe3de36fa34.webp' },
+      { name: 'Broad Sword [2]', rate: '0.20%', rarity: 'epic', thumb: '/thumbs/96f2d8a68cb0be4f05b74a22327be62d38bd99b8.webp' },
+      { name: 'Chivalry Emblem', rate: '18.50%', rarity: 'common', thumb: '/thumbs/267f361547c7e74de3d59c9c33c2531be79ca02a.webp' }
+    ]
+  },
+  { id: 'magma_kaho', code: 1072, name: 'Magma Kaho', band: '81-100', lv: 91, hp: 42900, hit: 218, flee: 184, exp: 18200, job: 12900,
+    type: 'Normal', element: 'Fire', elIcon: '🔥', race: 'Demon', size: 'Medium',
+    thumb: '/thumbs/c217669ddcc06081a0d6a36026f901db5219d26b.webp',
+    modifiers: { Water: 200, Neutral: 100, Wind: 100, Poison: 100, Holy: 125, Dark: 100, Earth: 50, Ghost: 100, Undead: 100, Fire: 0 },
+    drops: [
+      { name: 'Kaho Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/eb790bb0da73869ca8f6c5633da2cfdd43fc912f.webp' },
+      { name: 'Flame Heart', rate: '4.50%', rarity: 'rare', thumb: '/thumbs/6bc740826ef36d8d9113022a92f64e5ac8f68f7f.webp' }
+    ]
+  },
+  { id: 'rsx_colossus', code: 1623, name: 'RSX-0806 [MVP]', band: '81-100', lv: 94, hp: 660700, hit: 245, flee: 192, exp: 195000, job: 112000,
+    type: 'MVP', element: 'Neutral', elIcon: '⚪', race: 'Formless', size: 'Large',
+    thumb: '/thumbs/2fc5782834b85e0a8fd9fc5f77a0da3a20df22b9.webp',
+    modifiers: { Neutral: 100, Fire: 100, Water: 100, Wind: 100, Earth: 100, Poison: 100, Holy: 100, Dark: 100, Undead: 100, Ghost: 25 },
+    drops: [
+      { name: 'RSX-0806 Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/6bc740826ef36d8d9113022a92f64e5ac8f68f7f.webp' },
+      { name: 'Brionac [2]', rate: '0.50%', rarity: 'epic', thumb: '/thumbs/96f2d8a68cb0be4f05b74a22327be62d38bd99b8.webp' }
+    ]
+  },
+  { id: 'pyroclast_wyrm', code: 1832, name: 'Ifrit Pyroclast [MVP]', band: '81-100', lv: 99, hp: 1260000, hit: 280, flee: 225, exp: 420000, job: 260000,
+    type: 'MVP', element: 'Fire', elIcon: '🔥', race: 'Formless', size: 'Large',
+    thumb: '/thumbs/4b8d19ef42da8fa49a16550cb67bd865cb9b5be3.webp',
+    modifiers: { Water: 200, Neutral: 100, Wind: 100, Poison: 100, Holy: 100, Dark: 100, Earth: 50, Ghost: 100, Undead: 100, Fire: 0 },
+    drops: [
+      { name: 'Ifrit Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/eb790bb0da73869ca8f6c5633da2cfdd43fc912f.webp' },
+      { name: 'Ring of Flame Lord', rate: '0.50%', rarity: 'epic', thumb: '/thumbs/267f361547c7e74de3d59c9c33c2531be79ca02a.webp' }
+    ]
+  },
+  { id: 'baphomet', code: 1039, name: 'Baphomet [MVP]', band: '81-100', lv: 98, hp: 968000, hit: 272, flee: 238, exp: 385000, job: 215000,
+    type: 'MVP', element: 'Dark', elIcon: '🌑', race: 'Demon', size: 'Large',
+    thumb: '/thumbs/5c1ab699db9be2a09a4a9cb531c8cf62127fc5cb.webp',
+    modifiers: { Holy: 200, Neutral: 100, Fire: 100, Water: 100, Wind: 100, Earth: 100, Poison: 50, Ghost: 50, Undead: 100, Dark: 0 },
+    drops: [
+      { name: 'Baphomet Card', rate: '0.01%', rarity: 'legend', thumb: '/thumbs/d80a5e2bf28ff9d976c8ddbe7bbadbe3de36fa34.webp' },
+      { name: 'Majestic Goat', rate: '0.50%', rarity: 'epic', thumb: '/thumbs/267f361547c7e74de3d59c9c33c2531be79ca02a.webp' },
+      { name: 'Crescent Scythe', rate: '1.50%', rarity: 'rare', thumb: '/thumbs/96f2d8a68cb0be4f05b74a22327be62d38bd99b8.webp' }
+    ]
+  }
+];
+
+function getMaxionMob(id) {
+  return MAXION_MONSTERS.find(m => m.id === id) || MAXION_MONSTERS[0];
 }
 
-function renderTownMillcrossSvg(tp) {
-  if (!tp || !tp.extent) return '<div class="observatory-card__meta">No town plan loaded</div>';
-  const w = tp.extent.width || 220;
-  const h = tp.extent.height || 160;
-  return `
-    <svg width="100%" height="340" viewBox="0 0 ${w} ${h}" style="border-radius:8px;background:#162219;border:1px solid var(--joy-border-strong)">
-      <text x="6" y="10" fill="#a8f0be" font-size="6.5" font-weight="bold" font-family="monospace">Town Plan: ${escapeHtml(tp.town)} (${w}×${h}u · anchor [98.2, 152.6] km)</text>
-      <!-- Water polygons (Meltwash River & Mill Race) -->
-      ${(tp.water || []).map(wt => {
-        const pts = (wt.poly || []).map(p => `${p[0]},${p[1]}`).join(' ');
-        return `<polygon points="${pts}" fill="rgba(56, 139, 253, 0.38)" stroke="#58a6ff" stroke-width="0.8"/>`;
-      }).join('')}
-      <!-- Roads -->
-      ${(tp.roads || []).map(rd => {
-        const pts = (rd.points || []).map(p => `${p[0]},${p[1]}`).join(' ');
-        return `<polyline points="${pts}" fill="none" stroke="rgba(218, 184, 122, 0.65)" stroke-width="${Math.max(2, (rd.width || 8) * 0.45)}" stroke-linecap="round" stroke-linejoin="round"/>`;
-      }).join('')}
-      <!-- Footprints (Mills, Guild, Stores, Walls, Gates) -->
-      ${(tp.footprints || []).map(fp => {
-        const [x1, y1, x2, y2] = fp.rect || [0, 0, 10, 10];
-        const rx = Math.min(x1, x2), ry = Math.min(y1, y2);
-        const rw = Math.abs(x2 - x1), rh = Math.abs(y2 - y1);
-        const isWall = fp.kind === 'wall';
-        const isGate = fp.kind === 'gate';
-        const fill = isWall ? '#6e7681' : (isGate ? '#ffd166' : 'rgba(212, 175, 55, 0.32)');
-        const stroke = isWall ? '#8b949e' : '#ffd166';
-        return `
-          <g>
-            <rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="${fill}" stroke="${stroke}" stroke-width="0.7" rx="1"/>
-            ${!isWall && rw >= 12 ? `<text x="${rx + rw/2}" y="${ry + rh/2 + 1.8}" text-anchor="middle" fill="#f0f6fc" font-size="4.2" font-family="monospace">${escapeHtml(fp.id)}</text>` : ''}
-          </g>
-        `;
-      }).join('')}
-    </svg>
-  `;
+function getMaxionTile(id) {
+  return MAXION_WORLD_TILES.find(t => t.id === id) || MAXION_WORLD_TILES[0];
+}
+
+function renderDistinctMapTileSvg(tile, size = 132) {
+  const b = tile.biome || 'meadow';
+  const nb = tile.neighbors || {};
+  // Seeded hash from tile.id so every single map has distinct geometry
+  let h = 0;
+  for (let i = 0; i < tile.id.length; i++) h = ((h << 5) - h + tile.id.charCodeAt(i)) | 0;
+  const seed = Math.abs(h);
+
+  const palettes = {
+    town:     { bg: '#2c3644', base: '#3d4d5e', road: '#d4b483', accent: '#f59e0b', water: '#2563eb' },
+    meadow:   { bg: '#214e2a', base: '#2e6b38', road: '#c8a368', accent: '#86efac', water: '#0ea5e9' },
+    forest:   { bg: '#133822', base: '#1b4b2e', road: '#9c7a4c', accent: '#4ade80', water: '#0284c7' },
+    desert:   { bg: '#785226', base: '#9b6b33', road: '#e2c187', accent: '#fde047', water: '#06b6d4' },
+    pyramid:  { bg: '#5c3d1e', base: '#7c5329', road: '#d9b372', accent: '#f59e0b', water: '#1e293b' },
+    glacier:  { bg: '#1e3a5f', base: '#3b6998', road: '#cbd5e1', accent: '#7dd3fc', water: '#0369a1' },
+    volcano:  { bg: '#3b1512', base: '#571f1a', road: '#78350f', accent: '#f97316', water: '#dc2626' },
+    mountain: { bg: '#333642', base: '#494e5f', road: '#a89070', accent: '#cbd5e1', water: '#0284c7' },
+    crypt:    { bg: '#1a162b', base: '#282240', road: '#645986', accent: '#c084fc', water: '#312e81' },
+    castle:   { bg: '#272936', base: '#383b4e', road: '#94a3b8', accent: '#fbbf24', water: '#1d4ed8' },
+    port:     { bg: '#0c3b5e', base: '#2d5a42', road: '#d4b483', accent: '#38bdf8', water: '#0284c7' },
+    undersea: { bg: '#082644', base: '#0e3c68', road: '#38bdf8', accent: '#22d3ee', water: '#0369a1' },
+  };
+  const pal = palettes[b] || palettes.meadow;
+  const cx = 50 + ((seed % 17) - 8);
+  const cy = 50 + (((seed >> 4) % 17) - 8);
+
+  // Connected roads to N / S / E / W neighbors so tiles visibly link up!
+  let roads = '';
+  if (nb.N) roads += `<line x1="${cx}" y1="${cy}" x2="50" y2="0" stroke="${pal.road}" stroke-width="7" stroke-linecap="round"/>`;
+  if (nb.S) roads += `<line x1="${cx}" y1="${cy}" x2="50" y2="100" stroke="${pal.road}" stroke-width="7" stroke-linecap="round"/>`;
+  if (nb.W) roads += `<line x1="${cx}" y1="${cy}" x2="0" y2="50" stroke="${pal.road}" stroke-width="7" stroke-linecap="round"/>`;
+  if (nb.E) roads += `<line x1="${cx}" y1="${cy}" x2="100" y2="50" stroke="${pal.road}" stroke-width="7" stroke-linecap="round"/>`;
+
+  // Distinct topographic landmarks per biome
+  let landmark = '';
+  if (b === 'town') {
+    landmark = `
+      <rect x="20" y="20" width="60" height="60" rx="6" fill="#475569" stroke="#f8fafc" stroke-width="2.5"/>
+      <rect x="33" y="33" width="34" height="34" rx="3" fill="#b45309" stroke="#fde047" stroke-width="1.5"/>
+      <circle cx="50" cy="50" r="6" fill="#38bdf8" stroke="#fff" stroke-width="1.5"/>
+    `;
+  } else if (b === 'pyramid') {
+    landmark = `
+      <polygon points="50,18 82,76 18,76" fill="#d97706" stroke="#fde047" stroke-width="2"/>
+      <polygon points="50,18 82,76 50,76" fill="rgba(0,0,0,0.28)"/>
+      <rect x="44" y="58" width="12" height="18" fill="#1e1b18"/>
+    `;
+  } else if (b === 'volcano') {
+    landmark = `
+      <path d="M12,85 Q50,10 88,85 Z" fill="#451a14" stroke="#f97316" stroke-width="2"/>
+      <ellipse cx="50" cy="46" rx="16" ry="9" fill="#ef4444" stroke="#fde047" stroke-width="2"/>
+      <path d="M50,55 Q42,72 34,92 M54,54 Q66,75 74,92" stroke="#f97316" stroke-width="4" fill="none"/>
+    `;
+  } else if (b === 'glacier') {
+    landmark = `
+      <polygon points="28,74 44,24 60,74" fill="#7dd3fc" opacity="0.85"/>
+      <polygon points="46,78 64,18 82,78" fill="#bae6fd" stroke="#fff" stroke-width="1.5"/>
+      <circle cx="24" cy="30" r="10" fill="#0284c7" opacity="0.6"/>
+    `;
+  } else if (b === 'crypt' || b === 'castle') {
+    landmark = `
+      <rect x="22" y="24" width="56" height="52" rx="4" fill="rgba(15,23,42,0.75)" stroke="${pal.accent}" stroke-width="2"/>
+      <line x1="22" y1="50" x2="78" y2="50" stroke="${pal.accent}" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <line x1="50" y1="24" x2="50" y2="76" stroke="${pal.accent}" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <circle cx="${cx}" cy="${cy}" r="8" fill="${pal.accent}" opacity="0.85"/>
+    `;
+  } else if (b === 'port' || b === 'undersea') {
+    landmark = `
+      <path d="M0,62 Q50,44 100,66 L100,100 L0,100 Z" fill="${pal.water}"/>
+      <rect x="44" y="42" width="12" height="28" fill="#a16207" stroke="#fde68a" stroke-width="1.2"/>
+      <circle cx="28" cy="76" r="7" fill="#38bdf8" opacity="0.6"/>
+    `;
+  } else if (b === 'forest') {
+    landmark = `
+      <circle cx="28" cy="30" r="13" fill="#14532d" stroke="#4ade80" stroke-width="1.5"/>
+      <circle cx="72" cy="34" r="14" fill="#166534" stroke="#86efac" stroke-width="1.5"/>
+      <circle cx="32" cy="72" r="12" fill="#15803d"/>
+      <circle cx="70" cy="70" r="15" fill="#14532d" stroke="#4ade80" stroke-width="1.5"/>
+    `;
+  } else {
+    // Meadow / Desert / Mountain
+    const wx = 22 + (seed % 50);
+    const wy = 24 + ((seed >> 3) % 48);
+    landmark = `
+      <ellipse cx="${wx}" cy="${wy}" rx="18" ry="11" fill="${pal.water}" opacity="0.85" stroke="#bae6fd" stroke-width="1.2"/>
+      <circle cx="${78 - (seed % 35)}" cy="${28 + (seed % 40)}" r="10" fill="${pal.accent}" opacity="0.55"/>
+    `;
+  }
+
+  // Red warp portals on connected edges (just like RO / Maxion minimaps!)
+  let portals = '';
+  if (nb.N) portals += `<circle cx="50" cy="6" r="4.5" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>`;
+  if (nb.S) portals += `<circle cx="50" cy="94" r="4.5" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>`;
+  if (nb.W) portals += `<circle cx="6" cy="50" r="4.5" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>`;
+  if (nb.E) portals += `<circle cx="94" cy="50" r="4.5" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>`;
+
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" style="display:block;width:100%;height:100%;border-radius:8px;">
+    <rect width="100" height="100" fill="${pal.bg}"/>
+    <rect x="7" y="7" width="86" height="86" rx="10" fill="${pal.base}" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+    ${roads}
+    ${landmark}
+    ${portals}
+  </svg>`;
+}
+
+function selectMaxionLevelBand(band) {
+  MAXION_LEVEL_BAND = band;
+  const firstInBand = MAXION_MONSTERS.find(m => m.band === band);
+  if (firstInBand) {
+    MAXION_PINNED_MOB_ID = firstInBand.id;
+  }
+  writeUrlState(true);
+  render();
+}
+
+function selectMaxionCategory(cat) {
+  MAXION_CAT_FILTER = cat;
+  render();
+}
+
+function pinMaxionMonster(mobId) {
+  MAXION_PINNED_MOB_ID = mobId;
+  MAXION_SELECTED_MOB_ID = mobId;
+  // Auto-select the first map tile where this monster spawns
+  const spawnTile = MAXION_WORLD_TILES.find(t => t.spawns.some(s => s.id === mobId));
+  if (spawnTile) MAXION_SELECTED_TILE_ID = spawnTile.id;
+  writeUrlState(true);
+  render();
+}
+
+function openMonsterDetailPage(mobId) {
+  MAXION_SELECTED_MOB_ID = mobId;
+  MAXION_PINNED_MOB_ID = mobId;
+  CURRENT_TAB = 'mobs';
+  writeUrlState(true);
+  renderSidebar();
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function selectWorldTile(tileId) {
+  MAXION_SELECTED_TILE_ID = tileId;
+  writeUrlState(true);
+  render();
 }
 
 function renderWorldAtlas() {
-  const ws = DATA.worldSpine || {};
-  const allContinents = ws.continents || [];
-  const continents = allContinents.filter(c => (SELECTED_CONTINENT_ID === 'all' || c.id === SELECTED_CONTINENT_ID) && matchesSearch(c));
-  const pinned = (ws.pinnedPlaces || []).filter(p => (SELECTED_CONTINENT_ID === 'all' || p.continentId === SELECTED_CONTINENT_ID) && matchesSearch(p));
-  const zones = (ws.zones || []).filter(z => (SELECTED_CONTINENT_ID === 'all' || z.continentId === SELECTED_CONTINENT_ID) && matchesSearch(z));
-  const dungeons = (ws.dungeons || []).filter(d => (SELECTED_CONTINENT_ID === 'all' || d.continentId === SELECTED_CONTINENT_ID) && matchesSearch(d));
-  const boundCount = (ws.boundPlaces || []).filter(b => SELECTED_CONTINENT_ID === 'all' || b.continentId === SELECTED_CONTINENT_ID).length;
+  const pinnedMob = getMaxionMob(MAXION_PINNED_MOB_ID);
+  const selectedTile = getMaxionTile(MAXION_SELECTED_TILE_ID);
+  const bands = ['1-20', '21-40', '41-60', '61-80', '81-100'];
+
+  const filteredMobs = MAXION_MONSTERS.filter(m => {
+    if (SEARCH_QUERY) {
+      return m.name.toLowerCase().includes(SEARCH_QUERY) || String(m.code).includes(SEARCH_QUERY) || m.element.toLowerCase().includes(SEARCH_QUERY);
+    }
+    if (m.band !== MAXION_LEVEL_BAND) return false;
+    if (MAXION_CAT_FILTER === 'mvp' && m.type !== 'MVP') return false;
+    if (MAXION_CAT_FILTER === 'normal' && m.type === 'MVP') return false;
+    return true;
+  });
+
+  // Build 6x5 World Matrix cells
+  const gridCells = [];
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 6; c++) {
+      const tile = MAXION_WORLD_TILES.find(t => t.row === r && t.col === c);
+      if (!tile) {
+        gridCells.push(`<div class="maxion-map-cell ocean-empty" style="background:rgba(6,20,39,0.45);border:1px dashed rgba(56,189,248,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#334155;font-size:10px;font-family:var(--mono);">🌊 Sea Lane</div>`);
+        continue;
+      }
+      const spawnEntry = pinnedMob ? tile.spawns.find(s => s.id === pinnedMob.id) : null;
+      const isPinned = Boolean(spawnEntry);
+      const isSelected = tile.id === selectedTile.id;
+      const cls = [
+        'maxion-map-cell',
+        isPinned ? 'pinned-spawn' : '',
+        isSelected ? 'selected-tile' : ''
+      ].filter(Boolean).join(' ');
+
+      const nbBadges = Object.keys(tile.neighbors || {}).join('·');
+
+      gridCells.push(`
+        <div class="${cls}" onclick="selectWorldTile('${tile.id}')" ondblclick="CURRENT_TAB='maps';MAXION_SELECTED_TILE_ID='${tile.id}';writeUrlState(true);renderSidebar();render();" title="${escapeHtml(tile.name)} (${tile.code}) — Lv.${tile.lv} | Click to inspect, Double-click for Map Directory">
+          ${renderDistinctMapTileSvg(tile, 140)}
+          <div class="maxion-map-cell__code">${escapeHtml(tile.code)}</div>
+          <div class="maxion-map-cell__lv">Lv.${escapeHtml(tile.lv)}</div>
+          ${isPinned ? `
+            <div class="maxion-map-cell__pin" onclick="event.stopPropagation();openMonsterDetailPage('${pinnedMob.id}')" title="Click to open ${escapeHtml(pinnedMob.name)} detail page">
+              <img src="${pinnedMob.thumb}" alt="${escapeHtml(pinnedMob.name)}"/>
+              <span class="maxion-map-cell__pin-count">×${spawnEntry.count}</span>
+            </div>
+          ` : ''}
+          <div class="maxion-map-cell__name">${escapeHtml(tile.name)} <span style="opacity:0.65;font-size:9px;">[${nbBadges}]</span></div>
+        </div>
+      `);
+    }
+  }
+
+  // Selected Tile Neighbors & Resident Monsters
+  const nbEntries = Object.entries(selectedTile.neighbors || {});
 
   return `
-    <div class="page-hero">
+    <div style="margin-bottom: 14px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
       <div>
-        <div class="page-hero__eyebrow">LAYER 1 &amp; LAYER 2 WORLD SPINE · 400×400 KM DETERMINISTIC GEOGRAPHY</div>
-        <h1 class="page-hero__title">World &amp; Continent Atlas (<code>content/world/</code> + <code>content/spine/</code>)</h1>
-        <p class="page-hero__sub">
-          Single source of spatial truth: <strong>13 Continents</strong> (64,000 km² net land, 1.5:1 sea-to-land ratio),
-          <strong>${(ws.pinnedPlaces || []).length} Pinned Canon Places</strong>, <strong>${(ws.boundPlaces || []).length} Slot-Bound Places</strong>,
-          <strong>${(ws.zones || []).length} Surveyed Zones</strong>, and <strong>${(ws.dungeons || []).length} Multi-Floor Dungeons</strong>.
-        </p>
-      </div>
-      <div class="chip-row">
-        <span class="joy-badge joy-badge--brand mono">Seed: ${escapeHtml(ws.seed || '7c9e4a2f8b1d6e03')}</span>
-        <span class="joy-badge joy-badge--success">Sea:Land = ${ws.seaToLandRatio || 1.5}:1</span>
-      </div>
-    </div>
-
-    <!-- Interactive 2D World Atlas SVG + Millcross Town Plan SVG -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div class="observatory-card" style="padding:14px">
-        <div class="observatory-card__head">
-          <div>
-            <h3 class="observatory-card__title">400×400 km World Atlas (Click Any Continent)</h3>
-            <div class="observatory-card__meta">13 Continent footprints, sea lanes, c02 trade roads &amp; pinned towns</div>
-          </div>
-          ${SELECTED_CONTINENT_ID !== 'all' ? `<button class="joy-button joy-button--outline joy-button--sm" onclick="SELECTED_CONTINENT_ID='all';render()">Reset Filter (${escapeHtml(SELECTED_CONTINENT_ID)})</button>` : ''}
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#ffd166;">
+          🧭 INTERACTIVE WORLD MAP & MONSTER SPAWN LOCATOR (ROLTH.MAXION.GG + LINEAGE ATLAS BENCHMARK)
         </div>
-        ${renderWorldAtlasSvg(ws)}
+        <h1 style="font-size:24px;font-weight:900;margin:2px 0 0 0;color:#f8fafc;">
+          Midgard Connected Tile World Map <span style="font-size:14px;font-weight:600;color:#94a3b8;">(25 Distinct Connected Regions · 36 Unique Monsters)</span>
+        </h1>
       </div>
-
-      <div class="observatory-card" style="padding:14px">
-        <div class="observatory-card__head">
-          <div>
-            <h3 class="observatory-card__title">Authoritative Town Plan: Millcross (<code>town-millcross.json</code>)</h3>
-            <div class="observatory-card__meta">Meltwash river, mill race, 5 roads, city walls, gates &amp; 18 building footprints</div>
-          </div>
-          <div class="chip-row">
-            ${rmsLink('maps', 'millcross-ford', 'Open Millcross 3D Map', '4000×4000m')}
-            ${rmsLink('maps', 'freja-south-gate', 'Open Pilot Gate Map', '1000×1000m')}
-          </div>
-        </div>
-        ${renderTownMillcrossSvg(ws.townMillcross)}
-      </div>
-    </div>
-
-    <!-- Continent Filter Chips -->
-    <div class="controls-panel">
-      <strong style="font-size:12px;color:var(--joy-text-secondary)">Filter by Continent:</strong>
-      <div class="chip-row">
-        <button type="button" class="joy-button ${SELECTED_CONTINENT_ID === 'all' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="SELECTED_CONTINENT_ID='all';render()">
-          All 13 Continents
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn" onclick="openMonsterDetailPage('${pinnedMob.id}')" style="border-color:#ffd166;color:#ffd166;">
+          👾 Inspect Pinned: <b>${escapeHtml(pinnedMob.name)} (#${pinnedMob.code})</b> →
         </button>
-        ${allContinents.map(c => `
-          <button type="button" class="joy-button ${SELECTED_CONTINENT_ID === c.id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm mono" onclick="SELECTED_CONTINENT_ID='${escapeHtml(c.id)}';render()">
-            ${escapeHtml(c.id)} · ${escapeHtml(c.title)} (Lv.${c.levelMin}-${c.levelMax})
-          </button>
-        `).join('')}
+        <button class="btn" onclick="CURRENT_TAB='maps';writeUrlState(true);renderSidebar();render();">
+          🗺️ Connected Map Directory (25)
+        </button>
       </div>
     </div>
 
-    <!-- Continent Datasheets -->
-    <div class="rms-list">
-      ${continents.map(c => {
-        const cPinned = (ws.pinnedPlaces || []).filter(p => p.continentId === c.id);
-        const cDungeons = (ws.dungeons || []).filter(d => d.continentId === c.id);
-        const cZones = (ws.zones || []).filter(z => z.continentId === c.id);
-        const cBound = (ws.boundPlaces || []).filter(b => b.continentId === c.id);
-        return `
-          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === c.id ? 'rms-highlight' : ''}" id="entity-${escapeHtml(c.id)}">
-            <div class="rms-sheet__head">
-              <div class="rms-sheet__head-left">
-                <span class="rms-thumb-chip">🌍</span>
-                <span class="rms-sheet__title">${escapeHtml(c.id.toUpperCase())} — ${escapeHtml(c.title)}</span>
-                <span class="joy-badge joy-badge--brand joy-badge--sm">Lv.${c.levelMin}–${c.levelMax}</span>
-                <span class="joy-badge joy-badge--neutral joy-badge--sm mono">${escapeHtml(c.continentClass)} · coast:${escapeHtml(c.coastClass)}</span>
-                <span class="rms-sheet__id">Naming Register: <code>${escapeHtml(c.register)}</code></span>
-              </div>
-              <div class="chip-row">
-                <span class="joy-badge joy-badge--success joy-badge--sm mono">${c.grossLandKm2.toLocaleString()} km² (${c.landCells.toLocaleString()} cells)</span>
-                ${inspectBtnHtml('continent', c.title, c)}
-              </div>
-            </div>
-            <table class="rms-table">
-              <tbody>
-                <tr>
-                  <th>Structural Premise</th>
-                  <td colspan="3">${escapeHtml(c.structuralIdea)}</td>
-                  <th>Landform Kit</th>
-                  <td><div class="chip-row">${(c.landformKit || []).map(k => `<span class="joy-badge joy-badge--neutral joy-badge--sm mono">${escapeHtml(k)}</span>`).join('')}</div></td>
-                </tr>
-                <tr>
-                  <th>Biome Palette</th>
-                  <td colspan="3"><div class="chip-row">${(c.palette || []).map(p => `<span class="joy-badge joy-badge--success joy-badge--sm mono">${escapeHtml(p)}</span>`).join('')}</div></td>
-                  <th>Bound Frontier Slots</th>
-                  <td class="mono">${cBound.length} bound landmarks/settlements</td>
-                </tr>
-                <tr>
-                  <th>Pinned Towns &amp; Landmarks (${cPinned.length})</th>
-                  <td colspan="5">
-                    <div class="chip-row">
-                      ${cPinned.map(p => `<a class="rms-link" onclick="jumpToEntity('world', '${escapeHtml(p.id)}')"><span class="rms-link__arrow">${p.kind === 'town' ? '🏰' : '📍'}</span><span>${escapeHtml(p.title)}</span><span class="rms-link__rate">(${escapeHtml(p.landform)})</span></a>`).join(' ') || '<span class="observatory-card__meta">None</span>'}
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <th>Surveyed Zones (${cZones.length}) &amp; Playable 3D Maps</th>
-                  <td colspan="5">
-                    <div class="chip-row">
-                      ${cZones.slice(0, 12).map(z => {
-                        const zMap = (DATA.maps || []).find(m => (m.worldSpineBinding && m.worldSpineBinding.zoneId === z.id) || m.id === z.id);
-                        return zMap
-                          ? rmsLink('maps', zMap.id, `🗺️ ${z.id}`, `${z.regionRef} · ${(zMap.spawnAreas || []).length} spawns`)
-                          : `<span class="joy-badge joy-badge--neutral joy-badge--sm mono">🧭 ${escapeHtml(z.id)} (${escapeHtml(z.regionRef)})</span>`;
-                      }).join('')}
-                      ${cDungeons.slice(0, 10).map(d => `<span class="joy-badge joy-badge--warning joy-badge--sm mono">🗝️ ${escapeHtml(d.title)} (${d.floors}F · Lv.${d.levelMin}-${d.levelMax})</span>`).join('')}
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+    <div class="maxion-world-shell">
+      <!-- LEFT SIDEBAR: Level-Band Rail + Distinct Monster Portrait Grid (rolth.maxion.gg/WorldMap) -->
+      <aside class="maxion-sidebar">
+        <div class="maxion-sidebar__top">
+          <div class="maxion-sidebar__title">
+            <span>📌 Pin Monster Spawns on World Map</span>
           </div>
-        `;
-      }).join('')}
-    </div>
-
-    <!-- Pinned Canon Places Table -->
-    <div class="observatory-card">
-      <div class="observatory-card__head">
-        <div>
-          <h3 class="observatory-card__title">Pinned Canon Towns &amp; Landmarks (${pinned.length} shown · +${boundCount} Slot-Bound Places in SQLite)</h3>
-          <div class="observatory-card__meta">Every pinned place is a generator input verified by G-PIN-SAT (landform + water + slope)</div>
+          <div class="maxion-cat-tabs">
+            <button class="maxion-cat-btn ${MAXION_CAT_FILTER === 'all' || MAXION_CAT_FILTER === 'normal' ? 'active' : ''}" onclick="selectMaxionCategory(MAXION_CAT_FILTER === 'normal' ? 'all' : 'normal')">
+              👾 Normal Monsters
+            </button>
+            <button class="maxion-cat-btn ${MAXION_CAT_FILTER === 'mvp' ? 'active' : ''}" onclick="selectMaxionCategory(MAXION_CAT_FILTER === 'mvp' ? 'all' : 'mvp')">
+              👑 MVP & Boss
+            </button>
+          </div>
         </div>
-        <span class="joy-badge joy-badge--brand">content/world/civil/pinned-roster.json</span>
-      </div>
-      <div class="joy-table-container">
-        <table class="joy-table">
-          <thead>
-            <tr>
-              <th>ID &amp; Name</th>
-              <th>Kind / Rank</th>
-              <th>Continent &amp; Coords (km)</th>
-              <th>Required Landform</th>
-              <th>Canon / Geography Justification (<code>why</code>)</th>
-              <th>Inspect</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${pinned.map(p => `
-              <tr id="entity-${escapeHtml(p.id)}" class="${HIGHLIGHT_ENTITY_ID === p.id ? 'rms-highlight' : ''}">
-                <td>
-                  <div style="font-weight:700">${p.kind === 'town' ? '🏰' : '📍'} ${escapeHtml(p.title)}</div>
-                  <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">${escapeHtml(p.id)}</div>
-                </td>
-                <td><span class="joy-badge ${p.kind === 'town' ? 'joy-badge--brand' : 'joy-badge--neutral'} joy-badge--sm">${escapeHtml(p.kind.toUpperCase())}${p.rank ? ' · ' + escapeHtml(p.rank.toUpperCase()) : ''}</span></td>
-                <td class="mono">${escapeHtml(p.continentId)} @ [${p.atXKm ?? '—'}, ${p.atYKm ?? '—'}]</td>
-                <td><span class="joy-badge joy-badge--success joy-badge--sm mono">${escapeHtml(p.landform)}</span></td>
-                <td style="font-size:12px">${escapeHtml(p.whyOrNote)}</td>
-                <td>${inspectBtnHtml('place', p.title, p)}</td>
-              </tr>
+
+        <div class="maxion-sidebar__body">
+          <!-- Vertical Level-Band Tabs (1-20 .. 81-100) -->
+          <div class="maxion-lvl-rail">
+            ${bands.map(b => `
+              <button class="maxion-lvl-btn ${MAXION_LEVEL_BAND === b && !SEARCH_QUERY ? 'active' : ''}" onclick="selectMaxionLevelBand('${b}')">
+                Lv.<br>${b.replace('-', ' - ')}
+              </button>
             `).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Surveyed Zones & Dungeons Split -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div class="observatory-card">
-        <div class="observatory-card__head">
-          <div>
-            <h3 class="observatory-card__title">Surveyed Zones (${zones.length})</h3>
-            <div class="observatory-card__meta"><code>content/zones/*.json</code> — Hazards, Salvage/Crop Resources &amp; Landmarks</div>
           </div>
-        </div>
-        <div class="joy-table-container" style="max-height:420px;overflow-y:auto">
-          <table class="joy-table">
-            <thead>
-              <tr><th>Zone</th><th>Region</th><th>Reason to Go &amp; Hazards</th></tr>
-            </thead>
-            <tbody>
-              ${zones.map(z => {
-                const zMap = (DATA.maps || []).find(m => (m.worldSpineBinding && m.worldSpineBinding.zoneId === z.id) || m.id === z.id);
-                return `
-                <tr id="entity-zone-${escapeHtml(z.id)}">
-                  <td class="mono" style="font-weight:700">
-                    <div>${escapeHtml(z.id)}</div>
-                    ${zMap ? `<div style="margin-top:4px">${rmsLink('maps', zMap.id, '3D Map: ' + zMap.id, (zMap.spawnAreas || []).length + ' spawns')}</div>` : ''}
-                  </td>
-                  <td class="mono">
-                    <div>${escapeHtml(z.regionRef)}</div>
-                    ${zMap && zMap.worldSpineBinding && zMap.worldSpineBinding.storyRegionId ? `<div style="margin-top:4px">${rmsLink('story', zMap.worldSpineBinding.storyRegionId, zMap.worldSpineBinding.storyRegionId, 'Story')}</div>` : ''}
-                  </td>
-                  <td style="font-size:12px">
-                    <div>${escapeHtml(z.reasonToGo)}</div>
-                    <div class="chip-row" style="margin-top:4px">
-                      ${(z.hazards || []).map(h => `<span class="joy-badge joy-badge--danger joy-badge--sm">⚠️ ${escapeHtml(h.name)}</span>`).join('')}
-                      ${(z.resources || []).map(r => `<span class="joy-badge joy-badge--success joy-badge--sm">📦 ${escapeHtml(r.name)}</span>`).join('')}
-                    </div>
-                  </td>
-                </tr>
+
+          <!-- 3-Column Monster Portrait Cards -->
+          <div class="maxion-mob-grid">
+            ${filteredMobs.map(m => {
+              const isPinned = m.id === pinnedMob.id;
+              return `
+                <div class="maxion-mob-tile ${isPinned ? 'pinned' : ''}" onclick="pinMaxionMonster('${m.id}')" ondblclick="openMonsterDetailPage('${m.id}')" title="Click to pin spawns on World Map | Double-click for full Monster/${m.code} detail">
+                  <span class="maxion-mob-tile__pin-icon">📌</span>
+                  <div class="maxion-mob-tile__avatar">
+                    <img src="${m.thumb}" alt="${escapeHtml(m.name)}" loading="lazy"/>
+                  </div>
+                  <span class="maxion-mob-tile__lvl">${m.elIcon} Lv.${m.lv}</span>
+                  <div class="maxion-mob-tile__name">${escapeHtml(m.name)}</div>
+                </div>
               `;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="observatory-card">
-        <div class="observatory-card__head">
-          <div>
-            <h3 class="observatory-card__title">Dungeon Complexes (${dungeons.length})</h3>
-            <div class="observatory-card__meta"><code>content/dungeons/*.json</code> — Multi-floor complexes bound to landform handles</div>
+            }).join('')}
           </div>
         </div>
-        <div class="joy-table-container" style="max-height:420px;overflow-y:auto">
-          <table class="joy-table">
-            <thead>
-              <tr><th>Dungeon</th><th>Floors / Lv</th><th>Entrance, Hazards &amp; Lore</th></tr>
-            </thead>
-            <tbody>
-              ${dungeons.map(d => `
-                <tr>
-                  <td>
-                    <div style="font-weight:700">${escapeHtml(d.title)}</div>
-                    <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">${escapeHtml(d.handleRef)}</div>
-                  </td>
-                  <td class="mono">${d.floors}F · Lv.${d.levelMin}-${d.levelMax}</td>
-                  <td style="font-size:12px">
-                    <div>${escapeHtml(d.loreNote)}</div>
-                    <div class="chip-row" style="margin-top:4px">
-                      <span class="joy-badge joy-badge--neutral joy-badge--sm mono">door:${escapeHtml(d.entranceType)}</span>
-                      ${(d.hazards || []).map(h => `<span class="joy-badge joy-badge--warning joy-badge--sm mono">${escapeHtml(h)}</span>`).join('')}
+
+        <div style="padding:10px 14px;background:#090d14;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#94a3b8;">
+          <span>Pinned: <strong style="color:#ffd166;">${escapeHtml(pinnedMob.name)} (Lv.${pinnedMob.lv})</strong></span>
+          <a href="#tab=mobs&mob=${pinnedMob.id}" onclick="event.preventDefault();openMonsterDetailPage('${pinnedMob.id}')" style="color:#38bdf8;font-weight:700;text-decoration:none;">Full Stats & Drops →</a>
+        </div>
+      </aside>
+
+      <!-- RIGHT WORLD MAP CANVAS: 6x5 Connected Topographic Tile Matrix + Selected Map Inspector -->
+      <div class="maxion-canvas-card">
+        <div class="maxion-canvas-header">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <span class="pill pill--gold">📌 Pinned Monster: ${escapeHtml(pinnedMob.name)} (#${pinnedMob.code})</span>
+            <span style="font-size:12px;color:#cbd5e1;">
+              Spawns on <strong style="color:#38bdf8;">${MAXION_WORLD_TILES.filter(t => t.spawns.some(s => s.id === pinnedMob.id)).length} connected map tiles</strong> (highlighted in cyan/gold below)
+            </span>
+          </div>
+          <div style="font-size:11px;color:#94a3b8;">
+            Click any map tile to inspect N/S/E/W connections · Click pinned monster badge to open Monster DB
+          </div>
+        </div>
+
+        <div class="maxion-world-board">
+          <div class="maxion-tile-matrix">
+            ${gridCells.join('')}
+          </div>
+        </div>
+
+        <!-- SELECTED TILE INSPECTOR BAR (Lineage Connected Map + Spawn Breakdown) -->
+        <div style="padding:16px 18px;background:#0d1422;border-top:1px solid rgba(255,255,255,0.1);display:grid;grid-template-columns:110px 1fr 1.1fr;gap:18px;align-items:center;">
+          <div style="width:104px;height:104px;border-radius:10px;overflow:hidden;border:2px solid #ffd166;box-shadow:0 6px 18px rgba(0,0,0,0.5);">
+            ${renderDistinctMapTileSvg(selectedTile, 104)}
+          </div>
+
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <span class="pill pill--cyan" style="font-family:var(--mono);">${escapeHtml(selectedTile.code)}</span>
+              <span class="pill">${escapeHtml(selectedTile.biome.toUpperCase())}</span>
+              <span class="pill pill--gold">Lv. ${escapeHtml(selectedTile.lv)}</span>
+            </div>
+            <h3 style="margin:0 0 8px 0;font-size:18px;font-weight:800;color:#fff;">${escapeHtml(selectedTile.name)}</h3>
+            <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;font-weight:700;text-transform:uppercase;">Connected Adjacent Maps (Click to Travel):</div>
+            <div class="lineage-neighbors">
+              ${nbEntries.map(([dir, targetId]) => {
+                const target = getMaxionTile(targetId);
+                return `<span class="lineage-nb-chip" onclick="selectWorldTile('${target.id}')"><b>${dir}:</b> ${escapeHtml(target.name)} (${escapeHtml(target.code)})</span>`;
+              }).join('')}
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:11px;color:#94a3b8;margin-bottom:8px;font-weight:700;text-transform:uppercase;">
+              Resident Monsters in ${escapeHtml(selectedTile.name)} (Click to View Monster DB):
+            </div>
+            <div class="lineage-spawns-row">
+              ${selectedTile.spawns.map(sp => {
+                const mob = getMaxionMob(sp.id);
+                return `
+                  <div class="lineage-spawn-pill" onclick="openMonsterDetailPage('${mob.id}')">
+                    <img src="${mob.thumb}" alt="${escapeHtml(mob.name)}"/>
+                    <div>
+                      <div style="font-size:12px;font-weight:800;color:#f8fafc;">${escapeHtml(mob.name)}</div>
+                      <div style="font-size:10px;color:#ffd166;">Lv.${mob.lv} · ${sp.count} spawns</div>
                     </div>
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
         </div>
       </div>
     </div>
   `;
 }
+
 
 function renderStoryGraph() {
   const ws = DATA.worldSpine || {};
@@ -4061,113 +5100,167 @@ function updateRefineCalc() {
  * 3. MONSTER DATABASE (RateMyServer mob_db 2D Datasheet + 3D Creature Portrait)
  * ========================================================================== */
 function renderMobs() {
-  const mobs = DATA.mobs.filter(matchesSearch);
-  const mat = (DATA.elements && DATA.elements.damageMatrixPct) || {};
-  const elems = (DATA.elements && DATA.elements.elements) || [];
+  const mob = getMaxionMob(MAXION_SELECTED_MOB_ID);
+  const spawnTiles = MAXION_WORLD_TILES.filter(t => t.spawns.some(s => s.id === mob.id));
+
+  const elementMeta = [
+    { key: 'Earth',   icon: '🌿', color: '#4ade80' },
+    { key: 'Poison',  icon: '☠️', color: '#c084fc' },
+    { key: 'Neutral', icon: '⚪', color: '#cbd5e1' },
+    { key: 'Fire',    icon: '🔥', color: '#f87171' },
+    { key: 'Holy',    icon: '✨', color: '#fde047' },
+    { key: 'Dark',    icon: '🌑', color: '#818cf8' },
+    { key: 'Water',   icon: '💧', color: '#38bdf8' },
+    { key: 'Ghost',   icon: '👻', color: '#e2e8f0' },
+    { key: 'Undead',  icon: '💀', color: '#94a3b8' },
+    { key: 'Wind',    icon: '🌪️', color: '#facc15' },
+  ];
+
+  const rosterMobs = MAXION_MONSTERS.filter(m => {
+    if (!SEARCH_QUERY) return true;
+    return m.name.toLowerCase().includes(SEARCH_QUERY) || String(m.code).includes(SEARCH_QUERY) || m.element.toLowerCase().includes(SEARCH_QUERY) || m.race.toLowerCase().includes(SEARCH_QUERY);
+  });
 
   return `
-    <div class="page-hero">
-      <div>
-        <div class="page-hero__eyebrow">RATEMYSERVER MOB_DB · 3D CREATURE SPRITES &amp; DROPS</div>
-        <h1 class="page-hero__title">Monster Bestiary &amp; Drop Datasheets (${mobs.length})</h1>
-        <p class="page-hero__sub">
-          Full RateMyServer monster specification tables with 3D-baked creature portraits, elemental weakness calculations,
-          spawn map links, and live <strong>${DROP_RATE_MULT}x</strong> drop rates with item thumbnails.
-        </p>
+    <!-- Breadcrumb Bar (rolth.maxion.gg/Monster/1035 style) -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#94a3b8;font-weight:600;">
+        <a href="#tab=world&mob=${mob.id}" onclick="event.preventDefault();CURRENT_TAB='world';MAXION_PINNED_MOB_ID='${mob.id}';writeUrlState(true);renderSidebar();render();" style="color:#38bdf8;text-decoration:none;font-weight:700;">🧭 World Map</a>
+        <span>/</span>
+        <span>Monsters</span>
+        <span>/</span>
+        <span style="color:#f8fafc;font-weight:800;">${escapeHtml(mob.name)} (#${mob.code})</span>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" onclick="CURRENT_TAB='world';MAXION_PINNED_MOB_ID='${mob.id}';writeUrlState(true);renderSidebar();render();" style="border-color:#38bdf8;color:#38bdf8;">
+          📌 Show ${escapeHtml(mob.name)} on World Map (${spawnTiles.length} Maps)
+        </button>
       </div>
     </div>
 
-    <div class="rms-list">
-      ${mobs.map((m, idx) => {
-        const weakTo = [];
-        const resists = [];
-        elems.forEach(atk => {
-          const pct = (mat[atk] && mat[atk][m.element] !== undefined) ? mat[atk][m.element] : 100;
-          if (pct > 100) weakTo.push(`${atk} (${pct}%)`);
-          else if (pct < 100) resists.push(`${atk} (${pct}%)`);
-        });
-        const huntedInQuests = DATA.quests.filter(q => (q.objectives || []).some(o => o.targetId === m.id));
-        const handbookEntries = DATA.handbook.filter(h => h.targetId === m.id);
+    <div class="maxion-mob-detail">
+      <!-- HERO HEADER: 192x192 Portrait Card + Name + 4 Pill Badges + 4 Stat Boxes -->
+      <div class="maxion-mob-hero">
+        <div class="maxion-mob-portrait-box">
+          <img src="${mob.thumb}" alt="${escapeHtml(mob.name)}"/>
+        </div>
 
-        return `
-          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === m.id ? 'rms-highlight' : ''}" id="entity-${m.id}">
-            <div class="rms-sheet__head">
-              <div class="rms-sheet__head-left">
-                ${renderThumbChip(m, m.isMvp ? '👑' : '👾')}
-                <span class="rms-sheet__title">Lv.${m.level} ${escapeHtml(m.name)}</span>
-                <span class="joy-badge ${m.isMvp ? 'joy-badge--warning' : 'joy-badge--danger'} joy-badge--sm">${m.isMvp ? 'MVP BOSS' : 'Rank ' + m.rank}</span>
-                <span class="rms-sheet__id">Mob ID# ${2001 + idx} (<code>${escapeHtml(m.id)}</code> · <code>${escapeHtml(m.assetStudioKey)}</code>)</span>
+        <div>
+          <div style="font-size:12px;font-family:var(--mono);color:#94a3b8;font-weight:700;margin-bottom:2px;">
+            MONSTER ID #${mob.code} · LEVEL BAND ${mob.band}
+          </div>
+          <h1 class="maxion-mob-title">${escapeHtml(mob.name)}</h1>
+
+          <!-- 4 Property Pill Badges (Normal/MVP, Element, Race, Size) -->
+          <div class="maxion-prop-pills">
+            <span class="maxion-prop-pill" style="${mob.type === 'MVP' ? 'border-color:#eab308;color:#fde047;background:rgba(234,179,8,0.16);' : ''}">
+              ${mob.type === 'MVP' ? '👑 MVP Boss' : '⚔️ Normal'}
+            </span>
+            <span class="maxion-prop-pill">${mob.elIcon} ${escapeHtml(mob.element)}</span>
+            <span class="maxion-prop-pill">🧬 ${escapeHtml(mob.race)}</span>
+            <span class="maxion-prop-pill">📏 ${escapeHtml(mob.size)}</span>
+          </div>
+
+          <!-- 4 Primary Stat Boxes (LEVEL, HP, HIT / FLEE, EXP / JOB) -->
+          <div class="maxion-stat-boxes">
+            <div class="maxion-stat-box">
+              <div class="maxion-stat-box__label">LEVEL</div>
+              <div class="maxion-stat-box__val">${mob.lv}</div>
+            </div>
+            <div class="maxion-stat-box">
+              <div class="maxion-stat-box__label">HP</div>
+              <div class="maxion-stat-box__val">${mob.hp.toLocaleString()}</div>
+            </div>
+            <div class="maxion-stat-box">
+              <div class="maxion-stat-box__label">HIT / FLEE</div>
+              <div class="maxion-stat-box__val">${mob.hit} / ${mob.flee}</div>
+            </div>
+            <div class="maxion-stat-box">
+              <div class="maxion-stat-box__label">EXP / JOB</div>
+              <div class="maxion-stat-box__val">${mob.exp.toLocaleString()} / ${mob.job.toLocaleString()}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 1: 2x5 Elemental Damage Modifiers (ธาตุ / Elemental Modifiers) -->
+      <div>
+        <div class="maxion-section-head">ธาตุ · Elemental Damage Modifiers</div>
+        <div class="maxion-elem-grid">
+          ${elementMeta.map(el => {
+            const pct = mob.modifiers[el.key] !== undefined ? mob.modifiers[el.key] : 100;
+            const cls = pct > 100 ? 'maxion-elem-card__pct--weak' : (pct < 100 ? 'maxion-elem-card__pct--resist' : '');
+            return `
+              <div class="maxion-elem-card">
+                <div class="maxion-elem-card__icon" style="border:1px solid ${el.color}55;">${el.icon}</div>
+                <div>
+                  <div class="maxion-elem-card__name">${el.key}</div>
+                  <div class="maxion-elem-card__pct ${cls}">${pct}%</div>
+                </div>
               </div>
-              <div class="chip-row">
-                ${inspectBtnHtml('mob', m.name, m)}
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- SECTION 2: Visual Item Drop Cards (โอกาสได้รับ · Drops & Obtainable Items) -->
+      <div>
+        <div class="maxion-section-head">โอกาสได้รับ · Obtainable Drops (${mob.drops.length} Items)</div>
+        <div class="maxion-drops-grid">
+          ${mob.drops.map(d => `
+            <div class="maxion-drop-card rarity-${d.rarity}">
+              <div class="maxion-drop-card__art">
+                <img src="${d.thumb}" alt="${escapeHtml(d.name)}"/>
+                <span class="maxion-drop-card__rate">${escapeHtml(d.rate)}</span>
+              </div>
+              <div class="maxion-drop-card__name">${escapeHtml(d.name)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- SECTION 3: Connected Spawn Habitat Maps -->
+      <div>
+        <div class="maxion-section-head">แหล่งเกิดมอนสเตอร์ · Connected Spawn Maps (${spawnTiles.length} Maps)</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;">
+          ${spawnTiles.map(tile => {
+            const sp = tile.spawns.find(s => s.id === mob.id);
+            return `
+              <div onclick="CURRENT_TAB='world';MAXION_PINNED_MOB_ID='${mob.id}';MAXION_SELECTED_TILE_ID='${tile.id}';writeUrlState(true);renderSidebar();render();" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;background:#161d2a;border:1px solid rgba(255,255,255,0.1);cursor:pointer;">
+                <div style="width:64px;height:64px;flex-shrink:0;border-radius:8px;overflow:hidden;border:1px solid rgba(255,209,102,0.5);">
+                  ${renderDistinctMapTileSvg(tile, 64)}
+                </div>
+                <div>
+                  <div style="font-size:11px;font-family:var(--mono);color:#38bdf8;font-weight:700;">${escapeHtml(tile.code)} · Lv.${escapeHtml(tile.lv)}</div>
+                  <div style="font-size:14px;font-weight:800;color:#fff;">${escapeHtml(tile.name)}</div>
+                  <div style="font-size:12px;color:#ffd166;font-weight:700;">📌 ${sp ? sp.count : 20} Active Spawns →</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- SECTION 4: Quick Monster Switcher Roster (All 36 Distinct Monsters) -->
+      <div>
+        <div class="maxion-section-head">All Monsters Roster (${rosterMobs.length} Distinct Monsters — Click Any to Inspect)</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">
+          ${rosterMobs.map(m => `
+            <div onclick="openMonsterDetailPage('${m.id}')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:${m.id === mob.id ? 'rgba(234,179,8,0.18)' : '#161c28'};border:1.5px solid ${m.id === mob.id ? '#eab308' : 'rgba(255,255,255,0.08)'};cursor:pointer;">
+              <img src="${m.thumb}" alt="${escapeHtml(m.name)}" style="width:42px;height:42px;object-fit:contain;border-radius:8px;background:#0c1018;padding:3px;"/>
+              <div style="min-width:0;">
+                <div style="font-size:12px;font-weight:800;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(m.name)}</div>
+                <div style="font-size:10px;color:#94a3b8;">#${m.code} · Lv.${m.lv}</div>
               </div>
             </div>
-            <table class="rms-table">
-              <tbody>
-                <tr>
-                  ${renderArtworkCell(m, 6, m.assetStudioKey)}
-                  <th>HP</th>
-                  <td class="mono"><strong>${m.hp.toLocaleString()}</strong></td>
-                  <th>Attack (pAtk)</th>
-                  <td class="mono">${m.pAtk}</td>
-                  <th>Defense (pDef)</th>
-                  <td class="mono">${m.pDef}</td>
-                  <th>Aggro / Leash</th>
-                  <td class="mono">${m.aggroRangeM}m / ${m.leashRangeM}m</td>
-                </tr>
-                <tr>
-                  <th>Element</th>
-                  <td><strong>${escapeHtml(m.element)}</strong></td>
-                  <th>Race</th>
-                  <td><strong>${escapeHtml(m.race)}</strong></td>
-                  <th>Size</th>
-                  <td><strong>${escapeHtml(m.size)}</strong></td>
-                  <th>EXP / 100 HP</th>
-                  <td class="mono">${((m.baseExp * 100) / Math.max(1, m.hp)).toFixed(1)} Base/100HP</td>
-                </tr>
-                <tr>
-                  <th>Base EXP</th>
-                  <td class="mono">+${(m.baseExp * DROP_RATE_MULT).toLocaleString()} (${DROP_RATE_MULT}x)</td>
-                  <th>Job EXP</th>
-                  <td class="mono">+${(m.jobExp * DROP_RATE_MULT).toLocaleString()} (${DROP_RATE_MULT}x)</td>
-                  <th>Weak To (&gt;100%)</th>
-                  <td style="color:var(--joy-status-success-fg);font-weight:600">${weakTo.join(', ') || 'None'}</td>
-                  <th>Resists (&lt;100%)</th>
-                  <td style="color:var(--joy-status-danger-fg)">${resists.join(', ') || 'None'}</td>
-                </tr>
-                <tr>
-                  <th>Spawn Maps</th>
-                  <td colspan="7">
-                    ${(m.spawnZones || []).map(z => rmsLink('maps', z, z, 'Active Spawn')).join(' ')}
-                  </td>
-                </tr>
-                <tr>
-                  <th>Drops (${DROP_RATE_MULT}x Rate)</th>
-                  <td colspan="7">
-                    ${(m.drops || []).map(d => rmsLink('gear', d.itemId, d.itemId, formatDropPct(d.chanceBps))).join(' ')}
-                    ${m.cardId ? rmsLink('gear', m.cardId, m.cardId, formatDropPct(20)) : ''}
-                  </td>
-                </tr>
-                <tr>
-                  <th>Quests &amp; Research</th>
-                  <td colspan="7">
-                    ${huntedInQuests.map(q => rmsLink('quests', q.id, q.title, 'Hunt Objective')).join(' ')}
-                    ${handbookEntries.map(h => `<span class="joy-badge joy-badge--success joy-badge--sm">${escapeHtml(h.title)} (${h.tiers.map(t => '≥' + t.requiredCount).join('/')})</span>`).join(' ')}
-                    ${(!huntedInQuests.length && !handbookEntries.length) ? '<span class="observatory-card__meta">Field / Boss Encounter</span>' : ''}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        `;
-      }).join('')}
+          `).join('')}
+        </div>
+      </div>
     </div>
   `;
 }
 
-/* ============================================================================
- * 4. SKILL & JOB BRANCH DATABASE (RateMyServer skill_db_class Layout)
- * ========================================================================== */
+
 function renderJobs() {
   const jobs = DATA.jobs.filter(matchesSearch);
   const skills = DATA.skills.filter(matchesSearch);
@@ -4619,215 +5712,95 @@ function updateSiegeCalc() {
  * 8. MAP & AREA SPAWN DIRECTORY (RateMyServer map_db + areainfo Layout)
  * ========================================================================== */
 function renderMinimapSvg(m) {
-  const terraces = m.heightTerraces || [];
-  const structs = m.structures || [];
-  const spawns = m.spawnAreas || [];
-  const routes = m.routes || [];
-  const zones = m.groundZones || [];
-
-  const halfExtent = Math.max(42.0, (m.width || 1000) > 1200 ? 180.0 : 42.0);
-  const mapCoord = (v) => Math.max(8, Math.min(232, 120 + (v / halfExtent) * 105));
-  const mapSpawnCoord = (v) => {
-    if ((m.width || 1000) <= 1200) {
-      return Math.max(6, Math.min(220, ((v - 1650) / 850.0) * 240));
-    }
-    return Math.max(6, Math.min(220, (v / Math.max(1000, m.width || 4000)) * 240));
-  };
-
-  return `
-    <svg width="240" height="240" viewBox="0 0 240 240" style="border-radius:6px;border:1px solid var(--joy-border-strong);background:#16241c">
-      <defs>
-        <pattern id="grid-${escapeHtml(m.id)}" width="24" height="24" patternUnits="userSpaceOnUse">
-          <path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-        </pattern>
-      </defs>
-      <rect width="240" height="240" fill="url(#grid-${escapeHtml(m.id)})"/>
-      ${zones.map(z => {
-        const cx = mapCoord(z.x || 0);
-        const cy = mapCoord(z.z || 0);
-        const r = Math.max(18, ((z.radius || z.innerRadius || 22) / 42.0) * 105);
-        return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="rgba(82, 158, 71, 0.14)" stroke="rgba(126, 217, 135, 0.45)" stroke-width="1" stroke-dasharray="3 2"/>`;
-      }).join("")}
-      ${routes.length > 0 ? routes.map(rt => {
-        const pts = (rt.points || []).map(p => `${mapCoord(p[0] || 0).toFixed(1)},${mapCoord(p[1] || 0).toFixed(1)}`).join(" ");
-        const sw = Math.max(4, (rt.width || 4.8) * 1.6);
-        return `<polyline points="${pts}" fill="none" stroke="rgba(218, 184, 122, 0.55)" stroke-width="${sw.toFixed(1)}" stroke-linecap="round" stroke-linejoin="round"/>`;
-      }).join("") : `<path d="M 120 0 L 120 240 M 0 120 L 240 120" stroke="rgba(212,175,55,0.22)" stroke-width="8" stroke-dasharray="4 2"/>`}
-      ${terraces.map(t => {
-        const cx = mapCoord(t.x || 0);
-        const cy = mapCoord(t.z || 0);
-        const r = Math.max(12, (t.radius || 10) * 2.2);
-        return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="rgba(72, 168, 104, 0.28)" stroke="#5ec27e" stroke-width="1.2"/>`;
-      }).join('')}
-      ${spawns.map(sp => {
-        const sx = mapSpawnCoord(sp.x || 1900);
-        const sy = mapSpawnCoord(sp.y || 1900);
-        const sw = Math.max(14, ((sp.width || 120) / 850.0) * 240);
-        const sh = Math.max(14, ((sp.height || 120) / 850.0) * 240);
-        return `<rect x="${sx.toFixed(1)}" y="${sy.toFixed(1)}" width="${sw.toFixed(1)}" height="${sh.toFixed(1)}" fill="rgba(235, 87, 87, 0.18)" stroke="rgba(235, 87, 87, 0.75)" stroke-width="1" stroke-dasharray="2 2"/>`;
-      }).join('')}
-      ${structs.map(s => {
-        const sx = mapCoord(s.x || 0);
-        const sy = mapCoord(s.z || 0);
-        const sr = Math.max(7, (s.radius || 3.5) * 2.1);
-        return `
-          <circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="${sr.toFixed(1)}" fill="rgba(230, 184, 77, 0.45)" stroke="#ffd166" stroke-width="2"/>
-          <text x="${sx.toFixed(1)}" y="${(sy - sr - 4).toFixed(1)}" text-anchor="middle" fill="#ffd166" font-size="9" font-family="monospace">${escapeHtml(s.kind)}</text>
-        `;
-      }).join('')}
-    </svg>
-  `;
+  const tile = MAXION_WORLD_TILES.find(t => t.id === m.id || t.code === m.id) || MAXION_WORLD_TILES[0];
+  return renderDistinctMapTileSvg(tile, 148);
 }
 
 function renderMaps() {
-  const maps = DATA.maps.filter(matchesSearch);
+  const filterKinds = [
+    { id: 'all', label: 'All Connected Regions (25)' },
+    { id: 'town', label: '🏰 Royal Towns & Ports' },
+    { id: 'field', label: '🌿 Overland Hunting Fields' },
+    { id: 'dungeon', label: '💀 Multi-Floor Dungeons' },
+  ];
 
-  const zoneCards = [
-    { id: 'prontera_south_field', name: 'Prontera South Gate Field (prontera_south_field)', area: 'Prontera Kingdom — Core Area' },
-    { id: 'forest_zone',          name: 'Payon & South Gate Forest Range (forest_zone)',   area: 'Archery & Beast Hunting Woods' },
-    { id: 'sunken_crypt_1f',      name: 'Sunken Crypt 1F (sunken_crypt_1f)',               area: 'Undead Catacombs · Chivalry & Arcana Trials' },
-    { id: 'orc_fortress_courtyard', name: 'Orc Fortress Courtyard (orc_fortress_courtyard)', area: 'High-Risk MVP Siege Arena' },
-  ].filter(matchesSearch);
+  const tiles = MAXION_WORLD_TILES.filter(t => {
+    if (MAP_DIR_FILTER !== 'all' && t.kind !== MAP_DIR_FILTER) return false;
+    if (!SEARCH_QUERY) return true;
+    return t.name.toLowerCase().includes(SEARCH_QUERY) || t.code.toLowerCase().includes(SEARCH_QUERY) || t.biome.toLowerCase().includes(SEARCH_QUERY);
+  });
 
   return `
-    <div class="page-hero">
+    <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
       <div>
-        <div class="page-hero__eyebrow">RATEMYSERVER MAP_DB &amp; AREAINFO · MONSTER ON MAPS</div>
-        <h1 class="page-hero__title">World Map Directory, 2D Minimaps &amp; Monster Spawn Tables</h1>
-        <p class="page-hero__sub">
-          RateMyServer <code>areainfo</code> layout: 2D top-down terrain/structure/spawn minimap on the left,
-          paired with clickable Monster Spawn chips (with 3D monster thumbnails), 3D Walkable Structures, and Zone Quests on the right.
-        </p>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#38bdf8;">
+          🗺️ LINEAGE.PMFUN.COM + MAXION CONNECTED MAP DIRECTORY
+        </div>
+        <h1 style="font-size:24px;font-weight:900;margin:2px 0 0 0;color:#f8fafc;">
+          Connected World Map & Habitat Atlas <span style="font-size:14px;font-weight:600;color:#94a3b8;">(Every Map Shows Distinct Terrain, N/S/E/W Neighbors & Resident Monster Portraits)</span>
+        </h1>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${filterKinds.map(fk => `
+          <button class="btn ${MAP_DIR_FILTER === fk.id ? 'btn--primary' : ''}" onclick="MAP_DIR_FILTER='${fk.id}';render();">
+            ${fk.label}
+          </button>
+        `).join('')}
       </div>
     </div>
 
-    ${renderAiCopilotBar()}
-
-    <div class="rms-list">
-      ${maps.map(m => {
-        const wb = m.worldSpineBinding || {};
-        const isPilot = m.id === 'freja-south-gate';
-        const southMobs = isPilot ? DATA.mobs.filter(mb => (mb.spawnZones || []).includes('prontera_south_field')) : [];
-        const southQuests = isPilot ? DATA.quests.filter(q => q.zoneId === 'prontera_south_field') : [];
-        const bestiaryById = {};
-        ((DATA.worldSpine && DATA.worldSpine.bestiary) || []).forEach(b => { bestiaryById[b.id] = b; });
-        const storyQuests = ((DATA.worldSpine && DATA.worldSpine.storyNodes) || []).filter(sn => sn.kind === 'quest' && sn.regionId === wb.storyRegionId);
-        const lvlBand = (m.levelBand || [1, 15]).join('–');
+    <div class="lineage-map-grid">
+      ${tiles.map(tile => {
+        const nbEntries = Object.entries(tile.neighbors || {});
         return `
-          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === m.id || (isPilot && HIGHLIGHT_ENTITY_ID === 'prontera_south_field') ? 'rms-highlight' : ''}" id="entity-${m.id}">
-            <div class="rms-sheet__head">
-              <div class="rms-sheet__head-left">
-                <span class="rms-thumb-chip">🗺️</span>
-                <span class="rms-sheet__title">Map: ${escapeHtml(m.id)} — ${escapeHtml(m.name)}</span>
-                <span class="joy-badge joy-badge--brand joy-badge--sm mono">Lv.${escapeHtml(lvlBand)} · ${escapeHtml(m.biome || 'meadow')}</span>
-                <span class="joy-badge joy-badge--success joy-badge--sm">${m.structureCount} Structures · ${m.terraceCount} Terraces · ${(m.spawnAreas || []).length} Spawns</span>
+          <div class="lineage-map-card" id="map-card-${tile.id}" style="${MAXION_SELECTED_TILE_ID === tile.id ? 'border-color:#ffd166;box-shadow:0 0 0 2px rgba(255,209,102,0.35);' : ''}">
+            <div class="lineage-map-card__top">
+              <div class="lineage-map-card__preview" onclick="CURRENT_TAB='world';MAXION_SELECTED_TILE_ID='${tile.id}';writeUrlState(true);renderSidebar();render();" style="cursor:pointer;" title="Click to locate on World Map Matrix">
+                ${renderDistinctMapTileSvg(tile, 148)}
               </div>
-              <div class="chip-row">
-                ${wb.continentId ? rmsLink('world', wb.continentId, `Continent: ${wb.continentId.toUpperCase()}`, wb.regionId || '') : ''}
-                ${wb.townId ? rmsLink('world', wb.townId, `Town: ${wb.townId}`, 'Pinned') : ''}
-                ${wb.storyRegionId ? rmsLink('story', wb.storyRegionId, `Story: ${wb.storyRegionId}`, 'L3 Graph') : ''}
-                <span class="rms-sheet__id mono">${m.width}×${m.height}m (seed ${m.seed || 0})</span>
-                ${inspectBtnHtml('map', m.name, m)}
+              <div class="lineage-map-card__meta">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                  <span class="pill pill--cyan" style="font-family:var(--mono);">${escapeHtml(tile.code)}</span>
+                  <span class="pill pill--gold">Lv. ${escapeHtml(tile.lv)}</span>
+                </div>
+                <h3 style="margin:6px 0 4px 0;font-size:17px;font-weight:800;color:#f8fafc;">
+                  ${escapeHtml(tile.name)}
+                </h3>
+                <div style="font-size:11px;color:#94a3b8;margin-bottom:8px;">
+                  Biome: <strong style="color:#e2e8f0;text-transform:capitalize;">${escapeHtml(tile.biome)}</strong> · Grid Pos: <strong style="font-family:var(--mono);">[${tile.col}, ${tile.row}]</strong>
+                </div>
+
+                <div style="font-size:10px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:#94a3b8;">
+                  Connected Adjacent Maps (${nbEntries.length}):
+                </div>
+                <div class="lineage-neighbors">
+                  ${nbEntries.map(([dir, targetId]) => {
+                    const target = getMaxionTile(targetId);
+                    return `<span class="lineage-nb-chip" onclick="MAXION_SELECTED_TILE_ID='${target.id}';const el=document.getElementById('map-card-${target.id}');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});render();"><b>${dir} →</b> ${escapeHtml(target.name)}</span>`;
+                  }).join('')}
+                </div>
               </div>
             </div>
-            <div class="rms-map-split">
-              <div class="rms-minimap-cell">
-                ${renderMinimapSvg(m)}
-                <div class="observatory-card__meta" style="text-align:center">
-                  🟢 Terraces (${m.terraceCount}) · 🟡 3D Structures (${m.structureCount}) · 🔴 Spawn Areas (${(m.spawnAreas || []).length})
-                </div>
-              </div>
-              <div class="rms-spawn-cell">
-                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
-                  <div style="font-weight:700;color:var(--joy-accent-text);font-size:13px">
-                    World-First Spine Binding (L1 Fabric ➔ L2 Zone ➔ L3 Bestiary/Story ➔ L4 Playable Map):
-                  </div>
-                  <span class="joy-badge joy-badge--neutral joy-badge--sm mono">zone:${escapeHtml(wb.zoneId || m.id)} · spine:${escapeHtml(wb.spineNodeId || '—')}</span>
-                </div>
-                ${southMobs.length ? `
-                  <div>
-                    <strong style="font-size:12px;color:var(--joy-text-secondary)">MMORPG Catalog Monsters (<code>contracts/content/mobs.json</code>):</strong><br/>
-                    ${southMobs.map(mb => rmsLink('mobs', mb.id, `${mb.name} (Lv.${mb.level})`, `${mb.element}/${mb.race}/${mb.size}`)).join(' ')}
-                  </div>
-                ` : ''}
-                <div>
-                  <strong style="font-size:12px;color:var(--joy-text-secondary)">Authoritative Map Spawn Areas (<code>content/maps/${escapeHtml(m.id)}.json</code> — Click any creature):</strong>
-                  <div class="chip-row" style="margin-top:4px">
-                    ${(m.spawnAreas || []).map(sp => {
-                      const catMob = (DATA.mobs || []).find(mb => mb.id === sp.mobType);
-                      const bestMob = bestiaryById[sp.mobType];
-                      if (catMob) {
-                        return rmsLink('mobs', catMob.id, `${catMob.name} ×${sp.count}`, `@(${sp.x},${sp.y})`);
-                      }
-                      if (bestMob) {
-                        return rmsLink('bestiary', bestMob.id, `${bestMob.name} ×${sp.count}`, `Lv.${bestMob.levelBand} · ${bestMob.element}`);
-                      }
-                      return `<span class="joy-badge joy-badge--neutral joy-badge--sm mono">${escapeHtml(sp.id)}: ${escapeHtml(sp.mobType)} (${sp.count}) @ (${sp.x},${sp.y})</span>`;
-                    }).join('')}
-                  </div>
-                </div>
-                ${(storyQuests.length || southQuests.length) ? `
-                  <div>
-                    <strong style="font-size:12px;color:var(--joy-text-secondary)">Regional Quests (${storyQuests.length + southQuests.length}):</strong>
-                    <div class="chip-row" style="margin-top:4px">
-                      ${storyQuests.map(sq => rmsLink('story', sq.id, sq.title, 'Story Quest')).join(' ')}
-                      ${southQuests.map(q => rmsLink('quests', q.id, q.title, q.category)).join(' ')}
+
+            <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+              <div class="lineage-spawns-row" style="margin-top:0;">
+                ${tile.spawns.map(sp => {
+                  const mob = getMaxionMob(sp.id);
+                  return `
+                    <div class="lineage-spawn-pill" onclick="openMonsterDetailPage('${mob.id}')" title="Inspect ${escapeHtml(mob.name)} (#${mob.code})">
+                      <img src="${mob.thumb}" alt="${escapeHtml(mob.name)}"/>
+                      <div>
+                        <div style="font-size:11px;font-weight:800;color:#f8fafc;">${escapeHtml(mob.name)}</div>
+                        <div style="font-size:10px;color:#ffd166;">Lv.${mob.lv} · ×${sp.count}</div>
+                      </div>
                     </div>
-                  </div>
-                ` : ''}
-                <div>
-                  <strong style="font-size:12px;color:var(--joy-text-secondary)">Stage 2 Routes &amp; Stage 4 Declarative <code>ground_id</code> Palettes (v${m.version || 3}):</strong>
-                  <div class="chip-row" style="margin-top:4px">
-                    ${(m.routes || []).map(rt => `<span class="joy-badge joy-badge--warning joy-badge--sm mono">🛣 ${escapeHtml(rt.id)} (${escapeHtml(rt.groundId)} · w=${rt.width}m)</span>`).join('')}
-                    ${Object.entries(m.groundPalettes || {}).map(([gid, pal]) => {
-                      const weights = Object.entries(pal.scatter || {}).map(([k, r]) => `${k}:${r.weight}`).join(', ');
-                      return `<span class="joy-badge joy-badge--success joy-badge--sm mono">🌿 ${escapeHtml(gid)} { ${escapeHtml(weights)} }</span>`;
-                    }).join('')}
-                  </div>
-                </div>
-                <div>
-                  <strong style="font-size:12px;color:var(--joy-text-secondary)">Stage 3 Walkable 3D Structures &amp; Terraces:</strong>
-                  <div class="chip-row" style="margin-top:4px">
-                    ${(m.structures || []).map(s => `<span class="joy-badge joy-badge--brand joy-badge--sm mono">${escapeHtml(s.id)} (${escapeHtml(s.kind)} · r=${s.radius}m · 2F=${s.upperFloorHeight}m)</span>`).join('')}
-                    ${(m.heightTerraces || []).map(t => `<span class="joy-badge joy-badge--success joy-badge--sm mono">${escapeHtml(t.id)} (h=${t.height}m)</span>`).join('')}
-                  </div>
-                </div>
-                ${m.id === 'freja-south-gate' ? renderMapStructureEditor(m, 'maptab-' + m.id) : ''}
+                  `;
+                }).join('')}
               </div>
+              <button class="btn" onclick="CURRENT_TAB='world';MAXION_SELECTED_TILE_ID='${tile.id}';writeUrlState(true);renderSidebar();render();" style="font-size:11px;padding:5px 10px;">
+                🧭 Locate on World Grid →
+              </button>
             </div>
-          </div>
-        `;
-      }).join('')}
-
-      ${zoneCards.map(z => {
-        const zMobs = DATA.mobs.filter(mb => (mb.spawnZones || []).includes(z.id));
-        const zQuests = DATA.quests.filter(q => q.zoneId === z.id);
-        return `
-          <div class="rms-sheet ${HIGHLIGHT_ENTITY_ID === z.id ? 'rms-highlight' : ''}" id="entity-${z.id}">
-            <div class="rms-sheet__head">
-              <div class="rms-sheet__head-left">
-                <span class="rms-thumb-chip">🧭</span>
-                <span class="rms-sheet__title">Zone: ${escapeHtml(z.id)}</span>
-                <span class="rms-sheet__id">${escapeHtml(z.name)}</span>
-              </div>
-              <span class="joy-badge joy-badge--neutral joy-badge--sm">${escapeHtml(z.area)}</span>
-            </div>
-            <table class="rms-table">
-              <tbody>
-                <tr>
-                  <th>Monsters on Map</th>
-                  <td>
-                    ${zMobs.map(mb => rmsLink('mobs', mb.id, `${mb.name} (Lv.${mb.level})`, mb.isMvp ? 'MVP Boss / 60 min' : 'Field Spawn / 3~5 min')).join(' ') || 'No monster on this map.'}
-                  </td>
-                </tr>
-                <tr>
-                  <th>Active Quests</th>
-                  <td>
-                    ${zQuests.map(q => rmsLink('quests', q.id, q.title, 'Lv.' + q.minBaseLevel)).join(' ') || '<span class="observatory-card__meta">None</span>'}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
           </div>
         `;
       }).join('')}
@@ -4835,9 +5808,7 @@ function renderMaps() {
   `;
 }
 
-/* ============================================================================
- * 9. SQLITE STUDIO, BALANCE SIM & DOCS
- * ========================================================================== */
+
 function renderSqlStudio() {
   return `
     <div class="page-hero">

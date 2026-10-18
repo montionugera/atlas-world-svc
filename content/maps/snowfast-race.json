@@ -310,20 +310,24 @@
       "clearMargin": 2.4,
       "points": [
         [
-          0.0,
-          -90.0
+          -145.0,
+          -130.0
         ],
         [
-          -10.5,
-          -22.0
+          -60.4,
+          -25.0
         ],
         [
-          10.5,
-          22.0
+          -37.8,
+          -33.6
         ],
         [
-          0.0,
-          90.0
+          9.600000000000001,
+          55.0
+        ],
+        [
+          140.0,
+          135.0
         ]
       ]
     },
@@ -334,16 +338,16 @@
       "clearMargin": 1.8,
       "points": [
         [
-          -62.0,
-          0.0
+          -130.0,
+          85.0
         ],
         [
-          0.0,
-          0.0
+          -37.8,
+          -33.6
         ],
         [
-          62.0,
-          -0.0
+          125.0,
+          -95.0
         ]
       ]
     }
@@ -354,13 +358,13 @@
       "groundId": "pine_forest_border",
       "priority": 20,
       "shape": "circle",
-      "x": 0.0,
-      "z": 0.0,
-      "radius": 28.0,
+      "x": -37.8,
+      "z": -33.6,
+      "radius": 38.0,
       "innerRadius": 0.0,
-      "outerRadius": 28.0,
-      "width": 56.0,
-      "height": 56.0,
+      "outerRadius": 38.0,
+      "width": 76.0,
+      "height": 76.0,
       "feather": 4.5
     },
     {
@@ -368,38 +372,38 @@
       "groundId": "glacier_snow_crust",
       "priority": 10,
       "shape": "annulus",
-      "x": 0.0,
-      "z": 0.0,
-      "radius": 190.0,
-      "innerRadius": 28.0,
-      "outerRadius": 190.0,
-      "width": 380.0,
-      "height": 380.0,
+      "x": 18.9,
+      "z": 16.8,
+      "radius": 155.0,
+      "innerRadius": 42.0,
+      "outerRadius": 155.0,
+      "width": 310.0,
+      "height": 310.0,
       "feather": 6.0
     }
   ],
   "heightTerraces": [
     {
       "id": "keelshore_reach_terrace",
-      "x": 0.0,
-      "z": -18.0,
-      "radius": 16.0,
+      "x": -54.0,
+      "z": -55.0,
+      "radius": 22.0,
       "height": 2.3,
       "falloff": 0.46
     },
     {
       "id": "confluence_beyond_stormhold_bench",
-      "x": -18.0,
-      "z": 11.0,
-      "radius": 13.5,
+      "x": 64.0,
+      "z": 79.0,
+      "radius": 19.5,
       "height": 2.0,
       "falloff": 0.48
     },
     {
       "id": "snowfast_race_sheer_scarp_cliff",
-      "x": 27.0,
-      "z": -21.0,
-      "radius": 10.0,
+      "x": -76.0,
+      "z": 83.0,
+      "radius": 16.0,
       "height": 4.3,
       "falloff": 0.16
     }
@@ -408,8 +412,8 @@
     {
       "id": "snowfast_race_watchtower_01",
       "kind": "watchtower",
-      "x": -10.0,
-      "z": -7.0,
+      "x": -38.0,
+      "z": -61.0,
       "rotY": 0.0,
       "radius": 3.7,
       "upperFloorHeight": 3.2,
@@ -418,8 +422,8 @@
     {
       "id": "snowfast_race_cavern_01",
       "kind": "crystal_cave",
-      "x": 12.0,
-      "z": -8.0,
+      "x": 42.0,
+      "z": 73.0,
       "rotY": 0.0,
       "radius": 4.2,
       "upperFloorHeight": 3.2,
@@ -552,10 +556,10 @@
     },
     {
       "id": "cliff_snowfast_race_sheer_scarp_cliff",
-      "min_x": 2188.0,
-      "min_y": 1708.0,
-      "max_x": 2352.0,
-      "max_y": 1872.0
+      "min_x": 1108.8,
+      "min_y": 2698.8,
+      "max_x": 1371.2,
+      "max_y": 2961.2
     }
   ]
 }

@@ -369,20 +369,24 @@
       "clearMargin": 2.4,
       "points": [
         [
-          0.0,
-          -90.0
+          -35.0,
+          -160.0
         ],
         [
-          -3.0,
-          -22.0
+          -75.0,
+          -40.0
         ],
         [
-          3.0,
-          22.0
+          -21.0,
+          37.8
         ],
         [
-          0.0,
-          90.0
+          80.0,
+          45.0
+        ],
+        [
+          45.0,
+          160.0
         ]
       ]
     },
@@ -393,16 +397,16 @@
       "clearMargin": 1.8,
       "points": [
         [
-          -62.0,
-          10.5
+          -155.0,
+          -35.0
         ],
         [
-          0.0,
-          0.0
+          -21.0,
+          37.8
         ],
         [
-          62.0,
-          -10.5
+          150.0,
+          -45.0
         ]
       ]
     }
@@ -413,13 +417,13 @@
       "groundId": "meadow_grass",
       "priority": 20,
       "shape": "circle",
-      "x": 0.0,
-      "z": 0.0,
-      "radius": 28.0,
+      "x": -21.0,
+      "z": 37.8,
+      "radius": 38.0,
       "innerRadius": 0.0,
-      "outerRadius": 28.0,
-      "width": 56.0,
-      "height": 56.0,
+      "outerRadius": 38.0,
+      "width": 76.0,
+      "height": 76.0,
       "feather": 4.5
     },
     {
@@ -427,38 +431,38 @@
       "groundId": "coastal_tidal_flat",
       "priority": 10,
       "shape": "annulus",
-      "x": 0.0,
-      "z": 0.0,
-      "radius": 190.0,
-      "innerRadius": 28.0,
-      "outerRadius": 190.0,
-      "width": 380.0,
-      "height": 380.0,
+      "x": 10.5,
+      "z": -18.9,
+      "radius": 155.0,
+      "innerRadius": 42.0,
+      "outerRadius": 155.0,
+      "width": 310.0,
+      "height": 310.0,
       "feather": 6.0
     }
   ],
   "heightTerraces": [
     {
       "id": "quillfall_reach_terrace",
-      "x": 0.0,
-      "z": -18.0,
-      "radius": 16.0,
+      "x": -52.0,
+      "z": -71.0,
+      "radius": 22.0,
       "height": 2.3,
       "falloff": 0.46
     },
     {
       "id": "stack_below_brightlobe_bench",
-      "x": -18.0,
-      "z": 11.0,
-      "radius": 13.5,
+      "x": 51.0,
+      "z": 50.0,
+      "radius": 19.5,
       "height": 2.0,
       "falloff": 0.48
     },
     {
       "id": "sedgebar_roads_sheer_scarp_cliff",
-      "x": 27.0,
-      "z": -21.0,
-      "radius": 10.0,
+      "x": -85.0,
+      "z": 73.0,
+      "radius": 16.0,
       "height": 4.3,
       "falloff": 0.16
     }
@@ -467,8 +471,8 @@
     {
       "id": "sedgebar_roads_watchtower_01",
       "kind": "watchtower",
-      "x": -10.0,
-      "z": -7.0,
+      "x": -59.0,
+      "z": -42.0,
       "rotY": 0.0,
       "radius": 3.7,
       "upperFloorHeight": 3.2,
@@ -477,8 +481,8 @@
     {
       "id": "sedgebar_roads_cavern_01",
       "kind": "crystal_cave",
-      "x": 12.0,
-      "z": -8.0,
+      "x": 72.0,
+      "z": 69.0,
       "rotY": 0.0,
       "radius": 4.2,
       "upperFloorHeight": 3.2,
@@ -611,10 +615,10 @@
     },
     {
       "id": "cliff_sedgebar_roads_sheer_scarp_cliff",
-      "min_x": 2188.0,
-      "min_y": 1708.0,
-      "max_x": 2352.0,
-      "max_y": 1872.0
+      "min_x": 1018.8,
+      "min_y": 2598.8,
+      "max_x": 1281.2,
+      "max_y": 2861.2
     }
   ]
 }

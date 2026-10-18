@@ -283,19 +283,23 @@
       "points": [
         [
           0.0,
-          -90.0
+          -160.0
         ],
         [
-          6.0,
-          -22.0
+          -34.2,
+          -55.0
         ],
         [
-          -6.0,
-          22.0
+          -12.6,
+          29.4
         ],
         [
-          0.0,
-          90.0
+          34.2,
+          65.0
+        ],
+        [
+          25.0,
+          160.0
         ]
       ]
     },
@@ -306,16 +310,16 @@
       "clearMargin": 1.8,
       "points": [
         [
-          -62.0,
-          7.5
+          -155.0,
+          -49.4
         ],
         [
-          0.0,
-          0.0
+          -12.6,
+          29.4
         ],
         [
-          62.0,
-          -7.5
+          155.0,
+          49.4
         ]
       ]
     }
@@ -326,13 +330,13 @@
       "groundId": "barren_cliff",
       "priority": 20,
       "shape": "circle",
-      "x": 0.0,
-      "z": 0.0,
-      "radius": 28.0,
+      "x": -12.6,
+      "z": 29.4,
+      "radius": 38.0,
       "innerRadius": 0.0,
-      "outerRadius": 28.0,
-      "width": 56.0,
-      "height": 56.0,
+      "outerRadius": 38.0,
+      "width": 76.0,
+      "height": 76.0,
       "feather": 4.5
     },
     {
@@ -340,38 +344,38 @@
       "groundId": "cinder_ash_waste",
       "priority": 10,
       "shape": "annulus",
-      "x": 0.0,
-      "z": 0.0,
-      "radius": 190.0,
-      "innerRadius": 28.0,
-      "outerRadius": 190.0,
-      "width": 380.0,
-      "height": 380.0,
+      "x": 6.3,
+      "z": -14.7,
+      "radius": 155.0,
+      "innerRadius": 42.0,
+      "outerRadius": 155.0,
+      "width": 310.0,
+      "height": 310.0,
       "feather": 6.0
     }
   ],
   "heightTerraces": [
     {
       "id": "glasswold_barchan_terrace",
-      "x": 0.0,
-      "z": -18.0,
-      "radius": 16.0,
+      "x": -47.0,
+      "z": -76.0,
+      "radius": 22.0,
       "height": 2.3,
       "falloff": 0.46
     },
     {
       "id": "confluence_beyond_dunespar_bench",
-      "x": -18.0,
-      "z": 11.0,
-      "radius": 13.5,
+      "x": 75.0,
+      "z": 66.0,
+      "radius": 19.5,
       "height": 2.0,
       "falloff": 0.48
     },
     {
       "id": "charwaste_race_sheer_scarp_cliff",
-      "x": 27.0,
-      "z": -21.0,
-      "radius": 10.0,
+      "x": -83.0,
+      "z": 45.0,
+      "radius": 16.0,
       "height": 4.3,
       "falloff": 0.16
     }
@@ -380,8 +384,8 @@
     {
       "id": "charwaste_race_watchtower_01",
       "kind": "watchtower",
-      "x": -10.0,
-      "z": -7.0,
+      "x": -67.0,
+      "z": -44.0,
       "rotY": 0.0,
       "radius": 3.7,
       "upperFloorHeight": 3.2,
@@ -390,8 +394,8 @@
     {
       "id": "charwaste_race_cavern_01",
       "kind": "crystal_cave",
-      "x": 12.0,
-      "z": -8.0,
+      "x": 61.0,
+      "z": 71.0,
       "rotY": 0.0,
       "radius": 4.2,
       "upperFloorHeight": 3.2,
@@ -524,10 +528,10 @@
     },
     {
       "id": "cliff_charwaste_race_sheer_scarp_cliff",
-      "min_x": 2188.0,
-      "min_y": 1708.0,
-      "max_x": 2352.0,
-      "max_y": 1872.0
+      "min_x": 1038.8,
+      "min_y": 2318.8,
+      "max_x": 1301.2,
+      "max_y": 2581.2
     }
   ]
 }

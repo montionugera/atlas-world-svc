@@ -1541,8 +1541,30 @@ def compile_continent_zone_or_anchor_map(
     merged_landmarks = list(dict.fromkeys(landmark_ids + pinned_landmarks))
     slug = map_id.replace("-", "_")
     digest_num = int(hashlib.sha256(map_id.encode("utf-8")).hexdigest()[:8], 16)
-    bend_x = round(((digest_num % 17) - 8) * 1.5, 1)
-    bend_z = round((((digest_num >> 4) % 15) - 7) * 1.5, 1)
+    topo_kind = digest_num % 6
+    bend_x = round(((digest_num % 29) - 14) * 3.8, 1)
+    bend_z = round((((digest_num >> 5) % 27) - 13) * 3.8, 1)
+    cx_off = round((((digest_num >> 10) % 21) - 10) * 4.2, 1)
+    cz_off = round((((digest_num >> 15) % 21) - 10) * 4.2, 1)
+
+    if topo_kind == 0:
+        trunk_pts = [[-145.0, -130.0], [bend_x - 30.0, -25.0], [cx_off, cz_off], [bend_x + 40.0, 55.0], [140.0, 135.0]]
+        spur_pts = [[-130.0, 85.0], [cx_off, cz_off], [125.0, -95.0]]
+    elif topo_kind == 1:
+        trunk_pts = [[0.0, -160.0], [bend_x, -55.0], [cx_off, cz_off], [-bend_x, 65.0], [25.0, 160.0]]
+        spur_pts = [[-155.0, bend_z], [cx_off, cz_off], [155.0, -bend_z]]
+    elif topo_kind == 2:
+        trunk_pts = [[-160.0, -20.0], [-55.0, bend_z], [cx_off, cz_off], [65.0, -bend_z], [160.0, 30.0]]
+        spur_pts = [[bend_x, -150.0], [cx_off, cz_off], [-bend_x, 150.0]]
+    elif topo_kind == 3:
+        trunk_pts = [[135.0, -145.0], [45.0, -45.0], [cx_off, cz_off], [-55.0, 50.0], [-140.0, 145.0]]
+        spur_pts = [[-120.0, -85.0], [cx_off, cz_off], [130.0, 95.0]]
+    elif topo_kind == 4:
+        trunk_pts = [[-150.0, 110.0], [-60.0, 25.0], [cx_off, cz_off], [45.0, -65.0], [10.0, -155.0]]
+        spur_pts = [[cx_off, cz_off], [95.0, 40.0], [155.0, 115.0]]
+    else:
+        trunk_pts = [[-35.0, -160.0], [-75.0, -40.0], [cx_off, cz_off], [80.0, 45.0], [45.0, 160.0]]
+        spur_pts = [[-155.0, -35.0], [cx_off, cz_off], [150.0, -45.0]]
 
     routes = [
         {
@@ -1550,14 +1572,14 @@ def compile_continent_zone_or_anchor_map(
             "groundId": "cobble_road",
             "width": 12.5,
             "clearMargin": 2.4,
-            "points": [[0.0, -90.0], [bend_x, -22.0], [-bend_x, 22.0], [0.0, 90.0]],
+            "points": trunk_pts,
         },
         {
             "id": f"{slug}_survey_footpath",
             "groundId": "cobble_road",
             "width": 4.5,
             "clearMargin": 1.8,
-            "points": [[-62.0, bend_z], [0.0, 0.0], [62.0, -bend_z]],
+            "points": spur_pts,
         },
     ]
 
@@ -1567,13 +1589,13 @@ def compile_continent_zone_or_anchor_map(
             "groundId": bcfg["centerGroundId"],
             "priority": 20,
             "shape": "circle",
-            "x": 0.0,
-            "z": 0.0,
-            "radius": 28.0,
+            "x": cx_off,
+            "z": cz_off,
+            "radius": 38.0,
             "innerRadius": 0.0,
-            "outerRadius": 28.0,
-            "width": 56.0,
-            "height": 56.0,
+            "outerRadius": 38.0,
+            "width": 76.0,
+            "height": 76.0,
             "feather": 4.5,
         },
         {
@@ -1581,13 +1603,13 @@ def compile_continent_zone_or_anchor_map(
             "groundId": bcfg["ringGroundId"],
             "priority": 10,
             "shape": "annulus",
-            "x": 0.0,
-            "z": 0.0,
-            "radius": 190.0,
-            "innerRadius": 28.0,
-            "outerRadius": 190.0,
-            "width": 380.0,
-            "height": 380.0,
+            "x": round(-cx_off * 0.5, 1),
+            "z": round(-cz_off * 0.5, 1),
+            "radius": 155.0,
+            "innerRadius": 42.0,
+            "outerRadius": 155.0,
+            "width": 310.0,
+            "height": 310.0,
             "feather": 6.0,
         },
     ]
@@ -1595,39 +1617,51 @@ def compile_continent_zone_or_anchor_map(
     lm0_slug = (merged_landmarks[0] if merged_landmarks else f"{slug}_north").replace("-", "_")
     lm1_slug = (merged_landmarks[1] if len(merged_landmarks) > 1 else f"{slug}_west").replace("-", "_")
 
+    t0_x = round(-75.0 + (digest_num % 45), 1)
+    t0_z = round(-85.0 + ((digest_num >> 3) % 45), 1)
+    t1_x = round(40.0 + ((digest_num >> 6) % 55), 1)
+    t1_z = round(35.0 + ((digest_num >> 9) % 55), 1)
+    t2_x = round(-85.0 + ((digest_num >> 12) % 45), 1)
+    t2_z = round(45.0 + ((digest_num >> 15) % 50), 1)
+
     height_terraces = [
         {
             "id": f"{lm0_slug}_terrace",
-            "x": 0.0,
-            "z": -18.0,
-            "radius": 16.0,
+            "x": t0_x,
+            "z": t0_z,
+            "radius": 22.0,
             "height": 2.3,
             "falloff": 0.46,
         },
         {
             "id": f"{lm1_slug}_bench",
-            "x": -18.0,
-            "z": 11.0,
-            "radius": 13.5,
+            "x": t1_x,
+            "z": t1_z,
+            "radius": 19.5,
             "height": 2.0,
             "falloff": 0.48,
         },
         {
             "id": f"{slug}_sheer_scarp_cliff",
-            "x": 27.0,
-            "z": -21.0,
-            "radius": 10.0,
+            "x": t2_x,
+            "z": t2_z,
+            "radius": 16.0,
             "height": 4.3,
             "falloff": 0.16,
         },
     ]
 
+    wt_x = round(-68.0 + (digest_num % 32), 1)
+    wt_z = round(-62.0 + ((digest_num >> 4) % 36), 1)
+    cv_x = round(42.0 + ((digest_num >> 8) % 44), 1)
+    cv_z = round(32.0 + ((digest_num >> 12) % 44), 1)
+
     structures = [
         {
             "id": f"{slug}_watchtower_01",
             "kind": "watchtower",
-            "x": -10.0,
-            "z": -7.0,
+            "x": wt_x,
+            "z": wt_z,
             "rotY": 0.0,
             "radius": 3.7,
             "upperFloorHeight": 3.2,
@@ -1636,8 +1670,8 @@ def compile_continent_zone_or_anchor_map(
         {
             "id": f"{slug}_cavern_01",
             "kind": "crystal_cave",
-            "x": 12.0,
-            "z": -8.0,
+            "x": cv_x,
+            "z": cv_z,
             "rotY": 0.0,
             "radius": 4.2,
             "upperFloorHeight": 3.2,

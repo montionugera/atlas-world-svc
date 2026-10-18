@@ -284,20 +284,24 @@
       "clearMargin": 2.4,
       "points": [
         [
-          0.0,
-          -90.0
+          -150.0,
+          110.0
         ],
         [
-          6.0,
-          -22.0
+          -60.0,
+          25.0
         ],
         [
-          -6.0,
-          22.0
+          21.0,
+          0.0
         ],
         [
-          0.0,
-          90.0
+          45.0,
+          -65.0
+        ],
+        [
+          10.0,
+          -155.0
         ]
       ]
     },
@@ -308,16 +312,16 @@
       "clearMargin": 1.8,
       "points": [
         [
-          -62.0,
-          -9.0
-        ],
-        [
-          0.0,
+          21.0,
           0.0
         ],
         [
-          62.0,
-          9.0
+          95.0,
+          40.0
+        ],
+        [
+          155.0,
+          115.0
         ]
       ]
     }
@@ -328,13 +332,13 @@
       "groundId": "meadow_grass",
       "priority": 20,
       "shape": "circle",
-      "x": 0.0,
+      "x": 21.0,
       "z": 0.0,
-      "radius": 28.0,
+      "radius": 38.0,
       "innerRadius": 0.0,
-      "outerRadius": 28.0,
-      "width": 56.0,
-      "height": 56.0,
+      "outerRadius": 38.0,
+      "width": 76.0,
+      "height": 76.0,
       "feather": 4.5
     },
     {
@@ -342,38 +346,38 @@
       "groundId": "barren_cliff",
       "priority": 10,
       "shape": "annulus",
-      "x": 0.0,
-      "z": 0.0,
-      "radius": 190.0,
-      "innerRadius": 28.0,
-      "outerRadius": 190.0,
-      "width": 380.0,
-      "height": 380.0,
+      "x": -10.5,
+      "z": -0.0,
+      "radius": 155.0,
+      "innerRadius": 42.0,
+      "outerRadius": 155.0,
+      "width": 310.0,
+      "height": 310.0,
       "feather": 6.0
     }
   ],
   "heightTerraces": [
     {
       "id": "paverake_fenster_terrace",
-      "x": 0.0,
-      "z": -18.0,
-      "radius": 16.0,
+      "x": -62.0,
+      "z": -67.0,
+      "radius": 22.0,
       "height": 2.3,
       "falloff": 0.46
     },
     {
       "id": "geo_under_dolinflow_bench",
-      "x": -18.0,
-      "z": 11.0,
-      "radius": 13.5,
+      "x": 49.0,
+      "z": 36.0,
+      "radius": 19.5,
       "height": 2.0,
       "falloff": 0.48
     },
     {
       "id": "grikepot_head_sheer_scarp_cliff",
-      "x": 27.0,
-      "z": -21.0,
-      "radius": 10.0,
+      "x": -70.0,
+      "z": 86.0,
+      "radius": 16.0,
       "height": 4.3,
       "falloff": 0.16
     }
@@ -382,8 +386,8 @@
     {
       "id": "grikepot_head_watchtower_01",
       "kind": "watchtower",
-      "x": -10.0,
-      "z": -7.0,
+      "x": -56.0,
+      "z": -58.0,
       "rotY": 0.0,
       "radius": 3.7,
       "upperFloorHeight": 3.2,
@@ -392,8 +396,8 @@
     {
       "id": "grikepot_head_cavern_01",
       "kind": "crystal_cave",
-      "x": 12.0,
-      "z": -8.0,
+      "x": 66.0,
+      "z": 63.0,
       "rotY": 0.0,
       "radius": 4.2,
       "upperFloorHeight": 3.2,
@@ -526,10 +530,10 @@
     },
     {
       "id": "cliff_grikepot_head_sheer_scarp_cliff",
-      "min_x": 2188.0,
-      "min_y": 1708.0,
-      "max_x": 2352.0,
-      "max_y": 1872.0
+      "min_x": 1168.8,
+      "min_y": 2728.8,
+      "max_x": 1431.2,
+      "max_y": 2991.2
     }
   ]
 }
