@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-kelp-spiral-reef",
+  "name": "Kelp Spiral Reef",
+  "map_id": null,
+  "parent_district_id": "district-nebula-undertide",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western outer rim of Nebula Undertide at [0, 1] where inverted coral causeways wind through floating ribbons of luminescent star-kelp.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "level_range": [
+    42,
+    46
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Tether-divers say the star-kelp parts whenever a lantern is held at knee height, revealing ancient bronze mooring rings.",
+    "visual_silhouette": "Spiraling coral ledges suspended inside a slow-turning ribbon of glowing violet water.",
+    "unanswered_question": "Where does the western coral causeway link back to The Eclipse Observatory?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Serves as the western arrival reef of Nebula Undertide inside scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Spiraling upside-down coral ledges suspended inside glowing violet nebula currents."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics will be bound when promoted to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-nebula-undertide."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until Nebula Undertide is promoted."
+    }
+  }
+}

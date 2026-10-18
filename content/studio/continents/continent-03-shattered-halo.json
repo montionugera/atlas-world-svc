@@ -55,7 +55,7 @@
     "in_world_rumor": "Airship captains refuse to fly past the Violet Squall; they claim waterfalls pour upward into the stars and lost toys float back down.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
     "unanswered_question": "What sleeps inside the inverted Nebula Undertide whirlpool at the center of the Shattered Halo?",
-    "discovery_trigger_hint": "Promoted to Canon alongside Starfall Anchorage and the Astrolabe Rift Bridge."
+    "discovery_trigger_hint": "Promoted to Canon alongside Starfall Anchorage and The Eclipse Observatory."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -72,11 +72,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes Starfall Anchorage (Canon, [30, 42]), Eclipse Observatory (Draft, [38, 46]), and Nebula Undertide (Mystery, [44, 50]) across the sky-archipelago."
+      "evidence": "Organizes Starfall Anchorage (Canon, [30, 42]), The Eclipse Observatory (Canon, [36, 46]), and Nebula Undertide (Draft, [42, 50]) across the sky-archipelago."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Eclipse Observatory in Draft and Nebula Undertide in Mystery while keeping the direct airship link to Continent 01 locked_by_mystery."
+      "evidence": "Preserves Nebula Undertide in Draft while keeping the direct airship link to Continent 01 locked_by_mystery."
     }
   }
 }

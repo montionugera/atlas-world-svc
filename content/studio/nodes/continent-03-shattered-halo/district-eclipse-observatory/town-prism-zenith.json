@@ -1,0 +1,158 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-prism-zenith",
+  "name": "Prism Zenith",
+  "map_id": "prism-zenith",
+  "parent_district_id": "district-eclipse-observatory",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Central observatory town of The Eclipse Observatory at [1, 1] built beneath rotating quartz lens-rings where astronomers calibrate Vesper's starlight beacons and guard the Pendulum Sanctum.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "level_range": [
+    38,
+    44
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_roof_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_prism_dome",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Refracted rainbow star-pools circulating through carved quartz channels around the central telescope"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-prism-zenith-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-apogee-spire",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Unfocused solar-eclipse rays at Apogee Lens Spire burn through unshielded gliders; the Zenith Astronomers require the Sanctum Prism-Gyro before opening the northern stair.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": null,
+    "West": {
+      "portal_id": "portal-prism-zenith-west-orrery",
+      "direction": "West",
+      "target_node_id": "hunting-area-orrery-bridge",
+      "target_map_id": "orrery-bridge",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-prism-zenith-dungeon-sanctum",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-pendulum-sanctum",
+      "target_map_id": "pendulum-sanctum-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-chief-astronomer-veyla",
+      "name": "Chief Astronomer Veyla",
+      "role": "Quartz Lens Director",
+      "position_meters": {
+        "x": 1970.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.6,
+      "dialogue_greeting": "Step up to the 0.60 meter eyepiece bench, young Sprout! Through these quartz lenses you can see every floating island in the Shattered Halo."
+    },
+    {
+      "npc_id": "npc-prism-artisan-kael",
+      "name": "Prism-Artisan Kael",
+      "role": "Starlight Mirror Polisher",
+      "position_meters": {
+        "x": 2070.0,
+        "y": 1965.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Rogue refraction spirits in the Pendulum Sanctum below stole our Sanctum Prism-Gyro. Recover it and we can realign the northern lens toward Nebula Undertide!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.46,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.5,
+    "footpath_width_meters": 4.5,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_roof_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors The Eclipse Observatory at [1, 1] where Vesper's astrolabe lenses focus starlight across Continent 03."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Floating basalt observatory dome ringed by rotating quartz lenses and rainbow star-pools."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Eyepiece counters at 0.58 to 0.60m, stair risers at 0.14m, doorways 2.20m x 1.65m, and 13.5m observatory plazas for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric West portal to hunting-area-orrery-bridge, Dungeon portal to dungeon-pendulum-sanctum, and North fog_of_lore portal to hunting-area-apogee-spire."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Seals the northern Apogee Lens Spire gate with a fog_of_lore boundary portal and Zenith Astronomers lock message."
+    }
+  }
+}
