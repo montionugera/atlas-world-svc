@@ -1475,10 +1475,12 @@
     "from_idea": "I-174",
     "created_at": "2026-10-18T11:11:15.940194+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
+    "status": "shipped",
+    "release_version": "1.15",
     "epic": "E-007",
-    "claimed_at": "2026-10-18T11:12:21.392781+00:00"
+    "claimed_at": "2026-10-18T11:12:21.392781+00:00",
+    "shipped_at": "2026-10-18T11:31:36.689355+00:00",
+    "shipped_sha": "a5328df66991faaa115e3d72b95c32fc51bc0c13"
   },
   {
     "id": "F-119",
