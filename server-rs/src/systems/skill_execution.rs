@@ -3,8 +3,8 @@ use crate::combat::{get_skill, DamageCalculator, DamageOptions, SkillEffect};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
     CastingState, CooldownTracker, DashState, ElementalAttributes, Health, HitLog, HitRecord,
-    LingeringZone, MobTag, PlayerInputState, PlayerTag, Position, Projectile, StatusEffects,
-    Velocity,
+    LingeringZone, MobTag, PlayerInputState, PlayerTag, Position, Projectile, SkillLoadout,
+    StatusEffects, Velocity,
 };
 use bevy_ecs::prelude::*;
 
@@ -23,6 +23,7 @@ pub fn skill_execution_system(
         Option<&Health>,
         Option<&mut DashState>,
         Option<&StatusEffects>,
+        Option<&SkillLoadout>,
     )>,
     enemies: Query<(Entity, &Position, &Health, Has<MobTag>, Has<PlayerTag>)>,
 ) {
@@ -39,6 +40,7 @@ pub fn skill_execution_system(
         health,
         mut dash_opt,
         status_opt,
+        loadout_opt,
     ) in &mut query
     {
         // The dead cannot cast: drop any in-flight cast and swallow skill presses.
@@ -255,10 +257,15 @@ pub fn skill_execution_system(
         }
         if slot > 0 && !casting.is_casting(current_time) {
             let skill_id_str = match slot {
-                1 => "skill_1",
-                2 => "skill_2",
-                3 => "skill_3",
-                4 => "skill_4",
+                1..=4 => loadout_opt
+                    .and_then(|l| l.skill_for_slot(slot))
+                    .unwrap_or(match slot {
+                        1 => "skill_1",
+                        2 => "skill_2",
+                        3 => "skill_3",
+                        4 => "skill_4",
+                        _ => "",
+                    }),
                 5 => "skill_dash",
                 6 => "skill_heal",
                 _ => "",
