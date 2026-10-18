@@ -1420,5 +1420,14 @@
     "claimed_at": "2026-10-18T10:28:02.890920+00:00",
     "shipped_at": "2026-10-18T10:48:43.580650+00:00",
     "shipped_sha": "4f1edd1ccf11fceb8c029ef85d8087d2f4da7c88"
+  },
+  {
+    "id": "F-114",
+    "title": "District Libration Mirror Shoals Canon Promotion, Silver-Tide Causeway Connection, and Glaze-River Delta Draft",
+    "from_idea": "I-214",
+    "created_at": "2026-10-18T10:49:49.143001+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
