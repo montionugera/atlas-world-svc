@@ -2,12 +2,12 @@
   "schema_version": "1.0.0",
   "id": "hunting-area-aurora-tether",
   "name": "Aurora Tether Span",
-  "map_id": null,
+  "map_id": "aurora-tether",
   "parent_district_id": "district-zenith-crown",
   "parent_continent_id": "continent-03-shattered-halo",
   "node_type": "hunting_area",
-  "status": "mystery",
-  "core_rationale": "Western aurora-glass bridge of The Zenith Crown at [0, 1] ascending from the outer rim of Nebula Undertide toward the white-gold anchor towers.",
+  "status": "canon",
+  "core_rationale": "Western aurora-glass bridge of The Zenith Crown at [0, 1] ascending from Undertide Sanctuary toward Crown Beacon Citadel.",
   "is_starter_town": false,
   "grid_coordinates": [
     0,
@@ -17,31 +17,153 @@
     46,
     48
   ],
-  "mystery_hook": {
-    "in_world_rumor": "Tether-weavers claim the aurora ribbons hum in harmony whenever a star-lantern is raised at the western anchor pier.",
-    "visual_silhouette": "Aribbon of solidified green-and-violet aurora light spanning two floating white-gold anchor towers.",
-    "unanswered_question": "Where does the western aurora tether anchor into Undertide Sanctuary?"
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/archway.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_aurora_tether",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Ribbons of solidified green-and-violet aurora light flowing alongside white-gold anchor chains"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-aurora-tether-east-citadel",
+      "direction": "East",
+      "target_node_id": "town-crown-beacon-citadel",
+      "target_map_id": "crown-beacon-citadel",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-aurora-tether-west-sanctuary",
+      "direction": "West",
+      "target_node_id": "town-undertide-sanctuary",
+      "target_map_id": "undertide-sanctuary",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-aurora-tether-ribbon-wisp",
+      "monster_id": "mob-aurora-ribbon-wisp",
+      "monster_name": "Aurora Ribbon-Wisp",
+      "spawn_count": 9,
+      "respawn_seconds": 13.0,
+      "level": 46,
+      "element": "Wind",
+      "size": "Small",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-aurora-glass-shard",
+          "item_name": "Aurora Glass Shard",
+          "drop_chance_percent": 44.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-aurora-ribbon-wisp",
+        "card_name": "Aurora Ribbon-Wisp Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Garment",
+        "modifier_summary": "Wind Elemental Resistance +15%, Flee Rate +12"
+      }
+    },
+    {
+      "spawn_id": "spawn-aurora-tether-sky-drake",
+      "monster_id": "mob-zenith-sky-drake",
+      "monster_name": "Zenith Sky-Drake",
+      "spawn_count": 6,
+      "respawn_seconds": 18.0,
+      "level": 48,
+      "element": "Wind",
+      "size": "Medium",
+      "race": "Dragon",
+      "family": "dragon",
+      "item_drops": [
+        {
+          "item_id": "item-white-gold-wing-crest",
+          "item_name": "White-Gold Wing Crest",
+          "drop_chance_percent": 30.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-zenith-sky-drake",
+        "card_name": "Zenith Sky-Drake Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Weapon",
+        "modifier_summary": "Attack Speed +5%, Wind Elemental Attack +8%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.42,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/archway.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Serves as the western entry span of The Zenith Crown above scar-vesper-crater."
+      "evidence": "Connects Nebula Undertide (town-undertide-sanctuary) upward into The Zenith Crown along Vesper's aurora tether chains."
     },
     "fantasy_and_wonder": {
       "verified": true,
       "evidence": "Solidified aurora-glass walkways suspended between white-gold star-anchor towers."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+      "verified": true,
+      "evidence": "Enforces 0.18m grass, 0.42m shrubs, 0.14m star-stone risers, and 13.0m aurora walkways for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-zenith-crown."
+      "verified": true,
+      "evidence": "Symmetric West portal to town-undertide-sanctuary and East portal to town-crown-beacon-citadel; spirit/dragon spawns in [46, 48]."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Maintains map_id: null and complete mystery_hook until The Zenith Crown is promoted to Canon."
+      "evidence": "Promoted cleanly from Mystery to Canon with full five-pillar verification and playable map_id 'aurora-tether'."
     }
   }
 }

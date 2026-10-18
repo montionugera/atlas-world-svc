@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-firebrick-duct",
+  "name": "Firebrick Intake Duct",
+  "map_id": null,
+  "parent_district_id": "district-ash-bellows-trench",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western glazed terracotta intake corridor of Ash-Bellows Trench at [0, 1] channeling warm valley breezes from Kilnwatch Bastion into the sub-kiln draft chambers.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "level_range": [
+    12,
+    15
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Apprentice potters say the acoustic tiles inside Firebrick Intake Duct carry whispers all the way from Lantern Hollow.",
+    "visual_silhouette": "A vaulted terracotta tunnel lined with glowing amber acoustic louvers.",
+    "unanswered_question": "Where does the western intake louver connect into Kilnwatch Bastion?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Serves as the western intake corridor of Ash-Bellows Trench inside scar-kiln-basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Vaulted terracotta tunnel lined with singing ceramic louvers and warm ember-drafts."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-ash-bellows-trench."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until Ash-Bellows Trench is promoted to Canon."
+    }
+  }
+}
