@@ -106,20 +106,15 @@ pub struct SkillsDoc {
     pub loadout: Vec<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ActiveObjectiveProgress {
-    pub id: String,
-    pub current: u32,
-    pub required: u32,
-}
+/// Maps `objective.id -> current_progress_count` (`Record<string, number>` in `@atlas/contracts`).
+pub type QuestObjectivesMap = HashMap<String, u32>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ActiveQuestEntry {
     pub quest_id: String,
     pub started_at: u64,
-    pub objectives: Vec<ActiveObjectiveProgress>,
+    pub objectives: QuestObjectivesMap,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -212,13 +207,28 @@ fn require_u32_field(obj: &serde_json::Map<String, Value>, key: &str) -> Option<
     }
 }
 
+fn require_u64_field(obj: &serde_json::Map<String, Value>, key: &str) -> Option<u64> {
+    let val = obj.get(key)?;
+    if let Some(u) = val.as_u64() {
+        Some(u)
+    } else if let Some(f) = val.as_f64() {
+        if f.is_finite() && f >= 0.0 && f.fract() == 0.0 && f <= u64::MAX as f64 {
+            Some(f as u64)
+        } else {
+            None
+        }
+    } else {
+        None
+    }
+}
+
 /// Validates a v2 profile or migrates a v1 profile (`schemaVersion == 1`) to v2 by defaulting `allocated.dex` to `1`.
 /// Returns `None` if `raw` is corrupt or has an unsupported `schemaVersion`.
 pub fn migrate_profile_value(raw: &Value) -> Option<ProfileDoc> {
     let obj = raw.as_object()?;
     let ver = require_u32_field(obj, "schemaVersion")?;
     let level = require_u32_field(obj, "level")?;
-    let xp = require_u32_field(obj, "xp")?;
+    let xp = require_u64_field(obj, "xp")?;
     let stat_points = require_u32_field(obj, "statPoints")?;
     let allocated = obj.get("allocated")?.as_object()?;
     let str_val = require_u32_field(allocated, "str")?;
@@ -232,7 +242,7 @@ pub fn migrate_profile_value(raw: &Value) -> Option<ProfileDoc> {
             Some(ProfileDoc {
                 schema_version: 2,
                 level,
-                xp: u64::from(xp),
+                xp,
                 stat_points,
                 allocated: PrimaryStats {
                     str: str_val,
@@ -248,7 +258,7 @@ pub fn migrate_profile_value(raw: &Value) -> Option<ProfileDoc> {
             Some(ProfileDoc {
                 schema_version: 2,
                 level,
-                xp: u64::from(xp),
+                xp,
                 stat_points,
                 allocated: PrimaryStats {
                     str: str_val,
@@ -308,18 +318,19 @@ mod tests {
     use serde_json::json;
 
     #[test]
-    fn migrates_profile_v1_to_v2_adding_default_dex() {
+    fn migrates_profile_v1_to_v2_adding_default_dex_and_supports_u64_xp() {
+        let large_xp: u64 = 5_000_000_000;
         let v1 = json!({
             "schemaVersion": 1,
             "level": 3,
-            "xp": 50,
+            "xp": large_xp,
             "statPoints": 6,
             "allocated": { "str": 4, "agi": 2, "int": 1, "vit": 3 }
         });
         let doc = migrate_profile_value(&v1).expect("should migrate v1 profile");
         assert_eq!(doc.schema_version, 2);
         assert_eq!(doc.level, 3);
-        assert_eq!(doc.xp, 50);
+        assert_eq!(doc.xp, large_xp);
         assert_eq!(doc.stat_points, 6);
         assert_eq!(doc.allocated.str, 4);
         assert_eq!(doc.allocated.agi, 2);
