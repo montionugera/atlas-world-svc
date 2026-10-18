@@ -1623,8 +1623,9 @@
     "title": "District Saffron Kiln Orchards Canon Promotion, Apricot Aqueduct Terrace Connection, and Flywheel Dynamo Canyon Draft",
     "from_idea": "I-222",
     "created_at": "2026-10-18T12:37:07.182461+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-18T12:37:25.235229+00:00"
   }
 ]
