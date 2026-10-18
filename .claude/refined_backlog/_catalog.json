@@ -1871,5 +1871,15 @@
     "claimed_at": "2026-10-18T20:10:30.703507+00:00",
     "shipped_at": "2026-10-18T20:19:46.626435+00:00",
     "shipped_sha": "4c9329c41bf23362684f0aa25423ccdc89c5aa8d"
+  },
+  {
+    "id": "F-150",
+    "title": "Find and join friends in the world",
+    "from_idea": "I-184",
+    "created_at": "2026-10-18T20:19:57.658055+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-008"
   }
 ]
