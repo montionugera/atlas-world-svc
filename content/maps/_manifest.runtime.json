@@ -89,6 +89,24 @@
       ]
     },
     {
+      "mapId": "pendulum-sanctum-b1",
+      "nodeId": "dungeon-pendulum-sanctum",
+      "name": "The Pendulum Sanctum",
+      "districtId": "district-eclipse-observatory",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        40,
+        46
+      ]
+    },
+    {
       "mapId": "pendulum-shaft-b1",
       "nodeId": "dungeon-pendulum-shaft",
       "name": "The Pendulum Shaft (Floor -1)",
@@ -212,6 +230,24 @@
       "levelRange": [
         6,
         15
+      ]
+    },
+    {
+      "mapId": "orrery-bridge",
+      "nodeId": "hunting-area-orrery-bridge",
+      "name": "The Orrery Bridge",
+      "districtId": "district-eclipse-observatory",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        36,
+        42
       ]
     },
     {
@@ -341,6 +377,24 @@
       ]
     },
     {
+      "mapId": "prism-zenith",
+      "nodeId": "town-prism-zenith",
+      "name": "Prism Zenith",
+      "districtId": "district-eclipse-observatory",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        38,
+        44
+      ]
+    },
+    {
       "mapId": "starfall-haven",
       "nodeId": "town-starfall-haven",
       "name": "Starfall Haven",
@@ -441,6 +495,27 @@
       "arrivalPointMeters": {
         "x": 500.0,
         "y": 860.0
+      },
+      "lockMessage": null
+    },
+    "portal-pendulum-sanctum-exit-zenith": {
+      "portalId": "portal-pendulum-sanctum-exit-zenith",
+      "sourceNodeId": "dungeon-pendulum-sanctum",
+      "sourceMapId": "pendulum-sanctum-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-prism-zenith",
+      "targetMapId": "prism-zenith",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 1600.0,
+        "y": 2980.0,
+        "width": 20.0,
+        "height": 20.0
+      },
+      "arrivalPointMeters": {
+        "x": 1600.0,
+        "y": 2920.0
       },
       "lockMessage": null
     },
@@ -724,6 +799,48 @@
       "direction": "West",
       "targetNodeId": "town-lantern-hollow",
       "targetMapId": "lantern-hollow",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-orrery-bridge-east-prism-zenith": {
+      "portalId": "portal-orrery-bridge-east-prism-zenith",
+      "sourceNodeId": "hunting-area-orrery-bridge",
+      "sourceMapId": "orrery-bridge",
+      "direction": "East",
+      "targetNodeId": "town-prism-zenith",
+      "targetMapId": "prism-zenith",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-orrery-bridge-west-starfall-haven": {
+      "portalId": "portal-orrery-bridge-west-starfall-haven",
+      "sourceNodeId": "hunting-area-orrery-bridge",
+      "sourceMapId": "orrery-bridge",
+      "direction": "West",
+      "targetNodeId": "town-starfall-haven",
+      "targetMapId": "starfall-haven",
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
@@ -1158,6 +1275,69 @@
       },
       "lockMessage": null
     },
+    "portal-prism-zenith-north-fog": {
+      "portalId": "portal-prism-zenith-north-fog",
+      "sourceNodeId": "town-prism-zenith",
+      "sourceMapId": "prism-zenith",
+      "direction": "North",
+      "targetNodeId": "hunting-area-apogee-spire",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Unfocused solar-eclipse rays at Apogee Lens Spire burn through unshielded gliders; the Zenith Astronomers require the Sanctum Prism-Gyro before opening the northern stair."
+    },
+    "portal-prism-zenith-west-orrery": {
+      "portalId": "portal-prism-zenith-west-orrery",
+      "sourceNodeId": "town-prism-zenith",
+      "sourceMapId": "prism-zenith",
+      "direction": "West",
+      "targetNodeId": "hunting-area-orrery-bridge",
+      "targetMapId": "orrery-bridge",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-prism-zenith-dungeon-sanctum": {
+      "portalId": "portal-prism-zenith-dungeon-sanctum",
+      "sourceNodeId": "town-prism-zenith",
+      "sourceMapId": "prism-zenith",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-pendulum-sanctum",
+      "targetMapId": "pendulum-sanctum-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
     "portal-starfall-haven-north-fog": {
       "portalId": "portal-starfall-haven-north-fog",
       "sourceNodeId": "town-starfall-haven",
@@ -1178,6 +1358,27 @@
         "y": 200.0
       },
       "lockMessage": "Upward-pouring silver cataracts at Mirror Cascade Basin have frozen the northern tether-lock; the Cartographer Guild requires the Belfry Star-Chime before unsealing the gate."
+    },
+    "portal-starfall-haven-east-orrery": {
+      "portalId": "portal-starfall-haven-east-orrery",
+      "sourceNodeId": "town-starfall-haven",
+      "sourceMapId": "starfall-haven",
+      "direction": "East",
+      "targetNodeId": "hunting-area-orrery-bridge",
+      "targetMapId": "orrery-bridge",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-starfall-haven-west-tether": {
       "portalId": "portal-starfall-haven-west-tether",

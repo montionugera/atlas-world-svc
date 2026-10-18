@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-pendulum-sanctum",
+  "name": "The Pendulum Sanctum",
+  "map_id": "pendulum-sanctum-b1",
+  "parent_district_id": "district-eclipse-observatory",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Subterranean crystal-and-brass counterweight vault beneath Prism Zenith at [1, 1] (floor_index -1) where refraction spirits and prism-golems guard the primary Foucault star-pendulum.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    40,
+    46
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/pillar.webp",
+    "dimensions_meters": {
+      "width": 3200.0,
+      "height": 3200.0
+    },
+    "biome_palette": "shattered_halo_prism_sanctum_dungeon",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Liquid starlight mercury mirror-basins reflecting the swinging Foucault pendulum"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-pendulum-sanctum-exit-zenith",
+      "direction": "Exit",
+      "target_node_id": "town-prism-zenith",
+      "target_map_id": "prism-zenith",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 1600.0,
+        "y": 2980.0,
+        "width": 20.0,
+        "height": 20.0
+      },
+      "arrival_point_meters": {
+        "x": 1600.0,
+        "y": 2920.0
+      }
+    }
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-sanctum-refraction-specter",
+      "monster_id": "mob-prism-refraction-specter",
+      "monster_name": "Prism Refraction Specter",
+      "spawn_count": 9,
+      "respawn_seconds": 14.0,
+      "level": 42,
+      "element": "Ghost",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-chromatic-quartz-splinter",
+          "item_name": "Chromatic Quartz Splinter",
+          "drop_chance_percent": 42.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-prism-refraction-specter",
+        "card_name": "Prism Refraction Specter Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Headgear",
+        "modifier_summary": "Intelligence +4, Variable Cast Time -5%"
+      }
+    },
+    {
+      "spawn_id": "spawn-sanctum-zenith-prism-golem",
+      "monster_id": "mob-zenith-prism-colossus",
+      "monster_name": "Zenith Prism-Colossus",
+      "spawn_count": 6,
+      "respawn_seconds": 18.0,
+      "level": 45,
+      "element": "Holy",
+      "size": "Large",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-sanctum-prism-gyro",
+          "item_name": "Sanctum Prism-Gyro",
+          "drop_chance_percent": 34.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-zenith-prism-colossus",
+        "card_name": "Zenith Prism-Colossus Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Shield",
+        "modifier_summary": "Magic Defense +10, Holy and Shadow Elemental Resistance +10%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.16,
+    "max_bush_height_meters": 0.38,
+    "stair_riser_height_meters": 0.14,
+    "doorway_Clearance_meters": {
+      "height": 2.4,
+      "width": 1.8
+    },
+    "main_road_width_meters": 12.0,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/pillar.glb",
+      "res://assets/dungeon/archway.glb",
+      "res://assets/dungeon/floor_tile_large.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Houses the Foucault star-pendulum beneath Prism Zenith that stabilizes the optical lenses of The Eclipse Observatory."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Liquid starlight mercury mirror-basins reflecting a colossal swinging quartz pendulum."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Stair risers at 0.14m, archways 2.40m x 1.80m, and 12.0m sanctum galleries for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric Exit portal to town-prism-zenith at [1, 1] floor_index -1 and Level 42 to 45 spirit/construct spawns."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Complete Canon dungeon with zero placeholder text and Sanctum Prism-Gyro drop linked to Apogee Lens Spire."
+    }
+  }
+}

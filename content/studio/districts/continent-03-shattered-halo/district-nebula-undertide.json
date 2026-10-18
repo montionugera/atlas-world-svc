@@ -3,7 +3,7 @@
   "id": "district-nebula-undertide",
   "name": "Nebula Undertide",
   "parent_continent_id": "continent-03-shattered-halo",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Innermost inverted-gravity whirlpool of Continent 03 where Vesper's tear suspended a spiraling sea of luminescent star-kelp and sunken astral galleons.",
   "local_conflict": "Abyssal star-serpents and slumber-echoes coil around the central gravity core, threatening to pull the outer sky-islands inward.",
   "level_band_label": "Levels 21 to 40",
@@ -20,7 +20,23 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-kelp-spiral-reef",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "level_range": [
+        42,
+        46
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Divers who tether themselves over the Undertide rim claim the water above breathes in and out every twelve seconds like a sleeping child.",
@@ -34,19 +50,19 @@
     },
     "fantasy_and_wonder": {
       "verified": true,
-      "evidence": "A floating vortex of violet nebula mist, star-kelp, and upside-down coral spires."
+      "evidence": "A floating vortex of violet nebula mist, luminescent star-kelp, and upside-down coral spires."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: child node scale bindings will be verified when promoted to Draft."
+      "verified": true,
+      "evidence": "Uses 13.0m coral-decked boardwalks, 0.60m diving-bell counters, and 0.14m shell-risers for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the high-level [42, 50] inner vortex frontier of Continent 03."
+      "evidence": "Draft status: awaiting playable leaf map authoring for Kelp Spiral Reef and the Undertide sanctuary."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Maintains Mystery status with complete mystery_hook and zero child leaf maps until promoted to Draft."
+      "evidence": "Includes complete mystery_hook and reserves hunting-area-kelp-spiral-reef as a Mystery frontier."
     }
   }
 }

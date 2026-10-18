@@ -2,12 +2,12 @@
   "schema_version": "1.0.0",
   "id": "hunting-area-orrery-bridge",
   "name": "The Orrery Bridge",
-  "map_id": null,
+  "map_id": "orrery-bridge",
   "parent_district_id": "district-eclipse-observatory",
   "parent_continent_id": "continent-03-shattered-halo",
   "node_type": "hunting_area",
-  "status": "mystery",
-  "core_rationale": "Western approach causeway of The Eclipse Observatory at [0, 1] where rotating brass planetarium rings form a stepping-stone bridge from Starfall Anchorage.",
+  "status": "canon",
+  "core_rationale": "Western approach causeway of The Eclipse Observatory at [0, 1] where rotating brass planetarium rings form a 13.5 meter wide starlight bridge from Starfall Haven to Prism Zenith.",
   "is_starter_town": false,
   "grid_coordinates": [
     0,
@@ -17,31 +17,146 @@
     36,
     42
   ],
-  "mystery_hook": {
-    "in_world_rumor": "Cartographers warn that the Orrery Bridge only aligns its planetary walkways when the three moons of Aethelgard cross the zenith.",
-    "visual_silhouette": "Orbiting brass and crystal spheres linked by ribbons of solid starlight.",
-    "unanswered_question": "How can travelers lock the orbiting spheres in place to cross into the Eclipse Observatory?"
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/archway.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_orrery_causeway",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Weightless ribbons of silver dew orbiting alongside brass planetarium rings"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-orrery-bridge-east-prism-zenith",
+      "direction": "East",
+      "target_node_id": "town-prism-zenith",
+      "target_map_id": "prism-zenith",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-orrery-bridge-west-starfall-haven",
+      "direction": "West",
+      "target_node_id": "town-starfall-haven",
+      "target_map_id": "starfall-haven",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-orrery-bridge-eclipse-moth",
+      "monster_id": "mob-velvet-eclipse-moth",
+      "monster_name": "Velvet Eclipse-Moth",
+      "spawn_count": 10,
+      "respawn_seconds": 12.0,
+      "level": 37,
+      "element": "Wind",
+      "size": "Medium",
+      "race": "Insect",
+      "family": "insect",
+      "item_drops": [
+        {
+          "item_id": "item-starlight-wing-scale",
+          "item_name": "Starlight Wing Scale",
+          "drop_chance_percent": 45.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-velvet-eclipse-moth",
+        "card_name": "Velvet Eclipse-Moth Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Garment",
+        "modifier_summary": "Flee Rate +14, Dark Elemental Resistance +10%"
+      }
+    },
+    {
+      "spawn_id": "spawn-orrery-bridge-armillary-sentinel",
+      "monster_id": "mob-brass-armillary-sentinel",
+      "monster_name": "Brass Armillary Sentinel",
+      "spawn_count": 8,
+      "respawn_seconds": 15.0,
+      "level": 40,
+      "element": "Earth",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-engraved-solstice-ring",
+          "item_name": "Engraved Solstice Ring",
+          "drop_chance_percent": 38.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-brass-armillary-sentinel",
+        "card_name": "Brass Armillary Sentinel Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Accessory",
+        "modifier_summary": "Hit Rate +12, Critical Hit Damage +5%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.21,
+    "max_bush_height_meters": 0.48,
+    "main_road_width_meters": 13.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/archway.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Links the eastern rim of Starfall Anchorage to the central lens dome of The Eclipse Observatory."
+      "evidence": "Connects Starfall Haven East Gate in Starfall Anchorage to Prism Zenith West Gate in The Eclipse Observatory."
     },
     "fantasy_and_wonder": {
       "verified": true,
-      "evidence": "Orbiting brass planetarium spheres linked by solid starlight walkways."
+      "evidence": "Orbiting brass planetarium rings linked by solid starlight walkways and velvet eclipse-moths."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: terrain tile and prop kit metrics will be bound when promoted to Draft."
+      "verified": true,
+      "evidence": "Grass <= 0.21m, bushes <= 0.48m, terrace steps <= 0.14m, and 13.5m planetarium causeway for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-eclipse-observatory."
+      "verified": true,
+      "evidence": "Symmetric West cross-district portal to town-starfall-haven, East portal to town-prism-zenith, and Level 37 to 40 insect/construct fauna."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Maintains map_id: null and complete mystery_hook until Eclipse Observatory is promoted."
+      "evidence": "Promoted from Mystery to full Canon cross-district hunting area with complete spawns and card drops."
     }
   }
 }
