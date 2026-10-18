@@ -1437,5 +1437,11 @@
     "title": "Cap Gate 1 test and build worker concurrency in scripts/precheck.sh to prevent OOM freezes",
     "created_at": "2026-10-18T15:55:04.767773+00:00",
     "promoted_to": "F-138"
+  },
+  {
+    "id": "I-229",
+    "title": "Promote district-ginger-steam-terraces to Canon on Continent 01 with 4 leaf nodes and seed district-solstice-pendulum-atoll on Continent 03",
+    "created_at": "2026-10-18T17:45:40.152151+00:00",
+    "promoted_to": null
   }
 ]
