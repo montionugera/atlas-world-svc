@@ -341,6 +341,24 @@
       ]
     },
     {
+      "mapId": "spice-kiln-cellar-b1",
+      "nodeId": "dungeon-spice-kiln-cellar",
+      "name": "Spice-Kiln Cellar",
+      "districtId": "district-cinnamon-bellows-bluff",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        14,
+        15
+      ]
+    },
+    {
       "mapId": "stalactite-carillon-nave-b1",
       "nodeId": "dungeon-stalactite-carillon-nave",
       "name": "Stalactite Carillon Nave",
@@ -644,6 +662,24 @@
       "levelRange": [
         12,
         20
+      ]
+    },
+    {
+      "mapId": "cinnamon-bark-viaduct",
+      "nodeId": "hunting-area-cinnamon-bark-viaduct",
+      "name": "Cinnamon-Bark Viaduct",
+      "districtId": "district-cinnamon-bellows-bluff",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        14,
+        15
       ]
     },
     {
@@ -1076,6 +1112,24 @@
       "levelRange": [
         19,
         20
+      ]
+    },
+    {
+      "mapId": "cinnamon-mill-haven",
+      "nodeId": "town-cinnamon-mill-haven",
+      "name": "Cinnamon-Mill Haven",
+      "districtId": "district-cinnamon-bellows-bluff",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        14,
+        15
       ]
     },
     {
@@ -1872,6 +1926,27 @@
       },
       "lockMessage": null
     },
+    "portal-spice-cellar-exit-mill-haven": {
+      "portalId": "portal-spice-cellar-exit-mill-haven",
+      "sourceNodeId": "dungeon-spice-kiln-cellar",
+      "sourceMapId": "spice-kiln-cellar-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-cinnamon-mill-haven",
+      "targetMapId": "cinnamon-mill-haven",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
     "portal-carillon-nave-exit-bell-sanctuary": {
       "portalId": "portal-carillon-nave-exit-bell-sanctuary",
       "sourceNodeId": "dungeon-stalactite-carillon-nave",
@@ -2446,6 +2521,48 @@
       "direction": "West",
       "targetNodeId": "town-kilnwatch-bastion",
       "targetMapId": "kilnwatch-bastion",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-cinnamon-viaduct-east-mill-haven": {
+      "portalId": "portal-cinnamon-viaduct-east-mill-haven",
+      "sourceNodeId": "hunting-area-cinnamon-bark-viaduct",
+      "sourceMapId": "cinnamon-bark-viaduct",
+      "direction": "East",
+      "targetNodeId": "town-cinnamon-mill-haven",
+      "targetMapId": "cinnamon-mill-haven",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-cinnamon-viaduct-west-saffron-press": {
+      "portalId": "portal-cinnamon-viaduct-west-saffron-press",
+      "sourceNodeId": "hunting-area-cinnamon-bark-viaduct",
+      "sourceMapId": "cinnamon-bark-viaduct",
+      "direction": "West",
+      "targetNodeId": "town-saffron-press-village",
+      "targetMapId": "saffron-press-village",
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
@@ -3601,6 +3718,69 @@
       "direction": "Dungeon",
       "targetNodeId": "dungeon-ceramic-resonator-crypt",
       "targetMapId": "ceramic-resonator-crypt-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-cinnamon-mill-north-anise-fog": {
+      "portalId": "portal-cinnamon-mill-north-anise-fog",
+      "sourceNodeId": "town-cinnamon-mill-haven",
+      "sourceMapId": "cinnamon-mill-haven",
+      "direction": "North",
+      "targetNodeId": "hunting-area-star-anise-promontory",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Swirling aromatic spice-drafts across Star-Anise Promontory cloud unshielded sightlines; Mill-Steward Clove requires the Star-Pod Lantern before opening the northern promontory."
+    },
+    "portal-cinnamon-mill-west-viaduct": {
+      "portalId": "portal-cinnamon-mill-west-viaduct",
+      "sourceNodeId": "town-cinnamon-mill-haven",
+      "sourceMapId": "cinnamon-mill-haven",
+      "direction": "West",
+      "targetNodeId": "hunting-area-cinnamon-bark-viaduct",
+      "targetMapId": "cinnamon-bark-viaduct",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-cinnamon-mill-dungeon-spice-cellar": {
+      "portalId": "portal-cinnamon-mill-dungeon-spice-cellar",
+      "sourceNodeId": "town-cinnamon-mill-haven",
+      "sourceMapId": "cinnamon-mill-haven",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-spice-kiln-cellar",
+      "targetMapId": "spice-kiln-cellar-b1",
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
@@ -5063,6 +5243,27 @@
         "y": 200.0
       },
       "lockMessage": "Boiling amber glaze-steam vents across Honeycomb-Kiln Ridge; Orchard-Steward Marigold requires the Golden Comb Seal before unsealing the northern kiln ridge."
+    },
+    "portal-saffron-press-east-cinnamon-viaduct": {
+      "portalId": "portal-saffron-press-east-cinnamon-viaduct",
+      "sourceNodeId": "town-saffron-press-village",
+      "sourceMapId": "saffron-press-village",
+      "direction": "East",
+      "targetNodeId": "hunting-area-cinnamon-bark-viaduct",
+      "targetMapId": "cinnamon-bark-viaduct",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-saffron-press-west-apricot-terrace": {
       "portalId": "portal-saffron-press-west-apricot-terrace",

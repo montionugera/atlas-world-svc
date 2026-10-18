@@ -56,13 +56,14 @@
     "district-libration-mirror-shoals",
     "district-umbrage-prism-atoll",
     "district-aurora-chime-atoll",
-    "district-penumbra-prism-reef"
+    "district-penumbra-prism-reef",
+    "district-celestial-astrolabe-atoll"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Star-navigators whisper that Corona-Flare Arch in Penumbra Prism Reef bends eclipse-light into a shimmering corona bridge toward the outer void.",
-    "visual_silhouette": "A crescent halo of floating dark-stone islands and smoky-violet prism arches glowing softly on the northern horizon.",
-    "unanswered_question": "What eclipse-corona beacon crowns Corona-Flare Arch?",
-    "discovery_trigger_hint": "All ten Districts on Continent 03 are now Canon; Corona-Flare Arch remains guarded by a Fog of Lore portal."
+    "in_world_rumor": "Star-navigators say Celestial Astrolabe Atoll aligns its brass armillary rings once every hour to point toward hidden star-shoals.",
+    "visual_silhouette": "Nested starlight-and-brass armillary rings rotating around a floating basalt atoll.",
+    "unanswered_question": "What celestial chart-chamber sits at the center of Celestial Astrolabe Atoll?",
+    "discovery_trigger_hint": "Ten Districts on Continent 03 are Canon while Celestial Astrolabe Atoll awaits exploration on the outer armillary ring."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -79,11 +80,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes all ten Canon Districts on Continent 03."
+      "evidence": "Organizes ten Canon Districts plus Celestial Astrolabe Atoll (Mystery) on Continent 03."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Penumbra Prism Reef to Canon while preserving leaf Mystery frontier Corona-Flare Arch behind a Fog of Lore portal."
+      "evidence": "Seeds Celestial Astrolabe Atoll in Mystery status while preserving leaf Mystery frontiers behind Fog of Lore portals."
     }
   }
 }
