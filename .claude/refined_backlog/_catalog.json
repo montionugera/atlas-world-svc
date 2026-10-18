@@ -1709,8 +1709,9 @@
     "title": "Promote district-celestial-astrolabe-atoll to Canon on Continent 03 with 4 leaf nodes and seed district-thermal-compensator-basin on Continent 02",
     "from_idea": "I-227",
     "created_at": "2026-10-18T14:40:51.055601+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-18T14:41:07.984253+00:00"
   }
 ]
