@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-kiln-east-orchard",
+  "name": "Kiln East Orchard",
+  "map_id": "kiln-east-orchard",
+  "parent_district_id": "district-teacup-meadows",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "canon",
+  "core_rationale": "Terraced apricot and teacup-berry orchard east of Lantern Hollow where cracked clay watering-constructs and nectar-thieving beetles challenge Level 6 to 15 adventurers.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    2,
+    1
+  ],
+  "level_range": [
+    6,
+    15
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/nature/birch_tree_1.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_terracotta_orchard",
+    "max_terrace_step_meters": 0.2,
+    "water_feature": "Ceramic aqueduct sluice feeding the orchard rows"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": {
+      "portal_id": "portal-kiln-east-orchard-west",
+      "direction": "West",
+      "target_node_id": "town-lantern-hollow",
+      "target_map_id": "lantern-hollow",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-orchard-teapot-walker",
+      "monster_id": "mob-teapot-walker",
+      "monster_name": "Cracked Teapot-Walker",
+      "spawn_count": 8,
+      "respawn_seconds": 10.0,
+      "level": 9,
+      "element": "Earth",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-porcelain-shard",
+          "item_name": "Porcelain Spout Shard",
+          "drop_chance_percent": 50.0
+        },
+        {
+          "item_id": "item-chamomile-leaf",
+          "item_name": "Steeped Chamomile Leaf",
+          "drop_chance_percent": 22.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-teapot-walker",
+        "card_name": "Cracked Teapot-Walker Card",
+        "drop_chance_percent": 0.02,
+        "equipment_slot": "Armor",
+        "modifier_summary": "Vitality +2, Health Recovery +10%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.3,
+    "max_bush_height_meters": 0.6,
+    "main_road_width_meters": 12.0,
+    "footpath_width_meters": 4.0,
+    "three_dimensional_assets": [
+      "res://assets/nature/birch_tree_1.glb",
+      "res://assets/dungeon/barrel_small.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Connects directly to Lantern Hollow East Gate at grid [2, 1] and dramatizes the clogged irrigation sluice conflict."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Walking porcelain watering-teapots patrolling golden apricot terraces."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Grass <= 0.30m, bushes <= 0.60m, terrace steps <= 0.20m, and 12.0m main orchard road for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric West portal back to town-lantern-hollow and Level 9 construct fauna within District's Level 1 to 15 range."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Complete playable leaf map with verified bestiary and drop percentages."
+    }
+  }
+}

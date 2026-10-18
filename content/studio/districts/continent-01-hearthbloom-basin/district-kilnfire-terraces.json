@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-kilnfire-terraces",
+  "name": "Kilnfire Terraces",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "status": "draft",
+  "core_rationale": "Upper stepped terracotta rim of Sola's ceramic shield where giant pottery kilns vent warm updrafts toward the eastern root-train viaduct.",
+  "local_conflict": "Cracked porcelain golems have blocked the Kettle-Whistle Viaduct leading to Continent 02.",
+  "level_band_label": "Levels 1 to 20",
+  "level_range": [
+    10,
+    20
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "spirit"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Potters claim the upper kiln vents hum in harmony whenever the root-train approaches from the east.",
+    "visual_silhouette": "Stepped red-clay amphitheaters crowned by smoking porcelain chimneys.",
+    "unanswered_question": "Who locked the Great Kiln damper from the inside?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Forms the upper eastern rim of Continent 01 Hearthbloom Basin connecting to the Kettle-Whistle Viaduct."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Stepped terracotta amphitheaters and giant whistling teapot kilns."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Terrace steps capped at 0.18 meters with 4.0 meter wide glaze-brick ramps for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Draft status: child hunting area tiles for Levels 10 to 20 are being laid out."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides mystery_hook for the locked Great Kiln damper without placeholder filler maps."
+    }
+  }
+}

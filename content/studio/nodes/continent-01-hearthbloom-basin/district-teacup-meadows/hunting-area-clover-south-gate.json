@@ -1,0 +1,155 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-clover-south-gate",
+  "name": "Clover South Gate",
+  "map_id": "clover-south-gate",
+  "parent_district_id": "district-teacup-meadows",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "canon",
+  "core_rationale": "Gentle sunlit clover terrace immediately south of Lantern Hollow where new Level 1 to 10 Sprouts learn basic combat against passive Soot-Puffs and Dew-Beetles along a wide 14-meter cobble road.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    2
+  ],
+  "level_range": [
+    1,
+    10
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/nature/pine_tree_1.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_clover_meadow",
+    "max_terrace_step_meters": 0.18,
+    "water_feature": "Shallow warm creek ford on the southern meadow apron"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-clover-south-gate-north",
+      "direction": "North",
+      "target_node_id": "town-lantern-hollow",
+      "target_map_id": "lantern-hollow",
+      "target_direction": "South",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-clover-soot-puff",
+      "monster_id": "mob-soot-puff",
+      "monster_name": "Warm Soot-Puff",
+      "spawn_count": 12,
+      "respawn_seconds": 6.0,
+      "level": 2,
+      "element": "Fire",
+      "size": "Small",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-warm-ash-fluff",
+          "item_name": "Warm Ash Fluff",
+          "drop_chance_percent": 65.0
+        },
+        {
+          "item_id": "item-hearth-candy",
+          "item_name": "Hearth Sugar Drop",
+          "drop_chance_percent": 18.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-warm-soot-puff",
+        "card_name": "Warm Soot-Puff Card",
+        "drop_chance_percent": 0.02,
+        "equipment_slot": "Garment",
+        "modifier_summary": "Fire Resistance +5%, Maximum Health Points +50"
+      }
+    },
+    {
+      "spawn_id": "spawn-clover-dew-beetle",
+      "monster_id": "mob-clover-dew-beetle",
+      "monster_name": "Clover Dew-Beetle",
+      "spawn_count": 10,
+      "respawn_seconds": 8.0,
+      "level": 5,
+      "element": "Earth",
+      "size": "Small",
+      "race": "Insect",
+      "family": "insect",
+      "item_drops": [
+        {
+          "item_id": "item-glazed-shell",
+          "item_name": "Glazed Carapace Shell",
+          "drop_chance_percent": 55.0
+        },
+        {
+          "item_id": "item-clover-nectar",
+          "item_name": "Sweet Clover Nectar",
+          "drop_chance_percent": 14.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-clover-dew-beetle",
+        "card_name": "Clover Dew-Beetle Card",
+        "drop_chance_percent": 0.02,
+        "equipment_slot": "Shield",
+        "modifier_summary": "Physical Defense +3, Earth Resistance +5%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.28,
+    "max_bush_height_meters": 0.58,
+    "main_road_width_meters": 14.0,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/nature/pine_tree_1.glb",
+      "res://assets/nature/rock_medium_1.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Connects directly to Lantern Hollow South Gate at grid [1, 2] within district-teacup-meadows."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Sunlit terracotta clover terraces patrolled by glowing Warm Soot-Puffs and Glazed Dew-Beetles."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Grass capped at 0.28m, bushes at 0.58m, terrace steps at 0.18m, and highway width at 14.0m for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric North portal back to town-lantern-hollow and Level 2 to 5 spirit/insect fauna matching District families."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Complete playable leaf map with zero placeholder boilerplate."
+    }
+  }
+}

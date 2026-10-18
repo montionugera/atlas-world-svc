@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "worldHistoryId": "world-history-cradle-of-embers",
+  "characterScaleBandMeters": [
+    0.9,
+    1.2
+  ],
+  "defaultStarterMapId": "lantern-hollow",
+  "starterSpawns": {
+    "lantern-hollow": {
+      "nodeId": "town-lantern-hollow",
+      "x": 2000.0,
+      "y": 2000.0,
+      "z": 0.0,
+      "safeZoneRadiusMeters": 40.0
+    }
+  },
+  "playableMaps": [
+    {
+      "mapId": "kiln-cellar-b1",
+      "nodeId": "dungeon-kiln-cellar",
+      "name": "The Under-Hearth Kiln Cellar",
+      "districtId": "district-teacup-meadows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "draft",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        10,
+        18
+      ]
+    },
+    {
+      "mapId": "clover-south-gate",
+      "nodeId": "hunting-area-clover-south-gate",
+      "name": "Clover South Gate",
+      "districtId": "district-teacup-meadows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        2
+      ],
+      "levelRange": [
+        1,
+        10
+      ]
+    },
+    {
+      "mapId": "kiln-east-orchard",
+      "nodeId": "hunting-area-kiln-east-orchard",
+      "name": "Kiln East Orchard",
+      "districtId": "district-teacup-meadows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        2,
+        1
+      ],
+      "levelRange": [
+        6,
+        15
+      ]
+    },
+    {
+      "mapId": "lantern-hollow",
+      "nodeId": "town-lantern-hollow",
+      "name": "Lantern Hollow",
+      "districtId": "district-teacup-meadows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": true,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        1,
+        5
+      ]
+    }
+  ],
+  "portalRoutingTable": {
+    "portal-kiln-cellar-exit": {
+      "portalId": "portal-kiln-cellar-exit",
+      "sourceNodeId": "dungeon-kiln-cellar",
+      "sourceMapId": "kiln-cellar-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-lantern-hollow",
+      "targetMapId": "lantern-hollow",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 1000.0,
+        "y": 1840.0,
+        "width": 12.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 1000.0,
+        "y": 1800.0
+      },
+      "lockMessage": null
+    },
+    "portal-clover-south-gate-north": {
+      "portalId": "portal-clover-south-gate-north",
+      "sourceNodeId": "hunting-area-clover-south-gate",
+      "sourceMapId": "clover-south-gate",
+      "direction": "North",
+      "targetNodeId": "town-lantern-hollow",
+      "targetMapId": "lantern-hollow",
+      "targetDirection": "South",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": null
+    },
+    "portal-kiln-east-orchard-west": {
+      "portalId": "portal-kiln-east-orchard-west",
+      "sourceNodeId": "hunting-area-kiln-east-orchard",
+      "sourceMapId": "kiln-east-orchard",
+      "direction": "West",
+      "targetNodeId": "town-lantern-hollow",
+      "targetMapId": "lantern-hollow",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-lantern-hollow-south": {
+      "portalId": "portal-lantern-hollow-south",
+      "sourceNodeId": "town-lantern-hollow",
+      "sourceMapId": "lantern-hollow",
+      "direction": "South",
+      "targetNodeId": "hunting-area-clover-south-gate",
+      "targetMapId": "clover-south-gate",
+      "targetDirection": "North",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3800.0
+      },
+      "lockMessage": null
+    },
+    "portal-lantern-hollow-east": {
+      "portalId": "portal-lantern-hollow-east",
+      "sourceNodeId": "town-lantern-hollow",
+      "sourceMapId": "lantern-hollow",
+      "direction": "East",
+      "targetNodeId": "hunting-area-kiln-east-orchard",
+      "targetMapId": "kiln-east-orchard",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-lantern-hollow-west-fog": {
+      "portalId": "portal-lantern-hollow-west-fog",
+      "sourceNodeId": "town-lantern-hollow",
+      "sourceMapId": "lantern-hollow",
+      "direction": "West",
+      "targetNodeId": "hunting-area-whispering-mire",
+      "targetMapId": null,
+      "targetDirection": "East",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": "The western teapot-sluice bridge is shrouded in silver steam-fog; Lantern-Keepers forbid crossing until the Great Kiln is relit."
+    },
+    "portal-lantern-hollow-dungeon-cellar": {
+      "portalId": "portal-lantern-hollow-dungeon-cellar",
+      "sourceNodeId": "town-lantern-hollow",
+      "sourceMapId": "lantern-hollow",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-kiln-cellar",
+      "targetMapId": "kiln-cellar-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2120.0,
+        "y": 1880.0,
+        "width": 8.0,
+        "height": 8.0
+      },
+      "arrivalPointMeters": {
+        "x": 2110.0,
+        "y": 1880.0
+      },
+      "lockMessage": null
+    }
+  }
+}

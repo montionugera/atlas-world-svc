@@ -1,0 +1,120 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-kiln-cellar",
+  "name": "The Under-Hearth Kiln Cellar",
+  "map_id": "kiln-cellar-b1",
+  "parent_district_id": "district-teacup-meadows",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "dungeon",
+  "status": "draft",
+  "core_rationale": "Subterranean brick flue network beneath Lantern Hollow where Sola's ember-heart warms the town above and rogue cinder-constructs gather around the main draft valve.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    10,
+    18
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/torch_lit.webp",
+    "dimensions_meters": {
+      "width": 2000.0,
+      "height": 2000.0
+    },
+    "biome_palette": "hearthbloom_kiln_undervault",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Warm mineral condensation channels along the brick walls"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-kiln-cellar-exit",
+      "direction": "Exit",
+      "target_node_id": "town-lantern-hollow",
+      "target_map_id": "lantern-hollow",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 1000.0,
+        "y": 1840.0,
+        "width": 12.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 1000.0,
+        "y": 1800.0
+      }
+    }
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-cellar-cinder-beetle",
+      "monster_id": "mob-kiln-cinder-beetle",
+      "monster_name": "Kiln Cinder-Beetle",
+      "spawn_count": 10,
+      "respawn_seconds": 12.0,
+      "level": 13,
+      "element": "Fire",
+      "size": "Medium",
+      "race": "Insect",
+      "family": "insect",
+      "item_drops": [
+        {
+          "item_id": "item-ember-slag",
+          "item_name": "Glowing Ember Slag",
+          "drop_chance_percent": 48.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-kiln-cinder-beetle",
+        "card_name": "Kiln Cinder-Beetle Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Footgear",
+        "modifier_summary": "Movement Speed +5%, Fire Resistance +10%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.1,
+    "max_bush_height_meters": 0.25,
+    "main_road_width_meters": 12.0,
+    "footpath_width_meters": 4.0,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/torch_lit.glb",
+      "res://assets/dungeon/wall_arched.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly underlies town-lantern-hollow at grid [1, 1] floor -1 and houses the clogged flue valve from district-teacup-meadows."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Cozy brick-lined subterranean bakery flues lit by warm amber hearth-torches."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Wide 12.0m vaulted brick corridors and 0.16m stair steps prevent camera clipping for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Draft status: boss room for the Great Flue Valve Guardian is still being tuned."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Symmetric Exit portal back to Lantern Hollow Dungeon entrance."
+    }
+  }
+}

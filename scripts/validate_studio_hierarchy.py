@@ -1,37 +1,20 @@
 #!/usr/bin/env python3
-"""Deterministic validator for the Top-Down World Studio hierarchy (content/studio/).
+"""Deterministic validator and runtime manifest builder for the Top-Down World Studio hierarchy (content/studio/).
 
-Enforces:
-1. Layer 1 (World History and Concept) and Layer 2 (Continent) structural & schema rules,
-   plus optional Layer 3 (District) and Layer 4 (Town, Hunting Area, and Dungeon) rules
-   when present.
-2. Intentional Mystery / Fog of Lore state machine (`status` in `canon | draft | mystery`):
-   - Every node across all layers must have a non-empty `core_rationale` (>= 20 chars).
-   - Every `mystery` node must define `mystery_hook` (`in_world_rumor`, `visual_silhouette`,
-     `unanswered_question`).
-   - A `canon` child cannot exist under a `draft` or `mystery` parent.
-3. 90 to 120 centimeter (`[0.90, 1.20]` meters, `1.05` meter reference) Cute Toddler and Kid
-   Character Scale Law and environment metrics (`max_grass_height_meters <= 0.35`,
-   `max_bush_height_meters <= 0.65`, `max_stair_riser_meters <= 0.18`,
-   `min_doorway_height_meters >= 1.80`, `min_doorway_width_meters >= 1.40`,
-   `prop_counter_height_range_meters` within `[0.50, 0.70]`,
-   `min_highway_corridor_width_meters >= 3.5`).
-4. Five-Pillar Step-by-Step Quality, Continuity, Consistency, and Fantasy Checklist
-   (`quality_checklist`):
-   - Must contain all 5 pillars (`causal_continuity`, `fantasy_and_wonder`,
-     `character_scale_consistency`, `spatial_and_ecological_consistency`,
-     `intentional_mystery_discipline`) with boolean `verified` and non-empty `evidence`.
-   - Any node with `status == "canon"` must have `verified == True` on all 5 pillars.
-   - Any node with `status == "mystery"` must have `verified == True` on `causal_continuity`
-     and `intentional_mystery_discipline`.
-5. Anti-Boilerplate Gate:
-   - Rejects deprecated proof-of-concept lore terms (`undertow`, `woolmArch`, `stage_0`,
-     `c-town-millcross`) anywhere in `content/studio/`.
+Enforces all 4 perspective layers:
+  Level 1: World History and Concept (`content/studio/world_history_and_concept.json`)
+  Level 2: Continent (`content/studio/continents/*.json`)
+  Level 3: District (`content/studio/districts/<continent_id>/*.json`)
+  Level 4: Town, Hunting Area, and Dungeon (`content/studio/nodes/<continent_id>/<district_id>/*.json`)
+
+Plus the 7 deterministic topological, ecological, scale, and mystery invariants (INV-01 .. INV-07)
+and the 5-pillar Quality, Continuity, Consistency, and Fantasy Checklist (`quality_checklist`).
 """
 
 from __future__ import annotations
 
 import argparse
+from collections import deque
 import json
 from pathlib import Path
 import re
@@ -41,6 +24,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_STUDIO_DIR = REPO_ROOT / "content" / "studio"
+DEFAULT_RUNTIME_MANIFEST_PATH = REPO_ROOT / "content" / "maps" / "_manifest.runtime.json"
 
 ALLOWED_STATUSES = {"canon", "draft", "mystery"}
 REQUIRED_CHECKLIST_PILLARS = (
@@ -56,6 +40,20 @@ FORBIDDEN_BOILERPLATE_TERMS = (
     "stage_0",
     "c-town-millcross",
 )
+INVERSE_DIRECTION = {
+    "North": "South",
+    "South": "North",
+    "East": "West",
+    "West": "East",
+    "Dungeon": "Exit",
+    "Exit": "Dungeon",
+}
+CARDINAL_VECTORS = {
+    "North": (0, -1),
+    "South": (0, 1),
+    "East": (1, 0),
+    "West": (-1, 0),
+}
 
 
 def _check_forbidden_boilerplate(raw_text: str, source_label: str, errors: list[str]) -> None:
@@ -234,6 +232,453 @@ def _validate_character_scale_law(
         errors.append(
             f"{source_label}: prop_counter_height_range_meters must lie within [0.50, 0.70], got {counter_range!r}"
         )
+
+
+def _validate_districts_and_nodes(
+    studio_dir: Path,
+    whc: dict[str, Any],
+    continents_by_id: dict[str, dict[str, Any]],
+    errors: list[str],
+) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+    """Validate Layer 3 (Districts) and Layer 4 (Town/Hunting Area/Dungeon Nodes) and INV-01..INV-07."""
+    districts_by_id: dict[str, dict[str, Any]] = {}
+    nodes_by_id: dict[str, dict[str, Any]] = {}
+
+    districts_root = studio_dir / "districts"
+    nodes_root = studio_dir / "nodes"
+    if not districts_root.exists():
+        return districts_by_id, nodes_by_id
+
+    for d_path in sorted(districts_root.rglob("*.json")):
+        try:
+            d_raw = d_path.read_text(encoding="utf-8")
+            district = json.loads(d_raw)
+        except Exception as exc:
+            errors.append(f"{d_path}: failed to parse JSON: {exc}")
+            continue
+
+        _check_forbidden_boilerplate(d_raw, str(d_path), errors)
+        _validate_rationalized_envelope(district, str(d_path), errors, require_checklist=True)
+
+        did = district.get("id", "")
+        if not did.startswith("district-"):
+            errors.append(f"{d_path}: district id must start with 'district-', got {did!r}")
+        if d_path.stem != did:
+            errors.append(
+                f"{d_path}: filename stem '{d_path.stem}' must match district id '{did}'"
+            )
+
+        parent_cid = district.get("parent_continent_id", "")
+        if parent_cid not in continents_by_id:
+            errors.append(
+                f"{d_path}: INV-01 violation: parent_continent_id '{parent_cid}' does not exist"
+            )
+        else:
+            parent_c = continents_by_id[parent_cid]
+            if district.get("status") == "canon" and parent_c.get("status") != "canon":
+                errors.append(
+                    f"{d_path}: INV-01 violation: canon district '{did}' cannot belong to non-canon continent '{parent_cid}' ({parent_c.get('status')})"
+                )
+            if did not in (parent_c.get("district_ids") or []):
+                errors.append(
+                    f"{d_path}: INV-01 violation: district '{did}' not listed in continent '{parent_cid}.district_ids'"
+                )
+
+        # INV-02: Grid Orthogonality & Uniqueness on District grid_nodes
+        surface_coords: dict[tuple[int, int], str] = {}
+        dungeon_coords: dict[tuple[int, int, int], str] = {}
+        grid_nodes_by_id: dict[str, dict[str, Any]] = {}
+        dims = district.get("grid_dimensions") or {}
+        max_cols = int(dims.get("columns", 10))
+        max_rows = int(dims.get("rows", 10))
+
+        for g_idx, g_node in enumerate(district.get("grid_nodes") or []):
+            g_label = f"{d_path}#grid_nodes[{g_idx}]"
+            nid = g_node.get("node_id", "")
+            ntype = g_node.get("node_type", "")
+            coords = g_node.get("grid_coordinates")
+            if (
+                not isinstance(coords, list)
+                or len(coords) != 2
+                or not all(isinstance(c, int) for c in coords)
+            ):
+                errors.append(f"{g_label}: INV-02 violation: invalid grid_coordinates {coords!r}")
+                continue
+            col, row = coords[0], coords[1]
+            if not (0 <= col < max_cols and 0 <= row < max_rows):
+                errors.append(
+                    f"{g_label}: INV-02 violation: grid_coordinates {[col, row]} outside grid_dimensions {max_cols}x{max_rows}"
+                )
+            if ntype in ("town", "hunting_area"):
+                if (col, row) in surface_coords:
+                    errors.append(
+                        f"{g_label}: INV-02 violation: duplicate surface grid_coordinates {[col, row]} shared by '{nid}' and '{surface_coords[(col, row)]}'"
+                    )
+                surface_coords[(col, row)] = nid
+            elif ntype == "dungeon":
+                floor_idx = g_node.get("floor_index")
+                if not isinstance(floor_idx, int) or floor_idx >= 0:
+                    errors.append(
+                        f"{g_label}: INV-02 violation: dungeon node '{nid}' must have floor_index < 0, got {floor_idx!r}"
+                    )
+                else:
+                    key = (col, row, floor_idx)
+                    if key in dungeon_coords:
+                        errors.append(
+                            f"{g_label}: INV-02 violation: duplicate dungeon coordinate/floor {key} shared by '{nid}' and '{dungeon_coords[key]}'"
+                        )
+                    dungeon_coords[key] = nid
+            grid_nodes_by_id[nid] = g_node
+
+        # Validate District portal_edges cardinal geometry & level continuity (INV-02, INV-05, INV-07)
+        d_lv_range = district.get("level_range") or [1, 100]
+        for e_idx, edge in enumerate(district.get("portal_edges") or []):
+            e_label = f"{d_path}#portal_edges[{e_idx}]"
+            u_id = edge.get("from_node_id")
+            v_id = edge.get("to_node_id")
+            from_dir = edge.get("from_direction")
+            to_dir = edge.get("to_direction")
+            if u_id not in grid_nodes_by_id or v_id not in grid_nodes_by_id:
+                errors.append(
+                    f"{e_label}: portal edge references node not in grid_nodes ({u_id!r} -> {v_id!r})"
+                )
+                continue
+            u_node = grid_nodes_by_id[u_id]
+            v_node = grid_nodes_by_id[v_id]
+
+            if INVERSE_DIRECTION.get(from_dir) != to_dir:
+                errors.append(
+                    f"{e_label}: INV-03 violation: from_direction '{from_dir}' must pair with inverse '{INVERSE_DIRECTION.get(from_dir)}', got '{to_dir}'"
+                )
+
+            if from_dir in CARDINAL_VECTORS:
+                dx, dy = CARDINAL_VECTORS[from_dir]
+                u_col, u_row = u_node["grid_coordinates"]
+                v_col, v_row = v_node["grid_coordinates"]
+                if (u_col + dx, u_row + dy) != (v_col, v_row):
+                    errors.append(
+                        f"{e_label}: INV-02 violation: cardinal '{from_dir}' edge from {u_id} {[u_col, u_row]} to {v_id} {[v_col, v_row]} does not match vector {(dx, dy)}"
+                    )
+
+            # INV-07: Mystery target must use fog_of_lore gate_state
+            if v_node.get("status") == "mystery" or u_node.get("status") == "mystery":
+                if edge.get("gate_state") != "fog_of_lore":
+                    errors.append(
+                        f"{e_label}: INV-07 violation: edge touching mystery node must have gate_state 'fog_of_lore'"
+                    )
+                lock_reason = edge.get("lock_reason")
+                if not isinstance(lock_reason, str) or len(lock_reason.strip()) < 15:
+                    errors.append(
+                        f"{e_label}: INV-07 violation: fog_of_lore edge requires lock_reason (>= 15 chars)"
+                    )
+
+            # INV-05: Level delta across open cardinal portals <= 15
+            if edge.get("gate_state") == "open" and from_dir in CARDINAL_VECTORS:
+                u_mid = sum(u_node["level_range"]) / 2.0
+                v_mid = sum(v_node["level_range"]) / 2.0
+                if abs(u_mid - v_mid) > 15.0:
+                    errors.append(
+                        f"{e_label}: INV-05 violation: level midpoint delta {abs(u_mid - v_mid):.1f} > 15 between '{u_id}' and '{v_id}'"
+                    )
+
+        districts_by_id[did] = {
+            **district,
+            "_grid_nodes_by_id": grid_nodes_by_id,
+            "_d_lv_range": d_lv_range,
+        }
+
+    # Load and validate Layer 4 Nodes
+    if nodes_root.exists():
+        for n_path in sorted(nodes_root.rglob("*.json")):
+            try:
+                n_raw = n_path.read_text(encoding="utf-8")
+                node = json.loads(n_raw)
+            except Exception as exc:
+                errors.append(f"{n_path}: failed to parse JSON: {exc}")
+                continue
+
+            _check_forbidden_boilerplate(n_raw, str(n_path), errors)
+            _validate_rationalized_envelope(node, str(n_path), errors, require_checklist=True)
+
+            nid = node.get("id", "")
+            if n_path.stem != nid:
+                errors.append(
+                    f"{n_path}: filename stem '{n_path.stem}' must match node id '{nid}'"
+                )
+
+            parent_did = node.get("parent_district_id", "")
+            parent_cid = node.get("parent_continent_id", "")
+            n_status = node.get("status")
+            ntype = node.get("node_type")
+
+            if parent_did not in districts_by_id:
+                errors.append(
+                    f"{n_path}: INV-01 violation: parent_district_id '{parent_did}' does not exist"
+                )
+                continue
+
+            parent_d = districts_by_id[parent_did]
+            if parent_d.get("parent_continent_id") != parent_cid:
+                errors.append(
+                    f"{n_path}: INV-01 violation: parent_continent_id '{parent_cid}' does not match district's continent '{parent_d.get('parent_continent_id')}'"
+                )
+            if n_status == "canon" and parent_d.get("status") != "canon":
+                errors.append(
+                    f"{n_path}: INV-01 violation: canon node '{nid}' cannot belong to non-canon district '{parent_did}' ({parent_d.get('status')})"
+                )
+            if nid not in parent_d["_grid_nodes_by_id"]:
+                errors.append(
+                    f"{n_path}: INV-02 violation: node '{nid}' is not registered in district '{parent_did}.grid_nodes'"
+                )
+
+            # INV-05: Node level_range containment within District level_range (+5 bleed for dungeons)
+            d_min, d_max = parent_d["_d_lv_range"]
+            n_lv = node.get("level_range") or [1, 1]
+            allowed_max = d_max + (5 if ntype == "dungeon" else 0)
+            if n_lv[0] < d_min or n_lv[1] > allowed_max:
+                errors.append(
+                    f"{n_path}: INV-05 violation: node level_range {n_lv} exceeds district '{parent_did}' level_range {[d_min, allowed_max]}"
+                )
+
+            if n_status == "mystery":
+                if node.get("map_id") is not None:
+                    errors.append(
+                        f"{n_path}: INV-07 violation: mystery node '{nid}' must have map_id: null"
+                    )
+            else:
+                if not isinstance(node.get("map_id"), str) or not node.get("map_id"):
+                    errors.append(
+                        f"{n_path}: '{n_status}' node '{nid}' must have a non-empty string map_id"
+                    )
+
+                # INV-07: Check 90-120cm Character Scale Law on terrain_tile and asset_kit_bindings
+                tile = node.get("terrain_tile")
+                if not isinstance(tile, dict):
+                    errors.append(f"{n_path}: missing 'terrain_tile' object")
+                else:
+                    step_m = tile.get("max_terrace_step_meters")
+                    if not isinstance(step_m, (int, float)) or step_m > 0.25:
+                        errors.append(
+                            f"{n_path}: INV-07 violation: max_terrace_step_meters must be <= 0.25, got {step_m!r}"
+                        )
+
+                kit = node.get("asset_kit_bindings")
+                if not isinstance(kit, dict):
+                    errors.append(f"{n_path}: missing 'asset_kit_bindings' object")
+                else:
+                    if kit.get("player_scale_band_meters") != [0.90, 1.20]:
+                        errors.append(
+                            f"{n_path}: INV-07 violation: asset_kit_bindings.player_scale_band_meters must be [0.90, 1.20]"
+                        )
+                    if (kit.get("max_grass_height_meters") or 99) > 0.35:
+                        errors.append(
+                            f"{n_path}: INV-07 violation: asset_kit_bindings.max_grass_height_meters must be <= 0.35"
+                        )
+                    if (kit.get("max_bush_height_meters") or 99) > 0.65:
+                        errors.append(
+                            f"{n_path}: INV-07 violation: asset_kit_bindings.max_bush_height_meters must be <= 0.65"
+                        )
+                    if (kit.get("main_road_width_meters") or 0) < 12.0:
+                        errors.append(
+                            f"{n_path}: INV-07 violation: asset_kit_bindings.main_road_width_meters must be >= 12.0"
+                        )
+                    if (kit.get("footpath_width_meters") or 0) < 4.0:
+                        errors.append(
+                            f"{n_path}: INV-07 violation: asset_kit_bindings.footpath_width_meters must be >= 4.0"
+                        )
+
+                # INV-06: Ecological & Loot Table Completeness
+                spawns = node.get("resident_spawns") or []
+                if ntype == "town" and spawns:
+                    errors.append(
+                        f"{n_path}: INV-06 violation: town node '{nid}' must have empty resident_spawns inside safe zone"
+                    )
+                allowed_families = set(parent_d.get("ecological_monster_families") or [])
+                for s_idx, spawn in enumerate(spawns):
+                    s_label = f"{n_path}#resident_spawns[{s_idx}]"
+                    fam = spawn.get("family")
+                    if fam not in allowed_families:
+                        errors.append(
+                            f"{s_label}: INV-06 violation: monster family '{fam}' not in parent district families {sorted(allowed_families)}"
+                        )
+                    mob_lv = spawn.get("level", 0)
+                    if not (n_lv[0] <= mob_lv <= n_lv[1]):
+                        errors.append(
+                            f"{s_label}: INV-06 violation: monster level {mob_lv} outside node level_range {n_lv}"
+                        )
+                    if spawn.get("size") not in ("Small", "Medium", "Large"):
+                        errors.append(
+                            f"{s_label}: INV-06 violation: invalid monster size {spawn.get('size')!r}"
+                        )
+                    drops = spawn.get("item_drops") or []
+                    if not drops:
+                        errors.append(f"{s_label}: INV-06 violation: item_drops cannot be empty")
+                    for d_item in drops:
+                        pct = d_item.get("drop_chance_percent", 0)
+                        if not (0 < pct <= 100.0):
+                            errors.append(
+                                f"{s_label}: INV-06 violation: item drop_chance_percent {pct} must be in (0, 100]"
+                            )
+                    card = spawn.get("monster_card_drop") or {}
+                    card_pct = card.get("drop_chance_percent", 0)
+                    if not (0.001 <= card_pct <= 1.0):
+                        errors.append(
+                            f"{s_label}: INV-06 violation: monster_card_drop.drop_chance_percent {card_pct} must be in [0.001, 1.0]"
+                        )
+
+            nodes_by_id[nid] = node
+
+    # INV-03: Bidirectional Portal Symmetry across non-mystery Layer 4 nodes
+    if nodes_by_id:
+        for nid, node in nodes_by_id.items():
+            if node.get("status") == "mystery":
+                continue
+            portals = node.get("portals") or {}
+            for direction, p_obj in portals.items():
+                if not p_obj:
+                    continue
+                target_nid = p_obj.get("target_node_id")
+                if target_nid not in nodes_by_id:
+                    errors.append(
+                        f"Node '{nid}' portal '{direction}' references unknown target_node_id '{target_nid}'"
+                    )
+                    continue
+                target_node = nodes_by_id[target_nid]
+                if target_node.get("status") == "mystery":
+                    if (
+                        p_obj.get("gate_state") != "fog_of_lore"
+                        or p_obj.get("target_map_id") is not None
+                    ):
+                        errors.append(
+                            f"INV-07 violation: Node '{nid}' portal '{direction}' to mystery node '{target_nid}' must have gate_state='fog_of_lore' and target_map_id=null"
+                        )
+                    continue
+
+                inv_dir = INVERSE_DIRECTION.get(direction)
+                target_portals = target_node.get("portals") or {}
+                mirror = target_portals.get(inv_dir)
+                if not isinstance(mirror, dict) or mirror.get("target_node_id") != nid:
+                    errors.append(
+                        f"INV-03 violation: Node '{nid}' portal '{direction}' -> '{target_nid}' lacks inverse '{inv_dir}' portal on '{target_nid}' pointing back to '{nid}'"
+                    )
+
+        # INV-04: Starter Town Reachability (BFS) over open portals
+        starter_nodes = [
+            nid
+            for nid, n in nodes_by_id.items()
+            if n.get("is_starter_town") is True and n.get("status") == "canon"
+        ]
+        if not starter_nodes:
+            errors.append(
+                "INV-04 violation: No canon Starter Town node (is_starter_town: true) found in content/studio/nodes/"
+            )
+        else:
+            visited: set[str] = set(starter_nodes)
+            queue: deque[str] = deque(starter_nodes)
+            while queue:
+                curr_id = queue.popleft()
+                curr_node = nodes_by_id[curr_id]
+                for p_obj in (curr_node.get("portals") or {}).values():
+                    if not isinstance(p_obj, dict):
+                        continue
+                    if p_obj.get("gate_state") != "open":
+                        continue
+                    nxt_id = p_obj.get("target_node_id")
+                    if (
+                        nxt_id in nodes_by_id
+                        and nodes_by_id[nxt_id].get("status") != "mystery"
+                        and nxt_id not in visited
+                    ):
+                        visited.add(nxt_id)
+                        queue.append(nxt_id)
+
+            for nid, n in nodes_by_id.items():
+                if n.get("status") in ("canon", "draft") and nid not in visited:
+                    errors.append(
+                        f"INV-04 violation: '{n.get('status')}' node '{nid}' is not reachable from any Starter Town via open portals"
+                    )
+
+    return districts_by_id, nodes_by_id
+
+
+def build_runtime_manifest(studio_dir: Path = DEFAULT_STUDIO_DIR) -> dict[str, Any]:
+    """Build content/maps/_manifest.runtime.json from validated studio hierarchy."""
+    errors = validate_studio_directory(studio_dir)
+    if errors:
+        raise ValueError(f"Cannot build runtime manifest; studio hierarchy has errors: {errors}")
+
+    whc = json.loads((studio_dir / "world_history_and_concept.json").read_text(encoding="utf-8"))
+    continents_by_id = {
+        p.stem: json.loads(p.read_text(encoding="utf-8"))
+        for p in sorted((studio_dir / "continents").glob("*.json"))
+    }
+    _, nodes_by_id = _validate_districts_and_nodes(studio_dir, whc, continents_by_id, [])
+
+    starter_spawns: dict[str, dict[str, Any]] = {}
+    playable_maps: list[dict[str, Any]] = []
+    portal_routing_table: dict[str, dict[str, Any]] = {}
+    default_starter_map_id: str | None = None
+
+    for nid in sorted(nodes_by_id.keys()):
+        node = nodes_by_id[nid]
+        if node.get("status") == "mystery":
+            continue
+        map_id = node["map_id"]
+        if node.get("is_starter_town"):
+            binding = node.get("starter_arrival_binding") or {}
+            pt = binding.get("spawn_point_meters") or {"x": 2000.0, "y": 2000.0, "z": 0.0}
+            starter_spawns[map_id] = {
+                "nodeId": nid,
+                "x": float(pt.get("x", 2000.0)),
+                "y": float(pt.get("y", 2000.0)),
+                "z": float(pt.get("z", 0.0)),
+                "safeZoneRadiusMeters": float(binding.get("safe_zone_radius_meters", 40.0)),
+            }
+            if default_starter_map_id is None:
+                default_starter_map_id = map_id
+
+        playable_maps.append(
+            {
+                "mapId": map_id,
+                "nodeId": nid,
+                "name": node["name"],
+                "districtId": node["parent_district_id"],
+                "continentId": node["parent_continent_id"],
+                "nodeType": node["node_type"],
+                "status": node["status"],
+                "isStarterTown": bool(node.get("is_starter_town")),
+                "gridCoordinates": node["grid_coordinates"],
+                "levelRange": node["level_range"],
+            }
+        )
+
+        for direction, p_obj in (node.get("portals") or {}).items():
+            if not isinstance(p_obj, dict):
+                continue
+            pid = p_obj["portal_id"]
+            portal_routing_table[pid] = {
+                "portalId": pid,
+                "sourceNodeId": nid,
+                "sourceMapId": map_id,
+                "direction": direction,
+                "targetNodeId": p_obj.get("target_node_id"),
+                "targetMapId": p_obj.get("target_map_id"),
+                "targetDirection": p_obj.get("target_direction"),
+                "gateState": p_obj.get("gate_state"),
+                "triggerBoxMeters": p_obj.get("trigger_box_meters"),
+                "arrivalPointMeters": p_obj.get("arrival_point_meters"),
+                "lockMessage": p_obj.get("lock_message"),
+            }
+
+    return {
+        "schemaVersion": 1,
+        "worldHistoryId": whc["id"],
+        "characterScaleBandMeters": whc["character_scale_law"]["height_range_meters"],
+        "defaultStarterMapId": default_starter_map_id,
+        "starterSpawns": starter_spawns,
+        "playableMaps": playable_maps,
+        "portalRoutingTable": portal_routing_table,
+    }
 
 
 def validate_studio_directory(studio_dir: Path) -> list[str]:
@@ -519,6 +964,9 @@ def validate_studio_directory(studio_dir: Path) -> list[str]:
                         f"{b_label}: district_id '{target_did}' is not listed in continent '{target_cid}.district_ids'"
                     )
 
+    # Validate Layer 3 Districts and Layer 4 Nodes (INV-01..INV-07)
+    _validate_districts_and_nodes(studio_dir, whc, continents_by_id, errors)
+
     return errors
 
 
@@ -531,6 +979,12 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         default=DEFAULT_STUDIO_DIR,
         help="Path to content/studio directory (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--emit-runtime-manifest",
+        type=Path,
+        default=None,
+        help="Optional path to write compiled _manifest.runtime.json",
     )
     parser.add_argument(
         "--check",
@@ -549,9 +1003,22 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
 
+    if args.emit_runtime_manifest:
+        manifest = build_runtime_manifest(args.studio_dir)
+        args.emit_runtime_manifest.parent.mkdir(parents=True, exist_ok=True)
+        args.emit_runtime_manifest.write_text(
+            json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+        )
+
     continents_count = len(list((args.studio_dir / "continents").glob("*.json")))
+    districts_dir = args.studio_dir / "districts"
+    districts_count = (
+        len(list(districts_dir.rglob("*.json"))) if districts_dir.exists() else 0
+    )
+    nodes_dir = args.studio_dir / "nodes"
+    nodes_count = len(list(nodes_dir.rglob("*.json"))) if nodes_dir.exists() else 0
     print(
-        f"OK: Studio hierarchy validated cleanly (1 World History and Concept root, {continents_count} Continents, 5-pillar checklists verified)."
+        f"OK: Studio hierarchy validated cleanly (1 World History and Concept root, {continents_count} Continents, {districts_count} Districts, {nodes_count} Nodes, INV-01..INV-07 and 5-pillar checklists verified)."
     )
     return 0
 
