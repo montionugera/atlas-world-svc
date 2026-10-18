@@ -1238,8 +1238,9 @@
     "title": "District The Gilded Exhaust Flues Canon Promotion, Flue Causeway Connection, and Zenith Crown Draft",
     "from_idea": "I-205",
     "created_at": "2026-10-18T08:38:15.699246+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-18T08:38:34.235440+00:00"
   }
 ]
