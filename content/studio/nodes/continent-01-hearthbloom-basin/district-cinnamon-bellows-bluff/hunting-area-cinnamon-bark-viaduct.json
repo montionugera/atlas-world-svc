@@ -2,12 +2,12 @@
   "schema_version": "1.0.0",
   "id": "hunting-area-cinnamon-bark-viaduct",
   "name": "Cinnamon-Bark Viaduct",
-  "map_id": null,
+  "map_id": "cinnamon-bark-viaduct",
   "parent_district_id": "district-cinnamon-bellows-bluff",
   "parent_continent_id": "continent-01-hearthbloom-basin",
   "node_type": "hunting_area",
-  "status": "mystery",
-  "core_rationale": "Western terracotta spice-viaduct of Cinnamon-Bellows Bluff at [0, 1] linking Saffron-Press Village to the warm cinnamon-drying towers.",
+  "status": "canon",
+  "core_rationale": "Western terracotta spice-viaduct of Cinnamon-Bellows Bluff at [0, 1] linking Saffron-Press Village to Cinnamon-Mill Haven across warm spice-drying arches.",
   "is_starter_town": false,
   "grid_coordinates": [
     0,
@@ -18,31 +18,162 @@
     14,
     15
   ],
-  "mystery_hook": {
-    "in_world_rumor": "Spice-couriers say the terracotta arches of Cinnamon-Bark Viaduct stay warm enough to toast bread rolls even in evening mist.",
-    "visual_silhouette": "Glazed brick viaduct arches draped in giant curled cinnamon-bark awnings.",
-    "unanswered_question": "How do the spice-millers channel Sola's warm hearth-drafts along Cinnamon-Bark Viaduct?"
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/bridge_stone.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_cinnamon_bark_viaduct",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Warm cinnamon-infused thermal rills running along the glazed brick parapet"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-cinnamon-viaduct-east-mill-haven",
+      "direction": "East",
+      "target_node_id": "town-cinnamon-mill-haven",
+      "target_map_id": "cinnamon-mill-haven",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-cinnamon-viaduct-west-saffron-press",
+      "direction": "West",
+      "target_node_id": "town-saffron-press-village",
+      "target_map_id": "saffron-press-village",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-spice-ward-cassia",
+      "name": "Spice-Ward Cassia",
+      "role": "Viaduct Flue Tender",
+      "position_meters": {
+        "x": 1950.0,
+        "y": 2015.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Breathe in the warm cinnamon draft! Step up to my 0.58 meter spice-tray before crossing east into Cinnamon-Mill Haven."
+    }
+  ],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-cinnamon-quill-beetle",
+      "monster_id": "monster-cinnamon-quill-beetle",
+      "monster_name": "Cinnamon-Quill Beetle",
+      "spawn_count": 12,
+      "respawn_seconds": 25,
+      "level": 14,
+      "element": "Earth",
+      "size": "Small",
+      "race": "Insect",
+      "family": "carapace",
+      "item_drops": [
+        {
+          "item_id": "item-curled-cinnamon-quill",
+          "item_name": "Curled Cinnamon Quill",
+          "drop_chance_percent": 42.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-cinnamon-quill-beetle",
+        "card_name": "Cinnamon-Quill Beetle Card",
+        "drop_chance_percent": 0.04
+      }
+    },
+    {
+      "spawn_id": "spawn-ember-tail-kit",
+      "monster_id": "monster-ember-tail-kit",
+      "monster_name": "Ember-Tail Kit",
+      "spawn_count": 8,
+      "respawn_seconds": 34,
+      "level": 15,
+      "element": "Fire",
+      "size": "Small",
+      "race": "Brute",
+      "family": "flora_fauna",
+      "item_drops": [
+        {
+          "item_id": "item-warm-spice-tuft",
+          "item_name": "Warm Spice Tuft",
+          "drop_chance_percent": 32.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-ember-tail-kit",
+        "card_name": "Ember-Tail Kit Card",
+        "drop_chance_percent": 0.03
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.44,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.1,
+      "width": 1.55
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/bridge_stone.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/barrel.glb"
+    ]
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Connects Saffron Kiln Orchards east into Cinnamon-Bellows Bluff along scar-kiln-basin."
+      "evidence": "Links Saffron Kiln Orchards east into Cinnamon-Bellows Bluff along scar-kiln-basin."
     },
     "fantasy_and_wonder": {
       "verified": true,
       "evidence": "Glazed brick viaduct arches draped in giant curled cinnamon-bark awnings."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+      "verified": true,
+      "evidence": "Enforces 12.5m viaduct roads, 0.14m brick risers, 0.58m spice trays, and 0.20m grass for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: reserved at [0, 1] inside Cinnamon-Bellows Bluff with zero filler maps."
+      "verified": true,
+      "evidence": "Occupies [0, 1] with carapace and flora_fauna spawns and symmetric West/East portals."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Maintains map_id: null and complete mystery_hook until Cinnamon-Bellows Bluff is promoted to Canon."
+      "evidence": "Promoted from Mystery to Canon with full 5-pillar verification while Star-Anise Promontory remains Mystery."
     }
   }
 }

@@ -3,7 +3,7 @@
   "id": "district-bimetallic-escapement-mesa",
   "name": "Bimetallic Escapement Mesa",
   "parent_continent_id": "continent-02-clockwork-steppe",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Tenth thermal-compensated brass-and-invar plateau of Continent 02 where Krono's bimetallic balance coils flex with the steppe sun to keep the master clockwork in phase.",
   "local_conflict": "Thermal-coil automatons and invar-shelled armadillos patrol the flexing bimetallic arch-bridges.",
   "level_band_label": "Levels 21 to 40",
@@ -19,7 +19,24 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-bimetallic-expansion-span",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        29,
+        30
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Tinkers say the bridges of Bimetallic Escapement Mesa arch three meters higher at noon than at midnight as the twin metals expand and contract.",
@@ -36,16 +53,16 @@
       "evidence": "Laminated copper-and-invar balance coils flexing with the steppe sun across a brass mesa."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: bimetallic ramp and chronometer workbench metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Specifies 12.5m bimetallic ramp walkways, 0.58m chronometer workbenches, and 0.14m brass risers tailored to 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the tenth District frontier on Continent 02 with zero filler maps."
+      "evidence": "Draft status: seeds Bimetallic Expansion Span at [0, 1] while the central town, dungeon, and northern mesa remain queued."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Maintains Bimetallic Expansion Span in Mystery status with zero filler maps."
     }
   }
 }

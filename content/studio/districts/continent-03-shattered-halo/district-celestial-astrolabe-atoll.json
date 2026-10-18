@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-celestial-astrolabe-atoll",
+  "name": "Celestial Astrolabe Atoll",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "status": "mystery",
+  "core_rationale": "Eleventh floating basalt-and-brass ring island of Continent 03 where Vesper's outer orbital tether interlocks with giant starlight armillary spheres.",
+  "local_conflict": "Armillary sentinel constructs and starlight-winged moths circle the rotating celestial rings.",
+  "level_band_label": "Levels 41 to 60",
+  "level_range": [
+    49,
+    50
+  ],
+  "ecological_monster_families": [
+    "celestial",
+    "construct"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Star-navigators say Celestial Astrolabe Atoll aligns its brass armillary rings once every hour to point toward hidden star-shoals.",
+    "visual_silhouette": "Nested starlight-and-brass armillary rings rotating around a floating basalt atoll.",
+    "unanswered_question": "What celestial chart-chamber sits at the center of Celestial Astrolabe Atoll?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater along the outer armillary ring of Continent 03."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Nested starlight-and-brass armillary rings rotating around a floating basalt atoll."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: armillary walkway and astrolabe desk metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the eleventh District frontier on Continent 03 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}
