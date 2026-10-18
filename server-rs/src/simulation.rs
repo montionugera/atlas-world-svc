@@ -8,10 +8,9 @@ use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
     AiAgent, BodyRadius, BotAgent, CastingState, CombatStats, CooldownTracker, DashState,
-    DeadMobTracker,
-    DespawnedIds, ElementalAttributes, EntityId, Health, HitLog, LiveRules, Mass, MobSpawnAnchor,
-    MobTag, PlayerAvatar, PlayerInputState, PlayerTag, Position, Projectile, SpawnPoint,
-    StatusEffects, Velocity, MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
+    DeadMobTracker, DespawnedIds, ElementalAttributes, EntityId, Health, HitLog, LiveRules, Mass,
+    MobSpawnAnchor, MobTag, PlayerAvatar, PlayerInputState, PlayerTag, Position, Projectile,
+    SpawnPoint, StatusEffects, Velocity, MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
 };
 use crate::net::ClientPacket;
 use crate::physics::world::PhysicsWorld;
@@ -530,9 +529,8 @@ impl AtlasSimulation {
             self.wake(now_ms);
         }
 
-        let has_work = !inputs.is_empty()
-            || !disconnected.is_empty()
-            || !self.pending_disconnects.is_empty();
+        let has_work =
+            !inputs.is_empty() || !disconnected.is_empty() || !self.pending_disconnects.is_empty();
 
         if self.is_sleeping() && !has_work {
             return None;
