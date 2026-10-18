@@ -398,6 +398,12 @@ pub fn projectile_collision_system(
                                         SkillEffect::Stun { duration_sec } => {
                                             status.apply_stun(*duration_sec);
                                         }
+                                        SkillEffect::Burn { duration_sec, dps } => {
+                                            status.apply_burn(*duration_sec, *dps);
+                                        }
+                                        SkillEffect::Poison { duration_sec, dps } => {
+                                            status.apply_poison(*duration_sec, *dps);
+                                        }
                                         _ => {}
                                     }
                                 }
@@ -414,6 +420,12 @@ pub fn projectile_collision_system(
                                         }
                                         SkillEffect::Stun { duration_sec } => {
                                             status.apply_stun(*duration_sec);
+                                        }
+                                        SkillEffect::Burn { duration_sec, dps } => {
+                                            status.apply_burn(*duration_sec, *dps);
+                                        }
+                                        SkillEffect::Poison { duration_sec, dps } => {
+                                            status.apply_poison(*duration_sec, *dps);
                                         }
                                         _ => {}
                                     }
@@ -504,6 +516,12 @@ pub fn projectile_collision_system(
                                 SkillEffect::Stun { duration_sec } => {
                                     status.apply_stun(*duration_sec);
                                 }
+                                SkillEffect::Burn { duration_sec, dps } => {
+                                    status.apply_burn(*duration_sec, *dps);
+                                }
+                                SkillEffect::Poison { duration_sec, dps } => {
+                                    status.apply_poison(*duration_sec, *dps);
+                                }
                                 _ => {}
                             }
                         }
@@ -523,6 +541,12 @@ pub fn projectile_collision_system(
                                 }
                                 SkillEffect::Stun { duration_sec } => {
                                     status.apply_stun(*duration_sec);
+                                }
+                                SkillEffect::Burn { duration_sec, dps } => {
+                                    status.apply_burn(*duration_sec, *dps);
+                                }
+                                SkillEffect::Poison { duration_sec, dps } => {
+                                    status.apply_poison(*duration_sec, *dps);
                                 }
                                 _ => {}
                             }

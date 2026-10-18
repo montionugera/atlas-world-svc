@@ -16,6 +16,14 @@ pub enum SkillEffect {
     Stun {
         duration_sec: f32,
     },
+    Burn {
+        duration_sec: f32,
+        dps: f32,
+    },
+    Poison {
+        duration_sec: f32,
+        dps: f32,
+    },
     ImpulseCaster(f32),
 }
 
