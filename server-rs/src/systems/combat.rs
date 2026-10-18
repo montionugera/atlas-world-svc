@@ -3,9 +3,9 @@ use crate::combat::damage::{DamageCalculator, DamageOptions};
 use crate::combat::{DamageType, Element};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    knockback_speed, CombatStats, CooldownTracker, ElementalAttributes, EntityId, Health, HitLog,
-    HitRecord, Mass, MobAi, MobSpawnAnchor, ParryState, PlayerAvatar, PlayerInputState, Position,
-    StatusEffects, Velocity,
+    knockback_speed, CombatStats, CooldownTracker, ElementalAttributes, EntityId, EquippedWeapon,
+    Health, HitLog, HitRecord, Mass, MobAi, MobSpawnAnchor, ParryState, PlayerAvatar,
+    PlayerInputState, Position, Projectile, StatusEffects, Velocity, WeaponKind,
 };
 use crate::spatial::grid::SpatialGrid;
 use crate::storage::{MatchEvent, MatchEventQueue};
@@ -13,6 +13,7 @@ use bevy_ecs::prelude::*;
 
 #[allow(clippy::type_complexity)]
 pub fn combat_system(
+    mut commands: Commands,
     clock: Res<SimClock>,
     grid: Res<SpatialGrid>,
     mut event_queue: Option<ResMut<MatchEventQueue>>,
@@ -30,6 +31,7 @@ pub fn combat_system(
                 Option<&mut PlayerInputState>,
                 Option<&ElementalAttributes>,
                 Option<&mut ParryState>,
+                Option<&EquippedWeapon>,
             ),
             Without<MobAi>,
         >,
@@ -94,6 +96,43 @@ pub fn combat_system(
             }
 
             let is_player = stats.is_player;
+            if let Some(weapon) = opt_weapon.filter(|w| w.is_ranged()) {
+                stats.cooldown_timer = stats.attack_cooldown;
+                let (aim_x, aim_y) = input
+                    .as_ref()
+                    .map_or((1.0, 0.0), |inp| inp.aim_direction(*pos));
+                let attacker_elem = attrs.map(|a| a.element).unwrap_or(Element::Neutral);
+                let (damage_type, skill_id) = match weapon.kind {
+                    WeaponKind::Bow => (DamageType::Physical, "bow_shot"),
+                    WeaponKind::Staff => (DamageType::Magical, "staff_bolt"),
+                    WeaponKind::Melee => (DamageType::Physical, "melee"),
+                };
+                let speed = weapon.projectile_speed.max(150.0);
+                let max_range = weapon.projectile_range.max(150.0);
+                let radius = weapon.projectile_radius.max(3.0);
+                commands.spawn((
+                    Position::new(pos.x, pos.y),
+                    Velocity::new(aim_x * speed, aim_y * speed),
+                    Projectile {
+                        owner: entity,
+                        target: None,
+                        damage: stats.attack_power.max(1.0),
+                        damage_type,
+                        element: attacker_elem,
+                        speed,
+                        radius,
+                        max_range,
+                        traveled_distance: 0.0,
+                        lifetime: (max_range / speed) + 0.5,
+                        effects: Vec::new(),
+                        is_player_projectile: is_player,
+                        aoe_radius: 0.0,
+                        skill_id: Some(skill_id.to_string()),
+                        detonated: false,
+                    },
+                ));
+                continue;
+            }
             let attack_range = stats.attack_range;
             let mut nearest_target = None;
             let mut nearest_dist_sq = attack_range * attack_range;
