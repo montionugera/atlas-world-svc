@@ -4,7 +4,7 @@ use crate::combat::{DamageType, Element};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
     knockback_speed, CombatStats, CooldownTracker, ElementalAttributes, EntityId, EquippedWeapon,
-    Health, HitLog, HitRecord, Mass, MobAi, MobSpawnAnchor, ParryState, PlayerAvatar,
+    Health, HealthRegen, HitLog, HitRecord, Mass, MobAi, MobSpawnAnchor, ParryState, PlayerAvatar,
     PlayerInputState, Position, Projectile, StatusEffects, Velocity, WeaponKind,
 };
 use crate::spatial::grid::SpatialGrid;
@@ -361,6 +361,57 @@ pub fn status_effect_tick_system(
             if effects.poison_timer <= 1e-4 {
                 effects.poison_timer = 0.0;
                 effects.poison_dps = 0.0;
+            }
+        }
+        if effects.regen_timer > 0.0 {
+            let active_dt = dt.min(effects.regen_timer);
+            if let Some(ref mut health) = opt_health {
+                if effects.regen_hps > 0.0 {
+                    health.heal(effects.regen_hps * active_dt);
+                }
+            }
+            effects.regen_timer = (effects.regen_timer - dt).max(0.0);
+            if effects.regen_timer <= 1e-4 {
+                effects.regen_timer = 0.0;
+                effects.regen_hps = 0.0;
+            }
+        }
+    }
+}
+
+/// Regenerates health over time for alive entities with `HealthRegen` or active regeneration status (E-007 Slice 6).
+pub fn health_regen_system(
+    clock: Res<SimClock>,
+    mut query: Query<(
+        &mut Health,
+        Option<&HealthRegen>,
+        Option<&mut StatusEffects>,
+    )>,
+) {
+    let dt = clock.delta_seconds();
+    if dt <= 0.0 {
+        return;
+    }
+    for (mut health, opt_regen, mut opt_status) in &mut query {
+        if !health.is_alive {
+            continue;
+        }
+        if let Some(regen) = opt_regen {
+            if regen.hp_per_sec > 0.0 {
+                health.heal(regen.hp_per_sec * dt);
+            }
+        }
+        if let Some(ref mut status) = opt_status {
+            if status.regen_timer > 0.0 {
+                let active_dt = dt.min(status.regen_timer);
+                if status.regen_hps > 0.0 {
+                    health.heal(status.regen_hps * active_dt);
+                }
+                status.regen_timer = (status.regen_timer - dt).max(0.0);
+                if status.regen_timer <= 1e-4 {
+                    status.regen_timer = 0.0;
+                    status.regen_hps = 0.0;
+                }
             }
         }
     }

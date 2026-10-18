@@ -61,6 +61,36 @@ impl Health {
             self.is_alive = false;
         }
     }
+
+    pub fn heal(&mut self, amount: f32) {
+        if !self.is_alive || amount <= 0.0 {
+            return;
+        }
+        self.current = (self.current + amount).min(self.max);
+    }
+}
+
+/// Default passive health regeneration rate in HP/second (E-007 Slice 6).
+pub const DEFAULT_HEALTH_REGEN_PER_SEC: f32 = 5.0;
+
+/// Passive health regeneration component that restores HP over time while alive (E-007 Slice 6).
+#[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct HealthRegen {
+    pub hp_per_sec: f32,
+}
+
+impl HealthRegen {
+    pub fn new(hp_per_sec: f32) -> Self {
+        Self {
+            hp_per_sec: hp_per_sec.max(0.0),
+        }
+    }
+}
+
+impl Default for HealthRegen {
+    fn default() -> Self {
+        Self::new(DEFAULT_HEALTH_REGEN_PER_SEC)
+    }
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -597,6 +627,10 @@ pub struct StatusEffects {
     pub poison_timer: f32,
     #[serde(default)]
     pub poison_dps: f32,
+    #[serde(default)]
+    pub regen_timer: f32,
+    #[serde(default)]
+    pub regen_hps: f32,
 }
 
 impl StatusEffects {
@@ -673,6 +707,19 @@ impl StatusEffects {
 
     pub fn apply_default_poison(&mut self, dps: f32) {
         self.apply_poison(DOT_DEFAULT_DURATION_SEC, dps);
+    }
+
+    pub fn is_regenerating(&self) -> bool {
+        self.regen_timer > 0.0 && self.regen_hps > 0.0
+    }
+
+    pub fn apply_regen(&mut self, duration_sec: f32, hps: f32) {
+        if duration_sec > self.regen_timer {
+            self.regen_timer = duration_sec;
+        }
+        if hps > self.regen_hps {
+            self.regen_hps = hps;
+        }
     }
 }
 
