@@ -287,6 +287,24 @@
       ]
     },
     {
+      "mapId": "sunken-potter-hold-b1",
+      "nodeId": "dungeon-sunken-potter-hold",
+      "name": "Sunken Potter Hold B1",
+      "districtId": "district-glaze-river-delta",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
+      ]
+    },
+    {
       "mapId": "sunken-syzygy-dome-b1",
       "nodeId": "dungeon-sunken-syzygy-dome",
       "name": "Sunken Syzygy Dome B1",
@@ -446,6 +464,24 @@
       "levelRange": [
         1,
         10
+      ]
+    },
+    {
+      "mapId": "cobalt-sandbar-ford",
+      "nodeId": "hunting-area-cobalt-sandbar-ford",
+      "name": "Cobalt Sandbar Ford",
+      "districtId": "district-glaze-river-delta",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        18,
+        19
       ]
     },
     {
@@ -770,6 +806,24 @@
       "levelRange": [
         24,
         30
+      ]
+    },
+    {
+      "mapId": "glaze-barge-quay",
+      "nodeId": "town-glaze-barge-quay",
+      "name": "Glaze-Barge Quay",
+      "districtId": "district-glaze-river-delta",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
       ]
     },
     {
@@ -1323,6 +1377,27 @@
       },
       "lockMessage": null
     },
+    "portal-sunken-potter-hold-exit-quay": {
+      "portalId": "portal-sunken-potter-hold-exit-quay",
+      "sourceNodeId": "dungeon-sunken-potter-hold",
+      "sourceMapId": "sunken-potter-hold-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-glaze-barge-quay",
+      "targetMapId": "glaze-barge-quay",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
+      },
+      "lockMessage": null
+    },
     "portal-sunken-syzygy-exit-balance-haven": {
       "portalId": "portal-sunken-syzygy-exit-balance-haven",
       "sourceNodeId": "dungeon-sunken-syzygy-dome",
@@ -1677,6 +1752,48 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 200.0
+      },
+      "lockMessage": null
+    },
+    "portal-cobalt-ford-east-barge-quay": {
+      "portalId": "portal-cobalt-ford-east-barge-quay",
+      "sourceNodeId": "hunting-area-cobalt-sandbar-ford",
+      "sourceMapId": "cobalt-sandbar-ford",
+      "direction": "East",
+      "targetNodeId": "town-glaze-barge-quay",
+      "targetMapId": "glaze-barge-quay",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-cobalt-ford-west-roundhouse": {
+      "portalId": "portal-cobalt-ford-west-roundhouse",
+      "sourceNodeId": "hunting-area-cobalt-sandbar-ford",
+      "sourceMapId": "cobalt-sandbar-ford",
+      "direction": "West",
+      "targetNodeId": "town-root-train-roundhouse",
+      "targetMapId": "root-train-roundhouse",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
       },
       "lockMessage": null
     },
@@ -2646,6 +2763,69 @@
       },
       "lockMessage": null
     },
+    "portal-barge-quay-north-fog": {
+      "portalId": "portal-barge-quay-north-fog",
+      "sourceNodeId": "town-glaze-barge-quay",
+      "sourceMapId": "glaze-barge-quay",
+      "direction": "North",
+      "targetNodeId": "hunting-area-kiln-lighthouse-spit",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Boiling glaze-steam geysers curtain the northern Kiln-Lighthouse Spit; Barge-Master Cobalt requires the Porcelain Rudder Pin before opening the spit causeway."
+    },
+    "portal-barge-quay-west-cobalt": {
+      "portalId": "portal-barge-quay-west-cobalt",
+      "sourceNodeId": "town-glaze-barge-quay",
+      "sourceMapId": "glaze-barge-quay",
+      "direction": "West",
+      "targetNodeId": "hunting-area-cobalt-sandbar-ford",
+      "targetMapId": "cobalt-sandbar-ford",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-barge-quay-dungeon-potter-hold": {
+      "portalId": "portal-barge-quay-dungeon-potter-hold",
+      "sourceNodeId": "town-glaze-barge-quay",
+      "sourceMapId": "glaze-barge-quay",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-sunken-potter-hold",
+      "targetMapId": "sunken-potter-hold-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
     "portal-inductor-switchyard-north-fog": {
       "portalId": "portal-inductor-switchyard-north-fog",
       "sourceNodeId": "town-inductor-switchyard",
@@ -3422,6 +3602,27 @@
         "y": 200.0
       },
       "lockMessage": "Thick golden resin webs curtain the northern Banyan Canopy Spur; Stationmaster Bramble requires the Cistern Sap-Valve Key before opening the canopy turntable."
+    },
+    "portal-root-roundhouse-east-cobalt": {
+      "portalId": "portal-root-roundhouse-east-cobalt",
+      "sourceNodeId": "town-root-train-roundhouse",
+      "sourceMapId": "root-train-roundhouse",
+      "direction": "East",
+      "targetNodeId": "hunting-area-cobalt-sandbar-ford",
+      "targetMapId": "cobalt-sandbar-ford",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-root-roundhouse-west-resin": {
       "portalId": "portal-root-roundhouse-west-resin",
