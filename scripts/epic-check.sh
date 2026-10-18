@@ -39,6 +39,13 @@ cargo test --manifest-path server-rs/Cargo.toml \
   --test currency_and_vendor_test \
   --test quests_at_runtime_test
 
+echo "[epic-check] Verifying E-008 (Social Play: Nearby & World Chat + Rate Limiting, Friends List & Presence, Parties & Shared Kill Credit, Find & Join Friends in the World)"
+cargo test --manifest-path server-rs/Cargo.toml \
+  --test nearby_and_world_chat_test \
+  --test friends_list_test \
+  --test parties_test \
+  --test find_and_join_friends_test
+
 echo "[epic-check] Verifying E-010 & Autonomous Product Owner Studio Pipeline (World History and Concept -> Continent -> District -> Town or Hunting Area)"
 
 python3 scripts/run_world_pipeline.py --fast --auto-tune
@@ -46,4 +53,4 @@ python3 scripts/run_world_pipeline.py --fast --auto-tune
 rm -rf tests/__pycache__
 git checkout -- scripts/__pycache__/ 2>/dev/null || true
 
-echo "[epic-check] PASS — All E-004, E-005, E-007, E-010, and Product Owner Self-Evaluation assertions verified."
+echo "[epic-check] PASS — All E-004, E-005, E-007, E-008, E-010, and Product Owner Self-Evaluation assertions verified."
