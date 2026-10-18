@@ -91,5 +91,15 @@
     "verified_sha": null,
     "verified_at": null,
     "split_approved_by": null
+  },
+  {
+    "id": "E-010",
+    "title": "Systematic Top-Down World & Map Studio (WHC -> C -> D -> T/A)",
+    "created_at": "2026-10-18T02:42:52.914789+00:00",
+    "status": "open",
+    "release_version": null,
+    "verified_sha": null,
+    "verified_at": null,
+    "split_approved_by": null
   }
 ]
