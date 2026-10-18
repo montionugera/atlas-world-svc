@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-helical-gear-trench",
+  "name": "Helical-Gear Trench",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "status": "mystery",
+  "core_rationale": "Southeastern spiral worm-gear canyon of Continent 02 where Krono the Brass Titan's threaded drive-shafts carve stepped helical ramps into the copper bedrock.",
+  "local_conflict": "Spiral-thread construct beetles and oil-mist drakes patrol the rotating brass worm-shafts.",
+  "level_band_label": "Levels 21 to 40",
+  "level_range": [
+    38,
+    40
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "reptile"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Spring-miners say that if you walk counter-clockwise along the helical threads of Helical-Gear Trench, the rotating shaft carries you uphill without lifting a foot.",
+    "visual_silhouette": "A mile-long threaded brass worm-gear spinning slowly inside a terraced copper canyon.",
+    "unanswered_question": "What torque-engine chamber lies at the eastern terminus of Helical-Gear Trench?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-krono-brass-titan and scar-brass-faultline along the southeastern drive-shaft trench of Continent 02."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Mile-long threaded brass worm-gears spinning inside a terraced copper canyon."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: helical ramp and gear-hub counter metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the southeastern worm-gear District frontier on Continent 02 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}

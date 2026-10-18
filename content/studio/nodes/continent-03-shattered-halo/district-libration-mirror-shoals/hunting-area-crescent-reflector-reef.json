@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-crescent-reflector-reef",
+  "name": "Crescent Reflector Reef",
+  "map_id": null,
+  "parent_district_id": "district-libration-mirror-shoals",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern parabolic silver-coral reef of Libration Mirror Shoals at [1, 0] that focuses twilight starlight into a blinding horizon beam.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    50,
+    50
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Tide-watchers say that looking directly at Crescent Reflector Reef without smoked syzygy glass shows your own silhouette walking three steps ahead of you.",
+    "visual_silhouette": "A curved crescent of mirror-polished silver coral rising out of the northern tide pools.",
+    "unanswered_question": "What constellation citadel is revealed when Crescent Reflector Reef focuses its midnight beam?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Forms the northern reflector rim of Libration Mirror Shoals along scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Parabolic silver-coral reef focusing twilight starlight across oscillating mirror pools."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of town-libration-balance-haven behind a Fog of Lore portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind portal-balance-haven-north-fog."
+    }
+  }
+}

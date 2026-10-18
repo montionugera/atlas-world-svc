@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-cobalt-sandbar-ford",
+  "name": "Cobalt Sandbar Ford",
+  "map_id": null,
+  "parent_district_id": "district-glaze-river-delta",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western shallow cobalt-glazed sandbar ford of Glaze-River Delta at [0, 1] linking Root-Train Roundhouse across the warm pottery-silt channels.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    18,
+    19
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Sprout waders say the warm river water over Cobalt Sandbar Ford smells faintly of chamomile glaze and polishes scuffed boots clean.",
+    "visual_silhouette": "Stepping stones of vitrified cobalt-blue porcelain curving across shallow golden river rapids.",
+    "unanswered_question": "Where does the eastern pier of Cobalt Sandbar Ford join Glaze-Barge Quay?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Serves as the western entry ford of Glaze-River Delta along scar-kiln-basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Vitrified cobalt-blue porcelain stepping stones across warm golden thermal rapids."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-glaze-river-delta."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until Glaze-River Delta is promoted to Canon."
+    }
+  }
+}
