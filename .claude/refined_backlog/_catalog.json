@@ -1877,9 +1877,10 @@
     "title": "Find and join friends in the world",
     "from_idea": "I-184",
     "created_at": "2026-10-18T20:19:57.658055+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-008"
+    "epic": "E-008",
+    "claimed_at": "2026-10-18T20:20:06.364771+00:00"
   }
 ]
