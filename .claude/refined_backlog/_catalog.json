@@ -1090,10 +1090,11 @@
     "title": "Four-Level Perspective Switcher (World History and Concept to Continent) in Observatory Web Studio",
     "from_idea": "I-194",
     "created_at": "2026-10-18T04:24:10.264752+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-010"
+    "epic": "E-010",
+    "claimed_at": "2026-10-18T04:24:25.343399+00:00"
   },
   {
     "id": "F-088",
