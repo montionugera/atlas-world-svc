@@ -947,7 +947,8 @@ impl WsServer {
             };
 
             let req_map = Self::extract_map(req).unwrap_or_else(|| "map-for-play".to_string());
-            room_id = crate::content::map::room_id_for(&req_map).to_string();
+            room_id =
+                crate::content::world_regions::resolve_room_or_region_id(&req_map).to_string();
             req_proto = Self::extract_proto(req);
 
             match auth_ref.validate_token(&token) {
@@ -2530,5 +2531,17 @@ mod tests {
 
         ws_west.close(None).await.unwrap();
         ws_east.close(None).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_ws_server_routes_generated_world_region_millcross_ford() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let addr = server.local_addr();
+        let url = format!("ws://{addr}/ws?token=dev-token:region-p1&map=millcross-ford&proto=1");
+        let (mut ws, _) = connect_async(&url).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(40)).await;
+        assert_eq!(server.active_connections_in_room("millcross-ford").await, 1);
+        ws.close(None).await.unwrap();
     }
 }

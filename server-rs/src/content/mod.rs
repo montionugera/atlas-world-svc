@@ -4,6 +4,7 @@ pub mod mmorpg;
 pub mod stats;
 pub mod weapons;
 pub mod world_model;
+pub mod world_regions;
 
 pub use bestiary::{
     derive_mob_stats, BestiaryCatalog, BestiaryEntry, DerivedMobStats, MobTier, BASE_MOB_ATK,
@@ -27,4 +28,8 @@ pub use world_model::{
     WorldModelConfig, AOI_ENTER_RADIUS_UNITS, AOI_EXIT_RADIUS_UNITS, BORDER_GHOST_BAND_UNITS,
     CROSSING_MECHANISM, HANDOFF_HYSTERESIS_UNITS, REGION_SIZE_UNITS, SIM_WARN_BUDGET_MS,
     WORLD_STATE_STORE_KIND, WORLD_TICK_BUDGET_MS, WORLD_TICK_RATE_HZ,
+};
+pub use world_regions::{
+    embedded_region_json, load_generated_region_config, resolve_room_or_region_id,
+    GENERATED_REGION_IDS,
 };

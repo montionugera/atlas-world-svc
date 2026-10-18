@@ -1,5 +1,5 @@
 use server_rs::auth::AuthGuard;
-use server_rs::content::map::room_id_for;
+use server_rs::content::world_regions::{resolve_room_or_region_id, GENERATED_REGION_IDS};
 use server_rs::fleet::{AgonesClient, FleetLifecycle, HeartbeatTask};
 use server_rs::net::WsServer;
 use server_rs::protocol::SnapshotBuilder;
@@ -237,6 +237,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }),
     );
 
+    // 6. Generated-world regions (Wealdmarch c02 compiled regions)
+    for (idx, &region_id) in GENERATED_REGION_IDS.iter().enumerate() {
+        if let Some(sim) =
+            AtlasSimulation::from_generated_region(region_id, seed.wrapping_add(100 + idx as u32))
+        {
+            rooms.insert(region_id.to_string(), sim);
+        }
+    }
+
     info!(
         "Initialized {} simulation rooms: {:?}",
         rooms.len(),
@@ -305,13 +314,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 for (room_id, sim) in rooms.iter_mut() {
                     let room_inputs: Vec<server_rs::net::ClientPacket> = inputs
                         .iter()
-                        .filter(|p| room_id_for(&p.room_id) == room_id)
+                        .filter(|p| resolve_room_or_region_id(&p.room_id) == room_id)
                         .cloned()
                         .collect();
 
                     let room_disconnects: Vec<String> = disconnected
                         .iter()
-                        .filter(|(_, r)| room_id_for(r) == room_id)
+                        .filter(|(_, r)| resolve_room_or_region_id(r) == room_id)
                         .map(|(s, _)| s.clone())
                         .collect();
 
