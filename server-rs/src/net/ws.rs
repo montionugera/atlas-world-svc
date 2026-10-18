@@ -174,6 +174,7 @@ struct ConnectionLimits {
     outbound_queue_depth: Arc<AtomicUsize>,
     idle_timeout: Arc<std::sync::RwLock<Duration>>,
     rate_limited_drops: Arc<AtomicUsize>,
+    allowed_origins: Arc<std::sync::RwLock<Vec<String>>>,
 }
 
 /// Live server metrics shared with the `/metrics` HTTP endpoint.
@@ -285,6 +286,13 @@ impl WsServer {
         let (debug_tx, debug_rx) = unbounded_channel();
         let ready = Arc::new(AtomicBool::new(true));
         let metrics = ServerMetrics::default();
+        let env_origins: Vec<String> = std::env::var("ATLAS_ALLOWED_ORIGINS")
+            .or_else(|_| std::env::var("ALLOWED_ORIGINS"))
+            .unwrap_or_default()
+            .split(',')
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .collect();
         let limits = ConnectionLimits {
             rate_limit: Arc::new(std::sync::RwLock::new((
                 DEFAULT_MAX_INPUTS_PER_SEC,
@@ -293,6 +301,7 @@ impl WsServer {
             outbound_queue_depth: Arc::new(AtomicUsize::new(MAX_OUTBOUND_QUEUE_DEPTH)),
             idle_timeout: Arc::new(std::sync::RwLock::new(DEFAULT_IDLE_TIMEOUT)),
             rate_limited_drops: Arc::new(AtomicUsize::new(0)),
+            allowed_origins: Arc::new(std::sync::RwLock::new(env_origins)),
         };
 
         let server = Self {
@@ -402,6 +411,12 @@ impl WsServer {
     /// Configures the idle timeout before a silent connection is closed.
     pub fn with_idle_timeout(self, timeout: Duration) -> Self {
         *self.limits.idle_timeout.write().unwrap() = timeout;
+        self
+    }
+
+    /// Configures the additional allowed `Origin` values for WebSocket upgrades.
+    pub fn with_allowed_origins(self, origins: Vec<String>) -> Self {
+        *self.limits.allowed_origins.write().unwrap() = origins;
         self
     }
 
@@ -729,6 +744,24 @@ impl WsServer {
         None
     }
 
+    fn select_echo_subprotocol(req: &Request) -> Option<String> {
+        let proto_hdr = req.headers().get("Sec-WebSocket-Protocol")?;
+        let proto_str = proto_hdr.to_str().ok()?;
+        let parts: Vec<&str> = proto_str
+            .split(',')
+            .map(|p| p.trim())
+            .filter(|p| !p.is_empty())
+            .collect();
+        if parts.is_empty() {
+            return None;
+        }
+        if let Some(non_token) = parts.iter().find(|p| !p.starts_with("token.")) {
+            Some((*non_token).to_string())
+        } else {
+            Some(parts[0].to_string())
+        }
+    }
+
     fn extract_map(req: &Request) -> Option<String> {
         if let Some(query) = req.uri().query() {
             for pair in query.split('&') {
@@ -776,7 +809,19 @@ impl WsServer {
         let mut req_proto: Option<String> = None;
         let auth_ref = &auth_guard;
 
-        let callback = |req: &Request, response: Response| -> Result<Response, ErrorResponse> {
+        let allowed_origins_snapshot = limits.allowed_origins.read().unwrap().clone();
+        let callback = |req: &Request, mut response: Response| -> Result<Response, ErrorResponse> {
+            let origin_hdr = req.headers().get("Origin").and_then(|v| v.to_str().ok());
+            if !ws_origin_allowed(origin_hdr, &allowed_origins_snapshot) {
+                warn!(
+                    "WebSocket handshake rejected from {}: disallowed Origin {:?}",
+                    peer_addr, origin_hdr
+                );
+                let mut resp = ErrorResponse::new(Some("Forbidden Origin".to_string()));
+                *resp.status_mut() = StatusCode::FORBIDDEN;
+                return Err(resp);
+            }
+
             let token = match Self::extract_token(req) {
                 Some(t) => t,
                 None => {
@@ -797,6 +842,13 @@ impl WsServer {
             match auth_ref.validate_token(&token) {
                 Ok(claims) => {
                     session_id = claims.sub;
+                    if let Some(selected_proto) = Self::select_echo_subprotocol(req) {
+                        if let Ok(hdr_val) = selected_proto.parse() {
+                            response
+                                .headers_mut()
+                                .insert("Sec-WebSocket-Protocol", hdr_val);
+                        }
+                    }
                     info!(
                         "WebSocket handshake authenticated: user={} room={} from {}",
                         session_id, room_id, peer_addr
@@ -1214,6 +1266,29 @@ fn local_origin(origin: Option<&str>) -> Option<&str> {
             .strip_prefix("http://")
             .is_some_and(|authority| !authority.starts_with('[') && is_local_authority(authority))
     })
+}
+
+/// Checks whether a WebSocket upgrade `Origin` header is allowed:
+/// - `None` (non-browser clients that omit `Origin`) is allowed.
+/// - Local HTTP/HTTPS origins (`localhost`, `127.0.0.1` on any port) are allowed.
+/// - Any origin matching the configured `allowed_origins` list is allowed.
+pub fn ws_origin_allowed(origin: Option<&str>, allowed_origins: &[String]) -> bool {
+    let Some(orig) = origin else {
+        return true;
+    };
+    let trimmed = orig.trim();
+    if local_origin(Some(trimmed)).is_some() {
+        return true;
+    }
+    if trimmed
+        .strip_prefix("https://")
+        .is_some_and(|authority| !authority.starts_with('[') && is_local_authority(authority))
+    {
+        return true;
+    }
+    allowed_origins
+        .iter()
+        .any(|allowed| allowed.eq_ignore_ascii_case(trimmed))
 }
 
 /// Serves one `/debug/*` request and closes: `GET /debug/state?map=<room>` and
@@ -2112,5 +2187,57 @@ mod tests {
         assert!(parsed["tick_time_ms"]["max"].as_f64().unwrap() >= 4.0);
 
         ws1.close(None).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_ws_origin_allowlist_accepts_local_and_configured_and_rejects_evil_origin() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone())
+            .await
+            .unwrap()
+            .with_allowed_origins(vec!["https://play.atlasworld.example".to_string()]);
+        let addr = server.local_addr();
+        let token = auth.generate_test_token("origin-player", "Hero", 3600);
+
+        // 1. Disallowed origin -> rejected (403 Forbidden)
+        let evil_req = ClientRequest::builder()
+            .uri(format!("ws://{addr}/ws?proto=1"))
+            .header("Host", addr.to_string())
+            .header("Origin", "https://evil.example")
+            .header("Connection", "Upgrade")
+            .header("Upgrade", "websocket")
+            .header("Sec-WebSocket-Version", "13")
+            .header("Sec-WebSocket-Key", generate_key())
+            .header("Sec-WebSocket-Protocol", format!("atlas-v1, token.{token}"))
+            .body(())
+            .unwrap();
+        assert!(
+            connect_async(evil_req).await.is_err(),
+            "untrusted Origin must be rejected on WS upgrade"
+        );
+
+        // 2. Configured allowed origin + token in Sec-WebSocket-Protocol (no token in URL) -> accepted
+        let allowed_req = ClientRequest::builder()
+            .uri(format!("ws://{addr}/ws?proto=1"))
+            .header("Host", addr.to_string())
+            .header("Origin", "https://play.atlasworld.example")
+            .header("Connection", "Upgrade")
+            .header("Upgrade", "websocket")
+            .header("Sec-WebSocket-Version", "13")
+            .header("Sec-WebSocket-Key", generate_key())
+            .header("Sec-WebSocket-Protocol", format!("atlas-v1, token.{token}"))
+            .body(())
+            .unwrap();
+        let (mut ws, resp) = connect_async(allowed_req)
+            .await
+            .expect("configured Origin with Sec-WebSocket-Protocol token should connect");
+        assert_eq!(resp.status(), StatusCode::SWITCHING_PROTOCOLS);
+        assert_eq!(
+            resp.headers()
+                .get("Sec-WebSocket-Protocol")
+                .and_then(|v| v.to_str().ok()),
+            Some("atlas-v1")
+        );
+        ws.close(None).await.unwrap();
     }
 }
