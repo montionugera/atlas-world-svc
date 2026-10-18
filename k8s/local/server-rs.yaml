@@ -1,3 +1,8 @@
+# TLS termination note:
+# In staging/production deployments, external clients connect over `wss://` and TLS is terminated
+# at the edge Ingress / LoadBalancer before forwarding WebSocket upgrade traffic to `server-rs`
+# on containerPort 2567. Configure `ATLAS_ALLOWED_ORIGINS` with the comma-separated list of
+# allowed browser Origins (e.g. "https://play.atlasworld.example") enforced during WS upgrade.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,11 +28,29 @@ spec:
           ports:
             - name: ws
               containerPort: 2567
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: ws
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: ws
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
           env:
             - name: BIND_ADDR
               value: "0.0.0.0:2567"
             - name: AGONES_ENABLED
               value: "false"
+            - name: ATLAS_ALLOWED_ORIGINS
+              value: "http://localhost:3000,http://127.0.0.1:3000"
             - name: NAKAMA_SERVER_KEY
               value: "atlas_dev_session_key_change_me_please_32"
             - name: NAKAMA_URL
@@ -82,6 +105,8 @@ spec:
               value: "true"
             - name: BIND_ADDR
               value: "0.0.0.0:2567"
+            - name: ATLAS_ALLOWED_ORIGINS
+              value: "http://localhost:3000,http://127.0.0.1:3000"
             - name: NAKAMA_SERVER_KEY
               value: "atlas_dev_session_key_change_me_please_32"
             - name: NAKAMA_URL

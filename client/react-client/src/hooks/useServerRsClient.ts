@@ -32,8 +32,10 @@ import {
   DUPLICATE_SESSION_CLOSE_CODE,
   PROTOCOL_MISMATCH_CLOSE_CODE,
   PROTOCOL_VERSION,
+  REGION_FULL_CLOSE_CODE,
   formatDuplicateSessionMessage,
   formatProtocolMismatchMessage,
+  formatRegionFullMessage,
 } from "../protocol/protocolVersion";
 import { ClientInput } from "../protocol/generated/atlas/protocol/client-input";
 
@@ -489,9 +491,9 @@ export const useServerRsClient = (
           const sessionName = extractTokenUserId(token);
           const localPlayerId = String(fnv1a32(sessionName));
           setPlayerId(localPlayerId);
-          const url = `${protocol}://${config.serverHost}:${config.serverPort}?token=${token}&map=${activeMap}&proto=${PROTOCOL_VERSION}`;
+          const url = `${protocol}://${config.serverHost}:${config.serverPort}?map=${activeMap}&proto=${PROTOCOL_VERSION}`;
 
-          const ws = new WebSocket(url);
+          const ws = new WebSocket(url, ["atlas-v1", `token.${token}`]);
           ws.binaryType = "arraybuffer";
           // Track immediately so a disconnect() during CONNECTING (e.g. React
           // StrictMode double-mount) closes this socket instead of leaking it.
@@ -887,6 +889,29 @@ export const useServerRsClient = (
               const duplicateMsg = formatDuplicateSessionMessage(event.reason);
               connectionErrorRef.current = duplicateMsg;
               setConnectionError(duplicateMsg);
+              if (wsRef.current === ws) {
+                wsRef.current = null;
+              }
+              cancelTrailingPublish();
+              setIsConnected(false);
+              setRoomId(null);
+              gameStateRef.current = null;
+              publishedRef.current.at = -Infinity;
+              setGameState(null);
+              isConnectingRef.current = false;
+              settle();
+              return;
+            }
+            if (event?.code === REGION_FULL_CLOSE_CODE) {
+              if (wsRef.current !== ws && wsRef.current !== null) {
+                settle();
+                return;
+              }
+              cancelReconnectTimer();
+              reconnectAttemptsRef.current = 0;
+              const regionFullMsg = formatRegionFullMessage(event.reason);
+              connectionErrorRef.current = regionFullMsg;
+              setConnectionError(regionFullMsg);
               if (wsRef.current === ws) {
                 wsRef.current = null;
               }
