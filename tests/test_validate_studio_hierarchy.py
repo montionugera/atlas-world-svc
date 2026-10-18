@@ -1,4 +1,4 @@
-"""Unit tests for scripts/validate_studio_hierarchy.py."""
+"""Unit tests for scripts/validate_studio_hierarchy.py across all 4 levels and INV-01..INV-07."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ import unittest
 
 from scripts.validate_studio_hierarchy import (
     DEFAULT_STUDIO_DIR,
+    build_runtime_manifest,
     validate_studio_directory,
 )
 
@@ -99,6 +100,106 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
             any("undertow" in err for err in errors),
             f"Expected forbidden legacy term error, got: {errors}",
         )
+
+    def test_inv02_rejects_duplicate_surface_grid_coordinates(self) -> None:
+        d_path = (
+            self.studio_dir
+            / "districts"
+            / "continent-01-hearthbloom-basin"
+            / "district-teacup-meadows.json"
+        )
+        data = json.loads(d_path.read_text(encoding="utf-8"))
+        data["grid_nodes"][1]["grid_coordinates"] = [1, 1]
+        d_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+        errors = validate_studio_directory(self.studio_dir)
+        self.assertTrue(
+            any("INV-02 violation" in err for err in errors),
+            f"Expected INV-02 violation, got: {errors}",
+        )
+
+    def test_inv03_rejects_asymmetric_node_portal(self) -> None:
+        n_path = (
+            self.studio_dir
+            / "nodes"
+            / "continent-01-hearthbloom-basin"
+            / "district-teacup-meadows"
+            / "hunting-area-clover-south-gate.json"
+        )
+        data = json.loads(n_path.read_text(encoding="utf-8"))
+        data["portals"]["North"] = None
+        n_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+        errors = validate_studio_directory(self.studio_dir)
+        self.assertTrue(
+            any("INV-03 violation" in err for err in errors),
+            f"Expected INV-03 violation, got: {errors}",
+        )
+
+    def test_inv04_rejects_unreachable_canon_node(self) -> None:
+        t_path = (
+            self.studio_dir
+            / "nodes"
+            / "continent-01-hearthbloom-basin"
+            / "district-teacup-meadows"
+            / "town-lantern-hollow.json"
+        )
+        e_path = (
+            self.studio_dir
+            / "nodes"
+            / "continent-01-hearthbloom-basin"
+            / "district-teacup-meadows"
+            / "hunting-area-kiln-east-orchard.json"
+        )
+        t_data = json.loads(t_path.read_text(encoding="utf-8"))
+        e_data = json.loads(e_path.read_text(encoding="utf-8"))
+        t_data["portals"]["East"] = None
+        e_data["portals"]["West"] = None
+        t_path.write_text(json.dumps(t_data, indent=2), encoding="utf-8")
+        e_path.write_text(json.dumps(e_data, indent=2), encoding="utf-8")
+
+        errors = validate_studio_directory(self.studio_dir)
+        self.assertTrue(
+            any("INV-04 violation" in err for err in errors),
+            f"Expected INV-04 violation, got: {errors}",
+        )
+
+    def test_inv06_rejects_out_of_district_monster_family(self) -> None:
+        n_path = (
+            self.studio_dir
+            / "nodes"
+            / "continent-01-hearthbloom-basin"
+            / "district-teacup-meadows"
+            / "hunting-area-clover-south-gate.json"
+        )
+        data = json.loads(n_path.read_text(encoding="utf-8"))
+        data["resident_spawns"][0]["family"] = "undead_demon"
+        n_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+        errors = validate_studio_directory(self.studio_dir)
+        self.assertTrue(
+            any("INV-06 violation" in err for err in errors),
+            f"Expected INV-06 violation, got: {errors}",
+        )
+
+    def test_build_runtime_manifest_excludes_mystery_and_includes_fog_of_lore(self) -> None:
+        manifest = build_runtime_manifest(DEFAULT_STUDIO_DIR)
+        self.assertEqual(manifest["defaultStarterMapId"], "lantern-hollow")
+        self.assertIn("lantern-hollow", manifest["starterSpawns"])
+        playable_ids = [m["mapId"] for m in manifest["playableMaps"]]
+        self.assertEqual(
+            playable_ids,
+            [
+                "kiln-cellar-b1",
+                "clover-south-gate",
+                "kiln-east-orchard",
+                "lantern-hollow",
+            ],
+        )
+        fog_portal = manifest["portalRoutingTable"]["portal-lantern-hollow-west-fog"]
+        self.assertEqual(fog_portal["gateState"], "fog_of_lore")
+        self.assertIsNone(fog_portal["targetMapId"])
+        self.assertTrue(len(fog_portal["lockMessage"]) > 15)
 
 
 if __name__ == "__main__":

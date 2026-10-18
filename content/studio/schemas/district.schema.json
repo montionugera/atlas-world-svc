@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas-world.joymify.com/studio/schemas/district.schema.json",
+  "title": "StudioDistrict",
+  "allOf": [
+    {
+      "$ref": "common-mystery.schema.json"
+    }
+  ],
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "name",
+    "parent_continent_id",
+    "status",
+    "core_rationale",
+    "local_conflict",
+    "level_band_label",
+    "level_range",
+    "ecological_monster_families",
+    "grid_dimensions",
+    "grid_nodes",
+    "portal_edges",
+    "quality_checklist"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^district-[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 2
+    },
+    "parent_continent_id": {
+      "type": "string",
+      "pattern": "^continent-[0-9]{2}-[a-z0-9-]+$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "canon",
+        "draft",
+        "mystery"
+      ]
+    },
+    "core_rationale": {
+      "type": "string",
+      "minLength": 20
+    },
+    "local_conflict": {
+      "type": "string",
+      "minLength": 20
+    },
+    "level_band_label": {
+      "type": "string",
+      "enum": [
+        "Levels 1 to 20",
+        "Levels 21 to 40",
+        "Levels 41 to 60",
+        "Levels 61 to 80",
+        "Levels 81 to 100"
+      ]
+    },
+    "level_range": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "ecological_monster_families": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "grid_dimensions": {
+      "type": "object",
+      "required": [
+        "columns",
+        "rows"
+      ],
+      "properties": {
+        "columns": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "grid_nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "node_id",
+          "map_id",
+          "node_type",
+          "status",
+          "grid_coordinates",
+          "level_range",
+          "is_starter_town"
+        ],
+        "properties": {
+          "node_id": {
+            "type": "string",
+            "pattern": "^(town|hunting-area|dungeon)-[a-z0-9-]+$"
+          },
+          "map_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "node_type": {
+            "type": "string",
+            "enum": [
+              "town",
+              "hunting_area",
+              "dungeon"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "canon",
+              "draft",
+              "mystery"
+            ]
+          },
+          "grid_coordinates": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "floor_index": {
+            "type": "integer"
+          },
+          "level_range": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "is_starter_town": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "portal_edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "edge_id",
+          "from_node_id",
+          "from_direction",
+          "to_node_id",
+          "to_direction",
+          "bidirectional",
+          "gate_state"
+        ],
+        "properties": {
+          "edge_id": {
+            "type": "string"
+          },
+          "from_node_id": {
+            "type": "string"
+          },
+          "from_direction": {
+            "type": "string",
+            "enum": [
+              "North",
+              "South",
+              "East",
+              "West",
+              "Dungeon",
+              "Exit"
+            ]
+          },
+          "to_node_id": {
+            "type": "string"
+          },
+          "to_direction": {
+            "type": "string",
+            "enum": [
+              "North",
+              "South",
+              "East",
+              "West",
+              "Dungeon",
+              "Exit"
+            ]
+          },
+          "bidirectional": {
+            "type": "boolean"
+          },
+          "gate_state": {
+            "type": "string",
+            "enum": [
+              "open",
+              "locked_by_story",
+              "fog_of_lore"
+            ]
+          },
+          "road_width_meters": {
+            "type": "number"
+          },
+          "lock_reason": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

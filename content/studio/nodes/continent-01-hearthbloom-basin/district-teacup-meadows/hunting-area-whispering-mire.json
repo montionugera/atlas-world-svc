@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-whispering-mire",
+  "name": "The Whispering Teapot Mire",
+  "map_id": null,
+  "parent_district_id": "district-teacup-meadows",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western overflow marsh at grid [0, 1] where cracked porcelain aqueducts spilled warm mineral water into a silver-mist reed fen, reserved as an intentional Fog of Lore frontier on the edge of Teacup Meadows.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "level_range": [
+    10,
+    15
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "The Lantern-Keepers say a giant sunken sugar-bowl lies half-submerged in the western reeds, guarded by sleepy steam-frogs.",
+    "visual_silhouette": "A broken porcelain bridge vanishing into thick silver steam-fog and giant cattails.",
+    "unanswered_question": "Why did the western sluice-gate seal itself during the Great Lantern Eclipse?",
+    "discovery_trigger_hint": "Lifts when players clear the Under-Hearth Kiln Cellar and restore pressure to the western sluice."
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors the western [0, 1] fog_of_lore boundary portal of town-lantern-hollow in district-teacup-meadows."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Silver steam-fog marsh concealing a giant sunken porcelain sugar-bowl."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Intentional mystery: cattail reed height caps and lily-pad stepping stones for 1.05m characters will be authored when promoted to draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Intentional mystery: sealed behind portal-lantern-hollow-west-fog (gate_state: fog_of_lore)."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete in_world_rumor, visual_silhouette, and unanswered_question without compiling a fake filler map."
+    }
+  }
+}

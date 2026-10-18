@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-rustcog-downs",
+  "name": "Rustcog Downs",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "status": "draft",
+  "core_rationale": "Western arrival plateau of Continent 02 where Krono's brass gear-ribs emerge from copper grasslands around the Pinion Terminus root-train station.",
+  "local_conflict": "Wind-pirates and rogue clockwork hounds are stripping copper teeth from the active wind-mills.",
+  "level_band_label": "Levels 21 to 40",
+  "level_range": [
+    15,
+    30
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "beast",
+    "insect"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Couriers say the brass canyons shift their alignment every full moon when the buried mainspring slips a tooth.",
+    "visual_silhouette": "Rolling copper prairies pierced by hundred-meter oxidized brass gear arches.",
+    "unanswered_question": "Where does the central pendulum shaft descend?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits scar-brass-faultline and receives the Pinion Terminus root-train from Continent 01."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Hundred-meter brass gear arches rising over wind-swept copper prairies."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Uses 4.0 meter wide Titan gear-tooth ramps and 0.15 meter cog-steps for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Draft status: awaiting Continent 02 promotion to Canon before populating playable leaf maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Includes mystery_hook for the shifting brass canyons with zero filler maps."
+    }
+  }
+}
