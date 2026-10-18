@@ -1535,8 +1535,9 @@
     "title": "District Terracotta Wind-Chime Ridge Canon Promotion, Chime-Pipe Colonnade Connection, and Differential Spur Gorge Draft",
     "from_idea": "I-219",
     "created_at": "2026-10-18T11:54:50.659267+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-18T11:55:15.018270+00:00"
   }
 ]
