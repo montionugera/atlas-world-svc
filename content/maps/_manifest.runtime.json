@@ -143,6 +143,24 @@
       ]
     },
     {
+      "mapId": "star-heart-nave-b1",
+      "nodeId": "dungeon-star-heart-nave",
+      "name": "Star-Heart Nave",
+      "districtId": "district-zenith-crown",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        48,
+        54
+      ]
+    },
+    {
       "mapId": "vesper-cradle-b1",
       "nodeId": "dungeon-vesper-cradle",
       "name": "Vesper's Cradle Vault",
@@ -176,6 +194,24 @@
       "levelRange": [
         25,
         30
+      ]
+    },
+    {
+      "mapId": "aurora-tether",
+      "nodeId": "hunting-area-aurora-tether",
+      "name": "Aurora Tether Span",
+      "districtId": "district-zenith-crown",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        46,
+        48
       ]
     },
     {
@@ -374,6 +410,24 @@
       "levelRange": [
         27,
         30
+      ]
+    },
+    {
+      "mapId": "crown-beacon-citadel",
+      "nodeId": "town-crown-beacon-citadel",
+      "name": "Crown Beacon Citadel",
+      "districtId": "district-zenith-crown",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        47,
+        50
       ]
     },
     {
@@ -669,6 +723,27 @@
       },
       "lockMessage": null
     },
+    "portal-star-heart-nave-exit-citadel": {
+      "portalId": "portal-star-heart-nave-exit-citadel",
+      "sourceNodeId": "dungeon-star-heart-nave",
+      "sourceMapId": "star-heart-nave-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-crown-beacon-citadel",
+      "targetMapId": "crown-beacon-citadel",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 20.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3760.0
+      },
+      "lockMessage": null
+    },
     "portal-vesper-cradle-exit-sanctuary": {
       "portalId": "portal-vesper-cradle-exit-sanctuary",
       "sourceNodeId": "dungeon-vesper-cradle",
@@ -729,6 +804,48 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 3800.0
+      },
+      "lockMessage": null
+    },
+    "portal-aurora-tether-east-citadel": {
+      "portalId": "portal-aurora-tether-east-citadel",
+      "sourceNodeId": "hunting-area-aurora-tether",
+      "sourceMapId": "aurora-tether",
+      "direction": "East",
+      "targetNodeId": "town-crown-beacon-citadel",
+      "targetMapId": "crown-beacon-citadel",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-aurora-tether-west-sanctuary": {
+      "portalId": "portal-aurora-tether-west-sanctuary",
+      "sourceNodeId": "hunting-area-aurora-tether",
+      "sourceMapId": "aurora-tether",
+      "direction": "West",
+      "targetNodeId": "town-undertide-sanctuary",
+      "targetMapId": "undertide-sanctuary",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
       },
       "lockMessage": null
     },
@@ -1222,6 +1339,69 @@
       "direction": "Dungeon",
       "targetNodeId": "dungeon-ash-valve-vault",
       "targetMapId": "ash-valve-vault-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-crown-beacon-north-fog": {
+      "portalId": "portal-crown-beacon-north-fog",
+      "sourceNodeId": "town-crown-beacon-citadel",
+      "sourceMapId": "crown-beacon-citadel",
+      "direction": "North",
+      "targetNodeId": "hunting-area-solstice-anchor",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Zero-gravity star-shear along the Solstice Anchor Chain repels uncalibrated gliders; the Beacon Wardens require the Nave Aurora-Key before opening the northern anchor pier."
+    },
+    "portal-crown-beacon-west-aurora": {
+      "portalId": "portal-crown-beacon-west-aurora",
+      "sourceNodeId": "town-crown-beacon-citadel",
+      "sourceMapId": "crown-beacon-citadel",
+      "direction": "West",
+      "targetNodeId": "hunting-area-aurora-tether",
+      "targetMapId": "aurora-tether",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-crown-beacon-dungeon-nave": {
+      "portalId": "portal-crown-beacon-dungeon-nave",
+      "sourceNodeId": "town-crown-beacon-citadel",
+      "sourceMapId": "crown-beacon-citadel",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-star-heart-nave",
+      "targetMapId": "star-heart-nave-b1",
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
@@ -1781,6 +1961,27 @@
         "y": 200.0
       },
       "lockMessage": "Inverted tidal pressure along the Abyssal Barometer Ridge crushes uncalibrated diving bells; the Undertide Bell-Keepers require the Cradle Star-Heart before unsealing the northern coral lock."
+    },
+    "portal-undertide-sanctuary-east-aurora": {
+      "portalId": "portal-undertide-sanctuary-east-aurora",
+      "sourceNodeId": "town-undertide-sanctuary",
+      "sourceMapId": "undertide-sanctuary",
+      "direction": "East",
+      "targetNodeId": "hunting-area-aurora-tether",
+      "targetMapId": "aurora-tether",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-undertide-sanctuary-west-kelp": {
       "portalId": "portal-undertide-sanctuary-west-kelp",

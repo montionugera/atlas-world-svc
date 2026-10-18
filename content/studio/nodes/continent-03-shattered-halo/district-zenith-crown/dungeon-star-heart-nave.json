@@ -1,0 +1,158 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-star-heart-nave",
+  "name": "Star-Heart Nave",
+  "map_id": "star-heart-nave-b1",
+  "parent_district_id": "district-zenith-crown",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Subterranean acoustic star-chamber beneath Crown Beacon Citadel at [1, 1] (floor -1) where Vesper's highest resonance bells focus aurora light into the citadel beacon.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    48,
+    54
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_star_heart_nave",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Levitated pools of liquid aurora light vibrating to the chime of star-silver bells"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-star-heart-nave-exit-citadel",
+      "direction": "Exit",
+      "target_node_id": "town-crown-beacon-citadel",
+      "target_map_id": "crown-beacon-citadel",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 20.0,
+        "height": 14.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3760.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-star-heart-choir-seraph",
+      "monster_id": "mob-aurora-choir-spirit",
+      "monster_name": "Aurora Choir-Spirit",
+      "spawn_count": 8,
+      "respawn_seconds": 16.0,
+      "level": 50,
+      "element": "Holy",
+      "size": "Medium",
+      "race": "Angel",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-star-silver-tuning-fork",
+          "item_name": "Star-Silver Tuning Fork",
+          "drop_chance_percent": 36.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-aurora-choir-spirit",
+        "card_name": "Aurora Choir-Spirit Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Headgear",
+        "modifier_summary": "Magical Defense +10, Variable Cast Time -5%"
+      }
+    },
+    {
+      "spawn_id": "spawn-star-heart-arch-wyrm-solaris",
+      "monster_id": "mob-aurora-arch-wyrm",
+      "monster_name": "Aurora Arch-Wyrm",
+      "spawn_count": 1,
+      "respawn_seconds": 180.0,
+      "level": 54,
+      "element": "Holy",
+      "size": "Large",
+      "race": "Dragon",
+      "family": "dragon",
+      "item_drops": [
+        {
+          "item_id": "item-nave-aurora-key",
+          "item_name": "Nave Aurora-Key",
+          "drop_chance_percent": 45.0
+        },
+        {
+          "item_id": "item-zenith-crown-diadem",
+          "item_name": "Zenith Crown Diadem",
+          "drop_chance_percent": 15.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-aurora-arch-wyrm",
+        "card_name": "Aurora Arch-Wyrm Card",
+        "drop_chance_percent": 0.005,
+        "equipment_slot": "Armor",
+        "modifier_summary": "All Stats +3, Holy Elemental Resistance +20%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.38,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.3,
+      "width": 1.75
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Houses Vesper's resonance bells beneath Crown Beacon Citadel that power the airship beacon to Hearthbloom Basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Acoustic star-silver nave with levitating pools of liquid aurora light and choir-spirits."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Maintains 0.14m stair risers, 0.15m terrace steps, 12.5m nave aisles, and 2.30m x 1.75m arched doorways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric Exit portal to town-crown-beacon-citadel; spirit and dragon spawns at Levels 50 to 54 (within District max 50 + 5 dungeon bleed)."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops the Nave Aurora-Key required to unseal the northern Solstice Anchor Chain mystery gate."
+    }
+  }
+}

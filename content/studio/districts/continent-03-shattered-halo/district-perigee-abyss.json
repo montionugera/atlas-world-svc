@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-perigee-abyss",
+  "name": "Perigee Abyss",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "status": "mystery",
+  "core_rationale": "Lowest inverted gravity trench of Continent 03 where Vesper's sunken basalt anchors hang directly above the northern ocean maelstrom.",
+  "local_conflict": "Abyssal gravity-wraiths and deep-tide leviathans prowl the inverted basalt anchor-chains at the bottom of the Shattered Halo.",
+  "level_band_label": "Levels 41 to 60",
+  "level_range": [
+    48,
+    50
+  ],
+  "ecological_monster_families": [
+    "aquatic",
+    "spirit"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Tether-divers say that if you drop a brass coin from Perigee Abyss, it falls upward for three minutes before splashing into Nebula Undertide.",
+    "visual_silhouette": "A ring of inverted basalt stalactites hanging just above the roaring spray of the northern ocean whirlpool.",
+    "unanswered_question": "What ancient sea-gate lies submerged directly beneath the lowest basalt anchor of Perigee Abyss?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater at the lowest perigee rim of Continent 03."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Inverted basalt stalactites suspended above the roaring spray of the northern ocean maelstrom."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: anchor-chain catwalk and step riser metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the lower perigee District frontier on Continent 03 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}

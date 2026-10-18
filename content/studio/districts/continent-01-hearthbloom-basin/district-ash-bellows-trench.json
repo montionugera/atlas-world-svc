@@ -3,9 +3,9 @@
   "id": "district-ash-bellows-trench",
   "name": "Ash-Bellows Trench",
   "parent_continent_id": "continent-01-hearthbloom-basin",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Southeastern sub-kiln firebrick trench of Continent 01 where Sola's deepest ceramic air-ducts draw cool valley air beneath Kilnfire Terraces.",
-  "local_conflict": " Dormant glaze-golems and ember-salamanders stir inside the sealed firebrick intake tunnels beneath the shield rim.",
+  "local_conflict": "Dormant glaze-golems and ember-salamanders stir inside the sealed firebrick intake tunnels beneath the shield rim.",
   "level_band_label": "Levels 1 to 20",
   "level_range": [
     12,
@@ -19,7 +19,23 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-firebrick-duct",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "level_range": [
+        12,
+        15
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Kiln-masons say the southeastern air-ducts hum a three-note chord whenever the great bellows under Kilnwatch Bastion draw breath.",
@@ -36,16 +52,16 @@
       "evidence": "Glazed terracotta intake arches and singing ceramic air-ducts along the southeastern shield rim."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: firebrick catwalk and air-duct grate metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Uses 12.5m glazed firebrick walkways, 0.58m kiln-draft benches, and 0.14m brick step-risers for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the southeastern District frontier on Continent 01 with zero filler maps."
+      "evidence": "Draft status: awaiting playable leaf map authoring for Firebrick Duct and Draft-Kiln Post."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Includes complete mystery_hook and reserves hunting-area-firebrick-duct as a Mystery frontier."
     }
   }
 }

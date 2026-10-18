@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-solstice-anchor",
+  "name": "Solstice Anchor Chain",
+  "map_id": null,
+  "parent_district_id": "district-zenith-crown",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northernmost celestial anchor pier of The Zenith Crown at [1, 0] where Vesper's highest white-gold chain moors the Shattered Halo against the upper stratosphere.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "level_range": [
+    49,
+    50
+  ],
+  "portals": {
+    "North": null,
+    "South": {
+      "portal_id": "portal-solstice-anchor-south-fog",
+      "direction": "South",
+      "target_node_id": "town-crown-beacon-citadel",
+      "target_map_id": "crown-beacon-citadel",
+      "target_direction": "North",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Zero-gravity star-shear along the Solstice Anchor Chain repels uncalibrated gliders; the Beacon Wardens require the Nave Aurora-Key before opening the northern anchor pier."
+    },
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": null
+  },
+  "mystery_hook": {
+    "in_world_rumor": "Beacon Wardens claim that standing at the tip of the Solstice Anchor lets you hear the lullaby of all three Primordial Gods echoing across the stars.",
+    "visual_silhouette": "Avertical chain of colossal white-gold links vanishing upward into a crown of diamond starlight.",
+    "unanswered_question": "What celestial observatory or fourth continent lies moored at the far end of the Solstice Anchor Chain?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Forms the northernmost celestial mooring pier of The Zenith Crown above Crown Beacon Citadel."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A colossal white-gold chain rising into diamond starlight at the apex of the Shattered Halo."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: chain-link catwalk and guardrail metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Crown Beacon Citadel behind a fog_of_lore portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null, fog_of_lore portal symmetry with town-crown-beacon-citadel, and complete mystery_hook."
+    }
+  }
+}
