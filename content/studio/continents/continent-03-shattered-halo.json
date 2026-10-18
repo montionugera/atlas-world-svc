@@ -56,7 +56,7 @@
     "in_world_rumor": "Airship captains refuse to fly past the Violet Squall; they claim waterfalls pour upward into the stars and lost toys float back down.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
     "unanswered_question": "What sleeps inside the inverted Zenith Crown ring at the highest apogee of the Shattered Halo?",
-    "discovery_trigger_hint": "Three core Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide) are Canon; Zenith Crown remains Mystery."
+    "discovery_trigger_hint": "Three core Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide) are Canon; Zenith Crown is in Draft."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -73,11 +73,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes Starfall Anchorage (Canon, [30, 42]), The Eclipse Observatory (Canon, [36, 46]), Nebula Undertide (Canon, [42, 50]), and Zenith Crown (Mystery, [46, 50])."
+      "evidence": "Organizes Starfall Anchorage (Canon, [30, 42]), The Eclipse Observatory (Canon, [36, 46]), Nebula Undertide (Canon, [42, 50]), and Zenith Crown (Draft, [46, 50])."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Zenith Crown in Mystery status while keeping the direct airship link to Continent 01 locked_by_mystery."
+      "evidence": "Preserves Zenith Crown in Draft status with Mystery child Aurora Tether while keeping the direct airship link to Continent 01 locked_by_mystery."
     }
   }
 }

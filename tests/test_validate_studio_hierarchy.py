@@ -69,7 +69,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
     def test_rejects_mystery_node_without_mystery_hook(self) -> None:
         with self._mutated_files(
             {
-                "districts/continent-03-shattered-halo/district-zenith-crown.json": lambda d: d.pop(
+                "districts/continent-01-hearthbloom-basin/district-ash-bellows-trench.json": lambda d: d.pop(
                     "mystery_hook", None
                 )
             }
@@ -209,6 +209,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
         self.assertEqual(
             playable_ids,
             [
+                "ash-valve-vault-b1",
                 "chronometer-foundry-b1",
                 "inverted-belfry-b1",
                 "kiln-cellar-b1",
@@ -221,11 +222,13 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "caldera-rim",
                 "cinder-apron",
                 "clover-south-gate",
+                "flue-causeway",
                 "kelp-spiral-reef",
                 "kiln-east-orchard",
                 "orrery-bridge",
                 "siphon-sluice",
                 "tether-causeway",
+                "bellows-hearth",
                 "escapement-anvil",
                 "kilnwatch-bastion",
                 "lantern-hollow",
