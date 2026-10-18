@@ -107,6 +107,24 @@
       ]
     },
     {
+      "mapId": "medallion-heart-vault-b1",
+      "nodeId": "dungeon-medallion-heart-vault",
+      "name": "Medallion Heart Vault B1",
+      "districtId": "district-porcelain-cradle",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        13,
+        15
+      ]
+    },
+    {
       "mapId": "mercury-reservoir-b1",
       "nodeId": "dungeon-mercury-reservoir",
       "name": "The Mercury Reservoir Vault (Floor -1)",
@@ -284,6 +302,24 @@
       "levelRange": [
         22,
         28
+      ]
+    },
+    {
+      "mapId": "celadon-causeway",
+      "nodeId": "hunting-area-celadon-causeway",
+      "name": "Celadon Causeway",
+      "districtId": "district-porcelain-cradle",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        10,
+        12
       ]
     },
     {
@@ -629,6 +665,24 @@
       ]
     },
     {
+      "mapId": "porcelain-loom-sanctuary",
+      "nodeId": "town-porcelain-loom-sanctuary",
+      "name": "Porcelain Loom Sanctuary",
+      "districtId": "district-porcelain-cradle",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        11,
+        14
+      ]
+    },
+    {
       "mapId": "prism-zenith",
       "nodeId": "town-prism-zenith",
       "name": "Prism Zenith",
@@ -786,6 +840,27 @@
       "arrivalPointMeters": {
         "x": 1000.0,
         "y": 1800.0
+      },
+      "lockMessage": null
+    },
+    "portal-medallion-vault-exit-sanctuary": {
+      "portalId": "portal-medallion-vault-exit-sanctuary",
+      "sourceNodeId": "dungeon-medallion-heart-vault",
+      "sourceMapId": "medallion-heart-vault-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-porcelain-loom-sanctuary",
+      "targetMapId": "porcelain-loom-sanctuary",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
       },
       "lockMessage": null
     },
@@ -1090,6 +1165,48 @@
       "direction": "West",
       "targetNodeId": "hunting-area-brass-spur-ridge",
       "targetMapId": "brass-spur-ridge",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-celadon-causeway-east-sanctuary": {
+      "portalId": "portal-celadon-causeway-east-sanctuary",
+      "sourceNodeId": "hunting-area-celadon-causeway",
+      "sourceMapId": "celadon-causeway",
+      "direction": "East",
+      "targetNodeId": "town-porcelain-loom-sanctuary",
+      "targetMapId": "porcelain-loom-sanctuary",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-celadon-causeway-west-kiln-post": {
+      "portalId": "portal-celadon-causeway-west-kiln-post",
+      "sourceNodeId": "hunting-area-celadon-causeway",
+      "sourceMapId": "celadon-causeway",
+      "direction": "West",
+      "targetNodeId": "town-draft-kiln-post",
+      "targetMapId": "draft-kiln-post",
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
@@ -1692,6 +1809,27 @@
       },
       "lockMessage": "Molten celadon glaze-vapor vents through the northern Glaze Flue; the Draft-Kiln Masons require the Bellows Counterweight Key before unbolting the northern louver."
     },
+    "portal-draft-kiln-post-east-celadon": {
+      "portalId": "portal-draft-kiln-post-east-celadon",
+      "sourceNodeId": "town-draft-kiln-post",
+      "sourceMapId": "draft-kiln-post",
+      "direction": "East",
+      "targetNodeId": "hunting-area-celadon-causeway",
+      "targetMapId": "celadon-causeway",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-draft-kiln-post-west-firebrick": {
       "portalId": "portal-draft-kiln-post-west-firebrick",
       "sourceNodeId": "town-draft-kiln-post",
@@ -2172,6 +2310,69 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-porcelain-sanctuary-north-fog": {
+      "portalId": "portal-porcelain-sanctuary-north-fog",
+      "sourceNodeId": "town-porcelain-loom-sanctuary",
+      "sourceMapId": "porcelain-loom-sanctuary",
+      "direction": "North",
+      "targetNodeId": "hunting-area-lotus-kiln-rim",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Boiling lotus-glaze steam curtains seal the northern Lotus Kiln Rim; Loom-Mother Cera requires the Medallion Heart-Chime before opening the northern terrace."
+    },
+    "portal-porcelain-sanctuary-west-celadon": {
+      "portalId": "portal-porcelain-sanctuary-west-celadon",
+      "sourceNodeId": "town-porcelain-loom-sanctuary",
+      "sourceMapId": "porcelain-loom-sanctuary",
+      "direction": "West",
+      "targetNodeId": "hunting-area-celadon-causeway",
+      "targetMapId": "celadon-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-porcelain-sanctuary-dungeon-vault": {
+      "portalId": "portal-porcelain-sanctuary-dungeon-vault",
+      "sourceNodeId": "town-porcelain-loom-sanctuary",
+      "sourceMapId": "porcelain-loom-sanctuary",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-medallion-heart-vault",
+      "targetMapId": "medallion-heart-vault-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
       },
       "lockMessage": null
     },
