@@ -50,12 +50,13 @@
     "district-rustcog-downs",
     "district-mainspring-caldera",
     "district-verdigris-siphon",
-    "district-gilded-exhaust"
+    "district-gilded-exhaust",
+    "district-thunder-coil-basin"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Tinkers say the deepest canyon gear still ticks once every midnight, echoing a lullaby from the north.",
+    "in_world_rumor": "Tinkers say the deepest canyon gear still ticks once every midnight, echoing a lullaby from the lightning-charged eastern rim.",
     "visual_silhouette": "Colossal brass wheel-rims rising two hundred meters above golden short-grass plains.",
-    "unanswered_question": "What sleeps beyond the northern Cinder Chimney Damper at the edge of The Gilded Exhaust Flues?"
+    "unanswered_question": "What sleeps inside the Thunder-Coil Basin where Krono's lightning-rod fingers struck the eastern cliffside?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -72,11 +73,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "All four Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues) are Canon and connected across [15, 35]."
+      "evidence": "Organizes four Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues) plus Thunder-Coil Basin (Mystery)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Mystery leaf nodes (Sun-Coil Spire, Teal Spillway, Cinder Chimney) behind fog_of_lore gates while keeping the Astrolabe Gate open to Continent 03."
+      "evidence": "Preserves Thunder-Coil Basin in Mystery status and leaf Mystery nodes behind fog_of_lore gates while keeping the Astrolabe Gate open to Continent 03."
     }
   }
 }

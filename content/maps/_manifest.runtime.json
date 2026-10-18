@@ -179,6 +179,24 @@
       ]
     },
     {
+      "mapId": "submerged-orrery-keel-b1",
+      "nodeId": "dungeon-submerged-orrery-keel",
+      "name": "Submerged Orrery Keel B1",
+      "districtId": "district-perigee-abyss",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
       "mapId": "vesper-cradle-b1",
       "nodeId": "dungeon-vesper-cradle",
       "name": "Vesper's Cradle Vault",
@@ -413,6 +431,24 @@
       ]
     },
     {
+      "mapId": "stalactite-plunge",
+      "nodeId": "hunting-area-stalactite-plunge",
+      "name": "Stalactite Plunge Causeway",
+      "districtId": "district-perigee-abyss",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        48,
+        49
+      ]
+    },
+    {
       "mapId": "tether-causeway",
       "nodeId": "hunting-area-tether-causeway",
       "name": "Tether Causeway",
@@ -554,6 +590,24 @@
       "levelRange": [
         26,
         30
+      ]
+    },
+    {
+      "mapId": "perigee-diving-station",
+      "nodeId": "town-perigee-diving-station",
+      "name": "Perigee Diving-Station",
+      "districtId": "district-perigee-abyss",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        48,
+        50
       ]
     },
     {
@@ -816,6 +870,27 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 3760.0
+      },
+      "lockMessage": null
+    },
+    "portal-orrery-keel-exit-station": {
+      "portalId": "portal-orrery-keel-exit-station",
+      "sourceNodeId": "dungeon-submerged-orrery-keel",
+      "sourceMapId": "submerged-orrery-keel-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-perigee-diving-station",
+      "targetMapId": "perigee-diving-station",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
       },
       "lockMessage": null
     },
@@ -1365,6 +1440,48 @@
       },
       "lockMessage": null
     },
+    "portal-stalactite-plunge-east-station": {
+      "portalId": "portal-stalactite-plunge-east-station",
+      "sourceNodeId": "hunting-area-stalactite-plunge",
+      "sourceMapId": "stalactite-plunge",
+      "direction": "East",
+      "targetNodeId": "town-perigee-diving-station",
+      "targetMapId": "perigee-diving-station",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-stalactite-plunge-west-citadel": {
+      "portalId": "portal-stalactite-plunge-west-citadel",
+      "sourceNodeId": "hunting-area-stalactite-plunge",
+      "sourceMapId": "stalactite-plunge",
+      "direction": "West",
+      "targetNodeId": "town-crown-beacon-citadel",
+      "targetMapId": "crown-beacon-citadel",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-tether-causeway-south-astrolabe-rift": {
       "portalId": "portal-tether-causeway-south-astrolabe-rift",
       "sourceNodeId": "hunting-area-tether-causeway",
@@ -1490,6 +1607,27 @@
         "y": 200.0
       },
       "lockMessage": "Zero-gravity star-shear along the Solstice Anchor Chain repels uncalibrated gliders; the Beacon Wardens require the Nave Aurora-Key before opening the northern anchor pier."
+    },
+    "portal-crown-beacon-east-stalactite": {
+      "portalId": "portal-crown-beacon-east-stalactite",
+      "sourceNodeId": "town-crown-beacon-citadel",
+      "sourceMapId": "crown-beacon-citadel",
+      "direction": "East",
+      "targetNodeId": "hunting-area-stalactite-plunge",
+      "targetMapId": "stalactite-plunge",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-crown-beacon-west-aurora": {
       "portalId": "portal-crown-beacon-west-aurora",
@@ -1908,6 +2046,69 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-perigee-station-north-fog": {
+      "portalId": "portal-perigee-station-north-fog",
+      "sourceNodeId": "town-perigee-diving-station",
+      "sourceMapId": "perigee-diving-station",
+      "direction": "North",
+      "targetNodeId": "hunting-area-maelstrom-eye-lip",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Crushing inverted tidal shear along the Maelstrom Eye Lip snaps unreinforced tether-lines; Dive-Master Corin requires the Keel Gyro-Compass before opening the northern sea-lip."
+    },
+    "portal-perigee-station-west-plunge": {
+      "portalId": "portal-perigee-station-west-plunge",
+      "sourceNodeId": "town-perigee-diving-station",
+      "sourceMapId": "perigee-diving-station",
+      "direction": "West",
+      "targetNodeId": "hunting-area-stalactite-plunge",
+      "targetMapId": "stalactite-plunge",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-perigee-station-dungeon-keel": {
+      "portalId": "portal-perigee-station-dungeon-keel",
+      "sourceNodeId": "town-perigee-diving-station",
+      "sourceMapId": "perigee-diving-station",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-submerged-orrery-keel",
+      "targetMapId": "submerged-orrery-keel-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
       },
       "lockMessage": null
     },

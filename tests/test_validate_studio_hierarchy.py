@@ -69,7 +69,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
     def test_rejects_mystery_node_without_mystery_hook(self) -> None:
         with self._mutated_files(
             {
-                "districts/continent-01-hearthbloom-basin/district-porcelain-cradle.json": lambda d: d.pop(
+                "districts/continent-02-clockwork-steppe/district-thunder-coil-basin.json": lambda d: d.pop(
                     "mystery_hook", None
                 )
             }
@@ -218,6 +218,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "pendulum-sanctum-b1",
                 "pendulum-shaft-b1",
                 "star-heart-nave-b1",
+                "submerged-orrery-keel-b1",
                 "vesper-cradle-b1",
                 "astrolabe-rift",
                 "aurora-tether",
@@ -231,6 +232,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "kiln-east-orchard",
                 "orrery-bridge",
                 "siphon-sluice",
+                "stalactite-plunge",
                 "tether-causeway",
                 "bellows-hearth",
                 "crown-beacon-citadel",
@@ -239,6 +241,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "kilnwatch-bastion",
                 "lantern-hollow",
                 "patina-lock",
+                "perigee-diving-station",
                 "pinion-terminus",
                 "prism-zenith",
                 "starfall-haven",

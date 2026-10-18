@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-maelstrom-eye-lip",
+  "name": "Maelstrom Eye Lip",
+  "map_id": null,
+  "parent_district_id": "district-perigee-abyss",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northernmost inverted basalt sea-lip of Perigee Abyss at [1, 0] overhanging the eye of the northern ocean whirlpool where Vesper's tear first struck the sea.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    50,
+    50
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Divers swear that at dead low tide, the roaring eye of the whirlpool parts to reveal a staircase of dry star-glass descending into the seabed.",
+    "visual_silhouette": "A jagged basalt lip surrounded by a vertical wall of spinning silver sea-foam that never falls back down.",
+    "unanswered_question": "Does the star-glass staircase at the bottom of the Maelstrom Eye lead to Vesper's submerged dream-palace?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Marks the exact epicenter of scar-vesper-crater at the lowest rim of Perigee Abyss."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A basalt sea-lip overhanging a vertical wall of spinning silver whirlpool spray."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: gated behind the North fog_of_lore portal on town-perigee-diving-station."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook without generating filler map geometry."
+    }
+  }
+}
