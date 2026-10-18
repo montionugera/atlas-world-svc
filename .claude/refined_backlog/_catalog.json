@@ -1241,9 +1241,11 @@
     "from_idea": "I-205",
     "created_at": "2026-10-18T08:38:15.699246+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
-    "claimed_at": "2026-10-18T08:38:34.235440+00:00"
+    "status": "shipped",
+    "release_version": "1.15",
+    "claimed_at": "2026-10-18T08:38:34.235440+00:00",
+    "shipped_at": "2026-10-18T08:48:13.103975+00:00",
+    "shipped_sha": "9bcbfc94ff0b80d090390311ba1e7ccabbbd3fb5"
   },
   {
     "id": "F-100",
