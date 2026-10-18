@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-Automated test suite for E-010 / F-087 / F-088 / F-089:
+Automated test suite for E-010 / F-087 / F-088 / F-089 / F-090:
   - 4-Level Unabbreviated Perspective Switcher (World History and Concept -> Continent -> District -> Town or Hunting Area)
   - District Connected 2D Map Matrix + Maxion Level-Band Monster Pinning
   - Town or Hunting Area Inspector + Monster/1035 Detail Sheet
   - Human-in-the-Loop Core Rationale, Five-Pillar Quality Checklist Gate, Mystery Toggle, and Downward Child Generation API
+  - Autonomous Product Owner Self-Evaluation Telemetry & Kilnfire Terraces Increment
 """
 
 from __future__ import annotations
@@ -27,6 +28,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("districts", bundle)
         self.assertIn("nodes", bundle)
         self.assertIn("runtimeManifest", bundle)
+        self.assertIn("selfEvaluation", bundle)
 
         whc = bundle["worldHistoryAndConcept"]
         self.assertEqual(whc["id"], "world-history-cradle-of-embers")
@@ -36,11 +38,12 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self.assertEqual(len(bundle["continents"]), 3)
         self.assertEqual(len(bundle["districts"]), 3)
-        self.assertEqual(len(bundle["nodes"]), 5)
+        self.assertEqual(len(bundle["nodes"]), 8)
 
     def test_index_html_renders_unabbreviated_four_perspectives_and_benchmarks(self) -> None:
         html = web.INDEX_HTML
         self.assertIn('id="perspectiveBar"', html)
+        self.assertIn('id="productOwnerTelemetryBar"', html)
         self.assertIn("World History and Concept", html)
         self.assertIn("Continent", html)
         self.assertIn("District", html)

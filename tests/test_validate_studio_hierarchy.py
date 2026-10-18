@@ -191,8 +191,10 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
             playable_ids,
             [
                 "kiln-cellar-b1",
+                "cinder-apron",
                 "clover-south-gate",
                 "kiln-east-orchard",
+                "kilnwatch-bastion",
                 "lantern-hollow",
             ],
         )

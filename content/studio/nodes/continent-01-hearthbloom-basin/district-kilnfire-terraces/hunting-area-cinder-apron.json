@@ -1,0 +1,163 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-cinder-apron",
+  "name": "Cinder Apron Terraces",
+  "map_id": "cinder-apron",
+  "parent_district_id": "district-kilnfire-terraces",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "canon",
+  "core_rationale": "Broad red-brick kiln courtyard east of Kilnwatch Bastion where cracked porcelain golems and whistling kettle-sprites patrol the approach to the Kettle-Whistle Viaduct.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "level_range": [
+    12,
+    20
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/nature/rock_medium_1.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_kilnfire_apron",
+    "max_terrace_step_meters": 0.18,
+    "water_feature": "Warm mineral overflow runnels along the stepped kiln terraces"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-cinder-apron-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-slag-chasm",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Superheated porcelain glaze-steam billows from the northern Slag Chasm; the Guild of Potters has sealed the bridge until the Great Damper is cooled.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": null,
+    "West": {
+      "portal_id": "portal-cinder-apron-west",
+      "direction": "West",
+      "target_node_id": "town-kilnwatch-bastion",
+      "target_map_id": "kilnwatch-bastion",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-cinder-porcelain-golem",
+      "monster_id": "mob-porcelain-kiln-golem",
+      "monster_name": "Porcelain Kiln-Golem",
+      "spawn_count": 8,
+      "respawn_seconds": 14.0,
+      "level": 15,
+      "element": "Earth",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-kiln-glaze-core",
+          "item_name": "Vitrified Glaze Core",
+          "drop_chance_percent": 45.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-porcelain-kiln-golem",
+        "card_name": "Porcelain Kiln-Golem Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Armor",
+        "modifier_summary": "Physical Defense +6, Earth Resistance +10%"
+      }
+    },
+    {
+      "spawn_id": "spawn-cinder-kettle-sprite",
+      "monster_id": "mob-whistling-kettle-sprite",
+      "monster_name": "Whistling Kettle-Sprite",
+      "spawn_count": 10,
+      "respawn_seconds": 9.0,
+      "level": 18,
+      "element": "Fire",
+      "size": "Small",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-copper-whistle-cap",
+          "item_name": "Copper Whistle Cap",
+          "drop_chance_percent": 52.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-whistling-kettle-sprite",
+        "card_name": "Whistling Kettle-Sprite Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Accessory",
+        "modifier_summary": "Attack Speed +3%, Fire Magic Damage +5%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.25,
+    "max_bush_height_meters": 0.55,
+    "main_road_width_meters": 14.0,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/nature/rock_medium_1.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Connects directly to Kilnwatch Bastion East Gate at [1, 1] and dramatizes the blocked Kettle-Whistle Viaduct conflict."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Stepped red-clay kiln aprons patrolled by Whistling Kettle-Sprites and Porcelain Kiln-Golems."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Grass <= 0.25m, bushes <= 0.55m, terrace steps <= 0.18m, and 14.0m main highway for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric West portal to town-kilnwatch-bastion, North fog_of_lore portal to hunting-area-slag-chasm, and Level 15 to 18 construct/spirit fauna."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Compiles a fog_of_lore boundary portal on the North bridge leading to the uncharted Slag Chasm."
+    }
+  }
+}

@@ -71,7 +71,7 @@
       "node_id": "dungeon-kiln-cellar",
       "map_id": "kiln-cellar-b1",
       "node_type": "dungeon",
-      "status": "draft",
+      "status": "canon",
       "grid_coordinates": [
         1,
         1

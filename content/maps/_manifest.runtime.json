@@ -23,7 +23,7 @@
       "districtId": "district-teacup-meadows",
       "continentId": "continent-01-hearthbloom-basin",
       "nodeType": "dungeon",
-      "status": "draft",
+      "status": "canon",
       "isStarterTown": false,
       "gridCoordinates": [
         1,
@@ -32,6 +32,24 @@
       "levelRange": [
         10,
         18
+      ]
+    },
+    {
+      "mapId": "cinder-apron",
+      "nodeId": "hunting-area-cinder-apron",
+      "name": "Cinder Apron Terraces",
+      "districtId": "district-kilnfire-terraces",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        12,
+        20
       ]
     },
     {
@@ -67,6 +85,24 @@
       ],
       "levelRange": [
         6,
+        15
+      ]
+    },
+    {
+      "mapId": "kilnwatch-bastion",
+      "nodeId": "town-kilnwatch-bastion",
+      "name": "Kilnwatch Bastion",
+      "districtId": "district-kilnfire-terraces",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        10,
         15
       ]
     },
@@ -111,6 +147,48 @@
       },
       "lockMessage": null
     },
+    "portal-cinder-apron-north-fog": {
+      "portalId": "portal-cinder-apron-north-fog",
+      "sourceNodeId": "hunting-area-cinder-apron",
+      "sourceMapId": "cinder-apron",
+      "direction": "North",
+      "targetNodeId": "hunting-area-slag-chasm",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Superheated porcelain glaze-steam billows from the northern Slag Chasm; the Guild of Potters has sealed the bridge until the Great Damper is cooled."
+    },
+    "portal-cinder-apron-west": {
+      "portalId": "portal-cinder-apron-west",
+      "sourceNodeId": "hunting-area-cinder-apron",
+      "sourceMapId": "cinder-apron",
+      "direction": "West",
+      "targetNodeId": "town-kilnwatch-bastion",
+      "targetMapId": "kilnwatch-bastion",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-clover-south-gate-north": {
       "portalId": "portal-clover-south-gate-north",
       "sourceNodeId": "hunting-area-clover-south-gate",
@@ -132,6 +210,27 @@
       },
       "lockMessage": null
     },
+    "portal-kiln-east-orchard-east": {
+      "portalId": "portal-kiln-east-orchard-east",
+      "sourceNodeId": "hunting-area-kiln-east-orchard",
+      "sourceMapId": "kiln-east-orchard",
+      "direction": "East",
+      "targetNodeId": "town-kilnwatch-bastion",
+      "targetMapId": "kilnwatch-bastion",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-kiln-east-orchard-west": {
       "portalId": "portal-kiln-east-orchard-west",
       "sourceNodeId": "hunting-area-kiln-east-orchard",
@@ -139,6 +238,48 @@
       "direction": "West",
       "targetNodeId": "town-lantern-hollow",
       "targetMapId": "lantern-hollow",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-kilnwatch-bastion-east": {
+      "portalId": "portal-kilnwatch-bastion-east",
+      "sourceNodeId": "town-kilnwatch-bastion",
+      "sourceMapId": "kilnwatch-bastion",
+      "direction": "East",
+      "targetNodeId": "hunting-area-cinder-apron",
+      "targetMapId": "cinder-apron",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-kilnwatch-bastion-west": {
+      "portalId": "portal-kilnwatch-bastion-west",
+      "sourceNodeId": "town-kilnwatch-bastion",
+      "sourceMapId": "kilnwatch-bastion",
+      "direction": "West",
+      "targetNodeId": "hunting-area-kiln-east-orchard",
+      "targetMapId": "kiln-east-orchard",
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
