@@ -3,16 +3,83 @@ use crate::combat::{DamageType, Element};
 use crate::content::map::TerrainZones;
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    AiState, CombatStats, ElementalAttributes, Health, MobAi, PlayerTag, Position, Projectile,
-    StatusEffects, Velocity, KNOCKBACK_DECAY_PER_SEC,
+    AiState, AttackFacingCone, CombatStats, ElementalAttributes, Health, MobAi, MobWindupConfig,
+    PlayerTag, Position, Projectile, StatusEffects, Velocity, KNOCKBACK_DECAY_PER_SEC,
 };
 use bevy_ecs::prelude::*;
+
+#[allow(clippy::too_many_arguments)]
+fn spawn_mob_attack_projectile(
+    commands: &mut Commands,
+    mob_entity: Entity,
+    target_entity: Entity,
+    pos: Position,
+    dir_x: f32,
+    dir_y: f32,
+    is_ranged: bool,
+    attack_range: f32,
+    attack_power: f32,
+    mob_element: Element,
+    facing_cone_cos: f32,
+) {
+    let cone = AttackFacingCone::new(pos, dir_x, dir_y, facing_cone_cos);
+    if is_ranged {
+        let speed = 200.0;
+        commands.spawn((
+            Projectile {
+                owner: mob_entity,
+                target: Some(target_entity),
+                damage: attack_power,
+                damage_type: DamageType::Physical,
+                element: mob_element,
+                speed,
+                radius: 8.0,
+                max_range: attack_range + 50.0,
+                traveled_distance: 0.0,
+                lifetime: 2.0,
+                effects: Vec::new(),
+                is_player_projectile: false,
+                aoe_radius: 0.0,
+                skill_id: Some("spear".to_string()),
+                detonated: false,
+            },
+            Position::new(pos.x, pos.y),
+            Velocity::new(dir_x * speed, dir_y * speed),
+            cone,
+        ));
+    } else {
+        let speed = 400.0;
+        commands.spawn((
+            Projectile {
+                owner: mob_entity,
+                target: Some(target_entity),
+                damage: attack_power,
+                damage_type: DamageType::Physical,
+                element: mob_element,
+                speed,
+                radius: 12.0,
+                max_range: attack_range + 20.0,
+                traveled_distance: 0.0,
+                lifetime: 0.2,
+                effects: Vec::new(),
+                is_player_projectile: false,
+                aoe_radius: 0.0,
+                skill_id: None,
+                detonated: false,
+            },
+            Position::new(pos.x, pos.y),
+            Velocity::new(dir_x * speed, dir_y * speed),
+            cone,
+        ));
+    }
+}
 
 #[allow(clippy::type_complexity)]
 pub fn mob_ai_system(
     mut commands: Commands,
     clock: Res<SimClock>,
     terrain: Option<Res<TerrainZones>>,
+    windup_cfg: Option<Res<MobWindupConfig>>,
     mut mobs: Query<(
         Entity,
         &Position,
@@ -49,11 +116,20 @@ pub fn mob_ai_system(
     ) in &mut mobs
     {
         if !health.is_alive {
+            mob_ai.windup_timer = 0.0;
             continue;
         }
 
         if stats.cooldown_timer > 0.0 {
             stats.cooldown_timer = (stats.cooldown_timer - dt).max(0.0);
+        }
+
+        // If stunned, cancel wind-up and hold still
+        if opt_status.is_some_and(|s| s.is_stunned()) {
+            mob_ai.windup_timer = 0.0;
+            vel.vx = 0.0;
+            vel.vy = 0.0;
+            continue;
         }
 
         // If knocked back from an attack, preserve knockback velocity (easing out) and skip AI override
@@ -87,6 +163,7 @@ pub fn mob_ai_system(
         if active_target.is_none()
             && (mob_ai.state == AiState::Chase || mob_ai.state == AiState::Attack)
         {
+            mob_ai.windup_timer = 0.0;
             mob_ai.state = AiState::ReturnHome;
         }
 
@@ -112,6 +189,7 @@ pub fn mob_ai_system(
 
         // Target died / despawned mid-chase: stop and walk home instead of drifting.
         if active_target.is_none() && matches!(mob_ai.state, AiState::Chase | AiState::Attack) {
+            mob_ai.windup_timer = 0.0;
             mob_ai.state = AiState::ReturnHome;
         }
 
@@ -123,11 +201,51 @@ pub fn mob_ai_system(
             if dist_from_home > mob_ai.leash_distance {
                 // Target leashed! Clear target from threat table, switch state = ReturnHome
                 threat.clear_target(target_entity);
+                mob_ai.windup_timer = 0.0;
                 mob_ai.state = AiState::ReturnHome;
             } else {
                 let dx = target_pos.x - pos.x;
                 let dy = target_pos.y - pos.y;
                 let dist = (dx * dx + dy * dy).sqrt();
+                let mob_element = opt_attrs.map(|a| a.element).unwrap_or(Element::Neutral);
+                let effective_windup = if mob_ai.windup_duration_sec > 0.0 {
+                    mob_ai.windup_duration_sec
+                } else {
+                    windup_cfg.as_ref().map_or(0.0, |c| c.windup_duration_sec)
+                };
+
+                // Handle active pre-attack wind-up tell
+                if mob_ai.windup_timer > 0.0 {
+                    mob_ai.state = AiState::Attack;
+                    vel.vx = 0.0;
+                    vel.vy = 0.0;
+                    mob_ai.windup_timer = (mob_ai.windup_timer - dt).max(0.0);
+
+                    if mob_ai.windup_timer <= 0.0 {
+                        // Wind-up completed! Commit cooldown and fire along the locked facing cone.
+                        stats.cooldown_timer = stats.attack_cooldown;
+                        let (locked_dx, locked_dy) = mob_ai.windup_facing;
+                        let in_cone = mob_ai.is_in_facing_cone(*pos, target_pos);
+                        let in_melee_reach = dist <= mob_ai.attack_range + 20.0;
+
+                        if mob_ai.is_ranged || (in_cone && in_melee_reach) {
+                            spawn_mob_attack_projectile(
+                                &mut commands,
+                                mob_entity,
+                                target_entity,
+                                *pos,
+                                locked_dx,
+                                locked_dy,
+                                mob_ai.is_ranged,
+                                mob_ai.attack_range,
+                                stats.attack_power,
+                                mob_element,
+                                mob_ai.facing_cone_cos,
+                            );
+                        }
+                    }
+                    continue;
+                }
 
                 if dist <= mob_ai.attack_range {
                     mob_ai.state = AiState::Attack;
@@ -135,57 +253,28 @@ pub fn mob_ai_system(
                     vel.vy = 0.0;
 
                     if stats.cooldown_timer <= 0.0 {
-                        stats.cooldown_timer = stats.attack_cooldown;
                         let dir_x = if dist > 0.001 { dx / dist } else { 1.0 };
                         let dir_y = if dist > 0.001 { dy / dist } else { 0.0 };
-                        let mob_element = opt_attrs.map(|a| a.element).unwrap_or(Element::Neutral);
+                        mob_ai.windup_facing = (dir_x, dir_y);
 
-                        if mob_ai.is_ranged {
-                            let speed = 200.0;
-                            commands.spawn((
-                                Projectile {
-                                    owner: mob_entity,
-                                    target: Some(target_entity),
-                                    damage: stats.attack_power,
-                                    damage_type: DamageType::Physical,
-                                    element: mob_element,
-                                    speed,
-                                    radius: 8.0,
-                                    max_range: mob_ai.attack_range + 50.0,
-                                    traveled_distance: 0.0,
-                                    lifetime: 2.0,
-                                    effects: Vec::new(),
-                                    is_player_projectile: false,
-                                    aoe_radius: 0.0,
-                                    skill_id: Some("spear".to_string()),
-                                    detonated: false,
-                                },
-                                Position::new(pos.x, pos.y),
-                                Velocity::new(dir_x * speed, dir_y * speed),
-                            ));
+                        if effective_windup > 0.0 {
+                            mob_ai.windup_duration_sec = effective_windup;
+                            mob_ai.windup_timer = effective_windup;
                         } else {
-                            let speed = 400.0;
-                            commands.spawn((
-                                Projectile {
-                                    owner: mob_entity,
-                                    target: Some(target_entity),
-                                    damage: stats.attack_power,
-                                    damage_type: DamageType::Physical,
-                                    element: mob_element,
-                                    speed,
-                                    radius: 12.0,
-                                    max_range: mob_ai.attack_range + 20.0,
-                                    traveled_distance: 0.0,
-                                    lifetime: 0.2,
-                                    effects: Vec::new(),
-                                    is_player_projectile: false,
-                                    aoe_radius: 0.0,
-                                    skill_id: None,
-                                    detonated: false,
-                                },
-                                Position::new(pos.x, pos.y),
-                                Velocity::new(dir_x * speed, dir_y * speed),
-                            ));
+                            stats.cooldown_timer = stats.attack_cooldown;
+                            spawn_mob_attack_projectile(
+                                &mut commands,
+                                mob_entity,
+                                target_entity,
+                                *pos,
+                                dir_x,
+                                dir_y,
+                                mob_ai.is_ranged,
+                                mob_ai.attack_range,
+                                stats.attack_power,
+                                mob_element,
+                                mob_ai.facing_cone_cos,
+                            );
                         }
                     }
                 } else if dist <= mob_ai.chase_range {
