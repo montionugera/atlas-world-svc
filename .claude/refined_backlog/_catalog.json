@@ -1275,8 +1275,9 @@
     "title": "District Ash-Bellows Trench Canon Promotion, Firebrick Duct Connection, and Perigee Abyss Draft",
     "from_idea": "I-207",
     "created_at": "2026-10-18T09:01:42.815515+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-18T09:01:55.303619+00:00"
   }
 ]
