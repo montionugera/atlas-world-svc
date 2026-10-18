@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-saffron-kiln-orchards",
+  "name": "Saffron Kiln Orchards",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "status": "mystery",
+  "core_rationale": "Sun-warmed southeastern glaze-terrace orchards of Continent 01 where Sola's golden ceramic aqueducts irrigate saffron-apricot groves and honey-glaze vats.",
+  "local_conflict": "Nectar-sipping glaze beetles and warm-clay orchard sprites raid the saffron drying racks.",
+  "level_band_label": "Levels 1 to 20",
+  "level_range": [
+    19,
+    20
+  ],
+  "ecological_monster_families": [
+    "flora_fauna",
+    "carapace"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Bakers in Lantern Hollow say a single drop of honey-glaze from Saffron Kiln Orchards keeps hearth-loaves warm for seven days.",
+    "visual_silhouette": "Stepped golden-brick orchard terraces crowned by teapot-shaped honey presses and apricot blossoms.",
+    "unanswered_question": "What subterranean nectar-kiln bubbles beneath the central press of Saffron Kiln Orchards?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin along the southeastern aqueduct terraces of Continent 01."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Stepped golden-brick orchard terraces irrigated by warm ceramic aqueducts and teapot honey presses."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: orchard footpath and honey-press counter metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the eighth District frontier on Continent 01 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}

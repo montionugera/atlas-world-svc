@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-sun-gear-escarpment",
+  "name": "Sun-Gear Escarpment",
+  "map_id": null,
+  "parent_district_id": "district-differential-spur-gorge",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern brass cliff of Differential Spur Gorge at [1, 0] where Krono's exposed sun-gear teeth mesh with the buried solar flywheel.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    30,
+    30
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Tinkers say the northern Sun-Gear Escarpment meshes directly with Krono's buried solar flywheel.",
+    "visual_silhouette": "A sheer copper escarpment crowned by a fifty-meter golden sun-gear spinning against the northern sky.",
+    "unanswered_question": "What solar flywheel chamber turns beyond Sun-Gear Escarpment?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Extends north from Torque-Balance Citadel at [1, 0] along scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Sheer copper escarpment crowned by a fifty-meter golden sun-gear."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Torque-Balance Citadel with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind the Torque-Balance Citadel North Fog of Lore gate."
+    }
+  }
+}

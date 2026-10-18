@@ -53,7 +53,8 @@
     "district-porcelain-cradle",
     "district-amber-root-hollows",
     "district-glaze-river-delta",
-    "district-terracotta-wind-chimes"
+    "district-terracotta-wind-chimes",
+    "district-saffron-kiln-orchards"
   ],
   "quality_checklist": {
     "causal_continuity": {
@@ -70,11 +71,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Spans all seven Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench, Porcelain Cradle, Amber-Root Hollows, Glaze-River Delta, Terracotta Wind-Chime Ridge)."
+      "evidence": "Spans seven Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench, Porcelain Cradle, Amber-Root Hollows, Glaze-River Delta, Terracotta Wind-Chime Ridge) plus Saffron Kiln Orchards (Mystery)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Terracotta Wind-Chime Ridge to Canon while preserving Flute-Crest Promontory and leaf Mystery nodes behind fog_of_lore gates."
+      "evidence": "Seeds Saffron Kiln Orchards in Mystery status while preserving leaf Mystery nodes behind fog_of_lore gates."
     }
   }
 }

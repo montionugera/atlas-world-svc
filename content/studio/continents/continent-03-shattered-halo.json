@@ -61,7 +61,7 @@
     "in_world_rumor": "Star-navigators say that when the aurora curtains brush Aurora Chime Atoll, the suspended crystal stalactites ring out across forty miles of open sky.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
     "unanswered_question": "What celestial bell-foundry floats at the center of Aurora Chime Atoll?",
-    "discovery_trigger_hint": "Eight core Districts on Continent 03 are Canon; Aurora Chime Atoll is seeded as the ninth Mystery District frontier."
+    "discovery_trigger_hint": "Eight core Districts on Continent 03 are Canon; Aurora Chime Atoll is promoted to Draft with Mystery border Resonance Tether Causeway."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -78,11 +78,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes eight Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss, Aphelion Halo Rim, Libration Mirror Shoals, Umbrage Prism Atoll) plus Aurora Chime Atoll (Mystery)."
+      "evidence": "Organizes eight Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss, Aphelion Halo Rim, Libration Mirror Shoals, Umbrage Prism Atoll) plus Aurora Chime Atoll (Draft)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Seeds Aurora Chime Atoll in Mystery status while preserving leaf Mystery frontier Indigo Caustic Arch behind a Fog of Lore portal."
+      "evidence": "Promotes Aurora Chime Atoll to Draft while keeping Resonance Tether Causeway in Mystery status."
     }
   }
 }

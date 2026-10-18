@@ -3,7 +3,7 @@
   "id": "district-aurora-chime-atoll",
   "name": "Aurora Chime Atoll",
   "parent_continent_id": "continent-03-shattered-halo",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Eastern resonant starlight-bell archipelago of Continent 03 where Vesper's suspended crystal stalactites ring in harmony with the solar-wind aurora.",
   "local_conflict": "Harmonic aurora-seraphs and starlight bell-motley spirits guard the suspended resonance bridges.",
   "level_band_label": "Levels 41 to 60",
@@ -19,7 +19,24 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-resonance-tether-causeway",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        49,
+        50
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Star-navigators say that when the aurora curtains brush Aurora Chime Atoll, the suspended crystal stalactites ring out across forty miles of open sky.",
@@ -36,16 +53,16 @@
       "evidence": "Floating basalt arches hung with luminous crystal stalactite bells chiming in the solar-wind aurora."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: bell-pier walkway and crystal stair metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Specifies 12.5m resonance tether walkways, 0.58m aurora tuning benches, and 0.14m basalt risers for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the ninth District frontier on Continent 03 with zero filler maps."
+      "evidence": "Draft status: awaiting playable leaf map authoring for Resonance Tether Causeway and Aurora Bell Sanctuary."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Provides complete mystery_hook and reserves hunting-area-resonance-tether-causeway as a Mystery frontier."
     }
   }
 }

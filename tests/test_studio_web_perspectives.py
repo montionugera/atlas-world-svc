@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Automated test suite for E-010 / F-087 / F-088 / F-089 / F-090 / F-092 / F-093 / F-094 / F-095 / F-096 / F-097 / F-099 / F-101 / F-102 / F-104 / F-106 / F-108 / F-110 / F-112 / F-113 / F-115 / F-117 / F-119 / F-120 / F-123:
+Automated test suite for E-010 / F-087 / F-088 / F-089 / F-090 / F-092 / F-093 / F-094 / F-095 / F-096 / F-097 / F-099 / F-101 / F-102 / F-104 / F-106 / F-108 / F-110 / F-112 / F-113 / F-115 / F-117 / F-119 / F-120 / F-123 / F-126:
   - 4-Level Unabbreviated Perspective Switcher (World History and Concept -> Continent -> District -> Town or Hunting Area)
   - District Connected 2D Map Matrix + Maxion Level-Band Monster Pinning
   - Town or Hunting Area Inspector + Monster/1035 Detail Sheet
   - Human-in-the-Loop Core Rationale, Five-Pillar Quality Checklist Gate, Mystery Toggle, and Downward Child Generation API
-  - Autonomous Product Owner Self-Evaluation Telemetry & Continent 01 Terracotta Wind-Chime Ridge Canon Increment
+  - Autonomous Product Owner Self-Evaluation Telemetry & Continent 02 Differential Spur Gorge Canon Increment
 """
 
 from __future__ import annotations
@@ -37,8 +37,8 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertTrue(ok, f"Expected all 5 pillars verified on WHC, failed: {failed}")
 
         self.assertEqual(len(bundle["continents"]), 3)
-        self.assertEqual(len(bundle["districts"]), 24)
-        self.assertEqual(len(bundle["nodes"]), 89)
+        self.assertEqual(len(bundle["districts"]), 25)
+        self.assertEqual(len(bundle["nodes"]), 93)
 
     def test_index_html_renders_unabbreviated_four_perspectives_and_benchmarks(self) -> None:
         html = web.INDEX_HTML
@@ -56,10 +56,10 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("/api/studio/generate-children", html)
 
     def test_rationale_update_blocks_canon_when_parent_not_canon_or_checklist_incomplete(self) -> None:
-        # 1. hunting-area-planetary-carrier-span has parent district-differential-spur-gorge (status: draft)
+        # 1. hunting-area-resonance-tether-causeway has parent district-aurora-chime-atoll (status: draft)
         res, code = web.update_studio_rationale(
             {
-                "nodeId": "hunting-area-planetary-carrier-span",
+                "nodeId": "hunting-area-resonance-tether-causeway",
                 "status": "canon",
             }
         )
@@ -67,10 +67,10 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertFalse(res["ok"])
         self.assertIn("parent", res["error"].lower())
 
-        # 2. district-differential-spur-gorge has parent continent-02-clockwork-steppe (canon), but incomplete checklist pillars
+        # 2. district-aurora-chime-atoll has parent continent-03-shattered-halo (canon), but incomplete checklist pillars
         res2, code2 = web.update_studio_rationale(
             {
-                "nodeId": "district-differential-spur-gorge",
+                "nodeId": "district-aurora-chime-atoll",
                 "status": "canon",
             }
         )
@@ -79,16 +79,16 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("quality_checklist", res2["error"])
 
     def test_rationale_update_and_undo_snapshot_roundtrip(self) -> None:
-        _, orig_doc, _ = web.find_studio_node_and_path("district-differential-spur-gorge")
+        _, orig_doc, _ = web.find_studio_node_and_path("district-aurora-chime-atoll")
         self.assertIsNotNone(orig_doc)
         orig_rationale = orig_doc["core_rationale"]
 
         new_rationale = (
-            "Southern interlocking bevel-gear canyon of Continent 02 where Krono's twin planetary axles split torque across the copper gorge."
+            "Eastern resonant starlight-bell archipelago of Continent 03 where Vesper's crystal stalactites ring in the solar-wind aurora."
         )
         res, code = web.update_studio_rationale(
             {
-                "nodeId": "district-differential-spur-gorge",
+                "nodeId": "district-aurora-chime-atoll",
                 "core_rationale": new_rationale,
                 "status": "draft",
             }
@@ -100,38 +100,38 @@ class TestStudioWebPerspectives(unittest.TestCase):
         # Undo snapshot to restore original file state cleanly
         undo_res = web.undo_latest_snapshot()
         self.assertTrue(undo_res["ok"])
-        _, restored_doc, _ = web.find_studio_node_and_path("district-differential-spur-gorge")
+        _, restored_doc, _ = web.find_studio_node_and_path("district-aurora-chime-atoll")
         self.assertEqual(restored_doc["core_rationale"], orig_rationale)
 
     def test_generate_children_enforces_canon_and_five_pillar_checklist_gate(self) -> None:
-        # 1. Mystery parent district-aurora-chime-atoll must fail with 400
+        # 1. Mystery parent district-saffron-kiln-orchards must fail with 400
         res_mystery, code_mystery = web.generate_studio_children(
             {
-                "parentId": "district-aurora-chime-atoll",
-                "childName": "Forbidden Aurora Bridge",
+                "parentId": "district-saffron-kiln-orchards",
+                "childName": "Forbidden Saffron Grove",
                 "persist": False,
             }
         )
         self.assertEqual(code_mystery, 400)
         self.assertFalse(res_mystery["ok"])
 
-        # 2. Draft parent district-differential-spur-gorge must fail with 400
+        # 2. Draft parent district-aurora-chime-atoll must fail with 400
         res_draft, code_draft = web.generate_studio_children(
             {
-                "parentId": "district-differential-spur-gorge",
-                "childName": "Torque-Balance Citadel",
+                "parentId": "district-aurora-chime-atoll",
+                "childName": "Aurora Bell Sanctuary",
                 "persist": False,
             }
         )
         self.assertEqual(code_draft, 400)
         self.assertFalse(res_draft["ok"])
 
-        # 3. Canon parent district-terracotta-wind-chimes (with 5/5 checklist verified) must succeed with 200
+        # 3. Canon parent district-differential-spur-gorge (with 5/5 checklist verified) must succeed with 200
         res_canon, code_canon = web.generate_studio_children(
             {
-                "parentId": "district-terracotta-wind-chimes",
-                "childId": "hunting-area-chime-east-ridge",
-                "childName": "Chime East Ridge",
+                "parentId": "district-differential-spur-gorge",
+                "childId": "hunting-area-differential-east-spur",
+                "childName": "Differential East Spur",
                 "childStatus": "mystery",
                 "persist": False,
             }
@@ -139,7 +139,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertEqual(code_canon, 200)
         self.assertTrue(res_canon["ok"])
         self.assertEqual(res_canon["childLayer"], "town-or-hunting-area")
-        self.assertEqual(res_canon["childNode"]["parent_district_id"], "district-terracotta-wind-chimes")
+        self.assertEqual(res_canon["childNode"]["parent_district_id"], "district-differential-spur-gorge")
         self.assertEqual(res_canon["childNode"]["status"], "mystery")
 
 
