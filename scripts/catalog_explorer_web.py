@@ -2666,6 +2666,9 @@ let STUDIO_SELECTED_CONTINENT_ID = 'continent-01-hearthbloom-basin';
 let STUDIO_SELECTED_DISTRICT_ID = 'district-teacup-meadows';
 let STUDIO_SELECTED_NODE_ID = 'town-lantern-hollow';
 let STUDIO_ACTIVE_INSPECT_ID = 'world-history-cradle-of-embers';
+let STUDIO_LEVEL_BAND = 'Levels 1 to 20';
+let STUDIO_PINNED_MONSTER_ID = '';
+let STUDIO_SELECTED_MONSTER_ID = '';
 let SELECTED_STORY_KIND = 'all';
 let SELECTED_BESTIARY_REGION = 'all';
 let MAXION_LEVEL_BAND = '1-20';
@@ -2780,6 +2783,7 @@ function syncUrlState() {
   const studioCont = params.get('continent');
   const studioDist = params.get('district');
   const studioNode = params.get('node') || params.get('map');
+  const studioMonster = params.get('monster');
   if (perspective) {
     CURRENT_TAB = 'studio';
     STUDIO_PERSPECTIVE = perspective;
@@ -2787,6 +2791,10 @@ function syncUrlState() {
   if (studioCont) STUDIO_SELECTED_CONTINENT_ID = studioCont;
   if (studioDist) STUDIO_SELECTED_DISTRICT_ID = studioDist;
   if (studioNode) STUDIO_SELECTED_NODE_ID = studioNode;
+  if (studioMonster) {
+    STUDIO_SELECTED_MONSTER_ID = studioMonster;
+    STUDIO_PINNED_MONSTER_ID = studioMonster;
+  }
   if (t) CURRENT_TAB = t;
   if (q !== null) {
     SEARCH_QUERY = q;
@@ -2818,7 +2826,11 @@ function writeUrlState(pushHistory = true) {
     params.set('perspective', STUDIO_PERSPECTIVE);
     if (STUDIO_SELECTED_CONTINENT_ID) params.set('continent', STUDIO_SELECTED_CONTINENT_ID);
     if (STUDIO_SELECTED_DISTRICT_ID) params.set('district', STUDIO_SELECTED_DISTRICT_ID);
-    if (STUDIO_SELECTED_NODE_ID) params.set('node', STUDIO_SELECTED_NODE_ID);
+    if (STUDIO_SELECTED_NODE_ID) {
+      params.set('node', STUDIO_SELECTED_NODE_ID);
+      params.set('map', STUDIO_SELECTED_NODE_ID);
+    }
+    if (STUDIO_SELECTED_MONSTER_ID) params.set('monster', STUDIO_SELECTED_MONSTER_ID);
   }
   const newHash = '#' + params.toString();
   if (window.location.hash !== newHash) {
@@ -3062,6 +3074,9 @@ function setStudioPerspective(perspective, opts = {}) {
   if (opts.continentId) STUDIO_SELECTED_CONTINENT_ID = opts.continentId;
   if (opts.districtId) STUDIO_SELECTED_DISTRICT_ID = opts.districtId;
   if (opts.nodeId) STUDIO_SELECTED_NODE_ID = opts.nodeId;
+  if (opts.monsterId !== undefined) STUDIO_SELECTED_MONSTER_ID = opts.monsterId;
+  if (opts.pinnedMonsterId !== undefined) STUDIO_PINNED_MONSTER_ID = opts.pinnedMonsterId;
+  if (opts.levelBand) STUDIO_LEVEL_BAND = opts.levelBand;
   if (opts.inspectId) STUDIO_ACTIVE_INSPECT_ID = opts.inspectId;
   writeUrlState();
   renderSidebar();
@@ -3388,35 +3403,261 @@ function renderStudioContinentPerspective(whc, continents, districts, activeCont
   `;
 }
 
+function computeStudioElementalModifiers(elementName) {
+  const el = (elementName || 'Neutral');
+  const table = {
+    Fire:    { Neutral: 100, Water: 150, Earth: 90,  Fire: 25,  Wind: 100, Poison: 100, Holy: 100, Shadow: 100, Ghost: 100, Undead: 100 },
+    Earth:   { Neutral: 100, Water: 100, Earth: 25,  Fire: 150, Wind: 90,  Poison: 100, Holy: 100, Shadow: 100, Ghost: 100, Undead: 100 },
+    Wind:    { Neutral: 100, Water: 90,  Earth: 150, Fire: 100, Wind: 25,  Poison: 100, Holy: 100, Shadow: 100, Ghost: 100, Undead: 100 },
+    Water:   { Neutral: 100, Water: 25,  Earth: 100, Fire: 90,  Wind: 150, Poison: 100, Holy: 100, Shadow: 100, Ghost: 100, Undead: 100 },
+    Shadow:  { Neutral: 100, Water: 100, Earth: 100, Fire: 100, Wind: 100, Poison: 50,  Holy: 150, Shadow: 0,   Ghost: 100, Undead: 0   },
+    Holy:    { Neutral: 100, Water: 100, Earth: 100, Fire: 100, Wind: 100, Poison: 100, Holy: 0,   Shadow: 150, Ghost: 100, Undead: 150 },
+    Neutral: { Neutral: 100, Water: 100, Earth: 100, Fire: 100, Wind: 100, Poison: 100, Holy: 100, Shadow: 100, Ghost: 70,  Undead: 100 }
+  };
+  return table[el] || table.Neutral;
+}
+
 function renderStudioDistrictPerspective(activeContinent, districts, nodes, activeDistrict) {
-  const districtNodes = nodes.filter(n => n.parent_district_id === activeDistrict.id);
-  return `
-    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
-      <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div>
-            <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 3 · DISTRICT CONNECTED GRID (${escapeHtml(activeDistrict.level_band_label || '')})</div>
-            <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(activeDistrict.name || '')}</h2>
+  const filteredDistricts = districts.filter(d => STUDIO_STATUS_FILTER === 'all' || d.status === STUDIO_STATUS_FILTER);
+  const districtNodes = nodes
+    .filter(n => n.parent_district_id === activeDistrict.id)
+    .filter(n => STUDIO_STATUS_FILTER === 'all' || n.status === STUDIO_STATUS_FILTER);
+  const allDistrictNodes = nodes.filter(n => n.parent_district_id === activeDistrict.id);
+  const nodeById = {};
+  allDistrictNodes.forEach(n => { nodeById[n.id] = n; });
+
+  const levelBands = [
+    'Levels 1 to 20',
+    'Levels 21 to 40',
+    'Levels 41 to 60',
+    'Levels 61 to 80',
+    'Levels 81 to 100'
+  ];
+
+  // Collect all monsters across this district's child nodes
+  const monsterCatalogMap = {};
+  allDistrictNodes.forEach(n => {
+    (n.resident_spawns || []).forEach(sp => {
+      if (!monsterCatalogMap[sp.monster_id]) {
+        monsterCatalogMap[sp.monster_id] = {
+          ...sp,
+          habitats: []
+        };
+      }
+      monsterCatalogMap[sp.monster_id].habitats.push({
+        node_id: n.id,
+        node_name: n.name,
+        grid_coordinates: n.grid_coordinates || [0, 0],
+        spawn_count: sp.spawn_count,
+        respawn_seconds: sp.respawn_seconds
+      });
+    });
+  });
+  const districtMonsters = Object.values(monsterCatalogMap);
+  if (!STUDIO_PINNED_MONSTER_ID && districtMonsters.length > 0) {
+    STUDIO_PINNED_MONSTER_ID = districtMonsters[0].monster_id;
+  }
+
+  const cols = (activeDistrict.grid_dimensions && activeDistrict.grid_dimensions.columns) || 3;
+  const rows = (activeDistrict.grid_dimensions && activeDistrict.grid_dimensions.rows) || 3;
+  const portalEdges = activeDistrict.portal_edges || [];
+
+  // Build 2D matrix cells [col, row]
+  const matrixCellsHtml = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cellNodes = districtNodes.filter(n => {
+        const coords = n.grid_coordinates || [0, 0];
+        return coords[0] === c && coords[1] === r;
+      });
+      if (cellNodes.length === 0) {
+        matrixCellsHtml.push(`
+          <div style="min-height:190px;padding:12px;border-radius:10px;background:rgba(15,23,42,0.35);border:1px dashed var(--joy-border-subtle);display:flex;flex-direction:column;justify-content:center;align-items:center;color:var(--joy-text-muted);font-size:11px">
+            <span class="mono">[Column ${c}, Row ${r}]</span>
+            <span style="margin-top:4px">Unassigned Frontier Cell</span>
           </div>
-          ${renderStatusBadgeHtml(activeDistrict.status)}
-        </div>
-        <p style="font-size:12px;color:var(--joy-text-secondary);margin:0 0 12px">${escapeHtml(activeDistrict.core_rationale || '')}</p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
-          ${districtNodes.map(n => `
-            <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px ${n.status === 'mystery' ? 'dashed rgba(168,85,247,0.55)' : 'solid var(--joy-border-default)'}">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                <strong>[${(n.grid_coordinates || [0,0]).join(', ')}] ${escapeHtml(n.name)}</strong>
+        `);
+      } else {
+        const cardsHtml = cellNodes.map(n => {
+          const isMystery = n.status === 'mystery';
+          const thumb = (n.terrain_tile && n.terrain_tile.preview_thumbnail) || '/thumbs/nature/pine_tree_1.webp';
+          const spawns = n.resident_spawns || [];
+          const pinnedSpawn = spawns.find(sp => sp.monster_id === STUDIO_PINNED_MONSTER_ID);
+          const connectedEdges = portalEdges.filter(e => e.from_node_id === n.id || e.to_node_id === n.id);
+          const typeLabel = n.node_type === 'town' ? '🏰 Town' : (n.node_type === 'dungeon' ? '💀 Dungeon (Floor ' + (n.floor_index || -1) + ')' : '🌿 Hunting Area');
+
+          return `
+            <div style="padding:12px;border-radius:10px;background:var(--joy-surface-sunken);border:2px ${pinnedSpawn ? 'solid #ffd166' : (isMystery ? 'dashed rgba(168,85,247,0.65)' : 'solid var(--joy-border-default)')};margin-bottom:${cellNodes.length > 1 ? '8px' : '0'};position:relative">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px">
+                <span class="mono" style="font-size:10.5px;color:var(--joy-text-secondary)">[${c}, ${r}] · ${typeLabel}</span>
                 ${renderStatusBadgeHtml(n.status)}
               </div>
-              <div class="mono" style="font-size:11px;color:var(--joy-text-secondary);margin-bottom:6px">Type: ${escapeHtml(n.node_type)} · Levels ${(n.level_range || [1,1]).join(' to ')}</div>
-              <div style="font-size:12px;margin-bottom:8px">${escapeHtml(n.core_rationale)}</div>
-              <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(n.id)}', inspectId: '${escapeHtml(n.id)}' })">
+              <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+                <div style="width:52px;height:52px;border-radius:8px;background:var(--joy-surface-card);border:1px solid var(--joy-border-subtle);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+                  ${isMystery
+                    ? '<span style="font-size:22px">🌫️</span>'
+                    : `<img src="${escapeHtml(thumb)}" alt="${escapeHtml(n.name)}" style="width:46px;height:46px;object-fit:contain" />`}
+                </div>
+                <div style="min-width:0;flex:1">
+                  <div style="font-weight:800;font-size:13.5px;color:var(--joy-text-primary)">${escapeHtml(n.name)}</div>
+                  <div class="mono" style="font-size:11px;color:#ffd166">Levels ${(n.level_range || [1, 1]).join(' to ')}</div>
+                  ${pinnedSpawn ? `
+                    <div style="margin-top:3px;display:inline-block;padding:2px 7px;border-radius:999px;background:rgba(255,209,102,0.2);border:1px solid #ffd166;color:#ffd166;font-size:10.5px;font-weight:700">
+                      📌 Pinned: ${escapeHtml(pinnedSpawn.monster_name)} ×${pinnedSpawn.spawn_count}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+
+              <div style="font-size:11.5px;color:var(--joy-text-secondary);margin-bottom:8px;line-height:1.4">
+                ${escapeHtml(n.core_rationale || '')}
+              </div>
+
+              ${isMystery && n.mystery_hook ? `
+                <div style="padding:8px;border-radius:6px;background:rgba(168,85,247,0.14);border:1px solid rgba(168,85,247,0.4);font-size:11px;margin-bottom:8px">
+                  <div><strong>🌫️ Fog of Lore Rumor:</strong> ${escapeHtml(n.mystery_hook.in_world_rumor)}</div>
+                </div>
+              ` : ''}
+
+              ${spawns.length > 0 ? `
+                <div style="margin-bottom:8px">
+                  <div class="mono" style="font-size:10px;color:var(--joy-text-secondary);margin-bottom:4px">RESIDENT MONSTERS (${spawns.length}):</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:4px">
+                    ${spawns.map(sp => `
+                      <button type="button" class="joy-button ${STUDIO_PINNED_MONSTER_ID === sp.monster_id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" style="height:22px;padding:0 7px;font-size:10.5px" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(n.id)}', monsterId: '${escapeHtml(sp.monster_id)}', inspectId: '${escapeHtml(n.id)}' })">
+                        ${escapeHtml(sp.monster_name)} (Level ${sp.level} · ×${sp.spawn_count})
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : (n.node_type === 'town' ? `<div class="mono" style="font-size:10.5px;color:#34d399;margin-bottom:8px">🛡️ Peaceful Safe Zone (Zero Hostile Spawns)</div>` : '')}
+
+              <div style="margin-bottom:8px">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary);margin-bottom:4px">DIRECTIONAL PORTAL BRIDGES (${connectedEdges.length}):</div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px">
+                  ${connectedEdges.map(edge => {
+                    const isFrom = edge.from_node_id === n.id;
+                    const dir = isFrom ? edge.from_direction : edge.to_direction;
+                    const targetId = isFrom ? edge.to_node_id : edge.from_node_id;
+                    const targetNode = nodeById[targetId] || { name: targetId };
+                    const isFog = edge.gate_state === 'fog_of_lore';
+                    return `
+                      <span class="mono" style="font-size:10px;padding:2px 6px;border-radius:4px;cursor:pointer;background:${isFog ? 'rgba(168,85,247,0.18)' : 'var(--joy-surface-card)'};border:1px solid ${isFog ? 'rgba(168,85,247,0.5)' : 'var(--joy-border-subtle)'};color:${isFog ? '#c084fc' : 'var(--joy-text-primary)'}" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(targetId)}', inspectId: '${escapeHtml(targetId)}' })" title="${escapeHtml(edge.lock_reason || ('Road width ' + edge.road_width_meters + ' meters'))}">
+                        ${escapeHtml(dir)} ➔ ${escapeHtml(targetNode.name)} ${isFog ? '(Fog of Lore)' : ''}
+                      </span>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+
+              <button type="button" class="joy-button joy-button--solid joy-button--sm" style="width:100%" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(n.id)}', monsterId: '${escapeHtml((spawns[0] && spawns[0].monster_id) || '')}', inspectId: '${escapeHtml(n.id)}' })">
                 Inspect ${escapeHtml(n.name)} ➔
               </button>
             </div>
+          `;
+        }).join('');
+        matrixCellsHtml.push(`<div>${cardsHtml}</div>`);
+      }
+    }
+  }
+
+  return `
+    <div style="display:grid;grid-template-columns:280px 1.5fr 350px;gap:16px;align-items:start">
+      <!-- Left Column: Maxion Level-Band Tabs & Monster Pinning Sidebar -->
+      <aside class="panel" style="padding:14px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+        <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:8px">
+          MAXION LEVEL-BAND MONSTER PINNING
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
+          ${levelBands.map(lb => `
+            <button type="button" class="joy-button ${STUDIO_LEVEL_BAND === lb ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" style="justify-content:space-between" onclick="setStudioPerspective('district', { districtId: '${escapeHtml(activeDistrict.id)}', levelBand: '${escapeHtml(lb)}' })">
+              <span>${escapeHtml(lb)}</span>
+              <span class="mono" style="font-size:10px">${lb === activeDistrict.level_band_label ? 'ACTIVE' : ''}</span>
+            </button>
           `).join('')}
         </div>
+
+        <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">
+          ECOLOGICAL MONSTER FAMILIES
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">
+          ${(activeDistrict.ecological_monster_families || []).map(fam => `
+            <span class="joy-badge joy-badge--neutral joy-badge--sm">${escapeHtml(fam)}</span>
+          `).join('')}
+        </div>
+
+        <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">
+          CLICK MONSTER TO PIN SPAWNS ON GRID (${districtMonsters.length})
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${districtMonsters.length ? districtMonsters.map(mob => {
+            const isPinned = STUDIO_PINNED_MONSTER_ID === mob.monster_id;
+            const totalSpawns = mob.habitats.reduce((acc, h) => acc + (h.spawn_count || 0), 0);
+            return `
+              <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1.5px solid ${isPinned ? '#ffd166' : 'var(--joy-border-default)'};cursor:pointer" onclick="setStudioPerspective('district', { districtId: '${escapeHtml(activeDistrict.id)}', pinnedMonsterId: '${escapeHtml(mob.monster_id)}' })">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                  <strong style="font-size:12.5px;color:${isPinned ? '#ffd166' : 'var(--joy-text-primary)'}">${isPinned ? '📌 ' : ''}${escapeHtml(mob.monster_name)}</strong>
+                  <span class="joy-badge joy-badge--brand joy-badge--sm">Level ${mob.level}</span>
+                </div>
+                <div class="mono" style="font-size:10.5px;color:var(--joy-text-secondary);margin-top:3px">
+                  ${escapeHtml(mob.element)} · ${escapeHtml(mob.size)} · ${escapeHtml(mob.race)} (${escapeHtml(mob.family)})
+                </div>
+                <div style="font-size:11px;color:#34d399;margin-top:4px">
+                  Spawns: ×${totalSpawns} across ${mob.habitats.map(h => h.node_name).join(', ')}
+                </div>
+                <div style="margin-top:6px">
+                  <button type="button" class="joy-button joy-button--outline joy-button--sm" style="width:100%;height:24px;font-size:10.5px" onclick="event.stopPropagation();setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(mob.habitats[0].node_id)}', monsterId: '${escapeHtml(mob.monster_id)}', inspectId: '${escapeHtml(mob.habitats[0].node_id)}' })">
+                    Open Monster/1035 Sheet ➔
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('') : '<div style="font-size:11.5px;color:var(--joy-text-secondary)">Select a District with Canon/Draft child hunting areas to pin monster spawns.</div>'}
+        </div>
+      </aside>
+
+      <!-- Center Column: District 2D Connected Map Matrix -->
+      <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+          <div>
+            <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 3 · DISTRICT ORTHOGONAL CONNECTED MAP MATRIX (${escapeHtml(activeDistrict.level_band_label || '')})</div>
+            <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(activeDistrict.name || '')} (${cols} × ${rows} Connected Grid)</h2>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${filteredDistricts.map(d => `
+              <button type="button" class="joy-button ${d.id === activeDistrict.id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('district', { continentId: '${escapeHtml(d.parent_continent_id)}', districtId: '${escapeHtml(d.id)}', inspectId: '${escapeHtml(d.id)}' })">
+                ${escapeHtml(d.name)} (${escapeHtml(d.status)})
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div style="padding:10px 12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle);margin-bottom:14px;font-size:12px">
+          <div><strong>Core Rationale:</strong> ${escapeHtml(activeDistrict.core_rationale || '')}</div>
+          <div style="margin-top:4px;color:var(--joy-text-secondary)"><strong>Local Conflict:</strong> ${escapeHtml(activeDistrict.local_conflict || '')}</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(${cols}, minmax(210px, 1fr));gap:12px;margin-bottom:16px">
+          ${matrixCellsHtml.join('')}
+        </div>
+
+        <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+          <div class="mono" style="font-size:11px;font-weight:700;margin-bottom:8px">SYMMETRIC PORTAL EDGE TOPOLOGY (${portalEdges.length} BRIDGES)</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px">
+            ${portalEdges.map(edge => `
+              <div style="padding:8px 10px;border-radius:6px;background:var(--joy-surface-card);border:1px solid ${edge.gate_state === 'fog_of_lore' ? 'rgba(168,85,247,0.5)' : 'var(--joy-border-subtle)'};font-size:11.5px">
+                <div style="font-weight:700">${escapeHtml(edge.from_node_id)} (${escapeHtml(edge.from_direction)}) ⇄ ${escapeHtml(edge.to_node_id)} (${escapeHtml(edge.to_direction)})</div>
+                <div class="mono" style="font-size:10.5px;color:var(--joy-text-secondary);margin-top:3px">
+                  Gate: ${escapeHtml(edge.gate_state)} · Road Width: ${edge.road_width_meters} meters
+                </div>
+                ${edge.lock_reason ? `<div style="font-size:11px;color:#c084fc;margin-top:3px">🌫️ ${escapeHtml(edge.lock_reason)}</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
       </section>
+
+      <!-- Right Column: Core Rationale & Five-Pillar Quality Checklist Drawer -->
       <aside class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px;position:sticky;top:72px">
         <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">CORE RATIONALE AND QUALITY GATE</div>
         <h3 style="margin:4px 0 8px;font-size:1.1rem">${escapeHtml(activeDistrict.name || '')}</h3>
@@ -3431,18 +3672,237 @@ function renderStudioDistrictPerspective(activeContinent, districts, nodes, acti
 }
 
 function renderStudioTownOrHuntingAreaPerspective(activeDistrict, nodes, activeNode) {
+  const districtNodes = nodes
+    .filter(n => n.parent_district_id === activeDistrict.id)
+    .filter(n => STUDIO_STATUS_FILTER === 'all' || n.status === STUDIO_STATUS_FILTER);
+  const isMystery = activeNode.status === 'mystery';
+  const tile = activeNode.terrain_tile || {};
+  const dims = tile.dimensions_meters || { width: 4000, height: 4000 };
+  const portals = activeNode.portals || {};
+  const portalDirs = ['North', 'South', 'East', 'West', 'Dungeon', 'Exit'];
+  const kit = activeNode.asset_kit_bindings || {};
+  const spawns = activeNode.resident_spawns || [];
+
+  // Select active monster for Monster/1035 detail inspector
+  let activeMonster = spawns.find(sp => sp.monster_id === STUDIO_SELECTED_MONSTER_ID) || spawns[0] || null;
+  if (!activeMonster) {
+    // Fallback to first monster in the district so Town viewers can also inspect nearby District fauna if desired
+    for (const dn of nodes.filter(x => x.parent_district_id === activeDistrict.id)) {
+      if ((dn.resident_spawns || []).length > 0) {
+        activeMonster = dn.resident_spawns[0];
+        break;
+      }
+    }
+  }
+
+  let monsterDetailHtml = '';
+  if (activeMonster) {
+    const lv = activeMonster.level || 1;
+    const hp = lv * 68 + 45;
+    const hitFlee = `${100 + lv * 3} / ${95 + lv * 2}`;
+    const baseJobExp = `${lv * 24} / ${lv * 16}`;
+    const elemMods = computeStudioElementalModifiers(activeMonster.element);
+    const elemOrder = ['Neutral', 'Water', 'Earth', 'Fire', 'Wind', 'Poison', 'Holy', 'Shadow', 'Ghost', 'Undead'];
+    const card = activeMonster.monster_card_drop || {};
+
+    monsterDetailHtml = `
+      <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+          <div>
+            <div class="mono" style="font-size:11px;color:#38bdf8">MAXION MONSTER/1035 DETAIL INSPECTOR</div>
+            <h3 style="margin:2px 0 0;font-size:1.15rem">${escapeHtml(activeMonster.monster_name)} (${escapeHtml(activeMonster.monster_id)})</h3>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${spawns.map(sp => `
+              <button type="button" class="joy-button ${sp.monster_id === activeMonster.monster_id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(activeNode.id)}', monsterId: '${escapeHtml(sp.monster_id)}', inspectId: '${escapeHtml(activeNode.id)}' })">
+                ${escapeHtml(sp.monster_name)} (Level ${sp.level})
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:192px 1fr;gap:16px;align-items:start">
+          <!-- 192x192 Portrait Stage -->
+          <div style="width:192px;height:192px;border-radius:12px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-strong);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;text-align:center">
+            <img src="${escapeHtml(tile.preview_thumbnail || '/thumbs/nature/pine_tree_1.webp')}" alt="${escapeHtml(activeMonster.monster_name)}" style="width:112px;height:112px;object-fit:contain;margin-bottom:8px" />
+            <div style="font-weight:800;font-size:12px">${escapeHtml(activeMonster.monster_name)}</div>
+            <div class="mono" style="font-size:10px;color:#ffd166">Spawn ×${activeMonster.spawn_count} · Every ${activeMonster.respawn_seconds}s</div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <!-- 4 Property Pills -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">ELEMENT</div>
+                <div style="font-weight:800;font-size:13px;margin-top:2px">${escapeHtml(activeMonster.element)}</div>
+              </div>
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">SIZE</div>
+                <div style="font-weight:800;font-size:13px;margin-top:2px">${escapeHtml(activeMonster.size)}</div>
+              </div>
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">RACE</div>
+                <div style="font-weight:800;font-size:13px;margin-top:2px">${escapeHtml(activeMonster.race)}</div>
+              </div>
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">ECOLOGY FAMILY</div>
+                <div style="font-weight:800;font-size:13px;margin-top:2px">${escapeHtml(activeMonster.family)}</div>
+              </div>
+            </div>
+
+            <!-- 4 Stat Boxes: Level, Health Points, Hit and Flee, Base and Job Experience -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">LEVEL</div>
+                <div class="mono" style="font-weight:800;font-size:13px;color:#ffd166;margin-top:2px">Level ${lv}</div>
+              </div>
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">HEALTH POINTS</div>
+                <div class="mono" style="font-weight:800;font-size:13px;color:#34d399;margin-top:2px">${hp} Health Points</div>
+              </div>
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">100% HIT / 95% FLEE</div>
+                <div class="mono" style="font-weight:800;font-size:13px;margin-top:2px">${hitFlee}</div>
+              </div>
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">BASE / JOB EXPERIENCE</div>
+                <div class="mono" style="font-weight:800;font-size:13px;margin-top:2px">${baseJobExp}</div>
+              </div>
+            </div>
+
+            <!-- 2x5 Elemental Modifiers Grid -->
+            <div>
+              <div class="mono" style="font-size:10px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">2 × 5 ELEMENTAL DAMAGE MODIFIERS GRID (PERCENTAGE)</div>
+              <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
+                ${elemOrder.map(el => {
+                  const pct = elemMods[el] !== undefined ? elemMods[el] : 100;
+                  const color = pct > 100 ? '#34d399' : (pct < 100 ? '#f87171' : 'var(--joy-text-primary)');
+                  return `
+                    <div style="padding:6px 8px;border-radius:6px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle);display:flex;justify-content:space-between;align-items:center;font-size:11px">
+                      <span>${el}</span>
+                      <strong class="mono" style="color:${color}">${pct}%</strong>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- Item Drops & Monster Card Drop -->
+            <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:10px">
+              <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">ITEM DROPS WITH PERCENTAGE BADGES</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                  ${(activeMonster.item_drops || []).map(it => `
+                    <span class="joy-badge joy-badge--neutral joy-badge--sm" style="padding:4px 8px">
+                      ${escapeHtml(it.item_name)} <strong class="mono" style="color:#ffd166;margin-left:4px">${it.drop_chance_percent}%</strong>
+                    </span>
+                  `).join('')}
+                </div>
+              </div>
+              <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">MONSTER CARD DROP</div>
+                <div style="font-size:12px;font-weight:700;color:#ffd166">🃏 ${escapeHtml(card.card_name || 'None')} (${card.drop_chance_percent || 0.01}%)</div>
+                <div style="font-size:11px;color:var(--joy-text-secondary);margin-top:2px">Slot: ${escapeHtml(card.equipment_slot || 'Accessory')} · ${escapeHtml(card.modifier_summary || '')}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
   return `
     <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
-      <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div>
-            <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 4 · TOWN OR HUNTING AREA INSPECTOR</div>
-            <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(activeNode.name || '')}</h2>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+            <div>
+              <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 4 · TOWN OR HUNTING AREA INSPECTOR (${escapeHtml(activeNode.node_type || '')})</div>
+              <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(activeNode.name || '')} [${(activeNode.grid_coordinates || [0,0]).join(', ')}]</h2>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              ${districtNodes.map(n => `
+                <button type="button" class="joy-button ${n.id === activeNode.id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(n.id)}', inspectId: '${escapeHtml(n.id)}' })">
+                  ${escapeHtml(n.name)} (${escapeHtml(n.status)})
+                </button>
+              `).join('')}
+            </div>
           </div>
-          ${renderStatusBadgeHtml(activeNode.status)}
-        </div>
-        <p style="font-size:12px;color:var(--joy-text-secondary);margin:0 0 12px">${escapeHtml(activeNode.core_rationale || '')}</p>
-      </section>
+
+          <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle);margin-bottom:14px;font-size:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <strong>Core Rationale (Linked to District ${escapeHtml(activeDistrict.name || '')})</strong>
+              ${renderStatusBadgeHtml(activeNode.status)}
+            </div>
+            <div>${escapeHtml(activeNode.core_rationale || '')}</div>
+          </div>
+
+          ${isMystery && activeNode.mystery_hook ? `
+            <div style="padding:16px;border-radius:10px;background:rgba(168,85,247,0.14);border:1px dashed rgba(168,85,247,0.6)">
+              <div style="font-weight:800;font-size:13.5px;color:#c084fc;margin-bottom:6px">🌫️ Intentional Mystery / Fog of Lore Leaf Node (Not Compiled to Playable Map)</div>
+              <div style="font-size:12px;margin-bottom:6px"><strong>In-World Rumor:</strong> ${escapeHtml(activeNode.mystery_hook.in_world_rumor)}</div>
+              <div style="font-size:12px;margin-bottom:6px"><strong>Visual Silhouette:</strong> ${escapeHtml(activeNode.mystery_hook.visual_silhouette)}</div>
+              <div style="font-size:12px"><strong>Unanswered Question:</strong> ${escapeHtml(activeNode.mystery_hook.unanswered_question)}</div>
+            </div>
+          ` : `
+            <!-- Topographic & Directional Portal Blueprint -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+              <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+                <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">TOPOGRAPHIC TERRAIN TILE</div>
+                <div style="font-size:12px"><strong>Map Identifier:</strong> <code>${escapeHtml(activeNode.map_id || '')}</code></div>
+                <div style="font-size:12px;margin-top:3px"><strong>Dimensions:</strong> ${dims.width} × ${dims.height} meters</div>
+                <div style="font-size:12px;margin-top:3px"><strong>Biome Palette:</strong> <code>${escapeHtml(tile.biome_palette || '')}</code></div>
+                <div style="font-size:12px;margin-top:3px"><strong>Maximum Terrace Step:</strong> ${tile.max_terrace_step_meters || 0.18} meters (≤ 0.25 meters)</div>
+                <div style="font-size:12px;margin-top:3px"><strong>Water Feature:</strong> ${escapeHtml(tile.water_feature || '')}</div>
+              </div>
+
+              <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+                <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">90 TO 120 CENTIMETER SCALE AND THREE-DIMENSIONAL ASSET KIT</div>
+                <div style="font-size:12px"><strong>Player Scale Band:</strong> ${(kit.player_scale_band_meters || [0.9, 1.2]).join(' to ')} meters</div>
+                <div style="font-size:12px;margin-top:3px"><strong>Grass Height Cap:</strong> ${kit.max_grass_height_meters || 0.28} meters (≤ 0.35 meters)</div>
+                <div style="font-size:12px;margin-top:3px"><strong>Bush Height Cap:</strong> ${kit.max_bush_height_meters || 0.58} meters (≤ 0.65 meters)</div>
+                <div style="font-size:12px;margin-top:3px"><strong>Road / Footpath Width:</strong> ${kit.main_road_width_meters || 12.0} meters / ${kit.footpath_width_meters || 4.0} meters</div>
+                <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">
+                  ${(kit.three_dimensional_assets || []).map(glb => `<span class="joy-badge joy-badge--brand joy-badge--sm mono">${escapeHtml(glb)}</span>`).join('')}
+                </div>
+              </div>
+            </div>
+
+            <h3 style="margin:0 0 8px;font-size:1rem">Directional Portal Triggers (North / South / East / West / Dungeon / Exit)</h3>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+              ${portalDirs.map(dir => {
+                const p = portals[dir];
+                if (!p) {
+                  return `
+                    <div style="padding:10px;border-radius:8px;background:rgba(15,23,42,0.35);border:1px dashed var(--joy-border-subtle);font-size:11.5px;color:var(--joy-text-muted)">
+                      <strong>${dir}:</strong> Natural Boundary (Closed)
+                    </div>
+                  `;
+                }
+                const isFog = p.gate_state === 'fog_of_lore';
+                const tb = p.trigger_box_meters || {};
+                return `
+                  <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid ${isFog ? 'rgba(168,85,247,0.55)' : 'var(--joy-border-default)'};font-size:11.5px">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <strong>${dir} Portal</strong>
+                      <span class="mono" style="font-size:10px;color:${isFog ? '#c084fc' : '#34d399'}">${escapeHtml(p.gate_state)}</span>
+                    </div>
+                    <div style="margin-top:4px">Target: <code>${escapeHtml(p.target_node_id)}</code> (${escapeHtml(p.target_direction)})</div>
+                    <div class="mono" style="font-size:10px;color:var(--joy-text-secondary);margin-top:2px">Trigger Box: (${tb.x}, ${tb.y}) ${tb.width}×${tb.height} meters</div>
+                    ${p.lock_message ? `<div style="font-size:10.5px;color:#c084fc;margin-top:4px">🌫️ ${escapeHtml(p.lock_message)}</div>` : ''}
+                    <button type="button" class="joy-button joy-button--outline joy-button--sm" style="margin-top:6px;width:100%;height:24px;font-size:10.5px" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(p.target_node_id)}', inspectId: '${escapeHtml(p.target_node_id)}' })">
+                      Traverse ${dir} ➔
+                    </button>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `}
+        </section>
+
+        ${monsterDetailHtml}
+      </div>
+
       <aside class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px;position:sticky;top:72px">
         <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">CORE RATIONALE AND QUALITY GATE</div>
         <h3 style="margin:4px 0 8px;font-size:1.1rem">${escapeHtml(activeNode.name || '')}</h3>
