@@ -1394,5 +1394,15 @@
     "release_version": null,
     "epic": "E-007",
     "claimed_at": "2026-10-18T10:13:34.777555+00:00"
+  },
+  {
+    "id": "F-112",
+    "title": "District Amber-Root Hollows Canon Promotion, Resin-Arch Tunnel Connection, and West Pendulum Steppe Draft",
+    "from_idea": "I-212",
+    "created_at": "2026-10-18T10:14:18.609851+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-18T10:14:32.168276+00:00"
   }
 ]
