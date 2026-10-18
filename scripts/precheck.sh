@@ -41,8 +41,15 @@ set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
+# Cap worker concurrency across Jest, Cargo, Node test runners, and pnpm to
+# prevent OOM freezes on developer laptops when Gate 1 runs.
+export ATLAS_MAX_WORKERS="${ATLAS_MAX_WORKERS:-2}"
+export CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-$ATLAS_MAX_WORKERS}"
+export RAYON_NUM_THREADS="${RAYON_NUM_THREADS:-$ATLAS_MAX_WORKERS}"
+export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=2048}"
+
 MAIN_ROOT="$(git worktree list --porcelain 2>/dev/null | awk 'NR==1{print $2}')"
-echo "📂 Gate 1 working tree: $REPO_ROOT"
+echo "📂 Gate 1 working tree: $REPO_ROOT (max workers: $ATLAS_MAX_WORKERS)"
 [ -n "$MAIN_ROOT" ] && [ "$REPO_ROOT" != "$MAIN_ROOT" ] && \
   echo "   ↳ linked worktree (primary checkout: $MAIN_ROOT)"
 
@@ -88,7 +95,7 @@ run_section() {
 deps_install() {
   command -v pnpm >/dev/null 2>&1 || { echo "pnpm not found — run: corepack enable"; return 1; }
   if [ ! -d "$REPO_ROOT/node_modules/.pnpm" ]; then
-    (cd "$REPO_ROOT" && CI=true pnpm install --frozen-lockfile) || return 1
+    (cd "$REPO_ROOT" && CI=true pnpm install --frozen-lockfile --network-concurrency "$ATLAS_MAX_WORKERS" --child-concurrency "$ATLAS_MAX_WORKERS") || return 1
   fi
   if [ -f "$REPO_ROOT/client/react-client/package.json" ] && [ ! -x "$REPO_ROOT/client/react-client/node_modules/.bin/react-scripts" ]; then
     (cd "$REPO_ROOT/client/react-client" && npm ci) || return 1
@@ -100,7 +107,7 @@ deps_install() {
 
 # Must run before any typecheck; see the header note.
 contracts_build() { (cd "$REPO_ROOT/contracts" && npm run build); }
-contracts_tests() { (cd "$REPO_ROOT/contracts" && npx jest); }
+contracts_tests() { (cd "$REPO_ROOT/contracts" && npx jest --maxWorkers="$ATLAS_MAX_WORKERS"); }
 
 
 # Rust server-rs quality gate (fmt, clippy, unit tests)
@@ -113,13 +120,13 @@ rust_gates() {
   if [ -z "${CARGO_TARGET_DIR:-}" ] && [ -n "$MAIN_ROOT" ]; then
     export CARGO_TARGET_DIR="$MAIN_ROOT/server-rs/target"
   fi
-  echo "🦀 Checking Rust server-rs formatting, lints, and tests (target: ${CARGO_TARGET_DIR:-default})..."
-  (cd "$REPO_ROOT/server-rs" && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test)
+  echo "🦀 Checking Rust server-rs formatting, lints, and tests (target: ${CARGO_TARGET_DIR:-default}, jobs: $ATLAS_MAX_WORKERS)..."
+  (cd "$REPO_ROOT/server-rs" && cargo fmt --check && cargo clippy --jobs "$ATLAS_MAX_WORKERS" --all-targets -- -D warnings && cargo test --jobs "$ATLAS_MAX_WORKERS" -- --test-threads="$ATLAS_MAX_WORKERS")
 }
 
 # nakama is bundled into the Nakama runtime; a type error here breaks InitModule.
 nakama_typecheck() { (cd "$REPO_ROOT/nakama" && npx tsc --noEmit); }
-nakama_tests()     { (cd "$REPO_ROOT/nakama" && npx jest); }
+nakama_tests()     { (cd "$REPO_ROOT/nakama" && npx jest --maxWorkers="$ATLAS_MAX_WORKERS"); }
 
 # The react-client suite. This used to run only via scripts/test_all.sh, which
 # nothing called — so it gated nothing. CI=true makes react-scripts run once and
@@ -137,7 +144,7 @@ client_tests() {
     echo "  run:  (cd client/react-client && npm ci)   — or drop --no-install"
     return 1
   fi
-  (cd "$REPO_ROOT/client/react-client" && CI=true npm test)
+  (cd "$REPO_ROOT/client/react-client" && CI=true npm test -- --maxWorkers="$ATLAS_MAX_WORKERS")
 }
 
 # The combat balance model gates itself (G1-G12) and fails on spec staleness.
@@ -189,7 +196,7 @@ art_forge_tests() {
   # tests once appended 18 entries to runs/A1-ART-02.json.
   local before after
   before=$(cat "$REPO_ROOT"/atelier/art-forge/runs/*.json | shasum)
-  ( cd "$REPO_ROOT/atelier/art-forge" && node --test tests/*.test.mjs ) || return 1
+  ( cd "$REPO_ROOT/atelier/art-forge" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" tests/*.test.mjs ) || return 1
   after=$(cat "$REPO_ROOT"/atelier/art-forge/runs/*.json | shasum)
   [ "$before" = "$after" ] || { echo "art-forge tests modified atelier/art-forge/runs/*.json"; return 1; }
 }
@@ -198,11 +205,11 @@ storybook_tests() {
   # F-038: taxonomy resolution, thumb-index join, verdict store. Pure modules,
   # so they run here with no browser and no Blender.
   # F-053: plus the headless Forge smoke (skips loudly, exit 0, with no Chrome).
-  ( cd "$REPO_ROOT" && node --test atelier/asset-storybook/tests/*.test.mjs \
+  ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/asset-storybook/tests/*.test.mjs \
       && node atelier/asset-storybook/tests/smoke/run.mjs )
 }
 
-map_builder_tests() { ( cd "$REPO_ROOT" && node --test atelier/map-builder/tests/*.test.mjs ) }
+map_builder_tests() { ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/map-builder/tests/*.test.mjs ) }
 
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace install" deps_install
