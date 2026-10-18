@@ -3,7 +3,7 @@
   "id": "district-flywheel-dynamo-canyon",
   "name": "Flywheel Dynamo Canyon",
   "parent_continent_id": "continent-02-clockwork-steppe",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Eastern kinetic-storage gorge of Continent 02 where Krono's hundred-meter brass flywheels store surplus wind-torque from the steppe windmills.",
   "local_conflict": "Centrifugal spark-automatons and copper-armored Pangolins patrol the spinning flywheel rim-bridges.",
   "level_band_label": "Levels 21 to 40",
@@ -19,7 +19,24 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-centrifugal-gantry-span",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        29,
+        30
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Tinkers say the great flywheels of Flywheel Dynamo Canyon spin so smoothly that a coin balanced on the axle housing never tips over.",
@@ -36,16 +53,16 @@
       "evidence": "Colossal solid-brass flywheel discs storing wind-torque inside a terraced copper canyon."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: flywheel gantry and governor console metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Specifies 12.5m gantry walkways, 0.58m governor consoles, and 0.14m brass risers tailored to 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the ninth District frontier on Continent 02 with zero filler maps."
+      "evidence": "Draft status: seeds Centrifugal Gantry Span at [0, 1] while the central governor town, dungeon, and northern rim remain queued."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Maintains Centrifugal Gantry Span in Mystery status behind a Fog of Lore portal with zero filler maps."
     }
   }
 }
