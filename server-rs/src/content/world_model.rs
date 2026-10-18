@@ -112,7 +112,7 @@ mod tests {
     #[test]
     fn decision_record_documents_region_size_store_crossing_budget_and_f027_f081_inputs() {
         let adr = include_str!(
-            "../../../../docs/superpowers/decisions/2026-10-18-e004-world-model-decision.md"
+            "../../../docs/superpowers/decisions/2026-10-18-e004-world-model-decision.md"
         );
         assert!(adr.contains("F-027"));
         assert!(adr.contains("F-081"));
