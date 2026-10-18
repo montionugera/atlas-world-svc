@@ -5,17 +5,73 @@ use std::collections::HashMap;
 use std::net::{IpAddr, SocketAddr};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, OnceLock};
+use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
-use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
+use tokio::sync::mpsc::error::TrySendError;
+use tokio::sync::mpsc::{
+    channel, unbounded_channel, Receiver, Sender, UnboundedReceiver, UnboundedSender,
+};
 use tokio::sync::{oneshot, RwLock};
-use tokio_tungstenite::accept_hdr_async;
+use tokio_tungstenite::accept_hdr_async_with_config;
 use tokio_tungstenite::tungstenite::handshake::server::{ErrorResponse, Request, Response};
 use tokio_tungstenite::tungstenite::http::StatusCode;
 use tokio_tungstenite::tungstenite::protocol::frame::coding::CloseCode;
-use tokio_tungstenite::tungstenite::protocol::CloseFrame;
+use tokio_tungstenite::tungstenite::protocol::{CloseFrame, WebSocketConfig};
 use tokio_tungstenite::tungstenite::Message;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, info, warn};
+
+/// Maximum WebSocket frame/message size accepted by the gateway.
+pub const MAX_WS_FRAME_BYTES: usize = 4096;
+/// Maximum binary input payload size accepted per client frame.
+pub const MAX_INPUT_PACKET_BYTES: usize = 512;
+/// Default sustained input packet rate allowed per connection (packets/sec).
+pub const DEFAULT_MAX_INPUTS_PER_SEC: u32 = 60;
+/// Default token-bucket burst capacity per connection.
+pub const DEFAULT_INPUT_BURST_CAPACITY: u32 = 30;
+/// Default bounded per-connection outbound snapshot queue depth.
+pub const MAX_OUTBOUND_QUEUE_DEPTH: usize = 64;
+/// Bounded server-wide inbound packet queue depth.
+pub const MAX_INBOUND_QUEUE_DEPTH: usize = 4096;
+/// Default idle timeout before a silent connection is closed.
+pub const DEFAULT_IDLE_TIMEOUT: Duration = Duration::from_secs(60);
+
+/// Token-bucket rate limiter enforced per WebSocket connection.
+#[derive(Debug, Clone)]
+pub struct InputRateLimiter {
+    tokens: f64,
+    capacity: f64,
+    refill_per_sec: f64,
+    last_refill: Instant,
+}
+
+impl InputRateLimiter {
+    pub fn new(max_per_sec: u32, burst_capacity: u32) -> Self {
+        let cap = burst_capacity.max(1) as f64;
+        Self {
+            tokens: cap,
+            capacity: cap,
+            refill_per_sec: max_per_sec.max(1) as f64,
+            last_refill: Instant::now(),
+        }
+    }
+
+    pub fn allow(&mut self, now: Instant) -> bool {
+        let elapsed = now
+            .saturating_duration_since(self.last_refill)
+            .as_secs_f64();
+        if elapsed > 0.0 {
+            self.tokens = (self.tokens + elapsed * self.refill_per_sec).min(self.capacity);
+            self.last_refill = now;
+        }
+        if self.tokens >= 1.0 {
+            self.tokens -= 1.0;
+            true
+        } else {
+            false
+        }
+    }
+}
 
 /// Process-wide cache of the most recent join-time `LoadoutSnapshot` per `session_id`
 /// so `AtlasSimulation::apply_player_input` can apply a saved character even when invoked
@@ -111,23 +167,34 @@ struct DebugGate {
     tx: UnboundedSender<DebugRequest>,
 }
 
+/// Configurable input/queue/idle limits shared with the accept loop.
+#[derive(Clone)]
+struct ConnectionLimits {
+    rate_limit: Arc<std::sync::RwLock<(u32, u32)>>,
+    outbound_queue_depth: Arc<AtomicUsize>,
+    idle_timeout: Arc<std::sync::RwLock<Duration>>,
+    rate_limited_drops: Arc<AtomicUsize>,
+}
+
 pub type LoadoutNotice = (String, String, Option<crate::storage::LoadoutSnapshot>);
 
 pub struct WsServer {
     local_addr: SocketAddr,
-    connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
+    connections: Arc<RwLock<HashMap<String, Sender<Message>>>>,
     session_rooms: Arc<RwLock<HashMap<String, String>>>,
     session_loadouts: Arc<std::sync::RwLock<HashMap<String, crate::storage::LoadoutSnapshot>>>,
     loadout_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<LoadoutNotice>>>,
     auth_guard: AuthGuard,
-    inbound_tx: UnboundedSender<ClientPacket>,
-    inbound_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<ClientPacket>>>,
+    inbound_tx: Sender<ClientPacket>,
+    inbound_rx: Arc<tokio::sync::Mutex<Receiver<ClientPacket>>>,
+    disconnect_tx: UnboundedSender<(String, String)>,
     disconnect_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<(String, String)>>>,
     pub nakama_client: Option<Arc<crate::storage::NakamaClient>>,
     nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
     non_uuid_skip_logs: Arc<AtomicUsize>,
     debug_enabled: Arc<AtomicBool>,
     debug_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<DebugRequest>>>,
+    limits: ConnectionLimits,
 }
 
 impl WsServer {
@@ -144,7 +211,7 @@ impl WsServer {
         let session_loadouts = Arc::new(std::sync::RwLock::new(HashMap::new()));
         let (loadout_tx, loadout_rx) = unbounded_channel();
         let loadout_rx = Arc::new(tokio::sync::Mutex::new(loadout_rx));
-        let (inbound_tx, inbound_rx) = unbounded_channel();
+        let (inbound_tx, inbound_rx) = channel(MAX_INBOUND_QUEUE_DEPTH);
         let inbound_rx = Arc::new(tokio::sync::Mutex::new(inbound_rx));
         let (disconnect_tx, disconnect_rx) = unbounded_channel();
         let disconnect_rx = Arc::new(tokio::sync::Mutex::new(disconnect_rx));
@@ -152,6 +219,15 @@ impl WsServer {
         let non_uuid_skip_logs = Arc::new(AtomicUsize::new(0));
         let debug_enabled = Arc::new(AtomicBool::new(false));
         let (debug_tx, debug_rx) = unbounded_channel();
+        let limits = ConnectionLimits {
+            rate_limit: Arc::new(std::sync::RwLock::new((
+                DEFAULT_MAX_INPUTS_PER_SEC,
+                DEFAULT_INPUT_BURST_CAPACITY,
+            ))),
+            outbound_queue_depth: Arc::new(AtomicUsize::new(MAX_OUTBOUND_QUEUE_DEPTH)),
+            idle_timeout: Arc::new(std::sync::RwLock::new(DEFAULT_IDLE_TIMEOUT)),
+            rate_limited_drops: Arc::new(AtomicUsize::new(0)),
+        };
 
         let server = Self {
             local_addr,
@@ -162,12 +238,14 @@ impl WsServer {
             auth_guard: auth_guard.clone(),
             inbound_tx: inbound_tx.clone(),
             inbound_rx,
+            disconnect_tx: disconnect_tx.clone(),
             disconnect_rx,
             nakama_client: None,
             nakama_ref: nakama_ref.clone(),
             non_uuid_skip_logs: non_uuid_skip_logs.clone(),
             debug_enabled: debug_enabled.clone(),
             debug_rx: Arc::new(tokio::sync::Mutex::new(debug_rx)),
+            limits: limits.clone(),
         };
 
         // Spawn accept loop
@@ -186,9 +264,35 @@ impl WsServer {
                 enabled: debug_enabled,
                 tx: debug_tx,
             },
+            limits,
         ));
 
         Ok(server)
+    }
+
+    /// Configures the per-connection input rate limit (`max_per_sec` and `burst_capacity`).
+    pub fn with_rate_limit(self, max_per_sec: u32, burst_capacity: u32) -> Self {
+        *self.limits.rate_limit.write().unwrap() = (max_per_sec, burst_capacity);
+        self
+    }
+
+    /// Configures the bounded outbound queue depth per connection.
+    pub fn with_outbound_queue_depth(self, depth: usize) -> Self {
+        self.limits
+            .outbound_queue_depth
+            .store(depth.max(1), Ordering::Relaxed);
+        self
+    }
+
+    /// Configures the idle timeout before a silent connection is closed.
+    pub fn with_idle_timeout(self, timeout: Duration) -> Self {
+        *self.limits.idle_timeout.write().unwrap() = timeout;
+        self
+    }
+
+    /// Returns the total number of inbound packets dropped due to per-connection rate limiting.
+    pub fn rate_limited_drop_count(&self) -> usize {
+        self.limits.rate_limited_drops.load(Ordering::Relaxed)
     }
 
     /// Returns the most recently fetched `LoadoutSnapshot` for `session_id` on this server.
@@ -244,7 +348,7 @@ impl WsServer {
         self.local_addr
     }
 
-    pub fn connections(&self) -> Arc<RwLock<HashMap<String, UnboundedSender<Message>>>> {
+    pub fn connections(&self) -> Arc<RwLock<HashMap<String, Sender<Message>>>> {
         self.connections.clone()
     }
 
@@ -261,7 +365,7 @@ impl WsServer {
         &self.auth_guard
     }
 
-    pub fn inbound_tx(&self) -> &UnboundedSender<ClientPacket> {
+    pub fn inbound_tx(&self) -> &Sender<ClientPacket> {
         &self.inbound_tx
     }
 
@@ -307,56 +411,104 @@ impl WsServer {
         gone
     }
 
-    /// Broadcast serialized snapshot bytes to all active sessions.
-    pub async fn broadcast_snapshot(&self, bytes: &[u8]) {
-        let conns = self.connections.read().await;
-        if conns.is_empty() {
+    async fn evict_stalled_connections(&self, stalled_keys: Vec<String>) {
+        if stalled_keys.is_empty() {
             return;
         }
-
-        let msg = Message::Binary(bytes.to_vec().into());
-        for (session_id, tx) in conns.iter() {
-            if let Err(e) = tx.send(msg.clone()) {
-                debug!("Failed to send snapshot to session {}: {}", session_id, e);
-            }
-        }
-    }
-
-    /// Broadcast serialized snapshot bytes to active sessions in a specific room.
-    pub async fn broadcast_snapshot_to_room(&self, room_id: &str, bytes: &[u8]) {
-        let conns = self.connections.read().await;
-        let rooms = self.session_rooms.read().await;
-        if conns.is_empty() {
-            return;
-        }
-
-        let msg = Message::Binary(bytes.to_vec().into());
-        for (conn_key, tx) in conns.iter() {
-            let conn_room = rooms
-                .get(conn_key)
-                .map(|s| s.as_str())
-                .unwrap_or("map-for-play");
-            if conn_room == room_id {
-                if let Err(e) = tx.send(msg.clone()) {
-                    debug!("Failed to send snapshot to session {}: {}", conn_key, e);
+        let mut conns = self.connections.write().await;
+        let mut rooms = self.session_rooms.write().await;
+        for conn_key in stalled_keys {
+            let was_active = conns.remove(&conn_key).is_some();
+            let old_room = rooms
+                .remove(&conn_key)
+                .unwrap_or_else(|| "map-for-play".to_string());
+            if was_active {
+                if let Some((session_id, _)) = conn_key.rsplit_once('#') {
+                    warn!(
+                        "Evicting stalled/closed connection {} in room {}",
+                        conn_key, old_room
+                    );
+                    if !has_session_in_room(&conns, &rooms, session_id, &old_room) {
+                        let _ = self.disconnect_tx.send((session_id.to_string(), old_room));
+                    }
                 }
             }
         }
     }
 
+    /// Broadcast serialized snapshot bytes to all active sessions.
+    pub async fn broadcast_snapshot(&self, bytes: &[u8]) {
+        let mut stalled = Vec::new();
+        {
+            let conns = self.connections.read().await;
+            if conns.is_empty() {
+                return;
+            }
+
+            let msg = Message::Binary(bytes.to_vec().into());
+            for (conn_key, tx) in conns.iter() {
+                match tx.try_send(msg.clone()) {
+                    Ok(()) => {}
+                    Err(TrySendError::Full(_)) | Err(TrySendError::Closed(_)) => {
+                        debug!(
+                            "Outbound queue full/closed for session {}; marking for eviction",
+                            conn_key
+                        );
+                        stalled.push(conn_key.clone());
+                    }
+                }
+            }
+        }
+        self.evict_stalled_connections(stalled).await;
+    }
+
+    /// Broadcast serialized snapshot bytes to active sessions in a specific room.
+    pub async fn broadcast_snapshot_to_room(&self, room_id: &str, bytes: &[u8]) {
+        let mut stalled = Vec::new();
+        {
+            let conns = self.connections.read().await;
+            let rooms = self.session_rooms.read().await;
+            if conns.is_empty() {
+                return;
+            }
+
+            let msg = Message::Binary(bytes.to_vec().into());
+            for (conn_key, tx) in conns.iter() {
+                let conn_room = rooms
+                    .get(conn_key)
+                    .map(|s| s.as_str())
+                    .unwrap_or("map-for-play");
+                if conn_room == room_id {
+                    match tx.try_send(msg.clone()) {
+                        Ok(()) => {}
+                        Err(TrySendError::Full(_)) | Err(TrySendError::Closed(_)) => {
+                            debug!(
+                                "Outbound queue full/closed for session {}; marking for eviction",
+                                conn_key
+                            );
+                            stalled.push(conn_key.clone());
+                        }
+                    }
+                }
+            }
+        }
+        self.evict_stalled_connections(stalled).await;
+    }
+
     #[allow(clippy::too_many_arguments)]
     async fn accept_loop(
         listener: TcpListener,
-        connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
+        connections: Arc<RwLock<HashMap<String, Sender<Message>>>>,
         session_rooms: Arc<RwLock<HashMap<String, String>>>,
         session_loadouts: Arc<std::sync::RwLock<HashMap<String, crate::storage::LoadoutSnapshot>>>,
         loadout_tx: UnboundedSender<LoadoutNotice>,
         auth_guard: AuthGuard,
-        inbound_tx: UnboundedSender<ClientPacket>,
+        inbound_tx: Sender<ClientPacket>,
         disconnect_tx: UnboundedSender<(String, String)>,
         nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
         non_uuid_skip_logs: Arc<AtomicUsize>,
         debug: DebugGate,
+        limits: ConnectionLimits,
     ) {
         info!(
             "WebSocket accept loop running on {}",
@@ -378,6 +530,7 @@ impl WsServer {
             let nakama = nakama_ref.clone();
             let skip_logs = non_uuid_skip_logs.clone();
             let debug = debug.clone();
+            let limits = limits.clone();
 
             tokio::spawn(async move {
                 if is_debug_http(&stream).await {
@@ -386,7 +539,7 @@ impl WsServer {
                 }
                 Self::handle_connection(
                     stream, peer_addr, conn_seq, conns, rooms, loadouts, lo_tx, auth, in_tx, dc_tx,
-                    nakama, skip_logs,
+                    nakama, skip_logs, limits,
                 )
                 .await;
             });
@@ -460,15 +613,16 @@ impl WsServer {
         stream: TcpStream,
         peer_addr: SocketAddr,
         conn_seq: u64,
-        connections: Arc<RwLock<HashMap<String, UnboundedSender<Message>>>>,
+        connections: Arc<RwLock<HashMap<String, Sender<Message>>>>,
         session_rooms: Arc<RwLock<HashMap<String, String>>>,
         session_loadouts: Arc<std::sync::RwLock<HashMap<String, crate::storage::LoadoutSnapshot>>>,
         loadout_tx: UnboundedSender<LoadoutNotice>,
         auth_guard: AuthGuard,
-        inbound_tx: UnboundedSender<ClientPacket>,
+        inbound_tx: Sender<ClientPacket>,
         disconnect_tx: UnboundedSender<(String, String)>,
         nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
         non_uuid_skip_logs: Arc<AtomicUsize>,
+        limits: ConnectionLimits,
     ) {
         let mut session_id = String::new();
         let mut room_id = "map-for-play".to_string();
@@ -514,13 +668,18 @@ impl WsServer {
             }
         };
 
-        let mut ws_stream = match accept_hdr_async(stream, callback).await {
-            Ok(ws) => ws,
-            Err(e) => {
-                debug!("WebSocket handshake failed with {}: {}", peer_addr, e);
-                return;
-            }
-        };
+        let mut ws_config = WebSocketConfig::default();
+        ws_config.max_message_size = Some(MAX_WS_FRAME_BYTES);
+        ws_config.max_frame_size = Some(MAX_WS_FRAME_BYTES);
+
+        let mut ws_stream =
+            match accept_hdr_async_with_config(stream, callback, Some(ws_config)).await {
+                Ok(ws) => ws,
+                Err(e) => {
+                    debug!("WebSocket handshake failed with {}: {}", peer_addr, e);
+                    return;
+                }
+            };
 
         // Check protocol version before fetching persistent loadout or registering connection.
         let server_ver = crate::protocol::PROTOCOL_VERSION;
@@ -608,7 +767,9 @@ impl WsServer {
         }
 
         let (mut ws_write, mut ws_read) = ws_stream.split();
-        let (out_tx, mut out_rx) = unbounded_channel::<Message>();
+        let queue_depth = limits.outbound_queue_depth.load(Ordering::Relaxed).max(1);
+        let (out_tx, mut out_rx) = channel::<Message>(queue_depth);
+        let conn_out_tx = out_tx.clone();
 
         // Enforce one live session per account using the accept-order sequence `conn_seq`:
         // - If an older connection (`old_seq < conn_seq`) is active for `session_id`, remove it
@@ -643,7 +804,7 @@ impl WsServer {
                             code: CloseCode::Library(crate::protocol::DUPLICATE_SESSION_CLOSE_CODE),
                             reason: "session replaced by newer connection".into(),
                         };
-                        let _ = old_tx.send(Message::Close(Some(close_frame)));
+                        let _ = old_tx.try_send(Message::Close(Some(close_frame)));
                     }
                     if let Some(old_room) = rooms.remove(&old_key) {
                         if old_room != room_id {
@@ -698,17 +859,61 @@ impl WsServer {
             }
         });
 
-        // Inbound loop reading messages from client
-        while let Some(msg_result) = ws_read.next().await {
+        let (max_per_sec, burst_cap) = *limits.rate_limit.read().unwrap();
+        let mut rate_limiter = InputRateLimiter::new(max_per_sec, burst_cap);
+        let idle_timeout = *limits.idle_timeout.read().unwrap();
+
+        // Inbound loop reading messages from client with idle timeout & size/rate caps
+        loop {
+            let next_frame = tokio::time::timeout(idle_timeout, ws_read.next()).await;
+            let msg_result = match next_frame {
+                Ok(Some(res)) => res,
+                Ok(None) => break,
+                Err(_) => {
+                    info!(
+                        "Closing idle connection {} after {:?} without frames",
+                        session_id, idle_timeout
+                    );
+                    let close_frame = CloseFrame {
+                        code: CloseCode::Policy,
+                        reason: "idle connection timeout".into(),
+                    };
+                    let _ = conn_out_tx.try_send(Message::Close(Some(close_frame)));
+                    break;
+                }
+            };
+
             match msg_result {
                 Ok(Message::Binary(bin)) => {
+                    if bin.len() > MAX_INPUT_PACKET_BYTES {
+                        warn!(
+                            "Rejecting oversized input packet ({} bytes > {}) from {}",
+                            bin.len(),
+                            MAX_INPUT_PACKET_BYTES,
+                            session_id
+                        );
+                        let close_frame = CloseFrame {
+                            code: CloseCode::Size,
+                            reason: "input packet exceeds max size".into(),
+                        };
+                        let _ = conn_out_tx.try_send(Message::Close(Some(close_frame)));
+                        break;
+                    }
+                    if !rate_limiter.allow(Instant::now()) {
+                        limits.rate_limited_drops.fetch_add(1, Ordering::Relaxed);
+                        debug!("Rate-limiting excess input packet from {}", session_id);
+                        continue;
+                    }
                     let packet = ClientPacket {
                         session_id: session_id.clone(),
                         room_id: room_id.clone(),
                         payload: bin.to_vec(),
                     };
-                    if let Err(e) = inbound_tx.send(packet) {
-                        error!("Failed to route inbound client packet: {}", e);
+                    if let Err(e) = inbound_tx.try_send(packet) {
+                        warn!(
+                            "Inbound packet queue full or closed for {}: {}",
+                            session_id, e
+                        );
                     }
                 }
                 Ok(Message::Close(_)) => {
@@ -913,14 +1118,14 @@ async fn serve_debug_http(mut stream: TcpStream, peer: IpAddr, debug: DebugGate)
     let _ = stream.shutdown().await;
 }
 
-fn has_session(conns: &HashMap<String, UnboundedSender<Message>>, session_id: &str) -> bool {
+fn has_session(conns: &HashMap<String, Sender<Message>>, session_id: &str) -> bool {
     conns
         .keys()
         .any(|k| k.rsplit_once('#').is_some_and(|(s, _)| s == session_id))
 }
 
 fn has_session_in_room(
-    conns: &HashMap<String, UnboundedSender<Message>>,
+    conns: &HashMap<String, Sender<Message>>,
     rooms: &HashMap<String, String>,
     session_id: &str,
     room_id: &str,
@@ -1418,5 +1623,168 @@ mod tests {
 
         client_match.close(None).await.unwrap();
         client_absent.close(None).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_ws_input_limits_oversized_packet_rejected_with_close_size() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let token = auth.generate_test_token("oversize-player", "Tester", 3600);
+        let url = format!("ws://{}/ws?token={}&proto=1", server.local_addr(), token);
+
+        let (mut client_ws, _) = connect_async(&url).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(30)).await;
+        assert_eq!(server.active_connections_count().await, 1);
+
+        // Send a binary packet larger than MAX_INPUT_PACKET_BYTES (512 bytes)
+        let big_payload = vec![0xAA; MAX_INPUT_PACKET_BYTES + 1];
+        client_ws
+            .send(Message::Binary(big_payload.into()))
+            .await
+            .unwrap();
+
+        let msg = tokio::time::timeout(Duration::from_secs(1), client_ws.next())
+            .await
+            .expect("should receive close frame for oversized packet")
+            .expect("stream should yield close frame")
+            .expect("no transport error");
+        match msg {
+            Message::Close(Some(frame)) => {
+                assert_eq!(frame.code, CloseCode::Size);
+            }
+            other => panic!("expected Close(Size), got {:?}", other),
+        }
+
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert!(server.drain_inbound().await.is_empty());
+        assert_eq!(server.active_connections_count().await, 0);
+        assert_eq!(
+            server.drain_disconnects().await,
+            vec!["oversize-player".to_string()]
+        );
+    }
+
+    #[tokio::test]
+    async fn test_ws_input_limits_per_connection_rate_limiter_drops_excess() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone())
+            .await
+            .unwrap()
+            .with_rate_limit(10, 5);
+        let token = auth.generate_test_token("spam-player", "Tester", 3600);
+        let url = format!("ws://{}/ws?token={}&proto=1", server.local_addr(), token);
+
+        let (mut client_ws, _) = connect_async(&url).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(30)).await;
+
+        // Send 15 small packets in a tight burst; burst capacity is 5
+        for i in 0..15u8 {
+            client_ws
+                .send(Message::Binary(vec![i].into()))
+                .await
+                .unwrap();
+        }
+        tokio::time::sleep(Duration::from_millis(60)).await;
+
+        let accepted = server.drain_inbound().await;
+        assert!(
+            accepted.len() >= 5 && accepted.len() <= 7,
+            "expected burst ~5 accepted packets, got {}",
+            accepted.len()
+        );
+        assert!(
+            server.rate_limited_drop_count() >= 8,
+            "expected excess packets dropped by rate limiter, got {}",
+            server.rate_limited_drop_count()
+        );
+        // Connection remains alive after rate-limiting excess packets
+        assert_eq!(server.active_connections_count().await, 1);
+        client_ws.close(None).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_ws_input_limits_bounded_outbound_queue_evicts_stalled_connection() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone())
+            .await
+            .unwrap()
+            .with_outbound_queue_depth(4);
+        let addr = server.local_addr();
+
+        // Perform a raw TCP WebSocket handshake and then never read from the socket,
+        // simulating a stalled client whose TCP receive buffer and outbound channel fill up.
+        let mut raw_stream = TcpStream::connect(addr).await.unwrap();
+        let key = generate_key();
+        let req = format!(
+            "GET /ws?token=dev-token:stalled-user&proto=1 HTTP/1.1\r\n\
+             Host: {addr}\r\n\
+             Upgrade: websocket\r\n\
+             Connection: Upgrade\r\n\
+             Sec-WebSocket-Key: {key}\r\n\
+             Sec-WebSocket-Version: 13\r\n\r\n"
+        );
+        raw_stream.write_all(req.as_bytes()).await.unwrap();
+        let mut resp_buf = [0u8; 512];
+        let n = raw_stream.read(&mut resp_buf).await.unwrap();
+        assert!(String::from_utf8_lossy(&resp_buf[..n]).starts_with("HTTP/1.1 101"));
+
+        tokio::time::sleep(Duration::from_millis(40)).await;
+        assert_eq!(server.active_connections_count().await, 1);
+
+        // Flood large snapshots without reading from raw_stream so write_task blocks and
+        // the bounded channel (depth 4) fills up.
+        let big_snapshot = vec![0x55u8; 64 * 1024];
+        for _ in 0..128 {
+            server.broadcast_snapshot(&big_snapshot).await;
+            if server.active_connections_count().await == 0 {
+                break;
+            }
+        }
+
+        assert_eq!(
+            server.active_connections_count().await,
+            0,
+            "stalled connection should be evicted once outbound queue is full"
+        );
+        assert_eq!(
+            server.drain_disconnects().await,
+            vec!["stalled-user".to_string()]
+        );
+    }
+
+    #[tokio::test]
+    async fn test_ws_input_limits_idle_connection_dropped_after_timeout() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone())
+            .await
+            .unwrap()
+            .with_idle_timeout(Duration::from_millis(120));
+        let token = auth.generate_test_token("idle-player", "Tester", 3600);
+        let url = format!("ws://{}/ws?token={}&proto=1", server.local_addr(), token);
+
+        let (mut client_ws, _) = connect_async(&url).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(30)).await;
+        assert_eq!(server.active_connections_count().await, 1);
+
+        // Stay silent past the 120ms idle timeout
+        let msg = tokio::time::timeout(Duration::from_secs(1), client_ws.next())
+            .await
+            .expect("idle connection should receive close frame")
+            .expect("stream should yield close frame")
+            .expect("no transport error");
+        match msg {
+            Message::Close(Some(frame)) => {
+                assert_eq!(frame.code, CloseCode::Policy);
+                assert!(frame.reason.contains("idle"));
+            }
+            other => panic!("expected Close(Policy) for idle timeout, got {:?}", other),
+        }
+
+        tokio::time::sleep(Duration::from_millis(40)).await;
+        assert_eq!(server.active_connections_count().await, 0);
+        assert_eq!(
+            server.drain_disconnects().await,
+            vec!["idle-player".to_string()]
+        );
     }
 }
