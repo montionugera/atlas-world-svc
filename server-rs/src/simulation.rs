@@ -274,6 +274,22 @@ impl AtlasSimulation {
     /// The ONLY constructor the live server (`main.rs`) may use. Bots and bestiary mobs
     /// carry the full live bundles (collision bodies, spawn points, MobAi, ThreatTable,
     /// spawn anchors). The golden-trace harness uses `with_arena` instead.
+    /// Constructs a live simulation room from a compiled generated-world region (`content/maps/<region_id>.json`).
+    pub fn from_generated_region(region_id: &str, seed: u32) -> Option<Self> {
+        let cfg = crate::content::world_regions::load_generated_region_config(region_id)?;
+        let mob_count: usize = cfg.spawn_areas.iter().map(|a| a.count).sum();
+        Some(Self::live(LiveConfig {
+            seed,
+            arena_width: cfg.width,
+            arena_height: cfg.height,
+            bot_count: 0,
+            mob_count: mob_count.max(1),
+            mob_respawn_sec: 5.0,
+            player_respawn_sec: 5.0,
+            map_id: Some(region_id.to_string()),
+        }))
+    }
+
     pub fn live(cfg: LiveConfig) -> Self {
         let map_cfg =
             crate::content::map::MapConfig::load(cfg.map_id.as_deref().unwrap_or("default"));
