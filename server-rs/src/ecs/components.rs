@@ -152,6 +152,39 @@ pub struct MobTag;
 pub const PLAYER_BODY_RADIUS: f32 = 12.0;
 /// Mob body radius (px). Matches the client's `SERVER_RS_MOB_RADIUS`.
 pub const MOB_BODY_RADIUS: f32 = 14.0;
+/// Boss collision body radius (px) (`1.5x` standard mob body radius) (E-007 Slice 7).
+pub const BOSS_BODY_RADIUS: f32 = 21.0;
+/// Boss visual/model scale multiplier (`1.5x`) (E-007 Slice 7).
+pub const BOSS_VISUAL_SCALE: f32 = 1.5;
+
+/// Identifies whether a spawned mob is a boss-tier encounter and carries its scale multiplier (E-007 Slice 7).
+#[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct BossTag {
+    pub is_boss: bool,
+    pub visual_scale: f32,
+}
+
+impl BossTag {
+    pub fn boss() -> Self {
+        Self {
+            is_boss: true,
+            visual_scale: BOSS_VISUAL_SCALE,
+        }
+    }
+
+    pub fn normal() -> Self {
+        Self {
+            is_boss: false,
+            visual_scale: 1.0,
+        }
+    }
+}
+
+impl Default for BossTag {
+    fn default() -> Self {
+        Self::normal()
+    }
+}
 
 /// Circular collision body. Only live-runtime entities carry it, so the golden-trace
 /// harness population (which has none) is unaffected by body collision.

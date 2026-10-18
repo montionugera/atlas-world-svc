@@ -1,10 +1,10 @@
 use crate::ai::ThreatTable;
-use crate::content::{derive_mob_stats, BestiaryCatalog};
+use crate::content::{derive_mob_stats, BestiaryCatalog, MobTier};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    BodyRadius, CombatStats, DeadMobTracker, DespawnedIds, ElementalAttributes, EntityId, Health,
-    LiveRules, Mass, MobAi, MobCorpse, MobSpawnAnchor, MobTag, Position, StatusEffects, Velocity,
-    MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
+    BodyRadius, BossTag, CombatStats, DeadMobTracker, DespawnedIds, ElementalAttributes, EntityId,
+    Health, LiveRules, Mass, MobAi, MobCorpse, MobSpawnAnchor, MobTag, Position, StatusEffects,
+    Velocity, BOSS_BODY_RADIUS, MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
 };
 use bevy_ecs::prelude::*;
 use std::sync::OnceLock;
@@ -56,10 +56,22 @@ pub fn mob_bundle(catalog: &BestiaryCatalog, anchor: &MobSpawnAnchor, id: String
     // reach is treated as edge-to-edge and measured centre-to-centre here (otherwise a
     // 20px melee mob could never touch a player). Assumption: legacy melee attackRange was
     // also surface reach for Planck bodies. Ranged reach is projectile range: unchanged.
+    let is_boss = anchor.tier == MobTier::Boss;
+    let body_radius = if is_boss {
+        BOSS_BODY_RADIUS
+    } else {
+        MOB_BODY_RADIUS
+    };
+    let effective_mass = if is_boss { mass * 2.0 } else { mass };
+    let boss_tag = if is_boss {
+        BossTag::boss()
+    } else {
+        BossTag::normal()
+    };
     let attack_range = if is_ranged {
         base_range
     } else {
-        base_range + MOB_BODY_RADIUS + PLAYER_BODY_RADIUS
+        base_range + body_radius + PLAYER_BODY_RADIUS
     };
     let spawn = anchor.spawn_pos;
 
@@ -81,9 +93,10 @@ pub fn mob_bundle(catalog: &BestiaryCatalog, anchor: &MobSpawnAnchor, id: String
         ThreatTable::new(),
         MobAi::new(spawn, chase_range, attack_range, is_ranged).with_move_speed(speed),
         anchor.clone(),
-        BodyRadius(MOB_BODY_RADIUS),
-        Mass(mass),
+        BodyRadius(body_radius),
+        Mass(effective_mass),
         StatusEffects::default(),
+        boss_tag,
     )
 }
 
