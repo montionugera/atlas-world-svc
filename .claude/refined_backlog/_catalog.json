@@ -1785,8 +1785,9 @@
     "title": "Promote district-ginger-steam-terraces to Canon on Continent 01 with 4 leaf nodes and seed district-solstice-pendulum-atoll on Continent 03",
     "from_idea": "I-229",
     "created_at": "2026-10-18T17:45:40.976850+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-18T17:45:56.814856+00:00"
   }
 ]
