@@ -55,7 +55,7 @@
   "mystery_hook": {
     "in_world_rumor": "Tinkers say the deepest canyon gear still ticks once every midnight, echoing a lullaby from the north.",
     "visual_silhouette": "Colossal brass wheel-rims rising two hundred meters above golden short-grass plains.",
-    "unanswered_question": "What sleeps beneath the southern Gilded Exhaust flue vents where Krono's furnace breath escapes?"
+    "unanswered_question": "What sleeps beyond the northern Cinder Chimney Damper at the edge of The Gilded Exhaust Flues?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -72,11 +72,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Three connected Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon) and one Draft District (Gilded Exhaust) spanning [15, 35]."
+      "evidence": "All four Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues) are Canon and connected across [15, 35]."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Gilded Exhaust in Draft status with Mystery child Flue Causeway while keeping the northern Astrolabe Gate open to Continent 03."
+      "evidence": "Preserves Mystery leaf nodes (Sun-Coil Spire, Teal Spillway, Cinder Chimney) behind fog_of_lore gates while keeping the Astrolabe Gate open to Continent 03."
     }
   }
 }

@@ -17,6 +17,24 @@
   },
   "playableMaps": [
     {
+      "mapId": "ash-valve-vault-b1",
+      "nodeId": "dungeon-ash-valve-vault",
+      "name": "Ash-Valve Vault",
+      "districtId": "district-gilded-exhaust",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        28,
+        32
+      ]
+    },
+    {
       "mapId": "chronometer-foundry-b1",
       "nodeId": "dungeon-chronometer-foundry",
       "name": "The Chronometer Foundry (Floor -1)",
@@ -233,6 +251,24 @@
       ]
     },
     {
+      "mapId": "flue-causeway",
+      "nodeId": "hunting-area-flue-causeway",
+      "name": "Flue Causeway",
+      "districtId": "district-gilded-exhaust",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        26,
+        28
+      ]
+    },
+    {
       "mapId": "kelp-spiral-reef",
       "nodeId": "hunting-area-kelp-spiral-reef",
       "name": "Kelp Spiral Reef",
@@ -320,6 +356,24 @@
       "levelRange": [
         30,
         36
+      ]
+    },
+    {
+      "mapId": "bellows-hearth",
+      "nodeId": "town-bellows-hearth",
+      "name": "Bellows Hearth",
+      "districtId": "district-gilded-exhaust",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        27,
+        30
       ]
     },
     {
@@ -468,6 +522,27 @@
     }
   ],
   "portalRoutingTable": {
+    "portal-ash-valve-exit-bellows": {
+      "portalId": "portal-ash-valve-exit-bellows",
+      "sourceNodeId": "dungeon-ash-valve-vault",
+      "sourceMapId": "ash-valve-vault-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-bellows-hearth",
+      "targetMapId": "bellows-hearth",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 20.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3760.0
+      },
+      "lockMessage": null
+    },
     "portal-chronometer-foundry-exit-anvil": {
       "portalId": "portal-chronometer-foundry-exit-anvil",
       "sourceNodeId": "dungeon-chronometer-foundry",
@@ -846,6 +921,48 @@
       },
       "lockMessage": null
     },
+    "portal-flue-causeway-east-bellows": {
+      "portalId": "portal-flue-causeway-east-bellows",
+      "sourceNodeId": "hunting-area-flue-causeway",
+      "sourceMapId": "flue-causeway",
+      "direction": "East",
+      "targetNodeId": "town-bellows-hearth",
+      "targetMapId": "bellows-hearth",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-flue-causeway-west-patina": {
+      "portalId": "portal-flue-causeway-west-patina",
+      "sourceNodeId": "hunting-area-flue-causeway",
+      "sourceMapId": "flue-causeway",
+      "direction": "West",
+      "targetNodeId": "town-patina-lock",
+      "targetMapId": "patina-lock",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-kelp-spiral-east-sanctuary": {
       "portalId": "portal-kelp-spiral-east-sanctuary",
       "sourceNodeId": "hunting-area-kelp-spiral-reef",
@@ -1053,6 +1170,69 @@
       "arrivalPointMeters": {
         "x": 3800.0,
         "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-bellows-hearth-north-fog": {
+      "portalId": "portal-bellows-hearth-north-fog",
+      "sourceNodeId": "town-bellows-hearth",
+      "sourceMapId": "bellows-hearth",
+      "direction": "North",
+      "targetNodeId": "hunting-area-cinder-chimney",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Scalding golden exhaust plumes vent through the Cinder Chimney Damper; the Bellows Guild requires the Master Damper Crank from Ash-Valve Vault before opening the northern flue."
+    },
+    "portal-bellows-hearth-west-flue": {
+      "portalId": "portal-bellows-hearth-west-flue",
+      "sourceNodeId": "town-bellows-hearth",
+      "sourceMapId": "bellows-hearth",
+      "direction": "West",
+      "targetNodeId": "hunting-area-flue-causeway",
+      "targetMapId": "flue-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-bellows-hearth-dungeon-valve": {
+      "portalId": "portal-bellows-hearth-dungeon-valve",
+      "sourceNodeId": "town-bellows-hearth",
+      "sourceMapId": "bellows-hearth",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-ash-valve-vault",
+      "targetMapId": "ash-valve-vault-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
       },
       "lockMessage": null
     },
@@ -1286,6 +1466,27 @@
         "y": 200.0
       },
       "lockMessage": "Pressurized turquoise coolant cascades over the northern Teal Spillway; the Lock-Keepers Guild has bolted the weir gate until the monsoon sluices subside."
+    },
+    "portal-patina-lock-east-flue": {
+      "portalId": "portal-patina-lock-east-flue",
+      "sourceNodeId": "town-patina-lock",
+      "sourceMapId": "patina-lock",
+      "direction": "East",
+      "targetNodeId": "hunting-area-flue-causeway",
+      "targetMapId": "flue-causeway",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-patina-lock-west-sluice": {
       "portalId": "portal-patina-lock-west-sluice",

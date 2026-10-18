@@ -48,7 +48,24 @@
       }
     },
     "South": null,
-    "East": null,
+    "East": {
+      "portal_id": "portal-patina-lock-east-flue",
+      "direction": "East",
+      "target_node_id": "hunting-area-flue-causeway",
+      "target_map_id": "flue-causeway",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
     "West": {
       "portal_id": "portal-patina-lock-west-sluice",
       "direction": "West",
@@ -117,7 +134,7 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Peaceful Safe Zone (0 resident_spawns) at [1, 1] with West portal to Siphon Sluiceway, Dungeon portal to Mercury Reservoir, and North fog_of_lore portal."
+      "evidence": "Peaceful Safe Zone (0 resident_spawns) at [1, 1] with West portal to Siphon Sluiceway, East portal to Flue Causeway, Dungeon portal to Mercury Reservoir, and North fog_of_lore portal."
     },
     "intentional_mystery_discipline": {
       "verified": true,

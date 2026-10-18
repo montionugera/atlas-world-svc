@@ -43,12 +43,13 @@
       "travel_mode": "airship",
       "hub_name": "Cloud-Pier Observatory",
       "status": "locked_by_mystery",
-      "unlock_rationale": "Sky-gale barrier blocks flight until Continent 03 is promoted from mystery."
+      "unlock_rationale": "Sky-gale barrier blocks flight until the Zenith Crown airship beacon on Continent 03 is lit."
     }
   ],
   "district_ids": [
     "district-teacup-meadows",
-    "district-kilnfire-terraces"
+    "district-kilnfire-terraces",
+    "district-ash-bellows-trench"
   ],
   "quality_checklist": {
     "causal_continuity": {
@@ -65,11 +66,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Spans Levels 1 to 15 across two cohesive Districts and links eastward via the Kettle-Whistle Viaduct root-train to Continent 02."
+      "evidence": "Spans Levels 1 to 15 across Teacup Meadows and Kilnfire Terraces (Canon) plus Ash-Bellows Trench (Mystery), linking eastward via the Kettle-Whistle Viaduct."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Marks the northern Cloud-Pier Observatory airship link to Continent 03 as locked_by_mystery with clear narrative rationale."
+      "evidence": "Preserves Ash-Bellows Trench as a Mystery District frontier and marks the Cloud-Pier Observatory airship link to Continent 03 as locked_by_mystery."
     }
   }
 }

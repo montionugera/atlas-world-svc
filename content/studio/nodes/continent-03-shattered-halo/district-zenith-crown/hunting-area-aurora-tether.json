@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-aurora-tether",
+  "name": "Aurora Tether Span",
+  "map_id": null,
+  "parent_district_id": "district-zenith-crown",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western aurora-glass bridge of The Zenith Crown at [0, 1] ascending from the outer rim of Nebula Undertide toward the white-gold anchor towers.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "level_range": [
+    46,
+    48
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Tether-weavers claim the aurora ribbons hum in harmony whenever a star-lantern is raised at the western anchor pier.",
+    "visual_silhouette": "Aribbon of solidified green-and-violet aurora light spanning two floating white-gold anchor towers.",
+    "unanswered_question": "Where does the western aurora tether anchor into Undertide Sanctuary?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Serves as the western entry span of The Zenith Crown above scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Solidified aurora-glass walkways suspended between white-gold star-anchor towers."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-zenith-crown."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until The Zenith Crown is promoted to Canon."
+    }
+  }
+}

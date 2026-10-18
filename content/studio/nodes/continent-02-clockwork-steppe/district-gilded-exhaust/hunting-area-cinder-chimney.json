@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-cinder-chimney",
+  "name": "Cinder Chimney Damper",
+  "map_id": null,
+  "parent_district_id": "district-gilded-exhaust",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern high-pressure smokestack ridge of The Gilded Exhaust Flues at [1, 0] where Krono's tallest fluted brass chimney vents golden thermal rings into the upper sky-lanes.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "level_range": [
+    28,
+    30
+  ],
+  "portals": {
+    "North": null,
+    "South": {
+      "portal_id": "portal-cinder-chimney-south-fog",
+      "direction": "South",
+      "target_node_id": "town-bellows-hearth",
+      "target_map_id": "bellows-hearth",
+      "target_direction": "North",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Scalding golden exhaust plumes vent through the Cinder Chimney Damper; the Bellows Guild requires the Master Damper Crank from Ash-Valve Vault before opening the northern flue."
+    },
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": null
+  },
+  "mystery_hook": {
+    "in_world_rumor": "Glider-couriers say the golden smoke rings blown from Cinder Chimney float all the way up to the Shattered Halo before turning into starlight.",
+    "visual_silhouette": "A colossal fluted brass smokestack crowned by spinning damper petals on the northern cliff of Bellows Hearth.",
+    "unanswered_question": "Can a glider ride the Cinder Chimney thermal plume straight into the lower rings of Continent 03?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Forms the northern high-pressure exhaust vent of The Gilded Exhaust Flues above Bellows Hearth."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A colossal fluted brass smokestack puffing rings of golden mist into the steppe sky."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: chimney catwalk and damper petal metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Bellows Hearth behind a fog_of_lore portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null, fog_of_lore portal symmetry with town-bellows-hearth, and complete mystery_hook."
+    }
+  }
+}
