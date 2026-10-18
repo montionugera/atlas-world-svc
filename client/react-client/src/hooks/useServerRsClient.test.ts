@@ -17,8 +17,10 @@ import {
 import {
   DUPLICATE_SESSION_CLOSE_CODE,
   PROTOCOL_VERSION,
+  REGION_FULL_CLOSE_CODE,
   formatDuplicateSessionMessage,
   formatProtocolMismatchMessage,
+  formatRegionFullMessage,
 } from "../protocol/protocolVersion";
 import { WorldSnapshot } from "../protocol/generated/atlas/protocol/world-snapshot";
 import { EntityDelta } from "../protocol/generated/atlas/protocol/entity-delta";
@@ -59,6 +61,7 @@ class MockWebSocket {
   readonly CLOSED = 3;
 
   url: string;
+  protocols?: string | string[];
   binaryType: string = "blob";
   readyState: number = MockWebSocket.manualOpen ? 0 : 1; // OPEN unless manual
   onopen: (() => void) | null = null;
@@ -67,8 +70,9 @@ class MockWebSocket {
   onerror: ((err: any) => void) | null = null;
   sentMessages: any[] = [];
 
-  constructor(url: string) {
+  constructor(url: string, protocols?: string | string[]) {
     this.url = url;
+    this.protocols = protocols;
     MockWebSocket.instances.push(this);
     setTimeout(() => {
       if (!MockWebSocket.manualOpen && this.readyState !== 3 && this.onopen) {
@@ -177,7 +181,11 @@ describe("useServerRsClient", () => {
 
     expect(result.current.isConnected).toBe(true);
     expect(MockWebSocket.instances.length).toBe(1);
-    expect(MockWebSocket.instances[0].url).toContain("token=test-jwt-token");
+    expect(MockWebSocket.instances[0].url).not.toContain("token=");
+    expect(MockWebSocket.instances[0].protocols).toEqual([
+      "atlas-v1",
+      "token.test-jwt-token",
+    ]);
     expect(MockWebSocket.instances[0].url).toContain(
       `proto=${PROTOCOL_VERSION}`,
     );
@@ -1239,6 +1247,29 @@ describe("useServerRsClient", () => {
     expect(MockWebSocket.instances).toHaveLength(1);
   });
 
+  it("surfaces region full rejection (close code 4003) in connectionError without reconnect loop", async () => {
+    const { result } = await connected();
+    act(() => {
+      MockWebSocket.instances[0].close(
+        REGION_FULL_CLOSE_CODE,
+        "region full: map-for-play is at capacity (100/100)",
+      );
+    });
+    expect(result.current.connectionError).toBe(
+      "Region map-for-play is full (100/100 players). Try another region or wait a moment.",
+    );
+    expect(formatRegionFullMessage("region full")).toBe(
+      "This region is full. Try another region or wait a moment.",
+    );
+    expect(result.current.isConnected).toBe(false);
+
+    // joinRoom does not enter an auto-reconnect loop while connectionError is set
+    await act(async () => {
+      await result.current.joinRoom("map-for-play");
+    });
+    expect(MockWebSocket.instances).toHaveLength(1);
+  });
+
   it("authenticates against Nakama device endpoint and sends real session JWT instead of dev-token", async () => {
     const nakamaUid = "e560e7e0-6767-4287-bb3c-e89b555659a4";
     const nakamaJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0aWQiOiJhNzI0NTIzNi00NTFkLTQxODQtODU1Ni1jZGQ4MzcxMDE0Y2UiLCJ1aWQiOiJlNTYwZTdlMC02NzY3LTQyODctYmIzYy1lODliNTU1NjU5YTQiLCJ1c24iOiJHa0xpanJJZ2NjIiwiZXhwIjoxNzkyMjc5MjMzfQ.k663Qar6bS1dzoZgbUFH_n3nCAEJWjfXonYYYWagaPs";
@@ -1293,8 +1324,11 @@ describe("useServerRsClient", () => {
 
     expect(result.current.isConnected).toBe(true);
     expect(MockWebSocket.instances).toHaveLength(1);
-    expect(MockWebSocket.instances[0].url).toContain(`token=${nakamaJwt}`);
-    expect(MockWebSocket.instances[0].url).not.toContain("dev-token");
+    expect(MockWebSocket.instances[0].url).not.toContain("token=");
+    expect(MockWebSocket.instances[0].protocols).toEqual([
+      "atlas-v1",
+      `token.${nakamaJwt}`,
+    ]);
     expect(result.current.playerId).toBe(String(fnv1a32(nakamaUid)));
   });
 
@@ -1342,7 +1376,11 @@ describe("useServerRsClient", () => {
 
     expect(MockWebSocket.instances).toHaveLength(2);
     expect(result.current.isConnected).toBe(true);
-    expect(MockWebSocket.instances[1].url).toContain("token=dev-token:resume-hero");
+    expect(MockWebSocket.instances[1].url).not.toContain("token=");
+    expect(MockWebSocket.instances[1].protocols).toEqual([
+      "atlas-v1",
+      "token.dev-token:resume-hero",
+    ]);
     const resumedInput = decode(MockWebSocket.instances[1].sentMessages[0]);
     expect(resumedInput.moveX()).toBeCloseTo(1.0, 3);
     expect(resumedInput.moveY()).toBeCloseTo(-0.5, 3);

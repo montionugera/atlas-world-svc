@@ -924,24 +924,79 @@ impl AtlasSimulation {
         }
     }
 
+    /// Maximum Euclidean distance at which a player may legitimately target an entity or ground point.
+    pub const MAX_TARGET_INTENT_RANGE: f32 = 500.0;
+
     /// Applies client input state to the player avatar, auto-spawning if necessary.
     pub fn apply_player_input(&mut self, session_id: &str, input: &crate::protocol::ClientInput) {
-        let resolved_target_entity = if input.target_id() != 0 {
-            let mut id_query = self.world.query::<(Entity, &EntityId)>();
-            let mut found_e = None;
-            for (e, eid) in id_query.iter(&self.world) {
-                if crate::protocol::fnv1a_32(&eid.0) == input.target_id() {
-                    found_e = Some(e);
+        let mut player_pos = self.player_spawn;
+        {
+            let mut pos_query = self
+                .world
+                .query::<(&EntityId, &Position, Option<&SpawnPoint>)>();
+            for (eid, pos, spawn) in pos_query.iter(&self.world) {
+                if eid.0 == session_id {
+                    player_pos = if input.respawn() && self.debug_enabled {
+                        spawn.map(|s| s.0).unwrap_or(Position::new(
+                            self.arena_width / 2.0,
+                            self.arena_height / 2.0,
+                        ))
+                    } else {
+                        *pos
+                    };
                     break;
                 }
             }
-            found_e
+        }
+
+        let max_range_sq = Self::MAX_TARGET_INTENT_RANGE * Self::MAX_TARGET_INTENT_RANGE;
+        let (validated_target_id, resolved_target_entity) = if input.target_id() != 0 {
+            let mut id_query = self.world.query::<(
+                Entity,
+                &EntityId,
+                &Position,
+                &Health,
+                bevy_ecs::prelude::Has<MobTag>,
+            )>();
+            let mut found_valid = None;
+            for (e, eid, t_pos, t_health, is_mob) in id_query.iter(&self.world) {
+                if crate::protocol::fnv1a_32(&eid.0) == input.target_id() {
+                    let dx = t_pos.x - player_pos.x;
+                    let dy = t_pos.y - player_pos.y;
+                    let dist_sq = dx * dx + dy * dy;
+                    if is_mob && t_health.is_alive && dist_sq <= max_range_sq {
+                        found_valid = Some(e);
+                    }
+                    break;
+                }
+            }
+            if let Some(e) = found_valid {
+                (input.target_id(), Some(e))
+            } else {
+                (0, None)
+            }
         } else {
-            None
+            (0, None)
         };
 
-        let target_pos = if input.target_x() != 0.0 || input.target_y() != 0.0 {
-            Some(Position::new(input.target_x(), input.target_y()))
+        let tx = input.target_x();
+        let ty = input.target_y();
+        let target_pos = if tx != 0.0 || ty != 0.0 {
+            let dx = tx - player_pos.x;
+            let dy = ty - player_pos.y;
+            let dist_sq = dx * dx + dy * dy;
+            if tx.is_finite()
+                && ty.is_finite()
+                && tx >= 0.0
+                && tx <= self.arena_width
+                && ty >= 0.0
+                && ty <= self.arena_height
+                && dist_sq <= max_range_sq
+            {
+                Some(Position::new(tx, ty))
+            } else {
+                None
+            }
         } else {
             None
         };
@@ -976,12 +1031,22 @@ impl AtlasSimulation {
                     revived_entity = Some(entity);
                 }
 
-                input_state.move_x = input.move_x();
-                input_state.move_y = input.move_y();
-                let move_len_sq = input.move_x() * input.move_x() + input.move_y() * input.move_y();
+                let mx = if input.move_x().is_finite() {
+                    input.move_x()
+                } else {
+                    0.0
+                };
+                let my = if input.move_y().is_finite() {
+                    input.move_y()
+                } else {
+                    0.0
+                };
+                input_state.move_x = mx;
+                input_state.move_y = my;
+                let move_len_sq = mx * mx + my * my;
                 if move_len_sq > 1e-4 {
                     let inv_len = 1.0 / move_len_sq.sqrt();
-                    input_state.last_facing = (input.move_x() * inv_len, input.move_y() * inv_len);
+                    input_state.last_facing = (mx * inv_len, my * inv_len);
                 }
 
                 // Latch attack presses in the same tick: a keyup/movement packet arriving in the same
@@ -999,7 +1064,7 @@ impl AtlasSimulation {
                 if input.skill_slot() != 0 {
                     input_state.skill_slot = input.skill_slot();
                 }
-                input_state.target_id = input.target_id();
+                input_state.target_id = validated_target_id;
                 input_state.target_entity = resolved_target_entity;
                 if target_pos.is_some() {
                     input_state.target_pos = target_pos;
@@ -1065,17 +1130,27 @@ impl AtlasSimulation {
                 loadout.as_ref(),
             );
             if let Some(mut state) = self.world.get_mut::<PlayerInputState>(entity) {
-                state.move_x = input.move_x();
-                state.move_y = input.move_y();
-                let move_len_sq = input.move_x() * input.move_x() + input.move_y() * input.move_y();
+                let mx = if input.move_x().is_finite() {
+                    input.move_x()
+                } else {
+                    0.0
+                };
+                let my = if input.move_y().is_finite() {
+                    input.move_y()
+                } else {
+                    0.0
+                };
+                state.move_x = mx;
+                state.move_y = my;
+                let move_len_sq = mx * mx + my * my;
                 if move_len_sq > 1e-4 {
                     let inv_len = 1.0 / move_len_sq.sqrt();
-                    state.last_facing = (input.move_x() * inv_len, input.move_y() * inv_len);
+                    state.last_facing = (mx * inv_len, my * inv_len);
                 }
                 state.attack = input.attack();
                 state.attack_held = input.attack();
                 state.skill_slot = input.skill_slot();
-                state.target_id = input.target_id();
+                state.target_id = validated_target_id;
                 state.target_entity = resolved_target_entity;
                 state.target_pos = target_pos;
                 state.client_tick = input.client_tick();
@@ -1269,5 +1344,106 @@ mod tests {
         let removed = sim.remove_player_avatar(session_id);
         assert!(removed);
         assert!(sim.world.get_entity(avatar_entity).is_err());
+    }
+
+    #[test]
+    fn test_validate_target_intents_rejects_invalid_target_id_cases() {
+        use crate::protocol::{deserialize_client_input, fnv1a_32, serialize_client_input_full};
+
+        let mut sim = AtlasSimulation::new(1, 2000.0, 2000.0);
+        let p_ent = sim.spawn_player_avatar("hero", 200.0, 200.0);
+        let _other_player = sim.spawn_player_avatar("ally", 250.0, 200.0);
+
+        // 1. Dead mob nearby
+        let mut dead_health = Health::new(100.0);
+        dead_health.current = 0.0;
+        dead_health.is_alive = false;
+        sim.world.spawn((
+            EntityId("dead-mob".to_string()),
+            Position::new(240.0, 200.0),
+            Velocity::zero(),
+            dead_health,
+            MobTag,
+        ));
+
+        // 2. Living mob out of range (> 500 units away)
+        sim.world.spawn((
+            EntityId("far-mob".to_string()),
+            Position::new(900.0, 900.0),
+            Velocity::zero(),
+            Health::new(100.0),
+            MobTag,
+        ));
+
+        // 3. Living mob in range (<= 500 units away)
+        let valid_mob = sim
+            .world
+            .spawn((
+                EntityId("valid-mob".to_string()),
+                Position::new(300.0, 200.0),
+                Velocity::zero(),
+                Health::new(100.0),
+                MobTag,
+            ))
+            .id();
+
+        for bad_id in [
+            999_999u32,           // non-existent entity
+            fnv1a_32("hero"),     // self
+            fnv1a_32("ally"),     // friendly player (not a mob)
+            fnv1a_32("dead-mob"), // dead mob
+            fnv1a_32("far-mob"),  // out-of-range mob
+        ] {
+            let bytes = serialize_client_input_full(1, 0.0, 0.0, false, 0, bad_id, 0.0, 0.0, false);
+            let input = deserialize_client_input(&bytes).unwrap();
+            sim.apply_player_input("hero", &input);
+            let st = sim.world.get::<PlayerInputState>(p_ent).unwrap();
+            assert_eq!(st.target_id, 0, "bad target_id {bad_id} must be rejected");
+            assert!(
+                st.target_entity.is_none(),
+                "bad target_id {bad_id} must not resolve to an entity"
+            );
+        }
+
+        // Valid living in-range mob succeeds
+        let good_id = fnv1a_32("valid-mob");
+        let bytes = serialize_client_input_full(2, 0.0, 0.0, false, 0, good_id, 0.0, 0.0, false);
+        let input = deserialize_client_input(&bytes).unwrap();
+        sim.apply_player_input("hero", &input);
+        let st = sim.world.get::<PlayerInputState>(p_ent).unwrap();
+        assert_eq!(st.target_id, good_id);
+        assert_eq!(st.target_entity, Some(valid_mob));
+    }
+
+    #[test]
+    fn test_validate_target_intents_rejects_invalid_target_positions() {
+        use crate::protocol::{deserialize_client_input, serialize_client_input_full};
+
+        let mut sim = AtlasSimulation::new(1, 1000.0, 1000.0);
+        let p_ent = sim.spawn_player_avatar("hero", 200.0, 200.0);
+
+        for (bad_x, bad_y) in [
+            (f32::NAN, 200.0),      // NaN
+            (200.0, f32::INFINITY), // Infinity
+            (-10.0, 200.0),         // negative x (out of arena)
+            (200.0, 1200.0),        // > arena_height
+            (900.0, 900.0),         // in arena but > 500 units from player at (200, 200)
+        ] {
+            let bytes = serialize_client_input_full(1, 0.0, 0.0, false, 0, 0, bad_x, bad_y, false);
+            let input = deserialize_client_input(&bytes).unwrap();
+            sim.apply_player_input("hero", &input);
+            let st = sim.world.get::<PlayerInputState>(p_ent).unwrap();
+            assert!(
+                st.target_pos.is_none(),
+                "invalid target position ({bad_x}, {bad_y}) must be rejected"
+            );
+        }
+
+        // Valid in-bounds, in-range target position succeeds
+        let bytes = serialize_client_input_full(2, 0.0, 0.0, false, 0, 0, 350.0, 250.0, false);
+        let input = deserialize_client_input(&bytes).unwrap();
+        sim.apply_player_input("hero", &input);
+        let st = sim.world.get::<PlayerInputState>(p_ent).unwrap();
+        assert_eq!(st.target_pos, Some(Position::new(350.0, 250.0)));
     }
 }
