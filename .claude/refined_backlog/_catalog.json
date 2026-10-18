@@ -1485,8 +1485,9 @@
     "title": "District Helical-Gear Trench Canon Promotion, Spiral Wormway Ramp Connection, and Umbrage Prism Atoll Draft",
     "from_idea": "I-217",
     "created_at": "2026-10-18T11:17:31.481964+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-18T11:17:51.213908+00:00"
   }
 ]
