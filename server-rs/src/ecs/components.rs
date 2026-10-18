@@ -308,6 +308,55 @@ impl AttackFacingCone {
     }
 }
 
+/// A combat ability in a mob's attack repertoire with a distance band (`min_range..=max_range`)
+/// so a mob can vary its attacks depending on combat situation / target distance (E-007 Slice 8).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MobAttackAbility {
+    pub id: String,
+    pub min_range: f32,
+    pub max_range: f32,
+    pub damage_multiplier: f32,
+    pub is_ranged: bool,
+    pub projectile_speed: f32,
+    pub projectile_radius: f32,
+    pub aoe_radius: f32,
+    pub effects: Vec<SkillEffect>,
+}
+
+impl MobAttackAbility {
+    pub fn melee_cleave(max_range: f32) -> Self {
+        Self {
+            id: "melee_cleave".to_string(),
+            min_range: 0.0,
+            max_range,
+            damage_multiplier: 1.25,
+            is_ranged: false,
+            projectile_speed: 400.0,
+            projectile_radius: 14.0,
+            aoe_radius: 0.0,
+            effects: Vec::new(),
+        }
+    }
+
+    pub fn ranged_bolt(min_range: f32, max_range: f32) -> Self {
+        Self {
+            id: "ranged_bolt".to_string(),
+            min_range,
+            max_range,
+            damage_multiplier: 1.0,
+            is_ranged: true,
+            projectile_speed: 220.0,
+            projectile_radius: 8.0,
+            aoe_radius: 0.0,
+            effects: Vec::new(),
+        }
+    }
+
+    pub fn matches_distance(&self, dist: f32) -> bool {
+        dist >= self.min_range && dist <= self.max_range
+    }
+}
+
 #[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MobAi {
     pub state: AiState,
@@ -332,6 +381,12 @@ pub struct MobAi {
     /// Cosine of half-angle for the mob's attack facing cone (`0.5` = 60 deg half-angle).
     #[serde(default = "default_facing_cone_cos")]
     pub facing_cone_cos: f32,
+    /// Distance-banded attack repertoire for combat situation variety (E-007 Slice 8).
+    #[serde(default)]
+    pub abilities: Vec<MobAttackAbility>,
+    /// ID of the most recently executed attack ability.
+    #[serde(default)]
+    pub last_used_ability: Option<String>,
 }
 
 impl MobAi {
@@ -351,7 +406,27 @@ impl MobAi {
             windup_timer: 0.0,
             windup_facing: (1.0, 0.0),
             facing_cone_cos: MOB_FACING_CONE_HALF_ANGLE_COS,
+            abilities: Vec::new(),
+            last_used_ability: None,
         }
+    }
+
+    pub fn with_abilities(mut self, abilities: Vec<MobAttackAbility>) -> Self {
+        if let Some(max_r) = abilities
+            .iter()
+            .map(|a| a.max_range)
+            .max_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
+        {
+            if max_r > self.attack_range {
+                self.attack_range = max_r;
+            }
+        }
+        self.abilities = abilities;
+        self
+    }
+
+    pub fn select_ability_for_distance(&self, dist: f32) -> Option<&MobAttackAbility> {
+        self.abilities.iter().find(|a| a.matches_distance(dist))
     }
 
     pub fn with_leash_distance(mut self, leash_distance: f32) -> Self {

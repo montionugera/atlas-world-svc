@@ -3,10 +3,56 @@ use crate::combat::{DamageType, Element};
 use crate::content::map::TerrainZones;
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    AiState, AttackFacingCone, CombatStats, ElementalAttributes, Health, MobAi, MobWindupConfig,
-    PlayerTag, Position, Projectile, StatusEffects, Velocity, KNOCKBACK_DECAY_PER_SEC,
+    AiState, AttackFacingCone, CombatStats, ElementalAttributes, Health, MobAi, MobAttackAbility,
+    MobWindupConfig, PlayerTag, Position, Projectile, StatusEffects, Velocity,
+    KNOCKBACK_DECAY_PER_SEC,
 };
 use bevy_ecs::prelude::*;
+
+#[allow(clippy::too_many_arguments)]
+fn spawn_mob_ability_projectile(
+    commands: &mut Commands,
+    mob_entity: Entity,
+    target_entity: Entity,
+    pos: Position,
+    dir_x: f32,
+    dir_y: f32,
+    ability: &MobAttackAbility,
+    attack_power: f32,
+    mob_element: Element,
+    facing_cone_cos: f32,
+) {
+    let cone = AttackFacingCone::new(pos, dir_x, dir_y, facing_cone_cos);
+    let speed = ability.projectile_speed.max(150.0);
+    let max_range = if ability.is_ranged {
+        ability.max_range + 50.0
+    } else {
+        ability.max_range + 20.0
+    };
+    let lifetime = if ability.is_ranged { 2.0 } else { 0.25 };
+    commands.spawn((
+        Projectile {
+            owner: mob_entity,
+            target: Some(target_entity),
+            damage: (attack_power * ability.damage_multiplier).max(1.0),
+            damage_type: DamageType::Physical,
+            element: mob_element,
+            speed,
+            radius: ability.projectile_radius.max(6.0),
+            max_range,
+            traveled_distance: 0.0,
+            lifetime,
+            effects: ability.effects.clone(),
+            is_player_projectile: false,
+            aoe_radius: ability.aoe_radius,
+            skill_id: Some(ability.id.clone()),
+            detonated: false,
+        },
+        Position::new(pos.x, pos.y),
+        Velocity::new(dir_x * speed, dir_y * speed),
+        cone,
+    ));
+}
 
 #[allow(clippy::too_many_arguments)]
 fn spawn_mob_attack_projectile(
@@ -262,19 +308,36 @@ pub fn mob_ai_system(
                             mob_ai.windup_timer = effective_windup;
                         } else {
                             stats.cooldown_timer = stats.attack_cooldown;
-                            spawn_mob_attack_projectile(
-                                &mut commands,
-                                mob_entity,
-                                target_entity,
-                                *pos,
-                                dir_x,
-                                dir_y,
-                                mob_ai.is_ranged,
-                                mob_ai.attack_range,
-                                stats.attack_power,
-                                mob_element,
-                                mob_ai.facing_cone_cos,
-                            );
+                            if let Some(ability) = mob_ai.select_ability_for_distance(dist).cloned()
+                            {
+                                mob_ai.last_used_ability = Some(ability.id.clone());
+                                spawn_mob_ability_projectile(
+                                    &mut commands,
+                                    mob_entity,
+                                    target_entity,
+                                    *pos,
+                                    dir_x,
+                                    dir_y,
+                                    &ability,
+                                    stats.attack_power,
+                                    mob_element,
+                                    mob_ai.facing_cone_cos,
+                                );
+                            } else {
+                                spawn_mob_attack_projectile(
+                                    &mut commands,
+                                    mob_entity,
+                                    target_entity,
+                                    *pos,
+                                    dir_x,
+                                    dir_y,
+                                    mob_ai.is_ranged,
+                                    mob_ai.attack_range,
+                                    stats.attack_power,
+                                    mob_element,
+                                    mob_ai.facing_cone_cos,
+                                );
+                            }
                         }
                     }
                 } else if dist <= mob_ai.chase_range {
