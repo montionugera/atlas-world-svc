@@ -8,7 +8,9 @@ use server_rs::meta::{
 use server_rs::net::WsServer;
 use server_rs::protocol::SnapshotBuilder;
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
-use server_rs::spatial::{collect_region_border_ghosts, RegionAdjacencyGraph};
+use server_rs::spatial::{
+    collect_region_border_ghosts, AuthorityHandoffCoordinator, RegionAdjacencyGraph,
+};
 use server_rs::storage::{
     CharacterStateBuffer, MatchEventBuffer, NakamaClient, NakamaConfig, NakamaStorage,
 };
@@ -357,6 +359,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut aoi_trackers: std::collections::HashMap<String, server_rs::spatial::AoiTracker> =
         std::collections::HashMap::new();
     let adjacency_graph = RegionAdjacencyGraph::wealdmarch_default();
+    let mut handoff_coordinator = AuthorityHandoffCoordinator::default();
     let mut match_event_buffer = MatchEventBuffer::default();
     let mut character_state_buffer = CharacterStateBuffer::default();
 
@@ -430,6 +433,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                     room_disconnects_map.insert(room_id.clone(), room_disconnects);
                     room_frames.insert(room_id.clone(), frame);
+                }
+
+                let epoch_now_ms = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|d| d.as_millis() as u64)
+                    .unwrap_or(0);
+                let handoff_tokens = handoff_coordinator.step_handoffs_with_frames(
+                    &mut rooms,
+                    &mut room_frames,
+                    &adjacency_graph,
+                    epoch_now_ms,
+                );
+                for token in &handoff_tokens {
+                    if let Some(aoi) = aoi_trackers.get_mut(&token.transfer.from_region) {
+                        aoi.remove_viewer(server_rs::protocol::fnv1a_32(&token.transfer.session_id));
+                    }
+                    ws_server
+                        .reassign_session_room(
+                            &token.transfer.session_id,
+                            &token.transfer.to_region,
+                        )
+                        .await;
                 }
 
                 let region_snapshots: std::collections::HashMap<String, Vec<server_rs::protocol::EntitySnapshotData>> =

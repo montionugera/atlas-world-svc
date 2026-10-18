@@ -36,11 +36,12 @@
     "id": "E-004",
     "title": "One continuous open world",
     "created_at": "2026-10-11T06:40:07.212210+00:00",
-    "status": "open",
-    "release_version": null,
+    "status": "failed_verification",
+    "release_version": "1.15",
     "verified_sha": null,
     "verified_at": null,
-    "split_approved_by": null
+    "split_approved_by": null,
+    "verifying_sha": null
   },
   {
     "id": "E-005",
