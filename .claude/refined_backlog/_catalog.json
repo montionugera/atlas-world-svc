@@ -1629,5 +1629,15 @@
     "status": "claimed",
     "release_version": null,
     "claimed_at": "2026-10-18T12:37:25.235229+00:00"
+  },
+  {
+    "id": "F-131",
+    "title": "Experience and levels",
+    "from_idea": "I-154",
+    "created_at": "2026-10-18T12:50:13.594942+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-005"
   }
 ]
