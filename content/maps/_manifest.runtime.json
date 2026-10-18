@@ -413,6 +413,24 @@
       ]
     },
     {
+      "mapId": "starlight-orrery-nave-b1",
+      "nodeId": "dungeon-starlight-orrery-nave",
+      "name": "Starlight Orrery Nave",
+      "districtId": "district-celestial-astrolabe-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
       "mapId": "submerged-orrery-keel-b1",
       "nodeId": "dungeon-submerged-orrery-keel",
       "name": "Submerged Orrery Keel B1",
@@ -536,6 +554,24 @@
       "levelRange": [
         19,
         20
+      ]
+    },
+    {
+      "mapId": "armillary-ring-causeway",
+      "nodeId": "hunting-area-armillary-ring-causeway",
+      "name": "Armillary Ring Causeway",
+      "districtId": "district-celestial-astrolabe-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
       ]
     },
     {
@@ -1166,6 +1202,24 @@
       "levelRange": [
         19,
         20
+      ]
+    },
+    {
+      "mapId": "celestial-astrolabe-sanctuary",
+      "nodeId": "town-celestial-astrolabe-sanctuary",
+      "name": "Celestial Astrolabe Sanctuary",
+      "districtId": "district-celestial-astrolabe-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
       ]
     },
     {
@@ -2064,6 +2118,27 @@
       },
       "lockMessage": null
     },
+    "portal-orrery-nave-exit-astrolabe-sanctuary": {
+      "portalId": "portal-orrery-nave-exit-astrolabe-sanctuary",
+      "sourceNodeId": "dungeon-starlight-orrery-nave",
+      "sourceMapId": "starlight-orrery-nave-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-celestial-astrolabe-sanctuary",
+      "targetMapId": "celestial-astrolabe-sanctuary",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
     "portal-orrery-keel-exit-station": {
       "portalId": "portal-orrery-keel-exit-station",
       "sourceNodeId": "dungeon-submerged-orrery-keel",
@@ -2218,6 +2293,48 @@
       "direction": "West",
       "targetNodeId": "town-carillon-hearth-belfry",
       "targetMapId": "carillon-hearth-belfry",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-armillary-causeway-east-astrolabe-sanctuary": {
+      "portalId": "portal-armillary-causeway-east-astrolabe-sanctuary",
+      "sourceNodeId": "hunting-area-armillary-ring-causeway",
+      "sourceMapId": "armillary-ring-causeway",
+      "direction": "East",
+      "targetNodeId": "town-celestial-astrolabe-sanctuary",
+      "targetMapId": "celestial-astrolabe-sanctuary",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-armillary-causeway-west-prism-haven": {
+      "portalId": "portal-armillary-causeway-west-prism-haven",
+      "sourceNodeId": "hunting-area-armillary-ring-causeway",
+      "sourceMapId": "armillary-ring-causeway",
+      "direction": "West",
+      "targetNodeId": "town-penumbra-prism-haven",
+      "targetMapId": "penumbra-prism-haven",
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
@@ -3912,6 +4029,69 @@
       },
       "lockMessage": null
     },
+    "portal-astrolabe-sanctuary-north-equinox-fog": {
+      "portalId": "portal-astrolabe-sanctuary-north-equinox-fog",
+      "sourceNodeId": "town-celestial-astrolabe-sanctuary",
+      "sourceMapId": "celestial-astrolabe-sanctuary",
+      "direction": "North",
+      "targetNodeId": "hunting-area-equinox-zenith-arch",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Shearing orbital starlight across Equinox-Zenith Arch buffets unanchored gliders; Astrolabe-Keeper Caelum requires the Celestial Vernier Key before unlocking the northern equinox gate."
+    },
+    "portal-astrolabe-sanctuary-west-armillary-causeway": {
+      "portalId": "portal-astrolabe-sanctuary-west-armillary-causeway",
+      "sourceNodeId": "town-celestial-astrolabe-sanctuary",
+      "sourceMapId": "celestial-astrolabe-sanctuary",
+      "direction": "West",
+      "targetNodeId": "hunting-area-armillary-ring-causeway",
+      "targetMapId": "armillary-ring-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-astrolabe-sanctuary-dungeon-orrery-nave": {
+      "portalId": "portal-astrolabe-sanctuary-dungeon-orrery-nave",
+      "sourceNodeId": "town-celestial-astrolabe-sanctuary",
+      "sourceMapId": "celestial-astrolabe-sanctuary",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-starlight-orrery-nave",
+      "targetMapId": "starlight-orrery-nave-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
     "portal-cinnamon-mill-north-anise-fog": {
       "portalId": "portal-cinnamon-mill-north-anise-fog",
       "sourceNodeId": "town-cinnamon-mill-haven",
@@ -4982,6 +5162,27 @@
         "y": 200.0
       },
       "lockMessage": "Blinding corona-glare across Corona-Flare Arch disorients unshielded gliders; Prism-Navigator Lyra requires the Penumbral Filter Lens before opening the northern arch."
+    },
+    "portal-prism-haven-east-armillary-causeway": {
+      "portalId": "portal-prism-haven-east-armillary-causeway",
+      "sourceNodeId": "town-penumbra-prism-haven",
+      "sourceMapId": "penumbra-prism-haven",
+      "direction": "East",
+      "targetNodeId": "hunting-area-armillary-ring-causeway",
+      "targetMapId": "armillary-ring-causeway",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-prism-haven-west-penumbra-causeway": {
       "portalId": "portal-prism-haven-west-penumbra-causeway",

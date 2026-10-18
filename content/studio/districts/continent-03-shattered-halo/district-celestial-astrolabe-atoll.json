@@ -3,7 +3,7 @@
   "id": "district-celestial-astrolabe-atoll",
   "name": "Celestial Astrolabe Atoll",
   "parent_continent_id": "continent-03-shattered-halo",
-  "status": "draft",
+  "status": "canon",
   "core_rationale": "Eleventh floating basalt-and-brass ring island of Continent 03 where Vesper's outer orbital tether interlocks with giant starlight armillary spheres.",
   "local_conflict": "Armillary sentinel constructs and starlight-winged moths circle the rotating celestial rings.",
   "level_band_label": "Levels 41 to 60",
@@ -22,9 +22,9 @@
   "grid_nodes": [
     {
       "node_id": "hunting-area-armillary-ring-causeway",
-      "map_id": null,
+      "map_id": "armillary-ring-causeway",
       "node_type": "hunting_area",
-      "status": "mystery",
+      "status": "canon",
       "grid_coordinates": [
         0,
         1
@@ -35,18 +35,89 @@
         50
       ],
       "is_starter_town": false
+    },
+    {
+      "node_id": "town-celestial-astrolabe-sanctuary",
+      "map_id": "celestial-astrolabe-sanctuary",
+      "node_type": "town",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        49,
+        50
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "dungeon-starlight-orrery-nave",
+      "map_id": "starlight-orrery-nave-b1",
+      "node_type": "dungeon",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": -1,
+      "level_range": [
+        49,
+        50
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-equinox-zenith-arch",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        1,
+        0
+      ],
+      "floor_index": 0,
+      "level_range": [
+        50,
+        50
+      ],
+      "is_starter_town": false
     }
   ],
-  "portal_edges": [],
+  "portal_edges": [
+    {
+      "from_node_id": "hunting-area-armillary-ring-causeway",
+      "from_direction": "East",
+      "to_node_id": "town-celestial-astrolabe-sanctuary",
+      "to_direction": "West",
+      "gate_state": "open"
+    },
+    {
+      "from_node_id": "town-celestial-astrolabe-sanctuary",
+      "from_direction": "Dungeon",
+      "to_node_id": "dungeon-starlight-orrery-nave",
+      "to_direction": "Exit",
+      "gate_state": "open"
+    },
+    {
+      "from_node_id": "town-celestial-astrolabe-sanctuary",
+      "from_direction": "North",
+      "to_node_id": "hunting-area-equinox-zenith-arch",
+      "to_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_reason": "Shearing orbital starlight across Equinox-Zenith Arch requires Astrolabe-Keeper Caelum's Celestial Vernier Key."
+    }
+  ],
   "mystery_hook": {
     "in_world_rumor": "Star-navigators say Celestial Astrolabe Atoll aligns its brass armillary rings once every hour to point toward hidden star-shoals.",
     "visual_silhouette": "Nested starlight-and-brass armillary rings rotating around a floating basalt atoll.",
-    "unanswered_question": "What celestial chart-chamber sits at the center of Celestial Astrolabe Atoll?"
+    "unanswered_question": "What celestial chart-chamber sits at the center of Equinox-Zenith Arch?"
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater along the outer armillary ring of Continent 03."
+      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater along the outer armillary ring of Continent 03 and connects west to Penumbra Prism Haven."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -57,12 +128,12 @@
       "evidence": "Specifies 12.5m armillary bridge walkways, 0.58m astrolabe chart desks, and 0.14m basalt risers tailored to 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Draft status: seeds hunting-area-armillary-ring-causeway at [0, 1] ahead of full 2x2 District promotion."
+      "verified": true,
+      "evidence": "2x2 connected matrix at [0,1], [1,1], [1,1] floor -1, and [1,0] with celestial and construct monster families."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves hunting-area-armillary-ring-causeway in Mystery status with complete mystery_hook."
+      "evidence": "Preserves hunting-area-equinox-zenith-arch in Mystery status behind a Fog of Lore portal with explicit lock_reason."
     }
   }
 }

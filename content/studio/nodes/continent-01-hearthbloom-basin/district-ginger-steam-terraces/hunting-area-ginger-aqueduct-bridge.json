@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-ginger-aqueduct-bridge",
+  "name": "Ginger Aqueduct Bridge",
+  "map_id": null,
+  "parent_district_id": "district-ginger-steam-terraces",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western glazed-terracotta steam aqueduct bridge of Ginger-Steam Terraces at [0, 1] channeling warm ginger-mineral water from Cinnamon-Bellows Bluff.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    14,
+    15
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Lantern-Keepers say the terracotta aqueduct arches hum like giant flutes whenever ginger steam surges toward the eastern bathhouses.",
+    "visual_silhouette": "Glazed golden-clay aqueduct arches wreathed in fragrant ginger mist east of Cinnamon-Mill Haven.",
+    "unanswered_question": "Why did the bathhouse golems seal the western sluice gate of Ginger Aqueduct Bridge?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Seeds the western entry node [0, 1] of Ginger-Steam Terraces along scar-kiln-basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Glazed golden-clay aqueduct arches wreathed in fragrant ginger mist."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] as the western entry frontier of Ginger-Steam Terraces."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook in Draft parent district."
+    }
+  }
+}

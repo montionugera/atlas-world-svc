@@ -69,7 +69,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
     def test_rejects_mystery_node_without_mystery_hook(self) -> None:
         with self._mutated_files(
             {
-                "districts/continent-01-hearthbloom-basin/district-ginger-steam-terraces.json": lambda d: d.pop(
+                "districts/continent-02-clockwork-steppe/district-thermal-compensator-basin.json": lambda d: d.pop(
                     "mystery_hook", None
                 )
             }
@@ -231,6 +231,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "spice-kiln-cellar-b1",
                 "stalactite-carillon-nave-b1",
                 "star-heart-nave-b1",
+                "starlight-orrery-nave-b1",
                 "submerged-orrery-keel-b1",
                 "sunken-potter-hold-b1",
                 "sunken-syzygy-dome-b1",
@@ -238,6 +239,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "vesper-cradle-b1",
                 "worm-drive-gearbox-b1",
                 "apricot-aqueduct-terrace",
+                "armillary-ring-causeway",
                 "astrolabe-rift",
                 "aurora-tether",
                 "bimetallic-expansion-span",
@@ -273,6 +275,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "bellows-hearth",
                 "bimetallic-chronometer-hub",
                 "carillon-hearth-belfry",
+                "celestial-astrolabe-sanctuary",
                 "cinnamon-mill-haven",
                 "crown-beacon-citadel",
                 "draft-kiln-post",

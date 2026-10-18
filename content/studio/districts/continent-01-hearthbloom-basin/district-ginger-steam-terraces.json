@@ -3,8 +3,8 @@
   "id": "district-ginger-steam-terraces",
   "name": "Ginger-Steam Terraces",
   "parent_continent_id": "continent-01-hearthbloom-basin",
-  "status": "mystery",
-  "core_rationale": "Tenth terracotta-and-mineral-spring terrace cluster of Hearthbloom Basin where Sola's geothermal vents simmer wild ginger roots andglazed ceramic steam-baths.",
+  "status": "draft",
+  "core_rationale": "Tenth terracotta-and-mineral-spring terrace cluster of Hearthbloom Basin where Sola's geothermal vents simmer wild ginger roots and glazed ceramic steam-baths.",
   "local_conflict": "Effervescent ginger-steam sprites and glazed-clay bathhouse golems bubble out of the over-pressurized mineral cisterns.",
   "level_band_label": "Levels 1 to 20",
   "level_range": [
@@ -19,7 +19,24 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-ginger-aqueduct-bridge",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        14,
+        15
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Bathhouse keepers in Cinnamon-Bellows Sanctuary say the eastern mineral aqueducts carry warm ginger-scented steam from a hidden terrace of whistling teapot domes.",
@@ -36,16 +53,16 @@
       "evidence": "Stepped golden-ochre travertine pools and whistling ceramic teapot bathhouses veiled in aromatic ginger steam."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: travertine pool step risers and teapot bathhouse doorway metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Specifies 12.5m travertine walkways, 0.58m ceramic bath counters, and 0.14m pool step risers tailored to 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the tenth District frontier on Continent 01 with zero filler maps."
+      "evidence": "Draft status: seeds hunting-area-ginger-aqueduct-bridge at [0, 1] ahead of full 2x2 District promotion."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Preserves hunting-area-ginger-aqueduct-bridge in Mystery status with complete mystery_hook."
     }
   }
 }

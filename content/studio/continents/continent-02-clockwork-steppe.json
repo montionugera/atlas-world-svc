@@ -56,12 +56,14 @@
     "district-helical-gear-trench",
     "district-differential-spur-gorge",
     "district-flywheel-dynamo-canyon",
-    "district-bimetallic-escapement-mesa"
+    "district-bimetallic-escapement-mesa",
+    "district-thermal-compensator-basin"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Tinkers say Solar-Coil Overlook on Bimetallic Escapement Mesa stores noon sunlight as pure mechanical spring-tension.",
-    "visual_silhouette": "Laminated copper-and-silver balance coils curving over a sun-drenched brass mesa.",
-    "unanswered_question": "What solar chronometer relay crowns Solar-Coil Overlook?"
+    "in_world_rumor": "Horologists in Bimetallic-Chronometer Hub say the eastern Thermal Compensator Basin rises and falls by two full meters between dawn and dusk as its mercury bellows breathe.",
+    "visual_silhouette": "Concentric brass bellows-towers and silver thermal radiator fins shimmering beyond the eastern rim of Bimetallic Escapement Mesa.",
+    "unanswered_question": "What deep-crust geothermal spring feeds the primary heat exchanger of Thermal Compensator Basin?",
+    "discovery_trigger_hint": "Ten Districts on Continent 02 are Canon while Thermal Compensator Basin awaits exploration along the eastern thermal rim."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -78,11 +80,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes all ten Canon Districts on Continent 02."
+      "evidence": "Organizes ten Canon Districts plus Thermal Compensator Basin (Mystery) on Continent 02."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Bimetallic Escapement Mesa to Canon while preserving Solar-Coil Overlook behind a Fog of Lore portal."
+      "evidence": "Seeds Thermal Compensator Basin in Mystery status while preserving leaf Mystery nodes behind Fog of Lore portals."
     }
   }
 }
