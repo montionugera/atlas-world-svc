@@ -1503,5 +1503,15 @@
     "status": "claimed",
     "release_version": null,
     "claimed_at": "2026-10-18T11:30:51.892491+00:00"
+  },
+  {
+    "id": "F-121",
+    "title": "Damage-over-time statuses",
+    "from_idea": "I-175",
+    "created_at": "2026-10-18T11:31:44.212992+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-007"
   }
 ]
