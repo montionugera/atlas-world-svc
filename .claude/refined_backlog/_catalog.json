@@ -1137,5 +1137,14 @@
     "claimed_at": "2026-10-18T05:04:40.082333+00:00",
     "shipped_at": "2026-10-18T05:24:57.843268+00:00",
     "shipped_sha": "0717f2f9dbe7812c355f225e8d90f1f5c4cb4156"
+  },
+  {
+    "id": "F-091",
+    "title": "Native Rust Meta Engine and Trait-Backed Persistence (Nakama Replacement)",
+    "from_idea": "I-198",
+    "created_at": "2026-10-18T06:05:22.581839+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
