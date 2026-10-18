@@ -53,12 +53,13 @@
     "district-gilded-exhaust",
     "district-thunder-coil-basin",
     "district-pendulum-steppe-west",
-    "district-helical-gear-trench"
+    "district-helical-gear-trench",
+    "district-differential-spur-gorge"
   ],
   "mystery_hook": {
-    "in_world_rumor": "Tinkers say the northern Bevel-Pinion Overlook in Helical-Gear Trench transfers torque at a ninety-degree angle straight into the cliffside.",
+    "in_world_rumor": "Tinkers say the twin bridges of Differential Spur Gorge rotate in opposite directions whenever the Clock-Gale shifts.",
     "visual_silhouette": "Colossal brass wheel-rims rising two hundred meters above golden short-grass plains.",
-    "unanswered_question": "What subterranean worm-gear foundry turns beyond Bevel-Pinion Overlook?"
+    "unanswered_question": "What torque-balancing citadel anchors the central carrier hub of Differential Spur Gorge?"
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -75,11 +76,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes all seven Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin, West Pendulum Steppe, Helical-Gear Trench)."
+      "evidence": "Organizes seven Canon Districts (Rustcog Downs, Mainspring Caldera, Verdigris Siphon, The Gilded Exhaust Flues, Thunder-Coil Basin, West Pendulum Steppe, Helical-Gear Trench) plus Differential Spur Gorge (Mystery)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Helical-Gear Trench to Canon while preserving leaf Mystery frontier Bevel-Pinion Overlook behind a Fog of Lore portal."
+      "evidence": "Seeds Differential Spur Gorge in Mystery status while preserving leaf Mystery frontier Bevel-Pinion Overlook behind a Fog of Lore portal."
     }
   }
 }
