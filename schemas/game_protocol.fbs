@@ -29,6 +29,9 @@ table EntityDelta {
     // Added (backward compatible): ClientInput.client_tick of the last input this player's
     // tick ran on; 0 for none yet, and for bots, mobs and projectiles.
     input_ack: uint32;
+    // Added (E-005 Slice 1, backward compatible): player level and experience on the wire.
+    level: uint32;
+    xp: uint32;
 }
 
 // state_flags bits: 1 = alive, 2 = server-driven bot (BotAgent).

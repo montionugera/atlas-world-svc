@@ -1256,6 +1256,205 @@ impl PlayerInputState {
     }
 }
 
+/// Experience required to advance from `level` to `level + 1` (E-005 Slice 1).
+pub fn xp_for_level(level: u32) -> u32 {
+    100 * level.max(1)
+}
+
+/// Tracks player level, current XP within the level, threshold for next level, and lifetime total XP (E-005 Slice 1).
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PlayerProgression {
+    pub level: u32,
+    pub xp: u32,
+    pub xp_to_next_level: u32,
+    pub total_xp: u32,
+}
+
+impl Default for PlayerProgression {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl PlayerProgression {
+    pub fn new() -> Self {
+        Self {
+            level: 1,
+            xp: 0,
+            xp_to_next_level: xp_for_level(1),
+            total_xp: 0,
+        }
+    }
+
+    /// Grants `amount` XP, advancing `level` as many times as thresholds are crossed.
+    /// Returns the number of levels gained.
+    pub fn grant_xp(&mut self, amount: u32) -> u32 {
+        if amount == 0 {
+            return 0;
+        }
+        self.xp = self.xp.saturating_add(amount);
+        self.total_xp = self.total_xp.saturating_add(amount);
+        let mut levels_gained = 0;
+        while self.xp >= self.xp_to_next_level {
+            self.xp -= self.xp_to_next_level;
+            self.level = self.level.saturating_add(1);
+            self.xp_to_next_level = xp_for_level(self.level);
+            levels_gained += 1;
+        }
+        levels_gained
+    }
+
+    /// Deducts up to `penalty` XP from current level progress without ever de-leveling the player (E-005 Slice 7).
+    pub fn apply_xp_penalty(&mut self, penalty: u32) -> u32 {
+        let deducted = self.xp.min(penalty);
+        self.xp -= deducted;
+        deducted
+    }
+}
+
+/// One stack of items in a player's inventory (E-005 Slices 3 & 5).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct InventoryItemStack {
+    pub item_id: String,
+    pub quantity: u32,
+}
+
+/// Player inventory holding owned item stacks (E-005 Slices 3 & 5).
+#[derive(Component, Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct PlayerInventory {
+    pub items: Vec<InventoryItemStack>,
+}
+
+impl PlayerInventory {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn add_item(&mut self, item_id: impl Into<String>, quantity: u32) {
+        if quantity == 0 {
+            return;
+        }
+        let id = item_id.into();
+        if let Some(stack) = self.items.iter_mut().find(|s| s.item_id == id) {
+            stack.quantity = stack.quantity.saturating_add(quantity);
+        } else {
+            self.items.push(InventoryItemStack {
+                item_id: id,
+                quantity,
+            });
+        }
+    }
+
+    pub fn remove_item(&mut self, item_id: &str, quantity: u32) -> bool {
+        if quantity == 0 {
+            return true;
+        }
+        let Some(idx) = self.items.iter().position(|s| s.item_id == item_id) else {
+            return false;
+        };
+        if self.items[idx].quantity < quantity {
+            return false;
+        }
+        self.items[idx].quantity -= quantity;
+        if self.items[idx].quantity == 0 {
+            self.items.remove(idx);
+        }
+        true
+    }
+
+    pub fn count(&self, item_id: &str) -> u32 {
+        self.items
+            .iter()
+            .find(|s| s.item_id == item_id)
+            .map(|s| s.quantity)
+            .unwrap_or(0)
+    }
+
+    pub fn has_item(&self, item_id: &str) -> bool {
+        self.count(item_id) > 0
+    }
+}
+
+/// Player equipment slots (`weapon`, `armor`, `accessory`) (E-005 Slice 5).
+#[derive(Component, Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct PlayerEquipment {
+    pub weapon_id: Option<String>,
+    pub armor_id: Option<String>,
+    pub accessory_id: Option<String>,
+}
+
+/// Custom skill loadout mapping slots `1..=4` to skill IDs (E-005 Slice 6).
+#[derive(Component, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SkillLoadout {
+    pub slots: [String; 4],
+}
+
+impl Default for SkillLoadout {
+    fn default() -> Self {
+        Self {
+            slots: [
+                "skill_1".to_string(),
+                "skill_2".to_string(),
+                "skill_3".to_string(),
+                "skill_4".to_string(),
+            ],
+        }
+    }
+}
+
+impl SkillLoadout {
+    pub fn skill_for_slot(&self, slot: u8) -> Option<&str> {
+        if (1..=4).contains(&slot) {
+            Some(self.slots[(slot - 1) as usize].as_str())
+        } else {
+            None
+        }
+    }
+
+    pub fn set_slot(&mut self, slot: u8, skill_id: impl Into<String>) -> bool {
+        if (1..=4).contains(&slot) {
+            self.slots[(slot - 1) as usize] = skill_id.into();
+            true
+        } else {
+            false
+        }
+    }
+}
+
+/// Player respawn bind point and discovered fast-travel waypoints (E-005 Slice 7).
+#[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BindPoint {
+    pub region_id: String,
+    pub position: Position,
+    pub discovered_waypoints: Vec<(String, Position)>,
+}
+
+impl Default for BindPoint {
+    fn default() -> Self {
+        Self {
+            region_id: "millcross-ford".to_string(),
+            position: Position::new(200.0, 200.0),
+            discovered_waypoints: vec![("millcross-ford".to_string(), Position::new(200.0, 200.0))],
+        }
+    }
+}
+
+/// Player currency wallet (E-005 Slice 8).
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct PlayerWallet {
+    pub gold: u64,
+}
+
+/// World loot drop entity spawned when a mob dies (E-005 Slice 3).
+#[derive(Component, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LootDrop {
+    pub drop_id: String,
+    pub item_id: String,
+    pub quantity: u32,
+    pub gold: u64,
+    pub claimed: bool,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
