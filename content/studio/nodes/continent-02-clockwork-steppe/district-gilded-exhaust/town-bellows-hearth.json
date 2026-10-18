@@ -1,0 +1,158 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-bellows-hearth",
+  "name": "Bellows Hearth",
+  "map_id": "bellows-hearth",
+  "parent_district_id": "district-gilded-exhaust",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Central chimney-guild town of The Gilded Exhaust Flues at [1, 1] built around Krono's primary brass exhaust bellows where sweeps roast chestnuts and guard the Ash-Valve Vault.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "level_range": [
+    27,
+    30
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/building_forge.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_bellows_hearth_town",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Warm copper condenser troughs fed by condensed golden flue steam"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-bellows-hearth-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-cinder-chimney",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Scalding golden exhaust plumes vent through the Cinder Chimney Damper; the Bellows Guild requires the Master Damper Crank from Ash-Valve Vault before opening the northern flue.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": null,
+    "West": {
+      "portal_id": "portal-bellows-hearth-west-flue",
+      "direction": "West",
+      "target_node_id": "hunting-area-flue-causeway",
+      "target_map_id": "flue-causeway",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-bellows-hearth-dungeon-valve",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-ash-valve-vault",
+      "target_map_id": "ash-valve-vault-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-master-sweep-pippin",
+      "name": "Master Sweep Pippin",
+      "role": "Bellows Guild Foreman",
+      "position_meters": {
+        "x": 1970.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.6,
+      "dialogue_greeting": "Mind your boots on the warm brass grates, Sprout! Our 0.60 meter chestnut-roasting counters are warmed directly by Krono's deep furnace breath."
+    },
+    {
+      "npc_id": "npc-valve-tinker-mira",
+      "name": "Valve-Tinker Mira",
+      "role": "Damper Crank Engineer",
+      "position_meters": {
+        "x": 2070.0,
+        "y": 1965.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "A rogue furnace-automaton down in the Ash-Valve Vault jammed the Master Damper Crank. Retrieve it so we can vent the northern Cinder Chimney!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.44,
+    "stair_riser_height_meters": 0.15,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.15,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/building_forge.glb",
+      "res://assets/dungeon/floor_tile_big_grate.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors The Gilded Exhaust Flues at [1, 1] directly above Krono's Ash-Valve Vault."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A cozy brass chimney-town where giant accordion bellows puff golden mist and warm chestnut ovens."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Counters at 0.58 to 0.60m, grate stair risers at 0.15m, doorways 2.15m x 1.65m, and 13.0m avenues for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric West portal to hunting-area-flue-causeway, Dungeon portal to dungeon-ash-valve-vault, and North fog_of_lore portal to hunting-area-cinder-chimney."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Seals the northern Cinder Chimney Damper behind a fog_of_lore boundary portal and Bellows Guild lock message."
+    }
+  }
+}

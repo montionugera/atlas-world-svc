@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-ash-bellows-trench",
+  "name": "Ash-Bellows Trench",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "status": "mystery",
+  "core_rationale": "Southeastern sub-kiln firebrick trench of Continent 01 where Sola's deepest ceramic air-ducts draw cool valley air beneath Kilnfire Terraces.",
+  "local_conflict": " Dormant glaze-golems and ember-salamanders stir inside the sealed firebrick intake tunnels beneath the shield rim.",
+  "level_band_label": "Levels 1 to 20",
+  "level_range": [
+    12,
+    18
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "spirit"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Kiln-masons say the southeastern air-ducts hum a three-note chord whenever the great bellows under Kilnwatch Bastion draw breath.",
+    "visual_silhouette": "Glazed terracotta intake arches disappearing into a warm, glowing trench along the southeastern shield rim.",
+    "unanswered_question": "What ancient kiln-blueprint lies sealed inside Sola's primary draft chamber at the bottom of Ash-Bellows Trench?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin on Continent 01 Hearthbloom Basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Glazed terracotta intake arches and singing ceramic air-ducts along the southeastern shield rim."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: firebrick catwalk and air-duct grate metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the southeastern District frontier on Continent 01 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}

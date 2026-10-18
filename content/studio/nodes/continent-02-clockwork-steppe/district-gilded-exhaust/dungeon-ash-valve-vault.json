@@ -1,0 +1,158 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-ash-valve-vault",
+  "name": "Ash-Valve Vault",
+  "map_id": "ash-valve-vault-b1",
+  "parent_district_id": "district-gilded-exhaust",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Subterranean brass pressure-valve chamber beneath Bellows Hearth at [1, 1] (floor -1) where Krono's exhaust manifolds regulate thermal flow across the southern steppe.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    28,
+    32
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_ash_valve_vault",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Glowing golden cinder-traps and brass steam-condenser conduits"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-ash-valve-exit-bellows",
+      "direction": "Exit",
+      "target_node_id": "town-bellows-hearth",
+      "target_map_id": "bellows-hearth",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 20.0,
+        "height": 14.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3760.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-ash-valve-cinder-klokwerk",
+      "monster_id": "mob-cinder-valve-automaton",
+      "monster_name": "Cinder-Valve Automaton",
+      "spawn_count": 8,
+      "respawn_seconds": 16.0,
+      "level": 29,
+      "element": "Fire",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-brass-valve-gasket",
+          "item_name": "Brass Valve Gasket",
+          "drop_chance_percent": 38.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-cinder-valve-automaton",
+        "card_name": "Cinder-Valve Automaton Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Armor",
+        "modifier_summary": "Physical Defense +8, Fire Elemental Resistance +10%"
+      }
+    },
+    {
+      "spawn_id": "spawn-ash-valve-furnace-warden",
+      "monster_id": "mob-furnace-warden-pyrogon",
+      "monster_name": "Furnace-Warden Pyrogon",
+      "spawn_count": 1,
+      "respawn_seconds": 150.0,
+      "level": 32,
+      "element": "Fire",
+      "size": "Large",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-master-damper-crank",
+          "item_name": "Master Damper Crank",
+          "drop_chance_percent": 45.0
+        },
+        {
+          "item_id": "item-gilded-bellows-core",
+          "item_name": "Gilded Bellows Core",
+          "drop_chance_percent": 18.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-furnace-warden-pyrogon",
+        "card_name": "Furnace-Warden Pyrogon Card",
+        "drop_chance_percent": 0.005,
+        "equipment_slot": "Weapon",
+        "modifier_summary": "Physical Attack Power +18, Fire Elemental Attack +8%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.38,
+    "stair_riser_height_meters": 0.15,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 12.0,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Houses Krono's subterranean exhaust manifold beneath Bellows Hearth along scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Brass pressure-valve rotunda lit by glowing golden cinder-conduits and rhythmic bellows pistons."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Maintains 0.15m stair risers, 0.16m terrace steps, 12.0m vault corridors, and 2.20m x 1.65m arched doorways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric Exit portal to town-bellows-hearth; construct spawns at Levels 29 to 32 (within District max 30 + 5 dungeon bleed)."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops the Master Damper Crank required to unseal the northern Cinder Chimney Damper mystery gate."
+    }
+  }
+}
