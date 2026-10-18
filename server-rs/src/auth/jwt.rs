@@ -230,6 +230,12 @@ impl AuthGuard {
         encode(&Header::default(), &claims, &encoding_key)
             .expect("Failed to encode Nakama session JWT")
     }
+
+    /// Issues a signed Nakama-compatible session JWT with a freshly generated UUIDv4 `tid`.
+    pub fn issue_session_token(&self, uid: &str, usn: &str, exp_offset_sec: i64) -> String {
+        let tid = crate::meta::generate_uuid_v4();
+        self.generate_nakama_token(uid, usn, &tid, exp_offset_sec)
+    }
 }
 
 #[cfg(test)]
@@ -263,6 +269,16 @@ mod tests {
             .expect("Nakama session token with uid/usn/tid must be accepted");
         assert_eq!(claims.sub, "e560e7e0-6767-4287-bb3c-e89b555659a4");
         assert_eq!(claims.username.as_deref(), Some("GkLijrIgcc"));
+    }
+
+    #[test]
+    fn test_issue_session_token_roundtrip() {
+        let guard = AuthGuard::new_strict(b"atlas_dev_session_key_change_me_please_32".to_vec());
+        let token =
+            guard.issue_session_token("00000000-0000-4000-8000-000000000077", "player_abc", 7200);
+        let claims = guard.validate_token(&token).unwrap();
+        assert_eq!(claims.sub, "00000000-0000-4000-8000-000000000077");
+        assert_eq!(claims.username.as_deref(), Some("player_abc"));
     }
 
     #[test]

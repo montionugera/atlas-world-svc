@@ -1,6 +1,6 @@
 # 🚀 Atlas World - Real-time Multiplayer Game
 
-A high-performance real-time multiplayer game built with a modern high-density architecture: **server-rs** (authoritative Rust ECS game server with FlatBuffers binary delta replication) and **Nakama** for meta-systems (auth, social, matchmaking).
+A high-performance real-time multiplayer game built with a modern high-density architecture: **server-rs** (authoritative Rust ECS game server with FlatBuffers binary delta replication and native in-process **Rust Meta & Persistence Engine**).
 
 ---
 
@@ -40,19 +40,23 @@ A high-performance real-time multiplayer game built with a modern high-density a
 ### Legacy Core Simulation Engine (Colyseus TypeScript — Migration to Rust in progress)
 - **Authoritative 2.5D Model:** Per-floor 2D physics using `Planck.js`. Being replaced by `server-rs` in release 1.11 (Epic E-002).
 
-### Meta-Systems (Nakama)
-- **Auth & Storage:** Handles user accounts, inventory, and leaderboards.
-- **Matchmaking:** Calls Agones to allocate a server and returns `ip:port:token` to client.
+### Native Rust Meta & Persistence Engine (`server-rs/src/meta/` — Feature F-091)
+- **Zero-Overhead Single-Binary Meta Engine:** Built directly into `server-rs` to replace the Go/Goja Nakama + CockroachDB stack while preserving 100% `/v2/*` HTTP wire compatibility (`POST /v2/account/authenticate/device`, `GET /v2/account`, `POST /v2/storage`, `GET|POST /v2/rpc/{id}`).
+- **In-Process `NakamaStorage` Implementation:** `RustMetaEngine` implements `NakamaStorage` directly in-memory/in-process so join-time `get_loadout`, match-event reporting (`report_match_events`), and character-state checkpointing (`save_character_state`) execute with zero HTTP S2S round-trip overhead.
+- **Trait-Backed Persistence (`MetaDocStore`):**
+  - `InMemoryMetaStore`: Zero-dependency default when `META_DB_PATH` is unset.
+  - `SqliteMetaStore`: Embedded `rusqlite` (`WAL` mode + `BEGIN IMMEDIATE` multi-key atomic CAS transactions) configured via `META_DB_PATH=./data/meta.db`.
+  - `PostgresMetaStore`: Conditional-DML SQL transaction adapter for multi-pod Kubernetes clusters (`META_POSTGRES_URL`).
 
 ### Orchestration & Fleet Lifecycle (Agones — Epic E-001 Slices 4 & 5)
 - **Lifecycle Management:** Dedicated `FleetLifecycle` trait in `server-rs` connecting to the Agones SDK sidecar (`localhost:9357`).
 - **Containerization:** Multi-stage Debian/Rust Docker image (`server-rs/Dockerfile`, $< 35\text{ MB}$), with local Kubernetes Deployment and Agones `GameServer` manifest (`k8s/local/server-rs.yaml`).
 - **Cold Boot Time:** $< 5\text{ ms}$ (budget: $< 50\text{ ms}$).
 
-### Meta-Systems & Token Authentication (Nakama — Epic E-001 Slice 4)
-- **Session Authentication:** `AuthGuard` validates HS256-signed JWT tokens from Nakama against `NAKAMA_SERVER_KEY` rationale.
+### Meta-Systems & Token Authentication (`server-rs/src/auth/`)
+- **Session Authentication:** `AuthGuard` both issues (`issue_session_token`) and validates HS256-signed JWT tokens (`tid`, `uid`, `usn`, `exp`) against `NAKAMA_SESSION_KEY` / `NAKAMA_SERVER_KEY`.
 - **Zero-Leeway Verification:** Rejects unauthenticated connections, expired sessions, and forged tokens before establishing WebSocket session.
-- **WebSocket Gateway:** Native `tokio-tungstenite` server accepting binary FlatBuffers frames and broadcasting `WorldSnapshot` frames.
+- **WebSocket Gateway:** Native `tokio-tungstenite` server accepting binary FlatBuffers frames and broadcasting `WorldSnapshot` frames while multiplexing `/v2/*` Meta HTTP endpoints on the same port (and optional `META_BIND_ADDR`).
 
 ---
 
@@ -64,10 +68,12 @@ A high-performance real-time multiplayer game built with a modern high-density a
 - Rust 1.98+ & Cargo (`~/.cargo/bin`)
 - .NET 8 SDK & Xcode 16+ (for Godot C# iOS Client)
 
-### 1. Start High-Density Rust Game Server (`server-rs`)
+### 1. Start High-Density Rust Game & Meta Server (`server-rs`)
 ```bash
 cd server-rs
 export NAKAMA_SERVER_KEY="defaultkey"
+export META_DB_PATH="./data/meta.db"       # optional: omit for in-memory store
+export META_BIND_ADDR="0.0.0.0:7350"       # optional: secondary Nakama /v2/* HTTP port
 export AGONES_ENABLED="false"
 cargo run --release
 ```
@@ -107,13 +113,11 @@ xcrun devicectl device process launch --device <DEVICE_UUID> com.atlasworld.clie
 
 | Service | Endpoint | Purpose |
 | ---| --- | --- |
-| **Colyseus Server (WS)** | `ws://localhost:2567/game` | Binary websocket connection |
+| **server-rs WebSocket & Meta API** | `ws://localhost:2567/ws` / `http://localhost:2567/v2/*` | Binary FlatBuffers WebSocket + Nakama `/v2/*` HTTP API |
+| **Secondary Meta HTTP Listener** | `http://localhost:7350/v2/*` | Optional (`META_BIND_ADDR=0.0.0.0:7350`) drop-in Nakama HTTP port |
+| **Colyseus Server (WS)** | `ws://localhost:2567/game` | Legacy binary websocket connection |
 | **REST API (Static Data)** | `http://localhost:2567/api` | Mob types, configs, stats |
-| **Nakama HTTP API** | `http://localhost:7350` | Auth, meta-systems RPCs (profile/inventory/quests) — see [meta-systems.spec.md](./docs/meta-systems.spec.md) |
-| **Nakama Console** | `http://localhost:7351` | Admin UI (admin/password, see `nakama/local.yml`) |
-| **CockroachDB (SQL)** | `localhost:26257` | Nakama's database |
-| **CockroachDB (Admin UI)** | `http://localhost:8081` | DB admin UI (host port 8081, avoids the 8080 collision) |
-| **Metrics (Prometheus)** | `http://localhost:9091/metrics`| Raw diagnostic metrics |
+| **Metrics (Prometheus)** | `http://localhost:2567/metrics`| Live server tick & entity diagnostic metrics |
 | **Dashboards (Grafana)** | `http://localhost:3000` | Analytics dashboards (admin/admin) |
 | **React Interface** | `http://localhost:3001` | Browser-based generic client |
 
@@ -127,7 +131,7 @@ xcrun devicectl device process launch --device <DEVICE_UUID> com.atlasworld.clie
 | `docs/` | Architecture specs and API documentation. |
 | `game-client/` | Godot 4.7 C# NativeAOT Mobile MMORPG client (scenes, scripts, shaders, assets). |
 | `game-client/src/UI/Widgets/` | Ragnarok-style UI components: `PlayerFrame`, `TopBar`, `ChatBox`, `WardrobeModal`, `MobileControlsOverlay`. |
-| `server-rs/` | Authoritative Rust ECS simulation engine with Bevy ECS, Rapier2D, and FlatBuffers delta streaming. |
+| `server-rs/` | Authoritative Rust ECS simulation engine + Native Rust Meta & Persistence Engine (`server-rs/src/meta/`). |
 | `colyseus-server/` | Legacy Node.js authoritative game server. |
 | `client/react-client/` | Web-based client implementation for quick prototyping. |
 | `monitoring/` | Prometheus & Grafana configuration stacks. |
@@ -181,10 +185,12 @@ The real-time game state replication protocol uses schema-compiled Google FlatBu
 | ---| --- | --- |
 | `MAP_KEY` | `TowerF5` | Name of the instance map |
 | `CAPACITY` | `300` | Limit of connections before rejecting |
-| `NAKAMA_RUNTIME_ENV` | `development` | Nakama operation mode |
-| `NAKAMA_SERVER_KEY` | `defaultkey` | Shared secret for signing/validating Nakama JWT session tokens |
-| `PORT` | `2567` (or `7350`) | Game socket port |
-| `BIND_ADDR` | `0.0.0.0:2567` | Listen address for Rust `server-rs` WebSocket gateway |
+| `META_DB_PATH` | `./data/meta.db` (optional) | SQLite WAL file path for `RustMetaEngine` (uses `InMemoryMetaStore` when unset) |
+| `META_POSTGRES_URL` | `postgres://...` (optional) | Postgres connection URL for multi-pod `PostgresMetaStore` |
+| `META_BIND_ADDR` | `0.0.0.0:7350` (optional) | Secondary TCP listener serving Nakama `/v2/*` HTTP routes |
+| `NAKAMA_SERVER_KEY` | `defaultkey` | Shared secret for Basic device auth and JWT fallback |
+| `NAKAMA_HTTP_KEY` | `atlas_dev_http_key` | Shared secret for S2S `/v2/rpc/*?http_key=` calls |
+| `PORT` | `2567` | Game WebSocket & primary HTTP gateway port |
 | `AGONES_ENABLED` | `false` (local) / `true` (prod) | Whether to connect to Agones Kubernetes sidecar |
 | `AGONES_SDK_PORT` | `9357` | Port for the Agones SDK sidecar gRPC/HTTP interface |
 

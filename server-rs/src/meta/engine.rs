@@ -348,7 +348,7 @@ impl RustMetaEngine {
                 let body = Self::parse_json_payload(payload_raw)?;
                 self.rpc_accept_quest(uid, &body)
             }
-            "claim_quest_reward" => {
+            "claim_quest_reward" | "complete_quest" => {
                 let uid = Self::require_client(ctx)?;
                 let body = Self::parse_json_payload(payload_raw)?;
                 self.rpc_claim_quest_reward(uid, &body)
@@ -520,9 +520,10 @@ impl RustMetaEngine {
         let mut last_err = None;
         for _ in 0..MAX_OCC_ATTEMPTS {
             let (mut seq_doc, seq_ver) = self.read_quests_seq(user_id)?;
-            let last_seq = seq_doc.get(match_id).copied().unwrap_or(0);
-            if seq <= last_seq {
-                return Ok(json!({ "deduped": true }));
+            if let Some(&last_seq) = seq_doc.get(match_id) {
+                if seq <= last_seq {
+                    return Ok(json!({ "deduped": true }));
+                }
             }
 
             let (mut quests_doc, quests_ver) = self.read_quests(user_id)?;
@@ -694,6 +695,7 @@ impl RustMetaEngine {
             .ok_or_else(|| MetaError::BadRequest("Invalid grant_xp payload".to_string()))?;
         let amount = body
             .get("amount")
+            .or_else(|| body.get("xp"))
             .and_then(|v| v.as_u64())
             .filter(|&a| a > 0)
             .ok_or_else(|| MetaError::BadRequest("Invalid grant_xp payload".to_string()))?;
