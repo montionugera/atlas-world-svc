@@ -161,6 +161,24 @@
       ]
     },
     {
+      "mapId": "invar-balance-vault-b1",
+      "nodeId": "dungeon-invar-balance-vault",
+      "name": "Invar Balance Vault",
+      "districtId": "district-bimetallic-escapement-mesa",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
       "mapId": "inverted-belfry-b1",
       "nodeId": "dungeon-inverted-belfry",
       "name": "The Inverted Belfry",
@@ -554,6 +572,24 @@
       "levelRange": [
         46,
         48
+      ]
+    },
+    {
+      "mapId": "bimetallic-expansion-span",
+      "nodeId": "hunting-area-bimetallic-expansion-span",
+      "name": "Bimetallic Expansion Span",
+      "districtId": "district-bimetallic-escapement-mesa",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
       ]
     },
     {
@@ -1093,6 +1129,24 @@
       ],
       "levelRange": [
         27,
+        30
+      ]
+    },
+    {
+      "mapId": "bimetallic-chronometer-hub",
+      "nodeId": "town-bimetallic-chronometer-hub",
+      "name": "Bimetallic-Chronometer Hub",
+      "districtId": "district-bimetallic-escapement-mesa",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        29,
         30
       ]
     },
@@ -1716,6 +1770,27 @@
       },
       "lockMessage": null
     },
+    "portal-invar-vault-exit-chronometer-hub": {
+      "portalId": "portal-invar-vault-exit-chronometer-hub",
+      "sourceNodeId": "dungeon-invar-balance-vault",
+      "sourceMapId": "invar-balance-vault-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-bimetallic-chronometer-hub",
+      "targetMapId": "bimetallic-chronometer-hub",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
     "portal-inverted-belfry-exit-haven": {
       "portalId": "portal-inverted-belfry-exit-haven",
       "sourceNodeId": "dungeon-inverted-belfry",
@@ -2227,6 +2302,48 @@
       "direction": "West",
       "targetNodeId": "town-undertide-sanctuary",
       "targetMapId": "undertide-sanctuary",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-bimetallic-span-east-chronometer-hub": {
+      "portalId": "portal-bimetallic-span-east-chronometer-hub",
+      "sourceNodeId": "hunting-area-bimetallic-expansion-span",
+      "sourceMapId": "bimetallic-expansion-span",
+      "direction": "East",
+      "targetNodeId": "town-bimetallic-chronometer-hub",
+      "targetMapId": "bimetallic-chronometer-hub",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-bimetallic-span-west-governor-hub": {
+      "portalId": "portal-bimetallic-span-west-governor-hub",
+      "sourceNodeId": "hunting-area-bimetallic-expansion-span",
+      "sourceMapId": "bimetallic-expansion-span",
+      "direction": "West",
+      "targetNodeId": "town-flywheel-governor-hub",
+      "targetMapId": "flywheel-governor-hub",
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
@@ -3648,6 +3765,69 @@
       },
       "lockMessage": null
     },
+    "portal-chronometer-hub-north-solar-coil-fog": {
+      "portalId": "portal-chronometer-hub-north-solar-coil-fog",
+      "sourceNodeId": "town-bimetallic-chronometer-hub",
+      "sourceMapId": "bimetallic-chronometer-hub",
+      "direction": "North",
+      "targetNodeId": "hunting-area-solar-coil-overlook",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Concentrated solar-noon thermal expansion across Solar-Coil Overlook warps uncalibrated gear; Chronometer-Master Vane requires the Zero-Expansion Invar Key before opening the northern heliostat gate."
+    },
+    "portal-chronometer-hub-west-bimetallic-span": {
+      "portalId": "portal-chronometer-hub-west-bimetallic-span",
+      "sourceNodeId": "town-bimetallic-chronometer-hub",
+      "sourceMapId": "bimetallic-chronometer-hub",
+      "direction": "West",
+      "targetNodeId": "hunting-area-bimetallic-expansion-span",
+      "targetMapId": "bimetallic-expansion-span",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-chronometer-hub-dungeon-invar-vault": {
+      "portalId": "portal-chronometer-hub-dungeon-invar-vault",
+      "sourceNodeId": "town-bimetallic-chronometer-hub",
+      "sourceMapId": "bimetallic-chronometer-hub",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-invar-balance-vault",
+      "targetMapId": "invar-balance-vault-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
     "portal-carillon-belfry-north-fog": {
       "portalId": "portal-carillon-belfry-north-fog",
       "sourceNodeId": "town-carillon-hearth-belfry",
@@ -4067,6 +4247,27 @@
         "y": 200.0
       },
       "lockMessage": "Centrifugal wind-shear across Gyroscope-Rim Overlook buffets uncalibrated gliders; Governor-Master Torque requires the Flywheel Ballast Key before unlocking the northern rim bridge."
+    },
+    "portal-governor-hub-east-bimetallic-span": {
+      "portalId": "portal-governor-hub-east-bimetallic-span",
+      "sourceNodeId": "town-flywheel-governor-hub",
+      "sourceMapId": "flywheel-governor-hub",
+      "direction": "East",
+      "targetNodeId": "hunting-area-bimetallic-expansion-span",
+      "targetMapId": "bimetallic-expansion-span",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-governor-hub-west-centrifugal-gantry": {
       "portalId": "portal-governor-hub-west-centrifugal-gantry",

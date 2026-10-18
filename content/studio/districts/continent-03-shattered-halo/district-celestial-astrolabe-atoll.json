@@ -3,7 +3,7 @@
   "id": "district-celestial-astrolabe-atoll",
   "name": "Celestial Astrolabe Atoll",
   "parent_continent_id": "continent-03-shattered-halo",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Eleventh floating basalt-and-brass ring island of Continent 03 where Vesper's outer orbital tether interlocks with giant starlight armillary spheres.",
   "local_conflict": "Armillary sentinel constructs and starlight-winged moths circle the rotating celestial rings.",
   "level_band_label": "Levels 41 to 60",
@@ -19,7 +19,24 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-armillary-ring-causeway",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        49,
+        50
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Star-navigators say Celestial Astrolabe Atoll aligns its brass armillary rings once every hour to point toward hidden star-shoals.",
@@ -36,16 +53,16 @@
       "evidence": "Nested starlight-and-brass armillary rings rotating around a floating basalt atoll."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: armillary walkway and astrolabe desk metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Specifies 12.5m armillary bridge walkways, 0.58m astrolabe chart desks, and 0.14m basalt risers tailored to 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the eleventh District frontier on Continent 03 with zero filler maps."
+      "evidence": "Draft status: seeds hunting-area-armillary-ring-causeway at [0, 1] ahead of full 2x2 District promotion."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Preserves hunting-area-armillary-ring-causeway in Mystery status with complete mystery_hook."
     }
   }
 }

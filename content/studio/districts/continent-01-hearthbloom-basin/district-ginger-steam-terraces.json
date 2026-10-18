@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-ginger-steam-terraces",
+  "name": "Ginger-Steam Terraces",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "status": "mystery",
+  "core_rationale": "Tenth terracotta-and-mineral-spring terrace cluster of Hearthbloom Basin where Sola's geothermal vents simmer wild ginger roots andglazed ceramic steam-baths.",
+  "local_conflict": "Effervescent ginger-steam sprites and glazed-clay bathhouse golems bubble out of the over-pressurized mineral cisterns.",
+  "level_band_label": "Levels 1 to 20",
+  "level_range": [
+    14,
+    15
+  ],
+  "ecological_monster_families": [
+    "flora",
+    "construct"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Bathhouse keepers in Cinnamon-Bellows Sanctuary say the eastern mineral aqueducts carry warm ginger-scented steam from a hidden terrace of whistling teapot domes.",
+    "visual_silhouette": "Stepped golden-ochre travertine pools and glazed ceramic steam-chimneys rising beyond the eastern ridge of Cinnamon-Bellows Bluff.",
+    "unanswered_question": "Which ancient Kiln-Master sealed the master pressure-valve beneath the Ginger-Steam Terraces?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin along the eastern geothermal rim of Continent 01."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Stepped golden-ochre travertine pools and whistling ceramic teapot bathhouses veiled in aromatic ginger steam."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: travertine pool step risers and teapot bathhouse doorway metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the tenth District frontier on Continent 01 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}

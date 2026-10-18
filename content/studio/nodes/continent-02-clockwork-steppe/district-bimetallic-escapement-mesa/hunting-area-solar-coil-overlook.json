@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-solar-coil-overlook",
+  "name": "Solar-Coil Overlook",
+  "map_id": null,
+  "parent_district_id": "district-bimetallic-escapement-mesa",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern parabolic heliostat cliff of Bimetallic Escapement Mesa at [1, 0] where Krono's solar-heated copper coils drive the daytime expansion stroke of the eastern steppe.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    30,
+    30
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Chronometer apprentices warn that at solar noon the giant bimetallic coils snap with enough force to launch a brass cart across the canyon, guarding a nest of sun-charged automata.",
+    "visual_silhouette": "Parabolic copper mirrors and glowing red-gold bimetallic spirals shimmering above the northern rim of Bimetallic-Chronometer Hub.",
+    "unanswered_question": "Who tilted the primary heliostat array toward the unmapped eastern horizon after the Great Escapement Fracture?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Extends north from Bimetallic-Chronometer Hub at [1, 0] along scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Parabolic copper mirrors and glowing red-gold bimetallic spirals shimmering above the northern rim."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Bimetallic-Chronometer Hub with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind the Bimetallic-Chronometer Hub North Fog of Lore gate."
+    }
+  }
+}

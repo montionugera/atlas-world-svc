@@ -2,12 +2,12 @@
   "schema_version": "1.0.0",
   "id": "hunting-area-bimetallic-expansion-span",
   "name": "Bimetallic Expansion Span",
-  "map_id": null,
+  "map_id": "bimetallic-expansion-span",
   "parent_district_id": "district-bimetallic-escapement-mesa",
   "parent_continent_id": "continent-02-clockwork-steppe",
   "node_type": "hunting_area",
-  "status": "mystery",
-  "core_rationale": "Western laminated copper-and-invar arch bridge of Bimetallic Escapement Mesa at [0, 1] linking Flywheel-Governor Hub to the thermal chronometer plateau.",
+  "status": "canon",
+  "core_rationale": "Western laminated copper-and-invar arch bridge of Bimetallic Escapement Mesa at [0, 1] linking Flywheel-Governor Hub to Bimetallic-Chronometer Hub.",
   "is_starter_town": false,
   "grid_coordinates": [
     0,
@@ -18,31 +18,162 @@
     29,
     30
   ],
-  "mystery_hook": {
-    "in_world_rumor": "Glider pilots say Bimetallic Expansion Span rings like a tuning fork whenever a cloud shadow passes across its copper-invar ribs.",
-    "visual_silhouette": "Twin laminated metal arches gleaming copper on top and mirror-silver underneath.",
-    "unanswered_question": "How do the wind-tinkers lock the expansion joints of Bimetallic Expansion Span during noon heat?"
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/bridge_wood.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_bimetallic_expansion_span",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Mirror-polished invar cooling channels beneath laminated copper expansion arches"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-bimetallic-span-east-chronometer-hub",
+      "direction": "East",
+      "target_node_id": "town-bimetallic-chronometer-hub",
+      "target_map_id": "bimetallic-chronometer-hub",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-bimetallic-span-west-governor-hub",
+      "direction": "West",
+      "target_node_id": "town-flywheel-governor-hub",
+      "target_map_id": "flywheel-governor-hub",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-expansion-warden-kale",
+      "name": "Expansion-Warden Kale",
+      "role": "Bimetallic Joint Inspector",
+      "position_meters": {
+        "x": 1950.0,
+        "y": 2015.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Feel the bridge flex with the sun! Check my 0.58 meter thermal gauge stand before crossing east into Bimetallic-Chronometer Hub."
+    }
+  ],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-bimetallic-coil-sentry",
+      "monster_id": "monster-bimetallic-coil-sentry",
+      "monster_name": "Bimetallic Coil-Sentry",
+      "spawn_count": 12,
+      "respawn_seconds": 25,
+      "level": 29,
+      "element": "Fire",
+      "size": "Small",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-laminated-invar-strip",
+          "item_name": "Laminated Invar Strip",
+          "drop_chance_percent": 42.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-bimetallic-coil-sentry",
+        "card_name": "Bimetallic Coil-Sentry Card",
+        "drop_chance_percent": 0.04
+      }
+    },
+    {
+      "spawn_id": "spawn-invar-shell-armadillo",
+      "monster_id": "monster-invar-shell-armadillo",
+      "monster_name": "Invar-Shell Armadillo",
+      "spawn_count": 8,
+      "respawn_seconds": 34,
+      "level": 30,
+      "element": "Earth",
+      "size": "Medium",
+      "race": "Brute",
+      "family": "carapace",
+      "item_drops": [
+        {
+          "item_id": "item-silver-invar-plate",
+          "item_name": "Silver Invar Plate",
+          "drop_chance_percent": 32.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-invar-shell-armadillo",
+        "card_name": "Invar-Shell Armadillo Card",
+        "drop_chance_percent": 0.03
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.44,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.15,
+      "width": 1.6
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/bridge_wood.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/barrel.glb"
+    ]
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Connects Flywheel Dynamo Canyon east into Bimetallic Escapement Mesa along scar-brass-faultline."
+      "evidence": "Links Flywheel Dynamo Canyon east into Bimetallic Escapement Mesa along scar-brass-faultline."
     },
     "fantasy_and_wonder": {
       "verified": true,
       "evidence": "Laminated copper-and-invar arches flexing smoothly with the steppe sun."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+      "verified": true,
+      "evidence": "Enforces 12.5m bimetallic walkways, 0.14m brass risers, 0.58m gauge stands, and 0.20m grass for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: reserved at [0, 1] inside Bimetallic Escapement Mesa with zero filler maps."
+      "verified": true,
+      "evidence": "Occupies [0, 1] with construct and carapace spawns and symmetric West/East portals."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Maintains map_id: null and complete mystery_hook until Bimetallic Escapement Mesa is promoted to Canon."
+      "evidence": "Promoted from Mystery to Canon with full 5-pillar verification while Solar-Coil Overlook remains Mystery."
     }
   }
 }

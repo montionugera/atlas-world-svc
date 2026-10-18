@@ -63,7 +63,7 @@
     "in_world_rumor": "Star-navigators say Celestial Astrolabe Atoll aligns its brass armillary rings once every hour to point toward hidden star-shoals.",
     "visual_silhouette": "Nested starlight-and-brass armillary rings rotating around a floating basalt atoll.",
     "unanswered_question": "What celestial chart-chamber sits at the center of Celestial Astrolabe Atoll?",
-    "discovery_trigger_hint": "Ten Districts on Continent 03 are Canon while Celestial Astrolabe Atoll awaits exploration on the outer armillary ring."
+    "discovery_trigger_hint": "Ten Districts on Continent 03 are Canon while Celestial Astrolabe Atoll is now in Draft status with Armillary Ring Causeway seeded."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -80,11 +80,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes ten Canon Districts plus Celestial Astrolabe Atoll (Mystery) on Continent 03."
+      "evidence": "Organizes ten Canon Districts plus Celestial Astrolabe Atoll (Draft) on Continent 03."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Seeds Celestial Astrolabe Atoll in Mystery status while preserving leaf Mystery frontiers behind Fog of Lore portals."
+      "evidence": "Advances Celestial Astrolabe Atoll to Draft while preserving Armillary Ring Causeway and leaf Mystery frontiers behind Fog of Lore portals."
     }
   }
 }

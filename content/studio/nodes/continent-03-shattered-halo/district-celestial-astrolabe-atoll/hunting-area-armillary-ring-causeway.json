@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-armillary-ring-causeway",
+  "name": "Armillary Ring Causeway",
+  "map_id": null,
+  "parent_district_id": "district-celestial-astrolabe-atoll",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western brass-and-basalt meridian arch bridge of Celestial Astrolabe Atoll at [0, 1] where rotating starlight rings align with the twilight currents from Penumbra Prism Reef.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    49,
+    50
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Astrolabe apprentices claim the causeway's outer meridian ring locks into place only when three twilight constellations align above Penumbra Prism Haven.",
+    "visual_silhouette": "Concentric brass meridian rings rotating slowly around a floating basalt bridge in the eastern starlight mist.",
+    "unanswered_question": "What keeps the outer meridian ring spinning after its primary starlight tether snapped?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Seeds the western entry node [0, 1] of Celestial Astrolabe Atoll along scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Concentric brass meridian rings rotating slowly around a floating basalt bridge in the eastern starlight mist."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] as the western entry frontier of Celestial Astrolabe Atoll."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook in Draft parent district."
+    }
+  }
+}
