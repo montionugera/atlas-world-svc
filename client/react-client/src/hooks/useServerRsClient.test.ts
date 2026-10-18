@@ -59,6 +59,7 @@ class MockWebSocket {
   readonly CLOSED = 3;
 
   url: string;
+  protocols?: string | string[];
   binaryType: string = "blob";
   readyState: number = MockWebSocket.manualOpen ? 0 : 1; // OPEN unless manual
   onopen: (() => void) | null = null;
@@ -67,8 +68,9 @@ class MockWebSocket {
   onerror: ((err: any) => void) | null = null;
   sentMessages: any[] = [];
 
-  constructor(url: string) {
+  constructor(url: string, protocols?: string | string[]) {
     this.url = url;
+    this.protocols = protocols;
     MockWebSocket.instances.push(this);
     setTimeout(() => {
       if (!MockWebSocket.manualOpen && this.readyState !== 3 && this.onopen) {
@@ -177,7 +179,11 @@ describe("useServerRsClient", () => {
 
     expect(result.current.isConnected).toBe(true);
     expect(MockWebSocket.instances.length).toBe(1);
-    expect(MockWebSocket.instances[0].url).toContain("token=test-jwt-token");
+    expect(MockWebSocket.instances[0].url).not.toContain("token=");
+    expect(MockWebSocket.instances[0].protocols).toEqual([
+      "atlas-v1",
+      "token.test-jwt-token",
+    ]);
     expect(MockWebSocket.instances[0].url).toContain(
       `proto=${PROTOCOL_VERSION}`,
     );
@@ -1293,8 +1299,11 @@ describe("useServerRsClient", () => {
 
     expect(result.current.isConnected).toBe(true);
     expect(MockWebSocket.instances).toHaveLength(1);
-    expect(MockWebSocket.instances[0].url).toContain(`token=${nakamaJwt}`);
-    expect(MockWebSocket.instances[0].url).not.toContain("dev-token");
+    expect(MockWebSocket.instances[0].url).not.toContain("token=");
+    expect(MockWebSocket.instances[0].protocols).toEqual([
+      "atlas-v1",
+      `token.${nakamaJwt}`,
+    ]);
     expect(result.current.playerId).toBe(String(fnv1a32(nakamaUid)));
   });
 
@@ -1342,7 +1351,11 @@ describe("useServerRsClient", () => {
 
     expect(MockWebSocket.instances).toHaveLength(2);
     expect(result.current.isConnected).toBe(true);
-    expect(MockWebSocket.instances[1].url).toContain("token=dev-token:resume-hero");
+    expect(MockWebSocket.instances[1].url).not.toContain("token=");
+    expect(MockWebSocket.instances[1].protocols).toEqual([
+      "atlas-v1",
+      "token.dev-token:resume-hero",
+    ]);
     const resumedInput = decode(MockWebSocket.instances[1].sentMessages[0]);
     expect(resumedInput.moveX()).toBeCloseTo(1.0, 3);
     expect(resumedInput.moveY()).toBeCloseTo(-0.5, 3);

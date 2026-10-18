@@ -489,9 +489,9 @@ export const useServerRsClient = (
           const sessionName = extractTokenUserId(token);
           const localPlayerId = String(fnv1a32(sessionName));
           setPlayerId(localPlayerId);
-          const url = `${protocol}://${config.serverHost}:${config.serverPort}?token=${token}&map=${activeMap}&proto=${PROTOCOL_VERSION}`;
+          const url = `${protocol}://${config.serverHost}:${config.serverPort}?map=${activeMap}&proto=${PROTOCOL_VERSION}`;
 
-          const ws = new WebSocket(url);
+          const ws = new WebSocket(url, ["atlas-v1", `token.${token}`]);
           ws.binaryType = "arraybuffer";
           // Track immediately so a disconnect() during CONNECTING (e.g. React
           // StrictMode double-mount) closes this socket instead of leaking it.
