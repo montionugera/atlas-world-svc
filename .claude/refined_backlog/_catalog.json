@@ -1123,5 +1123,14 @@
     "claimed_at": "2026-10-18T04:43:09.675218+00:00",
     "shipped_at": "2026-10-18T04:53:10.698144+00:00",
     "shipped_sha": "5d191cb4ac22bb7b7a48e73708468baebbd7575f"
+  },
+  {
+    "id": "F-090",
+    "title": "Autonomous Product Owner Multi-Agent Studio Pipeline, Self-Evaluation Telemetry, and Kilnfire Terraces Increment",
+    "from_idea": "I-197",
+    "created_at": "2026-10-18T05:04:33.492516+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
