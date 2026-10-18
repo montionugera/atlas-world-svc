@@ -1,0 +1,151 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-sunken-potter-hold",
+  "name": "Sunken Potter Hold B1",
+  "map_id": "sunken-potter-hold-b1",
+  "parent_district_id": "district-glaze-river-delta",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Submerged ancient kiln-barge cargo hold beneath Glaze-Barge Quay at [1, 1] (floor -1) where rows of glowing cobalt amphorae rest in warm thermal spring chambers.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    19,
+    20
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_sunken_potter_hold",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Warm cobalt-tinted thermal pools lapping against terraced amphora racks"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-sunken-potter-hold-exit-quay",
+      "direction": "Exit",
+      "target_node_id": "town-glaze-barge-quay",
+      "target_map_id": "glaze-barge-quay",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 2040.0
+      }
+    }
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-cobalt-amphora-golem",
+      "monster_id": "monster-cobalt-amphora-golem",
+      "monster_name": "Cobalt Amphora-Golem",
+      "spawn_count": 7,
+      "respawn_seconds": 32,
+      "level": 19,
+      "element": "Earth",
+      "size": "Large",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-cobalt-amphora-handle",
+          "item_name": "Cobalt Amphora Handle",
+          "drop_chance_percent": 38.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-cobalt-amphora-golem",
+        "card_name": "Cobalt Amphora-Golem Card",
+        "drop_chance_percent": 0.05,
+        "card_effect": "Increases healing received from potions by 8% and grants +4% Earth resistance."
+      }
+    },
+    {
+      "spawn_id": "spawn-kiln-barge-eel",
+      "monster_id": "monster-kiln-barge-eel",
+      "monster_name": "Kiln-Barge Lantern-Eel",
+      "spawn_count": 5,
+      "respawn_seconds": 36,
+      "level": 20,
+      "element": "Water",
+      "size": "Medium",
+      "race": "Fish",
+      "family": "aquatic",
+      "item_drops": [
+        {
+          "item_id": "item-warm-glaze-fin",
+          "item_name": "Warm Glaze Fin",
+          "drop_chance_percent": 32.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-kiln-barge-eel",
+        "card_name": "Kiln-Barge Lantern-Eel Card",
+        "drop_chance_percent": 0.04,
+        "card_effect": "Grants +5% Water Magic Damage and +10 Hit Rate in underground holds."
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.14,
+    "max_bush_height_meters": 0.35,
+    "stair_riser_height_meters": 0.15,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.1,
+      "width": 1.55
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/dungeon/pillar.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Submerged ancient kiln-barge hold beneath Glaze-Barge Quay warmed by Sola's thermal springs."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Glowing cobalt amphora racks and lantern-eels swimming through sunken porcelain cargo vaults."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.15m cargo-deck risers, 2.10m x 1.55m bulkhead hatches, and 12.5m aisles for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Floor -1 dungeon at [1, 1] with symmetric Exit portal to town-glaze-barge-quay and construct/aquatic spawns."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Houses the Porcelain Rudder Pin lore hook required to unlock the northern Kiln-Lighthouse Spit."
+    }
+  }
+}

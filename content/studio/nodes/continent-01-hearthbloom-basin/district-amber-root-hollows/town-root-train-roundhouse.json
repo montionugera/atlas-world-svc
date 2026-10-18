@@ -49,7 +49,24 @@
       }
     },
     "South": null,
-    "East": null,
+    "East": {
+      "portal_id": "portal-root-roundhouse-east-cobalt",
+      "direction": "East",
+      "target_node_id": "hunting-area-cobalt-sandbar-ford",
+      "target_map_id": "cobalt-sandbar-ford",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
     "West": {
       "portal_id": "portal-root-roundhouse-west-resin",
       "direction": "West",
@@ -137,7 +154,7 @@
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Anchors Amber-Root Hollows at [1, 1] where Kettle-Whistle root-trains depart for Continent 02."
+      "evidence": "Anchors Amber-Root Hollows at [1, 1] where Kettle-Whistle root-trains depart for Continent 02 and connects eastward to Cobalt Sandbar Ford."
     },
     "fantasy_and_wonder": {
       "verified": true,
@@ -149,11 +166,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Symmetric West portal to hunting-area-resin-arch-tunnel, Dungeon portal to dungeon-sap-heart-cistern, and North fog_of_lore portal to hunting-area-banyan-canopy-spur."
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, East, Dungeon, and North (fog_of_lore) portals."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Seals the northern Banyan Canopy Spur behind a fog_of_lore boundary portal and Stationmaster lock message."
+      "evidence": "Locks northern Banyan Canopy Spur behind a Fog of Lore portal while connecting eastward to Glaze-River Delta."
     }
   }
 }

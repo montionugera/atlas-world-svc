@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-umbrage-prism-atoll",
+  "name": "Umbrage Prism Atoll",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "status": "mystery",
+  "core_rationale": "Southern eclipse-shadow crystal atoll of Continent 03 where Vesper's smoky quartz spires split twilight starlight into seven walkable spectrum bridges.",
+  "local_conflict": "Umbral prism-seraphs and shadow-refraction wisps patrol the crystal spectrum spans.",
+  "level_band_label": "Levels 41 to 60",
+  "level_range": [
+    49,
+    50
+  ],
+  "ecological_monster_families": [
+    "celestial",
+    "spirit"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Star-navigators say that walking the violet band of Umbrage Prism Atoll muffles every footstep into a harp-chord.",
+    "visual_silhouette": "Smoky quartz prism-spires rising from a floating basalt ring and projecting seven-colored light bridges across the void.",
+    "unanswered_question": "What eclipse-glass sanctum sits at the focal point of Umbrage Prism Atoll?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater along the southern eclipse-shadow rim of Continent 03."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Smoky quartz prism-spires splitting twilight starlight into seven walkable spectrum bridges."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: prism-bridge and lens-table metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the southern prism District frontier on Continent 03 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}
