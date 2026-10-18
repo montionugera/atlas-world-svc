@@ -1729,5 +1729,15 @@
     "claimed_at": "2026-10-18T15:55:19.522912+00:00",
     "shipped_at": "2026-10-18T16:03:05.808148+00:00",
     "shipped_sha": "a30ce68af6c1bcaec972eadea5e628459adcbb18"
+  },
+  {
+    "id": "F-139",
+    "title": "Loot drops and pickup",
+    "from_idea": "I-156",
+    "created_at": "2026-10-18T16:49:44.220212+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-005"
   }
 ]
