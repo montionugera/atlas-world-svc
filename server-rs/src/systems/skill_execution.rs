@@ -260,6 +260,7 @@ pub fn skill_execution_system(
                 3 => "skill_3",
                 4 => "skill_4",
                 5 => "skill_dash",
+                6 => "skill_heal",
                 _ => "",
             };
 
@@ -268,6 +269,8 @@ pub fn skill_execution_system(
                     // No dashing out of a knockback: it must neither fire nor spend cooldown.
                     !status_opt.is_some_and(|s| s.is_knocked_back())
                         && cooldown_tracker.can_perform(&[skill.id.as_str()])
+                } else if skill.heal_amount().is_some() {
+                    cooldown_tracker.can_perform(&[skill.id.as_str()])
                 } else {
                     cooldown_tracker.can_perform(&[skill.id.as_str(), "global_magic_cd"])
                 };
@@ -299,6 +302,16 @@ pub fn skill_execution_system(
                         vel.vx = dir_x * dash_speed;
                         vel.vy = dir_y * dash_speed;
                         cooldown_tracker.set_cooldown(&skill.id, skill.cooldown_sec);
+                    } else if let Some(heal_amt) = skill.heal_amount() {
+                        commands.queue(move |world: &mut World| {
+                            if let Some(mut h) = world.get_mut::<Health>(entity) {
+                                h.heal(heal_amt);
+                            }
+                        });
+                        cooldown_tracker.set_cooldown(&skill.id, skill.cooldown_sec);
+                        if skill.gcd_sec > 0.0 {
+                            cooldown_tracker.set_cooldown("global_magic_cd", skill.gcd_sec);
+                        }
                     } else {
                         // Start casting
                         casting.start_cast(&skill.id, skill.casting_time_sec, current_time);
