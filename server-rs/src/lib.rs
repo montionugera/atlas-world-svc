@@ -43,9 +43,10 @@ pub use storage::{
 
 pub use core::{Lcg, Mulberry32, SimClock};
 pub use ecs::{
-    AiAgent, AiState, BotAgent, CastingState, CombatStats, CooldownTracker, DashState,
-    DeadMobTracker, ElementalAttributes, EntityId, Health, Mass, MobAi, MobSpawnAnchor, MobTag,
-    PlayerInputState, PlayerTag, Position, Projectile, StatusEffects, Velocity,
+    AiAgent, AiState, AttackFacingCone, BotAgent, CastingState, CombatStats, CooldownTracker,
+    DashState, DeadMobTracker, ElementalAttributes, EntityId, Health, Mass, MobAi, MobSpawnAnchor,
+    MobTag, MobWindupConfig, PlayerInputState, PlayerTag, Position, Projectile, StatusEffects,
+    Velocity, MOB_FACING_CONE_HALF_ANGLE_COS, MOB_WINDUP_DURATION_SEC,
 };
 pub use physics::{PhysicsWorld, RapierBodyHandle, RapierColliderHandle};
 pub use protocol::{

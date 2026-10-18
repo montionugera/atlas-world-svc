@@ -182,6 +182,69 @@ pub enum AiState {
     ReturnHome,
 }
 
+/// Standard 800 ms wind-up tell before a mob attack lands (E-007 Slice 1).
+pub const MOB_WINDUP_DURATION_SEC: f32 = 0.8;
+/// Cosine of the 60-degree half-angle (120-degree total cone) for mob attack facing checks.
+pub const MOB_FACING_CONE_HALF_ANGLE_COS: f32 = 0.5;
+
+fn default_facing_cone_cos() -> f32 {
+    MOB_FACING_CONE_HALF_ANGLE_COS
+}
+
+/// Optional simulation-wide resource configuring default mob wind-up tell duration and facing cone.
+#[derive(Resource, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct MobWindupConfig {
+    pub windup_duration_sec: f32,
+    pub facing_cone_cos: f32,
+}
+
+impl Default for MobWindupConfig {
+    fn default() -> Self {
+        Self {
+            windup_duration_sec: MOB_WINDUP_DURATION_SEC,
+            facing_cone_cos: MOB_FACING_CONE_HALF_ANGLE_COS,
+        }
+    }
+}
+
+/// Enforces a directional facing cone check on an attack projectile so targets outside
+/// the attacker's locked facing cone when the swing lands take no damage.
+#[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct AttackFacingCone {
+    pub origin: Position,
+    pub dir_x: f32,
+    pub dir_y: f32,
+    pub min_cos: f32,
+}
+
+impl AttackFacingCone {
+    pub fn new(origin: Position, dir_x: f32, dir_y: f32, min_cos: f32) -> Self {
+        let len = (dir_x * dir_x + dir_y * dir_y).sqrt();
+        let (nx, ny) = if len > 1e-4 {
+            (dir_x / len, dir_y / len)
+        } else {
+            (1.0, 0.0)
+        };
+        Self {
+            origin,
+            dir_x: nx,
+            dir_y: ny,
+            min_cos,
+        }
+    }
+
+    pub fn contains(&self, target_pos: Position) -> bool {
+        let dx = target_pos.x - self.origin.x;
+        let dy = target_pos.y - self.origin.y;
+        let dist = (dx * dx + dy * dy).sqrt();
+        if dist <= 1e-4 {
+            return true;
+        }
+        let dot = (dx / dist) * self.dir_x + (dy / dist) * self.dir_y;
+        dot >= self.min_cos
+    }
+}
+
 #[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MobAi {
     pub state: AiState,
@@ -194,6 +257,18 @@ pub struct MobAi {
     pub wander_target: Position,
     /// Chase / return speed in px/s (bestiary `derive_mob_stats().speed`).
     pub move_speed: f32,
+    /// Wind-up tell duration in seconds before an attack fires (e.g. `MOB_WINDUP_DURATION_SEC = 0.8`).
+    #[serde(default)]
+    pub windup_duration_sec: f32,
+    /// Remaining wind-up tell timer in seconds (`> 0.0` while showing the wind-up tell).
+    #[serde(default)]
+    pub windup_timer: f32,
+    /// Unit facing direction locked when the wind-up tell begins.
+    #[serde(default = "default_facing")]
+    pub windup_facing: (f32, f32),
+    /// Cosine of half-angle for the mob's attack facing cone (`0.5` = 60 deg half-angle).
+    #[serde(default = "default_facing_cone_cos")]
+    pub facing_cone_cos: f32,
 }
 
 impl MobAi {
@@ -209,6 +284,10 @@ impl MobAi {
             wander_target: home_pos,
             // Bestiary "mid" speed (8 legacy units * 10).
             move_speed: 80.0,
+            windup_duration_sec: 0.0,
+            windup_timer: 0.0,
+            windup_facing: (1.0, 0.0),
+            facing_cone_cos: MOB_FACING_CONE_HALF_ANGLE_COS,
         }
     }
 
@@ -220,6 +299,45 @@ impl MobAi {
     pub fn with_move_speed(mut self, move_speed: f32) -> Self {
         self.move_speed = move_speed;
         self
+    }
+
+    pub fn with_windup(mut self, duration_sec: f32) -> Self {
+        self.windup_duration_sec = duration_sec.max(0.0);
+        self
+    }
+
+    pub fn with_default_windup(self) -> Self {
+        self.with_windup(MOB_WINDUP_DURATION_SEC)
+    }
+
+    pub fn with_facing_cone_cos(mut self, cos_threshold: f32) -> Self {
+        self.facing_cone_cos = cos_threshold.clamp(-1.0, 1.0);
+        self
+    }
+
+    /// True while the mob is in its pre-attack wind-up tell.
+    pub fn is_winding_up(&self) -> bool {
+        self.windup_timer > 0.0
+    }
+
+    /// Returns normalized progress (`0.0..=1.0`) through the current wind-up tell.
+    pub fn windup_progress(&self) -> f32 {
+        if self.windup_timer <= 0.0 || self.windup_duration_sec <= 0.0 {
+            0.0
+        } else {
+            (1.0 - (self.windup_timer / self.windup_duration_sec)).clamp(0.0, 1.0)
+        }
+    }
+
+    /// Checks whether `target_pos` lies inside the mob's locked `windup_facing` cone from `mob_pos`.
+    pub fn is_in_facing_cone(&self, mob_pos: Position, target_pos: Position) -> bool {
+        AttackFacingCone::new(
+            mob_pos,
+            self.windup_facing.0,
+            self.windup_facing.1,
+            self.facing_cone_cos,
+        )
+        .contains(target_pos)
     }
 }
 
