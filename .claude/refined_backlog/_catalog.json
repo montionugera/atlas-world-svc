@@ -1244,5 +1244,15 @@
     "status": "claimed",
     "release_version": null,
     "claimed_at": "2026-10-18T08:38:34.235440+00:00"
+  },
+  {
+    "id": "F-100",
+    "title": "Sleeping regions",
+    "from_idea": "I-149",
+    "created_at": "2026-10-18T08:42:30.386258+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-004"
   }
 ]
