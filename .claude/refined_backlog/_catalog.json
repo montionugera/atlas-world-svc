@@ -995,9 +995,10 @@
     "title": "Player caps per region",
     "from_idea": "I-170",
     "created_at": "2026-10-18T01:02:54.022096+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-006"
+    "epic": "E-006",
+    "claimed_at": "2026-10-18T01:03:00.874131+00:00"
   }
 ]
