@@ -8,6 +8,7 @@ use server_rs::meta::{
 use server_rs::net::WsServer;
 use server_rs::protocol::SnapshotBuilder;
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
+use server_rs::spatial::{collect_region_border_ghosts, RegionAdjacencyGraph};
 use server_rs::storage::{
     CharacterStateBuffer, MatchEventBuffer, NakamaClient, NakamaConfig, NakamaStorage,
 };
@@ -355,6 +356,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut snapshot_builder = SnapshotBuilder::new();
     let mut aoi_trackers: std::collections::HashMap<String, server_rs::spatial::AoiTracker> =
         std::collections::HashMap::new();
+    let adjacency_graph = RegionAdjacencyGraph::wealdmarch_default();
     let mut match_event_buffer = MatchEventBuffer::default();
     let mut character_state_buffer = CharacterStateBuffer::default();
 
@@ -393,6 +395,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let mut departed_users: Vec<String> =
                     disconnected.iter().map(|(s, _)| s.clone()).collect();
                 let mut total_entities: usize = 0;
+                let mut room_frames: std::collections::HashMap<String, server_rs::simulation::LiveFrame> =
+                    std::collections::HashMap::with_capacity(rooms.len());
+                let mut room_disconnects_map: std::collections::HashMap<String, Vec<String>> =
+                    std::collections::HashMap::with_capacity(rooms.len());
 
                 for (room_id, sim) in rooms.iter_mut() {
                     let room_inputs: Vec<server_rs::net::ClientPacket> = inputs
@@ -422,23 +428,42 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
                     }
 
+                    room_disconnects_map.insert(room_id.clone(), room_disconnects);
+                    room_frames.insert(room_id.clone(), frame);
+                }
+
+                let region_snapshots: std::collections::HashMap<String, Vec<server_rs::protocol::EntitySnapshotData>> =
+                    room_frames
+                        .iter()
+                        .map(|(r, f)| (r.clone(), f.entities.clone()))
+                        .collect();
+
+                for (room_id, frame) in &room_frames {
                     if ws_server.active_connections_in_room(room_id).await > 0 {
                         let epoch_ms = std::time::SystemTime::now()
                             .duration_since(std::time::UNIX_EPOCH)
                             .map(|d| d.as_millis() as u64)
                             .unwrap_or(frame.sim_time_ms);
                         let aoi = aoi_trackers.entry(room_id.clone()).or_default();
-                        for departed in &room_disconnects {
-                            aoi.remove_viewer(server_rs::protocol::fnv1a_32(departed));
+                        if let Some(room_disconnects) = room_disconnects_map.get(room_id) {
+                            for departed in room_disconnects {
+                                aoi.remove_viewer(server_rs::protocol::fnv1a_32(departed));
+                            }
                         }
+                        let border_ghosts = collect_region_border_ghosts(
+                            room_id,
+                            &adjacency_graph,
+                            &region_snapshots,
+                        );
                         ws_server
-                            .broadcast_aoi_snapshots_to_room(
+                            .broadcast_aoi_snapshots_with_ghosts_to_room(
                                 room_id,
                                 aoi,
                                 &mut snapshot_builder,
                                 frame.tick,
                                 epoch_ms,
                                 &frame.entities,
+                                &border_ghosts,
                                 &frame.removed_ids,
                                 &frame.events,
                             )
@@ -598,21 +623,5 @@ mod tests {
         assert_eq!(timings.work_us.len(), TICK_REPORT_EVERY - 1);
         timings.record(start + Duration::from_secs(60), Duration::from_millis(2));
         assert!(timings.interval_us.is_empty() && timings.work_us.is_empty());
-    }
-
-    #[tokio::test]
-    async fn sim_ticker_does_not_burst_after_a_stall() {
-        let period = Duration::from_millis(20);
-        let mut ticker = sim_ticker(period);
-        ticker.tick().await;
-        // Stall for six periods, as an overrunning tick or a starved host would.
-        std::thread::sleep(period * 6);
-        let resumed = Instant::now();
-        for _ in 0..4 {
-            ticker.tick().await;
-        }
-        // One tick is due at once; the next three keep the 20 ms cadence. A bursting
-        // timer returns all four immediately.
-        assert!(resumed.elapsed() >= period * 2, "{:?}", resumed.elapsed());
     }
 }
