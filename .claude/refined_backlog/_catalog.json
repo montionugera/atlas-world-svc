@@ -1047,5 +1047,15 @@
     "claimed_at": "2026-10-18T01:59:25.475127+00:00",
     "shipped_at": "2026-10-18T02:07:43.237227+00:00",
     "shipped_sha": "c2579b1f1cd22531e49484f6f56d613feb5413e3"
+  },
+  {
+    "id": "F-084",
+    "title": "Load a generated-world region on the server",
+    "from_idea": "I-147",
+    "created_at": "2026-10-18T02:09:52.899905+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-004"
   }
 ]
