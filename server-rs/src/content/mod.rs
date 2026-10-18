@@ -1,4 +1,5 @@
 pub mod bestiary;
+pub mod item_catalog;
 pub mod map;
 pub mod mmorpg;
 pub mod stats;
@@ -10,6 +11,7 @@ pub use bestiary::{
     derive_mob_stats, BestiaryCatalog, BestiaryEntry, DerivedMobStats, MobTier, BASE_MOB_ATK,
     BESTIARY_JSON, BOSS_ATK_MULTIPLIER, BOSS_HP_MULTIPLIER,
 };
+pub use item_catalog::{EquipmentSlot, ItemCatalog, ItemDefinition, LootDropSpec};
 pub use map::{
     HeightTerrace, MapConfig, MapSpawnArea, StaticObstacle, StaticObstacles, TerrainHeightfield,
     TerrainType, TerrainZone, TerrainZones,
