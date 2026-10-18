@@ -8,7 +8,7 @@ use crate::ecs::components::{
 };
 use bevy_ecs::prelude::*;
 
-#[allow(clippy::type_complexity)]
+#[allow(clippy::too_many_arguments)]
 fn spawn_mob_attack_projectile(
     commands: &mut Commands,
     mob_entity: Entity,
