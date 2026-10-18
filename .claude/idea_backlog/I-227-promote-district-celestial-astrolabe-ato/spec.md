@@ -15,6 +15,8 @@ Promoting `district-celestial-astrolabe-atoll` to `canon` advances Continent 03 
 2. **Continent 01 & Continent 02 Frontier Pipeline**:
    - Promote `content/studio/districts/continent-01-hearthbloom-basin/district-ginger-steam-terraces.json` (`mystery -> draft`) and create `content/studio/nodes/continent-01-hearthbloom-basin/district-ginger-steam-terraces/hunting-area-ginger-aqueduct-bridge.json` (`mystery`).
    - Create `content/studio/districts/continent-02-clockwork-steppe/district-thermal-compensator-basin.json` (`mystery`) and register in `continent-02-clockwork-steppe.json`.
-3. **Verification Gates**:
-   - Zero Abbreviations, 90 to 120 centimeter toddler/kid Character Scale Law, and all Seven Invariants (`INV-01`..`INV-07`).
-   - `python3 scripts/run_world_pipeline.py --fast --auto-tune` (`100.0%` Quality Score, `A+` warm turn speed, **157 Studio nodes**, **91 playable maps**).
+
+## 3. Acceptance Criteria
+- Zero Abbreviations, 90 to 120 centimeter toddler/kid Character Scale Law, and all Seven Invariants (`INV-01`..`INV-07`) pass with 0 errors.
+- `python3 scripts/run_world_pipeline.py --fast --auto-tune` achieves `100.0%` Quality Score, `A+` (`< 1,000 ms`) warm turn speed, **157 Studio nodes**, and **91 playable maps**.
+- All unit tests in `tests/test_validate_studio_hierarchy.py` and `tests/test_studio_web_perspectives.py` pass.
