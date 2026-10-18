@@ -2,8 +2,8 @@ use crate::ai::ThreatTable;
 use crate::combat::{DamageCalculator, DamageOptions, SkillEffect};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    knockback_speed, ElementalAttributes, Health, HitLog, HitRecord, Mass, MobTag, Parried,
-    PlayerInputState, PlayerTag, Position, Projectile, StatusEffects, Velocity,
+    knockback_speed, AttackFacingCone, ElementalAttributes, Health, HitLog, HitRecord, Mass,
+    MobTag, Parried, PlayerInputState, PlayerTag, Position, Projectile, StatusEffects, Velocity,
 };
 use crate::spatial::grid::SpatialGrid;
 use bevy_ecs::prelude::*;
@@ -40,6 +40,7 @@ pub fn projectile_collision_system(
         Option<&mut Velocity>,
         &mut Projectile,
         Has<Parried>,
+        Option<&AttackFacingCone>,
     )>,
     mut targets: Query<
         (
@@ -61,7 +62,8 @@ pub fn projectile_collision_system(
     let now = clock.map_or(0.0, |c| c.current_time_seconds());
     let default_attrs = ElementalAttributes::default();
 
-    for (proj_entity, pos, mut proj_vel_opt, mut proj, already_parried) in &mut proj_query {
+    for (proj_entity, pos, mut proj_vel_opt, mut proj, already_parried, opt_cone) in &mut proj_query
+    {
         let hit_radius = if proj.aoe_radius > 0.0 {
             proj.aoe_radius
         } else {
@@ -132,6 +134,16 @@ pub fn projectile_collision_system(
             {
                 if !health.is_alive {
                     continue;
+                }
+
+                // If projectile carries a locked AttackFacingCone (and was not reflected),
+                // targets outside the attacker's facing cone evade the hit.
+                if !already_parried {
+                    if let Some(cone) = opt_cone {
+                        if !cone.contains(*t_pos) {
+                            continue;
+                        }
+                    }
                 }
 
                 // Check for Melee Attack Parry / Deflection:
