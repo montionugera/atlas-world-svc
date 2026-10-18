@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-silver-tide-causeway",
+  "name": "Silver-Tide Causeway",
+  "map_id": null,
+  "parent_district_id": "district-libration-mirror-shoals",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western silver-coral causeway of Libration Mirror Shoals at [0, 1] linking Aphelion Buoy Haven across the oscillating mirror-pools.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    48,
+    49
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Tide-watchers say the silver coral along Silver-Tide Causeway chimes softly whenever the lunar tilt reverses.",
+    "visual_silhouette": "Luminous silver-coral stepping terraces bridging mirror-still basalt tide pools.",
+    "unanswered_question": "Where does the eastern pier of Silver-Tide Causeway reach Libration Balance Haven?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Serves as the western entry causeway of Libration Mirror Shoals along scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Silver-coral stepping terraces bridging mirror-still basalt tide pools that reflect ancient constellations."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-libration-mirror-shoals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook until Libration Mirror Shoals is promoted to Canon."
+    }
+  }
+}

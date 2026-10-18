@@ -59,7 +59,7 @@
     "in_world_rumor": "Airship captains say the mirror-flat tide pools of Libration Mirror Shoals reflect constellations from before the Clockspring War.",
     "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
     "unanswered_question": "What sleeps beneath the silver tide-mirrors of Libration Mirror Shoals?",
-    "discovery_trigger_hint": "Six core Districts on Continent 03 are Canon; Libration Mirror Shoals is preserved as an intentional Mystery frontier."
+    "discovery_trigger_hint": "Six core Districts on Continent 03 are Canon; Libration Mirror Shoals is promoted to Draft with Mystery border Silver-Tide Causeway."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -76,11 +76,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes six Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss, Aphelion Halo Rim) plus Libration Mirror Shoals (Mystery)."
+      "evidence": "Organizes six Canon Districts (Starfall Anchorage, The Eclipse Observatory, Nebula Undertide, The Zenith Crown, Perigee Abyss, Aphelion Halo Rim) plus Libration Mirror Shoals (Draft)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Preserves Libration Mirror Shoals in Mystery status and leaf Mystery nodes behind fog_of_lore gates."
+      "evidence": "Promotes Libration Mirror Shoals to Draft while keeping Silver-Tide Causeway in Mystery status."
     }
   }
 }

@@ -69,7 +69,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
     def test_rejects_mystery_node_without_mystery_hook(self) -> None:
         with self._mutated_files(
             {
-                "districts/continent-03-shattered-halo/district-libration-mirror-shoals.json": lambda d: d.pop(
+                "districts/continent-01-hearthbloom-basin/district-glaze-river-delta.json": lambda d: d.pop(
                     "mystery_hook", None
                 )
             }
@@ -212,6 +212,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "ash-valve-vault-b1",
                 "chronometer-foundry-b1",
                 "comet-core-geode-b1",
+                "counterweight-shaft-b1",
                 "ember-bellows-chamber-b1",
                 "faraday-dynamo-vault-b1",
                 "inverted-belfry-b1",
@@ -237,6 +238,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "kelp-spiral-reef",
                 "kiln-east-orchard",
                 "leyden-causeway",
+                "metronome-bridge",
                 "orrery-bridge",
                 "resin-arch-tunnel",
                 "siphon-sluice",
@@ -250,6 +252,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "inductor-switchyard",
                 "kilnwatch-bastion",
                 "lantern-hollow",
+                "metronome-pivot-citadel",
                 "patina-lock",
                 "perigee-diving-station",
                 "pinion-terminus",
