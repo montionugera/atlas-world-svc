@@ -1058,5 +1058,15 @@
     "release_version": null,
     "epic": "E-004",
     "claimed_at": "2026-10-18T02:10:02.468889+00:00"
+  },
+  {
+    "id": "F-085",
+    "title": "World History and Concept and Continent Studio Schemas, Mystery State Machine, and Quality Checklists",
+    "from_idea": "I-192",
+    "created_at": "2026-10-18T03:52:18.309642+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-010"
   }
 ]
