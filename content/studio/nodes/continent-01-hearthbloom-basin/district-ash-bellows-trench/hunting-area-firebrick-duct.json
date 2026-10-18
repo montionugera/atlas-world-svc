@@ -2,12 +2,12 @@
   "schema_version": "1.0.0",
   "id": "hunting-area-firebrick-duct",
   "name": "Firebrick Intake Duct",
-  "map_id": null,
+  "map_id": "firebrick-duct",
   "parent_district_id": "district-ash-bellows-trench",
   "parent_continent_id": "continent-01-hearthbloom-basin",
   "node_type": "hunting_area",
-  "status": "mystery",
-  "core_rationale": "Western glazed terracotta intake corridor of Ash-Bellows Trench at [0, 1] channeling warm valley breezes from Kilnwatch Bastion into the sub-kiln draft chambers.",
+  "status": "canon",
+  "core_rationale": "Western glazed terracotta intake corridor of Ash-Bellows Trench at [0, 1] channeling warm valley breezes from Kilnwatch Bastion into Draft-Kiln Post.",
   "is_starter_town": false,
   "grid_coordinates": [
     0,
@@ -17,31 +17,153 @@
     12,
     15
   ],
-  "mystery_hook": {
-    "in_world_rumor": "Apprentice potters say the acoustic tiles inside Firebrick Intake Duct carry whispers all the way from Lantern Hollow.",
-    "visual_silhouette": "A vaulted terracotta tunnel lined with glowing amber acoustic louvers.",
-    "unanswered_question": "Where does the western intake louver connect into Kilnwatch Bastion?"
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_firebrick_duct",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Warm condensation runnels lining acoustic terracotta floor channels"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-firebrick-duct-north-kilnwatch",
+      "direction": "North",
+      "target_node_id": "town-kilnwatch-bastion",
+      "target_map_id": "kilnwatch-bastion",
+      "target_direction": "South",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-firebrick-duct-east-post",
+      "direction": "East",
+      "target_node_id": "town-draft-kiln-post",
+      "target_map_id": "draft-kiln-post",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": null,
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-firebrick-duct-louver-imp",
+      "monster_id": "mob-terracotta-louver-sprite",
+      "monster_name": "Terracotta Louver-Sprite",
+      "spawn_count": 9,
+      "respawn_seconds": 11.0,
+      "level": 13,
+      "element": "Fire",
+      "size": "Small",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-acoustic-clay-reed",
+          "item_name": "Acoustic Clay Reed",
+          "drop_chance_percent": 46.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-terracotta-louver-sprite",
+        "card_name": "Terracotta Louver-Sprite Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Accessory",
+        "modifier_summary": "Fire Magic Damage +4%, Maximum Mana Points +40"
+      }
+    },
+    {
+      "spawn_id": "spawn-firebrick-duct-brick-sentinel",
+      "monster_id": "mob-firebrick-draft-golem",
+      "monster_name": "Firebrick Draft-Golem",
+      "spawn_count": 7,
+      "respawn_seconds": 14.0,
+      "level": 15,
+      "element": "Earth",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-glazed-firebrick-tile",
+          "item_name": "Glazed Firebrick Tile",
+          "drop_chance_percent": 38.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-firebrick-draft-golem",
+        "card_name": "Firebrick Draft-Golem Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Shield",
+        "modifier_summary": "Physical Defense +5, Fire Elemental Resistance +8%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.45,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_Clearance_meters": {
+      "height": 2.1,
+      "width": 1.55
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Serves as the western intake corridor of Ash-Bellows Trench inside scar-kiln-basin."
+      "evidence": "Connects Kilnwatch Bastion South Gate into Ash-Bellows Trench inside scar-kiln-basin."
     },
     "fantasy_and_wonder": {
       "verified": true,
       "evidence": "Vaulted terracotta tunnel lined with singing ceramic louvers and warm ember-drafts."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+      "verified": true,
+      "evidence": "Enforces 0.20m grass, 0.45m shrubs, 0.14m brick risers, and 12.5m walkways for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: reserved at [0, 1] inside Draft District district-ash-bellows-trench."
+      "verified": true,
+      "evidence": "Symmetric North portal to town-kilnwatch-bastion and East portal to town-draft-kiln-post; spirit/construct spawns in [12, 15]."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Maintains map_id: null and complete mystery_hook until Ash-Bellows Trench is promoted to Canon."
+      "evidence": "Promoted cleanly from Mystery to Canon with full five-pillar verification and playable map_id 'firebrick-duct'."
     }
   }
 }

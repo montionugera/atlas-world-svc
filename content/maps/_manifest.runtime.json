@@ -53,6 +53,24 @@
       ]
     },
     {
+      "mapId": "ember-bellows-chamber-b1",
+      "nodeId": "dungeon-ember-bellows-chamber",
+      "name": "Ember-Bellows Chamber",
+      "districtId": "district-ash-bellows-trench",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        16,
+        20
+      ]
+    },
+    {
       "mapId": "inverted-belfry-b1",
       "nodeId": "dungeon-inverted-belfry",
       "name": "The Inverted Belfry",
@@ -287,6 +305,24 @@
       ]
     },
     {
+      "mapId": "firebrick-duct",
+      "nodeId": "hunting-area-firebrick-duct",
+      "name": "Firebrick Intake Duct",
+      "districtId": "district-ash-bellows-trench",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        12,
+        15
+      ]
+    },
+    {
       "mapId": "flue-causeway",
       "nodeId": "hunting-area-flue-causeway",
       "name": "Flue Causeway",
@@ -428,6 +464,24 @@
       "levelRange": [
         47,
         50
+      ]
+    },
+    {
+      "mapId": "draft-kiln-post",
+      "nodeId": "town-draft-kiln-post",
+      "name": "Draft-Kiln Post",
+      "districtId": "district-ash-bellows-trench",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        14,
+        17
       ]
     },
     {
@@ -615,6 +669,27 @@
       "arrivalPointMeters": {
         "x": 500.0,
         "y": 860.0
+      },
+      "lockMessage": null
+    },
+    "portal-ember-bellows-exit-post": {
+      "portalId": "portal-ember-bellows-exit-post",
+      "sourceNodeId": "dungeon-ember-bellows-chamber",
+      "sourceMapId": "ember-bellows-chamber-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-draft-kiln-post",
+      "targetMapId": "draft-kiln-post",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 20.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3760.0
       },
       "lockMessage": null
     },
@@ -1038,6 +1113,48 @@
       },
       "lockMessage": null
     },
+    "portal-firebrick-duct-north-kilnwatch": {
+      "portalId": "portal-firebrick-duct-north-kilnwatch",
+      "sourceNodeId": "hunting-area-firebrick-duct",
+      "sourceMapId": "firebrick-duct",
+      "direction": "North",
+      "targetNodeId": "town-kilnwatch-bastion",
+      "targetMapId": "kilnwatch-bastion",
+      "targetDirection": "South",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": null
+    },
+    "portal-firebrick-duct-east-post": {
+      "portalId": "portal-firebrick-duct-east-post",
+      "sourceNodeId": "hunting-area-firebrick-duct",
+      "sourceMapId": "firebrick-duct",
+      "direction": "East",
+      "targetNodeId": "town-draft-kiln-post",
+      "targetMapId": "draft-kiln-post",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-flue-causeway-east-bellows": {
       "portalId": "portal-flue-causeway-east-bellows",
       "sourceNodeId": "hunting-area-flue-causeway",
@@ -1416,6 +1533,69 @@
       },
       "lockMessage": null
     },
+    "portal-draft-kiln-post-north-fog": {
+      "portalId": "portal-draft-kiln-post-north-fog",
+      "sourceNodeId": "town-draft-kiln-post",
+      "sourceMapId": "draft-kiln-post",
+      "direction": "North",
+      "targetNodeId": "hunting-area-glaze-flue-vent",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Molten celadon glaze-vapor vents through the northern Glaze Flue; the Draft-Kiln Masons require the Bellows Counterweight Key before unbolting the northern louver."
+    },
+    "portal-draft-kiln-post-west-firebrick": {
+      "portalId": "portal-draft-kiln-post-west-firebrick",
+      "sourceNodeId": "town-draft-kiln-post",
+      "sourceMapId": "draft-kiln-post",
+      "direction": "West",
+      "targetNodeId": "hunting-area-firebrick-duct",
+      "targetMapId": "firebrick-duct",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-draft-kiln-post-dungeon-bellows": {
+      "portalId": "portal-draft-kiln-post-dungeon-bellows",
+      "sourceNodeId": "town-draft-kiln-post",
+      "sourceMapId": "draft-kiln-post",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-ember-bellows-chamber",
+      "targetMapId": "ember-bellows-chamber-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
     "portal-escapement-anvil-north-fog": {
       "portalId": "portal-escapement-anvil-north-fog",
       "sourceNodeId": "town-escapement-anvil",
@@ -1497,6 +1677,27 @@
       "arrivalPointMeters": {
         "x": 2000.0,
         "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-kilnwatch-bastion-south-firebrick": {
+      "portalId": "portal-kilnwatch-bastion-south-firebrick",
+      "sourceNodeId": "town-kilnwatch-bastion",
+      "sourceMapId": "kilnwatch-bastion",
+      "direction": "South",
+      "targetNodeId": "hunting-area-firebrick-duct",
+      "targetMapId": "firebrick-duct",
+      "targetDirection": "North",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3800.0
       },
       "lockMessage": null
     },

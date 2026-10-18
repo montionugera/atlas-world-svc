@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-porcelain-cradle",
+  "name": "Porcelain Cradle Sanctuary",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "status": "mystery",
+  "core_rationale": "Innermost vitrified white-clay amphitheater of Continent 01 where Sola's unbroken ceramic boss-medallion radiates warm hearth-light beneath the central lake.",
+  "local_conflict": "Luminous glaze-sprites and ancient kiln-wardens guard the sealed inner sanctuary where Hearth-Sparks first condense.",
+  "level_band_label": "Levels 1 to 20",
+  "level_range": [
+    10,
+    15
+  ],
+  "ecological_monster_families": [
+    "spirit",
+    "construct"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Lantern-Keepers say that when the central pond in Lantern Hollow is completely still, you can see the white-gold roofs of Porcelain Cradle reflected below.",
+    "visual_silhouette": "A sunken amphitheater of translucent white porcelain domes glowing softly beneath shallow warm springs.",
+    "unanswered_question": "Does Sola's original Hearth-Loom still weave new spirit-lanterns inside the Porcelain Cradle?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin at the innermost core of Continent 01 Hearthbloom Basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Translucent white porcelain domes glowing beneath warm spring-water at the center of Sola's shield."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: porcelain stepping-stone and doorway metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the inner sanctuary District frontier on Continent 01 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}

@@ -3,7 +3,7 @@
   "id": "district-perigee-abyss",
   "name": "Perigee Abyss",
   "parent_continent_id": "continent-03-shattered-halo",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Lowest inverted gravity trench of Continent 03 where Vesper's sunken basalt anchors hang directly above the northern ocean maelstrom.",
   "local_conflict": "Abyssal gravity-wraiths and deep-tide leviathans prowl the inverted basalt anchor-chains at the bottom of the Shattered Halo.",
   "level_band_label": "Levels 41 to 60",
@@ -19,7 +19,23 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-stalactite-plunge",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "level_range": [
+        48,
+        49
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Tether-divers say that if you drop a brass coin from Perigee Abyss, it falls upward for three minutes before splashing into Nebula Undertide.",
@@ -36,16 +52,16 @@
       "evidence": "Inverted basalt stalactites suspended above the roaring spray of the northern ocean maelstrom."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: anchor-chain catwalk and step riser metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Uses 12.5m basalt anchor-chain boardwalks, 0.60m winch-lock benches, and 0.14m basalt risers for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the lower perigee District frontier on Continent 03 with zero filler maps."
+      "evidence": "Draft status: awaiting playable leaf map authoring for Stalactite Plunge and Perigee Diving-Station."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Includes complete mystery_hook and reserves hunting-area-stalactite-plunge as a Mystery frontier."
     }
   }
 }
