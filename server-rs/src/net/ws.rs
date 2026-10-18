@@ -562,6 +562,23 @@ impl WsServer {
         rooms.values().filter(|r| r.as_str() == room_id).count()
     }
 
+    /// Reassigns all active WebSocket connections for `session_id` to `new_room_id`
+    /// during an atomic cross-border authority handoff (`E-004` Slice 10).
+    pub async fn reassign_session_room(&self, session_id: &str, new_room_id: &str) -> usize {
+        let mut rooms = self.session_rooms.write().await;
+        let mut updated = 0;
+        for (conn_key, room) in rooms.iter_mut() {
+            if conn_key
+                .rsplit_once('#')
+                .is_some_and(|(s, _)| s == session_id)
+            {
+                *room = new_room_id.to_string();
+                updated += 1;
+            }
+        }
+        updated
+    }
+
     /// Returns the distinct active `session_id`s currently connected in `room_id`.
     pub async fn active_sessions_in_room(&self, room_id: &str) -> Vec<String> {
         let rooms = self.session_rooms.read().await;
@@ -1333,9 +1350,15 @@ impl WsServer {
                         debug!("Rate-limiting excess input packet from {}", session_id);
                         continue;
                     }
+                    let current_room = session_rooms
+                        .read()
+                        .await
+                        .get(&conn_key)
+                        .cloned()
+                        .unwrap_or_else(|| room_id.clone());
                     let packet = ClientPacket {
                         session_id: session_id.clone(),
-                        room_id: room_id.clone(),
+                        room_id: current_room,
                         payload: bin.to_vec(),
                     };
                     if let Err(e) = inbound_tx.try_send(packet) {
@@ -1367,9 +1390,9 @@ impl WsServer {
             let mut conns = connections.write().await;
             let was_active = conns.remove(&conn_key).is_some();
             let mut rooms = session_rooms.write().await;
-            rooms.remove(&conn_key);
-            if was_active && !has_session_in_room(&conns, &rooms, &session_id, &room_id) {
-                let _ = disconnect_tx.send((session_id.clone(), room_id.clone()));
+            let active_room = rooms.remove(&conn_key).unwrap_or_else(|| room_id.clone());
+            if was_active && !has_session_in_room(&conns, &rooms, &session_id, &active_room) {
+                let _ = disconnect_tx.send((session_id.clone(), active_room));
             }
         }
         let _ = tokio::time::timeout(std::time::Duration::from_millis(50), write_task).await;

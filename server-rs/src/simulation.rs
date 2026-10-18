@@ -677,6 +677,219 @@ impl AtlasSimulation {
         Ok(true)
     }
 
+    /// Extracts alive human players who have crossed a connected cardinal border (`E-004` Slice 10),
+    /// despawning them from this region and returning their `PlayerTransferState` for atomic handoff.
+    pub fn extract_border_crossing_players(
+        &mut self,
+        adjacency: &crate::spatial::RegionAdjacencyGraph,
+        hysteresis_units: f32,
+    ) -> Vec<crate::spatial::PlayerTransferState> {
+        use crate::spatial::{CardinalBorder, PlayerTransferState};
+        let hysteresis = hysteresis_units.clamp(1.0, (self.arena_width * 0.25).max(1.0));
+        let mut to_extract: Vec<(Entity, PlayerTransferState)> = Vec::new();
+
+        {
+            let mut query = self.world.query::<(
+                Entity,
+                &EntityId,
+                &PlayerAvatar,
+                &Position,
+                &Velocity,
+                &Health,
+                Option<&CombatStats>,
+                Option<&ElementalAttributes>,
+                Option<&CooldownTracker>,
+                Option<&StatusEffects>,
+                Option<&DashState>,
+                Option<&PlayerInputState>,
+            )>();
+
+            for (
+                entity,
+                id,
+                avatar,
+                pos,
+                vel,
+                health,
+                combat,
+                elem,
+                cooldowns,
+                status,
+                dash,
+                input,
+            ) in query.iter(&self.world)
+            {
+                if !health.is_alive {
+                    continue;
+                }
+                let move_x = input.map(|i| i.move_x).unwrap_or(0.0);
+                let move_y = input.map(|i| i.move_y).unwrap_or(0.0);
+
+                let crossed = if pos.x >= self.arena_width - 0.5 && move_x >= 0.0 {
+                    adjacency
+                        .neighbor(&self.map_id, CardinalBorder::East)
+                        .map(|to| {
+                            (
+                                CardinalBorder::East,
+                                to.to_string(),
+                                hysteresis,
+                                pos.y.clamp(0.0, self.arena_height),
+                            )
+                        })
+                } else if pos.x <= 0.5 && move_x <= 0.0 {
+                    adjacency
+                        .neighbor(&self.map_id, CardinalBorder::West)
+                        .map(|to| {
+                            (
+                                CardinalBorder::West,
+                                to.to_string(),
+                                (self.arena_width - hysteresis).max(0.0),
+                                pos.y.clamp(0.0, self.arena_height),
+                            )
+                        })
+                } else if pos.y >= self.arena_height - 0.5 && move_y >= 0.0 {
+                    adjacency
+                        .neighbor(&self.map_id, CardinalBorder::South)
+                        .map(|to| {
+                            (
+                                CardinalBorder::South,
+                                to.to_string(),
+                                pos.x.clamp(0.0, self.arena_width),
+                                hysteresis,
+                            )
+                        })
+                } else if pos.y <= 0.5 && move_y <= 0.0 {
+                    adjacency
+                        .neighbor(&self.map_id, CardinalBorder::North)
+                        .map(|to| {
+                            (
+                                CardinalBorder::North,
+                                to.to_string(),
+                                pos.x.clamp(0.0, self.arena_width),
+                                (self.arena_height - hysteresis).max(0.0),
+                            )
+                        })
+                } else {
+                    None
+                };
+
+                let Some((border, to_region, target_x, target_y)) = crossed else {
+                    continue;
+                };
+
+                let vx = if vel.vx.abs() > 1e-3 {
+                    vel.vx
+                } else {
+                    move_x * avatar.speed
+                };
+                let vy = if vel.vy.abs() > 1e-3 {
+                    vel.vy
+                } else {
+                    move_y * avatar.speed
+                };
+
+                let transfer = PlayerTransferState {
+                    session_id: id.0.clone(),
+                    from_region: self.map_id.clone(),
+                    to_region,
+                    border,
+                    x: target_x,
+                    y: target_y,
+                    vx,
+                    vy,
+                    health: health.current,
+                    max_health: health.max,
+                    is_alive: health.is_alive,
+                    speed: avatar.speed,
+                    combat_stats: combat.copied().unwrap_or(CombatStats {
+                        is_player: true,
+                        ..Default::default()
+                    }),
+                    elemental_attributes: elem.copied().unwrap_or_default(),
+                    cooldowns: cooldowns.cloned().unwrap_or_default(),
+                    status_effects: status.cloned().unwrap_or_default(),
+                    dash_state: dash.cloned().unwrap_or_default(),
+                    client_tick: input.map(|i| i.client_tick).unwrap_or(0),
+                    last_facing: input.map(|i| i.last_facing).unwrap_or((1.0, 0.0)),
+                    loadout: self.session_loadouts.get(&id.0).cloned(),
+                };
+                to_extract.push((entity, transfer));
+            }
+        }
+
+        let mut transfers = Vec::with_capacity(to_extract.len());
+        for (entity, transfer) in to_extract {
+            self.pending_disconnects.remove(&transfer.session_id);
+            self.world.despawn(entity);
+            if let Some(mut despawned) = self.world.get_resource_mut::<DespawnedIds>() {
+                despawned.0.push(transfer.session_id.clone());
+            }
+            transfers.push(transfer);
+        }
+        transfers
+    }
+
+    /// Accepts a player transferred from an adjacent region (`E-004` Slice 10), waking this
+    /// region if it was sleeping and spawning the player's avatar with preserved runtime state.
+    pub fn accept_player_transfer(
+        &mut self,
+        transfer: &crate::spatial::PlayerTransferState,
+        now_ms: u64,
+    ) -> Entity {
+        if self.is_sleeping() {
+            self.wake(now_ms);
+        }
+
+        self.remove_player_avatar(&transfer.session_id);
+        if let Some(mut despawned) = self.world.get_resource_mut::<DespawnedIds>() {
+            despawned.0.retain(|id| id != &transfer.session_id);
+        }
+
+        let mut loadout = transfer.loadout.clone().unwrap_or_default();
+        loadout.character_state = Some(CharacterStateSnapshot {
+            schema_version: 1,
+            map_id: self.map_id.clone(),
+            x: transfer.x,
+            y: transfer.y,
+            health: transfer.health,
+            seq: 0,
+        });
+        self.session_loadouts
+            .insert(transfer.session_id.clone(), loadout.clone());
+        crate::net::set_cached_session_loadout(&transfer.session_id, Some(loadout));
+
+        let entity = self
+            .world
+            .spawn((
+                EntityId(transfer.session_id.clone()),
+                Position::new(transfer.x, transfer.y),
+                Velocity::new(transfer.vx, transfer.vy),
+                Health {
+                    current: transfer.health,
+                    max: transfer.max_health.max(1.0),
+                    is_alive: transfer.is_alive,
+                    invulnerable: false,
+                },
+                PlayerTag,
+                PlayerAvatar::new(&transfer.session_id, transfer.speed),
+                crate::spatial::input_state_from_transfer(transfer),
+                transfer.combat_stats,
+                transfer.elemental_attributes,
+                transfer.cooldowns.clone(),
+                CastingState::default(),
+                transfer.status_effects.clone(),
+                BodyRadius(PLAYER_BODY_RADIUS),
+                Mass(15.0),
+                SpawnPoint(Position::new(transfer.x, transfer.y)),
+            ))
+            .id();
+
+        self.world
+            .entity_mut(entity)
+            .insert(transfer.dash_state.clone());
+        entity
+    }
+
     /// Returns the number of human-controlled `PlayerAvatar` entities currently in the region.
     pub fn active_player_count(&mut self) -> usize {
         self.world
