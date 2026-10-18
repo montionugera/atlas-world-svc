@@ -1447,9 +1447,10 @@
     "title": "Aimed ranged attacks",
     "from_idea": "I-173",
     "created_at": "2026-10-18T10:56:27.106070+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-007"
+    "epic": "E-007",
+    "claimed_at": "2026-10-18T10:57:03.229845+00:00"
   }
 ]
