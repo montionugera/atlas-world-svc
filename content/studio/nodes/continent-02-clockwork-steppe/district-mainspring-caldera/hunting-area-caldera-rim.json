@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-caldera-rim",
+  "name": "The Mainspring Caldera Rim",
+  "map_id": null,
+  "parent_district_id": "district-mainspring-caldera",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western bronze-slag overlook of Mainspring Caldera at [0, 1] where rhythmic steam vents from Krono's central coil heat the skyways east of Brass Spur Ridge.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "level_range": [
+    22,
+    30
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Foundry apprentices say the bronze bridge gates only unlatch when the three pressure valves along Brass Spur Ridge are equalized.",
+    "visual_silhouette": "Concentric bronze flywheel bridges disappearing into golden steam clouds above a glowing crater.",
+    "unanswered_question": "What guards the primary escapement lever inside the Mainspring Foundry?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Forms the western entry frontier of District Mainspring Caldera on Continent 02."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Steaming bronze flywheel bridges suspended above Krono's glowing mainspring crater."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics will be bound when promoted to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] in Mainspring Caldera awaiting eastern viaduct connection."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook without generating low-effort filler maps."
+    }
+  }
+}

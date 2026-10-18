@@ -538,7 +538,9 @@ def undo_latest_snapshot() -> dict:
             dst_p.unlink()
             removed.append(rel)
     shutil.rmtree(snap_dir, ignore_errors=True)
-    subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
+    touched = restored + removed
+    if not touched or any(not rel.startswith("content/studio/") and rel != "content/review-queue.json" for rel in touched):
+        subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
     return {"ok": True, "restoredSnapshot": latest["id"], "restoredFiles": restored, "removedFiles": removed}
 
 
@@ -7474,6 +7476,8 @@ def main() -> int:
 
     if args.dump_check:
         bundle = build_full_bundle()
+        studio = load_studio_perspectives_bundle()
+        studio_nodes = 1 + len(studio.get("continents") or []) + len(studio.get("districts") or []) + len(studio.get("nodes") or [])
         sql_res = run_readonly_sql("SELECT * FROM v_mob_economy;")
         thumbs_ok = sum(1 for it in bundle["items"] if it.get("thumbUrl"))
         proposals_cnt = len((bundle.get("reviewQueue") or {}).get("proposals") or [])
@@ -7483,7 +7487,7 @@ def main() -> int:
             f"items={len(bundle['items'])} (thumbs={thumbs_ok}/{len(bundle['items'])}), "
             f"cards={len(bundle['cards'])}, quests={len(bundle['quests'])}, "
             f"castles={len(bundle['castles'])}, palettes={palettes_cnt}, "
-            f"review_proposals={proposals_cnt}, sql_rows={sql_res.get('rowCount')}"
+            f"review_proposals={proposals_cnt}, sql_rows={sql_res.get('rowCount')}, studio_nodes={studio_nodes}"
         )
         return 0
 

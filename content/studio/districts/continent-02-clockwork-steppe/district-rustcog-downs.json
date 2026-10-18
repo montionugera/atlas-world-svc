@@ -3,7 +3,7 @@
   "id": "district-rustcog-downs",
   "name": "Rustcog Downs",
   "parent_continent_id": "continent-02-clockwork-steppe",
-  "status": "draft",
+  "status": "canon",
   "core_rationale": "Western arrival plateau of Continent 02 where Krono's brass gear-ribs emerge from copper grasslands around the Pinion Terminus root-train station.",
   "local_conflict": "Wind-pirates and rogue clockwork hounds are stripping copper teeth from the active wind-mills.",
   "level_band_label": "Levels 21 to 40",
@@ -20,33 +20,127 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
-  "portal_edges": [],
+  "grid_nodes": [
+    {
+      "node_id": "town-pinion-terminus",
+      "map_id": "pinion-terminus",
+      "node_type": "town",
+      "status": "canon",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "level_range": [
+        15,
+        22
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-brass-spur-ridge",
+      "map_id": "brass-spur-ridge",
+      "node_type": "hunting_area",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "level_range": [
+        18,
+        28
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "dungeon-pendulum-shaft",
+      "map_id": "pendulum-shaft-b1",
+      "node_type": "dungeon",
+      "status": "canon",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": -1,
+      "level_range": [
+        20,
+        30
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-astrolabe-rift",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        1,
+        0
+      ],
+      "level_range": [
+        25,
+        30
+      ],
+      "is_starter_town": false
+    }
+  ],
+  "portal_edges": [
+    {
+      "edge_id": "edge-pinion-terminus-east-brass-spur",
+      "from_node_id": "town-pinion-terminus",
+      "from_direction": "East",
+      "to_node_id": "hunting-area-brass-spur-ridge",
+      "to_direction": "West",
+      "bidirectional": true,
+      "gate_state": "open",
+      "road_width_meters": 14.0
+    },
+    {
+      "edge_id": "edge-pinion-terminus-dungeon-pendulum",
+      "from_node_id": "town-pinion-terminus",
+      "from_direction": "Dungeon",
+      "to_node_id": "dungeon-pendulum-shaft",
+      "to_direction": "Exit",
+      "bidirectional": true,
+      "gate_state": "open",
+      "road_width_meters": 12.0
+    },
+    {
+      "edge_id": "edge-brass-spur-north-astrolabe-rift",
+      "from_node_id": "hunting-area-brass-spur-ridge",
+      "from_direction": "North",
+      "to_node_id": "hunting-area-astrolabe-rift",
+      "to_direction": "South",
+      "bidirectional": true,
+      "gate_state": "fog_of_lore",
+      "road_width_meters": 12.0,
+      "lock_reason": "Inverted gravity eddies from the Astrolabe Gate tear at copper gliders; the Tinker Guild has chained the northern bridge until the Star-Pendulum key is recovered."
+    }
+  ],
   "mystery_hook": {
     "in_world_rumor": "Couriers say the brass canyons shift their alignment every full moon when the buried mainspring slips a tooth.",
     "visual_silhouette": "Rolling copper prairies pierced by hundred-meter oxidized brass gear arches.",
-    "unanswered_question": "Where does the central pendulum shaft descend?"
+    "unanswered_question": "Where does the northern Astrolabe Rift bridge lead once the gravity eddies subside?"
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Directly inherits scar-brass-faultline and receives the Pinion Terminus root-train from Continent 01."
+      "evidence": "Directly inherits scar-brass-faultline and receives the Kettle-Whistle Viaduct and root-train from Continent 01 at Pinion Terminus."
     },
     "fantasy_and_wonder": {
       "verified": true,
-      "evidence": "Hundred-meter brass gear arches rising over wind-swept copper prairies."
+      "evidence": "Hundred-meter brass gear arches rising over wind-swept copper prairies with ticking pendulum shafts."
     },
     "character_scale_consistency": {
       "verified": true,
-      "evidence": "Uses 4.0 meter wide Titan gear-tooth ramps and 0.15 meter cog-steps for 1.05m characters."
+      "evidence": "Uses 14.0 meter wide Titan gear-tooth ramps, 0.15 meter cog-steps, and <= 0.25 meter copper grass for 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
-      "verified": false,
-      "evidence": "Draft status: awaiting Continent 02 promotion to Canon before populating playable leaf maps."
+      "verified": true,
+      "evidence": "Orthogonal 2x2 grid with Pinion Terminus [0,1], Brass Spur Ridge [1,1], Pendulum Shaft Dungeon [0,1, floor -1], and Astrolabe Rift [1,0] (Fog of Lore) plus Level 20 to 28 construct/insect spawns."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Includes mystery_hook for the shifting brass canyons with zero filler maps."
+      "evidence": "Seals the northern Astrolabe Rift frontier with a fog_of_lore portal and Tinker Guild gravity-eddy warning."
     }
   }
 }

@@ -38,6 +38,9 @@ import sys
 import time
 from pathlib import Path
 
+sys.dont_write_bytecode = True
+os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
+
 ROOT = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT / "build" / "catalog.sqlite"
 CACHE_PATH = ROOT / "build" / ".pipeline_cache.json"
@@ -114,32 +117,26 @@ def run_step(label: str, cmd: list[str], env: dict[str, str] | None = None, cach
     }
 
 
-def auto_tune_workspace() -> list[str]:
+def auto_tune_workspace(sync_manifest: bool = True) -> list[str]:
     actions: list[str] = []
-    # 1. Synchronize content/maps/_manifest.runtime.json from content/studio/ if needed
-    sys.path.insert(0, str(ROOT / "scripts"))
-    import validate_studio_hierarchy as vsh  # noqa: E402
+    if sync_manifest:
+        sys.path.insert(0, str(ROOT / "scripts"))
+        import validate_studio_hierarchy as vsh  # noqa: E402
 
-    errs = vsh.validate_studio_directory(STUDIO_DIR)
-    if not errs:
-        manifest = vsh.build_runtime_manifest(STUDIO_DIR)
-        new_raw = json.dumps(manifest, indent=2) + "\n"
-        old_raw = RUNTIME_MANIFEST_PATH.read_text(encoding="utf-8") if RUNTIME_MANIFEST_PATH.exists() else ""
-        if new_raw != old_raw:
-            RUNTIME_MANIFEST_PATH.write_text(new_raw, encoding="utf-8")
-            actions.append("Auto-tuned content/maps/_manifest.runtime.json to match content/studio/ topology.")
+        errs = vsh.validate_studio_directory(STUDIO_DIR)
+        if not errs:
+            manifest = vsh.build_runtime_manifest(STUDIO_DIR)
+            new_raw = json.dumps(manifest, indent=2) + "\n"
+            old_raw = RUNTIME_MANIFEST_PATH.read_text(encoding="utf-8") if RUNTIME_MANIFEST_PATH.exists() else ""
+            if new_raw != old_raw:
+                RUNTIME_MANIFEST_PATH.write_text(new_raw, encoding="utf-8")
+                actions.append("Auto-tuned content/maps/_manifest.runtime.json to match content/studio/ topology.")
 
-    # 2. Clean untracked __pycache__ and restore tracked scripts/__pycache__
     tests_pycache = ROOT / "tests" / "__pycache__"
     if tests_pycache.exists():
         shutil.rmtree(tests_pycache, ignore_errors=True)
         actions.append("Removed untracked tests/__pycache__ directory.")
 
-    subprocess.run(
-        ["git", "checkout", "--", "scripts/__pycache__/"],
-        cwd=str(ROOT),
-        capture_output=True,
-    )
     snm = ROOT / "scripts" / "node_modules"
     if snm.is_symlink():
         snm.unlink()
@@ -193,7 +190,6 @@ def evaluate_studio_quality_and_queue() -> dict:
             if len(verified_pillars) == 5:
                 canon_checklist_passed += 1
         else:
-            # Candidate for Next-Increment Brainstorm Queue
             priority_score = len(verified_pillars) * 20 + (15 if st == "draft" else 5)
             recommended_role = (
                 "world-lore-architect"
@@ -309,9 +305,10 @@ def main() -> int:
     args = parser.parse_args()
 
     t_start = time.monotonic()
-    auto_tune_actions = auto_tune_workspace() if args.auto_tune else []
+    auto_tune_actions = auto_tune_workspace(sync_manifest=True) if args.auto_tune else []
 
     env = os.environ.copy()
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
     cargo_bin = str(Path.home() / ".cargo" / "bin")
     if cargo_bin not in env.get("PATH", ""):
         env["PATH"] = f"{cargo_bin}:{env.get('PATH', '')}"
@@ -323,7 +320,7 @@ def main() -> int:
                 break
 
     cache = load_cache() if args.fast else {}
-    maps_digest = compute_dir_digest([STUDIO_DIR, ROOT / "scripts" / "compile_world_maps.py"])
+    maps_digest = compute_dir_digest([STUDIO_DIR, ROOT / "content" / "maps", ROOT / "scripts" / "compile_world_maps.py"])
     db_digest = compute_dir_digest([ROOT / "contracts" / "content", ROOT / "scripts" / "build_catalog_db.py"])
 
     skip_compile = bool(args.fast and cache.get("maps_digest") == maps_digest and RUNTIME_MANIFEST_PATH.exists())
@@ -332,18 +329,18 @@ def main() -> int:
     steps_spec = [
         (
             "Stage 1 · Validate Top-Down Studio Hierarchy & Seven Invariants (INV-01..INV-07)",
-            [sys.executable, "scripts/validate_studio_hierarchy.py", "--check"],
+            [sys.executable, "-B", "scripts/validate_studio_hierarchy.py", "--check"],
             False,
         ),
         (
             "Stage 2a · Compile L4 World-First Maps & Runtime Manifest",
-            [sys.executable, "scripts/compile_world_maps.py"],
+            [sys.executable, "-B", "scripts/compile_world_maps.py"],
             skip_compile,
         ),
         (
             "Stage 2b · Verify L4 Map Invariants & 90-120cm Scale Law",
-            [sys.executable, "scripts/compile_world_maps.py", "--check"],
-            False,
+            [sys.executable, "-B", "scripts/compile_world_maps.py", "--check"],
+            skip_compile,
         ),
         (
             "Stage 3 · Verify L0–L3 Canon, Fabric, Spine & Story Gates",
@@ -352,18 +349,19 @@ def main() -> int:
         ),
         (
             "Stage 4 · Rebuild Unified SQLite + JSONB Catalog",
-            [sys.executable, "scripts/build_catalog_db.py"],
+            [sys.executable, "-B", "scripts/build_catalog_db.py"],
             skip_db,
         ),
         (
             "Stage 5 · Verify Observatory Web Bundle & Four-Level Perspectives",
-            [sys.executable, "scripts/catalog_explorer_web.py", "--dump-check"],
+            [sys.executable, "-B", "scripts/catalog_explorer_web.py", "--dump-check"],
             False,
         ),
         (
             "Stage 6 · Run Studio Hierarchy & Perspectives Unit Tests",
             [
                 sys.executable,
+                "-B",
                 "-m",
                 "unittest",
                 "tests/test_validate_studio_hierarchy.py",
@@ -390,18 +388,28 @@ def main() -> int:
             all_ok = False
             break
 
-    if all_ok and args.fast:
-        save_cache({"maps_digest": maps_digest, "db_digest": db_digest, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ")})
-
     if args.auto_tune:
-        auto_tune_workspace()
+        auto_tune_workspace(sync_manifest=False)
+
+    studio_eval = evaluate_studio_quality_and_queue()
+    if all_ok and skip_db and isinstance(cache.get("coverageAudit"), dict) and cache["coverageAudit"]:
+        coverage = cache["coverageAudit"]
+    else:
+        coverage = audit_cross_layer_coverage() if all_ok else {}
+
+    if all_ok and args.fast:
+        save_cache(
+            {
+                "maps_digest": maps_digest,
+                "db_digest": db_digest,
+                "coverageAudit": coverage,
+                "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            }
+        )
 
     total_ms = round((time.monotonic() - t_start) * 1000, 1)
     cache_hits = sum(1 for r in results if r.get("cached"))
     speed_grade = "A+ (Sub-Second Fast Loop)" if total_ms < 1000 else ("A (Fast Loop)" if total_ms < 2500 else "B (Full Rebuild)")
-
-    studio_eval = evaluate_studio_quality_and_queue()
-    coverage = audit_cross_layer_coverage() if all_ok else {}
 
     self_eval_doc = {
         "ok": all_ok,

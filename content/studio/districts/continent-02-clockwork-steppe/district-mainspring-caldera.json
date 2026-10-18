@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-mainspring-caldera",
+  "name": "Mainspring Caldera",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "status": "draft",
+  "core_rationale": "Central volcanic-brass crater of Continent 02 where Krono the Brass Titan's primary mainspring coil still beats, venting rhythmic steam plumes that drive the surrounding foundry towns.",
+  "local_conflict": "Over-wound foundry automatons and ember-beetles have seized the main escapement bridge, threatening to over-pressurize the caldera vents.",
+  "level_band_label": "Levels 21 to 40",
+  "level_range": [
+    22,
+    30
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "insect"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-caldera-rim",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "level_range": [
+        22,
+        30
+      ],
+      "is_starter_town": false
+    }
+  ],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Master smiths claim the heart of the Mainspring Caldera holds an uncracked Titan chronometer that can rewind a broken weapon to the day it was forged.",
+    "visual_silhouette": "Concentric rings of glowing bronze flywheel bridges suspended above a steaming copper-slag crater.",
+    "unanswered_question": "Who wound the primary escapement lever during the Great Lantern Eclipse?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-krono-brass-titan and forms the eastern high-level industrial heart of Continent 02 beyond Rustcog Downs."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Concentric bronze flywheel bridges suspended over a rhythmic steam-venting mainspring crater."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Designed around 14.0 meter bronze flywheel highways, 0.16 meter cog-risers, and 0.60 meter anvil counters for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Draft status: awaiting leaf node topology and foundry boss ecology before Canon promotion."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Includes complete mystery_hook for the uncracked Titan chronometer with zero filler maps."
+    }
+  }
+}
