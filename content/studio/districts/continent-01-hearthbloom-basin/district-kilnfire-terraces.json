@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-kilnfire-terraces",
+  "name": "Kilnfire Terraces",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "status": "canon",
+  "core_rationale": "Upper stepped terracotta rim of Sola's ceramic shield where giant pottery kilns vent warm updrafts toward the eastern root-train viaduct.",
+  "local_conflict": "Cracked porcelain golems and whistling kettle-sprites have blocked the Kettle-Whistle Viaduct leading to Continent 02.",
+  "level_band_label": "Levels 1 to 20",
+  "level_range": [
+    10,
+    20
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "spirit"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [
+    {
+      "node_id": "town-kilnwatch-bastion",
+      "map_id": "kilnwatch-bastion",
+      "node_type": "town",
+      "status": "canon",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "level_range": [
+        10,
+        15
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-cinder-apron",
+      "map_id": "cinder-apron",
+      "node_type": "hunting_area",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "level_range": [
+        12,
+        20
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-slag-chasm",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        1,
+        0
+      ],
+      "level_range": [
+        16,
+        20
+      ],
+      "is_starter_town": false
+    }
+  ],
+  "portal_edges": [
+    {
+      "edge_id": "edge-kilnwatch-east-cinder-apron",
+      "from_node_id": "town-kilnwatch-bastion",
+      "from_direction": "East",
+      "to_node_id": "hunting-area-cinder-apron",
+      "to_direction": "West",
+      "bidirectional": true,
+      "gate_state": "open",
+      "road_width_meters": 14.0
+    },
+    {
+      "edge_id": "edge-cinder-apron-north-slag-chasm",
+      "from_node_id": "hunting-area-cinder-apron",
+      "from_direction": "North",
+      "to_node_id": "hunting-area-slag-chasm",
+      "to_direction": "South",
+      "bidirectional": true,
+      "gate_state": "fog_of_lore",
+      "road_width_meters": 12.0,
+      "lock_reason": "Superheated porcelain glaze-steam billows from the northern Slag Chasm; the Guild of Potters has sealed the bridge until the Great Damper is cooled."
+    }
+  ],
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Forms the upper eastern rim of Continent 01 Hearthbloom Basin connecting Teacup Meadows to the Kettle-Whistle Viaduct."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Stepped terracotta amphitheaters, whistling teapot kilns, and glazed porcelain viaduct bastions."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Terrace steps capped at 0.18 meters with 14.0 meter main kiln highways and 0.25m grass for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Orthogonal 2x2 grid with Kilnwatch Bastion [0,1], Cinder Apron [1,1], and Slag Chasm [1,0] (Fog of Lore) plus Level 12 to 20 construct/spirit spawns."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Seals the northern Slag Chasm frontier with a fog_of_lore portal and Guild of Potters rumor."
+    }
+  }
+}

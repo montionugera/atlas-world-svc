@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-mirror-cascade",
+  "name": "Mirror Cascade Basin",
+  "map_id": null,
+  "parent_district_id": "district-starfall-anchorage",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern terraced rim of Starfall Anchorage at [1, 0] where silver ocean water pours upward in stepped mirror-like cataracts toward the Eclipse Observatory.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "level_range": [
+    36,
+    40
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Tether-divers say if you peer into the upward waterfalls at dusk, you see your reflection standing on the ceiling of the sky.",
+    "visual_silhouette": "Stepped basalt mirror-pools whose silver curtains fall upward into a ring of floating crystal prisms.",
+    "unanswered_question": "Can the Belfry Star-Chime part the upward cataract to reveal the bridge to the Eclipse Observatory?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly extends Vesper's inverted-gravity waterfall anomaly on the northern rim of Starfall Anchorage."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Stepped basalt mirror-pools pouring silver water upward into floating crystal prisms."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics will be bound when promoted to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] North of Starfall Haven via a fog_of_lore boundary portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and compiles to a fog_of_lore boundary portal on Starfall Haven North Gate."
+    }
+  }
+}

@@ -2059,6 +2059,31 @@ def main() -> int:
         compiled.append(doc)
 
     errors = verify_compiled_maps(compiled, bestiary, continents, check_on_disk=True)
+
+    # 5. Validate Top-Down Studio Hierarchy (World History and Concept -> Continent -> District -> Town or Hunting Area)
+    #    and compile/verify content/maps/_manifest.runtime.json
+    studio_dir = CONTENT_DIR / "studio"
+    if studio_dir.exists():
+        from validate_studio_hierarchy import build_runtime_manifest, validate_studio_directory
+
+        studio_errors = validate_studio_directory(studio_dir)
+        errors.extend([f"studio: {e}" for e in studio_errors])
+        if not studio_errors:
+            runtime_manifest = build_runtime_manifest(studio_dir)
+            runtime_manifest_path = MAPS_DIR / "_manifest.runtime.json"
+            if not args.check:
+                save_json(runtime_manifest_path, runtime_manifest)
+            elif runtime_manifest_path.exists():
+                disk_manifest_raw = runtime_manifest_path.read_text(encoding="utf-8")
+                expected_manifest_raw = json.dumps(runtime_manifest, indent=2) + "\n"
+                if disk_manifest_raw != expected_manifest_raw:
+                    errors.append(
+                        f"Drift detected in {runtime_manifest_path.relative_to(ROOT)} (run python3 scripts/compile_world_maps.py)"
+                    )
+            else:
+                errors.append(
+                    f"Missing compiled studio runtime manifest on disk: {runtime_manifest_path.relative_to(ROOT)}"
+                )
     for doc in compiled:
         mid = doc["mapId"]
         spawns = len(doc.get("spawnAreas", []))

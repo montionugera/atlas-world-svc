@@ -1,5 +1,5 @@
 use server_rs::auth::AuthGuard;
-use server_rs::content::map::room_id_for;
+use server_rs::content::world_regions::{resolve_room_or_region_id, GENERATED_REGION_IDS};
 use server_rs::fleet::{AgonesClient, FleetLifecycle, HeartbeatTask};
 use server_rs::meta::{
     spawn_meta_http_listener, InMemoryMetaStore, MetaDocStore, MetaHttpConfig, PostgresMetaStore,
@@ -320,6 +320,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }),
     );
 
+    // 6. Generated-world regions (Wealdmarch c02 compiled regions)
+    for (idx, &region_id) in GENERATED_REGION_IDS.iter().enumerate() {
+        if let Some(sim) =
+            AtlasSimulation::from_generated_region(region_id, seed.wrapping_add(100 + idx as u32))
+        {
+            rooms.insert(region_id.to_string(), sim);
+        }
+    }
+
     info!(
         "Initialized {} simulation rooms: {:?}",
         rooms.len(),
@@ -344,6 +353,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         disconnect_grace_ticks,
     );
     let mut snapshot_builder = SnapshotBuilder::new();
+    let mut aoi_trackers: std::collections::HashMap<String, server_rs::spatial::AoiTracker> =
+        std::collections::HashMap::new();
     let mut match_event_buffer = MatchEventBuffer::default();
     let mut character_state_buffer = CharacterStateBuffer::default();
 
@@ -386,13 +397,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 for (room_id, sim) in rooms.iter_mut() {
                     let room_inputs: Vec<server_rs::net::ClientPacket> = inputs
                         .iter()
-                        .filter(|p| room_id_for(&p.room_id) == room_id)
+                        .filter(|p| resolve_room_or_region_id(&p.room_id) == room_id)
                         .cloned()
                         .collect();
 
                     let room_disconnects: Vec<String> = disconnected
                         .iter()
-                        .filter(|(_, r)| room_id_for(r) == room_id)
+                        .filter(|(_, r)| resolve_room_or_region_id(r) == room_id)
                         .map(|(s, _)| s.clone())
                         .collect();
 
@@ -416,14 +427,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             .duration_since(std::time::UNIX_EPOCH)
                             .map(|d| d.as_millis() as u64)
                             .unwrap_or(frame.sim_time_ms);
-                        let snapshot_bytes = snapshot_builder.build_frame(
-                            frame.tick,
-                            epoch_ms,
-                            &frame.entities,
-                            &frame.removed_ids,
-                            &frame.events,
-                        );
-                        ws_server.broadcast_snapshot_to_room(room_id, snapshot_bytes).await;
+                        let aoi = aoi_trackers.entry(room_id.clone()).or_default();
+                        for departed in &room_disconnects {
+                            aoi.remove_viewer(server_rs::protocol::fnv1a_32(departed));
+                        }
+                        ws_server
+                            .broadcast_aoi_snapshots_to_room(
+                                room_id,
+                                aoi,
+                                &mut snapshot_builder,
+                                frame.tick,
+                                epoch_ms,
+                                &frame.entities,
+                                &frame.removed_ids,
+                                &frame.events,
+                            )
+                            .await;
                     }
                 }
 

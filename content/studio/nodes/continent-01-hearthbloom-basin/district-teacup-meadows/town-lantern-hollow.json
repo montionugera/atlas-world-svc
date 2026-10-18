@@ -1,0 +1,155 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-lantern-hollow",
+  "name": "Lantern Hollow",
+  "map_id": "lantern-hollow",
+  "parent_district_id": "district-teacup-meadows",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "The warm ceramic-domed Starter Town inside Sola's unbroken palm where newly condensed 90 to 120 centimeter Star-Kindled Sprouts first awaken around the Ever-Hearth.",
+  "is_starter_town": true,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "level_range": [
+    1,
+    5
+  ],
+  "starter_arrival_binding": {
+    "world_history_id": "world-history-cradle-of-embers",
+    "arrival_rationale": "Falling Hearth-Sparks condense gently inside the warm ceramic plaza of Lantern Hollow, where Lantern-Keepers outfit new Sprouts before they venture through the South or East gates.",
+    "spawn_point_meters": {
+      "x": 2000.0,
+      "y": 2000.0,
+      "z": 0.0
+    },
+    "safe_zone_radius_meters": 40.0
+  },
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_terracotta_village",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Warm thermal canal encircling the central Ever-Hearth plaza"
+  },
+  "portals": {
+    "North": null,
+    "South": {
+      "portal_id": "portal-lantern-hollow-south",
+      "direction": "South",
+      "target_node_id": "hunting-area-clover-south-gate",
+      "target_map_id": "clover-south-gate",
+      "target_direction": "North",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3800.0
+      }
+    },
+    "East": {
+      "portal_id": "portal-lantern-hollow-east",
+      "direction": "East",
+      "target_node_id": "hunting-area-kiln-east-orchard",
+      "target_map_id": "kiln-east-orchard",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-lantern-hollow-west-fog",
+      "direction": "West",
+      "target_node_id": "hunting-area-whispering-mire",
+      "target_map_id": null,
+      "target_direction": "East",
+      "gate_state": "fog_of_lore",
+      "lock_message": "The western teapot-sluice bridge is shrouded in silver steam-fog; Lantern-Keepers forbid crossing until the Great Kiln is relit.",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-lantern-hollow-dungeon-cellar",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-kiln-cellar",
+      "target_map_id": "kiln-cellar-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2120.0,
+        "y": 1880.0,
+        "width": 8.0,
+        "height": 8.0
+      },
+      "arrival_point_meters": {
+        "x": 2110.0,
+        "y": 1880.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.25,
+    "max_bush_height_meters": 0.55,
+    "main_road_width_meters": 14.0,
+    "footpath_width_meters": 4.5,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/dungeon/pillar.glb",
+      "res://assets/dungeon/banner_shield_blue.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly fulfills the Starter Town binding in world-history-cradle-of-embers and anchors district-teacup-meadows at grid [1, 1]."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Teapot-domed ceramic cottages encircling the warm Ever-Hearth fountain where falling star-sparks condense."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Grass capped at 0.25m, bushes at 0.55m, step risers at 0.15m, and main plaza roads at 14.0m for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Enforces a 40.0m peaceful safe zone with zero monster spawns and symmetric South, East, West (fog_of_lore), and Dungeon portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Compiles a fog_of_lore boundary portal on the West bridge leading to the uncharted Whispering Mire."
+    }
+  }
+}

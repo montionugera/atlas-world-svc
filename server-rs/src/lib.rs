@@ -6,6 +6,7 @@ pub mod core;
 pub mod debug;
 pub mod ecs;
 pub mod fleet;
+pub mod load_harness;
 pub mod meta;
 pub mod net;
 pub mod physics;
@@ -27,6 +28,10 @@ pub use content::{
     BASE_MOB_ATK, BESTIARY_JSON, GEAR_REFERENCE, GROWTH, STAT_COEF, STAT_MAX, UNARMED_GEAR,
 };
 pub use fleet::{AgonesClient, FleetLifecycle, FleetState, HeartbeatTask, MockFleetClient};
+pub use load_harness::{
+    measure_tier, run_capacity_sweep, CapacitySweepReport, CapacityTierReport,
+    DEFAULT_CAPACITY_TIERS,
+};
 pub use net::{ClientPacket, WsServer};
 pub use storage::{
     normalize_match_event_type, CharacterStateBuffer, CharacterStateSnapshot, EquippedItemIds,
@@ -49,7 +54,7 @@ pub use protocol::{
 pub use simulation::{
     AtlasSimulation, EntityTraceSnapshot, FinalSummary, SimulationTrace, TickTraceSnapshot,
 };
-pub use spatial::SpatialGrid;
+pub use spatial::{AoiTracker, SpatialGrid};
 pub use systems::{
     bot_steering_system, combat_system, cooldown_tick_system, mob_ai_system, mob_lifecycle_system,
     physics_step_system, player_input_system, projectile_collision_system,

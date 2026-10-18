@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas-world.joymify.com/studio/schemas/common-mystery.schema.json",
+  "title": "RationalizedStudioNode",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "status",
+    "core_rationale",
+    "quality_checklist"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 2
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "canon",
+        "draft",
+        "mystery"
+      ],
+      "description": "canon = locked and playable/compilable; draft = in-design with partial children; mystery = intentional Fog of Lore placeholder with solid parent rationale."
+    },
+    "core_rationale": {
+      "type": "string",
+      "minLength": 20,
+      "description": "Mandatory at all statuses. Explains why this node exists as a direct consequence of its parent layer."
+    },
+    "mystery_hook": {
+      "type": "object",
+      "description": "Required when status is 'mystery'. Optional flavor rumor when 'draft' or 'canon'.",
+      "required": [
+        "in_world_rumor",
+        "visual_silhouette",
+        "unanswered_question"
+      ],
+      "properties": {
+        "in_world_rumor": {
+          "type": "string",
+          "minLength": 15,
+          "description": "What tavern keepers, sailors, or scholars say about this uncharted place or event."
+        },
+        "visual_silhouette": {
+          "type": "string",
+          "minLength": 15,
+          "description": "What players see from the world map, telescope, or border fog."
+        },
+        "unanswered_question": {
+          "type": "string",
+          "minLength": 15,
+          "description": "The core design and lore question left intentionally open for future expansion."
+        },
+        "discovery_trigger_hint": {
+          "type": "string",
+          "description": "High-level condition that will eventually lift the fog."
+        }
+      }
+    },
+    "quality_checklist": {
+      "type": "object",
+      "description": "Five-Pillar Step-by-Step Quality, Continuity, Consistency, and Fantasy Checklist. All five pillars must be verified true before promoting a node to 'canon' or generating child layers.",
+      "required": [
+        "causal_continuity",
+        "fantasy_and_wonder",
+        "character_scale_consistency",
+        "spatial_and_ecological_consistency",
+        "intentional_mystery_discipline"
+      ],
+      "properties": {
+        "causal_continuity": {
+          "type": "object",
+          "required": [
+            "verified",
+            "evidence"
+          ],
+          "properties": {
+            "verified": {
+              "type": "boolean"
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 15
+            }
+          }
+        },
+        "fantasy_and_wonder": {
+          "type": "object",
+          "required": [
+            "verified",
+            "evidence"
+          ],
+          "properties": {
+            "verified": {
+              "type": "boolean"
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 15
+            }
+          }
+        },
+        "character_scale_consistency": {
+          "type": "object",
+          "required": [
+            "verified",
+            "evidence"
+          ],
+          "properties": {
+            "verified": {
+              "type": "boolean"
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 15
+            }
+          }
+        },
+        "spatial_and_ecological_consistency": {
+          "type": "object",
+          "required": [
+            "verified",
+            "evidence"
+          ],
+          "properties": {
+            "verified": {
+              "type": "boolean"
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 15
+            }
+          }
+        },
+        "intentional_mystery_discipline": {
+          "type": "object",
+          "required": [
+            "verified",
+            "evidence"
+          ],
+          "properties": {
+            "verified": {
+              "type": "boolean"
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 15
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "mystery"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "mystery_hook"
+        ]
+      }
+    }
+  ]
+}

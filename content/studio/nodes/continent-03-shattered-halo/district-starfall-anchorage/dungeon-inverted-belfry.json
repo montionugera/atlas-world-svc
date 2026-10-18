@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-inverted-belfry",
+  "name": "The Inverted Belfry",
+  "map_id": "inverted-belfry-b1",
+  "parent_district_id": "district-starfall-anchorage",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Sub-island dungeon suspended upside-down beneath Starfall Haven at [1, 1] (floor_index -1) where Vesper's Star-Pendulum bell hangs into the open sky-abyss and gravity-leech wyrms nest.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    34,
+    42
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/pillar.webp",
+    "dimensions_meters": {
+      "width": 3200.0,
+      "height": 3200.0
+    },
+    "biome_palette": "shattered_halo_inverted_belfry_dungeon",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Upward-dripping starlight condensation pooling inside inverted stained-glass domes"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-inverted-belfry-exit-haven",
+      "direction": "Exit",
+      "target_node_id": "town-starfall-haven",
+      "target_map_id": "starfall-haven",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 1600.0,
+        "y": 2980.0,
+        "width": 20.0,
+        "height": 20.0
+      },
+      "arrival_point_meters": {
+        "x": 1600.0,
+        "y": 2920.0
+      }
+    }
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-belfry-dream-glass-wraith",
+      "monster_id": "mob-dream-glass-chime-wraith",
+      "monster_name": "Dream-Glass Chime Wraith",
+      "spawn_count": 9,
+      "respawn_seconds": 14.0,
+      "level": 37,
+      "element": "Ghost",
+      "size": "Medium",
+      "race": "Demon",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-resonant-dream-glass-shard",
+          "item_name": "Resonant Dream-Glass Shard",
+          "drop_chance_percent": 42.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-dream-glass-chime-wraith",
+        "card_name": "Dream-Glass Chime Wraith Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Weapon",
+        "modifier_summary": "Magic Attack +6%, Ghost Magic Damage +8%"
+      }
+    },
+    {
+      "spawn_id": "spawn-belfry-gravity-leech-wyrm",
+      "monster_id": "mob-gravity-leech-wyrm",
+      "monster_name": "Gravity-Leech Wyrm",
+      "spawn_count": 6,
+      "respawn_seconds": 18.0,
+      "level": 41,
+      "element": "Dark",
+      "size": "Large",
+      "race": "Dragon",
+      "family": "dragon",
+      "item_drops": [
+        {
+          "item_id": "item-belfry-star-chime-clapper",
+          "item_name": "Belfry Star-Chime Clapper",
+          "drop_chance_percent": 32.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-gravity-leech-wyrm",
+        "card_name": "Gravity-Leech Wyrm Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Armor",
+        "modifier_summary": "Maximum Health Points +700, Dragon Race Resistance +12%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.16,
+    "max_bush_height_meters": 0.4,
+    "stair_riser_height_meters": 0.14,
+    "doorway_Clearance_meters": {
+      "height": 2.4,
+      "width": 1.8
+    },
+    "main_road_width_meters": 12.0,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/pillar.glb",
+      "res://assets/dungeon/archway.glb",
+      "res://assets/dungeon/floor_tile_large.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Suspended beneath Starfall Haven where Vesper's Star-Pendulum bell anchors the southern sky-island's gravity field."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Upside-down basalt cathedral belfry hanging over open starlight clouds with resonant dream-glass chimes."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Stair risers at 0.14m, archways 2.40m x 1.80m, and 12.0m belfry catwalks for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric Exit portal to town-starfall-haven at [1, 1] floor_index -1 and Level 37 to 41 spirit/dragon spawns."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Complete Canon dungeon with zero placeholder text and item drops that tie into the Mirror Cascade Basin lore."
+    }
+  }
+}

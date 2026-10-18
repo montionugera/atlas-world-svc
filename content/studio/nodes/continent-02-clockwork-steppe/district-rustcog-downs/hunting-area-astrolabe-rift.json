@@ -1,0 +1,162 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-astrolabe-rift",
+  "name": "The Astrolabe Rift Promontory",
+  "map_id": "astrolabe-rift",
+  "parent_district_id": "district-rustcog-downs",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "canon",
+  "core_rationale": "Northern cliff-edge promontory of Rustcog Downs at [1, 0] where Krono's outermost astrolabe ring stabilizes the dimensional rift bridge north to Tether Causeway on Continent 03.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "level_range": [
+    25,
+    30
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/nature/rock_tall_1.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_steppe_astrolabe_promontory",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Upward-drifting silver condensation droplets rising from the canyon rim toward the hovering astrolabe ring"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-astrolabe-rift-north-tether-causeway",
+      "direction": "North",
+      "target_node_id": "hunting-area-tether-causeway",
+      "target_map_id": "tether-causeway",
+      "target_direction": "South",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": {
+      "portal_id": "portal-astrolabe-rift-south-brass-spur",
+      "direction": "South",
+      "target_node_id": "hunting-area-brass-spur-ridge",
+      "target_map_id": "brass-spur-ridge",
+      "target_direction": "North",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3800.0
+      }
+    },
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-astrolabe-rift-gyro-falcon",
+      "monster_id": "mob-brass-gyro-falcon",
+      "monster_name": "Brass Gyro-Falcon",
+      "spawn_count": 9,
+      "respawn_seconds": 13.0,
+      "level": 27,
+      "element": "Wind",
+      "size": "Medium",
+      "race": "Brute",
+      "family": "beast",
+      "item_drops": [
+        {
+          "item_id": "item-gyroscopic-feather-vane",
+          "item_name": "Gyroscopic Feather Vane",
+          "drop_chance_percent": 44.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-brass-gyro-falcon",
+        "card_name": "Brass Gyro-Falcon Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Garment",
+        "modifier_summary": "Flee Rate +12, Wind Elemental Resistance +10%"
+      }
+    },
+    {
+      "spawn_id": "spawn-astrolabe-rift-lodestone-automaton",
+      "monster_id": "mob-lodestone-astrolabe-sentry",
+      "monster_name": "Lodestone Astrolabe Sentry",
+      "spawn_count": 7,
+      "respawn_seconds": 16.0,
+      "level": 30,
+      "element": "Earth",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-calibrated-star-gimbal",
+          "item_name": "Calibrated Star Gimbal",
+          "drop_chance_percent": 38.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-lodestone-astrolabe-sentry",
+        "card_name": "Lodestone Astrolabe Sentry Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Accessory",
+        "modifier_summary": "Hit Rate +10, Magic Defense +5"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.24,
+    "max_bush_height_meters": 0.52,
+    "main_road_width_meters": 12.0,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/nature/rock_tall_1.glb",
+      "res://assets/dungeon/archway.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Bridges Rustcog Downs on Continent 02 to Tether Causeway in Starfall Anchorage on Continent 03 via the calibrated Astrolabe Gate."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Hovering thirty-meter brass astrolabe ring where silver droplets and pebbles drift upward into the dimensional rift."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Grass <= 0.24m, bushes <= 0.52m, terrace steps <= 0.16m, and 12.0m astrolabe causeway for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric South portal to hunting-area-brass-spur-ridge, North cross-continent portal to hunting-area-tether-causeway, and Level 27 to 30 beast/construct fauna."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Promoted from Mystery to full Canon hunting area with complete spawns, cards, and cross-continent rift portal."
+    }
+  }
+}

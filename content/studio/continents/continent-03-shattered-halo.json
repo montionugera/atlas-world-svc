@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0.0",
+  "id": "continent-03-shattered-halo",
+  "name": "The Shattered Halo",
+  "status": "canon",
+  "core_rationale": "Born from scar-vesper-crater where Vesper the Dream-Eater's tear inverted gravity during the Clockspring War, forming a Level 30 to 50 vertical sky-archipelago of tethered basalt islands.",
+  "parent_world_history_causes": {
+    "world_history_id": "world-history-cradle-of-embers",
+    "god_patron_ids": [
+      "god-vesper-dream-eater"
+    ],
+    "war_scar_ids": [
+      "scar-vesper-crater"
+    ],
+    "causal_summary": "Vesper's slumbering gravity field holds broken ocean chunks suspended in a luminous ring above the northern whirlpool."
+  },
+  "level_band": {
+    "min_level": 30,
+    "max_level": 50
+  },
+  "climate_profile": {
+    "macro_biome": "Inverted-gravity basalt sky-islands linked by starlight tether-bridges and upward waterfalls",
+    "weather_phenomena": [
+      "Luminous Star-Tide updrafts that slow fall speed and illuminate crystal buoys"
+    ],
+    "skybox_palette": "Deep indigo twilight with a crescent ring of floating islands and upward-flowing silver cascades"
+  },
+  "civilization_style": {
+    "culture_archetype": "Star-navigators, tether-weavers, and dream-glass cartographers",
+    "architecture_motif": "Lantern-lit basalt anchor-piers and brass tether-winches carved into floating island rims",
+    "character_scale_adaptation": "Tether-bridges maintain 12.0 meter wide decked walkways (>= 3.5 meter law) with 0.65 meter safety rails, 0.15 meter basalt risers, and 0.60 meter astrolabe chart tables for 1.05 meter characters."
+  },
+  "travel_links": [
+    {
+      "target_continent_id": "continent-02-clockwork-steppe",
+      "travel_mode": "dimensional_rift",
+      "hub_name": "Starfall Anchorage Rift-Dock",
+      "status": "open",
+      "unlock_rationale": "Inbound dimensional rift from The Astrolabe Rift Promontory in Rustcog Downs (Continent 02) to Tether Causeway."
+    },
+    {
+      "target_continent_id": "continent-01-hearthbloom-basin",
+      "travel_mode": "airship",
+      "hub_name": "Hearthbloom Sky-Spire",
+      "status": "locked_by_mystery",
+      "unlock_rationale": "Sealed until the Violet Squall barometer beacons in Nebula Undertide are lit."
+    }
+  ],
+  "district_ids": [
+    "district-starfall-anchorage",
+    "district-eclipse-observatory",
+    "district-nebula-undertide"
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Airship captains refuse to fly past the Violet Squall; they claim waterfalls pour upward into the stars and lost toys float back down.",
+    "visual_silhouette": "A crescent halo of floating dark-stone islands and inverted waterfalls glowing softly on the northern horizon.",
+    "unanswered_question": "What sleeps inside the inverted Nebula Undertide whirlpool at the center of the Shattered Halo?",
+    "discovery_trigger_hint": "Promoted to Canon alongside Starfall Anchorage and the Astrolabe Rift Bridge."
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Traces directly to god-vesper-dream-eater and scar-vesper-crater in world-history-cradle-of-embers and receives the open Astrolabe Gate rift from Continent 02."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Inverted waterfalls pouring upward into a crescent halo of floating basalt islands moored by starlight chains."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Specifies 12.0m tether-bridge walkways, 0.65m safety rails, 0.15m basalt risers, and 0.60m chart tables for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Organizes Starfall Anchorage (Canon, [30, 42]), Eclipse Observatory (Draft, [38, 46]), and Nebula Undertide (Mystery, [44, 50]) across the sky-archipelago."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Preserves Eclipse Observatory in Draft and Nebula Undertide in Mystery while keeping the direct airship link to Continent 01 locked_by_mystery."
+    }
+  }
+}

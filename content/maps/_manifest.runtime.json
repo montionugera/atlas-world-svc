@@ -1,0 +1,1225 @@
+{
+  "schemaVersion": 1,
+  "worldHistoryId": "world-history-cradle-of-embers",
+  "characterScaleBandMeters": [
+    0.9,
+    1.2
+  ],
+  "defaultStarterMapId": "lantern-hollow",
+  "starterSpawns": {
+    "lantern-hollow": {
+      "nodeId": "town-lantern-hollow",
+      "x": 2000.0,
+      "y": 2000.0,
+      "z": 0.0,
+      "safeZoneRadiusMeters": 40.0
+    }
+  },
+  "playableMaps": [
+    {
+      "mapId": "chronometer-foundry-b1",
+      "nodeId": "dungeon-chronometer-foundry",
+      "name": "The Chronometer Foundry (Floor -1)",
+      "districtId": "district-mainspring-caldera",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        26,
+        35
+      ]
+    },
+    {
+      "mapId": "inverted-belfry-b1",
+      "nodeId": "dungeon-inverted-belfry",
+      "name": "The Inverted Belfry",
+      "districtId": "district-starfall-anchorage",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        34,
+        42
+      ]
+    },
+    {
+      "mapId": "kiln-cellar-b1",
+      "nodeId": "dungeon-kiln-cellar",
+      "name": "The Under-Hearth Kiln Cellar",
+      "districtId": "district-teacup-meadows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        10,
+        18
+      ]
+    },
+    {
+      "mapId": "mercury-reservoir-b1",
+      "nodeId": "dungeon-mercury-reservoir",
+      "name": "The Mercury Reservoir Vault (Floor -1)",
+      "districtId": "district-verdigris-siphon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        28,
+        35
+      ]
+    },
+    {
+      "mapId": "pendulum-shaft-b1",
+      "nodeId": "dungeon-pendulum-shaft",
+      "name": "The Pendulum Shaft (Floor -1)",
+      "districtId": "district-rustcog-downs",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        20,
+        30
+      ]
+    },
+    {
+      "mapId": "astrolabe-rift",
+      "nodeId": "hunting-area-astrolabe-rift",
+      "name": "The Astrolabe Rift Promontory",
+      "districtId": "district-rustcog-downs",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        0
+      ],
+      "levelRange": [
+        25,
+        30
+      ]
+    },
+    {
+      "mapId": "brass-spur-ridge",
+      "nodeId": "hunting-area-brass-spur-ridge",
+      "name": "Brass Spur Ridge",
+      "districtId": "district-rustcog-downs",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        18,
+        28
+      ]
+    },
+    {
+      "mapId": "caldera-rim",
+      "nodeId": "hunting-area-caldera-rim",
+      "name": "The Mainspring Caldera Rim",
+      "districtId": "district-mainspring-caldera",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        22,
+        28
+      ]
+    },
+    {
+      "mapId": "cinder-apron",
+      "nodeId": "hunting-area-cinder-apron",
+      "name": "Cinder Apron Terraces",
+      "districtId": "district-kilnfire-terraces",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        12,
+        20
+      ]
+    },
+    {
+      "mapId": "clover-south-gate",
+      "nodeId": "hunting-area-clover-south-gate",
+      "name": "Clover South Gate",
+      "districtId": "district-teacup-meadows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        2
+      ],
+      "levelRange": [
+        1,
+        10
+      ]
+    },
+    {
+      "mapId": "kiln-east-orchard",
+      "nodeId": "hunting-area-kiln-east-orchard",
+      "name": "Kiln East Orchard",
+      "districtId": "district-teacup-meadows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        2,
+        1
+      ],
+      "levelRange": [
+        6,
+        15
+      ]
+    },
+    {
+      "mapId": "siphon-sluice",
+      "nodeId": "hunting-area-siphon-sluice",
+      "name": "The Verdigris Siphon Sluiceway",
+      "districtId": "district-verdigris-siphon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        25,
+        29
+      ]
+    },
+    {
+      "mapId": "tether-causeway",
+      "nodeId": "hunting-area-tether-causeway",
+      "name": "Tether Causeway",
+      "districtId": "district-starfall-anchorage",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        30,
+        36
+      ]
+    },
+    {
+      "mapId": "escapement-anvil",
+      "nodeId": "town-escapement-anvil",
+      "name": "Escapement Anvil",
+      "districtId": "district-mainspring-caldera",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        24,
+        30
+      ]
+    },
+    {
+      "mapId": "kilnwatch-bastion",
+      "nodeId": "town-kilnwatch-bastion",
+      "name": "Kilnwatch Bastion",
+      "districtId": "district-kilnfire-terraces",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        10,
+        15
+      ]
+    },
+    {
+      "mapId": "lantern-hollow",
+      "nodeId": "town-lantern-hollow",
+      "name": "Lantern Hollow",
+      "districtId": "district-teacup-meadows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": true,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        1,
+        5
+      ]
+    },
+    {
+      "mapId": "patina-lock",
+      "nodeId": "town-patina-lock",
+      "name": "Patina Lock",
+      "districtId": "district-verdigris-siphon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        26,
+        30
+      ]
+    },
+    {
+      "mapId": "pinion-terminus",
+      "nodeId": "town-pinion-terminus",
+      "name": "Pinion Terminus",
+      "districtId": "district-rustcog-downs",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        15,
+        22
+      ]
+    },
+    {
+      "mapId": "starfall-haven",
+      "nodeId": "town-starfall-haven",
+      "name": "Starfall Haven",
+      "districtId": "district-starfall-anchorage",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        32,
+        38
+      ]
+    }
+  ],
+  "portalRoutingTable": {
+    "portal-chronometer-foundry-exit-anvil": {
+      "portalId": "portal-chronometer-foundry-exit-anvil",
+      "sourceNodeId": "dungeon-chronometer-foundry",
+      "sourceMapId": "chronometer-foundry-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-escapement-anvil",
+      "targetMapId": "escapement-anvil",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 500.0,
+        "y": 900.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 500.0,
+        "y": 860.0
+      },
+      "lockMessage": null
+    },
+    "portal-inverted-belfry-exit-haven": {
+      "portalId": "portal-inverted-belfry-exit-haven",
+      "sourceNodeId": "dungeon-inverted-belfry",
+      "sourceMapId": "inverted-belfry-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-starfall-haven",
+      "targetMapId": "starfall-haven",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 1600.0,
+        "y": 2980.0,
+        "width": 20.0,
+        "height": 20.0
+      },
+      "arrivalPointMeters": {
+        "x": 1600.0,
+        "y": 2920.0
+      },
+      "lockMessage": null
+    },
+    "portal-kiln-cellar-exit": {
+      "portalId": "portal-kiln-cellar-exit",
+      "sourceNodeId": "dungeon-kiln-cellar",
+      "sourceMapId": "kiln-cellar-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-lantern-hollow",
+      "targetMapId": "lantern-hollow",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 1000.0,
+        "y": 1840.0,
+        "width": 12.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 1000.0,
+        "y": 1800.0
+      },
+      "lockMessage": null
+    },
+    "portal-mercury-reservoir-exit-patina": {
+      "portalId": "portal-mercury-reservoir-exit-patina",
+      "sourceNodeId": "dungeon-mercury-reservoir",
+      "sourceMapId": "mercury-reservoir-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-patina-lock",
+      "targetMapId": "patina-lock",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 500.0,
+        "y": 900.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 500.0,
+        "y": 860.0
+      },
+      "lockMessage": null
+    },
+    "portal-pendulum-shaft-exit-pinion": {
+      "portalId": "portal-pendulum-shaft-exit-pinion",
+      "sourceNodeId": "dungeon-pendulum-shaft",
+      "sourceMapId": "pendulum-shaft-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-pinion-terminus",
+      "targetMapId": "pinion-terminus",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 500.0,
+        "y": 900.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 500.0,
+        "y": 860.0
+      },
+      "lockMessage": null
+    },
+    "portal-astrolabe-rift-north-tether-causeway": {
+      "portalId": "portal-astrolabe-rift-north-tether-causeway",
+      "sourceNodeId": "hunting-area-astrolabe-rift",
+      "sourceMapId": "astrolabe-rift",
+      "direction": "North",
+      "targetNodeId": "hunting-area-tether-causeway",
+      "targetMapId": "tether-causeway",
+      "targetDirection": "South",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": null
+    },
+    "portal-astrolabe-rift-south-brass-spur": {
+      "portalId": "portal-astrolabe-rift-south-brass-spur",
+      "sourceNodeId": "hunting-area-astrolabe-rift",
+      "sourceMapId": "astrolabe-rift",
+      "direction": "South",
+      "targetNodeId": "hunting-area-brass-spur-ridge",
+      "targetMapId": "brass-spur-ridge",
+      "targetDirection": "North",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3800.0
+      },
+      "lockMessage": null
+    },
+    "portal-brass-spur-north-astrolabe": {
+      "portalId": "portal-brass-spur-north-astrolabe",
+      "sourceNodeId": "hunting-area-brass-spur-ridge",
+      "sourceMapId": "brass-spur-ridge",
+      "direction": "North",
+      "targetNodeId": "hunting-area-astrolabe-rift",
+      "targetMapId": "astrolabe-rift",
+      "targetDirection": "South",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": null
+    },
+    "portal-brass-spur-east-caldera": {
+      "portalId": "portal-brass-spur-east-caldera",
+      "sourceNodeId": "hunting-area-brass-spur-ridge",
+      "sourceMapId": "brass-spur-ridge",
+      "direction": "East",
+      "targetNodeId": "hunting-area-caldera-rim",
+      "targetMapId": "caldera-rim",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-brass-spur-west": {
+      "portalId": "portal-brass-spur-west",
+      "sourceNodeId": "hunting-area-brass-spur-ridge",
+      "sourceMapId": "brass-spur-ridge",
+      "direction": "West",
+      "targetNodeId": "town-pinion-terminus",
+      "targetMapId": "pinion-terminus",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-caldera-rim-east-anvil": {
+      "portalId": "portal-caldera-rim-east-anvil",
+      "sourceNodeId": "hunting-area-caldera-rim",
+      "sourceMapId": "caldera-rim",
+      "direction": "East",
+      "targetNodeId": "town-escapement-anvil",
+      "targetMapId": "escapement-anvil",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-caldera-rim-west-brass-spur": {
+      "portalId": "portal-caldera-rim-west-brass-spur",
+      "sourceNodeId": "hunting-area-caldera-rim",
+      "sourceMapId": "caldera-rim",
+      "direction": "West",
+      "targetNodeId": "hunting-area-brass-spur-ridge",
+      "targetMapId": "brass-spur-ridge",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-cinder-apron-north-fog": {
+      "portalId": "portal-cinder-apron-north-fog",
+      "sourceNodeId": "hunting-area-cinder-apron",
+      "sourceMapId": "cinder-apron",
+      "direction": "North",
+      "targetNodeId": "hunting-area-slag-chasm",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Superheated porcelain glaze-steam billows from the northern Slag Chasm; the Guild of Potters has sealed the bridge until the Great Damper is cooled."
+    },
+    "portal-cinder-apron-east-pinion": {
+      "portalId": "portal-cinder-apron-east-pinion",
+      "sourceNodeId": "hunting-area-cinder-apron",
+      "sourceMapId": "cinder-apron",
+      "direction": "East",
+      "targetNodeId": "town-pinion-terminus",
+      "targetMapId": "pinion-terminus",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-cinder-apron-west": {
+      "portalId": "portal-cinder-apron-west",
+      "sourceNodeId": "hunting-area-cinder-apron",
+      "sourceMapId": "cinder-apron",
+      "direction": "West",
+      "targetNodeId": "town-kilnwatch-bastion",
+      "targetMapId": "kilnwatch-bastion",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-clover-south-gate-north": {
+      "portalId": "portal-clover-south-gate-north",
+      "sourceNodeId": "hunting-area-clover-south-gate",
+      "sourceMapId": "clover-south-gate",
+      "direction": "North",
+      "targetNodeId": "town-lantern-hollow",
+      "targetMapId": "lantern-hollow",
+      "targetDirection": "South",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": null
+    },
+    "portal-kiln-east-orchard-east": {
+      "portalId": "portal-kiln-east-orchard-east",
+      "sourceNodeId": "hunting-area-kiln-east-orchard",
+      "sourceMapId": "kiln-east-orchard",
+      "direction": "East",
+      "targetNodeId": "town-kilnwatch-bastion",
+      "targetMapId": "kilnwatch-bastion",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-kiln-east-orchard-west": {
+      "portalId": "portal-kiln-east-orchard-west",
+      "sourceNodeId": "hunting-area-kiln-east-orchard",
+      "sourceMapId": "kiln-east-orchard",
+      "direction": "West",
+      "targetNodeId": "town-lantern-hollow",
+      "targetMapId": "lantern-hollow",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-siphon-sluice-east-patina": {
+      "portalId": "portal-siphon-sluice-east-patina",
+      "sourceNodeId": "hunting-area-siphon-sluice",
+      "sourceMapId": "siphon-sluice",
+      "direction": "East",
+      "targetNodeId": "town-patina-lock",
+      "targetMapId": "patina-lock",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-siphon-sluice-west-anvil": {
+      "portalId": "portal-siphon-sluice-west-anvil",
+      "sourceNodeId": "hunting-area-siphon-sluice",
+      "sourceMapId": "siphon-sluice",
+      "direction": "West",
+      "targetNodeId": "town-escapement-anvil",
+      "targetMapId": "escapement-anvil",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-tether-causeway-south-astrolabe-rift": {
+      "portalId": "portal-tether-causeway-south-astrolabe-rift",
+      "sourceNodeId": "hunting-area-tether-causeway",
+      "sourceMapId": "tether-causeway",
+      "direction": "South",
+      "targetNodeId": "hunting-area-astrolabe-rift",
+      "targetMapId": "astrolabe-rift",
+      "targetDirection": "North",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3800.0
+      },
+      "lockMessage": null
+    },
+    "portal-tether-causeway-east-starfall-haven": {
+      "portalId": "portal-tether-causeway-east-starfall-haven",
+      "sourceNodeId": "hunting-area-tether-causeway",
+      "sourceMapId": "tether-causeway",
+      "direction": "East",
+      "targetNodeId": "town-starfall-haven",
+      "targetMapId": "starfall-haven",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-escapement-anvil-north-fog": {
+      "portalId": "portal-escapement-anvil-north-fog",
+      "sourceNodeId": "town-escapement-anvil",
+      "sourceMapId": "escapement-anvil",
+      "direction": "North",
+      "targetNodeId": "hunting-area-sun-coil-spire",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Superheated solar-brass updrafts swirl around the Sun-Coil Spire; the Master Clockmakers have locked the lift until the barometer stabilizers are calibrated."
+    },
+    "portal-escapement-anvil-east-siphon": {
+      "portalId": "portal-escapement-anvil-east-siphon",
+      "sourceNodeId": "town-escapement-anvil",
+      "sourceMapId": "escapement-anvil",
+      "direction": "East",
+      "targetNodeId": "hunting-area-siphon-sluice",
+      "targetMapId": "siphon-sluice",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-escapement-anvil-west-rim": {
+      "portalId": "portal-escapement-anvil-west-rim",
+      "sourceNodeId": "town-escapement-anvil",
+      "sourceMapId": "escapement-anvil",
+      "direction": "West",
+      "targetNodeId": "hunting-area-caldera-rim",
+      "targetMapId": "caldera-rim",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-escapement-anvil-dungeon-chronometer": {
+      "portalId": "portal-escapement-anvil-dungeon-chronometer",
+      "sourceNodeId": "town-escapement-anvil",
+      "sourceMapId": "escapement-anvil",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-chronometer-foundry",
+      "targetMapId": "chronometer-foundry-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-kilnwatch-bastion-east": {
+      "portalId": "portal-kilnwatch-bastion-east",
+      "sourceNodeId": "town-kilnwatch-bastion",
+      "sourceMapId": "kilnwatch-bastion",
+      "direction": "East",
+      "targetNodeId": "hunting-area-cinder-apron",
+      "targetMapId": "cinder-apron",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-kilnwatch-bastion-west": {
+      "portalId": "portal-kilnwatch-bastion-west",
+      "sourceNodeId": "town-kilnwatch-bastion",
+      "sourceMapId": "kilnwatch-bastion",
+      "direction": "West",
+      "targetNodeId": "hunting-area-kiln-east-orchard",
+      "targetMapId": "kiln-east-orchard",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-lantern-hollow-south": {
+      "portalId": "portal-lantern-hollow-south",
+      "sourceNodeId": "town-lantern-hollow",
+      "sourceMapId": "lantern-hollow",
+      "direction": "South",
+      "targetNodeId": "hunting-area-clover-south-gate",
+      "targetMapId": "clover-south-gate",
+      "targetDirection": "North",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3800.0
+      },
+      "lockMessage": null
+    },
+    "portal-lantern-hollow-east": {
+      "portalId": "portal-lantern-hollow-east",
+      "sourceNodeId": "town-lantern-hollow",
+      "sourceMapId": "lantern-hollow",
+      "direction": "East",
+      "targetNodeId": "hunting-area-kiln-east-orchard",
+      "targetMapId": "kiln-east-orchard",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-lantern-hollow-west-fog": {
+      "portalId": "portal-lantern-hollow-west-fog",
+      "sourceNodeId": "town-lantern-hollow",
+      "sourceMapId": "lantern-hollow",
+      "direction": "West",
+      "targetNodeId": "hunting-area-whispering-mire",
+      "targetMapId": null,
+      "targetDirection": "East",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": "The western teapot-sluice bridge is shrouded in silver steam-fog; Lantern-Keepers forbid crossing until the Great Kiln is relit."
+    },
+    "portal-lantern-hollow-dungeon-cellar": {
+      "portalId": "portal-lantern-hollow-dungeon-cellar",
+      "sourceNodeId": "town-lantern-hollow",
+      "sourceMapId": "lantern-hollow",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-kiln-cellar",
+      "targetMapId": "kiln-cellar-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2120.0,
+        "y": 1880.0,
+        "width": 8.0,
+        "height": 8.0
+      },
+      "arrivalPointMeters": {
+        "x": 2110.0,
+        "y": 1880.0
+      },
+      "lockMessage": null
+    },
+    "portal-patina-lock-north-fog": {
+      "portalId": "portal-patina-lock-north-fog",
+      "sourceNodeId": "town-patina-lock",
+      "sourceMapId": "patina-lock",
+      "direction": "North",
+      "targetNodeId": "hunting-area-teal-spillway",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Pressurized turquoise coolant cascades over the northern Teal Spillway; the Lock-Keepers Guild has bolted the weir gate until the monsoon sluices subside."
+    },
+    "portal-patina-lock-west-sluice": {
+      "portalId": "portal-patina-lock-west-sluice",
+      "sourceNodeId": "town-patina-lock",
+      "sourceMapId": "patina-lock",
+      "direction": "West",
+      "targetNodeId": "hunting-area-siphon-sluice",
+      "targetMapId": "siphon-sluice",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-patina-lock-dungeon-mercury": {
+      "portalId": "portal-patina-lock-dungeon-mercury",
+      "sourceNodeId": "town-patina-lock",
+      "sourceMapId": "patina-lock",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-mercury-reservoir",
+      "targetMapId": "mercury-reservoir-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-pinion-terminus-east": {
+      "portalId": "portal-pinion-terminus-east",
+      "sourceNodeId": "town-pinion-terminus",
+      "sourceMapId": "pinion-terminus",
+      "direction": "East",
+      "targetNodeId": "hunting-area-brass-spur-ridge",
+      "targetMapId": "brass-spur-ridge",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-pinion-terminus-west-cinder": {
+      "portalId": "portal-pinion-terminus-west-cinder",
+      "sourceNodeId": "town-pinion-terminus",
+      "sourceMapId": "pinion-terminus",
+      "direction": "West",
+      "targetNodeId": "hunting-area-cinder-apron",
+      "targetMapId": "cinder-apron",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-pinion-terminus-dungeon-pendulum": {
+      "portalId": "portal-pinion-terminus-dungeon-pendulum",
+      "sourceNodeId": "town-pinion-terminus",
+      "sourceMapId": "pinion-terminus",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-pendulum-shaft",
+      "targetMapId": "pendulum-shaft-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-starfall-haven-north-fog": {
+      "portalId": "portal-starfall-haven-north-fog",
+      "sourceNodeId": "town-starfall-haven",
+      "sourceMapId": "starfall-haven",
+      "direction": "North",
+      "targetNodeId": "hunting-area-mirror-cascade",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Upward-pouring silver cataracts at Mirror Cascade Basin have frozen the northern tether-lock; the Cartographer Guild requires the Belfry Star-Chime before unsealing the gate."
+    },
+    "portal-starfall-haven-west-tether": {
+      "portalId": "portal-starfall-haven-west-tether",
+      "sourceNodeId": "town-starfall-haven",
+      "sourceMapId": "starfall-haven",
+      "direction": "West",
+      "targetNodeId": "hunting-area-tether-causeway",
+      "targetMapId": "tether-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-starfall-haven-dungeon-belfry": {
+      "portalId": "portal-starfall-haven-dungeon-belfry",
+      "sourceNodeId": "town-starfall-haven",
+      "sourceMapId": "starfall-haven",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-inverted-belfry",
+      "targetMapId": "inverted-belfry-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    }
+  }
+}

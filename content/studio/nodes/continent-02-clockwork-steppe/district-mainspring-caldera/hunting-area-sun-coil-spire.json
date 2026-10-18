@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-sun-coil-spire",
+  "name": "The Sun-Coil Spire",
+  "map_id": null,
+  "parent_district_id": "district-mainspring-caldera",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern thermal-brass tower of Mainspring Caldera at [1, 0] where solar mirrors and barometer vanes harvest high-altitude wind to charge the upper sky-docks.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "level_range": [
+    28,
+    30
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Glider captains say the upper Sun-Coil Spire platform aligns with a floating brass dock from Continent 03 once every solstice.",
+    "visual_silhouette": "A spiraling tower of polished copper heliostats and spinning barometer cups rising out of the northern caldera rim.",
+    "unanswered_question": "What sky-ship blueprint is locked inside the Master Clockmakers' barometer observatory?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Forms the northern high-altitude thermal spire of Mainspring Caldera on Continent 02."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Spiraling tower of polished copper heliostats and spinning barometer cups above the caldera clouds."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics will be bound when promoted to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] North of Escapement Anvil via a fog_of_lore boundary portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and compiles to a fog_of_lore boundary portal on Escapement Anvil North Gate."
+    }
+  }
+}
