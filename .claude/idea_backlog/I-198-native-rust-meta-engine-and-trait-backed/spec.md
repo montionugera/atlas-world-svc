@@ -135,6 +135,12 @@ flowchart TB
 | **AC-3** | `RustMetaEngine` with embedded `items.json`, `skills.json`, `quests.json` | S2S and client RPCs (`grant_xp`, `grant_loot`, `equip_item`, `allocate_stats`, `set_skill_loadout`, `accept_quest`, `report_match_events`, `claim_quest_reward`, `save_character_state`, `get_loadout`) and in-process `NakamaStorage` calls execute across simulated restarts | Every RPC matches the exact JSON schema, leveling curve (`100 * level`, `+3 statPoints`), quest progression, monotonic `UNIX_EPOCH`-seeded sequence numbers, and OCC retry semantics. |
 | **AC-4** | `WsServer` with `RustMetaEngine` attached | Clients call `OPTIONS` + `POST /v2/account/authenticate/device?create=true` (concurrently), `GET /v2/account`, `POST /v2/storage` (before and after writes, and attempting to read `quests_seq`), `POST /v2/rpc/allocate_stats` (wrapped), `POST /v2/rpc/get_loadout?http_key=...&unwrap`, and probe `GET /ws?lang=en&status=true&token=...` | Concurrent device auth returns the same `user_id` and a valid JWT (`uid`, `usn`, `tid`, `exp`); `/v2/storage` returns `{"objects":[]}` before writes, returns stored docs after writes, and blocks `quests_seq`; `/ws?status=true` returns `404` without spawning a ghost player; gameplay WS join hydrates the player's live ECS entity. |
 
+### Acceptance Criteria Checklist
+- [ ] **AC-1:** `InMemoryMetaStore`, `SqliteMetaStore` (WAL file across restart & `:memory:`), and `PostgresMetaStore` pass atomic `write_batch`, CAS `VersionConflict` rollback, and conflict-safe `authenticate_device`.
+- [ ] **AC-2:** `profile` v1 documents (`schemaVersion: 1`) automatically migrate to `schemaVersion: 2` with `allocated.dex == 1` while preserving existing stats.
+- [ ] **AC-3:** All 10 gameplay RPCs (`get_loadout`, `save_character_state`, `report_match_events`, `grant_xp`, `grant_loot`, `equip_item`, `allocate_stats`, `set_skill_loadout`, `accept_quest`, `claim_quest_reward`) + `healthcheck` and in-process `NakamaStorage` calls pass with monotonic `UNIX_EPOCH`-seeded sequence numbers and 2-attempt OCC retries.
+- [ ] **AC-4:** `/v2/*` HTTP endpoints (`POST /v2/account/authenticate/device`, `GET /v2/account`, `POST /v2/storage`, `GET|POST /v2/rpc/{id}` with wrapped and `?unwrap` modes, CORS headers, and `/ws?status=` 404 socket guard) pass E2E tests and `precheck.sh`.
+
 ### End-to-End Verification Command
 ```bash
 cargo test --manifest-path server-rs/Cargo.toml && ./scripts/precheck.sh --no-install
