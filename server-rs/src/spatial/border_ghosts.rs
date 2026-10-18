@@ -3,7 +3,7 @@ use crate::protocol::{EntitySnapshotData, EntityType, STATE_FLAG_ALIVE};
 use std::collections::HashMap;
 
 /// Cardinal border direction relative to a local region (`E-004` Slice 9).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum CardinalBorder {
     /// Shared border at `y = 0.0` (neighbor sits at `y in [-H, 0.0]`).
     North,
