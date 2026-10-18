@@ -70,11 +70,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Spans six Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench, Porcelain Cradle, Amber-Root Hollows, Glaze-River Delta) plus Terracotta Wind-Chime Ridge (Draft)."
+      "evidence": "Spans all seven Canon Districts (Teacup Meadows, Kilnfire Terraces, Ash-Bellows Trench, Porcelain Cradle, Amber-Root Hollows, Glaze-River Delta, Terracotta Wind-Chime Ridge)."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Terracotta Wind-Chime Ridge to Draft while preserving Chime-Pipe Colonnade and leaf Mystery nodes behind fog_of_lore gates."
+      "evidence": "Promotes Terracotta Wind-Chime Ridge to Canon while preserving Flute-Crest Promontory and leaf Mystery nodes behind fog_of_lore gates."
     }
   }
 }

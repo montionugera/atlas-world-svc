@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-aurora-chime-atoll",
+  "name": "Aurora Chime Atoll",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "status": "mystery",
+  "core_rationale": "Eastern resonant starlight-bell archipelago of Continent 03 where Vesper's suspended crystal stalactites ring in harmony with the solar-wind aurora.",
+  "local_conflict": "Harmonic aurora-seraphs and starlight bell-motley spirits guard the suspended resonance bridges.",
+  "level_band_label": "Levels 41 to 60",
+  "level_range": [
+    49,
+    50
+  ],
+  "ecological_monster_families": [
+    "celestial",
+    "spirit"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Star-navigators say that when the aurora curtains brush Aurora Chime Atoll, the suspended crystal stalactites ring out across forty miles of open sky.",
+    "visual_silhouette": "A floating ring of basalt arches hung with luminous crystal stalactite bells beneath shimmering violet-green aurora ribbons.",
+    "unanswered_question": "What celestial bell-foundry floats at the center of Aurora Chime Atoll?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater along the eastern aurora rim of Continent 03."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Floating basalt arches hung with luminous crystal stalactite bells chiming in the solar-wind aurora."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: bell-pier walkway and crystal stair metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the ninth District frontier on Continent 03 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}
