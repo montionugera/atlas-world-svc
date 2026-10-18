@@ -83,7 +83,7 @@ function launchChrome(chromePath) {
     "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
     "--remote-debugging-pipe", `--user-data-dir=${userDataDir}`, "--window-size=1440,1000", "about:blank",
   ];
-  if (process.env.CI) args.push("--no-sandbox"); // GitHub's ubuntu runners restrict the Chrome sandbox
+  if (process.env.CI && process.platform === "linux") args.push("--no-sandbox"); // GitHub's ubuntu runners restrict the Chrome sandbox
   const proc = spawn(chromePath, args, {
     stdio: ["ignore", "ignore", process.env.SMOKE_DEBUG ? "inherit" : "ignore", "pipe", "pipe"],
   });
