@@ -9,6 +9,7 @@ pub mod progression;
 pub mod projectile;
 pub mod separation;
 pub mod skill_execution;
+pub mod social;
 pub mod spatial;
 pub mod steering;
 
@@ -37,5 +38,12 @@ pub use progression::{
 pub use projectile::{projectile_collision_system, projectile_kinematics_system};
 pub use separation::separation_system;
 pub use skill_execution::{lingering_zone_system, skill_execution_system};
+pub use social::{
+    accept_friend_request, accept_party_invite, create_party, grant_party_kill_rewards,
+    invite_to_party, join_friend_in_world, list_friends_with_presence, locate_friend_in_world,
+    send_chat_message, send_friend_request, sync_party_member_snapshots, ChatChannel, ChatInbox,
+    ChatMessage, ChatRateLimiter, FriendPresenceEntry, PartyMemberSnapshot, PartyState, SocialHub,
+    SocialSession, MAX_CHAT_MESSAGES_PER_SECOND, NEARBY_CHAT_RADIUS, PARTY_SHARE_RADIUS,
+};
 pub use spatial::spatial_grid_rebuild_system;
 pub use steering::{bot_steering_system, ArenaBounds};
