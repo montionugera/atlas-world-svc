@@ -267,7 +267,7 @@ storybook_smoke_skip_reason() {
   fi
   base=$(git rev-parse -q --verify "$base^{commit}") || return 1
   [ "$base" = "$(git rev-parse HEAD)" ] && return 1
-  changed=$( { git diff --name-only "$base" -- && git ls-files --others --exclude-standard; } ) || return 1
+  changed=$( { git diff --name-only --no-renames "$base" -- && git ls-files --others --exclude-standard; } ) || return 1
   [ -z "$changed" ] && return 1
   printf '%s\n' "$changed" | grep -qE "$STORYBOOK_SMOKE_PATHS" && return 1
   echo "storybook smoke SKIPPED: no change under its inputs since ${base:0:12} (CI still runs it; ATLAS_FORCE_STORYBOOK_SMOKE=1 forces)"
