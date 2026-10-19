@@ -69,6 +69,7 @@ SECTION_RESULTS=()
 
 run_section() {
   local name="$1"; shift
+  local start=$SECONDS
   echo ""
   echo "----------------------------------------------------------------------"
   echo "▶ $name"
@@ -80,6 +81,7 @@ run_section() {
     SECTION_NAMES+=("$name"); SECTION_RESULTS+=("FAIL")
     echo "❌ $name — FAIL"
   fi
+  echo "[gate-timing] $name $((SECONDS - start))s"
 }
 
 # --- Sections ----------------------------------------------------------------
@@ -239,6 +241,7 @@ for i in "${!SECTION_NAMES[@]}"; do
   [ "${SECTION_RESULTS[$i]}" = "FAIL" ] && EXIT=1
 done
 echo "======================================================================"
+echo "[gate-timing] total ${SECONDS}s"
 if [ "$EXIT" -eq 0 ]; then
   echo "RESULT: GATE 1 PASS — feature is ship-clean"
 else
