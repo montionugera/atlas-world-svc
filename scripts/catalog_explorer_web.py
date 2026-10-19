@@ -4288,6 +4288,21 @@ function onStudioMapPointerUp(evt) {
   STUDIO_MAP_DRAG = null;
 }
 
+function getSortedContinentDistricts(districts, continentId) {
+  return (districts || [])
+    .filter(d => d.parent_continent_id === continentId)
+    .slice()
+    .sort((a, b) => {
+      const aStarter = a.id === 'district-teacup-meadows' || a.id === 'district-pinion-terminus' || a.id === 'district-starfall-haven' ? 0 : 1;
+      const bStarter = b.id === 'district-teacup-meadows' || b.id === 'district-pinion-terminus' || b.id === 'district-starfall-haven' ? 0 : 1;
+      if (aStarter !== bStarter) return aStarter - bStarter;
+      const aMin = (a.level_range && a.level_range[0]) || 1;
+      const bMin = (b.level_range && b.level_range[0]) || 1;
+      if (aMin !== bMin) return aMin - bMin;
+      return String(a.id).localeCompare(String(b.id));
+    });
+}
+
 function selectStudioMapPoi(poiJsonStr, evt) {
   if (evt && evt.stopPropagation) evt.stopPropagation();
   try {
@@ -4299,6 +4314,24 @@ function selectStudioMapPoi(poiJsonStr, evt) {
     if (poi && poi.inspectId) {
       STUDIO_ACTIVE_INSPECT_ID = poi.inspectId;
     }
+    // Keep Continent -> District -> Town/Hunting Area selection 100% synchronized!
+    const sp = (DATA && DATA.studioPerspectives) || {};
+    const doOpts = (poi && poi.drillOpts) || {};
+    if (doOpts.continentId) {
+      STUDIO_SELECTED_CONTINENT_ID = doOpts.continentId;
+    }
+    if (doOpts.districtId) {
+      STUDIO_SELECTED_DISTRICT_ID = doOpts.districtId;
+      const dNodes = (sp.nodes || []).filter(n => n.parent_district_id === doOpts.districtId);
+      const prefNode = dNodes.find(n => n.node_type === 'town') || dNodes[0];
+      if (prefNode && !doOpts.nodeId) {
+        STUDIO_SELECTED_NODE_ID = prefNode.id;
+      }
+    }
+    if (doOpts.nodeId) {
+      STUDIO_SELECTED_NODE_ID = doOpts.nodeId;
+    }
+    writeUrlState(false);
     render();
   } catch (err) {
     console.error('selectStudioMapPoi error:', err);
@@ -4829,211 +4862,244 @@ function renderWhcBigPictureSvg(whc, continents) {
 
 function renderContinentBigPictureSvg(continents, districts, activeContinent) {
   const isL2 = STUDIO_CARTO_THEME === 'l2hub';
-  const childDistricts = districts.filter(d => d.parent_continent_id === activeContinent.id);
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const allNodes = sp.nodes || [];
+  const childDistricts = getSortedContinentDistricts(districts, activeContinent.id);
   const isC01 = activeContinent.id.includes('continent-01');
   const isC02 = activeContinent.id.includes('continent-02');
 
-  // 12 Aden-style geographic positions across the 1040x500 Continent Parchment Map (just like Gludio -> Dion -> Cruma -> Giran -> Death Pass -> Dragon Valley -> Antharas Lair!)
+  // 12 Contiguous District Territory Positions across the 1040x500 Continent Map
+  // D01 (index 0) is placed centrally at the Starter Basin heart so roads radiate cleanly!
   const regionCenters = [
-    { x: 155, y: 375, kind: 'town',     flag: '#eab308', poly: '65,305 245,300 265,445 75,455' },
-    { x: 315, y: 365, kind: 'windmill', flag: '#22c55e', poly: '245,300 415,305 425,450 265,445' },
-    { x: 485, y: 382, kind: 'castle',   flag: '#dc2626', poly: '415,305 585,305 595,450 425,450' },
-    { x: 665, y: 372, kind: 'fortress', flag: '#dc2626', poly: '585,305 765,310 775,450 595,450' },
-    { x: 205, y: 235, kind: 'castle',   flag: '#dc2626', poly: '75,165 295,165 245,300 65,305' },
-    { x: 385, y: 215, kind: 'tower',    flag: '#38bdf8', poly: '295,165 485,165 415,305 245,300' },
-    { x: 565, y: 235, kind: 'catacomb', flag: '#a855f7', poly: '485,165 675,170 585,305 415,305' },
-    { x: 745, y: 245, kind: 'town',     flag: '#22c55e', poly: '675,170 855,175 765,310 585,305' },
-    { x: 285, y: 105, kind: 'fortress', flag: '#dc2626', poly: '125,45 435,45 485,165 295,165 75,165' },
-    { x: 575, y: 102, kind: 'fortress', flag: '#2563eb', poly: '435,45 715,45 675,170 485,165' },
-    { x: 845, y: 118, kind: 'lair',     flag: '#f97316', poly: '715,45 975,65 965,225 855,175 675,170' },
-    { x: 895, y: 345, kind: 'castle',   flag: '#22c55e', poly: '765,310 965,225 985,435 775,450' }
+    { x: 205, y: 365, poly: '65,295 325,295 335,445 75,450' },
+    { x: 455, y: 372, poly: '325,295 575,295 585,450 335,445' },
+    { x: 705, y: 372, poly: '575,295 815,300 825,450 585,450' },
+    { x: 905, y: 365, poly: '815,300 985,295 985,450 825,450' },
+    { x: 195, y: 222, poly: '70,155 315,155 325,295 65,295' },
+    { x: 445, y: 222, poly: '315,155 575,155 575,295 325,295' },
+    { x: 695, y: 225, poly: '575,155 815,160 815,300 575,295' },
+    { x: 905, y: 225, poly: '815,160 985,160 985,295 815,300' },
+    { x: 225, y: 92,  poly: '85,35 365,35 315,155 70,155' },
+    { x: 495, y: 90,  poly: '365,35 635,35 575,155 315,155' },
+    { x: 745, y: 92,  poly: '635,35 865,40 815,160 575,155' },
+    { x: 925, y: 95,  poly: '865,40 985,45 985,160 815,160' }
   ];
 
-  // Winding Road Network (connecting every District like Aden's Gludio-Dion-Giran-DragonValley network)
+  // Arterial Continent Highway Network connecting the District Territories (D01 -> D02 -> D03...)
   const roadPairs = [
-    [0, 1], [1, 2], [2, 3], [0, 4], [4, 5], [5, 1], [5, 6], [6, 2], [6, 7], [7, 3],
-    [4, 8], [5, 8], [6, 9], [7, 9], [9, 10], [7, 10], [7, 11], [3, 11]
+    [0, 1], [1, 2], [2, 3], [0, 4], [1, 5], [2, 6], [3, 7],
+    [4, 5], [5, 6], [6, 7], [4, 8], [5, 9], [6, 10], [7, 11],
+    [8, 9], [9, 10], [10, 11]
   ];
 
-  const firstDist = childDistricts[0] || {};
+  const selectedDist = childDistricts.find(d => d.id === STUDIO_SELECTED_DISTRICT_ID) || childDistricts[0] || {};
+  const selectedDistIdx = Math.max(0, childDistricts.findIndex(d => d.id === selectedDist.id));
+  const selectedDistCode = `D${String(selectedDistIdx + 1).padStart(2, '0')}`;
+  const selectedDistNodes = allNodes.filter(n => n.parent_district_id === selectedDist.id);
+
   const defaultPoi = {
-    title: activeContinent.name || 'Continent Region',
-    category: `Aden-Style Regional Parchment Map · ${childDistricts.length} Connected Districts`,
-    thumb: isC01 ? '/thumbs/creatures/god-sola-hearth-weaver.webp' : (isC02 ? '/thumbs/creatures/god-krono-brass-titan.webp' : '/thumbs/creatures/god-vesper-dream-eater.webp'),
-    hoursOrStatus: `CANON · ${childDistricts.filter(d => d.status === 'canon').length} Canon Districts`,
-    summary: activeContinent.core_rationale || '',
-    address: `${activeContinent.name} · ${(activeContinent.climate_profile && activeContinent.climate_profile.macro_biome) || 'Regional Plateau'}`,
-    coordinates: `Level Band: Lv. ${(activeContinent.level_band && activeContinent.level_band.min_level) || 1}–${(activeContinent.level_band && activeContinent.level_band.max_level) || 30} · ${childDistricts.length} Districts`,
-    scaleSpecs: (activeContinent.civilization_style && activeContinent.civilization_style.character_scale_adaptation) || '90–120cm scale roads & counters',
+    title: `${selectedDistCode} · ${selectedDist.name || activeContinent.name}`,
+    category: `Selected District in ${activeContinent.name} · Lv. ${(selectedDist.level_range || [1, 15]).join('–')}`,
+    thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+    hoursOrStatus: `${(selectedDist.status || 'canon').toUpperCase()} · ${selectedDistNodes.length} Child Maps Inside This District`,
+    summary: selectedDist.core_rationale || activeContinent.core_rationale || '',
+    address: `Territory ${selectedDistCode} (${selectedDist.name}) · ${activeContinent.name}`,
+    coordinates: `Contains: 🏰 ${selectedDistNodes.filter(n => n.node_type === 'town').length} Town · ⚔️ ${selectedDistNodes.filter(n => n.node_type === 'hunting_area').length} Hunting · 🕳️ ${selectedDistNodes.filter(n => n.node_type === 'dungeon').length} Catacomb`,
+    scaleSpecs: (selectedDist.quality_checklist && selectedDist.quality_checklist.character_scale_consistency && selectedDist.quality_checklist.character_scale_consistency.evidence) || '12.5m roads · 4.4m walkways · 0.58m counters',
     drillPerspective: 'district',
-    drillOpts: { continentId: activeContinent.id, districtId: firstDist.id, inspectId: firstDist.id },
-    drillLabel: `Zoom to ${firstDist.name || 'District'}`,
-    inspectId: activeContinent.id,
-    connections: childDistricts.slice(0, 6).map((d, i) => ({
-      label: `D${String(i + 1).padStart(2, '0')} · ${d.name}`,
-      badge: `Lv.${(d.level_range || [1, 15]).join('–')} · ${(d.status || 'canon').toUpperCase()}`
+    drillOpts: { continentId: activeContinent.id, districtId: selectedDist.id, inspectId: selectedDist.id },
+    drillLabel: `Zoom into ${selectedDistCode} ${selectedDist.name} (16×)`,
+    inspectId: selectedDist.id,
+    connections: selectedDistNodes.map(n => ({
+      label: `${n.node_type === 'town' ? '🏰 TOWN:' : (n.node_type === 'dungeon' ? '🕳️ CATACOMB:' : '⚔️ HUNTING:')} ${n.name}`,
+      badge: `Lv.${(n.level_range || [1, 15]).join('–')} · ${n.status.toUpperCase()}`
     }))
   };
 
-  // Base Parchment Continent Landmass + Sculpted Mountain Ridges + Rivers
   const terrainHtml = `
-    <!-- Outer Coastal Shallows & Continent Parchment Island (like Aden Continent in l2hub.info/map) -->
-    <path d="M 38,85 Q 110,28 515,28 Q 935,28 995,95 Q 1015,265 985,445 Q 845,482 515,475 Q 145,482 48,435 Q 18,265 38,85 Z"
+    <!-- Outer Coastal Shallows & Continent Parchment Island -->
+    <path d="M 38,65 Q 110,22 515,22 Q 935,22 998,75 Q 1015,265 992,458 Q 845,485 515,478 Q 145,485 48,452 Q 18,265 38,65 Z"
           fill="${isL2 ? 'url(#l2ParchmentGrad)' : '#255847'}" stroke="#241c10" stroke-width="4"/>
 
-    <!-- Topographic Shading & Marsh/Forest Basins -->
-    <ellipse cx="385" cy="215" rx="95" ry="52" fill="${isL2 ? '#495239' : '#1b4335'}" opacity="0.65"/>
-    <ellipse cx="745" cy="245" rx="110" ry="58" fill="${isL2 ? '#5b5338' : '#1b4335'}" opacity="0.55"/>
-    <ellipse cx="845" cy="118" rx="95" ry="48" fill="${isL2 ? '#4a3f28' : '#1b4335'}" opacity="0.7"/>
+    <!-- Continual Rivers, Lakes & Harbors (Shared Azure #38bdf8 / #314e52 across Continent & District!) -->
+    <path d="M 445,25 Q 435,145 445,222 T 455,372 L 485,478" fill="none" stroke="${isL2 ? '#314e52' : '#1d4ed8'}" stroke-width="12" stroke-linecap="round"/>
+    <path d="M 45,295 Q 245,265 445,222 T 705,225 L 995,215" fill="none" stroke="${isL2 ? '#38bdf8' : '#38bdf8'}" stroke-width="4" stroke-linecap="round" opacity="0.65"/>
+    <ellipse cx="445" cy="222" rx="42" ry="18" fill="${isL2 ? '#314e52' : '#1d4ed8'}" stroke="#38bdf8" stroke-width="1.2"/>
 
-    <!-- Continual Rivers, Lakes & Harbors (like Giran Harbor / Cruma Marshlands / Fellmere Lake) -->
-    <path d="M 415,30 Q 405,135 385,215 T 485,382 L 515,478" fill="none" stroke="${isL2 ? '#314e52' : '#1d4ed8'}" stroke-width="12" stroke-linecap="round"/>
-    <path d="M 45,295 Q 235,275 385,215 T 745,245 L 995,215" fill="none" stroke="${isL2 ? '#39595e' : '#2563eb'}" stroke-width="8" stroke-linecap="round"/>
-    <ellipse cx="385" cy="215" rx="45" ry="22" fill="${isL2 ? '#314e52' : '#1d4ed8'}" stroke="#7fa6ad" stroke-width="1.2"/>
-
-    <!-- Sculpted Mountain Ranges & Canyons (like Death Pass & Dragon Valley ridges!) -->
-    ${drawL2MountainRangeSvg('95,155 215,135 335,155 465,130', 1.2)}
-    ${drawL2MountainRangeSvg('525,155 625,125 645,215 620,285', 1.25)}
-    ${drawL2MountainRangeSvg('715,75 815,65 925,95 945,175', 1.3)}
-    ${drawL2MountainRangeSvg('225,315 355,325 445,295', 1.0)}
-    ${drawL2MountainRangeSvg('695,325 815,295 915,310', 1.1)}
-
-    <!-- Vertical Mountain Pass Label (just like "Death Pass" in the L2Hub screenshot!) -->
-    <text x="605" y="155" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:3.5px;fill:#f8f5ec;font-size:10px;font-weight:800;letter-spacing:0.25em" transform="rotate(90 605 155)">
-      ${isC01 ? 'KILNFIRE PASS' : (isC02 ? 'MAINSPRING PASS' : 'SOLSTICE RIFT PASS')}
-    </text>
+    <!-- Sculpted Mountain Ridges -->
+    ${drawL2MountainRangeSvg('95,152 215,140 335,152 465,138', 1.1)}
+    ${drawL2MountainRangeSvg('575,152 695,138 815,152', 1.1)}
+    ${drawL2MountainRangeSvg('225,295 355,302 525,292', 1.0)}
   `;
 
-  // Subtle Province TerritoryPolygons (clickable)
-  const polygonsHtml = childDistricts.map((d, idx) => {
-    const rc = regionCenters[idx % regionCenters.length];
-    const st = (d.status || 'canon').toLowerCase();
-    const poiObj = {
-      title: `D${String(idx + 1).padStart(2, '0')} · ${d.name}`,
-      category: `District Territory · ${d.level_band_label || 'Regional Cluster'} (Lv. ${(d.level_range || [1, 15]).join('–')})`,
-      thumb: '/thumbs/buildings/tower_round_roof_a.webp',
-      hoursOrStatus: `${st.toUpperCase()} · ${(d.grid_nodes || []).length} Map Zones · Families: ${(d.ecological_monster_families || []).join(', ')}`,
-      summary: d.core_rationale || '',
-      address: `${d.name} · ${activeContinent.name}`,
-      coordinates: `Grid: 2×2 Overland + Dungeon · Status: ${st.toUpperCase()}`,
-      scaleSpecs: (d.quality_checklist && d.quality_checklist.character_scale_consistency && d.quality_checklist.character_scale_consistency.evidence) || '12.5m arterial highways, 0.58m counters, 0.14m risers',
-      drillPerspective: 'district',
-      drillOpts: { continentId: activeContinent.id, districtId: d.id, inspectId: d.id },
-      drillLabel: 'Zoom to District Map',
-      inspectId: d.id,
-      svgX: rc.x,
-      svgY: rc.y,
-      connections: (d.grid_nodes || []).map(gn => ({
-        label: `${gn.node_type === 'town' ? '🏰' : (gn.node_type === 'dungeon' ? '🕳️' : '🌿')} ${gn.node_id}`,
-        badge: gn.status.toUpperCase()
-      }))
-    };
-    return `
-      <polygon points="${rc.poly}" fill="transparent" stroke="${isL2 ? 'rgba(42,33,18,0.45)' : 'rgba(168,85,247,0.55)'}" stroke-width="1.5" stroke-dasharray="6 4"
-               data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr(poiObj)}', event)"/>
-    `;
-  }).join('');
-
-  // Winding Parchment Dirt Roads connecting all Districts (with dark border casing like L2Hub)
+  // Winding Continent Highways connecting District centers
   const roadsHtml = roadPairs
     .filter(([a, b]) => a < childDistricts.length && b < childDistricts.length)
     .map(([a, b]) => {
       const pa = regionCenters[a];
       const pb = regionCenters[b];
-      const cx = Math.round((pa.x + pb.x) / 2 + ((a + b) % 2 === 0 ? 14 : -14));
-      const cy = Math.round((pa.y + pb.y) / 2 + ((a + b) % 2 === 0 ? -10 : 10));
+      const isSelEdge = childDistricts[a].id === selectedDist.id || childDistricts[b].id === selectedDist.id;
       return `
         <g pointer-events="none">
-          <path d="M ${pa.x},${pa.y} Q ${cx},${cy} ${pb.x},${pb.y}" fill="none" stroke="#241c10" stroke-width="5.5" stroke-linecap="round"/>
-          <path d="M ${pa.x},${pa.y} Q ${cx},${cy} ${pb.x},${pb.y}" fill="none" stroke="${isL2 ? '#cbb989' : '#94a3b8'}" stroke-width="2.6" stroke-linecap="round"/>
+          <line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="#241c10" stroke-width="${isSelEdge ? 6.5 : 4.5}" stroke-linecap="round"/>
+          <line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="${isSelEdge ? '#fde047' : '#cbb989'}" stroke-width="${isSelEdge ? 3.2 : 2.0}" stroke-linecap="round" ${isSelEdge ? '' : 'stroke-dasharray="8 4"'}/>
         </g>
       `;
     }).join('');
 
-  // Hand-Illustrated Castles, Walled Towns, Pennant Fortresses, Towers, Catacombs & Boss Lairs for each District!
-  const landmarksHtml = childDistricts.map((d, idx) => {
+  // Render EACH District Territory Polygon + Its Internal Mini-Cluster (🏰 Gold Town, ⚔️ Red Hunting Fortress, 🕳️ Purple Catacomb)
+  // Using the EXACT SAME symbol + icon + color as Step 3 District!
+  const districtsHtml = childDistricts.map((d, idx) => {
     const rc = regionCenters[idx % regionCenters.length];
+    const dCode = `D${String(idx + 1).padStart(2, '0')}`;
     const st = (d.status || 'canon').toLowerCase();
-    const isSelected = STUDIO_ACTIVE_INSPECT_ID === d.id || (STUDIO_MAP_SELECTED_POI && STUDIO_MAP_SELECTED_POI.inspectId === d.id);
+    const isSel = d.id === selectedDist.id;
     const lvRange = (d.level_range || [1, 15]).join('–');
-    const kind = st === 'mystery' ? 'catacomb' : (st === 'draft' ? 'fortress' : rc.kind);
+    const dNodes = allNodes.filter(n => n.parent_district_id === d.id);
+    const townNode = dNodes.find(n => n.node_type === 'town');
+    const huntNodes = dNodes.filter(n => n.node_type === 'hunting_area');
+    const dngNode = dNodes.find(n => n.node_type === 'dungeon');
+
     const poiObj = {
-      title: `D${String(idx + 1).padStart(2, '0')} · ${d.name}`,
-      category: `${kind.toUpperCase()} & District Territory · Lv. ${lvRange} (${st.toUpperCase()})`,
-      thumb: '/thumbs/buildings/tower_round_roof_a.webp',
-      hoursOrStatus: `${st.toUpperCase()} · ${(d.grid_nodes || []).length} Connected Zones`,
+      title: `${dCode} · ${d.name}`,
+      category: `District Territory · Lv. ${lvRange} (${st.toUpperCase()})`,
+      thumb: (townNode && townNode.terrain_tile && townNode.terrain_tile.preview_thumbnail) || '/thumbs/buildings/tower_round_roof_a.webp',
+      hoursOrStatus: `${st.toUpperCase()} · Contains: 🏰 ${townNode ? 1 : 0} Town, ⚔️ ${huntNodes.length} Hunting, 🕳️ ${dngNode ? 1 : 0} Catacomb`,
       summary: d.core_rationale || '',
-      address: `${d.name} · ${activeContinent.name}`,
-      coordinates: `Province D${String(idx + 1).padStart(2, '0')} · Monsters: ${(d.ecological_monster_families || []).join(', ')}`,
-      scaleSpecs: (d.quality_checklist && d.quality_checklist.character_scale_consistency && d.quality_checklist.character_scale_consistency.evidence) || '12.5m roads · 0.58m counters',
+      address: `District ${dCode} (${d.name}) · ${activeContinent.name}`,
+      coordinates: `Same Symbols in Lv.3 District: 🏰 Gold Town · ⚔️ Red Hunting · 🕳️ Purple Catacomb`,
+      scaleSpecs: (d.quality_checklist && d.quality_checklist.character_scale_consistency && d.quality_checklist.character_scale_consistency.evidence) || '12.5m roads · 4.4m walkways · 0.58m counters',
       drillPerspective: 'district',
-      drillOpts: { continentId: activeContinent.id, districtId: d.id, inspectId: d.id },
-      drillLabel: 'Zoom to District Map',
+      drillOpts: { continentId: activeContinent.id, districtId: d.id, nodeId: (townNode && townNode.id) || (dNodes[0] && dNodes[0].id) || '', inspectId: d.id },
+      drillLabel: `Zoom into ${dCode} ${d.name} (16×)`,
       inspectId: d.id,
-      connections: (d.grid_nodes || []).map(gn => ({
-        label: `${gn.node_type.toUpperCase()}: ${gn.node_id}`,
-        badge: `Lv.${(gn.level_range || [1, 15]).join('–')}`
+      svgX: rc.x,
+      svgY: rc.y,
+      connections: dNodes.map(n => ({
+        label: `${n.node_type === 'town' ? '🏰 TOWN:' : (n.node_type === 'dungeon' ? '🕳️ CATACOMB:' : '⚔️ HUNTING:')} ${n.name}`,
+        badge: `Lv.${(n.level_range || [1, 15]).join('–')} · ${n.status.toUpperCase()}`
       }))
     };
-    return drawL2LandmarkSvg({
-      kind,
-      x: rc.x,
-      y: rc.y,
-      label: d.name,
-      sublabel: `D${String(idx + 1).padStart(2, '0')} · Lv.${lvRange}${st !== 'canon' ? ' · ' + st.toUpperCase() : ''}`,
-      flagColor: rc.flag,
-      isSelected,
-      poiObj
-    });
+
+    const polyFill = isSel
+      ? 'rgba(250, 204, 21, 0.20)'
+      : (st === 'mystery' ? 'rgba(168, 85, 247, 0.14)' : (st === 'draft' ? 'rgba(234, 179, 8, 0.12)' : 'rgba(24, 20, 12, 0.14)'));
+    const polyStroke = isSel ? '#fde047' : (st === 'mystery' ? '#c084fc' : 'rgba(245, 158, 11, 0.55)');
+
+    // Mini child nodes inside the District territory on the Continent map (exact same colors & icons as Step 3 District!)
+    // Center = 🏰 Gold Town (#eab308), Left = ⚔️ Red Hunting (#ef4444), Right = 🕳️ Purple Catacomb (#a855f7) or 2nd Hunting
+    const miniClusterSvg = st === 'mystery' ? `
+      <!-- Mystery District Sigil (#e879f9) -->
+      <circle cx="${rc.x}" cy="${rc.y - 4}" r="14" fill="#3b0764" stroke="#e879f9" stroke-width="2" stroke-dasharray="4 2"/>
+      <text x="${rc.x}" y="${rc.y + 1}" text-anchor="middle" font-size="12">🌫️</text>
+    ` : `
+      <!-- Mini Internal District Road connecting Hunting <-> Town <-> Catacomb -->
+      <line x1="${rc.x - 36}" y1="${rc.y + 2}" x2="${rc.x + 36}" y2="${rc.y + 2}" stroke="#1c150b" stroke-width="4"/>
+      <line x1="${rc.x - 36}" y1="${rc.y + 2}" x2="${rc.x + 36}" y2="${rc.y + 2}" stroke="#d4af37" stroke-width="2"/>
+
+      <!-- Left Mini Node: ⚔️ Hunting Ground (#ef4444 Red Fortress) -->
+      <g transform="translate(${rc.x - 36}, ${rc.y + 2})">
+        <circle cx="0" cy="0" r="10" fill="#991b1b" stroke="#ef4444" stroke-width="1.8"/>
+        <text x="0" y="3.5" text-anchor="middle" font-size="9.5">⚔️</text>
+      </g>
+
+      <!-- Center Main Node: 🏰 Town Sanctuary (#eab308 Gold Walled Town) -->
+      <g transform="translate(${rc.x}, ${rc.y - 4})">
+        <circle cx="0" cy="0" r="${isSel ? 15 : 13}" fill="#854d0e" stroke="#fde047" stroke-width="${isSel ? 2.5 : 2}"/>
+        <text x="0" y="4.5" text-anchor="middle" font-size="${isSel ? 13 : 11}">🏰</text>
+      </g>
+
+      <!-- Right Mini Node: 🕳️ Catacomb/Dungeon (#a855f7 Violet Obelisk) -->
+      <g transform="translate(${rc.x + 36}, ${rc.y + 2})">
+        <circle cx="0" cy="0" r="10" fill="#4c1d95" stroke="#c084fc" stroke-width="1.8"/>
+        <text x="0" y="3.5" text-anchor="middle" font-size="9.5">${dngNode ? '🕳️' : '⚔️'}</text>
+      </g>
+    `;
+
+    return `
+      <g data-poi-clickable="1" style="cursor:pointer"
+         onclick="selectStudioMapPoi('${encodePoiAttr(poiObj)}', event)"
+         ondblclick="setStudioPerspective('district', { continentId: '${escapeHtml(activeContinent.id)}', districtId: '${escapeHtml(d.id)}', inspectId: '${escapeHtml(d.id)}' }); STUDIO_MAP_SELECTED_POI=null;">
+        <polygon points="${rc.poly}" fill="${polyFill}" stroke="${polyStroke}" stroke-width="${isSel ? 3.2 : 1.6}" ${isSel ? '' : 'stroke-dasharray="7 4"'}/>
+
+        <!-- District Code & Name Banner -->
+        <rect x="${rc.x - 78}" y="${rc.y - 46}" width="156" height="19" rx="4" fill="${isSel ? '#eab308' : 'rgba(18,14,9,0.88)'}" stroke="${isSel ? '#ffffff' : '#f59e0b'}" stroke-width="1.2"/>
+        <text x="${rc.x}" y="${rc.y - 33}" text-anchor="middle" fill="${isSel ? '#0f172a' : '#fde68a'}" font-size="9.5" font-weight="900" font-family="monospace">
+          ${dCode} · ${escapeHtml(d.name.slice(0, 16))}
+        </text>
+
+        ${miniClusterSvg}
+
+        <!-- Sublabel showing child Town name & Level Band -->
+        <text x="${rc.x}" y="${rc.y + 23}" text-anchor="middle"
+              style="paint-order:stroke fill;stroke:#120d07;stroke-width:3.5px;fill:${isSel ? '#fde047' : '#f8f5ec'};font-size:10px;font-weight:800">
+          ${townNode ? '🏰 ' + escapeHtml(townNode.name.slice(0, 18)) : (st === 'mystery' ? '🌫️ Uncharted Caldera' : escapeHtml(d.name.slice(0, 18)))}
+        </text>
+        <text x="${rc.x}" y="${rc.y + 35}" text-anchor="middle"
+              style="paint-order:stroke fill;stroke:#120d07;stroke-width:3px;fill:#e2d5b5;font-size:8.5px;font-weight:700;font-family:monospace">
+          Lv.${lvRange} · ${dNodes.length} Maps ${isSel ? '· [SELECTED]' : ''}
+        </text>
+      </g>
+    `;
   }).join('');
 
-  // L2Hub-style Top-Left Continent Tab Bar ("Aden" tab in Screenshot!)
   const continentSwitcherHtml = continents.map(c => `
     <button type="button" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c.id)}', inspectId: '${escapeHtml(c.id)}' }); STUDIO_MAP_SELECTED_POI=null;"
-            style="padding:6px 13px;border-radius:6px;font-size:11.5px;font-weight:800;cursor:pointer;border:1px solid ${c.id === activeContinent.id ? '#f59e0b' : 'rgba(255,255,255,0.18)'};background:${c.id === activeContinent.id ? '#292318' : 'rgba(18,16,12,0.82)'};color:${c.id === activeContinent.id ? '#fde047' : '#d6d3d1'};box-shadow:0 4px 12px rgba(0,0,0,0.45)">
-      ${escapeHtml(c.name)}
+            style="padding:6px 12px;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer;border:1px solid ${c.id === activeContinent.id ? '#f59e0b' : 'rgba(255,255,255,0.18)'};background:${c.id === activeContinent.id ? '#292318' : 'rgba(18,16,12,0.86)'};color:${c.id === activeContinent.id ? '#fde047' : '#d6d3d1'}">
+      🌍 ${escapeHtml(c.name)}
     </button>
-  `).join('');
+  `).join('') + `
+    <button type="button" onclick="setStudioPerspective('district', { continentId: '${escapeHtml(activeContinent.id)}', districtId: '${escapeHtml(selectedDist.id || '')}', inspectId: '${escapeHtml(selectedDist.id || '')}' }); STUDIO_MAP_SELECTED_POI=null;"
+            style="padding:6px 12px;border-radius:6px;font-size:11px;font-weight:900;cursor:pointer;border:1.5px solid #fde047;background:#2563eb;color:#ffffff;box-shadow:0 4px 12px rgba(37,99,235,0.45)">
+      🔍 Zoom into Selected ${selectedDistCode} (${escapeHtml((selectedDist.name || '').slice(0, 18))}) ➔
+    </button>
+  `;
 
   const svgInnerHtml = `
     ${terrainHtml}
-    ${polygonsHtml}
     ${roadsHtml}
-    ${landmarksHtml}
+    ${districtsHtml}
   `;
 
   return renderCartoShellHtml({
-    stepLabel: `🗺️ STEP 2 CONTINENT PARCHMENT ATLAS (L2HUB ADEN STYLE) · ${escapeHtml((activeContinent.name || '').toUpperCase())}`,
-    title: `${escapeHtml(activeContinent.name || '')} — Castles, Walled Towns, Fortresses, Towers, Catacombs & Mountain Passes`,
-    subtitle: 'Styled after l2hub.info/map (Aden): trace the winding roads across mountain passes, click any Castle/Town/Fortress/Catacomb to move the + crosshair, and zoom into its District',
+    stepLabel: `🗺️ STEP 2 CONTINENT ATLAS · ${escapeHtml((activeContinent.name || '').toUpperCase())} · SELECTED: ${selectedDistCode} ${escapeHtml((selectedDist.name || '').toUpperCase())}`,
+    title: `${escapeHtml(activeContinent.name || '')} — ${childDistricts.length} District Territories (D01–D${String(childDistricts.length).padStart(2, '0')}) with Unified 🏰 Town / ⚔️ Hunting / 🕳️ Catacomb Symbols`,
+    subtitle: 'Every District box on the Continent map previews its internal 🏰 Gold Town, ⚔️ Red Hunting Ground & 🕳️ Purple Catacomb — click any District to select it, or double-click to zoom into its Lv.3 District Map',
     activeScaleIndex: 2,
     defaultPoi,
     drillControls: continentSwitcherHtml,
     svgInnerHtml,
     legendItems: [
-      { color: '#2a2012', label: 'Castles & Walled Towns' },
-      { color: '#dc2626', label: 'Fortresses (Red/Blue Pennants)' },
-      { color: '#a855f7', label: 'Catacombs & Necropolises' },
-      { color: '#f97316', label: 'Boss Lairs & Towers' },
-      { color: '#cbb989', label: 'Winding Continent Roads' }
+      { color: '#fde047', label: '[D01..D11] Selected District Territory' },
+      { color: '#eab308', label: '🏰 Town Sanctuary (Gold)' },
+      { color: '#ef4444', label: '⚔️ Hunting Area (Crimson)' },
+      { color: '#a855f7', label: '🕳️ Catacomb / Dungeon (Violet)' },
+      { color: '#38bdf8', label: '🌊 River & Highway Network' }
     ]
   });
 }
 
 function renderDistrictBigPictureSvg(activeContinent, activeDistrict, allDistrictNodes) {
   const isL2 = STUDIO_CARTO_THEME === 'l2hub';
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const sortedContinentDistricts = getSortedContinentDistricts(sp.districts || [], activeContinent.id);
+  const distIdx = Math.max(0, sortedContinentDistricts.findIndex(d => d.id === activeDistrict.id));
+  const distCode = `D${String(distIdx + 1).padStart(2, '0')}`;
+  const prevDist = distIdx > 0 ? sortedContinentDistricts[distIdx - 1] : null;
+  const nextDist = distIdx + 1 < sortedContinentDistricts.length ? sortedContinentDistricts[distIdx + 1] : null;
+
   const portalEdges = activeDistrict.portal_edges || [];
   const overlandNodes = allDistrictNodes.filter(n => n.node_type !== 'dungeon');
   const dungeonNodes = allDistrictNodes.filter(n => n.node_type === 'dungeon');
 
   function quadCenter(coords, isDng, idx) {
-    if (isDng) return { x: 895, y: 245 + idx * 120, bx: 785, by: 55, bw: 220, bh: 390 };
+    if (isDng) return { x: 895, y: 250 + idx * 120, bx: 780, by: 52, bw: 235, bh: 396 };
     const c = coords && coords.length === 2 ? coords : [0, 1];
-    const qx = c[0] === 0 ? 240 : 590;
-    const qy = c[1] === 0 ? 138 : 348;
-    const bx = c[0] === 0 ? 60 : 415;
-    const by = c[1] === 0 ? 40 : 245;
-    return { x: qx, y: qy, bx, by, bw: 350, bh: 200 };
+    const qx = c[0] === 0 ? 235 : 585;
+    const qy = c[1] === 0 ? 142 : 348;
+    const bx = c[0] === 0 ? 55 : 410;
+    const by = c[1] === 0 ? 48 : 252;
+    return { x: qx, y: qy, bx, by, bw: 345, bh: 196 };
   }
 
   const nodePos = {};
@@ -5045,26 +5111,33 @@ function renderDistrictBigPictureSvg(activeContinent, activeDistrict, allDistric
   });
 
   const townNode = overlandNodes.find(n => n.node_type === 'town') || allDistrictNodes[0] || {};
+  const totalNpcs = allDistrictNodes.reduce((acc, n) => acc + ((n.resident_npcs || []).length), 0);
+  const totalSpawns = allDistrictNodes.reduce((acc, n) => acc + ((n.resident_spawns || []).length), 0);
+
   const defaultPoi = {
-    title: `${activeDistrict.name || 'District'} Territory Atlas`,
-    category: `8,000m × 8,000m Connected 2×2 District Basin · ${activeDistrict.level_band_label || ''}`,
+    title: `${distCode} · ${activeDistrict.name || 'District'} (Lv.3 District Atlas)`,
+    category: `Part of ${activeContinent.name || 'Continent'} · 8,000m × 8,000m Territory · Lv. ${(activeDistrict.level_range || [1, 15]).join('–')}`,
     thumb: (townNode.terrain_tile && townNode.terrain_tile.preview_thumbnail) || '/thumbs/buildings/tower_round_roof_a.webp',
-    hoursOrStatus: `${(activeDistrict.status || 'canon').toUpperCase()} · ${allDistrictNodes.length} Zones (${overlandNodes.length} Overland + ${dungeonNodes.length} Catacomb/Dungeon)`,
+    hoursOrStatus: `${(activeDistrict.status || 'canon').toUpperCase()} · ${allDistrictNodes.length} Zones · ${totalNpcs} NPCs · ${totalSpawns} Monster Packs`,
     summary: activeDistrict.core_rationale || '',
-    address: `${activeDistrict.name} · ${activeContinent.name || ''}`,
-    coordinates: `Level Range: Lv. ${(activeDistrict.level_range || [1, 15]).join('–')} · Families: ${(activeDistrict.ecological_monster_families || []).join(', ')}`,
+    address: `Territory ${distCode} (${activeDistrict.name}) · ${activeContinent.name || ''}`,
+    coordinates: `Same Symbols as Lv.2 Continent: 🏰 Gold Town · ⚔️ Red Hunting · 🕳️ Purple Catacomb · 🛍️ Green NPCs`,
     scaleSpecs: (activeDistrict.quality_checklist && activeDistrict.quality_checklist.character_scale_consistency && activeDistrict.quality_checklist.character_scale_consistency.evidence) || '12.5m main roads · 4.4m walkways · 0.58m counters',
     drillPerspective: 'town-or-hunting-area',
-    drillOpts: { districtId: activeDistrict.id, nodeId: townNode.id, inspectId: townNode.id },
-    drillLabel: `Zoom into ${townNode.name || 'Town'}`,
+    drillOpts: { continentId: activeContinent.id, districtId: activeDistrict.id, nodeId: townNode.id, inspectId: townNode.id },
+    drillLabel: `Zoom into 🏰 ${townNode.name || 'Town'} (64×)`,
     inspectId: activeDistrict.id,
-    connections: allDistrictNodes.map(n => ({
-      label: `${n.node_type === 'town' ? '🏰' : (n.node_type === 'dungeon' ? '🕳️' : '🌿')} ${n.name} [${(n.grid_coordinates || [0,0]).join(',')}]`,
-      badge: `Lv.${(n.level_range || [1, 15]).join('–')} · ${n.status.toUpperCase()}`
-    }))
+    connections: [
+      ...(prevDist ? [{ label: `⬅ West Continent Highway → D${String(distIdx).padStart(2, '0')} ${prevDist.name}`, badge: 'NEIGHBOR' }] : []),
+      ...(nextDist ? [{ label: `➡ East Continent Highway → D${String(distIdx + 2).padStart(2, '0')} ${nextDist.name}`, badge: 'NEIGHBOR' }] : []),
+      ...allDistrictNodes.map(n => ({
+        label: `${n.node_type === 'town' ? '🏰 TOWN:' : (n.node_type === 'dungeon' ? '🕳️ CATACOMB:' : '⚔️ HUNTING:')} ${n.name} [${(n.grid_coordinates || [0,0]).join(',')}]`,
+        badge: `Lv.${(n.level_range || [1, 15]).join('–')} · ${(n.resident_npcs || []).length} NPC / ${(n.resident_spawns || []).length} Mob`
+      }))
+    ]
   };
 
-  // Render each quadrant with L2Hub illustrated castles/fortresses/catacombs + urban blocks + monster camps
+  // Render each quadrant with FULL architectural, street, NPC, and Monster Spawn details!
   const sectorsHtml = Object.values(nodePos).map(({ x, y, bx, by, bw, bh, node }) => {
     const isMystery = node.status === 'mystery';
     const isTown = node.node_type === 'town';
@@ -5072,20 +5145,26 @@ function renderDistrictBigPictureSvg(activeContinent, activeDistrict, allDistric
     const spawns = node.resident_spawns || [];
     const npcs = node.resident_npcs || [];
     const kit = node.asset_kit_bindings || {};
-    const thumb = isMystery ? '/thumbs/creatures/god-vesper-dream-eater.webp' : ((node.terrain_tile && node.terrain_tile.preview_thumbnail) || '/thumbs/buildings/tower_round_roof_a.webp');
+    const tile = node.terrain_tile || {};
+    const thumb = isMystery ? '/thumbs/creatures/god-vesper-dream-eater.webp' : (tile.preview_thumbnail || '/thumbs/buildings/tower_round_roof_a.webp');
+
+    // Unified Symbol + Icon + Color matching Lv.2 Continent & Lv.4 Street!
+    const unifiedBadgeCol = isMystery ? '#e879f9' : (isTown ? '#eab308' : (isDng ? '#a855f7' : '#ef4444'));
+    const unifiedIcon = isMystery ? '🌫️' : (isTown ? '🏰' : (isDng ? '🕳️' : '⚔️'));
+    const unifiedTypeLabel = isMystery ? 'MYSTERY FOG' : (isTown ? 'TOWN SANCTUARY' : (isDng ? 'CATACOMB / DUNGEON B1' : 'HUNTING GROUND'));
 
     const poiObj = {
-      title: `${node.name} (${node.node_type.replace('_', ' ').toUpperCase()})`,
-      category: `4,000m × 4,000m Zone at Grid [${(node.grid_coordinates || [0,0]).join(', ')}] · Floor ${node.floor_index || 0}`,
+      title: `${unifiedIcon} ${node.name} (${unifiedTypeLabel})`,
+      category: `Grid [${(node.grid_coordinates || [0,0]).join(', ')}] in ${distCode} ${activeDistrict.name} · 4,000m × 4,000m`,
       thumb,
-      hoursOrStatus: isMystery ? 'MYSTERY FRONTIER · Locked behind Fog of Lore' : `CANON · ${isTown ? (npcs.length + ' Resident NPCs · Safe Sanctuary') : (spawns.length + ' Monster Species Active')}`,
+      hoursOrStatus: isMystery ? 'MYSTERY FRONTIER · Locked behind Fog of Lore' : `CANON · ${isTown ? (npcs.length + ' Resident NPCs · Safe Sanctuary') : (spawns.length + ' Monster Packs Active')}`,
       summary: node.core_rationale || (node.mystery_hook && node.mystery_hook.in_world_rumor) || '',
-      address: `${node.name} [${(node.grid_coordinates || [0,0]).join(', ')}] · ${activeDistrict.name} · ${activeContinent.name || ''}`,
-      coordinates: `Map ID: ${node.map_id || 'uncharted (mystery)'} · Lv. ${(node.level_range || [1, 15]).join('–')}`,
-      scaleSpecs: isMystery ? 'Locked behind Fog of Lore gate' : `Main Road: ${kit.main_road_width_meters || 12.5}m · Footpath: ${kit.footpath_width_meters || 4.4}m · Counter: ${kit.shop_counter_height_meters || 0.58}m · Riser: ${kit.stair_riser_height_meters || 0.14}m`,
+      address: `${node.name} [${(node.grid_coordinates || [0,0]).join(', ')}] · ${distCode} ${activeDistrict.name} · ${activeContinent.name || ''}`,
+      coordinates: `Map ID: ${node.map_id || 'uncharted (mystery)'} · Lv. ${(node.level_range || [1, 15]).join('–')} · Water: ${tile.water_feature || 'Canal'}`,
+      scaleSpecs: isMystery ? 'Locked behind Fog of Lore gate' : `Main Road: ${kit.main_road_width_meters || 12.5}m · Walkway: ${kit.footpath_width_meters || 4.4}m · Counter: ${kit.shop_counter_height_meters || 0.58}m · Riser: ${kit.stair_riser_height_meters || 0.14}m`,
       drillPerspective: 'town-or-hunting-area',
-      drillOpts: { districtId: activeDistrict.id, nodeId: node.id, inspectId: node.id },
-      drillLabel: 'Zoom to Street & Buildings',
+      drillOpts: { continentId: activeContinent.id, districtId: activeDistrict.id, nodeId: node.id, inspectId: node.id },
+      drillLabel: `Zoom to ${node.name} Street Map (64×)`,
       inspectId: node.id,
       svgX: x,
       svgY: y,
@@ -5096,45 +5175,114 @@ function renderDistrictBigPictureSvg(activeContinent, activeDistrict, allDistric
     };
 
     const sectorFill = isL2
-      ? (isMystery ? '#3a2e45' : (isTown ? '#756c4b' : (isDng ? '#29201b' : '#645c3f')))
-      : (isMystery ? '#221a36' : (isTown ? '#285249' : (isDng ? '#2c1d27' : '#234f3e')));
-    const borderCol = isMystery ? '#c084fc' : (isTown ? '#eab308' : (isDng ? '#f97316' : '#a39060'));
+      ? (isMystery ? '#3a2547' : (isTown ? '#766b46' : (isDng ? '#261b30' : '#62593b')))
+      : (isMystery ? '#221a36' : (isTown ? '#285249' : (isDng ? '#2c1d38' : '#234f3e')));
 
-    const blocksSvg = isTown ? `
-      <rect x="${bx + 45}" y="${by + 28}" width="${bw - 90}" height="${bh - 56}" rx="12" fill="rgba(26,20,12,0.28)" stroke="#d4af37" stroke-width="2" stroke-dasharray="10 3"/>
-      <rect x="${bx + 62}" y="${by + 42}" width="65" height="36" rx="3" fill="rgba(42,32,18,0.55)" stroke="#a39060" stroke-width="1"/>
-      <rect x="${bx + 222}" y="${by + 42}" width="62" height="36" rx="3" fill="rgba(42,32,18,0.55)" stroke="#a39060" stroke-width="1"/>
-      <ellipse cx="${bx + 175}" cy="${by + 148}" rx="34" ry="15" fill="#314e52" stroke="#7fa6ad" stroke-width="1"/>
-    ` : (isMystery ? `
-      <ellipse cx="${x}" cy="${y}" rx="95" ry="52" fill="rgba(168,85,247,0.16)" stroke="#c084fc" stroke-width="1.5" stroke-dasharray="6 4"/>
-    ` : `
-      ${drawL2MountainRangeSvg(`${bx + 45},${by + 65} ${bx + 125},${by + 48} ${bx + 215},${by + 68}`, 0.85)}
-      <ellipse cx="${bx + 255}" cy="${by + 148}" rx="55" ry="26" fill="rgba(42,58,36,0.45)"/>
-    `);
+    // Rich internal detail inside each sector so District is packed with readable geography!
+    let internalDetailSvg = '';
+    if (isTown) {
+      internalDetailSvg = `
+        <!-- Town Castle Curtain Wall + 4 Corner Bastions + Internal Streets + 2D Building Roofs -->
+        <rect x="${bx + 24}" y="${by + 28}" width="${bw - 48}" height="${bh - 42}" rx="12" fill="rgba(20,16,10,0.32)" stroke="#eab308" stroke-width="2.2" stroke-dasharray="12 4"/>
+        <circle cx="${bx + 24}" cy="${by + 28}" r="5" fill="#eab308" stroke="#120d07" stroke-width="1.2"/>
+        <circle cx="${bx + bw - 24}" cy="${by + 28}" r="5" fill="#eab308" stroke="#120d07" stroke-width="1.2"/>
+        <circle cx="${bx + 24}" cy="${by + bh - 14}" r="5" fill="#eab308" stroke="#120d07" stroke-width="1.2"/>
+        <circle cx="${bx + bw - 24}" cy="${by + bh - 14}" r="5" fill="#eab308" stroke="#120d07" stroke-width="1.2"/>
+        <!-- Internal Cross Streets & Roundabout Plaza -->
+        <line x1="${bx + 26}" y1="${y}" x2="${bx + bw - 26}" y2="${y}" stroke="#cbb989" stroke-width="5" opacity="0.65"/>
+        <line x1="${x}" y1="${by + 30}" x2="${x}" y2="${by + bh - 16}" stroke="#cbb989" stroke-width="5" opacity="0.65"/>
+        <circle cx="${x}" cy="${y}" r="22" fill="rgba(234,179,8,0.22)" stroke="#fde047" stroke-width="1.5"/>
+        <!-- 2D Building Footprints around Plaza -->
+        <rect x="${bx + 42}" y="${by + 40}" width="58" height="28" rx="3" fill="#4a3820" stroke="#d4af37" stroke-width="1"/>
+        <rect x="${bx + bw - 100}" y="${by + 40}" width="58" height="28" rx="3" fill="#4a3820" stroke="#d4af37" stroke-width="1"/>
+        <rect x="${bx + 42}" y="${by + bh - 54}" width="64" height="26" rx="3" fill="#4a3820" stroke="#d4af37" stroke-width="1"/>
+        <rect x="${bx + bw - 106}" y="${by + bh - 54}" width="64" height="26" rx="3" fill="#4a3820" stroke="#d4af37" stroke-width="1"/>
+        <!-- Resident NPC Shop Pins (#10b981 Emerald) directly visible in District view! -->
+        ${npcs.slice(0, 2).map((npc, ni) => {
+          const nx = ni === 0 ? bx + 72 : bx + bw - 72;
+          const ny = ni === 0 ? by + 54 : by + bh - 41;
+          return `
+            <g transform="translate(${nx}, ${ny})">
+              <rect x="-48" y="-9" width="96" height="18" rx="9" fill="#064e3b" stroke="#10b981" stroke-width="1.2"/>
+              <text x="0" y="3" text-anchor="middle" fill="#a7f3d0" font-size="8.5" font-weight="800">🛍️ ${escapeHtml(npc.name.slice(0, 12))}</text>
+            </g>
+          `;
+        }).join('')}
+      `;
+    } else if (isDng) {
+      internalDetailSvg = `
+        <!-- Subterranean Catacomb Chambers, Pillars & Boss Altar -->
+        <rect x="${bx + 18}" y="${by + 36}" width="${bw - 36}" height="${bh - 54}" rx="10" fill="rgba(15,10,24,0.55)" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <line x1="${x}" y1="${by + 45}" x2="${x}" y2="${by + bh - 30}" stroke="#7e22ce" stroke-width="8" stroke-dasharray="10 6"/>
+        <circle cx="${x}" cy="${by + 95}" r="24" fill="rgba(168,85,247,0.18)" stroke="#c084fc" stroke-width="1.5"/>
+        <text x="${x}" y="${by + 70}" text-anchor="middle" fill="#e9d5ff" font-size="8.5" font-family="monospace">UPPER VAULT HALL</text>
+        <circle cx="${x}" cy="${by + bh - 85}" r="28" fill="rgba(239,68,68,0.2)" stroke="#f97316" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="${x}" y="${by + bh - 45}" text-anchor="middle" fill="#fed7aa" font-size="8.5" font-family="monospace">🔥 SUMP ALTAR CHAMBER</text>
+        ${spawns.slice(0, 2).map((sp, si) => {
+          const sy = si === 0 ? by + 95 : by + bh - 85;
+          return `
+            <g transform="translate(${x}, ${sy})">
+              <rect x="-68" y="14" width="136" height="18" rx="9" fill="#3b0764" stroke="#c084fc" stroke-width="1.2"/>
+              <text x="0" y="26" text-anchor="middle" fill="#f3e8ff" font-size="8.5" font-weight="800">🕳️ ${escapeHtml(sp.monster_name.slice(0, 13))} ×${sp.spawn_count} (Lv.${sp.level})</text>
+            </g>
+          `;
+        }).join('')}
+      `;
+    } else if (isMystery) {
+      internalDetailSvg = `
+        <ellipse cx="${x}" cy="${y}" rx="115" ry="58" fill="rgba(168,85,247,0.18)" stroke="#e879f9" stroke-width="2" stroke-dasharray="6 4"/>
+        <text x="${x}" y="${y - 32}" text-anchor="middle" fill="#f5d0fe" font-size="9.5" font-weight="800">🌫️ SEALED BY FOG OF LORE</text>
+        <text x="${x}" y="${y + 48}" text-anchor="middle" fill="#e9d5ff" font-size="8.5" font-style="italic">${escapeHtml(((node.mystery_hook && node.mystery_hook.visual_silhouette) || 'Uncharted frontier silhouette').slice(0, 42))}...</text>
+      `;
+    } else {
+      // Hunting Area: Mountain Ridges, Forest Groves, Watchtower & Monster Habitat Rings + Badges!
+      internalDetailSvg = `
+        ${drawL2MountainRangeSvg(`${bx + 35},${by + 58} ${bx + 115},${by + 42} ${bx + 195},${by + 60}`, 0.85)}
+        <ellipse cx="${bx + 78}" cy="${by + 138}" rx="48" ry="24" fill="rgba(26,56,36,0.55)" stroke="rgba(74,222,128,0.35)" stroke-width="1"/>
+        <ellipse cx="${bx + bw - 78}" cy="${by + 138}" rx="52" ry="26" fill="rgba(239,68,68,0.18)" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <!-- Monster Pack Badges directly visible in District view! -->
+        ${spawns.slice(0, 2).map((sp, si) => {
+          const sx = si === 0 ? bx + 85 : bx + bw - 85;
+          const sy = si === 0 ? by + bh - 26 : by + 48;
+          return `
+            <g transform="translate(${sx}, ${sy})">
+              <rect x="-66" y="-9" width="132" height="18" rx="9" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.2"/>
+              <text x="0" y="3" text-anchor="middle" fill="#fecaca" font-size="8.5" font-weight="800">⚔️ ${escapeHtml(sp.monster_name.slice(0, 12))} ×${sp.spawn_count} Lv.${sp.level}</text>
+            </g>
+          `;
+        }).join('')}
+      `;
+    }
 
     const l2Kind = isTown ? 'town' : (isDng ? 'catacomb' : (isMystery ? 'tower' : 'fortress'));
-    const subText = `Lv.${(node.level_range || [1, 15]).join('–')} · ${isTown ? (npcs.length + ' NPCs') : (spawns.length + ' Mobs')}`;
+    const subText = `Lv.${(node.level_range || [1, 15]).join('–')} · ${isTown ? (npcs.length + ' NPCs') : (spawns.length + ' Monster Packs')}`;
 
     return `
-      <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr(poiObj)}', event)">
-        <rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="8" fill="${sectorFill}" stroke="${borderCol}" stroke-width="2" ${isMystery ? 'stroke-dasharray="7 4"' : ''}/>
-        ${blocksSvg}
-        <text x="${bx + 12}" y="${by + 19}" style="paint-order:stroke fill;stroke:#120d07;stroke-width:3px;fill:${borderCol};font-size:9.5px;font-weight:800;font-family:monospace">GRID [${(node.grid_coordinates || [0,0]).join(', ')}] · ${isDng ? 'CATACOMB / DUNGEON B1' : 'OVERLAND TERRITORY'}</text>
+      <g data-poi-clickable="1" style="cursor:pointer"
+         onclick="selectStudioMapPoi('${encodePoiAttr(poiObj)}', event)"
+         ondblclick="setStudioPerspective('town-or-hunting-area', { continentId: '${escapeHtml(activeContinent.id)}', districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(node.id)}', inspectId: '${escapeHtml(node.id)}' }); STUDIO_MAP_SELECTED_POI=null;">
+        <rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="10" fill="${sectorFill}" stroke="${unifiedBadgeCol}" stroke-width="${STUDIO_SELECTED_NODE_ID === node.id ? 3.2 : 2}" ${isMystery ? 'stroke-dasharray="7 4"' : ''}/>
+        <!-- Unified Color Header Pill -->
+        <rect x="${bx + 10}" y="${by + 8}" width="${bw - 20}" height="18" rx="4" fill="rgba(12,10,7,0.82)" stroke="${unifiedBadgeCol}" stroke-width="1"/>
+        <text x="${bx + 18}" y="${by + 20}" fill="${unifiedBadgeCol}" font-size="9.5" font-weight="900" font-family="monospace">
+          ${unifiedIcon} [${(node.grid_coordinates || [0,0]).join(', ')}] ${unifiedTypeLabel} · ${escapeHtml((tile.biome_palette || 'biome').replace(/_/g, ' ').slice(0, 18).toUpperCase())}
+        </text>
+        ${internalDetailSvg}
       </g>
       ${drawL2LandmarkSvg({
         kind: l2Kind,
         x,
-        y: y - 6,
+        y: y - 4,
         label: node.name,
         sublabel: subText,
-        flagColor: isTown ? '#eab308' : (isDng ? '#a855f7' : '#dc2626'),
-        isSelected: STUDIO_ACTIVE_INSPECT_ID === node.id,
+        flagColor: unifiedBadgeCol,
+        isSelected: STUDIO_SELECTED_NODE_ID === node.id || STUDIO_ACTIVE_INSPECT_ID === node.id,
         poiObj
       })}
     `;
   }).join('');
 
-  // Render winding parchment roads & bridges connecting the quadrants
+  // Render arterial highways & bridges connecting the quadrants
   const roadsHtml = portalEdges.map((edge) => {
     const a = nodePos[edge.from_node_id];
     const b = nodePos[edge.to_node_id];
@@ -5143,45 +5291,93 @@ function renderDistrictBigPictureSvg(activeContinent, activeDistrict, allDistric
     const isDng = edge.from_direction === 'Dungeon' || edge.to_direction === 'Dungeon';
     const mx = Math.round((a.x + b.x) / 2);
     const my = Math.round((a.y + b.y) / 2);
-    const stroke = isFog ? '#c084fc' : (isDng ? '#fb923c' : '#cbb989');
+    const stroke = isFog ? '#e879f9' : (isDng ? '#a855f7' : '#d4af37');
     return `
       <g pointer-events="none">
-        <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#1c150b" stroke-width="8" stroke-linecap="round"/>
-        <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${stroke}" stroke-width="4" ${isFog || isDng ? 'stroke-dasharray="8 5"' : ''}/>
-        <text x="${mx}" y="${my - 6}" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:3.5px;fill:#fde68a;font-size:9px;font-weight:800;font-family:monospace">
-          ${isFog ? '🌫️ FOG GATE' : (isDng ? '⬇ CATACOMB DESCENT' : `🛤️ ${edge.from_direction}⇄${edge.to_direction}`)}
+        <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#1c150b" stroke-width="9" stroke-linecap="round"/>
+        <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${stroke}" stroke-width="4.5" ${isFog || isDng ? 'stroke-dasharray="8 5"' : ''}/>
+        <rect x="${mx - 58}" y="${my - 10}" width="116" height="19" rx="4" fill="#120d07" stroke="${stroke}" stroke-width="1.2"/>
+        <text x="${mx}" y="${my + 3}" text-anchor="middle" fill="#fde68a" font-size="8.5" font-weight="800" font-family="monospace">
+          ${isFog ? '🌫️ FOG GATE' : (isDng ? '🕳️ CATACOMB STAIR' : `🛤️ ${edge.from_direction}⇄${edge.to_direction} ROAD`)}
         </text>
       </g>
     `;
   }).join('');
 
+  // Neighboring District Highway Banners on West & East edges so Continent <-> District link is crystal clear!
+  const neighborGatesSvg = `
+    ${prevDist ? `
+      <g data-poi-clickable="1" style="cursor:pointer" onclick="setStudioPerspective('district', { continentId: '${escapeHtml(activeContinent.id)}', districtId: '${escapeHtml(prevDist.id)}', inspectId: '${escapeHtml(prevDist.id)}' }); STUDIO_MAP_SELECTED_POI=null;">
+        <rect x="6" y="218" width="44" height="68" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
+        <text x="28" y="242" text-anchor="middle" fill="#fde047" font-size="12" font-weight="900">⬅</text>
+        <text x="28" y="256" text-anchor="middle" fill="#ffffff" font-size="8.5" font-weight="800" font-family="monospace">D${String(distIdx).padStart(2, '0')}</text>
+        <text x="28" y="268" text-anchor="middle" fill="#93c5fd" font-size="7.5" font-family="monospace">WEST</text>
+      </g>
+    ` : ''}
+    ${nextDist ? `
+      <g data-poi-clickable="1" style="cursor:pointer" onclick="setStudioPerspective('district', { continentId: '${escapeHtml(activeContinent.id)}', districtId: '${escapeHtml(nextDist.id)}', inspectId: '${escapeHtml(nextDist.id)}' }); STUDIO_MAP_SELECTED_POI=null;">
+        <rect x="730" y="218" width="44" height="68" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
+        <text x="752" y="242" text-anchor="middle" fill="#fde047" font-size="12" font-weight="900">➡</text>
+        <text x="752" y="256" text-anchor="middle" fill="#ffffff" font-size="8.5" font-weight="800" font-family="monospace">D${String(distIdx + 2).padStart(2, '0')}</text>
+        <text x="752" y="268" text-anchor="middle" fill="#93c5fd" font-size="7.5" font-family="monospace">EAST</text>
+      </g>
+    ` : ''}
+  `;
+
+  // Top-left District Switcher pills so you can jump between D01..D11 inside the District view too!
+  const districtControlsHtml = `
+    <button type="button" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(activeContinent.id)}', districtId: '${escapeHtml(activeDistrict.id)}', inspectId: '${escapeHtml(activeDistrict.id)}' }); STUDIO_MAP_SELECTED_POI=null;"
+            style="padding:5px 10px;border-radius:6px;font-size:10.5px;font-weight:800;cursor:pointer;border:1px solid #38bdf8;background:rgba(15,23,42,0.92);color:#7dd3fc">
+      ⬅ Back to 🌍 ${escapeHtml(activeContinent.name)} (${distCode} Highlighted)
+    </button>
+  ` + sortedContinentDistricts.slice(0, 6).map((d, i) => {
+    const code = `D${String(i + 1).padStart(2, '0')}`;
+    const active = d.id === activeDistrict.id;
+    return `
+      <button type="button" onclick="setStudioPerspective('district', { continentId: '${escapeHtml(activeContinent.id)}', districtId: '${escapeHtml(d.id)}', inspectId: '${escapeHtml(d.id)}' }); STUDIO_MAP_SELECTED_POI=null;"
+              style="padding:5px 9px;border-radius:6px;font-size:10.5px;font-weight:800;cursor:pointer;border:1px solid ${active ? '#fde047' : 'rgba(255,255,255,0.16)'};background:${active ? '#d97706' : 'rgba(18,16,12,0.85)'};color:${active ? '#ffffff' : '#cbd5e1'}">
+        ${code} ${escapeHtml(d.name.slice(0, 12))}
+      </button>
+    `;
+  }).join('');
+
+  const hasNW = overlandNodes.some(n => (n.grid_coordinates || [0,0])[0] === 0 && (n.grid_coordinates || [0,0])[1] === 0);
   const svgInnerHtml = `
-    <!-- Empty [0,0] NW Highland Mountain Reserve -->
-    <rect x="60" y="40" width="350" height="200" rx="8" fill="${isL2 ? '#554e35' : '#1d4436'}" stroke="rgba(212,175,55,0.3)" stroke-width="1.5" stroke-dasharray="5 4"/>
-    ${drawL2MountainRangeSvg('95,115 185,85 275,110 365,90', 1.15)}
-    ${drawL2MountainRangeSvg('115,175 225,155 335,180', 1.0)}
-    <text x="235" y="138" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:3.5px;fill:#e2d5b5;font-size:11px;font-weight:800">⛰️ HIGHLAND WATERSHED RIDGE [0, 0]</text>
+    <!-- Outer Golden District Boundary Box matching the [D01..D11] Territory Box from Lv.2 Continent! -->
+    <rect x="44" y="38" width="978" height="420" rx="14" fill="none" stroke="#f59e0b" stroke-width="3" stroke-dasharray="12 5"/>
 
-    <!-- Continuous Regional River flowing across [0,0] -> [0,1] -> [1,1] -->
-    <path d="M 115,45 Q 210,165 235,285 T 585,365 L 765,380" fill="none" stroke="${isL2 ? '#314e52' : '#1d4ed8'}" stroke-width="12" stroke-linecap="round" opacity="0.75"/>
+    ${!hasNW ? `
+      <!-- [0,0] NW Highland Watershed & Caldera Rim Reserve -->
+      <rect x="55" y="48" width="345" height="196" rx="10" fill="${isL2 ? '#554e35' : '#1d4436'}" stroke="rgba(212,175,55,0.35)" stroke-width="1.5" stroke-dasharray="5 4"/>
+      ${drawL2MountainRangeSvg('90,115 180,88 270,112 360,92', 1.15)}
+      ${drawL2MountainRangeSvg('110,175 220,155 330,178', 1.0)}
+      <text x="228" y="136" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:3.5px;fill:#e2d5b5;font-size:11px;font-weight:800">⛰️ ${escapeHtml((activeDistrict.name || '').toUpperCase())} HIGHLAND RIDGE [0, 0]</text>
+      <text x="228" y="152" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:3px;fill:#a7f3d0;font-size:9px;font-family:monospace">Headwaters feeding ${escapeHtml((townNode.terrain_tile && townNode.terrain_tile.water_feature) || 'District Waterway')}</text>
+    ` : ''}
 
-    ${ roadsHtml }
-    ${ sectorsHtml }
+    <!-- Continuous Regional River (#38bdf8 / #314e52) flowing across [0,0] -> [0,1] -> [1,1] -->
+    <path d="M 115,48 Q 210,165 235,285 T 585,365 L 765,380" fill="none" stroke="${isL2 ? '#314e52' : '#1d4ed8'}" stroke-width="14" stroke-linecap="round" opacity="0.8"/>
+    <path d="M 115,48 Q 210,165 235,285 T 585,365 L 765,380" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-dasharray="10 6" opacity="0.65"/>
+
+    ${roadsHtml}
+    ${sectorsHtml}
+    ${neighborGatesSvg}
   `;
 
   return renderCartoShellHtml({
-    stepLabel: `🏙️ STEP 3 DISTRICT TERRITORY & ROAD NETWORK · ${escapeHtml((activeDistrict.name || '').toUpperCase())}`,
-    title: `${escapeHtml(activeDistrict.name || '')} — Walled Town [1,1], Hunting Fortress [0,1], Fog Frontier [1,0] & Catacomb B1`,
-    subtitle: 'Click any Walled Town, Hunting Ground Fortress, Fog of Lore Tower, or Underground Catacomb to inspect or zoom to street-level building footprints',
+    stepLabel: `🏙️ STEP 3 DISTRICT TERRITORY ATLAS · ${distCode} ${escapeHtml((activeDistrict.name || '').toUpperCase())} (IN ${escapeHtml((activeContinent.name || '').toUpperCase())})`,
+    title: `${distCode} · ${escapeHtml(activeDistrict.name || '')} — Detailed 🏰 Town Walls & NPCs, ⚔️ Hunting Grounds & Monster Packs, 🕳️ Catacomb B1`,
+    subtitle: 'Shares exact same symbols & colors as Lv.2 Continent: click any 🏰 Gold Town, ⚔️ Red Hunting Area, 🕳️ Purple Catacomb, 🛍️ NPC, or ⚔️ Monster Pack (double-click to zoom to Lv.4 Street)',
     activeScaleIndex: 3,
     defaultPoi,
+    drillControls: districtControlsHtml,
     svgInnerHtml,
     legendItems: [
-      { color: '#eab308', label: 'Walled Town Sanctuary [1,1]' },
-      { color: '#dc2626', label: 'Hunting Grounds & Fortresses [0,1]' },
-      { color: '#c084fc', label: 'Fog of Lore Frontier [1,0]' },
-      { color: '#f97316', label: 'Catacomb / Dungeon (Floor -1)' },
-      { color: '#314e52', label: 'Continuous District River' }
+      { color: '#eab308', label: '🏰 Town Sanctuary & Walls [1,1]' },
+      { color: '#ef4444', label: '⚔️ Hunting Ground & Mob Packs [0,1]' },
+      { color: '#a855f7', label: '🕳️ Catacomb / Dungeon (Floor -1)' },
+      { color: '#10b981', label: '🛍️ Resident NPC Shops' },
+      { color: '#38bdf8', label: '🌊 River & Neighbor District Gates' }
     ]
   });
 }
