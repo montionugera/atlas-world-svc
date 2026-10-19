@@ -1828,6 +1828,15 @@
       "cli_command": "python3 scripts/studio_world_governance.py --audit-map-chain",
       "verified": true,
       "evidence": "Every single adjacent pair in all 6 racial spoke chains, all 3 continental mainline chains (64 overland nodes), and both inter-continent bridges is verified to have an active open portal in content/studio/nodes/."
+    },
+    {
+      "gate_id": "GOV-10",
+      "category": "t_shaped_world_atlas",
+      "title": "L2J.RU / L2Hub / PMFun Top-Down T-Shaped World Atlas & Zone Database",
+      "invariant_rule": "content/studio/t_shaped_world_atlas.json must validate against t-shaped-world-atlas.schema.json, indexing T-Breadth across all 6 zone categories (Starting Towns, Castle/Hub Towns, Fields, Regular Dungeons, God-Seal Catacombs, Harbors/Clan Halls/Forts) and T-Depth 100% validation on District D01 (Lantern Hollow Village + Clover South-Gate Meadow + Kiln Cellar Ruins + 3 Mob Drop/Spoil Sheets).",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-t-atlas",
+      "verified": true,
+      "evidence": "T-Breadth indexes 3 continents ([16_10]..[25_25]), 6 starting villages, 10 castle/hub towns, 25 field zones, 12 regular dungeons, 8 God-Seal catacombs, and 9 harbors/clan halls/forts; T-Depth validates Lantern Hollow + Clover South-Gate + Kiln Cellar Ruins + Prairie Keltir (20535) / Kiln Salamander (20109) / Discarded Kiln-Guardian (25372)."
     }
   ]
 }

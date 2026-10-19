@@ -1578,7 +1578,8 @@
               "quest_progression_tracks",
               "boss_hierarchy_law",
               "level_growth_path_1_to_25",
-              "world_continent_map_chain"
+              "world_continent_map_chain",
+              "t_shaped_world_atlas"
             ]
           },
           "title": {

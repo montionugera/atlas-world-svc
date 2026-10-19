@@ -50,7 +50,9 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertEqual(gov_rep["summary"]["monsterEcologyRacesCount"], 6)
         self.assertEqual(gov_rep["summary"]["godTierEntitiesCount"], 6)
         self.assertEqual(gov_rep["summary"]["historyChaptersCount"], 4)
-        self.assertEqual(gov_rep["summary"]["governanceGatesVerified"], 9)
+        self.assertEqual(gov_rep["summary"]["governanceGatesVerified"], 10)
+        self.assertIn("tShapedWorldAtlas", bundle)
+        self.assertEqual(bundle["tShapedWorldAtlas"]["id"], "t-shaped-world-atlas-cradle-of-embers")
 
     def test_long_term_world_governance_and_scaffolding_tools(self) -> None:
         errors, report = gov.validate_world_governance()

@@ -1,0 +1,2707 @@
+{
+  "schema_version": "1.0.0",
+  "id": "t-shaped-world-atlas-cradle-of-embers",
+  "name": "Cradle of Embers \u2014 T-Shaped World & Continent Top-Down Atlas (L2J.RU / L2Hub / PMFun Standard)",
+  "status": "canon",
+  "design_philosophy": "Adopt the proven Lineage II (L2J.RU Gracia Final, L2Hub.info, and PMFun) Top-Down World & Zone Database Architecture using a T-Shaped Production Strategy: (1) T-BREADTH HORIZONTAL BAR \u2014 index the entire 3-continent world on a unified [X_grid]_[Y_grid] coordinate tile grid (`all_interlaced.jpg` style) and a 6-category Zone Directory (Starting Towns, Castle/Hub Towns, Fields & Hunting Areas, Regular Dungeons, Seven-Signs/God-Seal Catacombs & Necropolises, and Harbors/Clan Halls/Fortresses) with level headers (`Zone Name: lvl.X [min-max]`) and `loc=X:Y` coordinates; (2) T-DEPTH VERTICAL BAR \u2014 dig deep to 100% database-grade completion on ONE linked starter cluster (1 Starting Town + 1 Field Hunting Area + 1 Multi-Room Dungeon + Full Mob Drop/Spoil Sheets) to validate the end-to-end gameplay and tooling loop before expanding other zones.",
+  "reference_benchmarks": [
+    {
+      "source_name": "L2J.RU Gracia Final Database (Maps, Zones, Dungeons & Mobs)",
+      "urls": [
+        "https://l2j.ru/graciafinal/img/maps/all_interlaced.jpg",
+        "https://l2j.ru/graciafinal/index.php?p=10",
+        "https://l2j.ru/graciafinal/img/maps/c3_aden.jpg",
+        "https://l2j.ru/graciafinal/index.php?p=24&t=1",
+        "https://l2j.ru/graciafinal/index.php?p=24&t=1&id=243",
+        "https://l2j.ru/graciafinal/index.php?p=1&id=20535"
+      ],
+      "extracted_patterns": [
+        "Interlaced World Grid (`all_interlaced.jpg`): Master world map divided into `[15_10]..[26_25]` server coordinate tiles overlaying Aden, Elmore, and Gracia.",
+        "4-Column Maps Directory (`p=10`): Categorizes world locations into Towns (6 Racial Starting Villages + 12 Castle/Hub Towns), Dungeons (8 Regular Dungeons + 14 Seven Signs Catacombs/Necropolises), Clan Halls (8), and Fortresses (21).",
+        "Dual-Map Zone Page (`p=24&t=1&id=243`): Header `Zone Name: lvl.X [min-max]`, top Parchment Illustrated Map with red spawn pins + bottom Top-Down Satellite Radar Map with red spawn clusters, followed by the 8-column NPC/Monster Spawn Table (`Name`, `Type`, `Level`, `Agr.`, `Race`, `X`, `Protections`, `Weaknesses`).",
+        "Side-by-Side Dungeon Map (`Elven Ruins: lvl.9 [9-22]`): Left map shows the overland entrance X pin relative to the racial starter town; Right map shows the top-down underground room-and-corridor layout with red spawn clusters.",
+        "Mob Detail Sheet (`p=1&id=20535` Prairie Keltir): 3D portrait + Stats (`HP/MP/Exp/SP`, `HP/MP Reg`) + Combat (`P.Atk/P.Def/M.Atk/M.Def/Atk.Spd/Cast.Spd/Walk/Run`) + Basic (`STR/INT/DEX/WIT/CON/MEN`) + Social (`Aggro/Social/Undead/Range`) + `Inhabits in` links + Grouped `Drop` table (`Group 0 Adena`, `Group 1 Equipment`, `Group 2 Crafting Materials/Recipes`) + `Spoil` table."
+      ]
+    },
+    {
+      "source_name": "L2Hub.info Interactive Map & Coordinate Pinning",
+      "urls": [
+        "https://l2hub.info/",
+        "https://l2hub.info/map?loc=72986%3A113330"
+      ],
+      "extracted_patterns": [
+        "Direct URL Coordinate Deep-Linking (`?loc=X:Y`): Every NPC, monster spawn cluster, raid boss, and teleport point has a deterministic world coordinate (`X:Y`) that centers and pins the top-down map.",
+        "Layer Toggles between Illustrated World Parchment and High-Contrast Terrain Radar."
+      ]
+    },
+    {
+      "source_name": "Lineage II PMFun Map Collection",
+      "urls": [
+        "https://lineage.pmfun.com/list/map"
+      ],
+      "extracted_patterns": [
+        "Multi-Scale Cartography: World Relief Maps (`Aden World Map`, `Elmore World Map`, `Gracia Star Stones Map`), Detailed Town Blueprints (`Dion Castle Town (detailed).png` with Guild/Shop/Gatekeeper callouts), and Multi-Floor Dungeon Maps."
+      ]
+    }
+  ],
+  "world_grid_spec": {
+    "coord_bounds_x": [
+      -131072,
+      229376
+    ],
+    "coord_bounds_y": [
+      -262144,
+      262144
+    ],
+    "grid_tile_sectors": "[16_10] to [26_25] (32,768 \u00d7 32,768 world units per grid sector, matching l2j.ru all_interlaced.jpg)",
+    "map_view_modes": [
+      "Common Parchment Map (Illustrated political & road relief map with territory borders and town crests)",
+      "Top-Down Radar Map (Orthographic terrain height/water/corridor satellite render with red spawn clusters)"
+    ],
+    "zone_categories": [
+      "starting_town",
+      "castle_or_hub_town",
+      "field_hunting_zone",
+      "regular_dungeon",
+      "seal_catacomb_necropolis",
+      "harbor",
+      "clan_hall",
+      "fortress"
+    ]
+  },
+  "t_breadth_continents": [
+    {
+      "continent_id": "continent-01-hearthbloom-basin",
+      "name": "Hearthbloom Basin (Southern Cradle Kingdom)",
+      "l2_archetype_analog": "Aden / Talking Island / Gludio / Dion / Giran Starter & Convergence Realm",
+      "level_band": [
+        1,
+        25
+      ],
+      "growth_stages": [
+        "A",
+        "B",
+        "C"
+      ],
+      "grid_sector_bounds": "[17_21] to [22_25]",
+      "summary": "Warm terracotta-and-river basin housing all 6 Playable Race Starting Villages (Lv. 1\u201310, Stage A), converging along open aqueduct highways into the central all-race guild city of Kilnwatch Bastion (Lv. 10\u201320, Stage B) and the Glaze-Barge / Cinder Apron Raid & Bridge Exits (Lv. 20\u201325, Stage C).",
+      "territories": [
+        "Teacup Meadows Territory (D01 \u00b7 Human Starter Island-Peninsula \u00b7 Grid 18_24)",
+        "Porcelain Cradle Territory (D02 \u00b7 Lunar Elven Forest \u00b7 Grid 19_22)",
+        "Ash-Bellows Trench Territory (D03 \u00b7 Ogre/Orc Plateau \u00b7 Grid 19_23)",
+        "Glaze-River Delta Territory (D04 \u00b7 Southern Harbor & Raid Port \u00b7 Grid 20_24)",
+        "Amber-Root Hollows Territory (D05 \u00b7 Dwarf Mining Basin \u00b7 Grid 20_22)",
+        "Kilnfire Terraces Territory (D06 \u00b7 Central All-Race Convergence Castle Town \u00b7 Grid 20_23)",
+        "Terracotta Wind-Chimes Territory (D07 \u00b7 Dark-Lunar Shilen Marsh \u00b7 Grid 18_22)",
+        "Saffron Orchard Basin Territory (D08 \u00b7 Agricultural Manor Plains \u00b7 Grid 18_21)",
+        "Cinnamon-Bellows Bluff Territory (D09 \u00b7 Furral Isle of Souls / Spice Bluff \u00b7 Grid 17_22)",
+        "Ginger-Steam Ravine Territory (D10 \u00b7 Eastern Hot-Springs Border \u00b7 Grid 21_22)"
+      ]
+    },
+    {
+      "continent_id": "continent-02-clockwork-steppe",
+      "name": "The Clockwork Steppe (Northern Brass-Gear Kingdom)",
+      "l2_archetype_analog": "Elmore / Oren / Goddard / Schuttgart / Rune Industrial & Highland Frontier",
+      "level_band": [
+        20,
+        40
+      ],
+      "growth_stages": [
+        "C",
+        "D",
+        "E"
+      ],
+      "grid_sector_bounds": "[20_15] to [25_20]",
+      "summary": "Vast wind-swept brass plateau north-east of Hearthbloom Basin where Lv. 20\u201325 parties arrive at Pinion Terminus (Stage C), test-drive 2nd-Class specializations in Escapement Anvil & Bellows Hearth (Stage D, Lv. 25\u201330), and promote to full 2nd Class in Inductor Switchyard & Metronome Pivot Citadel (Stage E, Lv. 30\u201340).",
+      "territories": [
+        "Rustcog Downs Territory (D01 \u00b7 Continental Rail Terminus \u00b7 Grid 21_20)",
+        "Mainspring Caldera Territory (D02 \u00b7 2nd-Class Trial Arena \u00b7 Grid 22_19)",
+        "Verdigris Canal Lock Territory (D03 \u00b7 Mercury Sluice Waterway \u00b7 Grid 21_18)",
+        "Soot-Stack Highlands Territory (D04 \u00b7 Volcanic Bellows Forge \u00b7 Grid 23_18)",
+        "Galvanic Ley-Spire Territory (D05 \u00b7 2nd-Class Promotion Switchyard \u00b7 Grid 22_17)",
+        "Pendulum Escapement Reach Territory (D06 \u00b7 Central Clockwork Citadel \u00b7 Grid 23_16)",
+        "Worm-Gear Trench Territory (D07 \u00b7 Deep Mechanical Quarry \u00b7 Grid 24_16)",
+        "Epicyclic Hub Territory (D08 \u00b7 Planetary Carrier Plains \u00b7 Grid 24_15)"
+      ]
+    },
+    {
+      "continent_id": "continent-03-shattered-halo",
+      "name": "The Shattered Halo (Sky-Archipelago & Astral Ring)",
+      "l2_archetype_analog": "Gracia Continent / Aden Endgame / Tower of Insolence & Seed of Infinity",
+      "level_band": [
+        35,
+        99
+      ],
+      "growth_stages": [
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L"
+      ],
+      "grid_sector_bounds": "[16_10] to [21_14]",
+      "summary": "Floating basalt-and-starlight archipelago tethered above the Astrolabe Rift where Guild Raid Squads contest their 1st MVP God-Apostle (Stage F, Lv. 40\u201345), forge Lv. 50/60 Star-Steel Arms (Stages G\u2013H), and ascend to Level 99 Sovereign Seal-Bearers (Stages I\u2013L).",
+      "territories": [
+        "Star-Tether Atoll Territory (D01 \u00b7 Sky-Harbor Arrival Pier \u00b7 Grid 19_14)",
+        "Zenith Refractory Territory (D02 \u00b7 1st MVP Apostle Sanctuary \u00b7 Grid 19_13)",
+        "Abyssal Undertide Reef Territory (D03 \u00b7 Bioluminescent Coral Basin \u00b7 Grid 18_13)",
+        "Crown-Lens Citadel Territory (D04 \u00b7 High-Halo Capital \u00b7 Grid 18_12)",
+        "Perigee Plunge Territory (D05 \u00b7 Inverted Stalactite Spire \u00b7 Grid 17_12)",
+        "Aphelion Drift Territory (D06 \u00b7 Outer Comet Ring \u00b7 Grid 17_11)",
+        "Libration Balance Territory (D07 \u00b7 Twin-Tide Equilibrium Atoll \u00b7 Grid 18_11)",
+        "Celestial Astrolabe Core Territory (D11 \u00b7 Level 99 Architect Meridian \u00b7 Grid 16_10)"
+      ]
+    }
+  ],
+  "t_breadth_zone_directory": {
+    "starting_towns": [
+      {
+        "zone_id": "zone-town-lantern-hollow",
+        "studio_node_id": "town-lantern-hollow",
+        "name": "Lantern Hollow Village (Human Starter)",
+        "category": "starting_town",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Teacup Meadows (D01)",
+        "level_header": "Lantern Hollow Village: lvl.1 [1-10]",
+        "level_band": [
+          1,
+          10
+        ],
+        "grid_sector": "18_24",
+        "loc_coord": "-84120:243500",
+        "l2_reference_analog": "Talking Island Village (Human Starting Town)",
+        "race_or_seal_affinity": "human_demi_human",
+        "connected_zone_ids": [
+          "zone-field-clover-south-gate",
+          "zone-field-kiln-east-orchard",
+          "zone-dungeon-kiln-cellar"
+        ],
+        "t_depth_status": "t_deep_validated"
+      },
+      {
+        "zone_id": "zone-town-porcelain-loom",
+        "studio_node_id": "town-porcelain-loom-sanctuary",
+        "name": "Porcelain Loom Sanctuary (Lunar Starter)",
+        "category": "starting_town",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Porcelain Cradle (D02)",
+        "level_header": "Porcelain Loom Sanctuary: lvl.1 [1-10]",
+        "level_band": [
+          1,
+          10
+        ],
+        "grid_sector": "19_22",
+        "loc_coord": "45800:41200",
+        "l2_reference_analog": "Elven Village (Shadow of the Mother Tree)",
+        "race_or_seal_affinity": "lunar",
+        "connected_zone_ids": [
+          "zone-field-celadon-causeway",
+          "zone-field-resin-arch-tunnel",
+          "zone-dungeon-medallion-heart-vault"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-town-draft-kiln-post",
+        "studio_node_id": "town-draft-kiln-post",
+        "name": "Draft-Kiln Post (Ogre/Orc Starter)",
+        "category": "starting_town",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Ash-Bellows Trench (D03)",
+        "level_header": "Draft-Kiln Post: lvl.1 [1-10]",
+        "level_band": [
+          1,
+          10
+        ],
+        "grid_sector": "19_23",
+        "loc_coord": "-44800:-113200",
+        "l2_reference_analog": "Orc Village (Immortal Plateau)",
+        "race_or_seal_affinity": "ogre_orc",
+        "connected_zone_ids": [
+          "zone-field-firebrick-duct",
+          "zone-field-celadon-causeway",
+          "zone-dungeon-ember-bellows-chamber"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-town-root-train-roundhouse",
+        "studio_node_id": "town-root-train-roundhouse",
+        "name": "Root-Train Roundhouse (Dwarf Starter)",
+        "category": "starting_town",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Amber-Root Hollows (D05)",
+        "level_header": "Root-Train Roundhouse: lvl.1 [1-10]",
+        "level_band": [
+          1,
+          10
+        ],
+        "grid_sector": "20_22",
+        "loc_coord": "115100:-178200",
+        "l2_reference_analog": "Dwarven Village (Western Mining Zone)",
+        "race_or_seal_affinity": "dwarf",
+        "connected_zone_ids": [
+          "zone-field-cobalt-sandbar-ford",
+          "zone-field-resin-arch-tunnel",
+          "zone-dungeon-sap-heart-cistern"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-town-carillon-belfry",
+        "studio_node_id": "town-carillon-hearth-belfry",
+        "name": "Carillon Hearth Belfry (Dark-Lunar Starter)",
+        "category": "starting_town",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Terracotta Wind-Chimes (D07)",
+        "level_header": "Carillon Hearth Belfry: lvl.1 [1-10]",
+        "level_band": [
+          1,
+          10
+        ],
+        "grid_sector": "18_22",
+        "loc_coord": "12400:16800",
+        "l2_reference_analog": "Dark Elf Village (The Dark Forest)",
+        "race_or_seal_affinity": "dark_lunar",
+        "connected_zone_ids": [
+          "zone-field-apricot-aqueduct-terrace",
+          "zone-field-chime-pipe-colonnade",
+          "zone-dungeon-ceramic-resonator-crypt"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-town-cinnamon-mill",
+        "studio_node_id": "town-cinnamon-mill-haven",
+        "name": "Cinnamon-Mill Haven (Furral Starter)",
+        "category": "starting_town",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Cinnamon-Bellows Bluff (D09)",
+        "level_header": "Cinnamon-Mill Haven: lvl.1 [1-10]",
+        "level_band": [
+          1,
+          10
+        ],
+        "grid_sector": "17_22",
+        "loc_coord": "-118200:46800",
+        "l2_reference_analog": "Kamael Village (Isle of Souls)",
+        "race_or_seal_affinity": "furral",
+        "connected_zone_ids": [
+          "zone-field-cinnamon-bark-viaduct",
+          "zone-field-ginger-aqueduct-bridge",
+          "zone-dungeon-spice-kiln-cellar"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      }
+    ],
+    "other_castle_and_hub_towns": [
+      {
+        "zone_id": "zone-town-kilnwatch-bastion",
+        "studio_node_id": "town-kilnwatch-bastion",
+        "name": "Town of Kilnwatch Bastion (All-Race Lv.10-20 Convergence Castle Town)",
+        "category": "castle_or_hub_town",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Kilnfire Terraces (D06)",
+        "level_header": "Town of Kilnwatch Bastion: lvl.10 [10-22]",
+        "level_band": [
+          10,
+          22
+        ],
+        "grid_sector": "20_23",
+        "loc_coord": "-14200:123500",
+        "l2_reference_analog": "Town of Gludio / Town of Dion (1st Class Change & Clan/Guild Convergence Hub)",
+        "race_or_seal_affinity": "all_races_convergence",
+        "connected_zone_ids": [
+          "zone-field-kiln-east-orchard",
+          "zone-field-firebrick-duct",
+          "zone-field-cinder-apron",
+          "zone-dungeon-kiln-cellar"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-town-glaze-barge-quay",
+        "studio_node_id": "town-glaze-barge-quay",
+        "name": "Glaze-Barge Quay (River Trade & Raid Port)",
+        "category": "castle_or_hub_town",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Glaze-River Delta (D04)",
+        "level_header": "Glaze-Barge Quay: lvl.15 [15-25]",
+        "level_band": [
+          15,
+          25
+        ],
+        "grid_sector": "20_24",
+        "loc_coord": "-81200:151400",
+        "l2_reference_analog": "Gludin Village / Heine Maritime Port",
+        "race_or_seal_affinity": "all_races_convergence",
+        "connected_zone_ids": [
+          "zone-field-cobalt-sandbar-ford",
+          "zone-field-chime-pipe-colonnade",
+          "zone-dungeon-sunken-potter-hold"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-town-saffron-press",
+        "studio_node_id": "town-saffron-press-village",
+        "name": "Saffron Press Village (Manor Agricultural Hub)",
+        "category": "castle_or_hub_town",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Saffron Orchard Basin (D08)",
+        "level_header": "Saffron Press Village: lvl.10 [8-18]",
+        "level_band": [
+          8,
+          18
+        ],
+        "grid_sector": "18_21",
+        "loc_coord": "17400:170100",
+        "l2_reference_analog": "Floran Village (Agricultural Free-Town)",
+        "race_or_seal_affinity": "neutral_manor",
+        "connected_zone_ids": [
+          "zone-field-apricot-aqueduct-terrace",
+          "zone-field-cinnamon-bark-viaduct"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-town-pinion-terminus",
+        "studio_node_id": "town-pinion-terminus",
+        "name": "Pinion Terminus Township (Continent 01->02 Gateway)",
+        "category": "castle_or_hub_town",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Rustcog Downs (D01)",
+        "level_header": "Pinion Terminus Township: lvl.20 [18-26]",
+        "level_band": [
+          18,
+          26
+        ],
+        "grid_sector": "21_20",
+        "loc_coord": "82400:148600",
+        "l2_reference_analog": "Giran Castle Town (Cross-Continental Trade & Raid Gateway)",
+        "race_or_seal_affinity": "all_races_convergence",
+        "connected_zone_ids": [
+          "zone-field-cinder-apron",
+          "zone-field-brass-spur-ridge",
+          "zone-dungeon-pendulum-shaft"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-town-escapement-anvil",
+        "studio_node_id": "town-escapement-anvil",
+        "name": "Town of Escapement Anvil (Stage D 2nd-Class [Learn & Try] Arena)",
+        "category": "castle_or_hub_town",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Mainspring Caldera (D02)",
+        "level_header": "Town of Escapement Anvil: lvl.25 [25-32]",
+        "level_band": [
+          25,
+          32
+        ],
+        "grid_sector": "22_19",
+        "loc_coord": "83100:53200",
+        "l2_reference_analog": "Town of Oren / Hardin's Academy",
+        "race_or_seal_affinity": "second_class_trial",
+        "connected_zone_ids": [
+          "zone-field-caldera-rim",
+          "zone-field-siphon-sluice",
+          "zone-dungeon-chronometer-foundry"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-town-inductor-switchyard",
+        "studio_node_id": "town-inductor-switchyard",
+        "name": "Town of Inductor Switchyard (Stage E 2nd-Class Promotion Capital)",
+        "category": "castle_or_hub_town",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Galvanic Ley-Spire (D05)",
+        "level_header": "Town of Inductor Switchyard: lvl.32 [30-40]",
+        "level_band": [
+          30,
+          40
+        ],
+        "grid_sector": "22_17",
+        "loc_coord": "147400:-55200",
+        "l2_reference_analog": "Town of Goddard / Town of Schuttgart",
+        "race_or_seal_affinity": "second_class_promotion",
+        "connected_zone_ids": [
+          "zone-field-leyden-causeway",
+          "zone-field-metronome-bridge",
+          "zone-dungeon-faraday-dynamo-vault"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-town-starfall-haven",
+        "studio_node_id": "town-starfall-haven",
+        "name": "Starfall Haven Township (Continent 03 Sky-Harbor Capital)",
+        "category": "castle_or_hub_town",
+        "continent_id": "continent-03-shattered-halo",
+        "territory_name": "Star-Tether Atoll (D01)",
+        "level_header": "Starfall Haven Township: lvl.40 [38-50]",
+        "level_band": [
+          38,
+          50
+        ],
+        "grid_sector": "19_14",
+        "loc_coord": "43800:-47900",
+        "l2_reference_analog": "Rune Township / Keucereus Alliance Base",
+        "race_or_seal_affinity": "sky_archipelago_hub",
+        "connected_zone_ids": [
+          "zone-field-tether-causeway",
+          "zone-field-orrery-bridge"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-town-crown-beacon",
+        "studio_node_id": "town-crown-beacon-citadel",
+        "name": "Town of Crown-Beacon Citadel (High-Halo Imperial Capital)",
+        "category": "castle_or_hub_town",
+        "continent_id": "continent-03-shattered-halo",
+        "territory_name": "Crown-Lens Citadel (D04)",
+        "level_header": "Town of Crown-Beacon Citadel: lvl.55 [50-75]",
+        "level_band": [
+          50,
+          75
+        ],
+        "grid_sector": "18_12",
+        "loc_coord": "147900:26800",
+        "l2_reference_analog": "Town of Aden (Imperial Castle Capital)",
+        "race_or_seal_affinity": "sovereign_capital",
+        "connected_zone_ids": [
+          "zone-field-aurora-tether",
+          "zone-field-stalactite-plunge"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      }
+    ],
+    "fields_and_hunting_areas": [
+      {
+        "zone_id": "zone-field-clover-south-gate",
+        "studio_node_id": "hunting-area-clover-south-gate",
+        "name": "Clover South-Gate Meadow (Human Starter Field)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Teacup Meadows (D01)",
+        "level_header": "Clover South-Gate Meadow: lvl.1 [1-12]",
+        "level_band": [
+          1,
+          12
+        ],
+        "grid_sector": "18_24",
+        "loc_coord": "72986:113330",
+        "l2_reference_analog": "Talking Island, Eastern Territory / Isle of Souls: Dystopia: lvl.1 [1-13]",
+        "race_or_seal_affinity": "human_demi_human",
+        "connected_zone_ids": [
+          "zone-town-lantern-hollow",
+          "zone-field-kiln-east-orchard",
+          "zone-dungeon-kiln-cellar"
+        ],
+        "t_depth_status": "t_deep_validated"
+      },
+      {
+        "zone_id": "zone-field-kiln-east-orchard",
+        "studio_node_id": "hunting-area-kiln-east-orchard",
+        "name": "Kiln-East Glaze Orchard (Human Farming & Convergence Highway)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Teacup Meadows (D01)",
+        "level_header": "Kiln-East Glaze Orchard: lvl.6 [5-14]",
+        "level_band": [
+          5,
+          14
+        ],
+        "grid_sector": "19_24",
+        "loc_coord": "78420:108900",
+        "l2_reference_analog": "Talking Island, Northern Territory / Windmill Hill",
+        "race_or_seal_affinity": "human_demi_human",
+        "connected_zone_ids": [
+          "zone-town-lantern-hollow",
+          "zone-field-clover-south-gate",
+          "zone-town-kilnwatch-bastion"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-field-celadon-causeway",
+        "studio_node_id": "hunting-area-celadon-causeway",
+        "name": "Celadon Glaze Causeway (Lunar & Ogre Shared Field)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Porcelain Cradle (D02)",
+        "level_header": "Celadon Glaze Causeway: lvl.5 [1-12]",
+        "level_band": [
+          1,
+          12
+        ],
+        "grid_sector": "19_22",
+        "loc_coord": "48200:49600",
+        "l2_reference_analog": "Elven Forest / The Neutral Zone",
+        "race_or_seal_affinity": "lunar",
+        "connected_zone_ids": [
+          "zone-town-porcelain-loom",
+          "zone-town-draft-kiln-post",
+          "zone-field-resin-arch-tunnel"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-field-firebrick-duct",
+        "studio_node_id": "hunting-area-firebrick-duct",
+        "name": "Firebrick Bellows Duct (Ogre Starter Field & Kilnwatch Approach)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Ash-Bellows Trench (D03)",
+        "level_header": "Firebrick Bellows Duct: lvl.6 [1-15]",
+        "level_band": [
+          1,
+          15
+        ],
+        "grid_sector": "19_23",
+        "loc_coord": "-39200:-105400",
+        "l2_reference_analog": "Valley of Heroes / Immortal Plateau, Northern Region",
+        "race_or_seal_affinity": "ogre_orc",
+        "connected_zone_ids": [
+          "zone-town-draft-kiln-post",
+          "zone-town-kilnwatch-bastion",
+          "zone-dungeon-ember-bellows-chamber"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-field-resin-arch-tunnel",
+        "studio_node_id": "hunting-area-resin-arch-tunnel",
+        "name": "Resin-Arch Root Tunnel (Dwarf & Lunar Farming Zone)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Amber-Root Hollows (D05)",
+        "level_header": "Resin-Arch Root Tunnel: lvl.5 [1-12]",
+        "level_band": [
+          1,
+          12
+        ],
+        "grid_sector": "20_22",
+        "loc_coord": "108400:-171000",
+        "l2_reference_analog": "Western Mining Zone / Black Rock Hill",
+        "race_or_seal_affinity": "dwarf",
+        "connected_zone_ids": [
+          "zone-town-root-train-roundhouse",
+          "zone-town-porcelain-loom",
+          "zone-field-cobalt-sandbar-ford"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-field-cobalt-sandbar-ford",
+        "studio_node_id": "hunting-area-cobalt-sandbar-ford",
+        "name": "Cobalt Sandbar Ford (Dwarf Hunting & River Delta Crossing)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Glaze-River Delta (D04)",
+        "level_header": "Cobalt Sandbar Ford: lvl.8 [5-16]",
+        "level_band": [
+          5,
+          16
+        ],
+        "grid_sector": "20_24",
+        "loc_coord": "-74200:142800",
+        "l2_reference_analog": "Fellmere Harvesting Grounds / Maille Lizardmen Barracks",
+        "race_or_seal_affinity": "dwarf",
+        "connected_zone_ids": [
+          "zone-town-root-train-roundhouse",
+          "zone-town-glaze-barge-quay",
+          "zone-field-chime-pipe-colonnade"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-field-chime-pipe-colonnade",
+        "studio_node_id": "hunting-area-chime-pipe-colonnade",
+        "name": "Chime-Pipe Colonnade (Dark-Lunar Acoustic Marsh)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Terracotta Wind-Chimes (D07)",
+        "level_header": "Chime-Pipe Colonnade: lvl.5 [1-12]",
+        "level_band": [
+          1,
+          12
+        ],
+        "grid_sector": "18_22",
+        "loc_coord": "18900:24100",
+        "l2_reference_analog": "Swampland / Spider Nest (Dark Forest)",
+        "race_or_seal_affinity": "dark_lunar",
+        "connected_zone_ids": [
+          "zone-town-carillon-belfry",
+          "zone-town-glaze-barge-quay",
+          "zone-field-apricot-aqueduct-terrace"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-field-apricot-aqueduct-terrace",
+        "studio_node_id": "hunting-area-apricot-aqueduct-terrace",
+        "name": "Apricot Aqueduct Terrace (Dark-Lunar & Manor Field)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Saffron Orchard Basin (D08)",
+        "level_header": "Apricot Aqueduct Terrace: lvl.7 [4-14]",
+        "level_band": [
+          4,
+          14
+        ],
+        "grid_sector": "18_21",
+        "loc_coord": "21400:158000",
+        "l2_reference_analog": "Floran Agricultural Area / Dion Hills",
+        "race_or_seal_affinity": "dark_lunar",
+        "connected_zone_ids": [
+          "zone-town-carillon-belfry",
+          "zone-town-saffron-press",
+          "zone-field-cinnamon-bark-viaduct"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-field-cinnamon-bark-viaduct",
+        "studio_node_id": "hunting-area-cinnamon-bark-viaduct",
+        "name": "Cinnamon-Bark Viaduct (Furral Farming & Spice Highway)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Cinnamon-Bellows Bluff (D09)",
+        "level_header": "Cinnamon-Bark Viaduct: lvl.4 [1-10]",
+        "level_band": [
+          1,
+          10
+        ],
+        "grid_sector": "17_22",
+        "loc_coord": "-112400:51200",
+        "l2_reference_analog": "Mimir's Forest / Hills of Gold (Isle of Souls)",
+        "race_or_seal_affinity": "furral",
+        "connected_zone_ids": [
+          "zone-town-cinnamon-mill",
+          "zone-town-saffron-press",
+          "zone-field-ginger-aqueduct-bridge"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-field-ginger-aqueduct-bridge",
+        "studio_node_id": "hunting-area-ginger-aqueduct-bridge",
+        "name": "Ginger-Steam Aqueduct Bridge (Furral Hunting Grounds)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Ginger-Steam Ravine (D10)",
+        "level_header": "Ginger-Steam Aqueduct Bridge: lvl.6 [3-12]",
+        "level_band": [
+          3,
+          12
+        ],
+        "grid_sector": "21_22",
+        "loc_coord": "-106800:59400",
+        "l2_reference_analog": "Eastern Mining Zone / Plunderous Plains",
+        "race_or_seal_affinity": "furral",
+        "connected_zone_ids": [
+          "zone-town-cinnamon-mill",
+          "zone-field-cinnamon-bark-viaduct"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-field-cinder-apron",
+        "studio_node_id": "hunting-area-cinder-apron",
+        "name": "Cinder Apron Viaduct (Stage B->C Party Field & C01->C02 Bridge)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Kilnfire Terraces (D06)",
+        "level_header": "Cinder Apron Viaduct: lvl.16 [12-22]",
+        "level_band": [
+          12,
+          22
+        ],
+        "grid_sector": "20_23",
+        "loc_coord": "-6400:131800",
+        "l2_reference_analog": "Ruins of Agony / Ruins of Despair / Cruma Marshlands",
+        "race_or_seal_affinity": "all_races_convergence",
+        "connected_zone_ids": [
+          "zone-town-kilnwatch-bastion",
+          "zone-town-pinion-terminus",
+          "zone-dungeon-kiln-cellar"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-field-brass-spur-ridge",
+        "studio_node_id": "hunting-area-brass-spur-ridge",
+        "name": "Brass-Spur Gear Ridge (Stage C Continent 02 Frontier)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Rustcog Downs (D01)",
+        "level_header": "Brass-Spur Gear Ridge: lvl.22 [20-26]",
+        "level_band": [
+          20,
+          26
+        ],
+        "grid_sector": "21_20",
+        "loc_coord": "89200:138400",
+        "l2_reference_analog": "Execution Grounds / Death Pass",
+        "race_or_seal_affinity": "clockwork_frontier",
+        "connected_zone_ids": [
+          "zone-town-pinion-terminus",
+          "zone-field-caldera-rim",
+          "zone-dungeon-pendulum-shaft"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-field-caldera-rim",
+        "studio_node_id": "hunting-area-caldera-rim",
+        "name": "Mainspring Caldera Rim (Stage D Pre-2nd-Class Trial Grounds)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Mainspring Caldera (D02)",
+        "level_header": "Mainspring Caldera Rim: lvl.26 [25-30]",
+        "level_band": [
+          25,
+          30
+        ],
+        "grid_sector": "22_19",
+        "loc_coord": "86400:61200",
+        "l2_reference_analog": "Plains of the Lizardmen / Sea of Spores",
+        "race_or_seal_affinity": "second_class_trial",
+        "connected_zone_ids": [
+          "zone-field-brass-spur-ridge",
+          "zone-town-escapement-anvil"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-field-leyden-causeway",
+        "studio_node_id": "hunting-area-leyden-causeway",
+        "name": "Leyden Capacitor Causeway (Stage E 2nd-Class Grinding Field)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Galvanic Ley-Spire (D05)",
+        "level_header": "Leyden Capacitor Causeway: lvl.34 [30-40]",
+        "level_band": [
+          30,
+          40
+        ],
+        "grid_sector": "22_17",
+        "loc_coord": "141200:-48600",
+        "l2_reference_analog": "Dragon Valley / Pavel Ruins",
+        "race_or_seal_affinity": "second_class_promotion",
+        "connected_zone_ids": [
+          "zone-town-inductor-switchyard",
+          "zone-dungeon-faraday-dynamo-vault"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-field-tether-causeway",
+        "studio_node_id": "hunting-area-tether-causeway",
+        "name": "Star-Tether Causeway (Stage F Continent 03 Arrival Field)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-03-shattered-halo",
+        "territory_name": "Star-Tether Atoll (D01)",
+        "level_header": "Star-Tether Causeway: lvl.42 [40-48]",
+        "level_band": [
+          40,
+          48
+        ],
+        "grid_sector": "19_14",
+        "loc_coord": "49200:-41200",
+        "l2_reference_analog": "Enchanted Valley / Valley of Saints",
+        "race_or_seal_affinity": "first_mvp_contest",
+        "connected_zone_ids": [
+          "zone-town-starfall-haven",
+          "zone-field-orrery-bridge"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-field-aurora-tether",
+        "studio_node_id": "hunting-area-aurora-tether",
+        "name": "Aurora Tether Span (Stage G-L High-Halo Endgame Field)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-03-shattered-halo",
+        "territory_name": "Crown-Lens Citadel (D04)",
+        "level_header": "Aurora Tether Span: lvl.65 [55-85]",
+        "level_band": [
+          55,
+          85
+        ],
+        "grid_sector": "18_12",
+        "loc_coord": "152400:31200",
+        "l2_reference_analog": "Blazing Swamp / Wall of Argos / Primeval Isle",
+        "race_or_seal_affinity": "endgame_mvp_field",
+        "connected_zone_ids": [
+          "zone-town-crown-beacon"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      }
+    ],
+    "regular_dungeons": [
+      {
+        "zone_id": "zone-dungeon-kiln-cellar",
+        "studio_node_id": "dungeon-kiln-cellar",
+        "name": "Kiln Cellar Ruins (Human Starter & Stage B Party Dungeon)",
+        "category": "regular_dungeon",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Teacup Meadows / Kilnfire Terraces (D01/D06)",
+        "level_header": "Kiln Cellar Ruins: lvl.9 [9-22]",
+        "level_band": [
+          9,
+          22
+        ],
+        "grid_sector": "18_24",
+        "loc_coord": "75410:116820",
+        "l2_reference_analog": "Elven Ruins: lvl.9 [9-22] (Talking Island Dungeon)",
+        "race_or_seal_affinity": "god-legendary-dragon",
+        "connected_zone_ids": [
+          "zone-town-lantern-hollow",
+          "zone-field-clover-south-gate",
+          "zone-town-kilnwatch-bastion"
+        ],
+        "t_depth_status": "t_deep_validated"
+      },
+      {
+        "zone_id": "zone-dungeon-medallion-heart-vault",
+        "studio_node_id": "dungeon-medallion-heart-vault",
+        "name": "Medallion Heart Fortress (Lunar Starter Dungeon)",
+        "category": "regular_dungeon",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Porcelain Cradle (D02)",
+        "level_header": "Medallion Heart Fortress: lvl.10 [9-20]",
+        "level_band": [
+          9,
+          20
+        ],
+        "grid_sector": "19_22",
+        "loc_coord": "49800:44100",
+        "l2_reference_analog": "Elven Fortress (Elven Village Dungeon)",
+        "race_or_seal_affinity": "god-angel",
+        "connected_zone_ids": [
+          "zone-town-porcelain-loom",
+          "zone-field-celadon-causeway"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-dungeon-ember-bellows-chamber",
+        "studio_node_id": "dungeon-ember-bellows-chamber",
+        "name": "Ember Bellows Cave of Trials (Ogre Starter & Stage C Raid Dungeon)",
+        "category": "regular_dungeon",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Ash-Bellows Trench (D03)",
+        "level_header": "Ember Bellows Cave of Trials: lvl.12 [9-23]",
+        "level_band": [
+          9,
+          23
+        ],
+        "grid_sector": "19_23",
+        "loc_coord": "-41200:-109800",
+        "l2_reference_analog": "Cave of Trials (Orc Village Dungeon)",
+        "race_or_seal_affinity": "god-legendary-dragon",
+        "connected_zone_ids": [
+          "zone-town-draft-kiln-post",
+          "zone-field-firebrick-duct"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-dungeon-sap-heart-cistern",
+        "studio_node_id": "dungeon-sap-heart-cistern",
+        "name": "Sap-Heart Abandoned Mines (Dwarf Starter Dungeon)",
+        "category": "regular_dungeon",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Amber-Root Hollows (D05)",
+        "level_header": "Sap-Heart Abandoned Mines: lvl.10 [8-19]",
+        "level_band": [
+          8,
+          19
+        ],
+        "grid_sector": "20_22",
+        "loc_coord": "119400:-174200",
+        "l2_reference_analog": "Abandoned Coal Mines (Dwarven Village Dungeon)",
+        "race_or_seal_affinity": "god-the-architect",
+        "connected_zone_ids": [
+          "zone-town-root-train-roundhouse",
+          "zone-field-resin-arch-tunnel"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-dungeon-ceramic-resonator-crypt",
+        "studio_node_id": "dungeon-ceramic-resonator-crypt",
+        "name": "Ceramic Resonator School of Dark Arts (Dark-Lunar Starter Dungeon)",
+        "category": "regular_dungeon",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Terracotta Wind-Chimes (D07)",
+        "level_header": "Ceramic Resonator Crypt: lvl.10 [8-20]",
+        "level_band": [
+          8,
+          20
+        ],
+        "grid_sector": "18_22",
+        "loc_coord": "15200:19400",
+        "l2_reference_analog": "School of Dark Arts (Dark Elf Dungeon)",
+        "race_or_seal_affinity": "god-demon",
+        "connected_zone_ids": [
+          "zone-town-carillon-belfry",
+          "zone-field-chime-pipe-colonnade"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-dungeon-spice-kiln-cellar",
+        "studio_node_id": "dungeon-spice-kiln-cellar",
+        "name": "Spice-Kiln Nornil's Cave (Furral Starter Dungeon)",
+        "category": "regular_dungeon",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Cinnamon-Bellows Bluff (D09)",
+        "level_header": "Spice-Kiln Nornil's Cave: lvl.10 [8-20]",
+        "level_band": [
+          8,
+          20
+        ],
+        "grid_sector": "17_22",
+        "loc_coord": "-115400:49100",
+        "l2_reference_analog": "Nornil's Cave / Nornil's Garden (Kamael Dungeon)",
+        "race_or_seal_affinity": "god-legendary-beast",
+        "connected_zone_ids": [
+          "zone-town-cinnamon-mill",
+          "zone-field-cinnamon-bark-viaduct"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-dungeon-sunken-potter-hold",
+        "studio_node_id": "dungeon-sunken-potter-hold",
+        "name": "Sunken Potter Hold (Stage C Lv.20-25 River Raid Dungeon)",
+        "category": "regular_dungeon",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Glaze-River Delta (D04)",
+        "level_header": "Sunken Potter Hold: lvl.20 [18-25]",
+        "level_band": [
+          18,
+          25
+        ],
+        "grid_sector": "20_24",
+        "loc_coord": "-78400:149200",
+        "l2_reference_analog": "Forgotten Temple / The Ant Nest",
+        "race_or_seal_affinity": "god-leviathan",
+        "connected_zone_ids": [
+          "zone-town-glaze-barge-quay",
+          "zone-field-cobalt-sandbar-ford"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-dungeon-pendulum-shaft",
+        "studio_node_id": "dungeon-pendulum-shaft",
+        "name": "Pendulum Shaft Tower (Stage C/D Continent 02 Gateway Dungeon)",
+        "category": "regular_dungeon",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Rustcog Downs (D01)",
+        "level_header": "Pendulum Shaft Tower: lvl.22 [20-28]",
+        "level_band": [
+          20,
+          28
+        ],
+        "grid_sector": "21_20",
+        "loc_coord": "85400:144200",
+        "l2_reference_analog": "Cruma Tower (Multi-Party Mechanical Tower)",
+        "race_or_seal_affinity": "god-the-architect",
+        "connected_zone_ids": [
+          "zone-town-pinion-terminus",
+          "zone-field-brass-spur-ridge"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-dungeon-chronometer-foundry",
+        "studio_node_id": "dungeon-chronometer-foundry",
+        "name": "Chronometer Foundry Labyrinth (Stage D 2nd-Class Trial Dungeon)",
+        "category": "regular_dungeon",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Mainspring Caldera (D02)",
+        "level_header": "Chronometer Foundry Labyrinth: lvl.27 [25-32]",
+        "level_band": [
+          25,
+          32
+        ],
+        "grid_sector": "22_19",
+        "loc_coord": "84800:56400",
+        "l2_reference_analog": "Archaic Laboratory / Mithril Mines",
+        "race_or_seal_affinity": "god-the-architect",
+        "connected_zone_ids": [
+          "zone-town-escapement-anvil",
+          "zone-field-caldera-rim"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-dungeon-star-heart-nave",
+        "studio_node_id": "dungeon-star-heart-nave",
+        "name": "Star-Heart Tower of Insolence (Stage G-L 14-Floor Sky Spire)",
+        "category": "regular_dungeon",
+        "continent_id": "continent-03-shattered-halo",
+        "territory_name": "Crown-Lens Citadel (D04)",
+        "level_header": "Star-Heart Spire: lvl.55 [50-85]",
+        "level_band": [
+          50,
+          85
+        ],
+        "grid_sector": "18_12",
+        "loc_coord": "149200:28400",
+        "l2_reference_analog": "Tower of Insolence (1st\u201314th Floor) / Forge of the Gods",
+        "race_or_seal_affinity": "god-angel",
+        "connected_zone_ids": [
+          "zone-town-crown-beacon",
+          "zone-field-aurora-tether"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      }
+    ],
+    "seven_signs_seal_catacombs": [
+      {
+        "zone_id": "zone-catacomb-heretic-kiln",
+        "studio_node_id": "dungeon-nectar-glaze-vat",
+        "name": "Catacomb of the Heretic Kiln (God-Seal Necropolis I \u00b7 Lv.20-30)",
+        "category": "seal_catacomb_necropolis",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Saffron Orchard Basin (D08)",
+        "level_header": "Catacomb of the Heretic Kiln: lvl.20 [20-30]",
+        "level_band": [
+          20,
+          30
+        ],
+        "grid_sector": "18_21",
+        "loc_coord": "19800:173400",
+        "l2_reference_analog": "Necropolis of Sacrifice / Catacomb of the Heretic (Seven Signs)",
+        "race_or_seal_affinity": "god-demon",
+        "connected_zone_ids": [
+          "zone-town-saffron-press",
+          "zone-field-apricot-aqueduct-terrace"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-catacomb-branded-bellows",
+        "studio_node_id": "dungeon-ash-valve-vault",
+        "name": "Catacomb of the Branded Bellows (God-Seal Necropolis II \u00b7 Lv.30-40)",
+        "category": "seal_catacomb_necropolis",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Soot-Stack Highlands (D04)",
+        "level_header": "Catacomb of the Branded Bellows: lvl.30 [28-40]",
+        "level_band": [
+          28,
+          40
+        ],
+        "grid_sector": "23_18",
+        "loc_coord": "112400:18200",
+        "l2_reference_analog": "The Pilgrims Necropolis / Catacomb of the Branded (Seven Signs)",
+        "race_or_seal_affinity": "god-legendary-dragon",
+        "connected_zone_ids": [
+          "zone-town-escapement-anvil"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-catacomb-apostate-dynamo",
+        "studio_node_id": "dungeon-faraday-dynamo-vault",
+        "name": "Necropolis of Worship & Dynamo Seal (God-Seal Necropolis III \u00b7 Lv.35-45)",
+        "category": "seal_catacomb_necropolis",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Galvanic Ley-Spire (D05)",
+        "level_header": "Necropolis of Dynamo Worship: lvl.38 [35-45]",
+        "level_band": [
+          35,
+          45
+        ],
+        "grid_sector": "22_17",
+        "loc_coord": "149800:-51200",
+        "l2_reference_analog": "Necropolis of Worship / Catacomb of the Apostate (Seven Signs)",
+        "race_or_seal_affinity": "god-legendary-beast",
+        "connected_zone_ids": [
+          "zone-town-inductor-switchyard",
+          "zone-field-leyden-causeway"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-catacomb-witch-pendulum",
+        "studio_node_id": "dungeon-pendulum-sanctum",
+        "name": "Catacomb of the Astral Witch (God-Seal Necropolis IV \u00b7 Lv.40-50)",
+        "category": "seal_catacomb_necropolis",
+        "continent_id": "continent-03-shattered-halo",
+        "territory_name": "Zenith Refractory (D02)",
+        "level_header": "Catacomb of the Astral Witch: lvl.45 [40-52]",
+        "level_band": [
+          40,
+          52
+        ],
+        "grid_sector": "19_13",
+        "loc_coord": "54200:-34800",
+        "l2_reference_analog": "The Patriots Necropolis / Catacomb of the Witch (Seven Signs)",
+        "race_or_seal_affinity": "god-angel",
+        "connected_zone_ids": [
+          "zone-town-starfall-haven"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-catacomb-dark-omens-coral",
+        "studio_node_id": "dungeon-vesper-cradle",
+        "name": "Necropolis of Deep Devotion (God-Seal Necropolis V \u00b7 Lv.50-65)",
+        "category": "seal_catacomb_necropolis",
+        "continent_id": "continent-03-shattered-halo",
+        "territory_name": "Abyssal Undertide Reef (D03)",
+        "level_header": "Necropolis of Deep Devotion: lvl.55 [50-65]",
+        "level_band": [
+          50,
+          65
+        ],
+        "grid_sector": "18_13",
+        "loc_coord": "38400:-28900",
+        "l2_reference_analog": "Necropolis of Devotion / Catacomb of Dark Omens (Seven Signs)",
+        "race_or_seal_affinity": "god-leviathan",
+        "connected_zone_ids": [
+          "zone-town-starfall-haven"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-catacomb-forbidden-path-orrery",
+        "studio_node_id": "dungeon-submerged-orrery-keel",
+        "name": "Catacomb of the Forbidden Architect Path (God-Seal Necropolis VI \u00b7 Lv.70-99)",
+        "category": "seal_catacomb_necropolis",
+        "continent_id": "continent-03-shattered-halo",
+        "territory_name": "Perigee Plunge (D05)",
+        "level_header": "Catacomb of the Forbidden Path: lvl.80 [70-99]",
+        "level_band": [
+          70,
+          99
+        ],
+        "grid_sector": "17_12",
+        "loc_coord": "18400:-64200",
+        "l2_reference_analog": "The Disciples Necropolis / Catacomb of the Forbidden Path (Seven Signs)",
+        "race_or_seal_affinity": "god-the-architect",
+        "connected_zone_ids": [
+          "zone-town-crown-beacon"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      }
+    ],
+    "harbors_clanhalls_and_forts": [
+      {
+        "zone_id": "zone-harbor-lantern-ferry-pier",
+        "studio_node_id": "town-lantern-hollow",
+        "name": "Lantern Hollow South Ferry Harbor",
+        "category": "harbor",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Teacup Meadows (D01)",
+        "level_header": "Lantern Hollow Harbor: lvl.1 [1-15]",
+        "level_band": [
+          1,
+          15
+        ],
+        "grid_sector": "18_24",
+        "loc_coord": "-96200:258400",
+        "l2_reference_analog": "Talking Island Harbor",
+        "race_or_seal_affinity": "human_demi_human",
+        "connected_zone_ids": [
+          "zone-town-lantern-hollow",
+          "zone-town-glaze-barge-quay"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-harbor-glaze-barge-airship-dock",
+        "studio_node_id": "town-glaze-barge-quay",
+        "name": "Glaze-Barge Maritime & Airship Harbor",
+        "category": "harbor",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Glaze-River Delta (D04)",
+        "level_header": "Glaze-Barge Harbor: lvl.15 [10-30]",
+        "level_band": [
+          10,
+          30
+        ],
+        "grid_sector": "20_24",
+        "loc_coord": "-89400:155200",
+        "l2_reference_analog": "Gludin Harbor / Gludio Airship Harbor",
+        "race_or_seal_affinity": "all_races_convergence",
+        "connected_zone_ids": [
+          "zone-town-glaze-barge-quay",
+          "zone-town-starfall-haven"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-clanhall-kilnwatch-accord",
+        "studio_node_id": "town-kilnwatch-bastion",
+        "name": "Kilnwatch Bastion Guild Clan Halls (6-Race Accord Quarters)",
+        "category": "clan_hall",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Kilnfire Terraces (D06)",
+        "level_header": "Kilnwatch Clan Halls: lvl.10 [10-99]",
+        "level_band": [
+          10,
+          99
+        ],
+        "grid_sector": "20_23",
+        "loc_coord": "-13800:124100",
+        "l2_reference_analog": "Gludio / Dion / Giran Clan Halls",
+        "race_or_seal_affinity": "all_races_convergence",
+        "connected_zone_ids": [
+          "zone-town-kilnwatch-bastion"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-clanhall-inductor-conclave",
+        "studio_node_id": "town-inductor-switchyard",
+        "name": "Inductor Switchyard Blacksmith & Guild Clan Halls",
+        "category": "clan_hall",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Galvanic Ley-Spire (D05)",
+        "level_header": "Inductor Clan Halls: lvl.30 [30-99]",
+        "level_band": [
+          30,
+          99
+        ],
+        "grid_sector": "22_17",
+        "loc_coord": "148100:-54800",
+        "l2_reference_analog": "Goddard / Schuttgart Clan Halls",
+        "race_or_seal_affinity": "second_class_promotion",
+        "connected_zone_ids": [
+          "zone-town-inductor-switchyard"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-fortress-shanty-kiln",
+        "studio_node_id": "hunting-area-cinder-apron",
+        "name": "Cinder-Apron Borderland Fortress",
+        "category": "fortress",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Kilnfire Terraces (D06)",
+        "level_header": "Cinder-Apron Fortress: lvl.20 [15-30]",
+        "level_band": [
+          15,
+          30
+        ],
+        "grid_sector": "20_23",
+        "loc_coord": "-5200:134200",
+        "l2_reference_analog": "Shanty Fortress / Southern Fortress / Hive Fortress",
+        "race_or_seal_affinity": "all_races_convergence",
+        "connected_zone_ids": [
+          "zone-town-kilnwatch-bastion",
+          "zone-field-cinder-apron"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-fortress-floran-saffron",
+        "studio_node_id": "town-saffron-press-village",
+        "name": "Saffron Agricultural Fortress",
+        "category": "fortress",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Saffron Orchard Basin (D08)",
+        "level_header": "Saffron Fortress: lvl.18 [15-25]",
+        "level_band": [
+          15,
+          25
+        ],
+        "grid_sector": "18_21",
+        "loc_coord": "18100:168400",
+        "l2_reference_analog": "Floran Fortress",
+        "race_or_seal_affinity": "neutral_manor",
+        "connected_zone_ids": [
+          "zone-town-saffron-press"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-fortress-dragonspine-cog",
+        "studio_node_id": "hunting-area-brass-spur-ridge",
+        "name": "Brass-Spur Dragonspine Fortress",
+        "category": "fortress",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Rustcog Downs (D01)",
+        "level_header": "Brass-Spur Fortress: lvl.28 [25-40]",
+        "level_band": [
+          25,
+          40
+        ],
+        "grid_sector": "21_20",
+        "loc_coord": "91200:136800",
+        "l2_reference_analog": "Dragonspine Fortress / Antharas Fortress",
+        "race_or_seal_affinity": "clockwork_frontier",
+        "connected_zone_ids": [
+          "zone-town-pinion-terminus",
+          "zone-field-brass-spur-ridge"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      },
+      {
+        "zone_id": "zone-fortress-cloud-halo",
+        "studio_node_id": "town-starfall-haven",
+        "name": "Starfall Cloud-Mountain Fortress",
+        "category": "fortress",
+        "continent_id": "continent-03-shattered-halo",
+        "territory_name": "Star-Tether Atoll (D01)",
+        "level_header": "Starfall Fortress: lvl.50 [45-70]",
+        "level_band": [
+          45,
+          70
+        ],
+        "grid_sector": "19_14",
+        "loc_coord": "46200:-45100",
+        "l2_reference_analog": "Cloud Mountain Fortress / Monastic Fortress",
+        "race_or_seal_affinity": "sky_archipelago_hub",
+        "connected_zone_ids": [
+          "zone-town-starfall-haven",
+          "zone-field-tether-causeway"
+        ],
+        "t_depth_status": "t_breadth_indexed"
+      }
+    ]
+  },
+  "t_deep_validation_slice": {
+    "slice_rationale": "T-Depth Vertical Validation Cluster in District D01 (`district-teacup-meadows`, Grid Sector `18_24` on Continent 01). Rather than prematurely expanding all 167 studio nodes, we dig deep to 100% L2J.RU / L2Hub / PMFun database fidelity on ONE connected trio: (1) ONE Starting Town (`town-lantern-hollow` \u00b7 Lantern Hollow Village), (2) ONE Field Hunting Zone (`hunting-area-clover-south-gate` \u00b7 Clover South-Gate Meadow), (3) ONE Multi-Room Dungeon (`dungeon-kiln-cellar` \u00b7 Kiln Cellar Ruins), and (4) Full Mob Drop/Spoil Database Sheets (`Prairie Keltir`, `Feral Kiln-Hound`, `Discarded Kiln-Guardian Raid Boss`).",
+    "deep_town": {
+      "zone_id": "zone-town-lantern-hollow",
+      "studio_node_id": "town-lantern-hollow",
+      "header_title": "Lantern Hollow Village: lvl.1 [1-10]",
+      "continent_id": "continent-01-hearthbloom-basin",
+      "race_key": "human_demi_human",
+      "grid_sector": "18_24",
+      "loc_coord": "-84120:243500",
+      "l2_reference_url": "https://l2j.ru/graciafinal/index.php?p=24&t=3&id=49",
+      "dual_map_layers": {
+        "common_parchment_map": "Illustrated parchment map of Teacup Meadows showing Lantern Hollow Village in the central-east valley, Cedric's Vanguard Hall to the south-east, Einhovant's Seal-Magic School to the north-west, Lantern Harbor to the south-west, and Kiln Cellar Ruins to the north-west.",
+        "top_down_radar_map": "High-contrast top-down orthographic town blueprint with cobblestone ring-plaza, 4 guarded stone gates (North, East, South, West), red guard patrol pins, and color-coded service buildings."
+      },
+      "town_landmarks": [
+        {
+          "landmark_id": "lm-neutral-adventure-guild",
+          "name": "Neutral Adventure Guild Hall ('No Side' Commission Board)",
+          "function": "F-Tier Adventure Quest registration, newbie guide buffs, and Lv. 10 convergence charter to Kilnwatch Bastion.",
+          "map_xy_pct": [
+            50,
+            48
+          ]
+        },
+        {
+          "landmark_id": "lm-blacksmith-clan-forge",
+          "name": "Blacksmith Clan Anvil (Master Altran's Terracotta Forge)",
+          "function": "Smelts Clover-Iron Ore, Coal, and Varnish into Lv. 10 Apprentice Weapons (Broad Sword, Willow Staff, Short Bow).",
+          "map_xy_pct": [
+            64,
+            54
+          ]
+        },
+        {
+          "landmark_id": "lm-cedrics-warrior-hall",
+          "name": "Grand Master Bitz's Fighter Training Hall",
+          "function": "Human/Demi-Human Fighter initiate skills (Power Strike, Mortal Blow) and Lv. 10 Swordman/Thief/Tinker-Smith Job Quest referral.",
+          "map_xy_pct": [
+            68,
+            34
+          ]
+        },
+        {
+          "landmark_id": "lm-einhovant-magic-sanctum",
+          "name": "High Priest Biotin's Temple of the Architect Seal",
+          "function": "Mystic initiate skills (Wind Strike, Heal) and Lv. 10 Mage/Acolyte Job Quest referral.",
+          "map_xy_pct": [
+            34,
+            32
+          ]
+        },
+        {
+          "landmark_id": "lm-gatekeeper-obelisk",
+          "name": "Gatekeeper Roxxy's Seal-Warp Obelisk",
+          "function": "Teleports players to Clover South-Gate, Kiln-East Orchard, Kiln Cellar Ruins entrance, and Kilnwatch Bastion (Lv. 10+).",
+          "map_xy_pct": [
+            50,
+            58
+          ]
+        },
+        {
+          "landmark_id": "lm-warehouse-and-grocery",
+          "name": "Freightman Rant's Vault & Trader Silvia's Provision Shop",
+          "function": "Account/Clan warehouse storage, Minor Hearth-Herb Potions, Sweet Clover Sap, and Wooden Arrows.",
+          "map_xy_pct": [
+            36,
+            56
+          ]
+        }
+      ],
+      "gatekeeper_routes": [
+        {
+          "target_zone_id": "zone-field-clover-south-gate",
+          "target_name": "Clover South-Gate Meadow (South Hunting Field)",
+          "recommended_level": "Lv. 1\u201310",
+          "fee_adena": 0
+        },
+        {
+          "target_zone_id": "zone-field-kiln-east-orchard",
+          "target_name": "Kiln-East Glaze Orchard (East Farming & Highway)",
+          "recommended_level": "Lv. 5\u201312",
+          "fee_adena": 150
+        },
+        {
+          "target_zone_id": "zone-dungeon-kiln-cellar",
+          "target_name": "Kiln Cellar Ruins Entrance (North-West Dungeon)",
+          "recommended_level": "Lv. 9\u201320",
+          "fee_adena": 350
+        },
+        {
+          "target_zone_id": "zone-town-kilnwatch-bastion",
+          "target_name": "Town of Kilnwatch Bastion (All-Race Lv. 10\u201320 Convergence Hub)",
+          "recommended_level": "Lv. 10\u201320 (Free with Lv. 10 Class Charter)",
+          "fee_adena": 800
+        }
+      ],
+      "npc_and_guard_table": [
+        {
+          "npc_id": 30039,
+          "name": "[Captain] Gilbert (South Gate Commander)",
+          "entity_type": "Guard",
+          "level": 70,
+          "aggro": "No",
+          "race_key": "human_demi_human",
+          "race_badge": "Human Guard",
+          "hp_multiplier": "1x",
+          "protections": [
+            " Divine Seal Ward",
+            "Bow/Crossbow Resist"
+          ],
+          "weaknesses": [],
+          "spawn_count": 1,
+          "respawn_sec": 60,
+          "loc_coord": "-84100:244900"
+        },
+        {
+          "npc_id": 30040,
+          "name": "[Guard] Leon (East Orchard Gate)",
+          "entity_type": "Guard",
+          "level": 70,
+          "aggro": "No",
+          "race_key": "human_demi_human",
+          "race_badge": "Human Guard",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Divine Seal Ward"
+          ],
+          "weaknesses": [],
+          "spawn_count": 2,
+          "respawn_sec": 60,
+          "loc_coord": "-82400:243500"
+        },
+        {
+          "npc_id": 30041,
+          "name": "[Guard] Arnold (North Kiln-Ruins Gate)",
+          "entity_type": "Guard",
+          "level": 70,
+          "aggro": "No",
+          "race_key": "human_demi_human",
+          "race_badge": "Human Guard",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Divine Seal Ward"
+          ],
+          "weaknesses": [],
+          "spawn_count": 2,
+          "respawn_sec": 60,
+          "loc_coord": "-84120:241800"
+        },
+        {
+          "npc_id": 30598,
+          "name": "[Newbie Guide] Hearth-Scribe Mira",
+          "entity_type": "NPC",
+          "level": 70,
+          "aggro": "No",
+          "race_key": "human_demi_human",
+          "race_badge": "Accord Guide",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Invulnerable NPC"
+          ],
+          "weaknesses": [],
+          "spawn_count": 1,
+          "respawn_sec": 60,
+          "loc_coord": "-84050:243420"
+        },
+        {
+          "npc_id": 31775,
+          "name": "[Adventure Guildsman] Kaelen (Neutral 'No Side' Broker)",
+          "entity_type": "NPC",
+          "level": 70,
+          "aggro": "No",
+          "race_key": "human_demi_human",
+          "race_badge": "Adventure Guild",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Invulnerable NPC"
+          ],
+          "weaknesses": [],
+          "spawn_count": 1,
+          "respawn_sec": 60,
+          "loc_coord": "-83980:243310"
+        },
+        {
+          "npc_id": 30283,
+          "name": "[Blacksmith] Altran (Blacksmith Clan Anvil)",
+          "entity_type": "NPC",
+          "level": 70,
+          "aggro": "No",
+          "race_key": "dwarf",
+          "race_badge": "Blacksmith Clan",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Invulnerable NPC"
+          ],
+          "weaknesses": [],
+          "spawn_count": 1,
+          "respawn_sec": 60,
+          "loc_coord": "-83620:243780"
+        },
+        {
+          "npc_id": 30026,
+          "name": "[Grand Master] Bitz (Fighter Guild Master)",
+          "entity_type": "NPC",
+          "level": 70,
+          "aggro": "No",
+          "race_key": "human_demi_human",
+          "race_badge": "Fighter Master",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Invulnerable NPC"
+          ],
+          "weaknesses": [],
+          "spawn_count": 1,
+          "respawn_sec": 60,
+          "loc_coord": "-83410:242800"
+        },
+        {
+          "npc_id": 30031,
+          "name": "[High Priest] Biotin (Mystic & Seal-Ward Master)",
+          "entity_type": "NPC",
+          "level": 70,
+          "aggro": "No",
+          "race_key": "human_demi_human",
+          "race_badge": "Mystic Master",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Invulnerable NPC"
+          ],
+          "weaknesses": [],
+          "spawn_count": 1,
+          "respawn_sec": 60,
+          "loc_coord": "-84680:242710"
+        },
+        {
+          "npc_id": 30006,
+          "name": "[Gatekeeper] Roxxy (Seal-Resonance Teleporter)",
+          "entity_type": "NPC",
+          "level": 70,
+          "aggro": "No",
+          "race_key": "human_demi_human",
+          "race_badge": "Gatekeeper",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Invulnerable NPC"
+          ],
+          "weaknesses": [],
+          "spawn_count": 1,
+          "respawn_sec": 60,
+          "loc_coord": "-84120:243950"
+        },
+        {
+          "npc_id": 30001,
+          "name": "[Trader] Lector (Weapons &Starter System Equip)",
+          "entity_type": "NPC",
+          "level": 70,
+          "aggro": "No",
+          "race_key": "human_demi_human",
+          "race_badge": "Merchant",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Invulnerable NPC"
+          ],
+          "weaknesses": [],
+          "spawn_count": 1,
+          "respawn_sec": 60,
+          "loc_coord": "-84450:243620"
+        }
+      ]
+    },
+    "deep_field_zone": {
+      "zone_id": "zone-field-clover-south-gate",
+      "studio_node_id": "hunting-area-clover-south-gate",
+      "header_title": "Clover South-Gate Meadow: lvl.1 [1-12]",
+      "continent_id": "continent-01-hearthbloom-basin",
+      "grid_sector": "18_24",
+      "loc_coord": "72986:113330",
+      "l2_reference_url": "https://l2j.ru/graciafinal/index.php?p=24&t=1&id=243",
+      "dual_map_layers": {
+        "common_parchment_map": "Top-down parchment territory map of Teacup Meadows showing Lantern Hollow Village at the north gate, the Royal Clover Highway running north-south, West Watchtower Hill, East Crystal-Clay Outcrop, and red monster spawn clusters.",
+        "top_down_radar_map": "Orthographic satellite terrain radar map with terraced clover pastures (<=0.25m step cap), clear road spline, and dense red spawn dots for Lv. 1\u201312 monsters."
+      },
+      "sub_areas_and_red_pins": [
+        {
+          "sub_area_id": "sub-south-gate-apron",
+          "name": "South-Gate Clover Apron (Lv. 1\u20133 Passive Tutorial Belt)",
+          "level_range": "Lv. 1\u20133",
+          "loc_coord": "72986:113330",
+          "map_xy_pct": [
+            50,
+            26
+          ],
+          "primary_mobs": [
+            "Grey Elpy",
+            "Young Prairie Keltir",
+            "Prairie Keltir"
+          ]
+        },
+        {
+          "sub_area_id": "sub-west-watchtower-knoll",
+          "name": "West Watchtower Wolf Knoll (Lv. 4\u20136 Pack Hunting Belt)",
+          "level_range": "Lv. 4\u20136",
+          "loc_coord": "71420:115800",
+          "map_xy_pct": [
+            28,
+            52
+          ],
+          "primary_mobs": [
+            "Dominant Prairie Keltir",
+            "Feral Kiln-Hound",
+            "Elder Black Wolf"
+          ]
+        },
+        {
+          "sub_area_id": "sub-east-clay-quarry",
+          "name": "East Terracotta Clay Pit (Lv. 6\u20139 Crafting Material Belt)",
+          "level_range": "Lv. 6\u20139",
+          "loc_coord": "74890:116200",
+          "map_xy_pct": [
+            72,
+            56
+          ],
+          "primary_mobs": [
+            "Glaze-Shell Beetle",
+            "Soot-Imp Forager",
+            "Cracked Clay Golem"
+          ]
+        },
+        {
+          "sub_area_id": "sub-north-west-ruins-approach",
+          "name": "Kiln Cellar Ruins Approach & Gatekeeper Post (Lv. 8\u201312)",
+          "level_range": "Lv. 8\u201312",
+          "loc_coord": "75410:116820",
+          "map_xy_pct": [
+            76,
+            82
+          ],
+          "primary_mobs": [
+            "Renegade Ash-Orc Scout",
+            "Shard-Stalker Spider",
+            "[Field Mini-Boss] Captain Vargos"
+          ]
+        }
+      ],
+      "spawn_table": [
+        {
+          "npc_id": 32176,
+          "name": "[Marksman] Ambra (South Gate Outpost Sentry)",
+          "entity_type": "Guard",
+          "level": 70,
+          "aggro": "No",
+          "race_key": "human_demi_human",
+          "race_badge": "Human Guard",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Divine Seal Ward"
+          ],
+          "weaknesses": [],
+          "spawn_count": 2,
+          "respawn_sec": 60,
+          "loc_coord": "72950:112900"
+        },
+        {
+          "npc_id": 32175,
+          "name": "[Marksman] Bixon (Watchtower Road Sentry)",
+          "entity_type": "Guard",
+          "level": 70,
+          "aggro": "No",
+          "race_key": "human_demi_human",
+          "race_badge": "Human Guard",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Divine Seal Ward"
+          ],
+          "weaknesses": [],
+          "spawn_count": 2,
+          "respawn_sec": 60,
+          "loc_coord": "71800:114500"
+        },
+        {
+          "npc_id": 22228,
+          "name": "Grey Elpy (Clover Field Hare)",
+          "entity_type": "Monster",
+          "level": 1,
+          "aggro": "No",
+          "race_key": "beast_animal_brute",
+          "race_badge": "Animals",
+          "hp_multiplier": "1x",
+          "protections": [],
+          "weaknesses": [
+            "Wind/Fire Vulnerable"
+          ],
+          "spawn_count": 28,
+          "respawn_sec": 15,
+          "loc_coord": "72986:113330"
+        },
+        {
+          "npc_id": 20535,
+          "name": "Prairie Keltir (Clover Fox)",
+          "entity_type": "Monster",
+          "level": 2,
+          "aggro": "No",
+          "race_key": "beast_animal_brute",
+          "race_badge": "Animals",
+          "hp_multiplier": "1x",
+          "protections": [],
+          "weaknesses": [],
+          "spawn_count": 32,
+          "respawn_sec": 18,
+          "loc_coord": "73120:113850"
+        },
+        {
+          "npc_id": 22231,
+          "name": "Dominant Prairie Keltir",
+          "entity_type": "Monster",
+          "level": 3,
+          "aggro": "No",
+          "race_key": "beast_animal_brute",
+          "race_badge": "Animals",
+          "hp_multiplier": "1x",
+          "protections": [],
+          "weaknesses": [],
+          "spawn_count": 22,
+          "respawn_sec": 20,
+          "loc_coord": "72600:114600"
+        },
+        {
+          "npc_id": 20317,
+          "name": "Feral Kiln-Hound (Black Wolf)",
+          "entity_type": "Monster",
+          "level": 4,
+          "aggro": "No",
+          "race_key": "beast_animal_brute",
+          "race_badge": "Animals",
+          "hp_multiplier": "1x",
+          "protections": [],
+          "weaknesses": [
+            "Blunt/Fire Weak"
+          ],
+          "spawn_count": 24,
+          "respawn_sec": 25,
+          "loc_coord": "71420:115800"
+        },
+        {
+          "npc_id": 22233,
+          "name": "Dominant Kiln-Hound Alpha",
+          "entity_type": "Monster",
+          "level": 5,
+          "aggro": "Yes",
+          "race_key": "beast_animal_brute",
+          "race_badge": "Animals",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Physical Def Lv.1"
+          ],
+          "weaknesses": [
+            "Fire Weak"
+          ],
+          "spawn_count": 16,
+          "respawn_sec": 30,
+          "loc_coord": "71100:116300"
+        },
+        {
+          "npc_id": 20460,
+          "name": "Glaze-Shell Beetle (Porcelain Carapace)",
+          "entity_type": "Monster",
+          "level": 6,
+          "aggro": "No",
+          "race_key": "insect_arachnia",
+          "race_badge": "Bugs",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Bow/Dagger Resist Lv.2"
+          ],
+          "weaknesses": [
+            "Blunt/Crush Weak"
+          ],
+          "spawn_count": 20,
+          "respawn_sec": 30,
+          "loc_coord": "74890:116200"
+        },
+        {
+          "npc_id": 20378,
+          "name": "Cracked Terracotta Golem",
+          "entity_type": "Monster",
+          "level": 8,
+          "aggro": "No",
+          "race_key": "robotic",
+          "race_badge": "Magic Creatures / Construct",
+          "hp_multiplier": "2x",
+          "protections": [
+            "Bow/Crossbow Resist Lv.3",
+            "Bleed/Poison Immune"
+          ],
+          "weaknesses": [
+            "Blunt/Hammer Weak"
+          ],
+          "spawn_count": 14,
+          "respawn_sec": 45,
+          "loc_coord": "75200:116500"
+        },
+        {
+          "npc_id": 22240,
+          "name": "Renegade Ash-Orc Scout (Muertos Scout)",
+          "entity_type": "Monster",
+          "level": 9,
+          "aggro": "Yes",
+          "race_key": "ogre_orc",
+          "race_badge": "Humanoids (Ogre/Orc)",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Fire Resist Lv.1"
+          ],
+          "weaknesses": [
+            "Water/Ice Weak"
+          ],
+          "spawn_count": 18,
+          "respawn_sec": 35,
+          "loc_coord": "75350:116750"
+        },
+        {
+          "npc_id": 27016,
+          "name": "[Field Mini-Boss] Captain Vargos the Ash-Brand (Stage A Lv.10 Gatekeeper)",
+          "entity_type": "Mini-Boss",
+          "level": 10,
+          "aggro": "Yes",
+          "race_key": "ogre_orc",
+          "race_badge": "Humanoids (Ogre/Orc)",
+          "hp_multiplier": "4x",
+          "protections": [
+            "Fire Resist Lv.2",
+            "Knockback Immune"
+          ],
+          "weaknesses": [
+            "Water/Holy Weak"
+          ],
+          "spawn_count": 1,
+          "respawn_sec": 180,
+          "loc_coord": "75410:116820"
+        }
+      ]
+    },
+    "deep_dungeon": {
+      "zone_id": "zone-dungeon-kiln-cellar",
+      "studio_node_id": "dungeon-kiln-cellar",
+      "header_title": "Kiln Cellar Ruins (Elven Ruins Analog): lvl.9 [9-22]",
+      "continent_id": "continent-01-hearthbloom-basin",
+      "grid_sector": "18_24",
+      "loc_coord": "75410:116820",
+      "l2_reference_url": "https://l2j.ru/graciafinal/index.php?p=24&t=2&id=53",
+      "side_by_side_map_spec": {
+        "left_overland_entrance_map": "Overland Teacup Meadows map with a red X pin at `loc=75410:116820` marking the spiral stone staircase descending into Kiln Cellar Ruins northwest of Lantern Hollow.",
+        "right_underground_corridor_map": "Top-down underground B1 corridor blueprint showing the Entry Spiral Ramp, the Outer Skeleton Gallery (Lv. 9\u201313), the Flooded Undine & Salamander Kiln Cisterns (Lv. 14\u201318), and the Inner Seal-Core Rotunda (Lv. 18\u201322 Raid Boss Chamber)."
+      },
+      "dungeon_rooms": [
+        {
+          "room_id": "room-01-vestibule-gallery",
+          "name": "Room 1 \u00b7 Outer Terracotta Vestibule & Bat Gallery",
+          "level_range": "Lv. 9\u201312",
+          "key_mobs": [
+            "Relic Werewolf",
+            "Monster Eye Watcher",
+            "Vampire Kiln-Bat",
+            "Drill Bat"
+          ],
+          "map_xy_pct": [
+            22,
+            48
+          ]
+        },
+        {
+          "room_id": "room-02-ossuary-corridors",
+          "name": "Room 2 \u00b7 Sunken Potter Ossuary & Skeleton Halls",
+          "level_range": "Lv. 12\u201315",
+          "key_mobs": [
+            "Kiln Skeleton",
+            "Skeleton Marksman",
+            "Stone Kiln-Giant",
+            "Skeleton Lord"
+          ],
+          "map_xy_pct": [
+            46,
+            36
+          ]
+        },
+        {
+          "room_id": "room-03-elemental-flue-chambers",
+          "name": "Room 3 \u00b7 Dual Elemental Flue Chambers (Salamander Fire & Undine Water)",
+          "level_range": "Lv. 16\u201319",
+          "key_mobs": [
+            "Cave Blade Spider",
+            "Kiln Salamander",
+            "Glaze Undine",
+            "Salamander Elder",
+            "Undine Noble"
+          ],
+          "map_xy_pct": [
+            68,
+            58
+          ]
+        },
+        {
+          "room_id": "room-04-inner-seal-rotunda",
+          "name": "Room 4 \u00b7 Inner Dragon-Seal Sanctum (Stage B/C Party Raid Boss Chamber)",
+          "level_range": "Lv. 19\u201322",
+          "key_mobs": [
+            "Dre Vanul Seal-Breaker",
+            "[Quest Monster] Nahir the Flue-Horror",
+            "[Raid Boss] Discarded Kiln-Guardian (Lv. 20)"
+          ],
+          "map_xy_pct": [
+            86,
+            48
+          ]
+        }
+      ],
+      "spawn_table": [
+        {
+          "npc_id": 30427,
+          "name": "[Gatekeeper] Siff (Dungeon Entrance Teleporter)",
+          "entity_type": "NPC",
+          "level": 70,
+          "aggro": "No",
+          "race_key": "human_demi_human",
+          "race_badge": "Gatekeeper",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Invulnerable NPC"
+          ],
+          "weaknesses": [],
+          "spawn_count": 1,
+          "respawn_sec": 60,
+          "loc_coord": "48550:248400"
+        },
+        {
+          "npc_id": 20450,
+          "name": "Relic Werewolf (Glaze-Ruins Lycan)",
+          "entity_type": "Monster",
+          "level": 9,
+          "aggro": "No",
+          "race_key": "beast_animal_brute",
+          "race_badge": "Humanoids / Brute",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Physical Atk Lv.1"
+          ],
+          "weaknesses": [
+            "Fire Weak"
+          ],
+          "spawn_count": 18,
+          "respawn_sec": 35,
+          "loc_coord": "48720:247900"
+        },
+        {
+          "npc_id": 20092,
+          "name": "Monster Eye Watcher",
+          "entity_type": "Monster",
+          "level": 10,
+          "aggro": "No",
+          "race_key": "robotic",
+          "race_badge": "Magic Creatures",
+          "hp_multiplier": "1x",
+          "protections": [
+            "M.Def Lv.2"
+          ],
+          "weaknesses": [
+            "Bow/Physical Weak"
+          ],
+          "spawn_count": 16,
+          "respawn_sec": 35,
+          "loc_coord": "48900:247500"
+        },
+        {
+          "npc_id": 20097,
+          "name": "Drill Bat (Cinder-Wing Bat)",
+          "entity_type": "Monster",
+          "level": 11,
+          "aggro": "No",
+          "race_key": "beast_animal_brute",
+          "race_badge": "Animals",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Evasion Lv.2"
+          ],
+          "weaknesses": [
+            "Bow/Wind Weak",
+            "Blunt Weak"
+          ],
+          "spawn_count": 22,
+          "respawn_sec": 30,
+          "loc_coord": "49120:247100"
+        },
+        {
+          "npc_id": 20099,
+          "name": "Kiln Skeleton",
+          "entity_type": "Monster",
+          "level": 12,
+          "aggro": "Yes",
+          "race_key": "undead",
+          "race_badge": "Undead",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Bow/Dagger Resist Lv.3",
+            "Dark Resist"
+          ],
+          "weaknesses": [
+            "Holy Weak",
+            "Blunt Weak"
+          ],
+          "spawn_count": 24,
+          "respawn_sec": 40,
+          "loc_coord": "49400:246600"
+        },
+        {
+          "npc_id": 20362,
+          "name": "Tunath Ash-Orc Warrior",
+          "entity_type": "Monster",
+          "level": 12,
+          "aggro": "Yes",
+          "race_key": "ogre_orc",
+          "race_badge": "Humanoids",
+          "hp_multiplier": "1x",
+          "protections": [
+            "P.Def Lv.2"
+          ],
+          "weaknesses": [],
+          "spawn_count": 18,
+          "respawn_sec": 40,
+          "loc_coord": "49650:246200"
+        },
+        {
+          "npc_id": 20100,
+          "name": "Skeleton Archer",
+          "entity_type": "Monster",
+          "level": 13,
+          "aggro": "Yes",
+          "race_key": "undead",
+          "race_badge": "Undead",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Bow/Dagger Resist Lv.3",
+            "Dark Resist"
+          ],
+          "weaknesses": [
+            "Holy Weak",
+            "Blunt Weak"
+          ],
+          "spawn_count": 20,
+          "respawn_sec": 45,
+          "loc_coord": "49900:245800"
+        },
+        {
+          "npc_id": 20378,
+          "name": "Stone Kiln-Giant",
+          "entity_type": "Monster",
+          "level": 13,
+          "aggro": "No",
+          "race_key": "robotic",
+          "race_badge": "Giants / Construct",
+          "hp_multiplier": "2x",
+          "protections": [
+            "Bow/Crossbow Resist Lv.4",
+            "Poison/Bleed Immune"
+          ],
+          "weaknesses": [
+            "Blunt/Hammer Weak",
+            "Earth Weak"
+          ],
+          "spawn_count": 12,
+          "respawn_sec": 50,
+          "loc_coord": "50200:245400"
+        },
+        {
+          "npc_id": 20104,
+          "name": "Skeleton Lord",
+          "entity_type": "Monster",
+          "level": 15,
+          "aggro": "No",
+          "race_key": "undead",
+          "race_badge": "Undead",
+          "hp_multiplier": "2x",
+          "protections": [
+            "Bow Resist Lv.3",
+            "Dark Attack"
+          ],
+          "weaknesses": [
+            "Holy Weak",
+            "Blunt Weak"
+          ],
+          "spawn_count": 10,
+          "respawn_sec": 60,
+          "loc_coord": "50600:244900"
+        },
+        {
+          "npc_id": 20462,
+          "name": "Cave Blade Spider",
+          "entity_type": "Monster",
+          "level": 17,
+          "aggro": "Yes",
+          "race_key": "insect_arachnia",
+          "race_badge": "Bugs / Arachnia",
+          "hp_multiplier": "1x",
+          "protections": [
+            "Poison Attack"
+          ],
+          "weaknesses": [
+            "Fire Weak",
+            "Blunt Weak"
+          ],
+          "spawn_count": 16,
+          "respawn_sec": 45,
+          "loc_coord": "51100:244400"
+        },
+        {
+          "npc_id": 20109,
+          "name": "Kiln Salamander (Fire Elemental)",
+          "entity_type": "Monster",
+          "level": 17,
+          "aggro": "No",
+          "race_key": "robotic",
+          "race_badge": "Spirits (Fire)",
+          "hp_multiplier": "2x",
+          "protections": [
+            "Fire Resist 100%",
+            "Reinforced HP (2x)"
+          ],
+          "weaknesses": [
+            "Water/Ice Vulnerable"
+          ],
+          "spawn_count": 14,
+          "respawn_sec": 55,
+          "loc_coord": "51500:243900"
+        },
+        {
+          "npc_id": 20110,
+          "name": "Glaze Undine (Water Elemental)",
+          "entity_type": "Monster",
+          "level": 17,
+          "aggro": "Yes",
+          "race_key": "fish",
+          "race_badge": "Spirits (Water)",
+          "hp_multiplier": "2x",
+          "protections": [
+            "Water Resist 100%",
+            "Reinforced HP (2x)"
+          ],
+          "weaknesses": [
+            "Wind/Earth Vulnerable"
+          ],
+          "spawn_count": 14,
+          "respawn_sec": 55,
+          "loc_coord": "51800:243600"
+        },
+        {
+          "npc_id": 20114,
+          "name": "Salamander Noble",
+          "entity_type": "Monster",
+          "level": 19,
+          "aggro": "Yes",
+          "race_key": "robotic",
+          "race_badge": "Spirits (Fire)",
+          "hp_multiplier": "2x",
+          "protections": [
+            "Fire Resist 100%",
+            "M.Def Lv.3"
+          ],
+          "weaknesses": [
+            "Water Vulnerable"
+          ],
+          "spawn_count": 8,
+          "respawn_sec": 65,
+          "loc_coord": "52200:243200"
+        },
+        {
+          "npc_id": 20118,
+          "name": "Dre Vanul Scout (Minion of Discarded Guardian)",
+          "entity_type": "Minion",
+          "level": 21,
+          "aggro": "Yes",
+          "race_key": "dark_lunar",
+          "race_badge": "Demons / Minion",
+          "hp_multiplier": "2x",
+          "protections": [
+            "Dark Resist Lv.3",
+            "P.Def Lv.3"
+          ],
+          "weaknesses": [
+            "Holy Vulnerable"
+          ],
+          "spawn_count": 4,
+          "respawn_sec": 300,
+          "loc_coord": "52750:242800"
+        },
+        {
+          "npc_id": 25372,
+          "name": "[Raid Boss] Discarded Kiln-Guardian (Rank 3 Warden \u00b7 Subordinate to MVP Volcanor)",
+          "entity_type": "RaidBoss",
+          "level": 20,
+          "aggro": "Yes",
+          "race_key": "robotic",
+          "race_badge": "RaidBoss (Construct)",
+          "hp_multiplier": "RaidBoss (12x)",
+          "protections": [
+            "Fire/Earth Seal Ward",
+            "Stun/Sleep/Hold Immune"
+          ],
+          "weaknesses": [
+            "Water/Blunt Crush Weak"
+          ],
+          "spawn_count": 1,
+          "respawn_sec": 43200,
+          "loc_coord": "52800:242750"
+        }
+      ]
+    },
+    "deep_mob_database": [
+      {
+        "npc_id": 20535,
+        "name": "Prairie Keltir",
+        "level": 2,
+        "mob_class": "Lv. 2 L2Monster male",
+        "race_key": "beast_animal_brute",
+        "race_passive_label": "Animals Lv.4",
+        "behavior_mode": "Passive (Social: Yes)",
+        "lore_description": "These general clover-meadow fox-animals are hunted by novice initiates outside Lantern Hollow and Draft-Kiln Post. They never attack first, but nearby packmates will assist if one is struck.",
+        "l2_reference_url": "https://l2j.ru/graciafinal/index.php?p=1&id=20535",
+        "stats": {
+          "hp": 75,
+          "mp": 138,
+          "exp": 70,
+          "sp": 2,
+          "hp_reg": 3.16,
+          "mp_reg": 0.91
+        },
+        "combat": {
+          "p_atk": 10,
+          "p_def": 42,
+          "m_atk": 3,
+          "m_def": 34,
+          "atk_spd": 278,
+          "cast_spd": 333,
+          "walk_spd": 23,
+          "run_spd": 110
+        },
+        "basic_attributes": {
+          "STR": 40,
+          "INT": 21,
+          "DEX": 30,
+          "WIT": 20,
+          "CON": 43,
+          "MEN": 10
+        },
+        "social": {
+          "aggro": "No",
+          "social": "Yes",
+          "undead": "No",
+          "atk_range": 40,
+          "soul_crystal_lv": "-",
+          "soul_crystal_type": "-"
+        },
+        "inhabits_in_zones": [
+          {
+            "zone_id": "zone-field-clover-south-gate",
+            "zone_name": "Clover South-Gate Meadow (72986:113330)"
+          },
+          {
+            "zone_id": "zone-town-lantern-hollow",
+            "zone_name": "Lantern Hollow Outskirts (-84120:243500)"
+          }
+        ],
+        "drop_groups": [
+          {
+            "group_index": 0,
+            "group_title": "Group 0 (Adena Currency)",
+            "group_chance_label": "100%",
+            "items": [
+              {
+                "item_id": 57,
+                "name": "Adena",
+                "min": 8,
+                "max": 13,
+                "chance_fraction": "1/1",
+                "chance_pct": 100.0
+              }
+            ]
+          },
+          {
+            "group_index": 1,
+            "group_title": "Group 1 (Novice Apprentice Apparel)",
+            "group_chance_label": "1/6 (16.37%)",
+            "items": [
+              {
+                "item_id": 28,
+                "name": "Apprentice Linen Pants",
+                "min": 1,
+                "max": 1,
+                "chance_fraction": "1/10",
+                "chance_pct": 10.0665
+              },
+              {
+                "item_id": 21,
+                "name": "Apprentice Linen Shirt",
+                "min": 1,
+                "max": 1,
+                "chance_fraction": "1/16",
+                "chance_pct": 6.3005
+              }
+            ]
+          },
+          {
+            "group_index": 2,
+            "group_title": "Group 2 (Blacksmith Clan Materials & Lv.10 Weapon Recipe)",
+            "group_chance_label": "1/6 (18.06%)",
+            "items": [
+              {
+                "item_id": 17,
+                "name": "Wooden Arrow",
+                "min": 10,
+                "max": 30,
+                "chance_fraction": "1/9",
+                "chance_pct": 11.5765
+              },
+              {
+                "item_id": 1865,
+                "name": "Kiln Varnish",
+                "min": 1,
+                "max": 1,
+                "chance_fraction": "1/43",
+                "chance_pct": 2.3155
+              },
+              {
+                "item_id": 1870,
+                "name": "Charred Kiln Coal",
+                "min": 1,
+                "max": 1,
+                "chance_fraction": "1/43",
+                "chance_pct": 2.3155
+              },
+              {
+                "item_id": 1786,
+                "name": "Recipe: Broad Sword (Lv.10 Weapon)",
+                "min": 1,
+                "max": 1,
+                "chance_fraction": "1/54",
+                "chance_pct": 1.8525
+              }
+            ]
+          }
+        ],
+        "spoil_table": [
+          {
+            "item_id": 36,
+            "name": "Leather Sandals",
+            "min": 1,
+            "max": 1,
+            "chance_pct": 48.4205
+          },
+          {
+            "item_id": 1867,
+            "name": "Animal Skin",
+            "min": 1,
+            "max": 1,
+            "chance_pct": 11.9435
+          },
+          {
+            "item_id": 1787,
+            "name": "Recipe: Willow Staff (Lv.10 Mystic Weapon)",
+            "min": 1,
+            "max": 1,
+            "chance_pct": 7.166
+          }
+        ]
+      },
+      {
+        "npc_id": 20109,
+        "name": "Kiln Salamander (Fire Elemental)",
+        "level": 17,
+        "mob_class": "Lv. 17 L2Monster (2x HP Reinforced)",
+        "race_key": "robotic",
+        "race_passive_label": "Spirits (Fire) Lv.9",
+        "behavior_mode": "Passive (Social: Yes \u00b7 Fire AoE Burst)",
+        "lore_description": "Elemental fire lizards born from the leaking Dragon-Seal flues on B1 of the Kiln Cellar Ruins. Sought after by Lv. 15\u201320 Kilnwatch parties for their Flame-Glaze Cores and Lv. 20 weapon recipes.",
+        "l2_reference_url": "https://l2j.ru/graciafinal/index.php?p=24&t=2&id=53",
+        "stats": {
+          "hp": 960,
+          "mp": 295,
+          "exp": 1140,
+          "sp": 58,
+          "hp_reg": 6.5,
+          "mp_reg": 1.8
+        },
+        "combat": {
+          "p_atk": 68,
+          "p_def": 92,
+          "m_atk": 45,
+          "m_def": 78,
+          "atk_spd": 278,
+          "cast_spd": 333,
+          "walk_spd": 40,
+          "run_spd": 145
+        },
+        "basic_attributes": {
+          "STR": 40,
+          "INT": 25,
+          "DEX": 30,
+          "WIT": 20,
+          "CON": 43,
+          "MEN": 20
+        },
+        "social": {
+          "aggro": "No",
+          "social": "Yes",
+          "undead": "No",
+          "atk_range": 40,
+          "soul_crystal_lv": "Lv. 1\u20132",
+          "soul_crystal_type": "Step / Chance"
+        },
+        "inhabits_in_zones": [
+          {
+            "zone_id": "zone-dungeon-kiln-cellar",
+            "zone_name": "Kiln Cellar Ruins \u2014 Room 3 Elemental Flue Chambers (51500:243900)"
+          }
+        ],
+        "drop_groups": [
+          {
+            "group_index": 0,
+            "group_title": "Group 0 (Adena Currency)",
+            "group_chance_label": "100%",
+            "items": [
+              {
+                "item_id": 57,
+                "name": "Adena",
+                "min": 145,
+                "max": 290,
+                "chance_fraction": "1/1",
+                "chance_pct": 100.0
+              }
+            ]
+          },
+          {
+            "group_index": 1,
+            "group_title": "Group 1 (Stage B/C 1st-Class Weapon & Armor Drops)",
+            "group_chance_label": "1/12 (8.33%)",
+            "items": [
+              {
+                "item_id": 125,
+                "name": "Kiln-Tempered Sabre (Lv.15-20 Weapon)",
+                "min": 1,
+                "max": 1,
+                "chance_fraction": "1/180",
+                "chance_pct": 0.555
+              },
+              {
+                "item_id": 1104,
+                "name": "Glaze-Scale Gaiters",
+                "min": 1,
+                "max": 1,
+                "chance_fraction": "1/64",
+                "chance_pct": 1.5625
+              }
+            ]
+          },
+          {
+            "group_index": 2,
+            "group_title": "Group 2 (Blacksmith Six-Anvil Smelting Materials)",
+            "group_chance_label": "1/4 (25.0%)",
+            "items": [
+              {
+                "item_id": 1869,
+                "name": "Iron Ore",
+                "min": 1,
+                "max": 3,
+                "chance_fraction": "1/8",
+                "chance_pct": 12.5
+              },
+              {
+                "item_id": 1878,
+                "name": "Durable Kiln-Braided Hemp",
+                "min": 1,
+                "max": 1,
+                "chance_fraction": "1/14",
+                "chance_pct": 7.14
+              },
+              {
+                "item_id": 4039,
+                "name": "Mold Glue (Six-Anvil Alloy Binder)",
+                "min": 1,
+                "max": 1,
+                "chance_fraction": "1/28",
+                "chance_pct": 3.57
+              }
+            ]
+          }
+        ],
+        "spoil_table": [
+          {
+            "item_id": 1880,
+            "name": "Refined Kiln Steel",
+            "min": 1,
+            "max": 1,
+            "chance_pct": 18.75
+          },
+          {
+            "item_id": 2184,
+            "name": "Recipe: Glaze-Bastard Sword (Lv.20 Weapon)",
+            "min": 1,
+            "max": 1,
+            "chance_pct": 4.25
+          }
+        ]
+      },
+      {
+        "npc_id": 25372,
+        "name": "[Raid Boss] Discarded Kiln-Guardian",
+        "level": 20,
+        "mob_class": "Lv. 20 L2RaidBoss (Rank 3 Catacomb Warden)",
+        "race_key": "robotic",
+        "race_passive_label": "RaidBoss \u00b7 Magic Construct (Subordinate to MVP Volcanor)",
+        "behavior_mode": "Aggressive Raid Boss (4 Minions: Dre Vanul Scouts)",
+        "lore_description": "An ancient Chapter 1.3 God-War siege automaton sealed inside the deepest rotunda of Kiln Cellar Ruins. Strictly subordinate in the Boss Hierarchy to MVP Apostle Volcanor (GOD_SEALED > MVP_GOD_SUBORDINATE > RAID_BOSS), it serves as the first 6-player cross-race party Raid Boss milestone at Level 20\u201325 (Stage C).",
+        "l2_reference_url": "https://l2j.ru/graciafinal/index.php?p=24&t=2&id=53",
+        "stats": {
+          "hp": 48500,
+          "mp": 1800,
+          "exp": 42000,
+          "sp": 3800,
+          "hp_reg": 85.0,
+          "mp_reg": 18.0
+        },
+        "combat": {
+          "p_atk": 310,
+          "p_def": 420,
+          "m_atk": 195,
+          "m_def": 310,
+          "atk_spd": 253,
+          "cast_spd": 333,
+          "walk_spd": 45,
+          "run_spd": 160
+        },
+        "basic_attributes": {
+          "STR": 60,
+          "INT": 44,
+          "DEX": 30,
+          "WIT": 40,
+          "CON": 75,
+          "MEN": 60
+        },
+        "social": {
+          "aggro": "Yes",
+          "social": "Yes (Calls 4 Dre Vanul Minions)",
+          "undead": "No",
+          "atk_range": 80,
+          "soul_crystal_lv": "Lv. 3\u20134 (Party Resonance)",
+          "soul_crystal_type": "All Party Members"
+        },
+        "inhabits_in_zones": [
+          {
+            "zone_id": "zone-dungeon-kiln-cellar",
+            "zone_name": "Kiln Cellar Ruins \u2014 Room 4 Inner Seal Rotunda (52800:242750)"
+          }
+        ],
+        "drop_groups": [
+          {
+            "group_index": 0,
+            "group_title": "Group 0 (Raid Boss Weapon Cores & Lv.20 Masterwork Arms)",
+            "group_chance_label": "100% (1\u20132 Drops)",
+            "items": [
+              {
+                "item_id": 2499,
+                "name": "Elven Long Sword / Kiln-Guardian Claymore (Lv.20 Raid Weapon)",
+                "min": 1,
+                "max": 1,
+                "chance_fraction": "1/3",
+                "chance_pct": 33.33
+              },
+              {
+                "item_id": 189,
+                "name": "Staff of Life / Seal-Mender Crozier (Lv.20 Raid Staff)",
+                "min": 1,
+                "max": 1,
+                "chance_fraction": "1/3",
+                "chance_pct": 33.33
+              },
+              {
+                "item_id": 9101,
+                "name": "Discarded Guardian Warden Alloy Core (Blacksmith Lv.20 Set Core)",
+                "min": 2,
+                "max": 4,
+                "chance_fraction": "1/1",
+                "chance_pct": 100.0
+              }
+            ]
+          },
+          {
+            "group_index": 1,
+            "group_title": "Group 1 (D-Grade / Lv.20 Armor Set & Enchant Scrolls)",
+            "group_chance_label": "100%",
+            "items": [
+              {
+                "item_id": 395,
+                "name": "Manticore Skin Shirt / Kiln-Brigandine Tunic (Lv.20)",
+                "min": 1,
+                "max": 2,
+                "chance_fraction": "1/2",
+                "chance_pct": 50.0
+              },
+              {
+                "item_id": 955,
+                "name": "Scroll: Enchant Weapon (D-Tier / Lv.20)",
+                "min": 1,
+                "max": 2,
+                "chance_fraction": "1/2",
+                "chance_pct": 50.0
+              }
+            ]
+          }
+        ],
+        "spoil_table": [
+          {
+            "item_id": 956,
+            "name": "Scroll: Enchant Armor (D-Tier / Lv.20)",
+            "min": 1,
+            "max": 3,
+            "chance_pct": 100.0
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -457,10 +457,57 @@ def validate_world_governance(
                         f"GOV-09 violation: Inter-continent bridge '{bid}' broken open-portal link '{u}' -> '{v}'"
                     )
 
+    # GOV-10: L2J.RU / L2Hub / PMFun Top-Down T-Shaped World Atlas & Zone Database
+    t_atlas_path = studio_dir / "t_shaped_world_atlas.json"
+    t_schema_path = studio_dir / "schemas" / "t-shaped-world-atlas.schema.json"
+    t_atlas_summary: dict[str, int] = {}
+    if not t_atlas_path.exists():
+        errors.append("GOV-10 violation: missing content/studio/t_shaped_world_atlas.json")
+    elif not t_schema_path.exists():
+        errors.append("GOV-10 violation: missing content/studio/schemas/t-shaped-world-atlas.schema.json")
+    else:
+        try:
+            t_doc = json.loads(t_atlas_path.read_text(encoding="utf-8"))
+            t_schema = json.loads(t_schema_path.read_text(encoding="utf-8"))
+            for req_key in t_schema.get("required", []):
+                if req_key not in t_doc:
+                    errors.append(f"GOV-10 violation: t_shaped_world_atlas.json missing required key '{req_key}'")
+            zdir = t_doc.get("t_breadth_zone_directory") or {}
+            t_atlas_summary = {
+                "continentsCount": len(t_doc.get("t_breadth_continents") or []),
+                "startingTownsCount": len(zdir.get("starting_towns") or []),
+                "otherCastleHubTownsCount": len(zdir.get("other_castle_and_hub_towns") or []),
+                "fieldsCount": len(zdir.get("fields_and_hunting_areas") or []),
+                "regularDungeonsCount": len(zdir.get("regular_dungeons") or []),
+                "sealCatacombsCount": len(zdir.get("seven_signs_seal_catacombs") or []),
+                "harborsClanhallsFortsCount": len(zdir.get("harbors_clanhalls_and_forts") or []),
+                "deepMobsCount": len((t_doc.get("t_deep_validation_slice") or {}).get("deep_mob_database") or []),
+            }
+            for cat_key, entries in zdir.items():
+                if not isinstance(entries, list):
+                    continue
+                for entry in entries:
+                    if isinstance(entry, dict):
+                        snid = str(entry.get("studio_node_id", ""))
+                        if snid not in nodes_by_id:
+                            errors.append(
+                                f"GOV-10 violation: T-Breadth category '{cat_key}' references unknown studio_node_id '{snid}'"
+                            )
+            deep_slice = t_doc.get("t_deep_validation_slice") or {}
+            for d_key in ("deep_town", "deep_field_zone", "deep_dungeon"):
+                d_obj = deep_slice.get(d_key) or {}
+                snid = str(d_obj.get("studio_node_id", ""))
+                if snid not in nodes_by_id:
+                    errors.append(
+                        f"GOV-10 violation: T-Depth '{d_key}' references unknown studio_node_id '{snid}'"
+                    )
+        except Exception as exc:
+            errors.append(f"GOV-10 violation: t_shaped_world_atlas validation error: {exc}")
+
     # Verify long_term_governance_checklist entries
     gov_checklist = whc.get("long_term_governance_checklist") or []
-    if len(gov_checklist) < 9:
-        errors.append("Governance checklist must contain all 9 gates (GOV-01..GOV-09)")
+    if len(gov_checklist) < 10:
+        errors.append("Governance checklist must contain all 10 gates (GOV-01..GOV-10)")
     for gate in gov_checklist:
         if isinstance(gate, dict) and whc.get("status") == "canon" and not gate.get("verified"):
             errors.append(
@@ -482,6 +529,7 @@ def validate_world_governance(
                 1 for g in gov_checklist if isinstance(g, dict) and g.get("verified")
             ),
             "governanceGatesTotal": len(gov_checklist),
+            "tShapedAtlasSummary": t_atlas_summary,
         },
         "gates": gov_checklist,
     }
@@ -663,7 +711,24 @@ def _print_audit_report(studio_dir: Path, section: str = "all") -> int:
                 f"          Route: {' -> '.join(br['portal_node_sequence'])}"
             )
 
-    print("\n[8] LONG-TERM GOVERNANCE CHECKLIST GATES (GOV-01..GOV-09):")
+    if section in ("all", "t_atlas"):
+        t_doc = json.loads((studio_dir / "t_shaped_world_atlas.json").read_text(encoding="utf-8"))
+        zdir = t_doc.get("t_breadth_zone_directory", {})
+        deep_s = t_doc.get("t_deep_validation_slice", {})
+        print("\n[7D] L2J.RU / L2HUB / PMFUN TOP-DOWN T-SHAPED WORLD ATLAS:")
+        print(f"  T-Breadth Continents          : {len(t_doc.get('t_breadth_continents', []))}")
+        print(f"  T-Breadth Starting Towns      : {len(zdir.get('starting_towns', []))}")
+        print(f"  T-Breadth Castle/Hub Towns    : {len(zdir.get('other_castle_and_hub_towns', []))}")
+        print(f"  T-Breadth Fields & Areas      : {len(zdir.get('fields_and_hunting_areas', []))}")
+        print(f"  T-Breadth Regular Dungeons    : {len(zdir.get('regular_dungeons', []))}")
+        print(f"  T-Breadth Seal Catacombs      : {len(zdir.get('seven_signs_seal_catacombs', []))}")
+        print(f"  T-Breadth Harbors/Halls/Forts : {len(zdir.get('harbors_clanhalls_and_forts', []))}")
+        print(f"  T-Depth Validated Town        : {deep_s.get('deep_town', {}).get('header_title')}")
+        print(f"  T-Depth Validated Field Zone  : {deep_s.get('deep_field_zone', {}).get('header_title')} ({len(deep_s.get('deep_field_zone', {}).get('spawn_table', []))} spawn rows)")
+        print(f"  T-Depth Validated Dungeon     : {deep_s.get('deep_dungeon', {}).get('header_title')} ({len(deep_s.get('deep_dungeon', {}).get('spawn_table', []))} spawn rows)")
+        print(f"  T-Depth Mob Sheets            : {len(deep_s.get('deep_mob_database', []))} full L2J stat/drop/spoil sheets")
+
+    print("\n[8] LONG-TERM GOVERNANCE CHECKLIST GATES (GOV-01..GOV-10):")
     for g in report.get("gates", []):
         mark = "PASS" if g.get("verified") else "FAIL"
         print(f"  [{mark}] {g['gate_id']} — {g['title']}")
@@ -676,7 +741,7 @@ def _print_audit_report(studio_dir: Path, section: str = "all") -> int:
             print(f"  - {err}")
         return 1
 
-    print("\nALL 9 LONG-TERM GOVERNANCE GATES PASSED (0 errors).")
+    print("\nALL 10 LONG-TERM GOVERNANCE GATES PASSED (0 errors).")
     return 0
 
 
@@ -694,6 +759,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--audit-bosses", action="store_true", help="Audit God > MVP > Raid Boss hierarchy.")
     parser.add_argument("--audit-growth", action="store_true", help="Audit Level 1-99 Growth Path (A..L) & Lv.1-25 Focus.")
     parser.add_argument("--audit-map-chain", action="store_true", help="Audit World Continent Area Map Chain (Lv.1-25 Hub-and-Spoke + 3-Continent Chain).")
+    parser.add_argument("--audit-t-atlas", action="store_true", help="Audit L2J/L2Hub/PMFun T-Shaped World Atlas (T-Breadth Directory + T-Depth Validation Slice).")
     parser.add_argument("--json", action="store_true", help="Emit JSON output for --check.")
 
     # Scaffolding sub-options
@@ -734,6 +800,8 @@ def main(argv: list[str] | None = None) -> int:
         return _print_audit_report(args.studio_dir, "growth")
     if args.audit_map_chain:
         return _print_audit_report(args.studio_dir, "map_chain")
+    if args.audit_t_atlas:
+        return _print_audit_report(args.studio_dir, "t_atlas")
     if args.audit:
         return _print_audit_report(args.studio_dir, "all")
 

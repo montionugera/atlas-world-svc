@@ -1,0 +1,537 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas-world.local/schemas/t-shaped-world-atlas.schema.json",
+  "title": "T-Shaped World & Continent Atlas (L2J.RU / L2Hub / PMFun Top-Down Standard)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "name",
+    "status",
+    "design_philosophy",
+    "reference_benchmarks",
+    "world_grid_spec",
+    "t_breadth_continents",
+    "t_breadth_zone_directory",
+    "t_deep_validation_slice"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "status": { "type": "string", "enum": ["canon", "draft"] },
+    "design_philosophy": { "type": "string", "minLength": 40 },
+    "reference_benchmarks": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_name", "urls", "extracted_patterns"],
+        "properties": {
+          "source_name": { "type": "string" },
+          "urls": { "type": "array", "items": { "type": "string" } },
+          "extracted_patterns": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "world_grid_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["coord_bounds_x", "coord_bounds_y", "grid_tile_sectors", "map_view_modes", "zone_categories"],
+      "properties": {
+        "coord_bounds_x": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
+        "coord_bounds_y": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
+        "grid_tile_sectors": { "type": "string" },
+        "map_view_modes": { "type": "array", "items": { "type": "string" }, "minItems": 2 },
+        "zone_categories": { "type": "array", "items": { "type": "string" }, "minItems": 6 }
+      }
+    },
+    "t_breadth_continents": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "continent_id",
+          "name",
+          "l2_archetype_analog",
+          "level_band",
+          "growth_stages",
+          "grid_sector_bounds",
+          "summary",
+          "territories"
+        ],
+        "properties": {
+          "continent_id": { "type": "string" },
+          "name": { "type": "string" },
+          "l2_archetype_analog": { "type": "string" },
+          "level_band": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
+          "growth_stages": { "type": "array", "items": { "type": "string" } },
+          "grid_sector_bounds": { "type": "string" },
+          "summary": { "type": "string" },
+          "territories": { "type": "array", "items": { "type": "string" }, "minItems": 3 }
+        }
+      }
+    },
+    "t_breadth_zone_directory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "starting_towns",
+        "other_castle_and_hub_towns",
+        "fields_and_hunting_areas",
+        "regular_dungeons",
+        "seven_signs_seal_catacombs",
+        "harbors_clanhalls_and_forts"
+      ],
+      "properties": {
+        "starting_towns": { "type": "array", "minItems": 6, "items": { "$ref": "#/$defs/zoneIndexItem" } },
+        "other_castle_and_hub_towns": { "type": "array", "minItems": 8, "items": { "$ref": "#/$defs/zoneIndexItem" } },
+        "fields_and_hunting_areas": { "type": "array", "minItems": 16, "items": { "$ref": "#/$defs/zoneIndexItem" } },
+        "regular_dungeons": { "type": "array", "minItems": 10, "items": { "$ref": "#/$defs/zoneIndexItem" } },
+        "seven_signs_seal_catacombs": { "type": "array", "minItems": 6, "items": { "$ref": "#/$defs/zoneIndexItem" } },
+        "harbors_clanhalls_and_forts": { "type": "array", "minItems": 8, "items": { "$ref": "#/$defs/zoneIndexItem" } }
+      }
+    },
+    "t_deep_validation_slice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slice_rationale",
+        "deep_town",
+        "deep_field_zone",
+        "deep_dungeon",
+        "deep_mob_database"
+      ],
+      "properties": {
+        "slice_rationale": { "type": "string" },
+        "deep_town": { "$ref": "#/$defs/deepTownSpec" },
+        "deep_field_zone": { "$ref": "#/$defs/deepFieldSpec" },
+        "deep_dungeon": { "$ref": "#/$defs/deepDungeonSpec" },
+        "deep_mob_database": {
+          "type": "array",
+          "minItems": 3,
+          "items": { "$ref": "#/$defs/deepMobSheet" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "zoneIndexItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "zone_id",
+        "studio_node_id",
+        "name",
+        "category",
+        "continent_id",
+        "territory_name",
+        "level_header",
+        "level_band",
+        "grid_sector",
+        "loc_coord",
+        "l2_reference_analog",
+        "race_or_seal_affinity",
+        "connected_zone_ids",
+        "t_depth_status"
+      ],
+      "properties": {
+        "zone_id": { "type": "string" },
+        "studio_node_id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": {
+          "type": "string",
+          "enum": [
+            "starting_town",
+            "castle_or_hub_town",
+            "field_hunting_zone",
+            "regular_dungeon",
+            "seal_catacomb_necropolis",
+            "harbor",
+            "clan_hall",
+            "fortress"
+          ]
+        },
+        "continent_id": { "type": "string" },
+        "territory_name": { "type": "string" },
+        "level_header": { "type": "string" },
+        "level_band": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
+        "grid_sector": { "type": "string" },
+        "loc_coord": { "type": "string" },
+        "l2_reference_analog": { "type": "string" },
+        "race_or_seal_affinity": { "type": "string" },
+        "connected_zone_ids": { "type": "array", "items": { "type": "string" } },
+        "t_depth_status": { "type": "string", "enum": ["t_breadth_indexed", "t_deep_validated"] }
+      }
+    },
+    "spawnRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "npc_id",
+        "name",
+        "entity_type",
+        "level",
+        "aggro",
+        "race_key",
+        "race_badge",
+        "hp_multiplier",
+        "protections",
+        "weaknesses",
+        "spawn_count",
+        "respawn_sec",
+        "loc_coord"
+      ],
+      "properties": {
+        "npc_id": { "type": "integer" },
+        "name": { "type": "string" },
+        "entity_type": { "type": "string", "enum": ["Guard", "NPC", "Monster", "Minion", "Quest Monster", "Mini-Boss", "RaidBoss"] },
+        "level": { "type": "integer" },
+        "aggro": { "type": "string", "enum": ["Yes", "No"] },
+        "race_key": { "type": "string" },
+        "race_badge": { "type": "string" },
+        "hp_multiplier": { "type": "string" },
+        "protections": { "type": "array", "items": { "type": "string" } },
+        "weaknesses": { "type": "array", "items": { "type": "string" } },
+        "spawn_count": { "type": "integer" },
+        "respawn_sec": { "type": "integer" },
+        "loc_coord": { "type": "string" }
+      }
+    },
+    "deepTownSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "zone_id",
+        "studio_node_id",
+        "header_title",
+        "continent_id",
+        "race_key",
+        "grid_sector",
+        "loc_coord",
+        "l2_reference_url",
+        "dual_map_layers",
+        "town_landmarks",
+        "gatekeeper_routes",
+        "npc_and_guard_table"
+      ],
+      "properties": {
+        "zone_id": { "type": "string" },
+        "studio_node_id": { "type": "string" },
+        "header_title": { "type": "string" },
+        "continent_id": { "type": "string" },
+        "race_key": { "type": "string" },
+        "grid_sector": { "type": "string" },
+        "loc_coord": { "type": "string" },
+        "l2_reference_url": { "type": "string" },
+        "dual_map_layers": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["common_parchment_map", "top_down_radar_map"],
+          "properties": {
+            "common_parchment_map": { "type": "string" },
+            "top_down_radar_map": { "type": "string" }
+          }
+        },
+        "town_landmarks": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["landmark_id", "name", "function", "map_xy_pct"],
+            "properties": {
+              "landmark_id": { "type": "string" },
+              "name": { "type": "string" },
+              "function": { "type": "string" },
+              "map_xy_pct": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 }
+            }
+          }
+        },
+        "gatekeeper_routes": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["target_zone_id", "target_name", "recommended_level", "fee_adena"],
+            "properties": {
+              "target_zone_id": { "type": "string" },
+              "target_name": { "type": "string" },
+              "recommended_level": { "type": "string" },
+              "fee_adena": { "type": "integer" }
+            }
+          }
+        },
+        "npc_and_guard_table": {
+          "type": "array",
+          "minItems": 10,
+          "items": { "$ref": "#/$defs/spawnRow" }
+        }
+      }
+    },
+    "deepFieldSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "zone_id",
+        "studio_node_id",
+        "header_title",
+        "continent_id",
+        "grid_sector",
+        "loc_coord",
+        "l2_reference_url",
+        "dual_map_layers",
+        "sub_areas_and_red_pins",
+        "spawn_table"
+      ],
+      "properties": {
+        "zone_id": { "type": "string" },
+        "studio_node_id": { "type": "string" },
+        "header_title": { "type": "string" },
+        "continent_id": { "type": "string" },
+        "grid_sector": { "type": "string" },
+        "loc_coord": { "type": "string" },
+        "l2_reference_url": { "type": "string" },
+        "dual_map_layers": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["common_parchment_map", "top_down_radar_map"],
+          "properties": {
+            "common_parchment_map": { "type": "string" },
+            "top_down_radar_map": { "type": "string" }
+          }
+        },
+        "sub_areas_and_red_pins": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["sub_area_id", "name", "level_range", "loc_coord", "map_xy_pct", "primary_mobs"],
+            "properties": {
+              "sub_area_id": { "type": "string" },
+              "name": { "type": "string" },
+              "level_range": { "type": "string" },
+              "loc_coord": { "type": "string" },
+              "map_xy_pct": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+              "primary_mobs": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "spawn_table": {
+          "type": "array",
+          "minItems": 10,
+          "items": { "$ref": "#/$defs/spawnRow" }
+        }
+      }
+    },
+    "deepDungeonSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "zone_id",
+        "studio_node_id",
+        "header_title",
+        "continent_id",
+        "grid_sector",
+        "loc_coord",
+        "l2_reference_url",
+        "side_by_side_map_spec",
+        "dungeon_rooms",
+        "spawn_table"
+      ],
+      "properties": {
+        "zone_id": { "type": "string" },
+        "studio_node_id": { "type": "string" },
+        "header_title": { "type": "string" },
+        "continent_id": { "type": "string" },
+        "grid_sector": { "type": "string" },
+        "loc_coord": { "type": "string" },
+        "l2_reference_url": { "type": "string" },
+        "side_by_side_map_spec": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["left_overland_entrance_map", "right_underground_corridor_map"],
+          "properties": {
+            "left_overland_entrance_map": { "type": "string" },
+            "right_underground_corridor_map": { "type": "string" }
+          }
+        },
+        "dungeon_rooms": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["room_id", "name", "level_range", "key_mobs", "map_xy_pct"],
+            "properties": {
+              "room_id": { "type": "string" },
+              "name": { "type": "string" },
+              "level_range": { "type": "string" },
+              "key_mobs": { "type": "array", "items": { "type": "string" } },
+              "map_xy_pct": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 }
+            }
+          }
+        },
+        "spawn_table": {
+          "type": "array",
+          "minItems": 12,
+          "items": { "$ref": "#/$defs/spawnRow" }
+        }
+      }
+    },
+    "deepMobSheet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "npc_id",
+        "name",
+        "level",
+        "mob_class",
+        "race_key",
+        "race_passive_label",
+        "behavior_mode",
+        "lore_description",
+        "l2_reference_url",
+        "stats",
+        "combat",
+        "basic_attributes",
+        "social",
+        "inhabits_in_zones",
+        "drop_groups",
+        "spoil_table"
+      ],
+      "properties": {
+        "npc_id": { "type": "integer" },
+        "name": { "type": "string" },
+        "level": { "type": "integer" },
+        "mob_class": { "type": "string" },
+        "race_key": { "type": "string" },
+        "race_passive_label": { "type": "string" },
+        "behavior_mode": { "type": "string" },
+        "lore_description": { "type": "string" },
+        "l2_reference_url": { "type": "string" },
+        "stats": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["hp", "mp", "exp", "sp", "hp_reg", "mp_reg"],
+          "properties": {
+            "hp": { "type": "integer" },
+            "mp": { "type": "integer" },
+            "exp": { "type": "integer" },
+            "sp": { "type": "integer" },
+            "hp_reg": { "type": "number" },
+            "mp_reg": { "type": "number" }
+          }
+        },
+        "combat": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["p_atk", "p_def", "m_atk", "m_def", "atk_spd", "cast_spd", "walk_spd", "run_spd"],
+          "properties": {
+            "p_atk": { "type": "integer" },
+            "p_def": { "type": "integer" },
+            "m_atk": { "type": "integer" },
+            "m_def": { "type": "integer" },
+            "atk_spd": { "type": "integer" },
+            "cast_spd": { "type": "integer" },
+            "walk_spd": { "type": "integer" },
+            "run_spd": { "type": "integer" }
+          }
+        },
+        "basic_attributes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["STR", "INT", "DEX", "WIT", "CON", "MEN"],
+          "properties": {
+            "STR": { "type": "integer" },
+            "INT": { "type": "integer" },
+            "DEX": { "type": "integer" },
+            "WIT": { "type": "integer" },
+            "CON": { "type": "integer" },
+            "MEN": { "type": "integer" }
+          }
+        },
+        "social": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["aggro", "social", "undead", "atk_range", "soul_crystal_lv", "soul_crystal_type"],
+          "properties": {
+            "aggro": { "type": "string" },
+            "social": { "type": "string" },
+            "undead": { "type": "string" },
+            "atk_range": { "type": "integer" },
+            "soul_crystal_lv": { "type": "string" },
+            "soul_crystal_type": { "type": "string" }
+          }
+        },
+        "inhabits_in_zones": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["zone_id", "zone_name"],
+            "properties": {
+              "zone_id": { "type": "string" },
+              "zone_name": { "type": "string" }
+            }
+          }
+        },
+        "drop_groups": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["group_index", "group_title", "group_chance_label", "items"],
+            "properties": {
+              "group_index": { "type": "integer" },
+              "group_title": { "type": "string" },
+              "group_chance_label": { "type": "string" },
+              "items": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["item_id", "name", "min", "max", "chance_fraction", "chance_pct"],
+                  "properties": {
+                    "item_id": { "type": "integer" },
+                    "name": { "type": "string" },
+                    "min": { "type": "integer" },
+                    "max": { "type": "integer" },
+                    "chance_fraction": { "type": "string" },
+                    "chance_pct": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "spoil_table": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["item_id", "name", "min", "max", "chance_pct"],
+            "properties": {
+              "item_id": { "type": "integer" },
+              "name": { "type": "string" },
+              "min": { "type": "integer" },
+              "max": { "type": "integer" },
+              "chance_pct": { "type": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

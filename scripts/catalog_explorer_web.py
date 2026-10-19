@@ -80,6 +80,7 @@ def load_studio_perspectives_bundle() -> dict:
     except ImportError:
         from studio_world_governance import validate_world_governance  # type: ignore
     _, gov_report = validate_world_governance(STUDIO_DIR)
+    t_atlas = load_json_file(STUDIO_DIR / "t_shaped_world_atlas.json") or {}
     return {
         "worldHistoryAndConcept": whc,
         "continents": continents,
@@ -88,6 +89,7 @@ def load_studio_perspectives_bundle() -> dict:
         "runtimeManifest": runtime_manifest,
         "selfEvaluation": self_eval,
         "governanceReport": gov_report,
+        "tShapedWorldAtlas": t_atlas,
     }
 
 THEME_CSS_CANDIDATES = [
@@ -5957,6 +5959,62 @@ function renderStudioWorldHistoryPerspective(whc, continents) {
                           </button>
                         </div>
                       `).join("")}
+                    </div>
+                  </div>
+                `;
+              })()}
+
+              ${(() => {
+                const tatlas = sp.tShapedWorldAtlas || {};
+                const zdir = tatlas.t_breadth_zone_directory || {};
+                const deep = tatlas.t_deep_validation_slice || {};
+                const dtown = deep.deep_town || {};
+                const dfield = deep.deep_field_zone || {};
+                const ddung = deep.deep_dungeon || {};
+                const dmobs = deep.deep_mob_database || [];
+                if (!tatlas.id) return "";
+                return `
+                  <div style="margin-top:14px;padding:14px;border-radius:10px;background:rgba(16,185,129,0.08);border:1.5px solid rgba(16,185,129,0.5)">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
+                      <strong style="font-size:13.5px;color:#10b981">🧭 L2J.RU / L2Hub / PMFun Top-Down T-Shaped World Atlas (T-Breadth Directory + T-Depth D01 Slice)</strong>
+                      <span class="mono" style="font-size:10px;padding:2px 8px;border-radius:999px;background:#059669;color:#ffffff;font-weight:800">GOV-10 VERIFIED</span>
+                    </div>
+                    <p style="font-size:11.5px;color:var(--joy-text-secondary);margin:0 0 10px">${escapeHtml(tatlas.design_philosophy || "")}</p>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;margin-bottom:12px">
+                      <div style="padding:8px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                        <div class="mono" style="font-size:10px;color:#fde047;font-weight:800">STARTING TOWNS (${(zdir.starting_towns || []).length})</div>
+                        ${(zdir.starting_towns || []).map(z => `<div style="font-size:10.5px;margin-top:3px"><strong>${escapeHtml(z.level_header)}</strong> <span class="mono" style="color:#38bdf8">[${escapeHtml(z.grid_sector)}]</span></div>`).join("")}
+                      </div>
+                      <div style="padding:8px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                        <div class="mono" style="font-size:10px;color:#38bdf8;font-weight:800">CASTLE & HUB TOWNS (${(zdir.other_castle_and_hub_towns || []).length})</div>
+                        ${(zdir.other_castle_and_hub_towns || []).map(z => `<div style="font-size:10.5px;margin-top:3px">${escapeHtml(z.level_header)} <span class="mono" style="color:#94a3b8">[${escapeHtml(z.grid_sector)}]</span></div>`).join("")}
+                      </div>
+                      <div style="padding:8px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                        <div class="mono" style="font-size:10px;color:#4ade80;font-weight:800">FIELDS & AREAS (${(zdir.fields_and_hunting_areas || []).length})</div>
+                        ${(zdir.fields_and_hunting_areas || []).slice(0, 8).map(z => `<div style="font-size:10.5px;margin-top:3px">${escapeHtml(z.level_header)} <span class="mono" style="color:#94a3b8">[${escapeHtml(z.grid_sector)}]</span></div>`).join("")}
+                      </div>
+                      <div style="padding:8px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                        <div class="mono" style="font-size:10px;color:#f87171;font-weight:800">DUNGEONS & CATACOMBS (${(zdir.regular_dungeons || []).length + (zdir.seven_signs_seal_catacombs || []).length})</div>
+                        ${(zdir.regular_dungeons || []).slice(0, 5).concat((zdir.seven_signs_seal_catacombs || []).slice(0, 3)).map(z => `<div style="font-size:10.5px;margin-top:3px">${escapeHtml(z.level_header)} <span class="mono" style="color:#c084fc">[${escapeHtml(z.grid_sector)}]</span></div>`).join("")}
+                      </div>
+                    </div>
+                    <div style="font-weight:800;font-size:12px;color:#10b981;margin-bottom:6px">T-Depth Vertical Validation Slice (100% L2J.RU Dual-Map + 8-Column Spawn Table + Mob Drop/Spoil Sheets)</div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px">
+                      <div style="padding:9px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid rgba(250,204,21,0.45)">
+                        <div style="font-weight:800;font-size:11.5px;color:#fde047">🏰 ${escapeHtml(dtown.header_title || "")}</div>
+                        <div class="mono" style="font-size:10px;color:#38bdf8">Grid ${escapeHtml(dtown.grid_sector || "")} · loc=${escapeHtml(dtown.loc_coord || "")}</div>
+                        <div style="font-size:10.5px;color:var(--joy-text-secondary);margin-top:4px">${(dtown.town_landmarks || []).length} landmarks · ${(dtown.gatekeeper_routes || []).length} Gatekeeper routes · ${(dtown.npc_and_guard_table || []).length} NPC/Guard rows</div>
+                      </div>
+                      <div style="padding:9px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid rgba(74,222,128,0.45)">
+                        <div style="font-weight:800;font-size:11.5px;color:#4ade80">🌿 ${escapeHtml(dfield.header_title || "")}</div>
+                        <div class="mono" style="font-size:10px;color:#38bdf8">Grid ${escapeHtml(dfield.grid_sector || "")} · loc=${escapeHtml(dfield.loc_coord || "")}</div>
+                        <div style="font-size:10.5px;color:var(--joy-text-secondary);margin-top:4px">Dual Parchment + Radar Map · ${(dfield.spawn_table || []).length} L2J 8-column spawn rows</div>
+                      </div>
+                      <div style="padding:9px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid rgba(248,113,113,0.45)">
+                        <div style="font-weight:800;font-size:11.5px;color:#f87171">⛩️ ${escapeHtml(ddung.header_title || "")}</div>
+                        <div class="mono" style="font-size:10px;color:#38bdf8">Grid ${escapeHtml(ddung.grid_sector || "")} · loc=${escapeHtml(ddung.loc_coord || "")}</div>
+                        <div style="font-size:10.5px;color:var(--joy-text-secondary);margin-top:4px">Side-by-Side Entrance + 4-Room Underground Map · ${(ddung.spawn_table || []).length} spawn rows · ${dmobs.length} Mob Drop/Spoil Sheets</div>
+                      </div>
                     </div>
                   </div>
                 `;
