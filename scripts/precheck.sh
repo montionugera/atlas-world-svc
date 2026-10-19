@@ -146,7 +146,10 @@ rust_gates() {
   # path built). A new worktree's target is seeded once by APFS clone (cp -c,
   # copy-on-write, ~68s) from the primary's; if cloning fails it starts empty
   # (slow, still correct). Under 50GB free it falls back to the shared target;
-  # the dep-info scrub below keeps either choice sound.
+  # the dep-info scrub below keeps either choice sound. In that low-disk
+  # fallback, worktrees sharing the target drop each other's server-rs
+  # fingerprints (server-rs rebuilds every run), and a scrub racing another
+  # worktree's live cargo build can fail that build (re-run it).
   if [ -z "${CARGO_TARGET_DIR:-}" ]; then
     local own="$REPO_ROOT/server-rs/target" main="$MAIN_ROOT/server-rs/target" free_gb
     if [ -n "$MAIN_ROOT" ] && [ "$REPO_ROOT" != "$MAIN_ROOT" ] && [ ! -d "$own" ] && [ -d "$main" ]; then
@@ -154,8 +157,10 @@ rust_gates() {
       if [ "${free_gb:-0}" -lt 50 ]; then
         echo "⚠️  only ${free_gb:-?}GB free — using the shared target $main"
         own="$main"
-      elif [ "$(uname)" = Darwin ] && cp -c -R "$main" "$own.seed.$$" 2>/dev/null && mv "$own.seed.$$" "$own"; then
-        echo "🌱 seeded $own from $main (APFS clone)"
+      elif [ "$(uname)" = Darwin ] && cp -c -R "$main" "$own.seed.$$" 2>/dev/null; then
+        # A concurrent first gate may have seeded it meanwhile; BSD mv has no -T
+        # and would nest the clone inside the existing target.
+        if [ -d "$own" ]; then rm -rf "$own.seed.$$"; else mv "$own.seed.$$" "$own" && echo "🌱 seeded $own from $main (APFS clone)"; fi
       else
         rm -rf "$own.seed.$$"
         echo "⚠️  could not clone $main — building $own from scratch"
