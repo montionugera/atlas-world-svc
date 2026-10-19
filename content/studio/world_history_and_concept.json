@@ -321,126 +321,168 @@
         "id": "race-human-demi-human",
         "race_key": "human_demi_human",
         "name": "Human / Demi-Human",
-        "archetype_reference": "Versatile heirs of The Architect's runic geometry and adaptive Demi-Human kin",
+        "icon": "\ud83e\uddec",
+        "archetype_reference": "Versatile heirs of The Architect runic geometry and adaptive Demi-Human kin",
         "can_be_player": true,
         "can_be_mob": true,
+        "starter_level_band": [
+          1,
+          10
+        ],
         "home_town_id": "town-lantern-hollow",
         "home_town_name": "Lantern Hollow",
         "continent_id": "continent-01-hearthbloom-basin",
         "district_id": "district-teacup-meadows",
         "hunting_area_id": "hunting-area-clover-south-gate",
         "farming_area_id": "hunting-area-kiln-east-orchard",
+        "convergence_hub_town_id": "town-kilnwatch-bastion",
+        "ancestral_expedition_citadel_id": "town-torque-balance-citadel",
         "farming_resources": [
           "Terracotta Seal-Clay",
           "Ember-Clover Nectar",
           "Glazed Kiln-Timber"
         ],
-        "niched_story": "Descendants of The Architect's original seal-keepers in Lantern Hollow who guard the First Meridian Keystone while investigating why renegade Demi-Human brigands and kiln-constructs are tampering with the cellar seals.",
+        "niched_story": "Awakening in Lantern Hollow (Lv.1-10), Human and Demi-Human initiates defend the First Meridian Keystone before marching east through Kiln East Orchard at Lv.10 to join all six races at Kilnwatch Bastion for guilding and party quests.",
         "combat_trait": "Balanced Seal-Resonance: +10% adaptability to all weapon classes and Job Quest mastery."
       },
       {
         "id": "race-dwarf",
         "race_key": "dwarf",
         "name": "Dwarf (Tontatta-Lineage Micro-Titans)",
+        "icon": "\ud83d\udd28",
         "archetype_reference": "One Piece Tontatta-inspired miniature craftsmen with explosive superhuman strength and botanical-mechanical mastery",
         "can_be_player": true,
         "can_be_mob": true,
+        "starter_level_band": [
+          1,
+          10
+        ],
         "home_town_id": "town-root-train-roundhouse",
         "home_town_name": "Root-Train Roundhouse",
         "continent_id": "continent-01-hearthbloom-basin",
         "district_id": "district-amber-root-hollows",
         "hunting_area_id": "hunting-area-cobalt-sandbar-ford",
         "farming_area_id": "hunting-area-resin-arch-tunnel",
+        "convergence_hub_town_id": "town-kilnwatch-bastion",
+        "ancestral_expedition_citadel_id": "town-escapement-anvil",
         "farming_resources": [
           "Fossilized Amber-Resin",
           "Deep-Root Iron Ore",
           "High-Density Micro-Springs"
         ],
-        "niched_story": "Tiny but terrifyingly strong Dwarf engineers of the Root-Train Roundhouse who cultivate giant banyan root-railways and forge high-density weapons for the Blacksmith Clan while repelling insectoid swarms in the Resin Arch Tunnels.",
+        "niched_story": "Tiny, super-strong Dwarf smith-scouts start in Root-Train Roundhouse (Lv.1-10) clearing insectoid swarms from the banyan root-railways, then ride the resin-arch line to Kilnwatch Bastion at Lv.10-20 to forge multi-race guild gear.",
         "combat_trait": "Tontatta Mighty Impact: Miniature hitbox with colossal hammer/axe knockdown force and +15% Blacksmith forging yield."
       },
       {
         "id": "race-ogre-orc",
         "race_key": "ogre_orc",
         "name": "Ogre / Orc",
+        "icon": "\ud83d\udd25",
         "archetype_reference": "Crucible-hardened Ogre and Orc vanguard clans sworn to contain the subterranean Demon and Dragon vents",
         "can_be_player": true,
         "can_be_mob": true,
-        "home_town_id": "town-kilnwatch-bastion",
-        "home_town_name": "Kilnwatch Bastion",
+        "starter_level_band": [
+          1,
+          10
+        ],
+        "home_town_id": "town-draft-kiln-post",
+        "home_town_name": "Draft-Kiln Post",
         "continent_id": "continent-01-hearthbloom-basin",
-        "district_id": "district-kilnfire-terraces",
+        "district_id": "district-ash-bellows-trench",
         "hunting_area_id": "hunting-area-firebrick-duct",
-        "farming_area_id": "hunting-area-cinder-apron",
+        "farming_area_id": "hunting-area-celadon-causeway",
+        "convergence_hub_town_id": "town-kilnwatch-bastion",
+        "ancestral_expedition_citadel_id": "town-bellows-hearth",
         "farming_resources": [
           "Dragon-Cinder Slag",
           "Crucible Basalt Plates",
           "Firebrick Marrow"
         ],
-        "niched_story": "Once front-line shock troops in the God Wars, the Ogre/Orc clans of Kilnwatch Bastion now stand guard over the roaring Firebrick Ducts, proving their honor by culling frenzied warband deserters and harvesting raw dragon-cinder.",
+        "niched_story": "Ogre and Orc vanguard initiates temper their resolve at Draft-Kiln Post (Lv.1-10) in the Ash-Bellows Trench before ascending Firebrick Duct at Lv.10-20 to serve as front-line tanks for multi-race parties in Kilnwatch Bastion.",
         "combat_trait": "Crucible Blood-Fury: High thermal/physical fortitude and heavy cleave damage that scales as HP drops."
       },
       {
         "id": "race-furral",
         "race_key": "furral",
         "name": "Furral (Electro-Beastfolk Tribe)",
-        "archetype_reference": "One Piece Mink-inspired agile beastfolk warriors who channel bio-static 'Electro' through fur and brass conductors",
+        "icon": "\u26a1",
+        "archetype_reference": "One Piece Mink-inspired agile beastfolk warriors who channel bio-static Electro through fur and brass conductors",
         "can_be_player": true,
         "can_be_mob": true,
-        "home_town_id": "town-inductor-switchyard",
-        "home_town_name": "Inductor Switchyard",
-        "continent_id": "continent-02-clockwork-steppe",
-        "district_id": "district-thunder-coil-basin",
-        "hunting_area_id": "hunting-area-metronome-bridge",
-        "farming_area_id": "hunting-area-leyden-causeway",
+        "starter_level_band": [
+          1,
+          10
+        ],
+        "home_town_id": "town-cinnamon-mill-haven",
+        "home_town_name": "Cinnamon-Mill Haven",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "district_id": "district-cinnamon-bellows-bluff",
+        "hunting_area_id": "hunting-area-ginger-aqueduct-bridge",
+        "farming_area_id": "hunting-area-cinnamon-bark-viaduct",
+        "convergence_hub_town_id": "town-kilnwatch-bastion",
+        "ancestral_expedition_citadel_id": "town-inductor-switchyard",
         "farming_resources": [
           "Galvanic Storm-Amber",
-          "Leyden Copper Coils",
+          "Wind-Mill Copper Coils",
           "Static Beast-Pelts"
         ],
-        "niched_story": "Sworn guardians of the Thunder-Coil Basin in the Clockwork Steppe, the Furral channel natural bio-electricity ('Electro') into the Inductor Switchyard and awaken primal lunar-static transformations when the Shattered Halo aligns overhead.",
+        "niched_story": "Young Furral electro-warriors train atop the wind-turbines of Cinnamon-Mill Haven (Lv.1-10), harvesting static amber before converging at Kilnwatch Bastion & Glaze-Barge Quay (Lv.10-20) to form guilds bound for their ancestral Inductor Switchyard.",
         "combat_trait": "Electro Claw & Sulong Surge: Imbues melee/dash strikes with chain-lightning shock and high evasion."
       },
       {
         "id": "race-lunar",
         "race_key": "lunar",
         "name": "Lunar (Astral High-Elven Lineage)",
-        "archetype_reference": "Elf-like celestial navigators and starlight weavers dwelling among floating basalt atolls",
+        "icon": "\ud83c\udf19",
+        "archetype_reference": "Elf-like celestial navigators and starlight weavers dwelling in porcelain-mirror sanctuaries",
         "can_be_player": true,
         "can_be_mob": true,
-        "home_town_id": "town-starfall-haven",
-        "home_town_name": "Starfall Haven",
-        "continent_id": "continent-03-shattered-halo",
-        "district_id": "district-starfall-anchorage",
-        "hunting_area_id": "hunting-area-orrery-bridge",
-        "farming_area_id": "hunting-area-tether-causeway",
+        "starter_level_band": [
+          1,
+          10
+        ],
+        "home_town_id": "town-porcelain-loom-sanctuary",
+        "home_town_name": "Porcelain Loom Sanctuary",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "district_id": "district-porcelain-cradle",
+        "hunting_area_id": "hunting-area-celadon-causeway",
+        "farming_area_id": "hunting-area-resin-arch-tunnel",
+        "convergence_hub_town_id": "town-kilnwatch-bastion",
+        "ancestral_expedition_citadel_id": "town-starfall-haven",
         "farming_resources": [
           "Luminous Star-Silk",
-          "Astral Tether Quartz",
-          "Upward-Cascade Moon-Dew"
+          "Celadon Mirror-Quartz",
+          "Astral Loom Dew"
         ],
-        "niched_story": "Graceful, long-lived Lunar wardens of Starfall Haven who maintain the starlight tether-bridges of Continent 03 and guard the Angel Seraphiel's Inverted Belfry seal against corrupted celestial choir-constructs.",
+        "niched_story": "Lunar star-weavers begin their pilgrimage in Porcelain Loom Sanctuary (Lv.1-10), weaving starlight wards across Celadon Causeway before uniting with all six races at Kilnwatch Bastion (Lv.10-20) to prepare for the sky-ascension to Starfall Haven.",
         "combat_trait": "Astral Grace & Bow/Spell Precision: Extended ranged/spell reach and low-gravity aerial step."
       },
       {
         "id": "race-dark-lunar",
         "race_key": "dark_lunar",
         "name": "Dark-Lunar (Umbral Eclipse Lineage)",
-        "archetype_reference": "Dark-Elf-like shadow-refraction scholars and abyssal seal-breakers who harness eclipse prisms",
+        "icon": "\ud83c\udf11",
+        "archetype_reference": "Dark-Elf-like shadow-refraction scholars and acoustic seal-watchers of the twilight belfries",
         "can_be_player": true,
         "can_be_mob": true,
-        "home_town_id": "town-umbrage-focal-sanctum",
-        "home_town_name": "Umbrage Focal Sanctum",
-        "continent_id": "continent-03-shattered-halo",
-        "district_id": "district-umbrage-prism-atoll",
-        "hunting_area_id": "hunting-area-resonance-tether-causeway",
-        "farming_area_id": "hunting-area-violet-spectrum-span",
+        "starter_level_band": [
+          1,
+          10
+        ],
+        "home_town_id": "town-carillon-hearth-belfry",
+        "home_town_name": "Carillon Hearth Belfry",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "district_id": "district-terracotta-wind-chimes",
+        "hunting_area_id": "hunting-area-apricot-aqueduct-terrace",
+        "farming_area_id": "hunting-area-chime-pipe-colonnade",
+        "convergence_hub_town_id": "town-kilnwatch-bastion",
+        "ancestral_expedition_citadel_id": "town-umbrage-focal-sanctum",
         "farming_resources": [
           "Umbral Prism Shards",
-          "Abyssal Obsidian Glass",
+          "Resonant Chime-Obsidian",
           "Eclipse Night-Nectar"
         ],
-        "niched_story": "Kinsfolk of the Lunar who embraced the shadow-refraction reefs of Umbrage Focal Sanctum to monitor the Demon and Leviathan seals from the dark side of the Halo, walking a razor's edge between forbidden seal-magic and survival.",
+        "niched_story": "Dark-Lunar shadow-scholars keep vigil in Carillon Hearth Belfry (Lv.1-10) listening for Demon-seal tremors in the wind-chime canyons, then join multi-race guilds at Kilnwatch Bastion & Glaze-Barge Quay (Lv.10-20) to unlock the Umbrage Prism Atolls.",
         "combat_trait": "Umbral Refraction: Critical backstab/shadow-arts amplification and resistance to abyssal corruption."
       }
     ],
@@ -729,6 +771,82 @@
           "loot_tier": "Everyday Crafting Materials, Monster Cards, Consumables, and Quest Turn-Ins"
         }
       ]
+    },
+    "cross_race_convergence_hubs": {
+      "target_level_band": [
+        10,
+        20
+      ],
+      "convergence_rule": "All 6 Playable Races spawn on Continent 01 (Lv.1-10) in their own Racial Home Town District and are guided by Main, Job, and Side Quests at Level 10-20 to converge at Kilnwatch Bastion (and Glaze-Barge Quay / Pinion Terminus) to form cross-race Guilds (gilding), matchmake parties, trade quests at the Neutral Adventure Guild, and smelt combined racial alloys at the Blacksmith Clan Six-Anvil Foundry.",
+      "primary_hub_town_id": "town-kilnwatch-bastion",
+      "hubs": [
+        {
+          "town_node_id": "town-kilnwatch-bastion",
+          "town_name": "Kilnwatch Bastion (Primary Lv.10-20 All-Race Guild & Party Citadel)",
+          "continent_id": "continent-01-hearthbloom-basin",
+          "district_id": "district-kilnfire-terraces",
+          "level_band": [
+            10,
+            20
+          ],
+          "hub_role": "Central Continent 01 fortress where all 6 races meet at Level 10-15 to register Guilds (gilding), form multi-race 6-player parties, trade quests at the Neutral Adventure Guild Grand Hall, and combine all 6 racial farming materials at the Sovereign Blacksmith Clan Six-Anvil Foundry.",
+          "guilding_and_party_features": [
+            "Accord Guild Registration Charter (Lv.10+ Cross-Race Guild Creation, Emblem & Guild Hall)",
+            "Neutral Adventure Guild Grand Exchange (Party Finder, Bounty Board & Multi-Race Quest Trading)",
+            "Blacksmith Clan Six-Anvil Master Foundry (Requires alloys farmed from all 6 Racial Home Towns)",
+            "Direct Portal Access to Lv.10-20 Party Grinding & Catacomb Raid Bosses"
+          ],
+          "shared_hunting_and_dungeon_nodes": [
+            "hunting-area-kiln-east-orchard",
+            "hunting-area-firebrick-duct",
+            "hunting-area-cinder-apron",
+            "dungeon-kiln-cellar",
+            "dungeon-ember-bellows-chamber"
+          ]
+        },
+        {
+          "town_node_id": "town-glaze-barge-quay",
+          "town_name": "Glaze-Barge Quay (Lv.15-20 Multi-Race River Guild Port)",
+          "continent_id": "continent-01-hearthbloom-basin",
+          "district_id": "district-glaze-river-delta",
+          "level_band": [
+            15,
+            20
+          ],
+          "hub_role": "Secondary Level 15-20 port city where Dwarf, Lunar, Dark-Lunar, and Furral river-routes merge with Human and Ogre parties for the Sunken Potter Hold Raid Boss.",
+          "guilding_and_party_features": [
+            "Guild Barge Convoy Escorts & River Delta Party Commissions (Lv.15-20)",
+            "Adventure Guild Maritime Brokerage & Cross-Race Material Market",
+            "Sunken Potter Hold B1 Catacomb Raid Staging Dock"
+          ],
+          "shared_hunting_and_dungeon_nodes": [
+            "hunting-area-cobalt-sandbar-ford",
+            "hunting-area-chime-pipe-colonnade",
+            "dungeon-sunken-potter-hold"
+          ]
+        },
+        {
+          "town_node_id": "town-pinion-terminus",
+          "town_name": "Pinion Terminus (Lv.15-22 Cross-Continent Guild Expedition Gateway)",
+          "continent_id": "continent-02-clockwork-steppe",
+          "district_id": "district-rustcog-downs",
+          "level_band": [
+            15,
+            22
+          ],
+          "hub_role": "Eastern gateway terminus connected directly to Kilnwatch Bastion via Cinder Apron (Lv.12-20), where united Level 15-20 Guilds graduate from Continent 01 into the Clockwork Steppe.",
+          "guilding_and_party_features": [
+            "Continent 01 -> Continent 02 Guild Expedition Charter & Root-Train Boarding",
+            "Pendulum Shaft B1 Multi-Race Party Raid Gate",
+            "Cross-Continental Blacksmith Alloy Calibration Counter"
+          ],
+          "shared_hunting_and_dungeon_nodes": [
+            "hunting-area-cinder-apron",
+            "hunting-area-brass-spur-ridge",
+            "dungeon-pendulum-shaft"
+          ]
+        }
+      ]
     }
   },
   "starter_town_bindings": [
@@ -740,57 +858,63 @@
       "town_node_id": "town-lantern-hollow",
       "hunting_area_id": "hunting-area-clover-south-gate",
       "farming_area_id": "hunting-area-kiln-east-orchard",
-      "arrival_narrative": "Human and Demi-Human adventurers awaken beside the First Meridian Keystone in Lantern Hollow, taking their first Neutral Adventure Guild commission into Clover South Gate and Kiln East Orchard."
+      "convergence_hub_town_id": "town-kilnwatch-bastion",
+      "arrival_narrative": "Awakening in Lantern Hollow (Lv.1-10), Human and Demi-Human initiates defend the First Meridian Keystone before marching east through Kiln East Orchard at Lv.10 to join all six races at Kilnwatch Bastion for guilding and party quests."
     },
     {
       "race_id": "race-dwarf",
-      "race_name": "Dwarf (Tontatta-Lineage)",
+      "race_name": "Dwarf (Tontatta-Lineage Micro-Titans)",
       "continent_id": "continent-01-hearthbloom-basin",
       "district_id": "district-amber-root-hollows",
       "town_node_id": "town-root-train-roundhouse",
       "hunting_area_id": "hunting-area-cobalt-sandbar-ford",
       "farming_area_id": "hunting-area-resin-arch-tunnel",
-      "arrival_narrative": "Miniature high-strength Dwarf smith-scouts report to the Root-Train Roundhouse, clearing insect/arachnid swarms from Banyan Canopy Spur and mining amber-resin in Resin Arch Tunnel."
+      "convergence_hub_town_id": "town-kilnwatch-bastion",
+      "arrival_narrative": "Tiny, super-strong Dwarf smith-scouts start in Root-Train Roundhouse (Lv.1-10) clearing insectoid swarms from the banyan root-railways, then ride the resin-arch line to Kilnwatch Bastion at Lv.10-20 to forge multi-race guild gear."
     },
     {
       "race_id": "race-ogre-orc",
       "race_name": "Ogre / Orc",
       "continent_id": "continent-01-hearthbloom-basin",
-      "district_id": "district-kilnfire-terraces",
-      "town_node_id": "town-kilnwatch-bastion",
+      "district_id": "district-ash-bellows-trench",
+      "town_node_id": "town-draft-kiln-post",
       "hunting_area_id": "hunting-area-firebrick-duct",
-      "farming_area_id": "hunting-area-cinder-apron",
-      "arrival_narrative": "Ogre and Orc vanguard initiates temper their blades at Kilnwatch Bastion's Blacksmith Clan foundry before marching into Firebrick Duct and harvesting dragon-cinder on Cinder Apron."
+      "farming_area_id": "hunting-area-celadon-causeway",
+      "convergence_hub_town_id": "town-kilnwatch-bastion",
+      "arrival_narrative": "Ogre and Orc vanguard initiates temper their resolve at Draft-Kiln Post (Lv.1-10) in the Ash-Bellows Trench before ascending Firebrick Duct at Lv.10-20 to serve as front-line tanks for multi-race parties in Kilnwatch Bastion."
     },
     {
       "race_id": "race-furral",
-      "race_name": "Furral (Electro-Beastfolk)",
-      "continent_id": "continent-02-clockwork-steppe",
-      "district_id": "district-thunder-coil-basin",
-      "town_node_id": "town-inductor-switchyard",
-      "hunting_area_id": "hunting-area-metronome-bridge",
-      "farming_area_id": "hunting-area-leyden-causeway",
-      "arrival_narrative": "Electro-charged Furral warriors leap from the copper gantries of Inductor Switchyard to hunt rogue clockwork constructs along Corona Arc Cliff and harvest storm-amber on Leyden Causeway."
+      "race_name": "Furral (Electro-Beastfolk Tribe)",
+      "continent_id": "continent-01-hearthbloom-basin",
+      "district_id": "district-cinnamon-bellows-bluff",
+      "town_node_id": "town-cinnamon-mill-haven",
+      "hunting_area_id": "hunting-area-ginger-aqueduct-bridge",
+      "farming_area_id": "hunting-area-cinnamon-bark-viaduct",
+      "convergence_hub_town_id": "town-kilnwatch-bastion",
+      "arrival_narrative": "Young Furral electro-warriors train atop the wind-turbines of Cinnamon-Mill Haven (Lv.1-10), harvesting static amber before converging at Kilnwatch Bastion & Glaze-Barge Quay (Lv.10-20) to form guilds bound for their ancestral Inductor Switchyard."
     },
     {
       "race_id": "race-lunar",
-      "race_name": "Lunar (Astral High-Elf)",
-      "continent_id": "continent-03-shattered-halo",
-      "district_id": "district-starfall-anchorage",
-      "town_node_id": "town-starfall-haven",
-      "hunting_area_id": "hunting-area-orrery-bridge",
-      "farming_area_id": "hunting-area-tether-causeway",
-      "arrival_narrative": "Lunar star-weavers descend the upward waterfalls of Starfall Haven, patrolling Mirror Cascade and gathering astral tether-quartz along Tether Causeway."
+      "race_name": "Lunar (Astral High-Elven Lineage)",
+      "continent_id": "continent-01-hearthbloom-basin",
+      "district_id": "district-porcelain-cradle",
+      "town_node_id": "town-porcelain-loom-sanctuary",
+      "hunting_area_id": "hunting-area-celadon-causeway",
+      "farming_area_id": "hunting-area-resin-arch-tunnel",
+      "convergence_hub_town_id": "town-kilnwatch-bastion",
+      "arrival_narrative": "Lunar star-weavers begin their pilgrimage in Porcelain Loom Sanctuary (Lv.1-10), weaving starlight wards across Celadon Causeway before uniting with all six races at Kilnwatch Bastion (Lv.10-20) to prepare for the sky-ascension to Starfall Haven."
     },
     {
       "race_id": "race-dark-lunar",
-      "race_name": "Dark-Lunar (Umbral Eclipse)",
-      "continent_id": "continent-03-shattered-halo",
-      "district_id": "district-umbrage-prism-atoll",
-      "town_node_id": "town-umbrage-focal-sanctum",
-      "hunting_area_id": "hunting-area-resonance-tether-causeway",
-      "farming_area_id": "hunting-area-violet-spectrum-span",
-      "arrival_narrative": "Dark-Lunar shadow-scholars emerge from Umbrage Focal Sanctum to cull abyssal wraiths across Indigo Caustic Arch and harvest eclipse prisms on Violet Spectrum Span."
+      "race_name": "Dark-Lunar (Umbral Eclipse Lineage)",
+      "continent_id": "continent-01-hearthbloom-basin",
+      "district_id": "district-terracotta-wind-chimes",
+      "town_node_id": "town-carillon-hearth-belfry",
+      "hunting_area_id": "hunting-area-apricot-aqueduct-terrace",
+      "farming_area_id": "hunting-area-chime-pipe-colonnade",
+      "convergence_hub_town_id": "town-kilnwatch-bastion",
+      "arrival_narrative": "Dark-Lunar shadow-scholars keep vigil in Carillon Hearth Belfry (Lv.1-10) listening for Demon-seal tremors in the wind-chime canyons, then join multi-race guilds at Kilnwatch Bastion & Glaze-Barge Quay (Lv.10-20) to unlock the Umbrage Prism Atolls."
     }
   ],
   "long_term_governance_checklist": [
@@ -847,6 +971,15 @@
       "cli_command": "python3 scripts/studio_world_governance.py --audit-bosses",
       "verified": true,
       "evidence": "Rank 1 (Sealed Gods) > Rank 2 (MVP Boss \u2014 Direct God Subordinate) > Rank 3 (Raid Boss \u2014 Dungeon Warden) > Rank 4 (Field Mob) is enforced across all 6 God-Tier entities."
+    },
+    {
+      "gate_id": "GOV-07",
+      "category": "level_10_20_convergence_hub",
+      "title": "Lv.1-10 Same-Continent Racial Starts -> Lv.10-20 All-Race Convergence City (Guilding & Party Hub)",
+      "invariant_rule": "All 6 Playable Races must start on Continent 01 (Lv.1-10) in distinct canon Home Towns and have open-portal reachability to the shared Level 10-20 Convergence Hubs (Kilnwatch Bastion, Glaze-Barge Quay, Pinion Terminus) for guilding, party matchmaking, and quest trading.",
+      "cli_command": "python3 scripts/studio_world_governance.py --check",
+      "verified": true,
+      "evidence": "All 6 Playable Races start in canon Continent 01 towns (Lantern Hollow, Root-Train Roundhouse, Draft-Kiln Post, Cinnamon-Mill Haven, Porcelain Loom Sanctuary, Carillon Hearth Belfry) with verified open-portal paths into Kilnwatch Bastion (Lv.10-20 Primary Convergence Hub)."
     }
   ]
 }

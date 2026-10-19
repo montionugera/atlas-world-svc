@@ -283,10 +283,65 @@ def validate_world_governance(
             f"GOV-06 violation: boss_power_hierarchy.tiers must rank {expected_ranks}, got {tier_by_rank}"
         )
 
+    # GOV-07: Level 10-20 Cross-Race Guild & Party Convergence Hub + Open-Portal Reachability
+    conv = systems.get("cross_race_convergence_hubs") or {}
+    if conv.get("target_level_band") != [10, 20]:
+        errors.append(
+            f"GOV-07 violation: cross_race_convergence_hubs.target_level_band must be [10, 20], got {conv.get('target_level_band')}"
+        )
+    primary_hub_id = str(conv.get("primary_hub_town_id", ""))
+    if primary_hub_id not in nodes_by_id or nodes_by_id[primary_hub_id].get("node_type") != "town":
+        errors.append(
+            f"GOV-07 violation: primary_hub_town_id '{primary_hub_id}' must be an existing canon town node"
+        )
+    hubs_list = conv.get("hubs") or []
+    if len(hubs_list) < 2:
+        errors.append("GOV-07 violation: cross_race_convergence_hubs.hubs must define >= 2 convergence hubs")
+
+    # Verify all 6 playable races start on Continent 01 (Lv.1-10) in distinct towns and can reach primary_hub_id via open portals
+    from collections import deque
+    seen_home_towns: set[str] = set()
+    for rkey, entry in playable_by_key.items():
+        if entry.get("continent_id") != "continent-01-hearthbloom-basin":
+            errors.append(
+                f"GOV-07 violation: Playable race '{rkey}' starter home town must be on 'continent-01-hearthbloom-basin' so all races can converge at Lv.10-20"
+            )
+        if entry.get("starter_level_band") != [1, 10]:
+            errors.append(
+                f"GOV-07 violation: Playable race '{rkey}' must have starter_level_band=[1, 10], got {entry.get('starter_level_band')}"
+            )
+        if entry.get("convergence_hub_town_id") != primary_hub_id:
+            errors.append(
+                f"GOV-07 violation: Playable race '{rkey}' convergence_hub_town_id must match primary_hub_town_id '{primary_hub_id}'"
+            )
+        ht_id = str(entry.get("home_town_id", ""))
+        if ht_id in seen_home_towns:
+            errors.append(f"GOV-07 violation: Duplicate racial home_town_id '{ht_id}'")
+        seen_home_towns.add(ht_id)
+        if ht_id in nodes_by_id and primary_hub_id in nodes_by_id:
+            visited = {ht_id}
+            q = deque([ht_id])
+            found_hub = (ht_id == primary_hub_id)
+            while q and not found_hub:
+                curr = q.popleft()
+                for p_obj in (nodes_by_id[curr].get("portals") or {}).values():
+                    if isinstance(p_obj, dict) and p_obj.get("gate_state") == "open":
+                        nxt = p_obj.get("target_node_id")
+                        if nxt in nodes_by_id and nxt not in visited:
+                            if nxt == primary_hub_id:
+                                found_hub = True
+                                break
+                            visited.add(nxt)
+                            q.append(nxt)
+            if not found_hub:
+                errors.append(
+                    f"GOV-07 violation: Playable race '{rkey}' home town '{ht_id}' cannot reach Lv.10-20 convergence hub '{primary_hub_id}' via open portals"
+                )
+
     # Verify long_term_governance_checklist entries
     gov_checklist = whc.get("long_term_governance_checklist") or []
-    if len(gov_checklist) < 6:
-        errors.append("Governance checklist must contain all 6 gates (GOV-01..GOV-06)")
+    if len(gov_checklist) < 7:
+        errors.append("Governance checklist must contain all 7 gates (GOV-01..GOV-07)")
     for gate in gov_checklist:
         if isinstance(gate, dict) and whc.get("status") == "canon" and not gate.get("verified"):
             errors.append(

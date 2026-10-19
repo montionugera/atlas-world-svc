@@ -4866,6 +4866,20 @@ function renderWhcBigPictureSvg(whc, continents) {
   });
 }
 
+
+function getStudioRaceBinding(districtOrTownId) {
+  const whc = (DATA && DATA.studioPerspectives && DATA.studioPerspectives.worldHistoryAndConcept) || {};
+  const races = (whc.race_taxonomy && whc.race_taxonomy.playable_and_mob_races) || [];
+  return races.find(r => r.district_id === districtOrTownId || r.home_town_id === districtOrTownId || r.ancestral_expedition_citadel_id === districtOrTownId) || null;
+}
+
+function getStudioConvergenceHub(districtOrTownId) {
+  const whc = (DATA && DATA.studioPerspectives && DATA.studioPerspectives.worldHistoryAndConcept) || {};
+  const conv = (whc.shared_world_systems && whc.shared_world_systems.cross_race_convergence_hubs) || {};
+  const hubs = conv.hubs || [];
+  return hubs.find(h => h.district_id === districtOrTownId || h.town_node_id === districtOrTownId) || null;
+}
+
 function renderContinentBigPictureSvg(continents, districts, activeContinent) {
   const isL2 = STUDIO_CARTO_THEME === 'l2hub';
   const sp = (DATA && DATA.studioPerspectives) || {};
@@ -4965,10 +4979,16 @@ function renderContinentBigPictureSvg(continents, districts, activeContinent) {
     const townNode = dNodes.find(n => n.node_type === 'town');
     const huntNodes = dNodes.filter(n => n.node_type === 'hunting_area');
     const dngNode = dNodes.find(n => n.node_type === 'dungeon');
+    const raceBind = getStudioRaceBinding(d.id) || (townNode && getStudioRaceBinding(townNode.id));
+    const isStarterRaceHome = Boolean(raceBind && raceBind.district_id === d.id);
+    const convHub = getStudioConvergenceHub(d.id) || (townNode && getStudioConvergenceHub(townNode.id));
+    const roleTag = convHub
+      ? `🤝 LV.${(convHub.level_band || [10,20]).join("-")} ALL-RACE GUILD & PARTY HUB`
+      : (isStarterRaceHome ? `${raceBind.icon || "🧬"} ${raceBind.name.split(" ")[0].toUpperCase()} HOME (Lv.1–10)` : (raceBind ? `${raceBind.icon || "🧬"} ${raceBind.name.split(" ")[0].toUpperCase()} CITADEL` : ""));
 
     const poiObj = {
-      title: `${dCode} · ${d.name}`,
-      category: `District Territory · Lv. ${lvRange} (${st.toUpperCase()})`,
+      title: `${dCode} · ${d.name}${roleTag ? " — " + roleTag : ""}`,
+      category: `${roleTag ? roleTag + " · " : ""}District Territory · Lv. ${lvRange} (${st.toUpperCase()})`,
       thumb: (townNode && townNode.terrain_tile && townNode.terrain_tile.preview_thumbnail) || '/thumbs/buildings/tower_round_roof_a.webp',
       hoursOrStatus: `${st.toUpperCase()} · Contains: 🏰 ${townNode ? 1 : 0} Town, ⚔️ ${huntNodes.length} Hunting, 🕳️ ${dngNode ? 1 : 0} Catacomb`,
       summary: d.core_rationale || '',
@@ -4981,10 +5001,18 @@ function renderContinentBigPictureSvg(continents, districts, activeContinent) {
       inspectId: d.id,
       svgX: rc.x,
       svgY: rc.y,
-      connections: dNodes.map(n => ({
-        label: `${n.node_type === 'town' ? '🏰 TOWN:' : (n.node_type === 'dungeon' ? '🕳️ CATACOMB:' : '⚔️ HUNTING:')} ${n.name}`,
-        badge: `Lv.${(n.level_range || [1, 15]).join('–')} · ${n.status.toUpperCase()}`
-      }))
+      connections: [
+        ...(convHub ? (convHub.guilding_and_party_features || []).map(f => ({ label: `🤝 ${f}`, badge: `Lv.${(convHub.level_band || [10,20]).join("-")} HUB` })) : []),
+        ...(isStarterRaceHome ? [
+          { label: `${raceBind.icon || "🧬"} Race Starter: ${raceBind.name} -> Home Town: ${raceBind.home_town_name}`, badge: "Lv.1–10 START" },
+          { label: `🌾 Farming Drops: ${(raceBind.farming_resources || []).join(", ")}`, badge: "CRAFTING" },
+          { label: `🤝 Lv.10–20 Convergence Target: Kilnwatch Bastion (Guilding & Party Hub)`, badge: "LV.10–20 HUB" }
+        ] : []),
+        ...dNodes.map(n => ({
+          label: `${n.node_type === 'town' ? '🏰 TOWN:' : (n.node_type === 'dungeon' ? '🕳️ CATACOMB:' : '⚔️ HUNTING:')} ${n.name}`,
+          badge: `Lv.${(n.level_range || [1, 15]).join('–')} · ${n.status.toUpperCase()}`
+        }))
+      ]
     };
 
     const polyFill = isSel
@@ -5028,6 +5056,20 @@ function renderContinentBigPictureSvg(continents, districts, activeContinent) {
          ondblclick="setStudioPerspective('district', { continentId: '${escapeHtml(activeContinent.id)}', districtId: '${escapeHtml(d.id)}', inspectId: '${escapeHtml(d.id)}' }); STUDIO_MAP_SELECTED_POI=null;">
         <polygon points="${rc.poly}" fill="${polyFill}" stroke="${polyStroke}" stroke-width="${isSel ? 3.2 : 1.6}" ${isSel ? '' : 'stroke-dasharray="7 4"'}/>
 
+        ${convHub ? `
+          <!-- Pulsing All-Race Lv.10-20 Convergence Hub Halo & Pill -->
+          <circle cx="${rc.x}" cy="${rc.y - 4}" r="30" fill="rgba(234,179,8,0.18)" stroke="#fde047" stroke-width="2" stroke-dasharray="5 3"/>
+          <rect x="${rc.x - 92}" y="${rc.y - 66}" width="184" height="17" rx="8" fill="#dc2626" stroke="#fde047" stroke-width="1.5"/>
+          <text x="${rc.x}" y="${rc.y - 54}" text-anchor="middle" fill="#ffffff" font-size="8.5" font-weight="900" font-family="monospace">
+            ${escapeHtml(roleTag)}
+          </text>
+        ` : (roleTag ? `
+          <!-- Race Home Town / Citadel Pill -->
+          <rect x="${rc.x - 84}" y="${rc.y - 65}" width="168" height="16" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.3"/>
+          <text x="${rc.x}" y="${rc.y - 54}" text-anchor="middle" fill="#7dd3fc" font-size="8.5" font-weight="900" font-family="monospace">
+            ${escapeHtml(roleTag)}
+          </text>
+        ` : "")}
         <!-- District Code & Name Banner -->
         <rect x="${rc.x - 78}" y="${rc.y - 46}" width="156" height="19" rx="4" fill="${isSel ? '#eab308' : 'rgba(18,14,9,0.88)'}" stroke="${isSel ? '#ffffff' : '#f59e0b'}" stroke-width="1.2"/>
         <text x="${rc.x}" y="${rc.y - 33}" text-anchor="middle" fill="${isSel ? '#0f172a' : '#fde68a'}" font-size="9.5" font-weight="900" font-family="monospace">
@@ -5330,11 +5372,17 @@ function renderDistrictBigPictureSvg(activeContinent, activeDistrict, allDistric
     ` : ''}
   `;
 
+  const distRaceBind = getStudioRaceBinding(activeDistrict.id);
+  const distConvHub = getStudioConvergenceHub(activeDistrict.id);
   // Top-left District Switcher pills so you can jump between D01..D11 inside the District view too!
   const districtControlsHtml = `
     <button type="button" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(activeContinent.id)}', districtId: '${escapeHtml(activeDistrict.id)}', inspectId: '${escapeHtml(activeDistrict.id)}' }); STUDIO_MAP_SELECTED_POI=null;"
             style="padding:5px 10px;border-radius:6px;font-size:10.5px;font-weight:800;cursor:pointer;border:1px solid #38bdf8;background:rgba(15,23,42,0.92);color:#7dd3fc">
       ⬅ Back to 🌍 ${escapeHtml(activeContinent.name)} (${distCode} Highlighted)
+    </button>
+    <button type="button" onclick="setStudioPerspective('district', { continentId: 'continent-01-hearthbloom-basin', districtId: 'district-kilnfire-terraces', nodeId: 'town-kilnwatch-bastion', inspectId: 'district-kilnfire-terraces' }); STUDIO_MAP_SELECTED_POI=null;"
+            style="padding:5px 10px;border-radius:6px;font-size:10.5px;font-weight:900;cursor:pointer;border:1.5px solid #fde047;background:#dc2626;color:#ffffff">
+      🤝 Lv.10–20 All-Race Guild Hub (Kilnwatch Bastion) ➔
     </button>
   ` + sortedContinentDistricts.slice(0, 6).map((d, i) => {
     const code = `D${String(i + 1).padStart(2, '0')}`;
@@ -5883,7 +5931,36 @@ function renderStudioWorldHistoryPerspective(whc, continents) {
             </section>
 
             <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
-              <div class="mono" style="font-size:11px;color:#eab308">SHARED WORLD INSTITUTIONS · QUEST LOOP · BOSS HIERARCHY LAW</div>
+              <div class="mono" style="font-size:11px;color:#eab308">LV.10–20 ALL-RACE CONVERGENCE CITIES · SHARED INSTITUTIONS · QUEST LOOP · BOSS HIERARCHY</div>
+              ${(() => {
+                const conv = sys.cross_race_convergence_hubs || {};
+                const hubs = conv.hubs || [];
+                if (!hubs.length) return "";
+                return `
+                  <div style="margin:8px 0 14px;padding:12px;border-radius:8px;background:rgba(220,38,38,0.10);border:1.5px solid rgba(250,204,21,0.55)">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
+                      <strong style="font-size:13px;color:#fde047">🤝 Level ${(conv.target_level_band || [10,20]).join("–")} Cross-Race Convergence Hubs (Guilding, Party Matchmaking & Quest Trading)</strong>
+                      <span class="mono" style="font-size:10px;padding:2px 8px;border-radius:999px;background:#dc2626;color:#ffffff">ALL 6 RACES UNITE AT LV.10–20</span>
+                    </div>
+                    <p style="font-size:11.5px;color:var(--joy-text-secondary);margin:4px 0 10px">${escapeHtml(conv.convergence_rule || "")}</p>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px">
+                      ${hubs.map(h => `
+                        <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+                          <div style="font-weight:700;font-size:12px">🏰 ${escapeHtml(h.town_name)}</div>
+                          <div class="mono" style="font-size:10px;color:#38bdf8;margin:2px 0 6px">Lv.${(h.level_band || [10,20]).join("–")} · ${escapeHtml(h.district_id)}</div>
+                          <div style="font-size:11px;color:var(--joy-text-secondary);margin-bottom:6px">${escapeHtml(h.hub_role)}</div>
+                          <ul style="margin:0 0 8px;padding-left:16px;font-size:10.5px;color:#fde68a">
+                            ${(h.guilding_and_party_features || []).map(f => `<li>${escapeHtml(f)}</li>`).join("")}
+                          </ul>
+                          <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { continentId: '${escapeHtml(h.continent_id)}', districtId: '${escapeHtml(h.district_id)}', nodeId: '${escapeHtml(h.town_node_id)}', inspectId: '${escapeHtml(h.town_node_id)}' })">
+                            🤝 Inspect Convergence Hub (${escapeHtml(h.town_node_id)}) ➔
+                          </button>
+                        </div>
+                      `).join("")}
+                    </div>
+                  </div>
+                `;
+              })()}
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:8px;margin-bottom:14px">
                 <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
                   <div style="font-weight:700;font-size:13px">🛡️ ${escapeHtml(guild.name || "Adventure Guild")} (<span class="mono">${escapeHtml(guild.allegiance || "neutral_no_side")}</span>)</div>

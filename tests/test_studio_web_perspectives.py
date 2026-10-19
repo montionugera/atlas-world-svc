@@ -50,7 +50,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertEqual(gov_rep["summary"]["monsterEcologyRacesCount"], 6)
         self.assertEqual(gov_rep["summary"]["godTierEntitiesCount"], 6)
         self.assertEqual(gov_rep["summary"]["historyChaptersCount"], 4)
-        self.assertEqual(gov_rep["summary"]["governanceGatesVerified"], 6)
+        self.assertEqual(gov_rep["summary"]["governanceGatesVerified"], 7)
 
     def test_long_term_world_governance_and_scaffolding_tools(self) -> None:
         errors, report = gov.validate_world_governance()
@@ -63,10 +63,10 @@ class TestStudioWebPerspectives(unittest.TestCase):
             track_key="side_quest",
             title="Leyden Coil Storm Patrol",
         )
-        self.assertEqual(quest_tpl["home_town_node_id"], "town-inductor-switchyard")
+        self.assertEqual(quest_tpl["home_town_node_id"], "town-cinnamon-mill-haven")
         self.assertEqual(quest_tpl["guild_allegiance"], "neutral_no_side")
-        self.assertEqual(quest_tpl["target_hunting_area_id"], "hunting-area-metronome-bridge")
-        self.assertEqual(quest_tpl["target_farming_area_id"], "hunting-area-leyden-causeway")
+        self.assertEqual(quest_tpl["target_hunting_area_id"], "hunting-area-ginger-aqueduct-bridge")
+        self.assertEqual(quest_tpl["target_farming_area_id"], "hunting-area-cinnamon-bark-viaduct")
 
         mvp_tpl = gov.scaffold_boss_template(
             gov.DEFAULT_STUDIO_DIR,
