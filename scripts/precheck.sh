@@ -112,6 +112,27 @@ contracts_build() { (cd "$REPO_ROOT/contracts" && npm run build); }
 contracts_tests() { (cd "$REPO_ROOT/contracts" && npx jest --maxWorkers="$ATLAS_MAX_WORKERS"); }
 
 
+# server-rs embeds content/**/*.json (outside the crate) with include_str!, and
+# cargo records those in dep-info as ABSOLUTE paths of whichever checkout built
+# last. A target that was shared or cloned can therefore hold a server-rs
+# fingerprint that watches ANOTHER worktree's JSON, and cargo reuses the test
+# binary after this worktree's JSON changed. Drop every server-rs fingerprint
+# whose dep-info names a /server-rs/ path not under this checkout, so cargo
+# rebuilds it. A byte count, not a parse: the encoded dep-info is binary.
+scrub_foreign_server_rs_depinfo() {
+  local f d all own dropped=0
+  # One grep over all dep-info files narrows to those naming any /server-rs/ path.
+  while IFS= read -r f; do
+    d="$(dirname "$f")"
+    [ -d "$d" ] || continue
+    all=$(LC_ALL=C grep -aoF "/server-rs/" "$f" | wc -l)
+    own=$(LC_ALL=C grep -aoF "$REPO_ROOT/server-rs/" "$f" | wc -l)
+    if [ "$all" -ne "$own" ]; then rm -rf "$d"; dropped=$((dropped + 1)); fi
+  done < <(find "$1"/*/.fingerprint -maxdepth 2 -path '*/server-rs-*/dep-*' -type f -print0 2>/dev/null | LC_ALL=C xargs -0 grep -laF "/server-rs/" 2>/dev/null)
+  [ "$dropped" -gt 0 ] && echo "🧹 dropped $dropped server-rs fingerprint(s) recording another checkout's paths — server-rs will rebuild"
+  return 0
+}
+
 # Rust server-rs quality gate (fmt, clippy, unit tests)
 rust_gates() {
   if [ ! -d "$REPO_ROOT/server-rs" ]; then
@@ -119,9 +140,30 @@ rust_gates() {
     return 0
   fi
   export PATH="$HOME/.cargo/bin:$PATH"
-  if [ -z "${CARGO_TARGET_DIR:-}" ] && [ -n "$MAIN_ROOT" ]; then
-    export CARGO_TARGET_DIR="$MAIN_ROOT/server-rs/target"
+  # Each worktree builds into its OWN server-rs/target (gitignored). A target
+  # shared with the primary checkout made worktrees evict each other's
+  # incremental cache (touch rebuild 12-16s same path vs 111s after another
+  # path built). A new worktree's target is seeded once by APFS clone (cp -c,
+  # copy-on-write, ~68s) from the primary's; if cloning fails it starts empty
+  # (slow, still correct). Under 50GB free it falls back to the shared target;
+  # the dep-info scrub below keeps either choice sound.
+  if [ -z "${CARGO_TARGET_DIR:-}" ]; then
+    local own="$REPO_ROOT/server-rs/target" main="$MAIN_ROOT/server-rs/target" free_gb
+    if [ -n "$MAIN_ROOT" ] && [ "$REPO_ROOT" != "$MAIN_ROOT" ] && [ ! -d "$own" ] && [ -d "$main" ]; then
+      free_gb=$(df -Pk "$REPO_ROOT" | awk 'NR==2{print int($4/1048576)}')
+      if [ "${free_gb:-0}" -lt 50 ]; then
+        echo "⚠️  only ${free_gb:-?}GB free — using the shared target $main"
+        own="$main"
+      elif cp -c -R "$main" "$own.seed.$$" 2>/dev/null && mv "$own.seed.$$" "$own"; then
+        echo "🌱 seeded $own from $main (APFS clone)"
+      else
+        rm -rf "$own.seed.$$"
+        echo "⚠️  could not clone $main — building $own from scratch"
+      fi
+    fi
+    export CARGO_TARGET_DIR="$own"
   fi
+  scrub_foreign_server_rs_depinfo "$CARGO_TARGET_DIR"
   echo "🦀 Checking Rust server-rs formatting, lints, and tests (target: ${CARGO_TARGET_DIR:-default}, jobs: $ATLAS_MAX_WORKERS)..."
   (cd "$REPO_ROOT/server-rs" && cargo fmt --check && cargo clippy --jobs "$ATLAS_MAX_WORKERS" --all-targets -- -D warnings && cargo test --jobs "$ATLAS_MAX_WORKERS" -- --test-threads="$ATLAS_MAX_WORKERS")
 }
