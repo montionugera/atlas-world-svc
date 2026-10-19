@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Long-Term World Content Governance, Checklist Validator & Scaffolding CLI.
 
-Enforces the 6 Long-Term World Studio Governance Gates (GOV-01..GOV-06):
+Enforces the 9 Long-Term World Studio Governance Gates (GOV-01..GOV-09):
   - GOV-01: 6 Playable/Mob Races (human_demi_human, lunar, ogre_orc, dark_lunar,
             dwarf, furral) bound to canon Home Towns + open portals to adjacent
             Hunting & Farming areas.
@@ -14,6 +14,9 @@ Enforces the 6 Long-Term World Studio Governance Gates (GOV-01..GOV-06):
   - GOV-04: Shared Neutral Adventure Guild ('neutral_no_side') & Blacksmith Clan.
   - GOV-05: 3-Track Quest Loop (main_quest, job_quest, side_quest).
   - GOV-06: Strict Boss Hierarchy (GOD_SEALED > MVP_GOD_SUBORDINATE > RAID_BOSS > MINI_BOSS > NORMAL_MOB).
+  - GOV-07: Level 10-20 Cross-Race Guild & Party Convergence Hub + Open-Portal Reachability.
+  - GOV-08: Level 1-99 Growth Path (Stages A..L) with Lv.1-25 Early Focus (A, B, C + D bridge).
+  - GOV-09: World Continent Area Map Chain (Lv.1-25 Hub-and-Spoke + 3-Continent 64-Map Portal Chain).
 
 Also provides deterministic scaffolding generators (--scaffold-quest, --scaffold-boss)
 for long-term content authoring.
@@ -22,6 +25,7 @@ for long-term content authoring.
 from __future__ import annotations
 
 import argparse
+from collections import deque
 import json
 from pathlib import Path
 import sys
@@ -92,10 +96,20 @@ def _load_continents_by_id(studio_dir: Path) -> dict[str, dict[str, Any]]:
     return continents
 
 
+def _has_open_portal(nodes_by_id: dict[str, dict[str, Any]], src_id: str, dst_id: str) -> bool:
+    node = nodes_by_id.get(src_id)
+    if not node:
+        return False
+    for p_obj in (node.get("portals") or {}).values():
+        if isinstance(p_obj, dict) and p_obj.get("gate_state") == "open" and p_obj.get("target_node_id") == dst_id:
+            return True
+    return False
+
+
 def validate_world_governance(
     studio_dir: Path = DEFAULT_STUDIO_DIR,
 ) -> tuple[list[str], dict[str, Any]]:
-    """Validate GOV-01..GOV-06 on world_history_and_concept.json and return (errors, report)."""
+    """Validate GOV-01..GOV-09 on world_history_and_concept.json and return (errors, report)."""
     errors: list[str] = []
     whc_path = studio_dir / "world_history_and_concept.json"
     if not whc_path.exists():
@@ -299,7 +313,6 @@ def validate_world_governance(
         errors.append("GOV-07 violation: cross_race_convergence_hubs.hubs must define >= 2 convergence hubs")
 
     # Verify all 6 playable races start on Continent 01 (Lv.1-10) in distinct towns and can reach primary_hub_id via open portals
-    from collections import deque
     seen_home_towns: set[str] = set()
     for rkey, entry in playable_by_key.items():
         if entry.get("continent_id") != "continent-01-hearthbloom-basin":
@@ -382,10 +395,72 @@ def validate_world_governance(
         if not isinstance(deep.get(req_stage), dict):
             errors.append(f"GOV-08 violation: early_focus_1_to_25_deep_dive missing '{req_stage}'")
 
+    # GOV-09: World Continent Area Map Chain (Lv.1-25 Hub-and-Spoke + 3-Continent 64-Map Portal Chain)
+    wcmc = systems.get("world_continent_map_chain") or {}
+    if not isinstance(wcmc, dict) or not wcmc.get("chain_architecture_law"):
+        errors.append("GOV-09 violation: missing 'world_continent_map_chain.chain_architecture_law' in shared_world_systems")
+    else:
+        ef_chain = wcmc.get("early_focus_hub_and_spoke_1_to_25") or {}
+        spokes = ef_chain.get("stage_a_spokes_1_to_10") or []
+        if len(spokes) != 6:
+            errors.append(f"GOV-09 violation: stage_a_spokes_1_to_10 must contain 6 racial spokes, got {len(spokes)}")
+        for sp in spokes:
+            if not isinstance(sp, dict):
+                continue
+            rkey = str(sp.get("race_key", ""))
+            pchain = sp.get("portal_chain_to_kilnwatch") or []
+            if not pchain or pchain[-1] != primary_hub_id:
+                errors.append(
+                    f"GOV-09 violation: Spoke '{rkey}' portal_chain_to_kilnwatch must end at '{primary_hub_id}'"
+                )
+            for idx in range(len(pchain) - 1):
+                u, v = str(pchain[idx]), str(pchain[idx + 1])
+                if not _has_open_portal(nodes_by_id, u, v):
+                    errors.append(
+                        f"GOV-09 violation: Spoke '{rkey}' broken open-portal link '{u}' -> '{v}'"
+                    )
+            cat_id = str(sp.get("tutorial_catacomb_id", ""))
+            if cat_id not in nodes_by_id:
+                errors.append(f"GOV-09 violation: Spoke '{rkey}' tutorial_catacomb_id '{cat_id}' not found")
+
+        cont_chains = wcmc.get("continent_chains") or []
+        if len(cont_chains) != 3:
+            errors.append(f"GOV-09 violation: continent_chains must contain 3 continents, got {len(cont_chains)}")
+        for cc in cont_chains:
+            if not isinstance(cc, dict):
+                continue
+            cid = str(cc.get("continent_id", ""))
+            if cid not in continents_by_id:
+                errors.append(f"GOV-09 violation: continent_chains references unknown continent '{cid}'")
+            mchain = cc.get("ordered_mainline_node_chain") or []
+            if len(mchain) < 16:
+                errors.append(f"GOV-09 violation: Continent '{cid}' ordered_mainline_node_chain too short ({len(mchain)})")
+            for idx in range(len(mchain) - 1):
+                u, v = str(mchain[idx]), str(mchain[idx + 1])
+                if not _has_open_portal(nodes_by_id, u, v):
+                    errors.append(
+                        f"GOV-09 violation: Continent '{cid}' ordered_mainline_node_chain broken open-portal link '{u}' -> '{v}'"
+                    )
+
+        bridges = wcmc.get("inter_continent_bridges") or []
+        if len(bridges) < 2:
+            errors.append("GOV-09 violation: inter_continent_bridges must define >= 2 continental bridges")
+        for br in bridges:
+            if not isinstance(br, dict):
+                continue
+            bid = str(br.get("bridge_id", ""))
+            bseq = br.get("portal_node_sequence") or []
+            for idx in range(len(bseq) - 1):
+                u, v = str(bseq[idx]), str(bseq[idx + 1])
+                if not _has_open_portal(nodes_by_id, u, v):
+                    errors.append(
+                        f"GOV-09 violation: Inter-continent bridge '{bid}' broken open-portal link '{u}' -> '{v}'"
+                    )
+
     # Verify long_term_governance_checklist entries
     gov_checklist = whc.get("long_term_governance_checklist") or []
-    if len(gov_checklist) < 8:
-        errors.append("Governance checklist must contain all 8 gates (GOV-01..GOV-08)")
+    if len(gov_checklist) < 9:
+        errors.append("Governance checklist must contain all 9 gates (GOV-01..GOV-09)")
     for gate in gov_checklist:
         if isinstance(gate, dict) and whc.get("status") == "canon" and not gate.get("verified"):
             errors.append(
@@ -556,7 +631,39 @@ def _print_audit_report(studio_dir: Path, section: str = "all") -> int:
                     f"          Items: {seg['consumable_unlocks']} | Boss: {seg['boss_milestone']}"
                 )
 
-    print("\n[8] LONG-TERM GOVERNANCE CHECKLIST GATES (GOV-01..GOV-08):")
+    if section in ("all", "map_chain"):
+        wcmc = sys_cfg.get("world_continent_map_chain", {})
+        ef = wcmc.get("early_focus_hub_and_spoke_1_to_25", {})
+        print("\n[7C] WORLD CONTINENT AREA MAP CHAIN (LV.1-25 HUB-AND-SPOKE + 3-CONTINENT CHAIN):")
+        print(f"  Law: {wcmc.get('chain_architecture_law')}")
+        print("  * Stage A (Lv.1-10) — 6 Racial Starter Spokes -> Kilnwatch Convergence:")
+        for sp in ef.get("stage_a_spokes_1_to_10", []):
+            print(
+                f"      - {sp['race_name']} ({sp['home_town_id']}) [{sp['district_id']}]:\n"
+                f"          Chain   : {' -> '.join(sp['portal_chain_to_kilnwatch'])}\n"
+                f"          Catacomb: {sp['tutorial_catacomb_id']}"
+            )
+        sb = ef.get("stage_b_convergence_hub_10_to_20", {})
+        print(f"  * Stage B (Lv.10-20) — All-Race Convergence Hub: {sb.get('hub_town_id')} [{sb.get('district_id')}]")
+        print(f"      Hunting Grounds: {', '.join(sb.get('connected_party_hunting_grounds', []))}")
+        sc = ef.get("stage_c_boss_and_bridge_20_to_25", {})
+        print("  * Stage C (Lv.20-25) — Dual Raid Boss & Continental Bridge Branches:")
+        print(f"      West Raid  : {' -> '.join(sc.get('west_river_raid_branch', []))}")
+        print(f"      East Bridge: {' -> '.join(sc.get('east_continental_bridge_branch', []))}")
+        print("  * 3-Continent Mainline Node Chains:")
+        for cc in wcmc.get("continent_chains", []):
+            print(
+                f"      - {cc['continent_name']} ({cc['continent_id']}, Lv.{cc['level_band'][0]}-{cc['level_band'][1]}, Stages {', '.join(cc['growth_stages'])}):\n"
+                f"          Mainline ({len(cc['ordered_mainline_node_chain'])} nodes): {' -> '.join(cc['ordered_mainline_node_chain'])}"
+            )
+        print("  * Inter-Continent Bridges:")
+        for br in wcmc.get("inter_continent_bridges", []):
+            print(
+                f"      - {br['bridge_id']} ({br['from_continent_id']} -> {br['to_continent_id']} | {br.get('growth_stage_transition', '')}):\n"
+                f"          Route: {' -> '.join(br['portal_node_sequence'])}"
+            )
+
+    print("\n[8] LONG-TERM GOVERNANCE CHECKLIST GATES (GOV-01..GOV-09):")
     for g in report.get("gates", []):
         mark = "PASS" if g.get("verified") else "FAIL"
         print(f"  [{mark}] {g['gate_id']} — {g['title']}")
@@ -569,7 +676,7 @@ def _print_audit_report(studio_dir: Path, section: str = "all") -> int:
             print(f"  - {err}")
         return 1
 
-    print("\nALL 6 LONG-TERM GOVERNANCE GATES PASSED (0 errors).")
+    print("\nALL 9 LONG-TERM GOVERNANCE GATES PASSED (0 errors).")
     return 0
 
 
@@ -578,7 +685,7 @@ def main(argv: list[str] | None = None) -> int:
         description="Long-Term World Studio Governance Validator & Content Scaffolding Tool."
     )
     parser.add_argument("--studio-dir", type=Path, default=DEFAULT_STUDIO_DIR)
-    parser.add_argument("--check", action="store_true", help="Run GOV-01..GOV-06 checklist validation.")
+    parser.add_argument("--check", action="store_true", help="Run GOV-01..GOV-09 checklist validation.")
     parser.add_argument("--audit", action="store_true", help="Print full governance & lore audit report.")
     parser.add_argument("--audit-races", action="store_true", help="Audit 6 playable + 6 monster races.")
     parser.add_argument("--audit-history", action="store_true", help="Audit 4 history chapters + 6 sealed gods.")
@@ -586,6 +693,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--audit-quests", action="store_true", help="Audit 3-track quest progression loop.")
     parser.add_argument("--audit-bosses", action="store_true", help="Audit God > MVP > Raid Boss hierarchy.")
     parser.add_argument("--audit-growth", action="store_true", help="Audit Level 1-99 Growth Path (A..L) & Lv.1-25 Focus.")
+    parser.add_argument("--audit-map-chain", action="store_true", help="Audit World Continent Area Map Chain (Lv.1-25 Hub-and-Spoke + 3-Continent Chain).")
     parser.add_argument("--json", action="store_true", help="Emit JSON output for --check.")
 
     # Scaffolding sub-options
@@ -624,6 +732,8 @@ def main(argv: list[str] | None = None) -> int:
         return _print_audit_report(args.studio_dir, "bosses")
     if args.audit_growth:
         return _print_audit_report(args.studio_dir, "growth")
+    if args.audit_map_chain:
+        return _print_audit_report(args.studio_dir, "map_chain")
     if args.audit:
         return _print_audit_report(args.studio_dir, "all")
 

@@ -1301,6 +1301,382 @@
           ]
         }
       }
+    },
+    "world_continent_map_chain": {
+      "chain_architecture_law": "Hub-and-Spoke Radial Convergence on Continent 01 (Stages A->B->C, Lv.1\u201325) transitioning via Cinder Apron & Pinion Terminus into the Continent 02 Linear Gear-Highway (Stages D->E, Lv.25\u201340), and ascending via the Astrolabe Rift into the Continent 03 Vertical Sky-Archipelago Ring (Stages F->L, Lv.40\u201399).",
+      "early_focus_hub_and_spoke_1_to_25": {
+        "stage_a_spokes_1_to_10": [
+          {
+            "spoke_id": "spoke-01-human-teacup",
+            "race_key": "human_demi_human",
+            "race_name": "Human / Demi-Human",
+            "district_id": "district-teacup-meadows",
+            "home_town_id": "town-lantern-hollow",
+            "hunting_node_id": "hunting-area-clover-south-gate",
+            "farming_node_id": "hunting-area-kiln-east-orchard",
+            "tutorial_catacomb_id": "dungeon-kiln-cellar",
+            "portal_chain_to_kilnwatch": [
+              "town-lantern-hollow",
+              "hunting-area-kiln-east-orchard",
+              "town-kilnwatch-bastion"
+            ]
+          },
+          {
+            "spoke_id": "spoke-02-ogre-ash-bellows",
+            "race_key": "ogre_orc",
+            "race_name": "Ogre / Orc",
+            "district_id": "district-ash-bellows-trench",
+            "home_town_id": "town-draft-kiln-post",
+            "hunting_node_id": "hunting-area-firebrick-duct",
+            "farming_node_id": "hunting-area-celadon-causeway",
+            "tutorial_catacomb_id": "dungeon-ember-bellows-chamber",
+            "portal_chain_to_kilnwatch": [
+              "town-draft-kiln-post",
+              "hunting-area-firebrick-duct",
+              "town-kilnwatch-bastion"
+            ]
+          },
+          {
+            "spoke_id": "spoke-03-lunar-porcelain",
+            "race_key": "lunar",
+            "race_name": "Lunar (Astral High-Elf)",
+            "district_id": "district-porcelain-cradle",
+            "home_town_id": "town-porcelain-loom-sanctuary",
+            "hunting_node_id": "hunting-area-celadon-causeway",
+            "farming_node_id": "hunting-area-resin-arch-tunnel",
+            "tutorial_catacomb_id": "dungeon-medallion-heart-vault",
+            "portal_chain_to_kilnwatch": [
+              "town-porcelain-loom-sanctuary",
+              "hunting-area-celadon-causeway",
+              "town-draft-kiln-post",
+              "hunting-area-firebrick-duct",
+              "town-kilnwatch-bastion"
+            ]
+          },
+          {
+            "spoke_id": "spoke-04-dwarf-amber-root",
+            "race_key": "dwarf",
+            "race_name": "Dwarf (Tontatta Micro-Titans)",
+            "district_id": "district-amber-root-hollows",
+            "home_town_id": "town-root-train-roundhouse",
+            "hunting_node_id": "hunting-area-cobalt-sandbar-ford",
+            "farming_node_id": "hunting-area-resin-arch-tunnel",
+            "tutorial_catacomb_id": "dungeon-sap-heart-cistern",
+            "portal_chain_to_kilnwatch": [
+              "town-root-train-roundhouse",
+              "hunting-area-resin-arch-tunnel",
+              "town-porcelain-loom-sanctuary",
+              "hunting-area-celadon-causeway",
+              "town-draft-kiln-post",
+              "hunting-area-firebrick-duct",
+              "town-kilnwatch-bastion"
+            ]
+          },
+          {
+            "spoke_id": "spoke-05-dark-lunar-chimes",
+            "race_key": "dark_lunar",
+            "race_name": "Dark-Lunar (Umbral Eclipse)",
+            "district_id": "district-terracotta-wind-chimes",
+            "home_town_id": "town-carillon-hearth-belfry",
+            "hunting_node_id": "hunting-area-apricot-aqueduct-terrace",
+            "farming_node_id": "hunting-area-chime-pipe-colonnade",
+            "tutorial_catacomb_id": "dungeon-ceramic-resonator-crypt",
+            "portal_chain_to_kilnwatch": [
+              "town-carillon-hearth-belfry",
+              "hunting-area-chime-pipe-colonnade",
+              "town-glaze-barge-quay",
+              "hunting-area-cobalt-sandbar-ford",
+              "town-root-train-roundhouse",
+              "hunting-area-resin-arch-tunnel",
+              "town-porcelain-loom-sanctuary",
+              "hunting-area-celadon-causeway",
+              "town-draft-kiln-post",
+              "hunting-area-firebrick-duct",
+              "town-kilnwatch-bastion"
+            ]
+          },
+          {
+            "spoke_id": "spoke-06-furral-cinnamon",
+            "race_key": "furral",
+            "race_name": "Furral (Electro-Beastfolk)",
+            "district_id": "district-cinnamon-bellows-bluff",
+            "home_town_id": "town-cinnamon-mill-haven",
+            "hunting_node_id": "hunting-area-ginger-aqueduct-bridge",
+            "farming_node_id": "hunting-area-cinnamon-bark-viaduct",
+            "tutorial_catacomb_id": "dungeon-spice-kiln-cellar",
+            "portal_chain_to_kilnwatch": [
+              "town-cinnamon-mill-haven",
+              "hunting-area-cinnamon-bark-viaduct",
+              "town-saffron-press-village",
+              "hunting-area-apricot-aqueduct-terrace",
+              "town-carillon-hearth-belfry",
+              "hunting-area-chime-pipe-colonnade",
+              "town-glaze-barge-quay",
+              "hunting-area-cobalt-sandbar-ford",
+              "town-root-train-roundhouse",
+              "hunting-area-resin-arch-tunnel",
+              "town-porcelain-loom-sanctuary",
+              "hunting-area-celadon-causeway",
+              "town-draft-kiln-post",
+              "hunting-area-firebrick-duct",
+              "town-kilnwatch-bastion"
+            ]
+          }
+        ],
+        "stage_b_convergence_hub_10_to_20": {
+          "hub_town_id": "town-kilnwatch-bastion",
+          "district_id": "district-kilnfire-terraces",
+          "unlocked_systems": [
+            "1st Class Change Job Promotion (Swordman, Mage, Archer, Acolyte, Thief/Scout, Tinker-Smith)",
+            "Cross-Race Guild Registration Charter (Gilding)",
+            "Neutral Adventure Guild E-Tier Party Commissions",
+            "Blacksmith Clan Six-Anvil Combined Racial Alloy Smelting"
+          ],
+          "connected_party_hunting_grounds": [
+            "hunting-area-kiln-east-orchard",
+            "hunting-area-firebrick-duct",
+            "hunting-area-cinder-apron",
+            "hunting-area-celadon-causeway"
+          ],
+          "connected_catacomb_dungeons": [
+            "dungeon-kiln-cellar",
+            "dungeon-medallion-heart-vault",
+            "dungeon-sap-heart-cistern"
+          ]
+        },
+        "stage_c_boss_and_bridge_20_to_25": {
+          "west_river_raid_branch": [
+            "town-kilnwatch-bastion",
+            "hunting-area-firebrick-duct",
+            "town-draft-kiln-post",
+            "dungeon-ember-bellows-chamber",
+            "hunting-area-celadon-causeway",
+            "town-porcelain-loom-sanctuary",
+            "hunting-area-resin-arch-tunnel",
+            "town-root-train-roundhouse",
+            "hunting-area-cobalt-sandbar-ford",
+            "town-glaze-barge-quay",
+            "dungeon-sunken-potter-hold"
+          ],
+          "east_continental_bridge_branch": [
+            "town-kilnwatch-bastion",
+            "hunting-area-cinder-apron",
+            "town-pinion-terminus",
+            "dungeon-pendulum-shaft",
+            "hunting-area-brass-spur-ridge"
+          ],
+          "raid_boss_dungeons": [
+            "dungeon-ember-bellows-chamber",
+            "dungeon-sunken-potter-hold",
+            "dungeon-pendulum-shaft"
+          ]
+        },
+        "stage_d_trial_frontier_25_to_30": {
+          "entry_town_id": "town-escapement-anvil",
+          "portal_chain": [
+            "town-pinion-terminus",
+            "hunting-area-brass-spur-ridge",
+            "hunting-area-caldera-rim",
+            "town-escapement-anvil",
+            "hunting-area-siphon-sluice",
+            "town-patina-lock",
+            "hunting-area-flue-causeway",
+            "town-bellows-hearth"
+          ],
+          "trial_arenas_and_dungeons": [
+            "dungeon-chronometer-foundry",
+            "dungeon-mercury-reservoir",
+            "dungeon-ash-valve-vault"
+          ]
+        }
+      },
+      "continent_chains": [
+        {
+          "continent_id": "continent-01-hearthbloom-basin",
+          "continent_name": "Hearthbloom Basin (Early Game Hub-and-Spoke \u00b7 Stages A, B, C)",
+          "growth_stages": [
+            "A",
+            "B",
+            "C"
+          ],
+          "level_band": [
+            1,
+            25
+          ],
+          "topology_pattern": "6 Racial Starter Spokes (Lv.1\u201310) -> Central Kilnwatch Bastion Convergence Hub (Lv.10\u201320) -> Glaze-Barge & Cinder Apron Raid Exits (Lv.20\u201325)",
+          "ordered_district_chain": [
+            "district-teacup-meadows",
+            "district-kilnfire-terraces",
+            "district-ash-bellows-trench",
+            "district-porcelain-cradle",
+            "district-amber-root-hollows",
+            "district-glaze-river-delta",
+            "district-terracotta-wind-chimes",
+            "district-saffron-kiln-orchards",
+            "district-cinnamon-bellows-bluff",
+            "district-ginger-steam-terraces"
+          ],
+          "ordered_mainline_node_chain": [
+            "hunting-area-clover-south-gate",
+            "town-lantern-hollow",
+            "hunting-area-kiln-east-orchard",
+            "town-kilnwatch-bastion",
+            "hunting-area-firebrick-duct",
+            "town-draft-kiln-post",
+            "hunting-area-celadon-causeway",
+            "town-porcelain-loom-sanctuary",
+            "hunting-area-resin-arch-tunnel",
+            "town-root-train-roundhouse",
+            "hunting-area-cobalt-sandbar-ford",
+            "town-glaze-barge-quay",
+            "hunting-area-chime-pipe-colonnade",
+            "town-carillon-hearth-belfry",
+            "hunting-area-apricot-aqueduct-terrace",
+            "town-saffron-press-village",
+            "hunting-area-cinnamon-bark-viaduct",
+            "town-cinnamon-mill-haven",
+            "hunting-area-ginger-aqueduct-bridge",
+            "town-ginger-bathhouse-haven"
+          ]
+        },
+        {
+          "continent_id": "continent-02-clockwork-steppe",
+          "continent_name": "The Clockwork Steppe (Middle Game Gear-Highway \u00b7 Stages C, D, E)",
+          "growth_stages": [
+            "C",
+            "D",
+            "E"
+          ],
+          "level_band": [
+            20,
+            40
+          ],
+          "topology_pattern": "West-to-East Brass Faultline Railway & Gear-Highway with Northern Astrolabe Rift Branch to Continent 03",
+          "ordered_district_chain": [
+            "district-rustcog-downs",
+            "district-mainspring-caldera",
+            "district-verdigris-siphon",
+            "district-gilded-exhaust",
+            "district-thunder-coil-basin",
+            "district-pendulum-steppe-west",
+            "district-helical-gear-trench",
+            "district-differential-spur-gorge",
+            "district-flywheel-dynamo-canyon",
+            "district-bimetallic-escapement-mesa",
+            "district-thermal-compensator-basin"
+          ],
+          "ordered_mainline_node_chain": [
+            "town-pinion-terminus",
+            "hunting-area-brass-spur-ridge",
+            "hunting-area-caldera-rim",
+            "town-escapement-anvil",
+            "hunting-area-siphon-sluice",
+            "town-patina-lock",
+            "hunting-area-flue-causeway",
+            "town-bellows-hearth",
+            "hunting-area-leyden-causeway",
+            "town-inductor-switchyard",
+            "hunting-area-metronome-bridge",
+            "town-metronome-pivot-citadel",
+            "hunting-area-spiral-wormway-ramp",
+            "town-helical-torque-hub",
+            "hunting-area-planetary-carrier-span",
+            "town-torque-balance-citadel",
+            "hunting-area-centrifugal-gantry-span",
+            "town-flywheel-governor-hub",
+            "hunting-area-bimetallic-expansion-span",
+            "town-bimetallic-chronometer-hub",
+            "hunting-area-radiator-manifold-span",
+            "town-mercury-bellows-hub"
+          ]
+        },
+        {
+          "continent_id": "continent-03-shattered-halo",
+          "continent_name": "The Shattered Halo (Middle-to-Late Sky-Archipelago Ring \u00b7 Stages E..L)",
+          "growth_stages": [
+            "E",
+            "F",
+            "G",
+            "H",
+            "I",
+            "J",
+            "K",
+            "L"
+          ],
+          "level_band": [
+            35,
+            99
+          ],
+          "topology_pattern": "Orbital Tether-Bridge Ring ascending from Starfall Haven through Zenith Crown to the Aphelion & Umbrage Endgame Atolls",
+          "ordered_district_chain": [
+            "district-starfall-anchorage",
+            "district-eclipse-observatory",
+            "district-nebula-undertide",
+            "district-zenith-crown",
+            "district-perigee-abyss",
+            "district-aphelion-halo-rim",
+            "district-libration-mirror-shoals",
+            "district-umbrage-prism-atoll",
+            "district-aurora-chime-atoll",
+            "district-penumbra-prism-reef",
+            "district-celestial-astrolabe-atoll"
+          ],
+          "ordered_mainline_node_chain": [
+            "hunting-area-tether-causeway",
+            "town-starfall-haven",
+            "hunting-area-orrery-bridge",
+            "town-prism-zenith",
+            "hunting-area-kelp-spiral-reef",
+            "town-undertide-sanctuary",
+            "hunting-area-aurora-tether",
+            "town-crown-beacon-citadel",
+            "hunting-area-stalactite-plunge",
+            "town-perigee-diving-station",
+            "hunting-area-comet-tether-span",
+            "town-aphelion-buoy-haven",
+            "hunting-area-silver-tide-causeway",
+            "town-libration-balance-haven",
+            "hunting-area-violet-spectrum-span",
+            "town-umbrage-focal-sanctum",
+            "hunting-area-resonance-tether-causeway",
+            "town-aurora-bell-sanctuary",
+            "hunting-area-penumbra-refraction-causeway",
+            "town-penumbra-prism-haven",
+            "hunting-area-armillary-ring-causeway",
+            "town-celestial-astrolabe-sanctuary"
+          ]
+        }
+      ],
+      "inter_continent_bridges": [
+        {
+          "bridge_id": "bridge-c01-to-c02-cinder-viaduct",
+          "name": "Kettle-Whistle Viaduct & Cinder Apron Corridor (Continent 01 \u2794 Continent 02)",
+          "from_continent_id": "continent-01-hearthbloom-basin",
+          "to_continent_id": "continent-02-clockwork-steppe",
+          "unlock_stage": "Stage B -> Stage C (Lv. 15\u201320 Guild Expedition)",
+          "unlock_level": 15,
+          "portal_node_sequence": [
+            "town-kilnwatch-bastion",
+            "hunting-area-cinder-apron",
+            "town-pinion-terminus"
+          ]
+        },
+        {
+          "bridge_id": "bridge-c02-to-c03-astrolabe-rift",
+          "name": "The Astrolabe Dimensional Rift & Tether Causeway (Continent 02 \u2794 Continent 03)",
+          "from_continent_id": "continent-02-clockwork-steppe",
+          "to_continent_id": "continent-03-shattered-halo",
+          "unlock_stage": "Stage E -> Stage F (Lv. 35\u201340 2nd-Class Sky Ascension)",
+          "unlock_level": 35,
+          "portal_node_sequence": [
+            "town-pinion-terminus",
+            "hunting-area-brass-spur-ridge",
+            "hunting-area-astrolabe-rift",
+            "hunting-area-tether-causeway",
+            "town-starfall-haven"
+          ]
+        }
+      ]
     }
   },
   "starter_town_bindings": [
@@ -1443,6 +1819,15 @@
       "cli_command": "python3 scripts/studio_world_governance.py --audit-growth",
       "verified": true,
       "evidence": "All 12 growth stages (A..L) are mapped to canon Studio towns, hunting areas, and catacomb dungeons, with full Lv. 1\u201325 deep-dive specifications for all 6 playable races and 6 first-class jobs."
+    },
+    {
+      "gate_id": "GOV-09",
+      "category": "world_continent_map_chain",
+      "title": "End-to-End World Continent Area Map Chain (6 Spokes -> Kilnwatch Hub -> 3-Continent Mainline)",
+      "invariant_rule": "shared_world_systems.world_continent_map_chain must define verified step-by-step open-portal sequences for all 6 Stage A Racial Spokes into Kilnwatch Bastion (Stage B), both Stage C Raid & Bridge branches, the 20-node Continent 01 chain, the 22-node Continent 02 chain, the 22-node Continent 03 chain, and both inter-continental bridges.",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-map-chain",
+      "verified": true,
+      "evidence": "Every single adjacent pair in all 6 racial spoke chains, all 3 continental mainline chains (64 overland nodes), and both inter-continent bridges is verified to have an active open portal in content/studio/nodes/."
     }
   ]
 }

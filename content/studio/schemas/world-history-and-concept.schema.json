@@ -529,7 +529,8 @@
         "adventure_guild",
         "quest_progression_loop",
         "boss_power_hierarchy",
-        "level_growth_path"
+        "level_growth_path",
+        "world_continent_map_chain"
       ],
       "properties": {
         "cross_race_convergence_hubs": {
@@ -1220,6 +1221,277 @@
               }
             }
           }
+        },
+        "world_continent_map_chain": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "chain_architecture_law",
+            "early_focus_hub_and_spoke_1_to_25",
+            "continent_chains",
+            "inter_continent_bridges"
+          ],
+          "properties": {
+            "chain_architecture_law": {
+              "type": "string",
+              "minLength": 20
+            },
+            "early_focus_hub_and_spoke_1_to_25": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "stage_a_spokes_1_to_10",
+                "stage_b_convergence_hub_10_to_20",
+                "stage_c_boss_and_bridge_20_to_25",
+                "stage_d_trial_frontier_25_to_30"
+              ],
+              "properties": {
+                "stage_a_spokes_1_to_10": {
+                  "type": "array",
+                  "minItems": 6,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "spoke_id",
+                      "race_key",
+                      "race_name",
+                      "district_id",
+                      "home_town_id",
+                      "hunting_node_id",
+                      "farming_node_id",
+                      "tutorial_catacomb_id",
+                      "portal_chain_to_kilnwatch"
+                    ],
+                    "properties": {
+                      "spoke_id": {
+                        "type": "string"
+                      },
+                      "race_key": {
+                        "type": "string"
+                      },
+                      "race_name": {
+                        "type": "string"
+                      },
+                      "district_id": {
+                        "type": "string"
+                      },
+                      "home_town_id": {
+                        "type": "string"
+                      },
+                      "hunting_node_id": {
+                        "type": "string"
+                      },
+                      "farming_node_id": {
+                        "type": "string"
+                      },
+                      "tutorial_catacomb_id": {
+                        "type": "string"
+                      },
+                      "portal_chain_to_kilnwatch": {
+                        "type": "array",
+                        "minItems": 2,
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "stage_b_convergence_hub_10_to_20": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "hub_town_id",
+                    "district_id",
+                    "unlocked_systems",
+                    "connected_party_hunting_grounds",
+                    "connected_catacomb_dungeons"
+                  ],
+                  "properties": {
+                    "hub_town_id": {
+                      "type": "string"
+                    },
+                    "district_id": {
+                      "type": "string"
+                    },
+                    "unlocked_systems": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "connected_party_hunting_grounds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "connected_catacomb_dungeons": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "stage_c_boss_and_bridge_20_to_25": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "west_river_raid_branch",
+                    "east_continental_bridge_branch",
+                    "raid_boss_dungeons"
+                  ],
+                  "properties": {
+                    "west_river_raid_branch": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "east_continental_bridge_branch": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "raid_boss_dungeons": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "stage_d_trial_frontier_25_to_30": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "entry_town_id",
+                    "portal_chain",
+                    "trial_arenas_and_dungeons"
+                  ],
+                  "properties": {
+                    "entry_town_id": {
+                      "type": "string"
+                    },
+                    "portal_chain": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "trial_arenas_and_dungeons": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "continent_chains": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "continent_id",
+                  "continent_name",
+                  "growth_stages",
+                  "level_band",
+                  "topology_pattern",
+                  "ordered_district_chain",
+                  "ordered_mainline_node_chain"
+                ],
+                "properties": {
+                  "continent_id": {
+                    "type": "string"
+                  },
+                  "continent_name": {
+                    "type": "string"
+                  },
+                  "growth_stages": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "level_band": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "topology_pattern": {
+                    "type": "string"
+                  },
+                  "ordered_district_chain": {
+                    "type": "array",
+                    "minItems": 5,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "ordered_mainline_node_chain": {
+                    "type": "array",
+                    "minItems": 5,
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "inter_continent_bridges": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "bridge_id",
+                  "name",
+                  "from_continent_id",
+                  "to_continent_id",
+                  "unlock_stage",
+                  "unlock_level",
+                  "portal_node_sequence"
+                ],
+                "properties": {
+                  "bridge_id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "from_continent_id": {
+                    "type": "string"
+                  },
+                  "to_continent_id": {
+                    "type": "string"
+                  },
+                  "unlock_stage": {
+                    "type": "string"
+                  },
+                  "unlock_level": {
+                    "type": "integer"
+                  },
+                  "portal_node_sequence": {
+                    "type": "array",
+                    "minItems": 3,
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -1277,7 +1549,7 @@
     },
     "long_term_governance_checklist": {
       "type": "array",
-      "minItems": 8,
+      "minItems": 9,
       "items": {
         "type": "object",
         "additionalProperties": false,
@@ -1305,7 +1577,8 @@
               "guild_and_blacksmith",
               "quest_progression_tracks",
               "boss_hierarchy_law",
-              "level_growth_path_1_to_25"
+              "level_growth_path_1_to_25",
+              "world_continent_map_chain"
             ]
           },
           "title": {

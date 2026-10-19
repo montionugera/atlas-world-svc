@@ -6038,6 +6038,75 @@ function renderStudioWorldHistoryPerspective(whc, continents) {
                   </div>
                 `;
               })()}
+
+              ${(() => {
+                const wcmc = sys.world_continent_map_chain || {};
+                const ef = wcmc.early_focus_hub_and_spoke_1_to_25 || {};
+                const spokes = ef.stage_a_spokes_1_to_10 || [];
+                const sb = ef.stage_b_convergence_hub_10_to_20 || {};
+                const sc = ef.stage_c_boss_and_bridge_20_to_25 || {};
+                const sd = ef.stage_d_trial_frontier_25_to_30 || {};
+                const cchains = wcmc.continent_chains || [];
+                const bridges = wcmc.inter_continent_bridges || [];
+                if (!spokes.length) return "";
+                return `
+                  <div style="margin-top:14px;padding:14px;border-radius:10px;background:rgba(56,189,248,0.08);border:1.5px solid rgba(56,189,248,0.45)">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
+                      <strong style="font-size:13.5px;color:#38bdf8">🗺️ World Continent Area Map Chain (Lv. 1–25 Hub-and-Spoke ➔ 3-Continent 64-Map Chain)</strong>
+                      <span class="mono" style="font-size:10px;padding:2px 8px;border-radius:999px;background:#0284c7;color:#ffffff;font-weight:800">GOV-09 VERIFIED</span>
+                    </div>
+                    <p style="font-size:11.5px;color:var(--joy-text-secondary);margin:0 0 10px">${escapeHtml(wcmc.chain_architecture_law || "")}</p>
+                    <div style="font-weight:800;font-size:12px;color:#fde047;margin-bottom:6px">Stage A (Lv. 1–10) · 6 Racial Starter Spokes ➔ Open-Portal Route into Kilnwatch Bastion (Stage B Lv. 10–20)</div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px;margin-bottom:12px">
+                      ${spokes.map(sp => `
+                        <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+                          <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                            <strong>🧬 ${escapeHtml(sp.race_name)}</strong>
+                            <span class="mono" style="font-size:9.5px;color:#38bdf8">${escapeHtml(sp.district_id)}</span>
+                          </div>
+                          <div style="font-size:10.5px;color:var(--joy-text-secondary);margin:4px 0">
+                            <strong>Home:</strong> <span class="mono">${escapeHtml(sp.home_town_id)}</span> · <strong>Hunt:</strong> <span class="mono">${escapeHtml(sp.hunting_node_id)}</span> · <strong>Catacomb:</strong> <span class="mono">${escapeHtml(sp.tutorial_catacomb_id)}</span>
+                          </div>
+                          <div class="mono" style="font-size:10px;color:#10b981;line-height:1.45;background:rgba(15,23,42,0.55);padding:6px;border-radius:6px">
+                            ${(sp.portal_chain_to_kilnwatch || []).map(n => escapeHtml(n)).join(" ➔ ")}
+                          </div>
+                        </div>
+                      `).join("")}
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-bottom:12px">
+                      <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1.5px solid rgba(250,204,21,0.55)">
+                        <div style="font-weight:800;font-size:11.5px;color:#fde047">🤝 Stage B (Lv. 10–20) · Convergence Hub (${escapeHtml(sb.hub_town_id || "")})</div>
+                        <div style="font-size:10.5px;color:var(--joy-text-secondary);margin:4px 0"><strong>Party Grounds:</strong> ${(sb.connected_party_hunting_grounds || []).map(escapeHtml).join(", ")}</div>
+                        <div style="font-size:10.5px;color:#c084fc"><strong>Catacombs:</strong> ${(sb.connected_catacomb_dungeons || []).map(escapeHtml).join(", ")}</div>
+                      </div>
+                      <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1.5px solid rgba(248,113,113,0.5)">
+                        <div style="font-weight:800;font-size:11.5px;color:#f87171">⚔️ Stage C (Lv. 20–25) · Raid Boss & Continental Bridge</div>
+                        <div class="mono" style="font-size:10px;color:var(--joy-text-secondary);margin:4px 0"><strong>West Raid:</strong> ${(sc.west_river_raid_branch || []).map(escapeHtml).join(" ➔ ")}</div>
+                        <div class="mono" style="font-size:10px;color:#38bdf8"><strong>East Bridge:</strong> ${(sc.east_continental_bridge_branch || []).map(escapeHtml).join(" ➔ ")}</div>
+                      </div>
+                      <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1.5px solid rgba(168,85,247,0.5)">
+                        <div style="font-weight:800;font-size:11.5px;color:#c084fc">⚙️ Stage D (Lv. 25–30) · Prepare 2nd Class [Learn & Try]</div>
+                        <div class="mono" style="font-size:10px;color:var(--joy-text-secondary);margin:4px 0">${(sd.portal_chain || []).map(escapeHtml).join(" ➔ ")}</div>
+                      </div>
+                    </div>
+                    <div style="font-weight:800;font-size:12px;color:#38bdf8;margin-bottom:6px">Full 3-Continent Mainline Node Chains (64 Overland Maps + Inter-Continent Bridges)</div>
+                    <div style="display:grid;grid-template-columns:1fr;gap:8px">
+                      ${cchains.map(cc => `
+                        <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                          <div style="display:flex;justify-content:space-between;align-items:center">
+                            <strong>🌍 ${escapeHtml(cc.continent_name)} (<span class="mono">${escapeHtml(cc.continent_id)}</span>)</strong>
+                            <span class="mono" style="font-size:10px;color:#eab308">Lv.${(cc.level_band || []).join("–")} · Stages ${(cc.growth_stages || []).join(", ")} · ${(cc.ordered_mainline_node_chain || []).length} maps</span>
+                          </div>
+                          <div style="font-size:11px;color:var(--joy-text-secondary);margin:3px 0">${escapeHtml(cc.topology_pattern || "")}</div>
+                          <div class="mono" style="font-size:10px;color:#93c5fd;line-height:1.45;background:rgba(15,23,42,0.55);padding:6px;border-radius:6px">
+                            ${(cc.ordered_mainline_node_chain || []).map(escapeHtml).join(" ➔ ")}
+                          </div>
+                        </div>
+                      `).join("")}
+                    </div>
+                  </div>
+                `;
+              })()}
             </section>
           `;
         })()}
