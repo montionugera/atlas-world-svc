@@ -1961,8 +1961,10 @@
     "from_idea": "I-230",
     "created_at": "2026-10-19T03:26:46.464644+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
-    "claimed_at": "2026-10-19T03:26:52.110403+00:00"
+    "status": "shipped",
+    "release_version": "1.16",
+    "claimed_at": "2026-10-19T03:26:52.110403+00:00",
+    "shipped_at": "2026-10-19T03:35:58.710903+00:00",
+    "shipped_sha": "d5b100c76afc9ad87c4438f2a7290cf7f494321c"
   }
 ]
