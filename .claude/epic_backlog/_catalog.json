@@ -68,12 +68,12 @@
     "id": "E-007",
     "title": "Combat depth",
     "created_at": "2026-10-11T06:40:08.945927+00:00",
-    "status": "verified",
+    "status": "verifying",
     "release_version": "1.15",
     "verified_sha": "fbc8e42fad6288bb46472d0c7052ed4d72c8f1b2",
     "verified_at": "2026-10-18T12:48:16.638895+00:00",
     "split_approved_by": null,
-    "verifying_sha": null
+    "verifying_sha": "51db034ea96c783ac33981abaccfbf46d622785c"
   },
   {
     "id": "E-008",
