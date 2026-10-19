@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Automated test suite for E-010 / F-087..F-143:
+Automated test suite for E-010 / F-087..F-153:
   - 4-Level Unabbreviated Perspective Switcher (World History and Concept -> Continent -> District -> Town or Hunting Area)
+  - 4-Level Google/Apple Maps 2D Cartographic Explorer + Interactive Left-Hand Place Details Drawer
   - District Connected 2D Map Matrix + Maxion Level-Band Monster Pinning
   - Town or Hunting Area Inspector + Monster/1035 Detail Sheet
   - Human-in-the-Loop Core Rationale, Five-Pillar Quality Checklist Gate, Mystery Toggle, and Downward Child Generation API
-  - Autonomous Product Owner Self-Evaluation Telemetry & Continent 01 Ginger-Steam Terraces Canon Increment
+  - Autonomous Product Owner Self-Evaluation Telemetry & Continent 02 Thermal Compensator Basin Canon Increment
 """
 
 from __future__ import annotations
@@ -58,6 +59,12 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("renderContinentBigPictureSvg", html)
         self.assertIn("renderDistrictBigPictureSvg", html)
         self.assertIn("renderTownOrHuntingAreaBigPictureSvg", html)
+        # Google/Apple Maps 2D Cartographic Explorer + Place Details Slide-Over Drawer
+        self.assertIn("renderCartoShellHtml", html)
+        self.assertIn("studioGooglePlaceDrawer", html)
+        self.assertIn("selectStudioMapPoi", html)
+        self.assertIn("zoomStudioMap", html)
+        self.assertIn("onStudioMapWheel", html)
         for thumb_req in (
             "/thumbs/nature/pine_tree_1.webp",
             "/thumbs/buildings/bridge_stone.webp",

@@ -4199,366 +4199,991 @@ function renderTopDownStudio() {
   return `${perspectiveBar}${ownerTelemetryBar}${canvasHtml}`;
 }
 
-function renderWhcBigPictureSvg(whc, continents) {
-  const gods = whc.primordial_gods || [];
-  const epochs = whc.historical_epochs || [];
-  const scars = (epochs[0] && epochs[0].world_scars) || [];
-  const bindings = whc.starter_town_bindings || [];
-  const c01 = continents[0] || { id: 'continent-01-hearthbloom-basin', name: 'Hearthbloom Basin' };
-  const c02 = continents[1] || { id: 'continent-02-clockwork-steppe', name: 'The Clockwork Steppe' };
-  const c03 = continents[2] || { id: 'continent-03-shattered-halo', name: 'The Shattered Halo' };
-  const st0 = bindings[0] || { town_id: 'town-lantern-hollow', town_name: 'Lantern Hollow', continent_id: c01.id, district_id: 'district-teacup-meadows' };
+// ============================================================================
+// L2HUB ADEN PARCHMENT ATLAS + GOOGLE / APPLE MAPS 2D CARTOGRAPHIC EXPLORER
+// ============================================================================
+let STUDIO_CARTO_THEME = 'l2hub'; // 'l2hub' (L2 Aden Parchment) | 'google' (Google/Apple Dark GIS)
+let STUDIO_MAP_ZOOM = 1.0;
+let STUDIO_MAP_PAN_X = 0;
+let STUDIO_MAP_PAN_Y = 0;
+let STUDIO_MAP_SELECTED_POI = null;
+let STUDIO_MAP_DRAG = null;
+let STUDIO_MAP_LOC = { x: 72986, y: 113330, svgX: 590, svgY: 195 };
 
-  return `
-    <div style="margin-bottom:16px;padding:16px;border-radius:12px;background:linear-gradient(180deg,#0b1322 0%,#080d18 100%);border:1px solid rgba(56,189,248,0.32);box-shadow:0 14px 34px rgba(0,0,0,0.45)">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-        <div>
-          <div class="mono" style="font-size:10.5px;font-weight:800;color:#38bdf8;letter-spacing:0.06em">🌌 STEP 1 BIG PICTURE · CHRONOLOGICAL TIMELINE &amp; PLANETARY GEOLOCATION CAUSAL GRAPH</div>
-          <div style="font-size:13px;font-weight:700;color:#f8fafc;margin-top:2px">How Primordial Gods &amp; The Clockspring War Timeline Shaped the 3 Planetary Scars, Continents &amp; Toddler/Kid Starter Arrivals</div>
-        </div>
-        <span class="joy-badge joy-badge--brand joy-badge--sm">Interactive Geolocation &amp; Timeline Diagram (Click Any Node to Drill Down)</span>
-      </div>
-
-      <svg viewBox="0 0 980 430" width="100%" height="430" style="display:block;width:100%;height:auto;max-height:440px;border-radius:10px;background:#070c16;border:1px solid rgba(255,255,255,0.1)">
-        <defs>
-          <radialGradient id="whcOceanGrad" cx="50%" cy="55%" r="65%">
-            <stop offset="0%" stop-color="#112238"/>
-            <stop offset="65%" stop-color="#091322"/>
-            <stop offset="100%" stop-color="#050a12"/>
-          </radialGradient>
-          <marker id="whcArrowGold" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 1 L 9 5 L 0 9 z" fill="#ffd166"/>
-          </marker>
-          <marker id="whcArrowCyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 1 L 9 5 L 0 9 z" fill="#38bdf8"/>
-          </marker>
-        </defs>
-
-        <!-- Background & Latitude/Longitude Geolocation Grid -->
-        <rect width="980" height="430" fill="url(#whcOceanGrad)"/>
-        <g stroke="rgba(148,163,184,0.12)" stroke-width="1" stroke-dasharray="4 4">
-          <line x1="0" y1="145" x2="980" y2="145"/>
-          <line x1="0" y1="225" x2="980" y2="225"/>
-          <line x1="0" y1="305" x2="980" y2="305"/>
-          <line x1="0" y1="385" x2="980" y2="385"/>
-          <line x1="180" y1="125" x2="180" y2="430"/>
-          <line x1="490" y1="125" x2="490" y2="430"/>
-          <line x1="800" y1="125" x2="800" y2="430"/>
-        </g>
-        <text x="12" y="141" fill="#64748b" font-size="9.5" font-family="monospace">LAT 68°N · NORTHERN POLAR GRAVITY RING</text>
-        <text x="12" y="221" fill="#64748b" font-size="9.5" font-family="monospace">LAT 08°N · EQUATORIAL TECTONIC FAULT BELT</text>
-        <text x="12" y="301" fill="#64748b" font-size="9.5" font-family="monospace">LAT 22°S · SOUTHERN CERAMIC CALDERA BASIN</text>
-        <text x="186" y="422" fill="#64748b" font-size="9.5" font-family="monospace">LON 114°W (WEST)</text>
-        <text x="496" y="422" fill="#64748b" font-size="9.5" font-family="monospace">LON 000° (PRIME MERIDIAN)</text>
-        <text x="806" y="422" fill="#64748b" font-size="9.5" font-family="monospace">LON 062°E (EAST)</text>
-
-        <!-- TOP BAND: CHRONOLOGICAL TIMELINE (ERA 0 -> ERA 1 -> ERA 2 -> ERA 3) -->
-        <rect x="14" y="12" width="952" height="104" rx="8" fill="rgba(15,23,42,0.88)" stroke="rgba(255,209,102,0.35)" stroke-width="1.2"/>
-        <text x="28" y="30" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">CHRONOLOGICAL TIMELINE OF THE CRADLE OF EMBERS (TIME ➔ EVENT ➔ GEOLOCATION SCAR)</text>
-
-        <!-- Timeline Connecting Line -->
-        <line x1="130" y1="68" x2="850" y2="68" stroke="#ffd166" stroke-width="2.5" marker-end="url(#whcArrowGold)"/>
-
-        <!-- Era 0 Node -->
-        <g transform="translate(28, 40)">
-          <rect width="205" height="64" rx="6" fill="#131c2e" stroke="#38bdf8" stroke-width="1.5"/>
-          <text x="10" y="17" fill="#38bdf8" font-size="9.5" font-weight="bold" font-family="monospace">ERA 0 · T-∞ MYTHIC DAWN</text>
-          <text x="10" y="33" fill="#f8fafc" font-size="11.5" font-weight="bold">3 Primordial Gods Weave World</text>
-          <text x="10" y="48" fill="#94a3b8" font-size="9.5">Sola (Hearth) · Krono (Time) · Vesper (Dream)</text>
-        </g>
-
-        <!-- Era 1 Node -->
-        <g transform="translate(268, 40)">
-          <rect width="205" height="64" rx="6" fill="#1e162b" stroke="#f97316" stroke-width="1.5"/>
-          <text x="10" y="17" fill="#f97316" font-size="9.5" font-weight="bold" font-family="monospace">ERA 1 · T-1200 YRS CATACLYSM</text>
-          <text x="10" y="33" fill="#f8fafc" font-size="11.5" font-weight="bold">The Clockspring War</text>
-          <text x="10" y="48" fill="#cbd5e1" font-size="9.5">Krono's Mainspring shatters across 3 zones</text>
-        </g>
-
-        <!-- Era 2 Node -->
-        <g transform="translate(508, 40)">
-          <rect width="205" height="64" rx="6" fill="#132421" stroke="#34d399" stroke-width="1.5"/>
-          <text x="10" y="17" fill="#34d399" font-size="9.5" font-weight="bold" font-family="monospace">ERA 2 · T-800 YRS GEOGENESIS</text>
-          <text x="10" y="33" fill="#f8fafc" font-size="11.5" font-weight="bold">3 Planetary Scars &amp; Continents</text>
-          <text x="10" y="48" fill="#cbd5e1" font-size="9.5">Kiln Basin · Brass Fault · Vesper Crater</text>
-        </g>
-
-        <!-- Era 3 Node -->
-        <g transform="translate(748, 40)" style="cursor:pointer" onclick="setStudioPerspective('town-or-hunting-area', { continentId: '${escapeHtml(st0.continent_id)}', districtId: '${escapeHtml(st0.district_id)}', nodeId: '${escapeHtml(st0.town_id)}', inspectId: '${escapeHtml(st0.town_id)}' })">
-          <rect width="204" height="64" rx="6" fill="#261f10" stroke="#ffd166" stroke-width="1.8"/>
-          <text x="10" y="17" fill="#ffd166" font-size="9.5" font-weight="bold" font-family="monospace">ERA 3 · PRESENT DAY ARRIVAL</text>
-          <text x="10" y="33" fill="#ffffff" font-size="11.5" font-weight="bold">90–120cm Hearth-Spark Kids</text>
-          <text x="10" y="48" fill="#fde68a" font-size="9.5">Spawn at 🏰 ${escapeHtml(st0.town_name)} ➔</text>
-        </g>
-
-        <!-- BOTTOM BAND: PLANETARY GEOLOCATION & GOD -> SCAR -> CONTINENT GRAPH -->
-        <!-- Inter-Continent Sea/Sky Routes on Globe -->
-        <path d="M 310 315 Q 480 285 620 250" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="6 4"/>
-        <text x="465" y="278" text-anchor="middle" fill="#fde68a" font-size="9.5" font-family="monospace">🚂 Kettle-Whistle Root-Train</text>
-
-        <path d="M 660 220 Q 610 175 545 162" fill="none" stroke="#c084fc" stroke-width="2.5" stroke-dasharray="5 4"/>
-        <text x="645" y="182" text-anchor="middle" fill="#e9d5ff" font-size="9.5" font-family="monospace">🌀 Astrolabe Rift</text>
-
-        <path d="M 260 265 Q 350 185 450 162" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 4"/>
-        <text x="330" y="198" text-anchor="middle" fill="#bae6fd" font-size="9.5" font-family="monospace">⛵ Cloud-Pier Airship</text>
-
-        <!-- GEOLOCATION 1: SOUTH-WEST (22°S, 114°W) -> SOLA -> SCAR-KILN-BASIN -> CONTINENT 01 -->
-        <g style="cursor:pointer" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c01.id)}', inspectId: '${escapeHtml(c01.id)}' })">
-          <ellipse cx="220" cy="318" rx="135" ry="68" fill="rgba(34,197,94,0.16)" stroke="#4ade80" stroke-width="2.2"/>
-          <ellipse cx="220" cy="318" rx="95" ry="44" fill="rgba(234,179,8,0.14)" stroke="rgba(250,204,21,0.45)" stroke-width="1.2" stroke-dasharray="4 3"/>
-          <image href="/thumbs/creatures/god-sola-hearth-weaver.webp" x="102" y="274" width="44" height="44"/>
-          <text x="154" y="286" fill="#fde047" font-size="10" font-weight="bold" font-family="monospace">GOD: SOLA (HEARTH-WEAVER)</text>
-          <text x="154" y="301" fill="#86efac" font-size="10" font-family="monospace">⚡ scar-kiln-basin (22°S, 114°W)</text>
-          <text x="154" y="320" fill="#ffffff" font-size="13.5" font-weight="bold">🌍 C01: ${escapeHtml(c01.name)}</text>
-          <text x="154" y="336" fill="#cbd5e1" font-size="10.5">Lv. 1–45 · 11 Canon Districts · 33 Maps</text>
-          <rect x="154" y="344" width="172" height="22" rx="5" fill="rgba(15,23,42,0.9)" stroke="#ffd166" stroke-width="1.2"/>
-          <text x="240" y="359" text-anchor="middle" fill="#ffd166" font-size="10" font-weight="bold">🏰 Starter: ${escapeHtml(st0.town_name)} ➔</text>
-        </g>
-
-        <!-- GEOLOCATION 2: CENTRAL-EAST (08°N, 062°E) -> KRONO -> SCAR-BRASS-FAULTLINE -> CONTINENT 02 -->
-        <g style="cursor:pointer" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c02.id)}', inspectId: '${escapeHtml(c02.id)}' })">
-          <polygon points="610,215 745,195 895,225 915,295 795,335 635,305" fill="rgba(245,158,11,0.16)" stroke="#f59e0b" stroke-width="2.2"/>
-          <image href="/thumbs/creatures/god-krono-brass-titan.webp" x="642" y="226" width="44" height="44"/>
-          <text x="694" y="236" fill="#fdba74" font-size="10" font-weight="bold" font-family="monospace">GOD: KRONO (BRASS TITAN)</text>
-          <text x="694" y="251" fill="#fde047" font-size="10" font-family="monospace">⚡ scar-brass-faultline (08°N, 062°E)</text>
-          <text x="694" y="270" fill="#ffffff" font-size="13.5" font-weight="bold">🌍 C02: ${escapeHtml(c02.name)}</text>
-          <text x="694" y="286" fill="#cbd5e1" font-size="10.5">Lv. 20–75 · 10 Canon + 1 Draft District</text>
-          <text x="694" y="302" fill="#fed7aa" font-size="10" font-family="monospace">Click to Open Continent 02 Atlas ➔</text>
-        </g>
-
-        <!-- GEOLOCATION 3: NORTHERN POLAR RING (68°N, 015°W) -> VESPER -> SCAR-VESPER-CRATER -> CONTINENT 03 -->
-        <g style="cursor:pointer" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c03.id)}', inspectId: '${escapeHtml(c03.id)}' })">
-          <ellipse cx="495" cy="162" rx="145" ry="42" fill="rgba(168,85,247,0.16)" stroke="#c084fc" stroke-width="2.2" stroke-dasharray="8 4"/>
-          <circle cx="495" cy="162" r="22" fill="rgba(8,14,26,0.9)" stroke="#38bdf8" stroke-width="1.5"/>
-          <image href="/thumbs/creatures/god-vesper-dream-eater.webp" x="372" y="138" width="42" height="42"/>
-          <text x="422" y="146" fill="#e9d5ff" font-size="10" font-weight="bold" font-family="monospace">GOD: VESPER (DREAM-EATER)</text>
-          <text x="422" y="160" fill="#38bdf8" font-size="10" font-family="monospace">⚡ scar-vesper-crater (68°N, 015°W)</text>
-          <text x="422" y="177" fill="#ffffff" font-size="13" font-weight="bold">🌍 C03: ${escapeHtml(c03.name)}</text>
-          <text x="422" y="192" fill="#cbd5e1" font-size="10">Lv. 50–100 · 10 Canon + 1 Mystery District ➔</text>
-        </g>
-      </svg>
-    </div>
-  `;
+function setStudioCartoTheme(theme) {
+  STUDIO_CARTO_THEME = theme === 'google' ? 'google' : 'l2hub';
+  render();
 }
 
-function renderContinentBigPictureSvg(continents, districts, activeContinent) {
-  const childDistricts = districts.filter(d => d.parent_continent_id === activeContinent.id);
-  const c01 = continents[0] || { id: 'continent-01-hearthbloom-basin', name: 'Hearthbloom Basin' };
-  const c02 = continents[1] || { id: 'continent-02-clockwork-steppe', name: 'The Clockwork Steppe' };
-  const c03 = continents[2] || { id: 'continent-03-shattered-halo', name: 'The Shattered Halo' };
+function svgToL2Loc(svgX, svgY) {
+  const lx = Math.round(12000 + (svgX / 1040) * 145000);
+  const ly = Math.round(25000 + (svgY / 500) * 185000);
+  return { x: lx, y: ly, svgX: Math.round(svgX), svgY: Math.round(svgY) };
+}
 
-  const isC01 = activeContinent.id === c01.id;
-  const isC02 = activeContinent.id === c02.id;
-  const isC03 = activeContinent.id === c03.id;
+function zoomStudioMap(delta, reset = false) {
+  if (reset) {
+    STUDIO_MAP_ZOOM = 1.0;
+    STUDIO_MAP_PAN_X = 0;
+    STUDIO_MAP_PAN_Y = 0;
+  } else {
+    STUDIO_MAP_ZOOM = Math.max(0.85, Math.min(4.5, +(STUDIO_MAP_ZOOM + delta).toFixed(2)));
+  }
+  applyStudioMapTransform();
+}
 
-  // Geolocation positions for up to 12 child districts inside the right-hand Continent Geographic Map (x: 410..950, y: 70..395)
-  const slotCoords = [
-    [495, 345], [645, 350], [805, 345],
-    [485, 265], [640, 260], [795, 265], [905, 295],
-    [490, 182], [640, 178], [790, 182],
-    [555, 102], [755, 102]
-  ];
+function applyStudioMapTransform() {
+  const g = document.getElementById('studioCartoViewport');
+  const lbl = document.getElementById('studioCartoZoomReadout');
+  if (g) {
+    const cx = 520;
+    const cy = 250;
+    g.setAttribute(
+      'transform',
+      `translate(${cx + STUDIO_MAP_PAN_X}, ${cy + STUDIO_MAP_PAN_Y}) scale(${STUDIO_MAP_ZOOM}) translate(${-cx}, ${-cy})`
+    );
+  }
+  if (lbl) {
+    lbl.textContent = `${STUDIO_MAP_ZOOM.toFixed(2)}\u00d7`;
+  }
+}
 
-  // Connect sequential districts with regional trade roads
-  const roadLinesHtml = childDistricts.map((d, idx) => {
-    if (idx === 0) return '';
-    const prev = slotCoords[(idx - 1) % slotCoords.length];
-    const cur = slotCoords[idx % slotCoords.length];
-    return `<line x1="${prev[0]}" y1="${prev[1]}" x2="${cur[0]}" y2="${cur[1]}" stroke="rgba(255,209,102,0.45)" stroke-width="2.2" stroke-dasharray="${d.status === 'mystery' ? '4 4' : 'none'}"/>`;
-  }).join('');
+function onStudioMapWheel(evt) {
+  evt.preventDefault();
+  const delta = evt.deltaY < 0 ? 0.22 : -0.22;
+  zoomStudioMap(delta, false);
+}
 
-  const districtPinsHtml = childDistricts.map((d, idx) => {
-    const [dx, dy] = slotCoords[idx % slotCoords.length];
-    const st = (d.status || 'canon').toLowerCase();
-    const strokeCol = st === 'canon' ? '#34d399' : (st === 'mystery' ? '#c084fc' : '#fbbf24');
-    const bgCol = st === 'canon' ? 'rgba(6,78,59,0.88)' : (st === 'mystery' ? 'rgba(59,7,100,0.88)' : 'rgba(120,53,15,0.88)');
-    const lvRange = (d.level_range || [1, 20]).join('–');
-    const shortName = d.name.length > 18 ? d.name.slice(0, 17) + '…' : d.name;
-    return `
-      <g transform="translate(${dx - 62}, ${dy - 26})" style="cursor:pointer" onclick="setStudioPerspective('district', { continentId: '${escapeHtml(activeContinent.id)}', districtId: '${escapeHtml(d.id)}', inspectId: '${escapeHtml(d.id)}' })">
-        <rect width="124" height="50" rx="8" fill="${bgCol}" stroke="${strokeCol}" stroke-width="2" ${st === 'mystery' ? 'stroke-dasharray="4 3"' : ''}/>
-        <text x="8" y="16" fill="#fde047" font-size="9.5" font-weight="bold" font-family="monospace">D${String(idx + 1).padStart(2, '0')} · Lv.${lvRange}</text>
-        <text x="8" y="31" fill="#ffffff" font-size="10.5" font-weight="bold">${escapeHtml(shortName)}</text>
-        <text x="8" y="43" fill="#cbd5e1" font-size="9" font-family="monospace">${st.toUpperCase()} · Click ➔</text>
+function onStudioMapPointerDown(evt) {
+  if (evt.target && evt.target.closest && evt.target.closest('[data-poi-clickable="1"]')) return;
+  STUDIO_MAP_DRAG = {
+    startX: evt.clientX - STUDIO_MAP_PAN_X,
+    startY: evt.clientY - STUDIO_MAP_PAN_Y,
+    downClientX: evt.clientX,
+    downClientY: evt.clientY
+  };
+}
+
+function onStudioMapPointerMove(evt) {
+  if (!STUDIO_MAP_DRAG) return;
+  STUDIO_MAP_PAN_X = evt.clientX - STUDIO_MAP_DRAG.startX;
+  STUDIO_MAP_PAN_Y = evt.clientY - STUDIO_MAP_DRAG.startY;
+  applyStudioMapTransform();
+}
+
+function onStudioMapPointerUp(evt) {
+  if (STUDIO_MAP_DRAG && evt && Math.hypot(evt.clientX - STUDIO_MAP_DRAG.downClientX, evt.clientY - STUDIO_MAP_DRAG.downClientY) < 5) {
+    const svg = evt.currentTarget;
+    if (svg && svg.getBoundingClientRect) {
+      const rect = svg.getBoundingClientRect();
+      const sx = ((evt.clientX - rect.left) / rect.width) * 1040;
+      const sy = ((evt.clientY - rect.top) / rect.height) * 500;
+      STUDIO_MAP_LOC = svgToL2Loc(sx, sy);
+      const locBadge = document.getElementById('studioL2LocReadout');
+      if (locBadge) locBadge.textContent = `loc=${STUDIO_MAP_LOC.x}:${STUDIO_MAP_LOC.y}`;
+      const ch = document.getElementById('studioL2Crosshair');
+      if (ch) ch.setAttribute('transform', `translate(${STUDIO_MAP_LOC.svgX}, ${STUDIO_MAP_LOC.svgY})`);
+    }
+  }
+  STUDIO_MAP_DRAG = null;
+}
+
+function selectStudioMapPoi(poiJsonStr, evt) {
+  if (evt && evt.stopPropagation) evt.stopPropagation();
+  try {
+    const poi = typeof poiJsonStr === 'string' ? JSON.parse(poiJsonStr) : poiJsonStr;
+    STUDIO_MAP_SELECTED_POI = poi;
+    if (poi && poi.svgX !== undefined && poi.svgY !== undefined) {
+      STUDIO_MAP_LOC = svgToL2Loc(poi.svgX, poi.svgY);
+    }
+    if (poi && poi.inspectId) {
+      STUDIO_ACTIVE_INSPECT_ID = poi.inspectId;
+    }
+    render();
+  } catch (err) {
+    console.error('selectStudioMapPoi error:', err);
+  }
+}
+
+function closeStudioMapPoi(evt) {
+  if (evt && evt.stopPropagation) evt.stopPropagation();
+  STUDIO_MAP_SELECTED_POI = null;
+  render();
+}
+
+function encodePoiAttr(poiObj) {
+  return escapeHtml(JSON.stringify(poiObj));
+}
+
+// Reusable Lineage II (l2hub.info/map) Hand-Illustrated Landmark Silhouette Renderer
+function drawL2LandmarkSvg({ kind, x, y, label, sublabel, flagColor, isSelected, poiObj }) {
+  const isL2 = STUDIO_CARTO_THEME === 'l2hub';
+  const fCol = flagColor || '#dc2626';
+  const safeLabel = escapeHtml(label || '');
+  const safeSub = escapeHtml(sublabel || '');
+  const clickAttr = poiObj ? `data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiObj, svgX: x, svgY: y })}', event)"` : '';
+  const selRing = isSelected
+    ? `<circle cx="${x}" cy="${y}" r="26" fill="rgba(250,204,21,0.22)" stroke="#fde047" stroke-width="2" stroke-dasharray="5 3"/>`
+    : '';
+
+  let iconSvg = '';
+  if (kind === 'castle') {
+    // Multi-turret crenellated Castle Keep (like Gludio Castle / Dion Castle / Giran Castle)
+    iconSvg = `
+      <g transform="translate(${x}, ${y})">
+        <ellipse cx="0" cy="12" rx="26" ry="9" fill="rgba(18,13,7,0.65)"/>
+        <path d="M-22,12 L-22,-6 L-18,-6 L-18,-2 L-14,-2 L-14,-6 L-10,-6 L-10,2 L-7,2 L-7,-16 L-3,-22 L3,-22 L7,-16 L7,2 L10,2 L10,-6 L14,-6 L14,-2 L18,-2 L18,-6 L22,-6 L22,12 Z"
+              fill="#2a2012" stroke="#d4af37" stroke-width="1.6" stroke-linejoin="round"/>
+        <rect x="-15" y="-12" width="6" height="14" fill="#3d2f1b" stroke="#0f0a05" stroke-width="1.2"/>
+        <rect x="9" y="-12" width="6" height="14" fill="#3d2f1b" stroke="#0f0a05" stroke-width="1.2"/>
+        <path d="M-5,12 L-5,3 Q0,-2 5,3 L5,12 Z" fill="#0c0905" stroke="#eab308" stroke-width="1.1"/>
+        <!-- Castle Flag -->
+        <line x1="0" y1="-22" x2="0" y2="-32" stroke="#f8fafc" stroke-width="1.4"/>
+        <polygon points="0,-32 11,-28 0,-24" fill="${fCol}" stroke="#120d07" stroke-width="0.9"/>
       </g>
     `;
-  }).join('');
-
-  // Distinct geographic landform silhouette for the selected continent
-  let landformSvg = '';
-  if (isC01) {
-    landformSvg = `
-      <ellipse cx="685" cy="242" rx="265" ry="165" fill="rgba(22,101,52,0.32)" stroke="#4ade80" stroke-width="2.5"/>
-      <ellipse cx="685" cy="242" rx="195" ry="118" fill="rgba(34,197,94,0.16)" stroke="rgba(134,239,172,0.4)" stroke-width="1.5" stroke-dasharray="6 4"/>
-      <path d="M 460 250 Q 680 210 920 245" fill="none" stroke="#38bdf8" stroke-width="5" opacity="0.55"/>
-      <text x="685" y="64" text-anchor="middle" fill="#86efac" font-size="11" font-weight="bold" font-family="monospace">GEOGRAPHIC VIEW: PERPETUAL-SPRING CERAMIC KILN CALDERA &amp; TERRACED RIVERS</text>
+  } else if (kind === 'town') {
+    // Oval Walled Town packed with medieval roofs & watchtowers (like Town of Dion / Town of Gludio / Town of Giran)
+    iconSvg = `
+      <g transform="translate(${x}, ${y})">
+        <ellipse cx="0" cy="4" rx="25" ry="13" fill="#302414" stroke="#d4af37" stroke-width="1.8"/>
+        <ellipse cx="0" cy="3" rx="21" ry="10" fill="#4a3820" stroke="#140e07" stroke-width="1.2"/>
+        <!-- Peaked town roofs inside the curtain wall -->
+        <polygon points="-14,3 -8,-6 -2,3" fill="#854d27" stroke="#140e07" stroke-width="1"/>
+        <polygon points="2,4 9,-5 16,4" fill="#9a5b30" stroke="#140e07" stroke-width="1"/>
+        <rect x="-4" y="-12" width="8" height="15" fill="#574429" stroke="#140e07" stroke-width="1.2"/>
+        <polygon points="-6,-12 0,-20 6,-12" fill="#eab308" stroke="#140e07" stroke-width="1.1"/>
+        <!-- Town Gatehouse -->
+        <rect x="-4" y="6" width="8" height="7" rx="2" fill="#140e07" stroke="#fde047" stroke-width="1"/>
+      </g>
     `;
-  } else if (isC02) {
-    landformSvg = `
-      <polygon points="435,120 620,78 915,105 945,265 875,395 545,405 425,295" fill="rgba(146,64,14,0.32)" stroke="#f59e0b" stroke-width="2.5"/>
-      <circle cx="685" cy="242" r="115" fill="none" stroke="rgba(251,191,36,0.35)" stroke-width="8" stroke-dasharray="18 10"/>
-      <path d="M 445 310 L 925 180" fill="none" stroke="#ef4444" stroke-width="4" stroke-dasharray="8 4" opacity="0.65"/>
-      <text x="685" y="64" text-anchor="middle" fill="#fcd34d" font-size="11" font-weight="bold" font-family="monospace">GEOGRAPHIC VIEW: TECTONIC BRASS FAULTLINE, ESCAPEMENT MESAS &amp; STEAM RAIL SPURS</text>
+  } else if (kind === 'fortress') {
+    // Stone Fortress Bastion with Flying Triangular Pennant Flag (like Dragonspine / Tanor / Antharas Fortress)
+    iconSvg = `
+      <g transform="translate(${x}, ${y})">
+        <ellipse cx="0" cy="9" rx="18" ry="6" fill="rgba(18,13,7,0.55)"/>
+        <path d="M-14,9 L-12,-5 L-8,-5 L-8,-2 L-3,-2 L-3,-8 L3,-8 L3,-2 L8,-2 L8,-5 L12,-5 L14,9 Z"
+              fill="#3b2f1e" stroke="#c8b273" stroke-width="1.4" stroke-linejoin="round"/>
+        <line x1="-2" y1="-8" x2="-2" y2="-23" stroke="#140e07" stroke-width="2.2"/>
+        <line x1="-2" y1="-8" x2="-2" y2="-23" stroke="#e2d5b5" stroke-width="1.2"/>
+        <polygon points="-2,-23 12,-18 -2,-13" fill="${fCol}" stroke="#140e07" stroke-width="1"/>
+      </g>
+    `;
+  } else if (kind === 'tower') {
+    // Tall Spire inside concentric circular moat (like Cruma Tower)
+    iconSvg = `
+      <g transform="translate(${x}, ${y})">
+        <ellipse cx="0" cy="6" rx="24" ry="11" fill="rgba(26,46,53,0.75)" stroke="#5c5338" stroke-width="2" stroke-dasharray="6 3"/>
+        <ellipse cx="0" cy="6" rx="15" ry="7" fill="#2c2416" stroke="#a39060" stroke-width="1.2"/>
+        <path d="M-6,6 L-4,-18 L0,-25 L4,-18 L6,6 Z" fill="#3a2c18" stroke="#fde047" stroke-width="1.4"/>
+        <circle cx="0" cy="-12" r="2.5" fill="#38bdf8"/>
+      </g>
+    `;
+  } else if (kind === 'catacomb') {
+    // Dark Trapezoid Necropolis / Catacomb Portal with Floating Eye Sigil (like Catacomb of the Heretic / Necropolis of Martyrdom)
+    iconSvg = `
+      <g transform="translate(${x}, ${y})">
+        <polygon points="-11,9 -7,-4 7,-4 11,9" fill="#0d0b09" stroke="#a855f7" stroke-width="1.5"/>
+        <rect x="-3" y="1" width="6" height="8" fill="#3b0764"/>
+        <path d="M-9,-10 Q0,-16 9,-10 Q0,-4 -9,-10 Z" fill="#1e1b4b" stroke="#e9d5ff" stroke-width="1.2"/>
+        <circle cx="0" cy="-10" r="2.5" fill="#c084fc"/>
+      </g>
+    `;
+  } else if (kind === 'lair') {
+    // Dragon / Boss Skull & Ribcage Silhouette (like Antharas Lair / The Ant Nest / Ruins of Agony)
+    iconSvg = `
+      <g transform="translate(${x}, ${y})">
+        <ellipse cx="0" cy="7" rx="19" ry="7" fill="rgba(18,13,7,0.6)"/>
+        <path d="M-15,-4 Q-19,-15 -8,-12 Q0,-17 8,-12 Q19,-15 15,-4 Q11,7 0,9 Q-11,7 -15,-4 Z"
+              fill="#453723" stroke="#f97316" stroke-width="1.4"/>
+        <circle cx="-5" cy="-4" r="2.5" fill="#ef4444"/>
+        <circle cx="5" cy="-4" r="2.5" fill="#ef4444"/>
+        <path d="M-6,4 L-3,8 L0,4 L3,8 L6,4" fill="none" stroke="#140e07" stroke-width="1.4"/>
+      </g>
+    `;
+  } else if (kind === 'windmill') {
+    // Village Windmill (like Floran Village)
+    iconSvg = `
+      <g transform="translate(${x}, ${y})">
+        <polygon points="-7,10 -4,-6 4,-6 7,10" fill="#523d24" stroke="#140e07" stroke-width="1.3"/>
+        <line x1="-12" y1="-12" x2="12" y2="4" stroke="#eab308" stroke-width="2"/>
+        <line x1="12" y1="-12" x2="-12" y2="4" stroke="#eab308" stroke-width="2"/>
+        <circle cx="0" cy="-4" r="2.5" fill="#f8fafc" stroke="#140e07" stroke-width="1"/>
+      </g>
     `;
   } else {
-    landformSvg = `
-      <ellipse cx="685" cy="242" rx="260" ry="160" fill="rgba(88,28,135,0.28)" stroke="#c084fc" stroke-width="2.5" stroke-dasharray="10 5"/>
-      <ellipse cx="685" cy="242" rx="130" ry="78" fill="rgba(8,14,26,0.85)" stroke="#38bdf8" stroke-width="2"/>
-      <text x="685" y="246" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="bold" font-family="monospace">🌀 VESPER GRAVITY EYE</text>
-      <text x="685" y="64" text-anchor="middle" fill="#e9d5ff" font-size="11" font-weight="bold" font-family="monospace">GEOGRAPHIC VIEW: SUSPENDED FLOATING ATOLL RING ABOVE NORTHERN WHIRLPOOL</text>
+    // Hunting Area / Camp / Outpost Tent Silhouette
+    iconSvg = `
+      <g transform="translate(${x}, ${y})">
+        <polygon points="-12,8 -4,-6 4,8" fill="#5c4628" stroke="#140e07" stroke-width="1.2"/>
+        <polygon points="-2,9 6,-4 14,9" fill="#705632" stroke="#d4af37" stroke-width="1.2"/>
+      </g>
     `;
   }
 
+  const labelY = y + (kind === 'castle' || kind === 'town' ? 24 : 21);
   return `
-    <div style="margin-bottom:16px;padding:16px;border-radius:12px;background:linear-gradient(180deg,#0b1322 0%,#080d18 100%);border:1px solid rgba(250,204,21,0.32);box-shadow:0 14px 34px rgba(0,0,0,0.45)">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-        <div>
-          <div class="mono" style="font-size:10.5px;font-weight:800;color:#ffd166;letter-spacing:0.06em">🌍 STEP 2 BIG PICTURE · INTER-CONTINENT CONNECTION NETWORK &amp; REGIONAL GEOGRAPHIC ATLAS</div>
-          <div style="font-size:13px;font-weight:700;color:#f8fafc;margin-top:2px">Left: How the 3 Continents Connect Together · Right: Geographic Topography of ${escapeHtml(activeContinent.name || '')} (${childDistricts.length} Districts)</div>
+    <g ${clickAttr}>
+      ${selRing}
+      ${iconSvg}
+      <text x="${x}" y="${labelY}" text-anchor="middle"
+            style="paint-order:stroke fill;stroke:#120d07;stroke-width:3.8px;stroke-linejoin:round;fill:${isSelected ? '#fde047' : '#f8f5ec'};font-size:${kind === 'castle' || kind === 'town' ? '11.5px' : '10.5px'};font-weight:800;font-family:${isL2 ? 'Georgia, serif' : 'Inter, sans-serif'}">
+        ${safeLabel}
+      </text>
+      ${safeSub ? `
+        <text x="${x}" y="${labelY + 12}" text-anchor="middle"
+              style="paint-order:stroke fill;stroke:#120d07;stroke-width:3px;stroke-linejoin:round;fill:#e2d5b5;font-size:9px;font-weight:700;font-family:monospace">
+          ${safeSub}
+        </text>
+      ` : ''}
+    </g>
+  `;
+}
+
+// Reusable Mountain Ridge Hachure Generator (L2Hub Topographic Relief)
+function drawL2MountainRangeSvg(pointsStr, scale = 1.0) {
+  return `
+    <g opacity="0.72" pointer-events="none">
+      <polyline points="${pointsStr}" fill="none" stroke="#2b2416" stroke-width="${12 * scale}" stroke-linecap="round" stroke-linejoin="round" opacity="0.45"/>
+      <polyline points="${pointsStr}" fill="none" stroke="#463c27" stroke-width="${6 * scale}" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+      <polyline points="${pointsStr}" fill="none" stroke="#8c7f5a" stroke-width="${2 * scale}" stroke-linecap="round" stroke-dasharray="2 7"/>
+    </g>
+  `;
+}
+
+function renderCartoShellHtml({
+  stepLabel,
+  title,
+  subtitle,
+  activeScaleIndex,
+  defaultPoi,
+  svgInnerHtml,
+  legendItems,
+  drillControls
+}) {
+  const isL2 = STUDIO_CARTO_THEME === 'l2hub';
+  const poi = STUDIO_MAP_SELECTED_POI || defaultPoi;
+  const zoomScales = [
+    { idx: 1, code: 'LU4 · WORLD', label: '🌍 Lv.1 World Atlas (1×)', persp: 'world-history-and-concept' },
+    { idx: 2, code: 'C1 · ADEN CONT', label: '🗺️ Lv.2 Continent & Fortresses (4×)', persp: 'continent' },
+    { idx: 3, code: 'C4 · DISTRICT', label: '🏙️ Lv.3 District Territory & Roads (16×)', persp: 'district' },
+    { idx: 4, code: 'GF · STREET', label: '🏘️ Lv.4 Street, Walls & Buildings (64×)', persp: 'town-or-hunting-area' }
+  ];
+
+  const placeDrawerHtml = poi ? `
+    <div id="studioGooglePlaceDrawer" style="width:345px;flex-shrink:0;background:#161f2c;border-right:1px solid rgba(255,255,255,0.12);display:flex;flex-direction:column;justify-content:space-between;max-height:520px;overflow-y:auto">
+      <div style="padding:16px">
+        <!-- Place Header (Apple/Google Maps + L2Hub Place Card Style) -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+          <div>
+            <div style="font-size:18px;font-weight:800;color:#f8fafc;line-height:1.25">${escapeHtml(poi.title || 'Selected Place')}</div>
+            <div style="font-size:12.5px;color:#94a3b8;margin-top:3px;font-weight:600">${escapeHtml(poi.category || 'Cartographic Feature')}</div>
+          </div>
+          <button type="button" onclick="closeStudioMapPoi(event)" title="Reset to Default Overview" style="width:28px;height:28px;border-radius:999px;border:1px solid rgba(255,255,255,0.15);background:#243244;color:#cbd5e1;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center">×</button>
         </div>
-        <span class="joy-badge joy-badge--brand joy-badge--sm">Click Any Continent (Left) or District Region (Right)</span>
+
+        <!-- Primary Action Bar (Directions / Zoom Here / Center View) -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+          ${poi.drillPerspective ? `
+            <button type="button" onclick="setStudioPerspective('${escapeHtml(poi.drillPerspective)}', ${escapeHtml(JSON.stringify(poi.drillOpts || {}))}); STUDIO_MAP_SELECTED_POI=null;" style="height:36px;border-radius:10px;border:none;background:#2563eb;color:#ffffff;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(37,99,235,0.35)">
+              🔍 ${escapeHtml(poi.drillLabel || 'Zoom Into Map')}
+            </button>
+          ` : `
+            <button type="button" onclick="zoomStudioMap(0.45, false)" style="height:36px;border-radius:10px;border:none;background:#2563eb;color:#ffffff;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px">
+              🔍 Zoom Closer
+            </button>
+          `}
+          <button type="button" onclick="zoomStudioMap(0, true)" style="height:36px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:#243244;color:#e2e8f0;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px">
+            🧭 Center View
+          </button>
+        </div>
+
+        <!-- 3D Thumbnail + Status Banner -->
+        <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding:10px;border-radius:10px;background:#0f1722;border:1px solid rgba(255,255,255,0.08)">
+          <img src="${escapeHtml(poi.thumb || '/thumbs/buildings/tower_round_roof_a.webp')}" alt="" style="width:56px;height:56px;border-radius:8px;object-fit:contain;background:#090d14;border:1px solid rgba(255,209,102,0.35);flex-shrink:0" />
+          <div style="min-width:0">
+            <div style="font-size:11px;font-weight:800;color:#4ade80;text-transform:uppercase;letter-spacing:0.04em">${escapeHtml(poi.hoursOrStatus || 'Open 24 Hours · Active Canon')}</div>
+            <div style="font-size:11.5px;color:#cbd5e1;margin-top:3px;line-height:1.35">${escapeHtml(poi.summary || '')}</div>
+          </div>
+        </div>
+
+        <!-- Details Section (Apple/Google Maps + L2Hub Cards) -->
+        <div style="font-size:13px;font-weight:800;color:#f8fafc;margin:14px 0 8px">Details &amp; Cartography</div>
+
+        <!-- Card 1: Geographic Address & L2Hub loc=X:Y Coordinates -->
+        <div style="padding:11px 12px;border-radius:10px;background:#111823;border:1px solid rgba(255,255,255,0.07);margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:10.5px;color:#94a3b8;font-weight:700;text-transform:uppercase">Address &amp; Geolocation</span>
+            <span class="mono" style="font-size:10px;color:#f87171;font-weight:800">╋ loc=${STUDIO_MAP_LOC.x}:${STUDIO_MAP_LOC.y}</span>
+          </div>
+          <div style="font-size:12px;color:#f8fafc;margin-top:4px;line-height:1.45;font-weight:600">${escapeHtml(poi.address || 'Aethelgard World Atlas')}</div>
+          ${poi.coordinates ? `<div class="mono" style="font-size:11px;color:#38bdf8;margin-top:4px">${escapeHtml(poi.coordinates)}</div>` : ''}
+        </div>
+
+        <!-- Card 2: Architecture, Walkways & 90–120cm Scale -->
+        ${poi.scaleSpecs ? `
+          <div style="padding:11px 12px;border-radius:10px;background:#111823;border:1px solid rgba(255,255,255,0.07);margin-bottom:8px">
+            <div style="font-size:10.5px;color:#94a3b8;font-weight:700;text-transform:uppercase">Walkway, Building &amp; 90–120cm Scale</div>
+            <div style="font-size:11.5px;color:#fde68a;margin-top:4px;line-height:1.45">${escapeHtml(poi.scaleSpecs)}</div>
+          </div>
+        ` : ''}
+
+        <!-- Card 3: Connections / Residents / Drops -->
+        ${(poi.connections && poi.connections.length) ? `
+          <div style="padding:11px 12px;border-radius:10px;background:#111823;border:1px solid rgba(255,255,255,0.07)">
+            <div style="font-size:10.5px;color:#94a3b8;font-weight:700;text-transform:uppercase;margin-bottom:6px">Connected Routes &amp; Landmarks</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              ${poi.connections.map(c => `
+                <div style="font-size:11.5px;color:#cbd5e1;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 6px;border-radius:6px;background:#182232">
+                  <span>${escapeHtml(c.label)}</span>
+                  <span class="mono" style="font-size:10.5px;color:#38bdf8">${escapeHtml(c.badge || '')}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  ` : '';
+
+  return `
+    <div style="margin-bottom:16px;border-radius:14px;background:#12110e;border:1px solid ${isL2 ? 'rgba(212,175,55,0.45)' : 'rgba(56,189,248,0.35)'};box-shadow:0 16px 38px rgba(0,0,0,0.65);overflow:hidden">
+      <!-- Top L2Hub World Map + Google/Apple Maps Semantic Zoom Header -->
+      <div style="padding:11px 16px;background:${isL2 ? '#1a1712' : '#131d2e'};border-bottom:1px solid rgba(255,255,255,0.12);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="mono" style="font-size:10.5px;font-weight:800;color:${isL2 ? '#f59e0b' : '#38bdf8'};letter-spacing:0.06em">${stepLabel}</span>
+            <span id="studioL2LocReadout" class="mono" style="padding:2px 8px;border-radius:4px;background:rgba(220,38,38,0.18);border:1px solid rgba(248,113,113,0.5);color:#fca5a5;font-size:10.5px;font-weight:800">loc=${STUDIO_MAP_LOC.x}:${STUDIO_MAP_LOC.y}</span>
+          </div>
+          <div style="font-size:14px;font-weight:800;color:#f8fafc;margin-top:2px">${title}</div>
+          <div style="font-size:11.5px;color:#94a3b8;margin-top:1px">${subtitle}</div>
+        </div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
+          <!-- Cartography Style Switcher: L2Hub Parchment vs Google/Apple GIS -->
+          <div style="display:inline-flex;background:#0c0a08;padding:2px;border-radius:8px;border:1px solid rgba(255,255,255,0.16);margin-right:4px">
+            <button type="button" onclick="setStudioCartoTheme('l2hub')" style="padding:4px 9px;border-radius:6px;font-size:10.5px;font-weight:800;cursor:pointer;border:none;background:${isL2 ? '#d97706' : 'transparent'};color:${isL2 ? '#ffffff' : '#94a3b8'}">
+              📜 L2Hub Aden Parchment
+            </button>
+            <button type="button" onclick="setStudioCartoTheme('google')" style="padding:4px 9px;border-radius:6px;font-size:10.5px;font-weight:800;cursor:pointer;border:none;background:${!isL2 ? '#2563eb' : 'transparent'};color:${!isL2 ? '#ffffff' : '#94a3b8'}">
+              🗺️ Google/Apple GIS
+            </button>
+          </div>
+          ${zoomScales.map(zs => `
+            <button type="button" onclick="setStudioPerspective('${zs.persp}'); STUDIO_MAP_ZOOM=1.0; STUDIO_MAP_PAN_X=0; STUDIO_MAP_PAN_Y=0;" style="padding:5px 10px;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer;border:1px solid ${zs.idx === activeScaleIndex ? '#f59e0b' : 'rgba(255,255,255,0.14)'};background:${zs.idx === activeScaleIndex ? '#d97706' : '#26231d'};color:${zs.idx === activeScaleIndex ? '#ffffff' : '#d6d3d1'}">
+              ${zs.label}
+            </button>
+          `).join('')}
+        </div>
       </div>
 
-      <svg viewBox="0 0 980 430" width="100%" height="430" style="display:block;width:100%;height:auto;max-height:440px;border-radius:10px;background:#070c16;border:1px solid rgba(255,255,255,0.1)">
-        <!-- LEFT PANEL (0..385): INTER-CONTINENT CONNECTION TOPOLOGY -->
-        <rect x="10" y="10" width="375" height="410" rx="8" fill="rgba(15,23,42,0.85)" stroke="rgba(148,163,184,0.22)"/>
-        <text x="24" y="32" fill="#38bdf8" font-size="10.5" font-weight="bold" font-family="monospace">1. HOW CONTINENTS CONNECT (WORLD SEA &amp; SKY)</text>
+      <!-- Main Split: Left Place Details Drawer + Right Interactive 2D World Map -->
+      <div style="display:flex;align-items:stretch;position:relative;min-height:500px;background:${isL2 ? '#2b3d41' : '#193452'}">
+        ${placeDrawerHtml}
 
-        <!-- Connection Lines between C01, C02, C03 -->
-        <path d="M 125 320 L 285 235" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6 4"/>
-        <rect x="142" y="266" width="136" height="18" rx="4" fill="#0f172a" stroke="#f59e0b" stroke-width="1"/>
-        <text x="210" y="278" text-anchor="middle" fill="#fde68a" font-size="9" font-family="monospace">🚂 Root-Train Viaduct</text>
+        <div style="flex:1;position:relative;min-width:0;overflow:hidden;background:${isL2 ? '#2b3d41' : '#193452'}">
+          <!-- Floating Map Zoom Controls (+ / - / 1:1) -->
+          <div style="position:absolute;top:12px;right:12px;z-index:10;display:flex;flex-direction:column;gap:4px;background:rgba(18,16,12,0.92);padding:6px;border-radius:10px;border:1px solid rgba(212,175,55,0.35);box-shadow:0 6px 18px rgba(0,0,0,0.55)">
+            <button type="button" onclick="zoomStudioMap(0.3, false)" title="Zoom In" style="width:32px;height:32px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#29251d;color:#f8fafc;font-size:16px;font-weight:800;cursor:pointer">+</button>
+            <div id="studioCartoZoomReadout" class="mono" style="font-size:10px;text-align:center;color:#fde047;padding:2px 0">${STUDIO_MAP_ZOOM.toFixed(2)}×</div>
+            <button type="button" onclick="zoomStudioMap(-0.3, false)" title="Zoom Out" style="width:32px;height:32px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#29251d;color:#f8fafc;font-size:16px;font-weight:800;cursor:pointer">−</button>
+            <button type="button" onclick="zoomStudioMap(0, true)" title="Reset Pan & Zoom" style="width:32px;height:26px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#17140f;color:#fde047;font-size:10px;font-weight:700;cursor:pointer">1:1</button>
+          </div>
 
-        <path d="M 290 205 L 215 112" stroke="#c084fc" stroke-width="3" stroke-dasharray="5 4"/>
-        <rect x="208" y="148" width="128" height="18" rx="4" fill="#0f172a" stroke="#c084fc" stroke-width="1"/>
-        <text x="272" y="160" text-anchor="middle" fill="#e9d5ff" font-size="9" font-family="monospace">🌀 Astrolabe Rift Gate</text>
+          ${drillControls ? `
+            <div style="position:absolute;top:12px;left:12px;z-index:10;display:flex;flex-wrap:wrap;gap:6px">
+              ${drillControls}
+            </div>
+          ` : ''}
 
-        <path d="M 105 290 L 185 112" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="4 4"/>
-        <rect x="42" y="190" width="132" height="18" rx="4" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
-        <text x="108" y="202" text-anchor="middle" fill="#bae6fd" font-size="9" font-family="monospace">⛵ Cloud-Pier Airship</text>
+          <!-- Interactive 2D Cartographic SVG Map -->
+          <svg viewBox="0 0 1040 500" width="100%" height="500"
+               onwheel="onStudioMapWheel(event)"
+               onmousedown="onStudioMapPointerDown(event)"
+               onmousemove="onStudioMapPointerMove(event)"
+               onmouseup="onStudioMapPointerUp(event)"
+               onmouseleave="onStudioMapPointerUp(event)"
+               style="display:block;width:100%;height:500px;cursor:grab;user-select:none">
+            <defs>
+              <radialGradient id="cartoSeaGrad" cx="50%" cy="50%" r="72%">
+                <stop offset="0%" stop-color="${isL2 ? '#3d5a5e' : '#21436a'}"/>
+                <stop offset="65%" stop-color="${isL2 ? '#2f474b' : '#193452'}"/>
+                <stop offset="100%" stop-color="${isL2 ? '#1f3134' : '#12263d'}"/>
+              </radialGradient>
+              <radialGradient id="l2ParchmentGrad" cx="48%" cy="46%" r="65%">
+                <stop offset="0%" stop-color="#857c58"/>
+                <stop offset="55%" stop-color="#6b6344"/>
+                <stop offset="100%" stop-color="#4e472f"/>
+              </radialGradient>
+              <pattern id="cartoGridPat" width="80" height="80" patternUnits="userSpaceOnUse">
+                <path d="M 80 0 L 0 0 0 80" fill="none" stroke="${isL2 ? 'rgba(24,18,10,0.16)' : 'rgba(148,163,184,0.07)'}" stroke-width="1"/>
+              </pattern>
+              <filter id="cartoDropShadow" x="-15%" y="-15%" width="130%" height="130%">
+                <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#000000" flood-opacity="0.65"/>
+              </filter>
+            </defs>
+            <rect width="1040" height="500" fill="url(#cartoSeaGrad)"/>
+            <rect width="1040" height="500" fill="url(#cartoGridPat)"/>
+            <!-- Vignette Parchment Frame like L2Hub Aden Map -->
+            <g id="studioCartoViewport">
+              ${svgInnerHtml}
+              <!-- Interactive L2Hub Red/White Crosshair Target (+ at loc=X:Y) -->
+              <g id="studioL2Crosshair" transform="translate(${STUDIO_MAP_LOC.svgX}, ${STUDIO_MAP_LOC.svgY})" pointer-events="none">
+                <circle cx="0" cy="0" r="10" fill="rgba(220,38,38,0.22)" stroke="#ef4444" stroke-width="1.5"/>
+                <line x1="-9" y1="0" x2="9" y2="0" stroke="#ef4444" stroke-width="3.2"/>
+                <line x1="0" y1="-9" x2="0" y2="9" stroke="#ef4444" stroke-width="3.2"/>
+                <line x1="-7" y1="0" x2="7" y2="0" stroke="#ffffff" stroke-width="1.4"/>
+                <line x1="0" y1="-7" x2="0" y2="7" stroke="#ffffff" stroke-width="1.4"/>
+              </g>
+            </g>
+            <rect width="1040" height="500" fill="none" stroke="#1c160e" stroke-width="10" pointer-events="none"/>
+          </svg>
 
-        <!-- C03 Node on Globe -->
-        <g style="cursor:pointer" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c03.id)}', inspectId: '${escapeHtml(c03.id)}' })">
-          <ellipse cx="200" cy="95" rx="115" ry="38" fill="${isC03 ? 'rgba(168,85,247,0.38)' : 'rgba(168,85,247,0.15)'}" stroke="${isC03 ? '#ffd166' : '#c084fc'}" stroke-width="${isC03 ? 3 : 1.8}"/>
-          <text x="200" y="91" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="bold">🌍 C03: The Shattered Halo</text>
-          <text x="200" y="107" text-anchor="middle" fill="#e9d5ff" font-size="9.5" font-family="monospace">Lv. 50–100 · North Archipelago</text>
-        </g>
-
-        <!-- C02 Node on Globe -->
-        <g style="cursor:pointer" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c02.id)}', inspectId: '${escapeHtml(c02.id)}' })">
-          <ellipse cx="285" cy="232" rx="86" ry="42" fill="${isC02 ? 'rgba(245,158,11,0.38)' : 'rgba(245,158,11,0.15)'}" stroke="${isC02 ? '#ffd166' : '#f59e0b'}" stroke-width="${isC02 ? 3 : 1.8}"/>
-          <text x="285" y="228" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="bold">🌍 C02: Clockwork Steppe</text>
-          <text x="285" y="244" text-anchor="middle" fill="#fde68a" font-size="9.5" font-family="monospace">Lv. 20–75 · East Fault</text>
-        </g>
-
-        <!-- C01 Node on Globe -->
-        <g style="cursor:pointer" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c01.id)}', inspectId: '${escapeHtml(c01.id)}' })">
-          <ellipse cx="122" cy="332" rx="95" ry="44" fill="${isC01 ? 'rgba(34,197,94,0.38)' : 'rgba(34,197,94,0.15)'}" stroke="${isC01 ? '#ffd166' : '#4ade80'}" stroke-width="${isC01 ? 3 : 1.8}"/>
-          <text x="122" y="328" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="bold">🌍 C01: Hearthbloom Basin</text>
-          <text x="122" y="344" text-anchor="middle" fill="#86efac" font-size="9.5" font-family="monospace">Lv. 1–45 · SW Kiln Basin</text>
-        </g>
-
-        <text x="24" y="405" fill="#94a3b8" font-size="9.5" font-family="monospace">★ Gold border indicates currently inspected Continent</text>
-
-        <!-- RIGHT PANEL (395..970): SELECTED CONTINENT GEOGRAPHIC MAP & 11 DISTRICTS -->
-        <rect x="395" y="10" width="575" height="410" rx="8" fill="rgba(10,18,32,0.92)" stroke="rgba(255,209,102,0.32)"/>
-        <text x="412" y="32" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">2. REGIONAL GEOGRAPHY: ${escapeHtml((activeContinent.name || '').toUpperCase())} (${childDistricts.length} DISTRICTS)</text>
-
-        ${landformSvg}
-        ${roadLinesHtml}
-        ${districtPinsHtml}
-      </svg>
+          <!-- Bottom Cartographic Scale Bar & Legend -->
+          <div style="position:absolute;bottom:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:6px 12px;border-radius:8px;background:rgba(15,13,10,0.9);border:1px solid rgba(212,175,55,0.28);font-size:11px;color:#e7e5e4;pointer-events:none">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              ${(legendItems || []).map(item => `
+                <span style="display:inline-flex;align-items:center;gap:5px">
+                  <span style="width:10px;height:10px;border-radius:3px;background:${item.color};display:inline-block;border:1px solid rgba(255,255,255,0.4)"></span>
+                  <span>${escapeHtml(item.label)}</span>
+                </span>
+              `).join('')}
+            </div>
+            <div class="mono" style="font-size:10.5px;color:#fde68a">╋ Click Any Castle, Town, Fortress, Catacomb, or Road to Move Crosshair &amp; Inspect</div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 }
 
-function renderDistrictBigPictureSvg(activeContinent, activeDistrict, allDistrictNodes) {
-  const cols = (activeDistrict.grid_dimensions && activeDistrict.grid_dimensions.columns) || 3;
-  const rows = (activeDistrict.grid_dimensions && activeDistrict.grid_dimensions.rows) || 3;
-  const portalEdges = activeDistrict.portal_edges || [];
+function renderWhcBigPictureSvg(whc, continents) {
+  const isL2 = STUDIO_CARTO_THEME === 'l2hub';
+  const c01 = continents[0] || { id: 'continent-01-hearthbloom-basin', name: 'Hearthbloom Basin' };
+  const c02 = continents[1] || { id: 'continent-02-clockwork-steppe', name: 'The Clockwork Steppe' };
+  const c03 = continents[2] || { id: 'continent-03-shattered-halo', name: 'The Shattered Halo' };
+  const bindings = whc.starter_town_bindings || [];
+  const st0 = bindings[0] || { town_id: 'town-lantern-hollow', town_name: 'Lantern Hollow', continent_id: c01.id, district_id: 'district-teacup-meadows' };
 
-  // Map each node to an SVG coordinate in the District Basin Diagram
-  const nodePos = {};
+  const poiC01 = {
+    title: c01.name + ' (Continent 01)',
+    category: 'Starter Ceramic Caldera Continent · Lv. 1–15',
+    thumb: '/thumbs/creatures/god-sola-hearth-weaver.webp',
+    hoursOrStatus: 'CANON · 10 Canon Districts · 1 Mystery Caldera',
+    summary: 'Sheltered perpetual-spring caldera formed inside Sola the Hearth-Weaver’s ceramic shield around the warm Inland Kiln Sea.',
+    address: 'South-West Hemisphere · Lat 22°S, Lon 114°W · Scar: The Kiln-Basin Caldera',
+    coordinates: '10 Canon Districts · 30 Playable Maps · Starter Town: Lantern Hollow',
+    scaleSpecs: '2.0m × 1.5m keyhole cottage doorways · 0.14m step risers · 0.58m bakery counters · ≤0.25m clover grass',
+    drillPerspective: 'continent',
+    drillOpts: { continentId: c01.id, inspectId: c01.id },
+    drillLabel: 'Zoom to Continent 01',
+    inspectId: c01.id,
+    connections: [
+      { label: '🚂 Kettle-Whistle Root-Train → Clockwork Steppe', badge: 'OPEN' },
+      { label: '⛵ Cloud-Pier Airship → The Shattered Halo', badge: 'OPEN' },
+      { label: '🏰 Starter Town: Lantern Hollow (Teacup Meadows)', badge: 'SPAWN' }
+    ]
+  };
+
+  const poiC02 = {
+    title: c02.name + ' (Continent 02)',
+    category: 'Tectonic Brass Plateau Continent · Lv. 15–30',
+    thumb: '/thumbs/creatures/god-krono-brass-titan.webp',
+    hoursOrStatus: 'CANON · All 11 Districts Canon · 33 Playable Maps',
+    summary: 'Wind-swept copper-grassland plateau bisected by Krono the Brass Titan’s uncoiled mainspring canyon and thermal escapement mesas.',
+    address: 'Eastern Equatorial Belt · Lat 08°N, Lon 062°E · Scar: Uncoiled Mainspring Faultline',
+    coordinates: '11 Canon Districts · 33 Playable Maps · Hub: Pinion Terminus & Mercury-Bellows Hub',
+    scaleSpecs: '4.0m–12.5m Titan gear-tooth highways · 0.58m–0.60m tinker benches · 0.14m cog-steps',
+    drillPerspective: 'continent',
+    drillOpts: { continentId: c02.id, inspectId: c02.id },
+    drillLabel: 'Zoom to Continent 02',
+    inspectId: c02.id,
+    connections: [
+      { label: '🚂 Root-Train Viaduct ← Hearthbloom Basin', badge: 'OPEN' },
+      { label: '🌀 Astrolabe Rift Gate → The Shattered Halo', badge: 'OPEN' },
+      { label: '⚙️ Eastern Frontier: Thermal Compensator Basin', badge: 'CANON' }
+    ]
+  };
+
+  const poiC03 = {
+    title: c03.name + ' (Continent 03)',
+    category: 'Inverted-Gravity Floating Archipelago · Lv. 30–50',
+    thumb: '/thumbs/creatures/god-vesper-dream-eater.webp',
+    hoursOrStatus: 'CANON · 11 Canon Districts · 1 Draft Atoll',
+    summary: 'Ring of levitating black basalt islands and starlight tether-bridges suspended above Vesper’s northern gravity vortex.',
+    address: 'Northern Polar Ring · Lat 68°N, Lon 015°W · Scar: The Inverted Gravity Crater',
+    coordinates: '11 Canon + 1 Draft District (Solstice Pendulum Atoll) · 34 Playable Maps',
+    scaleSpecs: '12.0m–12.5m starlight tether-bridges · 0.14m basalt risers · 0.58m astrolabe consoles',
+    drillPerspective: 'continent',
+    drillOpts: { continentId: c03.id, inspectId: c03.id },
+    drillLabel: 'Zoom to Continent 03',
+    inspectId: c03.id,
+    connections: [
+      { label: '🌀 Astrolabe Rift Gate ← The Clockwork Steppe', badge: 'OPEN' },
+      { label: '⛵ Cloud-Pier Airship ← Hearthbloom Basin', badge: 'OPEN' },
+      { label: '⏳ Draft Frontier: Solstice Pendulum Atoll', badge: 'DRAFT' }
+    ]
+  };
+
+  const poiStarter = {
+    title: st0.town_name + ' (Starter Town)',
+    category: 'Player Arrival Sanctuary · Teacup Meadows [1, 1]',
+    thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+    hoursOrStatus: 'Every Day, Open 24 Hours · Zero Lethal Weather',
+    summary: 'Located inside Sola’s unbroken Ceramic Palm where 90–120cm Star-Kindled Sprouts condense gently beside warm kiln hearths.',
+    address: 'Lantern Hollow [1, 1] · Teacup Meadows · Hearthbloom Basin',
+    coordinates: 'Map ID: lantern-hollow · 4000m × 4000m Town Sanctuary',
+    scaleSpecs: '13.0m Main Plaza Road · 4.4m Cobblestone Walkways · 0.58m Bakery Counter · 0.14m Steps',
+    drillPerspective: 'town-or-hunting-area',
+    drillOpts: { continentId: c01.id, districtId: st0.district_id, nodeId: st0.town_id, inspectId: st0.town_id },
+    drillLabel: 'Zoom to Street Map',
+    inspectId: st0.town_id,
+    connections: [
+      { label: '🌿 West → Clover South Gate (Lv. 1–5)', badge: 'OPEN' },
+      { label: '🕳️ Dungeon → Sunken Potter Hold B1', badge: 'OPEN' },
+      { label: '🛤️ East → Kilnfire Terraces Highway', badge: 'OPEN' }
+    ]
+  };
+
+  const landFill1 = isL2 ? 'url(#l2ParchmentGrad)' : '#28624f';
+  const landStroke1 = isL2 ? '#332917' : '#4ade80';
+  const waterCol = isL2 ? '#37565b' : '#1d4ed8';
+
+  const svgInnerHtml = `
+    <!-- Ocean Bathymetry Contours -->
+    <path d="M 40,240 Q 220,170 430,260 T 940,340 L 980,480 L 40,480 Z" fill="${isL2 ? '#293f43' : '#1d3c5e'}" opacity="0.6"/>
+    <ellipse cx="485" cy="128" rx="285" ry="95" fill="${isL2 ? '#223538' : '#172c48'}" stroke="${isL2 ? '#6e6244' : '#284e7a'}" stroke-width="1.5" stroke-dasharray="10 6"/>
+
+    <!-- CONTINENT 01: HEARTHBLOOM BASIN (SW ORGANIC PARCHMENT LANDMASS + MOUNTAINS + RIVERS + CASTLES) -->
+    <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiC01, svgX: 235, svgY: 342 })}', event)">
+      <path d="M 65,335 Q 85,235 195,220 Q 325,205 395,275 Q 435,345 375,425 Q 285,465 165,450 Q 55,425 65,335 Z" fill="${isL2 ? '#453e29' : '#214d43'}" stroke="${isL2 ? '#262013' : '#2d6a5b'}" stroke-width="6" opacity="0.8"/>
+      <path d="M 78,335 Q 98,245 198,232 Q 318,218 382,282 Q 418,342 365,415 Q 280,452 170,438 Q 68,415 78,335 Z" fill="${landFill1}" stroke="${landStroke1}" stroke-width="2.5"/>
+      ${drawL2MountainRangeSvg('105,315 155,260 225,252 305,262 355,310', 1.1)}
+      ${drawL2MountainRangeSvg('125,395 215,425 315,402', 0.9)}
+      <!-- Inland Kiln Sea & Glaze Rivers -->
+      <ellipse cx="235" cy="342" rx="44" ry="20" fill="${waterCol}" stroke="#88b3ba" stroke-width="1.2"/>
+      <path d="M 235,322 Q 210,275 165,242 M 279,342 Q 335,345 388,330 M 192,352 Q 140,375 88,390" fill="none" stroke="${waterCol}" stroke-width="4" stroke-linecap="round"/>
+      <!-- Winding L2 Parchment Dirt Roads -->
+      <path d="M 145,295 Q 190,320 235,342 T 325,295 M 235,342 Q 275,375 305,395" fill="none" stroke="#261f12" stroke-width="5" stroke-linecap="round"/>
+      <path d="M 145,295 Q 190,320 235,342 T 325,295 M 235,342 Q 275,375 305,395" fill="none" stroke="#cbb989" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Continent Title -->
+      <text x="235" y="255" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:4px;fill:#fde68a;font-size:13px;font-weight:900;letter-spacing:0.12em">HEARTHBLOOM BASIN (LV. 1–15)</text>
+    </g>
+    ${drawL2LandmarkSvg({ kind: 'town', x: 235, y: 342, label: st0.town_name, sublabel: '★ Starter Town', flagColor: '#eab308', isSelected: true, poiObj: poiStarter })}
+    ${drawL2LandmarkSvg({ kind: 'castle', x: 325, y: 295, label: 'Kilnfire Castle', sublabel: 'Lv. 5–9', flagColor: '#dc2626', isSelected: false, poiObj: poiC01 })}
+    ${drawL2LandmarkSvg({ kind: 'windmill', x: 145, y: 295, label: 'Amber-Root Village', sublabel: 'Lv. 2–6', flagColor: '#22c55e', isSelected: false, poiObj: poiC01 })}
+    ${drawL2LandmarkSvg({ kind: 'catacomb', x: 305, y: 395, label: 'Cardamom Kiln Catacomb', sublabel: 'Mystery', flagColor: '#a855f7', isSelected: false, poiObj: poiC01 })}
+
+    <!-- CONTINENT 02: THE CLOCKWORK STEPPE (EASTERN PLATEAU + CASTLES + FORTRESSES + BOSS LAIR) -->
+    <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiC02, svgX: 752, svgY: 318 })}', event)">
+      <path d="M 555,255 Q 635,185 785,192 Q 935,200 975,285 Q 985,385 885,435 Q 735,455 615,405 Q 535,355 555,255 Z" fill="${isL2 ? '#453e29' : '#214d43'}" stroke="${isL2 ? '#262013' : '#2d6a5b'}" stroke-width="6" opacity="0.8"/>
+      <path d="M 568,258 Q 642,195 785,202 Q 922,210 962,288 Q 970,378 878,422 Q 735,442 622,395 Q 548,348 568,258 Z" fill="${landFill1}" stroke="${landStroke1}" stroke-width="2.5"/>
+      ${drawL2MountainRangeSvg('605,245 705,220 815,228 915,255', 1.15)}
+      ${drawL2MountainRangeSvg('635,375 765,360 885,385', 1.0)}
+      <!-- Uncoiled Mainspring Canyon River -->
+      <path d="M 572,325 Q 695,305 795,320 T 958,295" fill="none" stroke="${waterCol}" stroke-width="5" stroke-linecap="round"/>
+      <!-- Winding L2 Parchment Dirt Roads -->
+      <path d="M 615,318 Q 685,295 752,318 T 895,302 M 752,318 Q 775,260 825,245" fill="none" stroke="#261f12" stroke-width="5.5" stroke-linecap="round"/>
+      <path d="M 615,318 Q 685,295 752,318 T 895,302 M 752,318 Q 775,260 825,245" fill="none" stroke="#cbb989" stroke-width="2.8" stroke-linecap="round"/>
+      <text x="765" y="218" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:4px;fill:#fde68a;font-size:13px;font-weight:900;letter-spacing:0.12em">THE CLOCKWORK STEPPE (LV. 15–30)</text>
+    </g>
+    ${drawL2LandmarkSvg({ kind: 'castle', x: 615, y: 318, label: 'Pinion Terminus Castle', sublabel: 'Lv. 15–20', flagColor: '#dc2626', isSelected: false, poiObj: poiC02 })}
+    ${drawL2LandmarkSvg({ kind: 'tower', x: 752, y: 318, label: 'Mainspring Tower', sublabel: 'Lv. 20–26', flagColor: '#2563eb', isSelected: false, poiObj: poiC02 })}
+    ${drawL2LandmarkSvg({ kind: 'fortress', x: 825, y: 245, label: 'Pendulum Escapement Fortress', sublabel: 'Lv. 22–28', flagColor: '#dc2626', isSelected: false, poiObj: poiC02 })}
+    ${drawL2LandmarkSvg({ kind: 'town', x: 895, y: 315, label: 'Mercury-Bellows Hub', sublabel: 'Lv. 27–30 Canon', flagColor: '#22c55e', isSelected: false, poiObj: poiC02 })}
+
+    <!-- CONTINENT 03: THE SHATTERED HALO (NORTHERN FLOATING ATOLL + GRAVITY EYE + LAIRS) -->
+    <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiC03, svgX: 485, svgY: 112 })}', event)">
+      <path d="M 255,115 Q 335,55 485,48 Q 645,52 725,115 Q 685,155 615,135 Q 555,95 485,92 Q 415,95 355,135 Q 295,155 255,115 Z" fill="${landFill1}" stroke="#c084fc" stroke-width="2.2"/>
+      <path d="M 325,168 Q 415,198 555,192 Q 635,182 665,152 Q 595,168 485,170 Q 385,168 325,168 Z" fill="${landFill1}" stroke="#a855f7" stroke-width="1.8"/>
+      <ellipse cx="485" cy="132" rx="72" ry="26" fill="#13111c" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6 3"/>
+      <path d="M 345,108 Q 415,82 485,82 T 628,108" fill="none" stroke="#261f12" stroke-width="4.5"/>
+      <path d="M 345,108 Q 415,82 485,82 T 628,108" fill="none" stroke="#cbb989" stroke-width="2.2"/>
+      <text x="485" y="38" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:4px;fill:#e9d5ff;font-size:13px;font-weight:900;letter-spacing:0.14em">THE SHATTERED HALO (LV. 30–50)</text>
+    </g>
+    ${drawL2LandmarkSvg({ kind: 'castle', x: 345, y: 108, label: 'Starfall Haven Keep', sublabel: 'Lv. 30–36', flagColor: '#38bdf8', isSelected: false, poiObj: poiC03 })}
+    ${drawL2LandmarkSvg({ kind: 'lair', x: 485, y: 132, label: 'Vesper Gravity Lair', sublabel: 'Lv. 45–50 Boss', flagColor: '#dc2626', isSelected: false, poiObj: poiC03 })}
+    ${drawL2LandmarkSvg({ kind: 'fortress', x: 628, y: 108, label: 'Solstice Pendulum Fortress', sublabel: 'Lv. 46–50 Draft', flagColor: '#eab308', isSelected: false, poiObj: poiC03 })}
+
+    <!-- INTER-CONTINENTAL VIADUCTS & CORRIDORS -->
+    <path d="M 255,342 C 375,335 475,328 595,318" fill="none" stroke="#1c160e" stroke-width="6"/>
+    <path d="M 255,342 C 375,335 475,328 595,318" fill="none" stroke="#fbbf24" stroke-width="3" stroke-dasharray="10 4"/>
+    <text x="435" y="322" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:3.5px;fill:#fde047;font-size:10px;font-weight:800">🚂 KETTLE-WHISTLE ROOT-TRAIN VIADUCT</text>
+  `;
+
+  return renderCartoShellHtml({
+    stepLabel: '🌍 STEP 1 WORLD MAP (L2HUB ADEN PARCHMENT + GOOGLE MAPS EXPLORER)',
+    title: 'Aethelgard World Map — Continents, Castles, Walled Towns, Fortresses, Catacombs & Winding Roads',
+    subtitle: 'Inspired by l2hub.info/map & Google Maps: click any Castle, Town, Fortress, Catacomb, or Road to move the red crosshair (loc=X:Y) and open its Place Details Drawer',
+    activeScaleIndex: 1,
+    defaultPoi: poiStarter,
+    svgInnerHtml,
+    legendItems: [
+      { color: '#857c58', label: 'Topographic Parchment Relief' },
+      { color: '#cbb989', label: 'Winding Dirt & Cobble Roads' },
+      { color: '#dc2626', label: 'Castles & Pennant Fortresses' },
+      { color: '#a855f7', label: 'Catacombs & Necropolises' },
+      { color: '#ef4444', label: '╋ Interactive loc=X:Y Crosshair' }
+    ]
+  });
+}
+
+function renderContinentBigPictureSvg(continents, districts, activeContinent) {
+  const isL2 = STUDIO_CARTO_THEME === 'l2hub';
+  const childDistricts = districts.filter(d => d.parent_continent_id === activeContinent.id);
+  const isC01 = activeContinent.id.includes('continent-01');
+  const isC02 = activeContinent.id.includes('continent-02');
+
+  // 12 Aden-style geographic positions across the 1040x500 Continent Parchment Map (just like Gludio -> Dion -> Cruma -> Giran -> Death Pass -> Dragon Valley -> Antharas Lair!)
+  const regionCenters = [
+    { x: 155, y: 375, kind: 'town',     flag: '#eab308', poly: '65,305 245,300 265,445 75,455' },
+    { x: 315, y: 365, kind: 'windmill', flag: '#22c55e', poly: '245,300 415,305 425,450 265,445' },
+    { x: 485, y: 382, kind: 'castle',   flag: '#dc2626', poly: '415,305 585,305 595,450 425,450' },
+    { x: 665, y: 372, kind: 'fortress', flag: '#dc2626', poly: '585,305 765,310 775,450 595,450' },
+    { x: 205, y: 235, kind: 'castle',   flag: '#dc2626', poly: '75,165 295,165 245,300 65,305' },
+    { x: 385, y: 215, kind: 'tower',    flag: '#38bdf8', poly: '295,165 485,165 415,305 245,300' },
+    { x: 565, y: 235, kind: 'catacomb', flag: '#a855f7', poly: '485,165 675,170 585,305 415,305' },
+    { x: 745, y: 245, kind: 'town',     flag: '#22c55e', poly: '675,170 855,175 765,310 585,305' },
+    { x: 285, y: 105, kind: 'fortress', flag: '#dc2626', poly: '125,45 435,45 485,165 295,165 75,165' },
+    { x: 575, y: 102, kind: 'fortress', flag: '#2563eb', poly: '435,45 715,45 675,170 485,165' },
+    { x: 845, y: 118, kind: 'lair',     flag: '#f97316', poly: '715,45 975,65 965,225 855,175 675,170' },
+    { x: 895, y: 345, kind: 'castle',   flag: '#22c55e', poly: '765,310 965,225 985,435 775,450' }
+  ];
+
+  // Winding Road Network (connecting every District like Aden's Gludio-Dion-Giran-DragonValley network)
+  const roadPairs = [
+    [0, 1], [1, 2], [2, 3], [0, 4], [4, 5], [5, 1], [5, 6], [6, 2], [6, 7], [7, 3],
+    [4, 8], [5, 8], [6, 9], [7, 9], [9, 10], [7, 10], [7, 11], [3, 11]
+  ];
+
+  const firstDist = childDistricts[0] || {};
+  const defaultPoi = {
+    title: activeContinent.name || 'Continent Region',
+    category: `Aden-Style Regional Parchment Map · ${childDistricts.length} Connected Districts`,
+    thumb: isC01 ? '/thumbs/creatures/god-sola-hearth-weaver.webp' : (isC02 ? '/thumbs/creatures/god-krono-brass-titan.webp' : '/thumbs/creatures/god-vesper-dream-eater.webp'),
+    hoursOrStatus: `CANON · ${childDistricts.filter(d => d.status === 'canon').length} Canon Districts`,
+    summary: activeContinent.core_rationale || '',
+    address: `${activeContinent.name} · ${(activeContinent.climate_profile && activeContinent.climate_profile.macro_biome) || 'Regional Plateau'}`,
+    coordinates: `Level Band: Lv. ${(activeContinent.level_band && activeContinent.level_band.min_level) || 1}–${(activeContinent.level_band && activeContinent.level_band.max_level) || 30} · ${childDistricts.length} Districts`,
+    scaleSpecs: (activeContinent.civilization_style && activeContinent.civilization_style.character_scale_adaptation) || '90–120cm scale roads & counters',
+    drillPerspective: 'district',
+    drillOpts: { continentId: activeContinent.id, districtId: firstDist.id, inspectId: firstDist.id },
+    drillLabel: `Zoom to ${firstDist.name || 'District'}`,
+    inspectId: activeContinent.id,
+    connections: childDistricts.slice(0, 6).map((d, i) => ({
+      label: `D${String(i + 1).padStart(2, '0')} · ${d.name}`,
+      badge: `Lv.${(d.level_range || [1, 15]).join('–')} · ${(d.status || 'canon').toUpperCase()}`
+    }))
+  };
+
+  // Base Parchment Continent Landmass + Sculpted Mountain Ridges + Rivers
+  const terrainHtml = `
+    <!-- Outer Coastal Shallows & Continent Parchment Island (like Aden Continent in l2hub.info/map) -->
+    <path d="M 38,85 Q 110,28 515,28 Q 935,28 995,95 Q 1015,265 985,445 Q 845,482 515,475 Q 145,482 48,435 Q 18,265 38,85 Z"
+          fill="${isL2 ? 'url(#l2ParchmentGrad)' : '#255847'}" stroke="#241c10" stroke-width="4"/>
+
+    <!-- Topographic Shading & Marsh/Forest Basins -->
+    <ellipse cx="385" cy="215" rx="95" ry="52" fill="${isL2 ? '#495239' : '#1b4335'}" opacity="0.65"/>
+    <ellipse cx="745" cy="245" rx="110" ry="58" fill="${isL2 ? '#5b5338' : '#1b4335'}" opacity="0.55"/>
+    <ellipse cx="845" cy="118" rx="95" ry="48" fill="${isL2 ? '#4a3f28' : '#1b4335'}" opacity="0.7"/>
+
+    <!-- Continual Rivers, Lakes & Harbors (like Giran Harbor / Cruma Marshlands / Fellmere Lake) -->
+    <path d="M 415,30 Q 405,135 385,215 T 485,382 L 515,478" fill="none" stroke="${isL2 ? '#314e52' : '#1d4ed8'}" stroke-width="12" stroke-linecap="round"/>
+    <path d="M 45,295 Q 235,275 385,215 T 745,245 L 995,215" fill="none" stroke="${isL2 ? '#39595e' : '#2563eb'}" stroke-width="8" stroke-linecap="round"/>
+    <ellipse cx="385" cy="215" rx="45" ry="22" fill="${isL2 ? '#314e52' : '#1d4ed8'}" stroke="#7fa6ad" stroke-width="1.2"/>
+
+    <!-- Sculpted Mountain Ranges & Canyons (like Death Pass & Dragon Valley ridges!) -->
+    ${drawL2MountainRangeSvg('95,155 215,135 335,155 465,130', 1.2)}
+    ${drawL2MountainRangeSvg('525,155 625,125 645,215 620,285', 1.25)}
+    ${drawL2MountainRangeSvg('715,75 815,65 925,95 945,175', 1.3)}
+    ${drawL2MountainRangeSvg('225,315 355,325 445,295', 1.0)}
+    ${drawL2MountainRangeSvg('695,325 815,295 915,310', 1.1)}
+
+    <!-- Vertical Mountain Pass Label (just like "Death Pass" in the L2Hub screenshot!) -->
+    <text x="605" y="155" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:3.5px;fill:#f8f5ec;font-size:10px;font-weight:800;letter-spacing:0.25em" transform="rotate(90 605 155)">
+      ${isC01 ? 'KILNFIRE PASS' : (isC02 ? 'MAINSPRING PASS' : 'SOLSTICE RIFT PASS')}
+    </text>
+  `;
+
+  // Subtle Province TerritoryPolygons (clickable)
+  const polygonsHtml = childDistricts.map((d, idx) => {
+    const rc = regionCenters[idx % regionCenters.length];
+    const st = (d.status || 'canon').toLowerCase();
+    const poiObj = {
+      title: `D${String(idx + 1).padStart(2, '0')} · ${d.name}`,
+      category: `District Territory · ${d.level_band_label || 'Regional Cluster'} (Lv. ${(d.level_range || [1, 15]).join('–')})`,
+      thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+      hoursOrStatus: `${st.toUpperCase()} · ${(d.grid_nodes || []).length} Map Zones · Families: ${(d.ecological_monster_families || []).join(', ')}`,
+      summary: d.core_rationale || '',
+      address: `${d.name} · ${activeContinent.name}`,
+      coordinates: `Grid: 2×2 Overland + Dungeon · Status: ${st.toUpperCase()}`,
+      scaleSpecs: (d.quality_checklist && d.quality_checklist.character_scale_consistency && d.quality_checklist.character_scale_consistency.evidence) || '12.5m arterial highways, 0.58m counters, 0.14m risers',
+      drillPerspective: 'district',
+      drillOpts: { continentId: activeContinent.id, districtId: d.id, inspectId: d.id },
+      drillLabel: 'Zoom to District Map',
+      inspectId: d.id,
+      svgX: rc.x,
+      svgY: rc.y,
+      connections: (d.grid_nodes || []).map(gn => ({
+        label: `${gn.node_type === 'town' ? '🏰' : (gn.node_type === 'dungeon' ? '🕳️' : '🌿')} ${gn.node_id}`,
+        badge: gn.status.toUpperCase()
+      }))
+    };
+    return `
+      <polygon points="${rc.poly}" fill="transparent" stroke="${isL2 ? 'rgba(42,33,18,0.45)' : 'rgba(168,85,247,0.55)'}" stroke-width="1.5" stroke-dasharray="6 4"
+               data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr(poiObj)}', event)"/>
+    `;
+  }).join('');
+
+  // Winding Parchment Dirt Roads connecting all Districts (with dark border casing like L2Hub)
+  const roadsHtml = roadPairs
+    .filter(([a, b]) => a < childDistricts.length && b < childDistricts.length)
+    .map(([a, b]) => {
+      const pa = regionCenters[a];
+      const pb = regionCenters[b];
+      const cx = Math.round((pa.x + pb.x) / 2 + ((a + b) % 2 === 0 ? 14 : -14));
+      const cy = Math.round((pa.y + pb.y) / 2 + ((a + b) % 2 === 0 ? -10 : 10));
+      return `
+        <g pointer-events="none">
+          <path d="M ${pa.x},${pa.y} Q ${cx},${cy} ${pb.x},${pb.y}" fill="none" stroke="#241c10" stroke-width="5.5" stroke-linecap="round"/>
+          <path d="M ${pa.x},${pa.y} Q ${cx},${cy} ${pb.x},${pb.y}" fill="none" stroke="${isL2 ? '#cbb989' : '#94a3b8'}" stroke-width="2.6" stroke-linecap="round"/>
+        </g>
+      `;
+    }).join('');
+
+  // Hand-Illustrated Castles, Walled Towns, Pennant Fortresses, Towers, Catacombs & Boss Lairs for each District!
+  const landmarksHtml = childDistricts.map((d, idx) => {
+    const rc = regionCenters[idx % regionCenters.length];
+    const st = (d.status || 'canon').toLowerCase();
+    const isSelected = STUDIO_ACTIVE_INSPECT_ID === d.id || (STUDIO_MAP_SELECTED_POI && STUDIO_MAP_SELECTED_POI.inspectId === d.id);
+    const lvRange = (d.level_range || [1, 15]).join('–');
+    const kind = st === 'mystery' ? 'catacomb' : (st === 'draft' ? 'fortress' : rc.kind);
+    const poiObj = {
+      title: `D${String(idx + 1).padStart(2, '0')} · ${d.name}`,
+      category: `${kind.toUpperCase()} & District Territory · Lv. ${lvRange} (${st.toUpperCase()})`,
+      thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+      hoursOrStatus: `${st.toUpperCase()} · ${(d.grid_nodes || []).length} Connected Zones`,
+      summary: d.core_rationale || '',
+      address: `${d.name} · ${activeContinent.name}`,
+      coordinates: `Province D${String(idx + 1).padStart(2, '0')} · Monsters: ${(d.ecological_monster_families || []).join(', ')}`,
+      scaleSpecs: (d.quality_checklist && d.quality_checklist.character_scale_consistency && d.quality_checklist.character_scale_consistency.evidence) || '12.5m roads · 0.58m counters',
+      drillPerspective: 'district',
+      drillOpts: { continentId: activeContinent.id, districtId: d.id, inspectId: d.id },
+      drillLabel: 'Zoom to District Map',
+      inspectId: d.id,
+      connections: (d.grid_nodes || []).map(gn => ({
+        label: `${gn.node_type.toUpperCase()}: ${gn.node_id}`,
+        badge: `Lv.${(gn.level_range || [1, 15]).join('–')}`
+      }))
+    };
+    return drawL2LandmarkSvg({
+      kind,
+      x: rc.x,
+      y: rc.y,
+      label: d.name,
+      sublabel: `D${String(idx + 1).padStart(2, '0')} · Lv.${lvRange}${st !== 'canon' ? ' · ' + st.toUpperCase() : ''}`,
+      flagColor: rc.flag,
+      isSelected,
+      poiObj
+    });
+  }).join('');
+
+  // L2Hub-style Top-Left Continent Tab Bar ("Aden" tab in Screenshot!)
+  const continentSwitcherHtml = continents.map(c => `
+    <button type="button" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c.id)}', inspectId: '${escapeHtml(c.id)}' }); STUDIO_MAP_SELECTED_POI=null;"
+            style="padding:6px 13px;border-radius:6px;font-size:11.5px;font-weight:800;cursor:pointer;border:1px solid ${c.id === activeContinent.id ? '#f59e0b' : 'rgba(255,255,255,0.18)'};background:${c.id === activeContinent.id ? '#292318' : 'rgba(18,16,12,0.82)'};color:${c.id === activeContinent.id ? '#fde047' : '#d6d3d1'};box-shadow:0 4px 12px rgba(0,0,0,0.45)">
+      ${escapeHtml(c.name)}
+    </button>
+  `).join('');
+
+  const svgInnerHtml = `
+    ${terrainHtml}
+    ${polygonsHtml}
+    ${roadsHtml}
+    ${landmarksHtml}
+  `;
+
+  return renderCartoShellHtml({
+    stepLabel: `🗺️ STEP 2 CONTINENT PARCHMENT ATLAS (L2HUB ADEN STYLE) · ${escapeHtml((activeContinent.name || '').toUpperCase())}`,
+    title: `${escapeHtml(activeContinent.name || '')} — Castles, Walled Towns, Fortresses, Towers, Catacombs & Mountain Passes`,
+    subtitle: 'Styled after l2hub.info/map (Aden): trace the winding roads across mountain passes, click any Castle/Town/Fortress/Catacomb to move the + crosshair, and zoom into its District',
+    activeScaleIndex: 2,
+    defaultPoi,
+    drillControls: continentSwitcherHtml,
+    svgInnerHtml,
+    legendItems: [
+      { color: '#2a2012', label: 'Castles & Walled Towns' },
+      { color: '#dc2626', label: 'Fortresses (Red/Blue Pennants)' },
+      { color: '#a855f7', label: 'Catacombs & Necropolises' },
+      { color: '#f97316', label: 'Boss Lairs & Towers' },
+      { color: '#cbb989', label: 'Winding Continent Roads' }
+    ]
+  });
+}
+
+function renderDistrictBigPictureSvg(activeContinent, activeDistrict, allDistrictNodes) {
+  const isL2 = STUDIO_CARTO_THEME === 'l2hub';
+  const portalEdges = activeDistrict.portal_edges || [];
   const overlandNodes = allDistrictNodes.filter(n => n.node_type !== 'dungeon');
   const dungeonNodes = allDistrictNodes.filter(n => n.node_type === 'dungeon');
 
-  overlandNodes.forEach((n, idx) => {
-    const coords = n.grid_coordinates || [idx % cols, Math.floor(idx / cols)];
-    const cx = 140 + (coords[0] * 210);
-    const cy = 115 + (coords[1] * 145);
-    nodePos[n.id] = { x: cx, y: cy, node: n };
+  function quadCenter(coords, isDng, idx) {
+    if (isDng) return { x: 895, y: 245 + idx * 120, bx: 785, by: 55, bw: 220, bh: 390 };
+    const c = coords && coords.length === 2 ? coords : [0, 1];
+    const qx = c[0] === 0 ? 240 : 590;
+    const qy = c[1] === 0 ? 138 : 348;
+    const bx = c[0] === 0 ? 60 : 415;
+    const by = c[1] === 0 ? 40 : 245;
+    return { x: qx, y: qy, bx, by, bw: 350, bh: 200 };
+  }
+
+  const nodePos = {};
+  overlandNodes.forEach((n, i) => {
+    nodePos[n.id] = { ...quadCenter(n.grid_coordinates, false, i), node: n };
+  });
+  dungeonNodes.forEach((n, i) => {
+    nodePos[n.id] = { ...quadCenter(n.grid_coordinates, true, i), node: n };
   });
 
-  dungeonNodes.forEach((n, idx) => {
-    const cx = 770;
-    const cy = 140 + idx * 140;
-    nodePos[n.id] = { x: cx, y: cy, node: n };
-  });
+  const townNode = overlandNodes.find(n => n.node_type === 'town') || allDistrictNodes[0] || {};
+  const defaultPoi = {
+    title: `${activeDistrict.name || 'District'} Territory Atlas`,
+    category: `8,000m × 8,000m Connected 2×2 District Basin · ${activeDistrict.level_band_label || ''}`,
+    thumb: (townNode.terrain_tile && townNode.terrain_tile.preview_thumbnail) || '/thumbs/buildings/tower_round_roof_a.webp',
+    hoursOrStatus: `${(activeDistrict.status || 'canon').toUpperCase()} · ${allDistrictNodes.length} Zones (${overlandNodes.length} Overland + ${dungeonNodes.length} Catacomb/Dungeon)`,
+    summary: activeDistrict.core_rationale || '',
+    address: `${activeDistrict.name} · ${activeContinent.name || ''}`,
+    coordinates: `Level Range: Lv. ${(activeDistrict.level_range || [1, 15]).join('–')} · Families: ${(activeDistrict.ecological_monster_families || []).join(', ')}`,
+    scaleSpecs: (activeDistrict.quality_checklist && activeDistrict.quality_checklist.character_scale_consistency && activeDistrict.quality_checklist.character_scale_consistency.evidence) || '12.5m main roads · 4.4m walkways · 0.58m counters',
+    drillPerspective: 'town-or-hunting-area',
+    drillOpts: { districtId: activeDistrict.id, nodeId: townNode.id, inspectId: townNode.id },
+    drillLabel: `Zoom into ${townNode.name || 'Town'}`,
+    inspectId: activeDistrict.id,
+    connections: allDistrictNodes.map(n => ({
+      label: `${n.node_type === 'town' ? '🏰' : (n.node_type === 'dungeon' ? '🕳️' : '🌿')} ${n.name} [${(n.grid_coordinates || [0,0]).join(',')}]`,
+      badge: `Lv.${(n.level_range || [1, 15]).join('–')} · ${n.status.toUpperCase()}`
+    }))
+  };
 
-  const edgeLinesHtml = portalEdges.map(edge => {
+  // Render each quadrant with L2Hub illustrated castles/fortresses/catacombs + urban blocks + monster camps
+  const sectorsHtml = Object.values(nodePos).map(({ x, y, bx, by, bw, bh, node }) => {
+    const isMystery = node.status === 'mystery';
+    const isTown = node.node_type === 'town';
+    const isDng = node.node_type === 'dungeon';
+    const spawns = node.resident_spawns || [];
+    const npcs = node.resident_npcs || [];
+    const kit = node.asset_kit_bindings || {};
+    const thumb = isMystery ? '/thumbs/creatures/god-vesper-dream-eater.webp' : ((node.terrain_tile && node.terrain_tile.preview_thumbnail) || '/thumbs/buildings/tower_round_roof_a.webp');
+
+    const poiObj = {
+      title: `${node.name} (${node.node_type.replace('_', ' ').toUpperCase()})`,
+      category: `4,000m × 4,000m Zone at Grid [${(node.grid_coordinates || [0,0]).join(', ')}] · Floor ${node.floor_index || 0}`,
+      thumb,
+      hoursOrStatus: isMystery ? 'MYSTERY FRONTIER · Locked behind Fog of Lore' : `CANON · ${isTown ? (npcs.length + ' Resident NPCs · Safe Sanctuary') : (spawns.length + ' Monster Species Active')}`,
+      summary: node.core_rationale || (node.mystery_hook && node.mystery_hook.in_world_rumor) || '',
+      address: `${node.name} [${(node.grid_coordinates || [0,0]).join(', ')}] · ${activeDistrict.name} · ${activeContinent.name || ''}`,
+      coordinates: `Map ID: ${node.map_id || 'uncharted (mystery)'} · Lv. ${(node.level_range || [1, 15]).join('–')}`,
+      scaleSpecs: isMystery ? 'Locked behind Fog of Lore gate' : `Main Road: ${kit.main_road_width_meters || 12.5}m · Footpath: ${kit.footpath_width_meters || 4.4}m · Counter: ${kit.shop_counter_height_meters || 0.58}m · Riser: ${kit.stair_riser_height_meters || 0.14}m`,
+      drillPerspective: 'town-or-hunting-area',
+      drillOpts: { districtId: activeDistrict.id, nodeId: node.id, inspectId: node.id },
+      drillLabel: 'Zoom to Street & Buildings',
+      inspectId: node.id,
+      svgX: x,
+      svgY: y,
+      connections: [
+        ...npcs.map(npc => ({ label: `🛍️ NPC: ${npc.name} (${npc.role})`, badge: `${npc.counter_height_meters || 0.58}m counter` })),
+        ...spawns.map(sp => ({ label: `⚔️ ${sp.monster_name} ×${sp.spawn_count}`, badge: `Lv.${sp.level} · ${sp.element}` }))
+      ]
+    };
+
+    const sectorFill = isL2
+      ? (isMystery ? '#3a2e45' : (isTown ? '#756c4b' : (isDng ? '#29201b' : '#645c3f')))
+      : (isMystery ? '#221a36' : (isTown ? '#285249' : (isDng ? '#2c1d27' : '#234f3e')));
+    const borderCol = isMystery ? '#c084fc' : (isTown ? '#eab308' : (isDng ? '#f97316' : '#a39060'));
+
+    const blocksSvg = isTown ? `
+      <rect x="${bx + 45}" y="${by + 28}" width="${bw - 90}" height="${bh - 56}" rx="12" fill="rgba(26,20,12,0.28)" stroke="#d4af37" stroke-width="2" stroke-dasharray="10 3"/>
+      <rect x="${bx + 62}" y="${by + 42}" width="65" height="36" rx="3" fill="rgba(42,32,18,0.55)" stroke="#a39060" stroke-width="1"/>
+      <rect x="${bx + 222}" y="${by + 42}" width="62" height="36" rx="3" fill="rgba(42,32,18,0.55)" stroke="#a39060" stroke-width="1"/>
+      <ellipse cx="${bx + 175}" cy="${by + 148}" rx="34" ry="15" fill="#314e52" stroke="#7fa6ad" stroke-width="1"/>
+    ` : (isMystery ? `
+      <ellipse cx="${x}" cy="${y}" rx="95" ry="52" fill="rgba(168,85,247,0.16)" stroke="#c084fc" stroke-width="1.5" stroke-dasharray="6 4"/>
+    ` : `
+      ${drawL2MountainRangeSvg(`${bx + 45},${by + 65} ${bx + 125},${by + 48} ${bx + 215},${by + 68}`, 0.85)}
+      <ellipse cx="${bx + 255}" cy="${by + 148}" rx="55" ry="26" fill="rgba(42,58,36,0.45)"/>
+    `);
+
+    const l2Kind = isTown ? 'town' : (isDng ? 'catacomb' : (isMystery ? 'tower' : 'fortress'));
+    const subText = `Lv.${(node.level_range || [1, 15]).join('–')} · ${isTown ? (npcs.length + ' NPCs') : (spawns.length + ' Mobs')}`;
+
+    return `
+      <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr(poiObj)}', event)">
+        <rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="8" fill="${sectorFill}" stroke="${borderCol}" stroke-width="2" ${isMystery ? 'stroke-dasharray="7 4"' : ''}/>
+        ${blocksSvg}
+        <text x="${bx + 12}" y="${by + 19}" style="paint-order:stroke fill;stroke:#120d07;stroke-width:3px;fill:${borderCol};font-size:9.5px;font-weight:800;font-family:monospace">GRID [${(node.grid_coordinates || [0,0]).join(', ')}] · ${isDng ? 'CATACOMB / DUNGEON B1' : 'OVERLAND TERRITORY'}</text>
+      </g>
+      ${drawL2LandmarkSvg({
+        kind: l2Kind,
+        x,
+        y: y - 6,
+        label: node.name,
+        sublabel: subText,
+        flagColor: isTown ? '#eab308' : (isDng ? '#a855f7' : '#dc2626'),
+        isSelected: STUDIO_ACTIVE_INSPECT_ID === node.id,
+        poiObj
+      })}
+    `;
+  }).join('');
+
+  // Render winding parchment roads & bridges connecting the quadrants
+  const roadsHtml = portalEdges.map((edge) => {
     const a = nodePos[edge.from_node_id];
     const b = nodePos[edge.to_node_id];
     if (!a || !b) return '';
     const isFog = edge.gate_state === 'fog_of_lore';
     const isDng = edge.from_direction === 'Dungeon' || edge.to_direction === 'Dungeon';
-    const stroke = isFog ? '#c084fc' : (isDng ? '#f97316' : '#ffd166');
-    const mx = (a.x + b.x) / 2;
-    const my = (a.y + b.y) / 2;
-    const label = isFog ? '🌫️ Fog Gate' : (isDng ? '⬇ Dungeon Stair' : `${edge.from_direction} ⇄ ${edge.to_direction} (${edge.road_width_meters || 12}m)`);
+    const mx = Math.round((a.x + b.x) / 2);
+    const my = Math.round((a.y + b.y) / 2);
+    const stroke = isFog ? '#c084fc' : (isDng ? '#fb923c' : '#cbb989');
     return `
-      <g>
-        <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${stroke}" stroke-width="3" ${isFog || isDng ? 'stroke-dasharray="6 4"' : ''}/>
-        <rect x="${mx - 64}" y="${my - 10}" width="128" height="18" rx="4" fill="#090f1c" stroke="${stroke}" stroke-width="1"/>
-        <text x="${mx}" y="${my + 2}" text-anchor="middle" fill="#f8fafc" font-size="8.5" font-family="monospace">${escapeHtml(label)}</text>
+      <g pointer-events="none">
+        <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#1c150b" stroke-width="8" stroke-linecap="round"/>
+        <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${stroke}" stroke-width="4" ${isFog || isDng ? 'stroke-dasharray="8 5"' : ''}/>
+        <text x="${mx}" y="${my - 6}" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:3.5px;fill:#fde68a;font-size:9px;font-weight:800;font-family:monospace">
+          ${isFog ? '🌫️ FOG GATE' : (isDng ? '⬇ CATACOMB DESCENT' : `🛤️ ${edge.from_direction}⇄${edge.to_direction}`)}
+        </text>
       </g>
     `;
   }).join('');
 
-  const nodeBoxesHtml = Object.values(nodePos).map(({ x, y, node }) => {
-    const isMystery = node.status === 'mystery';
-    const isTown = node.node_type === 'town';
-    const isDng = node.node_type === 'dungeon';
-    const stroke = isMystery ? '#c084fc' : (isTown ? '#34d399' : (isDng ? '#f97316' : '#38bdf8'));
-    const bg = isMystery ? 'rgba(59,7,100,0.9)' : (isTown ? 'rgba(6,78,59,0.92)' : (isDng ? 'rgba(67,20,7,0.92)' : 'rgba(15,23,42,0.94)'));
-    const thumb = isMystery ? '/thumbs/vfx/mystery.webp' : ((node.terrain_tile && node.terrain_tile.preview_thumbnail) || '/thumbs/nature/pine_tree_1.webp');
-    const spawns = node.resident_spawns || [];
-    const firstMob = spawns[0];
-    const typeIcon = isTown ? '🏰 TOWN' : (isDng ? '💀 DUNGEON F-1' : (isMystery ? '🌫️ MYSTERY' : '🌿 HUNTING AREA'));
-    return `
-      <g transform="translate(${x - 95}, ${y - 46})" style="cursor:pointer" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(node.id)}', inspectId: '${escapeHtml(node.id)}' })">
-        <rect width="190" height="92" rx="10" fill="${bg}" stroke="${stroke}" stroke-width="2.2" ${isMystery ? 'stroke-dasharray="5 3"' : ''}/>
-        <image href="${escapeHtml(thumb)}" x="8" y="10" width="44" height="44"/>
-        <text x="58" y="20" fill="${stroke}" font-size="9" font-weight="bold" font-family="monospace">${typeIcon} [${(node.grid_coordinates || [0,0]).join(',')}]</text>
-        <text x="58" y="35" fill="#ffffff" font-size="11.5" font-weight="bold">${escapeHtml(node.name.length > 18 ? node.name.slice(0, 17) + '…' : node.name)}</text>
-        <text x="58" y="49" fill="#fde047" font-size="9.5" font-family="monospace">Lv. ${(node.level_range || [1,15]).join('–')} · ${escapeHtml(node.status.toUpperCase())}</text>
-        <text x="10" y="74" fill="#cbd5e1" font-size="9.5" font-family="monospace">${firstMob ? ('👾 ' + escapeHtml(firstMob.monster_name.slice(0, 16)) + ' ×' + firstMob.spawn_count) : (isTown ? '🛡️ Safe Sanctuary Hub' : '🌫️ Uncharted Rumor')}</text>
-      </g>
-    `;
-  }).join('');
+  const svgInnerHtml = `
+    <!-- Empty [0,0] NW Highland Mountain Reserve -->
+    <rect x="60" y="40" width="350" height="200" rx="8" fill="${isL2 ? '#554e35' : '#1d4436'}" stroke="rgba(212,175,55,0.3)" stroke-width="1.5" stroke-dasharray="5 4"/>
+    ${drawL2MountainRangeSvg('95,115 185,85 275,110 365,90', 1.15)}
+    ${drawL2MountainRangeSvg('115,175 225,155 335,180', 1.0)}
+    <text x="235" y="138" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:3.5px;fill:#e2d5b5;font-size:11px;font-weight:800">⛰️ HIGHLAND WATERSHED RIDGE [0, 0]</text>
 
-  return `
-    <div style="margin-bottom:14px;padding:14px;border-radius:12px;background:linear-gradient(180deg,#0b1322 0%,#080d18 100%);border:1px solid rgba(52,211,153,0.35)">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
-        <div>
-          <div class="mono" style="font-size:10px;font-weight:800;color:#34d399;letter-spacing:0.06em">🗺️ STEP 3 BIG PICTURE · DISTRICT TOPOGRAPHIC BASIN &amp; PORTAL GRAPH</div>
-          <div style="font-size:12.5px;font-weight:700;color:#f8fafc;margin-top:2px">${escapeHtml(activeDistrict.name || '')} — Overland Grid, Symmetric Road Bridges, Subterranean Dungeon Cutaway &amp; Fog-of-Lore Gates</div>
-        </div>
-        <span class="joy-badge joy-badge--success joy-badge--sm">Click Any Map Node to Open Step 4 Blueprint</span>
-      </div>
-      <svg viewBox="0 0 900 320" width="100%" height="320" style="display:block;width:100%;height:auto;max-height:330px;border-radius:10px;background:#070c16;border:1px solid rgba(255,255,255,0.1)">
-        <!-- Overland Basin Contour -->
-        <rect x="12" y="12" width="615" height="296" rx="12" fill="rgba(22,101,52,0.15)" stroke="rgba(74,222,128,0.35)" stroke-width="1.5"/>
-        <text x="26" y="32" fill="#86efac" font-size="10" font-weight="bold" font-family="monospace">OVERLAND TOPOGRAPHIC BASIN (${cols}×${rows} GRID · ${escapeHtml(activeDistrict.level_band_label || '')})</text>
+    <!-- Continuous Regional River flowing across [0,0] -> [0,1] -> [1,1] -->
+    <path d="M 115,45 Q 210,165 235,285 T 585,365 L 765,380" fill="none" stroke="${isL2 ? '#314e52' : '#1d4ed8'}" stroke-width="12" stroke-linecap="round" opacity="0.75"/>
 
-        <!-- Subterranean Dungeon Cutaway Box -->
-        <rect x="642" y="12" width="246" height="296" rx="12" fill="rgba(67,20,7,0.22)" stroke="rgba(249,115,22,0.45)" stroke-width="1.5" stroke-dasharray="6 4"/>
-        <text x="656" y="32" fill="#fdba74" font-size="10" font-weight="bold" font-family="monospace">SUBTERRANEAN DUNGEON (FLOOR -1)</text>
-
-        ${edgeLinesHtml}
-        ${nodeBoxesHtml}
-      </svg>
-    </div>
+    ${ roadsHtml }
+    ${ sectorsHtml }
   `;
+
+  return renderCartoShellHtml({
+    stepLabel: `🏙️ STEP 3 DISTRICT TERRITORY & ROAD NETWORK · ${escapeHtml((activeDistrict.name || '').toUpperCase())}`,
+    title: `${escapeHtml(activeDistrict.name || '')} — Walled Town [1,1], Hunting Fortress [0,1], Fog Frontier [1,0] & Catacomb B1`,
+    subtitle: 'Click any Walled Town, Hunting Ground Fortress, Fog of Lore Tower, or Underground Catacomb to inspect or zoom to street-level building footprints',
+    activeScaleIndex: 3,
+    defaultPoi,
+    svgInnerHtml,
+    legendItems: [
+      { color: '#eab308', label: 'Walled Town Sanctuary [1,1]' },
+      { color: '#dc2626', label: 'Hunting Grounds & Fortresses [0,1]' },
+      { color: '#c084fc', label: 'Fog of Lore Frontier [1,0]' },
+      { color: '#f97316', label: 'Catacomb / Dungeon (Floor -1)' },
+      { color: '#314e52', label: 'Continuous District River' }
+    ]
+  });
 }
 
 function renderTownOrHuntingAreaBigPictureSvg(activeDistrict, activeNode, activeMonster) {
@@ -4572,120 +5197,297 @@ function renderTownOrHuntingAreaBigPictureSvg(activeDistrict, activeNode, active
   const isTown = activeNode.node_type === 'town';
   const isDng = activeNode.node_type === 'dungeon';
   const isMystery = activeNode.status === 'mystery';
-  const thumb = tile.preview_thumbnail || '/thumbs/nature/pine_tree_1.webp';
+  const thumb = tile.preview_thumbnail || '/thumbs/buildings/tower_round_roof_a.webp';
 
-  const bgFill = isTown ? '#132824' : (isDng ? '#1b1326' : '#112218');
-  const ringStroke = isTown ? '#34d399' : (isDng ? '#c084fc' : '#4ade80');
-  const roadWidth = kit.main_road_width_meters || 12.0;
-  const grassH = kit.max_grass_height_meters || 0.25;
-  const bushH = kit.max_bush_height_meters || 0.55;
-  const stepH = tile.max_terrace_step_meters || 0.16;
-  const doorH = (kit.doorway_Clearance_meters && kit.doorway_Clearance_meters.height) || 2.15;
+  const roadWidth = kit.main_road_width_meters || 12.5;
+  const pathWidth = kit.footpath_width_meters || 4.4;
+  const counterH = kit.shop_counter_height_meters || 0.58;
+  const riserH = kit.stair_riser_height_meters || 0.14;
+  const doorH = (kit.doorway_clearance_meters && kit.doorway_clearance_meters.height) || 2.15;
+  const doorW = (kit.doorway_clearance_meters && kit.doorway_clearance_meters.width) || 1.6;
 
-  const portalBadges = [
-    { dir: 'North', x: 310, y: 26 },
-    { dir: 'South', x: 310, y: 356 },
-    { dir: 'West',  x: 78,  y: 192 },
-    { dir: 'East',  x: 542, y: 192 },
-    { dir: 'Dungeon', x: 470, y: 295 },
-    { dir: 'Exit',    x: 155, y: 95 },
-  ].map(pb => {
-    const p = portals[pb.dir];
+  // Build clickable street-level POIs (Walkways, River & Bridge, Castle/Town Wall, Central Statue, Buildings, NPC Shops, Monster Habitats, Portals)
+  const poiStatue = {
+    title: isTown ? `Central Founders Statue & Plaza (${activeNode.name})` : (isDng ? `Central Vault Resonance Pillar` : `Ancient Titan Relic Monument`),
+    category: isTown ? 'Monument Statue & Central Sanctuary Plaza' : 'Landmark Monument & Survey Anchor',
+    thumb: assets[0] ? `/thumbs/buildings/${assets[0].split('/').pop().replace('.glb', '.webp')}` : thumb,
+    hoursOrStatus: 'Open 24 Hours · 1.05m Kid Sightline Landmark',
+    summary: `Central architectural focal point at [2000m, 2000m] surrounded by a ${roadWidth}m wide stone roundabout and ${pathWidth}m pedestrian walkways.`,
+    address: `2000m E, 2000m N · Central Plaza · ${activeNode.name} · ${activeDistrict.name || ''}`,
+    coordinates: `Map ID: ${activeNode.map_id || activeNode.id} · Elevation Step ≤ ${tile.max_terrace_step_meters || 0.14}m`,
+    scaleSpecs: `Pedestal Riser: ${riserH}m (≤0.15m toddler law) · Plaza Road: ${roadWidth}m · Walkway: ${pathWidth}m · Unobstructed 12m camera sightline`,
+    inspectId: activeNode.id,
+    connections: [
+      { label: `🛣️ Main Artery: ${activeNode.name} Grand Avenue (${roadWidth}m)`, badge: '2-WAY' },
+      { label: `🚶 Pedestrian Ring Walkway (${pathWidth}m)`, badge: 'SAFE' },
+      { label: `🎨 3D Asset: ${(assets[0] || 'tower_round_roof_a.glb').split('/').pop()}`, badge: 'GLB' }
+    ]
+  };
+
+  const poiWall = {
+    title: isTown ? `${activeNode.name} Castle & Town Perimeter Wall` : `${activeNode.name} Canyon Rim & Retaining Wall`,
+    category: 'Fortified Wall, Gate Towers & Archways',
+    thumb: '/thumbs/buildings/wall_arched.webp',
+    hoursOrStatus: 'CANON · Fortified Perimeter & Gate Bastions',
+    summary: `Arched masonry perimeter wall protecting ${activeNode.name}, featuring ${doorH}m × ${doorW}m gate arches sized for 90–120cm Star-Kindled characters.`,
+    address: `Perimeter Ring [600m..3400m] · ${activeNode.name} · ${activeDistrict.name || ''}`,
+    coordinates: `3D Asset: res://assets/buildings/wall_arched.glb · 4 Gate Bastions`,
+    scaleSpecs: `Gate Archway: ${doorH}m H × ${doorW}m W · Rampart Step Riser: ${riserH}m · Bastion Walkway: ${pathWidth}m`,
+    inspectId: activeNode.id,
+    connections: Object.entries(portals).filter(([, v]) => v).map(([dir, p]) => ({
+      label: `🚪 ${dir} Gate → ${p.target_node_id}`,
+      badge: p.gate_state.toUpperCase()
+    }))
+  };
+
+  const poiRiver = {
+    title: tile.water_feature || 'Terraced River & Stone Bridge Crossing',
+    category: 'Waterway, Canal & Bridge Infrastructure',
+    thumb: '/thumbs/buildings/bridge_wood.webp',
+    hoursOrStatus: 'Active Waterway · Crossed by 2 Bridges',
+    summary: `${tile.water_feature || 'Warm mineral waterway'} flowing through ${activeNode.name}, spanned by ${roadWidth}m main highway bridges and ${pathWidth}m footbridges.`,
+    address: `Waterway Corridor · ${activeNode.name} · ${activeDistrict.name || ''}`,
+    coordinates: `Span: 4,000m Waterway · Bridge Clearance: ${roadWidth}m Wide`,
+    scaleSpecs: `Bridge Parapet: 0.60m (chest-high safety rail for 1.05m kids) · Bridge Approach Riser: ${riserH}m`,
+    inspectId: activeNode.id,
+    connections: [
+      { label: '🌉 Central Stone Highway Bridge', badge: `${roadWidth}m` },
+      { label: '🌉 East Pedestrian Footbridge', badge: `${pathWidth}m` }
+    ]
+  };
+
+  // NPC Shop Building POIs
+  const npcBlocks = npcs.map((npc, idx) => {
+    const bx = idx === 0 ? 375 : 575;
+    const by = idx === 0 ? 155 : 275;
+    const poiNpc = {
+      title: `${npc.name} — ${npc.role}`,
+      category: `NPC Shop, Guild Building & Counter`,
+      thumb: '/thumbs/props/chest.webp',
+      hoursOrStatus: 'Every Day, Open 24 Hours · Safe Town Service',
+      summary: `"${npc.dialogue_greeting || 'Welcome to our workshop!'}"`,
+      address: `${Math.round((npc.position_meters && npc.position_meters.x) || 1980)}m E, ${Math.round((npc.position_meters && npc.position_meters.y) || 2010)}m N · ${activeNode.name}`,
+      coordinates: `NPC ID: ${npc.npc_id} · Counter Height: ${npc.counter_height_meters || counterH}m`,
+      scaleSpecs: `Shop Counter: ${npc.counter_height_meters || counterH}m (0.55–0.65m toddler law) · Doorway: ${doorH}m × ${doorW}m · Frontage Walkway: ${pathWidth}m`,
+      inspectId: activeNode.id,
+      connections: [
+        { label: `🛍️ Service Role: ${npc.role}`, badge: 'OPEN' },
+        { label: `🚶 Frontage: ${activeNode.name} Market Street`, badge: `${pathWidth}m` }
+      ]
+    };
+    return { bx, by, npc, poiNpc };
+  });
+
+  // Monster Spawn Territory POIs
+  const spawnBlocks = spawns.map((sp, idx) => {
+    const sx = idx === 0 ? 275 : 715;
+    const sy = idx === 0 ? 155 : 335;
+    const drop0 = (sp.item_drops && sp.item_drops[0]) || null;
+    const card = sp.monster_card_drop || null;
+    const poiMob = {
+      title: `${sp.monster_name} Territory (×${sp.spawn_count})`,
+      category: `Monster Habitat · Lv.${sp.level} ${sp.element} · ${sp.size} ${sp.race} (${sp.family})`,
+      thumb: `/thumbs/creatures/${sp.monster_id}.webp`,
+      hoursOrStatus: `Respawn Cadence: Every ${sp.respawn_seconds}s · Active Pack: ×${sp.spawn_count}`,
+      summary: `Ecological ${sp.family} territory patrolling the ${tile.biome_palette || 'regional'} walkways and terraces of ${activeNode.name}.`,
+      address: `Sector ${idx === 0 ? 'North-West Terrace' : 'South-East Grounds'} · ${activeNode.name} · ${activeDistrict.name || ''}`,
+      coordinates: `Monster ID: ${sp.monster_id} · Spawn ID: ${sp.spawn_id}`,
+      scaleSpecs: `Foliage Law: Grass ≤ ${kit.max_grass_height_meters || 0.2}m, Bushes ≤ ${kit.max_bush_height_meters || 0.44}m so 1.05m player heads & mob silhouettes never clip`,
+      inspectId: activeNode.id,
+      connections: [
+        ...(drop0 ? [{ label: `🎁 Drop: ${drop0.item_name}`, badge: `${drop0.drop_chance_percent}%` }] : []),
+        ...(card ? [{ label: `🃏 Card: ${card.card_name}`, badge: `${card.drop_chance_percent}%` }] : [])
+      ]
+    };
+    return { sx, sy, sp, poiMob };
+  });
+
+  // Portal Gate POIs
+  const portalDefs = [
+    { dir: 'North', x: 520, y: 36, labelPos: 'bottom' },
+    { dir: 'South', x: 520, y: 462, labelPos: 'top' },
+    { dir: 'West',  x: 68,  y: 250, labelPos: 'right' },
+    { dir: 'East',  x: 972, y: 250, labelPos: 'left' },
+    { dir: 'Dungeon', x: 645, y: 215, labelPos: 'bottom' },
+    { dir: 'Exit',    x: 215, y: 395, labelPos: 'top' }
+  ];
+
+  const portalsSvg = portalDefs.map(pd => {
+    const p = portals[pd.dir];
     if (!p) return '';
     const isFog = p.gate_state === 'fog_of_lore';
-    const col = isFog ? '#c084fc' : '#ef4444';
+    const col = isFog ? '#c084fc' : '#2563eb';
+    const poiPortal = {
+      title: `${pd.dir} Portal Gate → ${p.target_node_id || 'Uncharted Frontier'}`,
+      category: `${pd.dir} Highway & Boundary Gate (${p.gate_state.toUpperCase()})`,
+      thumb: '/thumbs/buildings/wall_arched.webp',
+      hoursOrStatus: isFog ? 'LOCKED · Fog of Lore Gate' : 'OPEN 24 HOURS · Bidirectional Portal',
+      summary: isFog ? (p.lock_message || 'Sealed by Fog of Lore.') : `Connects ${activeNode.name} (${pd.dir}) directly to ${p.target_node_id} (${p.target_direction}).`,
+      address: `Trigger Box: X=${(p.trigger_box_meters && p.trigger_box_meters.x) || 2000}m, Y=${(p.trigger_box_meters && p.trigger_box_meters.y) || 160}m · ${activeNode.name}`,
+      coordinates: `Portal ID: ${p.portal_id} · Target Map: ${p.target_map_id || 'null (mystery)'}`,
+      scaleSpecs: `Gate Trigger Width: ${(p.trigger_box_meters && p.trigger_box_meters.width) || 12}m × ${(p.trigger_box_meters && p.trigger_box_meters.height) || 24}m · Approach Road: ${roadWidth}m`,
+      drillPerspective: 'town-or-hunting-area',
+      drillOpts: { districtId: activeDistrict.id, nodeId: p.target_node_id, inspectId: p.target_node_id },
+      drillLabel: `Traverse to ${p.target_node_id}`,
+      inspectId: p.target_node_id || activeNode.id,
+      connections: [
+        { label: `🧭 Direction: ${pd.dir} ➔ ${p.target_direction}`, badge: p.gate_state.toUpperCase() },
+        { label: `📍 Arrival: X=${(p.arrival_point_meters && p.arrival_point_meters.x) || 2000}m, Y=${(p.arrival_point_meters && p.arrival_point_meters.y) || 200}m`, badge: 'ARRIVAL' }
+      ]
+    };
     return `
-      <g style="cursor:pointer" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(p.target_node_id)}', inspectId: '${escapeHtml(p.target_node_id)}' })">
-        <line x1="310" y1="192" x2="${pb.x}" y2="${pb.y}" stroke="#d4b483" stroke-width="8" stroke-linecap="round" opacity="0.75"/>
-        <circle cx="${pb.x}" cy="${pb.y}" r="12" fill="${col}" stroke="#ffffff" stroke-width="2"/>
-        <rect x="${pb.x - 68}" y="${pb.y + 14}" width="136" height="20" rx="4" fill="rgba(9,13,22,0.92)" stroke="${col}" stroke-width="1.2"/>
-        <text x="${pb.x}" y="${pb.y + 27}" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="bold" font-family="monospace">${pb.dir}: ${escapeHtml((p.target_node_id || '').slice(0, 16))} ➔</text>
+      <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr(poiPortal)}', event)" filter="url(#cartoDropShadow)">
+        <circle cx="${pd.x}" cy="${pd.y}" r="14" fill="${col}" stroke="#ffffff" stroke-width="2.5"/>
+        <text x="${pd.x}" y="${pd.y + 4}" text-anchor="middle" font-size="12">${isFog ? '🌫️' : (pd.dir === 'Dungeon' ? '🕳️' : '🚪')}</text>
+        <rect x="${pd.x - 78}" y="${pd.y + (pd.y > 400 ? -34 : 16)}" width="156" height="20" rx="4" fill="rgba(15,23,42,0.94)" stroke="${col}" stroke-width="1.2"/>
+        <text x="${pd.x}" y="${pd.y + (pd.y > 400 ? -21 : 29)}" text-anchor="middle" fill="#ffffff" font-size="9.5" font-weight="800" font-family="monospace">${pd.dir.toUpperCase()}: ${escapeHtml((p.target_node_id || '').replace('hunting-area-', '').replace('town-', '').replace('dungeon-', '').slice(0, 16))} ➔</text>
       </g>
     `;
   }).join('');
 
-  return `
-    <div style="margin-bottom:16px;padding:16px;border-radius:12px;background:linear-gradient(180deg,#0b1322 0%,#080d18 100%);border:1px solid rgba(56,189,248,0.35);box-shadow:0 14px 34px rgba(0,0,0,0.45)">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-        <div>
-          <div class="mono" style="font-size:10.5px;font-weight:800;color:#38bdf8;letter-spacing:0.06em">📍 STEP 4 BIG PICTURE · ${dims.width}m × ${dims.height}m ARCHITECTURAL &amp; ECOLOGICAL MAP BLUEPRINT</div>
-          <div style="font-size:13px;font-weight:700;color:#f8fafc;margin-top:2px">${escapeHtml(activeNode.name || '')} (${escapeHtml(activeNode.map_id || activeNode.id || '')}) — Top-Down Survey, Portal Triggers, Spawn Zones &amp; 90–120cm Scale Cross-Section</div>
-        </div>
-        <span class="joy-badge joy-badge--brand joy-badge--sm">Click Any Red/Purple Portal on Map to Traverse</span>
-      </div>
+  // Urban building footprints (slanted/grid blocks like Screenshot 5!)
+  const buildingsSvg = `
+    <!-- City / Zone Blocks (Dark Slate Parcel Lots like Google Maps Street View) -->
+    <g opacity="0.92">
+      <!-- NW Block -->
+      <polygon points="155,75 465,75 465,205 155,205" fill="#2c394b" stroke="#3b4c63" stroke-width="1.5"/>
+      <rect x="175" y="92" width="82" height="46" rx="3" fill="#465870" stroke="#64748b" stroke-width="1"/>
+      <rect x="272" y="92" width="95" height="48" rx="3" fill="#465870" stroke="#64748b" stroke-width="1"/>
+      <rect x="382" y="92" width="66" height="92" rx="3" fill="#465870" stroke="#64748b" stroke-width="1"/>
+      <rect x="175" y="150" width="115" height="42" rx="3" fill="#465870" stroke="#64748b" stroke-width="1"/>
 
-      <svg viewBox="0 0 980 395" width="100%" height="395" style="display:block;width:100%;height:auto;max-height:405px;border-radius:10px;background:#070c16;border:1px solid rgba(255,255,255,0.1)">
-        <!-- LEFT PANEL (10..625): 4000m x 4000m TOP-DOWN MAP BLUEPRINT -->
-        <rect x="10" y="10" width="610" height="375" rx="10" fill="${bgFill}" stroke="${ringStroke}" stroke-width="2"/>
-        <!-- Elevation Terrace Rings -->
-        <ellipse cx="310" cy="192" rx="235" ry="138" fill="none" stroke="${ringStroke}" stroke-width="1.2" stroke-dasharray="6 4" opacity="0.5"/>
-        <ellipse cx="310" cy="192" rx="155" ry="92" fill="none" stroke="${ringStroke}" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.65"/>
-        <!-- Water Feature Contour -->
-        <path d="M 85 280 Q 210 235 355 275 T 555 250" fill="none" stroke="#0ea5e9" stroke-width="14" stroke-linecap="round" opacity="0.45"/>
-        <text x="26" y="30" fill="#bae6fd" font-size="9.5" font-weight="bold" font-family="monospace">WATER FEATURE: ${escapeHtml((tile.water_feature || 'Natural Spring').slice(0, 68))}</text>
-        <text x="26" y="374" fill="#94a3b8" font-size="9.5" font-family="monospace">DIMENSIONS: ${dims.width}m × ${dims.height}m · MAX TERRACE STEP: ${stepH}m (≤0.25m) · MAIN ROAD: ${roadWidth}m</text>
+      <!-- NE Block (with Park Lawn) -->
+      <polygon points="575,75 885,75 885,205 575,205" fill="#2c394b" stroke="#3b4c63" stroke-width="1.5"/>
+      <rect x="592" y="90" width="125" height="55" rx="4" fill="#1e4d3b" stroke="#34d399" stroke-width="1"/>
+      <text x="654" y="121" text-anchor="middle" fill="#86efac" font-size="9.5" font-weight="700">🌳 Terrace Garden</text>
+      <rect x="735" y="90" width="132" height="48" rx="3" fill="#465870" stroke="#64748b" stroke-width="1"/>
+      <rect x="735" y="148" width="132" height="44" rx="3" fill="#465870" stroke="#64748b" stroke-width="1"/>
 
-        <!-- Roads & Clickable Portals -->
-        ${portalBadges}
+      <!-- SW Block -->
+      <polygon points="155,295 465,295 465,425 155,425" fill="#2c394b" stroke="#3b4c63" stroke-width="1.5"/>
+      <rect x="175" y="312" width="92" height="48" rx="3" fill="#465870" stroke="#64748b" stroke-width="1"/>
+      <rect x="282" y="312" width="84" height="48" rx="3" fill="#465870" stroke="#64748b" stroke-width="1"/>
+      <rect x="380" y="312" width="68" height="95" rx="3" fill="#465870" stroke="#64748b" stroke-width="1"/>
+      <rect x="175" y="372" width="188" height="38" rx="3" fill="#465870" stroke="#64748b" stroke-width="1"/>
 
-        <!-- Center Sanctuary Plaza or Hunting Habitat Hub -->
-        <g transform="translate(220, 140)">
-          <rect width="180" height="104" rx="10" fill="rgba(9,13,22,0.92)" stroke="#ffd166" stroke-width="2"/>
-          <image href="${escapeHtml(thumb)}" x="10" y="12" width="52" height="52"/>
-          <text x="70" y="26" fill="#ffd166" font-size="9.5" font-weight="bold" font-family="monospace">${isTown ? '🏰 TOWN SANCTUARY' : (isDng ? '💀 DUNGEON CHAMBER' : '🌿 HABITAT CENTER')}</text>
-          <text x="70" y="42" fill="#ffffff" font-size="11.5" font-weight="bold">${escapeHtml((activeNode.name || '').slice(0, 16))}</text>
-          <text x="70" y="56" fill="#34d399" font-size="9.5" font-family="monospace">${isTown ? (npcs.length + ' Resident NPCs') : (spawns.length + ' Monster Species')}</text>
-          <text x="12" y="84" fill="#cbd5e1" font-size="9" font-family="monospace">3D Kit: ${escapeHtml(assets.map(a => a.split('/').pop()).join(', ').slice(0, 26))}</text>
-        </g>
-
-        <!-- Monster Spawn Marker or NPC Marker -->
-        ${activeMonster ? `
-          <g transform="translate(88, 72)">
-            <rect width="158" height="54" rx="8" fill="rgba(127,29,29,0.88)" stroke="#f87171" stroke-width="1.5"/>
-            <image href="/thumbs/creatures/${escapeHtml(activeMonster.monster_id)}.webp" x="6" y="5" width="42" height="42"/>
-            <text x="54" y="20" fill="#fca5a5" font-size="9" font-weight="bold" font-family="monospace">SPAWN HABITAT ×${activeMonster.spawn_count}</text>
-            <text x="54" y="34" fill="#ffffff" font-size="10.5" font-weight="bold">${escapeHtml(activeMonster.monster_name.slice(0, 14))}</text>
-            <text x="54" y="46" fill="#fde047" font-size="9" font-family="monospace">Lv.${activeMonster.level} · ${escapeHtml(activeMonster.element)}</text>
-          </g>
-        ` : ''}
-
-        <!-- RIGHT PANEL (632..970): 90-120CM SCALE & ELEVATION CROSS-SECTION -->
-        <rect x="632" y="10" width="338" height="375" rx="10" fill="rgba(15,23,42,0.92)" stroke="rgba(255,209,102,0.32)"/>
-        <text x="648" y="32" fill="#ffd166" font-size="10" font-weight="bold" font-family="monospace">90–120CM SCALE CROSS-SECTION INSET</text>
-
-        <!-- Ground Baseline -->
-        <line x1="650" y1="245" x2="950" y2="245" stroke="#4ade80" stroke-width="2.5"/>
-
-        <!-- Grass Bar -->
-        <rect x="662" y="${245 - Math.round(grassH * 70)}" width="34" height="${Math.round(grassH * 70)}" rx="3" fill="#22c55e"/>
-        <text x="679" y="262" text-anchor="middle" fill="#86efac" font-size="9" font-family="monospace">Grass</text>
-        <text x="679" y="274" text-anchor="middle" fill="#cbd5e1" font-size="8.5" font-family="monospace">${grassH}m</text>
-
-        <!-- Bush Bar -->
-        <rect x="716" y="${245 - Math.round(bushH * 70)}" width="38" height="${Math.round(bushH * 70)}" rx="5" fill="#10b981"/>
-        <text x="735" y="262" text-anchor="middle" fill="#6ee7b7" font-size="9" font-family="monospace">Bush</text>
-        <text x="735" y="274" text-anchor="middle" fill="#cbd5e1" font-size="8.5" font-family="monospace">${bushH}m</text>
-
-        <!-- 1.05m Toddler/Kid Player Silhouette -->
-        <circle cx="798" cy="182" r="12" fill="#ffd166" stroke="#ffffff" stroke-width="1.5"/>
-        <rect x="786" y="194" width="24" height="51" rx="6" fill="#3b82f6" stroke="#93c5fd" stroke-width="1.5"/>
-        <text x="798" y="262" text-anchor="middle" fill="#ffd166" font-size="9.5" font-weight="bold" font-family="monospace">Player</text>
-        <text x="798" y="274" text-anchor="middle" fill="#fde047" font-size="8.5" font-family="monospace">1.05m Kid</text>
-
-        <!-- Doorway Arch Clearance -->
-        <rect x="842" y="${245 - Math.round(doorH * 65)}" width="44" height="${Math.round(doorH * 65)}" rx="6" fill="rgba(99,102,241,0.25)" stroke="#818cf8" stroke-width="2"/>
-        <text x="864" y="262" text-anchor="middle" fill="#a5b4fc" font-size="9" font-family="monospace">Doorway</text>
-        <text x="864" y="274" text-anchor="middle" fill="#cbd5e1" font-size="8.5" font-family="monospace">${doorH}m</text>
-
-        <!-- Active Monster or Asset Preview Card at Bottom of Right Inset -->
-        <rect x="648" y="290" width="306" height="80" rx="8" fill="#090f1c" stroke="rgba(56,189,248,0.35)"/>
-        <image href="${activeMonster ? ('/thumbs/creatures/' + escapeHtml(activeMonster.monster_id) + '.webp') : escapeHtml(thumb)}" x="658" y="300" width="58" height="58"/>
-        <text x="728" y="318" fill="#38bdf8" font-size="9.5" font-weight="bold" font-family="monospace">${activeMonster ? 'ACTIVE RESIDENT MONSTER SPECIMEN' : '3D ENVIRONMENT LANDMARK ASSET'}</text>
-        <text x="728" y="336" fill="#ffffff" font-size="12" font-weight="bold">${escapeHtml(activeMonster ? activeMonster.monster_name : (activeNode.name || ''))}</text>
-        <text x="728" y="352" fill="#ffd166" font-size="10" font-family="monospace">${activeMonster ? ('Lv.' + activeMonster.level + ' · ' + activeMonster.element + ' · ' + activeMonster.size + ' · ' + activeMonster.race) : ('Biome: ' + (tile.biome_palette || 'meadow'))}</text>
-      </svg>
-    </div>
+      <!-- SE Block -->
+      <polygon points="575,295 885,295 885,425 575,425" fill="#2c394b" stroke="#3b4c63" stroke-width="1.5"/>
+      <rect x="595" y="312" width="105" height="46" rx="3" fill="#465870" stroke="#64748b" stroke-width="1"/>
+      <rect x="715" y="312" width="152" height="46" rx="3" fill="#465870" stroke="#64748b" stroke-width="1"/>
+      <rect x="595" y="370" width="135" height="42" rx="3" fill="#465870" stroke="#64748b" stroke-width="1"/>
+      <rect x="745" y="370" width="122" height="42" rx="3" fill="#465870" stroke="#64748b" stroke-width="1"/>
+    </g>
   `;
+
+  const svgInnerHtml = `
+    <!-- Base Emerald Ground Terrain -->
+    <rect x="20" y="15" width="1000" height="470" rx="14" fill="#214e3f"/>
+
+    ${buildingsSvg}
+
+    <!-- River / Canal Waterway cutting across map + Clickable Bridges -->
+    <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr(poiRiver)}', event)">
+      <path d="M 35,345 Q 265,285 520,295 T 1005,225" fill="none" stroke="#0f172a" stroke-width="26" stroke-linecap="round" opacity="0.45"/>
+      <path d="M 35,345 Q 265,285 520,295 T 1005,225" fill="none" stroke="#1d4ed8" stroke-width="20" stroke-linecap="round"/>
+      <text x="265" y="314" fill="#93c5fd" font-size="9.5" font-weight="700" font-style="italic" letter-spacing="0.08em">🌊 ${escapeHtml((tile.water_feature || 'Mineral Canal').slice(0, 38))}</text>
+    </g>
+
+    <!-- Castle / Town Perimeter Wall & Gate Towers (Clickable!) -->
+    <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr(poiWall)}', event)">
+      <rect x="125" y="55" width="790" height="390" rx="18" fill="none" stroke="#94a3b8" stroke-width="8" stroke-dasharray="28 8"/>
+      <rect x="125" y="55" width="790" height="390" rx="18" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+      <!-- 4 Corner Castle Wall Towers -->
+      <circle cx="125" cy="55" r="11" fill="#64748b" stroke="#f8fafc" stroke-width="2"/>
+      <circle cx="915" cy="55" r="11" fill="#64748b" stroke="#f8fafc" stroke-width="2"/>
+      <circle cx="125" cy="445" r="11" fill="#64748b" stroke="#f8fafc" stroke-width="2"/>
+      <circle cx="915" cy="445" r="11" fill="#64748b" stroke="#f8fafc" stroke-width="2"/>
+      <rect x="148" y="44" width="215" height="18" rx="4" fill="#0f172a" stroke="#94a3b8" stroke-width="1"/>
+      <text x="255" y="56" text-anchor="middle" fill="#e2e8f0" font-size="9" font-weight="800" font-family="monospace">🧱 CASTLE / TOWN WALL (${doorH}m ARCHES)</text>
+    </g>
+
+    <!-- Street & Walkway Network (Main East-West & North-South Avenues + Side Sois + Directional Arrows) -->
+    <g pointer-events="none">
+      <!-- West-East Main Highway (12.5m-13.0m) -->
+      <line x1="68" y1="250" x2="972" y2="250" stroke="#1e293b" stroke-width="28"/>
+      <line x1="68" y1="250" x2="972" y2="250" stroke="#334155" stroke-width="22"/>
+      <line x1="68" y1="250" x2="972" y2="250" stroke="#64748b" stroke-width="1.2" stroke-dasharray="10 8"/>
+      <text x="315" y="245" text-anchor="middle" fill="#cbd5e1" font-size="8.5" font-weight="800" letter-spacing="0.12em">← GRAND AVENUE (${roadWidth}M MAIN ROAD) →</text>
+      <text x="735" y="245" text-anchor="middle" fill="#cbd5e1" font-size="8.5" font-weight="800" letter-spacing="0.12em">← EAST GATEWAY ROAD (${roadWidth}M) →</text>
+
+      <!-- North-South Main Avenue -->
+      <line x1="520" y1="36" x2="520" y2="462" stroke="#1e293b" stroke-width="24"/>
+      <line x1="520" y1="36" x2="520" y2="462" stroke="#334155" stroke-width="18"/>
+      <text x="515" y="145" text-anchor="middle" transform="rotate(-90 515 145)" fill="#cbd5e1" font-size="8" font-weight="700" letter-spacing="0.1em">↑ NORTH SANCTUARY WALKWAY (${pathWidth}M)</text>
+
+      <!-- Secondary Pedestrian Walkways (Soi / Footpaths 4.4m) -->
+      <line x1="155" y1="145" x2="885" y2="145" stroke="#1e293b" stroke-width="10"/>
+      <line x1="155" y1="145" x2="885" y2="145" stroke="#475569" stroke-width="6"/>
+      <text x="320" y="143" text-anchor="middle" fill="#e2e8f0" font-size="7.5" font-family="monospace">SOI ARTISAN WALKWAY (${pathWidth}m) →</text>
+
+      <line x1="155" y1="362" x2="885" y2="362" stroke="#1e293b" stroke-width="10"/>
+      <line x1="155" y1="362" x2="885" y2="362" stroke="#475569" stroke-width="6"/>
+      <text x="710" y="360" text-anchor="middle" fill="#e2e8f0" font-size="7.5" font-family="monospace">← LANTERN MARKET WALKWAY (${pathWidth}m)</text>
+
+      <!-- Highway Route Shield in Center-West -->
+      <rect x="418" y="241" width="28" height="18" rx="3" fill="#f8fafc" stroke="#0f172a" stroke-width="1.2"/>
+      <text x="432" y="253" text-anchor="middle" fill="#0f172a" font-size="9" font-weight="800" font-family="monospace">12</text>
+    </g>
+
+    <!-- Central Roundabout Plaza & Monument Statue (Clickable!) -->
+    <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr(poiStatue)}', event)" filter="url(#cartoDropShadow)">
+      <circle cx="520" cy="250" r="42" fill="#334155" stroke="#eab308" stroke-width="3"/>
+      <circle cx="520" cy="250" r="26" fill="#1e293b" stroke="#ffd166" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <circle cx="520" cy="250" r="14" fill="#eab308" stroke="#ffffff" stroke-width="2"/>
+      <text x="520" y="255" text-anchor="middle" font-size="13">🗽</text>
+      <rect x="442" y="296" width="156" height="20" rx="5" fill="rgba(15,23,42,0.94)" stroke="#ffd166" stroke-width="1.2"/>
+      <text x="520" y="310" text-anchor="middle" fill="#fde047" font-size="9.5" font-weight="800">★ Statue &amp; Central Plaza</text>
+    </g>
+
+    <!-- Clickable NPC Shop & Guild Pins (Orange/Gold Google Maps Retail/Food Pins) -->
+    ${npcBlocks.map(({ bx, by, npc, poiNpc }) => `
+      <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr(poiNpc)}', event)" filter="url(#cartoDropShadow)">
+        <circle cx="${bx}" cy="${by}" r="13" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>
+        <text x="${bx}" y="${by + 4}" text-anchor="middle" font-size="11">🛍️</text>
+        <text x="${bx + 18}" y="${by - 2}" fill="#fde68a" font-size="10.5" font-weight="800">${escapeHtml(npc.name)}</text>
+        <text x="${bx + 18}" y="${by + 10}" fill="#cbd5e1" font-size="9" font-family="monospace">${escapeHtml(npc.role.slice(0, 24))} (${npc.counter_height_meters || counterH}m)</text>
+      </g>
+    `).join('')}
+
+    <!-- Clickable Monster Spawn Territory Pins (Crimson/Amber Pins with Portrait) -->
+    ${spawnBlocks.map(({ sx, sy, sp, poiMob }) => `
+      <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr(poiMob)}', event)" filter="url(#cartoDropShadow)">
+        <ellipse cx="${sx}" cy="${sy}" rx="56" ry="30" fill="rgba(239,68,68,0.16)" stroke="#f87171" stroke-width="1.5" stroke-dasharray="5 3"/>
+        <circle cx="${sx - 28}" cy="${sy}" r="14" fill="#dc2626" stroke="#ffffff" stroke-width="2"/>
+        <text x="${sx - 28}" y="${sy + 4}" text-anchor="middle" font-size="11">⚔️</text>
+        <text x="${sx - 8}" y="${sy - 3}" fill="#ffffff" font-size="10.5" font-weight="800">${escapeHtml(sp.monster_name.slice(0, 18))}</text>
+        <text x="${sx - 8}" y="${sy + 10}" fill="#fca5a5" font-size="9" font-family="monospace">Lv.${sp.level} · ×${sp.spawn_count} (${sp.respawn_seconds}s)</text>
+      </g>
+    `).join('')}
+
+    <!-- Clickable North / South / East / West / Dungeon / Exit Portal Gates -->
+    ${portalsSvg}
+  `;
+
+  const defaultPoi = activeMonster
+    ? (spawnBlocks.find(b => b.sp.monster_id === activeMonster.monster_id)?.poiMob || spawnBlocks[0]?.poiMob || poiStatue)
+    : (npcBlocks[0]?.poiNpc || spawnBlocks[0]?.poiMob || poiStatue);
+
+  return renderCartoShellHtml({
+    stepLabel: `🏘️ STEP 4 STREET, WALKWAY & BUILDING FOOTPRINT MAP · ${dims.width}m × ${dims.height}m`,
+    title: `${escapeHtml(activeNode.name || '')} (${escapeHtml(activeNode.map_id || activeNode.id || '')}) — 2D Building Footprints, Castle Walls, Statue Plaza, Rivers & POIs`,
+    subtitle: 'Styled like Google/Apple Street Maps: click any Building, Statue, Castle Wall, River Bridge, NPC Shop, Monster Territory, or Portal Gate to explore',
+    activeScaleIndex: 4,
+    defaultPoi,
+    svgInnerHtml,
+    legendItems: [
+      { color: '#465870', label: '2D Building Footprints' },
+      { color: '#94a3b8', label: 'Castle / Town Perimeter Wall' },
+      { color: '#eab308', label: 'Central Statue & Plaza' },
+      { color: '#f59e0b', label: 'NPC Shop & Counter' },
+      { color: '#dc2626', label: 'Monster Spawn Territory' },
+      { color: '#2563eb', label: 'River & Portal Gates' }
+    ]
+  });
 }
 
 function renderStudioWorldHistoryPerspective(whc, continents) {
