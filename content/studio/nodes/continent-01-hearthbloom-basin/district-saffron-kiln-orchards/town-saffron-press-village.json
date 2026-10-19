@@ -1,0 +1,176 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-saffron-press-village",
+  "name": "Saffron-Press Village",
+  "map_id": "saffron-press-village",
+  "parent_district_id": "district-saffron-kiln-orchards",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Central orchard sanctuary village of Saffron Kiln Orchards at [1, 1] where Lantern-Keepers press saffron-glaze nectar in sun-baked ceramic amphorae above the Nectar-Glaze Vat.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    19,
+    20
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/building_market_stalls.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_saffron_press_village_town",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Golden saffron-nectar settling basins fed by warm terracotta aqueduct spouts"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-saffron-press-north-honeycomb-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-honeycomb-kiln-ridge",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Boiling amber glaze-steam vents across Honeycomb-Kiln Ridge; Orchard-Steward Marigold requires the Golden Comb Seal before unsealing the northern kiln ridge.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-saffron-press-east-cinnamon-viaduct",
+      "direction": "East",
+      "target_node_id": "hunting-area-cinnamon-bark-viaduct",
+      "target_map_id": "cinnamon-bark-viaduct",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-saffron-press-west-apricot-terrace",
+      "direction": "West",
+      "target_node_id": "hunting-area-apricot-aqueduct-terrace",
+      "target_map_id": "apricot-aqueduct-terrace",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-saffron-press-dungeon-nectar-vat",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-nectar-glaze-vat",
+      "target_map_id": "nectar-glaze-vat-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-orchard-steward-marigold",
+      "name": "Orchard-Steward Marigold",
+      "role": "Saffron Press Mistress",
+      "position_meters": {
+        "x": 1975.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Welcome to Saffron-Press Village! Step up to my 0.58 meter tasting counter for a cup of warm apricot-saffron nectar."
+    },
+    {
+      "npc_id": "npc-amphora-cooper-pip",
+      "name": "Amphora-Cooper Pip",
+      "role": "Glazed Vat Artisan",
+      "position_meters": {
+        "x": 2065.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Down in the Nectar-Glaze Vat, an animated amber-kiln amphora beetle guards the Golden Comb Seal needed for Honeycomb-Kiln Ridge!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.45,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.1,
+      "width": 1.55
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/building_market_stalls.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Saffron Kiln Orchards at [1, 1] directly above Sola's Nectar-Glaze Vat and connects east to Cinnamon-Bellows Bluff."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Sun-drenched orchard village where golden saffron-nectar flows through glazed ceramic presses and warm tasting basins."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.58m tasting counters, 0.14m terracotta risers, 2.10m x 1.55m doorways, and 13.0m plazas for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, East, Dungeon, and North (fog_of_lore) portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Guards the northern Honeycomb-Kiln Ridge behind a Fog of Lore portal while opening East to Cinnamon-Bark Viaduct."
+    }
+  }
+}

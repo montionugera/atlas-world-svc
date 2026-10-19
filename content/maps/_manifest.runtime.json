@@ -1,0 +1,6250 @@
+{
+  "schemaVersion": 1,
+  "worldHistoryId": "world-history-cradle-of-embers",
+  "characterScaleBandMeters": [
+    0.9,
+    1.2
+  ],
+  "defaultStarterMapId": "lantern-hollow",
+  "starterSpawns": {
+    "lantern-hollow": {
+      "nodeId": "town-lantern-hollow",
+      "x": 2000.0,
+      "y": 2000.0,
+      "z": 0.0,
+      "safeZoneRadiusMeters": 40.0
+    }
+  },
+  "playableMaps": [
+    {
+      "mapId": "ash-valve-vault-b1",
+      "nodeId": "dungeon-ash-valve-vault",
+      "name": "Ash-Valve Vault",
+      "districtId": "district-gilded-exhaust",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        28,
+        32
+      ]
+    },
+    {
+      "mapId": "ceramic-resonator-crypt-b1",
+      "nodeId": "dungeon-ceramic-resonator-crypt",
+      "name": "Ceramic Resonator Crypt",
+      "districtId": "district-terracotta-wind-chimes",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
+      ]
+    },
+    {
+      "mapId": "chronometer-foundry-b1",
+      "nodeId": "dungeon-chronometer-foundry",
+      "name": "The Chronometer Foundry (Floor -1)",
+      "districtId": "district-mainspring-caldera",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        26,
+        35
+      ]
+    },
+    {
+      "mapId": "comet-core-geode-b1",
+      "nodeId": "dungeon-comet-core-geode",
+      "name": "Comet-Core Geode B1",
+      "districtId": "district-aphelion-halo-rim",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        50,
+        50
+      ]
+    },
+    {
+      "mapId": "counterweight-shaft-b1",
+      "nodeId": "dungeon-counterweight-shaft",
+      "name": "Counterweight Shaft B1",
+      "districtId": "district-pendulum-steppe-west",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        36,
+        38
+      ]
+    },
+    {
+      "mapId": "ember-bellows-chamber-b1",
+      "nodeId": "dungeon-ember-bellows-chamber",
+      "name": "Ember-Bellows Chamber",
+      "districtId": "district-ash-bellows-trench",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        16,
+        20
+      ]
+    },
+    {
+      "mapId": "epicyclic-pinion-vault-b1",
+      "nodeId": "dungeon-epicyclic-pinion-vault",
+      "name": "Epicyclic Pinion Vault",
+      "districtId": "district-differential-spur-gorge",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
+      "mapId": "faraday-dynamo-vault-b1",
+      "nodeId": "dungeon-faraday-dynamo-vault",
+      "name": "Faraday Dynamo Vault B1",
+      "districtId": "district-thunder-coil-basin",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        34,
+        36
+      ]
+    },
+    {
+      "mapId": "invar-balance-vault-b1",
+      "nodeId": "dungeon-invar-balance-vault",
+      "name": "Invar Balance Vault",
+      "districtId": "district-bimetallic-escapement-mesa",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
+      "mapId": "inverted-belfry-b1",
+      "nodeId": "dungeon-inverted-belfry",
+      "name": "The Inverted Belfry",
+      "districtId": "district-starfall-anchorage",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        34,
+        42
+      ]
+    },
+    {
+      "mapId": "kiln-cellar-b1",
+      "nodeId": "dungeon-kiln-cellar",
+      "name": "The Under-Hearth Kiln Cellar",
+      "districtId": "district-teacup-meadows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        10,
+        18
+      ]
+    },
+    {
+      "mapId": "kinetic-ballast-vault-b1",
+      "nodeId": "dungeon-kinetic-ballast-vault",
+      "name": "Kinetic Ballast Vault",
+      "districtId": "district-flywheel-dynamo-canyon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
+      "mapId": "medallion-heart-vault-b1",
+      "nodeId": "dungeon-medallion-heart-vault",
+      "name": "Medallion Heart Vault B1",
+      "districtId": "district-porcelain-cradle",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        13,
+        15
+      ]
+    },
+    {
+      "mapId": "mercury-reservoir-b1",
+      "nodeId": "dungeon-mercury-reservoir",
+      "name": "The Mercury Reservoir Vault (Floor -1)",
+      "districtId": "district-verdigris-siphon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        28,
+        35
+      ]
+    },
+    {
+      "mapId": "nectar-glaze-vat-b1",
+      "nodeId": "dungeon-nectar-glaze-vat",
+      "name": "Nectar-Glaze Vat",
+      "districtId": "district-saffron-kiln-orchards",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
+      ]
+    },
+    {
+      "mapId": "pendulum-sanctum-b1",
+      "nodeId": "dungeon-pendulum-sanctum",
+      "name": "The Pendulum Sanctum",
+      "districtId": "district-eclipse-observatory",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        40,
+        46
+      ]
+    },
+    {
+      "mapId": "pendulum-shaft-b1",
+      "nodeId": "dungeon-pendulum-shaft",
+      "name": "The Pendulum Shaft (Floor -1)",
+      "districtId": "district-rustcog-downs",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        20,
+        30
+      ]
+    },
+    {
+      "mapId": "sap-heart-cistern-b1",
+      "nodeId": "dungeon-sap-heart-cistern",
+      "name": "Sap-Heart Cistern B1",
+      "districtId": "district-amber-root-hollows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        16,
+        18
+      ]
+    },
+    {
+      "mapId": "shadow-refraction-crypt-b1",
+      "nodeId": "dungeon-shadow-refraction-crypt",
+      "name": "Shadow Refraction Crypt",
+      "districtId": "district-umbrage-prism-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "spice-kiln-cellar-b1",
+      "nodeId": "dungeon-spice-kiln-cellar",
+      "name": "Spice-Kiln Cellar",
+      "districtId": "district-cinnamon-bellows-bluff",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        14,
+        15
+      ]
+    },
+    {
+      "mapId": "stalactite-carillon-nave-b1",
+      "nodeId": "dungeon-stalactite-carillon-nave",
+      "name": "Stalactite Carillon Nave",
+      "districtId": "district-aurora-chime-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "star-heart-nave-b1",
+      "nodeId": "dungeon-star-heart-nave",
+      "name": "Star-Heart Nave",
+      "districtId": "district-zenith-crown",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        48,
+        54
+      ]
+    },
+    {
+      "mapId": "starlight-orrery-nave-b1",
+      "nodeId": "dungeon-starlight-orrery-nave",
+      "name": "Starlight Orrery Nave",
+      "districtId": "district-celestial-astrolabe-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "submerged-orrery-keel-b1",
+      "nodeId": "dungeon-submerged-orrery-keel",
+      "name": "Submerged Orrery Keel B1",
+      "districtId": "district-perigee-abyss",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "sunken-potter-hold-b1",
+      "nodeId": "dungeon-sunken-potter-hold",
+      "name": "Sunken Potter Hold B1",
+      "districtId": "district-glaze-river-delta",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
+      ]
+    },
+    {
+      "mapId": "sunken-syzygy-dome-b1",
+      "nodeId": "dungeon-sunken-syzygy-dome",
+      "name": "Sunken Syzygy Dome B1",
+      "districtId": "district-libration-mirror-shoals",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "teapot-steam-cistern-b1",
+      "nodeId": "dungeon-teapot-steam-cistern",
+      "name": "Teapot Steam Cistern",
+      "districtId": "district-ginger-steam-terraces",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        14,
+        15
+      ]
+    },
+    {
+      "mapId": "twilight-coral-crypt-b1",
+      "nodeId": "dungeon-twilight-coral-crypt",
+      "name": "Twilight Coral Crypt",
+      "districtId": "district-penumbra-prism-reef",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "vesper-cradle-b1",
+      "nodeId": "dungeon-vesper-cradle",
+      "name": "Vesper's Cradle Vault",
+      "districtId": "district-nebula-undertide",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        46,
+        50
+      ]
+    },
+    {
+      "mapId": "worm-drive-gearbox-b1",
+      "nodeId": "dungeon-worm-drive-gearbox",
+      "name": "Worm-Drive Gearbox B1",
+      "districtId": "district-helical-gear-trench",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        39,
+        40
+      ]
+    },
+    {
+      "mapId": "apricot-aqueduct-terrace",
+      "nodeId": "hunting-area-apricot-aqueduct-terrace",
+      "name": "Apricot Aqueduct Terrace",
+      "districtId": "district-saffron-kiln-orchards",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
+      ]
+    },
+    {
+      "mapId": "armillary-ring-causeway",
+      "nodeId": "hunting-area-armillary-ring-causeway",
+      "name": "Armillary Ring Causeway",
+      "districtId": "district-celestial-astrolabe-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "astrolabe-rift",
+      "nodeId": "hunting-area-astrolabe-rift",
+      "name": "The Astrolabe Rift Promontory",
+      "districtId": "district-rustcog-downs",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        0
+      ],
+      "levelRange": [
+        25,
+        30
+      ]
+    },
+    {
+      "mapId": "aurora-tether",
+      "nodeId": "hunting-area-aurora-tether",
+      "name": "Aurora Tether Span",
+      "districtId": "district-zenith-crown",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        46,
+        48
+      ]
+    },
+    {
+      "mapId": "bimetallic-expansion-span",
+      "nodeId": "hunting-area-bimetallic-expansion-span",
+      "name": "Bimetallic Expansion Span",
+      "districtId": "district-bimetallic-escapement-mesa",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
+      "mapId": "brass-spur-ridge",
+      "nodeId": "hunting-area-brass-spur-ridge",
+      "name": "Brass Spur Ridge",
+      "districtId": "district-rustcog-downs",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        18,
+        28
+      ]
+    },
+    {
+      "mapId": "caldera-rim",
+      "nodeId": "hunting-area-caldera-rim",
+      "name": "The Mainspring Caldera Rim",
+      "districtId": "district-mainspring-caldera",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        22,
+        28
+      ]
+    },
+    {
+      "mapId": "celadon-causeway",
+      "nodeId": "hunting-area-celadon-causeway",
+      "name": "Celadon Causeway",
+      "districtId": "district-porcelain-cradle",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        10,
+        12
+      ]
+    },
+    {
+      "mapId": "centrifugal-gantry-span",
+      "nodeId": "hunting-area-centrifugal-gantry-span",
+      "name": "Centrifugal Gantry Span",
+      "districtId": "district-flywheel-dynamo-canyon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
+      "mapId": "chime-pipe-colonnade",
+      "nodeId": "hunting-area-chime-pipe-colonnade",
+      "name": "Chime-Pipe Colonnade",
+      "districtId": "district-terracotta-wind-chimes",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
+      ]
+    },
+    {
+      "mapId": "cinder-apron",
+      "nodeId": "hunting-area-cinder-apron",
+      "name": "Cinder Apron Terraces",
+      "districtId": "district-kilnfire-terraces",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        12,
+        20
+      ]
+    },
+    {
+      "mapId": "cinnamon-bark-viaduct",
+      "nodeId": "hunting-area-cinnamon-bark-viaduct",
+      "name": "Cinnamon-Bark Viaduct",
+      "districtId": "district-cinnamon-bellows-bluff",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        14,
+        15
+      ]
+    },
+    {
+      "mapId": "clover-south-gate",
+      "nodeId": "hunting-area-clover-south-gate",
+      "name": "Clover South Gate",
+      "districtId": "district-teacup-meadows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        2
+      ],
+      "levelRange": [
+        1,
+        10
+      ]
+    },
+    {
+      "mapId": "cobalt-sandbar-ford",
+      "nodeId": "hunting-area-cobalt-sandbar-ford",
+      "name": "Cobalt Sandbar Ford",
+      "districtId": "district-glaze-river-delta",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        18,
+        19
+      ]
+    },
+    {
+      "mapId": "comet-tether-span",
+      "nodeId": "hunting-area-comet-tether-span",
+      "name": "Comet-Tether Span",
+      "districtId": "district-aphelion-halo-rim",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "firebrick-duct",
+      "nodeId": "hunting-area-firebrick-duct",
+      "name": "Firebrick Intake Duct",
+      "districtId": "district-ash-bellows-trench",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        12,
+        15
+      ]
+    },
+    {
+      "mapId": "flue-causeway",
+      "nodeId": "hunting-area-flue-causeway",
+      "name": "Flue Causeway",
+      "districtId": "district-gilded-exhaust",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        26,
+        28
+      ]
+    },
+    {
+      "mapId": "ginger-aqueduct-bridge",
+      "nodeId": "hunting-area-ginger-aqueduct-bridge",
+      "name": "Ginger Aqueduct Bridge",
+      "districtId": "district-ginger-steam-terraces",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        14,
+        15
+      ]
+    },
+    {
+      "mapId": "kelp-spiral-reef",
+      "nodeId": "hunting-area-kelp-spiral-reef",
+      "name": "Kelp Spiral Reef",
+      "districtId": "district-nebula-undertide",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        42,
+        46
+      ]
+    },
+    {
+      "mapId": "kiln-east-orchard",
+      "nodeId": "hunting-area-kiln-east-orchard",
+      "name": "Kiln East Orchard",
+      "districtId": "district-teacup-meadows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        2,
+        1
+      ],
+      "levelRange": [
+        6,
+        15
+      ]
+    },
+    {
+      "mapId": "leyden-causeway",
+      "nodeId": "hunting-area-leyden-causeway",
+      "name": "Leyden Capacitor Causeway",
+      "districtId": "district-thunder-coil-basin",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        32,
+        34
+      ]
+    },
+    {
+      "mapId": "metronome-bridge",
+      "nodeId": "hunting-area-metronome-bridge",
+      "name": "Metronome Suspension Bridge",
+      "districtId": "district-pendulum-steppe-west",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        34,
+        36
+      ]
+    },
+    {
+      "mapId": "orrery-bridge",
+      "nodeId": "hunting-area-orrery-bridge",
+      "name": "The Orrery Bridge",
+      "districtId": "district-eclipse-observatory",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        36,
+        42
+      ]
+    },
+    {
+      "mapId": "penumbra-refraction-causeway",
+      "nodeId": "hunting-area-penumbra-refraction-causeway",
+      "name": "Penumbra Refraction Causeway",
+      "districtId": "district-penumbra-prism-reef",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "planetary-carrier-span",
+      "nodeId": "hunting-area-planetary-carrier-span",
+      "name": "Planetary Carrier Span",
+      "districtId": "district-differential-spur-gorge",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
+      "mapId": "resin-arch-tunnel",
+      "nodeId": "hunting-area-resin-arch-tunnel",
+      "name": "Resin-Arch Tunnel",
+      "districtId": "district-amber-root-hollows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        14,
+        16
+      ]
+    },
+    {
+      "mapId": "resonance-tether-causeway",
+      "nodeId": "hunting-area-resonance-tether-causeway",
+      "name": "Resonance Tether Causeway",
+      "districtId": "district-aurora-chime-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "silver-tide-causeway",
+      "nodeId": "hunting-area-silver-tide-causeway",
+      "name": "Silver-Tide Causeway",
+      "districtId": "district-libration-mirror-shoals",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        48,
+        49
+      ]
+    },
+    {
+      "mapId": "siphon-sluice",
+      "nodeId": "hunting-area-siphon-sluice",
+      "name": "The Verdigris Siphon Sluiceway",
+      "districtId": "district-verdigris-siphon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        25,
+        29
+      ]
+    },
+    {
+      "mapId": "spiral-wormway-ramp",
+      "nodeId": "hunting-area-spiral-wormway-ramp",
+      "name": "Spiral Wormway Ramp",
+      "districtId": "district-helical-gear-trench",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        38,
+        39
+      ]
+    },
+    {
+      "mapId": "stalactite-plunge",
+      "nodeId": "hunting-area-stalactite-plunge",
+      "name": "Stalactite Plunge Causeway",
+      "districtId": "district-perigee-abyss",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        48,
+        49
+      ]
+    },
+    {
+      "mapId": "tether-causeway",
+      "nodeId": "hunting-area-tether-causeway",
+      "name": "Tether Causeway",
+      "districtId": "district-starfall-anchorage",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        30,
+        36
+      ]
+    },
+    {
+      "mapId": "violet-spectrum-span",
+      "nodeId": "hunting-area-violet-spectrum-span",
+      "name": "Violet Spectrum Span",
+      "districtId": "district-umbrage-prism-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "aphelion-buoy-haven",
+      "nodeId": "town-aphelion-buoy-haven",
+      "name": "Aphelion Buoy Haven",
+      "districtId": "district-aphelion-halo-rim",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "aurora-bell-sanctuary",
+      "nodeId": "town-aurora-bell-sanctuary",
+      "name": "Aurora Bell Sanctuary",
+      "districtId": "district-aurora-chime-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "bellows-hearth",
+      "nodeId": "town-bellows-hearth",
+      "name": "Bellows Hearth",
+      "districtId": "district-gilded-exhaust",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        27,
+        30
+      ]
+    },
+    {
+      "mapId": "bimetallic-chronometer-hub",
+      "nodeId": "town-bimetallic-chronometer-hub",
+      "name": "Bimetallic-Chronometer Hub",
+      "districtId": "district-bimetallic-escapement-mesa",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
+      "mapId": "carillon-hearth-belfry",
+      "nodeId": "town-carillon-hearth-belfry",
+      "name": "Carillon Hearth Belfry",
+      "districtId": "district-terracotta-wind-chimes",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
+      ]
+    },
+    {
+      "mapId": "celestial-astrolabe-sanctuary",
+      "nodeId": "town-celestial-astrolabe-sanctuary",
+      "name": "Celestial Astrolabe Sanctuary",
+      "districtId": "district-celestial-astrolabe-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "cinnamon-mill-haven",
+      "nodeId": "town-cinnamon-mill-haven",
+      "name": "Cinnamon-Mill Haven",
+      "districtId": "district-cinnamon-bellows-bluff",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        14,
+        15
+      ]
+    },
+    {
+      "mapId": "crown-beacon-citadel",
+      "nodeId": "town-crown-beacon-citadel",
+      "name": "Crown Beacon Citadel",
+      "districtId": "district-zenith-crown",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        47,
+        50
+      ]
+    },
+    {
+      "mapId": "draft-kiln-post",
+      "nodeId": "town-draft-kiln-post",
+      "name": "Draft-Kiln Post",
+      "districtId": "district-ash-bellows-trench",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        14,
+        17
+      ]
+    },
+    {
+      "mapId": "escapement-anvil",
+      "nodeId": "town-escapement-anvil",
+      "name": "Escapement Anvil",
+      "districtId": "district-mainspring-caldera",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        24,
+        30
+      ]
+    },
+    {
+      "mapId": "flywheel-governor-hub",
+      "nodeId": "town-flywheel-governor-hub",
+      "name": "Flywheel-Governor Hub",
+      "districtId": "district-flywheel-dynamo-canyon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
+      "mapId": "ginger-bathhouse-haven",
+      "nodeId": "town-ginger-bathhouse-haven",
+      "name": "Ginger-Bathhouse Haven",
+      "districtId": "district-ginger-steam-terraces",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        14,
+        15
+      ]
+    },
+    {
+      "mapId": "glaze-barge-quay",
+      "nodeId": "town-glaze-barge-quay",
+      "name": "Glaze-Barge Quay",
+      "districtId": "district-glaze-river-delta",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
+      ]
+    },
+    {
+      "mapId": "helical-torque-hub",
+      "nodeId": "town-helical-torque-hub",
+      "name": "Helical Torque Hub",
+      "districtId": "district-helical-gear-trench",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        39,
+        40
+      ]
+    },
+    {
+      "mapId": "inductor-switchyard",
+      "nodeId": "town-inductor-switchyard",
+      "name": "Inductor Switchyard",
+      "districtId": "district-thunder-coil-basin",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        33,
+        35
+      ]
+    },
+    {
+      "mapId": "kilnwatch-bastion",
+      "nodeId": "town-kilnwatch-bastion",
+      "name": "Kilnwatch Bastion",
+      "districtId": "district-kilnfire-terraces",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        10,
+        15
+      ]
+    },
+    {
+      "mapId": "lantern-hollow",
+      "nodeId": "town-lantern-hollow",
+      "name": "Lantern Hollow",
+      "districtId": "district-teacup-meadows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": true,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        1,
+        5
+      ]
+    },
+    {
+      "mapId": "libration-balance-haven",
+      "nodeId": "town-libration-balance-haven",
+      "name": "Libration Balance Haven",
+      "districtId": "district-libration-mirror-shoals",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "metronome-pivot-citadel",
+      "nodeId": "town-metronome-pivot-citadel",
+      "name": "Metronome Pivot Citadel",
+      "districtId": "district-pendulum-steppe-west",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        35,
+        37
+      ]
+    },
+    {
+      "mapId": "patina-lock",
+      "nodeId": "town-patina-lock",
+      "name": "Patina Lock",
+      "districtId": "district-verdigris-siphon",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        26,
+        30
+      ]
+    },
+    {
+      "mapId": "penumbra-prism-haven",
+      "nodeId": "town-penumbra-prism-haven",
+      "name": "Penumbra Prism Haven",
+      "districtId": "district-penumbra-prism-reef",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "perigee-diving-station",
+      "nodeId": "town-perigee-diving-station",
+      "name": "Perigee Diving-Station",
+      "districtId": "district-perigee-abyss",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        48,
+        50
+      ]
+    },
+    {
+      "mapId": "pinion-terminus",
+      "nodeId": "town-pinion-terminus",
+      "name": "Pinion Terminus",
+      "districtId": "district-rustcog-downs",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        15,
+        22
+      ]
+    },
+    {
+      "mapId": "porcelain-loom-sanctuary",
+      "nodeId": "town-porcelain-loom-sanctuary",
+      "name": "Porcelain Loom Sanctuary",
+      "districtId": "district-porcelain-cradle",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        11,
+        14
+      ]
+    },
+    {
+      "mapId": "prism-zenith",
+      "nodeId": "town-prism-zenith",
+      "name": "Prism Zenith",
+      "districtId": "district-eclipse-observatory",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        38,
+        44
+      ]
+    },
+    {
+      "mapId": "root-train-roundhouse",
+      "nodeId": "town-root-train-roundhouse",
+      "name": "Root-Train Roundhouse",
+      "districtId": "district-amber-root-hollows",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        15,
+        17
+      ]
+    },
+    {
+      "mapId": "saffron-press-village",
+      "nodeId": "town-saffron-press-village",
+      "name": "Saffron-Press Village",
+      "districtId": "district-saffron-kiln-orchards",
+      "continentId": "continent-01-hearthbloom-basin",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        19,
+        20
+      ]
+    },
+    {
+      "mapId": "starfall-haven",
+      "nodeId": "town-starfall-haven",
+      "name": "Starfall Haven",
+      "districtId": "district-starfall-anchorage",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        32,
+        38
+      ]
+    },
+    {
+      "mapId": "torque-balance-citadel",
+      "nodeId": "town-torque-balance-citadel",
+      "name": "Torque-Balance Citadel",
+      "districtId": "district-differential-spur-gorge",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
+      "mapId": "umbrage-focal-sanctum",
+      "nodeId": "town-umbrage-focal-sanctum",
+      "name": "Umbrage Focal Sanctum",
+      "districtId": "district-umbrage-prism-atoll",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        49,
+        50
+      ]
+    },
+    {
+      "mapId": "undertide-sanctuary",
+      "nodeId": "town-undertide-sanctuary",
+      "name": "Undertide Sanctuary",
+      "districtId": "district-nebula-undertide",
+      "continentId": "continent-03-shattered-halo",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        44,
+        48
+      ]
+    }
+  ],
+  "portalRoutingTable": {
+    "portal-ash-valve-exit-bellows": {
+      "portalId": "portal-ash-valve-exit-bellows",
+      "sourceNodeId": "dungeon-ash-valve-vault",
+      "sourceMapId": "ash-valve-vault-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-bellows-hearth",
+      "targetMapId": "bellows-hearth",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 20.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3760.0
+      },
+      "lockMessage": null
+    },
+    "portal-resonator-crypt-exit-belfry": {
+      "portalId": "portal-resonator-crypt-exit-belfry",
+      "sourceNodeId": "dungeon-ceramic-resonator-crypt",
+      "sourceMapId": "ceramic-resonator-crypt-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-carillon-hearth-belfry",
+      "targetMapId": "carillon-hearth-belfry",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-chronometer-foundry-exit-anvil": {
+      "portalId": "portal-chronometer-foundry-exit-anvil",
+      "sourceNodeId": "dungeon-chronometer-foundry",
+      "sourceMapId": "chronometer-foundry-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-escapement-anvil",
+      "targetMapId": "escapement-anvil",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 500.0,
+        "y": 900.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 500.0,
+        "y": 860.0
+      },
+      "lockMessage": null
+    },
+    "portal-comet-geode-exit-buoy": {
+      "portalId": "portal-comet-geode-exit-buoy",
+      "sourceNodeId": "dungeon-comet-core-geode",
+      "sourceMapId": "comet-core-geode-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-aphelion-buoy-haven",
+      "targetMapId": "aphelion-buoy-haven",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-counterweight-shaft-exit-pivot": {
+      "portalId": "portal-counterweight-shaft-exit-pivot",
+      "sourceNodeId": "dungeon-counterweight-shaft",
+      "sourceMapId": "counterweight-shaft-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-metronome-pivot-citadel",
+      "targetMapId": "metronome-pivot-citadel",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-ember-bellows-exit-post": {
+      "portalId": "portal-ember-bellows-exit-post",
+      "sourceNodeId": "dungeon-ember-bellows-chamber",
+      "sourceMapId": "ember-bellows-chamber-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-draft-kiln-post",
+      "targetMapId": "draft-kiln-post",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 20.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3760.0
+      },
+      "lockMessage": null
+    },
+    "portal-pinion-vault-exit-citadel": {
+      "portalId": "portal-pinion-vault-exit-citadel",
+      "sourceNodeId": "dungeon-epicyclic-pinion-vault",
+      "sourceMapId": "epicyclic-pinion-vault-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-torque-balance-citadel",
+      "targetMapId": "torque-balance-citadel",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-faraday-dynamo-exit-switchyard": {
+      "portalId": "portal-faraday-dynamo-exit-switchyard",
+      "sourceNodeId": "dungeon-faraday-dynamo-vault",
+      "sourceMapId": "faraday-dynamo-vault-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-inductor-switchyard",
+      "targetMapId": "inductor-switchyard",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-invar-vault-exit-chronometer-hub": {
+      "portalId": "portal-invar-vault-exit-chronometer-hub",
+      "sourceNodeId": "dungeon-invar-balance-vault",
+      "sourceMapId": "invar-balance-vault-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-bimetallic-chronometer-hub",
+      "targetMapId": "bimetallic-chronometer-hub",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-inverted-belfry-exit-haven": {
+      "portalId": "portal-inverted-belfry-exit-haven",
+      "sourceNodeId": "dungeon-inverted-belfry",
+      "sourceMapId": "inverted-belfry-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-starfall-haven",
+      "targetMapId": "starfall-haven",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 1600.0,
+        "y": 2980.0,
+        "width": 20.0,
+        "height": 20.0
+      },
+      "arrivalPointMeters": {
+        "x": 1600.0,
+        "y": 2920.0
+      },
+      "lockMessage": null
+    },
+    "portal-kiln-cellar-exit": {
+      "portalId": "portal-kiln-cellar-exit",
+      "sourceNodeId": "dungeon-kiln-cellar",
+      "sourceMapId": "kiln-cellar-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-lantern-hollow",
+      "targetMapId": "lantern-hollow",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 1000.0,
+        "y": 1840.0,
+        "width": 12.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 1000.0,
+        "y": 1800.0
+      },
+      "lockMessage": null
+    },
+    "portal-ballast-vault-exit-governor-hub": {
+      "portalId": "portal-ballast-vault-exit-governor-hub",
+      "sourceNodeId": "dungeon-kinetic-ballast-vault",
+      "sourceMapId": "kinetic-ballast-vault-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-flywheel-governor-hub",
+      "targetMapId": "flywheel-governor-hub",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-medallion-vault-exit-sanctuary": {
+      "portalId": "portal-medallion-vault-exit-sanctuary",
+      "sourceNodeId": "dungeon-medallion-heart-vault",
+      "sourceMapId": "medallion-heart-vault-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-porcelain-loom-sanctuary",
+      "targetMapId": "porcelain-loom-sanctuary",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-mercury-reservoir-exit-patina": {
+      "portalId": "portal-mercury-reservoir-exit-patina",
+      "sourceNodeId": "dungeon-mercury-reservoir",
+      "sourceMapId": "mercury-reservoir-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-patina-lock",
+      "targetMapId": "patina-lock",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 500.0,
+        "y": 900.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 500.0,
+        "y": 860.0
+      },
+      "lockMessage": null
+    },
+    "portal-nectar-vat-exit-saffron-press": {
+      "portalId": "portal-nectar-vat-exit-saffron-press",
+      "sourceNodeId": "dungeon-nectar-glaze-vat",
+      "sourceMapId": "nectar-glaze-vat-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-saffron-press-village",
+      "targetMapId": "saffron-press-village",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-pendulum-sanctum-exit-zenith": {
+      "portalId": "portal-pendulum-sanctum-exit-zenith",
+      "sourceNodeId": "dungeon-pendulum-sanctum",
+      "sourceMapId": "pendulum-sanctum-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-prism-zenith",
+      "targetMapId": "prism-zenith",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 1600.0,
+        "y": 2980.0,
+        "width": 20.0,
+        "height": 20.0
+      },
+      "arrivalPointMeters": {
+        "x": 1600.0,
+        "y": 2920.0
+      },
+      "lockMessage": null
+    },
+    "portal-pendulum-shaft-exit-pinion": {
+      "portalId": "portal-pendulum-shaft-exit-pinion",
+      "sourceNodeId": "dungeon-pendulum-shaft",
+      "sourceMapId": "pendulum-shaft-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-pinion-terminus",
+      "targetMapId": "pinion-terminus",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 500.0,
+        "y": 900.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 500.0,
+        "y": 860.0
+      },
+      "lockMessage": null
+    },
+    "portal-sap-cistern-exit-roundhouse": {
+      "portalId": "portal-sap-cistern-exit-roundhouse",
+      "sourceNodeId": "dungeon-sap-heart-cistern",
+      "sourceMapId": "sap-heart-cistern-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-root-train-roundhouse",
+      "targetMapId": "root-train-roundhouse",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-refraction-crypt-exit-focal-sanctum": {
+      "portalId": "portal-refraction-crypt-exit-focal-sanctum",
+      "sourceNodeId": "dungeon-shadow-refraction-crypt",
+      "sourceMapId": "shadow-refraction-crypt-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-umbrage-focal-sanctum",
+      "targetMapId": "umbrage-focal-sanctum",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-spice-cellar-exit-mill-haven": {
+      "portalId": "portal-spice-cellar-exit-mill-haven",
+      "sourceNodeId": "dungeon-spice-kiln-cellar",
+      "sourceMapId": "spice-kiln-cellar-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-cinnamon-mill-haven",
+      "targetMapId": "cinnamon-mill-haven",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-carillon-nave-exit-bell-sanctuary": {
+      "portalId": "portal-carillon-nave-exit-bell-sanctuary",
+      "sourceNodeId": "dungeon-stalactite-carillon-nave",
+      "sourceMapId": "stalactite-carillon-nave-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-aurora-bell-sanctuary",
+      "targetMapId": "aurora-bell-sanctuary",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-star-heart-nave-exit-citadel": {
+      "portalId": "portal-star-heart-nave-exit-citadel",
+      "sourceNodeId": "dungeon-star-heart-nave",
+      "sourceMapId": "star-heart-nave-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-crown-beacon-citadel",
+      "targetMapId": "crown-beacon-citadel",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 20.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3760.0
+      },
+      "lockMessage": null
+    },
+    "portal-orrery-nave-exit-astrolabe-sanctuary": {
+      "portalId": "portal-orrery-nave-exit-astrolabe-sanctuary",
+      "sourceNodeId": "dungeon-starlight-orrery-nave",
+      "sourceMapId": "starlight-orrery-nave-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-celestial-astrolabe-sanctuary",
+      "targetMapId": "celestial-astrolabe-sanctuary",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-orrery-keel-exit-station": {
+      "portalId": "portal-orrery-keel-exit-station",
+      "sourceNodeId": "dungeon-submerged-orrery-keel",
+      "sourceMapId": "submerged-orrery-keel-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-perigee-diving-station",
+      "targetMapId": "perigee-diving-station",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-sunken-potter-hold-exit-quay": {
+      "portalId": "portal-sunken-potter-hold-exit-quay",
+      "sourceNodeId": "dungeon-sunken-potter-hold",
+      "sourceMapId": "sunken-potter-hold-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-glaze-barge-quay",
+      "targetMapId": "glaze-barge-quay",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-sunken-syzygy-exit-balance-haven": {
+      "portalId": "portal-sunken-syzygy-exit-balance-haven",
+      "sourceNodeId": "dungeon-sunken-syzygy-dome",
+      "sourceMapId": "sunken-syzygy-dome-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-libration-balance-haven",
+      "targetMapId": "libration-balance-haven",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-teapot-cistern-exit-bathhouse-haven": {
+      "portalId": "portal-teapot-cistern-exit-bathhouse-haven",
+      "sourceNodeId": "dungeon-teapot-steam-cistern",
+      "sourceMapId": "teapot-steam-cistern-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-ginger-bathhouse-haven",
+      "targetMapId": "ginger-bathhouse-haven",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-coral-crypt-exit-prism-haven": {
+      "portalId": "portal-coral-crypt-exit-prism-haven",
+      "sourceNodeId": "dungeon-twilight-coral-crypt",
+      "sourceMapId": "twilight-coral-crypt-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-penumbra-prism-haven",
+      "targetMapId": "penumbra-prism-haven",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-vesper-cradle-exit-sanctuary": {
+      "portalId": "portal-vesper-cradle-exit-sanctuary",
+      "sourceNodeId": "dungeon-vesper-cradle",
+      "sourceMapId": "vesper-cradle-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-undertide-sanctuary",
+      "targetMapId": "undertide-sanctuary",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 20.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3760.0
+      },
+      "lockMessage": null
+    },
+    "portal-worm-gearbox-exit-torque-hub": {
+      "portalId": "portal-worm-gearbox-exit-torque-hub",
+      "sourceNodeId": "dungeon-worm-drive-gearbox",
+      "sourceMapId": "worm-drive-gearbox-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-helical-torque-hub",
+      "targetMapId": "helical-torque-hub",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-apricot-terrace-east-press-village": {
+      "portalId": "portal-apricot-terrace-east-press-village",
+      "sourceNodeId": "hunting-area-apricot-aqueduct-terrace",
+      "sourceMapId": "apricot-aqueduct-terrace",
+      "direction": "East",
+      "targetNodeId": "town-saffron-press-village",
+      "targetMapId": "saffron-press-village",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-apricot-terrace-west-belfry": {
+      "portalId": "portal-apricot-terrace-west-belfry",
+      "sourceNodeId": "hunting-area-apricot-aqueduct-terrace",
+      "sourceMapId": "apricot-aqueduct-terrace",
+      "direction": "West",
+      "targetNodeId": "town-carillon-hearth-belfry",
+      "targetMapId": "carillon-hearth-belfry",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-armillary-causeway-east-astrolabe-sanctuary": {
+      "portalId": "portal-armillary-causeway-east-astrolabe-sanctuary",
+      "sourceNodeId": "hunting-area-armillary-ring-causeway",
+      "sourceMapId": "armillary-ring-causeway",
+      "direction": "East",
+      "targetNodeId": "town-celestial-astrolabe-sanctuary",
+      "targetMapId": "celestial-astrolabe-sanctuary",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-armillary-causeway-west-prism-haven": {
+      "portalId": "portal-armillary-causeway-west-prism-haven",
+      "sourceNodeId": "hunting-area-armillary-ring-causeway",
+      "sourceMapId": "armillary-ring-causeway",
+      "direction": "West",
+      "targetNodeId": "town-penumbra-prism-haven",
+      "targetMapId": "penumbra-prism-haven",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-astrolabe-rift-north-tether-causeway": {
+      "portalId": "portal-astrolabe-rift-north-tether-causeway",
+      "sourceNodeId": "hunting-area-astrolabe-rift",
+      "sourceMapId": "astrolabe-rift",
+      "direction": "North",
+      "targetNodeId": "hunting-area-tether-causeway",
+      "targetMapId": "tether-causeway",
+      "targetDirection": "South",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": null
+    },
+    "portal-astrolabe-rift-south-brass-spur": {
+      "portalId": "portal-astrolabe-rift-south-brass-spur",
+      "sourceNodeId": "hunting-area-astrolabe-rift",
+      "sourceMapId": "astrolabe-rift",
+      "direction": "South",
+      "targetNodeId": "hunting-area-brass-spur-ridge",
+      "targetMapId": "brass-spur-ridge",
+      "targetDirection": "North",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3800.0
+      },
+      "lockMessage": null
+    },
+    "portal-aurora-tether-east-citadel": {
+      "portalId": "portal-aurora-tether-east-citadel",
+      "sourceNodeId": "hunting-area-aurora-tether",
+      "sourceMapId": "aurora-tether",
+      "direction": "East",
+      "targetNodeId": "town-crown-beacon-citadel",
+      "targetMapId": "crown-beacon-citadel",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-aurora-tether-west-sanctuary": {
+      "portalId": "portal-aurora-tether-west-sanctuary",
+      "sourceNodeId": "hunting-area-aurora-tether",
+      "sourceMapId": "aurora-tether",
+      "direction": "West",
+      "targetNodeId": "town-undertide-sanctuary",
+      "targetMapId": "undertide-sanctuary",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-bimetallic-span-east-chronometer-hub": {
+      "portalId": "portal-bimetallic-span-east-chronometer-hub",
+      "sourceNodeId": "hunting-area-bimetallic-expansion-span",
+      "sourceMapId": "bimetallic-expansion-span",
+      "direction": "East",
+      "targetNodeId": "town-bimetallic-chronometer-hub",
+      "targetMapId": "bimetallic-chronometer-hub",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-bimetallic-span-west-governor-hub": {
+      "portalId": "portal-bimetallic-span-west-governor-hub",
+      "sourceNodeId": "hunting-area-bimetallic-expansion-span",
+      "sourceMapId": "bimetallic-expansion-span",
+      "direction": "West",
+      "targetNodeId": "town-flywheel-governor-hub",
+      "targetMapId": "flywheel-governor-hub",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-brass-spur-north-astrolabe": {
+      "portalId": "portal-brass-spur-north-astrolabe",
+      "sourceNodeId": "hunting-area-brass-spur-ridge",
+      "sourceMapId": "brass-spur-ridge",
+      "direction": "North",
+      "targetNodeId": "hunting-area-astrolabe-rift",
+      "targetMapId": "astrolabe-rift",
+      "targetDirection": "South",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": null
+    },
+    "portal-brass-spur-east-caldera": {
+      "portalId": "portal-brass-spur-east-caldera",
+      "sourceNodeId": "hunting-area-brass-spur-ridge",
+      "sourceMapId": "brass-spur-ridge",
+      "direction": "East",
+      "targetNodeId": "hunting-area-caldera-rim",
+      "targetMapId": "caldera-rim",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-brass-spur-west": {
+      "portalId": "portal-brass-spur-west",
+      "sourceNodeId": "hunting-area-brass-spur-ridge",
+      "sourceMapId": "brass-spur-ridge",
+      "direction": "West",
+      "targetNodeId": "town-pinion-terminus",
+      "targetMapId": "pinion-terminus",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-caldera-rim-east-anvil": {
+      "portalId": "portal-caldera-rim-east-anvil",
+      "sourceNodeId": "hunting-area-caldera-rim",
+      "sourceMapId": "caldera-rim",
+      "direction": "East",
+      "targetNodeId": "town-escapement-anvil",
+      "targetMapId": "escapement-anvil",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-caldera-rim-west-brass-spur": {
+      "portalId": "portal-caldera-rim-west-brass-spur",
+      "sourceNodeId": "hunting-area-caldera-rim",
+      "sourceMapId": "caldera-rim",
+      "direction": "West",
+      "targetNodeId": "hunting-area-brass-spur-ridge",
+      "targetMapId": "brass-spur-ridge",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-celadon-causeway-east-sanctuary": {
+      "portalId": "portal-celadon-causeway-east-sanctuary",
+      "sourceNodeId": "hunting-area-celadon-causeway",
+      "sourceMapId": "celadon-causeway",
+      "direction": "East",
+      "targetNodeId": "town-porcelain-loom-sanctuary",
+      "targetMapId": "porcelain-loom-sanctuary",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-celadon-causeway-west-kiln-post": {
+      "portalId": "portal-celadon-causeway-west-kiln-post",
+      "sourceNodeId": "hunting-area-celadon-causeway",
+      "sourceMapId": "celadon-causeway",
+      "direction": "West",
+      "targetNodeId": "town-draft-kiln-post",
+      "targetMapId": "draft-kiln-post",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-centrifugal-gantry-east-governor-hub": {
+      "portalId": "portal-centrifugal-gantry-east-governor-hub",
+      "sourceNodeId": "hunting-area-centrifugal-gantry-span",
+      "sourceMapId": "centrifugal-gantry-span",
+      "direction": "East",
+      "targetNodeId": "town-flywheel-governor-hub",
+      "targetMapId": "flywheel-governor-hub",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-centrifugal-gantry-west-torque-citadel": {
+      "portalId": "portal-centrifugal-gantry-west-torque-citadel",
+      "sourceNodeId": "hunting-area-centrifugal-gantry-span",
+      "sourceMapId": "centrifugal-gantry-span",
+      "direction": "West",
+      "targetNodeId": "town-torque-balance-citadel",
+      "targetMapId": "torque-balance-citadel",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-chime-colonnade-east-belfry": {
+      "portalId": "portal-chime-colonnade-east-belfry",
+      "sourceNodeId": "hunting-area-chime-pipe-colonnade",
+      "sourceMapId": "chime-pipe-colonnade",
+      "direction": "East",
+      "targetNodeId": "town-carillon-hearth-belfry",
+      "targetMapId": "carillon-hearth-belfry",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-chime-colonnade-west-barge-quay": {
+      "portalId": "portal-chime-colonnade-west-barge-quay",
+      "sourceNodeId": "hunting-area-chime-pipe-colonnade",
+      "sourceMapId": "chime-pipe-colonnade",
+      "direction": "West",
+      "targetNodeId": "town-glaze-barge-quay",
+      "targetMapId": "glaze-barge-quay",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-cinder-apron-north-fog": {
+      "portalId": "portal-cinder-apron-north-fog",
+      "sourceNodeId": "hunting-area-cinder-apron",
+      "sourceMapId": "cinder-apron",
+      "direction": "North",
+      "targetNodeId": "hunting-area-slag-chasm",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Superheated porcelain glaze-steam billows from the northern Slag Chasm; the Guild of Potters has sealed the bridge until the Great Damper is cooled."
+    },
+    "portal-cinder-apron-east-pinion": {
+      "portalId": "portal-cinder-apron-east-pinion",
+      "sourceNodeId": "hunting-area-cinder-apron",
+      "sourceMapId": "cinder-apron",
+      "direction": "East",
+      "targetNodeId": "town-pinion-terminus",
+      "targetMapId": "pinion-terminus",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-cinder-apron-west": {
+      "portalId": "portal-cinder-apron-west",
+      "sourceNodeId": "hunting-area-cinder-apron",
+      "sourceMapId": "cinder-apron",
+      "direction": "West",
+      "targetNodeId": "town-kilnwatch-bastion",
+      "targetMapId": "kilnwatch-bastion",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-cinnamon-viaduct-east-mill-haven": {
+      "portalId": "portal-cinnamon-viaduct-east-mill-haven",
+      "sourceNodeId": "hunting-area-cinnamon-bark-viaduct",
+      "sourceMapId": "cinnamon-bark-viaduct",
+      "direction": "East",
+      "targetNodeId": "town-cinnamon-mill-haven",
+      "targetMapId": "cinnamon-mill-haven",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-cinnamon-viaduct-west-saffron-press": {
+      "portalId": "portal-cinnamon-viaduct-west-saffron-press",
+      "sourceNodeId": "hunting-area-cinnamon-bark-viaduct",
+      "sourceMapId": "cinnamon-bark-viaduct",
+      "direction": "West",
+      "targetNodeId": "town-saffron-press-village",
+      "targetMapId": "saffron-press-village",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-clover-south-gate-north": {
+      "portalId": "portal-clover-south-gate-north",
+      "sourceNodeId": "hunting-area-clover-south-gate",
+      "sourceMapId": "clover-south-gate",
+      "direction": "North",
+      "targetNodeId": "town-lantern-hollow",
+      "targetMapId": "lantern-hollow",
+      "targetDirection": "South",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": null
+    },
+    "portal-cobalt-ford-east-barge-quay": {
+      "portalId": "portal-cobalt-ford-east-barge-quay",
+      "sourceNodeId": "hunting-area-cobalt-sandbar-ford",
+      "sourceMapId": "cobalt-sandbar-ford",
+      "direction": "East",
+      "targetNodeId": "town-glaze-barge-quay",
+      "targetMapId": "glaze-barge-quay",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-cobalt-ford-west-roundhouse": {
+      "portalId": "portal-cobalt-ford-west-roundhouse",
+      "sourceNodeId": "hunting-area-cobalt-sandbar-ford",
+      "sourceMapId": "cobalt-sandbar-ford",
+      "direction": "West",
+      "targetNodeId": "town-root-train-roundhouse",
+      "targetMapId": "root-train-roundhouse",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-comet-tether-east-buoy": {
+      "portalId": "portal-comet-tether-east-buoy",
+      "sourceNodeId": "hunting-area-comet-tether-span",
+      "sourceMapId": "comet-tether-span",
+      "direction": "East",
+      "targetNodeId": "town-aphelion-buoy-haven",
+      "targetMapId": "aphelion-buoy-haven",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-comet-tether-west-perigee": {
+      "portalId": "portal-comet-tether-west-perigee",
+      "sourceNodeId": "hunting-area-comet-tether-span",
+      "sourceMapId": "comet-tether-span",
+      "direction": "West",
+      "targetNodeId": "town-perigee-diving-station",
+      "targetMapId": "perigee-diving-station",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-firebrick-duct-north-kilnwatch": {
+      "portalId": "portal-firebrick-duct-north-kilnwatch",
+      "sourceNodeId": "hunting-area-firebrick-duct",
+      "sourceMapId": "firebrick-duct",
+      "direction": "North",
+      "targetNodeId": "town-kilnwatch-bastion",
+      "targetMapId": "kilnwatch-bastion",
+      "targetDirection": "South",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": null
+    },
+    "portal-firebrick-duct-east-post": {
+      "portalId": "portal-firebrick-duct-east-post",
+      "sourceNodeId": "hunting-area-firebrick-duct",
+      "sourceMapId": "firebrick-duct",
+      "direction": "East",
+      "targetNodeId": "town-draft-kiln-post",
+      "targetMapId": "draft-kiln-post",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-flue-causeway-east-bellows": {
+      "portalId": "portal-flue-causeway-east-bellows",
+      "sourceNodeId": "hunting-area-flue-causeway",
+      "sourceMapId": "flue-causeway",
+      "direction": "East",
+      "targetNodeId": "town-bellows-hearth",
+      "targetMapId": "bellows-hearth",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-flue-causeway-west-patina": {
+      "portalId": "portal-flue-causeway-west-patina",
+      "sourceNodeId": "hunting-area-flue-causeway",
+      "sourceMapId": "flue-causeway",
+      "direction": "West",
+      "targetNodeId": "town-patina-lock",
+      "targetMapId": "patina-lock",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-ginger-aqueduct-east-bathhouse-haven": {
+      "portalId": "portal-ginger-aqueduct-east-bathhouse-haven",
+      "sourceNodeId": "hunting-area-ginger-aqueduct-bridge",
+      "sourceMapId": "ginger-aqueduct-bridge",
+      "direction": "East",
+      "targetNodeId": "town-ginger-bathhouse-haven",
+      "targetMapId": "ginger-bathhouse-haven",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-ginger-aqueduct-west-cinnamon-mill": {
+      "portalId": "portal-ginger-aqueduct-west-cinnamon-mill",
+      "sourceNodeId": "hunting-area-ginger-aqueduct-bridge",
+      "sourceMapId": "ginger-aqueduct-bridge",
+      "direction": "West",
+      "targetNodeId": "town-cinnamon-mill-haven",
+      "targetMapId": "cinnamon-mill-haven",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-kelp-spiral-east-sanctuary": {
+      "portalId": "portal-kelp-spiral-east-sanctuary",
+      "sourceNodeId": "hunting-area-kelp-spiral-reef",
+      "sourceMapId": "kelp-spiral-reef",
+      "direction": "East",
+      "targetNodeId": "town-undertide-sanctuary",
+      "targetMapId": "undertide-sanctuary",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-kelp-spiral-west-prism": {
+      "portalId": "portal-kelp-spiral-west-prism",
+      "sourceNodeId": "hunting-area-kelp-spiral-reef",
+      "sourceMapId": "kelp-spiral-reef",
+      "direction": "West",
+      "targetNodeId": "town-prism-zenith",
+      "targetMapId": "prism-zenith",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-kiln-east-orchard-east": {
+      "portalId": "portal-kiln-east-orchard-east",
+      "sourceNodeId": "hunting-area-kiln-east-orchard",
+      "sourceMapId": "kiln-east-orchard",
+      "direction": "East",
+      "targetNodeId": "town-kilnwatch-bastion",
+      "targetMapId": "kilnwatch-bastion",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-kiln-east-orchard-west": {
+      "portalId": "portal-kiln-east-orchard-west",
+      "sourceNodeId": "hunting-area-kiln-east-orchard",
+      "sourceMapId": "kiln-east-orchard",
+      "direction": "West",
+      "targetNodeId": "town-lantern-hollow",
+      "targetMapId": "lantern-hollow",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-leyden-causeway-east-switchyard": {
+      "portalId": "portal-leyden-causeway-east-switchyard",
+      "sourceNodeId": "hunting-area-leyden-causeway",
+      "sourceMapId": "leyden-causeway",
+      "direction": "East",
+      "targetNodeId": "town-inductor-switchyard",
+      "targetMapId": "inductor-switchyard",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-leyden-causeway-west-bellows": {
+      "portalId": "portal-leyden-causeway-west-bellows",
+      "sourceNodeId": "hunting-area-leyden-causeway",
+      "sourceMapId": "leyden-causeway",
+      "direction": "West",
+      "targetNodeId": "town-bellows-hearth",
+      "targetMapId": "bellows-hearth",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-metronome-bridge-east-pivot": {
+      "portalId": "portal-metronome-bridge-east-pivot",
+      "sourceNodeId": "hunting-area-metronome-bridge",
+      "sourceMapId": "metronome-bridge",
+      "direction": "East",
+      "targetNodeId": "town-metronome-pivot-citadel",
+      "targetMapId": "metronome-pivot-citadel",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-metronome-bridge-west-inductor": {
+      "portalId": "portal-metronome-bridge-west-inductor",
+      "sourceNodeId": "hunting-area-metronome-bridge",
+      "sourceMapId": "metronome-bridge",
+      "direction": "West",
+      "targetNodeId": "town-inductor-switchyard",
+      "targetMapId": "inductor-switchyard",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-orrery-bridge-east-prism-zenith": {
+      "portalId": "portal-orrery-bridge-east-prism-zenith",
+      "sourceNodeId": "hunting-area-orrery-bridge",
+      "sourceMapId": "orrery-bridge",
+      "direction": "East",
+      "targetNodeId": "town-prism-zenith",
+      "targetMapId": "prism-zenith",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-orrery-bridge-west-starfall-haven": {
+      "portalId": "portal-orrery-bridge-west-starfall-haven",
+      "sourceNodeId": "hunting-area-orrery-bridge",
+      "sourceMapId": "orrery-bridge",
+      "direction": "West",
+      "targetNodeId": "town-starfall-haven",
+      "targetMapId": "starfall-haven",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-penumbra-causeway-east-prism-haven": {
+      "portalId": "portal-penumbra-causeway-east-prism-haven",
+      "sourceNodeId": "hunting-area-penumbra-refraction-causeway",
+      "sourceMapId": "penumbra-refraction-causeway",
+      "direction": "East",
+      "targetNodeId": "town-penumbra-prism-haven",
+      "targetMapId": "penumbra-prism-haven",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-penumbra-causeway-west-bell-sanctuary": {
+      "portalId": "portal-penumbra-causeway-west-bell-sanctuary",
+      "sourceNodeId": "hunting-area-penumbra-refraction-causeway",
+      "sourceMapId": "penumbra-refraction-causeway",
+      "direction": "West",
+      "targetNodeId": "town-aurora-bell-sanctuary",
+      "targetMapId": "aurora-bell-sanctuary",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-carrier-span-east-citadel": {
+      "portalId": "portal-carrier-span-east-citadel",
+      "sourceNodeId": "hunting-area-planetary-carrier-span",
+      "sourceMapId": "planetary-carrier-span",
+      "direction": "East",
+      "targetNodeId": "town-torque-balance-citadel",
+      "targetMapId": "torque-balance-citadel",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-carrier-span-west-torque-hub": {
+      "portalId": "portal-carrier-span-west-torque-hub",
+      "sourceNodeId": "hunting-area-planetary-carrier-span",
+      "sourceMapId": "planetary-carrier-span",
+      "direction": "West",
+      "targetNodeId": "town-helical-torque-hub",
+      "targetMapId": "helical-torque-hub",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-resin-arch-east-roundhouse": {
+      "portalId": "portal-resin-arch-east-roundhouse",
+      "sourceNodeId": "hunting-area-resin-arch-tunnel",
+      "sourceMapId": "resin-arch-tunnel",
+      "direction": "East",
+      "targetNodeId": "town-root-train-roundhouse",
+      "targetMapId": "root-train-roundhouse",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-resin-arch-west-sanctuary": {
+      "portalId": "portal-resin-arch-west-sanctuary",
+      "sourceNodeId": "hunting-area-resin-arch-tunnel",
+      "sourceMapId": "resin-arch-tunnel",
+      "direction": "West",
+      "targetNodeId": "town-porcelain-loom-sanctuary",
+      "targetMapId": "porcelain-loom-sanctuary",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-resonance-causeway-east-bell-sanctuary": {
+      "portalId": "portal-resonance-causeway-east-bell-sanctuary",
+      "sourceNodeId": "hunting-area-resonance-tether-causeway",
+      "sourceMapId": "resonance-tether-causeway",
+      "direction": "East",
+      "targetNodeId": "town-aurora-bell-sanctuary",
+      "targetMapId": "aurora-bell-sanctuary",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-resonance-causeway-west-focal-sanctum": {
+      "portalId": "portal-resonance-causeway-west-focal-sanctum",
+      "sourceNodeId": "hunting-area-resonance-tether-causeway",
+      "sourceMapId": "resonance-tether-causeway",
+      "direction": "West",
+      "targetNodeId": "town-umbrage-focal-sanctum",
+      "targetMapId": "umbrage-focal-sanctum",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-silver-tide-east-balance-haven": {
+      "portalId": "portal-silver-tide-east-balance-haven",
+      "sourceNodeId": "hunting-area-silver-tide-causeway",
+      "sourceMapId": "silver-tide-causeway",
+      "direction": "East",
+      "targetNodeId": "town-libration-balance-haven",
+      "targetMapId": "libration-balance-haven",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-silver-tide-west-aphelion": {
+      "portalId": "portal-silver-tide-west-aphelion",
+      "sourceNodeId": "hunting-area-silver-tide-causeway",
+      "sourceMapId": "silver-tide-causeway",
+      "direction": "West",
+      "targetNodeId": "town-aphelion-buoy-haven",
+      "targetMapId": "aphelion-buoy-haven",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-siphon-sluice-east-patina": {
+      "portalId": "portal-siphon-sluice-east-patina",
+      "sourceNodeId": "hunting-area-siphon-sluice",
+      "sourceMapId": "siphon-sluice",
+      "direction": "East",
+      "targetNodeId": "town-patina-lock",
+      "targetMapId": "patina-lock",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-siphon-sluice-west-anvil": {
+      "portalId": "portal-siphon-sluice-west-anvil",
+      "sourceNodeId": "hunting-area-siphon-sluice",
+      "sourceMapId": "siphon-sluice",
+      "direction": "West",
+      "targetNodeId": "town-escapement-anvil",
+      "targetMapId": "escapement-anvil",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-wormway-ramp-east-torque-hub": {
+      "portalId": "portal-wormway-ramp-east-torque-hub",
+      "sourceNodeId": "hunting-area-spiral-wormway-ramp",
+      "sourceMapId": "spiral-wormway-ramp",
+      "direction": "East",
+      "targetNodeId": "town-helical-torque-hub",
+      "targetMapId": "helical-torque-hub",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-wormway-ramp-west-pivot": {
+      "portalId": "portal-wormway-ramp-west-pivot",
+      "sourceNodeId": "hunting-area-spiral-wormway-ramp",
+      "sourceMapId": "spiral-wormway-ramp",
+      "direction": "West",
+      "targetNodeId": "town-metronome-pivot-citadel",
+      "targetMapId": "metronome-pivot-citadel",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-stalactite-plunge-east-station": {
+      "portalId": "portal-stalactite-plunge-east-station",
+      "sourceNodeId": "hunting-area-stalactite-plunge",
+      "sourceMapId": "stalactite-plunge",
+      "direction": "East",
+      "targetNodeId": "town-perigee-diving-station",
+      "targetMapId": "perigee-diving-station",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-stalactite-plunge-west-citadel": {
+      "portalId": "portal-stalactite-plunge-west-citadel",
+      "sourceNodeId": "hunting-area-stalactite-plunge",
+      "sourceMapId": "stalactite-plunge",
+      "direction": "West",
+      "targetNodeId": "town-crown-beacon-citadel",
+      "targetMapId": "crown-beacon-citadel",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-tether-causeway-south-astrolabe-rift": {
+      "portalId": "portal-tether-causeway-south-astrolabe-rift",
+      "sourceNodeId": "hunting-area-tether-causeway",
+      "sourceMapId": "tether-causeway",
+      "direction": "South",
+      "targetNodeId": "hunting-area-astrolabe-rift",
+      "targetMapId": "astrolabe-rift",
+      "targetDirection": "North",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3800.0
+      },
+      "lockMessage": null
+    },
+    "portal-tether-causeway-east-starfall-haven": {
+      "portalId": "portal-tether-causeway-east-starfall-haven",
+      "sourceNodeId": "hunting-area-tether-causeway",
+      "sourceMapId": "tether-causeway",
+      "direction": "East",
+      "targetNodeId": "town-starfall-haven",
+      "targetMapId": "starfall-haven",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-violet-span-east-focal-sanctum": {
+      "portalId": "portal-violet-span-east-focal-sanctum",
+      "sourceNodeId": "hunting-area-violet-spectrum-span",
+      "sourceMapId": "violet-spectrum-span",
+      "direction": "East",
+      "targetNodeId": "town-umbrage-focal-sanctum",
+      "targetMapId": "umbrage-focal-sanctum",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-violet-span-west-balance-haven": {
+      "portalId": "portal-violet-span-west-balance-haven",
+      "sourceNodeId": "hunting-area-violet-spectrum-span",
+      "sourceMapId": "violet-spectrum-span",
+      "direction": "West",
+      "targetNodeId": "town-libration-balance-haven",
+      "targetMapId": "libration-balance-haven",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-aphelion-buoy-north-fog": {
+      "portalId": "portal-aphelion-buoy-north-fog",
+      "sourceNodeId": "town-aphelion-buoy-haven",
+      "sourceMapId": "aphelion-buoy-haven",
+      "direction": "North",
+      "targetNodeId": "hunting-area-outer-orbit-drift",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Sub-zero comet-tail shear sweeps the northern Outer Orbit Drift; Buoy-Keeper Astraea requires the Geode Resonance Prism before unlocking the outer mooring."
+    },
+    "portal-aphelion-buoy-east-silver-tide": {
+      "portalId": "portal-aphelion-buoy-east-silver-tide",
+      "sourceNodeId": "town-aphelion-buoy-haven",
+      "sourceMapId": "aphelion-buoy-haven",
+      "direction": "East",
+      "targetNodeId": "hunting-area-silver-tide-causeway",
+      "targetMapId": "silver-tide-causeway",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-aphelion-buoy-west-comet": {
+      "portalId": "portal-aphelion-buoy-west-comet",
+      "sourceNodeId": "town-aphelion-buoy-haven",
+      "sourceMapId": "aphelion-buoy-haven",
+      "direction": "West",
+      "targetNodeId": "hunting-area-comet-tether-span",
+      "targetMapId": "comet-tether-span",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-aphelion-buoy-dungeon-geode": {
+      "portalId": "portal-aphelion-buoy-dungeon-geode",
+      "sourceNodeId": "town-aphelion-buoy-haven",
+      "sourceMapId": "aphelion-buoy-haven",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-comet-core-geode",
+      "targetMapId": "comet-core-geode-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-bell-sanctuary-north-fog": {
+      "portalId": "portal-bell-sanctuary-north-fog",
+      "sourceNodeId": "town-aurora-bell-sanctuary",
+      "sourceMapId": "aurora-bell-sanctuary",
+      "direction": "North",
+      "targetNodeId": "hunting-area-magnetosphere-ribbon-arch",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Charged solar-wind curtains across Magnetosphere Ribbon Arch repel unshielded gliders; Chime-Keeper Aether requires the Stalactite Bell-Clapper before opening the northern arch."
+    },
+    "portal-bell-sanctuary-east-penumbra-causeway": {
+      "portalId": "portal-bell-sanctuary-east-penumbra-causeway",
+      "sourceNodeId": "town-aurora-bell-sanctuary",
+      "sourceMapId": "aurora-bell-sanctuary",
+      "direction": "East",
+      "targetNodeId": "hunting-area-penumbra-refraction-causeway",
+      "targetMapId": "penumbra-refraction-causeway",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-bell-sanctuary-west-resonance-causeway": {
+      "portalId": "portal-bell-sanctuary-west-resonance-causeway",
+      "sourceNodeId": "town-aurora-bell-sanctuary",
+      "sourceMapId": "aurora-bell-sanctuary",
+      "direction": "West",
+      "targetNodeId": "hunting-area-resonance-tether-causeway",
+      "targetMapId": "resonance-tether-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-bell-sanctuary-dungeon-carillon-nave": {
+      "portalId": "portal-bell-sanctuary-dungeon-carillon-nave",
+      "sourceNodeId": "town-aurora-bell-sanctuary",
+      "sourceMapId": "aurora-bell-sanctuary",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-stalactite-carillon-nave",
+      "targetMapId": "stalactite-carillon-nave-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-bellows-hearth-north-fog": {
+      "portalId": "portal-bellows-hearth-north-fog",
+      "sourceNodeId": "town-bellows-hearth",
+      "sourceMapId": "bellows-hearth",
+      "direction": "North",
+      "targetNodeId": "hunting-area-cinder-chimney",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Scalding golden exhaust plumes vent through the Cinder Chimney Damper; the Bellows Guild requires the Master Damper Crank from Ash-Valve Vault before opening the northern flue."
+    },
+    "portal-bellows-hearth-east-leyden": {
+      "portalId": "portal-bellows-hearth-east-leyden",
+      "sourceNodeId": "town-bellows-hearth",
+      "sourceMapId": "bellows-hearth",
+      "direction": "East",
+      "targetNodeId": "hunting-area-leyden-causeway",
+      "targetMapId": "leyden-causeway",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-bellows-hearth-west-flue": {
+      "portalId": "portal-bellows-hearth-west-flue",
+      "sourceNodeId": "town-bellows-hearth",
+      "sourceMapId": "bellows-hearth",
+      "direction": "West",
+      "targetNodeId": "hunting-area-flue-causeway",
+      "targetMapId": "flue-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-bellows-hearth-dungeon-valve": {
+      "portalId": "portal-bellows-hearth-dungeon-valve",
+      "sourceNodeId": "town-bellows-hearth",
+      "sourceMapId": "bellows-hearth",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-ash-valve-vault",
+      "targetMapId": "ash-valve-vault-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-chronometer-hub-north-solar-coil-fog": {
+      "portalId": "portal-chronometer-hub-north-solar-coil-fog",
+      "sourceNodeId": "town-bimetallic-chronometer-hub",
+      "sourceMapId": "bimetallic-chronometer-hub",
+      "direction": "North",
+      "targetNodeId": "hunting-area-solar-coil-overlook",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Concentrated solar-noon thermal expansion across Solar-Coil Overlook warps uncalibrated gear; Chronometer-Master Vane requires the Zero-Expansion Invar Key before opening the northern heliostat gate."
+    },
+    "portal-chronometer-hub-west-bimetallic-span": {
+      "portalId": "portal-chronometer-hub-west-bimetallic-span",
+      "sourceNodeId": "town-bimetallic-chronometer-hub",
+      "sourceMapId": "bimetallic-chronometer-hub",
+      "direction": "West",
+      "targetNodeId": "hunting-area-bimetallic-expansion-span",
+      "targetMapId": "bimetallic-expansion-span",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-chronometer-hub-dungeon-invar-vault": {
+      "portalId": "portal-chronometer-hub-dungeon-invar-vault",
+      "sourceNodeId": "town-bimetallic-chronometer-hub",
+      "sourceMapId": "bimetallic-chronometer-hub",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-invar-balance-vault",
+      "targetMapId": "invar-balance-vault-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-carillon-belfry-north-fog": {
+      "portalId": "portal-carillon-belfry-north-fog",
+      "sourceNodeId": "town-carillon-hearth-belfry",
+      "sourceMapId": "carillon-hearth-belfry",
+      "direction": "North",
+      "targetNodeId": "hunting-area-flute-crest-promontory",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Harmonic gale-shear across Flute-Crest Promontory buffets unshielded travelers; Carillon-Master Elian requires the Porcelain Tuning Fork before opening the northern promontory."
+    },
+    "portal-carillon-belfry-east-apricot-terrace": {
+      "portalId": "portal-carillon-belfry-east-apricot-terrace",
+      "sourceNodeId": "town-carillon-hearth-belfry",
+      "sourceMapId": "carillon-hearth-belfry",
+      "direction": "East",
+      "targetNodeId": "hunting-area-apricot-aqueduct-terrace",
+      "targetMapId": "apricot-aqueduct-terrace",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-carillon-belfry-west-colonnade": {
+      "portalId": "portal-carillon-belfry-west-colonnade",
+      "sourceNodeId": "town-carillon-hearth-belfry",
+      "sourceMapId": "carillon-hearth-belfry",
+      "direction": "West",
+      "targetNodeId": "hunting-area-chime-pipe-colonnade",
+      "targetMapId": "chime-pipe-colonnade",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-carillon-belfry-dungeon-resonator-crypt": {
+      "portalId": "portal-carillon-belfry-dungeon-resonator-crypt",
+      "sourceNodeId": "town-carillon-hearth-belfry",
+      "sourceMapId": "carillon-hearth-belfry",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-ceramic-resonator-crypt",
+      "targetMapId": "ceramic-resonator-crypt-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-astrolabe-sanctuary-north-equinox-fog": {
+      "portalId": "portal-astrolabe-sanctuary-north-equinox-fog",
+      "sourceNodeId": "town-celestial-astrolabe-sanctuary",
+      "sourceMapId": "celestial-astrolabe-sanctuary",
+      "direction": "North",
+      "targetNodeId": "hunting-area-equinox-zenith-arch",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Shearing orbital starlight across Equinox-Zenith Arch buffets unanchored gliders; Astrolabe-Keeper Caelum requires the Celestial Vernier Key before unlocking the northern equinox gate."
+    },
+    "portal-astrolabe-sanctuary-west-armillary-causeway": {
+      "portalId": "portal-astrolabe-sanctuary-west-armillary-causeway",
+      "sourceNodeId": "town-celestial-astrolabe-sanctuary",
+      "sourceMapId": "celestial-astrolabe-sanctuary",
+      "direction": "West",
+      "targetNodeId": "hunting-area-armillary-ring-causeway",
+      "targetMapId": "armillary-ring-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-astrolabe-sanctuary-dungeon-orrery-nave": {
+      "portalId": "portal-astrolabe-sanctuary-dungeon-orrery-nave",
+      "sourceNodeId": "town-celestial-astrolabe-sanctuary",
+      "sourceMapId": "celestial-astrolabe-sanctuary",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-starlight-orrery-nave",
+      "targetMapId": "starlight-orrery-nave-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-cinnamon-mill-north-anise-fog": {
+      "portalId": "portal-cinnamon-mill-north-anise-fog",
+      "sourceNodeId": "town-cinnamon-mill-haven",
+      "sourceMapId": "cinnamon-mill-haven",
+      "direction": "North",
+      "targetNodeId": "hunting-area-star-anise-promontory",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Swirling aromatic spice-drafts across Star-Anise Promontory cloud unshielded sightlines; Mill-Steward Clove requires the Star-Pod Lantern before opening the northern promontory."
+    },
+    "portal-cinnamon-mill-east-ginger-aqueduct": {
+      "portalId": "portal-cinnamon-mill-east-ginger-aqueduct",
+      "sourceNodeId": "town-cinnamon-mill-haven",
+      "sourceMapId": "cinnamon-mill-haven",
+      "direction": "East",
+      "targetNodeId": "hunting-area-ginger-aqueduct-bridge",
+      "targetMapId": "ginger-aqueduct-bridge",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-cinnamon-mill-west-viaduct": {
+      "portalId": "portal-cinnamon-mill-west-viaduct",
+      "sourceNodeId": "town-cinnamon-mill-haven",
+      "sourceMapId": "cinnamon-mill-haven",
+      "direction": "West",
+      "targetNodeId": "hunting-area-cinnamon-bark-viaduct",
+      "targetMapId": "cinnamon-bark-viaduct",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-cinnamon-mill-dungeon-spice-cellar": {
+      "portalId": "portal-cinnamon-mill-dungeon-spice-cellar",
+      "sourceNodeId": "town-cinnamon-mill-haven",
+      "sourceMapId": "cinnamon-mill-haven",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-spice-kiln-cellar",
+      "targetMapId": "spice-kiln-cellar-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-crown-beacon-north-fog": {
+      "portalId": "portal-crown-beacon-north-fog",
+      "sourceNodeId": "town-crown-beacon-citadel",
+      "sourceMapId": "crown-beacon-citadel",
+      "direction": "North",
+      "targetNodeId": "hunting-area-solstice-anchor",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Zero-gravity star-shear along the Solstice Anchor Chain repels uncalibrated gliders; the Beacon Wardens require the Nave Aurora-Key before opening the northern anchor pier."
+    },
+    "portal-crown-beacon-east-stalactite": {
+      "portalId": "portal-crown-beacon-east-stalactite",
+      "sourceNodeId": "town-crown-beacon-citadel",
+      "sourceMapId": "crown-beacon-citadel",
+      "direction": "East",
+      "targetNodeId": "hunting-area-stalactite-plunge",
+      "targetMapId": "stalactite-plunge",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-crown-beacon-west-aurora": {
+      "portalId": "portal-crown-beacon-west-aurora",
+      "sourceNodeId": "town-crown-beacon-citadel",
+      "sourceMapId": "crown-beacon-citadel",
+      "direction": "West",
+      "targetNodeId": "hunting-area-aurora-tether",
+      "targetMapId": "aurora-tether",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-crown-beacon-dungeon-nave": {
+      "portalId": "portal-crown-beacon-dungeon-nave",
+      "sourceNodeId": "town-crown-beacon-citadel",
+      "sourceMapId": "crown-beacon-citadel",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-star-heart-nave",
+      "targetMapId": "star-heart-nave-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-draft-kiln-post-north-fog": {
+      "portalId": "portal-draft-kiln-post-north-fog",
+      "sourceNodeId": "town-draft-kiln-post",
+      "sourceMapId": "draft-kiln-post",
+      "direction": "North",
+      "targetNodeId": "hunting-area-glaze-flue-vent",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Molten celadon glaze-vapor vents through the northern Glaze Flue; the Draft-Kiln Masons require the Bellows Counterweight Key before unbolting the northern louver."
+    },
+    "portal-draft-kiln-post-east-celadon": {
+      "portalId": "portal-draft-kiln-post-east-celadon",
+      "sourceNodeId": "town-draft-kiln-post",
+      "sourceMapId": "draft-kiln-post",
+      "direction": "East",
+      "targetNodeId": "hunting-area-celadon-causeway",
+      "targetMapId": "celadon-causeway",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-draft-kiln-post-west-firebrick": {
+      "portalId": "portal-draft-kiln-post-west-firebrick",
+      "sourceNodeId": "town-draft-kiln-post",
+      "sourceMapId": "draft-kiln-post",
+      "direction": "West",
+      "targetNodeId": "hunting-area-firebrick-duct",
+      "targetMapId": "firebrick-duct",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-draft-kiln-post-dungeon-bellows": {
+      "portalId": "portal-draft-kiln-post-dungeon-bellows",
+      "sourceNodeId": "town-draft-kiln-post",
+      "sourceMapId": "draft-kiln-post",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-ember-bellows-chamber",
+      "targetMapId": "ember-bellows-chamber-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-escapement-anvil-north-fog": {
+      "portalId": "portal-escapement-anvil-north-fog",
+      "sourceNodeId": "town-escapement-anvil",
+      "sourceMapId": "escapement-anvil",
+      "direction": "North",
+      "targetNodeId": "hunting-area-sun-coil-spire",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Superheated solar-brass updrafts swirl around the Sun-Coil Spire; the Master Clockmakers have locked the lift until the barometer stabilizers are calibrated."
+    },
+    "portal-escapement-anvil-east-siphon": {
+      "portalId": "portal-escapement-anvil-east-siphon",
+      "sourceNodeId": "town-escapement-anvil",
+      "sourceMapId": "escapement-anvil",
+      "direction": "East",
+      "targetNodeId": "hunting-area-siphon-sluice",
+      "targetMapId": "siphon-sluice",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-escapement-anvil-west-rim": {
+      "portalId": "portal-escapement-anvil-west-rim",
+      "sourceNodeId": "town-escapement-anvil",
+      "sourceMapId": "escapement-anvil",
+      "direction": "West",
+      "targetNodeId": "hunting-area-caldera-rim",
+      "targetMapId": "caldera-rim",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-escapement-anvil-dungeon-chronometer": {
+      "portalId": "portal-escapement-anvil-dungeon-chronometer",
+      "sourceNodeId": "town-escapement-anvil",
+      "sourceMapId": "escapement-anvil",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-chronometer-foundry",
+      "targetMapId": "chronometer-foundry-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-governor-hub-north-gyroscope-fog": {
+      "portalId": "portal-governor-hub-north-gyroscope-fog",
+      "sourceNodeId": "town-flywheel-governor-hub",
+      "sourceMapId": "flywheel-governor-hub",
+      "direction": "North",
+      "targetNodeId": "hunting-area-gyroscope-rim-overlook",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Centrifugal wind-shear across Gyroscope-Rim Overlook buffets uncalibrated gliders; Governor-Master Torque requires the Flywheel Ballast Key before unlocking the northern rim bridge."
+    },
+    "portal-governor-hub-east-bimetallic-span": {
+      "portalId": "portal-governor-hub-east-bimetallic-span",
+      "sourceNodeId": "town-flywheel-governor-hub",
+      "sourceMapId": "flywheel-governor-hub",
+      "direction": "East",
+      "targetNodeId": "hunting-area-bimetallic-expansion-span",
+      "targetMapId": "bimetallic-expansion-span",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-governor-hub-west-centrifugal-gantry": {
+      "portalId": "portal-governor-hub-west-centrifugal-gantry",
+      "sourceNodeId": "town-flywheel-governor-hub",
+      "sourceMapId": "flywheel-governor-hub",
+      "direction": "West",
+      "targetNodeId": "hunting-area-centrifugal-gantry-span",
+      "targetMapId": "centrifugal-gantry-span",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-governor-hub-dungeon-ballast-vault": {
+      "portalId": "portal-governor-hub-dungeon-ballast-vault",
+      "sourceNodeId": "town-flywheel-governor-hub",
+      "sourceMapId": "flywheel-governor-hub",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-kinetic-ballast-vault",
+      "targetMapId": "kinetic-ballast-vault-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-bathhouse-haven-north-cardamom-fog": {
+      "portalId": "portal-bathhouse-haven-north-cardamom-fog",
+      "sourceNodeId": "town-ginger-bathhouse-haven",
+      "sourceMapId": "ginger-bathhouse-haven",
+      "direction": "North",
+      "targetNodeId": "hunting-area-cardamom-cloud-overlook",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Dense aromatic steam clouds across Cardamom-Cloud Overlook obscure the upper travertine ledges; Bathhouse-Matron Yuzu requires the Porcelain Whistle Valve before opening the northern gate."
+    },
+    "portal-bathhouse-haven-west-ginger-aqueduct": {
+      "portalId": "portal-bathhouse-haven-west-ginger-aqueduct",
+      "sourceNodeId": "town-ginger-bathhouse-haven",
+      "sourceMapId": "ginger-bathhouse-haven",
+      "direction": "West",
+      "targetNodeId": "hunting-area-ginger-aqueduct-bridge",
+      "targetMapId": "ginger-aqueduct-bridge",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-bathhouse-haven-dungeon-teapot-cistern": {
+      "portalId": "portal-bathhouse-haven-dungeon-teapot-cistern",
+      "sourceNodeId": "town-ginger-bathhouse-haven",
+      "sourceMapId": "ginger-bathhouse-haven",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-teapot-steam-cistern",
+      "targetMapId": "teapot-steam-cistern-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-barge-quay-north-fog": {
+      "portalId": "portal-barge-quay-north-fog",
+      "sourceNodeId": "town-glaze-barge-quay",
+      "sourceMapId": "glaze-barge-quay",
+      "direction": "North",
+      "targetNodeId": "hunting-area-kiln-lighthouse-spit",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Boiling glaze-steam geysers curtain the northern Kiln-Lighthouse Spit; Barge-Master Cobalt requires the Porcelain Rudder Pin before opening the spit causeway."
+    },
+    "portal-barge-quay-east-chime-colonnade": {
+      "portalId": "portal-barge-quay-east-chime-colonnade",
+      "sourceNodeId": "town-glaze-barge-quay",
+      "sourceMapId": "glaze-barge-quay",
+      "direction": "East",
+      "targetNodeId": "hunting-area-chime-pipe-colonnade",
+      "targetMapId": "chime-pipe-colonnade",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-barge-quay-west-cobalt": {
+      "portalId": "portal-barge-quay-west-cobalt",
+      "sourceNodeId": "town-glaze-barge-quay",
+      "sourceMapId": "glaze-barge-quay",
+      "direction": "West",
+      "targetNodeId": "hunting-area-cobalt-sandbar-ford",
+      "targetMapId": "cobalt-sandbar-ford",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-barge-quay-dungeon-potter-hold": {
+      "portalId": "portal-barge-quay-dungeon-potter-hold",
+      "sourceNodeId": "town-glaze-barge-quay",
+      "sourceMapId": "glaze-barge-quay",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-sunken-potter-hold",
+      "targetMapId": "sunken-potter-hold-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-torque-hub-north-fog": {
+      "portalId": "portal-torque-hub-north-fog",
+      "sourceNodeId": "town-helical-torque-hub",
+      "sourceMapId": "helical-torque-hub",
+      "direction": "North",
+      "targetNodeId": "hunting-area-bevel-pinion-overlook",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Unclutched bevel-pinion teeth spin at gale-force speeds across the northern Bevel-Pinion Overlook; Torque-Master Helix requires the Bronze Worm-Clutch Key before engaging the safety brake."
+    },
+    "portal-torque-hub-east-carrier-span": {
+      "portalId": "portal-torque-hub-east-carrier-span",
+      "sourceNodeId": "town-helical-torque-hub",
+      "sourceMapId": "helical-torque-hub",
+      "direction": "East",
+      "targetNodeId": "hunting-area-planetary-carrier-span",
+      "targetMapId": "planetary-carrier-span",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-torque-hub-west-wormway": {
+      "portalId": "portal-torque-hub-west-wormway",
+      "sourceNodeId": "town-helical-torque-hub",
+      "sourceMapId": "helical-torque-hub",
+      "direction": "West",
+      "targetNodeId": "hunting-area-spiral-wormway-ramp",
+      "targetMapId": "spiral-wormway-ramp",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-torque-hub-dungeon-gearbox": {
+      "portalId": "portal-torque-hub-dungeon-gearbox",
+      "sourceNodeId": "town-helical-torque-hub",
+      "sourceMapId": "helical-torque-hub",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-worm-drive-gearbox",
+      "targetMapId": "worm-drive-gearbox-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-inductor-switchyard-north-fog": {
+      "portalId": "portal-inductor-switchyard-north-fog",
+      "sourceNodeId": "town-inductor-switchyard",
+      "sourceMapId": "inductor-switchyard",
+      "direction": "North",
+      "targetNodeId": "hunting-area-corona-arc-cliff",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Unshielded cyan corona arcs bridge the northern Corona-Arc Cliff; Switch-Master Voltair requires the Faraday Grounding Rod before opening the northern gate."
+    },
+    "portal-inductor-switchyard-east-metronome": {
+      "portalId": "portal-inductor-switchyard-east-metronome",
+      "sourceNodeId": "town-inductor-switchyard",
+      "sourceMapId": "inductor-switchyard",
+      "direction": "East",
+      "targetNodeId": "hunting-area-metronome-bridge",
+      "targetMapId": "metronome-bridge",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-inductor-switchyard-west-leyden": {
+      "portalId": "portal-inductor-switchyard-west-leyden",
+      "sourceNodeId": "town-inductor-switchyard",
+      "sourceMapId": "inductor-switchyard",
+      "direction": "West",
+      "targetNodeId": "hunting-area-leyden-causeway",
+      "targetMapId": "leyden-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-inductor-switchyard-dungeon-dynamo": {
+      "portalId": "portal-inductor-switchyard-dungeon-dynamo",
+      "sourceNodeId": "town-inductor-switchyard",
+      "sourceMapId": "inductor-switchyard",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-faraday-dynamo-vault",
+      "targetMapId": "faraday-dynamo-vault-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-kilnwatch-bastion-south-firebrick": {
+      "portalId": "portal-kilnwatch-bastion-south-firebrick",
+      "sourceNodeId": "town-kilnwatch-bastion",
+      "sourceMapId": "kilnwatch-bastion",
+      "direction": "South",
+      "targetNodeId": "hunting-area-firebrick-duct",
+      "targetMapId": "firebrick-duct",
+      "targetDirection": "North",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3800.0
+      },
+      "lockMessage": null
+    },
+    "portal-kilnwatch-bastion-east": {
+      "portalId": "portal-kilnwatch-bastion-east",
+      "sourceNodeId": "town-kilnwatch-bastion",
+      "sourceMapId": "kilnwatch-bastion",
+      "direction": "East",
+      "targetNodeId": "hunting-area-cinder-apron",
+      "targetMapId": "cinder-apron",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-kilnwatch-bastion-west": {
+      "portalId": "portal-kilnwatch-bastion-west",
+      "sourceNodeId": "town-kilnwatch-bastion",
+      "sourceMapId": "kilnwatch-bastion",
+      "direction": "West",
+      "targetNodeId": "hunting-area-kiln-east-orchard",
+      "targetMapId": "kiln-east-orchard",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-lantern-hollow-south": {
+      "portalId": "portal-lantern-hollow-south",
+      "sourceNodeId": "town-lantern-hollow",
+      "sourceMapId": "lantern-hollow",
+      "direction": "South",
+      "targetNodeId": "hunting-area-clover-south-gate",
+      "targetMapId": "clover-south-gate",
+      "targetDirection": "North",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3800.0
+      },
+      "lockMessage": null
+    },
+    "portal-lantern-hollow-east": {
+      "portalId": "portal-lantern-hollow-east",
+      "sourceNodeId": "town-lantern-hollow",
+      "sourceMapId": "lantern-hollow",
+      "direction": "East",
+      "targetNodeId": "hunting-area-kiln-east-orchard",
+      "targetMapId": "kiln-east-orchard",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-lantern-hollow-west-fog": {
+      "portalId": "portal-lantern-hollow-west-fog",
+      "sourceNodeId": "town-lantern-hollow",
+      "sourceMapId": "lantern-hollow",
+      "direction": "West",
+      "targetNodeId": "hunting-area-whispering-mire",
+      "targetMapId": null,
+      "targetDirection": "East",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": "The western teapot-sluice bridge is shrouded in silver steam-fog; Lantern-Keepers forbid crossing until the Great Kiln is relit."
+    },
+    "portal-lantern-hollow-dungeon-cellar": {
+      "portalId": "portal-lantern-hollow-dungeon-cellar",
+      "sourceNodeId": "town-lantern-hollow",
+      "sourceMapId": "lantern-hollow",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-kiln-cellar",
+      "targetMapId": "kiln-cellar-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2120.0,
+        "y": 1880.0,
+        "width": 8.0,
+        "height": 8.0
+      },
+      "arrivalPointMeters": {
+        "x": 2110.0,
+        "y": 1880.0
+      },
+      "lockMessage": null
+    },
+    "portal-balance-haven-north-fog": {
+      "portalId": "portal-balance-haven-north-fog",
+      "sourceNodeId": "town-libration-balance-haven",
+      "sourceMapId": "libration-balance-haven",
+      "direction": "North",
+      "targetNodeId": "hunting-area-crescent-reflector-reef",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Focused starlight glare from Crescent Reflector Reef blinds unshielded navigators; Tide-Balancer Selene requires the Syzygy Smoked-Glass Lens before unlocking the northern reef."
+    },
+    "portal-balance-haven-east-violet-span": {
+      "portalId": "portal-balance-haven-east-violet-span",
+      "sourceNodeId": "town-libration-balance-haven",
+      "sourceMapId": "libration-balance-haven",
+      "direction": "East",
+      "targetNodeId": "hunting-area-violet-spectrum-span",
+      "targetMapId": "violet-spectrum-span",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-balance-haven-west-silver-tide": {
+      "portalId": "portal-balance-haven-west-silver-tide",
+      "sourceNodeId": "town-libration-balance-haven",
+      "sourceMapId": "libration-balance-haven",
+      "direction": "West",
+      "targetNodeId": "hunting-area-silver-tide-causeway",
+      "targetMapId": "silver-tide-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-balance-haven-dungeon-syzygy": {
+      "portalId": "portal-balance-haven-dungeon-syzygy",
+      "sourceNodeId": "town-libration-balance-haven",
+      "sourceMapId": "libration-balance-haven",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-sunken-syzygy-dome",
+      "targetMapId": "sunken-syzygy-dome-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-pivot-citadel-north-fog": {
+      "portalId": "portal-pivot-citadel-north-fog",
+      "sourceNodeId": "town-metronome-pivot-citadel",
+      "sourceMapId": "metronome-pivot-citadel",
+      "direction": "North",
+      "targetNodeId": "hunting-area-deadbeat-escapement-bluff",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "The hundred-meter brass pallet-arms of Deadbeat Escapement Bluff slam shut every second; Pendulum-Keeper Horolog requires the Ruby Pallet Pin before unlocking the northern gate."
+    },
+    "portal-pivot-citadel-east-wormway": {
+      "portalId": "portal-pivot-citadel-east-wormway",
+      "sourceNodeId": "town-metronome-pivot-citadel",
+      "sourceMapId": "metronome-pivot-citadel",
+      "direction": "East",
+      "targetNodeId": "hunting-area-spiral-wormway-ramp",
+      "targetMapId": "spiral-wormway-ramp",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-pivot-citadel-west-bridge": {
+      "portalId": "portal-pivot-citadel-west-bridge",
+      "sourceNodeId": "town-metronome-pivot-citadel",
+      "sourceMapId": "metronome-pivot-citadel",
+      "direction": "West",
+      "targetNodeId": "hunting-area-metronome-bridge",
+      "targetMapId": "metronome-bridge",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-pivot-citadel-dungeon-counterweight": {
+      "portalId": "portal-pivot-citadel-dungeon-counterweight",
+      "sourceNodeId": "town-metronome-pivot-citadel",
+      "sourceMapId": "metronome-pivot-citadel",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-counterweight-shaft",
+      "targetMapId": "counterweight-shaft-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-patina-lock-north-fog": {
+      "portalId": "portal-patina-lock-north-fog",
+      "sourceNodeId": "town-patina-lock",
+      "sourceMapId": "patina-lock",
+      "direction": "North",
+      "targetNodeId": "hunting-area-teal-spillway",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Pressurized turquoise coolant cascades over the northern Teal Spillway; the Lock-Keepers Guild has bolted the weir gate until the monsoon sluices subside."
+    },
+    "portal-patina-lock-east-flue": {
+      "portalId": "portal-patina-lock-east-flue",
+      "sourceNodeId": "town-patina-lock",
+      "sourceMapId": "patina-lock",
+      "direction": "East",
+      "targetNodeId": "hunting-area-flue-causeway",
+      "targetMapId": "flue-causeway",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-patina-lock-west-sluice": {
+      "portalId": "portal-patina-lock-west-sluice",
+      "sourceNodeId": "town-patina-lock",
+      "sourceMapId": "patina-lock",
+      "direction": "West",
+      "targetNodeId": "hunting-area-siphon-sluice",
+      "targetMapId": "siphon-sluice",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-patina-lock-dungeon-mercury": {
+      "portalId": "portal-patina-lock-dungeon-mercury",
+      "sourceNodeId": "town-patina-lock",
+      "sourceMapId": "patina-lock",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-mercury-reservoir",
+      "targetMapId": "mercury-reservoir-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-prism-haven-north-corona-fog": {
+      "portalId": "portal-prism-haven-north-corona-fog",
+      "sourceNodeId": "town-penumbra-prism-haven",
+      "sourceMapId": "penumbra-prism-haven",
+      "direction": "North",
+      "targetNodeId": "hunting-area-corona-flare-arch",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Blinding corona-glare across Corona-Flare Arch disorients unshielded gliders; Prism-Navigator Lyra requires the Penumbral Filter Lens before opening the northern arch."
+    },
+    "portal-prism-haven-east-armillary-causeway": {
+      "portalId": "portal-prism-haven-east-armillary-causeway",
+      "sourceNodeId": "town-penumbra-prism-haven",
+      "sourceMapId": "penumbra-prism-haven",
+      "direction": "East",
+      "targetNodeId": "hunting-area-armillary-ring-causeway",
+      "targetMapId": "armillary-ring-causeway",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-prism-haven-west-penumbra-causeway": {
+      "portalId": "portal-prism-haven-west-penumbra-causeway",
+      "sourceNodeId": "town-penumbra-prism-haven",
+      "sourceMapId": "penumbra-prism-haven",
+      "direction": "West",
+      "targetNodeId": "hunting-area-penumbra-refraction-causeway",
+      "targetMapId": "penumbra-refraction-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-prism-haven-dungeon-coral-crypt": {
+      "portalId": "portal-prism-haven-dungeon-coral-crypt",
+      "sourceNodeId": "town-penumbra-prism-haven",
+      "sourceMapId": "penumbra-prism-haven",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-twilight-coral-crypt",
+      "targetMapId": "twilight-coral-crypt-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-perigee-station-north-fog": {
+      "portalId": "portal-perigee-station-north-fog",
+      "sourceNodeId": "town-perigee-diving-station",
+      "sourceMapId": "perigee-diving-station",
+      "direction": "North",
+      "targetNodeId": "hunting-area-maelstrom-eye-lip",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Crushing inverted tidal shear along the Maelstrom Eye Lip snaps unreinforced tether-lines; Dive-Master Corin requires the Keel Gyro-Compass before opening the northern sea-lip."
+    },
+    "portal-perigee-station-east-comet": {
+      "portalId": "portal-perigee-station-east-comet",
+      "sourceNodeId": "town-perigee-diving-station",
+      "sourceMapId": "perigee-diving-station",
+      "direction": "East",
+      "targetNodeId": "hunting-area-comet-tether-span",
+      "targetMapId": "comet-tether-span",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-perigee-station-west-plunge": {
+      "portalId": "portal-perigee-station-west-plunge",
+      "sourceNodeId": "town-perigee-diving-station",
+      "sourceMapId": "perigee-diving-station",
+      "direction": "West",
+      "targetNodeId": "hunting-area-stalactite-plunge",
+      "targetMapId": "stalactite-plunge",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-perigee-station-dungeon-keel": {
+      "portalId": "portal-perigee-station-dungeon-keel",
+      "sourceNodeId": "town-perigee-diving-station",
+      "sourceMapId": "perigee-diving-station",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-submerged-orrery-keel",
+      "targetMapId": "submerged-orrery-keel-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-pinion-terminus-east": {
+      "portalId": "portal-pinion-terminus-east",
+      "sourceNodeId": "town-pinion-terminus",
+      "sourceMapId": "pinion-terminus",
+      "direction": "East",
+      "targetNodeId": "hunting-area-brass-spur-ridge",
+      "targetMapId": "brass-spur-ridge",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-pinion-terminus-west-cinder": {
+      "portalId": "portal-pinion-terminus-west-cinder",
+      "sourceNodeId": "town-pinion-terminus",
+      "sourceMapId": "pinion-terminus",
+      "direction": "West",
+      "targetNodeId": "hunting-area-cinder-apron",
+      "targetMapId": "cinder-apron",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-pinion-terminus-dungeon-pendulum": {
+      "portalId": "portal-pinion-terminus-dungeon-pendulum",
+      "sourceNodeId": "town-pinion-terminus",
+      "sourceMapId": "pinion-terminus",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-pendulum-shaft",
+      "targetMapId": "pendulum-shaft-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 2040.0
+      },
+      "lockMessage": null
+    },
+    "portal-porcelain-sanctuary-north-fog": {
+      "portalId": "portal-porcelain-sanctuary-north-fog",
+      "sourceNodeId": "town-porcelain-loom-sanctuary",
+      "sourceMapId": "porcelain-loom-sanctuary",
+      "direction": "North",
+      "targetNodeId": "hunting-area-lotus-kiln-rim",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Boiling lotus-glaze steam curtains seal the northern Lotus Kiln Rim; Loom-Mother Cera requires the Medallion Heart-Chime before opening the northern terrace."
+    },
+    "portal-porcelain-sanctuary-east-resin": {
+      "portalId": "portal-porcelain-sanctuary-east-resin",
+      "sourceNodeId": "town-porcelain-loom-sanctuary",
+      "sourceMapId": "porcelain-loom-sanctuary",
+      "direction": "East",
+      "targetNodeId": "hunting-area-resin-arch-tunnel",
+      "targetMapId": "resin-arch-tunnel",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-porcelain-sanctuary-west-celadon": {
+      "portalId": "portal-porcelain-sanctuary-west-celadon",
+      "sourceNodeId": "town-porcelain-loom-sanctuary",
+      "sourceMapId": "porcelain-loom-sanctuary",
+      "direction": "West",
+      "targetNodeId": "hunting-area-celadon-causeway",
+      "targetMapId": "celadon-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-porcelain-sanctuary-dungeon-vault": {
+      "portalId": "portal-porcelain-sanctuary-dungeon-vault",
+      "sourceNodeId": "town-porcelain-loom-sanctuary",
+      "sourceMapId": "porcelain-loom-sanctuary",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-medallion-heart-vault",
+      "targetMapId": "medallion-heart-vault-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-prism-zenith-north-fog": {
+      "portalId": "portal-prism-zenith-north-fog",
+      "sourceNodeId": "town-prism-zenith",
+      "sourceMapId": "prism-zenith",
+      "direction": "North",
+      "targetNodeId": "hunting-area-apogee-spire",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Unfocused solar-eclipse rays at Apogee Lens Spire burn through unshielded gliders; the Zenith Astronomers require the Sanctum Prism-Gyro before opening the northern stair."
+    },
+    "portal-prism-zenith-east-kelp": {
+      "portalId": "portal-prism-zenith-east-kelp",
+      "sourceNodeId": "town-prism-zenith",
+      "sourceMapId": "prism-zenith",
+      "direction": "East",
+      "targetNodeId": "hunting-area-kelp-spiral-reef",
+      "targetMapId": "kelp-spiral-reef",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-prism-zenith-west-orrery": {
+      "portalId": "portal-prism-zenith-west-orrery",
+      "sourceNodeId": "town-prism-zenith",
+      "sourceMapId": "prism-zenith",
+      "direction": "West",
+      "targetNodeId": "hunting-area-orrery-bridge",
+      "targetMapId": "orrery-bridge",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-prism-zenith-dungeon-sanctum": {
+      "portalId": "portal-prism-zenith-dungeon-sanctum",
+      "sourceNodeId": "town-prism-zenith",
+      "sourceMapId": "prism-zenith",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-pendulum-sanctum",
+      "targetMapId": "pendulum-sanctum-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-root-roundhouse-north-fog": {
+      "portalId": "portal-root-roundhouse-north-fog",
+      "sourceNodeId": "town-root-train-roundhouse",
+      "sourceMapId": "root-train-roundhouse",
+      "direction": "North",
+      "targetNodeId": "hunting-area-banyan-canopy-spur",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Thick golden resin webs curtain the northern Banyan Canopy Spur; Stationmaster Bramble requires the Cistern Sap-Valve Key before opening the canopy turntable."
+    },
+    "portal-root-roundhouse-east-cobalt": {
+      "portalId": "portal-root-roundhouse-east-cobalt",
+      "sourceNodeId": "town-root-train-roundhouse",
+      "sourceMapId": "root-train-roundhouse",
+      "direction": "East",
+      "targetNodeId": "hunting-area-cobalt-sandbar-ford",
+      "targetMapId": "cobalt-sandbar-ford",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-root-roundhouse-west-resin": {
+      "portalId": "portal-root-roundhouse-west-resin",
+      "sourceNodeId": "town-root-train-roundhouse",
+      "sourceMapId": "root-train-roundhouse",
+      "direction": "West",
+      "targetNodeId": "hunting-area-resin-arch-tunnel",
+      "targetMapId": "resin-arch-tunnel",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-root-roundhouse-dungeon-cistern": {
+      "portalId": "portal-root-roundhouse-dungeon-cistern",
+      "sourceNodeId": "town-root-train-roundhouse",
+      "sourceMapId": "root-train-roundhouse",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-sap-heart-cistern",
+      "targetMapId": "sap-heart-cistern-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-saffron-press-north-honeycomb-fog": {
+      "portalId": "portal-saffron-press-north-honeycomb-fog",
+      "sourceNodeId": "town-saffron-press-village",
+      "sourceMapId": "saffron-press-village",
+      "direction": "North",
+      "targetNodeId": "hunting-area-honeycomb-kiln-ridge",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Boiling amber glaze-steam vents across Honeycomb-Kiln Ridge; Orchard-Steward Marigold requires the Golden Comb Seal before unsealing the northern kiln ridge."
+    },
+    "portal-saffron-press-east-cinnamon-viaduct": {
+      "portalId": "portal-saffron-press-east-cinnamon-viaduct",
+      "sourceNodeId": "town-saffron-press-village",
+      "sourceMapId": "saffron-press-village",
+      "direction": "East",
+      "targetNodeId": "hunting-area-cinnamon-bark-viaduct",
+      "targetMapId": "cinnamon-bark-viaduct",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-saffron-press-west-apricot-terrace": {
+      "portalId": "portal-saffron-press-west-apricot-terrace",
+      "sourceNodeId": "town-saffron-press-village",
+      "sourceMapId": "saffron-press-village",
+      "direction": "West",
+      "targetNodeId": "hunting-area-apricot-aqueduct-terrace",
+      "targetMapId": "apricot-aqueduct-terrace",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-saffron-press-dungeon-nectar-vat": {
+      "portalId": "portal-saffron-press-dungeon-nectar-vat",
+      "sourceNodeId": "town-saffron-press-village",
+      "sourceMapId": "saffron-press-village",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-nectar-glaze-vat",
+      "targetMapId": "nectar-glaze-vat-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-starfall-haven-north-fog": {
+      "portalId": "portal-starfall-haven-north-fog",
+      "sourceNodeId": "town-starfall-haven",
+      "sourceMapId": "starfall-haven",
+      "direction": "North",
+      "targetNodeId": "hunting-area-mirror-cascade",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Upward-pouring silver cataracts at Mirror Cascade Basin have frozen the northern tether-lock; the Cartographer Guild requires the Belfry Star-Chime before unsealing the gate."
+    },
+    "portal-starfall-haven-east-orrery": {
+      "portalId": "portal-starfall-haven-east-orrery",
+      "sourceNodeId": "town-starfall-haven",
+      "sourceMapId": "starfall-haven",
+      "direction": "East",
+      "targetNodeId": "hunting-area-orrery-bridge",
+      "targetMapId": "orrery-bridge",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-starfall-haven-west-tether": {
+      "portalId": "portal-starfall-haven-west-tether",
+      "sourceNodeId": "town-starfall-haven",
+      "sourceMapId": "starfall-haven",
+      "direction": "West",
+      "targetNodeId": "hunting-area-tether-causeway",
+      "targetMapId": "tether-causeway",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-starfall-haven-dungeon-belfry": {
+      "portalId": "portal-starfall-haven-dungeon-belfry",
+      "sourceNodeId": "town-starfall-haven",
+      "sourceMapId": "starfall-haven",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-inverted-belfry",
+      "targetMapId": "inverted-belfry-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-torque-citadel-north-fog": {
+      "portalId": "portal-torque-citadel-north-fog",
+      "sourceNodeId": "town-torque-balance-citadel",
+      "sourceMapId": "torque-balance-citadel",
+      "direction": "North",
+      "targetNodeId": "hunting-area-sun-gear-escarpment",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Counter-rotating sun-gear teeth across Sun-Gear Escarpment shear unshielded gliders; Carrier-Warden Bram requires the Epicyclic Carrier Pin before locking the northern gear-bridge."
+    },
+    "portal-torque-citadel-east-centrifugal-gantry": {
+      "portalId": "portal-torque-citadel-east-centrifugal-gantry",
+      "sourceNodeId": "town-torque-balance-citadel",
+      "sourceMapId": "torque-balance-citadel",
+      "direction": "East",
+      "targetNodeId": "hunting-area-centrifugal-gantry-span",
+      "targetMapId": "centrifugal-gantry-span",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-torque-citadel-west-carrier-span": {
+      "portalId": "portal-torque-citadel-west-carrier-span",
+      "sourceNodeId": "town-torque-balance-citadel",
+      "sourceMapId": "torque-balance-citadel",
+      "direction": "West",
+      "targetNodeId": "hunting-area-planetary-carrier-span",
+      "targetMapId": "planetary-carrier-span",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-torque-citadel-dungeon-pinion-vault": {
+      "portalId": "portal-torque-citadel-dungeon-pinion-vault",
+      "sourceNodeId": "town-torque-balance-citadel",
+      "sourceMapId": "torque-balance-citadel",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-epicyclic-pinion-vault",
+      "targetMapId": "epicyclic-pinion-vault-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-focal-sanctum-north-fog": {
+      "portalId": "portal-focal-sanctum-north-fog",
+      "sourceNodeId": "town-umbrage-focal-sanctum",
+      "sourceMapId": "umbrage-focal-sanctum",
+      "direction": "North",
+      "targetNodeId": "hunting-area-indigo-caustic-arch",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Standing indigo caustic beams across Indigo Caustic Arch blind unshielded travelers; Prism-Warden Lyra requires the Umbral Diffraction Grating before opening the northern arch."
+    },
+    "portal-focal-sanctum-east-resonance-causeway": {
+      "portalId": "portal-focal-sanctum-east-resonance-causeway",
+      "sourceNodeId": "town-umbrage-focal-sanctum",
+      "sourceMapId": "umbrage-focal-sanctum",
+      "direction": "East",
+      "targetNodeId": "hunting-area-resonance-tether-causeway",
+      "targetMapId": "resonance-tether-causeway",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-focal-sanctum-west-violet-span": {
+      "portalId": "portal-focal-sanctum-west-violet-span",
+      "sourceNodeId": "town-umbrage-focal-sanctum",
+      "sourceMapId": "umbrage-focal-sanctum",
+      "direction": "West",
+      "targetNodeId": "hunting-area-violet-spectrum-span",
+      "targetMapId": "violet-spectrum-span",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-focal-sanctum-dungeon-refraction-crypt": {
+      "portalId": "portal-focal-sanctum-dungeon-refraction-crypt",
+      "sourceNodeId": "town-umbrage-focal-sanctum",
+      "sourceMapId": "umbrage-focal-sanctum",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-shadow-refraction-crypt",
+      "targetMapId": "shadow-refraction-crypt-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-undertide-sanctuary-north-fog": {
+      "portalId": "portal-undertide-sanctuary-north-fog",
+      "sourceNodeId": "town-undertide-sanctuary",
+      "sourceMapId": "undertide-sanctuary",
+      "direction": "North",
+      "targetNodeId": "hunting-area-abyssal-barometer",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Inverted tidal pressure along the Abyssal Barometer Ridge crushes uncalibrated diving bells; the Undertide Bell-Keepers require the Cradle Star-Heart before unsealing the northern coral lock."
+    },
+    "portal-undertide-sanctuary-east-aurora": {
+      "portalId": "portal-undertide-sanctuary-east-aurora",
+      "sourceNodeId": "town-undertide-sanctuary",
+      "sourceMapId": "undertide-sanctuary",
+      "direction": "East",
+      "targetNodeId": "hunting-area-aurora-tether",
+      "targetMapId": "aurora-tether",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-undertide-sanctuary-west-kelp": {
+      "portalId": "portal-undertide-sanctuary-west-kelp",
+      "sourceNodeId": "town-undertide-sanctuary",
+      "sourceMapId": "undertide-sanctuary",
+      "direction": "West",
+      "targetNodeId": "hunting-area-kelp-spiral-reef",
+      "targetMapId": "kelp-spiral-reef",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-undertide-sanctuary-dungeon-cradle": {
+      "portalId": "portal-undertide-sanctuary-dungeon-cradle",
+      "sourceNodeId": "town-undertide-sanctuary",
+      "sourceMapId": "undertide-sanctuary",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-vesper-cradle",
+      "targetMapId": "vesper-cradle-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    }
+  }
+}

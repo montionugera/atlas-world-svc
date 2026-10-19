@@ -1,0 +1,174 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-kelp-spiral-reef",
+  "name": "Kelp Spiral Reef",
+  "map_id": "kelp-spiral-reef",
+  "parent_district_id": "district-nebula-undertide",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "canon",
+  "core_rationale": "Western outer rim of Nebula Undertide at [0, 1] where inverted coral causeways wind through floating ribbons of luminescent star-kelp between Prism Zenith and Undertide Sanctuary.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "level_range": [
+    42,
+    46
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/nature/rock_tall_j.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_kelp_reef",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Spiraling ribbons of luminescent violet star-water suspended between coral ledges"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-kelp-spiral-east-sanctuary",
+      "direction": "East",
+      "target_node_id": "town-undertide-sanctuary",
+      "target_map_id": "undertide-sanctuary",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-kelp-spiral-west-prism",
+      "direction": "West",
+      "target_node_id": "town-prism-zenith",
+      "target_map_id": "prism-zenith",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-kelp-spiral-star-mermaid",
+      "monster_id": "mob-star-kelp-mermaid",
+      "monster_name": "Star-Kelp Mermaid",
+      "spawn_count": 9,
+      "respawn_seconds": 14.0,
+      "level": 43,
+      "element": "Water",
+      "size": "Medium",
+      "race": "Fish",
+      "family": "aquatic",
+      "item_drops": [
+        {
+          "item_id": "item-star-kelp-frond",
+          "item_name": "Star-Kelp Frond",
+          "drop_chance_percent": 42.0
+        },
+        {
+          "item_id": "item-coral-bell-chime",
+          "item_name": "Coral Bell Chime",
+          "drop_chance_percent": 16.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-star-kelp-mermaid",
+        "card_name": "Star-Kelp Mermaid Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Garment",
+        "modifier_summary": "Water Elemental Resistance +15%, Maximum Mana Points +80"
+      }
+    },
+    {
+      "spawn_id": "spawn-kelp-spiral-undertide-merman",
+      "monster_id": "mob-undertide-trident-merman",
+      "monster_name": "Undertide Trident Merman",
+      "spawn_count": 6,
+      "respawn_seconds": 18.0,
+      "level": 46,
+      "element": "Water",
+      "size": "Medium",
+      "race": "Fish",
+      "family": "aquatic",
+      "item_drops": [
+        {
+          "item_id": "item-undertide-pearl",
+          "item_name": "Undertide Pearl",
+          "drop_chance_percent": 28.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-undertide-trident-merman",
+        "card_name": "Undertide Trident Merman Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Footgear",
+        "modifier_summary": "Maximum Health Points +8%, Health Points Recovery +12%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.24,
+    "max_bush_height_meters": 0.5,
+    "stair_riser_height_meters": 0.15,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.1,
+      "width": 1.6
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/nature/rock_tall_j.glb",
+      "res://assets/buildings/wall_arched.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Connects The Eclipse Observatory (town-prism-zenith) directly into Nebula Undertide across floating coral ledges."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Spiraling upside-down coral ledges suspended inside glowing violet nebula currents."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 0.24m sea-fronds, 0.50m coral shrubs, 0.15m shell-risers, 0.16m terrace steps, and 13.0m coral boardwalks for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric West portal to town-prism-zenith and East portal to town-undertide-sanctuary; aquatic spawns in [42, 46]."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Promoted cleanly from Mystery to Canon with full five-pillar verification and playable map_id 'kelp-spiral-reef'."
+    }
+  }
+}

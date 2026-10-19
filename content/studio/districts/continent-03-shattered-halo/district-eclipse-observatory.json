@@ -1,0 +1,146 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-eclipse-observatory",
+  "name": "The Eclipse Observatory",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "status": "canon",
+  "core_rationale": "Central floating prism-island of Continent 03 where Vesper's shattered astrolabe lenses focus starlight beams across the sky-archipelago.",
+  "local_conflict": "Eclipse-moths and prism-golems have misaligned the primary starlight lenses, casting frozen twilight shadows across the tether-lanes.",
+  "level_band_label": "Levels 21 to 40",
+  "level_range": [
+    36,
+    46
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "spirit",
+    "insect"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-orrery-bridge",
+      "map_id": "orrery-bridge",
+      "node_type": "hunting_area",
+      "status": "canon",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "level_range": [
+        36,
+        42
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "town-prism-zenith",
+      "map_id": "prism-zenith",
+      "node_type": "town",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "level_range": [
+        38,
+        44
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "dungeon-pendulum-sanctum",
+      "map_id": "pendulum-sanctum-b1",
+      "node_type": "dungeon",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": -1,
+      "level_range": [
+        40,
+        46
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-apogee-spire",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        1,
+        0
+      ],
+      "level_range": [
+        42,
+        46
+      ],
+      "is_starter_town": false
+    }
+  ],
+  "portal_edges": [
+    {
+      "edge_id": "edge-orrery-bridge-east-prism-zenith",
+      "from_node_id": "hunting-area-orrery-bridge",
+      "from_direction": "East",
+      "to_node_id": "town-prism-zenith",
+      "to_direction": "West",
+      "bidirectional": true,
+      "gate_state": "open",
+      "road_width_meters": 13.5
+    },
+    {
+      "edge_id": "edge-prism-zenith-dungeon-pendulum-sanctum",
+      "from_node_id": "town-prism-zenith",
+      "from_direction": "Dungeon",
+      "to_node_id": "dungeon-pendulum-sanctum",
+      "to_direction": "Exit",
+      "bidirectional": true,
+      "gate_state": "open",
+      "road_width_meters": 12.0
+    },
+    {
+      "edge_id": "edge-prism-zenith-north-apogee-spire",
+      "from_node_id": "town-prism-zenith",
+      "from_direction": "North",
+      "to_node_id": "hunting-area-apogee-spire",
+      "to_direction": "South",
+      "bidirectional": true,
+      "gate_state": "fog_of_lore",
+      "road_width_meters": 12.0,
+      "lock_reason": "Unfocused solar-eclipse rays at Apogee Lens Spire burn through unshielded gliders; the Zenith Astronomers require the Sanctum Prism-Gyro before opening the northern stair."
+    }
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Astronomers say the great brass-and-quartz telescope inside the Eclipse Observatory points inward at Vesper's dreams rather than outward at the stars.",
+    "visual_silhouette": "Concentric crystal lens-rings rotating slowly around a floating basalt observatory dome.",
+    "unanswered_question": "What celestial anomaly is magnified at the summit of Apogee Lens Spire?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater on Continent 03 and connects west via Orrery Bridge to Starfall Haven."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Rotating crystal lens-rings, orbiting brass planetarium walkways, and floating brass-and-quartz telescopes suspended in perpetual twilight."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Uses 13.5m starlight lens-bridges, 0.58 to 0.60m eyepiece counters, and 0.14m basalt risers for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Orthogonal 2x2 grid with Orrery Bridge [0,1], Prism Zenith [1,1], Pendulum Sanctum Dungeon [1,1, floor -1], and Apogee Lens Spire [1,0] (Fog of Lore) plus Level 37 to 45 construct/spirit/insect spawns."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Seals the northern Apogee Lens Spire frontier with a fog_of_lore portal and Zenith Astronomers lock rationale."
+    }
+  }
+}

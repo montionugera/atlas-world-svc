@@ -1,0 +1,175 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-starfall-haven",
+  "name": "Starfall Haven",
+  "map_id": "starfall-haven",
+  "parent_district_id": "district-starfall-anchorage",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Primary sky-island anchorage town of Starfall Anchorage at [1, 1] built inside a crescent basalt harbor where dream-glass cartographers maintain the starlight tether-winches and guard the Inverted Belfry descent.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "level_range": [
+    32,
+    38
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_roof_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_basalt_harbor",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Luminous star-tide pools held inside carved basalt basins with upward-drifting mist"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-starfall-haven-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-mirror-cascade",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Upward-pouring silver cataracts at Mirror Cascade Basin have frozen the northern tether-lock; the Cartographer Guild requires the Belfry Star-Chime before unsealing the gate.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-starfall-haven-east-orrery",
+      "direction": "East",
+      "target_node_id": "hunting-area-orrery-bridge",
+      "target_map_id": "orrery-bridge",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-starfall-haven-west-tether",
+      "direction": "West",
+      "target_node_id": "hunting-area-tether-causeway",
+      "target_map_id": "tether-causeway",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-starfall-haven-dungeon-belfry",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-inverted-belfry",
+      "target_map_id": "inverted-belfry-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-anchor-warden-lyra",
+      "name": "Anchor-Warden Lyra",
+      "role": "Starlight Tether Winch Keeper",
+      "position_meters": {
+        "x": 1960.0,
+        "y": 2020.0
+      },
+      "counter_height_meters": 0.6,
+      "dialogue_greeting": "Mind your boots near the pier rim, little Sprout! Out here the ocean falls up toward the stars, so keep one hand on the 0.60 meter brass guide-rail."
+    },
+    {
+      "npc_id": "npc-cartographer-solen",
+      "name": "Dream-Glass Cartographer Solen",
+      "role": "Sky-Island Astrolabe Archivist",
+      "position_meters": {
+        "x": 2080.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "The Starlight Planetarium Causeway to the east is aligned! Cross the Orrery Bridge to reach Prism Zenith inside The Eclipse Observatory."
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.48,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.5,
+    "footpath_width_meters": 4.5,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_roof_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Serves as the primary sky-harbor of Starfall Anchorage and links east across the Orrery Bridge into The Eclipse Observatory."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Lantern-lit basalt piers overlooking upward-flowing waterfalls and an inverted cathedral belfry hanging beneath the island."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Counters at 0.58 to 0.60m, basalt stair risers at 0.14m, doorways 2.20m x 1.65m, and 13.5m harbor promenades for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric West portal to hunting-area-tether-causeway, East open portal to hunting-area-orrery-bridge, Dungeon portal to dungeon-inverted-belfry, and North fog_of_lore portal to hunting-area-mirror-cascade."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Seals the northern Mirror Cascade Basin gate with a fog_of_lore boundary portal while opening the eastern Orrery Bridge."
+    }
+  }
+}

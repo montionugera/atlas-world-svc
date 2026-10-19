@@ -596,15 +596,10 @@ impl MapConfig {
             }
             _ => {
                 // Any custom map saved in content/maps/<map_id>.json is loaded automatically
-                for candidate in [
-                    format!("content/maps/{map_id}.json"),
-                    format!("../content/maps/{map_id}.json"),
-                ] {
-                    if let Ok(raw) = std::fs::read_to_string(&candidate) {
-                        if let Some(cfg) = Self::from_unified_json(map_id, &raw) {
-                            return cfg;
-                        }
-                    }
+                if let Some(cfg) =
+                    crate::content::world_regions::load_generated_region_config(map_id)
+                {
+                    return cfg;
                 }
                 Self::load_legacy_default(map_id)
             }

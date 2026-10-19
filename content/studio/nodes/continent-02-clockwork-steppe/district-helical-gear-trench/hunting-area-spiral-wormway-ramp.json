@@ -1,0 +1,168 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-spiral-wormway-ramp",
+  "name": "Spiral Wormway Ramp",
+  "map_id": "spiral-wormway-ramp",
+  "parent_district_id": "district-helical-gear-trench",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "canon",
+  "core_rationale": "Western helical brass thread-ramp of Helical-Gear Trench at [0, 1] linking Metronome Pivot Citadel down into the rotating worm-gear canyon to Helical Torque Hub.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    38,
+    39
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_spiral_wormway_ramp",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Warm clock-oil cooling channels spiraling alongside the bronze worm-gear threads"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-wormway-ramp-east-torque-hub",
+      "direction": "East",
+      "target_node_id": "town-helical-torque-hub",
+      "target_map_id": "helical-torque-hub",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-wormway-ramp-west-pivot",
+      "direction": "West",
+      "target_node_id": "town-metronome-pivot-citadel",
+      "target_map_id": "metronome-pivot-citadel",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-spiral-thread-beetle",
+      "monster_id": "monster-spiral-thread-beetle",
+      "monster_name": "Spiral-Thread Brass-Beetle",
+      "spawn_count": 7,
+      "respawn_seconds": 28,
+      "level": 38,
+      "element": "Earth",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-helical-brass-shaving",
+          "item_name": "Helical Brass Shaving",
+          "drop_chance_percent": 40.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-spiral-thread-beetle",
+        "card_name": "Spiral-Thread Brass-Beetle Card",
+        "drop_chance_percent": 0.05,
+        "card_effect": "Increases Physical Attack by 4% and grants +5% resistance to Earth-element attacks."
+      }
+    },
+    {
+      "spawn_id": "spawn-oil-mist-drake",
+      "monster_id": "monster-oil-mist-drake",
+      "monster_name": "Oil-Mist Trench-Drake",
+      "spawn_count": 6,
+      "respawn_seconds": 30,
+      "level": 39,
+      "element": "Fire",
+      "size": "Medium",
+      "race": "Dragon",
+      "family": "reptile",
+      "item_drops": [
+        {
+          "item_id": "item-tempered-drake-scale",
+          "item_name": "Tempered Drake Scale",
+          "drop_chance_percent": 35.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-oil-mist-drake",
+        "card_name": "Oil-Mist Trench-Drake Card",
+        "drop_chance_percent": 0.05,
+        "card_effect": "Grants +6% Critical Damage against Dragon and Formless enemies."
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.22,
+    "max_bush_height_meters": 0.48,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.6,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/dungeon/pillar.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Connects Metronome Pivot Citadel (West) to Helical Torque Hub (East) along scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Herringbone-grooved bronze worm-gear threads descending into a terraced copper canyon."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.22m copper grass, 0.48m bushes, 0.14m cog-risers, and 13.0m helical ramps for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Surface node at [0, 1] with symmetric West and East portals and construct/reptile spawns in Levels 38 to 39."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Promoted from Mystery to Canon with full Five-Pillar verification."
+    }
+  }
+}

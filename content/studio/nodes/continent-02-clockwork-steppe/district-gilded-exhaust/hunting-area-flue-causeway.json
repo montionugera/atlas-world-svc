@@ -1,0 +1,169 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-flue-causeway",
+  "name": "Flue Causeway",
+  "map_id": "flue-causeway",
+  "parent_district_id": "district-gilded-exhaust",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "canon",
+  "core_rationale": "Western brass grating causeway of The Gilded Exhaust Flues at [0, 1] spanning the warm thermal vents between Patina Lock and Bellows Hearth.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "level_range": [
+    26,
+    28
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/floor_tile_big_grate.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_gilded_flue_causeway",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Warm golden steam plumes rising beneath riveted brass grating bridges"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-flue-causeway-east-bellows",
+      "direction": "East",
+      "target_node_id": "town-bellows-hearth",
+      "target_map_id": "bellows-hearth",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-flue-causeway-west-patina",
+      "direction": "West",
+      "target_node_id": "town-patina-lock",
+      "target_map_id": "patina-lock",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-flue-causeway-soot-wisp",
+      "monster_id": "mob-golden-soot-wisp",
+      "monster_name": "Golden Soot-Wisp",
+      "spawn_count": 10,
+      "respawn_seconds": 12.0,
+      "level": 26,
+      "element": "Fire",
+      "size": "Small",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-gilded-soot-flake",
+          "item_name": "Gilded Soot Flake",
+          "drop_chance_percent": 45.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-golden-soot-wisp",
+        "card_name": "Golden Soot-Wisp Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Garment",
+        "modifier_summary": "Fire Elemental Resistance +15%, Flee Rate +8"
+      }
+    },
+    {
+      "spawn_id": "spawn-flue-causeway-grate-sweeper",
+      "monster_id": "mob-brass-grate-sweeper",
+      "monster_name": "Brass Grate-Sweeper",
+      "spawn_count": 7,
+      "respawn_seconds": 15.0,
+      "level": 28,
+      "element": "Earth",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-copper-flue-brush",
+          "item_name": "Copper Flue Brush",
+          "drop_chance_percent": 32.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-brass-grate-sweeper",
+        "card_name": "Brass Grate-Sweeper Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Footgear",
+        "modifier_summary": "Movement Speed on Grates +5%, Physical Defense +6"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.44,
+    "stair_riser_height_meters": 0.15,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.1,
+      "width": 1.6
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/floor_tile_big_grate.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Connects Verdigris Siphon (town-patina-lock) eastward into The Gilded Exhaust Flues along scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Riveted brass grating bridge suspended between whistling golden smokestacks and warm updrafts."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 0.18m grass, 0.44m shrubs, 0.15m grate-steps, and 12.5m brass catwalks for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric West portal to town-patina-lock and East portal to town-bellows-hearth; spirit/construct spawns in [26, 28]."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Promoted cleanly from Mystery to Canon with full five-pillar verification and playable map_id 'flue-causeway'."
+    }
+  }
+}

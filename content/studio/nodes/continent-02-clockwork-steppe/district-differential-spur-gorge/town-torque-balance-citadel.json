@@ -1,0 +1,176 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-torque-balance-citadel",
+  "name": "Torque-Balance Citadel",
+  "map_id": "torque-balance-citadel",
+  "parent_district_id": "district-differential-spur-gorge",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Central planetary-carrier hub town of Differential Spur Gorge at [1, 1] where differential machinists equalize counter-rotating bevel shafts above the Epicyclic Pinion Vault.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    29,
+    30
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_roof_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_torque_balance_citadel_town",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Counter-weighted copper oil-damping rings surrounding the central differential carrier plaza"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-torque-citadel-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-sun-gear-escarpment",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Counter-rotating sun-gear teeth across Sun-Gear Escarpment shear unshielded gliders; Carrier-Warden Bram requires the Epicyclic Carrier Pin before locking the northern gear-bridge.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-torque-citadel-east-centrifugal-gantry",
+      "direction": "East",
+      "target_node_id": "hunting-area-centrifugal-gantry-span",
+      "target_map_id": "centrifugal-gantry-span",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-torque-citadel-west-carrier-span",
+      "direction": "West",
+      "target_node_id": "hunting-area-planetary-carrier-span",
+      "target_map_id": "planetary-carrier-span",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-torque-citadel-dungeon-pinion-vault",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-epicyclic-pinion-vault",
+      "target_map_id": "epicyclic-pinion-vault-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-carrier-warden-bram",
+      "name": "Carrier-Warden Bram",
+      "role": "Differential Hub Director",
+      "position_meters": {
+        "x": 1975.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Welcome to Torque-Balance Citadel! While the outer bevel rings spin in opposite directions, our central plaza stays rock-steady around my 0.58 meter torque desk."
+    },
+    {
+      "npc_id": "npc-pinion-wright-talia",
+      "name": "Pinion-Wright Talia",
+      "role": "Epicyclic Gear Smith",
+      "position_meters": {
+        "x": 2065.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.6,
+      "dialogue_greeting": "Down in the Epicyclic Pinion Vault, a sun-pinion juggernaut guards the Epicyclic Carrier Pin needed to cross Sun-Gear Escarpment!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.42,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_roof_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Differential Spur Gorge at [1, 1] directly above Krono's Epicyclic Pinion Vault and connects east to Flywheel Dynamo Canyon."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Stationary brass carrier citadel ringed by counter-rotating planetary bevel rings."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.58 to 0.60m torque desks, 0.14m brass cog-risers, 2.20m x 1.65m doorways, and 13.0m plazas for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, East, Dungeon, and North (fog_of_lore) portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Guards the northern Sun-Gear Escarpment behind a Fog of Lore portal while opening East to Centrifugal Gantry Span."
+    }
+  }
+}

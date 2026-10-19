@@ -1,0 +1,176 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-umbrage-focal-sanctum",
+  "name": "Umbrage Focal Sanctum",
+  "map_id": "umbrage-focal-sanctum",
+  "parent_district_id": "district-umbrage-prism-atoll",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Central smoky-quartz optics sanctuary of Umbrage Prism Atoll at [1, 1] where seven spectrum bridges converge above the Shadow Refraction Crypt.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    49,
+    50
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_roof_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_umbrage_focal_sanctum",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Prismatic starlight reflection pools ringing the central smoky-quartz focal obelisk"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-focal-sanctum-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-indigo-caustic-arch",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Standing indigo caustic beams across Indigo Caustic Arch blind unshielded travelers; Prism-Warden Lyra requires the Umbral Diffraction Grating before opening the northern arch.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-focal-sanctum-east-resonance-causeway",
+      "direction": "East",
+      "target_node_id": "hunting-area-resonance-tether-causeway",
+      "target_map_id": "resonance-tether-causeway",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-focal-sanctum-west-violet-span",
+      "direction": "West",
+      "target_node_id": "hunting-area-violet-spectrum-span",
+      "target_map_id": "violet-spectrum-span",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-focal-sanctum-dungeon-refraction-crypt",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-shadow-refraction-crypt",
+      "target_map_id": "shadow-refraction-crypt-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-prism-warden-lyra",
+      "name": "Prism-Warden Lyra",
+      "role": "Umbrage Optics Director",
+      "position_meters": {
+        "x": 1975.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Welcome to Umbrage Focal Sanctum! Every spectrum bridge in the atoll converges right at my 0.58 meter smoky-quartz optics table."
+    },
+    {
+      "npc_id": "npc-chord-weaver-orion",
+      "name": "Chord-Weaver Orion",
+      "role": "Spectrum Harpist",
+      "position_meters": {
+        "x": 2065.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.6,
+      "dialogue_greeting": "Down in the Shadow Refraction Crypt, an eclipse-prism archon guards the Umbral Diffraction Grating needed to cross Indigo Caustic Arch!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.42,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_roof_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Umbrage Prism Atoll at [1, 1] directly above Vesper's Shadow Refraction Crypt and connects east into Aurora Chime Atoll."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Smoky-quartz optics plaza where seven refracted starlight bridges converge into a harmonic focal obelisk."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.58 to 0.60m optics desks, 0.14m quartz risers, 2.20m x 1.65m doorways, and 13.0m plazas for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, East, Dungeon, and North (fog_of_lore) portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Guards the northern Indigo Caustic Arch behind a Fog of Lore portal while opening East to Resonance Tether Causeway."
+    }
+  }
+}

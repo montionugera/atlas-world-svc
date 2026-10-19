@@ -1,0 +1,176 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-root-train-roundhouse",
+  "name": "Root-Train Roundhouse",
+  "map_id": "root-train-roundhouse",
+  "parent_district_id": "district-amber-root-hollows",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Eastern wooden turntable and brick roundhouse town of Amber-Root Hollows at [1, 1] where root-train engineers service Kettle-Whistle locomotives above the Sap-Heart Cistern.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    15,
+    17
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/building_forge.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_root_roundhouse_town",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Warm amber-resin boiler-fill basins ringing the central wooden locomotive turntable"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-root-roundhouse-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-banyan-canopy-spur",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Thick golden resin webs curtain the northern Banyan Canopy Spur; Stationmaster Bramble requires the Cistern Sap-Valve Key before opening the canopy turntable.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-root-roundhouse-east-cobalt",
+      "direction": "East",
+      "target_node_id": "hunting-area-cobalt-sandbar-ford",
+      "target_map_id": "cobalt-sandbar-ford",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-root-roundhouse-west-resin",
+      "direction": "West",
+      "target_node_id": "hunting-area-resin-arch-tunnel",
+      "target_map_id": "resin-arch-tunnel",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-root-roundhouse-dungeon-cistern",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-sap-heart-cistern",
+      "target_map_id": "sap-heart-cistern-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-stationmaster-bramble",
+      "name": "Stationmaster Bramble",
+      "role": "Kettle-Whistle Roundhouse Chief",
+      "position_meters": {
+        "x": 1975.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "All aboard for the Kettle-Whistle Viaduct! Stamp your ticket at my 0.58 meter resin counter while we turn the root-train around."
+    },
+    {
+      "npc_id": "npc-boiler-tinker-pip",
+      "name": "Boiler-Tinker Pip",
+      "role": "Sap-Heart Cistern Engineer",
+      "position_meters": {
+        "x": 2065.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Down in the Sap-Heart Cistern, a resin-golem jammed the Cistern Sap-Valve Key. Bring it up so we can clear the northern Banyan Canopy Spur!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.42,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_Clearance_meters": {
+      "height": 2.1,
+      "width": 1.55
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/building_forge.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Amber-Root Hollows at [1, 1] where Kettle-Whistle root-trains depart for Continent 02 and connects eastward to Cobalt Sandbar Ford."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A cozy brick-and-banyan roundhouse town centered on a revolving wooden locomotive turntable."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Ticket counters at 0.58m, wooden risers at 0.14m, doorways 2.10m x 1.55m, and 13.0m platforms for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, East, Dungeon, and North (fog_of_lore) portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Locks northern Banyan Canopy Spur behind a Fog of Lore portal while connecting eastward to Glaze-River Delta."
+    }
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-perigee-abyss",
+  "name": "Perigee Abyss",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "status": "canon",
+  "core_rationale": "Lowest inverted gravity trench of Continent 03 where Vesper's sunken basalt anchors hang directly above the northern ocean maelstrom.",
+  "local_conflict": "Abyssal gravity-wraiths and deep-tide leviathans prowl the inverted basalt anchor-chains at the bottom of the Shattered Halo.",
+  "level_band_label": "Levels 41 to 60",
+  "level_range": [
+    48,
+    50
+  ],
+  "ecological_monster_families": [
+    "aquatic",
+    "spirit"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-stalactite-plunge",
+      "map_id": "stalactite-plunge",
+      "node_type": "hunting_area",
+      "status": "canon",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        48,
+        49
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "town-perigee-diving-station",
+      "map_id": "perigee-diving-station",
+      "node_type": "town",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        48,
+        50
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "dungeon-submerged-orrery-keel",
+      "map_id": "submerged-orrery-keel-b1",
+      "node_type": "dungeon",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": -1,
+      "level_range": [
+        49,
+        50
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-maelstrom-eye-lip",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        1,
+        0
+      ],
+      "floor_index": 0,
+      "level_range": [
+        50,
+        50
+      ],
+      "is_starter_town": false
+    }
+  ],
+  "portal_edges": [
+    {
+      "from_node_id": "hunting-area-stalactite-plunge",
+      "from_direction": "East",
+      "to_node_id": "town-perigee-diving-station",
+      "to_direction": "West",
+      "gate_state": "open"
+    },
+    {
+      "from_node_id": "town-perigee-diving-station",
+      "from_direction": "Dungeon",
+      "to_node_id": "dungeon-submerged-orrery-keel",
+      "to_direction": "Exit",
+      "gate_state": "open"
+    },
+    {
+      "from_node_id": "town-perigee-diving-station",
+      "from_direction": "North",
+      "to_node_id": "hunting-area-maelstrom-eye-lip",
+      "to_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_reason": "Crushing inverted tidal shear along the Maelstrom Eye Lip snaps unreinforced tether-lines; Dive-Master Corin requires the Keel Gyro-Compass before opening the northern sea-lip."
+    }
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Tether-divers say that if you drop a brass coin from Perigee Abyss, it falls upward for three minutes before splashing into Nebula Undertide.",
+    "visual_silhouette": "A ring of inverted basalt stalactites hanging just above the roaring spray of the northern ocean whirlpool.",
+    "unanswered_question": "What ancient sea-gate lies submerged directly beneath the Maelstrom Eye Lip of Perigee Abyss?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-vesper-dream-eater and scar-vesper-crater at the lowest perigee rim of Continent 03 and links West to Crown Beacon Citadel."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Inverted basalt stalactites and diving-bell stations suspended directly above the roaring spray of the northern ocean maelstrom."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Uses 12.5m basalt anchor-chain boardwalks, 0.58 to 0.60m winch-lock benches, and 0.14m basalt risers for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "2x2 grid connects Stalactite Plunge, Perigee Diving-Station, and Submerged Orrery Keel B1 across [48, 50] with aquatic and spirit families."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Preserves hunting-area-maelstrom-eye-lip at [1, 0] as a Mystery frontier behind a fog_of_lore portal on Perigee Diving-Station."
+    }
+  }
+}

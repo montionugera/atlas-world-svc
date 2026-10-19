@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.0.0",
+  "id": "world-history-cradle-of-embers",
+  "name": "World History and Concept — The Clockspring Sundering",
+  "world_title": "Aethelgard: The Clockspring Nursery",
+  "status": "canon",
+  "core_rationale": "Giant Primordial Artisans shattered during the Clockspring War, leaving behind a continent-sized nursery of living relics where 90 to 120 centimeter Star-Kindled children awaken to mend the broken world-mechanisms.",
+  "character_scale_law": {
+    "height_range_meters": [
+      0.9,
+      1.2
+    ],
+    "reference_height_meters": 1.05,
+    "head_to_body_ratio": "1:2.3 cute toddler and kid proportions with chunky boots, clear silhouettes, and expressive oversized backpacks and lanterns",
+    "silhouette_rules": [
+      "Headgear, ears, and backpack props must read clearly at 12 meter camera distance against ground terrain.",
+      "Ground foliage never exceeds knee height (0.35 meters) in traversal lanes; bushes never exceed chest height (0.65 meters)."
+    ],
+    "camera_rig": {
+      "look_at_height_meters": 0.75,
+      "default_distance_meters": 9.5,
+      "pitch_degrees": 28.0,
+      "field_of_view_degrees": 45.0
+    },
+    "environment_metrics": {
+      "max_grass_height_meters": 0.35,
+      "max_bush_height_meters": 0.65,
+      "min_trunk_collider_radius_meters": 0.35,
+      "min_doorway_height_meters": 2.0,
+      "min_doorway_width_meters": 1.5,
+      "max_stair_riser_meters": 0.15,
+      "prop_counter_height_range_meters": [
+        0.55,
+        0.65
+      ],
+      "min_highway_corridor_width_meters": 3.5
+    }
+  },
+  "player_arrival_premise": {
+    "player_identity": "Star-Kindled Sprouts — 90 to 120 centimeter spirit-children condensed from fallen Hearth-Sparks.",
+    "why_enter_world": "Only small, nimble hands can crawl inside the fractured Titan Reliquaries and relight the World-Lanterns without triggering giant-scale defense wards.",
+    "inciting_phenomenon": "The Great Lantern Eclipse — outer continents are freezing into Fog of Lore, drawing newly condensed Sprouts into the warm Hearthbloom Basin."
+  },
+  "primordial_gods": [
+    {
+      "id": "god-sola-hearth-weaver",
+      "name": "Sola, the Hearth-Weaver",
+      "domain": "Warmth, ceramic pottery, eternal embers, and shelter",
+      "status": "canon",
+      "core_rationale": "Provides a safe, warm, low-altitude cradle for new players to spawn and learn basic mechanics.",
+      "geographical_scar": "Fell curled around the central inland sea, baking the surrounding clay basin into permanently warm, fertile terraced meadows.",
+      "architectural_imprint": "Rounded kiln-baked cottage domes, low 0.60 meter hearth-counters, and lantern-lined cobblestone lanes."
+    },
+    {
+      "id": "god-krono-brass-titan",
+      "name": "Krono, the Brass Titan",
+      "domain": "Wind, gears, locomotion, and timekeeping",
+      "status": "canon",
+      "core_rationale": "Justifies mid-level mechanical biomes, wind-trains, and airship transit between continents.",
+      "geographical_scar": "His shattered gearbox ribs jut out across the eastern plateau, creating perpetual gale-force wind canyons.",
+      "architectural_imprint": "Brass wind-vane towers, cog-wheel elevators with 0.15 meter toddler step-risers, and copper viaducts."
+    },
+    {
+      "id": "god-vesper-dream-eater",
+      "name": "Vesper, the Dream-Eater",
+      "domain": "Gravity, starlight, and silence",
+      "status": "canon",
+      "core_rationale": "Anchors the late-game northern anomaly and explains why the northern sea floats upward into storm clouds across The Shattered Halo.",
+      "geographical_scar": "Cracked the planetary crust into inverted floating islands shrouded in violet static.",
+      "architectural_imprint": "Inverted basalt spires, 0.15 meter basalt risers, and weightless 12.0 meter wide starlight tether-bridges.",
+      "mystery_hook": {
+        "in_world_rumor": "Sailors swear compasses spin backward north of the Brass Strait, pointing up at the clouds instead of the horizon.",
+        "visual_silhouette": "A ring of levitating black monoliths suspended inside a permanent aurora borealis.",
+        "unanswered_question": "Is Vesper dead like the other Primordial Gods, or dreaming inside the floating core?",
+        "discovery_trigger_hint": "Unlocked after restoring Krono's Great Mainspring in Continent 02."
+      }
+    }
+  ],
+  "historical_epochs": [
+    {
+      "id": "epoch-clockspring-war",
+      "name": "The Clockspring War",
+      "kind": "great_war",
+      "era_order": 1,
+      "status": "canon",
+      "core_rationale": "The foundational conflict between Sola, Krono, and Vesper that split the supercontinent into distinct climate and level-band Continents.",
+      "involved_god_ids": [
+        "god-sola-hearth-weaver",
+        "god-krono-brass-titan",
+        "god-vesper-dream-eater"
+      ],
+      "world_scars": [
+        {
+          "scar_id": "scar-kiln-basin",
+          "name": "The Kiln-Basin Caldera",
+          "description": "Sola's fallen ceramic shield formed a sheltered, sunlit caldera immune to winter.",
+          "spawned_continent_ids": [
+            "continent-01-hearthbloom-basin"
+          ]
+        },
+        {
+          "scar_id": "scar-brass-faultline",
+          "name": "The Uncoiled Mainspring Faultline",
+          "description": "Krono's severed mainspring uncoiled across the eastern plains, carving deep canyon trenches.",
+          "spawned_continent_ids": [
+            "continent-02-clockwork-steppe"
+          ]
+        },
+        {
+          "scar_id": "scar-vesper-crater",
+          "name": "The Inverted Gravity Crater",
+          "description": "Where Vesper's tear struck the northern ocean, gravity inverted and froze the archipelago in time.",
+          "spawned_continent_ids": [
+            "continent-03-shattered-halo"
+          ]
+        }
+      ]
+    }
+  ],
+  "starter_town_bindings": [
+    {
+      "town_id": "town-lantern-hollow",
+      "town_name": "Lantern Hollow",
+      "continent_id": "continent-01-hearthbloom-basin",
+      "district_id": "district-teacup-meadows",
+      "status": "canon",
+      "spawn_rationale": "Located directly inside Sola's unbroken Ceramic Palm where Hearth-Sparks condense gently; zero lethal weather and 100 percent toddler-scaled cottages."
+    }
+  ],
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Every Primordial God and Clockspring War scar directly spawns a named Continent (continent-01, continent-02, continent-03) and binds the Starter Town arrival."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Establishes the Clockspring Nursery fantasy where 90 to 120 centimeter Star-Kindled children crawl inside shattered Titan reliquaries to relight World-Lanterns."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Locks character height to 0.90 to 1.20 meters (1.05 meter reference) with grass <= 0.35m, bushes <= 0.65m, stair risers <= 0.15m, counters 0.55 to 0.65m, and doorways >= 2.0m."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Connects the sheltered Kiln-Basin starter caldera (Levels 1 to 15) outward to the wind-swept Clockwork Steppe (Levels 15 to 30) and northern Shattered Halo (Levels 30 to 50)."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Preserves Vesper's slumbering core unanswered question while promoting all three Primordial Gods to Canon with zero deprecated proof-of-concept lore."
+    }
+  }
+}

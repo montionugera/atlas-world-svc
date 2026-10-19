@@ -1,0 +1,168 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-metronome-bridge",
+  "name": "Metronome Suspension Bridge",
+  "map_id": "metronome-bridge",
+  "parent_district_id": "district-pendulum-steppe-west",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "canon",
+  "core_rationale": "Western braided-copper suspension bridge of West Pendulum Steppe at [0, 1] linking Thunder-Coil Basin across the pendulum gorge to Metronome Pivot Citadel.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    34,
+    36
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_metronome_suspension_bridge",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Wind-rippled copper-silt pools three hundred meters below the suspension deck"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-metronome-bridge-east-pivot",
+      "direction": "East",
+      "target_node_id": "town-metronome-pivot-citadel",
+      "target_map_id": "metronome-pivot-citadel",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-metronome-bridge-west-inductor",
+      "direction": "West",
+      "target_node_id": "town-inductor-switchyard",
+      "target_map_id": "inductor-switchyard",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-metronome-gale-hound",
+      "monster_id": "monster-metronome-gale-hound",
+      "monster_name": "Metronome Gale-Hound",
+      "spawn_count": 7,
+      "respawn_seconds": 28,
+      "level": 34,
+      "element": "Wind",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-braided-cable-wire",
+          "item_name": "Braided Cable Wire",
+          "drop_chance_percent": 42.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-metronome-gale-hound",
+        "card_name": "Metronome Gale-Hound Card",
+        "drop_chance_percent": 0.05,
+        "card_effect": "Increases Attack Speed by 4% when fighting in Wind-element steppes."
+      }
+    },
+    {
+      "spawn_id": "spawn-pendulum-reed-hawk",
+      "monster_id": "monster-pendulum-reed-hawk",
+      "monster_name": "Pendulum Reed-Hawk",
+      "spawn_count": 6,
+      "respawn_seconds": 30,
+      "level": 36,
+      "element": "Wind",
+      "size": "Small",
+      "race": "Brute",
+      "family": "sky_kin",
+      "item_drops": [
+        {
+          "item_id": "item-singing-copper-feather",
+          "item_name": "Singing Copper Feather",
+          "drop_chance_percent": 36.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-pendulum-reed-hawk",
+        "card_name": "Pendulum Reed-Hawk Card",
+        "drop_chance_percent": 0.05,
+        "card_effect": "Grants +5 Flee Rate and +3% Movement Speed on suspension bridges."
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.24,
+    "max_bush_height_meters": 0.5,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.6,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/dungeon/pillar.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Connects Inductor Switchyard (West) to Metronome Pivot Citadel (East) across the pendulum gorge of scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Braided copper suspension cables humming in sixty-beat rhythm above a canyon of golden reeds."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.24m copper reeds, 0.50m bushes, 0.14m cable-deck risers, and 13.0m bridge decks for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Surface node at [0, 1] with symmetric West and East portals and construct/sky_kin spawns in Levels 34 to 36."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Promoted from Mystery to Canon with full Five-Pillar verification."
+    }
+  }
+}

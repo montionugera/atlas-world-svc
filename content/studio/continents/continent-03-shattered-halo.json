@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0.0",
+  "id": "continent-03-shattered-halo",
+  "name": "The Shattered Halo",
+  "status": "canon",
+  "core_rationale": "Born from scar-vesper-crater where Vesper the Dream-Eater's tear inverted gravity during the Clockspring War, forming a Level 30 to 50 vertical sky-archipelago of tethered basalt islands.",
+  "parent_world_history_causes": {
+    "world_history_id": "world-history-cradle-of-embers",
+    "god_patron_ids": [
+      "god-vesper-dream-eater"
+    ],
+    "war_scar_ids": [
+      "scar-vesper-crater"
+    ],
+    "causal_summary": "Vesper's slumbering gravity field holds broken ocean chunks suspended in a luminous ring above the northern whirlpool."
+  },
+  "level_band": {
+    "min_level": 30,
+    "max_level": 50
+  },
+  "climate_profile": {
+    "macro_biome": "Inverted-gravity basalt sky-islands linked by starlight tether-bridges and upward waterfalls",
+    "weather_phenomena": [
+      "Luminous Star-Tide updrafts that slow fall speed and illuminate crystal buoys"
+    ],
+    "skybox_palette": "Deep indigo twilight with a crescent ring of floating islands and upward-flowing silver cascades"
+  },
+  "civilization_style": {
+    "culture_archetype": "Star-navigators, tether-weavers, and dream-glass cartographers",
+    "architecture_motif": "Lantern-lit basalt anchor-piers and brass tether-winches carved into floating island rims",
+    "character_scale_adaptation": "Tether-bridges maintain 12.0 meter wide decked walkways (>= 3.5 meter law) with 0.65 meter safety rails, 0.15 meter basalt risers, and 0.60 meter astrolabe chart tables for 1.05 meter characters."
+  },
+  "travel_links": [
+    {
+      "target_continent_id": "continent-02-clockwork-steppe",
+      "travel_mode": "dimensional_rift",
+      "hub_name": "Starfall Anchorage Rift-Dock",
+      "status": "open",
+      "unlock_rationale": "Inbound dimensional rift from The Astrolabe Rift Promontory in Rustcog Downs (Continent 02) to Tether Causeway."
+    },
+    {
+      "target_continent_id": "continent-01-hearthbloom-basin",
+      "travel_mode": "airship",
+      "hub_name": "Hearthbloom Sky-Spire",
+      "status": "open",
+      "unlock_rationale": "Opened upon igniting the Crown Beacon Citadel star-lighthouse in The Zenith Crown."
+    }
+  ],
+  "district_ids": [
+    "district-starfall-anchorage",
+    "district-eclipse-observatory",
+    "district-nebula-undertide",
+    "district-zenith-crown",
+    "district-perigee-abyss",
+    "district-aphelion-halo-rim",
+    "district-libration-mirror-shoals",
+    "district-umbrage-prism-atoll",
+    "district-aurora-chime-atoll",
+    "district-penumbra-prism-reef",
+    "district-celestial-astrolabe-atoll",
+    "district-solstice-pendulum-atoll"
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Astrolabe keepers in Celestial Astrolabe Sanctuary say Solstice Pendulum Atoll swings across a two-kilometer arc of open sky once every twelve hours.",
+    "visual_silhouette": "A floating basalt atoll suspended from a colossal starlight pendulum chain beyond the eastern rim of Celestial Astrolabe Atoll.",
+    "unanswered_question": "What counter-gravity anchor prevents Solstice Pendulum Atoll from colliding with the outer halo ring?",
+    "discovery_trigger_hint": "Eleven Districts on Continent 03 are Canon while Solstice Pendulum Atoll awaits exploration along the outer solstice arc."
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Traces directly to god-vesper-dream-eater and scar-vesper-crater in world-history-cradle-of-embers and completes the 3-continent travel loop."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Inverted waterfalls pouring upward into a crescent halo of floating basalt islands moored by starlight chains."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Specifies 12.0m tether-bridge walkways, 0.65m safety rails, 0.15m basalt risers, and 0.60m chart tables for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Organizes eleven Canon Districts plus Solstice Pendulum Atoll (Mystery) on Continent 03."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Seeds Solstice Pendulum Atoll in Mystery status while preserving leaf Mystery frontiers behind Fog of Lore portals."
+    }
+  }
+}

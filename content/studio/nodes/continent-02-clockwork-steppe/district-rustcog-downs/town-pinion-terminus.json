@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-pinion-terminus",
+  "name": "Pinion Terminus",
+  "map_id": "pinion-terminus",
+  "parent_district_id": "district-rustcog-downs",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Western root-train arrival hub of Continent 02 built inside a hollowed hundred-meter brass pinion wheel where tinker guilds service gliders and trade copper springs.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "level_range": [
+    15,
+    22
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_steppe_brass_hub",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Condensation cooling troughs along the central brass flywheel plaza"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-pinion-terminus-east",
+      "direction": "East",
+      "target_node_id": "hunting-area-brass-spur-ridge",
+      "target_map_id": "brass-spur-ridge",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-pinion-terminus-west-cinder",
+      "direction": "West",
+      "target_node_id": "hunting-area-cinder-apron",
+      "target_map_id": "cinder-apron",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-pinion-terminus-dungeon-pendulum",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-pendulum-shaft",
+      "target_map_id": "pendulum-shaft-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 2000.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 2040.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.22,
+    "max_bush_height_meters": 0.5,
+    "main_road_width_meters": 14.0,
+    "footpath_width_meters": 4.5,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Receives the Kettle-Whistle Viaduct from Cinder Apron (Continent 01) and anchors the western entry to Rustcog Downs."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Riveted copper tinker-town nested inside a hollow Titan pinion wheel with a descending pendulum lift."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.15m cog-steps, 14.0m gear-tooth main avenues, and 0.60m workbench counters for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Safe town hub (0 resident_spawns) at [0, 1] with symmetric West, East, and Dungeon portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Connects only to verified Canon neighbors while pointing adventurers toward the locked Astrolabe Rift in the northeast."
+    }
+  }
+}

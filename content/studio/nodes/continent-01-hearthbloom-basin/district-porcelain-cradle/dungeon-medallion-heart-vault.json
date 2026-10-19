@@ -1,0 +1,154 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-medallion-heart-vault",
+  "name": "Medallion Heart Vault B1",
+  "map_id": "medallion-heart-vault-b1",
+  "parent_district_id": "district-porcelain-cradle",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Radiant white-porcelain boss-medallion chamber beneath Porcelain Loom Sanctuary at [1, 1] floor -1 where Sola the Hearth-Weaver's central shield-crest warms the underground springs.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    13,
+    15
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_medallion_vault_dungeon",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Golden-lit geothermal spring conduits spiraling around Sola's porcelain boss-medallion"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-medallion-vault-exit-sanctuary",
+      "direction": "Exit",
+      "target_node_id": "town-porcelain-loom-sanctuary",
+      "target_map_id": "porcelain-loom-sanctuary",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3780.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-medallion-vault-lantern",
+      "monster_id": "monster-hearth-loom-wisp",
+      "monster_name": "Hearth-Loom Wisp",
+      "spawn_count": 10,
+      "respawn_seconds": 25,
+      "level": 13,
+      "element": "Fire",
+      "size": "Small",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-warm-silk-ember",
+          "item_name": "Warm Silk-Ember",
+          "drop_chance_percent": 44.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-hearth-loom-wisp",
+        "card_name": "Hearth-Loom Wisp Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Headgear",
+        "modifier_summary": "Adds +6 Intelligence and 8% Fire resistance."
+      }
+    },
+    {
+      "spawn_id": "spawn-medallion-vault-sentinel",
+      "monster_id": "monster-porcelain-medallion-sentinel",
+      "monster_name": "Porcelain Medallion-Sentinel",
+      "spawn_count": 8,
+      "respawn_seconds": 30,
+      "level": 15,
+      "element": "Earth",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-medallion-heart-chime-shard",
+          "item_name": "Medallion Heart-Chime Shard",
+          "drop_chance_percent": 36.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-porcelain-medallion-sentinel",
+        "card_name": "Porcelain Medallion-Sentinel Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Shield",
+        "modifier_summary": "Increases Defense by +8 and reduces Earth and Fire damage by 10%."
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.38,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_Clearance_meters": {
+      "height": 2.15,
+      "width": 1.6
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Houses Sola's unbroken ceramic boss-medallion beneath Porcelain Loom Sanctuary at [1, 1] floor -1."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A glowing white-and-gold porcelain medallion chamber encircled by warm geothermal spring conduits."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 0.14m risers, 2.15m x 1.60m porcelain archways, and 12.5m galleries for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric Exit portal to town-porcelain-loom-sanctuary and Level 13 to 15 spirit/construct spawns."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops Medallion Heart-Chime Shards referenced by the Lotus Kiln Rim fog_of_lore gate."
+    }
+  }
+}

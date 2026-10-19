@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-shadow-refraction-crypt",
+  "name": "Shadow Refraction Crypt",
+  "map_id": "shadow-refraction-crypt-b1",
+  "parent_district_id": "district-umbrage-prism-atoll",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Sub-surface smoky-quartz prism vault at [1, 1] floor -1 beneath Umbrage Focal Sanctum where Vesper's inverted eclipse-lens stores the Umbral Diffraction Grating.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    49,
+    50
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_base.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_shadow_refraction_crypt",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Submerged indigo starlight channels running between smoky-quartz mirror pillars"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-refraction-crypt-exit-focal-sanctum",
+      "direction": "Exit",
+      "target_node_id": "town-umbrage-focal-sanctum",
+      "target_map_id": "umbrage-focal-sanctum",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3780.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-crypt-caustic-phantasm",
+      "monster_id": "monster-crypt-caustic-phantasm",
+      "monster_name": "Crypt Caustic Phantasm",
+      "spawn_count": 12,
+      "respawn_seconds": 30,
+      "level": 49,
+      "element": "Ghost",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-caustic-shadow-lens",
+          "item_name": "Caustic Shadow Lens",
+          "drop_chance_percent": 38.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-crypt-caustic-phantasm",
+        "card_name": "Crypt Caustic Phantasm Card",
+        "drop_chance_percent": 0.04
+      }
+    },
+    {
+      "spawn_id": "spawn-eclipse-prism-archon",
+      "monster_id": "monster-eclipse-prism-archon",
+      "monster_name": "Eclipse Prism Archon",
+      "spawn_count": 6,
+      "respawn_seconds": 45,
+      "level": 50,
+      "element": "Shadow",
+      "size": "Large",
+      "race": "Angel",
+      "family": "celestial",
+      "item_drops": [
+        {
+          "item_id": "item-umbral-diffraction-grating",
+          "item_name": "Umbral Diffraction Grating",
+          "drop_chance_percent": 25.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-eclipse-prism-archon",
+        "card_name": "Eclipse Prism Archon Card",
+        "drop_chance_percent": 0.03
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.35,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.3,
+      "width": 1.7
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_base.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Sits at [1, 1] floor -1 directly beneath Umbrage Focal Sanctum and yields the Umbral Diffraction Grating."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Inverted smoky-quartz prism chamber lit by submerged indigo starlight channels."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 12.5m crypt aisles, 0.14m quartz risers, and 2.30m x 1.70m archways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Populated by spirit and celestial monster families with symmetric Exit portal back to Umbrage Focal Sanctum."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops the Umbral Diffraction Grating referenced in the Indigo Caustic Arch Fog of Lore lock_message."
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-honeycomb-kiln-ridge",
+  "name": "Honeycomb-Kiln Ridge",
+  "map_id": null,
+  "parent_district_id": "district-saffron-kiln-orchards",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northernmost hexagonal ceramic-comb ridge of Saffron Kiln Orchards at [1, 0] where Sola's upper orchard vents crystallize boiling nectar-steam into golden glaze-combs.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    20,
+    20
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Orchard tenders whisper that the hexagonal kiln-chimneys atop Honeycomb-Kiln Ridge drip solid sun-amber that never cools.",
+    "visual_silhouette": "Tiered hexagonal terracotta honeycombs glowing golden-orange along the northern orchard crest.",
+    "unanswered_question": "What ancient royal apiary or solar kiln-sanctuary sleeps inside Honeycomb-Kiln Ridge?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Extends north from Saffron-Press Village at [1, 0] along scar-kiln-basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Hexagonal terracotta honeycomb chimneys venting golden nectar-steam along the orchard ridge."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Saffron-Press Village with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind the Saffron-Press Village North Fog of Lore gate."
+    }
+  }
+}

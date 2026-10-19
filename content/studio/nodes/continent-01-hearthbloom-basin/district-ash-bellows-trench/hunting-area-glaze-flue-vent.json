@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-glaze-flue-vent",
+  "name": "Glaze Flue Vent",
+  "map_id": null,
+  "parent_district_id": "district-ash-bellows-trench",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern celadon glaze-chimney terrace of Ash-Bellows Trench at [1, 0] where warm mineral vapors rise from Sola's deeper kiln chambers.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "level_range": [
+    16,
+    18
+  ],
+  "portals": {
+    "North": null,
+    "South": {
+      "portal_id": "portal-glaze-flue-vent-south-fog",
+      "direction": "South",
+      "target_node_id": "town-draft-kiln-post",
+      "target_map_id": "draft-kiln-post",
+      "target_direction": "North",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Molten celadon glaze-vapor vents through the northern Glaze Flue; the Draft-Kiln Masons require the Bellows Counterweight Key before unbolting the northern louver."
+    },
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": null
+  },
+  "mystery_hook": {
+    "in_world_rumor": "Glaze-painters say the mist inside Glaze Flue Vent coats ordinary clay pebbles in iridescent celadon crystal.",
+    "visual_silhouette": "A cluster of jade-green porcelain chimney louvers steaming gently against the red-clay cliff.",
+    "unanswered_question": "Does a hidden stair inside Glaze Flue Vent lead down into the Porcelain Cradle Sanctuary?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Forms the northern celadon exhaust louver of Ash-Bellows Trench above Draft-Kiln Post."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Jade-green porcelain chimney louvers venting iridescent celadon mist."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: louver catwalk and ceramic step metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Draft-Kiln Post behind a fog_of_lore portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null, fog_of_lore portal symmetry with town-draft-kiln-post, and complete mystery_hook."
+    }
+  }
+}

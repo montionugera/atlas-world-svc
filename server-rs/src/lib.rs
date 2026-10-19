@@ -6,6 +6,8 @@ pub mod core;
 pub mod debug;
 pub mod ecs;
 pub mod fleet;
+pub mod load_harness;
+pub mod meta;
 pub mod net;
 pub mod physics;
 pub mod protocol;
@@ -26,20 +28,27 @@ pub use content::{
     BASE_MOB_ATK, BESTIARY_JSON, GEAR_REFERENCE, GROWTH, STAT_COEF, STAT_MAX, UNARMED_GEAR,
 };
 pub use fleet::{AgonesClient, FleetLifecycle, FleetState, HeartbeatTask, MockFleetClient};
+pub use load_harness::{
+    measure_tier, run_capacity_sweep, CapacitySweepReport, CapacityTierReport,
+    DEFAULT_CAPACITY_TIERS,
+};
 pub use net::{ClientPacket, WsServer};
 pub use storage::{
     normalize_match_event_type, CharacterStateBuffer, CharacterStateSnapshot, EquippedItemIds,
     LoadoutSnapshot, MatchEvent, MatchEventBatch, MatchEventBuffer, MatchEventQueue,
-    MockNakamaClient, NakamaClient, NakamaStorage, PrimaryStats, ProfileDoc,
+    MockNakamaClient, NakamaClient, NakamaStorage, PrimaryStats, ProfileDoc, SkillUnlock,
     DEFAULT_CHARACTER_STATE_FLUSH_INTERVAL, DEFAULT_MATCH_EVENT_FLUSH_INTERVAL,
     DEFAULT_NAKAMA_MATCH_ID,
 };
 
 pub use core::{Lcg, Mulberry32, SimClock};
 pub use ecs::{
-    AiAgent, AiState, BotAgent, CastingState, CombatStats, CooldownTracker, DashState,
-    DeadMobTracker, ElementalAttributes, EntityId, Health, Mass, MobAi, MobSpawnAnchor, MobTag,
-    PlayerInputState, PlayerTag, Position, Projectile, StatusEffects, Velocity,
+    AiAgent, AiState, AttackFacingCone, BotAgent, CastingState, CombatStats, CooldownTracker,
+    DashState, DeadMobTracker, ElementalAttributes, EntityId, EquippedWeapon, Health, Mass, MobAi,
+    MobSpawnAnchor, MobTag, MobWindupConfig, Parried, ParryState, PlayerInputState, PlayerTag,
+    Position, Projectile, StatusEffects, Velocity, WeaponKind, MAX_PARRY_CHARGES,
+    MAX_PARRY_HOLD_WINDOW_SEC, MOB_FACING_CONE_HALF_ANGLE_COS, MOB_WINDUP_DURATION_SEC,
+    PARRY_COOLDOWN_SEC, PARRY_REFLECT_STAGGER_SEC,
 };
 pub use physics::{PhysicsWorld, RapierBodyHandle, RapierColliderHandle};
 pub use protocol::{
@@ -48,10 +57,10 @@ pub use protocol::{
 pub use simulation::{
     AtlasSimulation, EntityTraceSnapshot, FinalSummary, SimulationTrace, TickTraceSnapshot,
 };
-pub use spatial::SpatialGrid;
+pub use spatial::{AoiTracker, SpatialGrid};
 pub use systems::{
     bot_steering_system, combat_system, cooldown_tick_system, mob_ai_system, mob_lifecycle_system,
-    physics_step_system, player_input_system, projectile_collision_system,
+    parry_tick_system, physics_step_system, player_input_system, projectile_collision_system,
     projectile_kinematics_system, separation_system, skill_execution_system,
     spatial_grid_rebuild_system, status_effect_tick_system, ArenaBounds,
 };

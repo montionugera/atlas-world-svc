@@ -1,0 +1,146 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-pendulum-shaft",
+  "name": "The Pendulum Shaft (Floor -1)",
+  "map_id": "pendulum-shaft-b1",
+  "parent_district_id": "district-rustcog-downs",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Subterranean escapement chamber directly beneath Pinion Terminus [0, 1] where Krono's counterweights swing in rhythmic arcs and rogue automatons guard the lower gear-oil reservoirs.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    20,
+    30
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 1000.0,
+      "height": 1000.0
+    },
+    "biome_palette": "clockwork_pendulum_vault",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Warm brass-oil lubrication basins beneath the central pendulum pit"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-pendulum-shaft-exit-pinion",
+      "direction": "Exit",
+      "target_node_id": "town-pinion-terminus",
+      "target_map_id": "pinion-terminus",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 500.0,
+        "y": 900.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrival_point_meters": {
+        "x": 500.0,
+        "y": 860.0
+      }
+    }
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-pendulum-mainspring-automaton",
+      "monster_id": "mob-mainspring-automaton",
+      "monster_name": "Mainspring Automaton",
+      "spawn_count": 7,
+      "respawn_seconds": 18.0,
+      "level": 25,
+      "element": "Earth",
+      "size": "Large",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-tempered-mainspring-coil",
+          "item_name": "Tempered Mainspring Coil",
+          "drop_chance_percent": 38.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-mainspring-automaton",
+        "card_name": "Mainspring Automaton Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Shield",
+        "modifier_summary": "Max Health Points +8%, Knockback Immunity"
+      }
+    },
+    {
+      "spawn_id": "spawn-pendulum-escapement-spider",
+      "monster_id": "mob-escapement-tick-spider",
+      "monster_name": "Escapement Tick-Spider",
+      "spawn_count": 9,
+      "respawn_seconds": 11.0,
+      "level": 28,
+      "element": "Poison",
+      "size": "Small",
+      "race": "Insect",
+      "family": "insect",
+      "item_drops": [
+        {
+          "item_id": "item-brass-escapement-pawl",
+          "item_name": "Brass Escapement Pawl",
+          "drop_chance_percent": 46.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-escapement-tick-spider",
+        "card_name": "Escapement Tick-Spider Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Garment",
+        "modifier_summary": "Skill Cooldown Reduction +4%, Dodge Rate +6"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.35,
+    "main_road_width_meters": 12.0,
+    "footpath_width_meters": 4.0,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly resolves the Rustcog Downs mystery question of what lies down the central pendulum shaft beneath Pinion Terminus."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Subterranean brass escapement chamber with swinging Titan counterweights and glowing gear-oil reservoirs."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.16m terrace steps, 12.0m dungeon walkways, and 4.0m side catwalks for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric Exit <-> Dungeon portal to town-pinion-terminus at [0, 1] floor_index -1 with Level 25 to 28 construct/insect fauna."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "All 5 checklist pillars verified before promotion from subterranean hook to Canon dungeon."
+    }
+  }
+}

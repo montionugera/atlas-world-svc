@@ -8,6 +8,10 @@ pub const BESTIARY_JSON: &str = include_str!("../../../content/bestiary/bestiary
 
 /// Base attack power for unpromoted mobs in server-rs (matching CombatStats baseline).
 pub const BASE_MOB_ATK: f32 = 10.0;
+/// Boss tier HP multiplier (`3.5x` >= `3.0x` Route tier HP) (E-007 Slice 7).
+pub const BOSS_HP_MULTIPLIER: f32 = 3.5;
+/// Boss tier attack power multiplier (`2.5x` Route tier attack power) (E-007 Slice 7).
+pub const BOSS_ATK_MULTIPLIER: f32 = 2.5;
 
 /// A raw entry in the bestiary catalog.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -113,6 +117,8 @@ pub enum MobTier {
     Interior,
     #[serde(alias = "Heart")]
     Heart,
+    #[serde(alias = "Boss")]
+    Boss,
 }
 
 impl MobTier {
@@ -123,6 +129,14 @@ impl MobTier {
             MobTier::Route => 1.0,
             MobTier::Interior => 1.75,
             MobTier::Heart => 2.5,
+            MobTier::Boss => BOSS_HP_MULTIPLIER,
+        }
+    }
+
+    pub fn attack_factor(&self) -> f32 {
+        match self {
+            MobTier::Boss => BOSS_ATK_MULTIPLIER,
+            other => other.factor(),
         }
     }
 
@@ -132,6 +146,7 @@ impl MobTier {
             MobTier::Route => "route",
             MobTier::Interior => "interior",
             MobTier::Heart => "heart",
+            MobTier::Boss => "boss",
         }
     }
 }
@@ -177,7 +192,7 @@ pub fn derive_mob_stats(entry: &BestiaryEntry, tier: MobTier) -> DerivedMobStats
     let hp = (durability_hp * f).round();
 
     let base_atk = BASE_MOB_ATK;
-    let p_atk = base_atk * f;
+    let p_atk = base_atk * tier.attack_factor();
 
     let speed = match entry.speed.as_str() {
         "low" => 5.0,
@@ -193,6 +208,11 @@ pub fn derive_mob_stats(entry: &BestiaryEntry, tier: MobTier) -> DerivedMobStats
         _ => (4.0, 2.0, 1.0, 20.0 * 10.0),
     };
 
+    let radius = if tier == MobTier::Boss {
+        radius * 1.5
+    } else {
+        radius
+    };
     let is_ranged = entry.threat == "ranged";
     let m_def = 1.0;
 

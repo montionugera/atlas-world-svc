@@ -16,6 +16,15 @@ pub enum SkillEffect {
     Stun {
         duration_sec: f32,
     },
+    Burn {
+        duration_sec: f32,
+        dps: f32,
+    },
+    Poison {
+        duration_sec: f32,
+        dps: f32,
+    },
+    Heal(f32),
     ImpulseCaster(f32),
 }
 
@@ -75,6 +84,13 @@ impl SkillDefinition {
     pub fn stun(&self) -> Option<f32> {
         self.effects.iter().find_map(|effect| match effect {
             SkillEffect::Stun { duration_sec } => Some(*duration_sec),
+            _ => None,
+        })
+    }
+
+    pub fn heal_amount(&self) -> Option<f32> {
+        self.effects.iter().find_map(|effect| match effect {
+            SkillEffect::Heal(amount) => Some(*amount),
             _ => None,
         })
     }
@@ -164,6 +180,21 @@ static SKILL_CATALOG: LazyLock<HashMap<&'static str, SkillDefinition>> = LazyLoc
             cooldown_sec: 0.5,
             gcd_sec: 0.0,
             effects: vec![SkillEffect::ImpulseCaster(160.0)],
+        },
+    );
+
+    catalog.insert(
+        "skill_heal",
+        SkillDefinition {
+            id: "skill_heal".to_string(),
+            name: "Second Wind".to_string(),
+            element: Element::Water,
+            damage_type: DamageType::Magical,
+            radius: 0.0,
+            casting_time_sec: 0.0,
+            cooldown_sec: 8.0,
+            gcd_sec: 0.0,
+            effects: vec![SkillEffect::Heal(35.0)],
         },
     );
 

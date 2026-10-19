@@ -1,0 +1,145 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-ash-bellows-trench",
+  "name": "Ash-Bellows Trench",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "status": "canon",
+  "core_rationale": "Southeastern sub-kiln firebrick trench of Continent 01 where Sola's deepest ceramic air-ducts draw cool valley air beneath Kilnfire Terraces.",
+  "local_conflict": "Dormant glaze-golems and ember-salamanders stir inside the firebrick intake tunnels beneath the shield rim.",
+  "level_band_label": "Levels 1 to 20",
+  "level_range": [
+    12,
+    18
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "spirit"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-firebrick-duct",
+      "map_id": "firebrick-duct",
+      "node_type": "hunting_area",
+      "status": "canon",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "level_range": [
+        12,
+        15
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "town-draft-kiln-post",
+      "map_id": "draft-kiln-post",
+      "node_type": "town",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "level_range": [
+        14,
+        17
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "dungeon-ember-bellows-chamber",
+      "map_id": "ember-bellows-chamber-b1",
+      "node_type": "dungeon",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": -1,
+      "level_range": [
+        16,
+        20
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-glaze-flue-vent",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        1,
+        0
+      ],
+      "level_range": [
+        16,
+        18
+      ],
+      "is_starter_town": false
+    }
+  ],
+  "portal_edges": [
+    {
+      "edge_id": "edge-firebrick-duct-to-draft-kiln-post",
+      "from_node_id": "hunting-area-firebrick-duct",
+      "from_direction": "East",
+      "to_node_id": "town-draft-kiln-post",
+      "to_direction": "West",
+      "bidirectional": true,
+      "gate_state": "open",
+      "road_width_meters": 12.5
+    },
+    {
+      "edge_id": "edge-draft-kiln-post-to-ember-bellows-chamber",
+      "from_node_id": "town-draft-kiln-post",
+      "from_direction": "Dungeon",
+      "to_node_id": "dungeon-ember-bellows-chamber",
+      "to_direction": "Exit",
+      "bidirectional": true,
+      "gate_state": "open",
+      "road_width_meters": 12.0
+    },
+    {
+      "edge_id": "edge-draft-kiln-post-to-glaze-flue-vent-fog",
+      "from_node_id": "town-draft-kiln-post",
+      "from_direction": "North",
+      "to_node_id": "hunting-area-glaze-flue-vent",
+      "to_direction": "South",
+      "bidirectional": true,
+      "gate_state": "fog_of_lore",
+      "road_width_meters": 12.5,
+      "lock_reason": "Molten celadon glaze-vapor vents through the northern Glaze Flue; the Draft-Kiln Masons require the Bellows Counterweight Key before unbolting the northern louver."
+    }
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Kiln-masons say the southeastern air-ducts hum a three-note chord whenever the great bellows under Kilnwatch Bastion draw breath.",
+    "visual_silhouette": "Glazed terracotta intake arches disappearing into a warm, glowing trench along the southeastern shield rim.",
+    "unanswered_question": "What ancient kiln-blueprint lies sealed inside Sola's primary draft chamber at the bottom of Ash-Bellows Trench?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin on Continent 01 Hearthbloom Basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Glazed terracotta intake arches and singing ceramic air-ducts along the southeastern shield rim."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Uses 12.5m glazed firebrick walkways, 0.58m kiln-draft benches, and 0.14m brick step-risers for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "2x2 connected matrix ([0, 1] Firebrick Intake Duct, [1, 1] Draft-Kiln Post, [1, 1] floor -1 Ember-Bellows Chamber, [1, 0] Glaze Flue Vent) with construct and spirit families."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Preserves hunting-area-glaze-flue-vent at [1, 0] as an intentional Mystery frontier gated by a fog_of_lore louver lock."
+    }
+  }
+}

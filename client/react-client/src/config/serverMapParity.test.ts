@@ -1,10 +1,19 @@
+import fs from "fs";
+import path from "path";
 import {
   ServerMaps,
   parseServerMaps,
   readServerMapSource,
 } from "./__fixtures__/serverMapSource";
-import { MAPS } from "./maps";
-import { TERRAIN_TYPES, terrainZonesFor } from "./terrain";
+import { GENERATED_REGION_MAPS, MAPS, mapDef, mapIdFromSearch } from "./maps";
+import {
+  TERRAIN_TYPES,
+  playerSpawnFor,
+  spawnAreasFor,
+  staticBlocksFor,
+  terrainZonesFor,
+} from "./terrain";
+import { MILLCROSS_BUILDINGS } from "../renderers/terrainRenderer";
 
 /** The client's tables, in the shape the server's source is read into. */
 function clientMaps(): Pick<ServerMaps, "multipliers"> & {
@@ -77,6 +86,81 @@ describe("client map tables match server-rs/src/content/map.rs, read from disk",
       x: 50,
       y: 50,
     });
+  });
+
+  it("derives Millcross town buildings and generated-world obstacles/spawns from the shared source with zero diff", () => {
+    const repoRoot = path.resolve(__dirname, "../../../../");
+    const townDoc = JSON.parse(
+      fs.readFileSync(
+        path.join(repoRoot, "content/towns/town-millcross.json"),
+        "utf8",
+      ),
+    );
+    const expectedFootprints = townDoc.footprints.map(
+      (fp: { id: string; rect: number[] }) => {
+        const minX = Math.min(fp.rect[0], fp.rect[2]) + 100;
+        const minY = Math.min(fp.rect[1], fp.rect[3]) + 100;
+        const maxX = Math.max(fp.rect[0], fp.rect[2]) + 100;
+        const maxY = Math.max(fp.rect[1], fp.rect[3]) + 100;
+        return {
+          id: fp.id,
+          x: minX,
+          y: minY,
+          width: maxX - minX,
+          height: maxY - minY,
+        };
+      },
+    );
+    expect(
+      MILLCROSS_BUILDINGS.map((b) => ({
+        id: b.id,
+        x: b.x,
+        y: b.y,
+        width: b.width,
+        height: b.height,
+      })),
+    ).toEqual(expectedFootprints);
+
+    expect(playerSpawnFor("map-for-play")).toEqual(
+      server.rooms["map-for-play"].spawn,
+    );
+    expect(spawnAreasFor("map-for-play").length).toBeGreaterThanOrEqual(8);
+
+    expect(GENERATED_REGION_MAPS.length).toBe(9);
+    for (const region of GENERATED_REGION_MAPS) {
+      expect(mapIdFromSearch(`?map=${region.id}`)).toBe(region.id);
+      expect(mapDef(region.id)).toMatchObject({
+        id: region.id,
+        width: 4000,
+        height: 4000,
+      });
+
+      const diskMap = JSON.parse(
+        fs.readFileSync(
+          path.join(repoRoot, `content/maps/${region.id}.json`),
+          "utf8",
+        ),
+      );
+      const expectedBlocks = diskMap.staticObstacles.map(
+        (obs: {
+          min_x: number;
+          min_y: number;
+          max_x: number;
+          max_y: number;
+        }) => ({
+          x: obs.min_x,
+          y: obs.min_y,
+          width: Number((obs.max_x - obs.min_x).toFixed(1)),
+          height: Number((obs.max_y - obs.min_y).toFixed(1)),
+        }),
+      );
+      expect(staticBlocksFor(region.id)).toEqual(expectedBlocks);
+      expect(spawnAreasFor(region.id)).toEqual(diskMap.spawnAreas);
+      expect(playerSpawnFor(region.id)).toEqual({
+        x: diskMap.width / 2,
+        y: diskMap.height / 2,
+      });
+    }
   });
 
   // The pin bites: each of these is one edit to map.rs, made to a copy in memory.

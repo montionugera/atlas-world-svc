@@ -1,0 +1,176 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-metronome-pivot-citadel",
+  "name": "Metronome Pivot Citadel",
+  "map_id": "metronome-pivot-citadel",
+  "parent_district_id": "district-pendulum-steppe-west",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Central chronometer-guild town of West Pendulum Steppe at [1, 1] built inside the jewel-bearing pivot housing where Krono's Great Pendulum swings.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    35,
+    37
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_roof_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_metronome_pivot_citadel",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Ruby-oil lubrication channels circulating around the central pendulum bearing plaza"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-pivot-citadel-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-deadbeat-escapement-bluff",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "The hundred-meter brass pallet-arms of Deadbeat Escapement Bluff slam shut every second; Pendulum-Keeper Horolog requires the Ruby Pallet Pin before unlocking the northern gate.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-pivot-citadel-east-wormway",
+      "direction": "East",
+      "target_node_id": "hunting-area-spiral-wormway-ramp",
+      "target_map_id": "spiral-wormway-ramp",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-pivot-citadel-west-bridge",
+      "direction": "West",
+      "target_node_id": "hunting-area-metronome-bridge",
+      "target_map_id": "metronome-bridge",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-pivot-citadel-dungeon-counterweight",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-counterweight-shaft",
+      "target_map_id": "counterweight-shaft-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-pendulum-keeper-horolog",
+      "name": "Pendulum-Keeper Horolog",
+      "role": "Metronome Pivot Warden",
+      "position_meters": {
+        "x": 1975.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.6,
+      "dialogue_greeting": "Welcome to Metronome Pivot Citadel! Feel that sixty-beat pulse beneath your boots? My 0.60 meter chronometer bench stays level with every swing."
+    },
+    {
+      "npc_id": "npc-jewel-cutter-rubina",
+      "name": "Jewel-Cutter Rubina",
+      "role": "Bearing Artisan",
+      "position_meters": {
+        "x": 2065.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Down in the Counterweight Shaft, a rogue escapement automaton stole the Ruby Pallet Pin. Bring it back to unlock the northern Deadbeat Escapement Bluff!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.42,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.6,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_roof_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors West Pendulum Steppe at [1, 1] directly above Krono's Counterweight Shaft and connects eastward to Spiral Wormway Ramp."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Jewel-bearing pivot plaza where ruby lubrication channels glow around the swinging Great Pendulum."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.58 to 0.60m chronometer benches, 0.14m cog-risers, 2.20m x 1.65m doorways, and 13.0m plazas for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, East, Dungeon, and North (fog_of_lore) portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Guards the northern Deadbeat Escapement Bluff behind a Fog of Lore portal while connecting eastward to Helical-Gear Trench."
+    }
+  }
+}

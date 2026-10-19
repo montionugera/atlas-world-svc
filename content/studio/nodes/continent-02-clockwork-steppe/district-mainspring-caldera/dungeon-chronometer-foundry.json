@@ -1,0 +1,146 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-chronometer-foundry",
+  "name": "The Chronometer Foundry (Floor -1)",
+  "map_id": "chronometer-foundry-b1",
+  "parent_district_id": "district-mainspring-caldera",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Subterranean mainspring core beneath Escapement Anvil [1, 1] where Krono's primary escapement lever beats and over-wound foundry golems guard the uncracked Titan chronometer.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    26,
+    35
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 1000.0,
+      "height": 1000.0
+    },
+    "biome_palette": "clockwork_chronometer_core",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Glowing molten-brass cooling conduits beneath the central chronometer ring"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-chronometer-foundry-exit-anvil",
+      "direction": "Exit",
+      "target_node_id": "town-escapement-anvil",
+      "target_map_id": "escapement-anvil",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 500.0,
+        "y": 900.0,
+        "width": 14.0,
+        "height": 14.0
+      },
+      "arrival_point_meters": {
+        "x": 500.0,
+        "y": 860.0
+      }
+    }
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-chronometer-foundry-golem",
+      "monster_id": "mob-overwound-foundry-golem",
+      "monster_name": "Over-Wound Foundry Golem",
+      "spawn_count": 7,
+      "respawn_seconds": 18.0,
+      "level": 29,
+      "element": "Fire",
+      "size": "Large",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-chronometer-balance-wheel",
+          "item_name": "Chronometer Balance Wheel",
+          "drop_chance_percent": 36.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-overwound-foundry-golem",
+        "card_name": "Over-Wound Foundry Golem Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Armor",
+        "modifier_summary": "Physical Defense +10, Fire Resistance +15%"
+      }
+    },
+    {
+      "spawn_id": "spawn-chronometer-spring-scarab",
+      "monster_id": "mob-chrono-spring-scarab",
+      "monster_name": "Chrono-Spring Scarab",
+      "spawn_count": 9,
+      "respawn_seconds": 12.0,
+      "level": 32,
+      "element": "Wind",
+      "size": "Small",
+      "race": "Insect",
+      "family": "insect",
+      "item_drops": [
+        {
+          "item_id": "item-hair-spring-filament",
+          "item_name": "Hair-Spring Filament",
+          "drop_chance_percent": 44.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-chrono-spring-scarab",
+        "card_name": "Chrono-Spring Scarab Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Weapon",
+        "modifier_summary": "Attack Speed +5%, Critical Damage +8%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.14,
+    "max_bush_height_meters": 0.32,
+    "main_road_width_meters": 12.0,
+    "footpath_width_meters": 4.0,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Resolves the Continent 02 and Mainspring Caldera mystery hook of the central Mainspring Foundry dungeon."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Glowing subterranean chronometer vault where Krono's primary escapement lever beats above molten brass conduits."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.16m terrace steps, 12.0m dungeon causeways, and 4.0m side catwalks for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric Exit <-> Dungeon portal to town-escapement-anvil at [1, 1] floor_index -1 with Level 29 to 32 construct/insect fauna (+5 dungeon bleed)."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "All 5 checklist pillars verified before promoting the subterranean foundry hook to Canon."
+    }
+  }
+}

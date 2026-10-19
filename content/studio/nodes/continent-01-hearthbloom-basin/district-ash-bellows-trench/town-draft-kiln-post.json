@@ -1,0 +1,175 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-draft-kiln-post",
+  "name": "Draft-Kiln Post",
+  "map_id": "draft-kiln-post",
+  "parent_district_id": "district-ash-bellows-trench",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Central kiln-mason outpost town of Ash-Bellows Trench at [1, 1] built around Sola's acoustic draft-wheel where masons tune the basin's airflow and guard the Ember-Bellows Chamber.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "level_range": [
+    14,
+    17
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/building_forge.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_draft_kiln_post",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Warm celadon glaze-settling pools ringing the central acoustic draft-wheel"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-draft-kiln-post-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-glaze-flue-vent",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Molten celadon glaze-vapor vents through the northern Glaze Flue; the Draft-Kiln Masons require the Bellows Counterweight Key before unbolting the northern louver.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-draft-kiln-post-east-celadon",
+      "direction": "East",
+      "target_node_id": "hunting-area-celadon-causeway",
+      "target_map_id": "celadon-causeway",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-draft-kiln-post-west-firebrick",
+      "direction": "West",
+      "target_node_id": "hunting-area-firebrick-duct",
+      "target_map_id": "firebrick-duct",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-draft-kiln-post-dungeon-bellows",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-ember-bellows-chamber",
+      "target_map_id": "ember-bellows-chamber-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-draft-mason-toma",
+      "name": "Draft-Mason Toma",
+      "role": "Acoustic Louver Foreman",
+      "position_meters": {
+        "x": 1970.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Listen to the three-note hum of our ceramic draft-wheel, young Sprout! Every cottage hearth in Hearthbloom Basin breathes through these tunnels."
+    },
+    {
+      "npc_id": "npc-glaze-tuner-pell",
+      "name": "Glaze-Tuner Pell",
+      "role": "Bellows Chamber Warden",
+      "position_meters": {
+        "x": 2070.0,
+        "y": 1965.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Our eastern celadon archway now opens onto the musical stepping-stones of Celadon Causeway in Porcelain Cradle Sanctuary!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.45,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_Clearance_meters": {
+      "height": 2.1,
+      "width": 1.55
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/building_forge.glb",
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Ash-Bellows Trench at [1, 1] above Sola's Ember-Bellows Chamber and connects East to Porcelain Cradle Sanctuary."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A warm ceramic kiln-mason town centered on a singing three-note acoustic draft-wheel."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Counters at 0.58m, brick stair risers at 0.14m, doorways 2.10m x 1.55m, and 13.0m walkways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric West portal to hunting-area-firebrick-duct, East portal to hunting-area-celadon-causeway, Dungeon portal to dungeon-ember-bellows-chamber, and North fog_of_lore portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Seals the northern Glaze Flue Vent behind a fog_of_lore boundary portal and Draft-Kiln Masons lock message."
+    }
+  }
+}

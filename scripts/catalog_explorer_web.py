@@ -42,6 +42,47 @@ GROUND_PALETTES_PATH = ROOT / "content" / "ground_palettes.json"
 REVIEW_QUEUE_PATH = ROOT / "content" / "review-queue.json"
 CLIENT_MANIFEST_PATH = ROOT / "game-client" / "assets" / "manifest.json"
 STUDIO_SNAPSHOTS_DIR = ROOT / "build" / "studio-snapshots"
+STUDIO_DIR = ROOT / "content" / "studio"
+RUNTIME_MANIFEST_PATH = MAPS_DIR / "_manifest.runtime.json"
+
+
+def load_studio_perspectives_bundle() -> dict:
+    whc_path = STUDIO_DIR / "world_history_and_concept.json"
+    whc = load_json_file(whc_path) or {}
+    continents = []
+    continents_dir = STUDIO_DIR / "continents"
+    if continents_dir.exists():
+        for cp in sorted(continents_dir.glob("*.json")):
+            doc = load_json_file(cp)
+            if doc:
+                continents.append(doc)
+
+    districts = []
+    districts_dir = STUDIO_DIR / "districts"
+    if districts_dir.exists():
+        for dp in sorted(districts_dir.rglob("*.json")):
+            doc = load_json_file(dp)
+            if doc:
+                districts.append(doc)
+
+    nodes = []
+    nodes_dir = STUDIO_DIR / "nodes"
+    if nodes_dir.exists():
+        for np in sorted(nodes_dir.rglob("*.json")):
+            doc = load_json_file(np)
+            if doc:
+                nodes.append(doc)
+
+    runtime_manifest = load_json_file(RUNTIME_MANIFEST_PATH) or {}
+    self_eval = load_json_file(ROOT / "build" / "studio_self_evaluation.json") or {}
+    return {
+        "worldHistoryAndConcept": whc,
+        "continents": continents,
+        "districts": districts,
+        "nodes": nodes,
+        "runtimeManifest": runtime_manifest,
+        "selfEvaluation": self_eval,
+    }
 
 THEME_CSS_CANDIDATES = [
     ROOT.parent / "joy-design" / "packages" / "tokens" / "dist" / "theme.css",
@@ -344,6 +385,8 @@ def build_full_bundle() -> dict:
     maps = []
     if MAPS_DIR.exists():
         for mp in sorted(MAPS_DIR.glob("*.json")):
+            if mp.name.startswith("_"):
+                continue
             d = load_json_file(mp) or {}
             maps.append(
                 {
@@ -432,6 +475,7 @@ def build_full_bundle() -> dict:
         "assetSceneThumbs": asset_scene_thumbs,
         "studioSnapshots": list_studio_snapshots(),
         "worldSpine": load_world_spine_bundle(),
+        "studioPerspectives": load_studio_perspectives_bundle(),
     }
 
 
@@ -448,9 +492,9 @@ def list_studio_snapshots() -> list[dict]:
     return out[:15]
 
 
-def create_studio_snapshot(label: str, rel_files: list[str]) -> dict:
+def create_studio_snapshot(label: str, rel_files: list[str], created_files: list[str] | None = None) -> dict:
     import time
-    ts = time.strftime("%Y%m%d-%H%M%S")
+    ts = f"{time.strftime('%Y%m%d-%H%M%S')}-{int((time.time() % 1) * 1000):03d}"
     safe_label = "".join(c if c.isalnum() or c in "-_" else "_" for c in label)[:36]
     snap_id = f"{ts}_{safe_label}"
     snap_dir = STUDIO_SNAPSHOTS_DIR / snap_id
@@ -468,6 +512,7 @@ def create_studio_snapshot(label: str, rel_files: list[str]) -> dict:
         "label": label,
         "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "files": saved_files,
+        "createdFiles": list(created_files or []),
     }
     (snap_dir / "meta.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
     return meta
@@ -486,9 +531,297 @@ def undo_latest_snapshot() -> dict:
         if backup_p.exists() and ROOT in dst_p.parents:
             shutil.copy2(backup_p, dst_p)
             restored.append(rel)
+    removed = []
+    for rel in latest.get("createdFiles", []):
+        dst_p = (ROOT / rel).resolve()
+        if dst_p.exists() and ROOT in dst_p.parents:
+            dst_p.unlink()
+            removed.append(rel)
     shutil.rmtree(snap_dir, ignore_errors=True)
-    subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
-    return {"ok": True, "restoredSnapshot": latest["id"], "restoredFiles": restored}
+    touched = restored + removed
+    if not touched or any(not rel.startswith("content/studio/") and rel != "content/review-queue.json" for rel in touched):
+        subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
+    return {"ok": True, "restoredSnapshot": latest["id"], "restoredFiles": restored, "removedFiles": removed}
+
+
+STUDIO_QUALITY_PILLARS = (
+    "causal_continuity",
+    "fantasy_and_wonder",
+    "character_scale_consistency",
+    "spatial_and_ecological_consistency",
+    "intentional_mystery_discipline",
+)
+
+
+def find_studio_node_and_path(node_id: str) -> tuple[str | None, dict | None, Path | None]:
+    target_id = (node_id or "").strip()
+    if not target_id:
+        return None, None, None
+    whc_path = STUDIO_DIR / "world_history_and_concept.json"
+    whc_doc = load_json_file(whc_path)
+    if whc_doc and whc_doc.get("id") == target_id:
+        return "world-history-and-concept", whc_doc, whc_path
+
+    continents_dir = STUDIO_DIR / "continents"
+    if continents_dir.exists():
+        for cp in sorted(continents_dir.glob("*.json")):
+            doc = load_json_file(cp)
+            if doc and doc.get("id") == target_id:
+                return "continent", doc, cp
+
+    districts_dir = STUDIO_DIR / "districts"
+    if districts_dir.exists():
+        for dp in sorted(districts_dir.rglob("*.json")):
+            doc = load_json_file(dp)
+            if doc and doc.get("id") == target_id:
+                return "district", doc, dp
+
+    nodes_dir = STUDIO_DIR / "nodes"
+    if nodes_dir.exists():
+        for np in sorted(nodes_dir.rglob("*.json")):
+            doc = load_json_file(np)
+            if doc and doc.get("id") == target_id:
+                return "town-or-hunting-area", doc, np
+
+    return None, None, None
+
+
+def get_parent_studio_doc(layer: str, doc: dict) -> dict | None:
+    if layer == "world-history-and-concept":
+        return None
+    if layer == "continent":
+        return load_json_file(STUDIO_DIR / "world_history_and_concept.json")
+    if layer == "district":
+        parent_id = doc.get("parent_continent_id") or ""
+        _, pdoc, _ = find_studio_node_and_path(parent_id)
+        return pdoc
+    if layer == "town-or-hunting-area":
+        parent_id = doc.get("parent_district_id") or ""
+        _, pdoc, _ = find_studio_node_and_path(parent_id)
+        return pdoc
+    return None
+
+
+def check_five_quality_pillars(qc: dict | None) -> tuple[bool, list[str]]:
+    if not isinstance(qc, dict):
+        return False, list(STUDIO_QUALITY_PILLARS)
+    failed = []
+    for k in STUDIO_QUALITY_PILLARS:
+        item = qc.get(k)
+        if not isinstance(item, dict) or item.get("verified") is not True or len(str(item.get("evidence") or "").strip()) < 15:
+            failed.append(k)
+    return len(failed) == 0, failed
+
+
+def update_studio_rationale(payload: dict) -> tuple[dict, int]:
+    node_id = str(payload.get("nodeId") or payload.get("node_id") or payload.get("id") or "").strip()
+    layer, doc, path = find_studio_node_and_path(node_id)
+    if not doc or not path or not layer:
+        return {"ok": False, "error": f"Studio node '{node_id}' not found."}, 404
+
+    updated = json.loads(json.dumps(doc))
+    if "core_rationale" in payload and payload["core_rationale"] is not None:
+        rationale = str(payload["core_rationale"]).strip()
+        if len(rationale) < 20:
+            return {"ok": False, "error": "core_rationale must be at least 20 characters long."}, 400
+        updated["core_rationale"] = rationale
+
+    if "quality_checklist" in payload and isinstance(payload["quality_checklist"], dict):
+        qc = updated.setdefault("quality_checklist", {})
+        for k, v in payload["quality_checklist"].items():
+            if k in STUDIO_QUALITY_PILLARS and isinstance(v, dict):
+                cur_item = qc.setdefault(k, {"verified": False, "evidence": "Verified by studio designer."})
+                if "verified" in v:
+                    cur_item["verified"] = bool(v["verified"])
+                if "evidence" in v and v["evidence"] is not None:
+                    cur_item["evidence"] = str(v["evidence"]).strip()
+
+    if "mystery_hook" in payload and isinstance(payload["mystery_hook"], dict):
+        mh = updated.setdefault("mystery_hook", {})
+        for mk in ("in_world_rumor", "visual_silhouette", "unanswered_question"):
+            if mk in payload["mystery_hook"] and payload["mystery_hook"][mk] is not None:
+                mh[mk] = str(payload["mystery_hook"][mk]).strip()
+
+    new_status = str(payload.get("status") or updated.get("status") or "draft").strip().lower()
+    if new_status not in ("canon", "draft", "mystery"):
+        return {"ok": False, "error": f"Invalid status '{new_status}'. Must be canon, draft, or mystery."}, 400
+
+    parent_doc = get_parent_studio_doc(layer, updated)
+    if new_status == "canon":
+        if parent_doc is not None and parent_doc.get("status") != "canon":
+            return {
+                "ok": False,
+                "error": f"Cannot promote '{node_id}' to canon because parent '{parent_doc.get('id')}' has status '{parent_doc.get('status')}' (must be canon).",
+            }, 400
+        all_ok, failed_pillars = check_five_quality_pillars(updated.get("quality_checklist"))
+        if not all_ok:
+            return {
+                "ok": False,
+                "error": f"Cannot promote '{node_id}' to canon until all 5 quality_checklist pillars are verified. Pending: {', '.join(failed_pillars)}",
+                "failedPillars": failed_pillars,
+            }, 400
+
+    if new_status == "mystery":
+        mh = updated.get("mystery_hook") or {}
+        updated["mystery_hook"] = {
+            "in_world_rumor": str(mh.get("in_world_rumor") or f"Travelers speak of uncharted phenomena beyond {updated.get('name', node_id)}.").strip(),
+            "visual_silhouette": str(mh.get("visual_silhouette") or f"Shrouded horizon silhouette bordering {updated.get('name', node_id)}.").strip(),
+            "unanswered_question": str(mh.get("unanswered_question") or f"What ancient force sleeps within {updated.get('name', node_id)}?").strip(),
+        }
+
+    updated["status"] = new_status
+    rel_file = str(path.relative_to(ROOT))
+    snap_meta = create_studio_snapshot(f"rationale_{node_id}", [rel_file])
+    path.write_text(json.dumps(updated, indent=2) + "\n", encoding="utf-8")
+
+    return {
+        "ok": True,
+        "layer": layer,
+        "node": updated,
+        "snapshot": snap_meta,
+        "studioPerspectives": load_studio_perspectives_bundle(),
+    }, 200
+
+
+def generate_studio_children(payload: dict) -> tuple[dict, int]:
+    parent_id = str(payload.get("parentId") or payload.get("parent_id") or payload.get("id") or "").strip()
+    parent_layer, parent_doc, _ = find_studio_node_and_path(parent_id)
+    if not parent_doc or not parent_layer:
+        return {"ok": False, "error": f"Parent studio node '{parent_id}' not found."}, 404
+
+    if parent_layer == "town-or-hunting-area":
+        return {"ok": False, "error": "Town or Hunting Area is a leaf layer and cannot generate child layers."}, 400
+
+    if parent_doc.get("status") != "canon":
+        return {
+            "ok": False,
+            "error": f"Top-down generation blocked: parent '{parent_id}' has status '{parent_doc.get('status')}' (must be 'canon').",
+        }, 400
+
+    if len(str(parent_doc.get("core_rationale") or "").strip()) < 20:
+        return {
+            "ok": False,
+            "error": f"Top-down generation blocked: parent '{parent_id}' lacks a valid core_rationale.",
+        }, 400
+
+    all_ok, failed_pillars = check_five_quality_pillars(parent_doc.get("quality_checklist"))
+    if not all_ok:
+        return {
+            "ok": False,
+            "error": f"Top-down generation blocked: parent '{parent_id}' has unverified quality_checklist pillars: {', '.join(failed_pillars)}",
+            "failedPillars": failed_pillars,
+        }, 400
+
+    child_status = str(payload.get("childStatus") or payload.get("status") or "mystery").strip().lower()
+    if child_status not in ("draft", "mystery"):
+        child_status = "mystery"
+
+    child_name = str(payload.get("childName") or payload.get("name") or "Uncharted Frontier Sector").strip()
+    rationale = str(
+        payload.get("coreRationale")
+        or payload.get("core_rationale")
+        or f"Directly extends canon parent '{parent_doc.get('name', parent_id)}' ({parent_id}) as a top-down child region."
+    ).strip()
+    persist = bool(payload.get("persist", False))
+
+    default_checklist = {
+        k: {
+            "verified": False,
+            "evidence": f"Pending human verification for child of {parent_id}.",
+        }
+        for k in STUDIO_QUALITY_PILLARS
+    }
+    default_mystery_hook = {
+        "in_world_rumor": f"Scouts from {parent_doc.get('name', parent_id)} report warm lantern-mist drifting across {child_name}.",
+        "visual_silhouette": f"Distant ceramic arches and glowing horizon silhouettes beyond {parent_doc.get('name', parent_id)}.",
+        "unanswered_question": f"What untouched remnants of the Primordial Gods await inside {child_name}?",
+    }
+
+    created_rel_path = None
+    if parent_layer == "world-history-and-concept":
+        child_layer = "continent"
+        cid = str(payload.get("childId") or "continent-04-uncharted-horizon").strip()
+        child_doc = {
+            "schema_version": "1.0.0",
+            "id": cid,
+            "name": child_name,
+            "status": child_status,
+            "core_rationale": rationale,
+            "parent_world_history_causes": {
+                "world_history_id": parent_id,
+                "god_patron_ids": ["god-vesper-lantern-weaver"],
+                "war_scar_ids": ["scar-shattered-halo-archipelago"],
+                "causal_summary": rationale,
+            },
+            "mystery_hook": default_mystery_hook,
+            "quality_checklist": default_checklist,
+        }
+        target_path = STUDIO_DIR / "continents" / f"{cid}.json"
+    elif parent_layer == "continent":
+        child_layer = "district"
+        cid = str(payload.get("childId") or f"district-{parent_id.replace('continent-', '')}-frontier").strip()
+        child_doc = {
+            "schema_version": "1.0.0",
+            "id": cid,
+            "name": child_name,
+            "parent_continent_id": parent_id,
+            "status": child_status,
+            "core_rationale": rationale,
+            "local_conflict": f"Frontier tremors along the outer rim of {parent_doc.get('name', parent_id)}.",
+            "level_band_label": "Levels 1 to 20",
+            "level_range": [10, 20],
+            "ecological_monster_families": ["spirit", "construct"],
+            "grid_dimensions": {"columns": 3, "rows": 3},
+            "grid_nodes": [],
+            "portal_edges": [],
+            "mystery_hook": default_mystery_hook,
+            "quality_checklist": default_checklist,
+        }
+        target_path = STUDIO_DIR / "districts" / parent_id / f"{cid}.json"
+    else:
+        child_layer = "town-or-hunting-area"
+        cid = str(payload.get("childId") or "hunting-area-uncharted-glade").strip()
+        cont_id = parent_doc.get("parent_continent_id") or "continent-01-hearthbloom-basin"
+        child_doc = {
+            "schema_version": "1.0.0",
+            "id": cid,
+            "name": child_name,
+            "map_id": None,
+            "parent_district_id": parent_id,
+            "parent_continent_id": cont_id,
+            "node_type": "hunting_area",
+            "status": "mystery",
+            "core_rationale": rationale,
+            "is_starter_town": False,
+            "grid_coordinates": [2, 2],
+            "level_range": [12, 18],
+            "mystery_hook": default_mystery_hook,
+            "quality_checklist": default_checklist,
+        }
+        target_path = STUDIO_DIR / "nodes" / cont_id / parent_id / f"{cid}.json"
+
+    snap_meta = None
+    if persist:
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        created_rel_path = str(target_path.relative_to(ROOT))
+        existed = target_path.exists()
+        snap_meta = create_studio_snapshot(
+            f"generate_{cid}",
+            [created_rel_path] if existed else [],
+            created_files=[] if existed else [created_rel_path],
+        )
+        target_path.write_text(json.dumps(child_doc, indent=2) + "\n", encoding="utf-8")
+
+    return {
+        "ok": True,
+        "parentId": parent_id,
+        "parentLayer": parent_layer,
+        "childLayer": child_layer,
+        "persisted": persist,
+        "createdFile": created_rel_path,
+        "childNode": child_doc,
+        "snapshot": snap_meta,
+    }, 200
 
 
 def sync_palettes_into_pilot_map(palettes: dict) -> None:
@@ -2618,6 +2951,15 @@ let DROP_RATE_MULT = 1;
 let HIGHLIGHT_ENTITY_ID = '';
 let SELECTED_DOC_IDX = 0;
 let SELECTED_CONTINENT_ID = 'all';
+let STUDIO_PERSPECTIVE = 'world-history-and-concept';
+let STUDIO_STATUS_FILTER = 'all';
+let STUDIO_SELECTED_CONTINENT_ID = 'continent-01-hearthbloom-basin';
+let STUDIO_SELECTED_DISTRICT_ID = 'district-teacup-meadows';
+let STUDIO_SELECTED_NODE_ID = 'town-lantern-hollow';
+let STUDIO_ACTIVE_INSPECT_ID = 'world-history-cradle-of-embers';
+let STUDIO_LEVEL_BAND = 'Levels 1 to 20';
+let STUDIO_PINNED_MONSTER_ID = '';
+let STUDIO_SELECTED_MONSTER_ID = '';
 let SELECTED_STORY_KIND = 'all';
 let SELECTED_BESTIARY_REGION = 'all';
 let MAXION_LEVEL_BAND = '1-20';
@@ -2630,6 +2972,12 @@ let SIM_OUTPUT = 'Click "Run Balance Sim" in the top bar (or below) to execute c
 let SIM_RUNNING = false;
 
 const NAV_GROUPS = [
+  {
+    section: 'Systematic Top-Down World Studio',
+    items: [
+      { id: 'studio', label: '🌌 Top-Down World Studio (4 Perspectives)', countKey: d => ((d.studioPerspectives && d.studioPerspectives.continents) || []).length + ' Continents' },
+    ]
+  },
   {
     section: 'World Map & Atlas (Maxion / Lineage)',
     items: [
@@ -2722,6 +3070,22 @@ function syncUrlState() {
   const mob = params.get('mob');
   const tile = params.get('tile');
   const band = params.get('band');
+  const perspective = params.get('perspective');
+  const studioCont = params.get('continent');
+  const studioDist = params.get('district');
+  const studioNode = params.get('node') || params.get('map');
+  const studioMonster = params.get('monster');
+  if (perspective) {
+    CURRENT_TAB = 'studio';
+    STUDIO_PERSPECTIVE = perspective;
+  }
+  if (studioCont) STUDIO_SELECTED_CONTINENT_ID = studioCont;
+  if (studioDist) STUDIO_SELECTED_DISTRICT_ID = studioDist;
+  if (studioNode) STUDIO_SELECTED_NODE_ID = studioNode;
+  if (studioMonster) {
+    STUDIO_SELECTED_MONSTER_ID = studioMonster;
+    STUDIO_PINNED_MONSTER_ID = studioMonster;
+  }
   if (t) CURRENT_TAB = t;
   if (q !== null) {
     SEARCH_QUERY = q;
@@ -2749,6 +3113,16 @@ function writeUrlState(pushHistory = true) {
   if (CURRENT_TAB === 'mobs' && MAXION_SELECTED_MOB_ID) params.set('mob', MAXION_SELECTED_MOB_ID);
   if (CURRENT_TAB === 'world' && MAXION_PINNED_MOB_ID) params.set('mob', MAXION_PINNED_MOB_ID);
   if (CURRENT_TAB === 'world' && MAXION_SELECTED_TILE_ID) params.set('tile', MAXION_SELECTED_TILE_ID);
+  if (CURRENT_TAB === 'studio') {
+    params.set('perspective', STUDIO_PERSPECTIVE);
+    if (STUDIO_SELECTED_CONTINENT_ID) params.set('continent', STUDIO_SELECTED_CONTINENT_ID);
+    if (STUDIO_SELECTED_DISTRICT_ID) params.set('district', STUDIO_SELECTED_DISTRICT_ID);
+    if (STUDIO_SELECTED_NODE_ID) {
+      params.set('node', STUDIO_SELECTED_NODE_ID);
+      params.set('map', STUDIO_SELECTED_NODE_ID);
+    }
+    if (STUDIO_SELECTED_MONSTER_ID) params.set('monster', STUDIO_SELECTED_MONSTER_ID);
+  }
   const newHash = '#' + params.toString();
   if (window.location.hash !== newHash) {
     if (pushHistory) history.pushState(null, '', newHash);
@@ -2945,6 +3319,7 @@ function render() {
   if (!DATA) return;
   const main = document.getElementById('mainContent');
   const titleMap = {
+    studio:   'Systematic Top-Down World and Map Studio (World History and Concept ➔ Continent ➔ District ➔ Town or Hunting Area)',
     world:    'World & Continent Atlas (400×400 km · 13 Continents · Towns, Zones & Dungeons)',
     story:    'Story, 5-Act Chronology, Factions, NPCs & Quest Unlock Graph',
     bestiary: 'World Bestiary, Regional Ecology & 3D/2D Visual Briefs (116 Creatures)',
@@ -2964,7 +3339,8 @@ function render() {
   };
   document.getElementById('topbarTitle').textContent = titleMap[CURRENT_TAB] || 'Observatory';
 
-  if (CURRENT_TAB === 'world') main.innerHTML = renderWorldAtlas();
+  if (CURRENT_TAB === 'studio') main.innerHTML = renderTopDownStudio();
+  else if (CURRENT_TAB === 'world') main.innerHTML = renderWorldAtlas();
   else if (CURRENT_TAB === 'story') main.innerHTML = renderStoryGraph();
   else if (CURRENT_TAB === 'bestiary') main.innerHTML = renderBestiary();
   else if (CURRENT_TAB === 'review') main.innerHTML = renderReviewInbox();
@@ -2980,6 +3356,1037 @@ function render() {
   else if (CURRENT_TAB === 'sql') { main.innerHTML = renderSqlStudio(); executeSql(); }
   else if (CURRENT_TAB === 'sim') main.innerHTML = renderSim();
   else if (CURRENT_TAB === 'docs') main.innerHTML = renderDocs();
+}
+
+
+function setStudioPerspective(perspective, opts = {}) {
+  CURRENT_TAB = 'studio';
+  STUDIO_PERSPECTIVE = perspective;
+  if (opts.continentId) STUDIO_SELECTED_CONTINENT_ID = opts.continentId;
+  if (opts.districtId) STUDIO_SELECTED_DISTRICT_ID = opts.districtId;
+  if (opts.nodeId) STUDIO_SELECTED_NODE_ID = opts.nodeId;
+  if (opts.monsterId !== undefined) STUDIO_SELECTED_MONSTER_ID = opts.monsterId;
+  if (opts.pinnedMonsterId !== undefined) STUDIO_PINNED_MONSTER_ID = opts.pinnedMonsterId;
+  if (opts.levelBand) STUDIO_LEVEL_BAND = opts.levelBand;
+  if (opts.inspectId) STUDIO_ACTIVE_INSPECT_ID = opts.inspectId;
+  writeUrlState();
+  renderSidebar();
+  render();
+}
+
+function setStudioStatusFilter(status) {
+  STUDIO_STATUS_FILTER = status;
+  render();
+}
+
+function renderStatusBadgeHtml(status) {
+  const s = (status || 'draft').toLowerCase();
+  if (s === 'canon') {
+    return '<span class="joy-badge joy-badge--success joy-badge--sm">🟢 Canon</span>';
+  }
+  if (s === 'mystery') {
+    return '<span class="joy-badge joy-badge--neutral joy-badge--sm" style="background:rgba(168,85,247,0.18);color:#c084fc;border:1px solid rgba(168,85,247,0.45)">🟣 Mystery (Fog of Lore)</span>';
+  }
+  return '<span class="joy-badge joy-badge--warning joy-badge--sm">🟡 Draft</span>';
+}
+
+async function submitStudioRationaleUpdate(nodeId, patchPayload) {
+  const statusEl = document.getElementById('studioDrawerStatusMsg');
+  if (statusEl) statusEl.textContent = 'Saving studio update...';
+  const res = await fetch('/api/studio/rationale/update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nodeId, ...patchPayload })
+  });
+  const data = await res.json();
+  if (!res.ok || !data.ok) {
+    if (statusEl) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = data.error || 'Failed to update studio node.';
+    }
+    return;
+  }
+  if (data.studioPerspectives) {
+    DATA.studioPerspectives = data.studioPerspectives;
+  }
+  render();
+  const afterEl = document.getElementById('studioDrawerStatusMsg');
+  if (afterEl) {
+    afterEl.style.color = '#34d399';
+    afterEl.textContent = 'Saved & snapshot recorded (' + ((data.snapshot && data.snapshot.id) || 'ok') + ').';
+  }
+}
+
+async function saveStudioRationaleForm(nodeId) {
+  const ratEl = document.getElementById('studioRationaleTextarea');
+  const stEl = document.getElementById('studioStatusSelect');
+  const rumorEl = document.getElementById('studioMysteryRumorInput');
+  const silEl = document.getElementById('studioMysterySilhouetteInput');
+  const qEl = document.getElementById('studioMysteryQuestionInput');
+  const payload = {};
+  if (ratEl) payload.core_rationale = ratEl.value;
+  if (stEl) payload.status = stEl.value;
+  if (rumorEl || silEl || qEl) {
+    payload.mystery_hook = {
+      in_world_rumor: rumorEl ? rumorEl.value : '',
+      visual_silhouette: silEl ? silEl.value : '',
+      unanswered_question: qEl ? qEl.value : ''
+    };
+  }
+  await submitStudioRationaleUpdate(nodeId, payload);
+}
+
+async function toggleStudioQualityPillar(nodeId, pillarKey, verified, currentEvidence) {
+  const ev = (currentEvidence && currentEvidence.length >= 15)
+    ? currentEvidence
+    : 'Verified against 90 to 120 centimeter scale and parent rationale.';
+  await submitStudioRationaleUpdate(nodeId, {
+    quality_checklist: {
+      [pillarKey]: { verified: !!verified, evidence: ev }
+    }
+  });
+}
+
+async function triggerStudioChildGeneration(parentId) {
+  const statusEl = document.getElementById('studioDrawerStatusMsg');
+  const childNameEl = document.getElementById('studioChildNameInput');
+  const childName = (childNameEl && childNameEl.value.trim()) || 'Uncharted Horizon Sector';
+  if (statusEl) statusEl.textContent = 'Validating parent Canon & 5-pillar gate...';
+  const res = await fetch('/api/studio/generate-children', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ parentId, childName, childStatus: 'mystery', persist: false })
+  });
+  const data = await res.json();
+  if (!res.ok || !data.ok) {
+    if (statusEl) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = data.error || 'Child generation blocked.';
+    }
+    return;
+  }
+  if (statusEl) {
+    statusEl.style.color = '#34d399';
+    statusEl.textContent = 'Generated ' + data.childLayer + ' candidate: ' + data.childNode.id + ' (' + data.childNode.status + ')';
+  }
+  openInspector(data.childLayer, 'Generated Child Preview: ' + data.childNode.name, data.childNode);
+}
+
+async function undoStudioSnapshotAction() {
+  const res = await fetch('/api/studio/undo', { method: 'POST' });
+  const data = await res.json();
+  const bundleRes = await fetch('/api/studio/perspectives');
+  const bundleData = await bundleRes.json();
+  if (bundleData.ok) {
+    DATA.studioPerspectives = bundleData;
+  }
+  render();
+  const statusEl = document.getElementById('studioDrawerStatusMsg');
+  if (statusEl) {
+    statusEl.style.color = data.ok ? '#34d399' : '#f87171';
+    statusEl.textContent = data.ok ? ('Reverted snapshot ' + data.restoredSnapshot) : (data.error || 'Nothing to undo.');
+  }
+}
+
+function renderQualityChecklistCardHtml(node) {
+  const nodeId = (node && node.id) || '';
+  const curStatus = (node && node.status) || 'draft';
+  const qc = (node && node.quality_checklist) || {};
+  const mh = (node && node.mystery_hook) || {};
+  const labels = [
+    ['causal_continuity', '1. Causal Continuity (Parent-to-Child Link)'],
+    ['fantasy_and_wonder', '2. Fantasy and Wonder (Distinct High-Fantasy Hook)'],
+    ['character_scale_consistency', '3. Character Scale Consistency (90 to 120 Centimeter Law)'],
+    ['spatial_and_ecological_consistency', '4. Spatial and Ecological Consistency'],
+    ['intentional_mystery_discipline', '5. Intentional Mystery Discipline (Zero Filler Slop)'],
+  ];
+  const passedCount = labels.filter(([k]) => qc[k] && qc[k].verified).length;
+  const isLeaf = Boolean(node && node.node_type);
+
+  return `
+    <div style="margin-top:12px;display:flex;flex-direction:column;gap:12px">
+      <!-- Interactive Core Rationale & Status Editor -->
+      <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong style="font-size:12px">Human-in-the-Loop Rationale &amp; Status Gate</strong>
+          <button type="button" class="joy-button joy-button--ghost joy-button--sm" style="height:22px;font-size:10.5px" onclick="undoStudioSnapshotAction()">
+            ↶ Undo Last Snapshot
+          </button>
+        </div>
+
+        <label class="mono" style="display:block;font-size:10px;color:var(--joy-text-secondary);margin-bottom:4px">NODE STATUS (CANON REQUIRES 5/5 CHECKLIST + CANON PARENT)</label>
+        <select id="studioStatusSelect" class="joy-select" style="width:100%;margin-bottom:8px;font-size:12px">
+          <option value="canon" ${curStatus === 'canon' ? 'selected' : ''}>🟢 Canon (Approved for Downward Generation)</option>
+          <option value="draft" ${curStatus === 'draft' ? 'selected' : ''}>🟡 Draft (Work in Progress)</option>
+          <option value="mystery" ${curStatus === 'mystery' ? 'selected' : ''}>🟣 Mystery / Fog of Lore (Intentional Uncharted Hook)</option>
+        </select>
+
+        <label class="mono" style="display:block;font-size:10px;color:var(--joy-text-secondary);margin-bottom:4px">CORE RATIONALE (MINIMUM 20 CHARACTERS)</label>
+        <textarea id="studioRationaleTextarea" rows="3" style="width:100%;padding:8px;border-radius:6px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-default);font-size:11.5px;margin-bottom:8px">${escapeHtml((node && node.core_rationale) || '')}</textarea>
+
+        <div style="padding:8px;border-radius:6px;background:rgba(168,85,247,0.08);border:1px dashed rgba(168,85,247,0.4);margin-bottom:8px">
+          <div class="mono" style="font-size:10px;color:#c084fc;margin-bottom:4px">INTENTIONAL MYSTERY / FOG OF LORE HOOK</div>
+          <input id="studioMysteryRumorInput" type="text" placeholder="In-world rumor..." value="${escapeHtml(mh.in_world_rumor || '')}" style="width:100%;padding:5px 7px;border-radius:4px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-subtle);font-size:11px;margin-bottom:4px" />
+          <input id="studioMysterySilhouetteInput" type="text" placeholder="Visual silhouette..." value="${escapeHtml(mh.visual_silhouette || '')}" style="width:100%;padding:5px 7px;border-radius:4px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-subtle);font-size:11px;margin-bottom:4px" />
+          <input id="studioMysteryQuestionInput" type="text" placeholder="Unanswered question..." value="${escapeHtml(mh.unanswered_question || '')}" style="width:100%;padding:5px 7px;border-radius:4px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-subtle);font-size:11px" />
+        </div>
+
+        <button type="button" class="joy-button joy-button--solid joy-button--sm" style="width:100%" onclick="saveStudioRationaleForm('${escapeHtml(nodeId)}')">
+          Save Rationale, Mystery Hook &amp; Status
+        </button>
+        <div id="studioDrawerStatusMsg" class="mono" style="font-size:10.5px;margin-top:6px;min-height:14px;color:var(--joy-text-secondary)"></div>
+      </div>
+
+      <!-- Step-by-Step Five-Pillar Quality Checklist -->
+      <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong style="font-size:12px">Step-by-Step Five-Pillar Quality Checklist</strong>
+          <span class="joy-badge ${passedCount === 5 ? 'joy-badge--success' : 'joy-badge--warning'} joy-badge--sm">${passedCount} / 5 Verified</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${labels.map(([k, title]) => {
+            const item = qc[k] || { verified: false, evidence: 'Not verified yet.' };
+            const safeEv = escapeHtml(item.evidence || '').replace(/'/g, "\'");
+            return `
+              <label style="padding:7px 9px;border-radius:6px;background:var(--joy-surface-card);border:1px solid var(--joy-border-subtle);font-size:11.5px;cursor:pointer;display:block">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                  <span style="font-weight:700;color:${item.verified ? '#34d399' : '#fbbf24'};display:flex;align-items:center;gap:6px">
+                    <input type="checkbox" ${item.verified ? 'checked' : ''} onchange="toggleStudioQualityPillar('${escapeHtml(nodeId)}', '${k}', this.checked, '${safeEv}')" />
+                    ${escapeHtml(title)}
+                  </span>
+                  <span class="mono" style="font-size:10px">${item.verified ? 'VERIFIED' : 'PENDING'}</span>
+                </div>
+                <div style="color:var(--joy-text-secondary);margin-top:3px;font-size:11px">${escapeHtml(item.evidence || '')}</div>
+              </label>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Top-Down Child Layer Generation Gate -->
+      ${!isLeaf ? `
+        <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+          <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">
+            TOP-DOWN CHILD LAYER GENERATION GATE
+          </div>
+          <input id="studioChildNameInput" type="text" placeholder="New child region name..." value="Uncharted Horizon Sector" style="width:100%;padding:6px 8px;border-radius:6px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-subtle);font-size:11.5px;margin-bottom:8px" />
+          <button type="button" class="joy-button ${curStatus === 'canon' && passedCount === 5 ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" style="width:100%" onclick="triggerStudioChildGeneration('${escapeHtml(nodeId)}')">
+            ${curStatus === 'canon' && passedCount === 5 ? '✨ Generate Child Layer Candidate ➔' : '🔒 Child Generation Locked (Requires Canon + 5/5 Checklist)'}
+          </button>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderTopDownStudio() {
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const whc = sp.worldHistoryAndConcept || {};
+  const continents = sp.continents || [];
+  const districts = sp.districts || [];
+  const nodes = sp.nodes || [];
+
+  const activeContinent = continents.find(c => c.id === STUDIO_SELECTED_CONTINENT_ID) || continents[0] || {};
+  const activeDistrict = districts.find(d => d.id === STUDIO_SELECTED_DISTRICT_ID) || districts[0] || {};
+  const activeNode = nodes.find(n => n.id === STUDIO_SELECTED_NODE_ID) || nodes[0] || {};
+
+  const perspectiveBar = `
+    <div id="perspectiveBar" style="position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;margin-bottom:16px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+        <span class="mono" style="font-size:11px;font-weight:700;color:var(--joy-text-secondary)">PERSPECTIVE:</span>
+        <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'world-history-and-concept' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('world-history-and-concept', { inspectId: '${escapeHtml(whc.id || '')}' })">
+          🌌 World History and Concept
+        </button>
+        <span style="color:var(--joy-text-muted);font-weight:700">➔</span>
+        <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'continent' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('continent', { inspectId: '${escapeHtml(activeContinent.id || '')}' })">
+          🌍 Continent (${escapeHtml(activeContinent.name || 'Continent')})
+        </button>
+        <span style="color:var(--joy-text-muted);font-weight:700">➔</span>
+        <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'district' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('district', { inspectId: '${escapeHtml(activeDistrict.id || '')}' })">
+          🗺️ District (${escapeHtml(activeDistrict.name || 'District')})
+        </button>
+        <span style="color:var(--joy-text-muted);font-weight:700">➔</span>
+        <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'town-or-hunting-area' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { inspectId: '${escapeHtml(activeNode.id || '')}' })">
+          📍 Town or Hunting Area (${escapeHtml(activeNode.name || 'Map')})
+        </button>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="mono" style="font-size:11px;color:var(--joy-text-secondary)">Filter Status:</span>
+        ${['all', 'canon', 'draft', 'mystery'].map(st => `
+          <button type="button" class="joy-button ${STUDIO_STATUS_FILTER === st ? 'joy-button--solid' : 'joy-button--ghost'} joy-button--sm" onclick="setStudioStatusFilter('${st}')">
+            ${st === 'all' ? 'All' : st.charAt(0).toUpperCase() + st.slice(1)}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  let canvasHtml = '';
+  if (STUDIO_PERSPECTIVE === 'world-history-and-concept') {
+    canvasHtml = renderStudioWorldHistoryPerspective(whc, continents);
+  } else if (STUDIO_PERSPECTIVE === 'continent') {
+    canvasHtml = renderStudioContinentPerspective(whc, continents, districts, activeContinent);
+  } else if (STUDIO_PERSPECTIVE === 'district') {
+    canvasHtml = renderStudioDistrictPerspective(activeContinent, districts, nodes, activeDistrict);
+  } else {
+    canvasHtml = renderStudioTownOrHuntingAreaPerspective(activeDistrict, nodes, activeNode);
+  }
+
+  const selfEval = sp.selfEvaluation || {};
+  const ts = selfEval.turnSpeedTelemetry || {};
+  const qs = selfEval.qualityScorecard || {};
+  const queue = selfEval.nextIncrementBrainstormQueue || [];
+  const canonCount = [whc, ...continents, ...districts, ...nodes].filter(x => x && x.status === 'canon').length;
+  const draftCount = [whc, ...continents, ...districts, ...nodes].filter(x => x && x.status === 'draft').length;
+  const mysteryCount = [whc, ...continents, ...districts, ...nodes].filter(x => x && x.status === 'mystery').length;
+
+  const ownerTelemetryBar = `
+    <div id="productOwnerTelemetryBar" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;padding:10px 16px;margin-bottom:16px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default);border-radius:10px;font-size:11.5px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+        <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
+        <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
+        <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px">
+        <span class="mono" style="font-size:10.5px;color:var(--joy-text-secondary)">NEXT INCREMENT QUEUE:</span>
+        ${queue.slice(0, 3).map(item => `
+          <span class="mono" style="font-size:10.5px;padding:2px 8px;border-radius:999px;background:var(--joy-surface-card);border:1px solid var(--joy-border-subtle)">
+            ${escapeHtml(item.name)} (${item.verifiedPillarsCount}/5 · ${escapeHtml(item.recommendedLeadRole)})
+          </span>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  return `${perspectiveBar}${ownerTelemetryBar}${canvasHtml}`;
+}
+
+function renderStudioWorldHistoryPerspective(whc, continents) {
+  const scale = whc.character_scale_law || {};
+  const metrics = scale.environment_metrics || {};
+  const premise = whc.player_arrival_premise || {};
+  const gods = (whc.primordial_gods || []).filter(g => STUDIO_STATUS_FILTER === 'all' || g.status === STUDIO_STATUS_FILTER);
+  const epochs = whc.historical_epochs || [];
+  const bindings = whc.starter_town_bindings || [];
+
+  return `
+    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div>
+              <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 1 · WORLD HISTORY AND CONCEPT</div>
+              <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(whc.world_title || whc.name || '')}</h2>
+            </div>
+            ${renderStatusBadgeHtml(whc.status)}
+          </div>
+          <p style="margin:8px 0 14px;color:var(--joy-text-secondary);line-height:1.5">${escapeHtml(whc.core_rationale || '')}</p>
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+            <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+              <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">PLAYER IDENTITY</div>
+              <div style="font-size:12px;margin-top:4px;font-weight:600">${escapeHtml(premise.player_identity || '')}</div>
+            </div>
+            <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+              <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">WHY PLAYERS ENTER THE WORLD</div>
+              <div style="font-size:12px;margin-top:4px">${escapeHtml(premise.why_enter_world || '')}</div>
+            </div>
+            <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+              <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">INCITING PHENOMENON</div>
+              <div style="font-size:12px;margin-top:4px">${escapeHtml(premise.inciting_phenomenon || '')}</div>
+            </div>
+          </div>
+
+          <h3 style="margin:0 0 10px;font-size:1rem">Primordial Gods and Planetary Scars</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+            ${gods.map(g => `
+              <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px ${g.status === 'mystery' ? 'dashed rgba(168,85,247,0.55)' : 'solid var(--joy-border-default)'}">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px">
+                  <strong>${escapeHtml(g.name)}</strong>
+                  ${renderStatusBadgeHtml(g.status)}
+                </div>
+                <div class="mono" style="font-size:11px;color:var(--joy-text-secondary);margin-bottom:6px">Domain: ${escapeHtml(g.domain)}</div>
+                <div style="font-size:12px;margin-bottom:6px"><strong>Core Rationale:</strong> ${escapeHtml(g.core_rationale)}</div>
+                <div style="font-size:11.5px;color:var(--joy-text-secondary)"><strong>Geographical Scar:</strong> ${escapeHtml(g.geographical_scar)}</div>
+                <div style="font-size:11.5px;color:var(--joy-text-secondary);margin-top:4px"><strong>Architectural Imprint:</strong> ${escapeHtml(g.architectural_imprint)}</div>
+                ${g.mystery_hook ? `
+                  <div style="margin-top:8px;padding:8px;border-radius:6px;background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.35);font-size:11px">
+                    <div><strong>🌫️ In-World Rumor:</strong> ${escapeHtml(g.mystery_hook.in_world_rumor)}</div>
+                    <div style="margin-top:3px"><strong>Unanswered Question:</strong> ${escapeHtml(g.mystery_hook.unanswered_question)}</div>
+                  </div>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </section>
+
+        <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+          <h3 style="margin:0 0 10px;font-size:1rem">Historical Epochs and Great War Scars (Click to Drill into Continent)</h3>
+          ${epochs.map(ep => `
+            <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default);margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <strong>Era ${ep.era_order}: ${escapeHtml(ep.name)} (${escapeHtml(ep.kind)})</strong>
+                ${renderStatusBadgeHtml(ep.status)}
+              </div>
+              <p style="font-size:12px;color:var(--joy-text-secondary);margin:6px 0 10px">${escapeHtml(ep.core_rationale)}</p>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px">
+                ${(ep.world_scars || []).map(sc => `
+                  <div style="padding:10px;border-radius:6px;background:var(--joy-surface-card);border:1px solid var(--joy-border-subtle)">
+                    <div style="font-weight:700;font-size:12px">${escapeHtml(sc.name)}</div>
+                    <div class="mono" style="font-size:10px;color:var(--joy-text-secondary);margin:2px 0 6px">${escapeHtml(sc.scar_id)}</div>
+                    <div style="font-size:11.5px;color:var(--joy-text-secondary);margin-bottom:8px">${escapeHtml(sc.description)}</div>
+                    ${(sc.spawned_continent_ids || []).map(cid => `
+                      <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(cid)}', inspectId: '${escapeHtml(cid)}' })">
+                        Drill into ${escapeHtml(cid)} ➔
+                      </button>
+                    `).join(' ')}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </section>
+
+        <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+          <h3 style="margin:0 0 8px;font-size:1rem">90 to 120 Centimeter Cute Toddler and Kid Character Scale Law Visualizer</h3>
+          <p style="font-size:12px;color:var(--joy-text-secondary);margin:0 0 10px">${escapeHtml(scale.head_to_body_ratio || '')}</p>
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;align-items:end;height:130px;padding:14px;background:var(--joy-surface-sunken);border-radius:8px;border:1px solid var(--joy-border-subtle)">
+            <div style="text-align:center"><div style="height:22px;background:#22c55e;border-radius:4px 4px 0 0"></div><div style="font-size:10px;margin-top:4px">Grass ≤ ${metrics.max_grass_height_meters || 0.35}m</div></div>
+            <div style="text-align:center"><div style="height:38px;background:#10b981;border-radius:4px 4px 0 0"></div><div style="font-size:10px;margin-top:4px">Bush ≤ ${metrics.max_bush_height_meters || 0.65}m</div></div>
+            <div style="text-align:center"><div style="height:36px;background:#eab308;border-radius:4px 4px 0 0"></div><div style="font-size:10px;margin-top:4px">Counter 0.60m</div></div>
+            <div style="text-align:center"><div style="height:64px;background:#3b82f6;border-radius:4px 4px 0 0"></div><div style="font-size:10px;font-weight:700;margin-top:4px">Kid ${scale.reference_height_meters || 1.05}m</div></div>
+            <div style="text-align:center"><div style="height:95px;background:#6366f1;border-radius:4px 4px 0 0"></div><div style="font-size:10px;margin-top:4px">Door ≥ ${metrics.min_doorway_height_meters || 2.0}m</div></div>
+            <div style="text-align:center"><div style="height:18px;background:#f97316;border-radius:4px 4px 0 0"></div><div style="font-size:10px;margin-top:4px">Step ≤ ${metrics.max_stair_riser_meters || 0.15}m</div></div>
+          </div>
+          <div style="margin-top:12px">
+            <strong style="font-size:12px">Starter Town Arrival Bindings:</strong>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+              ${bindings.map(b => `
+                <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default);font-size:12px">
+                  <div><strong>🏰 ${escapeHtml(b.town_name)}</strong> (${escapeHtml(b.town_id)}) · ${renderStatusBadgeHtml(b.status)}</div>
+                  <div style="color:var(--joy-text-secondary);font-size:11.5px;margin:4px 0">${escapeHtml(b.spawn_rationale)}</div>
+                  <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { continentId: '${escapeHtml(b.continent_id)}', districtId: '${escapeHtml(b.district_id)}', nodeId: '${escapeHtml(b.town_id)}', inspectId: '${escapeHtml(b.town_id)}' })">
+                    Inspect Starter Town ${escapeHtml(b.town_name)} ➔
+                  </button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px;position:sticky;top:72px">
+        <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">CORE RATIONALE AND QUALITY GATE</div>
+        <h3 style="margin:4px 0 8px;font-size:1.1rem">${escapeHtml(whc.name || '')}</h3>
+        ${renderStatusBadgeHtml(whc.status)}
+        <div style="margin-top:10px;padding:10px;border-radius:6px;background:var(--joy-surface-sunken);font-size:12px">
+          <strong>Core Rationale:</strong> ${escapeHtml(whc.core_rationale || '')}
+        </div>
+        ${renderQualityChecklistCardHtml(whc)}
+      </aside>
+    </div>
+  `;
+}
+
+function renderStudioContinentPerspective(whc, continents, districts, activeContinent) {
+  const filteredContinents = continents.filter(c => STUDIO_STATUS_FILTER === 'all' || c.status === STUDIO_STATUS_FILTER);
+  const childDistricts = districts.filter(d => d.parent_continent_id === activeContinent.id);
+  const causes = activeContinent.parent_world_history_causes || {};
+
+  return `
+    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+            <div>
+              <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 2 · CONTINENT MACRO ATLAS</div>
+              <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(activeContinent.name || '')}</h2>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              ${filteredContinents.map(c => `
+                <button type="button" class="joy-button ${c.id === activeContinent.id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c.id)}', inspectId: '${escapeHtml(c.id)}' })">
+                  ${escapeHtml(c.name)} (${escapeHtml(c.status)})
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle);margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <strong>Parent World History Scar Provenance</strong>
+              ${renderStatusBadgeHtml(activeContinent.status)}
+            </div>
+            <div style="font-size:12px;margin-bottom:4px"><strong>Core Rationale:</strong> ${escapeHtml(activeContinent.core_rationale || '')}</div>
+            <div style="font-size:12px;color:var(--joy-text-secondary)"><strong>Causal Summary:</strong> ${escapeHtml(causes.causal_summary || '')} (Scars: ${escapeHtml((causes.war_scar_ids || []).join(', '))})</div>
+          </div>
+
+          ${activeContinent.status === 'mystery' && activeContinent.mystery_hook ? `
+            <div style="padding:16px;border-radius:10px;background:rgba(168,85,247,0.12);border:1px dashed rgba(168,85,247,0.55);margin-bottom:14px">
+              <div style="font-weight:700;font-size:13px;color:#c084fc;margin-bottom:6px">🌫️ Intentional Mystery / Fog of Lore Continent</div>
+              <div style="font-size:12px;margin-bottom:6px"><strong>In-World Rumor:</strong> ${escapeHtml(activeContinent.mystery_hook.in_world_rumor)}</div>
+              <div style="font-size:12px;margin-bottom:6px"><strong>Visual Silhouette:</strong> ${escapeHtml(activeContinent.mystery_hook.visual_silhouette)}</div>
+              <div style="font-size:12px"><strong>Unanswered Question:</strong> ${escapeHtml(activeContinent.mystery_hook.unanswered_question)}</div>
+            </div>
+          ` : `
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px">
+              <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">CLIMATE AND LEVEL BAND</div>
+                <div style="font-size:12px;font-weight:700;margin-top:4px">Levels ${(activeContinent.level_band || {}).min_level || 1} to ${(activeContinent.level_band || {}).max_level || 15}</div>
+                <div style="font-size:12px;margin-top:4px">${escapeHtml((activeContinent.climate_profile || {}).macro_biome || '')}</div>
+                <div style="font-size:11px;color:var(--joy-text-secondary);margin-top:4px">Skybox: ${escapeHtml((activeContinent.climate_profile || {}).skybox_palette || '')}</div>
+              </div>
+              <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">90 TO 120 CENTIMETER ARCHITECTURE ADAPTATION</div>
+                <div style="font-size:12px;font-weight:700;margin-top:4px">${escapeHtml((activeContinent.civilization_style || {}).architecture_motif || '')}</div>
+                <div style="font-size:11.5px;color:var(--joy-text-secondary);margin-top:4px">${escapeHtml((activeContinent.civilization_style || {}).character_scale_adaptation || '')}</div>
+              </div>
+            </div>
+          `}
+
+          <h3 style="margin:0 0 8px;font-size:1rem">Child Districts in ${escapeHtml(activeContinent.name || '')}</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px">
+            ${childDistricts.length ? childDistricts.map(d => `
+              <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <strong>${escapeHtml(d.name)}</strong>
+                  ${renderStatusBadgeHtml(d.status)}
+                </div>
+                <div class="mono" style="font-size:11px;color:var(--joy-text-secondary);margin-bottom:6px">${escapeHtml(d.level_band_label || '')} · Families: ${escapeHtml((d.ecological_monster_families || []).join(', '))}</div>
+                <div style="font-size:12px;margin-bottom:8px">${escapeHtml(d.core_rationale)}</div>
+                <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="setStudioPerspective('district', { continentId: '${escapeHtml(activeContinent.id)}', districtId: '${escapeHtml(d.id)}', inspectId: '${escapeHtml(d.id)}' })">
+                  Drill into District ${escapeHtml(d.name)} ➔
+                </button>
+              </div>
+            `).join('') : '<div style="padding:12px;color:var(--joy-text-secondary);font-size:12px">No child Districts required while Continent status is Mystery (Fog of Lore).</div>'}
+          </div>
+        </section>
+      </div>
+
+      <aside class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px;position:sticky;top:72px">
+        <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">CORE RATIONALE AND QUALITY GATE</div>
+        <h3 style="margin:4px 0 8px;font-size:1.1rem">${escapeHtml(activeContinent.name || '')}</h3>
+        ${renderStatusBadgeHtml(activeContinent.status)}
+        <div style="margin-top:10px;padding:10px;border-radius:6px;background:var(--joy-surface-sunken);font-size:12px">
+          <strong>Core Rationale:</strong> ${escapeHtml(activeContinent.core_rationale || '')}
+        </div>
+        ${renderQualityChecklistCardHtml(activeContinent)}
+      </aside>
+    </div>
+  `;
+}
+
+function computeStudioElementalModifiers(elementName) {
+  const el = (elementName || 'Neutral');
+  const table = {
+    Fire:    { Neutral: 100, Water: 150, Earth: 90,  Fire: 25,  Wind: 100, Poison: 100, Holy: 100, Shadow: 100, Ghost: 100, Undead: 100 },
+    Earth:   { Neutral: 100, Water: 100, Earth: 25,  Fire: 150, Wind: 90,  Poison: 100, Holy: 100, Shadow: 100, Ghost: 100, Undead: 100 },
+    Wind:    { Neutral: 100, Water: 90,  Earth: 150, Fire: 100, Wind: 25,  Poison: 100, Holy: 100, Shadow: 100, Ghost: 100, Undead: 100 },
+    Water:   { Neutral: 100, Water: 25,  Earth: 100, Fire: 90,  Wind: 150, Poison: 100, Holy: 100, Shadow: 100, Ghost: 100, Undead: 100 },
+    Shadow:  { Neutral: 100, Water: 100, Earth: 100, Fire: 100, Wind: 100, Poison: 50,  Holy: 150, Shadow: 0,   Ghost: 100, Undead: 0   },
+    Holy:    { Neutral: 100, Water: 100, Earth: 100, Fire: 100, Wind: 100, Poison: 100, Holy: 0,   Shadow: 150, Ghost: 100, Undead: 150 },
+    Neutral: { Neutral: 100, Water: 100, Earth: 100, Fire: 100, Wind: 100, Poison: 100, Holy: 100, Shadow: 100, Ghost: 70,  Undead: 100 }
+  };
+  return table[el] || table.Neutral;
+}
+
+function renderStudioDistrictPerspective(activeContinent, districts, nodes, activeDistrict) {
+  const filteredDistricts = districts.filter(d => STUDIO_STATUS_FILTER === 'all' || d.status === STUDIO_STATUS_FILTER);
+  const districtNodes = nodes
+    .filter(n => n.parent_district_id === activeDistrict.id)
+    .filter(n => STUDIO_STATUS_FILTER === 'all' || n.status === STUDIO_STATUS_FILTER);
+  const allDistrictNodes = nodes.filter(n => n.parent_district_id === activeDistrict.id);
+  const nodeById = {};
+  allDistrictNodes.forEach(n => { nodeById[n.id] = n; });
+
+  const levelBands = [
+    'Levels 1 to 20',
+    'Levels 21 to 40',
+    'Levels 41 to 60',
+    'Levels 61 to 80',
+    'Levels 81 to 100'
+  ];
+
+  // Collect all monsters across this district's child nodes
+  const monsterCatalogMap = {};
+  allDistrictNodes.forEach(n => {
+    (n.resident_spawns || []).forEach(sp => {
+      if (!monsterCatalogMap[sp.monster_id]) {
+        monsterCatalogMap[sp.monster_id] = {
+          ...sp,
+          habitats: []
+        };
+      }
+      monsterCatalogMap[sp.monster_id].habitats.push({
+        node_id: n.id,
+        node_name: n.name,
+        grid_coordinates: n.grid_coordinates || [0, 0],
+        spawn_count: sp.spawn_count,
+        respawn_seconds: sp.respawn_seconds
+      });
+    });
+  });
+  const districtMonsters = Object.values(monsterCatalogMap);
+  if (!STUDIO_PINNED_MONSTER_ID && districtMonsters.length > 0) {
+    STUDIO_PINNED_MONSTER_ID = districtMonsters[0].monster_id;
+  }
+
+  const cols = (activeDistrict.grid_dimensions && activeDistrict.grid_dimensions.columns) || 3;
+  const rows = (activeDistrict.grid_dimensions && activeDistrict.grid_dimensions.rows) || 3;
+  const portalEdges = activeDistrict.portal_edges || [];
+
+  // Build 2D matrix cells [col, row]
+  const matrixCellsHtml = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cellNodes = districtNodes.filter(n => {
+        const coords = n.grid_coordinates || [0, 0];
+        return coords[0] === c && coords[1] === r;
+      });
+      if (cellNodes.length === 0) {
+        matrixCellsHtml.push(`
+          <div style="min-height:190px;padding:12px;border-radius:10px;background:rgba(15,23,42,0.35);border:1px dashed var(--joy-border-subtle);display:flex;flex-direction:column;justify-content:center;align-items:center;color:var(--joy-text-muted);font-size:11px">
+            <span class="mono">[Column ${c}, Row ${r}]</span>
+            <span style="margin-top:4px">Unassigned Frontier Cell</span>
+          </div>
+        `);
+      } else {
+        const cardsHtml = cellNodes.map(n => {
+          const isMystery = n.status === 'mystery';
+          const thumb = (n.terrain_tile && n.terrain_tile.preview_thumbnail) || '/thumbs/nature/pine_tree_1.webp';
+          const spawns = n.resident_spawns || [];
+          const pinnedSpawn = spawns.find(sp => sp.monster_id === STUDIO_PINNED_MONSTER_ID);
+          const connectedEdges = portalEdges.filter(e => e.from_node_id === n.id || e.to_node_id === n.id);
+          const typeLabel = n.node_type === 'town' ? '🏰 Town' : (n.node_type === 'dungeon' ? '💀 Dungeon (Floor ' + (n.floor_index || -1) + ')' : '🌿 Hunting Area');
+
+          return `
+            <div style="padding:12px;border-radius:10px;background:var(--joy-surface-sunken);border:2px ${pinnedSpawn ? 'solid #ffd166' : (isMystery ? 'dashed rgba(168,85,247,0.65)' : 'solid var(--joy-border-default)')};margin-bottom:${cellNodes.length > 1 ? '8px' : '0'};position:relative">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px">
+                <span class="mono" style="font-size:10.5px;color:var(--joy-text-secondary)">[${c}, ${r}] · ${typeLabel}</span>
+                ${renderStatusBadgeHtml(n.status)}
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+                <div style="width:52px;height:52px;border-radius:8px;background:var(--joy-surface-card);border:1px solid var(--joy-border-subtle);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+                  ${isMystery
+                    ? '<span style="font-size:22px">🌫️</span>'
+                    : `<img src="${escapeHtml(thumb)}" alt="${escapeHtml(n.name)}" style="width:46px;height:46px;object-fit:contain" />`}
+                </div>
+                <div style="min-width:0;flex:1">
+                  <div style="font-weight:800;font-size:13.5px;color:var(--joy-text-primary)">${escapeHtml(n.name)}</div>
+                  <div class="mono" style="font-size:11px;color:#ffd166">Levels ${(n.level_range || [1, 1]).join(' to ')}</div>
+                  ${pinnedSpawn ? `
+                    <div style="margin-top:3px;display:inline-block;padding:2px 7px;border-radius:999px;background:rgba(255,209,102,0.2);border:1px solid #ffd166;color:#ffd166;font-size:10.5px;font-weight:700">
+                      📌 Pinned: ${escapeHtml(pinnedSpawn.monster_name)} ×${pinnedSpawn.spawn_count}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+
+              <div style="font-size:11.5px;color:var(--joy-text-secondary);margin-bottom:8px;line-height:1.4">
+                ${escapeHtml(n.core_rationale || '')}
+              </div>
+
+              ${isMystery && n.mystery_hook ? `
+                <div style="padding:8px;border-radius:6px;background:rgba(168,85,247,0.14);border:1px solid rgba(168,85,247,0.4);font-size:11px;margin-bottom:8px">
+                  <div><strong>🌫️ Fog of Lore Rumor:</strong> ${escapeHtml(n.mystery_hook.in_world_rumor)}</div>
+                </div>
+              ` : ''}
+
+              ${spawns.length > 0 ? `
+                <div style="margin-bottom:8px">
+                  <div class="mono" style="font-size:10px;color:var(--joy-text-secondary);margin-bottom:4px">RESIDENT MONSTERS (${spawns.length}):</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:4px">
+                    ${spawns.map(sp => `
+                      <button type="button" class="joy-button ${STUDIO_PINNED_MONSTER_ID === sp.monster_id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" style="height:22px;padding:0 7px;font-size:10.5px" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(n.id)}', monsterId: '${escapeHtml(sp.monster_id)}', inspectId: '${escapeHtml(n.id)}' })">
+                        ${escapeHtml(sp.monster_name)} (Level ${sp.level} · ×${sp.spawn_count})
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : (n.node_type === 'town' ? `<div class="mono" style="font-size:10.5px;color:#34d399;margin-bottom:8px">🛡️ Peaceful Safe Zone (Zero Hostile Spawns)</div>` : '')}
+
+              <div style="margin-bottom:8px">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary);margin-bottom:4px">DIRECTIONAL PORTAL BRIDGES (${connectedEdges.length}):</div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px">
+                  ${connectedEdges.map(edge => {
+                    const isFrom = edge.from_node_id === n.id;
+                    const dir = isFrom ? edge.from_direction : edge.to_direction;
+                    const targetId = isFrom ? edge.to_node_id : edge.from_node_id;
+                    const targetNode = nodeById[targetId] || { name: targetId };
+                    const isFog = edge.gate_state === 'fog_of_lore';
+                    return `
+                      <span class="mono" style="font-size:10px;padding:2px 6px;border-radius:4px;cursor:pointer;background:${isFog ? 'rgba(168,85,247,0.18)' : 'var(--joy-surface-card)'};border:1px solid ${isFog ? 'rgba(168,85,247,0.5)' : 'var(--joy-border-subtle)'};color:${isFog ? '#c084fc' : 'var(--joy-text-primary)'}" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(targetId)}', inspectId: '${escapeHtml(targetId)}' })" title="${escapeHtml(edge.lock_reason || ('Road width ' + edge.road_width_meters + ' meters'))}">
+                        ${escapeHtml(dir)} ➔ ${escapeHtml(targetNode.name)} ${isFog ? '(Fog of Lore)' : ''}
+                      </span>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+
+              <button type="button" class="joy-button joy-button--solid joy-button--sm" style="width:100%" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(n.id)}', monsterId: '${escapeHtml((spawns[0] && spawns[0].monster_id) || '')}', inspectId: '${escapeHtml(n.id)}' })">
+                Inspect ${escapeHtml(n.name)} ➔
+              </button>
+            </div>
+          `;
+        }).join('');
+        matrixCellsHtml.push(`<div>${cardsHtml}</div>`);
+      }
+    }
+  }
+
+  return `
+    <div style="display:grid;grid-template-columns:280px 1.5fr 350px;gap:16px;align-items:start">
+      <!-- Left Column: Maxion Level-Band Tabs & Monster Pinning Sidebar -->
+      <aside class="panel" style="padding:14px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+        <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:8px">
+          MAXION LEVEL-BAND MONSTER PINNING
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
+          ${levelBands.map(lb => `
+            <button type="button" class="joy-button ${STUDIO_LEVEL_BAND === lb ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" style="justify-content:space-between" onclick="setStudioPerspective('district', { districtId: '${escapeHtml(activeDistrict.id)}', levelBand: '${escapeHtml(lb)}' })">
+              <span>${escapeHtml(lb)}</span>
+              <span class="mono" style="font-size:10px">${lb === activeDistrict.level_band_label ? 'ACTIVE' : ''}</span>
+            </button>
+          `).join('')}
+        </div>
+
+        <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">
+          ECOLOGICAL MONSTER FAMILIES
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">
+          ${(activeDistrict.ecological_monster_families || []).map(fam => `
+            <span class="joy-badge joy-badge--neutral joy-badge--sm">${escapeHtml(fam)}</span>
+          `).join('')}
+        </div>
+
+        <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">
+          CLICK MONSTER TO PIN SPAWNS ON GRID (${districtMonsters.length})
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${districtMonsters.length ? districtMonsters.map(mob => {
+            const isPinned = STUDIO_PINNED_MONSTER_ID === mob.monster_id;
+            const totalSpawns = mob.habitats.reduce((acc, h) => acc + (h.spawn_count || 0), 0);
+            return `
+              <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1.5px solid ${isPinned ? '#ffd166' : 'var(--joy-border-default)'};cursor:pointer" onclick="setStudioPerspective('district', { districtId: '${escapeHtml(activeDistrict.id)}', pinnedMonsterId: '${escapeHtml(mob.monster_id)}' })">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                  <strong style="font-size:12.5px;color:${isPinned ? '#ffd166' : 'var(--joy-text-primary)'}">${isPinned ? '📌 ' : ''}${escapeHtml(mob.monster_name)}</strong>
+                  <span class="joy-badge joy-badge--brand joy-badge--sm">Level ${mob.level}</span>
+                </div>
+                <div class="mono" style="font-size:10.5px;color:var(--joy-text-secondary);margin-top:3px">
+                  ${escapeHtml(mob.element)} · ${escapeHtml(mob.size)} · ${escapeHtml(mob.race)} (${escapeHtml(mob.family)})
+                </div>
+                <div style="font-size:11px;color:#34d399;margin-top:4px">
+                  Spawns: ×${totalSpawns} across ${mob.habitats.map(h => h.node_name).join(', ')}
+                </div>
+                <div style="margin-top:6px">
+                  <button type="button" class="joy-button joy-button--outline joy-button--sm" style="width:100%;height:24px;font-size:10.5px" onclick="event.stopPropagation();setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(mob.habitats[0].node_id)}', monsterId: '${escapeHtml(mob.monster_id)}', inspectId: '${escapeHtml(mob.habitats[0].node_id)}' })">
+                    Open Monster/1035 Sheet ➔
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('') : '<div style="font-size:11.5px;color:var(--joy-text-secondary)">Select a District with Canon/Draft child hunting areas to pin monster spawns.</div>'}
+        </div>
+      </aside>
+
+      <!-- Center Column: District 2D Connected Map Matrix -->
+      <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+          <div>
+            <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 3 · DISTRICT ORTHOGONAL CONNECTED MAP MATRIX (${escapeHtml(activeDistrict.level_band_label || '')})</div>
+            <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(activeDistrict.name || '')} (${cols} × ${rows} Connected Grid)</h2>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${filteredDistricts.map(d => `
+              <button type="button" class="joy-button ${d.id === activeDistrict.id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('district', { continentId: '${escapeHtml(d.parent_continent_id)}', districtId: '${escapeHtml(d.id)}', inspectId: '${escapeHtml(d.id)}' })">
+                ${escapeHtml(d.name)} (${escapeHtml(d.status)})
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div style="padding:10px 12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle);margin-bottom:14px;font-size:12px">
+          <div><strong>Core Rationale:</strong> ${escapeHtml(activeDistrict.core_rationale || '')}</div>
+          <div style="margin-top:4px;color:var(--joy-text-secondary)"><strong>Local Conflict:</strong> ${escapeHtml(activeDistrict.local_conflict || '')}</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(${cols}, minmax(210px, 1fr));gap:12px;margin-bottom:16px">
+          ${matrixCellsHtml.join('')}
+        </div>
+
+        <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+          <div class="mono" style="font-size:11px;font-weight:700;margin-bottom:8px">SYMMETRIC PORTAL EDGE TOPOLOGY (${portalEdges.length} BRIDGES)</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px">
+            ${portalEdges.map(edge => `
+              <div style="padding:8px 10px;border-radius:6px;background:var(--joy-surface-card);border:1px solid ${edge.gate_state === 'fog_of_lore' ? 'rgba(168,85,247,0.5)' : 'var(--joy-border-subtle)'};font-size:11.5px">
+                <div style="font-weight:700">${escapeHtml(edge.from_node_id)} (${escapeHtml(edge.from_direction)}) ⇄ ${escapeHtml(edge.to_node_id)} (${escapeHtml(edge.to_direction)})</div>
+                <div class="mono" style="font-size:10.5px;color:var(--joy-text-secondary);margin-top:3px">
+                  Gate: ${escapeHtml(edge.gate_state)} · Road Width: ${edge.road_width_meters} meters
+                </div>
+                ${edge.lock_reason ? `<div style="font-size:11px;color:#c084fc;margin-top:3px">🌫️ ${escapeHtml(edge.lock_reason)}</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Core Rationale & Five-Pillar Quality Checklist Drawer -->
+      <aside class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px;position:sticky;top:72px">
+        <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">CORE RATIONALE AND QUALITY GATE</div>
+        <h3 style="margin:4px 0 8px;font-size:1.1rem">${escapeHtml(activeDistrict.name || '')}</h3>
+        ${renderStatusBadgeHtml(activeDistrict.status)}
+        <div style="margin-top:10px;padding:10px;border-radius:6px;background:var(--joy-surface-sunken);font-size:12px">
+          <strong>Core Rationale:</strong> ${escapeHtml(activeDistrict.core_rationale || '')}
+        </div>
+        ${renderQualityChecklistCardHtml(activeDistrict)}
+      </aside>
+    </div>
+  `;
+}
+
+function renderStudioTownOrHuntingAreaPerspective(activeDistrict, nodes, activeNode) {
+  const districtNodes = nodes
+    .filter(n => n.parent_district_id === activeDistrict.id)
+    .filter(n => STUDIO_STATUS_FILTER === 'all' || n.status === STUDIO_STATUS_FILTER);
+  const isMystery = activeNode.status === 'mystery';
+  const tile = activeNode.terrain_tile || {};
+  const dims = tile.dimensions_meters || { width: 4000, height: 4000 };
+  const portals = activeNode.portals || {};
+  const portalDirs = ['North', 'South', 'East', 'West', 'Dungeon', 'Exit'];
+  const kit = activeNode.asset_kit_bindings || {};
+  const spawns = activeNode.resident_spawns || [];
+
+  // Select active monster for Monster/1035 detail inspector
+  let activeMonster = spawns.find(sp => sp.monster_id === STUDIO_SELECTED_MONSTER_ID) || spawns[0] || null;
+  if (!activeMonster) {
+    // Fallback to first monster in the district so Town viewers can also inspect nearby District fauna if desired
+    for (const dn of nodes.filter(x => x.parent_district_id === activeDistrict.id)) {
+      if ((dn.resident_spawns || []).length > 0) {
+        activeMonster = dn.resident_spawns[0];
+        break;
+      }
+    }
+  }
+
+  let monsterDetailHtml = '';
+  if (activeMonster) {
+    const lv = activeMonster.level || 1;
+    const hp = lv * 68 + 45;
+    const hitFlee = `${100 + lv * 3} / ${95 + lv * 2}`;
+    const baseJobExp = `${lv * 24} / ${lv * 16}`;
+    const elemMods = computeStudioElementalModifiers(activeMonster.element);
+    const elemOrder = ['Neutral', 'Water', 'Earth', 'Fire', 'Wind', 'Poison', 'Holy', 'Shadow', 'Ghost', 'Undead'];
+    const card = activeMonster.monster_card_drop || {};
+
+    monsterDetailHtml = `
+      <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+          <div>
+            <div class="mono" style="font-size:11px;color:#38bdf8">MAXION MONSTER/1035 DETAIL INSPECTOR</div>
+            <h3 style="margin:2px 0 0;font-size:1.15rem">${escapeHtml(activeMonster.monster_name)} (${escapeHtml(activeMonster.monster_id)})</h3>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${spawns.map(sp => `
+              <button type="button" class="joy-button ${sp.monster_id === activeMonster.monster_id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(activeNode.id)}', monsterId: '${escapeHtml(sp.monster_id)}', inspectId: '${escapeHtml(activeNode.id)}' })">
+                ${escapeHtml(sp.monster_name)} (Level ${sp.level})
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:192px 1fr;gap:16px;align-items:start">
+          <!-- 192x192 Portrait Stage -->
+          <div style="width:192px;height:192px;border-radius:12px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-strong);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;text-align:center">
+            <img src="${escapeHtml(tile.preview_thumbnail || '/thumbs/nature/pine_tree_1.webp')}" alt="${escapeHtml(activeMonster.monster_name)}" style="width:112px;height:112px;object-fit:contain;margin-bottom:8px" />
+            <div style="font-weight:800;font-size:12px">${escapeHtml(activeMonster.monster_name)}</div>
+            <div class="mono" style="font-size:10px;color:#ffd166">Spawn ×${activeMonster.spawn_count} · Every ${activeMonster.respawn_seconds}s</div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <!-- 4 Property Pills -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">ELEMENT</div>
+                <div style="font-weight:800;font-size:13px;margin-top:2px">${escapeHtml(activeMonster.element)}</div>
+              </div>
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">SIZE</div>
+                <div style="font-weight:800;font-size:13px;margin-top:2px">${escapeHtml(activeMonster.size)}</div>
+              </div>
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">RACE</div>
+                <div style="font-weight:800;font-size:13px;margin-top:2px">${escapeHtml(activeMonster.race)}</div>
+              </div>
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">ECOLOGY FAMILY</div>
+                <div style="font-weight:800;font-size:13px;margin-top:2px">${escapeHtml(activeMonster.family)}</div>
+              </div>
+            </div>
+
+            <!-- 4 Stat Boxes: Level, Health Points, Hit and Flee, Base and Job Experience -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">LEVEL</div>
+                <div class="mono" style="font-weight:800;font-size:13px;color:#ffd166;margin-top:2px">Level ${lv}</div>
+              </div>
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">HEALTH POINTS</div>
+                <div class="mono" style="font-weight:800;font-size:13px;color:#34d399;margin-top:2px">${hp} Health Points</div>
+              </div>
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">100% HIT / 95% FLEE</div>
+                <div class="mono" style="font-weight:800;font-size:13px;margin-top:2px">${hitFlee}</div>
+              </div>
+              <div style="padding:8px 10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;color:var(--joy-text-secondary)">BASE / JOB EXPERIENCE</div>
+                <div class="mono" style="font-weight:800;font-size:13px;margin-top:2px">${baseJobExp}</div>
+              </div>
+            </div>
+
+            <!-- 2x5 Elemental Modifiers Grid -->
+            <div>
+              <div class="mono" style="font-size:10px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">2 × 5 ELEMENTAL DAMAGE MODIFIERS GRID (PERCENTAGE)</div>
+              <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
+                ${elemOrder.map(el => {
+                  const pct = elemMods[el] !== undefined ? elemMods[el] : 100;
+                  const color = pct > 100 ? '#34d399' : (pct < 100 ? '#f87171' : 'var(--joy-text-primary)');
+                  return `
+                    <div style="padding:6px 8px;border-radius:6px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle);display:flex;justify-content:space-between;align-items:center;font-size:11px">
+                      <span>${el}</span>
+                      <strong class="mono" style="color:${color}">${pct}%</strong>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- Item Drops & Monster Card Drop -->
+            <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:10px">
+              <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">ITEM DROPS WITH PERCENTAGE BADGES</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                  ${(activeMonster.item_drops || []).map(it => `
+                    <span class="joy-badge joy-badge--neutral joy-badge--sm" style="padding:4px 8px">
+                      ${escapeHtml(it.item_name)} <strong class="mono" style="color:#ffd166;margin-left:4px">${it.drop_chance_percent}%</strong>
+                    </span>
+                  `).join('')}
+                </div>
+              </div>
+              <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                <div class="mono" style="font-size:10px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">MONSTER CARD DROP</div>
+                <div style="font-size:12px;font-weight:700;color:#ffd166">🃏 ${escapeHtml(card.card_name || 'None')} (${card.drop_chance_percent || 0.01}%)</div>
+                <div style="font-size:11px;color:var(--joy-text-secondary);margin-top:2px">Slot: ${escapeHtml(card.equipment_slot || 'Accessory')} · ${escapeHtml(card.modifier_summary || '')}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  return `
+    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+            <div>
+              <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 4 · TOWN OR HUNTING AREA INSPECTOR (${escapeHtml(activeNode.node_type || '')})</div>
+              <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(activeNode.name || '')} [${(activeNode.grid_coordinates || [0,0]).join(', ')}]</h2>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              ${districtNodes.map(n => `
+                <button type="button" class="joy-button ${n.id === activeNode.id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(n.id)}', inspectId: '${escapeHtml(n.id)}' })">
+                  ${escapeHtml(n.name)} (${escapeHtml(n.status)})
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle);margin-bottom:14px;font-size:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <strong>Core Rationale (Linked to District ${escapeHtml(activeDistrict.name || '')})</strong>
+              ${renderStatusBadgeHtml(activeNode.status)}
+            </div>
+            <div>${escapeHtml(activeNode.core_rationale || '')}</div>
+          </div>
+
+          ${isMystery && activeNode.mystery_hook ? `
+            <div style="padding:16px;border-radius:10px;background:rgba(168,85,247,0.14);border:1px dashed rgba(168,85,247,0.6)">
+              <div style="font-weight:800;font-size:13.5px;color:#c084fc;margin-bottom:6px">🌫️ Intentional Mystery / Fog of Lore Leaf Node (Not Compiled to Playable Map)</div>
+              <div style="font-size:12px;margin-bottom:6px"><strong>In-World Rumor:</strong> ${escapeHtml(activeNode.mystery_hook.in_world_rumor)}</div>
+              <div style="font-size:12px;margin-bottom:6px"><strong>Visual Silhouette:</strong> ${escapeHtml(activeNode.mystery_hook.visual_silhouette)}</div>
+              <div style="font-size:12px"><strong>Unanswered Question:</strong> ${escapeHtml(activeNode.mystery_hook.unanswered_question)}</div>
+            </div>
+          ` : `
+            <!-- Topographic & Directional Portal Blueprint -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+              <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+                <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">TOPOGRAPHIC TERRAIN TILE</div>
+                <div style="font-size:12px"><strong>Map Identifier:</strong> <code>${escapeHtml(activeNode.map_id || '')}</code></div>
+                <div style="font-size:12px;margin-top:3px"><strong>Dimensions:</strong> ${dims.width} × ${dims.height} meters</div>
+                <div style="font-size:12px;margin-top:3px"><strong>Biome Palette:</strong> <code>${escapeHtml(tile.biome_palette || '')}</code></div>
+                <div style="font-size:12px;margin-top:3px"><strong>Maximum Terrace Step:</strong> ${tile.max_terrace_step_meters || 0.18} meters (≤ 0.25 meters)</div>
+                <div style="font-size:12px;margin-top:3px"><strong>Water Feature:</strong> ${escapeHtml(tile.water_feature || '')}</div>
+              </div>
+
+              <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+                <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">90 TO 120 CENTIMETER SCALE AND THREE-DIMENSIONAL ASSET KIT</div>
+                <div style="font-size:12px"><strong>Player Scale Band:</strong> ${(kit.player_scale_band_meters || [0.9, 1.2]).join(' to ')} meters</div>
+                <div style="font-size:12px;margin-top:3px"><strong>Grass Height Cap:</strong> ${kit.max_grass_height_meters || 0.28} meters (≤ 0.35 meters)</div>
+                <div style="font-size:12px;margin-top:3px"><strong>Bush Height Cap:</strong> ${kit.max_bush_height_meters || 0.58} meters (≤ 0.65 meters)</div>
+                <div style="font-size:12px;margin-top:3px"><strong>Road / Footpath Width:</strong> ${kit.main_road_width_meters || 12.0} meters / ${kit.footpath_width_meters || 4.0} meters</div>
+                <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">
+                  ${(kit.three_dimensional_assets || []).map(glb => `<span class="joy-badge joy-badge--brand joy-badge--sm mono">${escapeHtml(glb)}</span>`).join('')}
+                </div>
+              </div>
+            </div>
+
+            <h3 style="margin:0 0 8px;font-size:1rem">Directional Portal Triggers (North / South / East / West / Dungeon / Exit)</h3>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+              ${portalDirs.map(dir => {
+                const p = portals[dir];
+                if (!p) {
+                  return `
+                    <div style="padding:10px;border-radius:8px;background:rgba(15,23,42,0.35);border:1px dashed var(--joy-border-subtle);font-size:11.5px;color:var(--joy-text-muted)">
+                      <strong>${dir}:</strong> Natural Boundary (Closed)
+                    </div>
+                  `;
+                }
+                const isFog = p.gate_state === 'fog_of_lore';
+                const tb = p.trigger_box_meters || {};
+                return `
+                  <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid ${isFog ? 'rgba(168,85,247,0.55)' : 'var(--joy-border-default)'};font-size:11.5px">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <strong>${dir} Portal</strong>
+                      <span class="mono" style="font-size:10px;color:${isFog ? '#c084fc' : '#34d399'}">${escapeHtml(p.gate_state)}</span>
+                    </div>
+                    <div style="margin-top:4px">Target: <code>${escapeHtml(p.target_node_id)}</code> (${escapeHtml(p.target_direction)})</div>
+                    <div class="mono" style="font-size:10px;color:var(--joy-text-secondary);margin-top:2px">Trigger Box: (${tb.x}, ${tb.y}) ${tb.width}×${tb.height} meters</div>
+                    ${p.lock_message ? `<div style="font-size:10.5px;color:#c084fc;margin-top:4px">🌫️ ${escapeHtml(p.lock_message)}</div>` : ''}
+                    <button type="button" class="joy-button joy-button--outline joy-button--sm" style="margin-top:6px;width:100%;height:24px;font-size:10.5px" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(p.target_node_id)}', inspectId: '${escapeHtml(p.target_node_id)}' })">
+                      Traverse ${dir} ➔
+                    </button>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `}
+        </section>
+
+        ${monsterDetailHtml}
+      </div>
+
+      <aside class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px;position:sticky;top:72px">
+        <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">CORE RATIONALE AND QUALITY GATE</div>
+        <h3 style="margin:4px 0 8px;font-size:1.1rem">${escapeHtml(activeNode.name || '')}</h3>
+        ${renderStatusBadgeHtml(activeNode.status)}
+        <div style="margin-top:10px;padding:10px;border-radius:6px;background:var(--joy-surface-sunken);font-size:12px">
+          <strong>Core Rationale:</strong> ${escapeHtml(activeNode.core_rationale || '')}
+        </div>
+        ${renderQualityChecklistCardHtml(activeNode)}
+      </aside>
+    </div>
+  `;
 }
 
 function inspectBtnHtml(kind, title, obj) {
@@ -5999,6 +7406,15 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
             self._send_json(build_full_bundle())
             return
 
+        if parsed.path == "/api/studio/perspectives":
+            self._send_json({"ok": True, **load_studio_perspectives_bundle()})
+            return
+
+        if parsed.path == "/api/studio/self-evaluation":
+            self_eval = load_json_file(ROOT / "build" / "studio_self_evaluation.json") or {}
+            self._send_json({"ok": True, "selfEvaluation": self_eval})
+            return
+
         if parsed.path == "/api/sql":
             qs = parse_qs(parsed.query)
             q = (qs.get("q") or [""])[0]
@@ -6041,6 +7457,14 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
         if parsed.path == "/api/studio/launch-3d":
             self._send_json(launch_3d_preview(self._read_json_body()))
             return
+        if parsed.path == "/api/studio/rationale/update":
+            res_payload, status_code = update_studio_rationale(self._read_json_body())
+            self._send_json(res_payload, status=status_code)
+            return
+        if parsed.path == "/api/studio/generate-children":
+            res_payload, status_code = generate_studio_children(self._read_json_body())
+            self._send_json(res_payload, status=status_code)
+            return
         self._send_json({"ok": False, "error": "Not found"}, status=404)
 
 
@@ -6052,6 +7476,8 @@ def main() -> int:
 
     if args.dump_check:
         bundle = build_full_bundle()
+        studio = load_studio_perspectives_bundle()
+        studio_nodes = 1 + len(studio.get("continents") or []) + len(studio.get("districts") or []) + len(studio.get("nodes") or [])
         sql_res = run_readonly_sql("SELECT * FROM v_mob_economy;")
         thumbs_ok = sum(1 for it in bundle["items"] if it.get("thumbUrl"))
         proposals_cnt = len((bundle.get("reviewQueue") or {}).get("proposals") or [])
@@ -6061,7 +7487,7 @@ def main() -> int:
             f"items={len(bundle['items'])} (thumbs={thumbs_ok}/{len(bundle['items'])}), "
             f"cards={len(bundle['cards'])}, quests={len(bundle['quests'])}, "
             f"castles={len(bundle['castles'])}, palettes={palettes_cnt}, "
-            f"review_proposals={proposals_cnt}, sql_rows={sql_res.get('rowCount')}"
+            f"review_proposals={proposals_cnt}, sql_rows={sql_res.get('rowCount')}, studio_nodes={studio_nodes}"
         )
         return 0
 

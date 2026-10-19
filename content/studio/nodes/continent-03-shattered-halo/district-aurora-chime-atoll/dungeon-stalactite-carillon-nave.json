@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-stalactite-carillon-nave",
+  "name": "Stalactite Carillon Nave",
+  "map_id": "stalactite-carillon-nave-b1",
+  "parent_district_id": "district-aurora-chime-atoll",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Inverted crystal-bell cathedral at [1, 1] floor -1 beneath Aurora Bell Sanctuary where Vesper's deepest stalactite pipes channel the solar-wind chord.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    49,
+    50
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_base.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_stalactite_carillon_nave",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Upward-dripping silver resonance wells beneath giant crystal stalactite bells"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-carillon-nave-exit-bell-sanctuary",
+      "direction": "Exit",
+      "target_node_id": "town-aurora-bell-sanctuary",
+      "target_map_id": "aurora-bell-sanctuary",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3780.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-nave-resonance-specter",
+      "monster_id": "monster-nave-resonance-specter",
+      "monster_name": "Nave Resonance Specter",
+      "spawn_count": 12,
+      "respawn_seconds": 28,
+      "level": 49,
+      "element": "Ghost",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-crystal-overtone-shard",
+          "item_name": "Crystal Overtone Shard",
+          "drop_chance_percent": 38.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-nave-resonance-specter",
+        "card_name": "Nave Resonance Specter Card",
+        "drop_chance_percent": 0.04
+      }
+    },
+    {
+      "spawn_id": "spawn-carillon-choir-archon",
+      "monster_id": "monster-carillon-choir-archon",
+      "monster_name": "Carillon Choir Archon",
+      "spawn_count": 6,
+      "respawn_seconds": 45,
+      "level": 50,
+      "element": "Holy",
+      "size": "Large",
+      "race": "Angel",
+      "family": "celestial",
+      "item_drops": [
+        {
+          "item_id": "item-stalactite-bell-clapper",
+          "item_name": "Stalactite Bell-Clapper",
+          "drop_chance_percent": 25.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-carillon-choir-archon",
+        "card_name": "Carillon Choir Archon Card",
+        "drop_chance_percent": 0.03
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.35,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.3,
+      "width": 1.7
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_base.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Sits at [1, 1] floor -1 directly beneath Aurora Bell Sanctuary and yields the Stalactite Bell-Clapper."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Inverted crystal-bell cathedral lit by upward-dripping silver resonance wells."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 12.5m nave aisles, 0.14m basalt risers, and 2.30m x 1.70m archways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Populated by spirit and celestial monster families with symmetric Exit portal back to Aurora Bell Sanctuary."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops the Stalactite Bell-Clapper referenced in the Magnetosphere Ribbon Arch Fog of Lore lock_message."
+    }
+  }
+}

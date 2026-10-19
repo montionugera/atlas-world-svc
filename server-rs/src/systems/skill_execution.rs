@@ -1,8 +1,10 @@
-use crate::combat::get_skill;
+use crate::ai::ThreatTable;
+use crate::combat::{get_skill, DamageCalculator, DamageOptions, SkillEffect};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    CastingState, CooldownTracker, DashState, Health, MobTag, PlayerInputState, PlayerTag,
-    Position, Projectile, StatusEffects, Velocity,
+    CastingState, CooldownTracker, DashState, ElementalAttributes, Health, HitLog, HitRecord,
+    LingeringZone, MobTag, PlayerInputState, PlayerTag, Position, Projectile, SkillLoadout,
+    StatusEffects, Velocity,
 };
 use bevy_ecs::prelude::*;
 
@@ -21,6 +23,7 @@ pub fn skill_execution_system(
         Option<&Health>,
         Option<&mut DashState>,
         Option<&StatusEffects>,
+        Option<&SkillLoadout>,
     )>,
     enemies: Query<(Entity, &Position, &Health, Has<MobTag>, Has<PlayerTag>)>,
 ) {
@@ -37,6 +40,7 @@ pub fn skill_execution_system(
         health,
         mut dash_opt,
         status_opt,
+        loadout_opt,
     ) in &mut query
     {
         // The dead cannot cast: drop any in-flight cast and swallow skill presses.
@@ -219,6 +223,25 @@ pub fn skill_execution_system(
                     };
 
                     commands.spawn((proj_pos, proj_vel, projectile));
+
+                    // E-007 Slice 4: Meteor Strike (skill_1) and Blizzard (skill_3) leave a
+                    // lingering ground hazard field at the target location that ticks damage
+                    // across 3 distinct intervals over 3.0 seconds.
+                    if skill.id == "skill_1" || skill.id == "skill_3" {
+                        commands.spawn((
+                            proj_pos,
+                            LingeringZone::new(
+                                entity,
+                                &skill.id,
+                                aoe_radius,
+                                skill.base_damage(),
+                                skill.damage_type,
+                                skill.element,
+                                skill.effects.clone(),
+                                is_player,
+                            ),
+                        ));
+                    }
                 }
             }
         }
@@ -234,11 +257,17 @@ pub fn skill_execution_system(
         }
         if slot > 0 && !casting.is_casting(current_time) {
             let skill_id_str = match slot {
-                1 => "skill_1",
-                2 => "skill_2",
-                3 => "skill_3",
-                4 => "skill_4",
+                1..=4 => loadout_opt
+                    .and_then(|l| l.skill_for_slot(slot))
+                    .unwrap_or(match slot {
+                        1 => "skill_1",
+                        2 => "skill_2",
+                        3 => "skill_3",
+                        4 => "skill_4",
+                        _ => "",
+                    }),
                 5 => "skill_dash",
+                6 => "skill_heal",
                 _ => "",
             };
 
@@ -247,6 +276,8 @@ pub fn skill_execution_system(
                     // No dashing out of a knockback: it must neither fire nor spend cooldown.
                     !status_opt.is_some_and(|s| s.is_knocked_back())
                         && cooldown_tracker.can_perform(&[skill.id.as_str()])
+                } else if skill.heal_amount().is_some() {
+                    cooldown_tracker.can_perform(&[skill.id.as_str()])
                 } else {
                     cooldown_tracker.can_perform(&[skill.id.as_str(), "global_magic_cd"])
                 };
@@ -278,6 +309,16 @@ pub fn skill_execution_system(
                         vel.vx = dir_x * dash_speed;
                         vel.vy = dir_y * dash_speed;
                         cooldown_tracker.set_cooldown(&skill.id, skill.cooldown_sec);
+                    } else if let Some(heal_amt) = skill.heal_amount() {
+                        commands.queue(move |world: &mut World| {
+                            if let Some(mut h) = world.get_mut::<Health>(entity) {
+                                h.heal(heal_amt);
+                            }
+                        });
+                        cooldown_tracker.set_cooldown(&skill.id, skill.cooldown_sec);
+                        if skill.gcd_sec > 0.0 {
+                            cooldown_tracker.set_cooldown("global_magic_cd", skill.gcd_sec);
+                        }
                     } else {
                         // Start casting
                         casting.start_cast(&skill.id, skill.casting_time_sec, current_time);
@@ -293,6 +334,147 @@ pub fn skill_execution_system(
                     }
                 }
             }
+        }
+    }
+}
+
+/// Ticks active `LingeringZone` ground fields (`Blizzard`, `Meteor Strike`) across 3 distinct
+/// intervals over their lifetime, damaging and applying elemental effects to hostile targets
+/// standing inside the field radius (E-007 Slice 4).
+#[allow(clippy::type_complexity)]
+pub fn lingering_zone_system(
+    mut commands: Commands,
+    clock: Res<SimClock>,
+    mut hit_log: Option<ResMut<HitLog>>,
+    mut zones: Query<(Entity, &Position, &mut LingeringZone)>,
+    mut targets: Query<
+        (
+            Entity,
+            &Position,
+            &mut Health,
+            Option<&ElementalAttributes>,
+            Option<&mut StatusEffects>,
+            Has<PlayerTag>,
+            Has<MobTag>,
+            Option<&mut ThreatTable>,
+        ),
+        Without<LingeringZone>,
+    >,
+) {
+    let dt = clock.delta_seconds();
+    if dt <= 0.0 {
+        return;
+    }
+    let now = clock.current_time_seconds();
+    let default_attrs = ElementalAttributes::default();
+
+    for (zone_entity, zone_pos, mut zone) in &mut zones {
+        zone.remaining_duration_sec -= dt;
+        zone.tick_accumulator_sec += dt;
+
+        while zone.tick_accumulator_sec + 1e-4 >= zone.tick_interval_sec
+            && zone.ticks_applied < zone.max_ticks
+        {
+            zone.tick_accumulator_sec =
+                (zone.tick_accumulator_sec - zone.tick_interval_sec).max(0.0);
+            zone.ticks_applied += 1;
+
+            let r_sq = zone.radius * zone.radius;
+            for (
+                t_entity,
+                t_pos,
+                mut t_health,
+                opt_attrs,
+                mut opt_status,
+                is_player,
+                is_mob,
+                opt_threat,
+            ) in &mut targets
+            {
+                if t_entity == zone.owner || !t_health.is_alive {
+                    continue;
+                }
+                let is_valid_victim =
+                    (zone.is_player_zone && is_mob) || (!zone.is_player_zone && is_player);
+                if !is_valid_victim {
+                    continue;
+                }
+
+                let dx = t_pos.x - zone_pos.x;
+                let dy = t_pos.y - zone_pos.y;
+                if dx * dx + dy * dy > r_sq {
+                    continue;
+                }
+
+                let attrs = opt_attrs.unwrap_or(&default_attrs);
+                let damage_opts = DamageOptions {
+                    base_damage: zone.damage_per_tick,
+                    damage_type: zone.damage_type,
+                    attack_element: zone.element,
+                    defense_element: attrs.element,
+                    p_def: attrs.p_def,
+                    m_def: attrs.m_def,
+                    armor: attrs.armor,
+                };
+                let damage = DamageCalculator::calculate(&damage_opts);
+                t_health.take_damage(damage);
+
+                if let Some(ref mut log) = hit_log {
+                    log.0.push(HitRecord {
+                        attacker: zone.owner,
+                        target: t_entity,
+                        amount: damage,
+                        killed: !t_health.is_alive || t_health.current <= 0.0,
+                    });
+                }
+
+                if let Some(mut threat) = opt_threat {
+                    threat.add_threat(zone.owner, damage, now);
+                }
+
+                if let Some(ref mut status) = opt_status {
+                    for effect in &zone.effects {
+                        match effect {
+                            SkillEffect::Freeze {
+                                duration_sec,
+                                speed_multiplier,
+                            } => {
+                                status.apply_freeze(*duration_sec, *speed_multiplier);
+                            }
+                            SkillEffect::Stun { duration_sec } => {
+                                status.apply_stun(*duration_sec);
+                            }
+                            _ => {}
+                        }
+                    }
+                } else {
+                    let mut status = StatusEffects::default();
+                    let mut applied = false;
+                    for effect in &zone.effects {
+                        match effect {
+                            SkillEffect::Freeze {
+                                duration_sec,
+                                speed_multiplier,
+                            } => {
+                                status.apply_freeze(*duration_sec, *speed_multiplier);
+                                applied = true;
+                            }
+                            SkillEffect::Stun { duration_sec } => {
+                                status.apply_stun(*duration_sec);
+                                applied = true;
+                            }
+                            _ => {}
+                        }
+                    }
+                    if applied {
+                        commands.entity(t_entity).insert(status);
+                    }
+                }
+            }
+        }
+
+        if zone.remaining_duration_sec <= 1e-4 || zone.ticks_applied >= zone.max_ticks {
+            commands.entity(zone_entity).despawn();
         }
     }
 }

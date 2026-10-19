@@ -1,0 +1,176 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-helical-torque-hub",
+  "name": "Helical Torque Hub",
+  "map_id": "helical-torque-hub",
+  "parent_district_id": "district-helical-gear-trench",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Central bronze worm-drive engineer town of Helical-Gear Trench at [1, 1] where torque-wrights balance Krono's drive-shaft clutches above the Worm-Drive Gearbox.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    39,
+    40
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_roof_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_helical_torque_hub_town",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Filtered amber oil-cooling basins around the central worm-clutch rotunda"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-torque-hub-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-bevel-pinion-overlook",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Unclutched bevel-pinion teeth spin at gale-force speeds across the northern Bevel-Pinion Overlook; Torque-Master Helix requires the Bronze Worm-Clutch Key before engaging the safety brake.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-torque-hub-east-carrier-span",
+      "direction": "East",
+      "target_node_id": "hunting-area-planetary-carrier-span",
+      "target_map_id": "planetary-carrier-span",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-torque-hub-west-wormway",
+      "direction": "West",
+      "target_node_id": "hunting-area-spiral-wormway-ramp",
+      "target_map_id": "spiral-wormway-ramp",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-torque-hub-dungeon-gearbox",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-worm-drive-gearbox",
+      "target_map_id": "worm-drive-gearbox-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-torque-master-helix",
+      "name": "Torque-Master Helix",
+      "role": "Helical Drive Director",
+      "position_meters": {
+        "x": 1975.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.6,
+      "dialogue_greeting": "Welcome to Helical Torque Hub! Check the pressure gauges at my 0.60 meter bronze console before descending into the gearbox."
+    },
+    {
+      "npc_id": "npc-clutch-smith-vera",
+      "name": "Clutch-Smith Vera",
+      "role": "Worm-Drive Machinist",
+      "position_meters": {
+        "x": 2065.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Down in the Worm-Drive Gearbox, an overdrive construct swallowed the Bronze Worm-Clutch Key needed to brake the northern Bevel-Pinion Overlook!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.42,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.6,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_roof_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Helical-Gear Trench at [1, 1] directly above Krono's Worm-Drive Gearbox and connects east into Differential Spur Gorge."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Bronze worm-clutch rotunda surrounded by spinning helical drive shafts and amber cooling basins."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.58 to 0.60m bronze consoles, 0.14m cog-risers, 2.20m x 1.65m doorways, and 13.0m plazas for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, East, Dungeon, and North (fog_of_lore) portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Guards the northern Bevel-Pinion Overlook behind a Fog of Lore portal while opening East to Planetary Carrier Span."
+    }
+  }
+}

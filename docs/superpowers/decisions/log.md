@@ -1,0 +1,9 @@
+# Superpowers Decisions Log
+
+| Date | Tier | Topic | Decision | Rationale / Source |
+|---|---|---|---|---|
+| 2026-10-18 | R0 | F-084 vs Rust Meta Sequencing | Verify & ship `F-084` (`Load a generated-world region on the server`) to `release/1.15` first, then build `I-198` (`RustMetaEngine`). | User explicit choice (A1). |
+| 2026-10-18 | R0 | Meta Service Topology | Build `RustMetaEngine` directly inside `server-rs` (`server-rs/src/meta/`) behind `NakamaStorage` and `MetaDocStore` traits. | Eliminates HTTP S2S latency in single-node/dev mode while keeping clean trait seam for horizontal scaling (User A2). |
+| 2026-10-18 | R0 | Persistence Backends | Trait-backed `MetaDocStore` with `InMemoryMetaStore`, embedded `SqliteMetaStore` (WAL mode + `BEGIN IMMEDIATE`), and `PostgresMetaStore` SQL transaction adapter. | Zero external container dependency for dev/local (`cargo run`), production-ready SQL transaction semantics (User A3). |
+| 2026-10-18 | R0 | Client Wire Compatibility | Phase 1 serves drop-in Nakama `/v2/*` HTTP endpoints (`/v2/account/authenticate/device`, `/v2/account`, `/v2/storage`, `/v2/rpc/{id}` with wrapped & `?unwrap` support). | Zero client changes required in Godot (`MetaGateway.cs`) or React (`useServerRsClient.ts`) in Phase 1 (User A4). |
+| 2026-10-18 | R2 | Review Lens Fixes (`I-198`) | 1. Reject `/ws?status=` Nakama realtime socket probes with `404` on `WsServer` to prevent ghost gameplay entities.<br>2. Return `{"objects":[]}` on storage miss in `POST /v2/storage` (while `read_typed_doc` in RPCs synthesizes `default_doc`).<br>3. Seed in-process sequence counters from `UNIX_EPOCH` ms so `report_match_events` / `save_character_state` never regress across restarts.<br>4. Preserve `"Nakama not configured"` log prefix when `NAKAMA_URL` is unset so `tests/nakama_wiring.rs` passes unchanged. | Folded from Product, QA, and Tech (`self-grill-audit`) spec review lenses; approved at R0 spec gate. |

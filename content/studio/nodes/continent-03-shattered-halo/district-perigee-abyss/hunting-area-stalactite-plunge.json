@@ -1,0 +1,170 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-stalactite-plunge",
+  "name": "Stalactite Plunge Causeway",
+  "map_id": "stalactite-plunge",
+  "parent_district_id": "district-perigee-abyss",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "canon",
+  "core_rationale": "Western inverted basalt stalactite causeway of Perigee Abyss at [0, 1] descending from Crown Beacon Citadel toward the lowest gravity anchor above the maelstrom.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "level_range": [
+    48,
+    49
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/nature/rock_tall_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_stalactite_plunge",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Upward-drifting sea-spray curtains condensing into glowing salt-pearl pools along basalt ledges"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-stalactite-plunge-east-station",
+      "direction": "East",
+      "target_node_id": "town-perigee-diving-station",
+      "target_map_id": "perigee-diving-station",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-stalactite-plunge-west-citadel",
+      "direction": "West",
+      "target_node_id": "town-crown-beacon-citadel",
+      "target_map_id": "crown-beacon-citadel",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-stalactite-plunge-ray",
+      "monster_id": "monster-brine-mist-ray",
+      "monster_name": "Brine-Mist Ray",
+      "spawn_count": 12,
+      "respawn_seconds": 25,
+      "level": 48,
+      "element": "Water",
+      "size": "Medium",
+      "race": "Fish",
+      "family": "aquatic",
+      "item_drops": [
+        {
+          "item_id": "item-salt-pearl-scale",
+          "item_name": "Salt-Pearl Scale",
+          "drop_chance_percent": 45.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-brine-mist-ray",
+        "card_name": "Brine-Mist Ray Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Garment",
+        "modifier_summary": "Increases Water resistance by 15% and movement speed on wet basalt ledges by 5%."
+      }
+    },
+    {
+      "spawn_id": "spawn-stalactite-plunge-wisp",
+      "monster_id": "monster-perigee-lantern-wisp",
+      "monster_name": "Perigee Lantern-Wisp",
+      "spawn_count": 10,
+      "respawn_seconds": 30,
+      "level": 49,
+      "element": "Ghost",
+      "size": "Small",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-inverted-salt-wick",
+          "item_name": "Inverted Salt-Wick",
+          "drop_chance_percent": 40.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-perigee-lantern-wisp",
+        "card_name": "Perigee Lantern-Wisp Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Accessory",
+        "modifier_summary": "Adds +8 Magic Defense and illuminates hidden upward-draft currents."
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.22,
+    "max_bush_height_meters": 0.48,
+    "stair_riser_height_meters": 0.15,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/nature/rock_tall_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Connects Crown Beacon Citadel (West) to Perigee Diving-Station (East) along the lowest basalt anchor rim of scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Spiral basalt walkways around upside-down stalactites where sea-spray drifts upward into salt-pearl pools."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 0.22m sea-moss, 0.48m coral shrubs, 0.15m risers, and 12.5m basalt causeways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric West/East portals and Level 48 to 49 aquatic/spirit spawns matching district-perigee-abyss."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Promoted cleanly from Mystery to Canon with full five-pillar verification."
+    }
+  }
+}

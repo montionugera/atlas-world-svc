@@ -1,0 +1,171 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-resin-arch-tunnel",
+  "name": "Resin-Arch Tunnel",
+  "map_id": "resin-arch-tunnel",
+  "parent_district_id": "district-amber-root-hollows",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "canon",
+  "core_rationale": "Western amber-lit banyan-root gallery of Amber-Root Hollows at [0, 1] linking Porcelain Loom Sanctuary to the eastern root-train viaduct piers.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    14,
+    16
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/nature/rock_tall_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_resin_arch_tunnel",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Warm golden sap-warmed streams trickling beside brick root-train trestles"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-resin-arch-east-roundhouse",
+      "direction": "East",
+      "target_node_id": "town-root-train-roundhouse",
+      "target_map_id": "root-train-roundhouse",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-resin-arch-west-sanctuary",
+      "direction": "West",
+      "target_node_id": "town-porcelain-loom-sanctuary",
+      "target_map_id": "porcelain-loom-sanctuary",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-resin-arch-beetle",
+      "monster_id": "monster-amber-sap-beetle",
+      "monster_name": "Amber-Sap Beetle",
+      "spawn_count": 12,
+      "respawn_seconds": 22,
+      "level": 14,
+      "element": "Earth",
+      "size": "Small",
+      "race": "Insect",
+      "family": "flora_fauna",
+      "item_drops": [
+        {
+          "item_id": "item-golden-resin-drop",
+          "item_name": "Golden Resin-Drop",
+          "drop_chance_percent": 46.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-amber-sap-beetle",
+        "card_name": "Amber-Sap Beetle Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Armor",
+        "modifier_summary": "Adds +5 Defense and 10% resistance to Earth elemental attacks."
+      }
+    },
+    {
+      "spawn_id": "spawn-resin-arch-lantern",
+      "monster_id": "monster-trestle-lantern-automaton",
+      "monster_name": "Trestle Lantern-Automaton",
+      "spawn_count": 10,
+      "respawn_seconds": 25,
+      "level": 16,
+      "element": "Fire",
+      "size": "Small",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-brass-trestle-rivet",
+          "item_name": "Brass Trestle-Rivet",
+          "drop_chance_percent": 40.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-trestle-lantern-automaton",
+        "card_name": "Trestle Lantern-Automaton Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Accessory",
+        "modifier_summary": "Increases Hit by +6 and Fire elemental damage by 4%."
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.22,
+    "max_bush_height_meters": 0.46,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_Clearance_meters": {
+      "height": 2.1,
+      "width": 1.55
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/nature/rock_tall_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Connects Porcelain Loom Sanctuary (West) to Root-Train Roundhouse (East) along the eastern banyan-root rim of scar-kiln-basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Warm golden banyan-root arches dripping luminous amber sap beside brick viaduct piers."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 0.22m fern-clover, 0.46m root-shrubs, 0.14m risers, and 12.5m root-walkways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric West/East portals and Level 14 to 16 flora_fauna/construct spawns matching district-amber-root-hollows."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Promoted cleanly from Mystery to Canon with full five-pillar verification."
+    }
+  }
+}

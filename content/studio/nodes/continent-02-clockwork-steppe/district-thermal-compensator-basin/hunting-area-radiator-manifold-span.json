@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-radiator-manifold-span",
+  "name": "Radiator Manifold Span",
+  "map_id": null,
+  "parent_district_id": "district-thermal-compensator-basin",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Western copper-fin radiator causeway of Thermal Compensator Basin at [0, 1] linking Bimetallic-Chronometer Hub to the eastern mercury bellows.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    29,
+    30
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Tinkers say the copper radiator fins along Radiator Manifold Span sing in three-part harmony whenever afternoon heat vents from the eastern basin.",
+    "visual_silhouette": "Rows of gleaming copper cooling fins and brass expansion pipes bridging the eastern canyon.",
+    "unanswered_question": "Why did the radiator manifolds lock into closed-loop recirculation after the Clockspring War?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Seeds the western entry node [0, 1] of Thermal Compensator Basin along scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Rows of gleaming copper cooling fins and brass expansion pipes bridging the eastern canyon."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [0, 1] as the western entry frontier of Thermal Compensator Basin."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook in Draft parent district."
+    }
+  }
+}

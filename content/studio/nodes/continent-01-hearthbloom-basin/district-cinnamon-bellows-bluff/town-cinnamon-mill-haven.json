@@ -1,0 +1,176 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-cinnamon-mill-haven",
+  "name": "Cinnamon-Mill Haven",
+  "map_id": "cinnamon-mill-haven",
+  "parent_district_id": "district-cinnamon-bellows-bluff",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Central spice-milling sanctuary town of Cinnamon-Bellows Bluff at [1, 1] where Lantern-Keepers grind warm cinnamon-sugar and star-anise glaze above the Spice-Kiln Cellar.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    14,
+    15
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/building_market_stalls.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_cinnamon_mill_haven_town",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Warm aromatic spice-steeping basins ringed by glazed terracotta millwheels"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-cinnamon-mill-north-anise-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-star-anise-promontory",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Swirling aromatic spice-drafts across Star-Anise Promontory cloud unshielded sightlines; Mill-Steward Clove requires the Star-Pod Lantern before opening the northern promontory.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-cinnamon-mill-east-ginger-aqueduct",
+      "direction": "East",
+      "target_node_id": "hunting-area-ginger-aqueduct-bridge",
+      "target_map_id": "ginger-aqueduct-bridge",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-cinnamon-mill-west-viaduct",
+      "direction": "West",
+      "target_node_id": "hunting-area-cinnamon-bark-viaduct",
+      "target_map_id": "cinnamon-bark-viaduct",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-cinnamon-mill-dungeon-spice-cellar",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-spice-kiln-cellar",
+      "target_map_id": "spice-kiln-cellar-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-mill-steward-clove",
+      "name": "Mill-Steward Clove",
+      "role": "Spice-Mill Sanctuary Director",
+      "position_meters": {
+        "x": 1975.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Welcome to Cinnamon-Mill Haven! Step up to my 0.58 meter pastry counter for a warm cinnamon-roll fresh from the hearth-mill."
+    },
+    {
+      "npc_id": "npc-grinder-apprentice-nutmeg",
+      "name": "Grinder-Apprentice Nutmeg",
+      "role": "Mortar & Millstone Keeper",
+      "position_meters": {
+        "x": 2065.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Down in the Spice-Kiln Cellar, a giant cinnamon-carapace beetle guards the Star-Pod Lantern needed for Star-Anise Promontory!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.42,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.1,
+      "width": 1.55
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/building_market_stalls.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Cinnamon-Bellows Bluff at [1, 1] directly above Sola's Spice-Kiln Cellar and connects east to Ginger Aqueduct Bridge."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Terracotta spice-mill plaza where warm hearth-breezes turn cinnamon-bark windmills."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.58m pastry counters, 0.14m terracotta risers, 2.10m x 1.55m doorways, and 13.0m plazas for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, East, Dungeon, and North (fog_of_lore) portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Guards the northern Star-Anise Promontory behind a Fog of Lore portal while opening East to Ginger Aqueduct Bridge."
+    }
+  }
+}

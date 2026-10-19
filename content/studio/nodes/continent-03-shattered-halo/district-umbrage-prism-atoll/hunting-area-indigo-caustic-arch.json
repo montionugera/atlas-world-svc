@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-indigo-caustic-arch",
+  "name": "Indigo Caustic Arch",
+  "map_id": null,
+  "parent_district_id": "district-umbrage-prism-atoll",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern refracted starlight arch of Umbrage Prism Atoll at [1, 0] where concentrated indigo caustic beams guard the outer eclipse horizon.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    50,
+    50
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Optics weavers say the northern Indigo Caustic Arch bends twilight into a standing curtain of violet aurora.",
+    "visual_silhouette": "A towering smoky-quartz arch crowned by shimmering curtains of focused indigo starlight.",
+    "unanswered_question": "What sleeping eclipse-spire lies beyond Indigo Caustic Arch?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Extends north from Umbrage Focal Sanctum at [1, 0] along scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Towering smoky-quartz arch crowned by standing curtains of focused indigo starlight."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Umbrage Focal Sanctum with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind the Umbrage Focal Sanctum North Fog of Lore gate."
+    }
+  }
+}

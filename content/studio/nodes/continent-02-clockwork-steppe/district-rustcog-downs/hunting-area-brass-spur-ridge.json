@@ -1,0 +1,179 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-brass-spur-ridge",
+  "name": "Brass Spur Ridge",
+  "map_id": "brass-spur-ridge",
+  "parent_district_id": "district-rustcog-downs",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "canon",
+  "core_rationale": "Wind-scoured copper-grassland plateau east of Pinion Terminus where rogue clockwork gear-hounds and glider-mantises prowl between half-buried Titan spur gears.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "level_range": [
+    18,
+    28
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/nature/rock_medium_1.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_steppe_copper_ridge",
+    "max_terrace_step_meters": 0.18,
+    "water_feature": "Mineral oil and rainwater channels etched along buried brass gear-rims"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-brass-spur-north-astrolabe",
+      "direction": "North",
+      "target_node_id": "hunting-area-astrolabe-rift",
+      "target_map_id": "astrolabe-rift",
+      "target_direction": "South",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-brass-spur-east-caldera",
+      "direction": "East",
+      "target_node_id": "hunting-area-caldera-rim",
+      "target_map_id": "caldera-rim",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-brass-spur-west",
+      "direction": "West",
+      "target_node_id": "town-pinion-terminus",
+      "target_map_id": "pinion-terminus",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-brass-spur-gear-hound",
+      "monster_id": "mob-clockwork-gear-hound",
+      "monster_name": "Clockwork Gear-Hound",
+      "spawn_count": 10,
+      "respawn_seconds": 12.0,
+      "level": 21,
+      "element": "Wind",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-phosphor-pinion-tooth",
+          "item_name": "Phosphor Pinion Tooth",
+          "drop_chance_percent": 48.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-clockwork-gear-hound",
+        "card_name": "Clockwork Gear-Hound Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Footgear",
+        "modifier_summary": "Movement Speed +5%, Flee Rate +8"
+      }
+    },
+    {
+      "spawn_id": "spawn-brass-spur-glider-mantis",
+      "monster_id": "mob-copper-glider-mantis",
+      "monster_name": "Copper Glider-Mantis",
+      "spawn_count": 8,
+      "respawn_seconds": 15.0,
+      "level": 25,
+      "element": "Wind",
+      "size": "Medium",
+      "race": "Insect",
+      "family": "insect",
+      "item_drops": [
+        {
+          "item_id": "item-riveted-wing-foil",
+          "item_name": "Riveted Wing Foil",
+          "drop_chance_percent": 40.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-copper-glider-mantis",
+        "card_name": "Copper Glider-Mantis Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Weapon",
+        "modifier_summary": "Critical Hit Rate +7, Wind Physical Damage +5%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.25,
+    "max_bush_height_meters": 0.55,
+    "main_road_width_meters": 14.0,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/nature/rock_medium_1.glb",
+      "res://assets/dungeon/pillar.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Connects Pinion Terminus East Gate at [1, 1] to the Mainspring Caldera Rim (East) and Astrolabe Rift Promontory (North)."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Copper grasslands bisected by hundred-meter brass spur arches and Clock-Gale updraft corridors."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Grass <= 0.25m, bushes <= 0.55m, terrace steps <= 0.18m, and 14.0m gear-tooth highways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric West portal to town-pinion-terminus, East open portal to hunting-area-caldera-rim, North open portal to hunting-area-astrolabe-rift, and Level 21 to 25 construct/insect fauna."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Opens the northern bridge to Astrolabe Rift Promontory with zero placeholder text."
+    }
+  }
+}

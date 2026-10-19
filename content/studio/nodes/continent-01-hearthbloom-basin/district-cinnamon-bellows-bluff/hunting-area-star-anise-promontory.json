@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-star-anise-promontory",
+  "name": "Star-Anise Promontory",
+  "map_id": null,
+  "parent_district_id": "district-cinnamon-bellows-bluff",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northernmost eight-pointed terracotta spice-promontory of Cinnamon-Bellows Bluff at [1, 0] where Sola's upper hearth-chimneys vent golden star-anise updrafts.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    15,
+    15
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Spice-millers say the eight-pointed wind-vanes of Star-Anise Promontory chime whenever a glider convoy approaches from the Clockwork Steppe.",
+    "visual_silhouette": "An eight-pointed star pavilion of glazed terracotta jutting above warm golden clouds.",
+    "unanswered_question": "What star-anise wind-belfry crowns Star-Anise Promontory?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Extends north from Cinnamon-Mill Haven at [1, 0] along scar-kiln-basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Eight-pointed star pavilion of glazed terracotta venting golden aromatic updrafts."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Cinnamon-Mill Haven with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind the Cinnamon-Mill Haven North Fog of Lore gate."
+    }
+  }
+}

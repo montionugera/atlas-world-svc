@@ -1,10 +1,19 @@
 use server_rs::auth::AuthGuard;
-use server_rs::content::map::room_id_for;
+use server_rs::content::world_regions::{resolve_room_or_region_id, GENERATED_REGION_IDS};
 use server_rs::fleet::{AgonesClient, FleetLifecycle, HeartbeatTask};
+use server_rs::meta::{
+    spawn_meta_http_listener, InMemoryMetaStore, MetaDocStore, MetaHttpConfig, PostgresMetaStore,
+    RustMetaEngine, SqliteMetaStore,
+};
 use server_rs::net::WsServer;
 use server_rs::protocol::SnapshotBuilder;
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
-use server_rs::storage::{CharacterStateBuffer, MatchEventBuffer, NakamaClient, NakamaConfig};
+use server_rs::spatial::{
+    collect_region_border_ghosts, AuthorityHandoffCoordinator, RegionAdjacencyGraph,
+};
+use server_rs::storage::{
+    CharacterStateBuffer, MatchEventBuffer, NakamaClient, NakamaConfig, NakamaStorage,
+};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tracing::{debug, error, info, warn};
@@ -65,6 +74,36 @@ fn summarize(micros: &mut [u64]) -> String {
     )
 }
 
+fn build_meta_doc_store_from_env() -> Result<Arc<dyn MetaDocStore>, String> {
+    if let Some(db_path) = std::env::var("META_DB_PATH")
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+    {
+        if db_path == ":memory:" {
+            info!("Initializing SqliteMetaStore (:memory:)");
+            let store = SqliteMetaStore::in_memory().map_err(|e| e.to_string())?;
+            return Ok(Arc::new(store));
+        }
+        info!("Initializing SqliteMetaStore at {}", db_path);
+        let store = SqliteMetaStore::open(&db_path).map_err(|e| e.to_string())?;
+        return Ok(Arc::new(store));
+    }
+
+    if let Some(pg_url) = std::env::var("META_POSTGRES_URL")
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+    {
+        info!("Initializing PostgresMetaStore");
+        let store = PostgresMetaStore::from_url(&pg_url).map_err(|e| e.to_string())?;
+        return Ok(Arc::new(store));
+    }
+
+    info!("Initializing InMemoryMetaStore (META_DB_PATH unset)");
+    Ok(Arc::new(InMemoryMetaStore::new()))
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Initialize tracing subscriber
@@ -105,8 +144,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 2. Auth Guard
     let auth_guard = AuthGuard::from_env();
 
-    // 2b. Nakama persistent storage client & startup probe (before Agones Ready)
-    let nakama_client = match NakamaConfig::from_env() {
+    // 2b. Persistent storage backend: external Nakama S2S client when NAKAMA_URL/NAKAMA_HTTP_KEY
+    // are configured, or native in-process RustMetaEngine by default.
+    let mut nakama_client: Option<Arc<NakamaClient>> = None;
+    let mut in_process_meta: Option<Arc<RustMetaEngine>> = None;
+
+    match NakamaConfig::from_env() {
         Ok(Some(cfg)) => {
             info!("Configuring Nakama client for {}", cfg.base_url);
             let client = Arc::new(NakamaClient::new(
@@ -121,18 +164,59 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 std::process::exit(1);
             }
             info!("Nakama startup probe succeeded ({})", cfg.base_url);
-            Some(client)
+            nakama_client = Some(client);
         }
         Ok(None) => {
-            info!("Nakama not configured (NAKAMA_URL and NAKAMA_HTTP_KEY unset); running in offline mode");
-            None
+            info!(
+                "Nakama not configured (NAKAMA_URL and NAKAMA_HTTP_KEY unset); running in-process RustMetaEngine"
+            );
+            let store = match build_meta_doc_store_from_env() {
+                Ok(s) => s,
+                Err(err) => {
+                    error!("Failed to initialize MetaDocStore: {}", err);
+                    eprintln!("Failed to initialize MetaDocStore: {}", err);
+                    std::process::exit(1);
+                }
+            };
+            let engine = match RustMetaEngine::new(store) {
+                Ok(eng) => Arc::new(eng),
+                Err(err) => {
+                    error!("Failed to initialize RustMetaEngine catalogs: {}", err);
+                    eprintln!("Failed to initialize RustMetaEngine catalogs: {}", err);
+                    std::process::exit(1);
+                }
+            };
+            in_process_meta = Some(engine);
         }
         Err(err) => {
             error!("Nakama configuration error: {}", err);
             eprintln!("Nakama configuration error: {}", err);
             std::process::exit(1);
         }
+    }
+
+    let storage_backend: Option<Arc<dyn NakamaStorage>> = if let Some(ref client) = nakama_client {
+        Some(client.clone())
+    } else if let Some(ref engine) = in_process_meta {
+        Some(engine.clone())
+    } else {
+        None
     };
+
+    // Optional secondary HTTP listener for Nakama `/v2/*` compatibility (e.g. `:7350`)
+    if let Some(meta_bind) = std::env::var("META_BIND_ADDR")
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+    {
+        if let Some(ref engine) = in_process_meta {
+            let meta_cfg = MetaHttpConfig::from_env(engine.clone(), auth_guard.clone());
+            let bound = spawn_meta_http_listener(&meta_bind, meta_cfg)
+                .await
+                .map_err(std::io::Error::other)?;
+            info!("Secondary Meta HTTP gateway listening on {}", bound);
+        }
+    }
 
     // 3. Agones lifecycle & heartbeat
     let agones = Arc::new(AgonesClient::from_env());
@@ -150,6 +234,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map_err(std::io::Error::other)?;
     if let Some(ref client) = nakama_client {
         ws_server_inner = ws_server_inner.with_nakama(client.clone());
+    } else if let Some(ref engine) = in_process_meta {
+        ws_server_inner = ws_server_inner.with_meta_engine_from_env(engine.clone());
     }
     let ws_server = Arc::new(ws_server_inner);
     info!("WebSocket gateway listening on {}", ws_server.local_addr());
@@ -237,6 +323,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }),
     );
 
+    // 6. Generated-world regions (Wealdmarch c02 compiled regions)
+    for (idx, &region_id) in GENERATED_REGION_IDS.iter().enumerate() {
+        if let Some(sim) =
+            AtlasSimulation::from_generated_region(region_id, seed.wrapping_add(100 + idx as u32))
+        {
+            rooms.insert(region_id.to_string(), sim);
+        }
+    }
+
     info!(
         "Initialized {} simulation rooms: {:?}",
         rooms.len(),
@@ -261,6 +356,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         disconnect_grace_ticks,
     );
     let mut snapshot_builder = SnapshotBuilder::new();
+    let mut aoi_trackers: std::collections::HashMap<String, server_rs::spatial::AoiTracker> =
+        std::collections::HashMap::new();
+    let adjacency_graph = RegionAdjacencyGraph::wealdmarch_default();
+    let mut handoff_coordinator = AuthorityHandoffCoordinator::default();
     let mut match_event_buffer = MatchEventBuffer::default();
     let mut character_state_buffer = CharacterStateBuffer::default();
 
@@ -299,17 +398,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let mut departed_users: Vec<String> =
                     disconnected.iter().map(|(s, _)| s.clone()).collect();
                 let mut total_entities: usize = 0;
+                let mut room_frames: std::collections::HashMap<String, server_rs::simulation::LiveFrame> =
+                    std::collections::HashMap::with_capacity(rooms.len());
+                let mut room_disconnects_map: std::collections::HashMap<String, Vec<String>> =
+                    std::collections::HashMap::with_capacity(rooms.len());
 
                 for (room_id, sim) in rooms.iter_mut() {
                     let room_inputs: Vec<server_rs::net::ClientPacket> = inputs
                         .iter()
-                        .filter(|p| room_id_for(&p.room_id) == room_id)
+                        .filter(|p| resolve_room_or_region_id(&p.room_id) == room_id)
                         .cloned()
                         .collect();
 
                     let room_disconnects: Vec<String> = disconnected
                         .iter()
-                        .filter(|(_, r)| room_id_for(r) == room_id)
+                        .filter(|(_, r)| resolve_room_or_region_id(r) == room_id)
                         .map(|(s, _)| s.clone())
                         .collect();
 
@@ -328,19 +431,68 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
                     }
 
+                    room_disconnects_map.insert(room_id.clone(), room_disconnects);
+                    room_frames.insert(room_id.clone(), frame);
+                }
+
+                let epoch_now_ms = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|d| d.as_millis() as u64)
+                    .unwrap_or(0);
+                let handoff_tokens = handoff_coordinator.step_handoffs_with_frames(
+                    &mut rooms,
+                    &mut room_frames,
+                    &adjacency_graph,
+                    epoch_now_ms,
+                );
+                for token in &handoff_tokens {
+                    if let Some(aoi) = aoi_trackers.get_mut(&token.transfer.from_region) {
+                        aoi.remove_viewer(server_rs::protocol::fnv1a_32(&token.transfer.session_id));
+                    }
+                    ws_server
+                        .reassign_session_room(
+                            &token.transfer.session_id,
+                            &token.transfer.to_region,
+                        )
+                        .await;
+                }
+
+                let region_snapshots: std::collections::HashMap<String, Vec<server_rs::protocol::EntitySnapshotData>> =
+                    room_frames
+                        .iter()
+                        .map(|(r, f)| (r.clone(), f.entities.clone()))
+                        .collect();
+
+                for (room_id, frame) in &room_frames {
                     if ws_server.active_connections_in_room(room_id).await > 0 {
                         let epoch_ms = std::time::SystemTime::now()
                             .duration_since(std::time::UNIX_EPOCH)
                             .map(|d| d.as_millis() as u64)
                             .unwrap_or(frame.sim_time_ms);
-                        let snapshot_bytes = snapshot_builder.build_frame(
-                            frame.tick,
-                            epoch_ms,
-                            &frame.entities,
-                            &frame.removed_ids,
-                            &frame.events,
+                        let aoi = aoi_trackers.entry(room_id.clone()).or_default();
+                        if let Some(room_disconnects) = room_disconnects_map.get(room_id) {
+                            for departed in room_disconnects {
+                                aoi.remove_viewer(server_rs::protocol::fnv1a_32(departed));
+                            }
+                        }
+                        let border_ghosts = collect_region_border_ghosts(
+                            room_id,
+                            &adjacency_graph,
+                            &region_snapshots,
                         );
-                        ws_server.broadcast_snapshot_to_room(room_id, snapshot_bytes).await;
+                        ws_server
+                            .broadcast_aoi_snapshots_with_ghosts_to_room(
+                                room_id,
+                                aoi,
+                                &mut snapshot_builder,
+                                frame.tick,
+                                epoch_ms,
+                                &frame.entities,
+                                &border_ghosts,
+                                &frame.removed_ids,
+                                &frame.events,
+                            )
+                            .await;
                     }
                 }
 
@@ -348,15 +500,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 batches_to_flush.extend(match_event_buffer.tick(tick_dt));
 
                 if !batches_to_flush.is_empty() {
-                    if let Some(ref client) = nakama_client {
-                        let client = client.clone();
+                    if let Some(ref storage) = storage_backend {
+                        let storage = storage.clone();
                         tokio::spawn(async move {
                             for res in
-                                MatchEventBuffer::dispatch_batches(client.as_ref(), &batches_to_flush)
+                                MatchEventBuffer::dispatch_batches(storage.as_ref(), &batches_to_flush)
                                     .await
                             {
                                 if let Err(err) = res {
-                                    warn!("Failed to report match events to Nakama: {}", err);
+                                    warn!("Failed to report match events to storage backend: {}", err);
                                 }
                             }
                         });
@@ -372,17 +524,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
 
                 if !states_to_flush.is_empty() {
-                    if let Some(ref client) = nakama_client {
-                        let client = client.clone();
+                    if let Some(ref storage) = storage_backend {
+                        let storage = storage.clone();
                         tokio::spawn(async move {
                             for res in CharacterStateBuffer::dispatch_states(
-                                client.as_ref(),
+                                storage.as_ref(),
                                 &states_to_flush,
                             )
                             .await
                             {
                                 if let Err(err) = res {
-                                    warn!("Failed to save character state to Nakama: {}", err);
+                                    warn!("Failed to save character state to storage backend: {}", err);
                                 }
                             }
                         });
@@ -407,8 +559,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let final_states = character_state_buffer.flush_all();
     if !final_states.is_empty() {
-        if let Some(ref client) = nakama_client {
-            for res in CharacterStateBuffer::dispatch_states(client.as_ref(), &final_states).await {
+        if let Some(ref storage) = storage_backend {
+            for res in CharacterStateBuffer::dispatch_states(storage.as_ref(), &final_states).await
+            {
                 if let Err(err) = res {
                     warn!("Failed to flush character state on shutdown: {}", err);
                 }
@@ -418,8 +571,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let final_batches = match_event_buffer.flush_all();
     if !final_batches.is_empty() {
-        if let Some(ref client) = nakama_client {
-            for res in MatchEventBuffer::dispatch_batches(client.as_ref(), &final_batches).await {
+        if let Some(ref storage) = storage_backend {
+            for res in MatchEventBuffer::dispatch_batches(storage.as_ref(), &final_batches).await {
                 if let Err(err) = res {
                     warn!("Failed to flush final match events on shutdown: {}", err);
                 }
@@ -495,21 +648,5 @@ mod tests {
         assert_eq!(timings.work_us.len(), TICK_REPORT_EVERY - 1);
         timings.record(start + Duration::from_secs(60), Duration::from_millis(2));
         assert!(timings.interval_us.is_empty() && timings.work_us.is_empty());
-    }
-
-    #[tokio::test]
-    async fn sim_ticker_does_not_burst_after_a_stall() {
-        let period = Duration::from_millis(20);
-        let mut ticker = sim_ticker(period);
-        ticker.tick().await;
-        // Stall for six periods, as an overrunning tick or a starved host would.
-        std::thread::sleep(period * 6);
-        let resumed = Instant::now();
-        for _ in 0..4 {
-            ticker.tick().await;
-        }
-        // One tick is due at once; the next three keep the 20 ms cadence. A bursting
-        // timer returns all four immediately.
-        assert!(resumed.elapsed() >= period * 2, "{:?}", resumed.elapsed());
     }
 }

@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0.0",
+  "id": "continent-02-clockwork-steppe",
+  "name": "The Clockwork Steppe",
+  "status": "canon",
+  "core_rationale": "Created where Krono the Brass Titan's mainspring uncoiled across the eastern plateau (scar-brass-faultline), forming a Level 15 to 30 wind-swept frontier of giant half-buried gears.",
+  "parent_world_history_causes": {
+    "world_history_id": "world-history-cradle-of-embers",
+    "god_patron_ids": [
+      "god-krono-brass-titan"
+    ],
+    "war_scar_ids": [
+      "scar-brass-faultline"
+    ],
+    "causal_summary": "Krono's still-ticking gear ribs generate rhythmic wind gusts and provide scrap brass for mortal tinker-towns."
+  },
+  "level_band": {
+    "min_level": 15,
+    "max_level": 30
+  },
+  "climate_profile": {
+    "macro_biome": "Copper-grassland plateaus bisected by resonant brass canyons",
+    "weather_phenomena": [
+      "Rhythmic Clock-Gales every ten minutes that boost glider speed"
+    ],
+    "skybox_palette": "Crisp cyan sky with spinning brass astrolabe cloud rings"
+  },
+  "civilization_style": {
+    "culture_archetype": "Wind-tinkers, glider couriers, and spring-miners",
+    "architecture_motif": "Riveted copper windmills built inside hollow Titan gear-teeth",
+    "character_scale_adaptation": "Giant Titan gears act as 4.0 meter wide highway ramps (>= 3.5 meter law); mortal shops inside gear-hubs use 0.60 meter workbench counters and 0.15 meter cog-steps."
+  },
+  "travel_links": [
+    {
+      "target_continent_id": "continent-01-hearthbloom-basin",
+      "travel_mode": "root_train",
+      "hub_name": "Pinion Terminus",
+      "status": "open",
+      "unlock_rationale": "Inbound root-train and Kettle-Whistle Viaduct connection from Hearthbloom Basin."
+    },
+    {
+      "target_continent_id": "continent-03-shattered-halo",
+      "travel_mode": "dimensional_rift",
+      "hub_name": "The Astrolabe Gate",
+      "status": "open",
+      "unlock_rationale": "Stabilized after calibrating the Star-Pendulum key between Astrolabe Rift Promontory and Tether Causeway on Continent 03."
+    }
+  ],
+  "district_ids": [
+    "district-rustcog-downs",
+    "district-mainspring-caldera",
+    "district-verdigris-siphon",
+    "district-gilded-exhaust",
+    "district-thunder-coil-basin",
+    "district-pendulum-steppe-west",
+    "district-helical-gear-trench",
+    "district-differential-spur-gorge",
+    "district-flywheel-dynamo-canyon",
+    "district-bimetallic-escapement-mesa",
+    "district-thermal-compensator-basin"
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Horologists in Bimetallic-Chronometer Hub say the eastern Thermal Compensator Basin rises and falls by two full meters between dawn and dusk as its mercury bellows breathe.",
+    "visual_silhouette": "Concentric brass bellows-towers and silver thermal radiator fins shimmering beyond the eastern rim of Bimetallic Escapement Mesa.",
+    "unanswered_question": "What deep-crust geothermal spring feeds the primary heat exchanger of Thermal Compensator Basin?",
+    "discovery_trigger_hint": "Ten Districts on Continent 02 are Canon while Thermal Compensator Basin is now in Draft status with Radiator Manifold Span seeded."
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-krono-brass-titan and scar-brass-faultline from world-history-cradle-of-embers."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Riveted copper wind-towns built inside colossal ticking Titan gear-teeth across golden short-grass steppes."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Uses 4.0m gear-tooth highways, 0.60m tinker workbenches, and 0.15m cog-steps tailored to 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Organizes ten Canon Districts plus Thermal Compensator Basin (Draft) on Continent 02."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Advances Thermal Compensator Basin to Draft while preserving Radiator Manifold Span and leaf Mystery nodes behind Fog of Lore portals."
+    }
+  }
+}

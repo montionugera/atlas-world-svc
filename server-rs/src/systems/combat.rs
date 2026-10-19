@@ -3,9 +3,9 @@ use crate::combat::damage::{DamageCalculator, DamageOptions};
 use crate::combat::{DamageType, Element};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    knockback_speed, CombatStats, CooldownTracker, ElementalAttributes, EntityId, Health, HitLog,
-    HitRecord, Mass, MobAi, MobSpawnAnchor, PlayerAvatar, PlayerInputState, Position,
-    StatusEffects, Velocity,
+    knockback_speed, CombatStats, CooldownTracker, ElementalAttributes, EntityId, EquippedWeapon,
+    Health, HealthRegen, HitLog, HitRecord, Mass, MobAi, MobSpawnAnchor, ParryState, PlayerAvatar,
+    PlayerInputState, Position, Projectile, StatusEffects, Velocity, WeaponKind,
 };
 use crate::spatial::grid::SpatialGrid;
 use crate::storage::{MatchEvent, MatchEventQueue};
@@ -13,6 +13,7 @@ use bevy_ecs::prelude::*;
 
 #[allow(clippy::type_complexity)]
 pub fn combat_system(
+    mut commands: Commands,
     clock: Res<SimClock>,
     grid: Res<SpatialGrid>,
     mut event_queue: Option<ResMut<MatchEventQueue>>,
@@ -29,6 +30,8 @@ pub fn combat_system(
                 Option<&PlayerAvatar>,
                 Option<&mut PlayerInputState>,
                 Option<&ElementalAttributes>,
+                Option<&mut ParryState>,
+                Option<&EquippedWeapon>,
             ),
             Without<MobAi>,
         >,
@@ -53,12 +56,27 @@ pub fn combat_system(
         // Mobs with MobAi are excluded: mob_ai_system owns their attacks and their single
         // per-tick cooldown decrement.
         let mut attackers = params.p0();
-        for (entity, pos, mut stats, health, entity_id, avatar, mut input, attrs) in &mut attackers
+        for (
+            entity,
+            pos,
+            mut stats,
+            health,
+            entity_id,
+            avatar,
+            mut input,
+            attrs,
+            mut opt_parry,
+            opt_weapon,
+        ) in &mut attackers
         {
             // Consume the attack latch every tick, whether or not a swing happens. Clearing
             // it only on a landed swing left a released tap armed forever when nothing was in
             // reach, and projectile_collision_system reads that flag as "parrying".
             let wants_attack = input.as_ref().is_some_and(|i| i.attack);
+            let holding_attack = input.as_ref().is_some_and(|i| i.attack || i.attack_held);
+            if let Some(ref mut parry) = opt_parry {
+                parry.tick_hold(dt, holding_attack);
+            }
             if let Some(ref mut inp) = input {
                 inp.attack = inp.attack_held;
             }
@@ -88,6 +106,43 @@ pub fn combat_system(
             }
 
             let is_player = stats.is_player;
+            if let Some(weapon) = opt_weapon.filter(|w| w.is_ranged()) {
+                stats.cooldown_timer = stats.attack_cooldown;
+                let (aim_x, aim_y) = input
+                    .as_ref()
+                    .map_or((1.0, 0.0), |inp| inp.aim_direction(*pos));
+                let attacker_elem = attrs.map(|a| a.element).unwrap_or(Element::Neutral);
+                let (damage_type, skill_id) = match weapon.kind {
+                    WeaponKind::Bow => (DamageType::Physical, "bow_shot"),
+                    WeaponKind::Staff => (DamageType::Magical, "staff_bolt"),
+                    WeaponKind::Melee => (DamageType::Physical, "melee"),
+                };
+                let speed = weapon.projectile_speed.max(150.0);
+                let max_range = weapon.projectile_range.max(150.0);
+                let radius = weapon.projectile_radius.max(3.0);
+                commands.spawn((
+                    Position::new(pos.x, pos.y),
+                    Velocity::new(aim_x * speed, aim_y * speed),
+                    Projectile {
+                        owner: entity,
+                        target: None,
+                        damage: stats.attack_power.max(1.0),
+                        damage_type,
+                        element: attacker_elem,
+                        speed,
+                        radius,
+                        max_range,
+                        traveled_distance: 0.0,
+                        lifetime: (max_range / speed) + 0.5,
+                        effects: Vec::new(),
+                        is_player_projectile: is_player,
+                        aoe_radius: 0.0,
+                        skill_id: Some(skill_id.to_string()),
+                        detonated: false,
+                    },
+                ));
+                continue;
+            }
             let attack_range = stats.attack_range;
             let mut nearest_target = None;
             let mut nearest_dist_sq = attack_range * attack_range;
@@ -248,12 +303,28 @@ pub fn cooldown_tick_system(clock: Res<SimClock>, mut query: Query<&mut Cooldown
     }
 }
 
-pub fn status_effect_tick_system(clock: Res<SimClock>, mut query: Query<&mut StatusEffects>) {
+pub fn parry_tick_system(
+    clock: Res<SimClock>,
+    mut query: Query<(&PlayerInputState, &mut ParryState)>,
+) {
     let dt = clock.delta_seconds();
     if dt <= 0.0 {
         return;
     }
-    for mut effects in &mut query {
+    for (input, mut parry) in &mut query {
+        parry.tick_hold(dt, input.attack || input.attack_held);
+    }
+}
+
+pub fn status_effect_tick_system(
+    clock: Res<SimClock>,
+    mut query: Query<(&mut StatusEffects, Option<&mut Health>)>,
+) {
+    let dt = clock.delta_seconds();
+    if dt <= 0.0 {
+        return;
+    }
+    for (mut effects, mut opt_health) in &mut query {
         if effects.freeze_timer > 0.0 {
             effects.freeze_timer = (effects.freeze_timer - dt).max(0.0);
             if effects.freeze_timer == 0.0 {
@@ -265,6 +336,83 @@ pub fn status_effect_tick_system(clock: Res<SimClock>, mut query: Query<&mut Sta
         }
         if effects.knockback_timer > 0.0 {
             effects.knockback_timer = (effects.knockback_timer - dt).max(0.0);
+        }
+        if effects.burn_timer > 0.0 {
+            let active_dt = dt.min(effects.burn_timer);
+            if let Some(ref mut health) = opt_health {
+                if effects.burn_dps > 0.0 {
+                    health.take_damage(effects.burn_dps * active_dt);
+                }
+            }
+            effects.burn_timer = (effects.burn_timer - dt).max(0.0);
+            if effects.burn_timer <= 1e-4 {
+                effects.burn_timer = 0.0;
+                effects.burn_dps = 0.0;
+            }
+        }
+        if effects.poison_timer > 0.0 {
+            let active_dt = dt.min(effects.poison_timer);
+            if let Some(ref mut health) = opt_health {
+                if effects.poison_dps > 0.0 {
+                    health.take_damage(effects.poison_dps * active_dt);
+                }
+            }
+            effects.poison_timer = (effects.poison_timer - dt).max(0.0);
+            if effects.poison_timer <= 1e-4 {
+                effects.poison_timer = 0.0;
+                effects.poison_dps = 0.0;
+            }
+        }
+        if effects.regen_timer > 0.0 {
+            let active_dt = dt.min(effects.regen_timer);
+            if let Some(ref mut health) = opt_health {
+                if effects.regen_hps > 0.0 {
+                    health.heal(effects.regen_hps * active_dt);
+                }
+            }
+            effects.regen_timer = (effects.regen_timer - dt).max(0.0);
+            if effects.regen_timer <= 1e-4 {
+                effects.regen_timer = 0.0;
+                effects.regen_hps = 0.0;
+            }
+        }
+    }
+}
+
+/// Regenerates health over time for alive entities with `HealthRegen` or active regeneration status (E-007 Slice 6).
+pub fn health_regen_system(
+    clock: Res<SimClock>,
+    mut query: Query<(
+        &mut Health,
+        Option<&HealthRegen>,
+        Option<&mut StatusEffects>,
+    )>,
+) {
+    let dt = clock.delta_seconds();
+    if dt <= 0.0 {
+        return;
+    }
+    for (mut health, opt_regen, mut opt_status) in &mut query {
+        if !health.is_alive {
+            continue;
+        }
+        if let Some(regen) = opt_regen {
+            if regen.hp_per_sec > 0.0 {
+                health.heal(regen.hp_per_sec * dt);
+            }
+        }
+        if let Some(ref mut status) = opt_status {
+            if status.regen_timer > 0.0 {
+                let active_dt = dt.min(status.regen_timer);
+                if status.regen_hps > 0.0 {
+                    health.heal(status.regen_hps * active_dt);
+                }
+                status.regen_timer = (status.regen_timer - dt).max(0.0);
+                if status.regen_timer <= 1e-4 {
+                    status.regen_timer = 0.0;
+                    status.regen_hps = 0.0;
+                }
+            }
         }
     }
 }

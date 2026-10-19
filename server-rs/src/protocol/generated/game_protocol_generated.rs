@@ -357,6 +357,8 @@ pub mod atlas {
             pub const VT_MOB_TYPE: ::flatbuffers::VOffsetT = 20;
             pub const VT_OWNER_ID: ::flatbuffers::VOffsetT = 22;
             pub const VT_INPUT_ACK: ::flatbuffers::VOffsetT = 24;
+            pub const VT_LEVEL: ::flatbuffers::VOffsetT = 26;
+            pub const VT_XP: ::flatbuffers::VOffsetT = 28;
 
             #[inline]
             pub unsafe fn init_from_table(table: ::flatbuffers::Table<'a>) -> Self {
@@ -373,6 +375,8 @@ pub mod atlas {
                 args: &'args EntityDeltaArgs<'args>,
             ) -> ::flatbuffers::WIPOffset<EntityDelta<'bldr>> {
                 let mut builder = EntityDeltaBuilder::new(_fbb);
+                builder.add_xp(args.xp);
+                builder.add_level(args.level);
                 builder.add_input_ack(args.input_ack);
                 builder.add_owner_id(args.owner_id);
                 if let Some(x) = args.mob_type {
@@ -501,6 +505,24 @@ pub mod atlas {
                         .unwrap()
                 }
             }
+            #[inline]
+            pub fn level(&self) -> u32 {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe {
+                    self._tab
+                        .get::<u32>(EntityDelta::VT_LEVEL, Some(0))
+                        .unwrap()
+                }
+            }
+            #[inline]
+            pub fn xp(&self) -> u32 {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe { self._tab.get::<u32>(EntityDelta::VT_XP, Some(0)).unwrap() }
+            }
         }
 
         impl ::flatbuffers::Verifiable for EntityDelta<'_> {
@@ -525,6 +547,8 @@ pub mod atlas {
                     )?
                     .visit_field::<u32>("owner_id", Self::VT_OWNER_ID, false)?
                     .visit_field::<u32>("input_ack", Self::VT_INPUT_ACK, false)?
+                    .visit_field::<u32>("level", Self::VT_LEVEL, false)?
+                    .visit_field::<u32>("xp", Self::VT_XP, false)?
                     .finish();
                 Ok(())
             }
@@ -541,6 +565,8 @@ pub mod atlas {
             pub mob_type: Option<::flatbuffers::WIPOffset<&'a str>>,
             pub owner_id: u32,
             pub input_ack: u32,
+            pub level: u32,
+            pub xp: u32,
         }
         impl<'a> Default for EntityDeltaArgs<'a> {
             #[inline]
@@ -557,6 +583,8 @@ pub mod atlas {
                     mob_type: None,
                     owner_id: 0,
                     input_ack: 0,
+                    level: 0,
+                    xp: 0,
                 }
             }
         }
@@ -626,6 +654,14 @@ pub mod atlas {
                     .push_slot::<u32>(EntityDelta::VT_INPUT_ACK, input_ack, 0);
             }
             #[inline]
+            pub fn add_level(&mut self, level: u32) {
+                self.fbb_.push_slot::<u32>(EntityDelta::VT_LEVEL, level, 0);
+            }
+            #[inline]
+            pub fn add_xp(&mut self, xp: u32) {
+                self.fbb_.push_slot::<u32>(EntityDelta::VT_XP, xp, 0);
+            }
+            #[inline]
             pub fn new(
                 _fbb: &'b mut ::flatbuffers::FlatBufferBuilder<'a, A>,
             ) -> EntityDeltaBuilder<'a, 'b, A> {
@@ -656,6 +692,8 @@ pub mod atlas {
                 ds.field("mob_type", &self.mob_type());
                 ds.field("owner_id", &self.owner_id());
                 ds.field("input_ack", &self.input_ack());
+                ds.field("level", &self.level());
+                ds.field("xp", &self.xp());
                 ds.finish()
             }
         }

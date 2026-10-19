@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-spice-kiln-cellar",
+  "name": "Spice-Kiln Cellar",
+  "map_id": "spice-kiln-cellar-b1",
+  "parent_district_id": "district-cinnamon-bellows-bluff",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Sub-surface terracotta spice-roasting vault at [1, 1] floor -1 beneath Cinnamon-Mill Haven where Sola's warm hearth-flues cure giant cinnamon quills and star-anise pods.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    14,
+    15
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_base.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_spice_kiln_cellar",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Subterranean warm cinnamon-syrup channels glowing beside glazed roasting ovens"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-spice-cellar-exit-mill-haven",
+      "direction": "Exit",
+      "target_node_id": "town-cinnamon-mill-haven",
+      "target_map_id": "cinnamon-mill-haven",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3780.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-anise-spore-puff",
+      "monster_id": "monster-anise-spore-puff",
+      "monster_name": "Anise-Spore Puff",
+      "spawn_count": 12,
+      "respawn_seconds": 26,
+      "level": 14,
+      "element": "Fire",
+      "size": "Small",
+      "race": "Plant",
+      "family": "flora_fauna",
+      "item_drops": [
+        {
+          "item_id": "item-roasted-anise-petal",
+          "item_name": "Roasted Anise Petal",
+          "drop_chance_percent": 40.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-anise-spore-puff",
+        "card_name": "Anise-Spore Puff Card",
+        "drop_chance_percent": 0.04
+      }
+    },
+    {
+      "spawn_id": "spawn-cinnamon-kiln-stag-beetle",
+      "monster_id": "monster-cinnamon-kiln-stag-beetle",
+      "monster_name": "Cinnamon-Kiln Stag Beetle",
+      "spawn_count": 6,
+      "respawn_seconds": 42,
+      "level": 15,
+      "element": "Earth",
+      "size": "Large",
+      "race": "Insect",
+      "family": "carapace",
+      "item_drops": [
+        {
+          "item_id": "item-star-pod-lantern",
+          "item_name": "Star-Pod Lantern",
+          "drop_chance_percent": 26.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-cinnamon-kiln-stag-beetle",
+        "card_name": "Cinnamon-Kiln Stag Beetle Card",
+        "drop_chance_percent": 0.03
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.35,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_base.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Sits at [1, 1] floor -1 directly beneath Cinnamon-Mill Haven and yields the Star-Pod Lantern."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Subterranean terracotta spice-roasting vault fragrant with warm cinnamon syrup and glowing star-anise pods."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 12.5m cellar aisles, 0.14m terracotta risers, and 2.20m x 1.65m archways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Populated by flora_fauna and carapace monster families with symmetric Exit portal back to Cinnamon-Mill Haven."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops the Star-Pod Lantern referenced in the Star-Anise Promontory Fog of Lore lock_message."
+    }
+  }
+}

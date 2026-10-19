@@ -1,0 +1,179 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-penumbra-refraction-causeway",
+  "name": "Penumbra Refraction Causeway",
+  "map_id": "penumbra-refraction-causeway",
+  "parent_district_id": "district-penumbra-prism-reef",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "canon",
+  "core_rationale": "Western smoky-violet prism causeway of Penumbra Prism Reef at [0, 1] linking Aurora Bell Sanctuary to Penumbra Prism Haven across half-shadowed coral arches.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    49,
+    50
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/bridge_stone.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_penumbra_refraction_causeway",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Upward-streaming silver twilight cascades refracted through smoky violet coral arches"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-penumbra-causeway-east-prism-haven",
+      "direction": "East",
+      "target_node_id": "town-penumbra-prism-haven",
+      "target_map_id": "penumbra-prism-haven",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-penumbra-causeway-west-bell-sanctuary",
+      "direction": "West",
+      "target_node_id": "town-aurora-bell-sanctuary",
+      "target_map_id": "aurora-bell-sanctuary",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-shadow-cartographer-nyx",
+      "name": "Shadow-Cartographer Nyx",
+      "role": "Penumbra Causeway Warden",
+      "position_meters": {
+        "x": 1950.0,
+        "y": 2015.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Watch your dual shadows on Penumbra Refraction Causeway! Check my 0.58 meter prism sextant before crossing east to Penumbra Prism Haven."
+    }
+  ],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-penumbra-glass-manta",
+      "monster_id": "monster-penumbra-glass-manta",
+      "monster_name": "Penumbra Glass-Manta",
+      "spawn_count": 12,
+      "respawn_seconds": 25,
+      "level": 49,
+      "element": "Shadow",
+      "size": "Medium",
+      "race": "Demon",
+      "family": "void_spawn",
+      "item_drops": [
+        {
+          "item_id": "item-smoky-prism-fin",
+          "item_name": "Smoky Prism Fin",
+          "drop_chance_percent": 42.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-penumbra-glass-manta",
+        "card_name": "Penumbra Glass-Manta Card",
+        "drop_chance_percent": 0.04
+      }
+    },
+    {
+      "spawn_id": "spawn-coral-prism-hermit",
+      "monster_id": "monster-coral-prism-hermit",
+      "monster_name": "Coral-Prism Hermit",
+      "spawn_count": 8,
+      "respawn_seconds": 34,
+      "level": 50,
+      "element": "Water",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-silver-coral-spire",
+          "item_name": "Silver Coral Spire",
+          "drop_chance_percent": 32.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-coral-prism-hermit",
+        "card_name": "Coral-Prism Hermit Card",
+        "drop_chance_percent": 0.03
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.44,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.15,
+      "width": 1.6
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/bridge_stone.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Links Aurora Chime Atoll east into Penumbra Prism Reef along scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Smoky crystal bridge-spans casting dual violet-and-silver shadows across upward waterfalls."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 12.5m prism causeways, 0.14m basalt risers, 0.58m sextant stands, and 0.20m grass for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Occupies [0, 1] with void_spawn and construct spawns and symmetric West/East portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Promoted from Mystery to Canon with full 5-pillar verification while Corona-Flare Arch remains Mystery."
+    }
+  }
+}

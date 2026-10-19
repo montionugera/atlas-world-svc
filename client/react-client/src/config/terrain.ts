@@ -1,8 +1,9 @@
+import generatedWorldMaps from "../data/generatedWorldMaps.json";
+
 /**
  * Client mirror of the terrain tables in server-rs/src/content/map.rs
- * (`TerrainType::speed_multiplier`, `MapConfig::load` terrain_zones).
- * The wire protocol carries no terrain, so these must be kept in step by hand;
- * the debug readout's measured speed is the server's truth, this is the expectation.
+ * (`TerrainType::speed_multiplier`, `MapConfig::load` terrain_zones) plus
+ * shared generated-world obstacles and spawn areas from `generatedWorldMaps.json`.
  */
 export type TerrainTypeId =
   "road" | "grass" | "forest" | "sand" | "ice" | "mud";
@@ -103,13 +104,44 @@ const TERRAIN_ZONES_BY_MAP: Record<string, readonly TerrainZone[]> = {
   ],
 };
 
-/** Solid blocks (server `static_obstacles`) worth drawing on the plain test maps. */
+/** Solid blocks (server `static_obstacles`) worth drawing on the plain/generated maps. */
 export interface StaticBlock {
   x: number;
   y: number;
   width: number;
   height: number;
 }
+
+export interface MapSpawnAreaDef {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  mobType: string;
+  count: number;
+}
+
+type GeneratedRegionEntry = {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  playerSpawn: { x: number; y: number };
+  staticObstacles: {
+    id: string;
+    min_x: number;
+    min_y: number;
+    max_x: number;
+    max_y: number;
+  }[];
+  spawnAreas: MapSpawnAreaDef[];
+};
+
+const GENERATED_REGIONS = generatedWorldMaps.regions as Record<
+  string,
+  GeneratedRegionEntry
+>;
 
 const STATIC_BLOCKS_BY_MAP: Record<string, readonly StaticBlock[]> = {
   "map-for-test-terrain": [
@@ -130,10 +162,37 @@ const STATIC_BLOCKS_BY_MAP: Record<string, readonly StaticBlock[]> = {
       [130, 110],
     ].map(([dx, dy]) => ({ x: cx + dx, y: cy + dy, width: 40, height: 40 })),
   ),
+  ...Object.fromEntries(
+    Object.entries(GENERATED_REGIONS).map(([regionId, region]) => [
+      regionId,
+      region.staticObstacles.map((obs) => ({
+        x: obs.min_x,
+        y: obs.min_y,
+        width: Number((obs.max_x - obs.min_x).toFixed(1)),
+        height: Number((obs.max_y - obs.min_y).toFixed(1)),
+      })),
+    ]),
+  ),
 };
 
 export function staticBlocksFor(mapId: string): readonly StaticBlock[] {
   return STATIC_BLOCKS_BY_MAP[mapId] ?? [];
+}
+
+/** Spawn areas derived directly from the shared generated world-map manifest. */
+export function spawnAreasFor(mapId: string): readonly MapSpawnAreaDef[] {
+  if (mapId === "map-for-play") {
+    return generatedWorldMaps.playMapSpawnAreas;
+  }
+  return GENERATED_REGIONS[mapId]?.spawnAreas ?? [];
+}
+
+/** Authoritative player spawn point derived from the shared generated world-map manifest. */
+export function playerSpawnFor(mapId: string): { x: number; y: number } | null {
+  if (mapId === "map-for-play") {
+    return generatedWorldMaps.playMapPlayerSpawn;
+  }
+  return GENERATED_REGIONS[mapId]?.playerSpawn ?? null;
 }
 
 /**
@@ -145,7 +204,13 @@ export const REFERENCE_RUN_SPEED = 200;
 
 /** Zones for a map, or null when the client has no terrain data for it. */
 export function terrainZonesFor(mapId: string): readonly TerrainZone[] | null {
-  return TERRAIN_ZONES_BY_MAP[mapId] ?? null;
+  if (mapId in TERRAIN_ZONES_BY_MAP) {
+    return TERRAIN_ZONES_BY_MAP[mapId];
+  }
+  if (mapId in GENERATED_REGIONS) {
+    return TERRAIN_ZONES_BY_MAP["map-for-play"];
+  }
+  return null;
 }
 
 /** Terrain under a world point (min edge inclusive, max edge exclusive, like the server). */

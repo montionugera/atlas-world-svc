@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-outer-orbit-drift",
+  "name": "Outer Orbit Drift",
+  "map_id": null,
+  "parent_district_id": "district-aphelion-halo-rim",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northernmost zero-gravity comet-shard drift of Aphelion Halo Rim at [1, 0] where Vesper's outermost starlight chains trail off into the uncharted astral sea.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    50,
+    50
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Cartographers claim the last buoy in Outer Orbit Drift is tied not to an island, but to the prow of a sleeping star-galleon.",
+    "visual_silhouette": "A slow-spinning ribbon of frost-coated comet boulders trailing silver dust into the northern aurora.",
+    "unanswered_question": "Who crewed the sleeping star-galleon moored beyond the Outer Orbit Drift?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Marks the outermost orbital boundary of scar-vesper-crater in Aphelion Halo Rim."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Frost-coated comet boulders trailing silver dust toward a sleeping star-galleon."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: gated behind the North fog_of_lore portal on town-aphelion-buoy-haven."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook without generating filler map geometry."
+    }
+  }
+}

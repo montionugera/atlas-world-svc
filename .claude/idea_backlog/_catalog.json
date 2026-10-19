@@ -879,133 +879,133 @@
     "id": "I-144",
     "title": "Measure capacity",
     "created_at": "2026-10-11T06:59:04.670870+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-081",
     "epic": "E-004"
   },
   {
     "id": "I-145",
     "title": "Decide the world model",
     "created_at": "2026-10-11T06:59:04.674658+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-082",
     "epic": "E-004"
   },
   {
     "id": "I-146",
     "title": "Send each player only what is near them",
     "created_at": "2026-10-11T06:59:04.676842+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-083",
     "epic": "E-004"
   },
   {
     "id": "I-147",
     "title": "Load a generated-world region on the server",
     "created_at": "2026-10-11T06:59:04.677927+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-084",
     "epic": "E-004"
   },
   {
     "id": "I-148",
     "title": "Derive client obstacles and spawn from the same source",
     "created_at": "2026-10-11T06:59:04.679157+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-098",
     "epic": "E-004"
   },
   {
     "id": "I-149",
     "title": "Sleeping regions",
     "created_at": "2026-10-11T06:59:04.683180+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-100",
     "epic": "E-004"
   },
   {
     "id": "I-150",
     "title": "World state store",
     "created_at": "2026-10-11T06:59:04.684576+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-103",
     "epic": "E-004"
   },
   {
     "id": "I-151",
     "title": "Save and restore region state across a restart",
     "created_at": "2026-10-11T06:59:04.686973+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-105",
     "epic": "E-004"
   },
   {
     "id": "I-152",
     "title": "Border ghosts",
     "created_at": "2026-10-11T06:59:04.689376+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-107",
     "epic": "E-004"
   },
   {
     "id": "I-153",
     "title": "Authority handoff",
     "created_at": "2026-10-11T06:59:04.690361+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-109",
     "epic": "E-004"
   },
   {
     "id": "I-154",
     "title": "Experience and levels",
     "created_at": "2026-10-11T06:59:05.803624+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-131",
     "epic": "E-005"
   },
   {
     "id": "I-155",
     "title": "Minimal item catalogue",
     "created_at": "2026-10-11T06:59:05.805693+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-133",
     "epic": "E-005"
   },
   {
     "id": "I-156",
     "title": "Loot drops and pickup",
     "created_at": "2026-10-11T06:59:05.823871+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-139",
     "epic": "E-005"
   },
   {
     "id": "I-157",
     "title": "Idempotent server-only grants",
     "created_at": "2026-10-11T06:59:05.825978+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-140",
     "epic": "E-005"
   },
   {
     "id": "I-158",
     "title": "Inventory and equipment screen",
     "created_at": "2026-10-11T06:59:05.828097+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-141",
     "epic": "E-005"
   },
   {
     "id": "I-159",
     "title": "Weapon switching and skill loadout in play",
     "created_at": "2026-10-11T06:59:05.829423+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-142",
     "epic": "E-005"
   },
   {
     "id": "I-160",
     "title": "Death, bind point and travel",
     "created_at": "2026-10-11T06:59:05.832159+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-144",
     "epic": "E-005"
   },
   {
     "id": "I-161",
     "title": "Currency and vendor",
     "created_at": "2026-10-11T06:59:05.834028+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-145",
     "epic": "E-005"
   },
   {
     "id": "I-162",
     "title": "Quests at runtime",
     "created_at": "2026-10-11T06:59:05.834954+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-146",
     "epic": "E-005"
   },
   {
@@ -1068,98 +1068,98 @@
     "id": "I-171",
     "title": "Mob attack wind-up and facing",
     "created_at": "2026-10-11T06:59:07.933674+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-111",
     "epic": "E-007"
   },
   {
     "id": "I-172",
     "title": "Parry cost",
     "created_at": "2026-10-11T06:59:07.937712+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-114",
     "epic": "E-007"
   },
   {
     "id": "I-173",
     "title": "Aimed ranged attacks",
     "created_at": "2026-10-11T06:59:07.939822+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-116",
     "epic": "E-007"
   },
   {
     "id": "I-174",
     "title": "Lingering area skills",
     "created_at": "2026-10-11T06:59:07.941356+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-118",
     "epic": "E-007"
   },
   {
     "id": "I-175",
     "title": "Damage-over-time statuses",
     "created_at": "2026-10-11T06:59:07.942388+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-121",
     "epic": "E-007"
   },
   {
     "id": "I-176",
     "title": "Healing in a fight",
     "created_at": "2026-10-11T06:59:07.943473+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-122",
     "epic": "E-007"
   },
   {
     "id": "I-177",
     "title": "Boss tier scaling at spawn",
     "created_at": "2026-10-11T06:59:07.944897+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-124",
     "epic": "E-007"
   },
   {
     "id": "I-178",
     "title": "Mob attack variety",
     "created_at": "2026-10-11T06:59:07.945984+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-125",
     "epic": "E-007"
   },
   {
     "id": "I-179",
     "title": "Companion spawn and follow",
     "created_at": "2026-10-11T06:59:07.946916+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-127",
     "epic": "E-007"
   },
   {
     "id": "I-180",
     "title": "Companion combat and respawn",
     "created_at": "2026-10-11T06:59:07.948224+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-129",
     "epic": "E-007"
   },
   {
     "id": "I-181",
     "title": "Nearby and world chat",
     "created_at": "2026-10-11T06:59:09.180187+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-147",
     "epic": "E-008"
   },
   {
     "id": "I-182",
     "title": "Friends list",
     "created_at": "2026-10-11T06:59:09.182780+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-148",
     "epic": "E-008"
   },
   {
     "id": "I-183",
     "title": "Parties",
     "created_at": "2026-10-11T06:59:09.184126+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-149",
     "epic": "E-008"
   },
   {
     "id": "I-184",
     "title": "Find and join friends in the world",
     "created_at": "2026-10-11T06:59:09.185141+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-150",
     "epic": "E-008"
   },
   {
@@ -1210,5 +1210,238 @@
     "created_at": "2026-10-11T06:59:10.428079+00:00",
     "promoted_to": null,
     "epic": "E-009"
+  },
+  {
+    "id": "I-192",
+    "title": "World History and Concept and Continent Studio Schemas, Mystery State Machine, and Quality Checklists",
+    "created_at": "2026-10-18T03:51:50.399715+00:00",
+    "promoted_to": "F-085",
+    "epic": "E-010"
+  },
+  {
+    "id": "I-193",
+    "title": "District and Town or Hunting Area Topology, Ecology, and Map Compiler Upgrade",
+    "created_at": "2026-10-18T03:51:50.401927+00:00",
+    "promoted_to": "F-086",
+    "epic": "E-010"
+  },
+  {
+    "id": "I-194",
+    "title": "Four-Level Perspective Switcher (World History and Concept to Continent) in Observatory Web Studio",
+    "created_at": "2026-10-18T03:51:50.403195+00:00",
+    "promoted_to": "F-087",
+    "epic": "E-010"
+  },
+  {
+    "id": "I-195",
+    "title": "District Connected Map Matrix and Town or Hunting Area plus Monster Detail Inspector",
+    "created_at": "2026-10-18T03:51:50.404021+00:00",
+    "promoted_to": "F-088",
+    "epic": "E-010"
+  },
+  {
+    "id": "I-196",
+    "title": "Human-in-the-Loop Core Rationale, Quality Checklist Gate, Mystery Toggle, and Top-Down Generation Drawer",
+    "created_at": "2026-10-18T03:51:50.405254+00:00",
+    "promoted_to": "F-089",
+    "epic": "E-010"
+  },
+  {
+    "id": "I-197",
+    "title": "Autonomous Product Owner Multi-Agent Studio Pipeline, Self-Evaluation Telemetry, and Kilnfire Terraces Increment",
+    "created_at": "2026-10-18T05:03:54.014139+00:00",
+    "promoted_to": "F-090"
+  },
+  {
+    "id": "I-198",
+    "title": "Native Rust Meta Engine and Trait-Backed Persistence (Nakama Replacement)",
+    "created_at": "2026-10-18T05:28:14.258916+00:00",
+    "promoted_to": "F-091"
+  },
+  {
+    "id": "I-199",
+    "title": "Continent 02 The Clockwork Steppe and District Rustcog Downs Canon Promotion, Connected Map Matrix, and Cross-Continent Viaduct",
+    "created_at": "2026-10-18T06:17:23.128785+00:00",
+    "promoted_to": "F-092"
+  },
+  {
+    "id": "I-200",
+    "title": "District Mainspring Caldera Canon Promotion, Connected 2x2 Foundry Matrix, and Cross-District Flywheel Viaduct",
+    "created_at": "2026-10-18T07:27:39.420436+00:00",
+    "promoted_to": "F-093"
+  },
+  {
+    "id": "I-201",
+    "title": "District Verdigris Siphon Canon Promotion, Connected 2x2 Coolant Matrix, and Continent 03 The Shattered Halo Draft Architecture",
+    "created_at": "2026-10-18T07:39:22.981621+00:00",
+    "promoted_to": "F-094"
+  },
+  {
+    "id": "I-202",
+    "title": "Continent 03 The Shattered Halo and District Starfall Anchorage Canon Promotion, Astrolabe Rift Bridge, and Sky-Island Matrix",
+    "created_at": "2026-10-18T07:51:11.707572+00:00",
+    "promoted_to": "F-095"
+  },
+  {
+    "id": "I-203",
+    "title": "District The Eclipse Observatory Canon Promotion, Orrery Bridge Connection, and Nebula Undertide Draft",
+    "created_at": "2026-10-18T08:06:23.778980+00:00",
+    "promoted_to": "F-096"
+  },
+  {
+    "id": "I-204",
+    "title": "District Nebula Undertide Canon Promotion, Kelp Spiral Reef Connection, and Gilded Exhaust Draft",
+    "created_at": "2026-10-18T08:21:04.078122+00:00",
+    "promoted_to": "F-097"
+  },
+  {
+    "id": "I-205",
+    "title": "District The Gilded Exhaust Flues Canon Promotion, Flue Causeway Connection, and Zenith Crown Draft",
+    "created_at": "2026-10-18T08:37:46.321898+00:00",
+    "promoted_to": "F-099"
+  },
+  {
+    "id": "I-206",
+    "title": "District The Zenith Crown Canon Promotion, Airship Loop Activation, and Ash-Bellows Trench Draft",
+    "created_at": "2026-10-18T08:48:47.166184+00:00",
+    "promoted_to": "F-101"
+  },
+  {
+    "id": "I-207",
+    "title": "District Ash-Bellows Trench Canon Promotion, Firebrick Duct Connection, and Perigee Abyss Draft",
+    "created_at": "2026-10-18T09:01:20.213038+00:00",
+    "promoted_to": "F-102"
+  },
+  {
+    "id": "I-208",
+    "title": "District Perigee Abyss Canon Promotion, Stalactite Plunge Connection, and Porcelain Cradle Draft",
+    "created_at": "2026-10-18T09:13:51.821772+00:00",
+    "promoted_to": "F-104"
+  },
+  {
+    "id": "I-209",
+    "title": "District Porcelain Cradle Canon Promotion, Celadon Causeway Connection, and Thunder-Coil Basin Draft",
+    "created_at": "2026-10-18T09:29:14.013680+00:00",
+    "promoted_to": "F-106"
+  },
+  {
+    "id": "I-210",
+    "title": "District Thunder-Coil Basin Canon Promotion, Leyden Causeway Connection, and Aphelion Halo Rim Draft",
+    "created_at": "2026-10-18T09:41:35.369059+00:00",
+    "promoted_to": "F-108"
+  },
+  {
+    "id": "I-211",
+    "title": "District Aphelion Halo Rim Canon Promotion, Comet-Tether Span Connection, and Amber-Root Hollows Draft",
+    "created_at": "2026-10-18T09:59:24.849400+00:00",
+    "promoted_to": "F-110"
+  },
+  {
+    "id": "I-212",
+    "title": "District Amber-Root Hollows Canon Promotion, Resin-Arch Tunnel Connection, and West Pendulum Steppe Draft",
+    "created_at": "2026-10-18T10:13:37.968194+00:00",
+    "promoted_to": "F-112"
+  },
+  {
+    "id": "I-213",
+    "title": "District West Pendulum Steppe Canon Promotion, Metronome Bridge Connection, and Libration Mirror Shoals Draft",
+    "created_at": "2026-10-18T10:27:12.316163+00:00",
+    "promoted_to": "F-113"
+  },
+  {
+    "id": "I-214",
+    "title": "District Libration Mirror Shoals Canon Promotion, Silver-Tide Causeway Connection, and Glaze-River Delta Draft",
+    "created_at": "2026-10-18T10:49:20.918143+00:00",
+    "promoted_to": "F-114"
+  },
+  {
+    "id": "I-215",
+    "title": "District Libration Mirror Shoals Canon Promotion, Silver-Tide Causeway Connection, and Glaze-River Delta Draft",
+    "created_at": "2026-10-18T10:50:55.864785+00:00",
+    "promoted_to": "F-115"
+  },
+  {
+    "id": "I-216",
+    "title": "District Glaze-River Delta Canon Promotion, Cobalt Sandbar Ford Connection, and Helical-Gear Trench Draft",
+    "created_at": "2026-10-18T11:04:23.569977+00:00",
+    "promoted_to": "F-117"
+  },
+  {
+    "id": "I-217",
+    "title": "District Helical-Gear Trench Canon Promotion, Spiral Wormway Ramp Connection, and Umbrage Prism Atoll Draft",
+    "created_at": "2026-10-18T11:17:06.126618+00:00",
+    "promoted_to": "F-119"
+  },
+  {
+    "id": "I-218",
+    "title": "District Umbrage Prism Atoll Canon Promotion, Violet Spectrum Span Connection, and Terracotta Wind-Chime Ridge Draft",
+    "created_at": "2026-10-18T11:30:07.024643+00:00",
+    "promoted_to": "F-120"
+  },
+  {
+    "id": "I-219",
+    "title": "District Terracotta Wind-Chime Ridge Canon Promotion, Chime-Pipe Colonnade Connection, and Differential Spur Gorge Draft",
+    "created_at": "2026-10-18T11:54:25.465577+00:00",
+    "promoted_to": "F-123"
+  },
+  {
+    "id": "I-220",
+    "title": "District Differential Spur Gorge Canon Promotion, Planetary Carrier Span Connection, and Aurora Chime Atoll Draft",
+    "created_at": "2026-10-18T12:10:54.297913+00:00",
+    "promoted_to": "F-126"
+  },
+  {
+    "id": "I-221",
+    "title": "District Aurora Chime Atoll Canon Promotion, Resonance Tether Causeway Connection, and Saffron Kiln Orchards Draft",
+    "created_at": "2026-10-18T12:22:29.013769+00:00",
+    "promoted_to": "F-128"
+  },
+  {
+    "id": "I-222",
+    "title": "District Saffron Kiln Orchards Canon Promotion, Apricot Aqueduct Terrace Connection, and Flywheel Dynamo Canyon Draft",
+    "created_at": "2026-10-18T12:36:34.088828+00:00",
+    "promoted_to": "F-130"
+  },
+  {
+    "id": "I-223",
+    "title": "Promote District Flywheel Dynamo Canyon to Canon on Continent 02 with 2x2 Connected Map Matrix",
+    "created_at": "2026-10-18T12:58:01.790023+00:00",
+    "promoted_to": "F-132"
+  },
+  {
+    "id": "I-224",
+    "title": "Promote District Penumbra Prism Reef to Canon on Continent 03 with 2x2 Connected Map Matrix",
+    "created_at": "2026-10-18T13:30:25.851547+00:00",
+    "promoted_to": "F-134"
+  },
+  {
+    "id": "I-225",
+    "title": "Promote District Cinnamon-Bellows Bluff to Canon on Continent 01 with 2x2 Connected Map Matrix",
+    "created_at": "2026-10-18T14:07:07.311557+00:00",
+    "promoted_to": "F-135"
+  },
+  {
+    "id": "I-226",
+    "title": "Promote District Bimetallic Escapement Mesa to Canon on Continent 02 with 2x2 Connected Map Matrix",
+    "created_at": "2026-10-18T14:25:31.137998+00:00",
+    "promoted_to": "F-136"
+  },
+  {
+    "id": "I-227",
+    "title": "Promote district-celestial-astrolabe-atoll to Canon on Continent 03 with 4 leaf nodes and seed district-thermal-compensator-basin on Continent 02",
+    "created_at": "2026-10-18T14:39:30.994114+00:00",
+    "promoted_to": "F-137"
+  },
+  {
+    "id": "I-228",
+    "title": "Cap Gate 1 test and build worker concurrency in scripts/precheck.sh to prevent OOM freezes",
+    "created_at": "2026-10-18T15:55:04.767773+00:00",
+    "promoted_to": "F-138"
+  },
+  {
+    "id": "I-229",
+    "title": "Promote district-ginger-steam-terraces to Canon on Continent 01 with 4 leaf nodes and seed district-solstice-pendulum-atoll on Continent 03",
+    "created_at": "2026-10-18T17:45:40.152151+00:00",
+    "promoted_to": "F-143"
   }
 ]

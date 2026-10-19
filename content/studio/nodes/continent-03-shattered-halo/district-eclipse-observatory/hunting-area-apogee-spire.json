@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-apogee-spire",
+  "name": "Apogee Lens Spire",
+  "map_id": null,
+  "parent_district_id": "district-eclipse-observatory",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern zenith pinnacle of The Eclipse Observatory at [1, 0] where the highest quartz mirror-array aims a concentrated beam of starlight toward the Nebula Undertide vortex.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "level_range": [
+    42,
+    46
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Apprentice astronomers say that when the Apogee mirror aligns with the Undertide vortex, you can hear Vesper's heartbeat humming through the brass railings.",
+    "visual_silhouette": "A towering spire of levitating quartz lenses crowned by a violet corona of refracted starlight.",
+    "unanswered_question": "Will installing the Sanctum Prism-Gyro focus the starlight bridge into the Nebula Undertide?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Forms the northern optical transmitter of The Eclipse Observatory pointing toward Nebula Undertide."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Levitating quartz lenses crowned by a violet corona of refracted starlight."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics will be bound when promoted to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] North of Prism Zenith via a fog_of_lore boundary portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and compiles to a fog_of_lore boundary portal on Prism Zenith North Gate."
+    }
+  }
+}

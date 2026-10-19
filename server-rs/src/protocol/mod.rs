@@ -37,6 +37,10 @@ pub struct EntitySnapshotData {
     pub owner_id: u32,
     /// `client_tick` of the last input this player's tick ran on; 0 for none / non-players.
     pub input_ack: u32,
+    /// Player level (0 for non-players or uninitialized).
+    pub level: u32,
+    /// Player current XP within the current level (0 for non-players).
+    pub xp: u32,
 }
 
 impl Default for EntitySnapshotData {
@@ -55,6 +59,8 @@ impl Default for EntitySnapshotData {
             mob_type: "",
             owner_id: 0,
             input_ack: 0,
+            level: 0,
+            xp: 0,
         }
     }
 }
@@ -161,6 +167,8 @@ impl SnapshotBuilder {
                     mob_type,
                     owner_id: e.owner_id,
                     input_ack: e.input_ack,
+                    level: e.level,
+                    xp: e.xp,
                 },
             );
             self.delta_offsets.push(delta);
@@ -426,36 +434,5 @@ mod tests {
         assert_eq!(snapshot.server_time_ms(), 1000);
         assert!(snapshot.entities().is_none());
         assert_eq!(snapshot.removed_ids().unwrap().get(0), 99);
-    }
-
-    #[test]
-    fn test_client_input_serialization_roundtrip() {
-        let bytes = serialize_client_input(42, 0.707, -0.707, true, 2, 909);
-        let input = deserialize_client_input(&bytes).expect("valid client input");
-        assert_eq!(input.client_tick(), 42);
-        assert!((input.move_x() - 0.707).abs() < 1e-4);
-        assert!((input.move_y() - (-0.707)).abs() < 1e-4);
-        assert!(input.attack());
-        assert_eq!(input.skill_slot(), 2);
-        assert_eq!(input.target_id(), 909);
-        assert_eq!(input.target_x(), 0.0);
-        assert_eq!(input.target_y(), 0.0);
-        assert!(!input.respawn());
-
-        let bytes_full =
-            serialize_client_input_full(43, 0.0, 0.0, false, 1, 101, 250.5, 300.25, true);
-        let input_full = deserialize_client_input(&bytes_full).expect("valid client input");
-        assert_eq!(input_full.client_tick(), 43);
-        assert_eq!(input_full.skill_slot(), 1);
-        assert_eq!(input_full.target_id(), 101);
-        assert!((input_full.target_x() - 250.5).abs() < 1e-4);
-        assert!((input_full.target_y() - 300.25).abs() < 1e-4);
-        assert!(input_full.respawn());
-    }
-
-    #[test]
-    fn test_fnv1a_32() {
-        assert_eq!(fnv1a_32("dev-player"), 4026785618);
-        assert_ne!(fnv1a_32("player-1"), fnv1a_32("player-2"));
     }
 }

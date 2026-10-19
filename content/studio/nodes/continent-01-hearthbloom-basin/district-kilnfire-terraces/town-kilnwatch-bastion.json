@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-kilnwatch-bastion",
+  "name": "Kilnwatch Bastion",
+  "map_id": "kilnwatch-bastion",
+  "parent_district_id": "district-kilnfire-terraces",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Fortified terracotta potter-garrison perched on the western lip of Kilnfire Terraces where glaze-artisans maintain the aqueduct sluices from Kiln East Orchard and guard the approach to the Kettle-Whistle Viaduct.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "level_range": [
+    10,
+    15
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/banner_shield_blue.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_kilnwatch_terracotta",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Steaming glaze-cooling cisterns flanking the central kiln plaza"
+  },
+  "portals": {
+    "North": null,
+    "South": {
+      "portal_id": "portal-kilnwatch-bastion-south-firebrick",
+      "direction": "South",
+      "target_node_id": "hunting-area-firebrick-duct",
+      "target_map_id": "firebrick-duct",
+      "target_direction": "North",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3800.0
+      }
+    },
+    "East": {
+      "portal_id": "portal-kilnwatch-bastion-east",
+      "direction": "East",
+      "target_node_id": "hunting-area-cinder-apron",
+      "target_map_id": "cinder-apron",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-kilnwatch-bastion-west",
+      "direction": "West",
+      "target_node_id": "hunting-area-kiln-east-orchard",
+      "target_map_id": "kiln-east-orchard",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.24,
+    "max_bush_height_meters": 0.52,
+    "main_road_width_meters": 14.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/dungeon/banner_shield_red.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors district-kilnfire-terraces at [0, 1] and links West to Teacup Meadows and South to Ash-Bellows Trench."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Glazed terracotta bastion towers and steaming porcelain cistern plazas built for 1.05m Sprout artisans."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Grass <= 0.24m, bushes <= 0.52m, terrace steps <= 0.16m, and 14.0m main highway for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Peaceful garrison safe zone with zero hostile spawns and symmetric West, East, and South portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Complete playable garrison town node with zero placeholder boilerplate."
+    }
+  }
+}

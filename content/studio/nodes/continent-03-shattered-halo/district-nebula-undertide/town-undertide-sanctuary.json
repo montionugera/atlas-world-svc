@@ -1,0 +1,175 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-undertide-sanctuary",
+  "name": "Undertide Sanctuary",
+  "map_id": "undertide-sanctuary",
+  "parent_district_id": "district-nebula-undertide",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Central diving-bell sanctuary town of Nebula Undertide at [1, 1] moored inside a giant pearlescent nautilus shell where Bell-Keepers monitor Vesper's Cradle below.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "level_range": [
+    44,
+    48
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_base.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_nautilus_sanctuary",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Calm bioluminescent tide-basins inside a colossal pearlescent nautilus dome"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-undertide-sanctuary-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-abyssal-barometer",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Inverted tidal pressure along the Abyssal Barometer Ridge crushes uncalibrated diving bells; the Undertide Bell-Keepers require the Cradle Star-Heart before unsealing the northern coral lock.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-undertide-sanctuary-east-aurora",
+      "direction": "East",
+      "target_node_id": "hunting-area-aurora-tether",
+      "target_map_id": "aurora-tether",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-undertide-sanctuary-west-kelp",
+      "direction": "West",
+      "target_node_id": "hunting-area-kelp-spiral-reef",
+      "target_map_id": "kelp-spiral-reef",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-undertide-sanctuary-dungeon-cradle",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-vesper-cradle",
+      "target_map_id": "vesper-cradle-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-bell-keeper-nerissa",
+      "name": "Bell-Keeper Nerissa",
+      "role": "Undertide Sanctuary Warden",
+      "position_meters": {
+        "x": 1970.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.6,
+      "dialogue_greeting": "Welcome inside the Great Nautilus Dome, young Sprout! Our 0.60 meter pearl counters stay dry even when the star-tides overhead swell."
+    },
+    {
+      "npc_id": "npc-diver-smith-corin",
+      "name": "Diver-Smith Corin",
+      "role": "Brass Diving-Bell Engineer",
+      "position_meters": {
+        "x": 2070.0,
+        "y": 1965.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "The eastern aurora bridge now ascends from our Nautilus Dome straight up to Aurora Tether Span in The Zenith Crown!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.45,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.5,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_base.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Nebula Undertide at [1, 1] directly above Vesper's Cradle at the heart of scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A sanctuary town built inside a colossal pearlescent nautilus shell surrounded by floating violet star-water."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Pearl counters at 0.58 to 0.60m, shell stair risers at 0.14m, doorways 2.20m x 1.65m, and 13.0m boardwalks for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric West portal to hunting-area-kelp-spiral-reef, East portal to hunting-area-aurora-tether, Dungeon portal to dungeon-vesper-cradle, and North fog_of_lore portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Seals the northern Abyssal Barometer Ridge gate with a fog_of_lore boundary portal and Bell-Keeper lock message."
+    }
+  }
+}

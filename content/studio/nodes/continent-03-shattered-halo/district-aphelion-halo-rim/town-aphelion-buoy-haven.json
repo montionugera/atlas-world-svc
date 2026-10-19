@@ -1,0 +1,176 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-aphelion-buoy-haven",
+  "name": "Aphelion Buoy Haven",
+  "map_id": "aphelion-buoy-haven",
+  "parent_district_id": "district-aphelion-halo-rim",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Outermost lantern-lit comet-buoy town of Continent 03 at [1, 1] built atop a captured blue-ice comet shard where star-navigators chart the Outer Orbit Drift above the Comet-Core Geode.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    49,
+    50
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_roof_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_aphelion_buoy_town",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Warm starlight-heated meltwater pools carved into translucent blue comet-glass plazas"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-aphelion-buoy-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-outer-orbit-drift",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Sub-zero comet-tail shear sweeps the northern Outer Orbit Drift; Buoy-Keeper Astraea requires the Geode Resonance Prism before unlocking the outer mooring.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-aphelion-buoy-east-silver-tide",
+      "direction": "East",
+      "target_node_id": "hunting-area-silver-tide-causeway",
+      "target_map_id": "silver-tide-causeway",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-aphelion-buoy-west-comet",
+      "direction": "West",
+      "target_node_id": "hunting-area-comet-tether-span",
+      "target_map_id": "comet-tether-span",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-aphelion-buoy-dungeon-geode",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-comet-core-geode",
+      "target_map_id": "comet-core-geode-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-buoy-keeper-astraea",
+      "name": "Buoy-Keeper Astraea",
+      "role": "Aphelion Mooring Warden",
+      "position_meters": {
+        "x": 1975.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.6,
+      "dialogue_greeting": "Welcome to Aphelion Buoy Haven! Warm your gloves at our 0.60 meter starlight-brazier desk while the comet-chimes ring overhead."
+    },
+    {
+      "npc_id": "npc-geode-cutter-caelum",
+      "name": "Geode-Cutter Caelum",
+      "role": "Comet-Glass Lapidary",
+      "position_meters": {
+        "x": 2065.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Inside the Comet-Core Geode below us, a crystalline star-seraph guards the Geode Resonance Prism needed to brave the Outer Orbit Drift!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.42,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.6,
+    "doorway_Clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_roof_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Aphelion Halo Rim at [1, 1] atop Vesper's outermost captured comet-shard and connects eastward to Silver-Tide Causeway."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A cozy lantern-lit haven carved into a glowing blue comet-shard at the edge of the twilight sky."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Brazier desks at 0.58 to 0.60m, comet-glass risers at 0.14m, doorways 2.20m x 1.65m, and 13.0m plazas for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, East, Dungeon, and North (fog_of_lore) portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Locks northern Outer Orbit Drift behind a Fog of Lore portal while connecting eastward to Libration Mirror Shoals."
+    }
+  }
+}

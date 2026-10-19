@@ -1,0 +1,139 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-bimetallic-escapement-mesa",
+  "name": "Bimetallic Escapement Mesa",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "status": "canon",
+  "core_rationale": "Tenth thermal-compensated brass-and-invar plateau of Continent 02 where Krono's bimetallic balance coils flex with the steppe sun to keep the master clockwork in phase.",
+  "local_conflict": "Thermal-coil automatons and invar-shelled armadillos patrol the flexing bimetallic arch-bridges.",
+  "level_band_label": "Levels 21 to 40",
+  "level_range": [
+    29,
+    30
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "carapace"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-bimetallic-expansion-span",
+      "map_id": "bimetallic-expansion-span",
+      "node_type": "hunting_area",
+      "status": "canon",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        29,
+        30
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "town-bimetallic-chronometer-hub",
+      "map_id": "bimetallic-chronometer-hub",
+      "node_type": "town",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        29,
+        30
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "dungeon-invar-balance-vault",
+      "map_id": "invar-balance-vault-b1",
+      "node_type": "dungeon",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": -1,
+      "level_range": [
+        29,
+        30
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-solar-coil-overlook",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        1,
+        0
+      ],
+      "floor_index": 0,
+      "level_range": [
+        30,
+        30
+      ],
+      "is_starter_town": false
+    }
+  ],
+  "portal_edges": [
+    {
+      "from_node_id": "hunting-area-bimetallic-expansion-span",
+      "from_direction": "East",
+      "to_node_id": "town-bimetallic-chronometer-hub",
+      "to_direction": "West",
+      "gate_state": "open"
+    },
+    {
+      "from_node_id": "town-bimetallic-chronometer-hub",
+      "from_direction": "Dungeon",
+      "to_node_id": "dungeon-invar-balance-vault",
+      "to_direction": "Exit",
+      "gate_state": "open"
+    },
+    {
+      "from_node_id": "town-bimetallic-chronometer-hub",
+      "from_direction": "North",
+      "to_node_id": "hunting-area-solar-coil-overlook",
+      "to_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_reason": "Rapid thermal-coil expansion across Solar-Coil Overlook requires Chronometer-Master Invar's Compensator Balance Key."
+    }
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Tinkers say the bridges of Bimetallic Escapement Mesa arch three meters higher at noon than at midnight as the twin metals expand and contract.",
+    "visual_silhouette": "Laminated copper-and-silver balance coils curving over a sun-drenched brass mesa.",
+    "unanswered_question": "What solar chronometer relay crowns Solar-Coil Overlook?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-krono-brass-titan and scar-brass-faultline along the eastern thermal-compensated plateau of Continent 02 and connects west to Flywheel-Governor Hub."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Laminated copper-and-invar balance coils flexing with the steppe sun across a brass mesa."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Specifies 12.5m bimetallic ramp walkways, 0.58m chronometer workbenches, and 0.14m brass risers tailored to 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "2x2 connected matrix at [0,1], [1,1], [1,1] floor -1, and [1,0] with construct and carapace monster families."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Preserves hunting-area-solar-coil-overlook in Mystery status behind a Fog of Lore portal with explicit lock_reason."
+    }
+  }
+}

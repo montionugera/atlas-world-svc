@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-kiln-lighthouse-spit",
+  "name": "Kiln-Lighthouse Spit",
+  "map_id": null,
+  "parent_district_id": "district-glaze-river-delta",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern porcelain-beacon sandspit of Glaze-River Delta at [1, 0] where a thirty-meter cobalt kiln-lighthouse guides river barges through thermal steam banks.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    20,
+    20
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Barge-potters say the cobalt flame inside Kiln-Lighthouse Spit rings like a crystal bell whenever a storm approaches from the outer sea.",
+    "visual_silhouette": "A thirty-meter spiral lighthouse of cobalt-blue porcelain rising from a steaming river sandspit.",
+    "unanswered_question": "What sea-lane chart is glazed into the lantern-room floor of Kiln-Lighthouse Spit?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Forms the northern beacon spit of Glaze-River Delta along scar-kiln-basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Spiral cobalt-blue porcelain lighthouse burning clay oil amidst warm delta steam."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of town-glaze-barge-quay behind a Fog of Lore portal."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind portal-barge-quay-north-fog."
+    }
+  }
+}

@@ -8,16 +8,17 @@ use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
     AiAgent, BodyRadius, BotAgent, CastingState, CombatStats, CooldownTracker, DashState,
-    DespawnedIds, ElementalAttributes, EntityId, Health, HitLog, LiveRules, Mass, MobSpawnAnchor,
-    MobTag, PlayerAvatar, PlayerInputState, PlayerTag, Position, Projectile, SpawnPoint,
-    StatusEffects, Velocity, MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
+    DeadMobTracker, DespawnedIds, ElementalAttributes, EntityId, Health, HitLog, LiveRules, Mass,
+    MobSpawnAnchor, MobTag, PlayerAvatar, PlayerInputState, PlayerProgression, PlayerTag, Position,
+    Projectile, SpawnPoint, StatusEffects, Velocity, MOB_BODY_RADIUS, PLAYER_BODY_RADIUS,
 };
 use crate::net::ClientPacket;
 use crate::physics::world::PhysicsWorld;
 use crate::protocol::{EntitySnapshotData, EntityType, GameEventData, GameEventKind};
 use crate::spatial::grid::SpatialGrid;
 use crate::storage::{
-    CharacterStateSnapshot, LoadoutSnapshot, MatchEvent, MatchEventQueue, PrimaryStats,
+    CharacterStateSnapshot, DeadMobRespawnRecord, LoadoutSnapshot, MatchEvent, MatchEventQueue,
+    MobStateRecord, PrimaryStats, RegionStateSnapshot, WorldObjectRecord, WorldStateStore,
 };
 use crate::systems::{
     body_collision_system, bot_steering_system, combat_system, cooldown_tick_system,
@@ -145,6 +146,10 @@ pub struct AtlasSimulation {
     disconnect_grace_ticks: u32,
     /// Active disconnect grace countdowns (`session_id` -> remaining ticks).
     pending_disconnects: HashMap<String, u32>,
+    /// Wall-clock/simulation timestamp (ms) when this region entered sleep (`None` = awake).
+    sleeping_since_ms: Option<u64>,
+    /// Persistent world objects (beacons, gates, structures) tracked in this region.
+    world_objects: Vec<WorldObjectRecord>,
     next_bot_index: usize,
     pub(crate) debug_mob_seq: u32,
 }
@@ -216,6 +221,8 @@ impl AtlasSimulation {
             session_loadouts: HashMap::new(),
             disconnect_grace_ticks: 0,
             pending_disconnects: HashMap::new(),
+            sleeping_since_ms: None,
+            world_objects: Vec::new(),
             next_bot_index: 0,
             debug_mob_seq: 0,
         }
@@ -274,6 +281,22 @@ impl AtlasSimulation {
     /// The ONLY constructor the live server (`main.rs`) may use. Bots and bestiary mobs
     /// carry the full live bundles (collision bodies, spawn points, MobAi, ThreatTable,
     /// spawn anchors). The golden-trace harness uses `with_arena` instead.
+    /// Constructs a live simulation room from a compiled generated-world region (`content/maps/<region_id>.json`).
+    pub fn from_generated_region(region_id: &str, seed: u32) -> Option<Self> {
+        let cfg = crate::content::world_regions::load_generated_region_config(region_id)?;
+        let mob_count: usize = cfg.spawn_areas.iter().map(|a| a.count).sum();
+        Some(Self::live(LiveConfig {
+            seed,
+            arena_width: cfg.width,
+            arena_height: cfg.height,
+            bot_count: 0,
+            mob_count: mob_count.max(1),
+            mob_respawn_sec: 5.0,
+            player_respawn_sec: 5.0,
+            map_id: Some(region_id.to_string()),
+        }))
+    }
+
     pub fn live(cfg: LiveConfig) -> Self {
         let map_cfg =
             crate::content::map::MapConfig::load(cfg.map_id.as_deref().unwrap_or("default"));
@@ -431,6 +454,540 @@ impl AtlasSimulation {
         ));
     }
 
+    /// Returns the persistent world objects currently tracked in this region.
+    pub fn world_objects(&self) -> &[WorldObjectRecord] {
+        &self.world_objects
+    }
+
+    /// Inserts or updates a persistent world object in this region by `object_id`.
+    pub fn upsert_world_object(&mut self, obj: WorldObjectRecord) {
+        if let Some(existing) = self
+            .world_objects
+            .iter_mut()
+            .find(|o| o.object_id == obj.object_id)
+        {
+            *existing = obj;
+        } else {
+            self.world_objects.push(obj);
+            self.world_objects
+                .sort_by(|a, b| a.object_id.cmp(&b.object_id));
+        }
+    }
+
+    /// Exports the current region state (living mobs, pending dead mob respawn timers, and
+    /// world objects) into a serializable `RegionStateSnapshot`.
+    pub fn export_region_state(&mut self, saved_at_ms: u64) -> RegionStateSnapshot {
+        let current_sec = self.clock.current_time_seconds();
+
+        let mut mobs: Vec<MobStateRecord> = Vec::new();
+        let mut dead_mob_respawns: Vec<DeadMobRespawnRecord> = Vec::new();
+
+        {
+            let mut mob_q = self.world.query_filtered::<(
+                &EntityId,
+                &Position,
+                &Velocity,
+                &Health,
+                Option<&MobSpawnAnchor>,
+            ), With<MobTag>>();
+            for (id, pos, vel, health, opt_anchor) in mob_q.iter(&self.world) {
+                let (mob_id, tier, spawn_x, spawn_y, respawn_delay_sec) = match opt_anchor {
+                    Some(a) => (
+                        a.mob_id.clone(),
+                        a.tier.as_str().to_string(),
+                        a.spawn_pos.x,
+                        a.spawn_pos.y,
+                        a.respawn_delay_sec,
+                    ),
+                    None => (
+                        "mob-bramble-stalker".to_string(),
+                        "route".to_string(),
+                        pos.x,
+                        pos.y,
+                        self.mob_respawn_sec,
+                    ),
+                };
+                if health.is_alive {
+                    mobs.push(MobStateRecord {
+                        entity_id: id.0.clone(),
+                        mob_id,
+                        tier,
+                        x: pos.x,
+                        y: pos.y,
+                        vx: vel.vx,
+                        vy: vel.vy,
+                        health: health.current,
+                        max_health: health.max,
+                        spawn_x,
+                        spawn_y,
+                        respawn_delay_sec,
+                    });
+                } else {
+                    dead_mob_respawns.push(DeadMobRespawnRecord {
+                        mob_id,
+                        tier,
+                        spawn_x,
+                        spawn_y,
+                        respawn_delay_sec,
+                        remaining_respawn_sec: respawn_delay_sec,
+                    });
+                }
+            }
+        }
+        mobs.sort_by(|a, b| a.entity_id.cmp(&b.entity_id));
+
+        {
+            let mut tracker_q = self.world.query::<&DeadMobTracker>();
+            for tracker in tracker_q.iter(&self.world) {
+                let remaining = (tracker.respawn_at - current_sec).max(0.0);
+                dead_mob_respawns.push(DeadMobRespawnRecord {
+                    mob_id: tracker.anchor.mob_id.clone(),
+                    tier: tracker.anchor.tier.as_str().to_string(),
+                    spawn_x: tracker.anchor.spawn_pos.x,
+                    spawn_y: tracker.anchor.spawn_pos.y,
+                    respawn_delay_sec: tracker.anchor.respawn_delay_sec,
+                    remaining_respawn_sec: remaining,
+                });
+            }
+        }
+
+        RegionStateSnapshot {
+            schema_version: 1,
+            region_id: self.map_id.clone(),
+            saved_at_tick: self.clock.tick(),
+            saved_at_ms,
+            sleeping_since_ms: self.sleeping_since_ms,
+            mobs,
+            dead_mob_respawns,
+            world_objects: self.world_objects.clone(),
+        }
+    }
+
+    /// Restores active mobs, pending `DeadMobTracker` respawn timers, and world objects
+    /// from a `RegionStateSnapshot`, optionally fast-forwarding respawn timers by `downtime_sec`.
+    pub fn restore_region_state(&mut self, snapshot: &RegionStateSnapshot, downtime_sec: f32) {
+        let existing_mobs: Vec<Entity> = self
+            .world
+            .query_filtered::<Entity, With<MobTag>>()
+            .iter(&self.world)
+            .collect();
+        for e in existing_mobs {
+            self.world.despawn(e);
+        }
+
+        let existing_trackers: Vec<Entity> = self
+            .world
+            .query_filtered::<Entity, With<DeadMobTracker>>()
+            .iter(&self.world)
+            .collect();
+        for e in existing_trackers {
+            self.world.despawn(e);
+        }
+
+        let catalog = self
+            .world
+            .get_resource::<BestiaryCatalog>()
+            .cloned()
+            .unwrap_or_default();
+
+        let parse_tier = |s: &str| match s.to_ascii_lowercase().as_str() {
+            "verge" => MobTier::Verge,
+            "interior" => MobTier::Interior,
+            "heart" => MobTier::Heart,
+            _ => MobTier::Route,
+        };
+
+        for m in &snapshot.mobs {
+            let anchor = MobSpawnAnchor::new(
+                Position::new(m.spawn_x, m.spawn_y),
+                &m.mob_id,
+                parse_tier(&m.tier),
+                m.respawn_delay_sec,
+            );
+            let entity = self
+                .world
+                .spawn(mob_bundle(&catalog, &anchor, m.entity_id.clone()))
+                .id();
+            if let Some(mut pos) = self.world.get_mut::<Position>(entity) {
+                *pos = Position::new(m.x, m.y);
+            }
+            if let Some(mut vel) = self.world.get_mut::<Velocity>(entity) {
+                *vel = Velocity { vx: m.vx, vy: m.vy };
+            }
+            if let Some(mut health) = self.world.get_mut::<Health>(entity) {
+                health.max = m.max_health.max(1.0);
+                health.current = m.health.clamp(0.0, health.max);
+                health.is_alive = health.current > 0.0;
+            }
+        }
+
+        let current_sec = self.clock.current_time_seconds();
+        let elapsed_downtime = downtime_sec.max(0.0);
+        for (idx, d) in snapshot.dead_mob_respawns.iter().enumerate() {
+            let anchor = MobSpawnAnchor::new(
+                Position::new(d.spawn_x, d.spawn_y),
+                &d.mob_id,
+                parse_tier(&d.tier),
+                d.respawn_delay_sec,
+            );
+            let remaining = d.remaining_respawn_sec - elapsed_downtime;
+            if remaining <= 0.0 {
+                let id = format!("{}-restored-{}", d.mob_id, idx);
+                self.world.spawn(mob_bundle(&catalog, &anchor, id));
+            } else {
+                self.world.spawn(DeadMobTracker {
+                    death_time: current_sec,
+                    respawn_at: current_sec + remaining,
+                    anchor,
+                });
+            }
+        }
+
+        self.world_objects = snapshot.world_objects.clone();
+        self.sleeping_since_ms = snapshot.sleeping_since_ms;
+    }
+
+    /// Exports and persists the current region state to `store`.
+    pub async fn save_to_store(
+        &mut self,
+        store: &dyn WorldStateStore,
+        saved_at_ms: u64,
+    ) -> Result<RegionStateSnapshot, String> {
+        let snapshot = self.export_region_state(saved_at_ms);
+        store.save_region_state(&snapshot).await?;
+        Ok(snapshot)
+    }
+
+    /// Loads and restores this region's state (`self.map_id`) from `store`.
+    /// When `now_ms` is provided, any elapsed downtime (`(now_ms - snapshot.saved_at_ms) / 1000.0`)
+    /// is applied to fast-forward pending `DeadMobTracker` respawn timers.
+    /// Returns `Ok(true)` if a saved snapshot was found and restored, or `Ok(false)` if none existed.
+    pub async fn restore_from_store(
+        &mut self,
+        store: &dyn WorldStateStore,
+        now_ms: Option<u64>,
+    ) -> Result<bool, String> {
+        let Some(snapshot) = store.load_region_state(&self.map_id).await? else {
+            return Ok(false);
+        };
+        let downtime_sec = now_ms
+            .map(|now| (now.saturating_sub(snapshot.saved_at_ms) as f32) / 1000.0)
+            .unwrap_or(0.0);
+        self.restore_region_state(&snapshot, downtime_sec);
+        Ok(true)
+    }
+
+    /// Extracts alive human players who have crossed a connected cardinal border (`E-004` Slice 10),
+    /// despawning them from this region and returning their `PlayerTransferState` for atomic handoff.
+    pub fn extract_border_crossing_players(
+        &mut self,
+        adjacency: &crate::spatial::RegionAdjacencyGraph,
+        hysteresis_units: f32,
+    ) -> Vec<crate::spatial::PlayerTransferState> {
+        use crate::spatial::{CardinalBorder, PlayerTransferState};
+        let hysteresis = hysteresis_units.clamp(1.0, (self.arena_width * 0.25).max(1.0));
+        let mut to_extract: Vec<(Entity, PlayerTransferState)> = Vec::new();
+
+        {
+            let mut query = self.world.query::<(
+                Entity,
+                &EntityId,
+                &PlayerAvatar,
+                &Position,
+                &Velocity,
+                &Health,
+                Option<&CombatStats>,
+                Option<&ElementalAttributes>,
+                Option<&CooldownTracker>,
+                Option<&StatusEffects>,
+                Option<&DashState>,
+                Option<&PlayerInputState>,
+            )>();
+
+            for (
+                entity,
+                id,
+                avatar,
+                pos,
+                vel,
+                health,
+                combat,
+                elem,
+                cooldowns,
+                status,
+                dash,
+                input,
+            ) in query.iter(&self.world)
+            {
+                if !health.is_alive {
+                    continue;
+                }
+                let move_x = input.map(|i| i.move_x).unwrap_or(0.0);
+                let move_y = input.map(|i| i.move_y).unwrap_or(0.0);
+
+                let crossed = if pos.x >= self.arena_width - 0.5 && move_x >= 0.0 {
+                    adjacency
+                        .neighbor(&self.map_id, CardinalBorder::East)
+                        .map(|to| {
+                            (
+                                CardinalBorder::East,
+                                to.to_string(),
+                                hysteresis,
+                                pos.y.clamp(0.0, self.arena_height),
+                            )
+                        })
+                } else if pos.x <= 0.5 && move_x <= 0.0 {
+                    adjacency
+                        .neighbor(&self.map_id, CardinalBorder::West)
+                        .map(|to| {
+                            (
+                                CardinalBorder::West,
+                                to.to_string(),
+                                (self.arena_width - hysteresis).max(0.0),
+                                pos.y.clamp(0.0, self.arena_height),
+                            )
+                        })
+                } else if pos.y >= self.arena_height - 0.5 && move_y >= 0.0 {
+                    adjacency
+                        .neighbor(&self.map_id, CardinalBorder::South)
+                        .map(|to| {
+                            (
+                                CardinalBorder::South,
+                                to.to_string(),
+                                pos.x.clamp(0.0, self.arena_width),
+                                hysteresis,
+                            )
+                        })
+                } else if pos.y <= 0.5 && move_y <= 0.0 {
+                    adjacency
+                        .neighbor(&self.map_id, CardinalBorder::North)
+                        .map(|to| {
+                            (
+                                CardinalBorder::North,
+                                to.to_string(),
+                                pos.x.clamp(0.0, self.arena_width),
+                                (self.arena_height - hysteresis).max(0.0),
+                            )
+                        })
+                } else {
+                    None
+                };
+
+                let Some((border, to_region, target_x, target_y)) = crossed else {
+                    continue;
+                };
+
+                let vx = if vel.vx.abs() > 1e-3 {
+                    vel.vx
+                } else {
+                    move_x * avatar.speed
+                };
+                let vy = if vel.vy.abs() > 1e-3 {
+                    vel.vy
+                } else {
+                    move_y * avatar.speed
+                };
+
+                let transfer = PlayerTransferState {
+                    session_id: id.0.clone(),
+                    from_region: self.map_id.clone(),
+                    to_region,
+                    border,
+                    x: target_x,
+                    y: target_y,
+                    vx,
+                    vy,
+                    health: health.current,
+                    max_health: health.max,
+                    is_alive: health.is_alive,
+                    speed: avatar.speed,
+                    combat_stats: combat.copied().unwrap_or(CombatStats {
+                        is_player: true,
+                        ..Default::default()
+                    }),
+                    elemental_attributes: elem.copied().unwrap_or_default(),
+                    cooldowns: cooldowns.cloned().unwrap_or_default(),
+                    status_effects: status.cloned().unwrap_or_default(),
+                    dash_state: dash.cloned().unwrap_or_default(),
+                    client_tick: input.map(|i| i.client_tick).unwrap_or(0),
+                    last_facing: input.map(|i| i.last_facing).unwrap_or((1.0, 0.0)),
+                    loadout: self.session_loadouts.get(&id.0).cloned(),
+                };
+                to_extract.push((entity, transfer));
+            }
+        }
+
+        let mut transfers = Vec::with_capacity(to_extract.len());
+        for (entity, transfer) in to_extract {
+            self.pending_disconnects.remove(&transfer.session_id);
+            self.world.despawn(entity);
+            if let Some(mut despawned) = self.world.get_resource_mut::<DespawnedIds>() {
+                despawned.0.push(transfer.session_id.clone());
+            }
+            transfers.push(transfer);
+        }
+        transfers
+    }
+
+    /// Accepts a player transferred from an adjacent region (`E-004` Slice 10), waking this
+    /// region if it was sleeping and spawning the player's avatar with preserved runtime state.
+    pub fn accept_player_transfer(
+        &mut self,
+        transfer: &crate::spatial::PlayerTransferState,
+        now_ms: u64,
+    ) -> Entity {
+        if self.is_sleeping() {
+            self.wake(now_ms);
+        }
+
+        self.remove_player_avatar(&transfer.session_id);
+        if let Some(mut despawned) = self.world.get_resource_mut::<DespawnedIds>() {
+            despawned.0.retain(|id| id != &transfer.session_id);
+        }
+
+        let mut loadout = transfer.loadout.clone().unwrap_or_default();
+        loadout.character_state = Some(CharacterStateSnapshot {
+            schema_version: 1,
+            map_id: self.map_id.clone(),
+            x: transfer.x,
+            y: transfer.y,
+            health: transfer.health,
+            seq: 0,
+        });
+        self.session_loadouts
+            .insert(transfer.session_id.clone(), loadout.clone());
+        crate::net::set_cached_session_loadout(&transfer.session_id, Some(loadout));
+
+        let entity = self
+            .world
+            .spawn((
+                EntityId(transfer.session_id.clone()),
+                Position::new(transfer.x, transfer.y),
+                Velocity::new(transfer.vx, transfer.vy),
+                Health {
+                    current: transfer.health,
+                    max: transfer.max_health.max(1.0),
+                    is_alive: transfer.is_alive,
+                    invulnerable: false,
+                },
+                PlayerTag,
+                PlayerAvatar::new(&transfer.session_id, transfer.speed),
+                crate::spatial::input_state_from_transfer(transfer),
+                transfer.combat_stats,
+                transfer.elemental_attributes,
+                transfer.cooldowns.clone(),
+                CastingState::default(),
+                transfer.status_effects.clone(),
+                BodyRadius(PLAYER_BODY_RADIUS),
+                Mass(15.0),
+                SpawnPoint(Position::new(transfer.x, transfer.y)),
+            ))
+            .id();
+
+        self.world
+            .entity_mut(entity)
+            .insert(transfer.dash_state.clone());
+        entity
+    }
+
+    /// Returns the number of human-controlled `PlayerAvatar` entities currently in the region.
+    pub fn active_player_count(&mut self) -> usize {
+        self.world
+            .query::<&PlayerAvatar>()
+            .iter(&self.world)
+            .count()
+    }
+
+    /// Returns `true` when this region is currently sleeping (0 active players, tick loop paused).
+    pub fn is_sleeping(&self) -> bool {
+        self.sleeping_since_ms.is_some()
+    }
+
+    /// Returns the millisecond timestamp when this region entered sleep, or `None` if awake.
+    pub fn sleeping_since_ms(&self) -> Option<u64> {
+        self.sleeping_since_ms
+    }
+
+    /// Transitions the region into the sleeping state at `now_ms` if not already asleep.
+    pub fn sleep(&mut self, now_ms: u64) {
+        if self.sleeping_since_ms.is_none() {
+            self.sleeping_since_ms = Some(now_ms);
+        }
+    }
+
+    /// Wakes a sleeping region at `now_ms`, fast-forwarding all `DeadMobTracker` respawn timers
+    /// by the elapsed sleep duration (`(now_ms - sleeping_since_ms) / 1000.0`) and immediately
+    /// respawning any mob whose remaining timer reaches `<= 0.0` at its `MobSpawnAnchor`.
+    /// Returns the elapsed sleep duration in seconds (`0.0` if already awake).
+    pub fn wake(&mut self, now_ms: u64) -> f32 {
+        let Some(sleep_start_ms) = self.sleeping_since_ms.take() else {
+            return 0.0;
+        };
+        let elapsed_sec = (now_ms.saturating_sub(sleep_start_ms) as f32) / 1000.0;
+        if elapsed_sec <= 0.0 {
+            return 0.0;
+        }
+
+        let current_time = self.clock.current_time_seconds();
+        let catalog = self
+            .world
+            .get_resource::<BestiaryCatalog>()
+            .cloned()
+            .unwrap_or_default();
+
+        let mut ready_to_respawn: Vec<(Entity, MobSpawnAnchor)> = Vec::new();
+        {
+            let mut tracker_q = self.world.query::<(Entity, &mut DeadMobTracker)>();
+            for (entity, mut tracker) in tracker_q.iter_mut(&mut self.world) {
+                tracker.respawn_at -= elapsed_sec;
+                if current_time >= tracker.respawn_at {
+                    ready_to_respawn.push((entity, tracker.anchor.clone()));
+                }
+            }
+        }
+
+        let tick = self.clock.tick();
+        for (tracker_entity, anchor) in ready_to_respawn {
+            let id = format!("{}-{}-{}", anchor.mob_id, tick, tracker_entity.index());
+            self.world.spawn(mob_bundle(&catalog, &anchor, id));
+            self.world.despawn(tracker_entity);
+        }
+
+        elapsed_sec
+    }
+
+    /// Steps the region only when awake or woken by incoming player packets.
+    /// When 0 human players remain and no packets/disconnects are pending, transitions to
+    /// `Sleeping` and returns `None` without advancing `clock.tick()`.
+    pub fn step_if_awake(
+        &mut self,
+        now_ms: u64,
+        inputs: &[ClientPacket],
+        disconnected: &[String],
+    ) -> Option<LiveFrame> {
+        if !inputs.is_empty() && self.is_sleeping() {
+            self.wake(now_ms);
+        }
+
+        let has_work =
+            !inputs.is_empty() || !disconnected.is_empty() || !self.pending_disconnects.is_empty();
+
+        if self.is_sleeping() && !has_work {
+            return None;
+        }
+
+        if !self.is_sleeping() && !has_work && self.active_player_count() == 0 {
+            self.sleep(now_ms);
+            return None;
+        }
+
+        let frame = self.live_tick(inputs, disconnected);
+        if self.active_player_count() == 0 && self.pending_disconnects.is_empty() {
+            self.sleep(now_ms);
+        }
+        Some(frame)
+    }
+
     /// One live server tick, exactly as `main.rs` runs it: apply inputs, then drop avatars
     /// whose session's last socket closed (or whose disconnect grace window expired), step,
     /// and build the wire frame including `removed_ids`.
@@ -515,11 +1072,12 @@ impl AtlasSimulation {
             Option<&MobSpawnAnchor>,
             Option<&ThreatTable>,
             Option<&PlayerInputState>,
+            Option<&PlayerProgression>,
         ), Or<(With<PlayerTag>, With<MobTag>)>>();
         let mut entities: Vec<(String, EntitySnapshotData)> = query
             .iter(&self.world)
             .map(
-                |(id, pos, vel, health, is_player, bot, anchor, threat, input)| {
+                |(id, pos, vel, health, is_player, bot, anchor, threat, input, prog)| {
                     let mut flags = 0;
                     if health.is_alive {
                         flags |= STATE_FLAG_ALIVE;
@@ -554,6 +1112,8 @@ impl AtlasSimulation {
                             owner_id: 0,
                             // Bots keep the default 0: only client packets set it.
                             input_ack: input.map_or(0, |i| i.client_tick),
+                            level: prog.map_or(0, |p| p.level),
+                            xp: prog.map_or(0, |p| p.xp),
                         },
                     )
                 },
@@ -601,6 +1161,8 @@ impl AtlasSimulation {
                         mob_type: p_type,
                         owner_id: id_of(Some(proj.owner)),
                         input_ack: 0,
+                        level: 0,
+                        xp: 0,
                     },
                 )
             })
@@ -797,7 +1359,10 @@ impl AtlasSimulation {
             ))
             .id();
 
-        self.world.entity_mut(entity).insert(DashState::default());
+        self.world.entity_mut(entity).insert((
+            DashState::default(),
+            crate::ecs::components::ParryState::default(),
+        ));
         entity
     }
 

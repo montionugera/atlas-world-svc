@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0.0",
+  "id": "continent-01-hearthbloom-basin",
+  "name": "Hearthbloom Basin",
+  "status": "canon",
+  "core_rationale": "Formed inside Sola the Hearth-Weaver's fallen ceramic shield (scar-kiln-basin), serving as the warm, low-hazard Level 1 to 15 starter continent where Star-Kindled Sprouts first awaken.",
+  "parent_world_history_causes": {
+    "world_history_id": "world-history-cradle-of-embers",
+    "god_patron_ids": [
+      "god-sola-hearth-weaver"
+    ],
+    "war_scar_ids": [
+      "scar-kiln-basin"
+    ],
+    "causal_summary": "Sola's eternal ember-heart beneath the clay soil keeps the basin at perpetual spring and powers the town hearths."
+  },
+  "level_band": {
+    "min_level": 1,
+    "max_level": 15
+  },
+  "climate_profile": {
+    "macro_biome": "Sun-baked terracotta terraces, short clover meadows, and warm thermal creeks",
+    "weather_phenomena": [
+      "Gentle ember-pollen drift across warm afternoon breezes"
+    ],
+    "skybox_palette": "Golden-hour apricot sky with soft cumulus clouds"
+  },
+  "civilization_style": {
+    "culture_archetype": "Pottery-craft agrarian guilds and Lantern-Keepers",
+    "architecture_motif": "Glazed teapot-domed cottages, brick archways, and waterwheel bakeries",
+    "character_scale_adaptation": "All cottages use 2.0 by 1.5 meter keyhole doorways, 0.14 meter step risers, 0.58 meter bakery counters, and clover grass capped at 0.25 meters so 1.05 meter Sprouts have unobstructed sightlines."
+  },
+  "travel_links": [
+    {
+      "target_continent_id": "continent-02-clockwork-steppe",
+      "travel_mode": "root_train",
+      "hub_name": "Kettle-Whistle Viaduct",
+      "status": "open",
+      "unlock_rationale": "Repaired upon completing the Level 15 Hearthbloom main story chapter."
+    },
+    {
+      "target_continent_id": "continent-03-shattered-halo",
+      "travel_mode": "airship",
+      "hub_name": "Cloud-Pier Observatory",
+      "status": "open",
+      "unlock_rationale": "Opened after igniting the Crown Beacon Citadel star-lighthouse in The Zenith Crown on Continent 03."
+    }
+  ],
+  "district_ids": [
+    "district-teacup-meadows",
+    "district-kilnfire-terraces",
+    "district-ash-bellows-trench",
+    "district-porcelain-cradle",
+    "district-amber-root-hollows",
+    "district-glaze-river-delta",
+    "district-terracotta-wind-chimes",
+    "district-saffron-kiln-orchards",
+    "district-cinnamon-bellows-bluff",
+    "district-ginger-steam-terraces"
+  ],
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin from world-history-cradle-of-embers and hosts the bound Starter Town town-lantern-hollow."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Glazed teapot-domed villages and warm terracotta caldera terraces powered by a slumbering Goddess's ceramic shield."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 2.0x1.5m keyhole doorways, 0.14m stair risers, 0.58m shop counters, and 0.25m clover grass for 0.90 to 1.20 meter characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Organizes all ten Canon Districts on Continent 01."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Promotes Ginger-Steam Terraces to Canon while preserving Cardamom-Cloud Overlook and leaf Mystery nodes behind fog_of_lore gates."
+    }
+  }
+}

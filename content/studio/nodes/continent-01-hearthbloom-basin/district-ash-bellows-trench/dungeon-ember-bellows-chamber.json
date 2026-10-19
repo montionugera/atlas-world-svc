@@ -1,0 +1,158 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-ember-bellows-chamber",
+  "name": "Ember-Bellows Chamber",
+  "map_id": "ember-bellows-chamber-b1",
+  "parent_district_id": "district-ash-bellows-trench",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Subterranean ceramic bellows vault beneath Draft-Kiln Post at [1, 1] (floor -1) where Sola's counterweight fans circulate warm air beneath Hearthbloom Basin.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    16,
+    20
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_ember_bellows_vault",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Glowing amber glaze-channels warming the counterweight fan pits"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-ember-bellows-exit-post",
+      "direction": "Exit",
+      "target_node_id": "town-draft-kiln-post",
+      "target_map_id": "draft-kiln-post",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3820.0,
+        "width": 20.0,
+        "height": 14.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3760.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-ember-bellows-glaze-wisp",
+      "monster_id": "mob-celadon-ember-wisp",
+      "monster_name": "Celadon Ember-Wisp",
+      "spawn_count": 8,
+      "respawn_seconds": 13.0,
+      "level": 17,
+      "element": "Fire",
+      "size": "Small",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-celadon-ember-bead",
+          "item_name": "Celadon Ember Bead",
+          "drop_chance_percent": 42.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-celadon-ember-wisp",
+        "card_name": "Celadon Ember-Wisp Card",
+        "drop_chance_percent": 0.01,
+        "equipment_slot": "Headgear",
+        "modifier_summary": "Intelligence +2, Fire Elemental Resistance +8%"
+      }
+    },
+    {
+      "spawn_id": "spawn-ember-bellows-warden-kilnstone",
+      "monster_id": "mob-bellows-warden-kilnstone",
+      "monster_name": "Bellows-Warden Kilnstone",
+      "spawn_count": 1,
+      "respawn_seconds": 120.0,
+      "level": 20,
+      "element": "Earth",
+      "size": "Large",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-bellows-counterweight-key",
+          "item_name": "Bellows Counterweight Key",
+          "drop_chance_percent": 45.0
+        },
+        {
+          "item_id": "item-sola-ceramic-fan-blade",
+          "item_name": "Sola Ceramic Fan-Blade",
+          "drop_chance_percent": 20.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-bellows-warden-kilnstone",
+        "card_name": "Bellows-Warden Kilnstone Card",
+        "drop_chance_percent": 0.005,
+        "equipment_slot": "Armor",
+        "modifier_summary": "Maximum Health Points +180, Earth Elemental Resistance +12%"
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.38,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_Clearance_meters": {
+      "height": 2.15,
+      "width": 1.6
+    },
+    "main_road_width_meters": 12.0,
+    "footpath_width_meters": 4.2,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Houses Sola's counterweight air-bellows beneath Draft-Kiln Post inside scar-kiln-basin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Glazed terracotta fan-vault lit by glowing celadon glaze-channels and ceramic counterweight pendulums."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Maintains 0.14m stair risers, 0.15m terrace steps, 12.0m vault aisles, and 2.15m x 1.60m arched doorways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Symmetric Exit portal to town-draft-kiln-post; spirit and construct spawns at Levels 17 to 20 (within District max 18 + 5 dungeon bleed)."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops the Bellows Counterweight Key required to unseal the northern Glaze Flue Vent mystery gate."
+    }
+  }
+}

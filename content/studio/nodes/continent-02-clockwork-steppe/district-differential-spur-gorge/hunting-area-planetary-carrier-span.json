@@ -1,0 +1,167 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-planetary-carrier-span",
+  "name": "Planetary Carrier Span",
+  "map_id": "planetary-carrier-span",
+  "parent_district_id": "district-differential-spur-gorge",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "canon",
+  "core_rationale": "Western concentric ring-gear bridge of Differential Spur Gorge at [0, 1] linking Helical Torque Hub to Torque-Balance Citadel.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    29,
+    30
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_planetary_carrier_span",
+    "max_terrace_step_meters": 0.15,
+    "water_feature": "Warm brass lubricant sluices beneath revolving planet-pinion bearings"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-carrier-span-east-citadel",
+      "direction": "East",
+      "target_node_id": "town-torque-balance-citadel",
+      "target_map_id": "torque-balance-citadel",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-carrier-span-west-torque-hub",
+      "direction": "West",
+      "target_node_id": "town-helical-torque-hub",
+      "target_map_id": "helical-torque-hub",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-planetary-pinion-beetle",
+      "monster_id": "monster-planetary-pinion-beetle",
+      "monster_name": "Planetary Pinion Beetle",
+      "spawn_count": 14,
+      "respawn_seconds": 24,
+      "level": 29,
+      "element": "Earth",
+      "size": "Small",
+      "race": "Insect",
+      "family": "carapace",
+      "item_drops": [
+        {
+          "item_id": "item-beveled-chitin-tooth",
+          "item_name": "Beveled Chitin Tooth",
+          "drop_chance_percent": 44.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-planetary-pinion-beetle",
+        "card_name": "Planetary Pinion Beetle Card",
+        "drop_chance_percent": 0.05
+      }
+    },
+    {
+      "spawn_id": "spawn-carrier-ring-sentinel",
+      "monster_id": "monster-carrier-ring-sentinel",
+      "monster_name": "Carrier-Ring Sentinel",
+      "spawn_count": 10,
+      "respawn_seconds": 32,
+      "level": 30,
+      "element": "Wind",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-brass-planet-bearing",
+          "item_name": "Brass Planet Bearing",
+          "drop_chance_percent": 34.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-carrier-ring-sentinel",
+        "card_name": "Carrier-Ring Sentinel Card",
+        "drop_chance_percent": 0.04
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.45,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/buildings/tower_round_base.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Connects Helical Torque Hub on the west to Torque-Balance Citadel on the east along scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Wide brass ring-bridge supported by three revolving planet-pinions over a copper canyon."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 12.5m planetary carrier walkways, 0.14m brass cog-risers, and 0.20m copper grass for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Populated by carapace and construct monster families matching parent District ecological_monster_families with symmetric West/East portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Promoted from Mystery to Canon with full terrain_tile, asset_kit_bindings, and symmetric portals."
+    }
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-saffron-kiln-orchards",
+  "name": "Saffron Kiln Orchards",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "status": "canon",
+  "core_rationale": "Sun-warmed southeastern glaze-terrace orchards of Continent 01 where Sola's golden ceramic aqueducts irrigate saffron-apricot groves and honey-glaze vats.",
+  "local_conflict": "Nectar-sipping glaze beetles and warm-clay orchard sprites raid the saffron drying racks.",
+  "level_band_label": "Levels 1 to 20",
+  "level_range": [
+    19,
+    20
+  ],
+  "ecological_monster_families": [
+    "flora_fauna",
+    "carapace"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-apricot-aqueduct-terrace",
+      "map_id": "apricot-aqueduct-terrace",
+      "node_type": "hunting_area",
+      "status": "canon",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        19,
+        20
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "town-saffron-press-village",
+      "map_id": "saffron-press-village",
+      "node_type": "town",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        19,
+        20
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "dungeon-nectar-glaze-vat",
+      "map_id": "nectar-glaze-vat-b1",
+      "node_type": "dungeon",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": -1,
+      "level_range": [
+        19,
+        20
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-honeycomb-kiln-ridge",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        1,
+        0
+      ],
+      "floor_index": 0,
+      "level_range": [
+        20,
+        20
+      ],
+      "is_starter_town": false
+    }
+  ],
+  "portal_edges": [
+    {
+      "from_node_id": "hunting-area-apricot-aqueduct-terrace",
+      "from_direction": "East",
+      "to_node_id": "town-saffron-press-village",
+      "to_direction": "West",
+      "gate_state": "open"
+    },
+    {
+      "from_node_id": "town-saffron-press-village",
+      "from_direction": "Dungeon",
+      "to_node_id": "dungeon-nectar-glaze-vat",
+      "to_direction": "Exit",
+      "gate_state": "open"
+    },
+    {
+      "from_node_id": "town-saffron-press-village",
+      "from_direction": "North",
+      "to_node_id": "hunting-area-honeycomb-kiln-ridge",
+      "to_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_reason": "Boiling amber honey-glaze vents across Honeycomb Kiln Ridge require the Golden Skimmer Ladle from Nectar Glaze Vat."
+    }
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Bakers in Lantern Hollow say Honeycomb Kiln Ridge bakes wildflower nectar into golden crystal combs that glow like hearth-coals.",
+    "visual_silhouette": "Stepped golden-brick orchard terraces crowned by teapot-shaped honey presses and apricot blossoms.",
+    "unanswered_question": "What queen-kiln sanctuary crowns Honeycomb Kiln Ridge?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin along the southeastern aqueduct terraces of Continent 01 and connects west to Carillon Hearth Belfry."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Stepped golden-brick orchard terraces irrigated by warm ceramic aqueducts and teapot honey presses."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Specifies 12.5m orchard terrace roads, 0.58m honey-press counters, and 0.14m brick risers for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "2x2 connected matrix at [0,1], [1,1], [1,1] floor -1, and [1,0] with flora_fauna and carapace monster families."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Preserves hunting-area-honeycomb-kiln-ridge as a Mystery frontier behind a Fog of Lore portal with explicit lock_reason."
+    }
+  }
+}

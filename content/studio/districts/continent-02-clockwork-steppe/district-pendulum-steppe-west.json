@@ -1,0 +1,142 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-pendulum-steppe-west",
+  "name": "West Pendulum Steppe",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "status": "canon",
+  "core_rationale": "Western wind-swept pendulum gorge of Continent 02 where Krono the Brass Titan's metronome counterweight swings across a chasm of singing copper reeds.",
+  "local_conflict": "Wind-up gale-hounds and metronome-constructs patrol the brass suspension cables spanning the pendulum gorge.",
+  "level_band_label": "Levels 21 to 40",
+  "level_range": [
+    34,
+    38
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "sky_kin"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-metronome-bridge",
+      "map_id": "metronome-bridge",
+      "node_type": "hunting_area",
+      "status": "canon",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        34,
+        36
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "town-metronome-pivot-citadel",
+      "map_id": "metronome-pivot-citadel",
+      "node_type": "town",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        35,
+        37
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "dungeon-counterweight-shaft",
+      "map_id": "counterweight-shaft-b1",
+      "node_type": "dungeon",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": -1,
+      "level_range": [
+        36,
+        38
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-deadbeat-escapement-bluff",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        1,
+        0
+      ],
+      "floor_index": 0,
+      "level_range": [
+        37,
+        38
+      ],
+      "is_starter_town": false
+    }
+  ],
+  "portal_edges": [
+    {
+      "edge_id": "edge-metronome-bridge-to-pivot-citadel",
+      "from_node_id": "hunting-area-metronome-bridge",
+      "from_direction": "East",
+      "to_node_id": "town-metronome-pivot-citadel",
+      "to_direction": "West",
+      "gate_state": "open"
+    },
+    {
+      "edge_id": "edge-pivot-citadel-to-counterweight-shaft",
+      "from_node_id": "town-metronome-pivot-citadel",
+      "from_direction": "Dungeon",
+      "to_node_id": "dungeon-counterweight-shaft",
+      "to_direction": "Exit",
+      "gate_state": "open"
+    },
+    {
+      "edge_id": "edge-pivot-citadel-to-deadbeat-escapement-fog",
+      "from_node_id": "town-metronome-pivot-citadel",
+      "from_direction": "North",
+      "to_node_id": "hunting-area-deadbeat-escapement-bluff",
+      "to_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_reason": "The hundred-meter brass pallet-arms of Deadbeat Escapement Bluff slam shut every second; Pendulum-Keeper Horolog requires the Ruby Pallet Pin before unlocking the northern gate."
+    }
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Glider scouts claim that if you catch the updraft of the Great Pendulum's swing at noon, you can soar straight up to Deadbeat Escapement Bluff without flapping once.",
+    "visual_silhouette": "A sun-burnished brass pendulum disk thirty meters wide swinging silently between twin copper cliff-faces.",
+    "unanswered_question": "What subterranean chronometer vault opens only when Deadbeat Escapement Bluff locks at noon?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-krono-brass-titan and scar-brass-faultline along the western pendulum gorge of Continent 02."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "A colossal sun-burnished brass pendulum swinging between twin copper cliffs of singing reeds."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Specifies 12.5m brass suspension-bridges, 0.60m chronometer benches, and 0.14m cog-steps for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Complete 2x2 connected District matrix (hunting-area-metronome-bridge, town-metronome-pivot-citadel, dungeon-counterweight-shaft, and Mystery hunting-area-deadbeat-escapement-bluff) with construct and sky_kin families."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Promotes West Pendulum Steppe to Canon while preserving leaf Mystery frontier Deadbeat Escapement Bluff behind a Fog of Lore portal."
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dungeon-epicyclic-pinion-vault",
+  "name": "Epicyclic Pinion Vault",
+  "map_id": "epicyclic-pinion-vault-b1",
+  "parent_district_id": "district-differential-spur-gorge",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "dungeon",
+  "status": "canon",
+  "core_rationale": "Sub-surface planetary gear chamber at [1, 1] floor -1 beneath Torque-Balance Citadel where Krono's central sun-pinion distributes torque across the southern faultline.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": -1,
+  "level_range": [
+    29,
+    30
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_base.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_epicyclic_pinion_vault",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Subterranean copper oil-cooling sumps beneath interlocking sun-and-planet gears"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": null,
+    "West": null,
+    "Dungeon": null,
+    "Exit": {
+      "portal_id": "portal-pinion-vault-exit-citadel",
+      "direction": "Exit",
+      "target_node_id": "town-torque-balance-citadel",
+      "target_map_id": "torque-balance-citadel",
+      "target_direction": "Dungeon",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 3780.0
+      }
+    }
+  },
+  "resident_npcs": [],
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-epicyclic-scarab",
+      "monster_id": "monster-epicyclic-scarab",
+      "monster_name": "Epicyclic Scarab",
+      "spawn_count": 12,
+      "respawn_seconds": 28,
+      "level": 29,
+      "element": "Earth",
+      "size": "Small",
+      "race": "Insect",
+      "family": "carapace",
+      "item_drops": [
+        {
+          "item_id": "item-sun-gear-carapace",
+          "item_name": "Sun-Gear Carapace",
+          "drop_chance_percent": 40.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-epicyclic-scarab",
+        "card_name": "Epicyclic Scarab Card",
+        "drop_chance_percent": 0.04
+      }
+    },
+    {
+      "spawn_id": "spawn-sun-pinion-juggernaut",
+      "monster_id": "monster-sun-pinion-juggernaut",
+      "monster_name": "Sun-Pinion Juggernaut",
+      "spawn_count": 6,
+      "respawn_seconds": 45,
+      "level": 30,
+      "element": "Wind",
+      "size": "Large",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-epicyclic-carrier-pin",
+          "item_name": "Epicyclic Carrier Pin",
+          "drop_chance_percent": 25.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-sun-pinion-juggernaut",
+        "card_name": "Sun-Pinion Juggernaut Card",
+        "drop_chance_percent": 0.03
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.15,
+    "max_bush_height_meters": 0.35,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.3,
+      "width": 1.7
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_base.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Sits at [1, 1] floor -1 directly beneath Torque-Balance Citadel and yields the Epicyclic Carrier Pin."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Subterranean sun-and-planet gear chamber lit by warm amber oil-cooling sumps."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces 12.5m vault aisles, 0.14m brass cog-risers, and 2.30m x 1.70m archways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Populated by carapace and construct monster families with symmetric Exit portal back to Torque-Balance Citadel."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Drops the Epicyclic Carrier Pin referenced in the Sun-Gear Escarpment Fog of Lore lock_message."
+    }
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-mainspring-caldera",
+  "name": "Mainspring Caldera",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "status": "canon",
+  "core_rationale": "Central volcanic-brass crater of Continent 02 where Krono the Brass Titan's primary mainspring coil still beats, venting rhythmic steam plumes that drive the surrounding foundry towns.",
+  "local_conflict": "Over-wound foundry automatons and steam-valve beetles have seized the main escapement bridge, threatening to over-pressurize the caldera vents.",
+  "level_band_label": "Levels 21 to 40",
+  "level_range": [
+    22,
+    30
+  ],
+  "ecological_monster_families": [
+    "construct",
+    "insect"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-caldera-rim",
+      "map_id": "caldera-rim",
+      "node_type": "hunting_area",
+      "status": "canon",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "level_range": [
+        22,
+        28
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "town-escapement-anvil",
+      "map_id": "escapement-anvil",
+      "node_type": "town",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "level_range": [
+        24,
+        30
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "dungeon-chronometer-foundry",
+      "map_id": "chronometer-foundry-b1",
+      "node_type": "dungeon",
+      "status": "canon",
+      "grid_coordinates": [
+        1,
+        1
+      ],
+      "floor_index": -1,
+      "level_range": [
+        26,
+        35
+      ],
+      "is_starter_town": false
+    },
+    {
+      "node_id": "hunting-area-sun-coil-spire",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        1,
+        0
+      ],
+      "level_range": [
+        28,
+        30
+      ],
+      "is_starter_town": false
+    }
+  ],
+  "portal_edges": [
+    {
+      "edge_id": "edge-caldera-rim-east-escapement-anvil",
+      "from_node_id": "hunting-area-caldera-rim",
+      "from_direction": "East",
+      "to_node_id": "town-escapement-anvil",
+      "to_direction": "West",
+      "bidirectional": true,
+      "gate_state": "open",
+      "road_width_meters": 14.0
+    },
+    {
+      "edge_id": "edge-escapement-anvil-dungeon-chronometer",
+      "from_node_id": "town-escapement-anvil",
+      "from_direction": "Dungeon",
+      "to_node_id": "dungeon-chronometer-foundry",
+      "to_direction": "Exit",
+      "bidirectional": true,
+      "gate_state": "open",
+      "road_width_meters": 12.0
+    },
+    {
+      "edge_id": "edge-escapement-anvil-north-sun-coil-spire",
+      "from_node_id": "town-escapement-anvil",
+      "from_direction": "North",
+      "to_node_id": "hunting-area-sun-coil-spire",
+      "to_direction": "South",
+      "bidirectional": true,
+      "gate_state": "fog_of_lore",
+      "road_width_meters": 12.0,
+      "lock_reason": "Superheated solar-brass updrafts swirl around the Sun-Coil Spire; the Master Clockmakers have locked the lift until the barometer stabilizers are calibrated."
+    }
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Master smiths claim the upper Sun-Coil Spire catches stray starlight from Continent 03 and stores it inside liquid-amber capacitors.",
+    "visual_silhouette": "Concentric rings of glowing bronze flywheel bridges suspended above a steaming copper-slag crater.",
+    "unanswered_question": "When will the Master Clockmakers unlock the northern Sun-Coil Spire sky-dock?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-krono-brass-titan and connects West via the Flywheel Viaduct to Brass Spur Ridge in Rustcog Downs."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Concentric bronze flywheel bridges suspended over a rhythmic steam-venting mainspring crater."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Designed around 14.0 meter bronze flywheel highways, 0.16 meter cog-risers, and 0.60 meter anvil counters for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Orthogonal 2x2 grid with Caldera Rim [0,1], Escapement Anvil Town [1,1], Chronometer Foundry Dungeon [1,1, floor -1], and Sun-Coil Spire [1,0] (Fog of Lore) plus Level 24 to 32 construct/insect spawns."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Seals the northern Sun-Coil Spire frontier with a fog_of_lore portal and Master Clockmakers barometer rumor."
+    }
+  }
+}

@@ -61,6 +61,36 @@ impl Health {
             self.is_alive = false;
         }
     }
+
+    pub fn heal(&mut self, amount: f32) {
+        if !self.is_alive || amount <= 0.0 {
+            return;
+        }
+        self.current = (self.current + amount).min(self.max);
+    }
+}
+
+/// Default passive health regeneration rate in HP/second (E-007 Slice 6).
+pub const DEFAULT_HEALTH_REGEN_PER_SEC: f32 = 5.0;
+
+/// Passive health regeneration component that restores HP over time while alive (E-007 Slice 6).
+#[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct HealthRegen {
+    pub hp_per_sec: f32,
+}
+
+impl HealthRegen {
+    pub fn new(hp_per_sec: f32) -> Self {
+        Self {
+            hp_per_sec: hp_per_sec.max(0.0),
+        }
+    }
+}
+
+impl Default for HealthRegen {
+    fn default() -> Self {
+        Self::new(DEFAULT_HEALTH_REGEN_PER_SEC)
+    }
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -118,10 +148,92 @@ impl PlayerAvatar {
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct MobTag;
 
+/// Default follow distance in units (`<= 5.0`) within which a companion settles near its owner (E-007 Slice 9).
+pub const COMPANION_FOLLOW_DISTANCE: f32 = 4.0;
+/// Default delay in seconds (`10.0s`) before a defeated companion respawns near its owner (E-007 Slice 10).
+pub const COMPANION_RESPAWN_DELAY_SEC: f32 = 10.0;
+
+/// Identifies an allied companion entity belonging to a player (E-007 Slice 9).
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct CompanionTag;
+
+/// Allied companion AI state and configuration (E-007 Slices 9 & 10).
+#[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CompanionAi {
+    #[serde(with = "entity_serde")]
+    pub owner: Entity,
+    pub follow_distance: f32,
+    pub move_speed: f32,
+    pub aggro_range: f32,
+    pub respawn_delay_sec: f32,
+    pub respawn_timer_sec: f32,
+}
+
+impl CompanionAi {
+    pub fn new(owner: Entity) -> Self {
+        Self {
+            owner,
+            follow_distance: COMPANION_FOLLOW_DISTANCE,
+            move_speed: 220.0,
+            aggro_range: 180.0,
+            respawn_delay_sec: COMPANION_RESPAWN_DELAY_SEC,
+            respawn_timer_sec: 0.0,
+        }
+    }
+
+    pub fn with_follow_distance(mut self, follow_distance: f32) -> Self {
+        self.follow_distance = follow_distance.max(0.5);
+        self
+    }
+
+    pub fn with_move_speed(mut self, move_speed: f32) -> Self {
+        self.move_speed = move_speed.max(10.0);
+        self
+    }
+
+    pub fn with_respawn_delay(mut self, respawn_delay_sec: f32) -> Self {
+        self.respawn_delay_sec = respawn_delay_sec.max(0.5);
+        self
+    }
+}
+
 /// Player body radius (px). Matches the client's `SERVER_RS_PLAYER_RADIUS`.
 pub const PLAYER_BODY_RADIUS: f32 = 12.0;
 /// Mob body radius (px). Matches the client's `SERVER_RS_MOB_RADIUS`.
 pub const MOB_BODY_RADIUS: f32 = 14.0;
+/// Boss collision body radius (px) (`1.5x` standard mob body radius) (E-007 Slice 7).
+pub const BOSS_BODY_RADIUS: f32 = 21.0;
+/// Boss visual/model scale multiplier (`1.5x`) (E-007 Slice 7).
+pub const BOSS_VISUAL_SCALE: f32 = 1.5;
+
+/// Identifies whether a spawned mob is a boss-tier encounter and carries its scale multiplier (E-007 Slice 7).
+#[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct BossTag {
+    pub is_boss: bool,
+    pub visual_scale: f32,
+}
+
+impl BossTag {
+    pub fn boss() -> Self {
+        Self {
+            is_boss: true,
+            visual_scale: BOSS_VISUAL_SCALE,
+        }
+    }
+
+    pub fn normal() -> Self {
+        Self {
+            is_boss: false,
+            visual_scale: 1.0,
+        }
+    }
+}
+
+impl Default for BossTag {
+    fn default() -> Self {
+        Self::normal()
+    }
+}
 
 /// Circular collision body. Only live-runtime entities carry it, so the golden-trace
 /// harness population (which has none) is unaffected by body collision.
@@ -182,6 +294,118 @@ pub enum AiState {
     ReturnHome,
 }
 
+/// Standard 800 ms wind-up tell before a mob attack lands (E-007 Slice 1).
+pub const MOB_WINDUP_DURATION_SEC: f32 = 0.8;
+/// Cosine of the 60-degree half-angle (120-degree total cone) for mob attack facing checks.
+pub const MOB_FACING_CONE_HALF_ANGLE_COS: f32 = 0.5;
+
+fn default_facing_cone_cos() -> f32 {
+    MOB_FACING_CONE_HALF_ANGLE_COS
+}
+
+/// Optional simulation-wide resource configuring default mob wind-up tell duration and facing cone.
+#[derive(Resource, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct MobWindupConfig {
+    pub windup_duration_sec: f32,
+    pub facing_cone_cos: f32,
+}
+
+impl Default for MobWindupConfig {
+    fn default() -> Self {
+        Self {
+            windup_duration_sec: MOB_WINDUP_DURATION_SEC,
+            facing_cone_cos: MOB_FACING_CONE_HALF_ANGLE_COS,
+        }
+    }
+}
+
+/// Enforces a directional facing cone check on an attack projectile so targets outside
+/// the attacker's locked facing cone when the swing lands take no damage.
+#[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct AttackFacingCone {
+    pub origin: Position,
+    pub dir_x: f32,
+    pub dir_y: f32,
+    pub min_cos: f32,
+}
+
+impl AttackFacingCone {
+    pub fn new(origin: Position, dir_x: f32, dir_y: f32, min_cos: f32) -> Self {
+        let len = (dir_x * dir_x + dir_y * dir_y).sqrt();
+        let (nx, ny) = if len > 1e-4 {
+            (dir_x / len, dir_y / len)
+        } else {
+            (1.0, 0.0)
+        };
+        Self {
+            origin,
+            dir_x: nx,
+            dir_y: ny,
+            min_cos,
+        }
+    }
+
+    pub fn contains(&self, target_pos: Position) -> bool {
+        let dx = target_pos.x - self.origin.x;
+        let dy = target_pos.y - self.origin.y;
+        let dist = (dx * dx + dy * dy).sqrt();
+        if dist <= 1e-4 {
+            return true;
+        }
+        let dot = (dx / dist) * self.dir_x + (dy / dist) * self.dir_y;
+        dot >= self.min_cos
+    }
+}
+
+/// A combat ability in a mob's attack repertoire with a distance band (`min_range..=max_range`)
+/// so a mob can vary its attacks depending on combat situation / target distance (E-007 Slice 8).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MobAttackAbility {
+    pub id: String,
+    pub min_range: f32,
+    pub max_range: f32,
+    pub damage_multiplier: f32,
+    pub is_ranged: bool,
+    pub projectile_speed: f32,
+    pub projectile_radius: f32,
+    pub aoe_radius: f32,
+    pub effects: Vec<SkillEffect>,
+}
+
+impl MobAttackAbility {
+    pub fn melee_cleave(max_range: f32) -> Self {
+        Self {
+            id: "melee_cleave".to_string(),
+            min_range: 0.0,
+            max_range,
+            damage_multiplier: 1.25,
+            is_ranged: false,
+            projectile_speed: 400.0,
+            projectile_radius: 14.0,
+            aoe_radius: 0.0,
+            effects: Vec::new(),
+        }
+    }
+
+    pub fn ranged_bolt(min_range: f32, max_range: f32) -> Self {
+        Self {
+            id: "ranged_bolt".to_string(),
+            min_range,
+            max_range,
+            damage_multiplier: 1.0,
+            is_ranged: true,
+            projectile_speed: 220.0,
+            projectile_radius: 8.0,
+            aoe_radius: 0.0,
+            effects: Vec::new(),
+        }
+    }
+
+    pub fn matches_distance(&self, dist: f32) -> bool {
+        dist >= self.min_range && dist <= self.max_range
+    }
+}
+
 #[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MobAi {
     pub state: AiState,
@@ -194,6 +418,24 @@ pub struct MobAi {
     pub wander_target: Position,
     /// Chase / return speed in px/s (bestiary `derive_mob_stats().speed`).
     pub move_speed: f32,
+    /// Wind-up tell duration in seconds before an attack fires (e.g. `MOB_WINDUP_DURATION_SEC = 0.8`).
+    #[serde(default)]
+    pub windup_duration_sec: f32,
+    /// Remaining wind-up tell timer in seconds (`> 0.0` while showing the wind-up tell).
+    #[serde(default)]
+    pub windup_timer: f32,
+    /// Unit facing direction locked when the wind-up tell begins.
+    #[serde(default = "default_facing")]
+    pub windup_facing: (f32, f32),
+    /// Cosine of half-angle for the mob's attack facing cone (`0.5` = 60 deg half-angle).
+    #[serde(default = "default_facing_cone_cos")]
+    pub facing_cone_cos: f32,
+    /// Distance-banded attack repertoire for combat situation variety (E-007 Slice 8).
+    #[serde(default)]
+    pub abilities: Vec<MobAttackAbility>,
+    /// ID of the most recently executed attack ability.
+    #[serde(default)]
+    pub last_used_ability: Option<String>,
 }
 
 impl MobAi {
@@ -209,7 +451,31 @@ impl MobAi {
             wander_target: home_pos,
             // Bestiary "mid" speed (8 legacy units * 10).
             move_speed: 80.0,
+            windup_duration_sec: 0.0,
+            windup_timer: 0.0,
+            windup_facing: (1.0, 0.0),
+            facing_cone_cos: MOB_FACING_CONE_HALF_ANGLE_COS,
+            abilities: Vec::new(),
+            last_used_ability: None,
         }
+    }
+
+    pub fn with_abilities(mut self, abilities: Vec<MobAttackAbility>) -> Self {
+        if let Some(max_r) = abilities
+            .iter()
+            .map(|a| a.max_range)
+            .max_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
+        {
+            if max_r > self.attack_range {
+                self.attack_range = max_r;
+            }
+        }
+        self.abilities = abilities;
+        self
+    }
+
+    pub fn select_ability_for_distance(&self, dist: f32) -> Option<&MobAttackAbility> {
+        self.abilities.iter().find(|a| a.matches_distance(dist))
     }
 
     pub fn with_leash_distance(mut self, leash_distance: f32) -> Self {
@@ -220,6 +486,45 @@ impl MobAi {
     pub fn with_move_speed(mut self, move_speed: f32) -> Self {
         self.move_speed = move_speed;
         self
+    }
+
+    pub fn with_windup(mut self, duration_sec: f32) -> Self {
+        self.windup_duration_sec = duration_sec.max(0.0);
+        self
+    }
+
+    pub fn with_default_windup(self) -> Self {
+        self.with_windup(MOB_WINDUP_DURATION_SEC)
+    }
+
+    pub fn with_facing_cone_cos(mut self, cos_threshold: f32) -> Self {
+        self.facing_cone_cos = cos_threshold.clamp(-1.0, 1.0);
+        self
+    }
+
+    /// True while the mob is in its pre-attack wind-up tell.
+    pub fn is_winding_up(&self) -> bool {
+        self.windup_timer > 0.0
+    }
+
+    /// Returns normalized progress (`0.0..=1.0`) through the current wind-up tell.
+    pub fn windup_progress(&self) -> f32 {
+        if self.windup_timer <= 0.0 || self.windup_duration_sec <= 0.0 {
+            0.0
+        } else {
+            (1.0 - (self.windup_timer / self.windup_duration_sec)).clamp(0.0, 1.0)
+        }
+    }
+
+    /// Checks whether `target_pos` lies inside the mob's locked `windup_facing` cone from `mob_pos`.
+    pub fn is_in_facing_cone(&self, mob_pos: Position, target_pos: Position) -> bool {
+        AttackFacingCone::new(
+            mob_pos,
+            self.windup_facing.0,
+            self.windup_facing.1,
+            self.facing_cone_cos,
+        )
+        .contains(target_pos)
     }
 }
 
@@ -460,12 +765,29 @@ impl DashState {
     }
 }
 
+/// Default duration in seconds (`5.0s`) for damage-over-time statuses (`Burn`, `Poison`) (E-007 Slice 5).
+pub const DOT_DEFAULT_DURATION_SEC: f32 = 5.0;
+/// Default damage per second (`8.0`) for damage-over-time statuses.
+pub const DOT_DEFAULT_DPS: f32 = 8.0;
+
 #[derive(Component, Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct StatusEffects {
     pub freeze_timer: f32,
     pub freeze_speed_multiplier: f32,
     pub stun_timer: f32,
     pub knockback_timer: f32,
+    #[serde(default)]
+    pub burn_timer: f32,
+    #[serde(default)]
+    pub burn_dps: f32,
+    #[serde(default)]
+    pub poison_timer: f32,
+    #[serde(default)]
+    pub poison_dps: f32,
+    #[serde(default)]
+    pub regen_timer: f32,
+    #[serde(default)]
+    pub regen_hps: f32,
 }
 
 impl StatusEffects {
@@ -479,6 +801,14 @@ impl StatusEffects {
 
     pub fn is_knocked_back(&self) -> bool {
         self.knockback_timer > 0.0
+    }
+
+    pub fn is_burning(&self) -> bool {
+        self.burn_timer > 0.0 && self.burn_dps > 0.0
+    }
+
+    pub fn is_poisoned(&self) -> bool {
+        self.poison_timer > 0.0 && self.poison_dps > 0.0
     }
 
     pub fn apply_knockback(&mut self, duration_sec: f32) {
@@ -507,6 +837,45 @@ impl StatusEffects {
     pub fn apply_stun(&mut self, duration_sec: f32) {
         if duration_sec > self.stun_timer {
             self.stun_timer = duration_sec;
+        }
+    }
+
+    pub fn apply_burn(&mut self, duration_sec: f32, dps: f32) {
+        if duration_sec > self.burn_timer {
+            self.burn_timer = duration_sec;
+        }
+        if dps > self.burn_dps {
+            self.burn_dps = dps;
+        }
+    }
+
+    pub fn apply_default_burn(&mut self, dps: f32) {
+        self.apply_burn(DOT_DEFAULT_DURATION_SEC, dps);
+    }
+
+    pub fn apply_poison(&mut self, duration_sec: f32, dps: f32) {
+        if duration_sec > self.poison_timer {
+            self.poison_timer = duration_sec;
+        }
+        if dps > self.poison_dps {
+            self.poison_dps = dps;
+        }
+    }
+
+    pub fn apply_default_poison(&mut self, dps: f32) {
+        self.apply_poison(DOT_DEFAULT_DURATION_SEC, dps);
+    }
+
+    pub fn is_regenerating(&self) -> bool {
+        self.regen_timer > 0.0 && self.regen_hps > 0.0
+    }
+
+    pub fn apply_regen(&mut self, duration_sec: f32, hps: f32) {
+        if duration_sec > self.regen_timer {
+            self.regen_timer = duration_sec;
+        }
+        if hps > self.regen_hps {
+            self.regen_hps = hps;
         }
     }
 }
@@ -578,10 +947,225 @@ pub struct Projectile {
     pub detonated: bool,
 }
 
+/// Default lingering hazard field duration in seconds (`3.0s`) (E-007 Slice 4).
+pub const LINGERING_ZONE_DURATION_SEC: f32 = 3.0;
+/// Default interval between lingering hazard field damage ticks (`1.0s`).
+pub const LINGERING_ZONE_TICK_INTERVAL_SEC: f32 = 1.0;
+/// Default number of damage ticks delivered across a lingering hazard field's lifetime (`3`).
+pub const LINGERING_ZONE_MAX_TICKS: u32 = 3;
+
+/// Persistent ground hazard field spawned by area skills (`Meteor Strike` / `Blizzard`)
+/// that ticks damage across 3 distinct intervals over its lifetime (E-007 Slice 4).
+#[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LingeringZone {
+    #[serde(with = "entity_serde")]
+    pub owner: Entity,
+    pub skill_id: String,
+    pub radius: f32,
+    pub damage_per_tick: f32,
+    pub damage_type: DamageType,
+    pub element: Element,
+    pub effects: Vec<SkillEffect>,
+    pub is_player_zone: bool,
+    pub remaining_duration_sec: f32,
+    pub tick_interval_sec: f32,
+    pub tick_accumulator_sec: f32,
+    pub ticks_applied: u32,
+    pub max_ticks: u32,
+}
+
+impl LingeringZone {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        owner: Entity,
+        skill_id: impl Into<String>,
+        radius: f32,
+        damage_per_tick: f32,
+        damage_type: DamageType,
+        element: Element,
+        effects: Vec<SkillEffect>,
+        is_player_zone: bool,
+    ) -> Self {
+        Self {
+            owner,
+            skill_id: skill_id.into(),
+            radius,
+            damage_per_tick,
+            damage_type,
+            element,
+            effects,
+            is_player_zone,
+            remaining_duration_sec: LINGERING_ZONE_DURATION_SEC,
+            tick_interval_sec: LINGERING_ZONE_TICK_INTERVAL_SEC,
+            tick_accumulator_sec: 0.0,
+            ticks_applied: 0,
+            max_ticks: LINGERING_ZONE_MAX_TICKS,
+        }
+    }
+}
+
 /// Marks a projectile that a parry has already reflected. A second parry
 /// destroys it instead of reflecting it again.
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Parried;
+
+/// Maximum continuous hold window (seconds) during which holding attack can parry incoming projectiles.
+pub const MAX_PARRY_HOLD_WINDOW_SEC: f32 = 0.4;
+/// Maximum consecutive parry deflections before parry stamina enters recovery cooldown.
+pub const MAX_PARRY_CHARGES: u8 = 2;
+/// Recovery cooldown (seconds) after exhausting parry charges or exceeding the active hold window.
+pub const PARRY_COOLDOWN_SEC: f32 = 1.5;
+/// Stagger/stun duration (seconds) applied to a mob struck by its own reflected projectile.
+pub const PARRY_REFLECT_STAGGER_SEC: f32 = 0.6;
+
+/// Tracks active parry window, remaining deflection charges, and recovery cooldown for a player (E-007 Slice 2).
+#[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ParryState {
+    pub max_hold_window_sec: f32,
+    pub active_hold_sec: f32,
+    pub max_charges: u8,
+    pub charges: u8,
+    pub cooldown_sec: f32,
+    pub cooldown_timer: f32,
+    pub reflect_stagger_sec: f32,
+}
+
+impl Default for ParryState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl ParryState {
+    pub fn new() -> Self {
+        Self {
+            max_hold_window_sec: MAX_PARRY_HOLD_WINDOW_SEC,
+            active_hold_sec: 0.0,
+            max_charges: MAX_PARRY_CHARGES,
+            charges: MAX_PARRY_CHARGES,
+            cooldown_sec: PARRY_COOLDOWN_SEC,
+            cooldown_timer: 0.0,
+            reflect_stagger_sec: PARRY_REFLECT_STAGGER_SEC,
+        }
+    }
+
+    /// True when the player is within the active parry window, has at least one parry charge,
+    /// and is not on parry recovery cooldown.
+    pub fn can_parry(&self) -> bool {
+        self.cooldown_timer <= 0.0
+            && self.charges > 0
+            && self.active_hold_sec <= self.max_hold_window_sec
+    }
+
+    /// Consumes one parry charge and enters recovery cooldown when charges reach zero.
+    pub fn record_parry(&mut self) {
+        self.charges = self.charges.saturating_sub(1);
+        if self.charges == 0 {
+            self.cooldown_timer = self.cooldown_sec;
+        }
+    }
+
+    /// Advances the active hold timer and recovery cooldown for a simulation tick (`dt` seconds).
+    pub fn tick_hold(&mut self, dt: f32, attack_held: bool) {
+        if self.cooldown_timer > 0.0 {
+            self.cooldown_timer = (self.cooldown_timer - dt).max(0.0);
+            if self.cooldown_timer <= 0.0 && !attack_held {
+                self.charges = self.max_charges;
+                self.active_hold_sec = 0.0;
+            }
+        }
+        if attack_held {
+            self.active_hold_sec += dt;
+            if self.active_hold_sec > self.max_hold_window_sec && self.cooldown_timer <= 0.0 {
+                self.cooldown_timer = self.cooldown_sec;
+            }
+        } else {
+            self.active_hold_sec = 0.0;
+            if self.cooldown_timer <= 0.0 {
+                self.charges = self.max_charges;
+            }
+        }
+    }
+}
+
+/// Weapon archetype controlling whether a primary attack is a melee strike or an aimed projectile (E-007 Slice 3).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub enum WeaponKind {
+    #[default]
+    Melee,
+    Bow,
+    Staff,
+}
+
+/// Equipped weapon profile attached to a player or combatant entity.
+#[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EquippedWeapon {
+    pub weapon_id: String,
+    pub kind: WeaponKind,
+    pub projectile_speed: f32,
+    pub projectile_range: f32,
+    pub projectile_radius: f32,
+}
+
+impl Default for EquippedWeapon {
+    fn default() -> Self {
+        Self::sword()
+    }
+}
+
+impl EquippedWeapon {
+    pub fn sword() -> Self {
+        Self {
+            weapon_id: "w_sword".to_string(),
+            kind: WeaponKind::Melee,
+            projectile_speed: 0.0,
+            projectile_range: 40.0,
+            projectile_radius: 0.0,
+        }
+    }
+
+    pub fn bow() -> Self {
+        Self {
+            weapon_id: "w_bow".to_string(),
+            kind: WeaponKind::Bow,
+            projectile_speed: 250.0,
+            projectile_range: 300.0,
+            projectile_radius: 4.0,
+        }
+    }
+
+    pub fn staff() -> Self {
+        Self {
+            weapon_id: "w_staff".to_string(),
+            kind: WeaponKind::Staff,
+            projectile_speed: 200.0,
+            projectile_range: 280.0,
+            projectile_radius: 5.0,
+        }
+    }
+
+    pub fn from_weapon_id(weapon_id: Option<&str>) -> Self {
+        let id = weapon_id.unwrap_or("basic_sword");
+        let lower = id.to_ascii_lowercase();
+        if lower.contains("bow") {
+            let mut w = Self::bow();
+            w.weapon_id = id.to_string();
+            w
+        } else if lower.contains("staff") || lower.contains("wand") {
+            let mut w = Self::staff();
+            w.weapon_id = id.to_string();
+            w
+        } else {
+            let mut w = Self::sword();
+            w.weapon_id = id.to_string();
+            w
+        }
+    }
+
+    pub fn is_ranged(&self) -> bool {
+        matches!(self.kind, WeaponKind::Bow | WeaponKind::Staff)
+    }
+}
 
 #[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PlayerInputState {
@@ -646,6 +1230,229 @@ impl PlayerInputState {
         self.target_pos = Some(Position::new(x, y));
         self
     }
+
+    /// Computes the unit aim vector from `origin` toward `target_pos` (if set),
+    /// otherwise along the movement input vector, falling back to `last_facing`.
+    pub fn aim_direction(&self, origin: Position) -> (f32, f32) {
+        if let Some(t_pos) = self.target_pos {
+            let dx = t_pos.x - origin.x;
+            let dy = t_pos.y - origin.y;
+            let dist = (dx * dx + dy * dy).sqrt();
+            if dist > 1e-4 {
+                return (dx / dist, dy / dist);
+            }
+        }
+        let move_len = (self.move_x * self.move_x + self.move_y * self.move_y).sqrt();
+        if move_len > 1e-4 {
+            return (self.move_x / move_len, self.move_y / move_len);
+        }
+        let (fx, fy) = self.last_facing;
+        let face_len = (fx * fx + fy * fy).sqrt();
+        if face_len > 1e-4 {
+            (fx / face_len, fy / face_len)
+        } else {
+            (1.0, 0.0)
+        }
+    }
+}
+
+/// Experience required to advance from `level` to `level + 1` (E-005 Slice 1).
+pub fn xp_for_level(level: u32) -> u32 {
+    100 * level.max(1)
+}
+
+/// Tracks player level, current XP within the level, threshold for next level, and lifetime total XP (E-005 Slice 1).
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PlayerProgression {
+    pub level: u32,
+    pub xp: u32,
+    pub xp_to_next_level: u32,
+    pub total_xp: u32,
+}
+
+impl Default for PlayerProgression {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl PlayerProgression {
+    pub fn new() -> Self {
+        Self {
+            level: 1,
+            xp: 0,
+            xp_to_next_level: xp_for_level(1),
+            total_xp: 0,
+        }
+    }
+
+    /// Grants `amount` XP, advancing `level` as many times as thresholds are crossed.
+    /// Returns the number of levels gained.
+    pub fn grant_xp(&mut self, amount: u32) -> u32 {
+        if amount == 0 {
+            return 0;
+        }
+        self.xp = self.xp.saturating_add(amount);
+        self.total_xp = self.total_xp.saturating_add(amount);
+        let mut levels_gained = 0;
+        while self.xp >= self.xp_to_next_level {
+            self.xp -= self.xp_to_next_level;
+            self.level = self.level.saturating_add(1);
+            self.xp_to_next_level = xp_for_level(self.level);
+            levels_gained += 1;
+        }
+        levels_gained
+    }
+
+    /// Deducts up to `penalty` XP from current level progress without ever de-leveling the player (E-005 Slice 7).
+    pub fn apply_xp_penalty(&mut self, penalty: u32) -> u32 {
+        let deducted = self.xp.min(penalty);
+        self.xp -= deducted;
+        deducted
+    }
+}
+
+/// One stack of items in a player's inventory (E-005 Slices 3 & 5).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct InventoryItemStack {
+    pub item_id: String,
+    pub quantity: u32,
+}
+
+/// Player inventory holding owned item stacks (E-005 Slices 3 & 5).
+#[derive(Component, Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct PlayerInventory {
+    pub items: Vec<InventoryItemStack>,
+}
+
+impl PlayerInventory {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn add_item(&mut self, item_id: impl Into<String>, quantity: u32) {
+        if quantity == 0 {
+            return;
+        }
+        let id = item_id.into();
+        if let Some(stack) = self.items.iter_mut().find(|s| s.item_id == id) {
+            stack.quantity = stack.quantity.saturating_add(quantity);
+        } else {
+            self.items.push(InventoryItemStack {
+                item_id: id,
+                quantity,
+            });
+        }
+    }
+
+    pub fn remove_item(&mut self, item_id: &str, quantity: u32) -> bool {
+        if quantity == 0 {
+            return true;
+        }
+        let Some(idx) = self.items.iter().position(|s| s.item_id == item_id) else {
+            return false;
+        };
+        if self.items[idx].quantity < quantity {
+            return false;
+        }
+        self.items[idx].quantity -= quantity;
+        if self.items[idx].quantity == 0 {
+            self.items.remove(idx);
+        }
+        true
+    }
+
+    pub fn count(&self, item_id: &str) -> u32 {
+        self.items
+            .iter()
+            .find(|s| s.item_id == item_id)
+            .map(|s| s.quantity)
+            .unwrap_or(0)
+    }
+
+    pub fn has_item(&self, item_id: &str) -> bool {
+        self.count(item_id) > 0
+    }
+}
+
+/// Player equipment slots (`weapon`, `armor`, `accessory`) (E-005 Slice 5).
+#[derive(Component, Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct PlayerEquipment {
+    pub weapon_id: Option<String>,
+    pub armor_id: Option<String>,
+    pub accessory_id: Option<String>,
+}
+
+/// Custom skill loadout mapping slots `1..=4` to skill IDs (E-005 Slice 6).
+#[derive(Component, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SkillLoadout {
+    pub slots: [String; 4],
+}
+
+impl Default for SkillLoadout {
+    fn default() -> Self {
+        Self {
+            slots: [
+                "skill_1".to_string(),
+                "skill_2".to_string(),
+                "skill_3".to_string(),
+                "skill_4".to_string(),
+            ],
+        }
+    }
+}
+
+impl SkillLoadout {
+    pub fn skill_for_slot(&self, slot: u8) -> Option<&str> {
+        if (1..=4).contains(&slot) {
+            Some(self.slots[(slot - 1) as usize].as_str())
+        } else {
+            None
+        }
+    }
+
+    pub fn set_slot(&mut self, slot: u8, skill_id: impl Into<String>) -> bool {
+        if (1..=4).contains(&slot) {
+            self.slots[(slot - 1) as usize] = skill_id.into();
+            true
+        } else {
+            false
+        }
+    }
+}
+
+/// Player respawn bind point and discovered fast-travel waypoints (E-005 Slice 7).
+#[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BindPoint {
+    pub region_id: String,
+    pub position: Position,
+    pub discovered_waypoints: Vec<(String, Position)>,
+}
+
+impl Default for BindPoint {
+    fn default() -> Self {
+        Self {
+            region_id: "millcross-ford".to_string(),
+            position: Position::new(200.0, 200.0),
+            discovered_waypoints: vec![("millcross-ford".to_string(), Position::new(200.0, 200.0))],
+        }
+    }
+}
+
+/// Player currency wallet (E-005 Slice 8).
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct PlayerWallet {
+    pub gold: u64,
+}
+
+/// World loot drop entity spawned when a mob dies (E-005 Slice 3).
+#[derive(Component, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LootDrop {
+    pub drop_id: String,
+    pub item_id: String,
+    pub quantity: u32,
+    pub gold: u64,
+    pub claimed: bool,
 }
 
 #[cfg(test)]

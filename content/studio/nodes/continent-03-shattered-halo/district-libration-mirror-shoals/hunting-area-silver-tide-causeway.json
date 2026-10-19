@@ -1,0 +1,168 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-silver-tide-causeway",
+  "name": "Silver-Tide Causeway",
+  "map_id": "silver-tide-causeway",
+  "parent_district_id": "district-libration-mirror-shoals",
+  "parent_continent_id": "continent-03-shattered-halo",
+  "node_type": "hunting_area",
+  "status": "canon",
+  "core_rationale": "Western silver-coral causeway of Libration Mirror Shoals at [0, 1] linking Aphelion Buoy Haven across the oscillating mirror-pools to Libration Balance Haven.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    0,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    48,
+    49
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "shattered_halo_silver_tide_causeway",
+    "max_terrace_step_meters": 0.16,
+    "water_feature": "Sheet-silver libration tide pools that rock gently every twelve hours"
+  },
+  "portals": {
+    "North": null,
+    "South": null,
+    "East": {
+      "portal_id": "portal-silver-tide-east-balance-haven",
+      "direction": "East",
+      "target_node_id": "town-libration-balance-haven",
+      "target_map_id": "libration-balance-haven",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-silver-tide-west-aphelion",
+      "direction": "West",
+      "target_node_id": "town-aphelion-buoy-haven",
+      "target_map_id": "aphelion-buoy-haven",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": null,
+    "Exit": null
+  },
+  "resident_spawns": [
+    {
+      "spawn_id": "spawn-mirror-shell-crab",
+      "monster_id": "monster-mirror-shell-crab",
+      "monster_name": "Mirror-Shell Tide-Crab",
+      "spawn_count": 7,
+      "respawn_seconds": 28,
+      "level": 48,
+      "element": "Water",
+      "size": "Medium",
+      "race": "Fish",
+      "family": "aquatic",
+      "item_drops": [
+        {
+          "item_id": "item-silver-mirror-carapace",
+          "item_name": "Silver Mirror Carapace",
+          "drop_chance_percent": 40.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-mirror-shell-crab",
+        "card_name": "Mirror-Shell Tide-Crab Card",
+        "drop_chance_percent": 0.05,
+        "card_effect": "Reflects 4% of incoming single-target Magic Damage back to the caster."
+      }
+    },
+    {
+      "spawn_id": "spawn-libration-reflection-wisp",
+      "monster_id": "monster-libration-reflection-wisp",
+      "monster_name": "Libration Reflection-Wisp",
+      "spawn_count": 6,
+      "respawn_seconds": 30,
+      "level": 49,
+      "element": "Ghost",
+      "size": "Small",
+      "race": "Formless",
+      "family": "spirit",
+      "item_drops": [
+        {
+          "item_id": "item-starlight-tide-droplet",
+          "item_name": "Starlight Tide Droplet",
+          "drop_chance_percent": 35.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-libration-reflection-wisp",
+        "card_name": "Libration Reflection-Wisp Card",
+        "drop_chance_percent": 0.05,
+        "card_effect": "Increases Ghost-element resistance by 8% and grants +15 Perfect Dodge."
+      }
+    }
+  ],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.2,
+    "max_bush_height_meters": 0.46,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 12.5,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/dungeon/wall_arched.glb",
+      "res://assets/dungeon/pillar.glb",
+      "res://assets/props/barrel.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Connects Aphelion Buoy Haven (West) to Libration Balance Haven (East) along scar-vesper-crater."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Silver-coral stepping terraces bridging mirror-still basalt tide pools that reflect ancient constellations."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.20m sea-fronds, 0.46m coral bushes, 0.14m basalt risers, and 12.5m causeways for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Surface node at [0, 1] with symmetric West and East portals and aquatic/spirit spawns in Levels 48 to 49."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Promoted from Mystery to Canon with full Five-Pillar verification."
+    }
+  }
+}

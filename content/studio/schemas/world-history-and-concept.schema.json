@@ -1,0 +1,378 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas-world.joymify.com/studio/schemas/world-history-and-concept.schema.json",
+  "title": "WorldHistoryAndConcept",
+  "allOf": [
+    {
+      "$ref": "common-mystery.schema.json"
+    }
+  ],
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "name",
+    "world_title",
+    "status",
+    "core_rationale",
+    "character_scale_law",
+    "player_arrival_premise",
+    "primordial_gods",
+    "historical_epochs",
+    "starter_town_bindings",
+    "quality_checklist"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^world-history-[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 2
+    },
+    "world_title": {
+      "type": "string",
+      "minLength": 2
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "canon",
+        "draft"
+      ]
+    },
+    "core_rationale": {
+      "type": "string",
+      "minLength": 30
+    },
+    "character_scale_law": {
+      "type": "object",
+      "description": "Global 90 to 120 centimeter cute toddler and kid character scale law governing all three-dimensional assets, cameras, and architecture.",
+      "required": [
+        "height_range_meters",
+        "reference_height_meters",
+        "head_to_body_ratio",
+        "silhouette_rules",
+        "camera_rig",
+        "environment_metrics"
+      ],
+      "properties": {
+        "height_range_meters": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Strict [0.90, 1.20] meters bounds."
+        },
+        "reference_height_meters": {
+          "type": "number",
+          "const": 1.05
+        },
+        "head_to_body_ratio": {
+          "type": "string",
+          "minLength": 10
+        },
+        "silhouette_rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "camera_rig": {
+          "type": "object",
+          "required": [
+            "look_at_height_meters",
+            "default_distance_meters",
+            "pitch_degrees",
+            "field_of_view_degrees"
+          ],
+          "properties": {
+            "look_at_height_meters": {
+              "type": "number"
+            },
+            "default_distance_meters": {
+              "type": "number"
+            },
+            "pitch_degrees": {
+              "type": "number"
+            },
+            "field_of_view_degrees": {
+              "type": "number"
+            }
+          }
+        },
+        "environment_metrics": {
+          "type": "object",
+          "required": [
+            "max_grass_height_meters",
+            "max_bush_height_meters",
+            "min_trunk_collider_radius_meters",
+            "min_doorway_height_meters",
+            "min_doorway_width_meters",
+            "max_stair_riser_meters",
+            "prop_counter_height_range_meters",
+            "min_highway_corridor_width_meters"
+          ],
+          "properties": {
+            "max_grass_height_meters": {
+              "type": "number",
+              "maximum": 0.35
+            },
+            "max_bush_height_meters": {
+              "type": "number",
+              "maximum": 0.65
+            },
+            "min_trunk_collider_radius_meters": {
+              "type": "number",
+              "minimum": 0.35
+            },
+            "min_doorway_height_meters": {
+              "type": "number",
+              "minimum": 1.8
+            },
+            "min_doorway_width_meters": {
+              "type": "number",
+              "minimum": 1.4
+            },
+            "max_stair_riser_meters": {
+              "type": "number",
+              "maximum": 0.18
+            },
+            "prop_counter_height_range_meters": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_highway_corridor_width_meters": {
+              "type": "number",
+              "minimum": 3.5
+            }
+          }
+        }
+      }
+    },
+    "player_arrival_premise": {
+      "type": "object",
+      "required": [
+        "player_identity",
+        "why_enter_world",
+        "inciting_phenomenon"
+      ],
+      "properties": {
+        "player_identity": {
+          "type": "string",
+          "minLength": 15
+        },
+        "why_enter_world": {
+          "type": "string",
+          "minLength": 15
+        },
+        "inciting_phenomenon": {
+          "type": "string",
+          "minLength": 15
+        }
+      }
+    },
+    "primordial_gods": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "domain",
+          "status",
+          "core_rationale",
+          "geographical_scar",
+          "architectural_imprint"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^god-[a-z0-9-]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "canon",
+              "draft",
+              "mystery"
+            ]
+          },
+          "core_rationale": {
+            "type": "string",
+            "minLength": 20
+          },
+          "geographical_scar": {
+            "type": "string",
+            "minLength": 15
+          },
+          "architectural_imprint": {
+            "type": "string",
+            "minLength": 15
+          },
+          "mystery_hook": {
+            "$ref": "common-mystery.schema.json#/properties/mystery_hook"
+          }
+        }
+      }
+    },
+    "historical_epochs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "era_order",
+          "status",
+          "core_rationale",
+          "involved_god_ids",
+          "world_scars"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^epoch-[a-z0-9-]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "creation",
+              "great_war",
+              "cataclysm",
+              "accord",
+              "awakening"
+            ]
+          },
+          "era_order": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "canon",
+              "draft",
+              "mystery"
+            ]
+          },
+          "core_rationale": {
+            "type": "string",
+            "minLength": 20
+          },
+          "involved_god_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "world_scars": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "scar_id",
+                "name",
+                "description",
+                "spawned_continent_ids"
+              ],
+              "properties": {
+                "scar_id": {
+                  "type": "string",
+                  "pattern": "^scar-[a-z0-9-]+$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string",
+                  "minLength": 15
+                },
+                "spawned_continent_ids": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "pattern": "^continent-[0-9]{2}-[a-z0-9-]+$"
+                  }
+                }
+              }
+            }
+          },
+          "mystery_hook": {
+            "$ref": "common-mystery.schema.json#/properties/mystery_hook"
+          }
+        }
+      }
+    },
+    "starter_town_bindings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "town_id",
+          "town_name",
+          "continent_id",
+          "district_id",
+          "status",
+          "spawn_rationale"
+        ],
+        "properties": {
+          "town_id": {
+            "type": "string",
+            "pattern": "^town-[a-z0-9-]+$"
+          },
+          "town_name": {
+            "type": "string"
+          },
+          "continent_id": {
+            "type": "string",
+            "pattern": "^continent-[0-9]{2}-[a-z0-9-]+$"
+          },
+          "district_id": {
+            "type": "string",
+            "pattern": "^district-[a-z0-9-]+$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "canon",
+              "draft",
+              "mystery"
+            ]
+          },
+          "spawn_rationale": {
+            "type": "string",
+            "minLength": 20
+          }
+        }
+      }
+    }
+  }
+}

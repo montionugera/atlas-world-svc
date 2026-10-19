@@ -3,11 +3,18 @@ use std::collections::HashMap;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 pub mod nakama;
+pub mod world_store;
 
 pub use nakama::{
     normalize_match_event_type, CharacterStateSnapshot, EquippedItemIds, LoadoutSnapshot,
     MatchEvent, MatchEventBatch, MockNakamaClient, NakamaClient, NakamaConfig, NakamaStorage,
-    PrimaryStats, ProfileDoc, DEFAULT_NAKAMA_MATCH_ID, PROBE_RETRY_WINDOW,
+    PrimaryStats, ProfileDoc, SkillUnlock, DEFAULT_NAKAMA_MATCH_ID, PROBE_RETRY_WINDOW,
+};
+pub use world_store::{
+    DeadMobRespawnRecord, FileWorldStateStore, MemoryWorldStateStore, MetaWorldStateStore,
+    MobStateRecord, RegionStateSnapshot, WorldObjectRecord, WorldStateStore,
+    WORLD_REGIONS_COLLECTION, WORLD_REGIONS_INDEX_COLLECTION, WORLD_REGIONS_INDEX_KEY,
+    WORLD_SYSTEM_USER_ID,
 };
 
 /// Default interval between buffered match-event flushes to Nakama (5 seconds).

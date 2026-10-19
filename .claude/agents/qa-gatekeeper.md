@@ -1,19 +1,15 @@
 ---
 name: qa-gatekeeper
-description: Adversarial Cross-Layer QA & Balance Gatekeeper (SQLite Foreign Keys, Content Validator, Rust Engine Tests & Observatory Bundle).
+description: Owner of the Five-Pillar Quality Checklist Gate, Observatory Web Studio, Self-Evaluation Telemetry, and Auto-Tune Pipeline.
 ---
 
-# QA & Balance Gatekeeper (`Cross-Layer Verification`)
+# Quality Assurance Gatekeeper (`Five-Pillar Gate, Observatory & Self-Evaluation`)
 
-You own end-to-end verification across all 6 layers (`L0 ➔ L5`):
-- **Master Pipeline**: `scripts/run_world_pipeline.py`
-- **Unified SQLite + JSONB Catalog**: `scripts/build_catalog_db.py` (`build/catalog.sqlite`)
-- **Observatory Web Studio**: `scripts/catalog_explorer_web.py`
-- **Rust Authoritative Simulation**: `server-rs` (`cargo test` & `cargo run --bin balance_sim`)
+You own verification, observability, turn-speed optimization, and regression prevention across `atlas-world-svc`:
+- **Master Pipeline & Self-Evaluator**: `scripts/run_world_pipeline.py` (`build/studio_self_evaluation.json`)
+- **Observatory Web Studio**: `scripts/catalog_explorer_web.py` (`GET /api/studio/perspectives`, `GET /api/studio/self-evaluation`, `POST /api/studio/rationale/update`, `POST /api/studio/generate-children`)
+- **Automated Test Suites**: `tests/test_validate_studio_hierarchy.py`, `tests/test_studio_web_perspectives.py`, `scripts/epic-check.sh`
 
-## Mandatory Gates
-1. `python3 scripts/compile_world_maps.py --check` -> 0 errors.
-2. `node scripts/check_content.mjs` -> 0 failures.
-3. `python3 scripts/build_catalog_db.py` -> 0 orphan foreign keys; `v_map_world_binding`, `v_world_continent_overview`, and `v_story_region_matrix` populated.
-4. `python3 scripts/catalog_explorer_web.py --dump-check` -> 0 errors.
-5. `cargo test --manifest-path server-rs/Cargo.toml --lib content::map::tests` -> all tests pass.
+## Shared Product Owner Invariants
+1. **Step-by-Step Five-Pillar Quality Checklist Gate**: No node may be promoted to `canon` or generate child layers unless its parent is `canon` and all 5 pillars (`causal_continuity`, `fantasy_and_wonder`, `character_scale_consistency`, `spatial_and_ecological_consistency`, `intentional_mystery_discipline`) are verified with `>= 15` characters of concrete evidence.
+2. **Self-Evaluation & Turn Speed**: Run `python3 scripts/run_world_pipeline.py --fast --auto-tune` to verify stage latency, 100% Canon checklist compliance, 100% Scale compliance, and clean git status (`0` untracked `__pycache__` files).

@@ -185,6 +185,7 @@ struct ConnectionLimits {
 struct ServerMetrics {
     bytes_sent: Arc<AtomicU64>,
     frames_sent: Arc<AtomicU64>,
+    snapshot_bytes_last: Arc<AtomicUsize>,
     ticks_completed: Arc<AtomicU64>,
     entities_count: Arc<AtomicUsize>,
     last_tick_us: Arc<AtomicU64>,
@@ -236,6 +237,7 @@ impl ServerMetrics {
             "entities": self.entities_count.load(Ordering::Relaxed),
             "bytes_sent": self.bytes_sent.load(Ordering::Relaxed),
             "frames_sent": self.frames_sent.load(Ordering::Relaxed),
+            "snapshot_bytes_last": self.snapshot_bytes_last.load(Ordering::Relaxed),
             "ticks_completed": self.ticks_completed.load(Ordering::Relaxed),
             "rate_limited_drops": rate_limited_drops,
         })
@@ -243,6 +245,8 @@ impl ServerMetrics {
 }
 
 pub type LoadoutNotice = (String, String, Option<crate::storage::LoadoutSnapshot>);
+type SharedStorageRef = Arc<std::sync::RwLock<Option<Arc<dyn crate::storage::NakamaStorage>>>>;
+type SharedMetaHttpRef = Arc<std::sync::RwLock<Option<crate::meta::MetaHttpConfig>>>;
 
 pub struct WsServer {
     local_addr: SocketAddr,
@@ -256,7 +260,8 @@ pub struct WsServer {
     disconnect_tx: UnboundedSender<(String, String)>,
     disconnect_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<(String, String)>>>,
     pub nakama_client: Option<Arc<crate::storage::NakamaClient>>,
-    nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
+    storage_ref: SharedStorageRef,
+    meta_http_ref: SharedMetaHttpRef,
     non_uuid_skip_logs: Arc<AtomicUsize>,
     debug_enabled: Arc<AtomicBool>,
     debug_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<DebugRequest>>>,
@@ -283,7 +288,8 @@ impl WsServer {
         let inbound_rx = Arc::new(tokio::sync::Mutex::new(inbound_rx));
         let (disconnect_tx, disconnect_rx) = unbounded_channel();
         let disconnect_rx = Arc::new(tokio::sync::Mutex::new(disconnect_rx));
-        let nakama_ref = Arc::new(std::sync::RwLock::new(None));
+        let storage_ref: SharedStorageRef = Arc::new(std::sync::RwLock::new(None));
+        let meta_http_ref: SharedMetaHttpRef = Arc::new(std::sync::RwLock::new(None));
         let non_uuid_skip_logs = Arc::new(AtomicUsize::new(0));
         let debug_enabled = Arc::new(AtomicBool::new(false));
         let (debug_tx, debug_rx) = unbounded_channel();
@@ -325,7 +331,8 @@ impl WsServer {
             disconnect_tx: disconnect_tx.clone(),
             disconnect_rx,
             nakama_client: None,
-            nakama_ref: nakama_ref.clone(),
+            storage_ref: storage_ref.clone(),
+            meta_http_ref: meta_http_ref.clone(),
             non_uuid_skip_logs: non_uuid_skip_logs.clone(),
             debug_enabled: debug_enabled.clone(),
             debug_rx: Arc::new(tokio::sync::Mutex::new(debug_rx)),
@@ -344,7 +351,8 @@ impl WsServer {
             auth_guard,
             inbound_tx,
             disconnect_tx,
-            nakama_ref,
+            storage_ref,
+            meta_http_ref,
             non_uuid_skip_logs,
             DebugGate {
                 enabled: debug_enabled,
@@ -498,8 +506,42 @@ impl WsServer {
     }
 
     pub fn with_nakama(mut self, client: Arc<crate::storage::NakamaClient>) -> Self {
-        *self.nakama_ref.write().unwrap() = Some(client.clone());
+        let storage: Arc<dyn crate::storage::NakamaStorage> = client.clone();
+        *self.storage_ref.write().unwrap() = Some(storage);
         self.nakama_client = Some(client);
+        self
+    }
+
+    /// Configures a generic `NakamaStorage` implementation (e.g. `RustMetaEngine` or `NakamaClient`)
+    /// for join-time `get_loadout` hydration.
+    pub fn with_storage(self, storage: Arc<dyn crate::storage::NakamaStorage>) -> Self {
+        *self.storage_ref.write().unwrap() = Some(storage);
+        self
+    }
+
+    /// Configures an in-process [`crate::meta::RustMetaEngine`] for both join-time `get_loadout`
+    /// hydration and Nakama-compatible `/v2/*` HTTP endpoints on this listener.
+    pub fn with_meta_engine(
+        self,
+        engine: Arc<crate::meta::RustMetaEngine>,
+        http_key: impl Into<String>,
+        server_key: impl Into<String>,
+    ) -> Self {
+        let storage: Arc<dyn crate::storage::NakamaStorage> = engine.clone();
+        *self.storage_ref.write().unwrap() = Some(storage);
+        let cfg =
+            crate::meta::MetaHttpConfig::new(engine, self.auth_guard.clone(), http_key, server_key);
+        *self.meta_http_ref.write().unwrap() = Some(cfg);
+        self
+    }
+
+    /// Configures an in-process [`crate::meta::RustMetaEngine`] using `NAKAMA_HTTP_KEY` and
+    /// `NAKAMA_SERVER_KEY` from the environment (falling back to local dev defaults).
+    pub fn with_meta_engine_from_env(self, engine: Arc<crate::meta::RustMetaEngine>) -> Self {
+        let storage: Arc<dyn crate::storage::NakamaStorage> = engine.clone();
+        *self.storage_ref.write().unwrap() = Some(storage);
+        let cfg = crate::meta::MetaHttpConfig::from_env(engine, self.auth_guard.clone());
+        *self.meta_http_ref.write().unwrap() = Some(cfg);
         self
     }
 
@@ -518,6 +560,146 @@ impl WsServer {
     pub async fn active_connections_in_room(&self, room_id: &str) -> usize {
         let rooms = self.session_rooms.read().await;
         rooms.values().filter(|r| r.as_str() == room_id).count()
+    }
+
+    /// Reassigns all active WebSocket connections for `session_id` to `new_room_id`
+    /// during an atomic cross-border authority handoff (`E-004` Slice 10).
+    pub async fn reassign_session_room(&self, session_id: &str, new_room_id: &str) -> usize {
+        let mut rooms = self.session_rooms.write().await;
+        let mut updated = 0;
+        for (conn_key, room) in rooms.iter_mut() {
+            if conn_key
+                .rsplit_once('#')
+                .is_some_and(|(s, _)| s == session_id)
+            {
+                *room = new_room_id.to_string();
+                updated += 1;
+            }
+        }
+        updated
+    }
+
+    /// Returns the distinct active `session_id`s currently connected in `room_id`.
+    pub async fn active_sessions_in_room(&self, room_id: &str) -> Vec<String> {
+        let rooms = self.session_rooms.read().await;
+        let mut sessions = Vec::new();
+        for (conn_key, r) in rooms.iter() {
+            if r.as_str() == room_id {
+                if let Some((session_id, _)) = conn_key.rsplit_once('#') {
+                    let s = session_id.to_string();
+                    if !sessions.contains(&s) {
+                        sessions.push(s);
+                    }
+                }
+            }
+        }
+        sessions.sort();
+        sessions
+    }
+
+    /// Sends a serialized snapshot frame to a single session in `room_id`, evicting stalled sockets.
+    pub async fn send_snapshot_to_session_in_room(
+        &self,
+        room_id: &str,
+        session_id: &str,
+        bytes: &[u8],
+    ) {
+        let mut stalled = Vec::new();
+        {
+            let conns = self.connections.read().await;
+            let rooms = self.session_rooms.read().await;
+            let msg = Message::Binary(bytes.to_vec().into());
+            for (conn_key, tx) in conns.iter() {
+                let matches_session = conn_key
+                    .rsplit_once('#')
+                    .is_some_and(|(s, _)| s == session_id);
+                let conn_room = rooms
+                    .get(conn_key)
+                    .map(|s| s.as_str())
+                    .unwrap_or("map-for-play");
+                if matches_session && conn_room == room_id {
+                    match tx.try_send(msg.clone()) {
+                        Ok(()) => {
+                            self.metrics
+                                .bytes_sent
+                                .fetch_add(bytes.len() as u64, Ordering::Relaxed);
+                            self.metrics.frames_sent.fetch_add(1, Ordering::Relaxed);
+                            self.metrics
+                                .snapshot_bytes_last
+                                .store(bytes.len(), Ordering::Relaxed);
+                        }
+                        Err(TrySendError::Full(_)) | Err(TrySendError::Closed(_)) => {
+                            stalled.push(conn_key.clone());
+                        }
+                    }
+                }
+            }
+        }
+        self.evict_stalled_connections(stalled).await;
+    }
+
+    /// Broadcasts per-viewer AOI-filtered snapshots to every connected session in `room_id`.
+    #[allow(clippy::too_many_arguments)]
+    pub async fn broadcast_aoi_snapshots_to_room(
+        &self,
+        room_id: &str,
+        aoi: &mut crate::spatial::AoiTracker,
+        snapshot_builder: &mut crate::protocol::SnapshotBuilder,
+        tick: u32,
+        time_ms: u64,
+        entities: &[crate::protocol::EntitySnapshotData],
+        removed_ids: &[u32],
+        events: &[crate::protocol::GameEventData],
+    ) {
+        self.broadcast_aoi_snapshots_with_ghosts_to_room(
+            room_id,
+            aoi,
+            snapshot_builder,
+            tick,
+            time_ms,
+            entities,
+            &[],
+            removed_ids,
+            events,
+        )
+        .await;
+    }
+
+    /// Broadcasts per-viewer AOI-filtered snapshots including projected `border_ghosts`
+    /// from adjacent regions (`E-004` Slice 9).
+    #[allow(clippy::too_many_arguments)]
+    pub async fn broadcast_aoi_snapshots_with_ghosts_to_room(
+        &self,
+        room_id: &str,
+        aoi: &mut crate::spatial::AoiTracker,
+        snapshot_builder: &mut crate::protocol::SnapshotBuilder,
+        tick: u32,
+        time_ms: u64,
+        entities: &[crate::protocol::EntitySnapshotData],
+        border_ghosts: &[crate::protocol::EntitySnapshotData],
+        removed_ids: &[u32],
+        events: &[crate::protocol::GameEventData],
+    ) {
+        let sessions = self.active_sessions_in_room(room_id).await;
+        for session_id in sessions {
+            let viewer_id = crate::protocol::fnv1a_32(&session_id);
+            let (vis_entities, vis_removed, vis_events) = aoi.filter_for_viewer_with_ghosts(
+                viewer_id,
+                entities,
+                border_ghosts,
+                removed_ids,
+                events,
+            );
+            let bytes = snapshot_builder.build_frame(
+                tick,
+                time_ms,
+                &vis_entities,
+                &vis_removed,
+                &vis_events,
+            );
+            self.send_snapshot_to_session_in_room(room_id, &session_id, bytes)
+                .await;
+        }
     }
 
     pub fn auth_guard(&self) -> &AuthGuard {
@@ -612,6 +794,9 @@ impl WsServer {
                             .bytes_sent
                             .fetch_add(bytes.len() as u64, Ordering::Relaxed);
                         self.metrics.frames_sent.fetch_add(1, Ordering::Relaxed);
+                        self.metrics
+                            .snapshot_bytes_last
+                            .store(bytes.len(), Ordering::Relaxed);
                     }
                     Err(TrySendError::Full(_)) | Err(TrySendError::Closed(_)) => {
                         debug!(
@@ -674,7 +859,8 @@ impl WsServer {
         auth_guard: AuthGuard,
         inbound_tx: Sender<ClientPacket>,
         disconnect_tx: UnboundedSender<(String, String)>,
-        nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
+        storage_ref: SharedStorageRef,
+        meta_http_ref: SharedMetaHttpRef,
         non_uuid_skip_logs: Arc<AtomicUsize>,
         debug: DebugGate,
         ready: Arc<AtomicBool>,
@@ -698,7 +884,8 @@ impl WsServer {
             let auth = auth_guard.clone();
             let in_tx = inbound_tx.clone();
             let dc_tx = disconnect_tx.clone();
-            let nakama = nakama_ref.clone();
+            let storage = storage_ref.clone();
+            let meta_http = meta_http_ref.clone();
             let skip_logs = non_uuid_skip_logs.clone();
             let debug = debug.clone();
             let ready = ready.clone();
@@ -716,9 +903,20 @@ impl WsServer {
                     serve_debug_http(stream, peer_addr.ip(), debug).await;
                     return;
                 }
+                if crate::meta::is_nakama_socket_probe(&stream).await {
+                    crate::meta::serve_nakama_socket_404(stream).await;
+                    return;
+                }
+                if crate::meta::is_meta_http(&stream).await {
+                    let cfg_opt = meta_http.read().unwrap().clone();
+                    if let Some(cfg) = cfg_opt {
+                        crate::meta::serve_meta_http(stream, cfg).await;
+                        return;
+                    }
+                }
                 Self::handle_connection(
                     stream, peer_addr, conn_seq, conns, rooms, loadouts, lo_tx, auth, in_tx, dc_tx,
-                    nakama, skip_logs, limits,
+                    storage, skip_logs, limits,
                 )
                 .await;
             });
@@ -817,7 +1015,7 @@ impl WsServer {
         auth_guard: AuthGuard,
         inbound_tx: Sender<ClientPacket>,
         disconnect_tx: UnboundedSender<(String, String)>,
-        nakama_ref: Arc<std::sync::RwLock<Option<Arc<crate::storage::NakamaClient>>>>,
+        storage_ref: SharedStorageRef,
         non_uuid_skip_logs: Arc<AtomicUsize>,
         limits: ConnectionLimits,
     ) {
@@ -853,7 +1051,8 @@ impl WsServer {
             };
 
             let req_map = Self::extract_map(req).unwrap_or_else(|| "map-for-play".to_string());
-            room_id = crate::content::map::room_id_for(&req_map).to_string();
+            room_id =
+                crate::content::world_regions::resolve_room_or_region_id(&req_map).to_string();
             req_proto = Self::extract_proto(req);
 
             match auth_ref.validate_token(&token) {
@@ -943,12 +1142,12 @@ impl WsServer {
             }
         }
 
-        // When token is validated, if nakama_client is configured, fetch get_loadout(&session_id).
+        // When token is validated, if storage backend is configured, fetch get_loadout(&session_id).
         // Nakama's storageRead rejects non-UUID user IDs, so non-UUID dev tokens skip the fetch
         // and log once per server instance.
-        let client_opt = nakama_ref.read().unwrap().clone();
+        let storage_opt = storage_ref.read().unwrap().clone();
         let mut fetched_loadout: Option<Option<crate::storage::LoadoutSnapshot>> = None;
-        if let Some(client) = client_opt {
+        if let Some(storage) = storage_opt {
             if !is_uuid_user_id(&session_id) {
                 if non_uuid_skip_logs
                     .compare_exchange(0, 1, Ordering::Relaxed, Ordering::Relaxed)
@@ -960,7 +1159,7 @@ impl WsServer {
                     );
                 }
             } else {
-                match client.get_loadout(&session_id).await {
+                match storage.get_loadout(&session_id).await {
                     Ok(Some(loadout)) => {
                         info!(
                             "Retrieved persistent loadout for user {}: level {}",
@@ -1151,9 +1350,15 @@ impl WsServer {
                         debug!("Rate-limiting excess input packet from {}", session_id);
                         continue;
                     }
+                    let current_room = session_rooms
+                        .read()
+                        .await
+                        .get(&conn_key)
+                        .cloned()
+                        .unwrap_or_else(|| room_id.clone());
                     let packet = ClientPacket {
                         session_id: session_id.clone(),
-                        room_id: room_id.clone(),
+                        room_id: current_room,
                         payload: bin.to_vec(),
                     };
                     if let Err(e) = inbound_tx.try_send(packet) {
@@ -1185,9 +1390,9 @@ impl WsServer {
             let mut conns = connections.write().await;
             let was_active = conns.remove(&conn_key).is_some();
             let mut rooms = session_rooms.write().await;
-            rooms.remove(&conn_key);
-            if was_active && !has_session_in_room(&conns, &rooms, &session_id, &room_id) {
-                let _ = disconnect_tx.send((session_id.clone(), room_id.clone()));
+            let active_room = rooms.remove(&conn_key).unwrap_or_else(|| room_id.clone());
+            if was_active && !has_session_in_room(&conns, &rooms, &session_id, &active_room) {
+                let _ = disconnect_tx.send((session_id.clone(), active_room));
             }
         }
         let _ = tokio::time::timeout(std::time::Duration::from_millis(50), write_task).await;
@@ -2351,5 +2556,102 @@ mod tests {
         ws1_reconn.close(None).await.unwrap();
         ws2.close(None).await.unwrap();
         ws_other.close(None).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_ws_broadcast_aoi_snapshots_to_room_sends_each_player_only_nearby_entities() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let addr = server.local_addr();
+
+        let url1 = format!("ws://{addr}/ws?token=dev-token:aoi-west&map=map-for-play&proto=1");
+        let url2 = format!("ws://{addr}/ws?token=dev-token:aoi-east&map=map-for-play&proto=1");
+        let (mut ws_west, _) = connect_async(&url1).await.unwrap();
+        let (mut ws_east, _) = connect_async(&url2).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(50)).await;
+
+        let west_id = crate::protocol::fnv1a_32("aoi-west");
+        let east_id = crate::protocol::fnv1a_32("aoi-east");
+        let entities = vec![
+            crate::protocol::EntitySnapshotData {
+                id: west_id,
+                x: 200.0,
+                y: 200.0,
+                ..Default::default()
+            },
+            crate::protocol::EntitySnapshotData {
+                id: 1001,
+                x: 350.0,
+                y: 200.0,
+                ..Default::default()
+            },
+            crate::protocol::EntitySnapshotData {
+                id: east_id,
+                x: 3500.0,
+                y: 3500.0,
+                ..Default::default()
+            },
+            crate::protocol::EntitySnapshotData {
+                id: 2002,
+                x: 3600.0,
+                y: 3500.0,
+                ..Default::default()
+            },
+        ];
+
+        let mut aoi = crate::spatial::AoiTracker::default();
+        let mut builder = crate::protocol::SnapshotBuilder::new();
+        server
+            .broadcast_aoi_snapshots_to_room(
+                "map-for-play",
+                &mut aoi,
+                &mut builder,
+                1,
+                1000,
+                &entities,
+                &[],
+                &[],
+            )
+            .await;
+
+        let west_msg = tokio::time::timeout(Duration::from_secs(1), ws_west.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+        let east_msg = tokio::time::timeout(Duration::from_secs(1), ws_east.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+
+        let decode_ids = |msg: Message| -> Vec<u32> {
+            let Message::Binary(bin) = msg else {
+                panic!("expected binary snapshot");
+            };
+            let snap = crate::protocol::root_as_world_snapshot(&bin).unwrap();
+            let ents = snap.entities().unwrap();
+            (0..ents.len()).map(|i| ents.get(i).id()).collect()
+        };
+
+        let west_ids = decode_ids(west_msg);
+        let east_ids = decode_ids(east_msg);
+        assert_eq!(west_ids, vec![west_id, 1001]);
+        assert_eq!(east_ids, vec![east_id, 2002]);
+
+        ws_west.close(None).await.unwrap();
+        ws_east.close(None).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_ws_server_routes_generated_world_region_millcross_ford() {
+        let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
+        let server = WsServer::bind("127.0.0.1:0", auth.clone()).await.unwrap();
+        let addr = server.local_addr();
+        let url = format!("ws://{addr}/ws?token=dev-token:region-p1&map=millcross-ford&proto=1");
+        let (mut ws, _) = connect_async(&url).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(40)).await;
+        assert_eq!(server.active_connections_in_room("millcross-ford").await, 1);
+        ws.close(None).await.unwrap();
     }
 }

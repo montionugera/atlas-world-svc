@@ -1,0 +1,176 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-glaze-barge-quay",
+  "name": "Glaze-Barge Quay",
+  "map_id": "glaze-barge-quay",
+  "parent_district_id": "district-glaze-river-delta",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Central porcelain-barge river harbor of Glaze-River Delta at [1, 1] where potter-mariners fire glazed hull-tiles above the Sunken Potter Hold.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    19,
+    20
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/building_forge.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "hearthbloom_glaze_barge_quay_town",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Warm cobalt-glazed canal locks and terracotta waterwheel docks"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-barge-quay-north-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-kiln-lighthouse-spit",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Boiling glaze-steam geysers curtain the northern Kiln-Lighthouse Spit; Barge-Master Cobalt requires the Porcelain Rudder Pin before opening the spit causeway.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": {
+      "portal_id": "portal-barge-quay-east-chime-colonnade",
+      "direction": "East",
+      "target_node_id": "hunting-area-chime-pipe-colonnade",
+      "target_map_id": "chime-pipe-colonnade",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
+    "West": {
+      "portal_id": "portal-barge-quay-west-cobalt",
+      "direction": "West",
+      "target_node_id": "hunting-area-cobalt-sandbar-ford",
+      "target_map_id": "cobalt-sandbar-ford",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-barge-quay-dungeon-potter-hold",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-sunken-potter-hold",
+      "target_map_id": "sunken-potter-hold-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-barge-master-cobalt",
+      "name": "Barge-Master Cobalt",
+      "role": "Delta Harbor Warden",
+      "position_meters": {
+        "x": 1975.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Welcome to Glaze-Barge Quay! Step onto our warm cobalt-tiled pier and check the tide manifest at my 0.58 meter harbor counter."
+    },
+    {
+      "npc_id": "npc-hull-glazer-miri",
+      "name": "Hull-Glazer Miri",
+      "role": "Potter-Hold Salvager",
+      "position_meters": {
+        "x": 2065.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Down in the Sunken Potter Hold, an animated amphora-guardian holds the Porcelain Rudder Pin needed to open the northern Kiln-Lighthouse Spit!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.42,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.1,
+      "width": 1.55
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/building_forge.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Glaze-River Delta at [1, 1] directly above the Sunken Potter Hold and connects east into Terracotta Wind-Chime Ridge."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Porcelain-barge harbor with warm cobalt-glazed canal locks and terracotta waterwheels."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Harbor counters at 0.58m, terracotta risers at 0.14m, doorways 2.10m x 1.55m, and 13.0m piers for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, East, Dungeon, and North (fog_of_lore) portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Guards the northern Kiln-Lighthouse Spit behind a Fog of Lore portal while opening East to Chime-Pipe Colonnade."
+    }
+  }
+}
