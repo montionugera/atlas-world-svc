@@ -75,6 +75,11 @@ def load_studio_perspectives_bundle() -> dict:
 
     runtime_manifest = load_json_file(RUNTIME_MANIFEST_PATH) or {}
     self_eval = load_json_file(ROOT / "build" / "studio_self_evaluation.json") or {}
+    try:
+        from scripts.studio_world_governance import validate_world_governance
+    except ImportError:
+        from studio_world_governance import validate_world_governance  # type: ignore
+    _, gov_report = validate_world_governance(STUDIO_DIR)
     return {
         "worldHistoryAndConcept": whc,
         "continents": continents,
@@ -82,6 +87,7 @@ def load_studio_perspectives_bundle() -> dict:
         "nodes": nodes,
         "runtimeManifest": runtime_manifest,
         "selfEvaluation": self_eval,
+        "governanceReport": gov_report,
     }
 
 THEME_CSS_CANDIDATES = [
@@ -5785,20 +5791,140 @@ function renderStudioWorldHistoryPerspective(whc, continents) {
             <div style="text-align:center"><div style="height:18px;background:#f97316;border-radius:4px 4px 0 0"></div><div style="font-size:10px;margin-top:4px">Step ≤ ${metrics.max_stair_riser_meters || 0.15}m</div></div>
           </div>
           <div style="margin-top:12px">
-            <strong style="font-size:12px">Starter Town Arrival Bindings:</strong>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
-              ${bindings.map(b => `
+            <strong style="font-size:12px">6 Racial Starter Town Arrival Bindings:</strong>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-top:6px">
+              ${bindings.map(b => {
+                const tId = b.town_id || b.town_node_id || "";
+                const tLabel = b.town_name || b.race_name || tId;
+                const narr = b.spawn_rationale || b.arrival_narrative || "";
+                return `
                 <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default);font-size:12px">
-                  <div><strong>🏰 ${escapeHtml(b.town_name)}</strong> (${escapeHtml(b.town_id)}) · ${renderStatusBadgeHtml(b.status)}</div>
-                  <div style="color:var(--joy-text-secondary);font-size:11.5px;margin:4px 0">${escapeHtml(b.spawn_rationale)}</div>
-                  <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { continentId: '${escapeHtml(b.continent_id)}', districtId: '${escapeHtml(b.district_id)}', nodeId: '${escapeHtml(b.town_id)}', inspectId: '${escapeHtml(b.town_id)}' })">
-                    Inspect Starter Town ${escapeHtml(b.town_name)} ➔
-                  </button>
+                  <div><strong>🏰 ${escapeHtml(tLabel)}</strong> <span class="mono" style="font-size:10px;color:var(--joy-text-secondary)">(${escapeHtml(tId)})</span> · ${renderStatusBadgeHtml(b.status || "canon")}</div>
+                  <div style="color:var(--joy-text-secondary);font-size:11.5px;margin:4px 0">${escapeHtml(narr)}</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+                    <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { continentId: '${escapeHtml(b.continent_id)}', districtId: '${escapeHtml(b.district_id)}', nodeId: '${escapeHtml(tId)}', inspectId: '${escapeHtml(tId)}' })">
+                      🏰 Home Town ➔
+                    </button>
+                    ${b.hunting_area_id ? `
+                      <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { continentId: '${escapeHtml(b.continent_id)}', districtId: '${escapeHtml(b.district_id)}', nodeId: '${escapeHtml(b.hunting_area_id)}', inspectId: '${escapeHtml(b.hunting_area_id)}' })">
+                        ⚔️ Hunting Area ➔
+                      </button>
+                    ` : ""}
+                    ${b.farming_area_id ? `
+                      <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { continentId: '${escapeHtml(b.continent_id)}', districtId: '${escapeHtml(b.district_id)}', nodeId: '${escapeHtml(b.farming_area_id)}', inspectId: '${escapeHtml(b.farming_area_id)}' })">
+                        🌾 Farming Area ➔
+                      </button>
+                    ` : ""}
+                  </div>
                 </div>
-              `).join('')}
+              `;}).join('')}
             </div>
           </div>
         </section>
+
+        ${(() => {
+          const tax = whc.race_taxonomy || {};
+          const playableRaces = tax.playable_and_mob_races || [];
+          const monsterRaces = tax.monster_ecology_races || [];
+          const godEntities = tax.god_tier_entities || [];
+          const sys = whc.shared_world_systems || {};
+          const smith = sys.blacksmith_clan || {};
+          const guild = sys.adventure_guild || {};
+          const qloop = sys.quest_progression_loop || {};
+          const bhier = sys.boss_power_hierarchy || {};
+          return `
+            <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+              <div class="mono" style="font-size:11px;color:#38bdf8">MULTI-RACE COSMOLOGY · 6 PLAYABLE/MOB RACES + 6 MONSTER ECOLOGIES + 6 SEALED GODS</div>
+              <h3 style="margin:4px 0 10px;font-size:1.05rem">6 Playable & Mob Races (Racial Home Towns, Niched Stories, Hunting & Farming Loops)</h3>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-bottom:16px">
+                ${playableRaces.map(r => `
+                  <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                      <strong>🧬 ${escapeHtml(r.name)}</strong>
+                      <span class="mono" style="font-size:10px;padding:2px 6px;border-radius:999px;background:rgba(56,189,248,0.16);color:#38bdf8">Player + Mob</span>
+                    </div>
+                    <div style="font-size:11px;color:var(--joy-text-secondary);margin:4px 0">${escapeHtml(r.archetype_reference || "")}</div>
+                    <div style="font-size:11.5px;margin:6px 0"><strong>Home Town:</strong> 🏰 ${escapeHtml(r.home_town_name)} (<span class="mono">${escapeHtml(r.home_town_id)}</span>)</div>
+                    <div style="font-size:11.5px;margin:4px 0"><strong>Niched Story:</strong> ${escapeHtml(r.niched_story)}</div>
+                    <div style="font-size:11px;color:#eab308;margin:4px 0"><strong>🌾 Farming Drops:</strong> ${escapeHtml((r.farming_resources || []).join(", "))}</div>
+                    <div style="font-size:11px;color:#10b981"><strong>⚡ Racial Trait:</strong> ${escapeHtml(r.combat_trait || "")}</div>
+                  </div>
+                `).join("")}
+              </div>
+
+              <h3 style="margin:12px 0 8px;font-size:1rem">6 Monster-Only Ecology Races (Other Race for Mobs)</h3>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-bottom:16px">
+                ${monsterRaces.map(m => `
+                  <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <strong>👾 ${escapeHtml(m.name)}</strong>
+                      <span class="mono" style="font-size:10px;color:#ef4444">Mob Only</span>
+                    </div>
+                    <div style="font-size:11.5px;color:var(--joy-text-secondary);margin:4px 0">${escapeHtml(m.ecological_niche)}</div>
+                    <div style="font-size:11px;color:#eab308"><strong>Drops:</strong> ${escapeHtml((m.signature_drops || []).join(", "))}</div>
+                  </div>
+                `).join("")}
+              </div>
+
+              <h3 style="margin:12px 0 8px;font-size:1rem">6 God-Tier Entities (Sealed by The Architect in Chapter 1.4 God Seal Magic)</h3>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px">
+                ${godEntities.map(g => `
+                  <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid rgba(168,85,247,0.4)">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <strong>✨ ${escapeHtml(g.name)}</strong>
+                      <span class="mono" style="font-size:10px;color:#c084fc">${escapeHtml((g.elements || []).join(" / "))}</span>
+                    </div>
+                    <div style="font-size:11px;color:#38bdf8;margin:4px 0"><strong>Seal Status:</strong> ${escapeHtml(g.seal_state)}</div>
+                    <div style="font-size:11px;color:#f87171;margin:4px 0"><strong>Direct MVP Subordinate:</strong> 👑 ${escapeHtml(g.direct_mvp_subordinate)}</div>
+                    <div style="font-size:11.5px;color:var(--joy-text-secondary)">${escapeHtml(g.lore_summary)}</div>
+                  </div>
+                `).join("")}
+              </div>
+            </section>
+
+            <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+              <div class="mono" style="font-size:11px;color:#eab308">SHARED WORLD INSTITUTIONS · QUEST LOOP · BOSS HIERARCHY LAW</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:8px;margin-bottom:14px">
+                <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+                  <div style="font-weight:700;font-size:13px">🛡️ ${escapeHtml(guild.name || "Adventure Guild")} (<span class="mono">${escapeHtml(guild.allegiance || "neutral_no_side")}</span>)</div>
+                  <p style="font-size:11.5px;color:var(--joy-text-secondary);margin:6px 0">${escapeHtml(guild.neutrality_charter || "")}</p>
+                  <ul style="margin:0;padding-left:16px;font-size:11px;color:var(--joy-text-secondary)">
+                    ${(guild.core_services || []).map(s => `<li>${escapeHtml(s)}</li>`).join("")}
+                  </ul>
+                </div>
+                <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+                  <div style="font-weight:700;font-size:13px">⚒️ ${escapeHtml(smith.name || "Blacksmith Clan")}</div>
+                  <p style="font-size:11.5px;color:var(--joy-text-secondary);margin:6px 0">${escapeHtml(smith.core_role || "")}</p>
+                  <ul style="margin:0;padding-left:16px;font-size:11px;color:var(--joy-text-secondary)">
+                    ${(smith.forging_systems || []).map(s => `<li>${escapeHtml(s)}</li>`).join("")}
+                  </ul>
+                </div>
+              </div>
+
+              <h4 style="margin:10px 0 6px;font-size:0.95rem">📜 3-Track Quest Progression Loop (Main + Job + Side Quests)</h4>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+                ${(qloop.tracks || []).map(t => `
+                  <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
+                    <div style="font-weight:700;font-size:12px">${escapeHtml(t.name)}</div>
+                    <div style="font-size:11px;color:var(--joy-text-secondary);margin:4px 0">${escapeHtml(t.purpose)}</div>
+                    <div style="font-size:10.5px;color:#10b981"><strong>Rewards:</strong> ${escapeHtml(t.reward_focus)}</div>
+                  </div>
+                `).join("")}
+              </div>
+
+              <h4 style="margin:10px 0 6px;font-size:0.95rem">👑 Strict Boss Power Hierarchy: <span class="mono" style="color:#f87171">${escapeHtml(bhier.strict_order_law || "")}</span></h4>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px">
+                ${(bhier.tiers || []).map(bt => `
+                  <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+                    <div style="font-weight:700;font-size:12px">Rank ${bt.rank} · ${escapeHtml(bt.name)}</div>
+                    <div style="font-size:11px;color:var(--joy-text-secondary);margin:4px 0">${escapeHtml(bt.power_relationship)}</div>
+                    <div style="font-size:10.5px;color:#eab308"><strong>Loot:</strong> ${escapeHtml(bt.loot_tier)}</div>
+                  </div>
+                `).join("")}
+              </div>
+            </section>
+          `;
+        })()}
       </div>
 
       <aside class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px;position:sticky;top:72px">
@@ -5809,6 +5935,19 @@ function renderStudioWorldHistoryPerspective(whc, continents) {
           <strong>Core Rationale:</strong> ${escapeHtml(whc.core_rationale || '')}
         </div>
         ${renderQualityChecklistCardHtml(whc)}
+        <div style="margin-top:14px;padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
+          <div class="mono" style="font-size:10.5px;color:#10b981;font-weight:700;margin-bottom:6px">LONG-TERM GOVERNANCE CHECKLIST (GOV-01..GOV-06)</div>
+          ${(whc.long_term_governance_checklist || []).map(g => `
+            <div style="padding:8px;border-radius:6px;background:var(--joy-surface-card);border:1px solid var(--joy-border-subtle);margin-bottom:6px;font-size:11px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <strong>${escapeHtml(g.gate_id)} · ${escapeHtml(g.title)}</strong>
+                <span class="mono" style="font-size:10px;padding:1px 6px;border-radius:999px;background:${g.verified ? "rgba(16,185,129,0.18)" : "rgba(239,68,68,0.18)"};color:${g.verified ? "#10b981" : "#ef4444"}">${g.verified ? "PASS" : "CHECK"}</span>
+              </div>
+              <div style="color:var(--joy-text-secondary);font-size:10.5px;margin:3px 0">${escapeHtml(g.evidence)}</div>
+              <div class="mono" style="font-size:9.5px;color:#38bdf8">${escapeHtml(g.cli_command)}</div>
+            </div>
+          `).join("")}
+        </div>
       </aside>
     </div>
   `;

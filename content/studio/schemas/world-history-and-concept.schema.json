@@ -1,29 +1,29 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://atlas-world.joymify.com/studio/schemas/world-history-and-concept.schema.json",
-  "title": "WorldHistoryAndConcept",
-  "allOf": [
-    {
-      "$ref": "common-mystery.schema.json"
-    }
-  ],
+  "$id": "https://atlas-world.local/schemas/studio/world-history-and-concept.schema.json",
+  "title": "Level 1: World History and Concept",
+  "description": "Top-Down World Studio Level 1 schema. Defines the Multi-Race Cosmology (6 Playable/Mob Races + 6 Monster Ecology Races + 6 Sealed God-Tier Entities), the 4-Chapter Canonical History (1.1 Creation, 1.2 Age Of The Gods, 1.3 The God Wars, 1.4 God Seal Magic by The Architect), Racial Home Towns, Neutral Adventure Guild, Blacksmith Clan, 3-Track Quest Loop, and Boss Power Hierarchy.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "schema_version",
     "id",
     "name",
-    "world_title",
     "status",
     "core_rationale",
+    "quality_checklist",
     "character_scale_law",
     "player_arrival_premise",
     "primordial_gods",
     "historical_epochs",
+    "race_taxonomy",
+    "shared_world_systems",
     "starter_town_bindings",
-    "quality_checklist"
+    "long_term_governance_checklist"
   ],
   "properties": {
     "schema_version": {
+      "type": "string",
       "const": "1.0.0"
     },
     "id": {
@@ -32,137 +32,26 @@
     },
     "name": {
       "type": "string",
-      "minLength": 2
-    },
-    "world_title": {
-      "type": "string",
-      "minLength": 2
+      "minLength": 3
     },
     "status": {
-      "type": "string",
-      "enum": [
-        "canon",
-        "draft"
-      ]
+      "$ref": "common-defs.schema.json#/$defs/node_status"
     },
     "core_rationale": {
-      "type": "string",
-      "minLength": 30
+      "$ref": "common-defs.schema.json#/$defs/core_rationale"
+    },
+    "mystery_hook": {
+      "$ref": "common-defs.schema.json#/$defs/mystery_hook"
+    },
+    "quality_checklist": {
+      "$ref": "common-defs.schema.json#/$defs/five_pillar_checklist"
     },
     "character_scale_law": {
-      "type": "object",
-      "description": "Global 90 to 120 centimeter cute toddler and kid character scale law governing all three-dimensional assets, cameras, and architecture.",
-      "required": [
-        "height_range_meters",
-        "reference_height_meters",
-        "head_to_body_ratio",
-        "silhouette_rules",
-        "camera_rig",
-        "environment_metrics"
-      ],
-      "properties": {
-        "height_range_meters": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "minItems": 2,
-          "maxItems": 2,
-          "description": "Strict [0.90, 1.20] meters bounds."
-        },
-        "reference_height_meters": {
-          "type": "number",
-          "const": 1.05
-        },
-        "head_to_body_ratio": {
-          "type": "string",
-          "minLength": 10
-        },
-        "silhouette_rules": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 2
-        },
-        "camera_rig": {
-          "type": "object",
-          "required": [
-            "look_at_height_meters",
-            "default_distance_meters",
-            "pitch_degrees",
-            "field_of_view_degrees"
-          ],
-          "properties": {
-            "look_at_height_meters": {
-              "type": "number"
-            },
-            "default_distance_meters": {
-              "type": "number"
-            },
-            "pitch_degrees": {
-              "type": "number"
-            },
-            "field_of_view_degrees": {
-              "type": "number"
-            }
-          }
-        },
-        "environment_metrics": {
-          "type": "object",
-          "required": [
-            "max_grass_height_meters",
-            "max_bush_height_meters",
-            "min_trunk_collider_radius_meters",
-            "min_doorway_height_meters",
-            "min_doorway_width_meters",
-            "max_stair_riser_meters",
-            "prop_counter_height_range_meters",
-            "min_highway_corridor_width_meters"
-          ],
-          "properties": {
-            "max_grass_height_meters": {
-              "type": "number",
-              "maximum": 0.35
-            },
-            "max_bush_height_meters": {
-              "type": "number",
-              "maximum": 0.65
-            },
-            "min_trunk_collider_radius_meters": {
-              "type": "number",
-              "minimum": 0.35
-            },
-            "min_doorway_height_meters": {
-              "type": "number",
-              "minimum": 1.8
-            },
-            "min_doorway_width_meters": {
-              "type": "number",
-              "minimum": 1.4
-            },
-            "max_stair_riser_meters": {
-              "type": "number",
-              "maximum": 0.18
-            },
-            "prop_counter_height_range_meters": {
-              "type": "array",
-              "items": {
-                "type": "number"
-              },
-              "minItems": 2,
-              "maxItems": 2
-            },
-            "min_highway_corridor_width_meters": {
-              "type": "number",
-              "minimum": 3.5
-            }
-          }
-        }
-      }
+      "$ref": "common-defs.schema.json#/$defs/character_scale_law"
     },
     "player_arrival_premise": {
       "type": "object",
+      "additionalProperties": false,
       "required": [
         "player_identity",
         "why_enter_world",
@@ -185,15 +74,17 @@
     },
     "primordial_gods": {
       "type": "array",
-      "minItems": 1,
+      "minItems": 6,
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "required": [
           "id",
           "name",
-          "domain",
+          "title",
           "status",
           "core_rationale",
+          "domain",
           "geographical_scar",
           "architectural_imprint"
         ],
@@ -203,47 +94,72 @@
             "pattern": "^god-[a-z0-9-]+$"
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "minLength": 2
           },
-          "domain": {
-            "type": "string"
+          "title": {
+            "type": "string",
+            "minLength": 3
           },
-          "status": {
+          "god_archetype": {
             "type": "string",
             "enum": [
-              "canon",
-              "draft",
-              "mystery"
+              "angel",
+              "demon",
+              "legendary_beast",
+              "leviathan",
+              "legendary_dragon",
+              "the_architect",
+              "regional_aspect"
             ]
           },
-          "core_rationale": {
+          "seal_status": {
             "type": "string",
-            "minLength": 20
+            "enum": [
+              "sealed_by_the_architect",
+              "architect_originator",
+              "sealed_regional_aspect"
+            ]
+          },
+          "mvp_apostle_title": {
+            "type": "string",
+            "minLength": 3
+          },
+          "status": {
+            "$ref": "common-defs.schema.json#/$defs/node_status"
+          },
+          "core_rationale": {
+            "$ref": "common-defs.schema.json#/$defs/core_rationale"
+          },
+          "mystery_hook": {
+            "$ref": "common-defs.schema.json#/$defs/mystery_hook"
+          },
+          "domain": {
+            "type": "string",
+            "minLength": 5
           },
           "geographical_scar": {
             "type": "string",
-            "minLength": 15
+            "minLength": 10
           },
           "architectural_imprint": {
             "type": "string",
-            "minLength": 15
-          },
-          "mystery_hook": {
-            "$ref": "common-mystery.schema.json#/properties/mystery_hook"
+            "minLength": 10
           }
         }
       }
     },
     "historical_epochs": {
       "type": "array",
-      "minItems": 1,
+      "minItems": 4,
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "required": [
           "id",
+          "era_order",
           "name",
           "kind",
-          "era_order",
           "status",
           "core_rationale",
           "involved_god_ids",
@@ -254,40 +170,44 @@
             "type": "string",
             "pattern": "^epoch-[a-z0-9-]+$"
           },
-          "name": {
-            "type": "string"
-          },
-          "kind": {
+          "chapter_code": {
             "type": "string",
-            "enum": [
-              "creation",
-              "great_war",
-              "cataclysm",
-              "accord",
-              "awakening"
-            ]
+            "pattern": "^1\\.[1-9]$"
           },
           "era_order": {
             "type": "integer",
             "minimum": 1
           },
-          "status": {
+          "name": {
+            "type": "string",
+            "minLength": 3
+          },
+          "kind": {
             "type": "string",
             "enum": [
-              "canon",
-              "draft",
-              "mystery"
+              "creation",
+              "awakening",
+              "great_war",
+              "cataclysm",
+              "accord",
+              "current_age"
             ]
           },
+          "status": {
+            "$ref": "common-defs.schema.json#/$defs/node_status"
+          },
           "core_rationale": {
-            "type": "string",
-            "minLength": 20
+            "$ref": "common-defs.schema.json#/$defs/core_rationale"
+          },
+          "mystery_hook": {
+            "$ref": "common-defs.schema.json#/$defs/mystery_hook"
           },
           "involved_god_ids": {
             "type": "array",
             "minItems": 1,
             "items": {
-              "type": "string"
+              "type": "string",
+              "pattern": "^god-[a-z0-9-]+$"
             }
           },
           "world_scars": {
@@ -295,6 +215,7 @@
             "minItems": 1,
             "items": {
               "type": "object",
+              "additionalProperties": false,
               "required": [
                 "scar_id",
                 "name",
@@ -307,7 +228,8 @@
                   "pattern": "^scar-[a-z0-9-]+$"
                 },
                 "name": {
-                  "type": "string"
+                  "type": "string",
+                  "minLength": 3
                 },
                 "description": {
                   "type": "string",
@@ -318,59 +240,401 @@
                   "minItems": 1,
                   "items": {
                     "type": "string",
-                    "pattern": "^continent-[0-9]{2}-[a-z0-9-]+$"
+                    "pattern": "^continent-[a-z0-9-]+$"
                   }
                 }
               }
             }
-          },
-          "mystery_hook": {
-            "$ref": "common-mystery.schema.json#/properties/mystery_hook"
+          }
+        }
+      }
+    },
+    "race_taxonomy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "playable_and_mob_races",
+        "monster_ecology_races",
+        "god_tier_entities"
+      ],
+      "properties": {
+        "playable_and_mob_races": {
+          "type": "array",
+          "minItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "race_key",
+              "name",
+              "archetype_reference",
+              "can_be_player",
+              "can_be_mob",
+              "home_town_id",
+              "home_town_name",
+              "continent_id",
+              "district_id",
+              "hunting_area_id",
+              "farming_area_id",
+              "farming_resources",
+              "niched_story",
+              "combat_trait"
+            ],
+            "properties": {
+              "id": { "type": "string", "pattern": "^race-[a-z0-9-]+$" },
+              "race_key": {
+                "type": "string",
+                "enum": [
+                  "human_demi_human",
+                  "lunar",
+                  "ogre_orc",
+                  "dark_lunar",
+                  "dwarf",
+                  "furral"
+                ]
+              },
+              "name": { "type": "string", "minLength": 2 },
+              "archetype_reference": { "type": "string", "minLength": 5 },
+              "can_be_player": { "type": "boolean", "const": true },
+              "can_be_mob": { "type": "boolean", "const": true },
+              "home_town_id": { "type": "string", "pattern": "^town-[a-z0-9-]+$" },
+              "home_town_name": { "type": "string", "minLength": 3 },
+              "continent_id": { "type": "string", "pattern": "^continent-[a-z0-9-]+$" },
+              "district_id": { "type": "string", "pattern": "^district-[a-z0-9-]+$" },
+              "hunting_area_id": { "type": "string", "pattern": "^hunting-area-[a-z0-9-]+$" },
+              "farming_area_id": { "type": "string", "pattern": "^hunting-area-[a-z0-9-]+$" },
+              "farming_resources": {
+                "type": "array",
+                "minItems": 2,
+                "items": { "type": "string", "minLength": 3 }
+              },
+              "niched_story": { "type": "string", "minLength": 20 },
+              "combat_trait": { "type": "string", "minLength": 10 }
+            }
+          }
+        },
+        "monster_ecology_races": {
+          "type": "array",
+          "minItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "race_key",
+              "name",
+              "can_be_player",
+              "can_be_mob",
+              "ecological_niche",
+              "signature_drops",
+              "primary_continents"
+            ],
+            "properties": {
+              "id": { "type": "string", "pattern": "^mob-race-[a-z0-9-]+$" },
+              "race_key": {
+                "type": "string",
+                "enum": [
+                  "beast_animal_brute",
+                  "robotic",
+                  "undead",
+                  "fish",
+                  "insect_arachnia",
+                  "plant"
+                ]
+              },
+              "name": { "type": "string", "minLength": 2 },
+              "can_be_player": { "type": "boolean", "const": false },
+              "can_be_mob": { "type": "boolean", "const": true },
+              "ecological_niche": { "type": "string", "minLength": 15 },
+              "signature_drops": {
+                "type": "array",
+                "minItems": 2,
+                "items": { "type": "string", "minLength": 3 }
+              },
+              "primary_continents": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string", "pattern": "^continent-[a-z0-9-]+$" }
+              }
+            }
+          }
+        },
+        "god_tier_entities": {
+          "type": "array",
+          "minItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "entity_key",
+              "name",
+              "elements",
+              "seal_state",
+              "sealed_by",
+              "seal_location_continent_id",
+              "direct_mvp_subordinate",
+              "lore_summary"
+            ],
+            "properties": {
+              "id": { "type": "string", "pattern": "^god-[a-z0-9-]+$" },
+              "entity_key": {
+                "type": "string",
+                "enum": [
+                  "angel",
+                  "demon",
+                  "legendary_beast",
+                  "leviathan",
+                  "legendary_dragon",
+                  "the_architect"
+                ]
+              },
+              "name": { "type": "string", "minLength": 3 },
+              "elements": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string", "minLength": 2 }
+              },
+              "seal_state": {
+                "type": "string",
+                "enum": [
+                  "sealed_by_god_seal_magic",
+                  "wielder_of_god_seal_magic"
+                ]
+              },
+              "sealed_by": { "type": "string", "minLength": 3 },
+              "seal_location_continent_id": { "type": "string", "pattern": "^continent-[a-z0-9-]+$" },
+              "direct_mvp_subordinate": { "type": "string", "minLength": 5 },
+              "lore_summary": { "type": "string", "minLength": 20 }
+            }
+          }
+        }
+      }
+    },
+    "shared_world_systems": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "blacksmith_clan",
+        "adventure_guild",
+        "quest_progression_loop",
+        "boss_power_hierarchy"
+      ],
+      "properties": {
+        "blacksmith_clan": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "allegiance",
+            "core_role",
+            "forging_systems",
+            "racial_anvil_branches"
+          ],
+          "properties": {
+            "id": { "type": "string", "const": "faction-blacksmith-clan" },
+            "name": { "type": "string", "minLength": 3 },
+            "allegiance": { "type": "string", "minLength": 5 },
+            "core_role": { "type": "string", "minLength": 15 },
+            "forging_systems": {
+              "type": "array",
+              "minItems": 3,
+              "items": { "type": "string", "minLength": 5 }
+            },
+            "racial_anvil_branches": {
+              "type": "array",
+              "minItems": 3,
+              "items": { "type": "string", "minLength": 5 }
+            }
+          }
+        },
+        "adventure_guild": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "allegiance",
+            "neutrality_charter",
+            "core_services"
+          ],
+          "properties": {
+            "id": { "type": "string", "const": "faction-adventure-guild" },
+            "name": { "type": "string", "minLength": 3 },
+            "allegiance": { "type": "string", "const": "neutral_no_side" },
+            "neutrality_charter": { "type": "string", "minLength": 15 },
+            "core_services": {
+              "type": "array",
+              "minItems": 3,
+              "items": { "type": "string", "minLength": 5 }
+            }
+          }
+        },
+        "quest_progression_loop": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "progression_philosophy",
+            "tracks"
+          ],
+          "properties": {
+            "progression_philosophy": { "type": "string", "minLength": 15 },
+            "tracks": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "track_key",
+                  "name",
+                  "purpose",
+                  "reward_focus"
+                ],
+                "properties": {
+                  "track_key": {
+                    "type": "string",
+                    "enum": ["main_quest", "job_quest", "side_quest"]
+                  },
+                  "name": { "type": "string", "minLength": 5 },
+                  "purpose": { "type": "string", "minLength": 15 },
+                  "reward_focus": { "type": "string", "minLength": 10 }
+                }
+              }
+            }
+          }
+        },
+        "boss_power_hierarchy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "strict_order_law",
+            "tiers"
+          ],
+          "properties": {
+            "strict_order_law": {
+              "type": "string",
+              "const": "GOD_SEALED > MVP_GOD_SUBORDINATE > RAID_BOSS > MINI_BOSS > NORMAL_MOB"
+            },
+            "tiers": {
+              "type": "array",
+              "minItems": 4,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "rank",
+                  "tier_key",
+                  "name",
+                  "cosmic_role",
+                  "power_relationship",
+                  "loot_tier"
+                ],
+                "properties": {
+                  "rank": { "type": "integer", "minimum": 1, "maximum": 5 },
+                  "tier_key": {
+                    "type": "string",
+                    "enum": ["god_tier", "mvp_boss", "raid_boss", "field_mob"]
+                  },
+                  "name": { "type": "string", "minLength": 3 },
+                  "cosmic_role": { "type": "string", "minLength": 15 },
+                  "power_relationship": { "type": "string", "minLength": 15 },
+                  "loot_tier": { "type": "string", "minLength": 10 }
+                }
+              }
+            }
           }
         }
       }
     },
     "starter_town_bindings": {
       "type": "array",
-      "minItems": 1,
+      "minItems": 6,
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "required": [
-          "town_id",
-          "town_name",
           "continent_id",
           "district_id",
-          "status",
-          "spawn_rationale"
+          "town_node_id",
+          "arrival_narrative"
         ],
         "properties": {
-          "town_id": {
+          "race_id": {
             "type": "string",
-            "pattern": "^town-[a-z0-9-]+$"
+            "pattern": "^race-[a-z0-9-]+$"
           },
-          "town_name": {
-            "type": "string"
+          "race_name": {
+            "type": "string",
+            "minLength": 2
           },
           "continent_id": {
             "type": "string",
-            "pattern": "^continent-[0-9]{2}-[a-z0-9-]+$"
+            "pattern": "^continent-[a-z0-9-]+$"
           },
           "district_id": {
             "type": "string",
             "pattern": "^district-[a-z0-9-]+$"
           },
-          "status": {
+          "town_node_id": {
+            "type": "string",
+            "pattern": "^town-[a-z0-9-]+$"
+          },
+          "hunting_area_id": {
+            "type": "string",
+            "pattern": "^hunting-area-[a-z0-9-]+$"
+          },
+          "farming_area_id": {
+            "type": "string",
+            "pattern": "^hunting-area-[a-z0-9-]+$"
+          },
+          "arrival_narrative": {
+            "type": "string",
+            "minLength": 15
+          }
+        }
+      }
+    },
+    "long_term_governance_checklist": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "gate_id",
+          "category",
+          "title",
+          "invariant_rule",
+          "cli_command",
+          "verified",
+          "evidence"
+        ],
+        "properties": {
+          "gate_id": {
+            "type": "string",
+            "pattern": "^GOV-[0-9]{2}$"
+          },
+          "category": {
             "type": "string",
             "enum": [
-              "canon",
-              "draft",
-              "mystery"
+              "race_hometown_matrix",
+              "monster_ecology_taxonomy",
+              "four_chapter_history",
+              "guild_and_blacksmith",
+              "quest_progression_tracks",
+              "boss_hierarchy_law"
             ]
           },
-          "spawn_rationale": {
-            "type": "string",
-            "minLength": 20
-          }
+          "title": { "type": "string", "minLength": 5 },
+          "invariant_command_ref": { "type": "string" },
+          "invariant_rule": { "type": "string", "minLength": 15 },
+          "cli_command": { "type": "string", "minLength": 10 },
+          "verified": { "type": "boolean" },
+          "evidence": { "type": "string", "minLength": 15 }
         }
       }
     }

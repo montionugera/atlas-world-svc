@@ -1,10 +1,31 @@
 {
   "schema_version": "1.0.0",
   "id": "world-history-cradle-of-embers",
-  "name": "World History and Concept — The Clockspring Sundering",
-  "world_title": "Aethelgard: The Clockspring Nursery",
+  "name": "The Cradle of Sealed Gods & Six Races",
   "status": "canon",
-  "core_rationale": "Giant Primordial Artisans shattered during the Clockspring War, leaving behind a continent-sized nursery of living relics where 90 to 120 centimeter Star-Kindled children awaken to mend the broken world-mechanisms.",
+  "core_rationale": "Establishes the Multi-Race & Sealed-God cosmology across four canonical chapters (1.1 Creation, 1.2 Age Of The Gods, 1.3 The God Wars, 1.4 God Seal Magic by The Architect), binding six playable/mob races to racial home towns with dedicated hunting and farming loops, six monster-only ecology races, neutral Adventure Guild & Blacksmith Clan hubs, and the strict God > MVP (God Subordinate) > Raid Boss hierarchy.",
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "All four history chapters (1.1 Creation -> 1.2 Age Of The Gods -> 1.3 The God Wars -> 1.4 God Seal Magic by The Architect) trace directly into the 3 Continents, 6 Racial Home Towns, and the God > MVP > Raid Boss hierarchy."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Every continent is anchored by a sealed God-Tier entity and a Great War scar: Hearthbloom Basin glazed kiln caldera, the Clockwork Steppe giant brass faultline, and the Shattered Halo inverted-gravity sky islands."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces the 0.90 to 1.20 meter chibi/miniature proportion standard (1.05m reference height, 2.0x1.5m doors, <=0.15m stairs, <=0.35m grass, >=3.5m roads, 0.55-0.65m counters) across all 6 racial home towns."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Players begin in their chosen Race Home Town with a race-specific story, open-portal adjacent hunting ground, and resource farming loop, then converge through the Neutral Adventure Guild and Blacksmith Clan."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "The Architect final God Seal Vaults and the awakening of each Sealed God top-tier MVP Apostle remain locked behind fog-of-lore catacombs and multi-race Main Quest keys."
+    }
+  },
   "character_scale_law": {
     "height_range_meters": [
       0.9,
@@ -37,54 +58,199 @@
     }
   },
   "player_arrival_premise": {
-    "player_identity": "Star-Kindled Sprouts — 90 to 120 centimeter spirit-children condensed from fallen Hearth-Sparks.",
-    "why_enter_world": "Only small, nimble hands can crawl inside the fractured Titan Reliquaries and relight the World-Lanterns without triggering giant-scale defense wards.",
-    "inciting_phenomenon": "The Great Lantern Eclipse — outer continents are freezing into Fog of Lore, drawing newly condensed Sprouts into the warm Hearthbloom Basin."
+    "player_identity": "A newly awakened scion of one of the Six Mortal Races\u2014Human/Demi-Human, Lunar, Ogre/Orc, Dark-Lunar, Dwarf, or Furral\u2014bearing a resonant fragment of The Architect's God Seal.",
+    "why_enter_world": "Each adventurer begins in their race's ancestral Home Town to master their racial craft, hunt encroaching monsters, farm regional alloys, and register with the Neutral Adventure Guild.",
+    "inciting_phenomenon": "Hairline fractures have appeared across the God Seals forged by The Architect in Chapter 1.4, awakening top-tier MVP Apostles (direct subordinates of the Sealed Gods) and lesser Raid Boss wardens across all three continents."
   },
   "primordial_gods": [
     {
-      "id": "god-sola-hearth-weaver",
-      "name": "Sola, the Hearth-Weaver",
-      "domain": "Warmth, ceramic pottery, eternal embers, and shelter",
+      "id": "god-the-architect",
+      "name": "Aethelgard, The Architect",
+      "title": "The Mortal Woman Who Sealed Every God",
+      "god_archetype": "the_architect",
+      "seal_status": "architect_originator",
+      "mvp_apostle_title": "First Seal-Scribe Automaton, Prime Keeper",
       "status": "canon",
-      "core_rationale": "Provides a safe, warm, low-altitude cradle for new players to spawn and learn basic mechanics.",
-      "geographical_scar": "Fell curled around the central inland sea, baking the surrounding clay basin into permanently warm, fertile terraced meadows.",
-      "architectural_imprint": "Rounded kiln-baked cottage domes, low 0.60 meter hearth-counters, and lantern-lined cobblestone lanes."
+      "core_rationale": "A mortal human woman of unmatched geometric and runic genius who ended the devastating God Wars (Chapter 1.3) by forging the nationwide array of God Seal Magic (Chapter 1.4), binding every deity\u2014Angel, Demon, Legendary Beast, Leviathan, and the Three-Element Legendary Dragon\u2014beneath the world's continents.",
+      "domain": "God Seal Magic, Sacred Geometry, and Mortal Sovereignty",
+      "geographical_scar": "The Prime Seal Meridians that link Lantern Hollow, Inductor Switchyard, and Starfall Haven into a planetary containment lattice",
+      "architectural_imprint": "Octagonal seal-keystones, runic obelisks, and 0.60-meter calibration pedestals found in every racial starter town"
+    },
+    {
+      "id": "god-angel",
+      "name": "Seraphiel of the Zenith Choir",
+      "title": "The Sealed Celestial Arbiter (Angel)",
+      "god_archetype": "angel",
+      "seal_status": "sealed_by_the_architect",
+      "mvp_apostle_title": "Arch-Valkyrie Caelia (MVP \u2014 Direct Angel Subordinate)",
+      "status": "canon",
+      "core_rationale": "Commander of the high-altitude celestial hosts during the Age of the Gods; sealed by The Architect inside the prism-bells of the Shattered Halo after judging mortal cities unworthy of free will.",
+      "domain": "Radiant Law, Starlight Judgement, and Harmonic Bells",
+      "geographical_scar": "The Inverted Belfry and luminous prism reefs of Continent 03 where celestial feathers calcified into starlight glass",
+      "architectural_imprint": "Winged alabaster archways, suspended chime-spires, and Lunar starlight sanctums"
+    },
+    {
+      "id": "god-demon",
+      "name": "Malphas of the Abyssal Crucible",
+      "title": "The Sealed Cinder Tyrant (Demon)",
+      "god_archetype": "demon",
+      "seal_status": "sealed_by_the_architect",
+      "mvp_apostle_title": "Dread-Lord Ignisazar (MVP \u2014 Direct Demon Subordinate)",
+      "status": "canon",
+      "core_rationale": "Lord of the abyssal slag-fiends who clashed with Seraphiel during the God Wars; bound by The Architect's chains beneath the deepest kiln-trenches and shadow refraction crypts.",
+      "domain": "Abyssal Hellfire, Blood-Obsidian, and Shadow Refraction",
+      "geographical_scar": "The umbral obsidian fissures beneath Kilnwatch Bastion and the Shadow Refraction Crypts",
+      "architectural_imprint": "Basalt horn-buttresses, dark-prism containment seals, and Ogre crucible bastions"
+    },
+    {
+      "id": "god-legendary-beast",
+      "name": "fenrir-kael, The World-Prowler",
+      "title": "The Sealed Sovereign of Fang & Root (Legendary Beast)",
+      "god_archetype": "legendary_beast",
+      "seal_status": "sealed_by_the_architect",
+      "mvp_apostle_title": "Alpha Electro-Stalker Raijin-Vex (MVP \u2014 Direct Beast Subordinate)",
+      "status": "canon",
+      "core_rationale": "Progenitor of all wild fauna and patron totem of the Furral warrior tribes; sealed by The Architect within the amber-root and thunder-coil ley canyons so its primal roar would no longer shatter continents.",
+      "domain": "Primal Savagery, Bio-Static Pulse, and World-Root Canopies",
+      "geographical_scar": "The giant claw-cut canyons of the Amber-Root Hollows and Thunder-Coil Basin",
+      "architectural_imprint": "Fang-arch totems, braided root-bridges, and Furral copper-inductor arenas"
+    },
+    {
+      "id": "god-leviathan",
+      "name": "Thalassor the Trench-Swallower",
+      "title": "The Sealed Abyssal Tidemaster (Leviathan)",
+      "god_archetype": "leviathan",
+      "seal_status": "sealed_by_the_architect",
+      "mvp_apostle_title": "Tide-Herald Pelagios (MVP \u2014 Direct Leviathan Subordinate)",
+      "status": "canon",
+      "core_rationale": "Colossal serpent of the primordial ocean whose thrashing during the God Wars tore whole archipelagos into the sky; sealed by The Architect beneath the upward waterfalls of the Perigee Abyss.",
+      "domain": "Crushing Abyssal Tides, Upward Maelstroms, and Pelagic Bioluminescence",
+      "geographical_scar": "The inverted whirlpool and upward-falling ocean cascades of the Shattered Halo",
+      "architectural_imprint": "Barnacle-clad brass diving bells, coral lock-gates, and siphon aqueducts"
+    },
+    {
+      "id": "god-legendary-dragon",
+      "name": "Bahamut-Triad, The Threefold Wyrm",
+      "title": "The Sealed Dragon of Earth, Fire & Thunder",
+      "god_archetype": "legendary_dragon",
+      "seal_status": "sealed_by_the_architect",
+      "mvp_apostle_title": "Tri-Scale Wyrm-Marshal Volcanor (MVP \u2014 Direct Dragon Subordinate)",
+      "status": "canon",
+      "core_rationale": "Three-headed primordial dragon embodying tectonic Earth, kiln Fire, and galvanic Thunder; sealed by The Architect across the tri-continental faultlines where the Blacksmith Clan now taps its dormant elemental breath.",
+      "domain": "Tectonic Earth, Crucible Fire, and Galvanic Thunder",
+      "geographical_scar": "The tri-elemental vein network feeding Hearthbloom's kilns, the Clockwork Steppe's thunder-coils, and the Blacksmith Clan's master anvils",
+      "architectural_imprint": "Dragon-jaw forge flues, triple-alloy anvils, and grounded lightning spires"
+    },
+    {
+      "id": "god-sola-hearth-weaver",
+      "name": "Sola the Hearth-Weaver",
+      "title": "Sealed Earth-Fire Aspect of the Kiln Basin",
+      "god_archetype": "regional_aspect",
+      "seal_status": "sealed_regional_aspect",
+      "mvp_apostle_title": "Kiln-Saint Pyraea (MVP \u2014 Direct Hearth-Weaver Subordinate)",
+      "status": "canon",
+      "core_rationale": "Regional Earth-and-Fire aspect sealed inside Hearthbloom Basin's central ceramic caldera; her dormant warmth keeps Continent 01 at perpetual spring for Human and Dwarf starter towns.",
+      "domain": "Warm Clay, Perpetual Spring, and Hearth-Fires",
+      "geographical_scar": "The Great Glazed Caldera of Hearthbloom Basin (scar-kiln-basin)",
+      "architectural_imprint": "Rounded terracotta domes, chimney-spire lanterns, and glazed brick bridges"
     },
     {
       "id": "god-krono-brass-titan",
-      "name": "Krono, the Brass Titan",
-      "domain": "Wind, gears, locomotion, and timekeeping",
+      "name": "Krono the Brass Titan",
+      "title": "Sealed Thunder-Forge Aspect of the Steppe",
+      "god_archetype": "regional_aspect",
+      "seal_status": "sealed_regional_aspect",
+      "mvp_apostle_title": "Chrono-Vanguard Aegis-IX (MVP \u2014 Direct Brass Titan Subordinate)",
       "status": "canon",
-      "core_rationale": "Justifies mid-level mechanical biomes, wind-trains, and airship transit between continents.",
-      "geographical_scar": "His shattered gearbox ribs jut out across the eastern plateau, creating perpetual gale-force wind canyons.",
-      "architectural_imprint": "Brass wind-vane towers, cog-wheel elevators with 0.15 meter toddler step-risers, and copper viaducts."
+      "core_rationale": "Colossal clockwork colossus of the God Wars sealed by The Architect along the Brass Faultline of Continent 02, powering wind-tinker hubs and Furral inductor switchyards.",
+      "domain": "Wind-Gears, Galvanic Springs, and Perpetual Motion",
+      "geographical_scar": "The Brass Faultline (scar-brass-faultline) across the Clockwork Steppe",
+      "architectural_imprint": "Interlocking copper gear-plazas, wind-vane towers, and railway viaducts"
     },
     {
       "id": "god-vesper-dream-eater",
-      "name": "Vesper, the Dream-Eater",
-      "domain": "Gravity, starlight, and silence",
+      "name": "Vesper the Dream-Eater",
+      "title": "Sealed Astral-Tide Aspect of the Halo",
+      "god_archetype": "regional_aspect",
+      "seal_status": "sealed_regional_aspect",
+      "mvp_apostle_title": "Eclipse-Cantor Nocturne (MVP \u2014 Direct Dream-Eater Subordinate)",
       "status": "canon",
-      "core_rationale": "Anchors the late-game northern anomaly and explains why the northern sea floats upward into storm clouds across The Shattered Halo.",
-      "geographical_scar": "Cracked the planetary crust into inverted floating islands shrouded in violet static.",
-      "architectural_imprint": "Inverted basalt spires, 0.15 meter basalt risers, and weightless 12.0 meter wide starlight tether-bridges.",
-      "mystery_hook": {
-        "in_world_rumor": "Sailors swear compasses spin backward north of the Brass Strait, pointing up at the clouds instead of the horizon.",
-        "visual_silhouette": "A ring of levitating black monoliths suspended inside a permanent aurora borealis.",
-        "unanswered_question": "Is Vesper dead like the other Primordial Gods, or dreaming inside the floating core?",
-        "discovery_trigger_hint": "Unlocked after restoring Krono's Great Mainspring in Continent 02."
-      }
+      "core_rationale": "Astral-and-Leviathan aspect sealed inside the inverted-gravity crater of Continent 03, where Lunar and Dark-Lunar citadels harvest starlight and umbral refraction.",
+      "domain": "Starlight Tides, Inverted Gravity, and Memory Glass",
+      "geographical_scar": "The Shattered Halo (scar-vesper-crater) suspended above the northern whirlpool",
+      "architectural_imprint": "Tethered floating piers, stained-glass astrolabes, and upside-down waterfalls"
     }
   ],
   "historical_epochs": [
     {
-      "id": "epoch-clockspring-war",
-      "name": "The Clockspring War",
-      "kind": "great_war",
+      "id": "epoch-1-1-creation",
+      "chapter_code": "1.1",
       "era_order": 1,
+      "name": "1.1 Creation \u2014 The Primordial Crucible & Birth of the Twelve Lineages",
+      "kind": "creation",
       "status": "canon",
-      "core_rationale": "The foundational conflict between Sola, Krono, and Vesper that split the supercontinent into distinct climate and level-band Continents.",
+      "core_rationale": "Out of the primordial elemental crucible emerged the landmasses, oceans, and the twelve living lineages: six sentient mortal races (Human/Demi-Human, Lunar, Ogre/Orc, Dark-Lunar, miniature high-strength Dwarf, and electro-warrior Furral) alongside six wild monster ecologies (Beast/Brute, Robotic cores, Undead husks, Fish, Insect/Arachnia, and sentient Plant flora).",
       "involved_god_ids": [
+        "god-legendary-dragon",
+        "god-legendary-beast",
+        "god-leviathan",
+        "god-sola-hearth-weaver"
+      ],
+      "world_scars": [
+        {
+          "scar_id": "scar-primordial-root-veins",
+          "name": "The Primordial Amber & Elemental Veins",
+          "description": "Deep subterranean veins of earth-clay, thunder-amber, and star-quartz formed at Creation, later tapped by the six racial home towns and the Blacksmith Clan.",
+          "spawned_continent_ids": [
+            "continent-01-hearthbloom-basin",
+            "continent-02-clockwork-steppe",
+            "continent-03-shattered-halo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "epoch-1-2-age-of-the-gods",
+      "chapter_code": "1.2",
+      "era_order": 2,
+      "name": "1.2 Age Of The Gods \u2014 Dominion of the Five Divine Orders",
+      "kind": "awakening",
+      "status": "canon",
+      "core_rationale": "Before mortal self-rule, the five divine orders\u2014Angel (Seraphiel), Demon (Malphas), Legendary Beast (Fenrir-Kael), Leviathan (Thalassor), and the Threefold Legendary Dragon (Earth, Fire, Thunder)\u2014claimed absolute dominion over the skies, seas, and faultlines, elevating chosen Apostles as top-tier MVP commanders over the mortal races.",
+      "involved_god_ids": [
+        "god-angel",
+        "god-demon",
+        "god-legendary-beast",
+        "god-leviathan",
+        "god-legendary-dragon"
+      ],
+      "world_scars": [
+        {
+          "scar_id": "scar-divine-citadel-pillars",
+          "name": "The Five Divine Citadel Foundations",
+          "description": "Monumental divine thrones and elemental conduits raised during the Age of the Gods, now serving as high-level MVP Boss sanctums.",
+          "spawned_continent_ids": [
+            "continent-01-hearthbloom-basin",
+            "continent-02-clockwork-steppe",
+            "continent-03-shattered-halo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "epoch-1-3-the-god-wars",
+      "chapter_code": "1.3",
+      "era_order": 3,
+      "name": "1.3 The God Wars \u2014 Clash of Pantheons & Shattering of the Continents",
+      "kind": "great_war",
+      "status": "canon",
+      "core_rationale": "Total war erupted between Angel, Demon, Legendary Beast, Leviathan, and the Three-Element Legendary Dragon (alongside regional aspects Sola, Krono, and Vesper). Their cataclysmic weapons fractured the world into three continents, spawning war-construct Raid Bosses and threatening to annihilate all six mortal races.",
+      "involved_god_ids": [
+        "god-angel",
+        "god-demon",
+        "god-legendary-beast",
+        "god-leviathan",
+        "god-legendary-dragon",
         "god-sola-hearth-weaver",
         "god-krono-brass-titan",
         "god-vesper-dream-eater"
@@ -92,61 +258,595 @@
       "world_scars": [
         {
           "scar_id": "scar-kiln-basin",
-          "name": "The Kiln-Basin Caldera",
-          "description": "Sola's fallen ceramic shield formed a sheltered, sunlit caldera immune to winter.",
+          "name": "The Great Glazed Caldera",
+          "description": "Where Sola's ceramic shield and the Earth-Fire Dragon's breath fused the western valley into warm terracotta terraces and boiling sap cisterns.",
           "spawned_continent_ids": [
             "continent-01-hearthbloom-basin"
           ]
         },
         {
           "scar_id": "scar-brass-faultline",
-          "name": "The Uncoiled Mainspring Faultline",
-          "description": "Krono's severed mainspring uncoiled across the eastern plains, carving deep canyon trenches.",
+          "name": "The Brass Faultline",
+          "description": "A 400-kilometer canyon of giant exposed clockwork gears, thunder-coils, and ticking copper ribs across the eastern steppe.",
           "spawned_continent_ids": [
             "continent-02-clockwork-steppe"
           ]
         },
         {
           "scar_id": "scar-vesper-crater",
-          "name": "The Inverted Gravity Crater",
-          "description": "Where Vesper's tear struck the northern ocean, gravity inverted and froze the archipelago in time.",
+          "name": "The Shattered Halo",
+          "description": "An inverted-gravity archipelago of basalt and coral islands suspended above a glowing maelstrom where Angel, Demon, and Leviathan clashed.",
           "spawned_continent_ids": [
+            "continent-03-shattered-halo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "epoch-1-4-god-seal-magic",
+      "chapter_code": "1.4",
+      "era_order": 4,
+      "name": "1.4 God Seal Magic \u2014 Every God Sealed by The Architect",
+      "kind": "accord",
+      "status": "canon",
+      "core_rationale": "Rising from the ashes of the God Wars, a mortal human woman known as The Architect (Aethelgard) wove the supreme God Seal Magic. She bound every single God\u2014Angel, Demon, Legendary Beast, Leviathan, and the Legendary Dragon\u2014into slumbering vaults beneath the world, allowing the six mortal races to build their Racial Home Towns, establish the Neutral Adventure Guild, and unite the Blacksmith Clan.",
+      "involved_god_ids": [
+        "god-the-architect",
+        "god-angel",
+        "god-demon",
+        "god-legendary-beast",
+        "god-leviathan",
+        "god-legendary-dragon",
+        "god-sola-hearth-weaver",
+        "god-krono-brass-titan",
+        "god-vesper-dream-eater"
+      ],
+      "world_scars": [
+        {
+          "scar_id": "scar-architect-seal-lattice",
+          "name": "The Architect's Planetary Seal Lattice",
+          "description": "A network of runic seal-anchors beneath every racial home town and catacomb dungeon; while the Gods remain sealed, their direct MVP subordinates and lesser Raid Boss wardens now strain against the locks.",
+          "spawned_continent_ids": [
+            "continent-01-hearthbloom-basin",
+            "continent-02-clockwork-steppe",
             "continent-03-shattered-halo"
           ]
         }
       ]
     }
   ],
+  "race_taxonomy": {
+    "playable_and_mob_races": [
+      {
+        "id": "race-human-demi-human",
+        "race_key": "human_demi_human",
+        "name": "Human / Demi-Human",
+        "archetype_reference": "Versatile heirs of The Architect's runic geometry and adaptive Demi-Human kin",
+        "can_be_player": true,
+        "can_be_mob": true,
+        "home_town_id": "town-lantern-hollow",
+        "home_town_name": "Lantern Hollow",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "district_id": "district-teacup-meadows",
+        "hunting_area_id": "hunting-area-clover-south-gate",
+        "farming_area_id": "hunting-area-kiln-east-orchard",
+        "farming_resources": [
+          "Terracotta Seal-Clay",
+          "Ember-Clover Nectar",
+          "Glazed Kiln-Timber"
+        ],
+        "niched_story": "Descendants of The Architect's original seal-keepers in Lantern Hollow who guard the First Meridian Keystone while investigating why renegade Demi-Human brigands and kiln-constructs are tampering with the cellar seals.",
+        "combat_trait": "Balanced Seal-Resonance: +10% adaptability to all weapon classes and Job Quest mastery."
+      },
+      {
+        "id": "race-dwarf",
+        "race_key": "dwarf",
+        "name": "Dwarf (Tontatta-Lineage Micro-Titans)",
+        "archetype_reference": "One Piece Tontatta-inspired miniature craftsmen with explosive superhuman strength and botanical-mechanical mastery",
+        "can_be_player": true,
+        "can_be_mob": true,
+        "home_town_id": "town-root-train-roundhouse",
+        "home_town_name": "Root-Train Roundhouse",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "district_id": "district-amber-root-hollows",
+        "hunting_area_id": "hunting-area-cobalt-sandbar-ford",
+        "farming_area_id": "hunting-area-resin-arch-tunnel",
+        "farming_resources": [
+          "Fossilized Amber-Resin",
+          "Deep-Root Iron Ore",
+          "High-Density Micro-Springs"
+        ],
+        "niched_story": "Tiny but terrifyingly strong Dwarf engineers of the Root-Train Roundhouse who cultivate giant banyan root-railways and forge high-density weapons for the Blacksmith Clan while repelling insectoid swarms in the Resin Arch Tunnels.",
+        "combat_trait": "Tontatta Mighty Impact: Miniature hitbox with colossal hammer/axe knockdown force and +15% Blacksmith forging yield."
+      },
+      {
+        "id": "race-ogre-orc",
+        "race_key": "ogre_orc",
+        "name": "Ogre / Orc",
+        "archetype_reference": "Crucible-hardened Ogre and Orc vanguard clans sworn to contain the subterranean Demon and Dragon vents",
+        "can_be_player": true,
+        "can_be_mob": true,
+        "home_town_id": "town-kilnwatch-bastion",
+        "home_town_name": "Kilnwatch Bastion",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "district_id": "district-kilnfire-terraces",
+        "hunting_area_id": "hunting-area-firebrick-duct",
+        "farming_area_id": "hunting-area-cinder-apron",
+        "farming_resources": [
+          "Dragon-Cinder Slag",
+          "Crucible Basalt Plates",
+          "Firebrick Marrow"
+        ],
+        "niched_story": "Once front-line shock troops in the God Wars, the Ogre/Orc clans of Kilnwatch Bastion now stand guard over the roaring Firebrick Ducts, proving their honor by culling frenzied warband deserters and harvesting raw dragon-cinder.",
+        "combat_trait": "Crucible Blood-Fury: High thermal/physical fortitude and heavy cleave damage that scales as HP drops."
+      },
+      {
+        "id": "race-furral",
+        "race_key": "furral",
+        "name": "Furral (Electro-Beastfolk Tribe)",
+        "archetype_reference": "One Piece Mink-inspired agile beastfolk warriors who channel bio-static 'Electro' through fur and brass conductors",
+        "can_be_player": true,
+        "can_be_mob": true,
+        "home_town_id": "town-inductor-switchyard",
+        "home_town_name": "Inductor Switchyard",
+        "continent_id": "continent-02-clockwork-steppe",
+        "district_id": "district-thunder-coil-basin",
+        "hunting_area_id": "hunting-area-metronome-bridge",
+        "farming_area_id": "hunting-area-leyden-causeway",
+        "farming_resources": [
+          "Galvanic Storm-Amber",
+          "Leyden Copper Coils",
+          "Static Beast-Pelts"
+        ],
+        "niched_story": "Sworn guardians of the Thunder-Coil Basin in the Clockwork Steppe, the Furral channel natural bio-electricity ('Electro') into the Inductor Switchyard and awaken primal lunar-static transformations when the Shattered Halo aligns overhead.",
+        "combat_trait": "Electro Claw & Sulong Surge: Imbues melee/dash strikes with chain-lightning shock and high evasion."
+      },
+      {
+        "id": "race-lunar",
+        "race_key": "lunar",
+        "name": "Lunar (Astral High-Elven Lineage)",
+        "archetype_reference": "Elf-like celestial navigators and starlight weavers dwelling among floating basalt atolls",
+        "can_be_player": true,
+        "can_be_mob": true,
+        "home_town_id": "town-starfall-haven",
+        "home_town_name": "Starfall Haven",
+        "continent_id": "continent-03-shattered-halo",
+        "district_id": "district-starfall-anchorage",
+        "hunting_area_id": "hunting-area-orrery-bridge",
+        "farming_area_id": "hunting-area-tether-causeway",
+        "farming_resources": [
+          "Luminous Star-Silk",
+          "Astral Tether Quartz",
+          "Upward-Cascade Moon-Dew"
+        ],
+        "niched_story": "Graceful, long-lived Lunar wardens of Starfall Haven who maintain the starlight tether-bridges of Continent 03 and guard the Angel Seraphiel's Inverted Belfry seal against corrupted celestial choir-constructs.",
+        "combat_trait": "Astral Grace & Bow/Spell Precision: Extended ranged/spell reach and low-gravity aerial step."
+      },
+      {
+        "id": "race-dark-lunar",
+        "race_key": "dark_lunar",
+        "name": "Dark-Lunar (Umbral Eclipse Lineage)",
+        "archetype_reference": "Dark-Elf-like shadow-refraction scholars and abyssal seal-breakers who harness eclipse prisms",
+        "can_be_player": true,
+        "can_be_mob": true,
+        "home_town_id": "town-umbrage-focal-sanctum",
+        "home_town_name": "Umbrage Focal Sanctum",
+        "continent_id": "continent-03-shattered-halo",
+        "district_id": "district-umbrage-prism-atoll",
+        "hunting_area_id": "hunting-area-resonance-tether-causeway",
+        "farming_area_id": "hunting-area-violet-spectrum-span",
+        "farming_resources": [
+          "Umbral Prism Shards",
+          "Abyssal Obsidian Glass",
+          "Eclipse Night-Nectar"
+        ],
+        "niched_story": "Kinsfolk of the Lunar who embraced the shadow-refraction reefs of Umbrage Focal Sanctum to monitor the Demon and Leviathan seals from the dark side of the Halo, walking a razor's edge between forbidden seal-magic and survival.",
+        "combat_trait": "Umbral Refraction: Critical backstab/shadow-arts amplification and resistance to abyssal corruption."
+      }
+    ],
+    "monster_ecology_races": [
+      {
+        "id": "mob-race-beast-animal-brute",
+        "race_key": "beast_animal_brute",
+        "name": "Beast / Animal / Brute",
+        "can_be_player": false,
+        "can_be_mob": true,
+        "ecological_niche": "Wild territorial predators, glaze-shell badgers, copper-horned steppelings, and primal brutes mutated by the Sealed Legendary Beast's aura.",
+        "signature_drops": [
+          "Primal Beast Hide",
+          "Brute Marrow Bone",
+          "Feral Fang Catalyst"
+        ],
+        "primary_continents": [
+          "continent-01-hearthbloom-basin",
+          "continent-02-clockwork-steppe"
+        ]
+      },
+      {
+        "id": "mob-race-robotic",
+        "race_key": "robotic",
+        "name": "Robotic / Clockwork Automaton",
+        "can_be_player": false,
+        "can_be_mob": true,
+        "ecological_niche": "Autonomous brass sentinels, runaway escapement drones, and God War siege constructs still executing ancient directives along the Brass Faultline.",
+        "signature_drops": [
+          "Precision Brass Pinion",
+          "Galvanic Core Capacitor",
+          "Invar Balance Spring"
+        ],
+        "primary_continents": [
+          "continent-02-clockwork-steppe",
+          "continent-01-hearthbloom-basin"
+        ]
+      },
+      {
+        "id": "mob-race-undead",
+        "race_key": "undead",
+        "name": "Undead / Seal-Wraith",
+        "can_be_player": false,
+        "can_be_mob": true,
+        "ecological_niche": "Hollowed soldiers of the God Wars, porcelain-bound crypt specters, and shadow-refracted revenants haunting catacombs near Demon and Leviathan seals.",
+        "signature_drops": [
+          "Ectoplasmic Seal-Wax",
+          "Ancient War-Emblem",
+          "Calcified Soul-Shard"
+        ],
+        "primary_continents": [
+          "continent-01-hearthbloom-basin",
+          "continent-03-shattered-halo"
+        ]
+      },
+      {
+        "id": "mob-race-fish",
+        "race_key": "fish",
+        "name": "Fish / Pelagic & Sky-Tide Fauna",
+        "can_be_player": false,
+        "can_be_mob": true,
+        "ecological_niche": "Glaze-river armored carp, abyssal trench leviathan-spawn, and flying starlight rays swimming through the upward waterfalls of the Shattered Halo.",
+        "signature_drops": [
+          "Iridescent Pelagic Scale",
+          "Abyssal Swim-Bladder",
+          "Star-Tide Pearl"
+        ],
+        "primary_continents": [
+          "continent-03-shattered-halo",
+          "continent-01-hearthbloom-basin"
+        ]
+      },
+      {
+        "id": "mob-race-insect-arachnia",
+        "race_key": "insect_arachnia",
+        "name": "Insect / Arachnia",
+        "can_be_player": false,
+        "can_be_mob": true,
+        "ecological_niche": "Amber-resin tunnel weavers, porcelain-carapace beetles, and copper-eating spark-spiders nesting inside root-trains and gear trenches.",
+        "signature_drops": [
+          "Resin-Hardened Chitin",
+          "Conductive Silk Thread",
+          "Venomous Mandible"
+        ],
+        "primary_continents": [
+          "continent-01-hearthbloom-basin",
+          "continent-02-clockwork-steppe"
+        ]
+      },
+      {
+        "id": "mob-race-plant",
+        "race_key": "plant",
+        "name": "Plant / Sentient Flora",
+        "can_be_player": false,
+        "can_be_mob": true,
+        "ecological_niche": "Spore-puffing lantern treants, spice-orchard mandrakes, and bioluminescent kelp-hydras fed by leaking God Seal mana.",
+        "signature_drops": [
+          "Living Hearth-Sap",
+          "Glowing Spore-Cluster",
+          "Ironwood Fiber"
+        ],
+        "primary_continents": [
+          "continent-01-hearthbloom-basin",
+          "continent-03-shattered-halo"
+        ]
+      }
+    ],
+    "god_tier_entities": [
+      {
+        "id": "god-angel",
+        "entity_key": "angel",
+        "name": "Angel (Seraphiel of the Zenith Choir)",
+        "elements": [
+          "Holy",
+          "Starlight",
+          "Wind"
+        ],
+        "seal_state": "sealed_by_god_seal_magic",
+        "sealed_by": "god-the-architect",
+        "seal_location_continent_id": "continent-03-shattered-halo",
+        "direct_mvp_subordinate": "Arch-Valkyrie Caelia (MVP Top-Tier Boss)",
+        "lore_summary": "Sealed inside the Inverted Belfry of the Shattered Halo; commands celestial MVP Apostle Caelia and lesser choir Raid Bosses."
+      },
+      {
+        "id": "god-demon",
+        "entity_key": "demon",
+        "name": "Demon (Malphas of the Abyssal Crucible)",
+        "elements": [
+          "Dark",
+          "Hellfire",
+          "Chaos"
+        ],
+        "seal_state": "sealed_by_god_seal_magic",
+        "sealed_by": "god-the-architect",
+        "seal_location_continent_id": "continent-01-hearthbloom-basin",
+        "direct_mvp_subordinate": "Dread-Lord Ignisazar (MVP Top-Tier Boss)",
+        "lore_summary": "Sealed beneath the deepest kiln-trenches and umbral crypts; his direct subordinate Dread-Lord Ignisazar reigns as a top-tier MVP Boss above dungeon Raid Bosses."
+      },
+      {
+        "id": "god-legendary-beast",
+        "entity_key": "legendary_beast",
+        "name": "Legendary Beast (Fenrir-Kael the World-Prowler)",
+        "elements": [
+          "Earth",
+          "Thunder",
+          "Feral"
+        ],
+        "seal_state": "sealed_by_god_seal_magic",
+        "sealed_by": "god-the-architect",
+        "seal_location_continent_id": "continent-02-clockwork-steppe",
+        "direct_mvp_subordinate": "Alpha Electro-Stalker Raijin-Vex (MVP Top-Tier Boss)",
+        "lore_summary": "Sealed beneath the Amber-Root and Thunder-Coil faultlines; revered by the Furral and served by MVP Apostle Raijin-Vex."
+      },
+      {
+        "id": "god-leviathan",
+        "entity_key": "leviathan",
+        "name": "Leviathan (Thalassor the Trench-Swallower)",
+        "elements": [
+          "Water",
+          "Ice",
+          "Abyssal Pressure"
+        ],
+        "seal_state": "sealed_by_god_seal_magic",
+        "sealed_by": "god-the-architect",
+        "seal_location_continent_id": "continent-03-shattered-halo",
+        "direct_mvp_subordinate": "Tide-Herald Pelagios (MVP Top-Tier Boss)",
+        "lore_summary": "Sealed beneath the Perigee Abyss maelstrom; its direct subordinate Tide-Herald Pelagios commands pelagic Raid Bosses across the sky-seas."
+      },
+      {
+        "id": "god-legendary-dragon",
+        "entity_key": "legendary_dragon",
+        "name": "Legendary Dragon (Bahamut-Triad of Earth, Fire & Thunder)",
+        "elements": [
+          "Earth",
+          "Fire",
+          "Thunder"
+        ],
+        "seal_state": "sealed_by_god_seal_magic",
+        "sealed_by": "god-the-architect",
+        "seal_location_continent_id": "continent-02-clockwork-steppe",
+        "direct_mvp_subordinate": "Tri-Scale Wyrm-Marshal Volcanor (MVP Top-Tier Boss)",
+        "lore_summary": "Three-headed elemental dragon of Earth, Fire, and Thunder sealed across the tri-continental meridian; its breath heats the Blacksmith Clan's master forges."
+      },
+      {
+        "id": "god-the-architect",
+        "entity_key": "the_architect",
+        "name": "The Architect (Aethelgard, Mortal Seal-Weaver)",
+        "elements": [
+          "God Seal Magic",
+          "Runic Geometry",
+          "Mortal Will"
+        ],
+        "seal_state": "wielder_of_god_seal_magic",
+        "sealed_by": "Self-Transcended into the Planetary Seal Lattice",
+        "seal_location_continent_id": "continent-01-hearthbloom-basin",
+        "direct_mvp_subordinate": "First Seal-Scribe Automaton, Prime Keeper (MVP Trial Arbiter)",
+        "lore_summary": "The human woman who ended the God Wars in Chapter 1.4 by sealing every God with God Seal Magic and gifting the six mortal races their sovereign home towns."
+      }
+    ]
+  },
+  "shared_world_systems": {
+    "blacksmith_clan": {
+      "id": "faction-blacksmith-clan",
+      "name": "The Sovereign Blacksmith Clan (Six-Anvil Covenant)",
+      "allegiance": "Cross-Racial Craft Covenant (Found in all 6 Racial Home Towns)",
+      "core_role": "Transforms raw materials farmed from racial hunting/farming grounds and boss drops into weapons, armor, and God-Seal socketed gear on 0.60m chibi-scale anvils.",
+      "forging_systems": [
+        "Racial Alloy Smelting (combining Human terracotta-steel, Dwarf root-iron, Ogre dragon-cinder, Furral storm-brass, and Lunar/Dark-Lunar star-glass)",
+        "Boss Core Awakening (socketing Raid Boss & MVP Apostle cores into endgame equipment)",
+        "Equipment Refinement, Durability Repair & Job-Weapon Promotion"
+      ],
+      "racial_anvil_branches": [
+        "Hearth-Kiln Anvil (Lantern Hollow & Kilnwatch Bastion)",
+        "Tontatta Micro-Press Foundry (Root-Train Roundhouse)",
+        "Galvanic Induction Forge (Inductor Switchyard)",
+        "Astral & Umbral Prism-Kiln (Starfall Haven & Umbrage Focal Sanctum)"
+      ]
+    },
+    "adventure_guild": {
+      "id": "faction-adventure-guild",
+      "name": "The Accord Adventure Guild",
+      "allegiance": "neutral_no_side",
+      "neutrality_charter": "Strictly neutral ('No Side') across all six playable races and all three continents. Every racial Home Town hosts an Adventure Guild hall where players trade quests, form cross-race parties, and claim bounties.",
+      "core_services": [
+        "Quest Trading & Commission Board (brokering Side Quests, Material Requests, and Bounty Contracts between players and NPCs)",
+        "Cross-Race Party & Raid Matchmaking for Catacomb Raid Bosses and field MVP Apostles",
+        "Hunter Rank Licensing, Monster Compendium Registration, and Fast-Travel Charter Passes"
+      ]
+    },
+    "quest_progression_loop": {
+      "progression_philosophy": "Players progress by weaving together three distinct quest tracks\u2014grinding levels, farming regional materials, advancing their combat Job, and uncovering the fracturing God Seals.",
+      "tracks": [
+        {
+          "track_key": "main_quest",
+          "name": "Main Quests (The Fracturing God Seals)",
+          "purpose": "Begins in the player's Racial Home Town with a race-specific crisis, then converges at the Neutral Adventure Guild to investigate the weakening of The Architect's Chapter 1.4 God Seals across all three continents.",
+          "reward_focus": "Continent Travel Unlocks, Seal-Resonance Relics, and Catacomb Gate Keys"
+        },
+        {
+          "track_key": "job_quest",
+          "name": "Job Quests (Class Mastery & Blacksmith Trials)",
+          "purpose": "Issued jointly by class mentors and the Blacksmith Clan to test combat proficiency, unlock racial/class skills, and forge signature Job weapons.",
+          "reward_focus": "Job Class Promotions, Signature Skill Books, and Blacksmith Masterwork Blueprints"
+        },
+        {
+          "track_key": "side_quest",
+          "name": "Side Quests (Home Town Stories, Hunting & Farming Commissions)",
+          "purpose": "Traded freely at the Neutral Adventure Guild counter\u2014covering local racial home town stories, monster culling in adjacent hunting areas, and resource farming runs.",
+          "reward_focus": "EXP Grind Efficiency, Crafting Materials, Guild Tokens, and Regional Reputation"
+        }
+      ]
+    },
+    "boss_power_hierarchy": {
+      "strict_order_law": "GOD_SEALED > MVP_GOD_SUBORDINATE > RAID_BOSS > MINI_BOSS > NORMAL_MOB",
+      "tiers": [
+        {
+          "rank": 1,
+          "tier_key": "god_tier",
+          "name": "God Tier (Sealed by The Architect)",
+          "cosmic_role": "The 5 Sealed Gods (Angel, Demon, Legendary Beast, Leviathan, Legendary Dragon of Earth/Fire/Thunder) plus The Architect who sealed them in Chapter 1.4.",
+          "power_relationship": "Transcendent cosmic entities immobilized by God Seal Magic; they cannot roam the surface directly and instead project power through their direct MVP subordinates.",
+          "loot_tier": "Mythic Seal-Shards & World-Epoch Relics (Echo Trial / Seal Defense rewards)"
+        },
+        {
+          "rank": 2,
+          "tier_key": "mvp_boss",
+          "name": "MVP Boss (Top-Tier Active Sovereign \u2014 Direct Subordinate of a God)",
+          "cosmic_role": "The supreme active combat threat in the world. Every MVP Boss is the direct Apostle/Subordinate of one of the Sealed Gods (e.g., Arch-Valkyrie Caelia for Angel, Dread-Lord Ignisazar for Demon, Tri-Scale Volcanor for Legendary Dragon).",
+          "power_relationship": "Strictly higher than any Raid Boss (MVP > Raid Boss). Announces spawn server-wide, commands multi-phase divine mechanics, and requires elite coordinated hunters.",
+          "loot_tier": "MVP God-Apostle Cards, Divine Weapon Cores, and Crown Cosmetics"
+        },
+        {
+          "rank": 3,
+          "tier_key": "raid_boss",
+          "name": "Raid Boss (Lower Tier than MVP \u2014 Dungeon Warden / Great War Construct)",
+          "cosmic_role": "Catacomb B1 seal-wardens, runaway God War siege engines, and mutated regional apex monsters guarding dungeon vaults.",
+          "power_relationship": "Strictly subordinate in power and authority to MVP Bosses (Raid Boss < MVP Boss), serving as structured multi-party dungeon milestones.",
+          "loot_tier": "Raid Set Armor Materials, Blacksmith Alloy Ingots, and Dungeon Seal Keys"
+        },
+        {
+          "rank": 4,
+          "tier_key": "field_mob",
+          "name": "Mini-Boss, Elite & Normal Monsters (12-Race Ecology)",
+          "cosmic_role": "Field leaders and everyday monsters belonging to either the 6 Playable/Mob races (renegade Ogres, Dark-Lunar exiles, etc.) or the 6 Monster-only ecology races (Beast/Brute, Robotic, Undead, Fish, Insect/Arachnia, Plant).",
+          "power_relationship": "Found across every Hunting Area and Farming Zone adjacent to Racial Home Towns for solo/small-party EXP and material grinding.",
+          "loot_tier": "Everyday Crafting Materials, Monster Cards, Consumables, and Quest Turn-Ins"
+        }
+      ]
+    }
+  },
   "starter_town_bindings": [
     {
-      "town_id": "town-lantern-hollow",
-      "town_name": "Lantern Hollow",
+      "race_id": "race-human-demi-human",
+      "race_name": "Human / Demi-Human",
       "continent_id": "continent-01-hearthbloom-basin",
       "district_id": "district-teacup-meadows",
-      "status": "canon",
-      "spawn_rationale": "Located directly inside Sola's unbroken Ceramic Palm where Hearth-Sparks condense gently; zero lethal weather and 100 percent toddler-scaled cottages."
+      "town_node_id": "town-lantern-hollow",
+      "hunting_area_id": "hunting-area-clover-south-gate",
+      "farming_area_id": "hunting-area-kiln-east-orchard",
+      "arrival_narrative": "Human and Demi-Human adventurers awaken beside the First Meridian Keystone in Lantern Hollow, taking their first Neutral Adventure Guild commission into Clover South Gate and Kiln East Orchard."
+    },
+    {
+      "race_id": "race-dwarf",
+      "race_name": "Dwarf (Tontatta-Lineage)",
+      "continent_id": "continent-01-hearthbloom-basin",
+      "district_id": "district-amber-root-hollows",
+      "town_node_id": "town-root-train-roundhouse",
+      "hunting_area_id": "hunting-area-cobalt-sandbar-ford",
+      "farming_area_id": "hunting-area-resin-arch-tunnel",
+      "arrival_narrative": "Miniature high-strength Dwarf smith-scouts report to the Root-Train Roundhouse, clearing insect/arachnid swarms from Banyan Canopy Spur and mining amber-resin in Resin Arch Tunnel."
+    },
+    {
+      "race_id": "race-ogre-orc",
+      "race_name": "Ogre / Orc",
+      "continent_id": "continent-01-hearthbloom-basin",
+      "district_id": "district-kilnfire-terraces",
+      "town_node_id": "town-kilnwatch-bastion",
+      "hunting_area_id": "hunting-area-firebrick-duct",
+      "farming_area_id": "hunting-area-cinder-apron",
+      "arrival_narrative": "Ogre and Orc vanguard initiates temper their blades at Kilnwatch Bastion's Blacksmith Clan foundry before marching into Firebrick Duct and harvesting dragon-cinder on Cinder Apron."
+    },
+    {
+      "race_id": "race-furral",
+      "race_name": "Furral (Electro-Beastfolk)",
+      "continent_id": "continent-02-clockwork-steppe",
+      "district_id": "district-thunder-coil-basin",
+      "town_node_id": "town-inductor-switchyard",
+      "hunting_area_id": "hunting-area-metronome-bridge",
+      "farming_area_id": "hunting-area-leyden-causeway",
+      "arrival_narrative": "Electro-charged Furral warriors leap from the copper gantries of Inductor Switchyard to hunt rogue clockwork constructs along Corona Arc Cliff and harvest storm-amber on Leyden Causeway."
+    },
+    {
+      "race_id": "race-lunar",
+      "race_name": "Lunar (Astral High-Elf)",
+      "continent_id": "continent-03-shattered-halo",
+      "district_id": "district-starfall-anchorage",
+      "town_node_id": "town-starfall-haven",
+      "hunting_area_id": "hunting-area-orrery-bridge",
+      "farming_area_id": "hunting-area-tether-causeway",
+      "arrival_narrative": "Lunar star-weavers descend the upward waterfalls of Starfall Haven, patrolling Mirror Cascade and gathering astral tether-quartz along Tether Causeway."
+    },
+    {
+      "race_id": "race-dark-lunar",
+      "race_name": "Dark-Lunar (Umbral Eclipse)",
+      "continent_id": "continent-03-shattered-halo",
+      "district_id": "district-umbrage-prism-atoll",
+      "town_node_id": "town-umbrage-focal-sanctum",
+      "hunting_area_id": "hunting-area-resonance-tether-causeway",
+      "farming_area_id": "hunting-area-violet-spectrum-span",
+      "arrival_narrative": "Dark-Lunar shadow-scholars emerge from Umbrage Focal Sanctum to cull abyssal wraiths across Indigo Caustic Arch and harvest eclipse prisms on Violet Spectrum Span."
     }
   ],
-  "quality_checklist": {
-    "causal_continuity": {
+  "long_term_governance_checklist": [
+    {
+      "gate_id": "GOV-01",
+      "category": "race_hometown_matrix",
+      "title": "6 Playable Races -> Canon Home Town + Hunting + Farming Loop",
+      "invariant_rule": "Every playable race (Human/Demi-Human, Lunar, Ogre/Orc, Dark-Lunar, Dwarf, Furral) must bind to an existing canon Town node and valid adjacent Hunting & Farming areas in the same District.",
+      "cli_command": "python3 scripts/studio_world_governance.py --check",
       "verified": true,
-      "evidence": "Every Primordial God and Clockspring War scar directly spawns a named Continent (continent-01, continent-02, continent-03) and binds the Starter Town arrival."
+      "evidence": "All 6 playable races map to verified canon Town nodes (town-lantern-hollow, town-root-train-roundhouse, town-kilnwatch-bastion, town-inductor-switchyard, town-starfall-haven, town-umbrage-focal-sanctum) with open portals to their Hunting and Farming nodes."
     },
-    "fantasy_and_wonder": {
+    {
+      "gate_id": "GOV-02",
+      "category": "monster_ecology_taxonomy",
+      "title": "12-Race Monster Taxonomy (6 Playable/Mob + 6 Monster-Only Ecologies)",
+      "invariant_rule": "All 6 Playable/Mob races (can_be_player=true, can_be_mob=true) and all 6 Monster-Only ecologies (Beast/Animal/Brute, Robotic, Undead, Fish, Insect/Arachnia, Plant with can_be_player=false, can_be_mob=true) must be registered with signature drops and continent habitats.",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-races",
       "verified": true,
-      "evidence": "Establishes the Clockspring Nursery fantasy where 90 to 120 centimeter Star-Kindled children crawl inside shattered Titan reliquaries to relight World-Lanterns."
+      "evidence": "6/6 Playable/Mob races and 6/6 Monster-Only ecology races are defined in race_taxonomy with explicit continent habitats and crafting drops."
     },
-    "character_scale_consistency": {
+    {
+      "gate_id": "GOV-03",
+      "category": "four_chapter_history",
+      "title": "4-Chapter Canonical History & Sealed-God Causality",
+      "invariant_rule": "historical_epochs must contain Chapters 1.1 Creation, 1.2 Age Of The Gods, 1.3 The God Wars, and 1.4 God Seal Magic (where The Architect seals Angel, Demon, Legendary Beast, Leviathan, and the Earth/Fire/Thunder Legendary Dragon).",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-history",
       "verified": true,
-      "evidence": "Locks character height to 0.90 to 1.20 meters (1.05 meter reference) with grass <= 0.35m, bushes <= 0.65m, stair risers <= 0.15m, counters 0.55 to 0.65m, and doorways >= 2.0m."
+      "evidence": "Chapters 1.1, 1.2, 1.3, and 1.4 are canon, ordered 1..4, and link all 6 God-Tier entities and 3 regional aspects to continental scars."
     },
-    "spatial_and_ecological_consistency": {
+    {
+      "gate_id": "GOV-04",
+      "category": "guild_and_blacksmith",
+      "title": "Neutral Adventure Guild ('No Side') & Cross-Racial Blacksmith Clan",
+      "invariant_rule": "shared_world_systems must define the Neutral Adventure Guild (allegiance='neutral_no_side') for quest trading and the Blacksmith Clan across all racial home towns.",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-factions",
       "verified": true,
-      "evidence": "Connects the sheltered Kiln-Basin starter caldera (Levels 1 to 15) outward to the wind-swept Clockwork Steppe (Levels 15 to 30) and northern Shattered Halo (Levels 30 to 50)."
+      "evidence": "Adventure Guild charter enforces 'neutral_no_side' quest trading and Blacksmith Clan covers all 6 racial home town anvil branches."
     },
-    "intentional_mystery_discipline": {
+    {
+      "gate_id": "GOV-05",
+      "category": "quest_progression_tracks",
+      "title": "3-Track Quest Loop (Main Quests + Job Quests + Side Quests)",
+      "invariant_rule": "shared_world_systems.quest_progression_loop must define Main Quests (God Seal narrative), Job Quests (Class & Blacksmith mastery), and Side Quests (Racial Home Town stories, hunting & farming).",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-quests",
       "verified": true,
-      "evidence": "Preserves Vesper's slumbering core unanswered question while promoting all three Primordial Gods to Canon with zero deprecated proof-of-concept lore."
+      "evidence": "All 3 quest tracks (main_quest, job_quest, side_quest) are specified with clear progression roles and reward focuses."
+    },
+    {
+      "gate_id": "GOV-06",
+      "category": "boss_hierarchy_law",
+      "title": "Strict Boss Power Hierarchy (Sealed God > MVP Apostle > Raid Boss > Mob)",
+      "invariant_rule": "Boss hierarchy must enforce GOD_SEALED > MVP_GOD_SUBORDINATE > RAID_BOSS > MINI_BOSS > NORMAL_MOB, where every Sealed God has a named top-tier MVP Subordinate ranked strictly above Dungeon Raid Bosses.",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-bosses",
+      "verified": true,
+      "evidence": "Rank 1 (Sealed Gods) > Rank 2 (MVP Boss \u2014 Direct God Subordinate) > Rank 3 (Raid Boss \u2014 Dungeon Warden) > Rank 4 (Field Mob) is enforced across all 6 God-Tier entities."
     }
-  }
+  ]
 }

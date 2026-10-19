@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Automated test suite for E-010 / F-087..F-153:
+Automated test suite for E-010 / F-087..F-154:
   - 4-Level Unabbreviated Perspective Switcher (World History and Concept -> Continent -> District -> Town or Hunting Area)
   - 4-Level Google/Apple Maps 2D Cartographic Explorer + Interactive Left-Hand Place Details Drawer
   - District Connected 2D Map Matrix + Maxion Level-Band Monster Pinning
   - Town or Hunting Area Inspector + Monster/1035 Detail Sheet
   - Human-in-the-Loop Core Rationale, Five-Pillar Quality Checklist Gate, Mystery Toggle, and Downward Child Generation API
   - Autonomous Product Owner Self-Evaluation Telemetry & Continent 02 Thermal Compensator Basin Canon Increment
+  - Long-Term Multi-Race (6 Playable + 6 Monster Ecologies), 4-Chapter History (1.1..1.4), Sealed Gods, Neutral Guild/Blacksmith, Boss Hierarchy & Governance Checklist Gates (GOV-01..GOV-06)
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import catalog_explorer_web as web  # noqa: E402
+import studio_world_governance as gov  # noqa: E402
 
 
 class TestStudioWebPerspectives(unittest.TestCase):
@@ -30,6 +32,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("nodes", bundle)
         self.assertIn("runtimeManifest", bundle)
         self.assertIn("selfEvaluation", bundle)
+        self.assertIn("governanceReport", bundle)
 
         whc = bundle["worldHistoryAndConcept"]
         self.assertEqual(whc["id"], "world-history-cradle-of-embers")
@@ -40,6 +43,43 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertEqual(len(bundle["continents"]), 3)
         self.assertEqual(len(bundle["districts"]), 34)
         self.assertEqual(len(bundle["nodes"]), 129)
+
+        gov_rep = bundle["governanceReport"]
+        self.assertTrue(gov_rep["ok"], f"Governance errors: {gov_rep.get('errors')}")
+        self.assertEqual(gov_rep["summary"]["playableRacesCount"], 6)
+        self.assertEqual(gov_rep["summary"]["monsterEcologyRacesCount"], 6)
+        self.assertEqual(gov_rep["summary"]["godTierEntitiesCount"], 6)
+        self.assertEqual(gov_rep["summary"]["historyChaptersCount"], 4)
+        self.assertEqual(gov_rep["summary"]["governanceGatesVerified"], 6)
+
+    def test_long_term_world_governance_and_scaffolding_tools(self) -> None:
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [])
+        self.assertTrue(report["ok"])
+
+        quest_tpl = gov.scaffold_quest_template(
+            gov.DEFAULT_STUDIO_DIR,
+            race_key="furral",
+            track_key="side_quest",
+            title="Leyden Coil Storm Patrol",
+        )
+        self.assertEqual(quest_tpl["home_town_node_id"], "town-inductor-switchyard")
+        self.assertEqual(quest_tpl["guild_allegiance"], "neutral_no_side")
+        self.assertEqual(quest_tpl["target_hunting_area_id"], "hunting-area-metronome-bridge")
+        self.assertEqual(quest_tpl["target_farming_area_id"], "hunting-area-leyden-causeway")
+
+        mvp_tpl = gov.scaffold_boss_template(
+            gov.DEFAULT_STUDIO_DIR,
+            tier_key="mvp_boss",
+            god_id="god-legendary-dragon",
+            node_id="dungeon-kiln-cellar",
+            name="Volcanor the Tri-Scale Apostle",
+        )
+        self.assertEqual(mvp_tpl["hierarchy_rank"], 2)
+        self.assertEqual(
+            mvp_tpl["strict_hierarchy_law"],
+            "GOD_SEALED > MVP_GOD_SUBORDINATE > RAID_BOSS > MINI_BOSS > NORMAL_MOB",
+        )
 
     def test_index_html_renders_unabbreviated_four_perspectives_and_benchmarks(self) -> None:
         html = web.INDEX_HTML
@@ -53,6 +93,9 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("Levels 81 to 100", html)
         self.assertIn("MAXION MONSTER/1035 DETAIL INSPECTOR", html)
         self.assertIn("Step-by-Step Five-Pillar Quality Checklist", html)
+        self.assertIn("LONG-TERM GOVERNANCE CHECKLIST (GOV-01..GOV-06)", html)
+        self.assertIn("6 Playable & Mob Races", html)
+        self.assertIn("Strict Boss Power Hierarchy", html)
         self.assertIn("/api/studio/rationale/update", html)
         self.assertIn("/api/studio/generate-children", html)
         self.assertIn("renderWhcBigPictureSvg", html)
