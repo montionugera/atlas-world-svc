@@ -203,12 +203,41 @@ art_forge_tests() {
   [ "$before" = "$after" ] || { echo "art-forge tests modified atelier/art-forge/runs/*.json"; return 1; }
 }
 
+# The Chrome smoke is ~60% of a warm Gate 1, and CI runs it as its own step
+# (ci.yml "storybook smoke"), so Gate 1 runs it only when the change can reach
+# it. The prefixes are what the smoke's local server was MEASURED serving (882
+# distinct paths) plus its own code; run.mjs imports only node: builtins, so no
+# package/lock file is an input. Fails closed: no base, HEAD == base (the
+# post-merge run in _release), an empty diff, or any git error -> run it.
+# Diff is base vs the WORKING TREE plus untracked files, so uncommitted edits
+# count. ATLAS_FORCE_STORYBOOK_SMOKE=1 always runs it.
+STORYBOOK_SMOKE_PATHS='^(atelier/asset-storybook/|atelier/art-forge/|atelier/mapforge/|content/|game-client/assets/|colyseus-server/generated/|scripts/lib/|scripts/precheck\.sh$)'
+storybook_smoke_skip_reason() {
+  [ "${ATLAS_FORCE_STORYBOOK_SMOKE:-0}" = "1" ] && return 1
+  local base="${PSRW_GATE_BASE:-}" rel changed
+  if [ -z "$base" ]; then
+    rel=$(node -e 'const r=require("./.release.json"); if (r.in_progress && r.version) console.log("release/" + r.version)' 2>/dev/null)
+    if [ -n "$rel" ] && git rev-parse -q --verify "$rel^{commit}" >/dev/null; then
+      base=$(git merge-base HEAD "$rel") || return 1
+    else
+      base=$(git merge-base HEAD origin/main) || return 1
+    fi
+  fi
+  base=$(git rev-parse -q --verify "$base^{commit}") || return 1
+  [ "$base" = "$(git rev-parse HEAD)" ] && return 1
+  changed=$( { git diff --name-only "$base" -- && git ls-files --others --exclude-standard; } ) || return 1
+  [ -z "$changed" ] && return 1
+  printf '%s\n' "$changed" | grep -qE "$STORYBOOK_SMOKE_PATHS" && return 1
+  echo "storybook smoke SKIPPED: no change under its inputs since ${base:0:12} (CI still runs it; ATLAS_FORCE_STORYBOOK_SMOKE=1 forces)"
+}
+
 storybook_tests() {
   # F-038: taxonomy resolution, thumb-index join, verdict store. Pure modules,
   # so they run here with no browser and no Blender.
   # F-053: plus the headless Forge smoke (skips loudly, exit 0, with no Chrome).
-  ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/asset-storybook/tests/*.test.mjs \
-      && node atelier/asset-storybook/tests/smoke/run.mjs )
+  ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/asset-storybook/tests/*.test.mjs ) || return 1
+  ( cd "$REPO_ROOT" && storybook_smoke_skip_reason ) && return 0
+  ( cd "$REPO_ROOT" && node atelier/asset-storybook/tests/smoke/run.mjs )
 }
 
 map_builder_tests() { ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/map-builder/tests/*.test.mjs ) }
