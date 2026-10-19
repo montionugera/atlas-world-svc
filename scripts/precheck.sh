@@ -245,14 +245,17 @@ art_forge_tests() {
   [ "$before" = "$after" ] || { echo "art-forge tests modified atelier/art-forge/runs/*.json"; return 1; }
 }
 
-# The Chrome smoke is ~60% of a warm Gate 1, and CI runs it as its own step
+# The Chrome smoke was measured at 78-86s of a Gate 1 run in one environment
+# (5-6s in another), and CI runs it as its own step
 # (ci.yml "storybook smoke"), so Gate 1 runs it only when the change can reach
 # it. The prefixes are what the smoke's local server was MEASURED serving (882
 # distinct paths) plus its own code; run.mjs imports only node: builtins, so no
 # package/lock file is an input. Fails closed: no base, HEAD == base (the
 # post-merge run in _release), an empty diff, or any git error -> run it.
 # Diff is base vs the WORKING TREE plus untracked files, so uncommitted edits
-# count. ATLAS_FORCE_STORYBOOK_SMOKE=1 always runs it.
+# count. Gitignored generated inputs (e.g. the asset thumbs) are invisible to
+# git diff, so a change only to those skips here; CI still covers it.
+# ATLAS_FORCE_STORYBOOK_SMOKE=1 always runs it.
 STORYBOOK_SMOKE_PATHS='^(atelier/asset-storybook/|atelier/art-forge/|atelier/mapforge/|content/|game-client/assets/|colyseus-server/generated/|scripts/lib/|scripts/precheck\.sh$)'
 storybook_smoke_skip_reason() {
   [ "${ATLAS_FORCE_STORYBOOK_SMOKE:-0}" = "1" ] && return 1
@@ -267,9 +270,14 @@ storybook_smoke_skip_reason() {
   fi
   base=$(git rev-parse -q --verify "$base^{commit}") || return 1
   [ "$base" = "$(git rev-parse HEAD)" ] && return 1
-  changed=$( { git diff --name-only --no-renames "$base" -- && git ls-files --others --exclude-standard; } ) || return 1
+  # core.quotePath=false: a C-quoted non-ASCII path ("content/\303\251.json")
+  # would not match the ^ anchor and would skip the smoke on a real input change.
+  changed=$( { git -c core.quotePath=false diff --name-only --no-renames "$base" -- &&
+    git -c core.quotePath=false ls-files --others --exclude-standard; } ) || return 1
   [ -z "$changed" ] && return 1
-  printf '%s\n' "$changed" | grep -qE "$STORYBOOK_SMOKE_PATHS" && return 1
+  # Here-string, not a pipe: under pipefail an early grep -q exit could SIGPIPE
+  # the writer and turn a match into a skip.
+  grep -qE "$STORYBOOK_SMOKE_PATHS" <<<"$changed" && return 1
   echo "storybook smoke SKIPPED: no change under its inputs since ${base:0:12} (CI still runs it; ATLAS_FORCE_STORYBOOK_SMOKE=1 forces)"
 }
 
