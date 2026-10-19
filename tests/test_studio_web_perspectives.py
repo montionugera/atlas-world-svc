@@ -54,6 +54,19 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("Step-by-Step Five-Pillar Quality Checklist", html)
         self.assertIn("/api/studio/rationale/update", html)
         self.assertIn("/api/studio/generate-children", html)
+        self.assertIn("renderWhcBigPictureSvg", html)
+        self.assertIn("renderContinentBigPictureSvg", html)
+        self.assertIn("renderDistrictBigPictureSvg", html)
+        self.assertIn("renderTownOrHuntingAreaBigPictureSvg", html)
+        for thumb_req in (
+            "/thumbs/nature/pine_tree_1.webp",
+            "/thumbs/buildings/bridge_stone.webp",
+            "/thumbs/creatures/god-sola-hearth-weaver.webp",
+            "/thumbs/a2dc61a37f57dd28c834dfda271aa671cb77b0fb.webp",
+        ):
+            resolved = web.resolve_thumb_file(thumb_req)
+            self.assertIsNotNone(resolved)
+            self.assertTrue(resolved.exists())
 
     def test_rationale_update_blocks_canon_when_parent_not_canon_or_checklist_incomplete(self) -> None:
         # 1. hunting-area-solstice-chain-causeway has parent district-solstice-pendulum-atoll (status: draft)

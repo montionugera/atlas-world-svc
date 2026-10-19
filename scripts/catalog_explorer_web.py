@@ -149,6 +149,98 @@ def thumb_url_for_entity(entity_id: str) -> str | None:
     return thumb_url_for_scene(ENTITY_SCENE_MAP.get(entity_id))
 
 
+_THUMB_CACHE_INITIALIZED = False
+_ALL_THUMBS: list[Path] = []
+_GLB_REL_TO_THUMB: dict[str, Path] = {}
+_STEM_TO_THUMB: dict[str, Path] = {}
+_CAT_TO_THUMBS: dict[str, list[Path]] = {}
+
+
+def _init_thumb_resolver() -> None:
+    global _THUMB_CACHE_INITIALIZED, _ALL_THUMBS
+    if _THUMB_CACHE_INITIALIZED:
+        return
+    _THUMB_CACHE_INITIALIZED = True
+    if not THUMBS_DIR.exists():
+        return
+    _ALL_THUMBS = sorted(p for p in THUMBS_DIR.glob("*.webp") if p.is_file())
+    assets_root = ROOT / "game-client" / "assets"
+    if not assets_root.exists():
+        return
+    for glb in sorted(assets_root.rglob("*.glb")):
+        rel = "res://assets/" + glb.relative_to(assets_root).as_posix()
+        h = hashlib.sha256(rel.encode("utf-8")).hexdigest()[:16] + ".webp"
+        tp = THUMBS_DIR / h
+        if tp.exists():
+            _GLB_REL_TO_THUMB[rel.lower()] = tp
+            parts = glb.relative_to(assets_root).parts
+            cat = parts[0].lower() if parts else "misc"
+            _CAT_TO_THUMBS.setdefault(cat, []).append(tp)
+            _STEM_TO_THUMB.setdefault(glb.stem.lower(), tp)
+
+
+def resolve_thumb_file(request_path: str) -> Path | None:
+    """Resolve any /thumbs/... path to a valid baked .webp file in game-client/assets/.thumbs/."""
+    _init_thumb_resolver()
+    if not _ALL_THUMBS:
+        return None
+    clean = (request_path or "").strip()
+    if clean.startswith("/thumbs/"):
+        sub = clean[len("/thumbs/"):]
+    else:
+        sub = clean.lstrip("/")
+    fname = Path(sub).name
+    direct = (THUMBS_DIR / fname).resolve()
+    if direct.parent == THUMBS_DIR.resolve() and direct.exists() and direct.suffix == ".webp":
+        return direct
+
+    # Try exact res://assets/<sub_without_webp>.glb match
+    if sub.endswith(".webp"):
+        sub_no_ext = sub[:-5]
+    else:
+        sub_no_ext = sub
+    cand_rel = f"res://assets/{sub_no_ext}.glb".lower()
+    if cand_rel in _GLB_REL_TO_THUMB:
+        return _GLB_REL_TO_THUMB[cand_rel]
+
+    # Try exact stem match
+    stem = Path(sub_no_ext).name.lower()
+    if stem in _STEM_TO_THUMB:
+        return _STEM_TO_THUMB[stem]
+
+    # Try keyword token match against stems
+    tokens = [t for t in stem.replace("-", "_").split("_") if len(t) >= 3 and not t.isdigit()]
+    for tok in tokens:
+        for k_stem, tp in _STEM_TO_THUMB.items():
+            if tok in k_stem:
+                return tp
+
+    # Category-aware deterministic fallback
+    parts = Path(sub_no_ext).parts
+    cat_hint = parts[0].lower() if len(parts) > 1 else ""
+    cat_map = {
+        "nature": ["nature"],
+        "buildings": ["env", "dungeon"],
+        "env": ["env", "dungeon"],
+        "dungeon": ["dungeon"],
+        "props": ["dungeon", "loot"],
+        "creatures": ["creatures", "characters"],
+        "monsters": ["creatures", "characters"],
+        "characters": ["characters", "creatures"],
+        "weapons": ["weapons"],
+        "loot": ["loot", "weapons"],
+        "items": ["loot", "weapons"],
+        "cards": ["characters", "creatures", "dungeon"],
+    }
+    pool: list[Path] = []
+    for c_key in cat_map.get(cat_hint, ["creatures", "characters", "nature", "dungeon", "loot", "weapons"]):
+        pool.extend(_CAT_TO_THUMBS.get(c_key, []))
+    if not pool:
+        pool = _ALL_THUMBS
+    idx = int(hashlib.sha256(clean.encode("utf-8")).hexdigest()[:12], 16) % len(pool)
+    return pool[idx]
+
+
 def load_theme_css() -> bytes:
     for candidate in THEME_CSS_CANDIDATES:
         if candidate.exists():
@@ -1696,41 +1788,64 @@ INDEX_HTML = r"""<!DOCTYPE html>
       overflow: hidden;
     }
     .topbar {
-      min-height: 56px;
+      min-height: 52px;
       border-bottom: 1px solid var(--hub-chrome-border);
       background: var(--hub-topbar-bg);
-      padding: 6px 24px;
+      padding: 6px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: var(--joy-space-3);
+      gap: 12px;
       flex-shrink: 0;
       flex-wrap: wrap;
     }
-    .topbar__start, .topbar__end {
+    .topbar__start {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+    .topbar__end {
       display: flex;
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
+      flex-shrink: 0;
     }
     .topbar__title {
       font-size: var(--joy-font-size-md);
       font-weight: 600;
       color: var(--joy-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .scroll-stage {
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
       scroll-behavior: smooth;
     }
     .content-area {
-      max-width: 1260px;
+      max-width: 100%;
       width: 100%;
       margin: 0 auto;
-      padding: 24px 28px 72px;
+      padding: 18px 24px 72px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 18px;
+    }
+    .studio-split-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 1220px) {
+      .studio-split-layout {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* Editorial Page Header */
@@ -2838,6 +2953,423 @@ INDEX_HTML = r"""<!DOCTYPE html>
       line-height: 1.25;
     }
 
+
+    /* =========================================================================
+     * CONNECTED MAP DIRECTORY (.lineage-*) + WORLD BOARD (.maxion-*) BOUNDED CSS
+     * ======================================================================= */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #e2e8f0;
+    }
+    .pill--cyan {
+      background: rgba(56, 189, 248, 0.14);
+      border-color: rgba(56, 189, 248, 0.45);
+      color: #7dd3fc;
+    }
+    .pill--gold {
+      background: rgba(250, 204, 21, 0.16);
+      border-color: rgba(250, 204, 21, 0.45);
+      color: #fde047;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #161e2e;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #e2e8f0;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn:hover {
+      border-color: #ffd166;
+      color: #ffffff;
+      background: #1e293b;
+    }
+    .btn--primary {
+      background: linear-gradient(135deg, rgba(255, 209, 102, 0.24), rgba(212, 175, 55, 0.14));
+      border-color: #ffd166;
+      color: #ffd166;
+    }
+    .lineage-map-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+    @media (max-width: 960px) {
+      .lineage-map-grid { grid-template-columns: 1fr; }
+    }
+    .lineage-map-card {
+      background: #101724;
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+    }
+    .lineage-map-card__top {
+      display: grid;
+      grid-template-columns: 148px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    .lineage-map-card__preview {
+      width: 148px;
+      height: 148px;
+      min-width: 148px;
+      max-width: 148px;
+      min-height: 148px;
+      max-height: 148px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1.5px solid rgba(255, 209, 102, 0.45);
+      background: #0c121d;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .lineage-map-card__preview svg,
+    .lineage-map-card__preview img {
+      width: 148px !important;
+      height: 148px !important;
+      max-width: 148px !important;
+      max-height: 148px !important;
+      display: block;
+      object-fit: cover;
+    }
+    .lineage-map-card__meta {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .lineage-neighbors {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 5px;
+    }
+    .lineage-nb-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #bae6fd;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+    .lineage-nb-chip:hover {
+      border-color: #fde047;
+      color: #fde047;
+      background: rgba(250, 204, 21, 0.14);
+    }
+    .lineage-spawns-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .lineage-spawn-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px 4px 6px;
+      border-radius: 8px;
+      background: #182132;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.12s ease;
+    }
+    .lineage-spawn-pill:hover {
+      transform: translateY(-1px);
+      border-color: #ffd166;
+    }
+    .lineage-spawn-pill img {
+      width: 32px !important;
+      height: 32px !important;
+      max-width: 32px !important;
+      max-height: 32px !important;
+      object-fit: contain;
+      border-radius: 6px;
+      background: #0c1018;
+      padding: 2px;
+      flex-shrink: 0;
+    }
+    .maxion-mob-tile__avatar {
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .maxion-mob-tile__avatar img {
+      width: 48px !important;
+      height: 48px !important;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
+    }
+    .maxion-mob-tile__pin-icon {
+      position: absolute;
+      top: 4px;
+      left: 5px;
+      font-size: 10px;
+      opacity: 0.75;
+    }
+    .maxion-canvas-card {
+      background: #0d131f;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+    }
+    .maxion-canvas-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.65);
+    }
+    .maxion-world-board {
+      padding: 16px;
+      background: radial-gradient(circle at 50% 42%, #1a2e26 0%, #0d1b2a 62%, #070d16 100%);
+      overflow-x: auto;
+    }
+    .maxion-tile-matrix {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(124px, 1fr));
+      gap: 12px;
+      min-width: 780px;
+    }
+    .maxion-map-cell {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      max-height: 168px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background: #111c17;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+      transition: transform 0.14s ease, border-color 0.14s ease;
+    }
+    .maxion-map-cell:hover {
+      transform: scale(1.03);
+      border-color: #fde047;
+      z-index: 4;
+    }
+    .maxion-map-cell svg {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+    .maxion-map-cell.selected-tile {
+      border-color: #fde047;
+      box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.32), 0 10px 24px rgba(0, 0, 0, 0.75);
+    }
+    .maxion-map-cell.pinned-spawn {
+      border: 2.5px dashed #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35), 0 0 22px rgba(56, 189, 248, 0.55);
+    }
+    .maxion-map-cell__code {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(7, 11, 18, 0.86);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #e2e8f0;
+      font-family: var(--joy-font-family-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+    .maxion-map-cell__lv {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(7, 11, 18, 0.86);
+      border: 1px solid rgba(250, 204, 21, 0.4);
+      color: #fde047;
+      font-family: var(--joy-font-family-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+    .maxion-map-cell__pin {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(15, 23, 42, 0.65) 0%, rgba(15, 23, 42, 0.2) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+    .maxion-map-cell__pin img {
+      width: 46px !important;
+      height: 46px !important;
+      object-fit: contain;
+      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.85));
+    }
+    .maxion-map-cell__pin-count {
+      background: rgba(9, 13, 22, 0.92);
+      border: 1px solid #38bdf8;
+      color: #e0f2fe;
+      font-family: var(--joy-font-family-mono);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 99px;
+    }
+    .maxion-map-cell__name {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 5px 6px 4px;
+      background: linear-gradient(180deg, transparent, rgba(7, 11, 18, 0.95) 40%);
+      color: #f8fafc;
+      font-size: 10.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+    }
+    .maxion-mob-detail {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .maxion-mob-hero {
+      background: radial-gradient(circle at 80% 20%, rgba(34, 62, 46, 0.42) 0%, rgba(11, 15, 23, 0.97) 68%);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 16px;
+      padding: 22px 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .maxion-mob-portrait-box {
+      width: 176px;
+      height: 176px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 50% 50%, rgba(250, 204, 21, 0.18) 0%, rgba(17, 24, 39, 0.95) 75%);
+      border: 1.5px solid rgba(250, 204, 21, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .maxion-mob-portrait-box img {
+      width: 136px !important;
+      height: 136px !important;
+      object-fit: contain;
+    }
+    .maxion-mob-title {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin: 0 0 8px 0;
+    }
+    .maxion-prop-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .maxion-prop-pill {
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: #262b36;
+      color: #f1f5f9;
+    }
+    .maxion-elem-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #0c1018;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .maxion-elem-card__icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 15px;
+    }
+    .maxion-elem-card__name {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+    .maxion-elem-card__pct {
+      font-size: 14px;
+      font-weight: 900;
+      color: #f8fafc;
+      font-family: var(--joy-font-family-mono);
+    }
+    .maxion-elem-card__pct--weak { color: #4ade80; }
+    .maxion-elem-card__pct--resist { color: #f87171; }
+    .maxion-drops-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .maxion-drop-card__art {
+      width: 112px;
+      height: 112px;
+      border-radius: 12px;
+      background: #141b29;
+      border: 1.5px solid rgba(255, 209, 102, 0.35);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 6px 6px;
+    }
+    .maxion-drop-card__art img {
+      width: 60px !important;
+      height: 60px !important;
+      object-fit: contain;
+    }
   </style>
 </head>
 <body>
@@ -2877,7 +3409,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
     <nav class="nav" id="sidebarNav"></nav>
 
     <div class="sidebar-footer">
-      <span>Web + macOS WKWebView</span>
+      <span>Web Studio (:8788)</span>
       <span class="joy-badge joy-badge--brand joy-badge--sm">joy-design</span>
     </div>
   </aside>
@@ -2945,7 +3477,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
 <script>
 let DATA = null;
 let THUMB_INDEX = {};
-let CURRENT_TAB = 'world';
+let CURRENT_TAB = 'studio';
 let SEARCH_QUERY = '';
 let DROP_RATE_MULT = 1;
 let HIGHLIGHT_ENTITY_ID = '';
@@ -2975,15 +3507,20 @@ const NAV_GROUPS = [
   {
     section: 'Systematic Top-Down World Studio',
     items: [
-      { id: 'studio', label: '🌌 Top-Down World Studio (4 Perspectives)', countKey: d => ((d.studioPerspectives && d.studioPerspectives.continents) || []).length + ' Continents' },
+      { id: 'studio', label: '🌌 Top-Down World Studio (4 Perspectives)', countKey: d => {
+        const sp = (d && d.studioPerspectives) || {};
+        const dists = (sp.districts || []).length;
+        const canonMaps = (sp.nodes || []).filter(n => n.status === 'canon').length;
+        return dists + 'D · ' + canonMaps + ' Maps';
+      } },
     ]
   },
   {
     section: 'World Map & Atlas (Maxion / Lineage)',
     items: [
-      { id: 'world', label: '🧭 Interactive World Map', countKey: () => '25 Tiles' },
-      { id: 'maps',  label: '🗺️ Connected Map Directory', countKey: () => '25 Maps' },
-      { id: 'mobs',  label: '👾 Monster Detail (mob_db)', countKey: () => '36 Mobs' },
+      { id: 'world', label: '🧭 Interactive World Map', countKey: () => getAllWorldTiles().length + ' Tiles' },
+      { id: 'maps',  label: '🗺️ Connected Map Directory', countKey: () => getAllWorldTiles().length + ' Maps' },
+      { id: 'mobs',  label: '👾 Monster Detail (mob_db)', countKey: () => getAllMonsters().length + ' Mobs' },
     ]
   },
   {
@@ -3662,6 +4199,495 @@ function renderTopDownStudio() {
   return `${perspectiveBar}${ownerTelemetryBar}${canvasHtml}`;
 }
 
+function renderWhcBigPictureSvg(whc, continents) {
+  const gods = whc.primordial_gods || [];
+  const epochs = whc.historical_epochs || [];
+  const scars = (epochs[0] && epochs[0].world_scars) || [];
+  const bindings = whc.starter_town_bindings || [];
+  const c01 = continents[0] || { id: 'continent-01-hearthbloom-basin', name: 'Hearthbloom Basin' };
+  const c02 = continents[1] || { id: 'continent-02-clockwork-steppe', name: 'The Clockwork Steppe' };
+  const c03 = continents[2] || { id: 'continent-03-shattered-halo', name: 'The Shattered Halo' };
+  const st0 = bindings[0] || { town_id: 'town-lantern-hollow', town_name: 'Lantern Hollow', continent_id: c01.id, district_id: 'district-teacup-meadows' };
+
+  return `
+    <div style="margin-bottom:16px;padding:16px;border-radius:12px;background:linear-gradient(180deg,#0b1322 0%,#080d18 100%);border:1px solid rgba(56,189,248,0.32);box-shadow:0 14px 34px rgba(0,0,0,0.45)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div>
+          <div class="mono" style="font-size:10.5px;font-weight:800;color:#38bdf8;letter-spacing:0.06em">🌌 STEP 1 BIG PICTURE · CHRONOLOGICAL TIMELINE &amp; PLANETARY GEOLOCATION CAUSAL GRAPH</div>
+          <div style="font-size:13px;font-weight:700;color:#f8fafc;margin-top:2px">How Primordial Gods &amp; The Clockspring War Timeline Shaped the 3 Planetary Scars, Continents &amp; Toddler/Kid Starter Arrivals</div>
+        </div>
+        <span class="joy-badge joy-badge--brand joy-badge--sm">Interactive Geolocation &amp; Timeline Diagram (Click Any Node to Drill Down)</span>
+      </div>
+
+      <svg viewBox="0 0 980 430" width="100%" height="430" style="display:block;width:100%;height:auto;max-height:440px;border-radius:10px;background:#070c16;border:1px solid rgba(255,255,255,0.1)">
+        <defs>
+          <radialGradient id="whcOceanGrad" cx="50%" cy="55%" r="65%">
+            <stop offset="0%" stop-color="#112238"/>
+            <stop offset="65%" stop-color="#091322"/>
+            <stop offset="100%" stop-color="#050a12"/>
+          </radialGradient>
+          <marker id="whcArrowGold" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 9 5 L 0 9 z" fill="#ffd166"/>
+          </marker>
+          <marker id="whcArrowCyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 9 5 L 0 9 z" fill="#38bdf8"/>
+          </marker>
+        </defs>
+
+        <!-- Background & Latitude/Longitude Geolocation Grid -->
+        <rect width="980" height="430" fill="url(#whcOceanGrad)"/>
+        <g stroke="rgba(148,163,184,0.12)" stroke-width="1" stroke-dasharray="4 4">
+          <line x1="0" y1="145" x2="980" y2="145"/>
+          <line x1="0" y1="225" x2="980" y2="225"/>
+          <line x1="0" y1="305" x2="980" y2="305"/>
+          <line x1="0" y1="385" x2="980" y2="385"/>
+          <line x1="180" y1="125" x2="180" y2="430"/>
+          <line x1="490" y1="125" x2="490" y2="430"/>
+          <line x1="800" y1="125" x2="800" y2="430"/>
+        </g>
+        <text x="12" y="141" fill="#64748b" font-size="9.5" font-family="monospace">LAT 68°N · NORTHERN POLAR GRAVITY RING</text>
+        <text x="12" y="221" fill="#64748b" font-size="9.5" font-family="monospace">LAT 08°N · EQUATORIAL TECTONIC FAULT BELT</text>
+        <text x="12" y="301" fill="#64748b" font-size="9.5" font-family="monospace">LAT 22°S · SOUTHERN CERAMIC CALDERA BASIN</text>
+        <text x="186" y="422" fill="#64748b" font-size="9.5" font-family="monospace">LON 114°W (WEST)</text>
+        <text x="496" y="422" fill="#64748b" font-size="9.5" font-family="monospace">LON 000° (PRIME MERIDIAN)</text>
+        <text x="806" y="422" fill="#64748b" font-size="9.5" font-family="monospace">LON 062°E (EAST)</text>
+
+        <!-- TOP BAND: CHRONOLOGICAL TIMELINE (ERA 0 -> ERA 1 -> ERA 2 -> ERA 3) -->
+        <rect x="14" y="12" width="952" height="104" rx="8" fill="rgba(15,23,42,0.88)" stroke="rgba(255,209,102,0.35)" stroke-width="1.2"/>
+        <text x="28" y="30" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">CHRONOLOGICAL TIMELINE OF THE CRADLE OF EMBERS (TIME ➔ EVENT ➔ GEOLOCATION SCAR)</text>
+
+        <!-- Timeline Connecting Line -->
+        <line x1="130" y1="68" x2="850" y2="68" stroke="#ffd166" stroke-width="2.5" marker-end="url(#whcArrowGold)"/>
+
+        <!-- Era 0 Node -->
+        <g transform="translate(28, 40)">
+          <rect width="205" height="64" rx="6" fill="#131c2e" stroke="#38bdf8" stroke-width="1.5"/>
+          <text x="10" y="17" fill="#38bdf8" font-size="9.5" font-weight="bold" font-family="monospace">ERA 0 · T-∞ MYTHIC DAWN</text>
+          <text x="10" y="33" fill="#f8fafc" font-size="11.5" font-weight="bold">3 Primordial Gods Weave World</text>
+          <text x="10" y="48" fill="#94a3b8" font-size="9.5">Sola (Hearth) · Krono (Time) · Vesper (Dream)</text>
+        </g>
+
+        <!-- Era 1 Node -->
+        <g transform="translate(268, 40)">
+          <rect width="205" height="64" rx="6" fill="#1e162b" stroke="#f97316" stroke-width="1.5"/>
+          <text x="10" y="17" fill="#f97316" font-size="9.5" font-weight="bold" font-family="monospace">ERA 1 · T-1200 YRS CATACLYSM</text>
+          <text x="10" y="33" fill="#f8fafc" font-size="11.5" font-weight="bold">The Clockspring War</text>
+          <text x="10" y="48" fill="#cbd5e1" font-size="9.5">Krono's Mainspring shatters across 3 zones</text>
+        </g>
+
+        <!-- Era 2 Node -->
+        <g transform="translate(508, 40)">
+          <rect width="205" height="64" rx="6" fill="#132421" stroke="#34d399" stroke-width="1.5"/>
+          <text x="10" y="17" fill="#34d399" font-size="9.5" font-weight="bold" font-family="monospace">ERA 2 · T-800 YRS GEOGENESIS</text>
+          <text x="10" y="33" fill="#f8fafc" font-size="11.5" font-weight="bold">3 Planetary Scars &amp; Continents</text>
+          <text x="10" y="48" fill="#cbd5e1" font-size="9.5">Kiln Basin · Brass Fault · Vesper Crater</text>
+        </g>
+
+        <!-- Era 3 Node -->
+        <g transform="translate(748, 40)" style="cursor:pointer" onclick="setStudioPerspective('town-or-hunting-area', { continentId: '${escapeHtml(st0.continent_id)}', districtId: '${escapeHtml(st0.district_id)}', nodeId: '${escapeHtml(st0.town_id)}', inspectId: '${escapeHtml(st0.town_id)}' })">
+          <rect width="204" height="64" rx="6" fill="#261f10" stroke="#ffd166" stroke-width="1.8"/>
+          <text x="10" y="17" fill="#ffd166" font-size="9.5" font-weight="bold" font-family="monospace">ERA 3 · PRESENT DAY ARRIVAL</text>
+          <text x="10" y="33" fill="#ffffff" font-size="11.5" font-weight="bold">90–120cm Hearth-Spark Kids</text>
+          <text x="10" y="48" fill="#fde68a" font-size="9.5">Spawn at 🏰 ${escapeHtml(st0.town_name)} ➔</text>
+        </g>
+
+        <!-- BOTTOM BAND: PLANETARY GEOLOCATION & GOD -> SCAR -> CONTINENT GRAPH -->
+        <!-- Inter-Continent Sea/Sky Routes on Globe -->
+        <path d="M 310 315 Q 480 285 620 250" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="6 4"/>
+        <text x="465" y="278" text-anchor="middle" fill="#fde68a" font-size="9.5" font-family="monospace">🚂 Kettle-Whistle Root-Train</text>
+
+        <path d="M 660 220 Q 610 175 545 162" fill="none" stroke="#c084fc" stroke-width="2.5" stroke-dasharray="5 4"/>
+        <text x="645" y="182" text-anchor="middle" fill="#e9d5ff" font-size="9.5" font-family="monospace">🌀 Astrolabe Rift</text>
+
+        <path d="M 260 265 Q 350 185 450 162" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="330" y="198" text-anchor="middle" fill="#bae6fd" font-size="9.5" font-family="monospace">⛵ Cloud-Pier Airship</text>
+
+        <!-- GEOLOCATION 1: SOUTH-WEST (22°S, 114°W) -> SOLA -> SCAR-KILN-BASIN -> CONTINENT 01 -->
+        <g style="cursor:pointer" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c01.id)}', inspectId: '${escapeHtml(c01.id)}' })">
+          <ellipse cx="220" cy="318" rx="135" ry="68" fill="rgba(34,197,94,0.16)" stroke="#4ade80" stroke-width="2.2"/>
+          <ellipse cx="220" cy="318" rx="95" ry="44" fill="rgba(234,179,8,0.14)" stroke="rgba(250,204,21,0.45)" stroke-width="1.2" stroke-dasharray="4 3"/>
+          <image href="/thumbs/creatures/god-sola-hearth-weaver.webp" x="102" y="274" width="44" height="44"/>
+          <text x="154" y="286" fill="#fde047" font-size="10" font-weight="bold" font-family="monospace">GOD: SOLA (HEARTH-WEAVER)</text>
+          <text x="154" y="301" fill="#86efac" font-size="10" font-family="monospace">⚡ scar-kiln-basin (22°S, 114°W)</text>
+          <text x="154" y="320" fill="#ffffff" font-size="13.5" font-weight="bold">🌍 C01: ${escapeHtml(c01.name)}</text>
+          <text x="154" y="336" fill="#cbd5e1" font-size="10.5">Lv. 1–45 · 11 Canon Districts · 33 Maps</text>
+          <rect x="154" y="344" width="172" height="22" rx="5" fill="rgba(15,23,42,0.9)" stroke="#ffd166" stroke-width="1.2"/>
+          <text x="240" y="359" text-anchor="middle" fill="#ffd166" font-size="10" font-weight="bold">🏰 Starter: ${escapeHtml(st0.town_name)} ➔</text>
+        </g>
+
+        <!-- GEOLOCATION 2: CENTRAL-EAST (08°N, 062°E) -> KRONO -> SCAR-BRASS-FAULTLINE -> CONTINENT 02 -->
+        <g style="cursor:pointer" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c02.id)}', inspectId: '${escapeHtml(c02.id)}' })">
+          <polygon points="610,215 745,195 895,225 915,295 795,335 635,305" fill="rgba(245,158,11,0.16)" stroke="#f59e0b" stroke-width="2.2"/>
+          <image href="/thumbs/creatures/god-krono-brass-titan.webp" x="642" y="226" width="44" height="44"/>
+          <text x="694" y="236" fill="#fdba74" font-size="10" font-weight="bold" font-family="monospace">GOD: KRONO (BRASS TITAN)</text>
+          <text x="694" y="251" fill="#fde047" font-size="10" font-family="monospace">⚡ scar-brass-faultline (08°N, 062°E)</text>
+          <text x="694" y="270" fill="#ffffff" font-size="13.5" font-weight="bold">🌍 C02: ${escapeHtml(c02.name)}</text>
+          <text x="694" y="286" fill="#cbd5e1" font-size="10.5">Lv. 20–75 · 10 Canon + 1 Draft District</text>
+          <text x="694" y="302" fill="#fed7aa" font-size="10" font-family="monospace">Click to Open Continent 02 Atlas ➔</text>
+        </g>
+
+        <!-- GEOLOCATION 3: NORTHERN POLAR RING (68°N, 015°W) -> VESPER -> SCAR-VESPER-CRATER -> CONTINENT 03 -->
+        <g style="cursor:pointer" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c03.id)}', inspectId: '${escapeHtml(c03.id)}' })">
+          <ellipse cx="495" cy="162" rx="145" ry="42" fill="rgba(168,85,247,0.16)" stroke="#c084fc" stroke-width="2.2" stroke-dasharray="8 4"/>
+          <circle cx="495" cy="162" r="22" fill="rgba(8,14,26,0.9)" stroke="#38bdf8" stroke-width="1.5"/>
+          <image href="/thumbs/creatures/god-vesper-dream-eater.webp" x="372" y="138" width="42" height="42"/>
+          <text x="422" y="146" fill="#e9d5ff" font-size="10" font-weight="bold" font-family="monospace">GOD: VESPER (DREAM-EATER)</text>
+          <text x="422" y="160" fill="#38bdf8" font-size="10" font-family="monospace">⚡ scar-vesper-crater (68°N, 015°W)</text>
+          <text x="422" y="177" fill="#ffffff" font-size="13" font-weight="bold">🌍 C03: ${escapeHtml(c03.name)}</text>
+          <text x="422" y="192" fill="#cbd5e1" font-size="10">Lv. 50–100 · 10 Canon + 1 Mystery District ➔</text>
+        </g>
+      </svg>
+    </div>
+  `;
+}
+
+function renderContinentBigPictureSvg(continents, districts, activeContinent) {
+  const childDistricts = districts.filter(d => d.parent_continent_id === activeContinent.id);
+  const c01 = continents[0] || { id: 'continent-01-hearthbloom-basin', name: 'Hearthbloom Basin' };
+  const c02 = continents[1] || { id: 'continent-02-clockwork-steppe', name: 'The Clockwork Steppe' };
+  const c03 = continents[2] || { id: 'continent-03-shattered-halo', name: 'The Shattered Halo' };
+
+  const isC01 = activeContinent.id === c01.id;
+  const isC02 = activeContinent.id === c02.id;
+  const isC03 = activeContinent.id === c03.id;
+
+  // Geolocation positions for up to 12 child districts inside the right-hand Continent Geographic Map (x: 410..950, y: 70..395)
+  const slotCoords = [
+    [495, 345], [645, 350], [805, 345],
+    [485, 265], [640, 260], [795, 265], [905, 295],
+    [490, 182], [640, 178], [790, 182],
+    [555, 102], [755, 102]
+  ];
+
+  // Connect sequential districts with regional trade roads
+  const roadLinesHtml = childDistricts.map((d, idx) => {
+    if (idx === 0) return '';
+    const prev = slotCoords[(idx - 1) % slotCoords.length];
+    const cur = slotCoords[idx % slotCoords.length];
+    return `<line x1="${prev[0]}" y1="${prev[1]}" x2="${cur[0]}" y2="${cur[1]}" stroke="rgba(255,209,102,0.45)" stroke-width="2.2" stroke-dasharray="${d.status === 'mystery' ? '4 4' : 'none'}"/>`;
+  }).join('');
+
+  const districtPinsHtml = childDistricts.map((d, idx) => {
+    const [dx, dy] = slotCoords[idx % slotCoords.length];
+    const st = (d.status || 'canon').toLowerCase();
+    const strokeCol = st === 'canon' ? '#34d399' : (st === 'mystery' ? '#c084fc' : '#fbbf24');
+    const bgCol = st === 'canon' ? 'rgba(6,78,59,0.88)' : (st === 'mystery' ? 'rgba(59,7,100,0.88)' : 'rgba(120,53,15,0.88)');
+    const lvRange = (d.level_range || [1, 20]).join('–');
+    const shortName = d.name.length > 18 ? d.name.slice(0, 17) + '…' : d.name;
+    return `
+      <g transform="translate(${dx - 62}, ${dy - 26})" style="cursor:pointer" onclick="setStudioPerspective('district', { continentId: '${escapeHtml(activeContinent.id)}', districtId: '${escapeHtml(d.id)}', inspectId: '${escapeHtml(d.id)}' })">
+        <rect width="124" height="50" rx="8" fill="${bgCol}" stroke="${strokeCol}" stroke-width="2" ${st === 'mystery' ? 'stroke-dasharray="4 3"' : ''}/>
+        <text x="8" y="16" fill="#fde047" font-size="9.5" font-weight="bold" font-family="monospace">D${String(idx + 1).padStart(2, '0')} · Lv.${lvRange}</text>
+        <text x="8" y="31" fill="#ffffff" font-size="10.5" font-weight="bold">${escapeHtml(shortName)}</text>
+        <text x="8" y="43" fill="#cbd5e1" font-size="9" font-family="monospace">${st.toUpperCase()} · Click ➔</text>
+      </g>
+    `;
+  }).join('');
+
+  // Distinct geographic landform silhouette for the selected continent
+  let landformSvg = '';
+  if (isC01) {
+    landformSvg = `
+      <ellipse cx="685" cy="242" rx="265" ry="165" fill="rgba(22,101,52,0.32)" stroke="#4ade80" stroke-width="2.5"/>
+      <ellipse cx="685" cy="242" rx="195" ry="118" fill="rgba(34,197,94,0.16)" stroke="rgba(134,239,172,0.4)" stroke-width="1.5" stroke-dasharray="6 4"/>
+      <path d="M 460 250 Q 680 210 920 245" fill="none" stroke="#38bdf8" stroke-width="5" opacity="0.55"/>
+      <text x="685" y="64" text-anchor="middle" fill="#86efac" font-size="11" font-weight="bold" font-family="monospace">GEOGRAPHIC VIEW: PERPETUAL-SPRING CERAMIC KILN CALDERA &amp; TERRACED RIVERS</text>
+    `;
+  } else if (isC02) {
+    landformSvg = `
+      <polygon points="435,120 620,78 915,105 945,265 875,395 545,405 425,295" fill="rgba(146,64,14,0.32)" stroke="#f59e0b" stroke-width="2.5"/>
+      <circle cx="685" cy="242" r="115" fill="none" stroke="rgba(251,191,36,0.35)" stroke-width="8" stroke-dasharray="18 10"/>
+      <path d="M 445 310 L 925 180" fill="none" stroke="#ef4444" stroke-width="4" stroke-dasharray="8 4" opacity="0.65"/>
+      <text x="685" y="64" text-anchor="middle" fill="#fcd34d" font-size="11" font-weight="bold" font-family="monospace">GEOGRAPHIC VIEW: TECTONIC BRASS FAULTLINE, ESCAPEMENT MESAS &amp; STEAM RAIL SPURS</text>
+    `;
+  } else {
+    landformSvg = `
+      <ellipse cx="685" cy="242" rx="260" ry="160" fill="rgba(88,28,135,0.28)" stroke="#c084fc" stroke-width="2.5" stroke-dasharray="10 5"/>
+      <ellipse cx="685" cy="242" rx="130" ry="78" fill="rgba(8,14,26,0.85)" stroke="#38bdf8" stroke-width="2"/>
+      <text x="685" y="246" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="bold" font-family="monospace">🌀 VESPER GRAVITY EYE</text>
+      <text x="685" y="64" text-anchor="middle" fill="#e9d5ff" font-size="11" font-weight="bold" font-family="monospace">GEOGRAPHIC VIEW: SUSPENDED FLOATING ATOLL RING ABOVE NORTHERN WHIRLPOOL</text>
+    `;
+  }
+
+  return `
+    <div style="margin-bottom:16px;padding:16px;border-radius:12px;background:linear-gradient(180deg,#0b1322 0%,#080d18 100%);border:1px solid rgba(250,204,21,0.32);box-shadow:0 14px 34px rgba(0,0,0,0.45)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div>
+          <div class="mono" style="font-size:10.5px;font-weight:800;color:#ffd166;letter-spacing:0.06em">🌍 STEP 2 BIG PICTURE · INTER-CONTINENT CONNECTION NETWORK &amp; REGIONAL GEOGRAPHIC ATLAS</div>
+          <div style="font-size:13px;font-weight:700;color:#f8fafc;margin-top:2px">Left: How the 3 Continents Connect Together · Right: Geographic Topography of ${escapeHtml(activeContinent.name || '')} (${childDistricts.length} Districts)</div>
+        </div>
+        <span class="joy-badge joy-badge--brand joy-badge--sm">Click Any Continent (Left) or District Region (Right)</span>
+      </div>
+
+      <svg viewBox="0 0 980 430" width="100%" height="430" style="display:block;width:100%;height:auto;max-height:440px;border-radius:10px;background:#070c16;border:1px solid rgba(255,255,255,0.1)">
+        <!-- LEFT PANEL (0..385): INTER-CONTINENT CONNECTION TOPOLOGY -->
+        <rect x="10" y="10" width="375" height="410" rx="8" fill="rgba(15,23,42,0.85)" stroke="rgba(148,163,184,0.22)"/>
+        <text x="24" y="32" fill="#38bdf8" font-size="10.5" font-weight="bold" font-family="monospace">1. HOW CONTINENTS CONNECT (WORLD SEA &amp; SKY)</text>
+
+        <!-- Connection Lines between C01, C02, C03 -->
+        <path d="M 125 320 L 285 235" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6 4"/>
+        <rect x="142" y="266" width="136" height="18" rx="4" fill="#0f172a" stroke="#f59e0b" stroke-width="1"/>
+        <text x="210" y="278" text-anchor="middle" fill="#fde68a" font-size="9" font-family="monospace">🚂 Root-Train Viaduct</text>
+
+        <path d="M 290 205 L 215 112" stroke="#c084fc" stroke-width="3" stroke-dasharray="5 4"/>
+        <rect x="208" y="148" width="128" height="18" rx="4" fill="#0f172a" stroke="#c084fc" stroke-width="1"/>
+        <text x="272" y="160" text-anchor="middle" fill="#e9d5ff" font-size="9" font-family="monospace">🌀 Astrolabe Rift Gate</text>
+
+        <path d="M 105 290 L 185 112" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="4 4"/>
+        <rect x="42" y="190" width="132" height="18" rx="4" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
+        <text x="108" y="202" text-anchor="middle" fill="#bae6fd" font-size="9" font-family="monospace">⛵ Cloud-Pier Airship</text>
+
+        <!-- C03 Node on Globe -->
+        <g style="cursor:pointer" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c03.id)}', inspectId: '${escapeHtml(c03.id)}' })">
+          <ellipse cx="200" cy="95" rx="115" ry="38" fill="${isC03 ? 'rgba(168,85,247,0.38)' : 'rgba(168,85,247,0.15)'}" stroke="${isC03 ? '#ffd166' : '#c084fc'}" stroke-width="${isC03 ? 3 : 1.8}"/>
+          <text x="200" y="91" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="bold">🌍 C03: The Shattered Halo</text>
+          <text x="200" y="107" text-anchor="middle" fill="#e9d5ff" font-size="9.5" font-family="monospace">Lv. 50–100 · North Archipelago</text>
+        </g>
+
+        <!-- C02 Node on Globe -->
+        <g style="cursor:pointer" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c02.id)}', inspectId: '${escapeHtml(c02.id)}' })">
+          <ellipse cx="285" cy="232" rx="86" ry="42" fill="${isC02 ? 'rgba(245,158,11,0.38)' : 'rgba(245,158,11,0.15)'}" stroke="${isC02 ? '#ffd166' : '#f59e0b'}" stroke-width="${isC02 ? 3 : 1.8}"/>
+          <text x="285" y="228" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="bold">🌍 C02: Clockwork Steppe</text>
+          <text x="285" y="244" text-anchor="middle" fill="#fde68a" font-size="9.5" font-family="monospace">Lv. 20–75 · East Fault</text>
+        </g>
+
+        <!-- C01 Node on Globe -->
+        <g style="cursor:pointer" onclick="setStudioPerspective('continent', { continentId: '${escapeHtml(c01.id)}', inspectId: '${escapeHtml(c01.id)}' })">
+          <ellipse cx="122" cy="332" rx="95" ry="44" fill="${isC01 ? 'rgba(34,197,94,0.38)' : 'rgba(34,197,94,0.15)'}" stroke="${isC01 ? '#ffd166' : '#4ade80'}" stroke-width="${isC01 ? 3 : 1.8}"/>
+          <text x="122" y="328" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="bold">🌍 C01: Hearthbloom Basin</text>
+          <text x="122" y="344" text-anchor="middle" fill="#86efac" font-size="9.5" font-family="monospace">Lv. 1–45 · SW Kiln Basin</text>
+        </g>
+
+        <text x="24" y="405" fill="#94a3b8" font-size="9.5" font-family="monospace">★ Gold border indicates currently inspected Continent</text>
+
+        <!-- RIGHT PANEL (395..970): SELECTED CONTINENT GEOGRAPHIC MAP & 11 DISTRICTS -->
+        <rect x="395" y="10" width="575" height="410" rx="8" fill="rgba(10,18,32,0.92)" stroke="rgba(255,209,102,0.32)"/>
+        <text x="412" y="32" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">2. REGIONAL GEOGRAPHY: ${escapeHtml((activeContinent.name || '').toUpperCase())} (${childDistricts.length} DISTRICTS)</text>
+
+        ${landformSvg}
+        ${roadLinesHtml}
+        ${districtPinsHtml}
+      </svg>
+    </div>
+  `;
+}
+
+function renderDistrictBigPictureSvg(activeContinent, activeDistrict, allDistrictNodes) {
+  const cols = (activeDistrict.grid_dimensions && activeDistrict.grid_dimensions.columns) || 3;
+  const rows = (activeDistrict.grid_dimensions && activeDistrict.grid_dimensions.rows) || 3;
+  const portalEdges = activeDistrict.portal_edges || [];
+
+  // Map each node to an SVG coordinate in the District Basin Diagram
+  const nodePos = {};
+  const overlandNodes = allDistrictNodes.filter(n => n.node_type !== 'dungeon');
+  const dungeonNodes = allDistrictNodes.filter(n => n.node_type === 'dungeon');
+
+  overlandNodes.forEach((n, idx) => {
+    const coords = n.grid_coordinates || [idx % cols, Math.floor(idx / cols)];
+    const cx = 140 + (coords[0] * 210);
+    const cy = 115 + (coords[1] * 145);
+    nodePos[n.id] = { x: cx, y: cy, node: n };
+  });
+
+  dungeonNodes.forEach((n, idx) => {
+    const cx = 770;
+    const cy = 140 + idx * 140;
+    nodePos[n.id] = { x: cx, y: cy, node: n };
+  });
+
+  const edgeLinesHtml = portalEdges.map(edge => {
+    const a = nodePos[edge.from_node_id];
+    const b = nodePos[edge.to_node_id];
+    if (!a || !b) return '';
+    const isFog = edge.gate_state === 'fog_of_lore';
+    const isDng = edge.from_direction === 'Dungeon' || edge.to_direction === 'Dungeon';
+    const stroke = isFog ? '#c084fc' : (isDng ? '#f97316' : '#ffd166');
+    const mx = (a.x + b.x) / 2;
+    const my = (a.y + b.y) / 2;
+    const label = isFog ? '🌫️ Fog Gate' : (isDng ? '⬇ Dungeon Stair' : `${edge.from_direction} ⇄ ${edge.to_direction} (${edge.road_width_meters || 12}m)`);
+    return `
+      <g>
+        <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${stroke}" stroke-width="3" ${isFog || isDng ? 'stroke-dasharray="6 4"' : ''}/>
+        <rect x="${mx - 64}" y="${my - 10}" width="128" height="18" rx="4" fill="#090f1c" stroke="${stroke}" stroke-width="1"/>
+        <text x="${mx}" y="${my + 2}" text-anchor="middle" fill="#f8fafc" font-size="8.5" font-family="monospace">${escapeHtml(label)}</text>
+      </g>
+    `;
+  }).join('');
+
+  const nodeBoxesHtml = Object.values(nodePos).map(({ x, y, node }) => {
+    const isMystery = node.status === 'mystery';
+    const isTown = node.node_type === 'town';
+    const isDng = node.node_type === 'dungeon';
+    const stroke = isMystery ? '#c084fc' : (isTown ? '#34d399' : (isDng ? '#f97316' : '#38bdf8'));
+    const bg = isMystery ? 'rgba(59,7,100,0.9)' : (isTown ? 'rgba(6,78,59,0.92)' : (isDng ? 'rgba(67,20,7,0.92)' : 'rgba(15,23,42,0.94)'));
+    const thumb = isMystery ? '/thumbs/vfx/mystery.webp' : ((node.terrain_tile && node.terrain_tile.preview_thumbnail) || '/thumbs/nature/pine_tree_1.webp');
+    const spawns = node.resident_spawns || [];
+    const firstMob = spawns[0];
+    const typeIcon = isTown ? '🏰 TOWN' : (isDng ? '💀 DUNGEON F-1' : (isMystery ? '🌫️ MYSTERY' : '🌿 HUNTING AREA'));
+    return `
+      <g transform="translate(${x - 95}, ${y - 46})" style="cursor:pointer" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(node.id)}', inspectId: '${escapeHtml(node.id)}' })">
+        <rect width="190" height="92" rx="10" fill="${bg}" stroke="${stroke}" stroke-width="2.2" ${isMystery ? 'stroke-dasharray="5 3"' : ''}/>
+        <image href="${escapeHtml(thumb)}" x="8" y="10" width="44" height="44"/>
+        <text x="58" y="20" fill="${stroke}" font-size="9" font-weight="bold" font-family="monospace">${typeIcon} [${(node.grid_coordinates || [0,0]).join(',')}]</text>
+        <text x="58" y="35" fill="#ffffff" font-size="11.5" font-weight="bold">${escapeHtml(node.name.length > 18 ? node.name.slice(0, 17) + '…' : node.name)}</text>
+        <text x="58" y="49" fill="#fde047" font-size="9.5" font-family="monospace">Lv. ${(node.level_range || [1,15]).join('–')} · ${escapeHtml(node.status.toUpperCase())}</text>
+        <text x="10" y="74" fill="#cbd5e1" font-size="9.5" font-family="monospace">${firstMob ? ('👾 ' + escapeHtml(firstMob.monster_name.slice(0, 16)) + ' ×' + firstMob.spawn_count) : (isTown ? '🛡️ Safe Sanctuary Hub' : '🌫️ Uncharted Rumor')}</text>
+      </g>
+    `;
+  }).join('');
+
+  return `
+    <div style="margin-bottom:14px;padding:14px;border-radius:12px;background:linear-gradient(180deg,#0b1322 0%,#080d18 100%);border:1px solid rgba(52,211,153,0.35)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <div>
+          <div class="mono" style="font-size:10px;font-weight:800;color:#34d399;letter-spacing:0.06em">🗺️ STEP 3 BIG PICTURE · DISTRICT TOPOGRAPHIC BASIN &amp; PORTAL GRAPH</div>
+          <div style="font-size:12.5px;font-weight:700;color:#f8fafc;margin-top:2px">${escapeHtml(activeDistrict.name || '')} — Overland Grid, Symmetric Road Bridges, Subterranean Dungeon Cutaway &amp; Fog-of-Lore Gates</div>
+        </div>
+        <span class="joy-badge joy-badge--success joy-badge--sm">Click Any Map Node to Open Step 4 Blueprint</span>
+      </div>
+      <svg viewBox="0 0 900 320" width="100%" height="320" style="display:block;width:100%;height:auto;max-height:330px;border-radius:10px;background:#070c16;border:1px solid rgba(255,255,255,0.1)">
+        <!-- Overland Basin Contour -->
+        <rect x="12" y="12" width="615" height="296" rx="12" fill="rgba(22,101,52,0.15)" stroke="rgba(74,222,128,0.35)" stroke-width="1.5"/>
+        <text x="26" y="32" fill="#86efac" font-size="10" font-weight="bold" font-family="monospace">OVERLAND TOPOGRAPHIC BASIN (${cols}×${rows} GRID · ${escapeHtml(activeDistrict.level_band_label || '')})</text>
+
+        <!-- Subterranean Dungeon Cutaway Box -->
+        <rect x="642" y="12" width="246" height="296" rx="12" fill="rgba(67,20,7,0.22)" stroke="rgba(249,115,22,0.45)" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="656" y="32" fill="#fdba74" font-size="10" font-weight="bold" font-family="monospace">SUBTERRANEAN DUNGEON (FLOOR -1)</text>
+
+        ${edgeLinesHtml}
+        ${nodeBoxesHtml}
+      </svg>
+    </div>
+  `;
+}
+
+function renderTownOrHuntingAreaBigPictureSvg(activeDistrict, activeNode, activeMonster) {
+  const tile = activeNode.terrain_tile || {};
+  const dims = tile.dimensions_meters || { width: 4000, height: 4000 };
+  const portals = activeNode.portals || {};
+  const kit = activeNode.asset_kit_bindings || {};
+  const spawns = activeNode.resident_spawns || [];
+  const npcs = activeNode.resident_npcs || [];
+  const assets = kit.three_dimensional_assets || [];
+  const isTown = activeNode.node_type === 'town';
+  const isDng = activeNode.node_type === 'dungeon';
+  const isMystery = activeNode.status === 'mystery';
+  const thumb = tile.preview_thumbnail || '/thumbs/nature/pine_tree_1.webp';
+
+  const bgFill = isTown ? '#132824' : (isDng ? '#1b1326' : '#112218');
+  const ringStroke = isTown ? '#34d399' : (isDng ? '#c084fc' : '#4ade80');
+  const roadWidth = kit.main_road_width_meters || 12.0;
+  const grassH = kit.max_grass_height_meters || 0.25;
+  const bushH = kit.max_bush_height_meters || 0.55;
+  const stepH = tile.max_terrace_step_meters || 0.16;
+  const doorH = (kit.doorway_Clearance_meters && kit.doorway_Clearance_meters.height) || 2.15;
+
+  const portalBadges = [
+    { dir: 'North', x: 310, y: 26 },
+    { dir: 'South', x: 310, y: 356 },
+    { dir: 'West',  x: 78,  y: 192 },
+    { dir: 'East',  x: 542, y: 192 },
+    { dir: 'Dungeon', x: 470, y: 295 },
+    { dir: 'Exit',    x: 155, y: 95 },
+  ].map(pb => {
+    const p = portals[pb.dir];
+    if (!p) return '';
+    const isFog = p.gate_state === 'fog_of_lore';
+    const col = isFog ? '#c084fc' : '#ef4444';
+    return `
+      <g style="cursor:pointer" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(p.target_node_id)}', inspectId: '${escapeHtml(p.target_node_id)}' })">
+        <line x1="310" y1="192" x2="${pb.x}" y2="${pb.y}" stroke="#d4b483" stroke-width="8" stroke-linecap="round" opacity="0.75"/>
+        <circle cx="${pb.x}" cy="${pb.y}" r="12" fill="${col}" stroke="#ffffff" stroke-width="2"/>
+        <rect x="${pb.x - 68}" y="${pb.y + 14}" width="136" height="20" rx="4" fill="rgba(9,13,22,0.92)" stroke="${col}" stroke-width="1.2"/>
+        <text x="${pb.x}" y="${pb.y + 27}" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="bold" font-family="monospace">${pb.dir}: ${escapeHtml((p.target_node_id || '').slice(0, 16))} ➔</text>
+      </g>
+    `;
+  }).join('');
+
+  return `
+    <div style="margin-bottom:16px;padding:16px;border-radius:12px;background:linear-gradient(180deg,#0b1322 0%,#080d18 100%);border:1px solid rgba(56,189,248,0.35);box-shadow:0 14px 34px rgba(0,0,0,0.45)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div>
+          <div class="mono" style="font-size:10.5px;font-weight:800;color:#38bdf8;letter-spacing:0.06em">📍 STEP 4 BIG PICTURE · ${dims.width}m × ${dims.height}m ARCHITECTURAL &amp; ECOLOGICAL MAP BLUEPRINT</div>
+          <div style="font-size:13px;font-weight:700;color:#f8fafc;margin-top:2px">${escapeHtml(activeNode.name || '')} (${escapeHtml(activeNode.map_id || activeNode.id || '')}) — Top-Down Survey, Portal Triggers, Spawn Zones &amp; 90–120cm Scale Cross-Section</div>
+        </div>
+        <span class="joy-badge joy-badge--brand joy-badge--sm">Click Any Red/Purple Portal on Map to Traverse</span>
+      </div>
+
+      <svg viewBox="0 0 980 395" width="100%" height="395" style="display:block;width:100%;height:auto;max-height:405px;border-radius:10px;background:#070c16;border:1px solid rgba(255,255,255,0.1)">
+        <!-- LEFT PANEL (10..625): 4000m x 4000m TOP-DOWN MAP BLUEPRINT -->
+        <rect x="10" y="10" width="610" height="375" rx="10" fill="${bgFill}" stroke="${ringStroke}" stroke-width="2"/>
+        <!-- Elevation Terrace Rings -->
+        <ellipse cx="310" cy="192" rx="235" ry="138" fill="none" stroke="${ringStroke}" stroke-width="1.2" stroke-dasharray="6 4" opacity="0.5"/>
+        <ellipse cx="310" cy="192" rx="155" ry="92" fill="none" stroke="${ringStroke}" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.65"/>
+        <!-- Water Feature Contour -->
+        <path d="M 85 280 Q 210 235 355 275 T 555 250" fill="none" stroke="#0ea5e9" stroke-width="14" stroke-linecap="round" opacity="0.45"/>
+        <text x="26" y="30" fill="#bae6fd" font-size="9.5" font-weight="bold" font-family="monospace">WATER FEATURE: ${escapeHtml((tile.water_feature || 'Natural Spring').slice(0, 68))}</text>
+        <text x="26" y="374" fill="#94a3b8" font-size="9.5" font-family="monospace">DIMENSIONS: ${dims.width}m × ${dims.height}m · MAX TERRACE STEP: ${stepH}m (≤0.25m) · MAIN ROAD: ${roadWidth}m</text>
+
+        <!-- Roads & Clickable Portals -->
+        ${portalBadges}
+
+        <!-- Center Sanctuary Plaza or Hunting Habitat Hub -->
+        <g transform="translate(220, 140)">
+          <rect width="180" height="104" rx="10" fill="rgba(9,13,22,0.92)" stroke="#ffd166" stroke-width="2"/>
+          <image href="${escapeHtml(thumb)}" x="10" y="12" width="52" height="52"/>
+          <text x="70" y="26" fill="#ffd166" font-size="9.5" font-weight="bold" font-family="monospace">${isTown ? '🏰 TOWN SANCTUARY' : (isDng ? '💀 DUNGEON CHAMBER' : '🌿 HABITAT CENTER')}</text>
+          <text x="70" y="42" fill="#ffffff" font-size="11.5" font-weight="bold">${escapeHtml((activeNode.name || '').slice(0, 16))}</text>
+          <text x="70" y="56" fill="#34d399" font-size="9.5" font-family="monospace">${isTown ? (npcs.length + ' Resident NPCs') : (spawns.length + ' Monster Species')}</text>
+          <text x="12" y="84" fill="#cbd5e1" font-size="9" font-family="monospace">3D Kit: ${escapeHtml(assets.map(a => a.split('/').pop()).join(', ').slice(0, 26))}</text>
+        </g>
+
+        <!-- Monster Spawn Marker or NPC Marker -->
+        ${activeMonster ? `
+          <g transform="translate(88, 72)">
+            <rect width="158" height="54" rx="8" fill="rgba(127,29,29,0.88)" stroke="#f87171" stroke-width="1.5"/>
+            <image href="/thumbs/creatures/${escapeHtml(activeMonster.monster_id)}.webp" x="6" y="5" width="42" height="42"/>
+            <text x="54" y="20" fill="#fca5a5" font-size="9" font-weight="bold" font-family="monospace">SPAWN HABITAT ×${activeMonster.spawn_count}</text>
+            <text x="54" y="34" fill="#ffffff" font-size="10.5" font-weight="bold">${escapeHtml(activeMonster.monster_name.slice(0, 14))}</text>
+            <text x="54" y="46" fill="#fde047" font-size="9" font-family="monospace">Lv.${activeMonster.level} · ${escapeHtml(activeMonster.element)}</text>
+          </g>
+        ` : ''}
+
+        <!-- RIGHT PANEL (632..970): 90-120CM SCALE & ELEVATION CROSS-SECTION -->
+        <rect x="632" y="10" width="338" height="375" rx="10" fill="rgba(15,23,42,0.92)" stroke="rgba(255,209,102,0.32)"/>
+        <text x="648" y="32" fill="#ffd166" font-size="10" font-weight="bold" font-family="monospace">90–120CM SCALE CROSS-SECTION INSET</text>
+
+        <!-- Ground Baseline -->
+        <line x1="650" y1="245" x2="950" y2="245" stroke="#4ade80" stroke-width="2.5"/>
+
+        <!-- Grass Bar -->
+        <rect x="662" y="${245 - Math.round(grassH * 70)}" width="34" height="${Math.round(grassH * 70)}" rx="3" fill="#22c55e"/>
+        <text x="679" y="262" text-anchor="middle" fill="#86efac" font-size="9" font-family="monospace">Grass</text>
+        <text x="679" y="274" text-anchor="middle" fill="#cbd5e1" font-size="8.5" font-family="monospace">${grassH}m</text>
+
+        <!-- Bush Bar -->
+        <rect x="716" y="${245 - Math.round(bushH * 70)}" width="38" height="${Math.round(bushH * 70)}" rx="5" fill="#10b981"/>
+        <text x="735" y="262" text-anchor="middle" fill="#6ee7b7" font-size="9" font-family="monospace">Bush</text>
+        <text x="735" y="274" text-anchor="middle" fill="#cbd5e1" font-size="8.5" font-family="monospace">${bushH}m</text>
+
+        <!-- 1.05m Toddler/Kid Player Silhouette -->
+        <circle cx="798" cy="182" r="12" fill="#ffd166" stroke="#ffffff" stroke-width="1.5"/>
+        <rect x="786" y="194" width="24" height="51" rx="6" fill="#3b82f6" stroke="#93c5fd" stroke-width="1.5"/>
+        <text x="798" y="262" text-anchor="middle" fill="#ffd166" font-size="9.5" font-weight="bold" font-family="monospace">Player</text>
+        <text x="798" y="274" text-anchor="middle" fill="#fde047" font-size="8.5" font-family="monospace">1.05m Kid</text>
+
+        <!-- Doorway Arch Clearance -->
+        <rect x="842" y="${245 - Math.round(doorH * 65)}" width="44" height="${Math.round(doorH * 65)}" rx="6" fill="rgba(99,102,241,0.25)" stroke="#818cf8" stroke-width="2"/>
+        <text x="864" y="262" text-anchor="middle" fill="#a5b4fc" font-size="9" font-family="monospace">Doorway</text>
+        <text x="864" y="274" text-anchor="middle" fill="#cbd5e1" font-size="8.5" font-family="monospace">${doorH}m</text>
+
+        <!-- Active Monster or Asset Preview Card at Bottom of Right Inset -->
+        <rect x="648" y="290" width="306" height="80" rx="8" fill="#090f1c" stroke="rgba(56,189,248,0.35)"/>
+        <image href="${activeMonster ? ('/thumbs/creatures/' + escapeHtml(activeMonster.monster_id) + '.webp') : escapeHtml(thumb)}" x="658" y="300" width="58" height="58"/>
+        <text x="728" y="318" fill="#38bdf8" font-size="9.5" font-weight="bold" font-family="monospace">${activeMonster ? 'ACTIVE RESIDENT MONSTER SPECIMEN' : '3D ENVIRONMENT LANDMARK ASSET'}</text>
+        <text x="728" y="336" fill="#ffffff" font-size="12" font-weight="bold">${escapeHtml(activeMonster ? activeMonster.monster_name : (activeNode.name || ''))}</text>
+        <text x="728" y="352" fill="#ffd166" font-size="10" font-family="monospace">${activeMonster ? ('Lv.' + activeMonster.level + ' · ' + activeMonster.element + ' · ' + activeMonster.size + ' · ' + activeMonster.race) : ('Biome: ' + (tile.biome_palette || 'meadow'))}</text>
+      </svg>
+    </div>
+  `;
+}
+
 function renderStudioWorldHistoryPerspective(whc, continents) {
   const scale = whc.character_scale_law || {};
   const metrics = scale.environment_metrics || {};
@@ -3671,7 +4697,8 @@ function renderStudioWorldHistoryPerspective(whc, continents) {
   const bindings = whc.starter_town_bindings || [];
 
   return `
-    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
+    ${renderWhcBigPictureSvg(whc, continents)}
+    <div class="studio-split-layout">
       <div style="display:flex;flex-direction:column;gap:16px">
         <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -3795,7 +4822,8 @@ function renderStudioContinentPerspective(whc, continents, districts, activeCont
   const causes = activeContinent.parent_world_history_causes || {};
 
   return `
-    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
+    ${renderContinentBigPictureSvg(continents, districts, activeContinent)}
+    <div class="studio-split-layout">
       <div style="display:flex;flex-direction:column;gap:16px">
         <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
@@ -4035,84 +5063,83 @@ function renderStudioDistrictPerspective(activeContinent, districts, nodes, acti
   }
 
   return `
-    <div style="display:grid;grid-template-columns:280px 1.5fr 350px;gap:16px;align-items:start">
-      <!-- Left Column: Maxion Level-Band Tabs & Monster Pinning Sidebar -->
-      <aside class="panel" style="padding:14px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
-        <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:8px">
-          MAXION LEVEL-BAND MONSTER PINNING
-        </div>
-        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
-          ${levelBands.map(lb => `
-            <button type="button" class="joy-button ${STUDIO_LEVEL_BAND === lb ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" style="justify-content:space-between" onclick="setStudioPerspective('district', { districtId: '${escapeHtml(activeDistrict.id)}', levelBand: '${escapeHtml(lb)}' })">
-              <span>${escapeHtml(lb)}</span>
-              <span class="mono" style="font-size:10px">${lb === activeDistrict.level_band_label ? 'ACTIVE' : ''}</span>
-            </button>
-          `).join('')}
-        </div>
-
-        <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">
-          ECOLOGICAL MONSTER FAMILIES
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">
-          ${(activeDistrict.ecological_monster_families || []).map(fam => `
-            <span class="joy-badge joy-badge--neutral joy-badge--sm">${escapeHtml(fam)}</span>
-          `).join('')}
-        </div>
-
-        <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">
-          CLICK MONSTER TO PIN SPAWNS ON GRID (${districtMonsters.length})
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          ${districtMonsters.length ? districtMonsters.map(mob => {
-            const isPinned = STUDIO_PINNED_MONSTER_ID === mob.monster_id;
-            const totalSpawns = mob.habitats.reduce((acc, h) => acc + (h.spawn_count || 0), 0);
-            return `
-              <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1.5px solid ${isPinned ? '#ffd166' : 'var(--joy-border-default)'};cursor:pointer" onclick="setStudioPerspective('district', { districtId: '${escapeHtml(activeDistrict.id)}', pinnedMonsterId: '${escapeHtml(mob.monster_id)}' })">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
-                  <strong style="font-size:12.5px;color:${isPinned ? '#ffd166' : 'var(--joy-text-primary)'}">${isPinned ? '📌 ' : ''}${escapeHtml(mob.monster_name)}</strong>
-                  <span class="joy-badge joy-badge--brand joy-badge--sm">Level ${mob.level}</span>
-                </div>
-                <div class="mono" style="font-size:10.5px;color:var(--joy-text-secondary);margin-top:3px">
-                  ${escapeHtml(mob.element)} · ${escapeHtml(mob.size)} · ${escapeHtml(mob.race)} (${escapeHtml(mob.family)})
-                </div>
-                <div style="font-size:11px;color:#34d399;margin-top:4px">
-                  Spawns: ×${totalSpawns} across ${mob.habitats.map(h => h.node_name).join(', ')}
-                </div>
-                <div style="margin-top:6px">
-                  <button type="button" class="joy-button joy-button--outline joy-button--sm" style="width:100%;height:24px;font-size:10.5px" onclick="event.stopPropagation();setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(mob.habitats[0].node_id)}', monsterId: '${escapeHtml(mob.monster_id)}', inspectId: '${escapeHtml(mob.habitats[0].node_id)}' })">
-                    Open Monster/1035 Sheet ➔
-                  </button>
-                </div>
-              </div>
-            `;
-          }).join('') : '<div style="font-size:11.5px;color:var(--joy-text-secondary)">Select a District with Canon/Draft child hunting areas to pin monster spawns.</div>'}
-        </div>
-      </aside>
-
-      <!-- Center Column: District 2D Connected Map Matrix -->
-      <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-          <div>
-            <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 3 · DISTRICT ORTHOGONAL CONNECTED MAP MATRIX (${escapeHtml(activeDistrict.level_band_label || '')})</div>
-            <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(activeDistrict.name || '')} (${cols} × ${rows} Connected Grid)</h2>
+    ${renderDistrictBigPictureSvg(activeContinent, activeDistrict, allDistrictNodes)}
+    <div class="studio-split-layout">
+      <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+        <!-- Maxion Level-Band Tabs & Monster Pinning Toolbar -->
+        <section class="panel" style="padding:14px 18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary)">MAXION LEVEL-BAND MONSTER PINNING:</span>
+              ${levelBands.map(lb => `
+                <button type="button" class="joy-button ${STUDIO_LEVEL_BAND === lb ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('district', { districtId: '${escapeHtml(activeDistrict.id)}', levelBand: '${escapeHtml(lb)}' })">
+                  <span>${escapeHtml(lb)}</span>
+                  ${lb === activeDistrict.level_band_label ? '<span class="mono" style="font-size:9.5px;margin-left:4px;color:#ffd166">● ACTIVE</span>' : ''}
+                </button>
+              `).join('')}
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <span class="mono" style="font-size:10px;color:var(--joy-text-secondary)">ECOLOGICAL MONSTER FAMILIES:</span>
+              ${(activeDistrict.ecological_monster_families || []).map(fam => `
+                <span class="joy-badge joy-badge--neutral joy-badge--sm">${escapeHtml(fam)}</span>
+              `).join('')}
+            </div>
           </div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            ${filteredDistricts.map(d => `
-              <button type="button" class="joy-button ${d.id === activeDistrict.id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('district', { continentId: '${escapeHtml(d.parent_continent_id)}', districtId: '${escapeHtml(d.id)}', inspectId: '${escapeHtml(d.id)}' })">
-                ${escapeHtml(d.name)} (${escapeHtml(d.status)})
-              </button>
-            `).join('')}
+
+          <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:8px">
+            CLICK MONSTER TO PIN SPAWNS ON GRID (${districtMonsters.length})
           </div>
-        </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
+            ${districtMonsters.length ? districtMonsters.map(mob => {
+              const isPinned = STUDIO_PINNED_MONSTER_ID === mob.monster_id;
+              const totalSpawns = mob.habitats.reduce((acc, h) => acc + (h.spawn_count || 0), 0);
+              return `
+                <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1.5px solid ${isPinned ? '#ffd166' : 'var(--joy-border-default)'};cursor:pointer" onclick="setStudioPerspective('district', { districtId: '${escapeHtml(activeDistrict.id)}', pinnedMonsterId: '${escapeHtml(mob.monster_id)}' })">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                    <strong style="font-size:12.5px;color:${isPinned ? '#ffd166' : 'var(--joy-text-primary)'}">${isPinned ? '📌 ' : ''}${escapeHtml(mob.monster_name)}</strong>
+                    <span class="joy-badge joy-badge--brand joy-badge--sm">Level ${mob.level}</span>
+                  </div>
+                  <div class="mono" style="font-size:10.5px;color:var(--joy-text-secondary);margin-top:3px">
+                    ${escapeHtml(mob.element)} · ${escapeHtml(mob.size)} · ${escapeHtml(mob.race)} (${escapeHtml(mob.family)})
+                  </div>
+                  <div style="font-size:11px;color:#34d399;margin-top:4px">
+                    Spawns: ×${totalSpawns} across ${mob.habitats.map(h => h.node_name).join(', ')}
+                  </div>
+                  <div style="margin-top:6px">
+                    <button type="button" class="joy-button joy-button--outline joy-button--sm" style="width:100%;height:24px;font-size:10.5px" onclick="event.stopPropagation();setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(mob.habitats[0].node_id)}', monsterId: '${escapeHtml(mob.monster_id)}', inspectId: '${escapeHtml(mob.habitats[0].node_id)}' })">
+                      Open Monster/1035 Sheet ➔
+                    </button>
+                  </div>
+                </div>
+              `;
+            }).join('') : '<div style="font-size:11.5px;color:var(--joy-text-secondary)">Select a District with Canon/Draft child hunting areas to pin monster spawns.</div>'}
+          </div>
+        </section>
 
-        <div style="padding:10px 12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle);margin-bottom:14px;font-size:12px">
-          <div><strong>Core Rationale:</strong> ${escapeHtml(activeDistrict.core_rationale || '')}</div>
-          <div style="margin-top:4px;color:var(--joy-text-secondary)"><strong>Local Conflict:</strong> ${escapeHtml(activeDistrict.local_conflict || '')}</div>
-        </div>
+        <!-- District 2D Connected Map Matrix -->
+        <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <div>
+              <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 3 · DISTRICT ORTHOGONAL CONNECTED MAP MATRIX (${escapeHtml(activeDistrict.level_band_label || '')})</div>
+              <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(activeDistrict.name || '')} (${cols} × ${rows} Connected Grid)</h2>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              ${filteredDistricts.map(d => `
+                <button type="button" class="joy-button ${d.id === activeDistrict.id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('district', { continentId: '${escapeHtml(d.parent_continent_id)}', districtId: '${escapeHtml(d.id)}', inspectId: '${escapeHtml(d.id)}' })">
+                  ${escapeHtml(d.name)} (${escapeHtml(d.status)})
+                </button>
+              `).join('')}
+            </div>
+          </div>
 
-        <div style="display:grid;grid-template-columns:repeat(${cols}, minmax(210px, 1fr));gap:12px;margin-bottom:16px">
-          ${matrixCellsHtml.join('')}
-        </div>
+          <div style="padding:10px 12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle);margin-bottom:14px;font-size:12px">
+            <div><strong>Core Rationale:</strong> ${escapeHtml(activeDistrict.core_rationale || '')}</div>
+            <div style="margin-top:4px;color:var(--joy-text-secondary)"><strong>Local Conflict:</strong> ${escapeHtml(activeDistrict.local_conflict || '')}</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(${cols}, minmax(0, 1fr));gap:12px;margin-bottom:16px">
+            ${matrixCellsHtml.join('')}
+          </div>
 
         <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
           <div class="mono" style="font-size:11px;font-weight:700;margin-bottom:8px">SYMMETRIC PORTAL EDGE TOPOLOGY (${portalEdges.length} BRIDGES)</div>
@@ -4128,7 +5155,8 @@ function renderStudioDistrictPerspective(activeContinent, districts, nodes, acti
             `).join('')}
           </div>
         </div>
-      </section>
+        </section>
+      </div>
 
       <!-- Right Column: Core Rationale & Five-Pillar Quality Checklist Drawer -->
       <aside class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px;position:sticky;top:72px">
@@ -4197,7 +5225,7 @@ function renderStudioTownOrHuntingAreaPerspective(activeDistrict, nodes, activeN
         <div style="display:grid;grid-template-columns:192px 1fr;gap:16px;align-items:start">
           <!-- 192x192 Portrait Stage -->
           <div style="width:192px;height:192px;border-radius:12px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-strong);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;text-align:center">
-            <img src="${escapeHtml(tile.preview_thumbnail || '/thumbs/nature/pine_tree_1.webp')}" alt="${escapeHtml(activeMonster.monster_name)}" style="width:112px;height:112px;object-fit:contain;margin-bottom:8px" />
+            <img src="/thumbs/creatures/${escapeHtml(activeMonster.monster_id)}.webp" alt="${escapeHtml(activeMonster.monster_name)}" style="width:112px;height:112px;object-fit:contain;margin-bottom:8px" />
             <div style="font-weight:800;font-size:12px">${escapeHtml(activeMonster.monster_name)}</div>
             <div class="mono" style="font-size:10px;color:#ffd166">Spawn ×${activeMonster.spawn_count} · Every ${activeMonster.respawn_seconds}s</div>
           </div>
@@ -4285,8 +5313,9 @@ function renderStudioTownOrHuntingAreaPerspective(activeDistrict, nodes, activeN
   }
 
   return `
-    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
-      <div style="display:flex;flex-direction:column;gap:16px">
+    ${renderTownOrHuntingAreaBigPictureSvg(activeDistrict, activeNode, activeMonster)}
+    <div class="studio-split-layout">
+      <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
         <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
             <div>
@@ -5529,12 +6558,165 @@ const MAXION_MONSTERS = [
   }
 ];
 
+function inferStudioBiome(node) {
+  const pal = String((node.terrain_tile && node.terrain_tile.biome_palette) || '').toLowerCase();
+  if (node.node_type === 'town') return 'town';
+  if (node.node_type === 'dungeon') {
+    if (pal.includes('glacier') || pal.includes('frost') || pal.includes('ice')) return 'glacier';
+    if (pal.includes('volcano') || pal.includes('lava') || pal.includes('ember') || pal.includes('kiln')) return 'volcano';
+    if (pal.includes('coral') || pal.includes('reef') || pal.includes('tide') || pal.includes('abyss')) return 'undersea';
+    return 'crypt';
+  }
+  if (pal.includes('glacier') || pal.includes('snow') || pal.includes('frost')) return 'glacier';
+  if (pal.includes('lava') || pal.includes('magma') || pal.includes('slag') || pal.includes('furnace')) return 'volcano';
+  if (pal.includes('brass') || pal.includes('clock') || pal.includes('steppe') || pal.includes('mesa') || pal.includes('basalt')) return 'mountain';
+  if (pal.includes('coral') || pal.includes('atoll') || pal.includes('lagoon') || pal.includes('harbor') || pal.includes('pier')) return 'port';
+  if (pal.includes('forest') || pal.includes('grove') || pal.includes('willow') || pal.includes('brier')) return 'forest';
+  return 'meadow';
+}
+
+function getStudioCanonTiles() {
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const nodes = (sp.nodes || []).filter(n => n && n.status === 'canon');
+  const distById = {};
+  (sp.districts || []).forEach(d => { if (d && d.id) distById[d.id] = d; });
+  const contById = {};
+  (sp.continents || []).forEach(c => { if (c && c.id) contById[c.id] = c; });
+
+  return nodes.map(n => {
+    const portals = n.portals || {};
+    const nb = {};
+    if (portals.North && portals.North.target_node_id) nb.N = portals.North.target_node_id;
+    if (portals.South && portals.South.target_node_id) nb.S = portals.South.target_node_id;
+    if (portals.East && portals.East.target_node_id) nb.E = portals.East.target_node_id;
+    if (portals.West && portals.West.target_node_id) nb.W = portals.West.target_node_id;
+    if (portals.Dungeon && portals.Dungeon.target_node_id) nb.D = portals.Dungeon.target_node_id;
+    if (portals.Exit && portals.Exit.target_node_id) nb.Exit = portals.Exit.target_node_id;
+
+    const coords = n.grid_coordinates || [0, 0];
+    const dist = distById[n.parent_district_id] || {};
+    const cont = contById[n.parent_continent_id] || {};
+    const lvRange = n.level_range || dist.level_range || [1, 15];
+
+    return {
+      id: n.id,
+      code: n.map_id || n.id,
+      name: n.name,
+      isStudioCanon: true,
+      continentId: n.parent_continent_id || '',
+      continentName: cont.name || n.parent_continent_id || '',
+      districtId: n.parent_district_id || '',
+      districtName: dist.name || n.parent_district_id || '',
+      coreRationale: n.core_rationale || '',
+      col: coords[0] || 0,
+      row: coords[1] || 0,
+      biome: inferStudioBiome(n),
+      biomePalette: (n.terrain_tile && n.terrain_tile.biome_palette) || 'meadow',
+      lv: lvRange[0] + ' - ' + lvRange[1],
+      kind: n.node_type === 'town' ? 'town' : (n.node_type === 'dungeon' ? 'dungeon' : 'field'),
+      thumb: (n.terrain_tile && n.terrain_tile.preview_thumbnail) || '',
+      neighbors: nb,
+      spawns: (n.resident_spawns || []).map(s => ({
+        id: s.monster_id,
+        count: s.spawn_count || 20
+      }))
+    };
+  });
+}
+
+function getAllWorldTiles() {
+  return [...getStudioCanonTiles(), ...MAXION_WORLD_TILES];
+}
+
+function getStudioCanonMonsters() {
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const nodes = (sp.nodes || []).filter(n => n && n.status === 'canon');
+  const seen = new Set(MAXION_MONSTERS.map(m => m.id));
+  const out = [];
+  const elIcons = {
+    Fire: '🔥', Water: '💧', Earth: '🌿', Wind: '🌪️',
+    Poison: '☠️', Holy: '✨', Shadow: '🌑', Dark: '🌑',
+    Ghost: '👻', Undead: '💀', Neutral: '⚪'
+  };
+  let seq = 2001;
+  nodes.forEach(n => {
+    (n.resident_spawns || []).forEach(s => {
+      if (!s || !s.monster_id || seen.has(s.monster_id)) return;
+      seen.add(s.monster_id);
+      const mobThumb = '/thumbs/creatures/' + s.monster_id + '.webp';
+      const lv = s.level || 10;
+      const band = lv <= 20 ? '1-20' : (lv <= 40 ? '21-40' : (lv <= 60 ? '41-60' : (lv <= 80 ? '61-80' : '81-100')));
+      const el = s.element || 'Neutral';
+      const drops = [];
+      if (s.monster_card_drop && s.monster_card_drop.card_name) {
+        drops.push({
+          name: s.monster_card_drop.card_name,
+          rate: (s.monster_card_drop.drop_chance_percent || 0.01) + '%',
+          rarity: 'legend',
+          thumb: '/thumbs/cards/' + (s.monster_card_drop.card_id || s.monster_id) + '.webp'
+        });
+      }
+      (s.item_drops || []).forEach(it => {
+        const pct = it.drop_chance_percent || 5.0;
+        drops.push({
+          name: it.item_name,
+          rate: pct + '%',
+          rarity: pct <= 1.0 ? 'epic' : (pct <= 10.0 ? 'rare' : 'common'),
+          thumb: '/thumbs/loot/' + (it.item_id || it.item_name || 'item') + '.webp'
+        });
+      });
+      const rawMods = computeStudioElementalModifiers(el);
+      out.push({
+        id: s.monster_id,
+        code: seq++,
+        name: s.monster_name || s.monster_id,
+        isStudioCanon: true,
+        districtId: n.parent_district_id,
+        nodeId: n.id,
+        band: band,
+        lv: lv,
+        hp: lv * 68 + 45,
+        hit: 100 + lv * 3,
+        flee: 95 + lv * 2,
+        exp: lv * 24,
+        job: lv * 16,
+        type: (s.size === 'Large' && lv >= 35) ? 'MVP' : 'Normal',
+        element: el,
+        elIcon: elIcons[el] || '⚪',
+        race: s.race || 'Formless',
+        size: s.size || 'Medium',
+        thumb: mobThumb,
+        modifiers: {
+          Earth: rawMods.Earth ?? 100,
+          Poison: rawMods.Poison ?? 100,
+          Neutral: rawMods.Neutral ?? 100,
+          Fire: rawMods.Fire ?? 100,
+          Holy: rawMods.Holy ?? 100,
+          Dark: rawMods.Shadow ?? 100,
+          Water: rawMods.Water ?? 100,
+          Ghost: rawMods.Ghost ?? 100,
+          Undead: rawMods.Undead ?? 100,
+          Wind: rawMods.Wind ?? 100
+        },
+        drops: drops
+      });
+    });
+  });
+  return out;
+}
+
+function getAllMonsters() {
+  return [...getStudioCanonMonsters(), ...MAXION_MONSTERS];
+}
+
 function getMaxionMob(id) {
-  return MAXION_MONSTERS.find(m => m.id === id) || MAXION_MONSTERS[0];
+  const all = getAllMonsters();
+  return all.find(m => m.id === id) || all[0];
 }
 
 function getMaxionTile(id) {
-  return MAXION_WORLD_TILES.find(t => t.id === id) || MAXION_WORLD_TILES[0];
+  const all = getAllWorldTiles();
+  return all.find(t => t.id === id || t.code === id) || all[0];
 }
 
 function renderDistinctMapTileSvg(tile, size = 132) {
@@ -5633,7 +6815,7 @@ function renderDistinctMapTileSvg(tile, size = 132) {
   if (nb.W) portals += `<circle cx="6" cy="50" r="4.5" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>`;
   if (nb.E) portals += `<circle cx="94" cy="50" r="4.5" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>`;
 
-  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" style="display:block;width:100%;height:100%;border-radius:8px;">
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" style="display:block;width:${size}px;height:${size}px;max-width:100%;max-height:100%;border-radius:8px;flex-shrink:0;">
     <rect width="100" height="100" fill="${pal.bg}"/>
     <rect x="7" y="7" width="86" height="86" rx="10" fill="${pal.base}" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
     ${roads}
@@ -5644,7 +6826,7 @@ function renderDistinctMapTileSvg(tile, size = 132) {
 
 function selectMaxionLevelBand(band) {
   MAXION_LEVEL_BAND = band;
-  const firstInBand = MAXION_MONSTERS.find(m => m.band === band);
+  const firstInBand = getAllMonsters().find(m => m.band === band);
   if (firstInBand) {
     MAXION_PINNED_MOB_ID = firstInBand.id;
   }
@@ -5661,7 +6843,7 @@ function pinMaxionMonster(mobId) {
   MAXION_PINNED_MOB_ID = mobId;
   MAXION_SELECTED_MOB_ID = mobId;
   // Auto-select the first map tile where this monster spawns
-  const spawnTile = MAXION_WORLD_TILES.find(t => t.spawns.some(s => s.id === mobId));
+  const spawnTile = getAllWorldTiles().find(t => t.spawns.some(s => s.id === mobId));
   if (spawnTile) MAXION_SELECTED_TILE_ID = spawnTile.id;
   writeUrlState(true);
   render();
@@ -5688,7 +6870,7 @@ function renderWorldAtlas() {
   const selectedTile = getMaxionTile(MAXION_SELECTED_TILE_ID);
   const bands = ['1-20', '21-40', '41-60', '61-80', '81-100'];
 
-  const filteredMobs = MAXION_MONSTERS.filter(m => {
+  const filteredMobs = getAllMonsters().filter(m => {
     if (SEARCH_QUERY) {
       return m.name.toLowerCase().includes(SEARCH_QUERY) || String(m.code).includes(SEARCH_QUERY) || m.element.toLowerCase().includes(SEARCH_QUERY);
     }
@@ -5753,7 +6935,7 @@ function renderWorldAtlas() {
           👾 Inspect Pinned: <b>${escapeHtml(pinnedMob.name)} (#${pinnedMob.code})</b> →
         </button>
         <button class="btn" onclick="CURRENT_TAB='maps';writeUrlState(true);renderSidebar();render();">
-          🗺️ Connected Map Directory (25)
+          🗺️ Connected Map Directory (${getAllWorldTiles().length})
         </button>
       </div>
     </div>
@@ -5815,7 +6997,7 @@ function renderWorldAtlas() {
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
             <span class="pill pill--gold">📌 Pinned Monster: ${escapeHtml(pinnedMob.name)} (#${pinnedMob.code})</span>
             <span style="font-size:12px;color:#cbd5e1;">
-              Spawns on <strong style="color:#38bdf8;">${MAXION_WORLD_TILES.filter(t => t.spawns.some(s => s.id === pinnedMob.id)).length} connected map tiles</strong> (highlighted in cyan/gold below)
+              Spawns on <strong style="color:#38bdf8;">${getAllWorldTiles().filter(t => t.spawns.some(s => s.id === pinnedMob.id)).length} connected map tiles</strong> (highlighted in cyan/gold below)
             </span>
           </div>
           <div style="font-size:11px;color:#94a3b8;">
@@ -6508,7 +7690,7 @@ function updateRefineCalc() {
  * ========================================================================== */
 function renderMobs() {
   const mob = getMaxionMob(MAXION_SELECTED_MOB_ID);
-  const spawnTiles = MAXION_WORLD_TILES.filter(t => t.spawns.some(s => s.id === mob.id));
+  const spawnTiles = getAllWorldTiles().filter(t => t.spawns.some(s => s.id === mob.id));
 
   const elementMeta = [
     { key: 'Earth',   icon: '🌿', color: '#4ade80' },
@@ -6523,7 +7705,7 @@ function renderMobs() {
     { key: 'Wind',    icon: '🌪️', color: '#facc15' },
   ];
 
-  const rosterMobs = MAXION_MONSTERS.filter(m => {
+  const rosterMobs = getAllMonsters().filter(m => {
     if (!SEARCH_QUERY) return true;
     return m.name.toLowerCase().includes(SEARCH_QUERY) || String(m.code).includes(SEARCH_QUERY) || m.element.toLowerCase().includes(SEARCH_QUERY) || m.race.toLowerCase().includes(SEARCH_QUERY);
   });
@@ -7124,30 +8306,41 @@ function renderMinimapSvg(m) {
 }
 
 function renderMaps() {
+  const studioTiles = getStudioCanonTiles();
+  const allTiles = getAllWorldTiles();
   const filterKinds = [
-    { id: 'all', label: 'All Connected Regions (25)' },
-    { id: 'town', label: '🏰 Royal Towns & Ports' },
-    { id: 'field', label: '🌿 Overland Hunting Fields' },
+    { id: 'all', label: `All Connected Maps (${allTiles.length})` },
+    { id: 'studio', label: `🌌 Studio Canon Maps (${studioTiles.length})` },
+    { id: 'town', label: '🏰 Towns & Sanctuaries' },
+    { id: 'field', label: '🌿 Overland Hunting Areas' },
     { id: 'dungeon', label: '💀 Multi-Floor Dungeons' },
+    { id: 'c01', label: '🌸 Continent 01 (Hearthbloom)' },
+    { id: 'c02', label: '⚙️ Continent 02 (Clockwork)' },
+    { id: 'c03', label: '🔭 Continent 03 (Shattered Halo)' },
   ];
 
-  const tiles = MAXION_WORLD_TILES.filter(t => {
-    if (MAP_DIR_FILTER !== 'all' && t.kind !== MAP_DIR_FILTER) return false;
+  const tiles = allTiles.filter(t => {
+    if (MAP_DIR_FILTER === 'studio' && !t.isStudioCanon) return false;
+    if (MAP_DIR_FILTER === 'c01' && t.continentId !== 'continent-01-hearthbloom-basin') return false;
+    if (MAP_DIR_FILTER === 'c02' && t.continentId !== 'continent-02-clockwork-steppe') return false;
+    if (MAP_DIR_FILTER === 'c03' && t.continentId !== 'continent-03-shattered-halo-archipelago') return false;
+    if (['town', 'field', 'dungeon'].includes(MAP_DIR_FILTER) && t.kind !== MAP_DIR_FILTER) return false;
     if (!SEARCH_QUERY) return true;
-    return t.name.toLowerCase().includes(SEARCH_QUERY) || t.code.toLowerCase().includes(SEARCH_QUERY) || t.biome.toLowerCase().includes(SEARCH_QUERY);
+    const hay = `${t.name} ${t.code} ${t.biome} ${t.districtName || ''} ${t.continentName || ''} ${t.coreRationale || ''}`.toLowerCase();
+    return hay.includes(SEARCH_QUERY);
   });
 
   return `
     <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
       <div>
         <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#38bdf8;">
-          🗺️ LINEAGE.PMFUN.COM + MAXION CONNECTED MAP DIRECTORY
+          🗺️ UNIFIED STUDIO CANON (${studioTiles.length} MAPS ACROSS 31 DISTRICTS) + MAXION CONNECTED MAP DIRECTORY
         </div>
         <h1 style="font-size:24px;font-weight:900;margin:2px 0 0 0;color:#f8fafc;">
-          Connected World Map & Habitat Atlas <span style="font-size:14px;font-weight:600;color:#94a3b8;">(Every Map Shows Distinct Terrain, N/S/E/W Neighbors & Resident Monster Portraits)</span>
+          Connected World Map & Habitat Atlas <span style="font-size:14px;font-weight:600;color:#94a3b8;">(${tiles.length} Showing · Bounded 148×148 Topographic Previews, N/S/E/W Portals & Resident Monster Portraits)</span>
         </h1>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
         ${filterKinds.map(fk => `
           <button class="btn ${MAP_DIR_FILTER === fk.id ? 'btn--primary' : ''}" onclick="MAP_DIR_FILTER='${fk.id}';render();">
             ${fk.label}
@@ -7162,23 +8355,36 @@ function renderMaps() {
         return `
           <div class="lineage-map-card" id="map-card-${tile.id}" style="${MAXION_SELECTED_TILE_ID === tile.id ? 'border-color:#ffd166;box-shadow:0 0 0 2px rgba(255,209,102,0.35);' : ''}">
             <div class="lineage-map-card__top">
-              <div class="lineage-map-card__preview" onclick="CURRENT_TAB='world';MAXION_SELECTED_TILE_ID='${tile.id}';writeUrlState(true);renderSidebar();render();" style="cursor:pointer;" title="Click to locate on World Map Matrix">
+              <div class="lineage-map-card__preview" onclick="${tile.isStudioCanon ? `setStudioPerspective('town-or-hunting-area', { continentId: '${escapeHtml(tile.continentId)}', districtId: '${escapeHtml(tile.districtId)}', nodeId: '${escapeHtml(tile.id)}', inspectId: '${escapeHtml(tile.id)}' })` : `CURRENT_TAB='world';MAXION_SELECTED_TILE_ID='${tile.id}';writeUrlState(true);renderSidebar();render();`}" style="cursor:pointer;" title="Click to inspect map">
                 ${renderDistinctMapTileSvg(tile, 148)}
+                ${tile.thumb ? `<img src="${escapeHtml(tile.thumb)}" alt="${escapeHtml(tile.name)}" style="position:absolute;bottom:6px;right:6px;width:42px !important;height:42px !important;border-radius:8px;background:rgba(9,13,22,0.88);border:1px solid #ffd166;padding:3px;object-fit:contain;" />` : ''}
               </div>
               <div class="lineage-map-card__meta">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;">
                   <span class="pill pill--cyan" style="font-family:var(--mono);">${escapeHtml(tile.code)}</span>
-                  <span class="pill pill--gold">Lv. ${escapeHtml(tile.lv)}</span>
+                  <div style="display:flex;gap:4px;align-items:center;">
+                    ${tile.isStudioCanon ? '<span class="joy-badge joy-badge--success joy-badge--sm">🟢 Studio Canon</span>' : '<span class="pill">Classic Benchmark</span>'}
+                    <span class="pill pill--gold">Lv. ${escapeHtml(tile.lv)}</span>
+                  </div>
                 </div>
-                <h3 style="margin:6px 0 4px 0;font-size:17px;font-weight:800;color:#f8fafc;">
+                <h3 style="margin:6px 0 4px 0;font-size:16.5px;font-weight:800;color:#f8fafc;">
                   ${escapeHtml(tile.name)}
                 </h3>
-                <div style="font-size:11px;color:#94a3b8;margin-bottom:8px;">
-                  Biome: <strong style="color:#e2e8f0;text-transform:capitalize;">${escapeHtml(tile.biome)}</strong> · Grid Pos: <strong style="font-family:var(--mono);">[${tile.col}, ${tile.row}]</strong>
-                </div>
+                ${tile.isStudioCanon ? `
+                  <div style="font-size:11px;color:#38bdf8;font-weight:700;margin-bottom:4px;">
+                    ${escapeHtml(tile.continentName)} ➔ ${escapeHtml(tile.districtName)}
+                  </div>
+                  <div style="font-size:11px;color:#cbd5e1;margin-bottom:6px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                    ${escapeHtml(tile.coreRationale)}
+                  </div>
+                ` : `
+                  <div style="font-size:11px;color:#94a3b8;margin-bottom:8px;">
+                    Biome: <strong style="color:#e2e8f0;text-transform:capitalize;">${escapeHtml(tile.biome)}</strong> · Grid Pos: <strong style="font-family:var(--mono);">[${tile.col}, ${tile.row}]</strong>
+                  </div>
+                `}
 
                 <div style="font-size:10px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:#94a3b8;">
-                  Connected Adjacent Maps (${nbEntries.length}):
+                  Connected Adjacent Portals (${nbEntries.length}):
                 </div>
                 <div class="lineage-neighbors">
                   ${nbEntries.map(([dir, targetId]) => {
@@ -7191,7 +8397,7 @@ function renderMaps() {
 
             <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
               <div class="lineage-spawns-row" style="margin-top:0;">
-                ${tile.spawns.map(sp => {
+                ${tile.spawns.length ? tile.spawns.map(sp => {
                   const mob = getMaxionMob(sp.id);
                   return `
                     <div class="lineage-spawn-pill" onclick="openMonsterDetailPage('${mob.id}')" title="Inspect ${escapeHtml(mob.name)} (#${mob.code})">
@@ -7202,11 +8408,17 @@ function renderMaps() {
                       </div>
                     </div>
                   `;
-                }).join('')}
+                }).join('') : '<span style="font-size:11px;color:#94a3b8;">🛡️ Safe Sanctuary / Town Hub (Non-Combat NPCs)</span>'}
               </div>
-              <button class="btn" onclick="CURRENT_TAB='world';MAXION_SELECTED_TILE_ID='${tile.id}';writeUrlState(true);renderSidebar();render();" style="font-size:11px;padding:5px 10px;">
-                🧭 Locate on World Grid →
-              </button>
+              ${tile.isStudioCanon ? `
+                <button class="btn btn--primary" onclick="setStudioPerspective('town-or-hunting-area', { continentId: '${escapeHtml(tile.continentId)}', districtId: '${escapeHtml(tile.districtId)}', nodeId: '${escapeHtml(tile.id)}', inspectId: '${escapeHtml(tile.id)}' })" style="font-size:11px;padding:5px 10px;">
+                  🌌 Open in 4-Level Studio →
+                </button>
+              ` : `
+                <button class="btn" onclick="CURRENT_TAB='world';MAXION_SELECTED_TILE_ID='${tile.id}';writeUrlState(true);renderSidebar();render();" style="font-size:11px;padding:5px 10px;">
+                  🧭 Locate on World Grid →
+                </button>
+              `}
             </div>
           </div>
         `;
@@ -7388,9 +8600,8 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
             return
 
         if parsed.path.startswith("/thumbs/"):
-            fname = Path(parsed.path).name
-            target = (THUMBS_DIR / fname).resolve()
-            if target.parent == THUMBS_DIR.resolve() and target.exists() and target.suffix == ".webp":
+            target = resolve_thumb_file(parsed.path)
+            if target and target.exists():
                 raw = target.read_bytes()
                 self.send_response(200)
                 self.send_header("Content-Type", "image/webp")
