@@ -36,12 +36,12 @@
     "id": "E-004",
     "title": "One continuous open world",
     "created_at": "2026-10-11T06:40:07.212210+00:00",
-    "status": "verifying",
+    "status": "verified",
     "release_version": "1.15",
-    "verified_sha": "9e56e470bf9f33d409466e25dc9ba90f05f47ee8",
-    "verified_at": "2026-10-18T10:09:56.673749+00:00",
+    "verified_sha": "9a756be6cee42b1453a7f3be750941b8767ed896",
+    "verified_at": "2026-10-19T00:27:00.385850+00:00",
     "split_approved_by": null,
-    "verifying_sha": "9a756be6cee42b1453a7f3be750941b8767ed896"
+    "verifying_sha": null
   },
   {
     "id": "E-005",
