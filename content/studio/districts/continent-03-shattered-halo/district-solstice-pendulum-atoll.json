@@ -3,7 +3,7 @@
   "id": "district-solstice-pendulum-atoll",
   "name": "Solstice Pendulum Atoll",
   "parent_continent_id": "continent-03-shattered-halo",
-  "status": "mystery",
+  "status": "draft",
   "core_rationale": "Twelfth floating basalt-and-starlight pendulum island of Continent 03 where Vesper's longest inverted gravity chain swings between the summer and winter solstice beacons.",
   "local_conflict": "Solstice chime-wraiths and pendulum-weight constructs patrol the swinging starlight anchor-piers.",
   "level_band_label": "Levels 41 to 60",
@@ -19,7 +19,24 @@
     "columns": 2,
     "rows": 2
   },
-  "grid_nodes": [],
+  "grid_nodes": [
+    {
+      "node_id": "hunting-area-solstice-chain-causeway",
+      "map_id": null,
+      "node_type": "hunting_area",
+      "status": "mystery",
+      "grid_coordinates": [
+        0,
+        1
+      ],
+      "floor_index": 0,
+      "level_range": [
+        49,
+        50
+      ],
+      "is_starter_town": false
+    }
+  ],
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Astrolabe keepers in Celestial Astrolabe Sanctuary say Solstice Pendulum Atoll swings across a two-kilometer arc of open sky once every twelve hours.",
@@ -36,16 +53,16 @@
       "evidence": "A floating basalt atoll swinging on a colossal starlight pendulum chain between twin solstice beacons."
     },
     "character_scale_consistency": {
-      "verified": false,
-      "evidence": "Mystery status: pendulum-pier walkway and solstice beacon metrics for 1.05m characters will be verified upon promotion to Draft."
+      "verified": true,
+      "evidence": "Specifies 12.5m starlight tether-piers, 0.58m solstice dial consoles, and 0.14m basalt risers tailored to 1.05m characters."
     },
     "spatial_and_ecological_consistency": {
       "verified": false,
-      "evidence": "Mystery status: reserved as the twelfth District frontier on Continent 03 with zero filler maps."
+      "evidence": "Draft status: seeds hunting-area-solstice-chain-causeway at [0, 1] ahead of full 2x2 District promotion."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+      "evidence": "Preserves hunting-area-solstice-chain-causeway in Mystery status with complete mystery_hook."
     }
   }
 }

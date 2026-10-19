@@ -64,7 +64,7 @@
     "in_world_rumor": "Astrolabe keepers in Celestial Astrolabe Sanctuary say Solstice Pendulum Atoll swings across a two-kilometer arc of open sky once every twelve hours.",
     "visual_silhouette": "A floating basalt atoll suspended from a colossal starlight pendulum chain beyond the eastern rim of Celestial Astrolabe Atoll.",
     "unanswered_question": "What counter-gravity anchor prevents Solstice Pendulum Atoll from colliding with the outer halo ring?",
-    "discovery_trigger_hint": "Eleven Districts on Continent 03 are Canon while Solstice Pendulum Atoll awaits exploration along the outer solstice arc."
+    "discovery_trigger_hint": "Eleven Districts on Continent 03 are Canon while Solstice Pendulum Atoll is now in Draft status with Solstice-Chain Causeway seeded."
   },
   "quality_checklist": {
     "causal_continuity": {
@@ -81,11 +81,11 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes eleven Canon Districts plus Solstice Pendulum Atoll (Mystery) on Continent 03."
+      "evidence": "Organizes eleven Canon Districts plus Solstice Pendulum Atoll (Draft) on Continent 03."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Seeds Solstice Pendulum Atoll in Mystery status while preserving leaf Mystery frontiers behind Fog of Lore portals."
+      "evidence": "Advances Solstice Pendulum Atoll to Draft while preserving Solstice-Chain Causeway and leaf Mystery frontiers behind Fog of Lore portals."
     }
   }
 }

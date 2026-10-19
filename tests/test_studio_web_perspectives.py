@@ -37,8 +37,8 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertTrue(ok, f"Expected all 5 pillars verified on WHC, failed: {failed}")
 
         self.assertEqual(len(bundle["continents"]), 3)
-        self.assertEqual(len(bundle["districts"]), 33)
-        self.assertEqual(len(bundle["nodes"]), 125)
+        self.assertEqual(len(bundle["districts"]), 34)
+        self.assertEqual(len(bundle["nodes"]), 129)
 
     def test_index_html_renders_unabbreviated_four_perspectives_and_benchmarks(self) -> None:
         html = web.INDEX_HTML
@@ -69,10 +69,10 @@ class TestStudioWebPerspectives(unittest.TestCase):
             self.assertTrue(resolved.exists())
 
     def test_rationale_update_blocks_canon_when_parent_not_canon_or_checklist_incomplete(self) -> None:
-        # 1. hunting-area-radiator-manifold-span has parent district-thermal-compensator-basin (status: draft)
+        # 1. hunting-area-solstice-chain-causeway has parent district-solstice-pendulum-atoll (status: draft)
         res, code = web.update_studio_rationale(
             {
-                "nodeId": "hunting-area-radiator-manifold-span",
+                "nodeId": "hunting-area-solstice-chain-causeway",
                 "status": "canon",
             }
         )
@@ -80,10 +80,10 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertFalse(res["ok"])
         self.assertIn("parent", res["error"].lower())
 
-        # 2. district-thermal-compensator-basin has parent continent-02-clockwork-steppe (canon), but incomplete checklist pillars
+        # 2. district-solstice-pendulum-atoll has parent continent-03-shattered-halo (canon), but incomplete checklist pillars
         res2, code2 = web.update_studio_rationale(
             {
-                "nodeId": "district-thermal-compensator-basin",
+                "nodeId": "district-solstice-pendulum-atoll",
                 "status": "canon",
             }
         )
@@ -92,16 +92,16 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("quality_checklist", res2["error"])
 
     def test_rationale_update_and_undo_snapshot_roundtrip(self) -> None:
-        _, orig_doc, _ = web.find_studio_node_and_path("district-thermal-compensator-basin")
+        _, orig_doc, _ = web.find_studio_node_and_path("district-solstice-pendulum-atoll")
         self.assertIsNotNone(orig_doc)
         orig_rationale = orig_doc["core_rationale"]
 
         new_rationale = (
-            "Eleventh mercury-and-brass thermal expansion basin of Continent 02 where Krono's subterranean heat-exchanger tubes stabilize the eastern escapement mesas."
+            "Twelfth floating basalt-and-starlight pendulum island of Continent 03 where Vesper's longest inverted gravity chain swings between the summer and winter solstice beacons."
         )
         res, code = web.update_studio_rationale(
             {
-                "nodeId": "district-thermal-compensator-basin",
+                "nodeId": "district-solstice-pendulum-atoll",
                 "core_rationale": new_rationale,
                 "status": "draft",
             }
@@ -113,38 +113,38 @@ class TestStudioWebPerspectives(unittest.TestCase):
         # Undo snapshot to restore original file state cleanly
         undo_res = web.undo_latest_snapshot()
         self.assertTrue(undo_res["ok"])
-        _, restored_doc, _ = web.find_studio_node_and_path("district-thermal-compensator-basin")
+        _, restored_doc, _ = web.find_studio_node_and_path("district-solstice-pendulum-atoll")
         self.assertEqual(restored_doc["core_rationale"], orig_rationale)
 
     def test_generate_children_enforces_canon_and_five_pillar_checklist_gate(self) -> None:
-        # 1. Mystery parent district-solstice-pendulum-atoll must fail with 400
+        # 1. Mystery parent district-cardamom-kiln-caldera must fail with 400
         res_mystery, code_mystery = web.generate_studio_children(
             {
-                "parentId": "district-solstice-pendulum-atoll",
-                "childName": "Forbidden Solstice Pier",
+                "parentId": "district-cardamom-kiln-caldera",
+                "childName": "Forbidden Cardamom Kiln",
                 "persist": False,
             }
         )
         self.assertEqual(code_mystery, 400)
         self.assertFalse(res_mystery["ok"])
 
-        # 2. Draft parent district-thermal-compensator-basin must fail with 400
+        # 2. Draft parent district-solstice-pendulum-atoll must fail with 400
         res_draft, code_draft = web.generate_studio_children(
             {
-                "parentId": "district-thermal-compensator-basin",
-                "childName": "Thermal Bellows Sanctuary",
+                "parentId": "district-solstice-pendulum-atoll",
+                "childName": "Solstice Pendulum Sanctuary",
                 "persist": False,
             }
         )
         self.assertEqual(code_draft, 400)
         self.assertFalse(res_draft["ok"])
 
-        # 3. Canon parent district-ginger-steam-terraces (with 5/5 checklist verified) must succeed with 200
+        # 3. Canon parent district-thermal-compensator-basin (with 5/5 checklist verified) must succeed with 200
         res_canon, code_canon = web.generate_studio_children(
             {
-                "parentId": "district-ginger-steam-terraces",
-                "childId": "hunting-area-ginger-east-terrace",
-                "childName": "Ginger East Terrace",
+                "parentId": "district-thermal-compensator-basin",
+                "childId": "hunting-area-thermal-east-bellows",
+                "childName": "Thermal East Bellows",
                 "childStatus": "mystery",
                 "persist": False,
             }
@@ -152,7 +152,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertEqual(code_canon, 200)
         self.assertTrue(res_canon["ok"])
         self.assertEqual(res_canon["childLayer"], "town-or-hunting-area")
-        self.assertEqual(res_canon["childNode"]["parent_district_id"], "district-ginger-steam-terraces")
+        self.assertEqual(res_canon["childNode"]["parent_district_id"], "district-thermal-compensator-basin")
         self.assertEqual(res_canon["childNode"]["status"], "mystery")
 
 

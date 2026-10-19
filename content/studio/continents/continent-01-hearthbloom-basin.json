@@ -56,7 +56,8 @@
     "district-terracotta-wind-chimes",
     "district-saffron-kiln-orchards",
     "district-cinnamon-bellows-bluff",
-    "district-ginger-steam-terraces"
+    "district-ginger-steam-terraces",
+    "district-cardamom-kiln-caldera"
   ],
   "quality_checklist": {
     "causal_continuity": {
@@ -73,11 +74,17 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Organizes all ten Canon Districts on Continent 01."
+      "evidence": "Organizes ten Canon Districts plus Cardamom-Kiln Caldera (Mystery) on Continent 01."
     },
     "intentional_mystery_discipline": {
       "verified": true,
-      "evidence": "Promotes Ginger-Steam Terraces to Canon while preserving Cardamom-Cloud Overlook and leaf Mystery nodes behind fog_of_lore gates."
+      "evidence": "Seeds Cardamom-Kiln Caldera in Mystery status while preserving leaf Mystery nodes behind fog_of_lore gates."
     }
+  },
+  "mystery_hook": {
+    "in_world_rumor": "Bathhouse keepers in Ginger-Bathhouse Haven say the eastern Cardamom-Kiln Caldera simmers with spiced porcelain glaze-springs that glow amber beneath the evening mist.",
+    "visual_silhouette": "Dome-shaped cardamom drying kilns and terraced porcelain glaze-basins rising beyond the eastern rim of Ginger-Steam Terraces.",
+    "unanswered_question": "Which Primordial Kiln-Artisan carved the central spice-glaze crucible of Cardamom-Kiln Caldera?",
+    "discovery_trigger_hint": "Ten Districts on Continent 01 are Canon while Cardamom-Kiln Caldera awaits exploration along the eastern geothermal rim."
   }
 }
