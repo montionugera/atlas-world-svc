@@ -96,17 +96,17 @@ ATLAS_REPO_ROOT="${REPO_ROOT}" "${MACOS_DIR}/${APP_NAME}" --self-test
 BIN_SIZE="$(du -sh "${MACOS_DIR}/${APP_NAME}" | awk '{print $1}')"
 echo "[build_mac_observatory] Built ${APP_BUNDLE} (binary size: ${BIN_SIZE})"
 
-if [[ "${SKIP_APPLICATIONS_INSTALL:-0}" != "1" && -w "/Applications" ]]; then
+# Web-only experience preferred: remove any legacy /Applications/AtlasObservatory.app bundle unless INSTALL_MAC_APP=1
+if [[ "${INSTALL_MAC_APP:-0}" == "1" && -w "/Applications" ]]; then
     rm -rf "${INSTALLED_APP}"
     cp -R "${APP_BUNDLE}" "${INSTALLED_APP}"
     codesign --force --deep --sign - "${INSTALLED_APP}" >/dev/null 2>&1 || true
     echo "[build_mac_observatory] Installed to ${INSTALLED_APP}"
+else
+    rm -rf "${INSTALLED_APP}" 2>/dev/null || true
 fi
 
 if [[ "${1:-}" == "--open" ]]; then
-    TARGET_APP="${INSTALLED_APP}"
-    [[ -d "${TARGET_APP}" ]] || TARGET_APP="${APP_BUNDLE}"
-    echo "[build_mac_observatory] Launching ${TARGET_APP}..."
-    killall "${APP_NAME}" >/dev/null 2>&1 || true
-    open -a "${TARGET_APP}"
+    echo "[build_mac_observatory] Opening Atlas World Web Observatory at http://127.0.0.1:8788..."
+    open "http://127.0.0.1:8788/#perspective=world-history-and-concept"
 fi

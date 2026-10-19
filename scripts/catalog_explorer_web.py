@@ -1788,41 +1788,64 @@ INDEX_HTML = r"""<!DOCTYPE html>
       overflow: hidden;
     }
     .topbar {
-      min-height: 56px;
+      min-height: 52px;
       border-bottom: 1px solid var(--hub-chrome-border);
       background: var(--hub-topbar-bg);
-      padding: 6px 24px;
+      padding: 6px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: var(--joy-space-3);
+      gap: 12px;
       flex-shrink: 0;
       flex-wrap: wrap;
     }
-    .topbar__start, .topbar__end {
+    .topbar__start {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+    .topbar__end {
       display: flex;
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
+      flex-shrink: 0;
     }
     .topbar__title {
       font-size: var(--joy-font-size-md);
       font-weight: 600;
       color: var(--joy-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .scroll-stage {
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
       scroll-behavior: smooth;
     }
     .content-area {
-      max-width: 1260px;
+      max-width: 100%;
       width: 100%;
       margin: 0 auto;
-      padding: 24px 28px 72px;
+      padding: 18px 24px 72px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 18px;
+    }
+    .studio-split-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 1220px) {
+      .studio-split-layout {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* Editorial Page Header */
@@ -3386,7 +3409,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
     <nav class="nav" id="sidebarNav"></nav>
 
     <div class="sidebar-footer">
-      <span>Web + macOS WKWebView</span>
+      <span>Web Studio (:8788)</span>
       <span class="joy-badge joy-badge--brand joy-badge--sm">joy-design</span>
     </div>
   </aside>
@@ -4675,7 +4698,7 @@ function renderStudioWorldHistoryPerspective(whc, continents) {
 
   return `
     ${renderWhcBigPictureSvg(whc, continents)}
-    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
+    <div class="studio-split-layout">
       <div style="display:flex;flex-direction:column;gap:16px">
         <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -4800,7 +4823,7 @@ function renderStudioContinentPerspective(whc, continents, districts, activeCont
 
   return `
     ${renderContinentBigPictureSvg(continents, districts, activeContinent)}
-    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
+    <div class="studio-split-layout">
       <div style="display:flex;flex-direction:column;gap:16px">
         <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
@@ -5040,86 +5063,83 @@ function renderStudioDistrictPerspective(activeContinent, districts, nodes, acti
   }
 
   return `
-    <div style="display:grid;grid-template-columns:280px 1.5fr 350px;gap:16px;align-items:start">
-      <!-- Left Column: Maxion Level-Band Tabs & Monster Pinning Sidebar -->
-      <aside class="panel" style="padding:14px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
-        <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:8px">
-          MAXION LEVEL-BAND MONSTER PINNING
-        </div>
-        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
-          ${levelBands.map(lb => `
-            <button type="button" class="joy-button ${STUDIO_LEVEL_BAND === lb ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" style="justify-content:space-between" onclick="setStudioPerspective('district', { districtId: '${escapeHtml(activeDistrict.id)}', levelBand: '${escapeHtml(lb)}' })">
-              <span>${escapeHtml(lb)}</span>
-              <span class="mono" style="font-size:10px">${lb === activeDistrict.level_band_label ? 'ACTIVE' : ''}</span>
-            </button>
-          `).join('')}
-        </div>
-
-        <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">
-          ECOLOGICAL MONSTER FAMILIES
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">
-          ${(activeDistrict.ecological_monster_families || []).map(fam => `
-            <span class="joy-badge joy-badge--neutral joy-badge--sm">${escapeHtml(fam)}</span>
-          `).join('')}
-        </div>
-
-        <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">
-          CLICK MONSTER TO PIN SPAWNS ON GRID (${districtMonsters.length})
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          ${districtMonsters.length ? districtMonsters.map(mob => {
-            const isPinned = STUDIO_PINNED_MONSTER_ID === mob.monster_id;
-            const totalSpawns = mob.habitats.reduce((acc, h) => acc + (h.spawn_count || 0), 0);
-            return `
-              <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1.5px solid ${isPinned ? '#ffd166' : 'var(--joy-border-default)'};cursor:pointer" onclick="setStudioPerspective('district', { districtId: '${escapeHtml(activeDistrict.id)}', pinnedMonsterId: '${escapeHtml(mob.monster_id)}' })">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
-                  <strong style="font-size:12.5px;color:${isPinned ? '#ffd166' : 'var(--joy-text-primary)'}">${isPinned ? '📌 ' : ''}${escapeHtml(mob.monster_name)}</strong>
-                  <span class="joy-badge joy-badge--brand joy-badge--sm">Level ${mob.level}</span>
-                </div>
-                <div class="mono" style="font-size:10.5px;color:var(--joy-text-secondary);margin-top:3px">
-                  ${escapeHtml(mob.element)} · ${escapeHtml(mob.size)} · ${escapeHtml(mob.race)} (${escapeHtml(mob.family)})
-                </div>
-                <div style="font-size:11px;color:#34d399;margin-top:4px">
-                  Spawns: ×${totalSpawns} across ${mob.habitats.map(h => h.node_name).join(', ')}
-                </div>
-                <div style="margin-top:6px">
-                  <button type="button" class="joy-button joy-button--outline joy-button--sm" style="width:100%;height:24px;font-size:10.5px" onclick="event.stopPropagation();setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(mob.habitats[0].node_id)}', monsterId: '${escapeHtml(mob.monster_id)}', inspectId: '${escapeHtml(mob.habitats[0].node_id)}' })">
-                    Open Monster/1035 Sheet ➔
-                  </button>
-                </div>
-              </div>
-            `;
-          }).join('') : '<div style="font-size:11.5px;color:var(--joy-text-secondary)">Select a District with Canon/Draft child hunting areas to pin monster spawns.</div>'}
-        </div>
-      </aside>
-
-      <!-- Center Column: District 2D Connected Map Matrix -->
-      <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-          <div>
-            <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 3 · DISTRICT ORTHOGONAL CONNECTED MAP MATRIX (${escapeHtml(activeDistrict.level_band_label || '')})</div>
-            <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(activeDistrict.name || '')} (${cols} × ${rows} Connected Grid)</h2>
+    ${renderDistrictBigPictureSvg(activeContinent, activeDistrict, allDistrictNodes)}
+    <div class="studio-split-layout">
+      <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+        <!-- Maxion Level-Band Tabs & Monster Pinning Toolbar -->
+        <section class="panel" style="padding:14px 18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary)">MAXION LEVEL-BAND MONSTER PINNING:</span>
+              ${levelBands.map(lb => `
+                <button type="button" class="joy-button ${STUDIO_LEVEL_BAND === lb ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('district', { districtId: '${escapeHtml(activeDistrict.id)}', levelBand: '${escapeHtml(lb)}' })">
+                  <span>${escapeHtml(lb)}</span>
+                  ${lb === activeDistrict.level_band_label ? '<span class="mono" style="font-size:9.5px;margin-left:4px;color:#ffd166">● ACTIVE</span>' : ''}
+                </button>
+              `).join('')}
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <span class="mono" style="font-size:10px;color:var(--joy-text-secondary)">ECOLOGICAL MONSTER FAMILIES:</span>
+              ${(activeDistrict.ecological_monster_families || []).map(fam => `
+                <span class="joy-badge joy-badge--neutral joy-badge--sm">${escapeHtml(fam)}</span>
+              `).join('')}
+            </div>
           </div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            ${filteredDistricts.map(d => `
-              <button type="button" class="joy-button ${d.id === activeDistrict.id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('district', { continentId: '${escapeHtml(d.parent_continent_id)}', districtId: '${escapeHtml(d.id)}', inspectId: '${escapeHtml(d.id)}' })">
-                ${escapeHtml(d.name)} (${escapeHtml(d.status)})
-              </button>
-            `).join('')}
+
+          <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:8px">
+            CLICK MONSTER TO PIN SPAWNS ON GRID (${districtMonsters.length})
           </div>
-        </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
+            ${districtMonsters.length ? districtMonsters.map(mob => {
+              const isPinned = STUDIO_PINNED_MONSTER_ID === mob.monster_id;
+              const totalSpawns = mob.habitats.reduce((acc, h) => acc + (h.spawn_count || 0), 0);
+              return `
+                <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1.5px solid ${isPinned ? '#ffd166' : 'var(--joy-border-default)'};cursor:pointer" onclick="setStudioPerspective('district', { districtId: '${escapeHtml(activeDistrict.id)}', pinnedMonsterId: '${escapeHtml(mob.monster_id)}' })">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                    <strong style="font-size:12.5px;color:${isPinned ? '#ffd166' : 'var(--joy-text-primary)'}">${isPinned ? '📌 ' : ''}${escapeHtml(mob.monster_name)}</strong>
+                    <span class="joy-badge joy-badge--brand joy-badge--sm">Level ${mob.level}</span>
+                  </div>
+                  <div class="mono" style="font-size:10.5px;color:var(--joy-text-secondary);margin-top:3px">
+                    ${escapeHtml(mob.element)} · ${escapeHtml(mob.size)} · ${escapeHtml(mob.race)} (${escapeHtml(mob.family)})
+                  </div>
+                  <div style="font-size:11px;color:#34d399;margin-top:4px">
+                    Spawns: ×${totalSpawns} across ${mob.habitats.map(h => h.node_name).join(', ')}
+                  </div>
+                  <div style="margin-top:6px">
+                    <button type="button" class="joy-button joy-button--outline joy-button--sm" style="width:100%;height:24px;font-size:10.5px" onclick="event.stopPropagation();setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(mob.habitats[0].node_id)}', monsterId: '${escapeHtml(mob.monster_id)}', inspectId: '${escapeHtml(mob.habitats[0].node_id)}' })">
+                      Open Monster/1035 Sheet ➔
+                    </button>
+                  </div>
+                </div>
+              `;
+            }).join('') : '<div style="font-size:11.5px;color:var(--joy-text-secondary)">Select a District with Canon/Draft child hunting areas to pin monster spawns.</div>'}
+          </div>
+        </section>
 
-        <div style="padding:10px 12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle);margin-bottom:14px;font-size:12px">
-          <div><strong>Core Rationale:</strong> ${escapeHtml(activeDistrict.core_rationale || '')}</div>
-          <div style="margin-top:4px;color:var(--joy-text-secondary)"><strong>Local Conflict:</strong> ${escapeHtml(activeDistrict.local_conflict || '')}</div>
-        </div>
+        <!-- District 2D Connected Map Matrix -->
+        <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <div>
+              <div class="mono" style="font-size:11px;color:var(--joy-text-secondary)">STEP 3 · DISTRICT ORTHOGONAL CONNECTED MAP MATRIX (${escapeHtml(activeDistrict.level_band_label || '')})</div>
+              <h2 style="margin:2px 0 0;font-size:1.25rem">${escapeHtml(activeDistrict.name || '')} (${cols} × ${rows} Connected Grid)</h2>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              ${filteredDistricts.map(d => `
+                <button type="button" class="joy-button ${d.id === activeDistrict.id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('district', { continentId: '${escapeHtml(d.parent_continent_id)}', districtId: '${escapeHtml(d.id)}', inspectId: '${escapeHtml(d.id)}' })">
+                  ${escapeHtml(d.name)} (${escapeHtml(d.status)})
+                </button>
+              `).join('')}
+            </div>
+          </div>
 
-        ${renderDistrictBigPictureSvg(activeContinent, activeDistrict, allDistrictNodes)}
+          <div style="padding:10px 12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle);margin-bottom:14px;font-size:12px">
+            <div><strong>Core Rationale:</strong> ${escapeHtml(activeDistrict.core_rationale || '')}</div>
+            <div style="margin-top:4px;color:var(--joy-text-secondary)"><strong>Local Conflict:</strong> ${escapeHtml(activeDistrict.local_conflict || '')}</div>
+          </div>
 
-        <div style="display:grid;grid-template-columns:repeat(${cols}, minmax(210px, 1fr));gap:12px;margin-bottom:16px">
-          ${matrixCellsHtml.join('')}
-        </div>
+          <div style="display:grid;grid-template-columns:repeat(${cols}, minmax(0, 1fr));gap:12px;margin-bottom:16px">
+            ${matrixCellsHtml.join('')}
+          </div>
 
         <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
           <div class="mono" style="font-size:11px;font-weight:700;margin-bottom:8px">SYMMETRIC PORTAL EDGE TOPOLOGY (${portalEdges.length} BRIDGES)</div>
@@ -5135,7 +5155,8 @@ function renderStudioDistrictPerspective(activeContinent, districts, nodes, acti
             `).join('')}
           </div>
         </div>
-      </section>
+        </section>
+      </div>
 
       <!-- Right Column: Core Rationale & Five-Pillar Quality Checklist Drawer -->
       <aside class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px;position:sticky;top:72px">
@@ -5292,8 +5313,9 @@ function renderStudioTownOrHuntingAreaPerspective(activeDistrict, nodes, activeN
   }
 
   return `
-    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
-      <div style="display:flex;flex-direction:column;gap:16px">
+    ${renderTownOrHuntingAreaBigPictureSvg(activeDistrict, activeNode, activeMonster)}
+    <div class="studio-split-layout">
+      <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
         <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
             <div>
@@ -5316,8 +5338,6 @@ function renderStudioTownOrHuntingAreaPerspective(activeDistrict, nodes, activeN
             </div>
             <div>${escapeHtml(activeNode.core_rationale || '')}</div>
           </div>
-
-          ${renderTownOrHuntingAreaBigPictureSvg(activeDistrict, activeNode, activeMonster)}
 
           ${isMystery && activeNode.mystery_hook ? `
             <div style="padding:16px;border-radius:10px;background:rgba(168,85,247,0.14);border:1px dashed rgba(168,85,247,0.6)">
