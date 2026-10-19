@@ -154,7 +154,7 @@ rust_gates() {
       if [ "${free_gb:-0}" -lt 50 ]; then
         echo "⚠️  only ${free_gb:-?}GB free — using the shared target $main"
         own="$main"
-      elif cp -c -R "$main" "$own.seed.$$" 2>/dev/null && mv "$own.seed.$$" "$own"; then
+      elif [ "$(uname)" = Darwin ] && cp -c -R "$main" "$own.seed.$$" 2>/dev/null && mv "$own.seed.$$" "$own"; then
         echo "🌱 seeded $own from $main (APFS clone)"
       else
         rm -rf "$own.seed.$$"
