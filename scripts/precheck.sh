@@ -112,6 +112,27 @@ contracts_build() { (cd "$REPO_ROOT/contracts" && npm run build); }
 contracts_tests() { (cd "$REPO_ROOT/contracts" && npx jest --maxWorkers="$ATLAS_MAX_WORKERS"); }
 
 
+# server-rs embeds content/**/*.json (outside the crate) with include_str!, and
+# cargo records those in dep-info as ABSOLUTE paths of whichever checkout built
+# last. A target that was shared or cloned can therefore hold a server-rs
+# fingerprint that watches ANOTHER worktree's JSON, and cargo reuses the test
+# binary after this worktree's JSON changed. Drop every server-rs fingerprint
+# whose dep-info names a /server-rs/ path not under this checkout, so cargo
+# rebuilds it. A byte count, not a parse: the encoded dep-info is binary.
+scrub_foreign_server_rs_depinfo() {
+  local f d all own dropped=0
+  # One grep over all dep-info files narrows to those naming any /server-rs/ path.
+  while IFS= read -r f; do
+    d="$(dirname "$f")"
+    [ -d "$d" ] || continue
+    all=$(LC_ALL=C grep -aoF "/server-rs/" "$f" | wc -l)
+    own=$(LC_ALL=C grep -aoF "$REPO_ROOT/server-rs/" "$f" | wc -l)
+    if [ "$all" -ne "$own" ]; then rm -rf "$d"; dropped=$((dropped + 1)); fi
+  done < <(find "$1"/*/.fingerprint -maxdepth 2 -path '*/server-rs-*/dep-*' -type f -print0 2>/dev/null | LC_ALL=C xargs -0 grep -laF "/server-rs/" 2>/dev/null)
+  [ "$dropped" -gt 0 ] && echo "🧹 dropped $dropped server-rs fingerprint(s) recording another checkout's paths — server-rs will rebuild"
+  return 0
+}
+
 # Rust server-rs quality gate (fmt, clippy, unit tests)
 rust_gates() {
   if [ ! -d "$REPO_ROOT/server-rs" ]; then
@@ -119,9 +140,35 @@ rust_gates() {
     return 0
   fi
   export PATH="$HOME/.cargo/bin:$PATH"
-  if [ -z "${CARGO_TARGET_DIR:-}" ] && [ -n "$MAIN_ROOT" ]; then
-    export CARGO_TARGET_DIR="$MAIN_ROOT/server-rs/target"
+  # Each worktree builds into its OWN server-rs/target (gitignored). A target
+  # shared with the primary checkout made worktrees evict each other's
+  # incremental cache (touch rebuild 12-16s same path vs 111s after another
+  # path built). A new worktree's target is seeded once by APFS clone (cp -c,
+  # copy-on-write, ~68s) from the primary's; if cloning fails it starts empty
+  # (slow, still correct). Under 50GB free it falls back to the shared target;
+  # the dep-info scrub below keeps either choice sound. In that low-disk
+  # fallback, worktrees sharing the target drop each other's server-rs
+  # fingerprints (server-rs rebuilds every run), and a scrub racing another
+  # worktree's live cargo build can fail that build (re-run it).
+  if [ -z "${CARGO_TARGET_DIR:-}" ]; then
+    local own="$REPO_ROOT/server-rs/target" main="$MAIN_ROOT/server-rs/target" free_gb
+    if [ -n "$MAIN_ROOT" ] && [ "$REPO_ROOT" != "$MAIN_ROOT" ] && [ ! -d "$own" ] && [ -d "$main" ]; then
+      free_gb=$(df -Pk "$REPO_ROOT" | awk 'NR==2{print int($4/1048576)}')
+      if [ "${free_gb:-0}" -lt 50 ]; then
+        echo "⚠️  only ${free_gb:-?}GB free — using the shared target $main"
+        own="$main"
+      elif [ "$(uname)" = Darwin ] && cp -c -R "$main" "$own.seed.$$" 2>/dev/null; then
+        # A concurrent first gate may have seeded it meanwhile; BSD mv has no -T
+        # and would nest the clone inside the existing target.
+        if [ -d "$own" ]; then rm -rf "$own.seed.$$"; else mv "$own.seed.$$" "$own" && echo "🌱 seeded $own from $main (APFS clone)"; fi
+      else
+        rm -rf "$own.seed.$$"
+        echo "⚠️  could not clone $main — building $own from scratch"
+      fi
+    fi
+    export CARGO_TARGET_DIR="$own"
   fi
+  scrub_foreign_server_rs_depinfo "$CARGO_TARGET_DIR"
   echo "🦀 Checking Rust server-rs formatting, lints, and tests (target: ${CARGO_TARGET_DIR:-default}, jobs: $ATLAS_MAX_WORKERS)..."
   (cd "$REPO_ROOT/server-rs" && cargo fmt --check && cargo clippy --jobs "$ATLAS_MAX_WORKERS" --all-targets -- -D warnings && cargo test --jobs "$ATLAS_MAX_WORKERS" -- --test-threads="$ATLAS_MAX_WORKERS")
 }
@@ -203,12 +250,49 @@ art_forge_tests() {
   [ "$before" = "$after" ] || { echo "art-forge tests modified atelier/art-forge/runs/*.json"; return 1; }
 }
 
+# The Chrome smoke was measured at 78-86s of a Gate 1 run in one environment
+# (5-6s in another), and CI runs it as its own step
+# (ci.yml "storybook smoke"), so Gate 1 runs it only when the change can reach
+# it. The prefixes are what the smoke's local server was MEASURED serving (882
+# distinct paths) plus its own code; run.mjs imports only node: builtins, so no
+# package/lock file is an input. Fails closed: no base, HEAD == base (the
+# post-merge run in _release), an empty diff, or any git error -> run it.
+# Diff is base vs the WORKING TREE plus untracked files, so uncommitted edits
+# count. Gitignored generated inputs (e.g. the asset thumbs) are invisible to
+# git diff, so a change only to those skips here; CI still covers it.
+# ATLAS_FORCE_STORYBOOK_SMOKE=1 always runs it.
+STORYBOOK_SMOKE_PATHS='^(atelier/asset-storybook/|atelier/art-forge/|atelier/mapforge/|content/|game-client/assets/|colyseus-server/generated/|scripts/lib/|scripts/precheck\.sh$)'
+storybook_smoke_skip_reason() {
+  [ "${ATLAS_FORCE_STORYBOOK_SMOKE:-0}" = "1" ] && return 1
+  local base="${PSRW_GATE_BASE:-}" rel changed
+  if [ -z "$base" ]; then
+    rel=$(node -e 'const r=require("./.release.json"); if (r.in_progress && r.version) console.log("release/" + r.version)' 2>/dev/null)
+    if [ -n "$rel" ] && git rev-parse -q --verify "$rel^{commit}" >/dev/null; then
+      base=$(git merge-base HEAD "$rel") || return 1
+    else
+      base=$(git merge-base HEAD origin/main) || return 1
+    fi
+  fi
+  base=$(git rev-parse -q --verify "$base^{commit}") || return 1
+  [ "$base" = "$(git rev-parse HEAD)" ] && return 1
+  # core.quotePath=false: a C-quoted non-ASCII path ("content/\303\251.json")
+  # would not match the ^ anchor and would skip the smoke on a real input change.
+  changed=$( { git -c core.quotePath=false diff --name-only --no-renames "$base" -- &&
+    git -c core.quotePath=false ls-files --others --exclude-standard; } ) || return 1
+  [ -z "$changed" ] && return 1
+  # Here-string, not a pipe: under pipefail an early grep -q exit could SIGPIPE
+  # the writer and turn a match into a skip.
+  grep -qE "$STORYBOOK_SMOKE_PATHS" <<<"$changed" && return 1
+  echo "storybook smoke SKIPPED: no change under its inputs since ${base:0:12} (CI still runs it; ATLAS_FORCE_STORYBOOK_SMOKE=1 forces)"
+}
+
 storybook_tests() {
   # F-038: taxonomy resolution, thumb-index join, verdict store. Pure modules,
   # so they run here with no browser and no Blender.
   # F-053: plus the headless Forge smoke (skips loudly, exit 0, with no Chrome).
-  ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/asset-storybook/tests/*.test.mjs \
-      && node atelier/asset-storybook/tests/smoke/run.mjs )
+  ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/asset-storybook/tests/*.test.mjs ) || return 1
+  ( cd "$REPO_ROOT" && storybook_smoke_skip_reason ) && return 0
+  ( cd "$REPO_ROOT" && node atelier/asset-storybook/tests/smoke/run.mjs )
 }
 
 map_builder_tests() { ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/map-builder/tests/*.test.mjs ) }
