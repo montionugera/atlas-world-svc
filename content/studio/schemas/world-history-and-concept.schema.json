@@ -284,7 +284,10 @@
               "combat_trait"
             ],
             "properties": {
-              "id": { "type": "string", "pattern": "^race-[a-z0-9-]+$" },
+              "id": {
+                "type": "string",
+                "pattern": "^race-[a-z0-9-]+$"
+              },
               "race_key": {
                 "type": "string",
                 "enum": [
@@ -296,32 +299,84 @@
                   "furral"
                 ]
               },
-              "name": { "type": "string", "minLength": 2 },
-              "icon": { "type": "string", "minLength": 1 },
-              "archetype_reference": { "type": "string", "minLength": 5 },
-              "can_be_player": { "type": "boolean", "const": true },
-              "can_be_mob": { "type": "boolean", "const": true },
+              "name": {
+                "type": "string",
+                "minLength": 2
+              },
+              "icon": {
+                "type": "string",
+                "minLength": 1
+              },
+              "archetype_reference": {
+                "type": "string",
+                "minLength": 5
+              },
+              "can_be_player": {
+                "type": "boolean",
+                "const": true
+              },
+              "can_be_mob": {
+                "type": "boolean",
+                "const": true
+              },
               "starter_level_band": {
                 "type": "array",
                 "minItems": 2,
                 "maxItems": 2,
-                "items": { "type": "integer", "minimum": 1, "maximum": 20 }
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                }
               },
-              "home_town_id": { "type": "string", "pattern": "^town-[a-z0-9-]+$" },
-              "home_town_name": { "type": "string", "minLength": 3 },
-              "continent_id": { "type": "string", "pattern": "^continent-[a-z0-9-]+$" },
-              "district_id": { "type": "string", "pattern": "^district-[a-z0-9-]+$" },
-              "hunting_area_id": { "type": "string", "pattern": "^hunting-area-[a-z0-9-]+$" },
-              "farming_area_id": { "type": "string", "pattern": "^hunting-area-[a-z0-9-]+$" },
-              "convergence_hub_town_id": { "type": "string", "pattern": "^town-[a-z0-9-]+$" },
-              "ancestral_expedition_citadel_id": { "type": "string", "pattern": "^town-[a-z0-9-]+$" },
+              "home_town_id": {
+                "type": "string",
+                "pattern": "^town-[a-z0-9-]+$"
+              },
+              "home_town_name": {
+                "type": "string",
+                "minLength": 3
+              },
+              "continent_id": {
+                "type": "string",
+                "pattern": "^continent-[a-z0-9-]+$"
+              },
+              "district_id": {
+                "type": "string",
+                "pattern": "^district-[a-z0-9-]+$"
+              },
+              "hunting_area_id": {
+                "type": "string",
+                "pattern": "^hunting-area-[a-z0-9-]+$"
+              },
+              "farming_area_id": {
+                "type": "string",
+                "pattern": "^hunting-area-[a-z0-9-]+$"
+              },
+              "convergence_hub_town_id": {
+                "type": "string",
+                "pattern": "^town-[a-z0-9-]+$"
+              },
+              "ancestral_expedition_citadel_id": {
+                "type": "string",
+                "pattern": "^town-[a-z0-9-]+$"
+              },
               "farming_resources": {
                 "type": "array",
                 "minItems": 2,
-                "items": { "type": "string", "minLength": 3 }
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
               },
-              "niched_story": { "type": "string", "minLength": 20 },
-              "combat_trait": { "type": "string", "minLength": 10 }
+              "niched_story": {
+                "type": "string",
+                "minLength": 20
+              },
+              "combat_trait": {
+                "type": "string",
+                "minLength": 10
+              }
             }
           }
         },
@@ -342,7 +397,10 @@
               "primary_continents"
             ],
             "properties": {
-              "id": { "type": "string", "pattern": "^mob-race-[a-z0-9-]+$" },
+              "id": {
+                "type": "string",
+                "pattern": "^mob-race-[a-z0-9-]+$"
+              },
               "race_key": {
                 "type": "string",
                 "enum": [
@@ -354,19 +412,37 @@
                   "plant"
                 ]
               },
-              "name": { "type": "string", "minLength": 2 },
-              "can_be_player": { "type": "boolean", "const": false },
-              "can_be_mob": { "type": "boolean", "const": true },
-              "ecological_niche": { "type": "string", "minLength": 15 },
+              "name": {
+                "type": "string",
+                "minLength": 2
+              },
+              "can_be_player": {
+                "type": "boolean",
+                "const": false
+              },
+              "can_be_mob": {
+                "type": "boolean",
+                "const": true
+              },
+              "ecological_niche": {
+                "type": "string",
+                "minLength": 15
+              },
               "signature_drops": {
                 "type": "array",
                 "minItems": 2,
-                "items": { "type": "string", "minLength": 3 }
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
               },
               "primary_continents": {
                 "type": "array",
                 "minItems": 1,
-                "items": { "type": "string", "pattern": "^continent-[a-z0-9-]+$" }
+                "items": {
+                  "type": "string",
+                  "pattern": "^continent-[a-z0-9-]+$"
+                }
               }
             }
           }
@@ -389,7 +465,10 @@
               "lore_summary"
             ],
             "properties": {
-              "id": { "type": "string", "pattern": "^god-[a-z0-9-]+$" },
+              "id": {
+                "type": "string",
+                "pattern": "^god-[a-z0-9-]+$"
+              },
               "entity_key": {
                 "type": "string",
                 "enum": [
@@ -401,11 +480,17 @@
                   "the_architect"
                 ]
               },
-              "name": { "type": "string", "minLength": 3 },
+              "name": {
+                "type": "string",
+                "minLength": 3
+              },
               "elements": {
                 "type": "array",
                 "minItems": 1,
-                "items": { "type": "string", "minLength": 2 }
+                "items": {
+                  "type": "string",
+                  "minLength": 2
+                }
               },
               "seal_state": {
                 "type": "string",
@@ -414,10 +499,22 @@
                   "wielder_of_god_seal_magic"
                 ]
               },
-              "sealed_by": { "type": "string", "minLength": 3 },
-              "seal_location_continent_id": { "type": "string", "pattern": "^continent-[a-z0-9-]+$" },
-              "direct_mvp_subordinate": { "type": "string", "minLength": 5 },
-              "lore_summary": { "type": "string", "minLength": 20 }
+              "sealed_by": {
+                "type": "string",
+                "minLength": 3
+              },
+              "seal_location_continent_id": {
+                "type": "string",
+                "pattern": "^continent-[a-z0-9-]+$"
+              },
+              "direct_mvp_subordinate": {
+                "type": "string",
+                "minLength": 5
+              },
+              "lore_summary": {
+                "type": "string",
+                "minLength": 20
+              }
             }
           }
         }
@@ -431,7 +528,8 @@
         "blacksmith_clan",
         "adventure_guild",
         "quest_progression_loop",
-        "boss_power_hierarchy"
+        "boss_power_hierarchy",
+        "level_growth_path"
       ],
       "properties": {
         "cross_race_convergence_hubs": {
@@ -448,10 +546,20 @@
               "type": "array",
               "minItems": 2,
               "maxItems": 2,
-              "items": { "type": "integer", "minimum": 10, "maximum": 25 }
+              "items": {
+                "type": "integer",
+                "minimum": 10,
+                "maximum": 25
+              }
             },
-            "convergence_rule": { "type": "string", "minLength": 20 },
-            "primary_hub_town_id": { "type": "string", "pattern": "^town-[a-z0-9-]+$" },
+            "convergence_rule": {
+              "type": "string",
+              "minLength": 20
+            },
+            "primary_hub_town_id": {
+              "type": "string",
+              "pattern": "^town-[a-z0-9-]+$"
+            },
             "hubs": {
               "type": "array",
               "minItems": 2,
@@ -469,26 +577,51 @@
                   "shared_hunting_and_dungeon_nodes"
                 ],
                 "properties": {
-                  "town_node_id": { "type": "string", "pattern": "^town-[a-z0-9-]+$" },
-                  "town_name": { "type": "string", "minLength": 3 },
-                  "continent_id": { "type": "string", "pattern": "^continent-[a-z0-9-]+$" },
-                  "district_id": { "type": "string", "pattern": "^district-[a-z0-9-]+$" },
+                  "town_node_id": {
+                    "type": "string",
+                    "pattern": "^town-[a-z0-9-]+$"
+                  },
+                  "town_name": {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  "continent_id": {
+                    "type": "string",
+                    "pattern": "^continent-[a-z0-9-]+$"
+                  },
+                  "district_id": {
+                    "type": "string",
+                    "pattern": "^district-[a-z0-9-]+$"
+                  },
                   "level_band": {
                     "type": "array",
                     "minItems": 2,
                     "maxItems": 2,
-                    "items": { "type": "integer", "minimum": 10, "maximum": 25 }
+                    "items": {
+                      "type": "integer",
+                      "minimum": 10,
+                      "maximum": 25
+                    }
                   },
-                  "hub_role": { "type": "string", "minLength": 15 },
+                  "hub_role": {
+                    "type": "string",
+                    "minLength": 15
+                  },
                   "guilding_and_party_features": {
                     "type": "array",
                     "minItems": 3,
-                    "items": { "type": "string", "minLength": 10 }
+                    "items": {
+                      "type": "string",
+                      "minLength": 10
+                    }
                   },
                   "shared_hunting_and_dungeon_nodes": {
                     "type": "array",
                     "minItems": 2,
-                    "items": { "type": "string", "minLength": 5 }
+                    "items": {
+                      "type": "string",
+                      "minLength": 5
+                    }
                   }
                 }
               }
@@ -507,19 +640,37 @@
             "racial_anvil_branches"
           ],
           "properties": {
-            "id": { "type": "string", "const": "faction-blacksmith-clan" },
-            "name": { "type": "string", "minLength": 3 },
-            "allegiance": { "type": "string", "minLength": 5 },
-            "core_role": { "type": "string", "minLength": 15 },
+            "id": {
+              "type": "string",
+              "const": "faction-blacksmith-clan"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 3
+            },
+            "allegiance": {
+              "type": "string",
+              "minLength": 5
+            },
+            "core_role": {
+              "type": "string",
+              "minLength": 15
+            },
             "forging_systems": {
               "type": "array",
               "minItems": 3,
-              "items": { "type": "string", "minLength": 5 }
+              "items": {
+                "type": "string",
+                "minLength": 5
+              }
             },
             "racial_anvil_branches": {
               "type": "array",
               "minItems": 3,
-              "items": { "type": "string", "minLength": 5 }
+              "items": {
+                "type": "string",
+                "minLength": 5
+              }
             }
           }
         },
@@ -534,14 +685,29 @@
             "core_services"
           ],
           "properties": {
-            "id": { "type": "string", "const": "faction-adventure-guild" },
-            "name": { "type": "string", "minLength": 3 },
-            "allegiance": { "type": "string", "const": "neutral_no_side" },
-            "neutrality_charter": { "type": "string", "minLength": 15 },
+            "id": {
+              "type": "string",
+              "const": "faction-adventure-guild"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 3
+            },
+            "allegiance": {
+              "type": "string",
+              "const": "neutral_no_side"
+            },
+            "neutrality_charter": {
+              "type": "string",
+              "minLength": 15
+            },
             "core_services": {
               "type": "array",
               "minItems": 3,
-              "items": { "type": "string", "minLength": 5 }
+              "items": {
+                "type": "string",
+                "minLength": 5
+              }
             }
           }
         },
@@ -553,7 +719,10 @@
             "tracks"
           ],
           "properties": {
-            "progression_philosophy": { "type": "string", "minLength": 15 },
+            "progression_philosophy": {
+              "type": "string",
+              "minLength": 15
+            },
             "tracks": {
               "type": "array",
               "minItems": 3,
@@ -570,11 +739,24 @@
                 "properties": {
                   "track_key": {
                     "type": "string",
-                    "enum": ["main_quest", "job_quest", "side_quest"]
+                    "enum": [
+                      "main_quest",
+                      "job_quest",
+                      "side_quest"
+                    ]
                   },
-                  "name": { "type": "string", "minLength": 5 },
-                  "purpose": { "type": "string", "minLength": 15 },
-                  "reward_focus": { "type": "string", "minLength": 10 }
+                  "name": {
+                    "type": "string",
+                    "minLength": 5
+                  },
+                  "purpose": {
+                    "type": "string",
+                    "minLength": 15
+                  },
+                  "reward_focus": {
+                    "type": "string",
+                    "minLength": 10
+                  }
                 }
               }
             }
@@ -607,15 +789,433 @@
                   "loot_tier"
                 ],
                 "properties": {
-                  "rank": { "type": "integer", "minimum": 1, "maximum": 5 },
+                  "rank": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
                   "tier_key": {
                     "type": "string",
-                    "enum": ["god_tier", "mvp_boss", "raid_boss", "field_mob"]
+                    "enum": [
+                      "god_tier",
+                      "mvp_boss",
+                      "raid_boss",
+                      "field_mob"
+                    ]
                   },
-                  "name": { "type": "string", "minLength": 3 },
-                  "cosmic_role": { "type": "string", "minLength": 15 },
-                  "power_relationship": { "type": "string", "minLength": 15 },
-                  "loot_tier": { "type": "string", "minLength": 10 }
+                  "name": {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  "cosmic_role": {
+                    "type": "string",
+                    "minLength": 15
+                  },
+                  "power_relationship": {
+                    "type": "string",
+                    "minLength": 15
+                  },
+                  "loot_tier": {
+                    "type": "string",
+                    "minLength": 10
+                  }
+                }
+              }
+            }
+          }
+        },
+        "level_growth_path": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "priority_focus_band",
+            "path_formula",
+            "phases",
+            "early_focus_1_to_25_deep_dive"
+          ],
+          "properties": {
+            "priority_focus_band": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 99
+              }
+            },
+            "path_formula": {
+              "type": "string",
+              "minLength": 20
+            },
+            "phases": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "phase_key",
+                  "name",
+                  "level_band",
+                  "segments"
+                ],
+                "properties": {
+                  "phase_key": {
+                    "type": "string",
+                    "enum": [
+                      "early",
+                      "middle",
+                      "late"
+                    ]
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 4
+                  },
+                  "level_band": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 99
+                    }
+                  },
+                  "segments": {
+                    "type": "array",
+                    "minItems": 4,
+                    "maxItems": 4,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "segment_code",
+                        "level_range",
+                        "priority_focus",
+                        "title",
+                        "class_milestone",
+                        "adventure_quest_tier",
+                        "equipment_unlock",
+                        "skill_unlocks",
+                        "consumable_unlocks",
+                        "boss_milestone",
+                        "bound_town_and_hunting_nodes"
+                      ],
+                      "properties": {
+                        "segment_code": {
+                          "type": "string",
+                          "enum": [
+                            "A",
+                            "B",
+                            "C",
+                            "D",
+                            "E",
+                            "F",
+                            "G",
+                            "H",
+                            "I",
+                            "J",
+                            "K",
+                            "L"
+                          ]
+                        },
+                        "level_range": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 99
+                          }
+                        },
+                        "priority_focus": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 5
+                        },
+                        "class_milestone": {
+                          "type": "string",
+                          "minLength": 3
+                        },
+                        "adventure_quest_tier": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "equipment_unlock": {
+                          "type": "string",
+                          "minLength": 3
+                        },
+                        "skill_unlocks": {
+                          "type": "string",
+                          "minLength": 3
+                        },
+                        "consumable_unlocks": {
+                          "type": "string",
+                          "minLength": 3
+                        },
+                        "boss_milestone": {
+                          "type": "string",
+                          "minLength": 3
+                        },
+                        "bound_town_and_hunting_nodes": {
+                          "type": "array",
+                          "minItems": 1,
+                          "items": {
+                            "type": "string",
+                            "minLength": 5
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "early_focus_1_to_25_deep_dive": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "summary",
+                "stage_a_1_to_10",
+                "stage_b_10_to_20",
+                "stage_c_20_to_25",
+                "stage_d_25_to_30_bridge"
+              ],
+              "properties": {
+                "summary": {
+                  "type": "string",
+                  "minLength": 20
+                },
+                "stage_a_1_to_10": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "level_range",
+                    "core_experience",
+                    "adventure_quest_rank",
+                    "equipment_and_weapon_tier",
+                    "consumables",
+                    "skills",
+                    "racial_starter_routes"
+                  ],
+                  "properties": {
+                    "level_range": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "core_experience": {
+                      "type": "string"
+                    },
+                    "adventure_quest_rank": {
+                      "type": "string"
+                    },
+                    "equipment_and_weapon_tier": {
+                      "type": "string"
+                    },
+                    "consumables": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "skills": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "racial_starter_routes": {
+                      "type": "array",
+                      "minItems": 6,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "race_key",
+                          "home_town_id",
+                          "hunting_area_id",
+                          "farming_area_id",
+                          "lv10_weapon_forged"
+                        ],
+                        "properties": {
+                          "race_key": {
+                            "type": "string"
+                          },
+                          "home_town_id": {
+                            "type": "string"
+                          },
+                          "hunting_area_id": {
+                            "type": "string"
+                          },
+                          "farming_area_id": {
+                            "type": "string"
+                          },
+                          "lv10_weapon_forged": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "stage_b_10_to_20": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "level_range",
+                    "core_experience",
+                    "first_class_change_options",
+                    "adventure_quest_rank",
+                    "convergence_guild_hub_id",
+                    "equipment_and_weapon_tier",
+                    "consumables",
+                    "skills",
+                    "party_hunting_and_dungeon_nodes"
+                  ],
+                  "properties": {
+                    "level_range": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "core_experience": {
+                      "type": "string"
+                    },
+                    "first_class_change_options": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "adventure_quest_rank": {
+                      "type": "string"
+                    },
+                    "convergence_guild_hub_id": {
+                      "type": "string"
+                    },
+                    "equipment_and_weapon_tier": {
+                      "type": "string"
+                    },
+                    "consumables": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "skills": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "party_hunting_and_dungeon_nodes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "stage_c_20_to_25": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "level_range",
+                    "core_experience",
+                    "adventure_quest_rank",
+                    "boss_encounters",
+                    "equipment_and_weapon_tier",
+                    "skills",
+                    "expedition_hub_and_dungeon_nodes"
+                  ],
+                  "properties": {
+                    "level_range": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "core_experience": {
+                      "type": "string"
+                    },
+                    "adventure_quest_rank": {
+                      "type": "string"
+                    },
+                    "boss_encounters": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "equipment_and_weapon_tier": {
+                      "type": "string"
+                    },
+                    "skills": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "expedition_hub_and_dungeon_nodes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "stage_d_25_to_30_bridge": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "level_range",
+                    "core_experience",
+                    "second_class_trial_preview",
+                    "booster_consumables",
+                    "skills",
+                    "transition_nodes"
+                  ],
+                  "properties": {
+                    "level_range": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "core_experience": {
+                      "type": "string"
+                    },
+                    "second_class_trial_preview": {
+                      "type": "string"
+                    },
+                    "booster_consumables": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "skills": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "transition_nodes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -677,7 +1277,7 @@
     },
     "long_term_governance_checklist": {
       "type": "array",
-      "minItems": 7,
+      "minItems": 8,
       "items": {
         "type": "object",
         "additionalProperties": false,
@@ -704,15 +1304,32 @@
               "four_chapter_history",
               "guild_and_blacksmith",
               "quest_progression_tracks",
-              "boss_hierarchy_law"
+              "boss_hierarchy_law",
+              "level_growth_path_1_to_25"
             ]
           },
-          "title": { "type": "string", "minLength": 5 },
-          "invariant_command_ref": { "type": "string" },
-          "invariant_rule": { "type": "string", "minLength": 15 },
-          "cli_command": { "type": "string", "minLength": 10 },
-          "verified": { "type": "boolean" },
-          "evidence": { "type": "string", "minLength": 15 }
+          "title": {
+            "type": "string",
+            "minLength": 5
+          },
+          "invariant_command_ref": {
+            "type": "string"
+          },
+          "invariant_rule": {
+            "type": "string",
+            "minLength": 15
+          },
+          "cli_command": {
+            "type": "string",
+            "minLength": 10
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 15
+          }
         }
       }
     }

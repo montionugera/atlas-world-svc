@@ -5990,7 +5990,7 @@ function renderStudioWorldHistoryPerspective(whc, continents) {
               </div>
 
               <h4 style="margin:10px 0 6px;font-size:0.95rem">👑 Strict Boss Power Hierarchy: <span class="mono" style="color:#f87171">${escapeHtml(bhier.strict_order_law || "")}</span></h4>
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-bottom:16px">
                 ${(bhier.tiers || []).map(bt => `
                   <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
                     <div style="font-weight:700;font-size:12px">Rank ${bt.rank} · ${escapeHtml(bt.name)}</div>
@@ -5999,6 +5999,45 @@ function renderStudioWorldHistoryPerspective(whc, continents) {
                   </div>
                 `).join("")}
               </div>
+
+              ${(() => {
+                const lgp = sys.level_growth_path || {};
+                const phases = lgp.phases || [];
+                const deep = lgp.early_focus_1_to_25_deep_dive || {};
+                if (!phases.length) return "";
+                return `
+                  <div style="padding:14px;border-radius:10px;background:rgba(16,185,129,0.08);border:1.5px solid rgba(16,185,129,0.45)">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
+                      <strong style="font-size:13.5px;color:#10b981">📈 Level 1–99 Growth Path (Stages A–L) · Priority Focus: Levels 1–25 (Stages A, B, C)</strong>
+                      <span class="mono" style="font-size:10px;padding:2px 8px;border-radius:999px;background:#10b981;color:#052e16;font-weight:800">LV. 1–25 FOCUS</span>
+                    </div>
+                    <div class="mono" style="font-size:11px;color:#fde047;margin-bottom:8px">${escapeHtml(lgp.path_formula || "")}</div>
+                    <p style="font-size:11.5px;color:var(--joy-text-secondary);margin:0 0 12px">${escapeHtml(deep.summary || "")}</p>
+                    ${phases.map(ph => `
+                      <div style="margin-bottom:10px">
+                        <div style="font-weight:800;font-size:12px;color:#38bdf8;margin-bottom:6px">${escapeHtml(ph.name)}</div>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px">
+                          ${(ph.segments || []).map(seg => `
+                            <div style="padding:10px;border-radius:8px;background:var(--joy-surface-sunken);border:1.5px solid ${seg.priority_focus ? "#10b981" : "var(--joy-border-default)"}">
+                              <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                                <strong>[${escapeHtml(seg.segment_code)}] Lv.${(seg.level_range || []).join("–")}</strong>
+                                <span class="mono" style="font-size:9.5px;padding:1px 6px;border-radius:999px;background:${seg.priority_focus ? "rgba(16,185,129,0.22)" : "rgba(148,163,184,0.16)"};color:${seg.priority_focus ? "#10b981" : "#94a3b8"}">${seg.priority_focus ? "LV.1–25 FOCUS" : "ROADMAP"}</span>
+                              </div>
+                              <div style="font-size:11.5px;font-weight:700;margin:4px 0">${escapeHtml(seg.title)}</div>
+                              <div style="font-size:10.5px;color:var(--joy-text-secondary)"><strong>Class:</strong> ${escapeHtml(seg.class_milestone)}</div>
+                              <div style="font-size:10.5px;color:#38bdf8"><strong>Quest:</strong> ${escapeHtml(seg.adventure_quest_tier)}</div>
+                              <div style="font-size:10.5px;color:#eab308"><strong>Equip:</strong> ${escapeHtml(seg.equipment_unlock)}</div>
+                              <div style="font-size:10.5px;color:#10b981"><strong>Skills:</strong> ${escapeHtml(seg.skill_unlocks)}</div>
+                              <div style="font-size:10.5px;color:#c084fc"><strong>Items:</strong> ${escapeHtml(seg.consumable_unlocks)}</div>
+                              <div style="font-size:10.5px;color:#f87171"><strong>Boss:</strong> ${escapeHtml(seg.boss_milestone)}</div>
+                            </div>
+                          `).join("")}
+                        </div>
+                      </div>
+                    `).join("")}
+                  </div>
+                `;
+              })()}
             </section>
           `;
         })()}

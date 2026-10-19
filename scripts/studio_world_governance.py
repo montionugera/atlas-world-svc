@@ -338,10 +338,54 @@ def validate_world_governance(
                     f"GOV-07 violation: Playable race '{rkey}' home town '{ht_id}' cannot reach Lv.10-20 convergence hub '{primary_hub_id}' via open portals"
                 )
 
+    # GOV-08: Level 1-99 Growth Path (Stages A..L) with Lv.1-25 Early Focus (A, B, C + D bridge)
+    lgp = systems.get("level_growth_path") or {}
+    if lgp.get("priority_focus_band") != [1, 25]:
+        errors.append(
+            f"GOV-08 violation: level_growth_path.priority_focus_band must be [1, 25], got {lgp.get('priority_focus_band')}"
+        )
+    phases = lgp.get("phases") or []
+    found_segments: dict[str, dict[str, Any]] = {}
+    for ph in phases:
+        if not isinstance(ph, dict):
+            continue
+        for seg in ph.get("segments") or []:
+            if isinstance(seg, dict) and seg.get("segment_code"):
+                code = str(seg["segment_code"])
+                found_segments[code] = seg
+                for nid in seg.get("bound_town_and_hunting_nodes") or []:
+                    if nid not in nodes_by_id:
+                        errors.append(
+                            f"GOV-08 violation: Stage {code} references unknown studio node '{nid}'"
+                        )
+    expected_codes = ("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L")
+    missing_codes = [c for c in expected_codes if c not in found_segments]
+    if missing_codes:
+        errors.append(f"GOV-08 violation: level_growth_path missing segments: {missing_codes}")
+    else:
+        expected_ranges = {
+            "A": [1, 10], "B": [10, 20], "C": [20, 25], "D": [25, 30],
+            "E": [30, 40], "F": [40, 45], "G": [45, 50], "H": [50, 60],
+            "I": [60, 70], "J": [70, 80], "K": [80, 90], "L": [90, 99],
+        }
+        for code, exp_r in expected_ranges.items():
+            if found_segments[code].get("level_range") != exp_r:
+                errors.append(
+                    f"GOV-08 violation: Stage {code} level_range must be {exp_r}, got {found_segments[code].get('level_range')}"
+                )
+        for p_code in ("A", "B", "C"):
+            if found_segments[p_code].get("priority_focus") is not True:
+                errors.append(f"GOV-08 violation: Early Stage {p_code} must have priority_focus=true")
+
+    deep = lgp.get("early_focus_1_to_25_deep_dive") or {}
+    for req_stage in ("stage_a_1_to_10", "stage_b_10_to_20", "stage_c_20_to_25", "stage_d_25_to_30_bridge"):
+        if not isinstance(deep.get(req_stage), dict):
+            errors.append(f"GOV-08 violation: early_focus_1_to_25_deep_dive missing '{req_stage}'")
+
     # Verify long_term_governance_checklist entries
     gov_checklist = whc.get("long_term_governance_checklist") or []
-    if len(gov_checklist) < 7:
-        errors.append("Governance checklist must contain all 7 gates (GOV-01..GOV-07)")
+    if len(gov_checklist) < 8:
+        errors.append("Governance checklist must contain all 8 gates (GOV-01..GOV-08)")
     for gate in gov_checklist:
         if isinstance(gate, dict) and whc.get("status") == "canon" and not gate.get("verified"):
             errors.append(
@@ -497,7 +541,22 @@ def _print_audit_report(studio_dir: Path, section: str = "all") -> int:
         for b in sys_cfg.get("boss_power_hierarchy", {}).get("tiers", []):
             print(f"  - Rank {b['rank']} [{b['tier_key']}]: {b['name']} — {b['power_relationship']}")
 
-    print("\n[8] LONG-TERM GOVERNANCE CHECKLIST GATES (GOV-01..GOV-06):")
+    if section in ("all", "growth"):
+        lgp = sys_cfg.get("level_growth_path", {})
+        print(f"\n[7B] LEVEL 1-99 GROWTH PATH (PRIORITY FOCUS: Lv.{lgp.get('priority_focus_band', [1,25])}):")
+        print(f"  Formula: {lgp.get('path_formula')}")
+        for ph in lgp.get("phases", []):
+            print(f"  * {ph['name']}:")
+            for seg in ph.get("segments", []):
+                focus_tag = " [PRIORITY LV.1-25 FOCUS]" if seg.get("priority_focus") else ""
+                print(
+                    f"      [{seg['segment_code']}] Lv.{seg['level_range'][0]}-{seg['level_range'][1]}{focus_tag}: {seg['title']}\n"
+                    f"          Class: {seg['class_milestone']} | Quest: {seg['adventure_quest_tier']}\n"
+                    f"          Equip: {seg['equipment_unlock']} | Skills: {seg['skill_unlocks']}\n"
+                    f"          Items: {seg['consumable_unlocks']} | Boss: {seg['boss_milestone']}"
+                )
+
+    print("\n[8] LONG-TERM GOVERNANCE CHECKLIST GATES (GOV-01..GOV-08):")
     for g in report.get("gates", []):
         mark = "PASS" if g.get("verified") else "FAIL"
         print(f"  [{mark}] {g['gate_id']} — {g['title']}")
@@ -526,6 +585,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--audit-factions", action="store_true", help="Audit Neutral Adventure Guild & Blacksmith Clan.")
     parser.add_argument("--audit-quests", action="store_true", help="Audit 3-track quest progression loop.")
     parser.add_argument("--audit-bosses", action="store_true", help="Audit God > MVP > Raid Boss hierarchy.")
+    parser.add_argument("--audit-growth", action="store_true", help="Audit Level 1-99 Growth Path (A..L) & Lv.1-25 Focus.")
     parser.add_argument("--json", action="store_true", help="Emit JSON output for --check.")
 
     # Scaffolding sub-options
@@ -562,6 +622,8 @@ def main(argv: list[str] | None = None) -> int:
         return _print_audit_report(args.studio_dir, "quests")
     if args.audit_bosses:
         return _print_audit_report(args.studio_dir, "bosses")
+    if args.audit_growth:
+        return _print_audit_report(args.studio_dir, "growth")
     if args.audit:
         return _print_audit_report(args.studio_dir, "all")
 

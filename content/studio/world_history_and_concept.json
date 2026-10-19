@@ -847,6 +847,460 @@
           ]
         }
       ]
+    },
+    "level_growth_path": {
+      "priority_focus_band": [
+        1,
+        25
+      ],
+      "path_formula": "Early: 1-[A]-10-[B]-20-[C]-25-[D]-30 | Middle: 30-[E]-40-[F]-45-[G]-50-[H]-60 | Late: 60-[I]-70-[J]-80-[K]-90-[L]-99",
+      "phases": [
+        {
+          "phase_key": "early",
+          "name": "Early Growth Phase (Lv. 1\u201330 \u00b7 Priority Focus: Lv. 1\u201325)",
+          "level_band": [
+            1,
+            30
+          ],
+          "segments": [
+            {
+              "segment_code": "A",
+              "level_range": [
+                1,
+                10
+              ],
+              "priority_focus": true,
+              "title": "Stage A (Lv. 1\u201310) \u00b7 Learning Period in Racial Home Towns",
+              "class_milestone": "Novice / Racial Initiate (Basic Skill Usage & System Equip Tutorial)",
+              "adventure_quest_tier": "F-Tier Adventure Quests (Home Town Tutorial & Local Culling/Farming)",
+              "equipment_unlock": "Starter System Equip (Lv. 1) -> Forged Equipment + Weapon (Lv. 10) at Home Town Blacksmith Anvil",
+              "skill_unlocks": "Basic Attack Combo, Racial Innate Trait, and Lv. 5/10 Novice Active Skill",
+              "consumable_unlocks": "Minor Hearth-Herb Potion, Sweet Clover Sap (SP), Novice Warp Feather",
+              "boss_milestone": "Field Leader / Mini-Boss Tutorial (Lv. 8\u201310 Gatekeeper in adjacent Hunting Area)",
+              "bound_town_and_hunting_nodes": [
+                "town-lantern-hollow",
+                "hunting-area-clover-south-gate",
+                "town-root-train-roundhouse",
+                "hunting-area-resin-arch-tunnel",
+                "town-draft-kiln-post",
+                "hunting-area-firebrick-duct",
+                "town-cinnamon-mill-haven",
+                "hunting-area-cinnamon-bark-viaduct",
+                "town-porcelain-loom-sanctuary",
+                "hunting-area-celadon-causeway",
+                "town-carillon-hearth-belfry",
+                "hunting-area-chime-pipe-colonnade"
+              ]
+            },
+            {
+              "segment_code": "B",
+              "level_range": [
+                10,
+                20
+              ],
+              "priority_focus": true,
+              "title": "Stage B (Lv. 10\u201320) \u00b7 Change 1st Class & All-Race Convergence Guilding",
+              "class_milestone": "Change 1st Class at Lv. 10 (Swordman, Mage, Archer, Acolyte, Thief/Scout, Tinker-Smith) via Job Quest",
+              "adventure_quest_tier": "E-Tier Adventure Quests (Cross-Race Party Commissions & Guild Registration at Kilnwatch Bastion)",
+              "equipment_unlock": "1st-Class Job Armor Set & Refined Lv. 15 Alloy Gear at the Six-Anvil Foundry",
+              "skill_unlocks": "Core 1st-Class Job Skills (Power Strike, Fireball, Double Strafe, Heal/Blessing, Shadow Step, Hammer Smash)",
+              "consumable_unlocks": "Medium Glaze-Draft Potion, Panacea Antidote, Party Campfire Ration, Elemental Whetstones",
+              "boss_milestone": "Elite Field Sub-Bosses & Early Catacomb Gatekeepers (Kiln Cellar B1 &Medallion Heart Vault B1)",
+              "bound_town_and_hunting_nodes": [
+                "town-kilnwatch-bastion",
+                "hunting-area-kiln-east-orchard",
+                "hunting-area-firebrick-duct",
+                "hunting-area-cinder-apron",
+                "dungeon-kiln-cellar",
+                "dungeon-medallion-heart-vault"
+              ]
+            },
+            {
+              "segment_code": "C",
+              "level_range": [
+                20,
+                25
+              ],
+              "priority_focus": true,
+              "title": "Stage C (Lv. 20\u201325) \u00b7 First Major Dungeon Raid Boss & D-Tier Quests",
+              "class_milestone": "1st-Class Mastery Peak (Unlocking 6-Player Party Synergy Combos)",
+              "adventure_quest_tier": "D-Tier Adventure Quests (Multi-Race Catacomb Bounties & Continent 01->02 Escort Charters)",
+              "equipment_unlock": "New Equipment + Weapon (Lv. 20) forged from combined 6-race materials & First Raid Boss Cores",
+              "skill_unlocks": "Advanced 1st-Class AoE, Crowd-Control & Party Buff Skills",
+              "consumable_unlocks": "Concentrated Kiln-Tonic, Boss Resistance Draught, Guild Banner Scroll",
+              "boss_milestone": "First Major Raid Bosses (Rank 3 Catacomb Wardens in Sunken Potter Hold B1, Ember Bellows B1, Pendulum Shaft B1)",
+              "bound_town_and_hunting_nodes": [
+                "town-glaze-barge-quay",
+                "dungeon-sunken-potter-hold",
+                "dungeon-ember-bellows-chamber",
+                "town-pinion-terminus",
+                "hunting-area-brass-spur-ridge",
+                "dungeon-pendulum-shaft"
+              ]
+            },
+            {
+              "segment_code": "D",
+              "level_range": [
+                25,
+                30
+              ],
+              "priority_focus": false,
+              "title": "Stage D (Lv. 25\u201330) \u00b7 Prepare Change 2nd Class [Learn & Try] + Speed/Magic Boosters",
+              "class_milestone": "Prepare Change 2nd Class [Learn & Try Trial Mode] \u2014 sample 2nd-Class specializations before committing at Lv. 30",
+              "adventure_quest_tier": "D+ Trial Commissions (Clockwork Steppe Frontier & Pre-2nd Job Trials)",
+              "equipment_unlock": "Pre-Promotion Trial Relics & Lv. 25 Calibration Sub-Gear",
+              "skill_unlocks": "2nd-Class Preview Stance Skills & Stamina/Cast-Rhythm Passives",
+              "consumable_unlocks": "Magic Booster (MATK/Flux), ASPD Booster (Clock-Spring Draught), Quick-Step Elixir",
+              "boss_milestone": "Clockwork Steppe Trial Wardens (Chronometer Foundry B1 & Ash-Valve Vault B1)",
+              "bound_town_and_hunting_nodes": [
+                "town-escapement-anvil",
+                "town-bellows-hearth",
+                "town-patina-lock",
+                "dungeon-chronometer-foundry",
+                "dungeon-ash-valve-vault"
+              ]
+            }
+          ]
+        },
+        {
+          "phase_key": "middle",
+          "name": "Middle Growth Phase (Lv. 30\u201360 \u00b7 2nd Class, First MVP & Team Skills)",
+          "level_band": [
+            30,
+            60
+          ],
+          "segments": [
+            {
+              "segment_code": "E",
+              "level_range": [
+                30,
+                40
+              ],
+              "priority_focus": false,
+              "title": "Stage E (Lv. 30\u201340) \u00b7 Change 2nd Class & Lv. 30 Weapon",
+              "class_milestone": "Change 2nd Class (Knight/Crusader, Wizard/Sage, Hunter/Bard, Priest/Monk, Assassin/Rogue, Alchemist/Blacksmith)",
+              "adventure_quest_tier": "E-Tier (2nd-Rank Guild Tier) Adventure Quests across Continent 02 & Lower Continent 03",
+              "equipment_unlock": "New Weapon (Lv. 30) \u2014 2nd-Class Signature Arms",
+              "skill_unlocks": "Core 2nd-Class Specialization Skills",
+              "consumable_unlocks": "Galvanic Mana Cell, High-Grade Recovery Draught",
+              "boss_milestone": "Continent 02 Regional Raid Bosses (Faraday Dynamo Vault B1 & Worm-Drive Gearbox B1)",
+              "bound_town_and_hunting_nodes": [
+                "town-inductor-switchyard",
+                "town-metronome-pivot-citadel",
+                "dungeon-faraday-dynamo-vault",
+                "town-starfall-haven"
+              ]
+            },
+            {
+              "segment_code": "F",
+              "level_range": [
+                40,
+                45
+              ],
+              "priority_focus": false,
+              "title": "Stage F (Lv. 40\u201345) \u00b7 Boss + 1st MVP (Lowest-Rank MVP Entry) & Team Skills",
+              "class_milestone": "Guild Raid Squad Certification (Coordinated Party Formation)",
+              "adventure_quest_tier": "D-Tier (2nd-Rank Guild Tier) High-Risk MVP & Raid Bounties",
+              "equipment_unlock": "MVP-Shard Socketed Sub-Armor & Seal-Ward Accessories",
+              "skill_unlocks": "New Team Skills (Synchronized Party Auras, Link-Shields & Combo Finishers)",
+              "consumable_unlocks": "Seal-Ward Barrier Scroll, Group Resurrection Chime",
+              "boss_milestone": "Raid Boss + 1st MVP Boss (Lowest-Rank God Apostle that Lv. 40\u201345 parties can damage and contest)",
+              "bound_town_and_hunting_nodes": [
+                "town-prism-zenith",
+                "dungeon-pendulum-sanctum",
+                "town-undertide-sanctuary",
+                "dungeon-vesper-cradle"
+              ]
+            },
+            {
+              "segment_code": "G",
+              "level_range": [
+                45,
+                50
+              ],
+              "priority_focus": false,
+              "title": "Stage G (Lv. 45\u201350) \u00b7 New Skills & Equipment + Weapon (Lv. 50)",
+              "class_milestone": "Upper 2nd-Class Mastery",
+              "adventure_quest_tier": "Shattered Halo Apex Guild Commissions",
+              "equipment_unlock": "New Equipment + Weapon (Lv. 50) \u2014 Star-Steel & Umbral-Prism Tier",
+              "skill_unlocks": "High-Tier 2nd-Class Ultimate AoE & Control Skills",
+              "consumable_unlocks": "Astral Gravity Tonic, Starlight Focus Elixir",
+              "boss_milestone": "Shattered Halo Catacomb Raid Bosses & Mid-Rank MVP Apostles",
+              "bound_town_and_hunting_nodes": [
+                "town-crown-beacon-citadel",
+                "town-umbrage-focal-sanctum",
+                "dungeon-star-heart-nave",
+                "dungeon-shadow-refraction-crypt"
+              ]
+            },
+            {
+              "segment_code": "H",
+              "level_range": [
+                50,
+                60
+              ],
+              "priority_focus": false,
+              "title": "Stage H (Lv. 50\u201360) \u00b7 Cast Speed / ATK Boosters & Equipment + Weapon (Lv. 60)",
+              "class_milestone": "Veteran 2nd-Class Peak",
+              "adventure_quest_tier": "Continental Seal-Defense Operations",
+              "equipment_unlock": "New Equipment + Weapon (Lv. 60)",
+              "skill_unlocks": "New Veteran Class Skills & Seal-Resonance Passives",
+              "consumable_unlocks": "Magic Cast Speed Booster, ATK Booster, Overcharge Tonic",
+              "boss_milestone": "High-Tier Regional Raid Bosses & Continental MVP Apostles",
+              "bound_town_and_hunting_nodes": [
+                "town-aphelion-buoy-haven",
+                "town-celestial-astrolabe-sanctuary",
+                "dungeon-comet-core-geode",
+                "dungeon-starlight-orrery-nave"
+              ]
+            }
+          ]
+        },
+        {
+          "phase_key": "late",
+          "name": "Late / Endgame Growth Phase (Lv. 60\u201399 \u00b7 Accessories, Team & Unique Skills)",
+          "level_band": [
+            60,
+            99
+          ],
+          "segments": [
+            {
+              "segment_code": "I",
+              "level_range": [
+                60,
+                70
+              ],
+              "priority_focus": false,
+              "title": "Stage I (Lv. 60\u201370) \u00b7 New Accessories (Lv. 60) & New Team Skill",
+              "class_milestone": "Transcendent Seal-Bearer Preparation",
+              "adventure_quest_tier": "Master Guild Seal Expeditions",
+              "equipment_unlock": "New Accessories (Lv. 60) \u2014 God-Seal Relic Rings & Amulets",
+              "skill_unlocks": "New Team Skill (Multi-Party Raid Link Formation)",
+              "consumable_unlocks": "High-Purity Seal Ambrosia",
+              "boss_milestone": "Elder Catacomb Raid Bosses & Sealed-God Apostle MVPs",
+              "bound_town_and_hunting_nodes": [
+                "town-libration-balance-haven",
+                "dungeon-sunken-syzygy-dome"
+              ]
+            },
+            {
+              "segment_code": "J",
+              "level_range": [
+                70,
+                80
+              ],
+              "priority_focus": false,
+              "title": "Stage J (Lv. 70\u201380) \u00b7 New Unique Skill & Awakened Lv. 50+ Relic Equipment/Weapon",
+              "class_milestone": "Awakened Class Lineage",
+              "adventure_quest_tier": "Grand Seal Vault Bounties",
+              "equipment_unlock": "Awakened Relic Equipment + Weapon (Refined Lv. 50 Base -> Mythic Awakening)",
+              "skill_unlocks": "New Unique Skill (Signature Class Awakening Technique)",
+              "consumable_unlocks": "Dragon-Marrow Elixir",
+              "boss_milestone": "Top-Tier MVP Apostles (Arch-Valkyrie Caelia, Dread-Lord Ignisazar)",
+              "bound_town_and_hunting_nodes": [
+                "town-aurora-bell-sanctuary",
+                "dungeon-stalactite-carillon-nave"
+              ]
+            },
+            {
+              "segment_code": "K",
+              "level_range": [
+                80,
+                90
+              ],
+              "priority_focus": false,
+              "title": "Stage K (Lv. 80\u201390) \u00b7 Awakened Accessories (Lv. 60+) & New Team Skill",
+              "class_milestone": "Sovereign Guild Commander",
+              "adventure_quest_tier": "Architect Meridian Defense Charters",
+              "equipment_unlock": "Awakened Seal Accessories (Lv. 60 Base -> Sovereign Set)",
+              "skill_unlocks": "New Team Skill (Guild-Wide Domain Resonance)",
+              "consumable_unlocks": "Architect Runic Panacea",
+              "boss_milestone": "Prime MVP Apostles (Raijin-Vex, Pelagios, Volcanor)",
+              "bound_town_and_hunting_nodes": [
+                "town-penumbra-prism-haven",
+                "dungeon-twilight-coral-crypt"
+              ]
+            },
+            {
+              "segment_code": "L",
+              "level_range": [
+                90,
+                99
+              ],
+              "priority_focus": false,
+              "title": "Stage L (Lv. 90\u201399) \u00b7 Final Unique Skill & Architect Seal Aura",
+              "class_milestone": "Level 99 Sovereign (Maximum Mortal Resonance)",
+              "adventure_quest_tier": "S-Rank Planetary Seal Defense",
+              "equipment_unlock": "Endgame God-Seal Socketed Masterworks",
+              "skill_unlocks": "Final Unique Skill (Level 99 Capstone Ultimate)",
+              "consumable_unlocks": "Aethelgard Sovereign Draught",
+              "boss_milestone": "First Seal-Scribe Automaton & Echoes of the 5 Sealed Gods",
+              "bound_town_and_hunting_nodes": [
+                "town-perigee-diving-station",
+                "dungeon-submerged-orrery-keel"
+              ]
+            }
+          ]
+        }
+      ],
+      "early_focus_1_to_25_deep_dive": {
+        "summary": "Primary playable production focus covering Levels 1 to 25 (Stages A, B, and C, plus the Stage D Lv. 25\u201330 2nd-Class Trial bridge). Every race starts in their own Continent 01 Home Town (Lv. 1\u201310, Stage A), converges at Kilnwatch Bastion at Lv. 10 for 1st Class Change and Guilding (Lv. 10\u201320, Stage B), and tackles the first major Dungeon Raid Bosses and Lv. 20 Weapons at Lv. 20\u201325 (Stage C).",
+        "stage_a_1_to_10": {
+          "level_range": [
+            1,
+            10
+          ],
+          "core_experience": "Learning Period: players learn basic movement, basic skill usage, System Equip tutorial, consumable item hotkeys, and complete F-Tier Adventure Quests around their race Home Town before forging their Lv. 10 Equipment + Weapon.",
+          "adventure_quest_rank": "F-Tier Adventure Quest (Issued at each Racial Home Town Neutral Adventure Guild desk)",
+          "equipment_and_weapon_tier": "Lv. 1 Starter System Equip -> Lv. 10 Racial Apprentice Weapon + Equipment Set",
+          "consumables": [
+            "Minor Hearth-Herb Potion (HP Recovery)",
+            "Sweet Clover Sap (SP Recovery)",
+            "Novice Fly-Wing / Home Town Return Feather"
+          ],
+          "skills": [
+            "Basic 3-Hit Combo & Dodge Step",
+            "First Aid & Campfire Rest",
+            "Racial Innate Passive + Lv. 10 Novice Capstone Skill"
+          ],
+          "racial_starter_routes": [
+            {
+              "race_key": "human_demi_human",
+              "home_town_id": "town-lantern-hollow",
+              "hunting_area_id": "hunting-area-clover-south-gate",
+              "farming_area_id": "hunting-area-kiln-east-orchard",
+              "lv10_weapon_forged": "Lv.10 Terracotta Seal-Blade / Kiln-Ash Staff"
+            },
+            {
+              "race_key": "dwarf",
+              "home_town_id": "town-root-train-roundhouse",
+              "hunting_area_id": "hunting-area-cobalt-sandbar-ford",
+              "farming_area_id": "hunting-area-resin-arch-tunnel",
+              "lv10_weapon_forged": "Lv.10 Tontatta Root-Iron Hammer / Micro-Spring Axe"
+            },
+            {
+              "race_key": "ogre_orc",
+              "home_town_id": "town-draft-kiln-post",
+              "hunting_area_id": "hunting-area-firebrick-duct",
+              "farming_area_id": "hunting-area-celadon-causeway",
+              "lv10_weapon_forged": "Lv.10 Crucible Cinder-Cleaver / Basalt Greatclub"
+            },
+            {
+              "race_key": "furral",
+              "home_town_id": "town-cinnamon-mill-haven",
+              "hunting_area_id": "hunting-area-ginger-aqueduct-bridge",
+              "farming_area_id": "hunting-area-cinnamon-bark-viaduct",
+              "lv10_weapon_forged": "Lv.10 Electro-Amber Claw / Wind-Coil Katar"
+            },
+            {
+              "race_key": "lunar",
+              "home_town_id": "town-porcelain-loom-sanctuary",
+              "hunting_area_id": "hunting-area-celadon-causeway",
+              "farming_area_id": "hunting-area-resin-arch-tunnel",
+              "lv10_weapon_forged": "Lv.10 Celadon Star-Bow / Loom-Quartz Wand"
+            },
+            {
+              "race_key": "dark_lunar",
+              "home_town_id": "town-carillon-hearth-belfry",
+              "hunting_area_id": "hunting-area-apricot-aqueduct-terrace",
+              "farming_area_id": "hunting-area-chime-pipe-colonnade",
+              "lv10_weapon_forged": "Lv.10 Umbral Chime-Daggers / Eclipse Prism Scythe"
+            }
+          ]
+        },
+        "stage_b_10_to_20": {
+          "level_range": [
+            10,
+            20
+          ],
+          "core_experience": "Change 1st Class & All-Race Convergence: at Level 10, all 6 races travel along open highways to Kilnwatch Bastion (D06) to complete their 1st Class Change Job Quest, form cross-race Guilds (gilding), and party up for E-Tier Adventure Quests.",
+          "first_class_change_options": [
+            "Swordman (Vanguard Tank & Melee Cleave)",
+            "Mage (Elemental Burst & Area Control)",
+            "Archer (Ranged Precision & Trap Kiting)",
+            "Acolyte (Party Healer, Barrier & Seal-Buffs)",
+            "Thief / Scout (High-Evasion Dual-Blade & Poison/Shadow)",
+            "Tinker-Smith (Blacksmith Clan Combat Forger & Turret/Hammer)"
+          ],
+          "adventure_quest_rank": "E-Tier Adventure Quest (Unlocked at Lv. 10 upon registering at Kilnwatch Bastion Grand Guild Hall)",
+          "convergence_guild_hub_id": "town-kilnwatch-bastion",
+          "equipment_and_weapon_tier": "Lv. 10\u201315 1st-Class Job Uniform + Multi-Race Alloy Sub-Equipment",
+          "consumables": [
+            "Medium Glaze-Draft Potion",
+            "Blue Mana-Resin Syrup",
+            "Panacea Herb (Cures Poison/Silence)",
+            "Party Campfire Kit (Shared HP/SP Regen)"
+          ],
+          "skills": [
+            "Swordman: Bash, Provoke, Iron Skin",
+            "Mage: Fire Bolt, Cold Bolt, Lightning Bolt",
+            "Archer: Owl Eye, Vulture Eye, Double Strafe",
+            "Acolyte: Heal, Increase AGI, Blessing",
+            "Thief/Scout: Double Attack, Improve Dodge, Envenom",
+            "Tinker-Smith: Mammonite Smash, Ore Discovery, Temper Weapon"
+          ],
+          "party_hunting_and_dungeon_nodes": [
+            "town-kilnwatch-bastion",
+            "hunting-area-kiln-east-orchard",
+            "hunting-area-firebrick-duct",
+            "hunting-area-cinder-apron",
+            "dungeon-kiln-cellar",
+            "dungeon-medallion-heart-vault"
+          ]
+        },
+        "stage_c_20_to_25": {
+          "level_range": [
+            20,
+            25
+          ],
+          "core_experience": "First Major Boss & Lv. 20 Equipment Spike: 6-player cross-race parties take on D-Tier Adventure Quests, challenge their first full Catacomb Raid Bosses (Rank 3 Wardens), and forge Lv. 20 Weapons + Equipment sets before bridging into Continent 02.",
+          "adventure_quest_rank": "D-Tier Adventure Quest (Party Boss Bounties & Glaze-Barge / Pinion Terminus Escorts)",
+          "boss_encounters": [
+            "Kiln-Crag Siege Golem (Raid Boss \u00b7 dungeon-ember-bellows-chamber Lv. 20)",
+            "Drowned Ceramic Leviathan-Spawn (Raid Boss \u00b7 dungeon-sunken-potter-hold Lv. 20)",
+            "Runaway Escapement Warden (Raid Boss \u00b7 dungeon-pendulum-shaft Lv. 22\u201325)"
+          ],
+          "equipment_and_weapon_tier": "New Equipment + Weapon (Lv. 20) \u2014 Boss-Core Socketed Weapons & 4-Piece Dungeon Armor Sets",
+          "skills": [
+            "Swordman: Magnum Break (Fire AoE) & Endure",
+            "Mage: Fireball (AoE), Frost Diver & Soul Strike",
+            "Archer: Arrow Shower (AoE) & Charge Arrow",
+            "Acolyte: Pneuma / Kyrie Barrier & Ruwach",
+            "Thief/Scout: Hiding, Ambush Backstab & Detoxify",
+            "Tinker-Smith: Cart Revolution (AoE Knockback) & Overthrust Party Buff"
+          ],
+          "expedition_hub_and_dungeon_nodes": [
+            "town-glaze-barge-quay",
+            "dungeon-sunken-potter-hold",
+            "dungeon-ember-bellows-chamber",
+            "town-pinion-terminus",
+            "hunting-area-brass-spur-ridge",
+            "dungeon-pendulum-shaft"
+          ]
+        },
+        "stage_d_25_to_30_bridge": {
+          "level_range": [
+            25,
+            30
+          ],
+          "core_experience": "Prepare Change 2nd Class [Learn & Try]: players test-drive 2nd-Class trial stances in the Clockwork Steppe frontier and unlock their first Speed/Magic Booster consumables ahead of the Lv. 30 2nd-Class promotion.",
+          "second_class_trial_preview": "Interactive Mentor Trial Arena in Escapement Anvil & Bellows Hearth allowing players to test both 2nd-Class branches (e.g. Knight vs Crusader, Wizard vs Sage) before locking in at Level 30.",
+          "booster_consumables": [
+            "Magic Booster (Amplifies MATK & Elemental Resonance for 15m)",
+            "ASPD Booster (Awakening Clock-Spring Potion \u00b7 +15% Attack Speed for 15m)"
+          ],
+          "skills": [
+            "Trial Stance Preview Skill (Temporary 2nd-Class Signature Skill usable during Job Trial Quests)",
+            "Job Mastery Passive (Lv. 25 Capstone)"
+          ],
+          "transition_nodes": [
+            "town-escapement-anvil",
+            "town-bellows-hearth",
+            "town-patina-lock",
+            "dungeon-chronometer-foundry"
+          ]
+        }
+      }
     }
   },
   "starter_town_bindings": [
@@ -980,6 +1434,15 @@
       "cli_command": "python3 scripts/studio_world_governance.py --check",
       "verified": true,
       "evidence": "All 6 Playable Races start in canon Continent 01 towns (Lantern Hollow, Root-Train Roundhouse, Draft-Kiln Post, Cinnamon-Mill Haven, Porcelain Loom Sanctuary, Carillon Hearth Belfry) with verified open-portal paths into Kilnwatch Bastion (Lv.10-20 Primary Convergence Hub)."
+    },
+    {
+      "gate_id": "GOV-08",
+      "category": "level_growth_path_1_to_25",
+      "title": "Level 1\u201399 Growth Path (Stages A\u2013L) with Lv. 1\u201325 Early Focus (A: 1\u201310, B: 10\u201320, C: 20\u201325, D: 25\u201330)",
+      "invariant_rule": "shared_world_systems.level_growth_path must define all 12 segments (A..L across Early 1\u201330, Middle 30\u201360, Late 60\u201399) with priority_focus_band=[1, 25] and deep-dive bindings for Stage A (Lv.1\u201310 F-quest + Lv.10 weapon), Stage B (Lv.10\u201320 1st Class + E-quest at Kilnwatch Bastion), Stage C (Lv.20\u201325 Boss + D-quest + Lv.20 weapon), and Stage D (Lv.25\u201330 Prepare 2nd Class + Magic/ASPD Boosters).",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-growth",
+      "verified": true,
+      "evidence": "All 12 growth stages (A..L) are mapped to canon Studio towns, hunting areas, and catacomb dungeons, with full Lv. 1\u201325 deep-dive specifications for all 6 playable races and 6 first-class jobs."
     }
   ]
 }
