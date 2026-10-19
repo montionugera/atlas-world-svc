@@ -1972,8 +1972,9 @@
     "title": "Promote district-thermal-compensator-basin to Canon on Continent 02 with 4 leaf nodes, advance district-solstice-pendulum-atoll to Draft on Continent 03, and seed district-cardamom-kiln-caldera on Continent 01",
     "from_idea": "I-231",
     "created_at": "2026-10-19T07:50:09.832456+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-19T07:50:14.741158+00:00"
   }
 ]
