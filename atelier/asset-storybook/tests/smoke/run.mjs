@@ -189,7 +189,11 @@ function launchChrome(chromePath) {
       await waitForExit();
       // Fix round 1, item 3: bounded retries absorb the OS-level lag between
       // the process actually exiting and its open file handles releasing.
-      rmSync(userDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+      try {
+        rmSync(userDataDir, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
+      } catch {
+        // Ignore late Chrome helper ENOTEMPTY cleanup races in /tmp after exit
+      }
     },
   };
 }
