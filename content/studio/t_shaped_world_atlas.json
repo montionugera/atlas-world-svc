@@ -56505,5 +56505,427 @@
       "mda_pillar_focus": "Continuity & Submission",
       "verification_evidence": "Verified 8 Harbor/ClanHall/Fortress blueprints, bidirectional Studio<->Atlas state sync, Draw.io score=0, and 60-Dimension 100.0/100 audit."
     }
+  ],
+  "continental_seed_cycles": [
+    {
+      "seed_node_id": "seed-01-infinity-stage1-hall-of-suffering-assault",
+      "node_name": "Seed of Infinity \u2014 Hall of Suffering Twin-Tumor Assault Conduit",
+      "seed_category": "Seed_of_Infinity_Stage",
+      "cycle_stage_label": "Stage 1: Hall of Suffering Assault",
+      "zone_id": "zone-catacomb-dark-omens-coral",
+      "dungeon_id": "zone-catacomb-dark-omens-coral",
+      "floor_id": "B1",
+      "loc": "38248:-28757",
+      "officer_npc_name": "Officer Tepios & Mouth of Ekimus (Hall of Suffering B1)",
+      "trigger_quota_rule": "20 Party Twin-Boss Clears (Yehan Klodekus & Yehan Klanikus) -> Advances Seed to Stage 2",
+      "featured_s80_rewards": [
+        "Vesper Weapon / Armor Piece (S84)",
+        "150\u2013300 Elemental Crystal Vein Harvest",
+        "Agathion Seal Bracelet: Hall of Suffering"
+      ]
+    },
+    {
+      "seed_node_id": "seed-02-infinity-stage2-hall-of-erosion-conquest",
+      "node_name": "Seed of Infinity \u2014 Hall of Erosion Cohemenes & 4-Tumor Conquest",
+      "seed_category": "Seed_of_Infinity_Stage",
+      "cycle_stage_label": "Stage 2: Hall of Erosion Conquest",
+      "zone_id": "zone-catacomb-dark-omens-coral",
+      "dungeon_id": "zone-catacomb-dark-omens-coral",
+      "floor_id": "B2",
+      "loc": "38261:-28769",
+      "officer_npc_name": "Officer Tepios & Soul Trader Asyatei (Hall of Erosion B2)",
+      "trigger_quota_rule": "15 Command-Channel Cohemenes Clears + 4 Suffering Tumor Destructions -> Opens Stage 3 Ekimus Sanctum",
+      "featured_s80_rewards": [
+        "Vesper Noble Enhancement Stone & S84 Armor Recipes (60%)",
+        "Extracted Red/Blue/Green Star Stone Bundles",
+        "Soul Crystal Stage 15\u201316 Resonance Eligibility"
+      ]
+    },
+    {
+      "seed_node_id": "seed-03-infinity-stage3-heart-of-immortality-ekimus",
+      "node_name": "Seed of Infinity \u2014 Heart of Immortality (Ekimus & Hound Sanctum)",
+      "seed_category": "Seed_of_Infinity_Stage",
+      "cycle_stage_label": "Stage 3: Heart of Immortality (Ekimus Sanctum)",
+      "zone_id": "zone-catacomb-forbidden-path-orrery",
+      "dungeon_id": "zone-catacomb-forbidden-path-orrery",
+      "floor_id": "B3",
+      "loc": "18274:-64081",
+      "officer_npc_name": "Mouth of Ekimus & Admiral Keucereus Herald (Heart of Immortality B3)",
+      "trigger_quota_rule": "36\u201345 Player Command Channel Defeats Lord of Immortality Ekimus -> Unlocks Stage 5 Harvest Window (24h)",
+      "featured_s80_rewards": [
+        "Vesper Buster / Shaper / Slasher / Thrower (S84 Weapons)",
+        "Vorpal & Vesper Heavy/Light/Robe Full Drops",
+        "300-Cap Dark/Unholy Elemental Crystal Cluster"
+      ]
+    },
+    {
+      "seed_node_id": "seed-04-infinity-stage4-defense-of-suffering-erosion",
+      "node_name": "Seed of Infinity \u2014 Undead Counterattack Defense of the Seed",
+      "seed_category": "Seed_of_Infinity_Stage",
+      "cycle_stage_label": "Stage 4: Defense of the Seed",
+      "zone_id": "zone-catacomb-forbidden-path-orrery",
+      "dungeon_id": "zone-catacomb-forbidden-path-orrery",
+      "floor_id": "B2",
+      "loc": "18287:-64093",
+      "officer_npc_name": "Officer Tepios & Special Product Broker Kutran",
+      "trigger_quota_rule": "Repel 10 Undead Soul Wagon Waves Protecting the Regenerated Life Wards -> Restores Stage 5 Free Harvest",
+      "featured_s80_rewards": [
+        "Tepios's Shining Treasure Box (Giant's Codex: Mastery)",
+        "Freed Soul Crystal & Piece of Bone Breastplate",
+        "High-Grade Life Stone (Lv.82\u201384) & Star Stone Fuel"
+      ]
+    },
+    {
+      "seed_node_id": "seed-05-infinity-stage5-free-attribute-crystal-harvest",
+      "node_name": "Seed of Infinity \u2014 Stabilized Necrotic Vein & Soul Collector Grounds",
+      "seed_category": "Seed_of_Infinity_Stage",
+      "cycle_stage_label": "Stage 5: Free Attribute Crystal Harvest",
+      "zone_id": "zone-field-tether-causeway",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "49100:-41105",
+      "officer_npc_name": "Officer Tepios & Magister Dilios (Stabilized Seed Plaza)",
+      "trigger_quota_rule": "24-Hour Non-Instanced Free Harvest Window Before Ekimus Awakens & Resets Cycle to Stage 1",
+      "featured_s80_rewards": [
+        "150\u2013300 Dark/Holy Attribute Crystal Direct Collection (Agathion/Collection Lv.3)",
+        "Mark of Keucereus \u2014 Stage 1 & Stage 2 Exchange Tokens",
+        "Blessed Scroll: Enchant Armor (S-Grade) Jackpot Veins"
+      ]
+    },
+    {
+      "seed_node_id": "seed-06-destruction-stage1-dragonkin-fortress-breach",
+      "node_name": "Seed of Destruction \u2014 Dragonkin Outer Gate & Obelisk Breach",
+      "seed_category": "Seed_of_Destruction_Stage",
+      "cycle_stage_label": "Stage 1: Dragonkin Outer Gate Breach",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "1F",
+      "loc": "149113:28483",
+      "officer_npc_name": "Sergeant Allenos & War Mage Artius (Destruction Gate 1F)",
+      "trigger_quota_rule": "Destroy 3 Fortress Teleport Devices & Cull 120 Dragonkin Vanguards -> Advances Seed to Stage 2",
+      "featured_s80_rewards": [
+        "Icarus S80 Weapon Key Materials & Recipes (60%)",
+        "Dragonkin Blood Crystal & Fire Attribute Stone (150)",
+        "Dynasty Platinum Plate / Jewel Leather Pieces"
+      ]
+    },
+    {
+      "seed_node_id": "seed-07-destruction-stage2-central-square-obelisk-crush",
+      "node_name": "Seed of Destruction \u2014 Central Square Mounted Troop & Portal Crush",
+      "seed_category": "Seed_of_Destruction_Stage",
+      "cycle_stage_label": "Stage 2: Central Square Obelisk Conquest",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "2F",
+      "loc": "149126:28471",
+      "officer_npc_name": "Sergeant Allenos & Mounted Troop Commander Obelisk (2F)",
+      "trigger_quota_rule": "Shatter 4 Warp Obelisks & Defeat Brigade General Enron -> Opens Throne of Darkness (Tiat 3F)",
+      "featured_s80_rewards": [
+        "Icarus Disperser / Sawsword / Spirit / Trident Pieces",
+        "150\u2013300 Fire Attribute Crystal Forge Fragments",
+        "Giant's Codex: Discipline & Oblivion Chapters"
+      ]
+    },
+    {
+      "seed_node_id": "seed-08-destruction-stage3-throne-of-darkness-tiat",
+      "node_name": "Seed of Destruction \u2014 Throne of Darkness (Mistress of Destruction Tiat)",
+      "seed_category": "Seed_of_Destruction_Stage",
+      "cycle_stage_label": "Stage 3: Throne of Darkness (Tiat Sanctum)",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "149139:28459",
+      "officer_npc_name": "Sergeant Allenos & Mistress of Destruction Tiat (Throne 3F)",
+      "trigger_quota_rule": "10 cumulative Tiat Command-Channel Kills (36\u201345 Players) -> Opens 12-Hour Stage 5 Dragonfont Harvest",
+      "featured_s80_rewards": [
+        "Vesper Dual Sword / Vesper Caster / Vesper Singer (S84)",
+        "Holy Spirit's Cloak of Tiat & Draconic Scale Visor",
+        "300-Cap Fire/Earth Elemental Crystal Vein Unlock"
+      ]
+    },
+    {
+      "seed_node_id": "seed-09-destruction-stage4-mounted-dragon-troop-defense",
+      "node_name": "Seed of Destruction \u2014 Mounted Dragon Troop Counter-Siege Defense",
+      "seed_category": "Seed_of_Destruction_Stage",
+      "cycle_stage_label": "Stage 4: Defense of the Destruction Throne",
+      "zone_id": "zone-fortress-cloud-halo",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "46152:-45053",
+      "officer_npc_name": "Sergeant Allenos & Admiral Keucereus Defense Marshal",
+      "trigger_quota_rule": "Hold the Central Throne Barrier Against 8 Mounted Dragonkin Siege Waves -> Preserves Stage 5 Harvest",
+      "featured_s80_rewards": [
+        "Allenos's Commendation Chest (Vesper Weapon Piece)",
+        "Fire/Earth Elemental Crystal (150->300) Bundle",
+        "Knights' Epaulette & Star Stone Fuel Cells"
+      ]
+    },
+    {
+      "seed_node_id": "seed-10-destruction-stage5-free-dragonfont-crystal-harvest",
+      "node_name": "Seed of Destruction \u2014 Open Dragonfont Energy & Fire Crystal Quarry",
+      "seed_category": "Seed_of_Destruction_Stage",
+      "cycle_stage_label": "Stage 5: Free Attribute Crystal Harvest",
+      "zone_id": "zone-field-aurora-tether",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "152365:31235",
+      "officer_npc_name": "Sergeant Allenos & Special Product Broker Kutran",
+      "trigger_quota_rule": "12-Hour Open-World Solo/Party Collection Window Using Agathion of Collection Before Tiat Reclaims Throne",
+      "featured_s80_rewards": [
+        "150\u2013300 Fire & Earth Attribute Crystal Direct Mining",
+        "Energy Compression Stone (Fire / Earth / Wind / Water)",
+        "Vesper Noble Enhancement Stone & Top-Grade Life Stone"
+      ]
+    },
+    {
+      "seed_node_id": "seed-11-well-starfall-keucereus-alliance-condenser",
+      "node_name": "Starfall Haven \u2014 Keucereus Alliance Energy Compression Well",
+      "seed_category": "Energy_Compression_Well",
+      "cycle_stage_label": "Stage 5: Free Attribute Crystal Harvest",
+      "zone_id": "zone-town-starfall-haven",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "43778:-47877",
+      "officer_npc_name": "Engineer Lekon & Special Product Broker Kutran",
+      "trigger_quota_rule": "Compress 5 Energy Compression Stones + 150-Cap Attribute Stones -> Synthesizes 300-Cap Elemental Crystals",
+      "featured_s80_rewards": [
+        "Fire / Water / Wind / Earth / Holy / Dark Crystal (150->300)",
+        "Collection Agathion Seal Bracelet & Star Stone Extractor",
+        "Icarus & Vesper Recipe Book Exchange"
+      ]
+    },
+    {
+      "seed_node_id": "seed-12-well-glaze-barge-airship-aether-condenser",
+      "node_name": "Glaze-Barge Airship Dock \u2014 Continental Aether Compression Well",
+      "seed_category": "Energy_Compression_Well",
+      "cycle_stage_label": "Stage 5: Free Attribute Crystal Harvest",
+      "zone_id": "zone-harbor-glaze-barge-airship-dock",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-89409:155211",
+      "officer_npc_name": "Airship Controller & Attribute Master Yin",
+      "trigger_quota_rule": "Refine Extracted Red/Blue/Green Star Stones & Seed Energy Cores at Continental Dock",
+      "featured_s80_rewards": [
+        "150\u2013300 Water & Wind Elemental Crystal Synthesis",
+        "Energy Star Stone Airship Summon Fuel (x20)",
+        "Spellbook: Aurabird Falcon & Owl Aerial Collection"
+      ]
+    },
+    {
+      "seed_node_id": "seed-13-well-chronometer-annihilation-bistakon-well",
+      "node_name": "Chronometer Foundry \u2014 Seed of Annihilation Bistakon/Reptilikon Well",
+      "seed_category": "Energy_Compression_Well",
+      "cycle_stage_label": "Stage 3: Taklacan / Dopagen Trio Rotation",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "3F",
+      "loc": "84804:56399",
+      "officer_npc_name": "Commander Kbaldir & Officer Nemo (Maguen Collector)",
+      "trigger_quota_rule": "Rotate Daily Between Bistakon (CON/STR), Reptilikon (DEX/AGI) & Cokrakon (INT/MEN) Bio-Energy Wells",
+      "featured_s80_rewards": [
+        "Vesper & Vorpal S84 Armor / Weapon Recipes",
+        "Maguen Plasma Collector & Elite Maguen Horn Pet",
+        "150\u2013300 Earth & Wind Attribute Crystal Drops"
+      ]
+    },
+    {
+      "seed_node_id": "seed-14-well-inductor-hellbound-quarry-condenser",
+      "node_name": "Inductor Switchyard \u2014 Hellbound & Seed Elemental Synthesis Well",
+      "seed_category": "Energy_Compression_Well",
+      "cycle_stage_label": "Stage 5: Free Attribute Crystal Harvest",
+      "zone_id": "zone-town-inductor-switchyard",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147417:-55213",
+      "officer_npc_name": "Attribute Master Yang & Trader Holly",
+      "trigger_quota_rule": "Cross-Convert Opposite Elemental Stones & Compress Seed Energy Wells into 300-Attribute Weapon Cores",
+      "featured_s80_rewards": [
+        "300-Cap Weapon Elemental Crystal (All 6 Elements)",
+        "120-Cap Armor Elemental Resistance Crystal Bundle",
+        "Dynasty & Vesper Masterwork Foundation Polish"
+      ]
+    }
+  ],
+  "party_coliseum_tournaments": [
+    {
+      "arena_id": "coliseum-01-bracket-lv40-49-cruma-crimson-ring",
+      "arena_name": "Underground Coliseum Ring I \u2014 C-Grade Vanguard 9v9 Bracket (Lv.40\u201349)",
+      "tournament_category": "Underground_Coliseum_Bracket",
+      "zone_id": "zone-town-kilnwatch-bastion",
+      "loc": "-14045:123349",
+      "arbiter_npc_name": "Arena Manager & Paddy's Underground Teleporter (Ring I)",
+      "level_or_clan_bracket": "Lv.40\u201349 9v9 Party Bracket (Up to 7 Registered Parties King-of-the-Hill)",
+      "resurrection_tower_mechanic": "Central Life Tower Auto-Resurrects Party Every 30s Until Destroyed",
+      "victory_fame_and_rewards": [
+        "+400 Individual Fame Points per Win Streak",
+        "Circlet of Party Supremacy (Lv.40\u201349 Bracket)",
+        "C-Grade Blessed Enchant Scroll & Quick Healing Potions"
+      ]
+    },
+    {
+      "arena_id": "coliseum-02-bracket-lv50-59-oren-bronze-ring",
+      "arena_name": "Underground Coliseum Ring II \u2014 B-Grade Tactical 9v9 Bracket (Lv.50\u201359)",
+      "tournament_category": "Underground_Coliseum_Bracket",
+      "zone_id": "zone-town-escapement-anvil",
+      "loc": "83240:53063",
+      "arbiter_npc_name": "Arena Manager & Coliseum Referee Dryad (Ring II)",
+      "level_or_clan_bracket": "Lv.50\u201359 9v9 Party Bracket (Up to 7 Registered Parties King-of-the-Hill)",
+      "resurrection_tower_mechanic": "Central Life Tower Auto-Resurrects Party Every 30s Until Destroyed",
+      "victory_fame_and_rewards": [
+        "+550 Individual Fame Points per Win Streak",
+        "B-Grade PvP Belt/Weapon Enhancement Credits",
+        "Top-Grade Life Stone (Lv.58) & Greater CP Potions"
+      ]
+    },
+    {
+      "arena_id": "coliseum-03-bracket-lv60-69-giran-silver-ring",
+      "arena_name": "Underground Coliseum Ring III \u2014 A-Grade Guild 9v9 Bracket (Lv.60\u201369)",
+      "tournament_category": "Underground_Coliseum_Bracket",
+      "zone_id": "zone-town-pinion-terminus",
+      "loc": "82525:148477",
+      "arbiter_npc_name": "Arena Manager & Reputation Manager Rapidus (Ring III)",
+      "level_or_clan_bracket": "Lv.60\u201369 9v9 Party Bracket (Up to 7 Registered Parties King-of-the-Hill)",
+      "resurrection_tower_mechanic": "Central Life Tower Auto-Resurrects Party Every 30s Until Destroyed",
+      "victory_fame_and_rewards": [
+        "+700 Individual Fame Points per Win Streak",
+        "A-Grade PvP Weapon/Armor Rune & Tally Marks",
+        "Giant's Codex & High-Grade Life Stone (Lv.67)"
+      ]
+    },
+    {
+      "arena_id": "coliseum-04-bracket-lv70-79-goddard-gold-ring",
+      "arena_name": "Underground Coliseum Ring IV \u2014 S-Grade Awakening 9v9 Bracket (Lv.70\u201379)",
+      "tournament_category": "Underground_Coliseum_Bracket",
+      "zone_id": "zone-town-inductor-switchyard",
+      "loc": "147510:-55309",
+      "arbiter_npc_name": "Arena Manager & Flame Marshal Vulcan (Ring IV)",
+      "level_or_clan_bracket": "Lv.70\u201379 9v9 Party Bracket (Up to 7 Registered Parties King-of-the-Hill)",
+      "resurrection_tower_mechanic": "Central Life Tower Auto-Resurrects Party Every 30s Until Destroyed",
+      "victory_fame_and_rewards": [
+        "+800 Individual Fame Points per Win Streak",
+        "Circlet of Party Supremacy & S-Grade PvP Credits",
+        "Forgotten Scroll Fragment & Top-Grade Life Stone (Lv.76)"
+      ]
+    },
+    {
+      "arena_id": "coliseum-05-bracket-lv80-85-aden-sovereign-ring",
+      "arena_name": "Underground Coliseum Ring V \u2014 No-Limit Sovereign 9v9 Bracket (Lv.80\u201385)",
+      "tournament_category": "Underground_Coliseum_Bracket",
+      "zone_id": "zone-town-crown-beacon",
+      "loc": "147995:26705",
+      "arbiter_npc_name": "Arena Manager & Grand Olympiad Steward (Ring V)",
+      "level_or_clan_bracket": "No-Limit Lv.80\u201385 Sovereign Bracket (9v9 Full-Party King-of-the-Hill)",
+      "resurrection_tower_mechanic": "Central Life Tower Auto-Resurrects Party Every 30s Until Destroyed + Bonus Kill Score in Last 3 Minutes",
+      "victory_fame_and_rewards": [
+        "+1,200 Individual Fame Points per Win Streak",
+        "Sovereign Crown of the Underground Coliseum (+PvP Damage)",
+        "Vesper / Dynasty PvP Belt & Weapon Enhancement Credits"
+      ]
+    },
+    {
+      "arena_id": "coliseum-06-clan-rainbow-springs-yetti-arena",
+      "arena_name": "Rainbow Springs Chateau \u2014 Messenger Yetti's 4-Clan War Arena",
+      "tournament_category": "Clan_War_Tournament_Ring",
+      "zone_id": "zone-clanhall-inductor-conclave",
+      "loc": "148180:-54881",
+      "arbiter_npc_name": "Messenger Yetti & Hot Springs Arena Master",
+      "level_or_clan_bracket": "Top 4 Decree-of-War Clans (5-Player Party per Clan \u00b7 Enraged Gourd & Word-Game Rules)",
+      "resurrection_tower_mechanic": "Clan Hot Springs Geyser Totem Respawns Fallen Members Every 45s While Gourd Stands",
+      "victory_fame_and_rewards": [
+        "Exclusive Ownership of Rainbow Springs S-Grade Siege Chateau",
+        "+1,500 Clan Reputation Points (CRP) & +900 Individual Fame",
+        "Rainbow Clan Hall Agathion Bracelet & Blessed Escape Scrolls"
+      ]
+    },
+    {
+      "arena_id": "coliseum-07-clan-bandit-stronghold-5team-ring",
+      "arena_name": "Bandit Stronghold \u2014 Messenger's 5-Clan Preliminaries & Final Ring",
+      "tournament_category": "Clan_War_Tournament_Ring",
+      "zone_id": "zone-fortress-shanty-kiln",
+      "loc": "-5135:134133",
+      "arbiter_npc_name": "Bandit Stronghold Messenger & Ol Mahum Referee",
+      "level_or_clan_bracket": "5 Qualifying Clans (300,000 Adena / 57-Badge Entry \u00b7 20-Minute Elimination)",
+      "resurrection_tower_mechanic": "Clan Tent Banner Resurrects Party Members Every 40s Until Enemy Captures Central Flag",
+      "victory_fame_and_rewards": [
+        "2-Week Sovereign Deed to Bandit Stronghold Chateau",
+        "+1,000 Clan Reputation Points & +750 Individual Fame",
+        "Clan Imperium Command Channel & Wyvern Roost Privilege"
+      ]
+    },
+    {
+      "arena_id": "coliseum-08-clan-wild-beast-reserve-tournament",
+      "arena_name": "Wild Beast Reserve \u2014 Messenger's 5-Clan Taming & Elimination Ring",
+      "tournament_category": "Clan_War_Tournament_Ring",
+      "zone_id": "zone-clanhall-kilnwatch-accord",
+      "loc": "-13750:124047",
+      "arbiter_npc_name": "Wild Beast Messenger & Tamer Kelvin",
+      "level_or_clan_bracket": "5 Qualifying Clans (Lv.4+ Clan \u00b7 9v9 Party Elimination Inside Enclosed Beast Ring)",
+      "resurrection_tower_mechanic": "Color-Coded Clan Obelisk Resurrects Party Every 35s Until Rival Party Shatters Obelisk",
+      "victory_fame_and_rewards": [
+        "2-Week Sovereign Deed to Wild Beast Reserve Chateau",
+        "+1,200 Clan Reputation Points & +850 Individual Fame",
+        "Exclusive Beast Farm Buff Whip & Top-Grade Life Stones"
+      ]
+    },
+    {
+      "arena_id": "coliseum-09-clan-aerial-cleft-9v9-sky-ring",
+      "arena_name": "Aerial Cleft Sky-Coliseum \u2014 9v9 Aurabird & Vortex Tournament Ring",
+      "tournament_category": "Clan_War_Tournament_Ring",
+      "zone_id": "zone-town-starfall-haven",
+      "loc": "43835:-47939",
+      "arbiter_npc_name": "Engineer Lekon & Aerial Cleft Arbiter (Keucereus Base)",
+      "level_or_clan_bracket": "9v9 Transformed Aerial Party Bracket (Lv.75+ Aurabird Falcon / Owl Flight Required)",
+      "resurrection_tower_mechanic": "Sky-Vortex Core Resurrects Transformed Flyers Every 25s While Central Compressor Holds",
+      "victory_fame_and_rewards": [
+        "50\u2013120 Emery Pieces & Extracted Red/Blue/Green Star Stones",
+        "+1,000 Individual Fame Points & Clan Airship Fuel Credits",
+        "Spellbook: Final Flying Form &S80 Icarus Weapon Pieces"
+      ]
+    },
+    {
+      "arena_id": "coliseum-10-royal-aden-grand-coliseum-stadium",
+      "arena_name": "Aden Grand Coliseum \u2014 Royal Open-Gate 9v9 Exhibition Stadium",
+      "tournament_category": "Royal_Fame_Exhibition_Arena",
+      "zone_id": "zone-field-aurora-tether",
+      "loc": "152420:31175",
+      "arbiter_npc_name": "Royal Tournament Herald & Arena Director (Aden East Gate)",
+      "level_or_clan_bracket": "All-Level Royal Exhibition & 9v9 GvG Tournament (Zero EXP Loss \u00b7 Spectator Grandstands)",
+      "resurrection_tower_mechanic": "Dual East/West Corner Resurrection Towers (20s Respawn Pulse \u00b7 Protected Behind Inner Gates)",
+      "victory_fame_and_rewards": [
+        "+900 Individual Fame Points (Redeemable at Reputation Manager Rapidus)",
+        "PvP Weapon / Armor Enhancement Activation (Dagger Cancels, Bow Speed, Robe Cast)",
+        "Royal Gladiator's Circlet & Blessed Scroll: Enchant Weapon (S)"
+      ]
+    },
+    {
+      "arena_id": "coliseum-11-royal-gludin-harbor-free-duel-ring",
+      "arena_name": "Glaze-Barge Maritime Arena \u2014 Coastal Party Duel & Fame Ring",
+      "tournament_category": "Royal_Fame_Exhibition_Arena",
+      "zone_id": "zone-town-glaze-barge-quay",
+      "loc": "-81195:151389",
+      "arbiter_npc_name": "Arena Manager & Reputation Manager Scipio",
+      "level_or_clan_bracket": "Lv.20\u201385 Open Party-vs-Party Exhibition & 3v3/9v9 Ranked Scrimmage",
+      "resurrection_tower_mechanic": "Harbor Beacon Obelisk Instant-Revives Wiped Parties at Ring Boundary With Full CP/MP",
+      "victory_fame_and_rewards": [
+        "+600 Individual Fame Points per Tournament Match",
+        "PK Count Reduction (-1 PK per 5,000 Fame) & Clan Reputation Exchange",
+        "weaver Olf S-Grade PvP Belt Ornament (+5% PvP Damage)"
+      ]
+    },
+    {
+      "arena_id": "coliseum-12-royal-heine-water-mirror-exhibition",
+      "arena_name": "Torque-Balance Water-Mirror Coliseum \u2014 Innadril Sovereign Tournament Ring",
+      "tournament_category": "Royal_Fame_Exhibition_Arena",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "loc": "116390:-18397",
+      "arbiter_npc_name": "Royal Tournament Herald & Lady of the Lake Steward",
+      "level_or_clan_bracket": "Lv.61\u201385 A/S-Grade 9v9 Sovereign Exhibition & Alliance Championship",
+      "resurrection_tower_mechanic": "Tidal Crystal Tower Grants 30s Party Resurrection + Eva's Water-Shield Spawn Immunity (5s)",
+      "victory_fame_and_rewards": [
+        "+1,100 Individual Fame Points & Noblesse Gate Pass Bonus",
+        "S80/S84 PvP Armor Augmentation & Giant's Codex: Mastery",
+        "Circlet of Innadril Supremacy & Top-Grade Life Stone (Lv.84)"
+      ]
+    }
   ]
 }

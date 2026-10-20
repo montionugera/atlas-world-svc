@@ -94,15 +94,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas56DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas58DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas60DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas62DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 28)),
+        "wave": int(iter_state.get("wave", 29)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"62-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"60-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"58-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"56-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -124,7 +126,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 Verified"
         ),
     }
     return merged
@@ -4386,7 +4388,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4465,6 +4467,8 @@ let ATLAS_AERIAL_DOCK_MODE = 'All';
 let ATLAS_BELT_CLOAK_MODE = 'All';
 let ATLAS_WEDDING_MODE = 'All';
 let ATLAS_COUNCIL_BENCHMARK_MODE = 'All';
+let ATLAS_SEED_CYCLE_MODE = 'All';
+let ATLAS_COLISEUM_TOURNAMENT_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4515,6 +4519,8 @@ const ATLAS_STATE_STORE = {
   beltCloakMode: 'All',                    // D58: Active 14-Node Mithril Belt Weaver & Sovereign Cloak Selector ('Off' | 'All' | 'Weaver_Olf_Belt_Loom' | 'Sovereign_Boss_Cloak_Sanctum' | 'Castle_Knight_Cloak_Armory')
   weddingMode: 'All',                      // D59: Active 12-Sanctuary Wedding Cathedral & Couple Teleport Selector ('Off' | 'All' | 'Grand_Wedding_Cathedral' | 'Formal_Wear_Couture_Tailor' | 'Bridal_Procession_Garden')
   councilBenchmarkMode: 'All',             // D60: Active 18-Benchmark 6-Role Studio Council 60D Audit Selector ('Off' | 'All' | 'Product_Owner' | 'Game_Designer_Lead' | 'Player_Growth_Path_Designer' | 'Game_Story_Designer' | 'Monster_And_Mob_Designer' | 'Lead_Systems_Map_Architect')
+  seedCycleMode: 'All',                    // D61: Active 14-Node Continental Seed Cycle (Stage 1-5) Selector ('Off' | 'All' | 'Seed_of_Infinity_Stage' | 'Seed_of_Destruction_Stage' | 'Energy_Compression_Well')
+  coliseumTournamentMode: 'All',           // D62: Active 12-Arena Underground Coliseum & Clan Tournament Selector ('Off' | 'All' | 'Underground_Coliseum_Bracket' | 'Clan_War_Tournament_Ring' | 'Royal_Fame_Exhibition_Arena')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4617,6 +4623,20 @@ function setAtlasWeddingMode(modeId) {
 function setAtlasCouncilBenchmarkMode(modeId) {
   ATLAS_COUNCIL_BENCHMARK_MODE = String(modeId || 'All');
   ATLAS_STATE_STORE.councilBenchmarkMode = ATLAS_COUNCIL_BENCHMARK_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasSeedCycleMode(modeId) {
+  ATLAS_SEED_CYCLE_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.seedCycleMode = ATLAS_SEED_CYCLE_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasColiseumTournamentMode(modeId) {
+  ATLAS_COLISEUM_TOURNAMENT_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.coliseumTournamentMode = ATLAS_COLISEUM_TOURNAMENT_MODE;
   writeUrlState(false);
   render();
 }
@@ -10269,6 +10289,196 @@ function renderAtlasCouncilBenchmarkBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasSeedCycleBarHtml(tatlas) {
+  const seedNodes = (tatlas && tatlas.continental_seed_cycles) || [];
+  if (!seedNodes.length) return '';
+
+  const curMode = ATLAS_SEED_CYCLE_MODE || ATLAS_STATE_STORE.seedCycleMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🌑 All 14 Seed Nodes' },
+    { id: 'Seed_of_Infinity_Stage', label: '💀 5 Seed of Infinity Stages' },
+    { id: 'Seed_of_Destruction_Stage', label: '🐉 5 Seed of Destruction Stages' },
+    { id: 'Energy_Compression_Well', label: '⚡ 4 Energy Compression Wells' }
+  ];
+
+  const filteredNodes = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? seedNodes : seedNodes.filter(s => s.seed_category === curMode));
+
+  const featuredNodes = curMode === 'All'
+    ? [
+        ...seedNodes.filter(s => s.seed_category === 'Seed_of_Infinity_Stage').slice(0, 2),
+        ...seedNodes.filter(s => s.seed_category === 'Seed_of_Destruction_Stage').slice(0, 1),
+        ...seedNodes.filter(s => s.seed_category === 'Energy_Compression_Well').slice(0, 1)
+      ]
+    : filteredNodes.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasSeedCycleBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1a1025;border:1px solid rgba(168,85,247,0.62)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#e9d5ff">🌑 14-NODE CONTINENTAL SEED CYCLE (STAGE 1–5 EKIMUS/TIAT STATE MACHINE) MATRIX (D61 · 14 NODES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasSeedCycleMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(168,85,247,0.45)'};background:${isAct ? '#581c87' : '#090d14'};color:${isAct ? '#ffffff' : '#f3e8ff'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          5 SEED OF INFINITY (EKIMUS) + 5 SEED OF DESTRUCTION (TIAT) + 4 ENERGY COMPRESSION WELLS
+        </span>
+      </div>
+
+      ${featuredNodes.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredNodes.map(s => {
+            const isInf = s.seed_category === 'Seed_of_Infinity_Stage';
+            const isDest = s.seed_category === 'Seed_of_Destruction_Stage';
+            const catCol = isInf ? '#c084fc' : (isDest ? '#f87171' : '#38bdf8');
+            const catIcon = isInf ? '💀' : (isDest ? '🐉' : '⚡');
+            const zObj = byZid[s.zone_id] || {};
+            const zidStr = String(s.zone_id || '');
+            const didStr = String(s.dungeon_id || '');
+            const fidStr = String(s.floor_id || 'B3');
+            let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(s.loc)}')`;
+            if (didStr) {
+              jumpJs = `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`;
+            } else if (zidStr.startsWith('zone-field-')) {
+              jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+            } else if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+              jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(s.node_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(s.cycle_stage_label.slice(0, 18))}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#e9d5ff;margin-top:1px">
+                    🎖️ ${escapeHtml(s.officer_npc_name.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    💎 ${escapeHtml(((s.featured_s80_rewards && s.featured_s80_rewards[0]) || '').slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#3b0764;color:#f3e8ff;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} ${didStr ? `Open Seed Sanctum (${escapeHtml(fidStr)})` : 'Jump to Seed / Energy Well'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasColiseumTournamentBarHtml(tatlas) {
+  const arenas = (tatlas && tatlas.party_coliseum_tournaments) || [];
+  if (!arenas.length) return '';
+
+  const curMode = ATLAS_COLISEUM_TOURNAMENT_MODE || ATLAS_STATE_STORE.coliseumTournamentMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🏟️ All 12 Tournament Rings' },
+    { id: 'Underground_Coliseum_Bracket', label: '⚔️ 5 Underground Coliseum Brackets' },
+    { id: 'Clan_War_Tournament_Ring', label: '🏰 4 Clan War Rings' },
+    { id: 'Royal_Fame_Exhibition_Arena', label: '👑 3 Royal Fame Arenas' }
+  ];
+
+  const filteredArenas = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? arenas : arenas.filter(a => a.tournament_category === curMode));
+
+  const featuredArenas = curMode === 'All'
+    ? [
+        ...arenas.filter(a => a.tournament_category === 'Underground_Coliseum_Bracket').slice(0, 2),
+        ...arenas.filter(a => a.tournament_category === 'Clan_War_Tournament_Ring').slice(0, 1),
+        ...arenas.filter(a => a.tournament_category === 'Royal_Fame_Exhibition_Arena').slice(0, 1)
+      ]
+    : filteredArenas.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasColiseumTournamentBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#261215;border:1px solid rgba(248,113,113,0.62)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fecaca">🏟️ 12-ARENA UNDERGROUND COLISEUM (PARTY-VS-PARTY) &amp; CLAN TOURNAMENT MATRIX (D62 · 12 ARENAS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasColiseumTournamentMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(248,113,113,0.45)'};background:${isAct ? '#991b1b' : '#090d14'};color:${isAct ? '#ffffff' : '#fee2e2'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          5 UNDERGROUND COLISEUM BRACKETS + 4 CLAN WAR RINGS + 3 ROYAL FAME ARENAS · LIFE TOWER RESPAWN
+        </span>
+      </div>
+
+      ${featuredArenas.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredArenas.map(a => {
+            const isCol = a.tournament_category === 'Underground_Coliseum_Bracket';
+            const isClan = a.tournament_category === 'Clan_War_Tournament_Ring';
+            const catCol = isCol ? '#f87171' : (isClan ? '#fb923c' : '#fde047');
+            const catIcon = isCol ? '⚔️' : (isClan ? '🏰' : '👑');
+            const zObj = byZid[a.zone_id] || {};
+            const zidStr = String(a.zone_id || '');
+            let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(a.loc)}')`;
+            if (zidStr.startsWith('zone-field-')) {
+              jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(a.loc)}')`;
+            } else if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+              jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(a.loc)}')`;
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(a.arena_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(a.tournament_category.split('_')[0])}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fecaca;margin-top:1px">
+                    🗼 ${escapeHtml(a.resurrection_tower_mechanic.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🏆 ${escapeHtml(((a.victory_fame_and_rewards && a.victory_fame_and_rewards[0]) || '').slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#7f1d1d;color:#fee2e2;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} Jump to Coliseum / Tournament Ring
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -10433,6 +10643,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasBeltCloakBarHtml(tatlas)}
       ${renderAtlasWeddingBarHtml(tatlas)}
       ${renderAtlasCouncilBenchmarkBarHtml(tatlas)}
+      ${renderAtlasSeedCycleBarHtml(tatlas)}
+      ${renderAtlasColiseumTournamentBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -13589,6 +13801,78 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D61: Interactive 14-Node Continental Seed Cycle (`Stage 1–5` Ekimus/Tiat State Machine) Overlay (`studioContinentalSeedOverlay`)
+  const seedCycleRows = (tatlas && tatlas.continental_seed_cycles) || [];
+  const curSeedCycleMode = ATLAS_SEED_CYCLE_MODE || ATLAS_STATE_STORE.seedCycleMode || 'All';
+  const activeSeedNodes = curSeedCycleMode === 'Off'
+    ? []
+    : (curSeedCycleMode === 'All'
+        ? seedCycleRows
+        : seedCycleRows.filter(s => s.seed_category === curSeedCycleMode));
+  const continentalSeedOverlaySvg = `
+    <g id="studioContinentalSeedOverlay">
+      ${activeSeedNodes.map(s => {
+        const sc = clampWorldLocCoord(s.loc || '-186200:242800');
+        const zObj = allZonesById[s.zone_id] || {};
+        const zidStr = String(s.zone_id || '');
+        const didStr = String(s.dungeon_id || '');
+        const fidStr = String(s.floor_id || 'B3');
+        const isInf = s.seed_category === 'Seed_of_Infinity_Stage';
+        const isDest = s.seed_category === 'Seed_of_Destruction_Stage';
+        const colHex = isInf ? '#c084fc' : (isDest ? '#f87171' : '#38bdf8');
+        const iconTxt = isInf ? '💀' : (isDest ? '🐉' : '⚡');
+        let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(s.loc)}')`;
+        if (didStr) {
+          jumpJs = `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`;
+        } else if (zidStr.startsWith('zone-field-')) {
+          jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+        } else if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+          jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${sc.svgX}" cy="${sc.svgY}" r="10.6" fill="rgba(88,28,135,0.46)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${sc.svgX}" y="${sc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D62: Interactive 12-Arena Underground Coliseum (`Party-vs-Party`) & Clan Tournament Overlay (`studioColiseumTournamentOverlay`)
+  const coliseumTournamentRows = (tatlas && tatlas.party_coliseum_tournaments) || [];
+  const curColiseumTournamentMode = ATLAS_COLISEUM_TOURNAMENT_MODE || ATLAS_STATE_STORE.coliseumTournamentMode || 'All';
+  const activeColiseumArenas = curColiseumTournamentMode === 'Off'
+    ? []
+    : (curColiseumTournamentMode === 'All'
+        ? coliseumTournamentRows
+        : coliseumTournamentRows.filter(a => a.tournament_category === curColiseumTournamentMode));
+  const coliseumTournamentOverlaySvg = `
+    <g id="studioColiseumTournamentOverlay">
+      ${activeColiseumArenas.map(a => {
+        const ac = clampWorldLocCoord(a.loc || '146800:46700');
+        const zObj = allZonesById[a.zone_id] || {};
+        const zidStr = String(a.zone_id || '');
+        const isCol = a.tournament_category === 'Underground_Coliseum_Bracket';
+        const isClan = a.tournament_category === 'Clan_War_Tournament_Ring';
+        const colHex = isCol ? '#f87171' : (isClan ? '#fb923c' : '#fde047');
+        const iconTxt = isCol ? '⚔️' : (isClan ? '🏰' : '👑');
+        let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(a.loc)}')`;
+        if (zidStr.startsWith('zone-field-')) {
+          jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(a.loc)}')`;
+        } else if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+          jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(a.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${ac.svgX}" cy="${ac.svgY}" r="10.6" fill="rgba(153,27,27,0.46)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${ac.svgX}" y="${ac.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -13629,6 +13913,8 @@ function renderDedicatedWorldAtlas() {
     ${beltCloakWeaverOverlaySvg}
     ${weddingCathedralOverlaySvg}
     ${councilBenchmarkOverlaySvg}
+    ${continentalSeedOverlaySvg}
+    ${coliseumTournamentOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

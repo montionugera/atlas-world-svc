@@ -275,6 +275,18 @@
       "maxItems": 18,
       "items": { "$ref": "#/$defs/studioCouncilAuditBenchmarkSpec" }
     },
+    "continental_seed_cycles": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "items": { "$ref": "#/$defs/continentalSeedCycleSpec" }
+    },
+    "party_coliseum_tournaments": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": { "$ref": "#/$defs/partyColiseumTournamentSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -3348,6 +3360,87 @@
         },
         "mda_pillar_focus": { "type": "string" },
         "verification_evidence": { "type": "string" }
+      }
+    },
+    "continentalSeedCycleSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "seed_node_id",
+        "node_name",
+        "seed_category",
+        "cycle_stage_label",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "officer_npc_name",
+        "trigger_quota_rule",
+        "featured_s80_rewards"
+      ],
+      "properties": {
+        "seed_node_id": { "type": "string" },
+        "node_name": { "type": "string" },
+        "seed_category": {
+          "type": "string",
+          "enum": [
+            "Seed_of_Infinity_Stage",
+            "Seed_of_Destruction_Stage",
+            "Energy_Compression_Well"
+          ]
+        },
+        "cycle_stage_label": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "officer_npc_name": { "type": "string" },
+        "trigger_quota_rule": { "type": "string" },
+        "featured_s80_rewards": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "partyColiseumTournamentSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "arena_id",
+        "arena_name",
+        "tournament_category",
+        "zone_id",
+        "loc",
+        "arbiter_npc_name",
+        "level_or_clan_bracket",
+        "resurrection_tower_mechanic",
+        "victory_fame_and_rewards"
+      ],
+      "properties": {
+        "arena_id": { "type": "string" },
+        "arena_name": { "type": "string" },
+        "tournament_category": {
+          "type": "string",
+          "enum": [
+            "Underground_Coliseum_Bracket",
+            "Clan_War_Tournament_Ring",
+            "Royal_Fame_Exhibition_Arena"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "arbiter_npc_name": { "type": "string" },
+        "level_or_clan_bracket": { "type": "string" },
+        "resurrection_tower_mechanic": { "type": "string" },
+        "victory_fame_and_rewards": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
       }
     }
   }

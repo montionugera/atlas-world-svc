@@ -2295,7 +2295,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 60)
+        self.assertGreaterEqual(len(audit["dimensions"]), 60)
 
         d59 = audit["dimensions"]["D59_wedding_cathedrals_and_couple_teleport_matrix"]
         self.assertEqual(d59["score"], 100.0)
@@ -2361,10 +2361,99 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas60DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 60)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 60)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 60)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 60)
         self.assertIn("60-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave29_continental_seed_cycles_and_party_coliseum_tournaments(self) -> None:
+        """Wave 29 (D61–D62): 14 Continental Seed Cycle (Stage 1–5 Ekimus/Tiat State Machine) Nodes & 12 Underground Coliseum (Party-vs-Party) & Clan Tournament Arenas."""
+        import scripts.catalog_explorer_web as web
+        import scripts.run_atlas_iteration_loop as loop
+        import scripts.studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["continentalSeedCyclesCount"], 14)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["partyColiseumTournamentsCount"], 12)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_SEED_CYCLE_MODE",
+            "setAtlasSeedCycleMode(",
+            "renderAtlasSeedCycleBarHtml(",
+            "studioContinentalSeedOverlay",
+            "ATLAS_COLISEUM_TOURNAMENT_MODE",
+            "setAtlasColiseumTournamentMode(",
+            "renderAtlasColiseumTournamentBarHtml(",
+            "studioColiseumTournamentOverlay",
+            "62-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 29 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 62)
+
+        d61 = audit["dimensions"]["D61_continental_seed_cycles_and_ekimus_tiat_stages"]
+        self.assertEqual(d61["score"], 100.0)
+        self.assertEqual(d61["verified"], 14)
+        self.assertEqual(d61["target"], 14)
+        self.assertEqual(d61["seed_of_infinity_stages"], 5)
+        self.assertEqual(d61["seed_of_destruction_stages"], 5)
+        self.assertEqual(d61["energy_compression_wells"], 4)
+        self.assertEqual(
+            set(d61["seed_categories"]),
+            {
+                "Seed_of_Infinity_Stage",
+                "Seed_of_Destruction_Stage",
+                "Energy_Compression_Well",
+            },
+        )
+        self.assertTrue(d61["ui_wired"])
+
+        d62 = audit["dimensions"]["D62_underground_coliseum_and_clan_tournament_arenas"]
+        self.assertEqual(d62["score"], 100.0)
+        self.assertEqual(d62["verified"], 12)
+        self.assertEqual(d62["target"], 12)
+        self.assertEqual(d62["underground_coliseum_brackets"], 5)
+        self.assertEqual(d62["clan_war_tournament_rings"], 4)
+        self.assertEqual(d62["royal_fame_exhibition_arenas"], 3)
+        self.assertEqual(
+            set(d62["tournament_categories"]),
+            {
+                "Underground_Coliseum_Bracket",
+                "Clan_War_Tournament_Ring",
+                "Royal_Fame_Exhibition_Arena",
+            },
+        )
+        self.assertTrue(d62["ui_wired"])
+
+        seed_nodes = atlas["continental_seed_cycles"]
+        self.assertEqual(len(seed_nodes), 14)
+        self.assertEqual(sum(1 for s in seed_nodes if s["seed_category"] == "Seed_of_Infinity_Stage"), 5)
+        self.assertEqual(sum(1 for s in seed_nodes if s["seed_category"] == "Seed_of_Destruction_Stage"), 5)
+        self.assertEqual(sum(1 for s in seed_nodes if s["seed_category"] == "Energy_Compression_Well"), 4)
+        for s in seed_nodes:
+            self.assertGreaterEqual(len(s["featured_s80_rewards"]), 2)
+
+        arenas = atlas["party_coliseum_tournaments"]
+        self.assertEqual(len(arenas), 12)
+        self.assertEqual(sum(1 for a in arenas if a["tournament_category"] == "Underground_Coliseum_Bracket"), 5)
+        self.assertEqual(sum(1 for a in arenas if a["tournament_category"] == "Clan_War_Tournament_Ring"), 4)
+        self.assertEqual(sum(1 for a in arenas if a["tournament_category"] == "Royal_Fame_Exhibition_Arena"), 3)
+        for a in arenas:
+            self.assertGreaterEqual(len(a["victory_fame_and_rewards"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas62DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 62)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 62)
+        self.assertIn("62-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

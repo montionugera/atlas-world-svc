@@ -10666,6 +10666,498 @@ def _build_studio_council_audit_benchmarks(atlas: dict[str, Any]) -> list[dict[s
     return rows
 
 
+def _build_continental_seed_cycles(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 14 Continental Seed Cycle (Stage 1–5 Ekimus/Tiat State Machine) & Energy Compression Well Nodes (5 Seed_of_Infinity_Stage + 5 Seed_of_Destruction_Stage + 4 Energy_Compression_Well) (D61)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if isinstance(z, dict)}
+
+    specs = [
+        # 5 Seed_of_Infinity_Stage Nodes (Stage 1..5 Ekimus State Machine)
+        (
+            "seed-01-infinity-stage1-hall-of-suffering-assault",
+            "Seed of Infinity — Hall of Suffering Twin-Tumor Assault Conduit",
+            "Seed_of_Infinity_Stage",
+            "Stage 1: Hall of Suffering Assault",
+            "zone-catacomb-dark-omens-coral",
+            "zone-catacomb-dark-omens-coral",
+            "B1",
+            "Officer Tepios & Mouth of Ekimus (Hall of Suffering B1)",
+            "20 Party Twin-Boss Clears (Yehan Klodekus & Yehan Klanikus) -> Advances Seed to Stage 2",
+            [
+                "Vesper Weapon / Armor Piece (S84)",
+                "150–300 Elemental Crystal Vein Harvest",
+                "Agathion Seal Bracelet: Hall of Suffering",
+            ],
+        ),
+        (
+            "seed-02-infinity-stage2-hall-of-erosion-conquest",
+            "Seed of Infinity — Hall of Erosion Cohemenes & 4-Tumor Conquest",
+            "Seed_of_Infinity_Stage",
+            "Stage 2: Hall of Erosion Conquest",
+            "zone-catacomb-dark-omens-coral",
+            "zone-catacomb-dark-omens-coral",
+            "B2",
+            "Officer Tepios & Soul Trader Asyatei (Hall of Erosion B2)",
+            "15 Command-Channel Cohemenes Clears + 4 Suffering Tumor Destructions -> Opens Stage 3 Ekimus Sanctum",
+            [
+                "Vesper Noble Enhancement Stone & S84 Armor Recipes (60%)",
+                "Extracted Red/Blue/Green Star Stone Bundles",
+                "Soul Crystal Stage 15–16 Resonance Eligibility",
+            ],
+        ),
+        (
+            "seed-03-infinity-stage3-heart-of-immortality-ekimus",
+            "Seed of Infinity — Heart of Immortality (Ekimus & Hound Sanctum)",
+            "Seed_of_Infinity_Stage",
+            "Stage 3: Heart of Immortality (Ekimus Sanctum)",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B3",
+            "Mouth of Ekimus & Admiral Keucereus Herald (Heart of Immortality B3)",
+            "36–45 Player Command Channel Defeats Lord of Immortality Ekimus -> Unlocks Stage 5 Harvest Window (24h)",
+            [
+                "Vesper Buster / Shaper / Slasher / Thrower (S84 Weapons)",
+                "Vorpal & Vesper Heavy/Light/Robe Full Drops",
+                "300-Cap Dark/Unholy Elemental Crystal Cluster",
+            ],
+        ),
+        (
+            "seed-04-infinity-stage4-defense-of-suffering-erosion",
+            "Seed of Infinity — Undead Counterattack Defense of the Seed",
+            "Seed_of_Infinity_Stage",
+            "Stage 4: Defense of the Seed",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B2",
+            "Officer Tepios & Special Product Broker Kutran",
+            "Repel 10 Undead Soul Wagon Waves Protecting the Regenerated Life Wards -> Restores Stage 5 Free Harvest",
+            [
+                "Tepios's Shining Treasure Box (Giant's Codex: Mastery)",
+                "Freed Soul Crystal & Piece of Bone Breastplate",
+                "High-Grade Life Stone (Lv.82–84) & Star Stone Fuel",
+            ],
+        ),
+        (
+            "seed-05-infinity-stage5-free-attribute-crystal-harvest",
+            "Seed of Infinity — Stabilized Necrotic Vein & Soul Collector Grounds",
+            "Seed_of_Infinity_Stage",
+            "Stage 5: Free Attribute Crystal Harvest",
+            "zone-field-tether-causeway",
+            "",
+            "",
+            "Officer Tepios & Magister Dilios (Stabilized Seed Plaza)",
+            "24-Hour Non-Instanced Free Harvest Window Before Ekimus Awakens & Resets Cycle to Stage 1",
+            [
+                "150–300 Dark/Holy Attribute Crystal Direct Collection (Agathion/Collection Lv.3)",
+                "Mark of Keucereus — Stage 1 & Stage 2 Exchange Tokens",
+                "Blessed Scroll: Enchant Armor (S-Grade) Jackpot Veins",
+            ],
+        ),
+        # 5 Seed_of_Destruction_Stage Nodes (Stage 1..5 Tiat State Machine)
+        (
+            "seed-06-destruction-stage1-dragonkin-fortress-breach",
+            "Seed of Destruction — Dragonkin Outer Gate & Obelisk Breach",
+            "Seed_of_Destruction_Stage",
+            "Stage 1: Dragonkin Outer Gate Breach",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "1F",
+            "Sergeant Allenos & War Mage Artius (Destruction Gate 1F)",
+            "Destroy 3 Fortress Teleport Devices & Cull 120 Dragonkin Vanguards -> Advances Seed to Stage 2",
+            [
+                "Icarus S80 Weapon Key Materials & Recipes (60%)",
+                "Dragonkin Blood Crystal & Fire Attribute Stone (150)",
+                "Dynasty Platinum Plate / Jewel Leather Pieces",
+            ],
+        ),
+        (
+            "seed-07-destruction-stage2-central-square-obelisk-crush",
+            "Seed of Destruction — Central Square Mounted Troop & Portal Crush",
+            "Seed_of_Destruction_Stage",
+            "Stage 2: Central Square Obelisk Conquest",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "2F",
+            "Sergeant Allenos & Mounted Troop Commander Obelisk (2F)",
+            "Shatter 4 Warp Obelisks & Defeat Brigade General Enron -> Opens Throne of Darkness (Tiat 3F)",
+            [
+                "Icarus Disperser / Sawsword / Spirit / Trident Pieces",
+                "150–300 Fire Attribute Crystal Forge Fragments",
+                "Giant's Codex: Discipline & Oblivion Chapters",
+            ],
+        ),
+        (
+            "seed-08-destruction-stage3-throne-of-darkness-tiat",
+            "Seed of Destruction — Throne of Darkness (Mistress of Destruction Tiat)",
+            "Seed_of_Destruction_Stage",
+            "Stage 3: Throne of Darkness (Tiat Sanctum)",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "Sergeant Allenos & Mistress of Destruction Tiat (Throne 3F)",
+            "10 cumulative Tiat Command-Channel Kills (36–45 Players) -> Opens 12-Hour Stage 5 Dragonfont Harvest",
+            [
+                "Vesper Dual Sword / Vesper Caster / Vesper Singer (S84)",
+                "Holy Spirit's Cloak of Tiat & Draconic Scale Visor",
+                "300-Cap Fire/Earth Elemental Crystal Vein Unlock",
+            ],
+        ),
+        (
+            "seed-09-destruction-stage4-mounted-dragon-troop-defense",
+            "Seed of Destruction — Mounted Dragon Troop Counter-Siege Defense",
+            "Seed_of_Destruction_Stage",
+            "Stage 4: Defense of the Destruction Throne",
+            "zone-fortress-cloud-halo",
+            "",
+            "",
+            "Sergeant Allenos & Admiral Keucereus Defense Marshal",
+            "Hold the Central Throne Barrier Against 8 Mounted Dragonkin Siege Waves -> Preserves Stage 5 Harvest",
+            [
+                "Allenos's Commendation Chest (Vesper Weapon Piece)",
+                "Fire/Earth Elemental Crystal (150->300) Bundle",
+                "Knights' Epaulette & Star Stone Fuel Cells",
+            ],
+        ),
+        (
+            "seed-10-destruction-stage5-free-dragonfont-crystal-harvest",
+            "Seed of Destruction — Open Dragonfont Energy & Fire Crystal Quarry",
+            "Seed_of_Destruction_Stage",
+            "Stage 5: Free Attribute Crystal Harvest",
+            "zone-field-aurora-tether",
+            "",
+            "",
+            "Sergeant Allenos & Special Product Broker Kutran",
+            "12-Hour Open-World Solo/Party Collection Window Using Agathion of Collection Before Tiat Reclaims Throne",
+            [
+                "150–300 Fire & Earth Attribute Crystal Direct Mining",
+                "Energy Compression Stone (Fire / Earth / Wind / Water)",
+                "Vesper Noble Enhancement Stone & Top-Grade Life Stone",
+            ],
+        ),
+        # 4 Energy_Compression_Well Nodes
+        (
+            "seed-11-well-starfall-keucereus-alliance-condenser",
+            "Starfall Haven — Keucereus Alliance Energy Compression Well",
+            "Energy_Compression_Well",
+            "Stage 5: Free Attribute Crystal Harvest",
+            "zone-town-starfall-haven",
+            "",
+            "",
+            "Engineer Lekon & Special Product Broker Kutran",
+            "Compress 5 Energy Compression Stones + 150-Cap Attribute Stones -> Synthesizes 300-Cap Elemental Crystals",
+            [
+                "Fire / Water / Wind / Earth / Holy / Dark Crystal (150->300)",
+                "Collection Agathion Seal Bracelet & Star Stone Extractor",
+                "Icarus & Vesper Recipe Book Exchange",
+            ],
+        ),
+        (
+            "seed-12-well-glaze-barge-airship-aether-condenser",
+            "Glaze-Barge Airship Dock — Continental Aether Compression Well",
+            "Energy_Compression_Well",
+            "Stage 5: Free Attribute Crystal Harvest",
+            "zone-harbor-glaze-barge-airship-dock",
+            "",
+            "",
+            "Airship Controller & Attribute Master Yin",
+            "Refine Extracted Red/Blue/Green Star Stones & Seed Energy Cores at Continental Dock",
+            [
+                "150–300 Water & Wind Elemental Crystal Synthesis",
+                "Energy Star Stone Airship Summon Fuel (x20)",
+                "Spellbook: Aurabird Falcon & Owl Aerial Collection",
+            ],
+        ),
+        (
+            "seed-13-well-chronometer-annihilation-bistakon-well",
+            "Chronometer Foundry — Seed of Annihilation Bistakon/Reptilikon Well",
+            "Energy_Compression_Well",
+            "Stage 3: Taklacan / Dopagen Trio Rotation",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "Commander Kbaldir & Officer Nemo (Maguen Collector)",
+            "Rotate Daily Between Bistakon (CON/STR), Reptilikon (DEX/AGI) & Cokrakon (INT/MEN) Bio-Energy Wells",
+            [
+                "Vesper & Vorpal S84 Armor / Weapon Recipes",
+                "Maguen Plasma Collector & Elite Maguen Horn Pet",
+                "150–300 Earth & Wind Attribute Crystal Drops",
+            ],
+        ),
+        (
+            "seed-14-well-inductor-hellbound-quarry-condenser",
+            "Inductor Switchyard — Hellbound & Seed Elemental Synthesis Well",
+            "Energy_Compression_Well",
+            "Stage 5: Free Attribute Crystal Harvest",
+            "zone-town-inductor-switchyard",
+            "",
+            "",
+            "Attribute Master Yang & Trader Holly",
+            "Cross-Convert Opposite Elemental Stones & Compress Seed Energy Wells into 300-Attribute Weapon Cores",
+            [
+                "300-Cap Weapon Elemental Crystal (All 6 Elements)",
+                "120-Cap Armor Elemental Resistance Crystal Bundle",
+                "Dynasty & Vesper Masterwork Foundation Polish",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        snid,
+        nname,
+        scat,
+        cstage,
+        zid,
+        did,
+        fid,
+        onpc,
+        trule,
+        rewards,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-186200:242800"))
+        loc = _fmt_loc(bx - 165 + idx * 13, by + 155 - idx * 12)
+        rows.append(
+            {
+                "seed_node_id": snid,
+                "node_name": nname,
+                "seed_category": scat,
+                "cycle_stage_label": cstage,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "officer_npc_name": onpc,
+                "trigger_quota_rule": trule,
+                "featured_s80_rewards": rewards,
+            }
+        )
+    return rows
+
+
+def _build_party_coliseum_tournaments(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 12 Underground Coliseum (Party-vs-Party) & Clan Tournament Arenas (5 Underground_Coliseum_Bracket + 4 Clan_War_Tournament_Ring + 3 Royal_Fame_Exhibition_Arena) (D62)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if isinstance(z, dict)}
+
+    specs = [
+        # 5 Underground_Coliseum_Bracket Arenas
+        (
+            "coliseum-01-bracket-lv40-49-cruma-crimson-ring",
+            "Underground Coliseum Ring I — C-Grade Vanguard 9v9 Bracket (Lv.40–49)",
+            "Underground_Coliseum_Bracket",
+            "zone-town-kilnwatch-bastion",
+            "Arena Manager & Paddy's Underground Teleporter (Ring I)",
+            "Lv.40–49 9v9 Party Bracket (Up to 7 Registered Parties King-of-the-Hill)",
+            "Central Life Tower Auto-Resurrects Party Every 30s Until Destroyed",
+            [
+                "+400 Individual Fame Points per Win Streak",
+                "Circlet of Party Supremacy (Lv.40–49 Bracket)",
+                "C-Grade Blessed Enchant Scroll & Quick Healing Potions",
+            ],
+        ),
+        (
+            "coliseum-02-bracket-lv50-59-oren-bronze-ring",
+            "Underground Coliseum Ring II — B-Grade Tactical 9v9 Bracket (Lv.50–59)",
+            "Underground_Coliseum_Bracket",
+            "zone-town-escapement-anvil",
+            "Arena Manager & Coliseum Referee Dryad (Ring II)",
+            "Lv.50–59 9v9 Party Bracket (Up to 7 Registered Parties King-of-the-Hill)",
+            "Central Life Tower Auto-Resurrects Party Every 30s Until Destroyed",
+            [
+                "+550 Individual Fame Points per Win Streak",
+                "B-Grade PvP Belt/Weapon Enhancement Credits",
+                "Top-Grade Life Stone (Lv.58) & Greater CP Potions",
+            ],
+        ),
+        (
+            "coliseum-03-bracket-lv60-69-giran-silver-ring",
+            "Underground Coliseum Ring III — A-Grade Guild 9v9 Bracket (Lv.60–69)",
+            "Underground_Coliseum_Bracket",
+            "zone-town-pinion-terminus",
+            "Arena Manager & Reputation Manager Rapidus (Ring III)",
+            "Lv.60–69 9v9 Party Bracket (Up to 7 Registered Parties King-of-the-Hill)",
+            "Central Life Tower Auto-Resurrects Party Every 30s Until Destroyed",
+            [
+                "+700 Individual Fame Points per Win Streak",
+                "A-Grade PvP Weapon/Armor Rune & Tally Marks",
+                "Giant's Codex & High-Grade Life Stone (Lv.67)",
+            ],
+        ),
+        (
+            "coliseum-04-bracket-lv70-79-goddard-gold-ring",
+            "Underground Coliseum Ring IV — S-Grade Awakening 9v9 Bracket (Lv.70–79)",
+            "Underground_Coliseum_Bracket",
+            "zone-town-inductor-switchyard",
+            "Arena Manager & Flame Marshal Vulcan (Ring IV)",
+            "Lv.70–79 9v9 Party Bracket (Up to 7 Registered Parties King-of-the-Hill)",
+            "Central Life Tower Auto-Resurrects Party Every 30s Until Destroyed",
+            [
+                "+800 Individual Fame Points per Win Streak",
+                "Circlet of Party Supremacy & S-Grade PvP Credits",
+                "Forgotten Scroll Fragment & Top-Grade Life Stone (Lv.76)",
+            ],
+        ),
+        (
+            "coliseum-05-bracket-lv80-85-aden-sovereign-ring",
+            "Underground Coliseum Ring V — No-Limit Sovereign 9v9 Bracket (Lv.80–85)",
+            "Underground_Coliseum_Bracket",
+            "zone-town-crown-beacon",
+            "Arena Manager & Grand Olympiad Steward (Ring V)",
+            "No-Limit Lv.80–85 Sovereign Bracket (9v9 Full-Party King-of-the-Hill)",
+            "Central Life Tower Auto-Resurrects Party Every 30s Until Destroyed + Bonus Kill Score in Last 3 Minutes",
+            [
+                "+1,200 Individual Fame Points per Win Streak",
+                "Sovereign Crown of the Underground Coliseum (+PvP Damage)",
+                "Vesper / Dynasty PvP Belt & Weapon Enhancement Credits",
+            ],
+        ),
+        # 4 Clan_War_Tournament_Ring Arenas
+        (
+            "coliseum-06-clan-rainbow-springs-yetti-arena",
+            "Rainbow Springs Chateau — Messenger Yetti's 4-Clan War Arena",
+            "Clan_War_Tournament_Ring",
+            "zone-clanhall-inductor-conclave",
+            "Messenger Yetti & Hot Springs Arena Master",
+            "Top 4 Decree-of-War Clans (5-Player Party per Clan · Enraged Gourd & Word-Game Rules)",
+            "Clan Hot Springs Geyser Totem Respawns Fallen Members Every 45s While Gourd Stands",
+            [
+                "Exclusive Ownership of Rainbow Springs S-Grade Siege Chateau",
+                "+1,500 Clan Reputation Points (CRP) & +900 Individual Fame",
+                "Rainbow Clan Hall Agathion Bracelet & Blessed Escape Scrolls",
+            ],
+        ),
+        (
+            "coliseum-07-clan-bandit-stronghold-5team-ring",
+            "Bandit Stronghold — Messenger's 5-Clan Preliminaries & Final Ring",
+            "Clan_War_Tournament_Ring",
+            "zone-fortress-shanty-kiln",
+            "Bandit Stronghold Messenger & Ol Mahum Referee",
+            "5 Qualifying Clans (300,000 Adena / 57-Badge Entry · 20-Minute Elimination)",
+            "Clan Tent Banner Resurrects Party Members Every 40s Until Enemy Captures Central Flag",
+            [
+                "2-Week Sovereign Deed to Bandit Stronghold Chateau",
+                "+1,000 Clan Reputation Points & +750 Individual Fame",
+                "Clan Imperium Command Channel & Wyvern Roost Privilege",
+            ],
+        ),
+        (
+            "coliseum-08-clan-wild-beast-reserve-tournament",
+            "Wild Beast Reserve — Messenger's 5-Clan Taming & Elimination Ring",
+            "Clan_War_Tournament_Ring",
+            "zone-clanhall-kilnwatch-accord",
+            "Wild Beast Messenger & Tamer Kelvin",
+            "5 Qualifying Clans (Lv.4+ Clan · 9v9 Party Elimination Inside Enclosed Beast Ring)",
+            "Color-Coded Clan Obelisk Resurrects Party Every 35s Until Rival Party Shatters Obelisk",
+            [
+                "2-Week Sovereign Deed to Wild Beast Reserve Chateau",
+                "+1,200 Clan Reputation Points & +850 Individual Fame",
+                "Exclusive Beast Farm Buff Whip & Top-Grade Life Stones",
+            ],
+        ),
+        (
+            "coliseum-09-clan-aerial-cleft-9v9-sky-ring",
+            "Aerial Cleft Sky-Coliseum — 9v9 Aurabird & Vortex Tournament Ring",
+            "Clan_War_Tournament_Ring",
+            "zone-town-starfall-haven",
+            "Engineer Lekon & Aerial Cleft Arbiter (Keucereus Base)",
+            "9v9 Transformed Aerial Party Bracket (Lv.75+ Aurabird Falcon / Owl Flight Required)",
+            "Sky-Vortex Core Resurrects Transformed Flyers Every 25s While Central Compressor Holds",
+            [
+                "50–120 Emery Pieces & Extracted Red/Blue/Green Star Stones",
+                "+1,000 Individual Fame Points & Clan Airship Fuel Credits",
+                "Spellbook: Final Flying Form &S80 Icarus Weapon Pieces",
+            ],
+        ),
+        # 3 Royal_Fame_Exhibition_Arena Arenas
+        (
+            "coliseum-10-royal-aden-grand-coliseum-stadium",
+            "Aden Grand Coliseum — Royal Open-Gate 9v9 Exhibition Stadium",
+            "Royal_Fame_Exhibition_Arena",
+            "zone-field-aurora-tether",
+            "Royal Tournament Herald & Arena Director (Aden East Gate)",
+            "All-Level Royal Exhibition & 9v9 GvG Tournament (Zero EXP Loss · Spectator Grandstands)",
+            "Dual East/West Corner Resurrection Towers (20s Respawn Pulse · Protected Behind Inner Gates)",
+            [
+                "+900 Individual Fame Points (Redeemable at Reputation Manager Rapidus)",
+                "PvP Weapon / Armor Enhancement Activation (Dagger Cancels, Bow Speed, Robe Cast)",
+                "Royal Gladiator's Circlet & Blessed Scroll: Enchant Weapon (S)",
+            ],
+        ),
+        (
+            "coliseum-11-royal-gludin-harbor-free-duel-ring",
+            "Glaze-Barge Maritime Arena — Coastal Party Duel & Fame Ring",
+            "Royal_Fame_Exhibition_Arena",
+            "zone-town-glaze-barge-quay",
+            "Arena Manager & Reputation Manager Scipio",
+            "Lv.20–85 Open Party-vs-Party Exhibition & 3v3/9v9 Ranked Scrimmage",
+            "Harbor Beacon Obelisk Instant-Revives Wiped Parties at Ring Boundary With Full CP/MP",
+            [
+                "+600 Individual Fame Points per Tournament Match",
+                "PK Count Reduction (-1 PK per 5,000 Fame) & Clan Reputation Exchange",
+                "weaver Olf S-Grade PvP Belt Ornament (+5% PvP Damage)",
+            ],
+        ),
+        (
+            "coliseum-12-royal-heine-water-mirror-exhibition",
+            "Torque-Balance Water-Mirror Coliseum — Innadril Sovereign Tournament Ring",
+            "Royal_Fame_Exhibition_Arena",
+            "zone-town-torque-balance-citadel",
+            "Royal Tournament Herald & Lady of the Lake Steward",
+            "Lv.61–85 A/S-Grade 9v9 Sovereign Exhibition & Alliance Championship",
+            "Tidal Crystal Tower Grants 30s Party Resurrection + Eva's Water-Shield Spawn Immunity (5s)",
+            [
+                "+1,100 Individual Fame Points & Noblesse Gate Pass Bonus",
+                "S80/S84 PvP Armor Augmentation & Giant's Codex: Mastery",
+                "Circlet of Innadril Supremacy & Top-Grade Life Stone (Lv.84)",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        aid,
+        aname,
+        tcat,
+        zid,
+        anpc,
+        bstr,
+        rtower,
+        fame_rewards,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "146800:46700"))
+        loc = _fmt_loc(bx + 170 - idx * 15, by - 165 + idx * 14)
+        rows.append(
+            {
+                "arena_id": aid,
+                "arena_name": aname,
+                "tournament_category": tcat,
+                "zone_id": zid,
+                "loc": loc,
+                "arbiter_npc_name": anpc,
+                "level_or_clan_bracket": bstr,
+                "resurrection_tower_mechanic": rtower,
+                "victory_fame_and_rewards": fame_rewards,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -11800,6 +12292,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("studio_council_audit_benchmarks") or []) < 18:
         atlas["studio_council_audit_benchmarks"] = _build_studio_council_audit_benchmarks(atlas)
         actions.append("populated_18_studio_council_audit_benchmarks")
+
+    # 45. Ensure all 14 Continental Seed Cycle (Stage 1-5 Ekimus/Tiat State Machine) Nodes exist in `continental_seed_cycles` (D61)
+    if len(atlas.get("continental_seed_cycles") or []) < 14:
+        atlas["continental_seed_cycles"] = _build_continental_seed_cycles(atlas)
+        actions.append("populated_14_continental_seed_cycles")
+
+    # 46. Ensure all 12 Underground Coliseum (Party-vs-Party) & Clan Tournament Arenas exist in `party_coliseum_tournaments` (D62)
+    if len(atlas.get("party_coliseum_tournaments") or []) < 12:
+        atlas["party_coliseum_tournaments"] = _build_party_coliseum_tournaments(atlas)
+        actions.append("populated_12_party_coliseum_tournaments")
 
     return {"actions": actions}
 
@@ -15025,15 +15527,149 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d60_ratio * 80.0, 1)
     )
 
+    # D61: Interactive 14-Node Continental Seed Cycle (Stage 1-5 Ekimus/Tiat State Machine) Matrix (`continental_seed_cycles` - 14 Nodes = 5 Seed_of_Infinity_Stage + 5 Seed_of_Destruction_Stage + 4 Energy_Compression_Well)
+    expected_seed_categories = {
+        "Seed_of_Infinity_Stage",
+        "Seed_of_Destruction_Stage",
+        "Energy_Compression_Well",
+    }
+    seed_cycle_rows = atlas.get("continental_seed_cycles") or []
+    valid_seed_nodes = 0
+    infinity_stage_count = 0
+    destruction_stage_count = 0
+    compression_well_count = 0
+    seen_seed_node_ids: set[str] = set()
+    seen_seed_categories: set[str] = set()
+    for srow in seed_cycle_rows:
+        if not isinstance(srow, dict):
+            continue
+        snid = str(srow.get("seed_node_id") or "")
+        scat = str(srow.get("seed_category") or "")
+        zid = str(srow.get("zone_id") or "")
+        did = str(srow.get("dungeon_id") or "")
+        fid = str(srow.get("floor_id") or "")
+        srewards = srow.get("featured_s80_rewards") or []
+        if (
+            snid
+            and snid not in seen_seed_node_ids
+            and srow.get("node_name")
+            and scat in expected_seed_categories
+            and srow.get("cycle_stage_label")
+            and zid in zone_ids_set
+            and (did == "" or did in mf_dungeon_id_set)
+            and fid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(srow.get("loc", ""))
+            and srow.get("officer_npc_name")
+            and srow.get("trigger_quota_rule")
+            and isinstance(srewards, list)
+            and len(srewards) >= 2
+        ):
+            valid_seed_nodes += 1
+            seen_seed_node_ids.add(snid)
+            seen_seed_categories.add(scat)
+            if scat == "Seed_of_Infinity_Stage":
+                infinity_stage_count += 1
+            elif scat == "Seed_of_Destruction_Stage":
+                destruction_stage_count += 1
+            elif scat == "Energy_Compression_Well":
+                compression_well_count += 1
+
+    has_d61_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_SEED_CYCLE_MODE",
+            "setAtlasSeedCycleMode",
+            "renderAtlasSeedCycleBarHtml",
+            "studioContinentalSeedOverlay",
+        )
+    )
+    d61_ratio = valid_seed_nodes / 14.0
+    d61_full_coverage = (
+        infinity_stage_count == 5
+        and destruction_stage_count == 5
+        and compression_well_count == 4
+        and seen_seed_categories == expected_seed_categories
+    )
+    d61_score = (
+        round(min(100.0, d61_ratio * 100.0), 1)
+        if (has_d61_ui and d61_full_coverage)
+        else round(d61_ratio * 80.0, 1)
+    )
+
+    # D62: Interactive 12-Arena Underground Coliseum (Party-vs-Party) & Clan Tournament Matrix (`party_coliseum_tournaments` - 12 Arenas = 5 Underground_Coliseum_Bracket + 4 Clan_War_Tournament_Ring + 3 Royal_Fame_Exhibition_Arena)
+    expected_tournament_categories = {
+        "Underground_Coliseum_Bracket",
+        "Clan_War_Tournament_Ring",
+        "Royal_Fame_Exhibition_Arena",
+    }
+    coliseum_rows = atlas.get("party_coliseum_tournaments") or []
+    valid_coliseum_arenas = 0
+    underground_bracket_count = 0
+    clan_tournament_ring_count = 0
+    royal_exhibition_count = 0
+    seen_arena_ids: set[str] = set()
+    seen_tournament_categories: set[str] = set()
+    for arow in coliseum_rows:
+        if not isinstance(arow, dict):
+            continue
+        aid = str(arow.get("arena_id") or "")
+        tcat = str(arow.get("tournament_category") or "")
+        zid = str(arow.get("zone_id") or "")
+        frewards = arow.get("victory_fame_and_rewards") or []
+        if (
+            aid
+            and aid not in seen_arena_ids
+            and arow.get("arena_name")
+            and tcat in expected_tournament_categories
+            and zid in zone_ids_set
+            and ":" in str(arow.get("loc", ""))
+            and arow.get("arbiter_npc_name")
+            and arow.get("level_or_clan_bracket")
+            and arow.get("resurrection_tower_mechanic")
+            and isinstance(frewards, list)
+            and len(frewards) >= 2
+        ):
+            valid_coliseum_arenas += 1
+            seen_arena_ids.add(aid)
+            seen_tournament_categories.add(tcat)
+            if tcat == "Underground_Coliseum_Bracket":
+                underground_bracket_count += 1
+            elif tcat == "Clan_War_Tournament_Ring":
+                clan_tournament_ring_count += 1
+            elif tcat == "Royal_Fame_Exhibition_Arena":
+                royal_exhibition_count += 1
+
+    has_d62_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_COLISEUM_TOURNAMENT_MODE",
+            "setAtlasColiseumTournamentMode",
+            "renderAtlasColiseumTournamentBarHtml",
+            "studioColiseumTournamentOverlay",
+        )
+    )
+    d62_ratio = valid_coliseum_arenas / 12.0
+    d62_full_coverage = (
+        underground_bracket_count == 5
+        and clan_tournament_ring_count == 4
+        and royal_exhibition_count == 3
+        and seen_tournament_categories == expected_tournament_categories
+    )
+    d62_score = (
+        round(min(100.0, d62_ratio * 100.0), 1)
+        if (has_d62_ui and d62_full_coverage)
+        else round(d62_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score) / 42.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score) / 44.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score) / 44.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score) / 54.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score) / 43.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score) / 50.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score) / 44.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score) / 46.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score) / 46.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score) / 56.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score) / 45.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score) / 52.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -15098,8 +15734,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d58_score
             + d59_score
             + d60_score
+            + d61_score
+            + d62_score
         )
-        / 60.0,
+        / 62.0,
         1,
     )
 
@@ -15592,6 +16230,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "council_roles": sorted(seen_council_roles),
                 "ui_wired": has_d60_ui,
             },
+            "D61_continental_seed_cycles_and_ekimus_tiat_stages": {
+                "score": d61_score,
+                "verified": valid_seed_nodes,
+                "target": 14,
+                "seed_of_infinity_stages": infinity_stage_count,
+                "seed_of_destruction_stages": destruction_stage_count,
+                "energy_compression_wells": compression_well_count,
+                "seed_categories": sorted(seen_seed_categories),
+                "ui_wired": has_d61_ui,
+            },
+            "D62_underground_coliseum_and_clan_tournament_arenas": {
+                "score": d62_score,
+                "verified": valid_coliseum_arenas,
+                "target": 12,
+                "underground_coliseum_brackets": underground_bracket_count,
+                "clan_war_tournament_rings": clan_tournament_ring_count,
+                "royal_fame_exhibition_arenas": royal_exhibition_count,
+                "tournament_categories": sorted(seen_tournament_categories),
+                "ui_wired": has_d62_ui,
+            },
         },
     }
 
@@ -15696,6 +16354,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D58 (14 Belt/Cloak Weavers) : {dims['D58_weaver_olf_belts_and_sovereign_cloaks']['score']}/100 ({dims['D58_weaver_olf_belts_and_sovereign_cloaks']['verified']}/{dims['D58_weaver_olf_belts_and_sovereign_cloaks']['target']} belt/cloak hubs)")
         print(f"  D59 (12 Wedding Cathedrals) : {dims['D59_wedding_cathedrals_and_couple_teleport_matrix']['score']}/100 ({dims['D59_wedding_cathedrals_and_couple_teleport_matrix']['verified']}/{dims['D59_wedding_cathedrals_and_couple_teleport_matrix']['target']} wedding sanctuaries)")
         print(f"  D60 (18 Council Benchmarks) : {dims['D60_studio_council_60d_audit_benchmarks']['score']}/100 ({dims['D60_studio_council_60d_audit_benchmarks']['verified']}/{dims['D60_studio_council_60d_audit_benchmarks']['target']} council benchmarks)")
+        print(f"  D61 (14 Seed Cycle Stages)  : {dims['D61_continental_seed_cycles_and_ekimus_tiat_stages']['score']}/100 ({dims['D61_continental_seed_cycles_and_ekimus_tiat_stages']['verified']}/{dims['D61_continental_seed_cycles_and_ekimus_tiat_stages']['target']} seed cycle nodes)")
+        print(f"  D62 (12 Coliseum Rings)     : {dims['D62_underground_coliseum_and_clan_tournament_arenas']['score']}/100 ({dims['D62_underground_coliseum_and_clan_tournament_arenas']['verified']}/{dims['D62_underground_coliseum_and_clan_tournament_arenas']['target']} tournament arenas)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

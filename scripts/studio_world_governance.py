@@ -700,6 +700,8 @@ def validate_world_governance(
                 "beltCloakWeaverHubsCount": len(t_doc.get("belt_cloak_weaver_hubs") or []),
                 "weddingCeremonyCathedralsCount": len(t_doc.get("wedding_ceremony_cathedrals") or []),
                 "studioCouncilAuditBenchmarksCount": len(t_doc.get("studio_council_audit_benchmarks") or []),
+                "continentalSeedCyclesCount": len(t_doc.get("continental_seed_cycles") or []),
+                "partyColiseumTournamentsCount": len(t_doc.get("party_coliseum_tournaments") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1409,6 +1411,43 @@ def validate_world_governance(
                 if cb_did and cb_did not in mf_dungeon_ids:
                     errors.append(
                         f"GOV-10 violation: studio_council_audit_benchmarks '{cb_id}' references unknown exemplar_dungeon_id '{cb_did}'"
+                    )
+
+            # Validate 14 Continental Seed Cycle (Stage 1-5 Ekimus/Tiat State Machine) Nodes (D61)
+            seed_cycles = t_doc.get("continental_seed_cycles") or []
+            if seed_cycles and len(seed_cycles) != 14:
+                errors.append(
+                    f"GOV-10 violation: continental_seed_cycles must have 14 seed cycle nodes, got {len(seed_cycles)}"
+                )
+            for sc_item in seed_cycles:
+                if not isinstance(sc_item, dict):
+                    continue
+                sc_id = str(sc_item.get("seed_node_id", ""))
+                sc_zid = str(sc_item.get("zone_id", ""))
+                sc_did = str(sc_item.get("dungeon_id", ""))
+                if sc_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: continental_seed_cycles '{sc_id}' references unknown zone_id '{sc_zid}'"
+                    )
+                if sc_did and sc_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: continental_seed_cycles '{sc_id}' references unknown dungeon_id '{sc_did}'"
+                    )
+
+            # Validate 12 Underground Coliseum (Party-vs-Party) & Clan Tournament Arenas (D62)
+            coliseum_tournaments = t_doc.get("party_coliseum_tournaments") or []
+            if coliseum_tournaments and len(coliseum_tournaments) != 12:
+                errors.append(
+                    f"GOV-10 violation: party_coliseum_tournaments must have 12 coliseum tournament arenas, got {len(coliseum_tournaments)}"
+                )
+            for ct_item in coliseum_tournaments:
+                if not isinstance(ct_item, dict):
+                    continue
+                ct_id = str(ct_item.get("arena_id", ""))
+                ct_zid = str(ct_item.get("zone_id", ""))
+                if ct_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: party_coliseum_tournaments '{ct_id}' references unknown zone_id '{ct_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)
