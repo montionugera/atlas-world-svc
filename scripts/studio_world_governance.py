@@ -744,6 +744,8 @@ def validate_world_governance(
                 "deterministicCombatReplaysCount": len(t_doc.get("deterministic_combat_replays") or []),
                 "archaeologicalLoreCodicesCount": len(t_doc.get("archaeological_lore_codices") or []),
                 "destructiblePhysicsBiomesCount": len(t_doc.get("destructible_physics_biomes") or []),
+                "bountyManhuntContractsCount": len(t_doc.get("bounty_manhunt_contracts") or []),
+                "disasterRecoveryPitrDrillsCount": len(t_doc.get("disaster_recovery_pitr_drills") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -2262,6 +2264,38 @@ def validate_world_governance(
                 if pb_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: destructible_physics_biomes '{pb_id}' references unknown zone_id '{pb_zid}'"
+                    )
+
+            # Validate 16-Record Dynamic Bounty Hunter Contracts, Chaotic PK Manhunt & High-Value Target Tracking Matrix (D105)
+            bounty_contracts = t_doc.get("bounty_manhunt_contracts") or []
+            if bounty_contracts and len(bounty_contracts) < 16:
+                errors.append(
+                    f"GOV-10 violation: bounty_manhunt_contracts must have at least 16 records, got {len(bounty_contracts)}"
+                )
+            for bm_item in bounty_contracts:
+                if not isinstance(bm_item, dict):
+                    continue
+                bm_id = str(bm_item.get("bounty_id", ""))
+                bm_zid = str(bm_item.get("zone_id", ""))
+                if bm_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: bounty_manhunt_contracts '{bm_id}' references unknown zone_id '{bm_zid}'"
+                    )
+
+            # Validate 15-Record Distributed World-State Snapshot Backup, Point-in-Time Recovery (PITR) & Disaster-Recovery Chaos Drill Matrix (D106)
+            pitr_drills = t_doc.get("disaster_recovery_pitr_drills") or []
+            if pitr_drills and len(pitr_drills) < 15:
+                errors.append(
+                    f"GOV-10 violation: disaster_recovery_pitr_drills must have at least 15 records, got {len(pitr_drills)}"
+                )
+            for pd_item in pitr_drills:
+                if not isinstance(pd_item, dict):
+                    continue
+                pd_id = str(pd_item.get("pitr_drill_id", ""))
+                pd_zid = str(pd_item.get("zone_id", ""))
+                if pd_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: disaster_recovery_pitr_drills '{pd_id}' references unknown zone_id '{pd_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

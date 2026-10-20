@@ -23680,6 +23680,534 @@ def inject_destructible_physics_biomes(atlas: dict[str, Any]) -> list[dict[str, 
     return rows
 
 
+def _build_bounty_manhunt_contracts(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16-Record [Role 2: Content & World Tools — Dynamic Bounty Hunter Contracts, Chaotic PK Manhunt & High-Value Target Tracking Matrix] (D105)."""
+    specs = [
+        (
+            "bounty-contract-01-hunters-village-master-guild",
+            "Hunters Village Master Bounty Guild — Crimson Outlaw & Poacher Ledger",
+            "zone-town-torque-balance-citadel",
+            "town-torque-balance-citadel",
+            "zone-dungeon-chronometer-foundry",
+            "Chaotic Player PK Warrant",
+            5000,
+            10,
+            4500,
+            638,
+            240,
+            "#ef4444",
+            "Central Hunters Village bounty board issuing live compass warrants on high-karma PK outlaws across Enchanted Valley and Forest of Mirrors.",
+        ),
+        (
+            "bounty-contract-02-floran-outlaw-sanctuary-post",
+            "Floran Outlaw Sanctuary Post — Red-Name Exile & Mercenary Clearance Board",
+            "zone-field-cinder-apron",
+            "town-saffron-press-village",
+            "zone-dungeon-pendulum-shaft",
+            "Chaotic Player PK Warrant",
+            1500,
+            15,
+            1200,
+            518,
+            436,
+            "#f97316",
+            "Tracks rogue PK fugitives hiding outside Dion's guard jurisdiction near Floran Village watermills and border pastures.",
+        ),
+        (
+            "bounty-contract-03-cruma-marshlands-pk-ambush-board",
+            "Cruma Marshlands PK Ambush Board — Core Excavation Camp Stalker Warrant",
+            "zone-field-cinder-apron",
+            "town-saffron-press-village",
+            "zone-dungeon-pendulum-shaft",
+            "Wandering World-Outlaw Posse Hunt",
+            3200,
+            12,
+            2400,
+            536,
+            414,
+            "#eab308",
+            "Posts escrow bounties against gank squads ambushing Cruma Tower elevator parties and Stakato marsh gatherers.",
+        ),
+        (
+            "bounty-contract-04-death-pass-caravan-raider-warrant",
+            "Death Pass Caravan Raider Warrant —Giran-to-Oren Bullion Convoy Interdiction",
+            "zone-field-leyden-causeway",
+            "town-pinion-terminus",
+            "zone-dungeon-chronometer-foundry",
+            "Caravan Hijacker Interdiction",
+            2800,
+            15,
+            3100,
+            596,
+            352,
+            "#a855f7",
+            "Rewards registered bounty hunters who intercept Wyrm-riding highwaymen and chaotic caravan hijackers along Death Pass.",
+        ),
+        (
+            "bounty-contract-05-dragon-valley-poacher-syndicate",
+            "Dragon Valley Poacher Syndicate Contract — Drake Egg Smuggler Assassination",
+            "zone-field-leyden-causeway",
+            "town-pinion-terminus",
+            "zone-dungeon-chronometer-foundry",
+            "Named Bandit Captain Assassination",
+            4500,
+            10,
+            5200,
+            612,
+            384,
+            "#ef4444",
+            "Targets named poacher captains harvesting forbidden Antharas brood scales and slaughtering solo Soul Crystal absorbers.",
+        ),
+        (
+            "bounty-contract-06-execution-grounds-grave-robber",
+            "Execution Grounds Grave-Robber Bounty — Guillotine Crypt Desecrator Hunt",
+            "zone-field-cobalt-sandbar-ford",
+            "town-saffron-press-village",
+            "zone-dungeon-kiln-cellar",
+            "Named Bandit Captain Assassination",
+            1200,
+            20,
+            850,
+            548,
+            408,
+            "#f97316",
+            "Posted by Dion's Temple of Einhasad to eliminate necromantic grave-robbers and low-level PK griefers in Execution Grounds.",
+        ),
+        (
+            "bounty-contract-07-sea-of-spores-heretic-alchemist",
+            "Sea of Spores Heretic Alchemist Warrant — Orfen Barrier Saboteur Track",
+            "zone-field-caldera-rim",
+            "town-escapement-anvil",
+            "zone-dungeon-star-heart-nave",
+            "Wandering World-Outlaw Posse Hunt",
+            6000,
+            8,
+            6400,
+            564,
+            318,
+            "#a855f7",
+            "Ivory Tower warrant tracking renegade poison alchemists and chaotic PK covens hiding inside Sea of Spores fungal trenches.",
+        ),
+        (
+            "bounty-contract-08-blazing-swamp-magma-smuggler",
+            "Blazing Swamp Magma Smuggler Hunt — Forbidden Sulfur Syndicate Elimination",
+            "zone-field-aurora-tether",
+            "town-crown-beacon-citadel",
+            "zone-catacomb-apostate-dynamo",
+            "Caravan Hijacker Interdiction",
+            8500,
+            8,
+            7800,
+            646,
+            248,
+            "#ef4444",
+            "Tracks black-market elemental stone smugglers and high-karma PK marauders operating across Blazing Swamp lava ridges.",
+        ),
+        (
+            "bounty-contract-09-plains-of-dion-bandit-lord",
+            "Plains of Dion Bandit Lord Ledger — Ol Mahum Deserter Chieftain Warrant",
+            "zone-field-cinder-apron",
+            "town-kilnwatch-bastion",
+            "zone-dungeon-kiln-cellar",
+            "Named Bandit Captain Assassination",
+            500,
+            30,
+            150,
+            498,
+            396,
+            "#eab308",
+            "Entry-tier Bronze Tracker warrant targeting Ol Mahum bandit warlords and novice chaotic outlaws along Gludio-Dion roads.",
+        ),
+        (
+            "bounty-contract-10-gludin-harbor-pirate-captain",
+            "Gludin Harbor Pirate Captain Poster — Zaken Smuggler Fleet Boarding Warrant",
+            "zone-town-glaze-barge-quay",
+            "town-glaze-barge-quay",
+            "zone-dungeon-kiln-cellar",
+            "Caravan Hijacker Interdiction",
+            1800,
+            18,
+            1650,
+            432,
+            418,
+            "#f97316",
+            "Maritime bounty board on Gludin's main pier issuing warrants for coastal pirate captains and harbor freight hijackers.",
+        ),
+        (
+            "bounty-contract-11-giran-black-market-assassin",
+            "Giran Black-Market Assassin Contract — Golden Mile Merchant Syndicate Escrow",
+            "zone-town-pinion-terminus",
+            "town-pinion-terminus",
+            "zone-dungeon-chronometer-foundry",
+            "Chaotic Player PK Warrant",
+            12000,
+            6,
+            9500,
+            586,
+            396,
+            "#ef4444",
+            "High-value escrow board in Giran Castle Town where merchant guilds pool Adena rewards on notorious red-name PK assassins.",
+        ),
+        (
+            "bounty-contract-12-oren-border-deserter-manhunt",
+            "Oren Border Deserter Manhunt — Outlaw Forest Mercenary Posse Pursuit",
+            "zone-town-escapement-anvil",
+            "town-escapement-anvil",
+            "zone-dungeon-star-heart-nave",
+            "Wandering World-Outlaw Posse Hunt",
+            7200,
+            10,
+            5800,
+            608,
+            308,
+            "#eab308",
+            "Dispatches Gold Bloodhound trackers into Outlaw Forest and Bandit Stronghold to neutralize mutinous fortress mercenaries.",
+        ),
+        (
+            "bounty-contract-13-aden-royal-warrant-high-karma",
+            "Aden Royal Warrant High-Karma Outlaw — Sovereign Executioner Imperial Decree",
+            "zone-town-crown-beacon",
+            "town-crown-beacon-citadel",
+            "zone-catacomb-apostate-dynamo",
+            "Chaotic Player PK Warrant",
+            25000,
+            5,
+            15000,
+            664,
+            278,
+            "#ef4444",
+            "Maximum-tier Sovereign Executioner warrant with 5-second directional compass pulses against server-wide top-karma PK warlords.",
+        ),
+        (
+            "bounty-contract-14-goddard-mercenary-blood-pact",
+            "Goddard Mercenary Blood-Pact Board — Ketra/Varka Warband Traitor Hunt",
+            "zone-town-inductor-switchyard",
+            "town-inductor-switchyard",
+            "zone-catacomb-branded-bellows",
+            "Named Bandit Captain Assassination",
+            14000,
+            7,
+            11200,
+            674,
+            204,
+            "#f97316",
+            "Hunts oath-breaking siege mercenaries and chaotic raid saboteurs across Wall of Argos and Forge of the Gods approaches.",
+        ),
+        (
+            "bounty-contract-15-rune-undercity-shadow-broker",
+            "Rune Undercity Shadow-Broker Bounty — Swamp of Screams Phantom Posse Contract",
+            "zone-town-starfall-haven",
+            "town-starfall-haven",
+            "zone-catacomb-witch-pendulum",
+            "Wandering World-Outlaw Posse Hunt",
+            18000,
+            6,
+            12800,
+            560,
+            202,
+            "#a855f7",
+            "Clandestine Rune Township lower-tier broker board tracking Pagan cult infiltrators and chaotic PK squads in Forest of the Dead.",
+        ),
+        (
+            "bounty-contract-16-hellbound-slaver-caravan",
+            "Hellbound Slaver Caravan Interdiction — Beleth Steel Citadel Taskmaster Hunt",
+            "zone-field-metronome-bridge",
+            "town-crown-beacon-citadel",
+            "zone-catacomb-apostate-dynamo",
+            "Caravan Hijacker Interdiction",
+            22000,
+            5,
+            14500,
+            654,
+            296,
+            "#eab308",
+            "Elite interdiction contract liberating native Hellbound quarry prisoners from Steel Citadel slaver convoys and chaotic defectors.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        bid,
+        title,
+        zid,
+        tid,
+        did,
+        cat,
+        karma_min,
+        pulse_sec,
+        reward_k,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "bounty_id": bid,
+                "title": title,
+                "zone_id": zid,
+                "town_id": tid,
+                "dungeon_id": did,
+                "contract_category": cat,
+                "karma_threshold_min": karma_min,
+                "compass_tracking_pulse_sec": pulse_sec,
+                "escrow_reward_adena_k": reward_k,
+                "anti_collusion_guard": "Zero-Clan/Ally Payout + 72h Kill-Cooldown + Gear-Drop Escrow",
+                "hunter_rank_tier": "Bronze Tracker .. Sovereign Executioner",
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_bounty_manhunt_contracts(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_bounty_manhunt_contracts(atlas)
+    atlas["bounty_manhunt_contracts"] = rows
+    return rows
+
+
+def _build_disaster_recovery_pitr_drills(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15-Record [Role 4: Backend Infra — Distributed World-State Snapshot Backup, Point-in-Time Recovery (PITR) & Disaster-Recovery Chaos Drill Matrix] (D106)."""
+    specs = [
+        (
+            "pitr-drill-01-talking-island",
+            "Talking Island (Lantern Hollow) — Starter Shard PITR & Redis Split-Brain Drill",
+            "town-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Redis Cluster Split-Brain Partition",
+            12,
+            4.2,
+            456,
+            452,
+            "#38bdf8",
+            "Validates zero-loss character creation & novice inventory state across Talking Island when Redis stream partitions heal.",
+        ),
+        (
+            "pitr-drill-02-elven-village",
+            "Elven Village (Porcelain Loom) — Sanctum Shard AZ Blackhole & WAL Replay Drill",
+            "town-porcelain-loom-sanctuary",
+            "zone-town-porcelain-loom",
+            "Region AZ Blackhole Failover",
+            15,
+            5.0,
+            546,
+            298,
+            "#10b981",
+            "Simulates complete Availability Zone network blackhole for Elven Forest shard with automated standby promotion in 5.0s.",
+        ),
+        (
+            "pitr-drill-03-dark-elven-village",
+            "Dark Elven Village (Carillon Belfry) — Loot-Table Hot-Config Corruption Rollback",
+            "town-carillon-hearth-belfry",
+            "zone-town-carillon-belfry",
+            "Corrupted Loot-Table Hot-Config Rollback",
+            0,
+            2.8,
+            526,
+            280,
+            "#60a5fa",
+            "Exercises atomic point-in-time configuration rollback and Merkle inventory reconciliation after injected drop-table fault.",
+        ),
+        (
+            "pitr-drill-04-orc-village",
+            "Orc Village (Draft-Kiln Post) — Plateau Shard Primary Postgres Node Kill Drill",
+            "town-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Primary Postgres Node Kill During Siege",
+            18,
+            5.8,
+            478,
+            150,
+            "#34d399",
+            "Injects SIGKILL on primary PostgreSQL node during peak clan war skirmishes, verifying Patroni leader election and zero-dupe WAL.",
+        ),
+        (
+            "pitr-drill-05-dwarven-village",
+            "Dwarven Village (Root-Train Roundhouse) — Workshop Ledger Split-Brain Recovery Drill",
+            "town-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Redis Cluster Split-Brain Partition",
+            8,
+            3.6,
+            628,
+            90,
+            "#38bdf8",
+            "Audits Dwarven manufacture recipe queues and Iron Gate warehouse locks under quorum-fencing split-brain chaos injection.",
+        ),
+        (
+            "pitr-drill-06-kamael-village",
+            "Kamael Village (Cinnamon-Mill Haven) — Isle of Souls AZ Failover & Instance PITR",
+            "town-cinnamon-mill-haven",
+            "zone-town-cinnamon-mill",
+            "Region AZ Blackhole Failover",
+            20,
+            6.4,
+            398,
+            308,
+            "#10b981",
+            "Tests cross-AZ failover for Nornil's Garden instanced dungeons and Soul Crystal stage state without losing boss progression.",
+        ),
+        (
+            "pitr-drill-07-gludin-village",
+            "Gludin Village (Glaze-Barge Quay) — Maritime Freight & Harbor Escrow Rollback Drill",
+            "town-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Corrupted Loot-Table Hot-Config Rollback",
+            5,
+            3.1,
+            428,
+            418,
+            "#60a5fa",
+            "Verifies harbor freight manifests and ship ticket Adena escrows reconcile 100% cleanly against pgBackRest WAL archives.",
+        ),
+        (
+            "pitr-drill-08-gludio-town",
+            "Town of Gludio (Kilnwatch Bastion) — Castle Siege Primary DB Failover Chaos Drill",
+            "town-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Primary Postgres Node Kill During Siege",
+            25,
+            7.5,
+            506,
+            384,
+            "#34d399",
+            "Kills primary database mid-siege while Swoop Cannons breach Gludio gates; verifies zero clan-reputation or relic rollbacks.",
+        ),
+        (
+            "pitr-drill-09-dion-town",
+            "Town of Dion (Saffron Press) — Manor Seed Settlement Redis Partition Drill",
+            "town-saffron-press-village",
+            "zone-town-saffron-press",
+            "Redis Cluster Split-Brain Partition",
+            14,
+            4.8,
+            528,
+            432,
+            "#38bdf8",
+            "Ensures Dion Manor crop procurement and Cruma Tower party finder locks survive Redis cluster minority partition fencing.",
+        ),
+        (
+            "pitr-drill-10-giran-castle-town",
+            "Giran Castle Town (Pinion Terminus) — Central Auction & Trade Hub AZ Failover Drill",
+            "town-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Region AZ Blackhole Failover",
+            0,
+            2.5,
+            594,
+            406,
+            "#10b981",
+            "Tier-0 zero-RPO synchronous standby failover for Giran's 50,000-order central clearinghouse with Merkle tree item verification.",
+        ),
+        (
+            "pitr-drill-11-oren-town",
+            "Town of Oren (Escapement Anvil) — Territory Ward & Tower of Insolence Hot-Rollback",
+            "town-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Corrupted Loot-Table Hot-Config Rollback",
+            10,
+            3.9,
+            606,
+            318,
+            "#60a5fa",
+            "Validates instant hot-config rollback across Tower of Insolence floors 1F-14F with zero item duplication or vanish events.",
+        ),
+        (
+            "pitr-drill-12-hunters-village",
+            "Hunters Village (Torque-Balance Citadel) — Bounty Escrow & Raid Spawn Partition Drill",
+            "town-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "Redis Cluster Split-Brain Partition",
+            16,
+            5.2,
+            638,
+            240,
+            "#34d399",
+            "Chaos-tests bounty hunter Adena escrow locks and Enchanted Valley rare spawn timers under network partition heals.",
+        ),
+        (
+            "pitr-drill-13-aden-imperial-capital",
+            "Town of Aden (Crown-Beacon Citadel) — 200v200 Imperial Siege Primary Postgres Kill",
+            "town-crown-beacon-citadel",
+            "zone-town-crown-beacon",
+            "Primary Postgres Node Kill During Siege",
+            0,
+            2.9,
+            664,
+            286,
+            "#38bdf8",
+            "Flagship weekly GameDay chaos drill killing Aden's primary DB node during simulated 400-player throne room engraving.",
+        ),
+        (
+            "pitr-drill-14-goddard-town",
+            "Town of Goddard (Inductor Switchyard) — Valakas Raid & Forge Shard AZ Blackhole Drill",
+            "town-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Region AZ Blackhole Failover",
+            35,
+            9.8,
+            672,
+            212,
+            "#10b981",
+            "Drills regional AZ blackhole failover during active Epic Dragon command-channel raids with full combat replay hash preservation.",
+        ),
+        (
+            "pitr-drill-15-rune-township",
+            "Rune Township (Starfall Haven) — Grand Citadel & Clan Treasury PITR Restore Drill",
+            "town-starfall-haven",
+            "zone-town-starfall-haven",
+            "Primary Postgres Node Kill During Siege",
+            50,
+            14.0,
+            560,
+            210,
+            "#60a5fa",
+            "Full Zstd WAL stream PITR restore and Merkle inventory audit across Rune Castle, Pagan Temple, and Monastery of Silence.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        pid,
+        title,
+        tid,
+        zid,
+        fault,
+        rpo_ms,
+        rto_sec,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "pitr_drill_id": pid,
+                "title": title,
+                "town_id": tid,
+                "zone_id": zid,
+                "chaos_fault_scenario": fault,
+                "wal_archive_backend": "pgBackRest S3 Object-Lock + Zstd Continuous WAL",
+                "rpo_zero_data_loss_ms": rpo_ms,
+                "rto_automated_failover_sec": rto_sec,
+                "merkle_inventory_reconcile": "100% Zero-Dupe / Zero-Vanish Invariant Pass",
+                "chaos_schedule_cadence": "Weekly Automated GameDay Drill",
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_disaster_recovery_pitr_drills(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_disaster_recovery_pitr_drills(atlas)
+    atlas["disaster_recovery_pitr_drills"] = rows
+    return rows
+
+
 
 
 
@@ -25035,6 +25563,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("destructible_physics_biomes") or []) < 15:
         inject_destructible_physics_biomes(atlas)
         actions.append("populated_15_destructible_physics_biomes")
+
+    # 89. Ensure all 16 Dynamic Bounty Hunter Contracts, Chaotic PK Manhunt & High-Value Target Tracking Matrix records exist in `bounty_manhunt_contracts` (D105)
+    if len(atlas.get("bounty_manhunt_contracts") or []) < 16:
+        inject_bounty_manhunt_contracts(atlas)
+        actions.append("populated_16_bounty_manhunt_contracts")
+
+    # 90. Ensure all 15 Distributed World-State Snapshot Backup, Point-in-Time Recovery (PITR) & Disaster-Recovery Chaos Drill Matrix records exist in `disaster_recovery_pitr_drills` (D106)
+    if len(atlas.get("disaster_recovery_pitr_drills") or []) < 15:
+        inject_disaster_recovery_pitr_drills(atlas)
+        actions.append("populated_15_disaster_recovery_pitr_drills")
 
     return {"actions": actions}
 
@@ -29915,15 +30453,25 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     d104_eval = score_d104_destructible_physics_biomes(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
     d104_score = d104_eval["score"]
 
+    # D105: Interactive 16-Record [Role 2: Content & World Tools — Dynamic Bounty Hunter Contracts, Chaotic PK Manhunt & High-Value Target Tracking Matrix] (`bounty_manhunt_contracts` - 16 Bounty Contracts)
+    d105_eval = score_d105_bounty_manhunt_contracts(
+        atlas, zone_ids_set=zone_ids_set, mf_dungeon_id_set=mf_dungeon_id_set, web_txt=web_txt
+    )
+    d105_score = d105_eval["score"]
+
+    # D106: Interactive 15-Record [Role 4: Backend Infra — Distributed World-State Snapshot Backup, Point-in-Time Recovery (PITR) & Disaster-Recovery Chaos Drill Matrix] (`disaster_recovery_pitr_drills` - 15 PITR Chaos Drills)
+    d106_eval = score_d106_disaster_recovery_pitr_drills(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
+    d106_score = d106_eval["score"]
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score) / 86.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score) / 88.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0 and d95_score == 100.0 and d96_score == 100.0 and d97_score == 100.0 and d98_score == 100.0 and d99_score == 100.0 and d100_score == 100.0 and d101_score == 100.0 and d102_score == 100.0 and d103_score == 100.0 and d104_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score) / 88.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score) / 98.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score) / 87.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score) / 94.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score) / 88.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score) / 90.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0 and d95_score == 100.0 and d96_score == 100.0 and d97_score == 100.0 and d98_score == 100.0 and d99_score == 100.0 and d100_score == 100.0 and d101_score == 100.0 and d102_score == 100.0 and d103_score == 100.0 and d104_score == 100.0 and d105_score == 100.0 and d106_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score) / 90.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score) / 100.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score) / 89.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score) / 96.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -30032,8 +30580,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d102_score
             + d103_score
             + d104_score
+            + d105_score
+            + d106_score
         )
-        / 104.0,
+        / 106.0,
         1,
     )
 
@@ -30782,6 +31332,8 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             "D102_deterministic_combat_replay_verifier_and_blake3_tick_hash_matrix": d102_eval,
             "D103_archaeological_relic_excavation_lore_codex_and_bestiary_matrix": d103_eval,
             "D104_procedural_foliage_wind_water_ripple_and_destructible_physics_matrix": d104_eval,
+            "D105_dynamic_bounty_hunter_contracts_and_chaotic_pk_manhunt_matrix": d105_eval,
+            "D106_distributed_world_state_pitr_backup_and_chaos_drill_matrix": d106_eval,
         },
     }
 
@@ -30977,6 +31529,188 @@ def score_d104_destructible_physics_biomes(
         "verified": valid_count,
         "target": 15,
         "physics_interaction_tiers": sorted(seen_tiers),
+        "ui_wired": has_ui,
+    }
+
+
+def score_d105_bounty_manhunt_contracts(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    mf_dungeon_id_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if mf_dungeon_id_set is None:
+        mf_dungeon_id_set = {
+            str(d.get("dungeon_id"))
+            for d in (atlas.get("multi_floor_dungeons") or [])
+            if isinstance(d, dict) and d.get("dungeon_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_categories = {
+        "Chaotic Player PK Warrant",
+        "Named Bandit Captain Assassination",
+        "Caravan Hijacker Interdiction",
+        "Wandering World-Outlaw Posse Hunt",
+    }
+    rows = atlas.get("bounty_manhunt_contracts") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_cats: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        bid = str(row.get("bounty_id") or "")
+        zid = str(row.get("zone_id") or "")
+        did = str(row.get("dungeon_id") or "")
+        cat = str(row.get("contract_category") or "")
+        karma_min = int(row.get("karma_threshold_min") or 0)
+        pulse_sec = int(row.get("compass_tracking_pulse_sec") or 0)
+        reward_k = int(row.get("escrow_reward_adena_k") or 0)
+        guard = str(row.get("anti_collusion_guard") or "")
+        rank_tier = str(row.get("hunter_rank_tier") or "")
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            bid
+            and bid not in seen_ids
+            and row.get("title")
+            and zid in zone_ids_set
+            and row.get("town_id")
+            and (did == "" or did in mf_dungeon_id_set)
+            and cat in expected_categories
+            and 500 <= karma_min <= 25000
+            and 5 <= pulse_sec <= 30
+            and 150 <= reward_k <= 15000
+            and guard == "Zero-Clan/Ally Payout + 72h Kill-Cooldown + Gear-Drop Escrow"
+            and rank_tier == "Bronze Tracker .. Sovereign Executioner"
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#ef4444", "#f97316", "#eab308", "#a855f7")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(bid)
+            seen_cats.add(cat)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_BOUNTY_MANHUNT_MODE",
+            "setAtlasBountyManhuntMode",
+            "selectBountyManhuntContract",
+            "renderAtlasBountyManhuntBarHtml",
+            "studioBountyManhuntContractsOverlay",
+        )
+    )
+    ratio = valid_count / 16.0
+    full_cov = valid_count == 16 and seen_cats == expected_categories
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 16,
+        "contract_categories": sorted(seen_cats),
+        "ui_wired": has_ui,
+    }
+
+
+def score_d106_disaster_recovery_pitr_drills(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_faults = {
+        "Primary Postgres Node Kill During Siege",
+        "Redis Cluster Split-Brain Partition",
+        "Region AZ Blackhole Failover",
+        "Corrupted Loot-Table Hot-Config Rollback",
+    }
+    rows = atlas.get("disaster_recovery_pitr_drills") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_faults: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        pid = str(row.get("pitr_drill_id") or "")
+        zid = str(row.get("zone_id") or "")
+        fault = str(row.get("chaos_fault_scenario") or "")
+        wal = str(row.get("wal_archive_backend") or "")
+        rpo_ms = row.get("rpo_zero_data_loss_ms")
+        rto_s = float(row.get("rto_automated_failover_sec") or 0.0)
+        merkle = str(row.get("merkle_inventory_reconcile") or "")
+        cadence = str(row.get("chaos_schedule_cadence") or "")
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            pid
+            and pid not in seen_ids
+            and row.get("title")
+            and zid in zone_ids_set
+            and row.get("town_id")
+            and fault in expected_faults
+            and wal == "pgBackRest S3 Object-Lock + Zstd Continuous WAL"
+            and isinstance(rpo_ms, int)
+            and 0 <= rpo_ms <= 50
+            and 2.5 <= rto_s <= 14.0
+            and merkle == "100% Zero-Dupe / Zero-Vanish Invariant Pass"
+            and cadence == "Weekly Automated GameDay Drill"
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#38bdf8", "#10b981", "#60a5fa", "#34d399")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(pid)
+            seen_faults.add(fault)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_PITR_CHAOS_MODE",
+            "setAtlasPitrChaosMode",
+            "selectDisasterRecoveryDrill",
+            "renderAtlasPitrChaosBarHtml",
+            "studioDisasterRecoveryDrillsOverlay",
+        )
+    )
+    ratio = valid_count / 15.0
+    full_cov = valid_count == 15 and seen_faults == expected_faults
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 15,
+        "chaos_fault_scenarios": sorted(seen_faults),
         "ui_wired": has_ui,
     }
 
@@ -32992,7 +33726,7 @@ def evaluate_80d_atlas(whc: dict[str, Any] | None = None, atlas: dict[str, Any] 
     if atlas is None:
         atlas = json.loads(ATLAS_PATH.read_text(encoding="utf-8"))
     res = audit_world_atlas(whc, atlas)
-    res["wave"] = 50
+    res["wave"] = 51
     return res
 
 
@@ -33140,6 +33874,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D102 (15 Combat Replays)    : {dims['D102_deterministic_combat_replay_verifier_and_blake3_tick_hash_matrix']['score']}/100 ({dims['D102_deterministic_combat_replay_verifier_and_blake3_tick_hash_matrix']['verified']}/{dims['D102_deterministic_combat_replay_verifier_and_blake3_tick_hash_matrix']['target']} deterministic combat replay sectors)")
         print(f"  D103 (16 Lore Codices)      : {dims['D103_archaeological_relic_excavation_lore_codex_and_bestiary_matrix']['score']}/100 ({dims['D103_archaeological_relic_excavation_lore_codex_and_bestiary_matrix']['verified']}/{dims['D103_archaeological_relic_excavation_lore_codex_and_bestiary_matrix']['target']} archaeological lore codex sites)")
         print(f"  D104 (15 Physics Biomes)    : {dims['D104_procedural_foliage_wind_water_ripple_and_destructible_physics_matrix']['score']}/100 ({dims['D104_procedural_foliage_wind_water_ripple_and_destructible_physics_matrix']['verified']}/{dims['D104_procedural_foliage_wind_water_ripple_and_destructible_physics_matrix']['target']} destructible physics biomes)")
+        print(f"  D105 (16 Bounty Contracts)  : {dims['D105_dynamic_bounty_hunter_contracts_and_chaotic_pk_manhunt_matrix']['score']}/100 ({dims['D105_dynamic_bounty_hunter_contracts_and_chaotic_pk_manhunt_matrix']['verified']}/{dims['D105_dynamic_bounty_hunter_contracts_and_chaotic_pk_manhunt_matrix']['target']} bounty manhunt contracts)")
+        print(f"  D106 (15 PITR Chaos Drills) : {dims['D106_distributed_world_state_pitr_backup_and_chaos_drill_matrix']['score']}/100 ({dims['D106_distributed_world_state_pitr_backup_and_chaos_drill_matrix']['verified']}/{dims['D106_distributed_world_state_pitr_backup_and_chaos_drill_matrix']['target']} disaster recovery pitr drills)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

@@ -4576,9 +4576,9 @@ class TestStudioWebPerspectives(unittest.TestCase):
         whc = bundle["worldHistoryAndConcept"]
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.evaluate_80d_atlas(whc, atlas)
-        self.assertEqual(audit["wave"], 50)
+        self.assertGreaterEqual(audit["wave"], 50)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 104)
+        self.assertGreaterEqual(len(audit["dimensions"]), 104)
 
         d103 = audit["dimensions"]["D103_archaeological_relic_excavation_lore_codex_and_bestiary_matrix"]
         self.assertEqual(d103["score"], 100.0)
@@ -4650,10 +4650,124 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas104DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 104)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 104)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 104)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 104)
         self.assertIn("104-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_dedicated_world_atlas_wave51_bounty_manhunt_contracts_and_disaster_recovery_pitr_drills(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        t_summary = report["summary"]["tShapedAtlasSummary"]
+        self.assertEqual(t_summary["bountyManhuntContractsCount"], 16)
+        self.assertEqual(t_summary["disasterRecoveryPitrDrillsCount"], 15)
+
+        index_html = web.INDEX_HTML
+        for token in (
+            "ATLAS_BOUNTY_MANHUNT_MODE",
+            "BOUNTY_MANHUNT_CONTRACTS",
+            "setAtlasBountyManhuntMode",
+            "selectBountyManhuntContract",
+            "renderAtlasBountyManhuntBarHtml",
+            "studioBountyManhuntContractsOverlay",
+            "ATLAS_PITR_CHAOS_MODE",
+            "DISASTER_RECOVERY_DRILLS",
+            "setAtlasPitrChaosMode",
+            "selectDisasterRecoveryDrill",
+            "renderAtlasPitrChaosBarHtml",
+            "studioDisasterRecoveryDrillsOverlay",
+            "🎯 Bounty &amp; PK Manhunt (16)",
+            "🛡️ PITR &amp; Chaos Drills (15)",
+            "106-Dimension Semantic-Zoom Atlas Score",
+            "D1–D106 Verified",
+        ):
+            self.assertIn(token, index_html)
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.evaluate_80d_atlas(whc, atlas)
+        self.assertEqual(audit["wave"], 51)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 106)
+
+        d105 = audit["dimensions"]["D105_dynamic_bounty_hunter_contracts_and_chaotic_pk_manhunt_matrix"]
+        self.assertEqual(d105["score"], 100.0)
+        self.assertEqual(d105["verified"], 16)
+        self.assertEqual(d105["target"], 16)
+        self.assertTrue(d105["ui_wired"])
+
+        d106 = audit["dimensions"]["D106_distributed_world_state_pitr_backup_and_chaos_drill_matrix"]
+        self.assertEqual(d106["score"], 100.0)
+        self.assertEqual(d106["verified"], 15)
+        self.assertEqual(d106["target"], 15)
+        self.assertTrue(d106["ui_wired"])
+
+        bounties = atlas["bounty_manhunt_contracts"]
+        self.assertEqual(len(bounties), 16)
+        expected_bounty_categories = {
+            "Chaotic Player PK Warrant",
+            "Named Bandit Captain Assassination",
+            "Caravan Hijacker Interdiction",
+            "Wandering World-Outlaw Posse Hunt",
+        }
+        seen_bounty_categories = set()
+        for b_row in bounties:
+            self.assertIn(b_row["contract_category"], expected_bounty_categories)
+            seen_bounty_categories.add(b_row["contract_category"])
+            self.assertEqual(
+                b_row["anti_collusion_guard"],
+                "Zero-Clan/Ally Payout + 72h Kill-Cooldown + Gear-Drop Escrow",
+            )
+            self.assertEqual(b_row["hunter_rank_tier"], "Bronze Tracker .. Sovereign Executioner")
+            self.assertGreaterEqual(b_row["karma_threshold_min"], 500)
+            self.assertLessEqual(b_row["karma_threshold_min"], 25000)
+            self.assertGreaterEqual(b_row["compass_tracking_pulse_sec"], 5)
+            self.assertLessEqual(b_row["compass_tracking_pulse_sec"], 30)
+            self.assertGreaterEqual(b_row["escrow_reward_adena_k"], 150)
+            self.assertLessEqual(b_row["escrow_reward_adena_k"], 15000)
+        self.assertEqual(seen_bounty_categories, expected_bounty_categories)
+
+        drills = atlas["disaster_recovery_pitr_drills"]
+        self.assertEqual(len(drills), 15)
+        expected_faults = {
+            "Primary Postgres Node Kill During Siege",
+            "Redis Cluster Split-Brain Partition",
+            "Region AZ Blackhole Failover",
+            "Corrupted Loot-Table Hot-Config Rollback",
+        }
+        seen_faults = set()
+        for d_row in drills:
+            self.assertIn(d_row["chaos_fault_scenario"], expected_faults)
+            seen_faults.add(d_row["chaos_fault_scenario"])
+            self.assertEqual(
+                d_row["wal_archive_backend"],
+                "pgBackRest S3 Object-Lock + Zstd Continuous WAL",
+            )
+            self.assertEqual(
+                d_row["merkle_inventory_reconcile"],
+                "100% Zero-Dupe / Zero-Vanish Invariant Pass",
+            )
+            self.assertEqual(
+                d_row["chaos_schedule_cadence"],
+                "Weekly Automated GameDay Drill",
+            )
+            self.assertGreaterEqual(d_row["rpo_zero_data_loss_ms"], 0)
+            self.assertLessEqual(d_row["rpo_zero_data_loss_ms"], 50)
+            self.assertGreaterEqual(d_row["rto_automated_failover_sec"], 2.5)
+            self.assertLessEqual(d_row["rto_automated_failover_sec"], 14.0)
+        self.assertEqual(seen_faults, expected_faults)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas106DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 106)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 106)
+        self.assertIn("106-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

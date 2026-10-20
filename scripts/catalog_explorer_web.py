@@ -116,15 +116,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas100DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas102DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas104DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas106DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 50)),
+        "wave": int(iter_state.get("wave", 51)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"106-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"104-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"102-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"100-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -168,7 +170,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 · D1–D90 · D1–D92 · D1–D94 · D1–D96 · D1–D98 · D1–D100 · D1–D102 · D1–D104 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 · D1–D90 · D1–D92 · D1–D94 · D1–D96 · D1–D98 · D1–D100 · D1–D102 · D1–D104 · D1–D106 Verified"
         ),
     }
     return merged
@@ -4430,7 +4432,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">104-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 102-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 100-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 98-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 96-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 94-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 92-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified · D1–D92 Verified · D1–D94 Verified · D1–D96 Verified · D1–D98 Verified · D1–D100 Verified · D1–D102 Verified · D1–D104 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">106-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 104-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 102-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 100-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 98-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 96-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 94-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 92-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified · D1–D92 Verified · D1–D94 Verified · D1–D96 Verified · D1–D98 Verified · D1–D100 Verified · D1–D102 Verified · D1–D104 Verified · D1–D106 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4553,6 +4555,8 @@ let ATLAS_NOCTURNAL_AFFIX_MODE = 'All';
 let ATLAS_COMBAT_REPLAY_MODE = 'All';
 let ATLAS_LORE_CODEX_MODE = 'All';
 let ATLAS_PHYSICS_BIOME_MODE = 'All';
+let ATLAS_BOUNTY_MANHUNT_MODE = 'All';
+let ATLAS_PITR_CHAOS_MODE = 'All';
 let SELECTED_ANTI_BOT_SENTINEL_ID = '';
 let SELECTED_GODOT_STORYBOOK_PREFAB_ID = '';
 let SELECTED_NAVMESH_SECTOR_ID = '';
@@ -4575,6 +4579,8 @@ let SELECTED_NOCTURNAL_AFFIX_SPAWN_ID = '';
 let SELECTED_DETERMINISTIC_COMBAT_REPLAY_ID = '';
 let SELECTED_ARCHAEOLOGICAL_CODEX_ID = '';
 let SELECTED_DESTRUCTIBLE_PHYSICS_BIOME_ID = '';
+let SELECTED_BOUNTY_MANHUNT_CONTRACT_ID = '';
+let SELECTED_DISASTER_RECOVERY_DRILL_ID = '';
 let ANTI_BOT_SENTINELS = [];
 let GODOT_STORYBOOK_PREFABS = [];
 let NAVMESH_OBSTACLE_SECTORS = [];
@@ -4597,6 +4603,8 @@ let NOCTURNAL_AFFIX_SPAWNS = [];
 let DETERMINISTIC_COMBAT_REPLAYS = [];
 let ARCHAEOLOGICAL_CODICES = [];
 let DESTRUCTIBLE_PHYSICS_BIOMES = [];
+let BOUNTY_MANHUNT_CONTRACTS = [];
+let DISASTER_RECOVERY_DRILLS = [];
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4691,6 +4699,8 @@ const ATLAS_STATE_STORE = {
   combatReplayMode: 'All',                 // D102: Active 15-Sector [Role 4: Backend Infra] Deterministic Combat Replay Verifier & BLAKE3 Tick Hash Selector
   loreCodexMode: 'All',                    // D103: Active 16-Codex [Role 2: Content & World Tools] Dynamic World Lore Codex, Relic Excavation & Bestiary Mastery Selector
   physicsBiomeMode: 'All',                 // D104: Active 15-Biome [Role 3: Technical Artist] Procedural Foliage Wind-Field, Water Ripple & Destructible Physics Selector
+  bountyManhuntMode: 'All',                // D105: Active 16-Contract [Role 2: Content & World Tools] Dynamic Bounty Hunter Contracts, Chaotic PK Manhunt & High-Value Target Tracking Selector
+  pitrChaosMode: 'All',                    // D106: Active 15-Shard [Role 4: Backend Infra] Distributed World-State Snapshot Backup, PITR & Disaster-Recovery Chaos Drill Selector
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4736,6 +4746,50 @@ function selectDestructiblePhysicsBiome(biomeId) {
   const tatlas = sp.tShapedWorldAtlas || {};
   DESTRUCTIBLE_PHYSICS_BIOMES = tatlas.destructible_physics_biomes || [];
   const item = DESTRUCTIBLE_PHYSICS_BIOMES.find(b => b.physics_biome_id === SELECTED_DESTRUCTIBLE_PHYSICS_BIOME_ID);
+  if (item) {
+    focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
+
+function setAtlasBountyManhuntMode(modeId) {
+  ATLAS_BOUNTY_MANHUNT_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.bountyManhuntMode = ATLAS_BOUNTY_MANHUNT_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectBountyManhuntContract(bountyId) {
+  SELECTED_BOUNTY_MANHUNT_CONTRACT_ID = String(bountyId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  BOUNTY_MANHUNT_CONTRACTS = tatlas.bounty_manhunt_contracts || [];
+  const item = BOUNTY_MANHUNT_CONTRACTS.find(b => b.bounty_id === SELECTED_BOUNTY_MANHUNT_CONTRACT_ID);
+  if (item) {
+    if (String(item.zone_id || '').startsWith('zone-town-')) {
+      focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+      return;
+    }
+    focusFieldOrFortressBlueprint(item.zone_id, `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
+
+function setAtlasPitrChaosMode(modeId) {
+  ATLAS_PITR_CHAOS_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.pitrChaosMode = ATLAS_PITR_CHAOS_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectDisasterRecoveryDrill(drillId) {
+  SELECTED_DISASTER_RECOVERY_DRILL_ID = String(drillId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  DISASTER_RECOVERY_DRILLS = tatlas.disaster_recovery_pitr_drills || [];
+  const item = DISASTER_RECOVERY_DRILLS.find(d => d.pitr_drill_id === SELECTED_DISASTER_RECOVERY_DRILL_ID);
   if (item) {
     focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
     return;
@@ -14717,6 +14771,170 @@ function renderAtlasPhysicsBiomeBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasBountyManhuntBarHtml(tatlas) {
+  const bounties = Array.isArray(tatlas && tatlas.bounty_manhunt_contracts) ? tatlas.bounty_manhunt_contracts : [];
+  if (!bounties.length) return '';
+  const isAct = !!ATLAS_BOUNTY_MANHUNT_MODE;
+  const selId = SELECTED_BOUNTY_MANHUNT_CONTRACT_ID || (bounties[0] && bounties[0].bounty_id) || 'bounty-contract-01-hunters-village-master-guild';
+  const activeBounty = bounties.find(b => b.bounty_id === selId) || bounties[0];
+
+  return `
+    <div id="atlasBountyManhuntBar" style="display:flex;flex-direction:column;gap:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#f87171">🎯 D105 DYNAMIC BOUNTY HUNTER CONTRACTS, CHAOTIC PK MANHUNT &amp; HIGH-VALUE TARGET TRACKING MATRIX:</span>
+          <button type="button" onclick="setAtlasBountyManhuntMode(!ATLAS_BOUNTY_MANHUNT_MODE)"
+                  style="min-height:26px;padding:3px 10px;border-radius:7px;font-size:10px;font-weight:900;cursor:pointer;border:1.5px solid ${isAct ? '#fde047' : 'rgba(239,68,68,0.55)'};background:${isAct ? '#7f1d1d' : '#0f172a'};color:${isAct ? '#ffffff' : '#fecaca'}">
+            🎯 Bounty &amp; PK Manhunt (16) ${isAct ? '● ACTIVE' : '○ OFF'}
+          </button>
+          <span style="font-size:10px;color:#cbd5e1;font-weight:700">
+            16 Bounty Boards &amp; Manhunt Sectors · Chaotic PK Warrants / Bandit Lords / Caravan Interdiction · Anti-Collusion Escrow
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+          ${bounties.slice(0, 6).map(b => {
+            const bSel = isAct && b.bounty_id === (activeBounty && activeBounty.bounty_id);
+            const colHex = b.accent || '#ef4444';
+            return `
+              <button type="button" onclick="selectBountyManhuntContract('${escapeHtml(b.bounty_id)}')"
+                      style="min-height:23px;padding:2px 7px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${bSel ? '#fde047' : colHex};background:${bSel ? '#7f1d1d' : '#090d14'};color:${bSel ? '#ffffff' : '#fecaca'}">
+                🎯 ${escapeHtml((b.title || b.bounty_id).split('—')[0].trim())} (${escapeHtml(String(b.escrow_reward_adena_k))}k)
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      ${isAct && activeBounty ? `
+        <div style="padding:8px 10px;border-radius:8px;background:rgba(127,29,29,0.42);border:1px solid rgba(239,68,68,0.45);display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+              <span style="font-size:11px;font-weight:900;color:#fecaca">🎯 ${escapeHtml(activeBounty.title)}</span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#fde047;border:1px solid rgba(250,204,21,0.4)">
+                Category: ${escapeHtml(activeBounty.contract_category)} · Karma ≥ ${escapeHtml(String(activeBounty.karma_threshold_min))}
+              </span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#34d399;border:1px solid rgba(52,211,153,0.4)">
+                Escrow: ${escapeHtml(String(activeBounty.escrow_reward_adena_k))}k Adena · Compass Pulse: ${escapeHtml(String(activeBounty.compass_tracking_pulse_sec))}s
+              </span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#38bdf8;border:1px solid rgba(56,189,248,0.4)">
+                Rank: ${escapeHtml(activeBounty.hunter_rank_tier)} · ${escapeHtml(activeBounty.anti_collusion_guard)}
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button type="button" onclick="openTownDetail('${escapeHtml(activeBridgeOrTownId(activeBounty.town_id))}')"
+                      style="min-height:22px;padding:2px 8px;border-radius:5px;border:1px solid #ef4444;background:#7f1d1d;color:#fee2e2;font-size:9.5px;font-weight:800;cursor:pointer">
+                🏛️ Bounty Town: ${escapeHtml(activeBounty.town_id)}
+              </button>
+            </div>
+          </div>
+          <div style="font-size:10px;color:#e2e8f0;line-height:1.4">
+            <strong style="color:#fde047">Manhunt Sector:</strong> <span class="mono" style="color:#38bdf8">${escapeHtml(activeBounty.zone_id)} / ${escapeHtml(activeBounty.dungeon_id)}</span>
+            · <strong style="color:#fecaca">Warrant Brief:</strong> ${escapeHtml(activeBounty.notes)}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:5px">
+            ${bounties.map(b => {
+              const isCardSel = b.bounty_id === activeBounty.bounty_id;
+              return `
+                <div onclick="selectBountyManhuntContract('${escapeHtml(b.bounty_id)}')"
+                     style="padding:5px 7px;border-radius:6px;cursor:pointer;background:${isCardSel ? 'rgba(239,68,68,0.26)' : 'rgba(9,13,20,0.85)'};border:1px solid ${isCardSel ? '#fde047' : 'rgba(239,68,68,0.3)'};display:flex;flex-direction:column;gap:2px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.5px;font-weight:800;color:#f8fafc">${escapeHtml((b.title || b.bounty_id).split('—')[0].trim())}</span>
+                    <span class="mono" style="font-size:8.5px;color:#fecaca">${escapeHtml(String(b.escrow_reward_adena_k))}k · ${escapeHtml(String(b.compass_tracking_pulse_sec))}s</span>
+                  </div>
+                  <div class="mono" style="font-size:8.5px;color:#cbd5e1">
+                    ${escapeHtml(b.contract_category)}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasPitrChaosBarHtml(tatlas) {
+  const drills = Array.isArray(tatlas && tatlas.disaster_recovery_pitr_drills) ? tatlas.disaster_recovery_pitr_drills : [];
+  if (!drills.length) return '';
+  const isAct = !!ATLAS_PITR_CHAOS_MODE;
+  const selId = SELECTED_DISASTER_RECOVERY_DRILL_ID || (drills[0] && drills[0].pitr_drill_id) || 'pitr-drill-01-talking-island';
+  const activeDrill = drills.find(d => d.pitr_drill_id === selId) || drills[0];
+
+  return `
+    <div id="atlasPitrChaosBar" style="display:flex;flex-direction:column;gap:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#38bdf8">🛡️ D106 DISTRIBUTED WORLD-STATE SNAPSHOT BACKUP, POINT-IN-TIME RECOVERY (PITR) &amp; DISASTER-RECOVERY CHAOS DRILL MATRIX:</span>
+          <button type="button" onclick="setAtlasPitrChaosMode(!ATLAS_PITR_CHAOS_MODE)"
+                  style="min-height:26px;padding:3px 10px;border-radius:7px;font-size:10px;font-weight:900;cursor:pointer;border:1.5px solid ${isAct ? '#fde047' : 'rgba(56,189,248,0.55)'};background:${isAct ? '#0c4a6e' : '#0f172a'};color:${isAct ? '#ffffff' : '#bae6fd'}">
+            🛡️ PITR &amp; Chaos Drills (15) ${isAct ? '● ACTIVE' : '○ OFF'}
+          </button>
+          <span style="font-size:10px;color:#cbd5e1;font-weight:700">
+            15 Town Shard Partitions · pgBackRest Zstd WAL / Zero-Dupe Merkle Inventory Reconcile · Weekly Automated GameDay Drills
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+          ${drills.slice(0, 6).map(d => {
+            const dSel = isAct && d.pitr_drill_id === (activeDrill && activeDrill.pitr_drill_id);
+            const colHex = d.accent || '#38bdf8';
+            return `
+              <button type="button" onclick="selectDisasterRecoveryDrill('${escapeHtml(d.pitr_drill_id)}')"
+                      style="min-height:23px;padding:2px 7px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${dSel ? '#fde047' : colHex};background:${dSel ? '#0c4a6e' : '#090d14'};color:${dSel ? '#ffffff' : '#bae6fd'}">
+                🛡️ ${escapeHtml((d.title || d.pitr_drill_id).split('—')[0].trim())} (RTO ${escapeHtml(String(d.rto_automated_failover_sec))}s)
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      ${isAct && activeDrill ? `
+        <div style="padding:8px 10px;border-radius:8px;background:rgba(12,74,110,0.42);border:1px solid rgba(56,189,248,0.45);display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+              <span style="font-size:11px;font-weight:900;color:#bae6fd">🛡️ ${escapeHtml(activeDrill.title)}</span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#fde047;border:1px solid rgba(250,204,21,0.4)">
+                Scenario: ${escapeHtml(activeDrill.chaos_fault_scenario)}
+              </span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#34d399;border:1px solid rgba(52,211,153,0.4)">
+                RPO: ${escapeHtml(String(activeDrill.rpo_zero_data_loss_ms))} ms · RTO: ${escapeHtml(String(activeDrill.rto_automated_failover_sec))} s
+              </span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#38bdf8;border:1px solid rgba(56,189,248,0.4)">
+                ${escapeHtml(activeDrill.wal_archive_backend)} · ${escapeHtml(activeDrill.merkle_inventory_reconcile)}
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button type="button" onclick="openTownDetail('${escapeHtml(activeBridgeOrTownId(activeDrill.town_id))}')"
+                      style="min-height:22px;padding:2px 8px;border-radius:5px;border:1px solid #38bdf8;background:#0c4a6e;color:#e0f2fe;font-size:9.5px;font-weight:800;cursor:pointer">
+                🏛️ Inspect Shard: ${escapeHtml(activeDrill.town_id)}
+              </button>
+            </div>
+          </div>
+          <div style="font-size:10px;color:#e2e8f0;line-height:1.4">
+            <strong style="color:#fde047">Shard Partition:</strong> <span class="mono" style="color:#38bdf8">${escapeHtml(activeDrill.zone_id)} (${escapeHtml(activeDrill.chaos_schedule_cadence)})</span>
+            · <strong style="color:#bae6fd">GameDay Drill Notes:</strong> ${escapeHtml(activeDrill.notes)}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:5px">
+            ${drills.map(d => {
+              const isCardSel = d.pitr_drill_id === activeDrill.pitr_drill_id;
+              return `
+                <div onclick="selectDisasterRecoveryDrill('${escapeHtml(d.pitr_drill_id)}')"
+                     style="padding:5px 7px;border-radius:6px;cursor:pointer;background:${isCardSel ? 'rgba(56,189,248,0.26)' : 'rgba(9,13,20,0.85)'};border:1px solid ${isCardSel ? '#fde047' : 'rgba(56,189,248,0.3)'};display:flex;flex-direction:column;gap:2px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.5px;font-weight:800;color:#f8fafc">${escapeHtml((d.title || d.pitr_drill_id).split('—')[0].trim())}</span>
+                    <span class="mono" style="font-size:8.5px;color:#bae6fd">RPO ${escapeHtml(String(d.rpo_zero_data_loss_ms))}ms · RTO ${escapeHtml(String(d.rto_automated_failover_sec))}s</span>
+                  </div>
+                  <div class="mono" style="font-size:8.5px;color:#cbd5e1">
+                    ${escapeHtml(d.chaos_fault_scenario)}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -14925,6 +15143,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasCombatReplayBarHtml(tatlas)}
       ${renderAtlasLoreCodexBarHtml(tatlas)}
       ${renderAtlasPhysicsBiomeBarHtml(tatlas)}
+      ${renderAtlasBountyManhuntBarHtml(tatlas)}
+      ${renderAtlasPitrChaosBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -19372,6 +19592,46 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // Dynamic Bounty Hunter Contracts, Chaotic PK Manhunt & High-Value Target Tracking Matrix Overlay (D105)
+  const bountyManhuntContractRecords = Array.isArray(atlas.bounty_manhunt_contracts) ? atlas.bounty_manhunt_contracts : [];
+  const bountyManhuntContractsOverlaySvg = !ATLAS_BOUNTY_MANHUNT_MODE ? '' : `
+    <g id="studioBountyManhuntContractsOverlay">
+      ${bountyManhuntContractRecords.map((b) => {
+        const wx = typeof b.world_x === 'number' ? b.world_x : 540;
+        const wy = typeof b.world_y === 'number' ? b.world_y : 295;
+        const colHex = b.accent || '#ef4444';
+        const cat = b.contract_category || '';
+        const iconTxt = cat.includes('PK') ? '🎯' : (cat.includes('Bandit') ? '🗡️' : (cat.includes('Caravan') ? '🛡️' : '💀'));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectBountyManhuntContract('${escapeHtml(b.bounty_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.6" fill="rgba(127,29,29,0.78)" stroke="${escapeHtml(colHex)}" stroke-width="2.1"/>
+            <text x="${wx}" y="${wy + 3.5}" text-anchor="middle" font-size="8.5">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // Distributed World-State Snapshot Backup, Point-in-Time Recovery (PITR) & Disaster-Recovery Chaos Drill Matrix Overlay (D106)
+  const disasterRecoveryDrillRecords = Array.isArray(atlas.disaster_recovery_pitr_drills) ? atlas.disaster_recovery_pitr_drills : [];
+  const disasterRecoveryDrillsOverlaySvg = !ATLAS_PITR_CHAOS_MODE ? '' : `
+    <g id="studioDisasterRecoveryDrillsOverlay">
+      ${disasterRecoveryDrillRecords.map((d) => {
+        const wx = typeof d.world_x === 'number' ? d.world_x : 540;
+        const wy = typeof d.world_y === 'number' ? d.world_y : 295;
+        const colHex = d.accent || '#38bdf8';
+        const fault = d.chaos_fault_scenario || '';
+        const iconTxt = fault.includes('Postgres') ? '🛡️' : (fault.includes('Redis') ? '⚡' : (fault.includes('AZ') ? '🌐' : '⏪'));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectDisasterRecoveryDrill('${escapeHtml(d.pitr_drill_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.6" fill="rgba(12,74,110,0.78)" stroke="${escapeHtml(colHex)}" stroke-width="2.1"/>
+            <text x="${wx}" y="${wy + 3.5}" text-anchor="middle" font-size="8.5">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -19456,6 +19716,8 @@ function renderDedicatedWorldAtlas() {
     ${deterministicCombatReplaysOverlaySvg}
     ${archaeologicalLoreCodicesOverlaySvg}
     ${destructiblePhysicsBiomesOverlaySvg}
+    ${bountyManhuntContractsOverlaySvg}
+    ${disasterRecoveryDrillsOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

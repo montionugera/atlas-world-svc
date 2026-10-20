@@ -539,6 +539,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/destructiblePhysicsBiomeSpec" }
     },
+    "bounty_manhunt_contracts": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/bountyManhuntContractSpec" }
+    },
+    "disaster_recovery_pitr_drills": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/disasterRecoveryPitrDrillSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -6296,6 +6308,153 @@
         "accent": {
           "type": "string",
           "enum": ["#10b981", "#34d399", "#06b6d4", "#38bdf8"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "bountyManhuntContractSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bounty_id",
+        "title",
+        "zone_id",
+        "town_id",
+        "dungeon_id",
+        "contract_category",
+        "karma_threshold_min",
+        "compass_tracking_pulse_sec",
+        "escrow_reward_adena_k",
+        "anti_collusion_guard",
+        "hunter_rank_tier",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "bounty_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "zone_id": { "type": "string", "minLength": 1 },
+        "town_id": { "type": "string", "minLength": 1 },
+        "dungeon_id": { "type": "string", "minLength": 1 },
+        "contract_category": {
+          "type": "string",
+          "enum": [
+            "Chaotic Player PK Warrant",
+            "Named Bandit Captain Assassination",
+            "Caravan Hijacker Interdiction",
+            "Wandering World-Outlaw Posse Hunt"
+          ]
+        },
+        "karma_threshold_min": {
+          "type": "integer",
+          "minimum": 500,
+          "maximum": 25000
+        },
+        "compass_tracking_pulse_sec": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 30
+        },
+        "escrow_reward_adena_k": {
+          "type": "integer",
+          "minimum": 150,
+          "maximum": 15000
+        },
+        "anti_collusion_guard": {
+          "type": "string",
+          "const": "Zero-Clan/Ally Payout + 72h Kill-Cooldown + Gear-Drop Escrow"
+        },
+        "hunter_rank_tier": {
+          "type": "string",
+          "const": "Bronze Tracker .. Sovereign Executioner"
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#ef4444", "#f97316", "#eab308", "#a855f7"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "disasterRecoveryPitrDrillSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pitr_drill_id",
+        "title",
+        "town_id",
+        "zone_id",
+        "chaos_fault_scenario",
+        "wal_archive_backend",
+        "rpo_zero_data_loss_ms",
+        "rto_automated_failover_sec",
+        "merkle_inventory_reconcile",
+        "chaos_schedule_cadence",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "pitr_drill_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "town_id": { "type": "string", "minLength": 1 },
+        "zone_id": { "type": "string", "minLength": 1 },
+        "chaos_fault_scenario": {
+          "type": "string",
+          "enum": [
+            "Primary Postgres Node Kill During Siege",
+            "Redis Cluster Split-Brain Partition",
+            "Region AZ Blackhole Failover",
+            "Corrupted Loot-Table Hot-Config Rollback"
+          ]
+        },
+        "wal_archive_backend": {
+          "type": "string",
+          "const": "pgBackRest S3 Object-Lock + Zstd Continuous WAL"
+        },
+        "rpo_zero_data_loss_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50
+        },
+        "rto_automated_failover_sec": {
+          "type": "number",
+          "minimum": 2.5,
+          "maximum": 14.0
+        },
+        "merkle_inventory_reconcile": {
+          "type": "string",
+          "const": "100% Zero-Dupe / Zero-Vanish Invariant Pass"
+        },
+        "chaos_schedule_cadence": {
+          "type": "string",
+          "const": "Weekly Automated GameDay Drill"
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#38bdf8", "#10b981", "#60a5fa", "#34d399"]
         },
         "notes": { "type": "string" }
       }
