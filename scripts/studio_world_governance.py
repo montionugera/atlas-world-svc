@@ -718,6 +718,8 @@ def validate_world_governance(
                 "spawnerLootBalancerSuitesCount": len(t_doc.get("spawner_loot_balancer_suites") or []),
                 "combatSkillTimelineProfilesCount": len(t_doc.get("combat_skill_timeline_profiles") or []),
                 "buildFarmPatchCdnNodesCount": len(t_doc.get("build_farm_patch_cdn_nodes") or []),
+                "architectDxCodegenGatesCount": len(t_doc.get("architect_dx_codegen_gates") or []),
+                "twoRingStudio80dSignoffMatrixCount": len(t_doc.get("two_ring_studio_80d_signoff_matrix") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1775,6 +1777,43 @@ def validate_world_governance(
                 if bf_tzid not in town_zone_ids:
                     errors.append(
                         f"GOV-10 violation: build_farm_patch_cdn_nodes '{bf_id}' references unknown town_zone_id '{bf_tzid}'"
+                    )
+
+            # Validate 15-Town Architect DX, Cross-Tool Undo/Redo & Codegen Drift-Gate Matrix (D79)
+            arch_dx_gates = t_doc.get("architect_dx_codegen_gates") or []
+            if arch_dx_gates and len(arch_dx_gates) != 15:
+                errors.append(
+                    f"GOV-10 violation: architect_dx_codegen_gates must have 15 town architect DX/codegen gates, got {len(arch_dx_gates)}"
+                )
+            for dx_item in arch_dx_gates:
+                if not isinstance(dx_item, dict):
+                    continue
+                dx_id = str(dx_item.get("dx_gate_id", ""))
+                dx_tzid = str(dx_item.get("town_zone_id", ""))
+                if dx_tzid not in town_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: architect_dx_codegen_gates '{dx_id}' references unknown town_zone_id '{dx_tzid}'"
+                    )
+
+            # Validate 22-Record Two-Ring Studio (11-Role) 80D Sign-Off Matrix (D80)
+            two_ring_matrix = t_doc.get("two_ring_studio_80d_signoff_matrix") or []
+            if two_ring_matrix and len(two_ring_matrix) != 22:
+                errors.append(
+                    f"GOV-10 violation: two_ring_studio_80d_signoff_matrix must have 22 sign-off records, got {len(two_ring_matrix)}"
+                )
+            for tr_item in two_ring_matrix:
+                if not isinstance(tr_item, dict):
+                    continue
+                tr_id = str(tr_item.get("matrix_record_id", ""))
+                tr_zid = str(tr_item.get("zone_id", ""))
+                tr_did = str(tr_item.get("dungeon_id", ""))
+                if tr_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: two_ring_studio_80d_signoff_matrix '{tr_id}' references unknown zone_id '{tr_zid}'"
+                    )
+                if tr_did and tr_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: two_ring_studio_80d_signoff_matrix '{tr_id}' references unknown dungeon_id '{tr_did}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

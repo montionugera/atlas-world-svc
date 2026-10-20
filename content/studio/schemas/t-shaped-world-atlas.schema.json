@@ -383,6 +383,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/buildFarmPatchCdnNodeSpec" }
     },
+    "architect_dx_codegen_gates": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/architectDxCodegenGateSpec" }
+    },
+    "two_ring_studio_80d_signoff_matrix": {
+      "type": "array",
+      "minItems": 22,
+      "maxItems": 22,
+      "items": { "$ref": "#/$defs/twoRingStudio80dSignoffSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -4230,6 +4242,109 @@
           "minItems": 2,
           "items": { "type": "string" }
         }
+      }
+    },
+    "architectDxCodegenGateSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dx_gate_id",
+        "town_zone_id",
+        "town_name",
+        "architect_dx_category",
+        "owner_engineer_role",
+        "hub_loc",
+        "dx_and_ssot_protocol",
+        "anti_tool_sprawl_consolidation",
+        "enforced_standards"
+      ],
+      "properties": {
+        "dx_gate_id": { "type": "string" },
+        "town_zone_id": { "type": "string" },
+        "town_name": { "type": "string" },
+        "architect_dx_category": {
+          "type": "string",
+          "enum": [
+            "Unified_SSO_Editor_Session_Hub",
+            "Cross_Tool_Undo_Redo_Command_Stack",
+            "Schema_Codegen_Drift_Gate_Watchdog"
+          ]
+        },
+        "owner_engineer_role": { "type": "string" },
+        "hub_loc": { "type": "string" },
+        "dx_and_ssot_protocol": { "type": "string" },
+        "anti_tool_sprawl_consolidation": { "type": "string" },
+        "enforced_standards": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "twoRingStudio80dSignoffSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "matrix_record_id",
+        "studio_ring",
+        "studio_role",
+        "tooling_pillar_stage",
+        "milestone_title",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "certified_dimensions",
+        "verdict_and_evidence"
+      ],
+      "properties": {
+        "matrix_record_id": { "type": "string" },
+        "studio_ring": {
+          "type": "string",
+          "enum": [
+            "Ring_A_Creative_Council",
+            "Ring_B_Platform_Tools_Squad"
+          ]
+        },
+        "studio_role": {
+          "type": "string",
+          "enum": [
+            "Product_Owner",
+            "Game_Designer_Lead",
+            "Player_Growth_Path_Designer",
+            "Game_Story_Designer",
+            "Monster_And_Mob_Designer",
+            "Lead_Systems_Map_Architect",
+            "Lead_Tools_Pipeline_Architect",
+            "Content_World_Tools_Engineer",
+            "Technical_Artist_Pipeline_DCC",
+            "Backend_Simulation_Infra_Engineer",
+            "LiveOps_Build_GM_Engineer"
+          ]
+        },
+        "tooling_pillar_stage": {
+          "type": "string",
+          "enum": [
+            "Stage_1_Content_And_World",
+            "Stage_2_Asset_And_Build_Pipeline",
+            "Stage_3_Server_And_Simulation",
+            "Stage_4_LiveOps_And_GM"
+          ]
+        },
+        "milestone_title": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "certified_dimensions": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "verdict_and_evidence": { "type": "string" }
       }
     }
   }

@@ -103,15 +103,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas74DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas76DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas78DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas80DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 37)),
+        "wave": int(iter_state.get("wave", 38)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"80-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"78-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"76-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"74-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -142,7 +144,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 Verified"
         ),
     }
     return merged
@@ -4404,7 +4406,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4501,6 +4503,8 @@ let ATLAS_DIALOGUE_GRAPH_MODE = 'All';
 let ATLAS_SPAWNER_BALANCER_MODE = 'All';
 let ATLAS_SKILL_TIMELINE_MODE = 'All';
 let ATLAS_BUILD_FARM_MODE = 'All';
+let ATLAS_ARCHITECT_DX_MODE = 'All';
+let ATLAS_TWO_RING_SIGNOFF_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4569,6 +4573,8 @@ const ATLAS_STATE_STORE = {
   spawnerBalancerMode: 'All',              // D76: Active 16-Zone [Role 1 & 2: Spawner & Economy Tools] Visual Spawner & Loot Balancer Selector ('Off' | 'All' | 'Visual_Spawner_Leash_Editor' | 'Monte_Carlo_Loot_Inflation_Balancer' | 'Hot_Reload_SSOT_Writeback_Bridge')
   skillTimelineMode: 'All',                // D77: Active 16-Archetype [Role 2: Combat Timeline Editor] Skill & Boss Telegraph Selector ('Off' | 'All' | 'Martial_Combo_Hitbox_Timeline' | 'Arcane_Cast_Interrupt_Timeline' | 'Boss_Telegraph_VFX_Timeline')
   buildFarmMode: 'All',                    // D78: Active 15-Node [Role 5: Build Farm & Patch CDN] Cooker & Delta Patch Selector ('Off' | 'All' | 'Godot_Client_Pak_Cooker_Node' | 'Server_Rs_Linux_Musl_Build_Runner' | 'Delta_Binary_Patch_CDN_Edge')
+  architectDxMode: 'All',                  // D79: Active 15-Town [Role 1: Lead Tools Architect] SSO, Undo/Redo & Codegen Drift-Gate Selector ('Off' | 'All' | 'Unified_SSO_Editor_Session_Hub' | 'Cross_Tool_Undo_Redo_Command_Stack' | 'Schema_Codegen_Drift_Gate_Watchdog')
+  twoRingSignoffMode: 'All',               // D80: Active 22-Record [11-Role Two-Ring Studio] D1-D80 Sign-Off Selector ('Off' | 'All' | 'Ring_A_Creative_Council' | 'Ring_B_Platform_Tools_Squad')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4576,6 +4582,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasArchitectDxMode(modeId) {
+  ATLAS_ARCHITECT_DX_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.architectDxMode = ATLAS_ARCHITECT_DX_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasTwoRingSignoffMode(modeId) {
+  ATLAS_TWO_RING_SIGNOFF_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.twoRingSignoffMode = ATLAS_TWO_RING_SIGNOFF_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasSkillTimelineMode(modeId) {
   ATLAS_SKILL_TIMELINE_MODE = String(modeId || 'All');
@@ -12137,6 +12157,185 @@ function renderAtlasBuildFarmBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasArchitectDxBarHtml(tatlas) {
+  const gates = (tatlas && tatlas.architect_dx_codegen_gates) || [];
+  if (!gates.length) return '';
+  const curMode = ATLAS_ARCHITECT_DX_MODE || ATLAS_STATE_STORE.architectDxMode || 'All';
+  const allTowns = getAllAtlasTownEntries(tatlas);
+  const byTownId = {};
+  allTowns.forEach(t => { byTownId[t.zone_id] = t; });
+
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🏛️ All 15 Architect DX & Codegen Gates', col: '#38bdf8' },
+    { id: 'Unified_SSO_Editor_Session_Hub', label: '🔐 Unified SSO & Context Bus (5)', col: '#a78bfa' },
+    { id: 'Cross_Tool_Undo_Redo_Command_Stack', label: '↩️ 500-Step Undo/Redo Stack (5)', col: '#fbbf24' },
+    { id: 'Schema_Codegen_Drift_Gate_Watchdog', label: '🛡️ Rust/C# Codegen Drift-Gate (5)', col: '#34d399' }
+  ];
+
+  const filteredGates = curMode === 'Off'
+    ? []
+    : gates.filter(g => {
+        if (curMode === 'All') return true;
+        return g.architect_dx_category === curMode;
+      });
+  const featuredGates = filteredGates.slice(0, 4);
+
+  const catStyleMap = {
+    'Unified_SSO_Editor_Session_Hub': { col: '#a78bfa', badge: 'SSO & CONTEXT BUS', icon: '🔐' },
+    'Cross_Tool_Undo_Redo_Command_Stack': { col: '#fbbf24', badge: 'UNDO/REDO STACK', icon: '↩️' },
+    'Schema_Codegen_Drift_Gate_Watchdog': { col: '#34d399', badge: 'CODEGEN DRIFT-GATE', icon: '🛡️' }
+  };
+
+  return `
+    <div id="atlasArchitectDxBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#38bdf8">🏛️ ARCHITECT DX, UNDO/REDO &amp; CODEGEN GATES (D79 · ${gates.length} TOWN HUBS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasArchitectDxMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          5 UNIFIED SSO BUS · 5 RFC-6902 UNDO/REDO STACKS · 5 RUST/C# CODEGEN DRIFT-GATES
+        </span>
+      </div>
+
+      ${featuredGates.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredGates.map(g => {
+            const cs = catStyleMap[g.architect_dx_category] || { col: '#38bdf8', badge: 'ARCHITECT DX', icon: '🏛️' };
+            const tzidStr = String(g.town_zone_id || '');
+            const tObj = byTownId[tzidStr] || {};
+            const jumpJs = `focusTownStreetBlueprint('${escapeHtml(tObj.studio_node_id || tzidStr.replace('zone-', ''))}', '${escapeHtml(g.hub_loc)}')`;
+            const stdTxt = (g.enforced_standards || []).slice(0, 2).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${cs.col};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${cs.icon} ${escapeHtml(g.town_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${cs.col}">[${cs.badge}]</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#bae6fd;margin-top:1px">
+                    ⚙️ ${escapeHtml(g.dx_and_ssot_protocol.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🧹 ${escapeHtml(g.anti_tool_sprawl_consolidation.slice(0, 42))} · ${escapeHtml(stdTxt.slice(0, 32))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${cs.col};background:#0c4a6e;color:#f0f9ff;font-size:8px;font-weight:800;cursor:pointer">
+                    ${cs.icon} Jump to Town DX/Codegen Hub (5.2×)
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasTwoRingSignoffBarHtml(tatlas) {
+  const records = (tatlas && tatlas.two_ring_studio_80d_signoff_matrix) || [];
+  if (!records.length) return '';
+  const curMode = ATLAS_TWO_RING_SIGNOFF_MODE || ATLAS_STATE_STORE.twoRingSignoffMode || 'All';
+  const allZones = getAllAtlas63Zones(tatlas);
+  const byZoneId = {};
+  allZones.forEach(z => { byZoneId[z.zone_id] = z; });
+
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🏆 All 22 Two-Ring 80D Sign-Offs (11 Roles)', col: '#fde047' },
+    { id: 'Ring_A_Creative_Council', label: '🎨 Ring A: 6-Role Creative Council (12)', col: '#f472b6' },
+    { id: 'Ring_B_Platform_Tools_Squad', label: '🛠️ Ring B: 5-Role Platform & Tools Squad (10)', col: '#38bdf8' }
+  ];
+
+  const filteredRecords = curMode === 'Off'
+    ? []
+    : records.filter(r => {
+        if (curMode === 'All') return true;
+        return r.studio_ring === curMode;
+      });
+  const featuredRecords = filteredRecords.slice(0, 4);
+
+  const ringStyleMap = {
+    'Ring_A_Creative_Council': { col: '#f472b6', badge: 'RING A · CREATIVE', icon: '🎨' },
+    'Ring_B_Platform_Tools_Squad': { col: '#38bdf8', badge: 'RING B · TOOLS SQUAD', icon: '🛠️' }
+  };
+
+  return `
+    <div id="atlasTwoRingSignoffBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fde047">🏆 TWO-RING STUDIO 11-ROLE 80D SIGN-OFF MATRIX (D80 · ${records.length} RECORDS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasTwoRingSignoffMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#34d399;font-weight:800">
+          12 RING A CREATIVE COUNCIL · 10 RING B PLATFORM/TOOLS SQUAD · D1–D80 = 100.0/100
+        </span>
+      </div>
+
+      ${featuredRecords.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredRecords.map(r => {
+            const rs = ringStyleMap[r.studio_ring] || { col: '#fde047', badge: 'TWO-RING 80D', icon: '🏆' };
+            const zidStr = String(r.zone_id || '');
+            const didStr = String(r.dungeon_id || '');
+            const fidStr = String(r.floor_id || 'B1');
+            const zObj = byZoneId[zidStr] || {};
+            const isDungeon = Boolean(didStr);
+            const jumpJs = isDungeon
+              ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+              : (zidStr.startsWith('zone-town-')
+                  ? `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(r.loc)}')`
+                  : `focusFieldOrFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(r.loc)}')`);
+            const dimTxt = (r.certified_dimensions || []).slice(0, 3).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${rs.col};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${rs.icon} ${escapeHtml(r.milestone_title.slice(0, 36))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${rs.col}">[${escapeHtml(r.studio_role.slice(0, 18))}]</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fde68a;margin-top:1px">
+                    📐 ${escapeHtml(r.tooling_pillar_stage)} · ${escapeHtml(dimTxt.slice(0, 42))}
+                  </div>
+                  <div style="font-size:8px;color:#a7f3d0;margin-top:1px">
+                    ✅ ${escapeHtml(r.verdict_and_evidence.slice(0, 68))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${rs.col};background:#422006;color:#fef9c3;font-size:8px;font-weight:800;cursor:pointer">
+                    ${rs.icon} Jump to Certified Exemplar (${isDungeon ? escapeHtml(fidStr) : '5.2×'})
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -12319,6 +12518,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasSpawnerBalancerBarHtml(tatlas)}
       ${renderAtlasSkillTimelineBarHtml(tatlas)}
       ${renderAtlasBuildFarmBarHtml(tatlas)}
+      ${renderAtlasArchitectDxBarHtml(tatlas)}
+      ${renderAtlasTwoRingSignoffBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -16102,6 +16303,68 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // Architect DX, Cross-Tool Undo/Redo & Codegen Drift-Gate Overlay (D79)
+  const architectDxGates = Array.isArray(atlas.architect_dx_codegen_gates) ? atlas.architect_dx_codegen_gates : [];
+  const architectDxOverlaySvg = !ATLAS_ARCHITECT_DX_MODE ? '' : `
+    <g id="studioArchitectDxOverlay">
+      ${architectDxGates.map((g, idx) => {
+        const zMap = {};
+        (atlas.zones || []).forEach(z => { zMap[z.id] = z; });
+        const zidStr = g.town_zone_id || '';
+        const zObj = zMap[zidStr] || {};
+        const rawX = typeof zObj.x === 'number' ? zObj.x : -14000;
+        const rawY = typeof zObj.y === 'number' ? zObj.y : 123500;
+        const dxc = locToAtlasSvg(rawX + ((idx % 3) - 1) * 3350, rawY - 3100);
+        const cat = g.architect_dx_category || 'Unified_SSO_Editor_Session_Hub';
+        const colHex = cat === 'Unified_SSO_Editor_Session_Hub'
+          ? '#a78bfa'
+          : (cat === 'Cross_Tool_Undo_Redo_Command_Stack' ? '#fbbf24' : '#34d399');
+        const iconTxt = cat === 'Unified_SSO_Editor_Session_Hub'
+          ? '🔐'
+          : (cat === 'Cross_Tool_Undo_Redo_Command_Stack' ? '↩️' : '🛡️');
+        const jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(g.hub_loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${dxc.svgX}" cy="${dxc.svgY}" r="10.4" fill="rgba(12,74,110,0.48)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${dxc.svgX}" y="${dxc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // Two-Ring Studio 11-Role Complete D1-D80 Sign-Off Matrix Overlay (D80)
+  const twoRingSignoffRecords = Array.isArray(atlas.two_ring_studio_80d_signoff_matrix) ? atlas.two_ring_studio_80d_signoff_matrix : [];
+  const twoRingSignoffOverlaySvg = !ATLAS_TWO_RING_SIGNOFF_MODE ? '' : `
+    <g id="studioTwoRingSignoffOverlay">
+      ${twoRingSignoffRecords.map((r, idx) => {
+        const zMap = {};
+        (atlas.zones || []).forEach(z => { zMap[z.id] = z; });
+        const zidStr = r.zone_id || '';
+        const didStr = r.dungeon_id || '';
+        const fidStr = r.floor_id || 'B1';
+        const zObj = zMap[zidStr] || {};
+        const rawX = typeof zObj.x === 'number' ? zObj.x : -14000;
+        const rawY = typeof zObj.y === 'number' ? zObj.y : 123500;
+        const trc = locToAtlasSvg(rawX + ((idx % 4) - 1.5) * 3100, rawY + 3400);
+        const sring = r.studio_ring || 'Ring_A_Creative_Council';
+        const colHex = sring === 'Ring_A_Creative_Council' ? '#f472b6' : '#38bdf8';
+        const iconTxt = sring === 'Ring_A_Creative_Council' ? '🎨' : '🛠️';
+        const jumpJs = didStr
+          ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+          : (zidStr.startsWith('zone-town-')
+              ? `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(r.loc)}')`
+              : `focusFieldOrFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(r.loc)}')`);
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${trc.svgX}" cy="${trc.svgY}" r="10.6" fill="rgba(66,32,6,0.52)" stroke="${colHex}" stroke-width="2.1"/>
+            <text x="${trc.svgX}" y="${trc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -16160,6 +16423,8 @@ function renderDedicatedWorldAtlas() {
     ${spawnerBalancerOverlaySvg}
     ${skillTimelineOverlaySvg}
     ${buildFarmOverlaySvg}
+    ${architectDxOverlaySvg}
+    ${twoRingSignoffOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

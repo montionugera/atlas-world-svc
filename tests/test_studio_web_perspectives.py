@@ -3196,7 +3196,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 78)
+        self.assertGreaterEqual(len(audit["dimensions"]), 78)
 
         d77 = audit["dimensions"]["D77_combat_skill_timeline_and_boss_telegraph_profiles"]
         self.assertEqual(d77["score"], 100.0)
@@ -3251,10 +3251,104 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas78DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 78)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 78)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 78)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 78)
         self.assertIn("78-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave38_architect_dx_codegen_gates_and_two_ring_studio_80d_signoff_matrix(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["architectDxCodegenGatesCount"], 15)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["twoRingStudio80dSignoffMatrixCount"], 22)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_ARCHITECT_DX_MODE",
+            "setAtlasArchitectDxMode",
+            "renderAtlasArchitectDxBarHtml",
+            "atlasArchitectDxBar",
+            "studioArchitectDxOverlay",
+            "Unified_SSO_Editor_Session_Hub",
+            "Cross_Tool_Undo_Redo_Command_Stack",
+            "Schema_Codegen_Drift_Gate_Watchdog",
+            "ATLAS_TWO_RING_SIGNOFF_MODE",
+            "setAtlasTwoRingSignoffMode",
+            "renderAtlasTwoRingSignoffBarHtml",
+            "atlasTwoRingSignoffBar",
+            "studioTwoRingSignoffOverlay",
+            "Ring_A_Creative_Council",
+            "Ring_B_Platform_Tools_Squad",
+            "80-Dimension Semantic-Zoom Atlas Score",
+            "D1–D80 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 38 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 80)
+
+        d79 = audit["dimensions"]["D79_architect_dx_undo_redo_and_codegen_drift_gates"]
+        self.assertEqual(d79["score"], 100.0)
+        self.assertEqual(d79["verified"], 15)
+        self.assertEqual(d79["target"], 15)
+        self.assertEqual(d79["unified_sso_editor_session_hubs"], 5)
+        self.assertEqual(d79["cross_tool_undo_redo_command_stacks"], 5)
+        self.assertEqual(d79["schema_codegen_drift_gate_watchdogs"], 5)
+        self.assertEqual(
+            set(d79["architect_dx_categories"]),
+            {
+                "Unified_SSO_Editor_Session_Hub",
+                "Cross_Tool_Undo_Redo_Command_Stack",
+                "Schema_Codegen_Drift_Gate_Watchdog",
+            },
+        )
+        self.assertTrue(d79["ui_wired"])
+
+        d80 = audit["dimensions"]["D80_two_ring_studio_11_role_80d_signoff_matrix"]
+        self.assertEqual(d80["score"], 100.0)
+        self.assertEqual(d80["verified"], 22)
+        self.assertEqual(d80["target"], 22)
+        self.assertEqual(d80["ring_a_creative_council_records"], 12)
+        self.assertEqual(d80["ring_b_platform_tools_squad_records"], 10)
+        self.assertEqual(
+            set(d80["studio_rings"]),
+            {"Ring_A_Creative_Council", "Ring_B_Platform_Tools_Squad"},
+        )
+        self.assertEqual(len(d80["studio_roles"]), 11)
+        self.assertEqual(len(d80["tooling_pillar_stages"]), 4)
+        self.assertTrue(d80["ui_wired"])
+
+        dx_gates = atlas["architect_dx_codegen_gates"]
+        self.assertEqual(len(dx_gates), 15)
+        self.assertEqual(len({g["town_zone_id"] for g in dx_gates}), 15)
+        self.assertEqual(sum(1 for g in dx_gates if g["architect_dx_category"] == "Unified_SSO_Editor_Session_Hub"), 5)
+        self.assertEqual(sum(1 for g in dx_gates if g["architect_dx_category"] == "Cross_Tool_Undo_Redo_Command_Stack"), 5)
+        self.assertEqual(sum(1 for g in dx_gates if g["architect_dx_category"] == "Schema_Codegen_Drift_Gate_Watchdog"), 5)
+        for g in dx_gates:
+            self.assertGreaterEqual(len(g["enforced_standards"]), 2)
+
+        signoffs = atlas["two_ring_studio_80d_signoff_matrix"]
+        self.assertEqual(len(signoffs), 22)
+        self.assertEqual(sum(1 for r in signoffs if r["studio_ring"] == "Ring_A_Creative_Council"), 12)
+        self.assertEqual(sum(1 for r in signoffs if r["studio_ring"] == "Ring_B_Platform_Tools_Squad"), 10)
+        self.assertEqual(len({r["studio_role"] for r in signoffs}), 11)
+        for r in signoffs:
+            self.assertGreaterEqual(len(r["certified_dimensions"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas80DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 80)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 80)
+        self.assertIn("80-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":
