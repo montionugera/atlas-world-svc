@@ -2485,7 +2485,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 64)
+        self.assertGreaterEqual(len(audit["dimensions"]), 64)
 
         d63 = audit["dimensions"]["D63_elemental_jewel_raid_rune_and_giants_relic_sanctums"]
         self.assertEqual(d63["score"], 100.0)
@@ -2540,10 +2540,99 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas64DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 64)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 64)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 64)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 64)
         self.assertIn("64-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave31_delusion_chamber_conduits_and_command_channel_raid_sanctums(self) -> None:
+        """Wave 31 (D65–D66): 12 Delusion Chamber & Aenkinel Raid Conduits & 14 Zaken, Freya & Frintezza Command-Channel Raid Sanctums."""
+        import scripts.catalog_explorer_web as web
+        import scripts.run_atlas_iteration_loop as loop
+        import scripts.studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["delusionChamberConduitsCount"], 12)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["commandChannelRaidSanctumsCount"], 14)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_DELUSION_CHAMBER_MODE",
+            "setAtlasDelusionChamberMode(",
+            "renderAtlasDelusionChamberBarHtml(",
+            "studioDelusionChamberOverlay",
+            "ATLAS_COMMAND_RAID_MODE",
+            "setAtlasCommandRaidMode(",
+            "renderAtlasCommandRaidBarHtml(",
+            "studioCommandChannelRaidOverlay",
+            "66-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 31 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 66)
+
+        d65 = audit["dimensions"]["D65_delusion_chamber_and_aenkinel_raid_conduits"]
+        self.assertEqual(d65["score"], 100.0)
+        self.assertEqual(d65["verified"], 12)
+        self.assertEqual(d65["target"], 12)
+        self.assertEqual(d65["seal_delusion_chambers"], 4)
+        self.assertEqual(d65["great_tower_of_seal_chambers"], 4)
+        self.assertEqual(d65["guiding_tea_leaf_conduits"], 4)
+        self.assertEqual(
+            set(d65["delusion_categories"]),
+            {
+                "Seal_Delusion_Chamber",
+                "Great_Tower_Of_Seal_Chamber",
+                "Guiding_Tea_Leaf_Conduit",
+            },
+        )
+        self.assertTrue(d65["ui_wired"])
+
+        d66 = audit["dimensions"]["D66_zaken_freya_and_frintezza_command_channel_raids"]
+        self.assertEqual(d66["score"], 100.0)
+        self.assertEqual(d66["verified"], 14)
+        self.assertEqual(d66["target"], 14)
+        self.assertEqual(d66["zaken_candlelight_caverns"], 5)
+        self.assertEqual(d66["ice_queen_freya_palaces"], 5)
+        self.assertEqual(d66["frintezza_organ_concert_halls"], 4)
+        self.assertEqual(
+            set(d66["expedition_wings"]),
+            {
+                "Zaken_Candlelight_Cavern",
+                "Ice_Queen_Freya_Palace",
+                "Frintezza_Organ_Concert_Hall",
+            },
+        )
+        self.assertTrue(d66["ui_wired"])
+
+        conduits = atlas["delusion_chamber_conduits"]
+        self.assertEqual(len(conduits), 12)
+        self.assertEqual(sum(1 for c in conduits if c["delusion_category"] == "Seal_Delusion_Chamber"), 4)
+        self.assertEqual(sum(1 for c in conduits if c["delusion_category"] == "Great_Tower_Of_Seal_Chamber"), 4)
+        self.assertEqual(sum(1 for c in conduits if c["delusion_category"] == "Guiding_Tea_Leaf_Conduit"), 4)
+        for c in conduits:
+            self.assertGreaterEqual(len(c["featured_delusion_drops"]), 2)
+
+        raid_sanctums = atlas["command_channel_raid_sanctums"]
+        self.assertEqual(len(raid_sanctums), 14)
+        self.assertEqual(sum(1 for r in raid_sanctums if r["expedition_wing"] == "Zaken_Candlelight_Cavern"), 5)
+        self.assertEqual(sum(1 for r in raid_sanctums if r["expedition_wing"] == "Ice_Queen_Freya_Palace"), 5)
+        self.assertEqual(sum(1 for r in raid_sanctums if r["expedition_wing"] == "Frintezza_Organ_Concert_Hall"), 4)
+        for r in raid_sanctums:
+            self.assertGreaterEqual(len(r["sovereign_expedition_drops"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas66DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 66)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 66)
+        self.assertIn("66-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

@@ -11617,6 +11617,513 @@ def _build_reputation_fame_monuments(atlas: dict[str, Any]) -> list[dict[str, An
     return rows
 
 
+def _build_delusion_chamber_conduits(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 12 Delusion Chamber & Aenkinel Raid Conduits (4 Seal_Delusion_Chamber + 4 Great_Tower_Of_Seal_Chamber + 4 Guiding_Tea_Leaf_Conduit) (D65)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if isinstance(z, dict)}
+
+    specs = [
+        # 4 Seal_Delusion_Chamber Conduits (Eastern / Western / Southern / Northern Seal Delusion Chambers)
+        (
+            "delusion-01-seal-eastern-kilnwatch-bastion",
+            "Delusion Chamber — Chamber of Eastern Seal (Lv.80+ Party Instance)",
+            "Seal_Delusion_Chamber",
+            "zone-town-kilnwatch-bastion",
+            "",
+            "",
+            "Guardian of Eastern Seal & Pathfinder Worker (Kilnwatch Dream Lobby)",
+            "40m Instance (8–10m Room Shift + 1 Manual Shift -> Final 5m Aenkinel Lv.81 & 4 Treasury Chests)",
+            [
+                "Dynasty Breastplate / Gaiters / Tunic Piece (S80)",
+                "Scroll: Enchant Weapon / Armor (S-Grade)",
+                "Guiding Tea Leaf & Essence of Kanabion Exchange Credits",
+            ],
+        ),
+        (
+            "delusion-02-seal-western-escapement-anvil",
+            "Delusion Chamber — Chamber of Western Seal (Lv.80+ Party Instance)",
+            "Seal_Delusion_Chamber",
+            "zone-town-escapement-anvil",
+            "",
+            "",
+            "Guardian of Western Seal & Dream Priestess (Oren Dream Lobby)",
+            "40m Instance (8–10m Room Shift + 1 Manual Shift -> Final 5m Aenkinel Lv.81 & 4 Treasury Chests)",
+            [
+                "Dynasty Leather Armor / Leggings / Helmet Piece (S80)",
+                "Blessed Scroll: Enchant Armor (S-Grade)",
+                "Top-Grade Life Stone (Lv.80) & Elemental Stone (150-Cap)",
+            ],
+        ),
+        (
+            "delusion-03-seal-southern-pinion-terminus",
+            "Delusion Chamber — Chamber of Southern Seal (Lv.80+ Party Instance)",
+            "Seal_Delusion_Chamber",
+            "zone-town-pinion-terminus",
+            "",
+            "",
+            "Guardian of Southern Seal & Pathfinder Steward (Hunters Dream Lobby)",
+            "40m Instance (8–10m Room Shift + 1 Manual Shift -> Final 5m Aenkinel Lv.82 & 4 Treasury Chests)",
+            [
+                "Dynasty Necklace / Earring / Ring Jewelry Piece (S80)",
+                "Icarus Weapon Key Materials & Leonard / Adamantine / Orichalcum",
+                "High-Grade Elemental Stone (Fire / Water / Wind / Earth)",
+            ],
+        ),
+        (
+            "delusion-04-seal-northern-starfall-haven",
+            "Delusion Chamber — Chamber of Northern Seal (Lv.80+ Party Instance)",
+            "Seal_Delusion_Chamber",
+            "zone-town-starfall-haven",
+            "",
+            "",
+            "Guardian of Northern Seal & Rune Pathfinder Envoy (Starfall Dream Lobby)",
+            "40m Instance (8–10m Room Shift + 1 Manual Shift -> Final 5m Aenkinel Lv.82 & 4 Treasury Chests)",
+            [
+                "Dynasty Shield / Sigil & S80 Weapon Blade / Shaft",
+                "Blessed Scroll: Enchant Weapon (S-Grade)",
+                "Giant's Codex: Oblivion & Mastery Fragment",
+            ],
+        ),
+        # 4 Great_Tower_Of_Seal_Chamber Conduits (Chamber of Great Seal & Tower of Seal AenkinelLv.84 Sanctums)
+        (
+            "delusion-05-tower-great-seal-forbidden-path-b3",
+            "Delusion Chamber — Chamber of Great Seal B3 (Aenkinel Lv.84 Raid)",
+            "Great_Tower_Of_Seal_Chamber",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B3",
+            "Guardian of Great Seal & Delusion Manager (Forbidden Path B3)",
+            "60m High-Tier Instance (2–9 Party · 8m Room Shift + Guiding Tea Leaf Extra Shift -> Aenkinel Lv.84 + 4 Boxes)",
+            [
+                "Full Dynasty Armor / Jewelry Box & S80 Sealed Pieces",
+                "Vesper Noble Enhancement Stone & Dynasty Soul Core",
+                "Blessed Scroll: Enchant Weapon / Armor (S-Grade)",
+            ],
+        ),
+        (
+            "delusion-06-tower-of-seal-dark-omens-b3",
+            "Delusion Chamber — Tower of Seal B3 (Supreme Aenkinel Lv.84 Sanctum)",
+            "Great_Tower_Of_Seal_Chamber",
+            "zone-catacomb-dark-omens-coral",
+            "zone-catacomb-dark-omens-coral",
+            "B3",
+            "Guardian of Tower of Seal & Dream Arbiter (Dark Omens B3)",
+            "60m Supreme Instance (Daily 06:30 UTC Reset · 1 True Treasure Box + 3 Ash-Crystal Boxes on Aenkinel Kill)",
+            [
+                "Icarus S80 Weapon Recipe (60%) & Vesper Weapon Piece",
+                "Blessed Scroll: Enchant Weapon (S-Grade) Jackpot Chest",
+                "150->300 Elemental Crystal & Ancient Tome of the Demon",
+            ],
+        ),
+        (
+            "delusion-07-tower-great-seal-star-heart-nave-3f",
+            "Star-Heart Nave 3F — Astral Tower of Seal Aenkinel Conduit",
+            "Great_Tower_Of_Seal_Chamber",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "Guardian of Tower of Seal & Seraphim Dream Warden (3F)",
+            "60m Astral Spire Instance (Party Wipe Returns to Dream Lobby · Leader Can Re-Shift Once per Run)",
+            [
+                "Dynasty Robe / Tunic / Sigil Full Piece & S80 Jewelry",
+                "Forgotten Scroll: Enlightenment / Sublime Self-Sacrifice",
+                "Top-Grade Life Stone (Lv.82–84) & Giant's Codex: Mastery",
+            ],
+        ),
+        (
+            "delusion-08-tower-great-seal-chronometer-foundry-3f",
+            "Chronometer Foundry 3F — Clockwork Great Seal Aenkinel Conduit",
+            "Great_Tower_Of_Seal_Chamber",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "Guardian of Great Seal & Brass Dream Chronomancer (3F)",
+            "60m Clockwork Dream Instance (Guaranteed Aenkinel Room Entry in Final 5 Minutes Before Instance Expiry)",
+            [
+                "Dynasty Heavy / Light Armor Full Piece & S80 Shield",
+                "Vesper Noble Enhancement Stone & Blessed S-Grade Enchant Scroll",
+                "Fire / Wind Elemental Crystal (150->300) Bundle",
+            ],
+        ),
+        # 4 Guiding_Tea_Leaf_Conduit Conduits (Pathfinder Warden Guiding Tea Leaf & Dream-World Exchange Hubs)
+        (
+            "delusion-09-tealeaf-inductor-switchyard-lobby",
+            "Inductor Switchyard — Pathfinder Guiding Tea Leaf & Dream Exchange",
+            "Guiding_Tea_Leaf_Conduit",
+            "zone-town-inductor-switchyard",
+            "",
+            "",
+            "Pathfinder Warden & Delusion Steward (Giran / Goddard Dream Hall)",
+            "Exchange Guiding Tea Leaves for +1 Extra Room Shift Toward Aenkinel & Unseal S80 Dynasty Relics",
+            [
+                "Guiding Tea Leaf Bundle (Unlocks Extra Delusion Room Shift)",
+                "Unsealed Dynasty Weapon / Armor / Jewelry Upgrade Service",
+                "Dynasty Shoulder Pack (Weapon Master / Force Master / Wizard / Healer)",
+            ],
+        ),
+        (
+            "delusion-10-tealeaf-crown-beacon-lobby",
+            "Crown-Beacon Citadel — Sovereign Dream World & Tea Leaf Conduit",
+            "Guiding_Tea_Leaf_Conduit",
+            "zone-town-crown-beacon",
+            "",
+            "",
+            "Pathfinder Warden & Imperial Dream Chronicler (Crown-Beacon)",
+            "Warp Any Lv.80+ Party Directly Into the 6 Delusion Chambers & Redeem Dream Fragments for S80/S84 Mats",
+            [
+                "Guiding Tea Leaf & Delusion Teleport Scroll",
+                "Dynasty Essence II & Vesper Noble Enhancement Stone",
+                "Top-Grade Life Stone (Lv.84) & Giant's Codex: Discipline",
+            ],
+        ),
+        (
+            "delusion-11-tealeaf-torque-balance-lobby",
+            "Torque-Balance Citadel — Innadril Dream-Tide & Tea Leaf Conduit",
+            "Guiding_Tea_Leaf_Conduit",
+            "zone-town-torque-balance-citadel",
+            "",
+            "",
+            "Pathfinder Warden & Water-Mirror Dream Weaver (Heine)",
+            "Provides Instant Dream Lobby Return on Death & Converts Delusion Ash Crystals into S-Grade Enchant Scrolls",
+            [
+                "Guiding Tea Leaf & Blessed Scroll of Escape (Delusion Chamber)",
+                "Scroll: Enchant Weapon / Armor (S-Grade) Exchange",
+                "Water / Holy Elemental Stone (150-Cap) & Dynasty Jewelry Box",
+            ],
+        ),
+        (
+            "delusion-12-tealeaf-root-train-roundhouse-lobby",
+            "Root-Train Roundhouse — Schuttgart Northern Dream & Tea Leaf Conduit",
+            "Guiding_Tea_Leaf_Conduit",
+            "zone-town-root-train-roundhouse",
+            "",
+            "",
+            "Pathfinder Warden & Iron Gate Dream Artificer (Schuttgart)",
+            "Links Rim Kamaloka Essence of Kanabion + Guiding Tea Leaves to Guarantee Aenkinel Boss Room Shift",
+            [
+                "Guiding Tea Leaf & Essence of Kanabion Synthesis Crate",
+                "Dynasty Heavy Breastplate / Gaiters & S80 Crusher Pieces",
+                "Earth / Dark Elemental Stone (150-Cap) & Leonard Alloy",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        cid,
+        cname,
+        dcat,
+        zid,
+        did,
+        fid,
+        gnpc,
+        rrule,
+        ddrops,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "146800:46700"))
+        loc = _fmt_loc(bx + 175 - idx * 14, by - 160 + idx * 13)
+        rows.append(
+            {
+                "conduit_id": cid,
+                "chamber_name": cname,
+                "delusion_category": dcat,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "guardian_npc_name": gnpc,
+                "room_shift_and_boss_rule": rrule,
+                "featured_delusion_drops": ddrops,
+            }
+        )
+    return rows
+
+
+def _build_command_channel_raid_sanctums(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 14 Multi-Tier Command-Channel Raid Sanctums (5 Zaken_Candlelight_Cavern + 5 Ice_Queen_Freya_Palace + 4 Frintezza_Organ_Concert_Hall) (D66)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if isinstance(z, dict)}
+
+    specs = [
+        # 5 Zaken_Candlelight_Cavern Sanctums (Pirate King Zaken Nighttime Lv.60, Daytime Lv.60 & Daytime Lv.83)
+        (
+            "cc-raid-01-zaken-nighttime-lv60-sunken-potter-b3",
+            "Devil's Isle Pirate Ship B3 — Nighttime Zaken Cavern (Full Command Channel)",
+            "Zaken_Candlelight_Cavern",
+            "zone-dungeon-sunken-potter-hold",
+            "zone-dungeon-sunken-potter-hold",
+            "B3",
+            "Pathfinder Agent Somulitan & Pirate Ship Boarding Guide (B3)",
+            "Nighttime Zaken Lv.60 (72–450 Players · 00:00 In-Game Midnight Gate Opening · Wed Reset)",
+            "Navigate 3 Ship Decks & Defeat Immortal Pirate Captain Zaken as He Teleports Across 15 Cabins",
+            [
+                "Earring of Zaken (+Bleed/Stun/Mental Resist, +4% Vampiric Rage, +MP)",
+                "Pirate's Eye Patch & Zaken's Blood Sword Dual-Craft Relic",
+                "Blessed Scroll: Enchant Weapon / Armor (B-Grade & A-Grade)",
+            ],
+        ),
+        (
+            "cc-raid-02-zaken-daytime-lv60-sunken-potter-b2",
+            "Devil's Isle Pirate Ship B2 — Daytime Zaken Lv.60 Candlelight Deck",
+            "Zaken_Candlelight_Cavern",
+            "zone-dungeon-sunken-potter-hold",
+            "zone-dungeon-sunken-potter-hold",
+            "B2",
+            "Pathfinder Agent Somulitan (Giran Harbor / Sunken Potter B2)",
+            "Daytime Zaken Lv.60 (9–27 Players · 1–3 Party Command Channel · 60m Instance)",
+            "Light 4 Blue Spirit Candles Around the Correct Room Without Triggering Red Poltergeist Candles",
+            [
+                "Earring of Zaken (Chance Drop) & Sealed A-Grade Accessories",
+                "Stage 10–12 Soul Crystal Resonance Absorption",
+                "Top-Grade Life Stone (Lv.61) & Blessed Enchant Scroll (A-Grade)",
+            ],
+        ),
+        (
+            "cc-raid-03-zaken-daytime-supreme-lv83-sunken-potter-b3",
+            "Devil's Isle Pirate Ship B3 — Daytime Zaken Lv.83 Supreme Sanctum",
+            "Zaken_Candlelight_Cavern",
+            "zone-dungeon-sunken-potter-hold",
+            "zone-dungeon-sunken-potter-hold",
+            "B3",
+            "Pathfinder Agent Somulitan & Dread Captain Warden (B3)",
+            "Daytime Zaken Lv.83 (9–27 Players · Lv.78–85 1–3 Party Command Channel · Mon/Wed/Fri Reset)",
+            "Light 4 Blue Spirit Candles Across 3 Ship Decks Under 5 Minutes for Vorpal Ring/Earring Bonus Loot",
+            [
+                "Blessed Earring of Zaken & Vorpal Armor / Jewelry Set Pieces (S84)",
+                "Holy Spirit's Cloak of Zaken & Soul Cloak of Zaken",
+                "Vesper Weapon / Armor & Stage 15–17 Soul Crystal Absorption",
+            ],
+        ),
+        (
+            "cc-raid-04-zaken-harbor-boarding-glaze-barge-quay",
+            "Glaze-Barge Maritime Quay — Somulitan's Devil's Isle Boarding Pier",
+            "Zaken_Candlelight_Cavern",
+            "zone-town-glaze-barge-quay",
+            "",
+            "",
+            "Pathfinder Agent Somulitan & Maritime Expedition Captain",
+            "All Zaken Tiers (Daytime Lv.60/83 9–27p & Nighttime Lv.60 72–450p Command Channel Staging)",
+            "Forms 3-Party Command Channel via Strategy Guide / Clan Imperium & Teleports Directly to Ship Deck",
+            [
+                "Vorpal Heavy / Light / Robe Set Pieces & Vesper Noble Stones",
+                "Zaken's Soul Cloak & Pirate King Transformation Sealbook",
+                "150–300 Water & Dark Elemental Crystals",
+            ],
+        ),
+        (
+            "cc-raid-05-zaken-underwater-crypt-ceramic-resonator-b3",
+            "Ceramic Resonator Crypt B3 — Sunken Galleon Candlelight Treasury",
+            "Zaken_Candlelight_Cavern",
+            "zone-dungeon-ceramic-resonator-crypt",
+            "zone-dungeon-ceramic-resonator-crypt",
+            "B3",
+            "Pathfinder Agent Somulitan & Ghostly Bosun (B3)",
+            "Daytime Zaken Lv.83 (9–27 Players · Fast-Clear <5m / <10m / <15m Bonus Tier Evaluation)",
+            "Extinguish False Red Candles & Ignite 4 Blue Spirit Corners to Force Zaken Out of Shadow Stealth",
+            [
+                "Vorpal Ring / Earring / Necklace (S84) & Vesper Buster/Shaper",
+                "Blessed Scroll: Enchant Weapon (S-Grade) & Giant's Codex: Mastery",
+                "Forgotten Scroll: Fighter's Will / Archer's Will / Magician's Will",
+            ],
+        ),
+        # 5 Ice_Queen_Freya_Palace Sanctums (Normal Freya Lv.82, Extreme Freya Lv.85, Sirra, Jinia Guild & Glakias)
+        (
+            "cc-raid-06-freya-normal-throne-sap-heart-cistern-b3",
+            "Ice Queen's Castle B3 — Normal Freya Throne Hall (4-Stage Glacial Raid)",
+            "Ice_Queen_Freya_Palace",
+            "zone-dungeon-sap-heart-cistern",
+            "zone-dungeon-sap-heart-cistern",
+            "B3",
+            "Jinia Guild Steward Rafforty & Princess Felicia / Freya (B3)",
+            "Normal Ice Queen Freya Lv.82 (9–27 Players · 2–3 Party Command Channel · Wed/Sat 06:30 Reset)",
+            "Survive 4 Glacial Phases (Palace Freya -> Ice Knight Glakias -> Second Throne -> Eternal Blizzard Core)",
+            [
+                "Necklace of Freya (+Water Resist, +MP Regen, -10% Magic Reuse, +Mental/Paralyze Resist)",
+                "Vorpal Heavy / Light / Robe Armor Set Pieces (S84) & Vesper Weapons",
+                "Holy Spirit's Cloak of Freya & Stage 16–17 Soul Crystal Resonance",
+            ],
+        ),
+        (
+            "cc-raid-07-freya-extreme-throne-medallion-heart-b3",
+            "Ice Queen's Castle B3 — Extreme Freya Sovereign Palace (Bottle of Freya's Soul)",
+            "Ice_Queen_Freya_Palace",
+            "zone-dungeon-medallion-heart-vault",
+            "zone-dungeon-medallion-heart-vault",
+            "B3",
+            "Jinia & Kegor (Extreme Ice Queen Sanctum B3)",
+            "Extreme Ice Queen Freya Lv.85 (18–45 Players · 2–5 Party Command Channel · High-Awakening Tier)",
+            "Deploy Black Frozen Core During Absolute Zero Eternal Blizzard & Shatter Breath of Ice Palace Totems",
+            [
+                "Blessed Necklace of Freya (+MEN/+CON/+STR, -15% Skill Cooldown, +5% Heal Power) & Bottle of Freya's Soul",
+                "Elegia Heavy / Light / Robe Set Pieces (Top S84) & Top S84 Weapons (Periel, Skull Edge, Rising Star)",
+                "Soul Cloak of Freya & Stage 17–18 Soul Crystal Absorption",
+            ],
+        ),
+        (
+            "cc-raid-08-freya-jinia-hideout-root-train-roundhouse",
+            "Jinia Guild Hideout (Schuttgart) — Rafforty's Frozen Core & Expedition Hall",
+            "Ice_Queen_Freya_Palace",
+            "zone-town-root-train-roundhouse",
+            "",
+            "",
+            "Rafforty, Jinia & Mercenary Captain Kegor (Schuttgart Frozen Labyrinth)",
+            "Normal & Extreme Freya Staging (9–45 Players · Distributes Frozen Core / Black Frozen Core)",
+            "Complete 'The Other Side of Truth' / 'Request of Ice Merchant' & Claim 20 Frozen Cores per Reset",
+            [
+                "Frozen Core & Black Frozen Core (Team Invulnerability vs Eternal Blizzard)",
+                "Upgrade Necklace of Freya + Bottle of Freya's Soul -> Blessed Necklace of Freya",
+                "Water Elemental Crystal (150->300) & Water Elemental Jewel Catalyst",
+            ],
+        ),
+        (
+            "cc-raid-09-freya-glakias-knight-hall-sap-heart-b2",
+            "Ice Queen's Castle B2 — Commander Glakias & Archery Knight Courtyard",
+            "Ice_Queen_Freya_Palace",
+            "zone-dungeon-sap-heart-cistern",
+            "zone-dungeon-sap-heart-cistern",
+            "B2",
+            "Archery Knight Captain Glakias & Ice Castle Controller (B2)",
+            "Stage 2 Glacial Gauntlet (9–27 Players · 6-Minute Enrage Timer Before Kelvin Zero Freeze)",
+            "Shatter Frozen Ice Statues Around Courtyard Edge Before Glakias Summons Unstoppable Glacial Wave",
+            [
+                "Vorpal Shield / Sigil / Gauntlets / Boots (S84)",
+                "Vesper Thrower / Buster / Caster / Avenger Weapons",
+                "Blessed Scroll: Enchant Armor (S-Grade) & Water Crystal (150->300)",
+            ],
+        ),
+        (
+            "cc-raid-10-freya-sirra-labyrinth-porcelain-loom",
+            "Frozen Labyrinth Gate — Ice Fairy Sirra & Freya Steward Conduit",
+            "Ice_Queen_Freya_Palace",
+            "zone-town-porcelain-loom",
+            "",
+            "",
+            "Steward of the Ice Queen & Rafforty's Envoy",
+            "Ice Fairy Sirra & Normal/Extreme Freya Entry (10 Silver Hemocytes + Command Channel Leader Check)",
+            "Break Freya's Reflect-Damage Glacial Barrier by Slaying Royal Guard Captains Inside Inner Garden",
+            [
+                "Elegia & Vorpal Jewelry Pieces (Ring / Earring / Necklace)",
+                "Silver Hemocyte Bundle & Forgotten Scroll: Sublime Self-Sacrifice",
+                "Top-Grade Life Stone (Lv.84) & Giant's Codex: Oblivion",
+            ],
+        ),
+        # 4 Frintezza_Organ_Concert_Hall Sanctums (Imperial Tomb Last Imperial Prince & Scarlet van Halisha)
+        (
+            "cc-raid-11-frintezza-organ-hall-witch-pendulum-b3",
+            "Last Imperial Tomb B3 — Frintezza's Pipe Organ & Scarlet van Halisha Concert Hall",
+            "Frintezza_Organ_Concert_Hall",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "Imperial Tomb Guide & Nameless Spirit (Last Imperial Tomb B3)",
+            "Frintezza & Scarlet van Halisha Lv.85 (9–45 Players · 2–5 Party Command Channel · Wed/Sat Reset)",
+            "Shoot Soul Breaking Arrows to Interrupt Frintezza's 5 Pipe Organ Melodies & Destroy 4 Demon Portraits",
+            [
+                "Necklace of Frintezza (+Stun/Poison/Bleed/Paralyze/Sleep Resist, -15% Skill Reuse, +4% Reflect Dmg)",
+                "Vorpal & Vesper S84 Weapons / Armor Sets & Halisha's Weapons",
+                "Holy Spirit's Cloak of Frintezza & Soul Cloak of Frintezza",
+            ],
+        ),
+        (
+            "cc-raid-12-frintezza-portrait-corridor-witch-pendulum-b2",
+            "Last Imperial Tomb B2 — Hall of Alarm & 4 Evil Spirit Portrait Gallery",
+            "Frintezza_Organ_Concert_Hall",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B2",
+            "Imperial Tomb Guide & Four Sepulchers Ghost of Wigoth (B2)",
+            "Stage 1–2 Imperial Tomb Breach (9–45 Players · Requires Frintezza's Magic Force Field Removal Scroll)",
+            "Shatter Hall of Alarm Generators Without Tripping Traps & Throw Dewdrop of Destruction at 4 Portraits",
+            [
+                "Dewdrop of Destruction & Soul Breaking Arrow (5 Arrows per Portrait Kill)",
+                "Vesper Noble Enhancement Stone & Forgotten Scroll: Meteor / Star Fall",
+                "Stage 14–16 Soul Crystal Resonance Absorption",
+            ],
+        ),
+        (
+            "cc-raid-13-frintezza-scarlet-halisha-morph-heretic-kiln-b3",
+            "Imperial Mausoleum B3 — Scarlet van Halisha 3-Morph Demon Sanctum",
+            "Frintezza_Organ_Concert_Hall",
+            "zone-catacomb-heretic-kiln",
+            "zone-catacomb-heretic-kiln",
+            "B3",
+            "Imperial Tomb Guide & Shadow of Halisha Warden (B3)",
+            "Stage 3 Final Morph Scarlet van Halisha Lv.85 (18–45 Players · 3-Form Transformation Encounter)",
+            "Cancel Frintezza's Psycho Symphony / Rampage / Plagued Organ Songs Before Scarlet's Daemon Charge",
+            [
+                "Necklace of Frintezza & Bottle of Frintezza's Soul",
+                "Elegia & Vorpal Armor Pieces + Top S84 Dualsword / Polearm / Bow",
+                "Blessed Scroll: Enchant Weapon (S-Grade) & Dark Elemental Jewel Catalyst",
+            ],
+        ),
+        (
+            "cc-raid-14-frintezza-expedition-staging-inductor-switchyard",
+            "Inductor Switchyard Imperial Plaza — Nameless Spirit & Sepulcher Expedition Hub",
+            "Frintezza_Organ_Concert_Hall",
+            "zone-town-inductor-switchyard",
+            "",
+            "",
+            "Nameless Spirit, Imperial Tomb Guide & Ghost Chamberlain of Elmoreden",
+            "Command Channel Staging (2–5 Parties · Issues Magic Force Field Removal Scroll via 4 Goblets)",
+            "Exchange Broken Relic Parts & 4 Sepulcher Goblets (Alectia, Tishas, Mekara, Morigul) for Tomb Entry",
+            [
+                "Frintezza's Magic Force Field Removal Scroll (Command Channel Leader Key)",
+                "Halisha's Mark & Sealed Imperial S80/S84 Weapon Recipes",
+                "Soul Cloak of Frintezza Unseal & Dark Crystal (150->300)",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        rsid,
+        sname,
+        ewing,
+        zid,
+        did,
+        fid,
+        gnpc,
+        cctier,
+        pmec,
+        edrops,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "146800:46700"))
+        loc = _fmt_loc(bx - 175 + idx * 13, by + 165 - idx * 14)
+        rows.append(
+            {
+                "raid_sanctum_id": rsid,
+                "sanctum_name": sname,
+                "expedition_wing": ewing,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "guide_npc_name": gnpc,
+                "command_channel_tier": cctier,
+                "signature_puzzle_mechanic": pmec,
+                "sovereign_expedition_drops": edrops,
+            }
+        )
+    return rows
+
+
+
 
 
 
@@ -12771,6 +13278,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("reputation_fame_monuments") or []) < 15:
         atlas["reputation_fame_monuments"] = _build_reputation_fame_monuments(atlas)
         actions.append("populated_15_reputation_fame_monuments")
+
+    # 49. Ensure all 12 Delusion Chamber & Aenkinel Raid Conduits exist in `delusion_chamber_conduits` (D65)
+    if len(atlas.get("delusion_chamber_conduits") or []) < 12:
+        atlas["delusion_chamber_conduits"] = _build_delusion_chamber_conduits(atlas)
+        actions.append("populated_12_delusion_chamber_conduits")
+
+    # 50. Ensure all 14 Zaken Candlelight, Ice Queen Freya & Frintezza Organ Command-Channel Raid Sanctums exist in `command_channel_raid_sanctums` (D66)
+    if len(atlas.get("command_channel_raid_sanctums") or []) < 14:
+        atlas["command_channel_raid_sanctums"] = _build_command_channel_raid_sanctums(atlas)
+        actions.append("populated_14_command_channel_raid_sanctums")
 
     return {"actions": actions}
 
@@ -16266,15 +16783,152 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d64_ratio * 80.0, 1)
     )
 
+    # D65: Interactive 12-Conduit Delusion Chamber & Aenkinel Raid Matrix (`delusion_chamber_conduits` - 12 Conduits = 4 Seal_Delusion_Chamber + 4 Great_Tower_Of_Seal_Chamber + 4 Guiding_Tea_Leaf_Conduit)
+    expected_delusion_categories = {
+        "Seal_Delusion_Chamber",
+        "Great_Tower_Of_Seal_Chamber",
+        "Guiding_Tea_Leaf_Conduit",
+    }
+    delusion_rows = atlas.get("delusion_chamber_conduits") or []
+    valid_delusion_conduits = 0
+    seal_delusion_count = 0
+    great_tower_delusion_count = 0
+    guiding_tea_leaf_count = 0
+    seen_delusion_conduit_ids: set[str] = set()
+    seen_delusion_categories: set[str] = set()
+    for drow in delusion_rows:
+        if not isinstance(drow, dict):
+            continue
+        cid = str(drow.get("conduit_id") or "")
+        dcat = str(drow.get("delusion_category") or "")
+        zid = str(drow.get("zone_id") or "")
+        did = str(drow.get("dungeon_id") or "")
+        fid = str(drow.get("floor_id") or "")
+        ddrops = drow.get("featured_delusion_drops") or []
+        if (
+            cid
+            and cid not in seen_delusion_conduit_ids
+            and drow.get("chamber_name")
+            and dcat in expected_delusion_categories
+            and zid in zone_ids_set
+            and (did == "" or did in mf_dungeon_id_set)
+            and fid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(drow.get("loc", ""))
+            and drow.get("guardian_npc_name")
+            and drow.get("room_shift_and_boss_rule")
+            and isinstance(ddrops, list)
+            and len(ddrops) >= 2
+        ):
+            valid_delusion_conduits += 1
+            seen_delusion_conduit_ids.add(cid)
+            seen_delusion_categories.add(dcat)
+            if dcat == "Seal_Delusion_Chamber":
+                seal_delusion_count += 1
+            elif dcat == "Great_Tower_Of_Seal_Chamber":
+                great_tower_delusion_count += 1
+            elif dcat == "Guiding_Tea_Leaf_Conduit":
+                guiding_tea_leaf_count += 1
+
+    has_d65_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_DELUSION_CHAMBER_MODE",
+            "setAtlasDelusionChamberMode",
+            "renderAtlasDelusionChamberBarHtml",
+            "studioDelusionChamberOverlay",
+        )
+    )
+    d65_ratio = valid_delusion_conduits / 12.0
+    d65_full_coverage = (
+        seal_delusion_count == 4
+        and great_tower_delusion_count == 4
+        and guiding_tea_leaf_count == 4
+        and seen_delusion_categories == expected_delusion_categories
+    )
+    d65_score = (
+        round(min(100.0, d65_ratio * 100.0), 1)
+        if (has_d65_ui and d65_full_coverage)
+        else round(d65_ratio * 80.0, 1)
+    )
+
+    # D66: Interactive 14-Sanctum Zaken Candlelight, Ice Queen Freya & Frintezza Organ Command-Channel Raid Matrix (`command_channel_raid_sanctums` - 14 Sanctums = 5 Zaken_Candlelight_Cavern + 5 Ice_Queen_Freya_Palace + 4 Frintezza_Organ_Concert_Hall)
+    expected_expedition_wings = {
+        "Zaken_Candlelight_Cavern",
+        "Ice_Queen_Freya_Palace",
+        "Frintezza_Organ_Concert_Hall",
+    }
+    cc_raid_rows = atlas.get("command_channel_raid_sanctums") or []
+    valid_cc_raid_sanctums = 0
+    zaken_cavern_count = 0
+    freya_palace_count = 0
+    frintezza_hall_count = 0
+    seen_cc_raid_ids: set[str] = set()
+    seen_expedition_wings: set[str] = set()
+    for rrow in cc_raid_rows:
+        if not isinstance(rrow, dict):
+            continue
+        rsid = str(rrow.get("raid_sanctum_id") or "")
+        ewing = str(rrow.get("expedition_wing") or "")
+        zid = str(rrow.get("zone_id") or "")
+        did = str(rrow.get("dungeon_id") or "")
+        fid = str(rrow.get("floor_id") or "")
+        edrops = rrow.get("sovereign_expedition_drops") or []
+        if (
+            rsid
+            and rsid not in seen_cc_raid_ids
+            and rrow.get("sanctum_name")
+            and ewing in expected_expedition_wings
+            and zid in zone_ids_set
+            and (did == "" or did in mf_dungeon_id_set)
+            and fid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(rrow.get("loc", ""))
+            and rrow.get("guide_npc_name")
+            and rrow.get("command_channel_tier")
+            and rrow.get("signature_puzzle_mechanic")
+            and isinstance(edrops, list)
+            and len(edrops) >= 2
+        ):
+            valid_cc_raid_sanctums += 1
+            seen_cc_raid_ids.add(rsid)
+            seen_expedition_wings.add(ewing)
+            if ewing == "Zaken_Candlelight_Cavern":
+                zaken_cavern_count += 1
+            elif ewing == "Ice_Queen_Freya_Palace":
+                freya_palace_count += 1
+            elif ewing == "Frintezza_Organ_Concert_Hall":
+                frintezza_hall_count += 1
+
+    has_d66_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_COMMAND_RAID_MODE",
+            "setAtlasCommandRaidMode",
+            "renderAtlasCommandRaidBarHtml",
+            "studioCommandChannelRaidOverlay",
+        )
+    )
+    d66_ratio = valid_cc_raid_sanctums / 14.0
+    d66_full_coverage = (
+        zaken_cavern_count == 5
+        and freya_palace_count == 5
+        and frintezza_hall_count == 4
+        and seen_expedition_wings == expected_expedition_wings
+    )
+    d66_score = (
+        round(min(100.0, d66_ratio * 100.0), 1)
+        if (has_d66_ui and d66_full_coverage)
+        else round(d66_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score) / 46.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score) / 48.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score) / 48.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score) / 58.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score) / 47.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score) / 54.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score) / 48.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score) / 50.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score) / 50.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score) / 60.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score) / 49.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score) / 56.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -16343,8 +16997,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d62_score
             + d63_score
             + d64_score
+            + d65_score
+            + d66_score
         )
-        / 64.0,
+        / 66.0,
         1,
     )
 
@@ -16877,6 +17533,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "fame_service_categories": sorted(seen_fame_service_categories),
                 "ui_wired": has_d64_ui,
             },
+            "D65_delusion_chamber_and_aenkinel_raid_conduits": {
+                "score": d65_score,
+                "verified": valid_delusion_conduits,
+                "target": 12,
+                "seal_delusion_chambers": seal_delusion_count,
+                "great_tower_of_seal_chambers": great_tower_delusion_count,
+                "guiding_tea_leaf_conduits": guiding_tea_leaf_count,
+                "delusion_categories": sorted(seen_delusion_categories),
+                "ui_wired": has_d65_ui,
+            },
+            "D66_zaken_freya_and_frintezza_command_channel_raids": {
+                "score": d66_score,
+                "verified": valid_cc_raid_sanctums,
+                "target": 14,
+                "zaken_candlelight_caverns": zaken_cavern_count,
+                "ice_queen_freya_palaces": freya_palace_count,
+                "frintezza_organ_concert_halls": frintezza_hall_count,
+                "expedition_wings": sorted(seen_expedition_wings),
+                "ui_wired": has_d66_ui,
+            },
         },
     }
 
@@ -16985,6 +17661,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D62 (12 Coliseum Rings)     : {dims['D62_underground_coliseum_and_clan_tournament_arenas']['score']}/100 ({dims['D62_underground_coliseum_and_clan_tournament_arenas']['verified']}/{dims['D62_underground_coliseum_and_clan_tournament_arenas']['target']} tournament arenas)")
         print(f"  D63 (14 Jewel/Rune Sanctums): {dims['D63_elemental_jewel_raid_rune_and_giants_relic_sanctums']['score']}/100 ({dims['D63_elemental_jewel_raid_rune_and_giants_relic_sanctums']['verified']}/{dims['D63_elemental_jewel_raid_rune_and_giants_relic_sanctums']['target']} jewel/rune sanctums)")
         print(f"  D64 (15 Fame Monuments)     : {dims['D64_town_reputation_manager_fame_and_pvp_monuments']['score']}/100 ({dims['D64_town_reputation_manager_fame_and_pvp_monuments']['verified']}/{dims['D64_town_reputation_manager_fame_and_pvp_monuments']['target']} fame monuments)")
+        print(f"  D65 (12 Delusion Conduits)  : {dims['D65_delusion_chamber_and_aenkinel_raid_conduits']['score']}/100 ({dims['D65_delusion_chamber_and_aenkinel_raid_conduits']['verified']}/{dims['D65_delusion_chamber_and_aenkinel_raid_conduits']['target']} delusion conduits)")
+        print(f"  D66 (14 Command Raid Halls) : {dims['D66_zaken_freya_and_frintezza_command_channel_raids']['score']}/100 ({dims['D66_zaken_freya_and_frintezza_command_channel_raids']['verified']}/{dims['D66_zaken_freya_and_frintezza_command_channel_raids']['target']} command raid sanctums)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

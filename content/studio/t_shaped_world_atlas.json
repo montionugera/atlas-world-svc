@@ -57338,5 +57338,439 @@
       ],
       "fame_point_cost_band": "5,000\u201352,000 Individual Fame Points + Adena"
     }
+  ],
+  "delusion_chamber_conduits": [
+    {
+      "conduit_id": "delusion-01-seal-eastern-kilnwatch-bastion",
+      "chamber_name": "Delusion Chamber \u2014 Chamber of Eastern Seal (Lv.80+ Party Instance)",
+      "delusion_category": "Seal_Delusion_Chamber",
+      "zone_id": "zone-town-kilnwatch-bastion",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-14039:123353",
+      "guardian_npc_name": "Guardian of Eastern Seal & Pathfinder Worker (Kilnwatch Dream Lobby)",
+      "room_shift_and_boss_rule": "40m Instance (8\u201310m Room Shift + 1 Manual Shift -> Final 5m Aenkinel Lv.81 & 4 Treasury Chests)",
+      "featured_delusion_drops": [
+        "Dynasty Breastplate / Gaiters / Tunic Piece (S80)",
+        "Scroll: Enchant Weapon / Armor (S-Grade)",
+        "Guiding Tea Leaf & Essence of Kanabion Exchange Credits"
+      ]
+    },
+    {
+      "conduit_id": "delusion-02-seal-western-escapement-anvil",
+      "chamber_name": "Delusion Chamber \u2014 Chamber of Western Seal (Lv.80+ Party Instance)",
+      "delusion_category": "Seal_Delusion_Chamber",
+      "zone_id": "zone-town-escapement-anvil",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "83247:53066",
+      "guardian_npc_name": "Guardian of Western Seal & Dream Priestess (Oren Dream Lobby)",
+      "room_shift_and_boss_rule": "40m Instance (8\u201310m Room Shift + 1 Manual Shift -> Final 5m Aenkinel Lv.81 & 4 Treasury Chests)",
+      "featured_delusion_drops": [
+        "Dynasty Leather Armor / Leggings / Helmet Piece (S80)",
+        "Blessed Scroll: Enchant Armor (S-Grade)",
+        "Top-Grade Life Stone (Lv.80) & Elemental Stone (150-Cap)"
+      ]
+    },
+    {
+      "conduit_id": "delusion-03-seal-southern-pinion-terminus",
+      "chamber_name": "Delusion Chamber \u2014 Chamber of Southern Seal (Lv.80+ Party Instance)",
+      "delusion_category": "Seal_Delusion_Chamber",
+      "zone_id": "zone-town-pinion-terminus",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "82533:148479",
+      "guardian_npc_name": "Guardian of Southern Seal & Pathfinder Steward (Hunters Dream Lobby)",
+      "room_shift_and_boss_rule": "40m Instance (8\u201310m Room Shift + 1 Manual Shift -> Final 5m Aenkinel Lv.82 & 4 Treasury Chests)",
+      "featured_delusion_drops": [
+        "Dynasty Necklace / Earring / Ring Jewelry Piece (S80)",
+        "Icarus Weapon Key Materials & Leonard / Adamantine / Orichalcum",
+        "High-Grade Elemental Stone (Fire / Water / Wind / Earth)"
+      ]
+    },
+    {
+      "conduit_id": "delusion-04-seal-northern-starfall-haven",
+      "chamber_name": "Delusion Chamber \u2014 Chamber of Northern Seal (Lv.80+ Party Instance)",
+      "delusion_category": "Seal_Delusion_Chamber",
+      "zone_id": "zone-town-starfall-haven",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "43919:-48008",
+      "guardian_npc_name": "Guardian of Northern Seal & Rune Pathfinder Envoy (Starfall Dream Lobby)",
+      "room_shift_and_boss_rule": "40m Instance (8\u201310m Room Shift + 1 Manual Shift -> Final 5m Aenkinel Lv.82 & 4 Treasury Chests)",
+      "featured_delusion_drops": [
+        "Dynasty Shield / Sigil & S80 Weapon Blade / Shaft",
+        "Blessed Scroll: Enchant Weapon (S-Grade)",
+        "Giant's Codex: Oblivion & Mastery Fragment"
+      ]
+    },
+    {
+      "conduit_id": "delusion-05-tower-great-seal-forbidden-path-b3",
+      "chamber_name": "Delusion Chamber \u2014 Chamber of Great Seal B3 (Aenkinel Lv.84 Raid)",
+      "delusion_category": "Great_Tower_Of_Seal_Chamber",
+      "zone_id": "zone-catacomb-forbidden-path-orrery",
+      "dungeon_id": "zone-catacomb-forbidden-path-orrery",
+      "floor_id": "B3",
+      "loc": "18505:-64295",
+      "guardian_npc_name": "Guardian of Great Seal & Delusion Manager (Forbidden Path B3)",
+      "room_shift_and_boss_rule": "60m High-Tier Instance (2\u20139 Party \u00b7 8m Room Shift + Guiding Tea Leaf Extra Shift -> Aenkinel Lv.84 + 4 Boxes)",
+      "featured_delusion_drops": [
+        "Full Dynasty Armor / Jewelry Box & S80 Sealed Pieces",
+        "Vesper Noble Enhancement Stone & Dynasty Soul Core",
+        "Blessed Scroll: Enchant Weapon / Armor (S-Grade)"
+      ]
+    },
+    {
+      "conduit_id": "delusion-06-tower-of-seal-dark-omens-b3",
+      "chamber_name": "Delusion Chamber \u2014 Tower of Seal B3 (Supreme Aenkinel Lv.84 Sanctum)",
+      "delusion_category": "Great_Tower_Of_Seal_Chamber",
+      "zone_id": "zone-catacomb-dark-omens-coral",
+      "dungeon_id": "zone-catacomb-dark-omens-coral",
+      "floor_id": "B3",
+      "loc": "38491:-28982",
+      "guardian_npc_name": "Guardian of Tower of Seal & Dream Arbiter (Dark Omens B3)",
+      "room_shift_and_boss_rule": "60m Supreme Instance (Daily 06:30 UTC Reset \u00b7 1 True Treasure Box + 3 Ash-Crystal Boxes on Aenkinel Kill)",
+      "featured_delusion_drops": [
+        "Icarus S80 Weapon Recipe (60%) & Vesper Weapon Piece",
+        "Blessed Scroll: Enchant Weapon (S-Grade) Jackpot Chest",
+        "150->300 Elemental Crystal & Ancient Tome of the Demon"
+      ]
+    },
+    {
+      "conduit_id": "delusion-07-tower-great-seal-star-heart-nave-3f",
+      "chamber_name": "Star-Heart Nave 3F \u2014 Astral Tower of Seal Aenkinel Conduit",
+      "delusion_category": "Great_Tower_Of_Seal_Chamber",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "149277:28331",
+      "guardian_npc_name": "Guardian of Tower of Seal & Seraphim Dream Warden (3F)",
+      "room_shift_and_boss_rule": "60m Astral Spire Instance (Party Wipe Returns to Dream Lobby \u00b7 Leader Can Re-Shift Once per Run)",
+      "featured_delusion_drops": [
+        "Dynasty Robe / Tunic / Sigil Full Piece & S80 Jewelry",
+        "Forgotten Scroll: Enlightenment / Sublime Self-Sacrifice",
+        "Top-Grade Life Stone (Lv.82\u201384) & Giant's Codex: Mastery"
+      ]
+    },
+    {
+      "conduit_id": "delusion-08-tower-great-seal-chronometer-foundry-3f",
+      "chamber_name": "Chronometer Foundry 3F \u2014 Clockwork Great Seal Aenkinel Conduit",
+      "delusion_category": "Great_Tower_Of_Seal_Chamber",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "3F",
+      "loc": "84863:56344",
+      "guardian_npc_name": "Guardian of Great Seal & Brass Dream Chronomancer (3F)",
+      "room_shift_and_boss_rule": "60m Clockwork Dream Instance (Guaranteed Aenkinel Room Entry in Final 5 Minutes Before Instance Expiry)",
+      "featured_delusion_drops": [
+        "Dynasty Heavy / Light Armor Full Piece & S80 Shield",
+        "Vesper Noble Enhancement Stone & Blessed S-Grade Enchant Scroll",
+        "Fire / Wind Elemental Crystal (150->300) Bundle"
+      ]
+    },
+    {
+      "conduit_id": "delusion-09-tealeaf-inductor-switchyard-lobby",
+      "chamber_name": "Inductor Switchyard \u2014 Pathfinder Guiding Tea Leaf & Dream Exchange",
+      "delusion_category": "Guiding_Tea_Leaf_Conduit",
+      "zone_id": "zone-town-inductor-switchyard",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147449:-55243",
+      "guardian_npc_name": "Pathfinder Warden & Delusion Steward (Giran / Goddard Dream Hall)",
+      "room_shift_and_boss_rule": "Exchange Guiding Tea Leaves for +1 Extra Room Shift Toward Aenkinel & Unseal S80 Dynasty Relics",
+      "featured_delusion_drops": [
+        "Guiding Tea Leaf Bundle (Unlocks Extra Delusion Room Shift)",
+        "Unsealed Dynasty Weapon / Armor / Jewelry Upgrade Service",
+        "Dynasty Shoulder Pack (Weapon Master / Force Master / Wizard / Healer)"
+      ]
+    },
+    {
+      "conduit_id": "delusion-10-tealeaf-crown-beacon-lobby",
+      "chamber_name": "Crown-Beacon Citadel \u2014 Sovereign Dream World & Tea Leaf Conduit",
+      "delusion_category": "Guiding_Tea_Leaf_Conduit",
+      "zone_id": "zone-town-crown-beacon",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147935:26770",
+      "guardian_npc_name": "Pathfinder Warden & Imperial Dream Chronicler (Crown-Beacon)",
+      "room_shift_and_boss_rule": "Warp Any Lv.80+ Party Directly Into the 6 Delusion Chambers & Redeem Dream Fragments for S80/S84 Mats",
+      "featured_delusion_drops": [
+        "Guiding Tea Leaf & Delusion Teleport Scroll",
+        "Dynasty Essence II & Vesper Noble Enhancement Stone",
+        "Top-Grade Life Stone (Lv.84) & Giant's Codex: Discipline"
+      ]
+    },
+    {
+      "conduit_id": "delusion-11-tealeaf-torque-balance-lobby",
+      "chamber_name": "Torque-Balance Citadel \u2014 Innadril Dream-Tide & Tea Leaf Conduit",
+      "delusion_category": "Guiding_Tea_Leaf_Conduit",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "116421:-18417",
+      "guardian_npc_name": "Pathfinder Warden & Water-Mirror Dream Weaver (Heine)",
+      "room_shift_and_boss_rule": "Provides Instant Dream Lobby Return on Death & Converts Delusion Ash Crystals into S-Grade Enchant Scrolls",
+      "featured_delusion_drops": [
+        "Guiding Tea Leaf & Blessed Scroll of Escape (Delusion Chamber)",
+        "Scroll: Enchant Weapon / Armor (S-Grade) Exchange",
+        "Water / Holy Elemental Stone (150-Cap) & Dynasty Jewelry Box"
+      ]
+    },
+    {
+      "conduit_id": "delusion-12-tealeaf-root-train-roundhouse-lobby",
+      "chamber_name": "Root-Train Roundhouse \u2014 Schuttgart Northern Dream & Tea Leaf Conduit",
+      "delusion_category": "Guiding_Tea_Leaf_Conduit",
+      "zone_id": "zone-town-root-train-roundhouse",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "115107:-178204",
+      "guardian_npc_name": "Pathfinder Warden & Iron Gate Dream Artificer (Schuttgart)",
+      "room_shift_and_boss_rule": "Links Rim Kamaloka Essence of Kanabion + Guiding Tea Leaves to Guarantee Aenkinel Boss Room Shift",
+      "featured_delusion_drops": [
+        "Guiding Tea Leaf & Essence of Kanabion Synthesis Crate",
+        "Dynasty Heavy Breastplate / Gaiters & S80 Crusher Pieces",
+        "Earth / Dark Elemental Stone (150-Cap) & Leonard Alloy"
+      ]
+    }
+  ],
+  "command_channel_raid_sanctums": [
+    {
+      "raid_sanctum_id": "cc-raid-01-zaken-nighttime-lv60-sunken-potter-b3",
+      "sanctum_name": "Devil's Isle Pirate Ship B3 \u2014 Nighttime Zaken Cavern (Full Command Channel)",
+      "expedition_wing": "Zaken_Candlelight_Cavern",
+      "zone_id": "zone-dungeon-sunken-potter-hold",
+      "dungeon_id": "zone-dungeon-sunken-potter-hold",
+      "floor_id": "B3",
+      "loc": "-78562:149351",
+      "guide_npc_name": "Pathfinder Agent Somulitan & Pirate Ship Boarding Guide (B3)",
+      "command_channel_tier": "Nighttime Zaken Lv.60 (72\u2013450 Players \u00b7 00:00 In-Game Midnight Gate Opening \u00b7 Wed Reset)",
+      "signature_puzzle_mechanic": "Navigate 3 Ship Decks & Defeat Immortal Pirate Captain Zaken as He Teleports Across 15 Cabins",
+      "sovereign_expedition_drops": [
+        "Earring of Zaken (+Bleed/Stun/Mental Resist, +4% Vampiric Rage, +MP)",
+        "Pirate's Eye Patch & Zaken's Blood Sword Dual-Craft Relic",
+        "Blessed Scroll: Enchant Weapon / Armor (B-Grade & A-Grade)"
+      ]
+    },
+    {
+      "raid_sanctum_id": "cc-raid-02-zaken-daytime-lv60-sunken-potter-b2",
+      "sanctum_name": "Devil's Isle Pirate Ship B2 \u2014 Daytime Zaken Lv.60 Candlelight Deck",
+      "expedition_wing": "Zaken_Candlelight_Cavern",
+      "zone_id": "zone-dungeon-sunken-potter-hold",
+      "dungeon_id": "zone-dungeon-sunken-potter-hold",
+      "floor_id": "B2",
+      "loc": "-78549:149337",
+      "guide_npc_name": "Pathfinder Agent Somulitan (Giran Harbor / Sunken Potter B2)",
+      "command_channel_tier": "Daytime Zaken Lv.60 (9\u201327 Players \u00b7 1\u20133 Party Command Channel \u00b7 60m Instance)",
+      "signature_puzzle_mechanic": "Light 4 Blue Spirit Candles Around the Correct Room Without Triggering Red Poltergeist Candles",
+      "sovereign_expedition_drops": [
+        "Earring of Zaken (Chance Drop) & Sealed A-Grade Accessories",
+        "Stage 10\u201312 Soul Crystal Resonance Absorption",
+        "Top-Grade Life Stone (Lv.61) & Blessed Enchant Scroll (A-Grade)"
+      ]
+    },
+    {
+      "raid_sanctum_id": "cc-raid-03-zaken-daytime-supreme-lv83-sunken-potter-b3",
+      "sanctum_name": "Devil's Isle Pirate Ship B3 \u2014 Daytime Zaken Lv.83 Supreme Sanctum",
+      "expedition_wing": "Zaken_Candlelight_Cavern",
+      "zone_id": "zone-dungeon-sunken-potter-hold",
+      "dungeon_id": "zone-dungeon-sunken-potter-hold",
+      "floor_id": "B3",
+      "loc": "-78536:149323",
+      "guide_npc_name": "Pathfinder Agent Somulitan & Dread Captain Warden (B3)",
+      "command_channel_tier": "Daytime Zaken Lv.83 (9\u201327 Players \u00b7 Lv.78\u201385 1\u20133 Party Command Channel \u00b7 Mon/Wed/Fri Reset)",
+      "signature_puzzle_mechanic": "Light 4 Blue Spirit Candles Across 3 Ship Decks Under 5 Minutes for Vorpal Ring/Earring Bonus Loot",
+      "sovereign_expedition_drops": [
+        "Blessed Earring of Zaken & Vorpal Armor / Jewelry Set Pieces (S84)",
+        "Holy Spirit's Cloak of Zaken & Soul Cloak of Zaken",
+        "Vesper Weapon / Armor & Stage 15\u201317 Soul Crystal Absorption"
+      ]
+    },
+    {
+      "raid_sanctum_id": "cc-raid-04-zaken-harbor-boarding-glaze-barge-quay",
+      "sanctum_name": "Glaze-Barge Maritime Quay \u2014 Somulitan's Devil's Isle Boarding Pier",
+      "expedition_wing": "Zaken_Candlelight_Cavern",
+      "zone_id": "zone-town-glaze-barge-quay",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-81323:151509",
+      "guide_npc_name": "Pathfinder Agent Somulitan & Maritime Expedition Captain",
+      "command_channel_tier": "All Zaken Tiers (Daytime Lv.60/83 9\u201327p & Nighttime Lv.60 72\u2013450p Command Channel Staging)",
+      "signature_puzzle_mechanic": "Forms 3-Party Command Channel via Strategy Guide / Clan Imperium & Teleports Directly to Ship Deck",
+      "sovereign_expedition_drops": [
+        "Vorpal Heavy / Light / Robe Set Pieces & Vesper Noble Stones",
+        "Zaken's Soul Cloak & Pirate King Transformation Sealbook",
+        "150\u2013300 Water & Dark Elemental Crystals"
+      ]
+    },
+    {
+      "raid_sanctum_id": "cc-raid-05-zaken-underwater-crypt-ceramic-resonator-b3",
+      "sanctum_name": "Ceramic Resonator Crypt B3 \u2014 Sunken Galleon Candlelight Treasury",
+      "expedition_wing": "Zaken_Candlelight_Cavern",
+      "zone_id": "zone-dungeon-ceramic-resonator-crypt",
+      "dungeon_id": "zone-dungeon-ceramic-resonator-crypt",
+      "floor_id": "B3",
+      "loc": "15090:19495",
+      "guide_npc_name": "Pathfinder Agent Somulitan & Ghostly Bosun (B3)",
+      "command_channel_tier": "Daytime Zaken Lv.83 (9\u201327 Players \u00b7 Fast-Clear <5m / <10m / <15m Bonus Tier Evaluation)",
+      "signature_puzzle_mechanic": "Extinguish False Red Candles & Ignite 4 Blue Spirit Corners to Force Zaken Out of Shadow Stealth",
+      "sovereign_expedition_drops": [
+        "Vorpal Ring / Earring / Necklace (S84) & Vesper Buster/Shaper",
+        "Blessed Scroll: Enchant Weapon (S-Grade) & Giant's Codex: Mastery",
+        "Forgotten Scroll: Fighter's Will / Archer's Will / Magician's Will"
+      ]
+    },
+    {
+      "raid_sanctum_id": "cc-raid-06-freya-normal-throne-sap-heart-cistern-b3",
+      "sanctum_name": "Ice Queen's Castle B3 \u2014 Normal Freya Throne Hall (4-Stage Glacial Raid)",
+      "expedition_wing": "Ice_Queen_Freya_Palace",
+      "zone_id": "zone-dungeon-sap-heart-cistern",
+      "dungeon_id": "zone-dungeon-sap-heart-cistern",
+      "floor_id": "B3",
+      "loc": "119303:-174119",
+      "guide_npc_name": "Jinia Guild Steward Rafforty & Princess Felicia / Freya (B3)",
+      "command_channel_tier": "Normal Ice Queen Freya Lv.82 (9\u201327 Players \u00b7 2\u20133 Party Command Channel \u00b7 Wed/Sat 06:30 Reset)",
+      "signature_puzzle_mechanic": "Survive 4 Glacial Phases (Palace Freya -> Ice Knight Glakias -> Second Throne -> Eternal Blizzard Core)",
+      "sovereign_expedition_drops": [
+        "Necklace of Freya (+Water Resist, +MP Regen, -10% Magic Reuse, +Mental/Paralyze Resist)",
+        "Vorpal Heavy / Light / Robe Armor Set Pieces (S84) & Vesper Weapons",
+        "Holy Spirit's Cloak of Freya & Stage 16\u201317 Soul Crystal Resonance"
+      ]
+    },
+    {
+      "raid_sanctum_id": "cc-raid-07-freya-extreme-throne-medallion-heart-b3",
+      "sanctum_name": "Ice Queen's Castle B3 \u2014 Extreme Freya Sovereign Palace (Bottle of Freya's Soul)",
+      "expedition_wing": "Ice_Queen_Freya_Palace",
+      "zone_id": "zone-dungeon-medallion-heart-vault",
+      "dungeon_id": "zone-dungeon-medallion-heart-vault",
+      "floor_id": "B3",
+      "loc": "49716:44167",
+      "guide_npc_name": "Jinia & Kegor (Extreme Ice Queen Sanctum B3)",
+      "command_channel_tier": "Extreme Ice Queen Freya Lv.85 (18\u201345 Players \u00b7 2\u20135 Party Command Channel \u00b7 High-Awakening Tier)",
+      "signature_puzzle_mechanic": "Deploy Black Frozen Core During Absolute Zero Eternal Blizzard & Shatter Breath of Ice Palace Totems",
+      "sovereign_expedition_drops": [
+        "Blessed Necklace of Freya (+MEN/+CON/+STR, -15% Skill Cooldown, +5% Heal Power) & Bottle of Freya's Soul",
+        "Elegia Heavy / Light / Robe Set Pieces (Top S84) & Top S84 Weapons (Periel, Skull Edge, Rising Star)",
+        "Soul Cloak of Freya & Stage 17\u201318 Soul Crystal Absorption"
+      ]
+    },
+    {
+      "raid_sanctum_id": "cc-raid-08-freya-jinia-hideout-root-train-roundhouse",
+      "sanctum_name": "Jinia Guild Hideout (Schuttgart) \u2014 Rafforty's Frozen Core & Expedition Hall",
+      "expedition_wing": "Ice_Queen_Freya_Palace",
+      "zone_id": "zone-town-root-train-roundhouse",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "115029:-178147",
+      "guide_npc_name": "Rafforty, Jinia & Mercenary Captain Kegor (Schuttgart Frozen Labyrinth)",
+      "command_channel_tier": "Normal & Extreme Freya Staging (9\u201345 Players \u00b7 Distributes Frozen Core / Black Frozen Core)",
+      "signature_puzzle_mechanic": "Complete 'The Other Side of Truth' / 'Request of Ice Merchant' & Claim 20 Frozen Cores per Reset",
+      "sovereign_expedition_drops": [
+        "Frozen Core & Black Frozen Core (Team Invulnerability vs Eternal Blizzard)",
+        "Upgrade Necklace of Freya + Bottle of Freya's Soul -> Blessed Necklace of Freya",
+        "Water Elemental Crystal (150->300) & Water Elemental Jewel Catalyst"
+      ]
+    },
+    {
+      "raid_sanctum_id": "cc-raid-09-freya-glakias-knight-hall-sap-heart-b2",
+      "sanctum_name": "Ice Queen's Castle B2 \u2014 Commander Glakias & Archery Knight Courtyard",
+      "expedition_wing": "Ice_Queen_Freya_Palace",
+      "zone_id": "zone-dungeon-sap-heart-cistern",
+      "dungeon_id": "zone-dungeon-sap-heart-cistern",
+      "floor_id": "B2",
+      "loc": "119342:-174161",
+      "guide_npc_name": "Archery Knight Captain Glakias & Ice Castle Controller (B2)",
+      "command_channel_tier": "Stage 2 Glacial Gauntlet (9\u201327 Players \u00b7 6-Minute Enrage Timer Before Kelvin Zero Freeze)",
+      "signature_puzzle_mechanic": "Shatter Frozen Ice Statues Around Courtyard Edge Before Glakias Summons Unstoppable Glacial Wave",
+      "sovereign_expedition_drops": [
+        "Vorpal Shield / Sigil / Gauntlets / Boots (S84)",
+        "Vesper Thrower / Buster / Caster / Avenger Weapons",
+        "Blessed Scroll: Enchant Armor (S-Grade) & Water Crystal (150->300)"
+      ]
+    },
+    {
+      "raid_sanctum_id": "cc-raid-10-freya-sirra-labyrinth-porcelain-loom",
+      "sanctum_name": "Frozen Labyrinth Gate \u2014 Ice Fairy Sirra & Freya Steward Conduit",
+      "expedition_wing": "Ice_Queen_Freya_Palace",
+      "zone_id": "zone-town-porcelain-loom",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "45755:41225",
+      "guide_npc_name": "Steward of the Ice Queen & Rafforty's Envoy",
+      "command_channel_tier": "Ice Fairy Sirra & Normal/Extreme Freya Entry (10 Silver Hemocytes + Command Channel Leader Check)",
+      "signature_puzzle_mechanic": "Break Freya's Reflect-Damage Glacial Barrier by Slaying Royal Guard Captains Inside Inner Garden",
+      "sovereign_expedition_drops": [
+        "Elegia & Vorpal Jewelry Pieces (Ring / Earring / Necklace)",
+        "Silver Hemocyte Bundle & Forgotten Scroll: Sublime Self-Sacrifice",
+        "Top-Grade Life Stone (Lv.84) & Giant's Codex: Oblivion"
+      ]
+    },
+    {
+      "raid_sanctum_id": "cc-raid-11-frintezza-organ-hall-witch-pendulum-b3",
+      "sanctum_name": "Last Imperial Tomb B3 \u2014 Frintezza's Pipe Organ & Scarlet van Halisha Concert Hall",
+      "expedition_wing": "Frintezza_Organ_Concert_Hall",
+      "zone_id": "zone-catacomb-witch-pendulum",
+      "dungeon_id": "zone-catacomb-witch-pendulum",
+      "floor_id": "B3",
+      "loc": "54168:-34789",
+      "guide_npc_name": "Imperial Tomb Guide & Nameless Spirit (Last Imperial Tomb B3)",
+      "command_channel_tier": "Frintezza & Scarlet van Halisha Lv.85 (9\u201345 Players \u00b7 2\u20135 Party Command Channel \u00b7 Wed/Sat Reset)",
+      "signature_puzzle_mechanic": "Shoot Soul Breaking Arrows to Interrupt Frintezza's 5 Pipe Organ Melodies & Destroy 4 Demon Portraits",
+      "sovereign_expedition_drops": [
+        "Necklace of Frintezza (+Stun/Poison/Bleed/Paralyze/Sleep Resist, -15% Skill Reuse, +4% Reflect Dmg)",
+        "Vorpal & Vesper S84 Weapons / Armor Sets & Halisha's Weapons",
+        "Holy Spirit's Cloak of Frintezza & Soul Cloak of Frintezza"
+      ]
+    },
+    {
+      "raid_sanctum_id": "cc-raid-12-frintezza-portrait-corridor-witch-pendulum-b2",
+      "sanctum_name": "Last Imperial Tomb B2 \u2014 Hall of Alarm & 4 Evil Spirit Portrait Gallery",
+      "expedition_wing": "Frintezza_Organ_Concert_Hall",
+      "zone_id": "zone-catacomb-witch-pendulum",
+      "dungeon_id": "zone-catacomb-witch-pendulum",
+      "floor_id": "B2",
+      "loc": "54181:-34803",
+      "guide_npc_name": "Imperial Tomb Guide & Four Sepulchers Ghost of Wigoth (B2)",
+      "command_channel_tier": "Stage 1\u20132 Imperial Tomb Breach (9\u201345 Players \u00b7 Requires Frintezza's Magic Force Field Removal Scroll)",
+      "signature_puzzle_mechanic": "Shatter Hall of Alarm Generators Without Tripping Traps & Throw Dewdrop of Destruction at 4 Portraits",
+      "sovereign_expedition_drops": [
+        "Dewdrop of Destruction & Soul Breaking Arrow (5 Arrows per Portrait Kill)",
+        "Vesper Noble Enhancement Stone & Forgotten Scroll: Meteor / Star Fall",
+        "Stage 14\u201316 Soul Crystal Resonance Absorption"
+      ]
+    },
+    {
+      "raid_sanctum_id": "cc-raid-13-frintezza-scarlet-halisha-morph-heretic-kiln-b3",
+      "sanctum_name": "Imperial Mausoleum B3 \u2014 Scarlet van Halisha 3-Morph Demon Sanctum",
+      "expedition_wing": "Frintezza_Organ_Concert_Hall",
+      "zone_id": "zone-catacomb-heretic-kiln",
+      "dungeon_id": "zone-catacomb-heretic-kiln",
+      "floor_id": "B3",
+      "loc": "19794:173383",
+      "guide_npc_name": "Imperial Tomb Guide & Shadow of Halisha Warden (B3)",
+      "command_channel_tier": "Stage 3 Final Morph Scarlet van Halisha Lv.85 (18\u201345 Players \u00b7 3-Form Transformation Encounter)",
+      "signature_puzzle_mechanic": "Cancel Frintezza's Psycho Symphony / Rampage / Plagued Organ Songs Before Scarlet's Daemon Charge",
+      "sovereign_expedition_drops": [
+        "Necklace of Frintezza & Bottle of Frintezza's Soul",
+        "Elegia & Vorpal Armor Pieces + Top S84 Dualsword / Polearm / Bow",
+        "Blessed Scroll: Enchant Weapon (S-Grade) & Dark Elemental Jewel Catalyst"
+      ]
+    },
+    {
+      "raid_sanctum_id": "cc-raid-14-frintezza-expedition-staging-inductor-switchyard",
+      "sanctum_name": "Inductor Switchyard Imperial Plaza \u2014 Nameless Spirit & Sepulcher Expedition Hub",
+      "expedition_wing": "Frintezza_Organ_Concert_Hall",
+      "zone_id": "zone-town-inductor-switchyard",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147407:-55231",
+      "guide_npc_name": "Nameless Spirit, Imperial Tomb Guide & Ghost Chamberlain of Elmoreden",
+      "command_channel_tier": "Command Channel Staging (2\u20135 Parties \u00b7 Issues Magic Force Field Removal Scroll via 4 Goblets)",
+      "signature_puzzle_mechanic": "Exchange Broken Relic Parts & 4 Sepulcher Goblets (Alectia, Tishas, Mekara, Morigul) for Tomb Entry",
+      "sovereign_expedition_drops": [
+        "Frintezza's Magic Force Field Removal Scroll (Command Channel Leader Key)",
+        "Halisha's Mark & Sealed Imperial S80/S84 Weapon Recipes",
+        "Soul Cloak of Frintezza Unseal & Dark Crystal (150->300)"
+      ]
+    }
   ]
 }

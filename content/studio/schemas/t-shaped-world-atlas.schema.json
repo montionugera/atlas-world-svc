@@ -299,6 +299,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/reputationFameMonumentSpec" }
     },
+    "delusion_chamber_conduits": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": { "$ref": "#/$defs/delusionChamberConduitSpec" }
+    },
+    "command_channel_raid_sanctums": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "items": { "$ref": "#/$defs/commandChannelRaidSanctumSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -3530,6 +3542,92 @@
           "items": { "type": "string" }
         },
         "fame_point_cost_band": { "type": "string" }
+      }
+    },
+    "delusionChamberConduitSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "conduit_id",
+        "chamber_name",
+        "delusion_category",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "guardian_npc_name",
+        "room_shift_and_boss_rule",
+        "featured_delusion_drops"
+      ],
+      "properties": {
+        "conduit_id": { "type": "string" },
+        "chamber_name": { "type": "string" },
+        "delusion_category": {
+          "type": "string",
+          "enum": [
+            "Seal_Delusion_Chamber",
+            "Great_Tower_Of_Seal_Chamber",
+            "Guiding_Tea_Leaf_Conduit"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "guardian_npc_name": { "type": "string" },
+        "room_shift_and_boss_rule": { "type": "string" },
+        "featured_delusion_drops": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "commandChannelRaidSanctumSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raid_sanctum_id",
+        "sanctum_name",
+        "expedition_wing",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "guide_npc_name",
+        "command_channel_tier",
+        "signature_puzzle_mechanic",
+        "sovereign_expedition_drops"
+      ],
+      "properties": {
+        "raid_sanctum_id": { "type": "string" },
+        "sanctum_name": { "type": "string" },
+        "expedition_wing": {
+          "type": "string",
+          "enum": [
+            "Zaken_Candlelight_Cavern",
+            "Ice_Queen_Freya_Palace",
+            "Frintezza_Organ_Concert_Hall"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "guide_npc_name": { "type": "string" },
+        "command_channel_tier": { "type": "string" },
+        "signature_puzzle_mechanic": { "type": "string" },
+        "sovereign_expedition_drops": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
       }
     }
   }

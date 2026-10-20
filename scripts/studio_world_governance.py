@@ -704,6 +704,8 @@ def validate_world_governance(
                 "partyColiseumTournamentsCount": len(t_doc.get("party_coliseum_tournaments") or []),
                 "elementalJewelRuneSanctumsCount": len(t_doc.get("elemental_jewel_rune_sanctums") or []),
                 "reputationFameMonumentsCount": len(t_doc.get("reputation_fame_monuments") or []),
+                "delusionChamberConduitsCount": len(t_doc.get("delusion_chamber_conduits") or []),
+                "commandChannelRaidSanctumsCount": len(t_doc.get("command_channel_raid_sanctums") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1487,6 +1489,48 @@ def validate_world_governance(
                 if fm_tzid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: reputation_fame_monuments '{fm_id}' references unknown town_zone_id '{fm_tzid}'"
+                    )
+
+            # Validate 12 Delusion Chamber & Aenkinel Raid Conduits (D65)
+            delusion_conduits = t_doc.get("delusion_chamber_conduits") or []
+            if delusion_conduits and len(delusion_conduits) != 12:
+                errors.append(
+                    f"GOV-10 violation: delusion_chamber_conduits must have 12 delusion chamber conduits, got {len(delusion_conduits)}"
+                )
+            for dc_item in delusion_conduits:
+                if not isinstance(dc_item, dict):
+                    continue
+                dc_id = str(dc_item.get("conduit_id", ""))
+                dc_zid = str(dc_item.get("zone_id", ""))
+                dc_did = str(dc_item.get("dungeon_id", ""))
+                if dc_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: delusion_chamber_conduits '{dc_id}' references unknown zone_id '{dc_zid}'"
+                    )
+                if dc_did and dc_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: delusion_chamber_conduits '{dc_id}' references unknown dungeon_id '{dc_did}'"
+                    )
+
+            # Validate 14 Zaken Candlelight, Ice Queen Freya & Frintezza Organ Command-Channel Raid Sanctums (D66)
+            cc_raid_sanctums = t_doc.get("command_channel_raid_sanctums") or []
+            if cc_raid_sanctums and len(cc_raid_sanctums) != 14:
+                errors.append(
+                    f"GOV-10 violation: command_channel_raid_sanctums must have 14 command-channel raid sanctums, got {len(cc_raid_sanctums)}"
+                )
+            for cc_item in cc_raid_sanctums:
+                if not isinstance(cc_item, dict):
+                    continue
+                cc_id = str(cc_item.get("raid_sanctum_id", ""))
+                cc_zid = str(cc_item.get("zone_id", ""))
+                cc_did = str(cc_item.get("dungeon_id", ""))
+                if cc_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: command_channel_raid_sanctums '{cc_id}' references unknown zone_id '{cc_zid}'"
+                    )
+                if cc_did and cc_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: command_channel_raid_sanctums '{cc_id}' references unknown dungeon_id '{cc_did}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

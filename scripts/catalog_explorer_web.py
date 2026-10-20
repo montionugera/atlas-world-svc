@@ -96,15 +96,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas60DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas62DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas64DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas66DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 30)),
+        "wave": int(iter_state.get("wave", 31)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"66-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"64-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"62-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"60-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -128,7 +130,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 Verified"
         ),
     }
     return merged
@@ -4390,7 +4392,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4473,6 +4475,8 @@ let ATLAS_SEED_CYCLE_MODE = 'All';
 let ATLAS_COLISEUM_TOURNAMENT_MODE = 'All';
 let ATLAS_ELEMENTAL_JEWEL_MODE = 'All';
 let ATLAS_FAME_MONUMENT_MODE = 'All';
+let ATLAS_DELUSION_CHAMBER_MODE = 'All';
+let ATLAS_COMMAND_RAID_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4527,6 +4531,8 @@ const ATLAS_STATE_STORE = {
   coliseumTournamentMode: 'All',           // D62: Active 12-Arena Underground Coliseum & Clan Tournament Selector ('Off' | 'All' | 'Underground_Coliseum_Bracket' | 'Clan_War_Tournament_Ring' | 'Royal_Fame_Exhibition_Arena')
   elementalJewelMode: 'All',               // D63: Active 14-Sanctum Elemental Jewel, Raid Rune Stone & Giant's Relic Selector ('Off' | 'All' | 'Elemental_Jewel_Forge' | 'Raid_Rune_Stone_Altar' | 'Ancient_Giants_Relic_Vault')
   fameMonumentMode: 'All',                 // D64: Active 15-Town Reputation Manager (Rapidus / Scipio) Fame & PvP Infusion Selector ('Off' | 'All' | 'PvP_Weapon_Infusion_Obelisk' | 'PvP_Armor_Mirage_Obelisk' | 'PK_Pardon_And_CRP_Monument')
+  delusionChamberMode: 'All',              // D65: Active 12-Conduit Delusion Chamber & Aenkinel Raid Selector ('Off' | 'All' | 'Seal_Delusion_Chamber' | 'Great_Tower_Of_Seal_Chamber' | 'Guiding_Tea_Leaf_Conduit')
+  commandRaidMode: 'All',                  // D66: Active 14-Sanctum Zaken, Freya & Frintezza Command-Channel Raid Selector ('Off' | 'All' | 'Zaken_Candlelight_Cavern' | 'Ice_Queen_Freya_Palace' | 'Frintezza_Organ_Concert_Hall')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4657,6 +4663,20 @@ function setAtlasElementalJewelMode(modeId) {
 function setAtlasFameMonumentMode(modeId) {
   ATLAS_FAME_MONUMENT_MODE = String(modeId || 'All');
   ATLAS_STATE_STORE.fameMonumentMode = ATLAS_FAME_MONUMENT_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasDelusionChamberMode(modeId) {
+  ATLAS_DELUSION_CHAMBER_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.delusionChamberMode = ATLAS_DELUSION_CHAMBER_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasCommandRaidMode(modeId) {
+  ATLAS_COMMAND_RAID_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.commandRaidMode = ATLAS_COMMAND_RAID_MODE;
   writeUrlState(false);
   render();
 }
@@ -10684,6 +10704,196 @@ function renderAtlasFameMonumentBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasDelusionChamberBarHtml(tatlas) {
+  const conduits = (tatlas && tatlas.delusion_chamber_conduits) || [];
+  if (!conduits.length) return '';
+
+  const curMode = ATLAS_DELUSION_CHAMBER_MODE || ATLAS_STATE_STORE.delusionChamberMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🌀 All 12 Conduits' },
+    { id: 'Seal_Delusion_Chamber', label: '🚪 4 Seal Delusion Chambers' },
+    { id: 'Great_Tower_Of_Seal_Chamber', label: '🗼 4 Great & Tower of Seal' },
+    { id: 'Guiding_Tea_Leaf_Conduit', label: '🍃 4 Guiding Tea Leaf Conduits' }
+  ];
+
+  const filteredConduits = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? conduits : conduits.filter(c => c.delusion_category === curMode));
+
+  const featuredConduits = curMode === 'All'
+    ? [
+        ...conduits.filter(c => c.delusion_category === 'Seal_Delusion_Chamber').slice(0, 2),
+        ...conduits.filter(c => c.delusion_category === 'Great_Tower_Of_Seal_Chamber').slice(0, 1),
+        ...conduits.filter(c => c.delusion_category === 'Guiding_Tea_Leaf_Conduit').slice(0, 1)
+      ]
+    : filteredConduits.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasDelusionChamberBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1e132c;border:1px solid rgba(192,132,252,0.62)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#e9d5ff">🌀 12-CONDUIT DELUSION CHAMBER &amp; AENKINEL RAID MATRIX (D65 · 12 CONDUITS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasDelusionChamberMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(192,132,252,0.45)'};background:${isAct ? '#7e22ce' : '#090d14'};color:${isAct ? '#ffffff' : '#f3e8ff'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          4 SEAL CHAMBERS + 4 GREAT/TOWER OF SEAL (AENKINEL LV.81–84) + 4 GUIDING TEA LEAF CONDUITS
+        </span>
+      </div>
+
+      ${featuredConduits.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredConduits.map(c => {
+            const isSeal = c.delusion_category === 'Seal_Delusion_Chamber';
+            const isTower = c.delusion_category === 'Great_Tower_Of_Seal_Chamber';
+            const catCol = isSeal ? '#c084fc' : (isTower ? '#f472b6' : '#34d399');
+            const catIcon = isSeal ? '🚪' : (isTower ? '🗼' : '🍃');
+            const zObj = byZid[c.zone_id] || {};
+            const zidStr = String(c.zone_id || '');
+            const didStr = String(c.dungeon_id || '');
+            const fidStr = String(c.floor_id || 'B3');
+            let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(c.loc)}')`;
+            if (didStr) {
+              jumpJs = `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`;
+            } else if (zidStr.startsWith('zone-field-')) {
+              jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(c.loc)}')`;
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(c.chamber_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(c.delusion_category.split('_')[0])}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#e9d5ff;margin-top:1px">
+                    🧙 ${escapeHtml(c.guardian_npc_name.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🎁 ${escapeHtml(((c.featured_delusion_drops && c.featured_delusion_drops[0]) || '').slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#581c87;color:#f3e8ff;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} ${didStr ? `Open Delusion Sanctum (${escapeHtml(fidStr)})` : 'Jump to Town Dream Conduit (5.2×)'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasCommandRaidBarHtml(tatlas) {
+  const sanctums = (tatlas && tatlas.command_channel_raid_sanctums) || [];
+  if (!sanctums.length) return '';
+
+  const curMode = ATLAS_COMMAND_RAID_MODE || ATLAS_STATE_STORE.commandRaidMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '⚔️ All 14 Sanctums' },
+    { id: 'Zaken_Candlelight_Cavern', label: '🏴‍☠️ 5 Zaken Candlelight Caverns' },
+    { id: 'Ice_Queen_Freya_Palace', label: '❄️ 5 Ice Queen Freya Palaces' },
+    { id: 'Frintezza_Organ_Concert_Hall', label: '🎻 4 Frintezza Organ Halls' }
+  ];
+
+  const filteredSanctums = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? sanctums : sanctums.filter(s => s.expedition_wing === curMode));
+
+  const featuredSanctums = curMode === 'All'
+    ? [
+        ...sanctums.filter(s => s.expedition_wing === 'Zaken_Candlelight_Cavern').slice(0, 2),
+        ...sanctums.filter(s => s.expedition_wing === 'Ice_Queen_Freya_Palace').slice(0, 1),
+        ...sanctums.filter(s => s.expedition_wing === 'Frintezza_Organ_Concert_Hall').slice(0, 1)
+      ]
+    : filteredSanctums.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasCommandRaidBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#112233;border:1px solid rgba(56,189,248,0.68)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#bae6fd">⚔️ 14-SANCTUM ZAKEN CANDLELIGHT, ICE QUEEN FREYA &amp; FRINTEZZA ORGAN COMMAND-CHANNEL MATRIX (D66 · 14 SANCTUMS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasCommandRaidMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(56,189,248,0.45)'};background:${isAct ? '#0284c7' : '#090d14'};color:${isAct ? '#ffffff' : '#e0f2fe'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          5 ZAKEN CANDLELIGHT DECKS + 5 FREYA GLACIAL PALACES + 4 FRINTEZZA PIPE ORGAN HALLS (9–450P CC)
+        </span>
+      </div>
+
+      ${featuredSanctums.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredSanctums.map(s => {
+            const isZaken = s.expedition_wing === 'Zaken_Candlelight_Cavern';
+            const isFreya = s.expedition_wing === 'Ice_Queen_Freya_Palace';
+            const catCol = isZaken ? '#f59e0b' : (isFreya ? '#38bdf8' : '#f43f5e');
+            const catIcon = isZaken ? '🏴‍☠️' : (isFreya ? '❄️' : '🎻');
+            const zObj = byZid[s.zone_id] || {};
+            const zidStr = String(s.zone_id || '');
+            const didStr = String(s.dungeon_id || '');
+            const fidStr = String(s.floor_id || 'B3');
+            let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(s.loc)}')`;
+            if (didStr) {
+              jumpJs = `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`;
+            } else if (zidStr.startsWith('zone-field-')) {
+              jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(s.sanctum_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(s.expedition_wing.split('_')[0])}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#bae6fd;margin-top:1px">
+                    🕯️ ${escapeHtml(s.signature_puzzle_mechanic.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    👑 ${escapeHtml(((s.sovereign_expedition_drops && s.sovereign_expedition_drops[0]) || '').slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#0c4a6e;color:#e0f2fe;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} ${didStr ? `Open Raid Sanctum (${escapeHtml(fidStr)})` : 'Jump to Expedition Guide (5.2×)'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -10852,6 +11062,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasColiseumTournamentBarHtml(tatlas)}
       ${renderAtlasElementalJewelBarHtml(tatlas)}
       ${renderAtlasFameMonumentBarHtml(tatlas)}
+      ${renderAtlasDelusionChamberBarHtml(tatlas)}
+      ${renderAtlasCommandRaidBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -14147,6 +14359,78 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D65: Interactive 12-Conduit Delusion Chamber & Aenkinel Raid Overlay (`studioDelusionChamberOverlay`)
+  const delusionConduitRows = (tatlas && tatlas.delusion_chamber_conduits) || [];
+  const curDelusionChamberMode = ATLAS_DELUSION_CHAMBER_MODE || ATLAS_STATE_STORE.delusionChamberMode || 'All';
+  const activeDelusionConduits = curDelusionChamberMode === 'Off'
+    ? []
+    : (curDelusionChamberMode === 'All'
+        ? delusionConduitRows
+        : delusionConduitRows.filter(c => c.delusion_category === curDelusionChamberMode));
+  const delusionChamberOverlaySvg = `
+    <g id="studioDelusionChamberOverlay">
+      ${activeDelusionConduits.map(c => {
+        const dc = clampWorldLocCoord(c.loc || '146800:46700');
+        const zObj = allZonesById[c.zone_id] || {};
+        const zidStr = String(c.zone_id || '');
+        const didStr = String(c.dungeon_id || '');
+        const fidStr = String(c.floor_id || 'B3');
+        const isSeal = c.delusion_category === 'Seal_Delusion_Chamber';
+        const isTower = c.delusion_category === 'Great_Tower_Of_Seal_Chamber';
+        const colHex = isSeal ? '#c084fc' : (isTower ? '#f472b6' : '#34d399');
+        const iconTxt = isSeal ? '🚪' : (isTower ? '🗼' : '🍃');
+        let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(c.loc)}')`;
+        if (didStr) {
+          jumpJs = `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`;
+        } else if (zidStr.startsWith('zone-field-')) {
+          jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(c.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${dc.svgX}" cy="${dc.svgY}" r="10.6" fill="rgba(88,28,135,0.46)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${dc.svgX}" y="${dc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D66: Interactive 14-Sanctum Zaken Candlelight, Ice Queen Freya & Frintezza Organ Command-Channel Raid Overlay (`studioCommandChannelRaidOverlay`)
+  const commandRaidRows = (tatlas && tatlas.command_channel_raid_sanctums) || [];
+  const curCommandRaidMode = ATLAS_COMMAND_RAID_MODE || ATLAS_STATE_STORE.commandRaidMode || 'All';
+  const activeCommandRaidSanctums = curCommandRaidMode === 'Off'
+    ? []
+    : (curCommandRaidMode === 'All'
+        ? commandRaidRows
+        : commandRaidRows.filter(s => s.expedition_wing === curCommandRaidMode));
+  const commandChannelRaidOverlaySvg = `
+    <g id="studioCommandChannelRaidOverlay">
+      ${activeCommandRaidSanctums.map(s => {
+        const rc = clampWorldLocCoord(s.loc || '146800:46700');
+        const zObj = allZonesById[s.zone_id] || {};
+        const zidStr = String(s.zone_id || '');
+        const didStr = String(s.dungeon_id || '');
+        const fidStr = String(s.floor_id || 'B3');
+        const isZaken = s.expedition_wing === 'Zaken_Candlelight_Cavern';
+        const isFreya = s.expedition_wing === 'Ice_Queen_Freya_Palace';
+        const colHex = isZaken ? '#f59e0b' : (isFreya ? '#38bdf8' : '#f43f5e');
+        const iconTxt = isZaken ? '🏴‍☠️' : (isFreya ? '❄️' : '🎻');
+        let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(s.loc)}')`;
+        if (didStr) {
+          jumpJs = `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`;
+        } else if (zidStr.startsWith('zone-field-')) {
+          jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${rc.svgX}" cy="${rc.svgY}" r="10.6" fill="rgba(12,74,110,0.46)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${rc.svgX}" y="${rc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -14191,6 +14475,8 @@ function renderDedicatedWorldAtlas() {
     ${coliseumTournamentOverlaySvg}
     ${elementalJewelOverlaySvg}
     ${fameMonumentOverlaySvg}
+    ${delusionChamberOverlaySvg}
+    ${commandChannelRaidOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}
