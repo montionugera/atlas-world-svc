@@ -24208,6 +24208,563 @@ def inject_disaster_recovery_pitr_drills(atlas: dict[str, Any]) -> list[dict[str
     return rows
 
 
+def _build_tavern_social_hubs(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16-Record [Role 2: Content & World Tools — Dynamic World Tavern Mini-Games, Bardic Music Buffs & Social Mercenary Recruitment Matrix] (D107)."""
+    specs = [
+        (
+            "tavern-hub-01-talking-island-salty-anchor-inn",
+            "Talking Island Salty Anchor Inn — Harbor Sea-Shanty Stage & Novice Mercenary Board",
+            "town-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Bardic Concert & Rhythm Buff Stage",
+            "Dragon-Pepper Roast Boar",
+            "+10% EXP/SP & +5% All Stats 60m",
+            10,
+            8,
+            458,
+            450,
+            "#f59e0b",
+            "Starter harbor inn on Talking Island where novice adventurers gather for sea-shanty rhythm buffs, boar roast platters, and Obelisk dungeon party recruitment.",
+        ),
+        (
+            "tavern-hub-02-elven-starlight-nectar-pavilion",
+            "Elven Starlight Nectar Pavilion — Mother Tree Harp Ensemble & Ambrosia Feast Terrace",
+            "town-porcelain-loom-sanctuary",
+            "zone-town-porcelain-loom",
+            "Bardic Concert & Rhythm Buff Stage",
+            "Elven Starlight Ambrosia",
+            "+25% Vitality Consumption Shield 90m",
+            25,
+            16,
+            544,
+            296,
+            "#10b981",
+            "Open-air Elven pavilion beneath the Mother Tree hosting 16-track Sword Singer harp recitals and Starlight Ambrosia Vitality preservation feasts.",
+        ),
+        (
+            "tavern-hub-03-dark-elven-velvet-nightshade-lounge",
+            "Dark Elven Velvet Nightshade Lounge — Blade Dancer Shadow Stage & Relic Card Parlor",
+            "town-carillon-hearth-belfry",
+            "zone-town-carillon-belfry",
+            "Dwarven Dice & Relic Card Table",
+            "Elven Starlight Ambrosia",
+            "+15% Raid Boss Drop Spoil Luck 45m",
+            50,
+            14,
+            524,
+            278,
+            "#a855f7",
+            "Bioluminescent subterranean lounge in Dark Elven Village featuring high-stakes Relic Card tables and nocturnal Blade Dancer rhythm buffs.",
+        ),
+        (
+            "tavern-hub-04-orc-emberhorn-mead-hall",
+            "Orc Emberhorn Mead Hall — Pa'agrio War-Drum Arena & Boar-Roast Feast Longhouse",
+            "town-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Culinary Feast & Vitality Rest Table",
+            "Dragon-Pepper Roast Boar",
+            "+20% Stun/Sleep/Bleed Resist 60m",
+            40,
+            12,
+            480,
+            152,
+            "#f59e0b",
+            "Roaring Orcish mead hall serving whole Dragon-Pepper Roast Boars with +20% Stun/Sleep/Bleed resistance for Immortal Plateau warbands.",
+        ),
+        (
+            "tavern-hub-05-dwarven-golden-ale-and-anvil-tavern",
+            "Dwarven Golden Ale & Anvil Tavern — Mithril Dice Escrow Tables & Spoil Luck Taproom",
+            "town-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Dwarven Dice & Relic Card Table",
+            "Dwarven Mithril Stout",
+            "+15% Raid Boss Drop Spoil Luck 45m",
+            120,
+            18,
+            630,
+            92,
+            "#f59e0b",
+            "Black Anvil and Bronze Key guild taproom hosting house-escrowed Dwarven Dice tournaments and Mithril Stout spoil-fortune toasts.",
+        ),
+        (
+            "tavern-hub-06-kamael-crimson-wing-officer-club",
+            "Kamael Crimson Wing Officer Club — Tactical Mercenary Contract Board & War-Hymn Hall",
+            "town-cinnamon-mill-haven",
+            "zone-town-cinnamon-mill",
+            "Party Finder & Raid Mercenary Contract Board",
+            "Aden Royal Truffle Banquet",
+            "+10% EXP/SP & +5% All Stats 60m",
+            60,
+            10,
+            400,
+            310,
+            "#ec4899",
+            "Disciplined Kamael officer mess pairing Nornil's Garden mercenary squad contracts with precision tactical rhythm cadences.",
+        ),
+        (
+            "tavern-hub-07-gludin-sea-breeze-mariners-tavern",
+            "Gludin Sea-Breeze Mariners Tavern — Dockside Dice Parlor & Pirate Raid Recruitment",
+            "town-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Dwarven Dice & Relic Card Table",
+            "Dwarven Mithril Stout",
+            "+25% Vitality Consumption Shield 90m",
+            85,
+            20,
+            430,
+            420,
+            "#10b981",
+            "Bustling Gludin harbor tavern where ship captains, Zaken raid mercenaries, and high-rolling dice players trade rumors over Mithril Stout.",
+        ),
+        (
+            "tavern-hub-08-gludio-frontier-watchman-inn",
+            "Gludio Frontier Watchman Inn — Ant Nest Expedition Mercenary Board & Garrison Kitchen",
+            "town-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Party Finder & Raid Mercenary Contract Board",
+            "Dragon-Pepper Roast Boar",
+            "+10% EXP/SP & +5% All Stats 60m",
+            75,
+            14,
+            508,
+            386,
+            "#f59e0b",
+            "Frontier garrison inn matching solo tanks and healers with Queen Ant raid expeditions via escrow-backed mercenary contracts.",
+        ),
+        (
+            "tavern-hub-09-dion-shepherds-flute-alehouse",
+            "Dion Shepherd's Flute Alehouse — Pastoral Folk-Bard Stage & Cruma Party Finder",
+            "town-saffron-press-village",
+            "zone-town-saffron-press",
+            "Bardic Concert & Rhythm Buff Stage",
+            "Dragon-Pepper Roast Boar",
+            "+25% Vitality Consumption Shield 90m",
+            90,
+            22,
+            530,
+            434,
+            "#10b981",
+            "Warm Dion country alehouse where folk bards perform 22 pastoral sheet-music tracks granting 90-minute Vitality shields before Cruma Tower delves.",
+        ),
+        (
+            "tavern-hub-10-giran-dragons-coin-grand-banquet",
+            "Giran Dragon's Coin Grand Banquet — High-Roller Relic Card Casino & Merchant Feast Hall",
+            "town-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Dwarven Dice & Relic Card Table",
+            "Aden Royal Truffle Banquet",
+            "+15% Raid Boss Drop Spoil Luck 45m",
+            500,
+            28,
+            596,
+            408,
+            "#ec4899",
+            "Giran's premier merchant banquet hall featuring 500k Adena escrow card tables, Antharas raid spoil buffs, and 28 orchestral bard tracks.",
+        ),
+        (
+            "tavern-hub-11-oren-ivory-quill-scholar-pub",
+            "Oren Ivory Quill Scholar Pub — Tower of Insolence Mercenary Exchange & Arcane Lounge",
+            "town-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Party Finder & Raid Mercenary Contract Board",
+            "Elven Starlight Ambrosia",
+            "+20% Stun/Sleep/Bleed Resist 60m",
+            150,
+            18,
+            608,
+            320,
+            "#a855f7",
+            "Scholar and mercenary pub at Oren's northern gate specializing in Baium & Hallate floor-clear contracts and status-resistance ambrosia.",
+        ),
+        (
+            "tavern-hub-12-hunters-boar-tusk-lodge",
+            "Hunters Boar-Tusk Lodge — Master Huntsman Roast Hall & Rare-Spawn Contract Board",
+            "town-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "Culinary Feast & Vitality Rest Table",
+            "Dragon-Pepper Roast Boar",
+            "+15% Raid Boss Drop Spoil Luck 45m",
+            180,
+            16,
+            640,
+            242,
+            "#f59e0b",
+            "Rustic timber lodge in Hunters Village famous for its spit-roasted Enchanted Valley boar feasts and rare-boss tracking contracts.",
+        ),
+        (
+            "tavern-hub-13-aden-crown-and-scepter-royal-salon",
+            "Aden Crown & Scepter Royal Salon — Imperial Chamber Orchestra & Truffle Banquet Rotunda",
+            "town-crown-beacon-citadel",
+            "zone-town-crown-beacon",
+            "Culinary Feast & Vitality Rest Table",
+            "Aden Royal Truffle Banquet",
+            "+10% EXP/SP & +5% All Stats 60m",
+            450,
+            30,
+            666,
+            288,
+            "#ec4899",
+            "Opulent Aden capital salon serving multi-course Royal Truffle Banquets to siege alliances with +10% EXP/SP and +5% All Stats.",
+        ),
+        (
+            "tavern-hub-14-goddard-magma-brew-thermal-inn",
+            "Goddard Magma-Brew Thermal Inn — Hot-Springs Stout Taproom & Valakas Raid Contract Hall",
+            "town-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Party Finder & Raid Mercenary Contract Board",
+            "Dwarven Mithril Stout",
+            "+20% Stun/Sleep/Bleed Resist 60m",
+            320,
+            24,
+            674,
+            214,
+            "#f59e0b",
+            "Volcanic thermal inn in Goddard pairing sulfur-spring recovery baths and Mithril Stout stun-resist buffs with Forge of the Gods mercenary boards.",
+        ),
+        (
+            "tavern-hub-15-rune-cliff-edge-mist-tavern",
+            "Rune Cliff-Edge Mist Tavern — Sky-Citadel Nocturne Stage & High-Stakes Relic Table",
+            "town-starfall-haven",
+            "zone-town-starfall-haven",
+            "Culinary Feast & Vitality Rest Table",
+            "Aden Royal Truffle Banquet",
+            "+25% Vitality Consumption Shield 90m",
+            380,
+            26,
+            562,
+            212,
+            "#a855f7",
+            "Perched on Rune's upper citadel cliffside, offering panoramic sea views, 90-minute Vitality shields, and Pagan Temple mercenary contracts.",
+        ),
+        (
+            "tavern-hub-16-fantasy-isle-parade-stage-amphitheater",
+            "Fantasy Isle Parade Stage Amphitheater — Grand 32-Track Bardic Rhythm Concert & Festival Feast",
+            "town-inductor-switchyard",
+            "zone-clanhall-inductor-conclave",
+            "Bardic Concert & Rhythm Buff Stage",
+            "Elven Starlight Ambrosia",
+            "+10% EXP/SP & +5% All Stats 60m",
+            250,
+            32,
+            644,
+            176,
+            "#ec4899",
+            "Continental festival amphitheater hosting synchronized 32-track multiplayer bardic rhythm concerts, parade fireworks, and server-wide party buffs.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        tid_key,
+        title,
+        town_id,
+        zone_id,
+        cat,
+        dish,
+        buff,
+        escrow_k,
+        tracks,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "tavern_id": tid_key,
+                "title": title,
+                "town_id": town_id,
+                "zone_id": zone_id,
+                "social_category": cat,
+                "signature_brew_or_dish": dish,
+                "party_feast_buff": buff,
+                "minigame_escrow_cap_adena_k": escrow_k,
+                "bard_sheet_music_tracks": tracks,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_tavern_social_hubs(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_tavern_social_hubs(atlas)
+    atlas["tavern_social_hubs"] = rows
+    return rows
+
+
+def _build_churn_sentiment_interventions(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15-Record [Role 5: LiveOps & CS Portal — Player Sentiment Telemetry, Net-Promoter In-Game Survey & Rage-Quit Churn Intervention Matrix] (D108)."""
+    specs = [
+        (
+            "churn-intervention-01-talking-island",
+            "Talking Island (Lantern Hollow) — Early-Game Quest Pathing Stall & Fairy Guide Intervention",
+            "town-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Quest Pathing Stall > 20m Idle",
+            0.68,
+            "Dynamic Waypoint Fairy Guide Spawn",
+            14.8,
+            2.0,
+            454,
+            454,
+            "#38bdf8",
+            "Detects Lv.1-15 navigation stalls in Elven Ruins and spawns a luminous Waypoint Fairy Guide with 1-click camera breadcrumbs.",
+        ),
+        (
+            "churn-intervention-02-elven-village",
+            "Elven Village (Porcelain Loom) — Solo Mystic/Healer Farming Bottleneck Companion Care",
+            "town-porcelain-loom-sanctuary",
+            "zone-town-porcelain-loom",
+            "Solo Healer/Tank Farming Bottleneck",
+            0.71,
+            "Newbie Helper Buff + Temporary NPC Companion",
+            12.4,
+            2.5,
+            548,
+            300,
+            "#34d399",
+            "Identifies Elven Oracle and Temple Knight solo TTK bottlenecks, granting a 60-minute Kookaburra combat companion and Empower buff.",
+        ),
+        (
+            "churn-intervention-03-dark-elven-village",
+            "Dark Elven Village (Carillon Belfry) — School of Dark Arts Boss Wipe Frustration Care",
+            "town-carillon-hearth-belfry",
+            "zone-town-carillon-belfry",
+            "3x Consecutive Boss Wipe Frustration",
+            0.74,
+            "Newbie Helper Buff + Temporary NPC Companion",
+            11.6,
+            3.0,
+            528,
+            282,
+            "#f472b6",
+            "Triggers after 3 consecutive quest trial boss wipes, restoring lost EXP free of charge and summoning an Abyssal Warder helper.",
+        ),
+        (
+            "churn-intervention-04-orc-village",
+            "Orc Village (Draft-Kiln Post) — Cave of Trials Pathing Stall & Totem Waypoint Guide",
+            "town-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Quest Pathing Stall > 20m Idle",
+            0.70,
+            "Dynamic Waypoint Fairy Guide Spawn",
+            13.2,
+            2.2,
+            476,
+            148,
+            "#fbbf24",
+            "Eliminates multi-level labyrinth confusion inside Cave of Trials by projecting a spirit-totem trail directly to the quest objective.",
+        ),
+        (
+            "churn-intervention-05-dwarven-village",
+            "Dwarven Village (Root-Train Roundhouse) — Early Weapon Refinement Break Streak Pity Care",
+            "town-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "+7..+15 Refinement Break Streak Pity",
+            0.76,
+            "Blacksmith Blessed Fail-Safe Scroll Voucher",
+            10.9,
+            1.8,
+            626,
+            88,
+            "#fbbf24",
+            "Intercepts rage-quit logouts following D-Grade/C-Grade weapon crystallization with a Blacksmith Bronk Blessed Fail-Safe Voucher.",
+        ),
+        (
+            "churn-intervention-06-kamael-village",
+            "Kamael Village (Cinnamon-Mill Haven) — Nornil's Garden Solo Instance Wipe Intervention",
+            "town-cinnamon-mill-haven",
+            "zone-town-cinnamon-mill",
+            "3x Consecutive Boss Wipe Frustration",
+            0.73,
+            "Newbie Helper Buff + Temporary NPC Companion",
+            12.1,
+            2.4,
+            396,
+            306,
+            "#38bdf8",
+            "Monitors Nornil's Garden instance telemetry and deploys a Kekropus Tactical Automaton ally if a player wipes three times on Spicula.",
+        ),
+        (
+            "churn-intervention-07-gludin-village",
+            "Gludin Village (Glaze-Barge Quay) — 1st Class Transfer Pathing Stall & Waypoint Care",
+            "town-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Quest Pathing Stall > 20m Idle",
+            0.72,
+            "Dynamic Waypoint Fairy Guide Spawn",
+            13.5,
+            2.0,
+            426,
+            416,
+            "#34d399",
+            "Guides Lv.19-20 adventurers stalled on multi-town 1st Class Transfer errands with free Gatekeeper vouchers and fairy pathfinding.",
+        ),
+        (
+            "churn-intervention-08-gludio-town",
+            "Town of Gludio (Kilnwatch Bastion) — Ant Nest Labyrinth Mentor Party Auto-Match",
+            "town-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Solo Healer/Tank Farming Bottleneck",
+            0.75,
+            "1-Click Mentor Party Auto-Match",
+            9.8,
+            3.2,
+            504,
+            382,
+            "#38bdf8",
+            "Pairs solo support and tank classes struggling in Ant Nest tunnels with high-level Academy Mentors for instant duo bonus EXP.",
+        ),
+        (
+            "churn-intervention-09-dion-town",
+            "Town of Dion (Saffron Press) — Cruma Tower 2nd Class Trial Wipe & Mentor Rescue",
+            "town-saffron-press-village",
+            "zone-town-saffron-press",
+            "3x Consecutive Boss Wipe Frustration",
+            0.78,
+            "1-Click Mentor Party Auto-Match",
+            10.4,
+            3.5,
+            526,
+            430,
+            "#f472b6",
+            "Detects repeated Porta/Excuro deaths during Lv.35-40 2nd Class Transfer trials and offers 1-click Mentor party escort matching.",
+        ),
+        (
+            "churn-intervention-10-giran-castle-town",
+            "Giran Castle Town (Pinion Terminus) — B/A-Grade +7..+15 Refinement Break Pity Shield",
+            "town-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "+7..+15 Refinement Break Streak Pity",
+            0.84,
+            "Blacksmith Blessed Fail-Safe Scroll Voucher",
+            14.2,
+            1.5,
+            592,
+            404,
+            "#fbbf24",
+            "High-impact churn circuit-breaker in Giran Luxury & Blacksmith district granting bound fail-safe restoration vouchers after consecutive over-enchant breaks.",
+        ),
+        (
+            "churn-intervention-11-oren-town",
+            "Town of Oren (Escapement Anvil) — Sea of Spores / ToI Support Farming Bottleneck Match",
+            "town-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Solo Healer/Tank Farming Bottleneck",
+            0.79,
+            "1-Click Mentor Party Auto-Match",
+            8.7,
+            3.8,
+            604,
+            316,
+            "#34d399",
+            "Auto-matches Bishop, Elven Elder, and Paladin players experiencing low solo EXP/hr in Oren borderlands into active Tower of Insolence AOE parties.",
+        ),
+        (
+            "churn-intervention-12-hunters-village",
+            "Hunters Village (Torque-Balance Citadel) — Enchanted Valley Rare-Hunt Stall Waypoint Care",
+            "town-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "Quest Pathing Stall > 20m Idle",
+            0.77,
+            "Dynamic Waypoint Fairy Guide Spawn",
+            7.9,
+            4.0,
+            636,
+            238,
+            "#38bdf8",
+            "Spawns a Hunter Guild tracking fairy when players stall >20m searching for hidden Forest of Mirrors mirrors or valley quest mobs.",
+        ),
+        (
+            "churn-intervention-13-aden-imperial-capital",
+            "Town of Aden (Crown-Beacon Citadel) — S-Grade Refinement Streak & Siege Fatigue Care",
+            "town-crown-beacon-citadel",
+            "zone-town-crown-beacon",
+            "+7..+15 Refinement Break Streak Pity",
+            0.88,
+            "Blacksmith Blessed Fail-Safe Scroll Voucher",
+            11.8,
+            2.8,
+            662,
+            284,
+            "#f472b6",
+            "Protects core Lv.76+ Third-Class veterans from catastrophic S-Grade enchant churn with automated pity accumulator scroll vouchers.",
+        ),
+        (
+            "churn-intervention-14-goddard-town",
+            "Town of Goddard (Inductor Switchyard) — Ketra/Varka Alliance & Subclass Raid Wipe Care",
+            "town-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "3x Consecutive Boss Wipe Frustration",
+            0.86,
+            "1-Click Mentor Party Auto-Match",
+            6.5,
+            4.5,
+            670,
+            210,
+            "#fbbf24",
+            "Monitors Subclass & Noblesse raid frustration in Goddard's volcanic zones, matching wiped parties with veteran command-channel leaders.",
+        ),
+        (
+            "churn-intervention-15-rune-township",
+            "Rune Township (Starfall Haven) — Endgame S80/S84 Pagan & Monastery Bottleneck Care",
+            "town-starfall-haven",
+            "zone-town-starfall-haven",
+            "Solo Healer/Tank Farming Bottleneck",
+            0.92,
+            "Newbie Helper Buff + Temporary NPC Companion",
+            4.2,
+            5.0,
+            558,
+            208,
+            "#34d399",
+            "Delivers non-intrusive NPS micro-surveys and temporary Divine Knight AI companions for solo players hitting Monastery of Silence walls.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        iid,
+        title,
+        town_id,
+        zone_id,
+        trig,
+        thresh,
+        action,
+        uplift,
+        survey_rate,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "intervention_id": iid,
+                "title": title,
+                "town_id": town_id,
+                "zone_id": zone_id,
+                "friction_trigger_type": trig,
+                "churn_risk_score_threshold": thresh,
+                "automated_care_action": action,
+                "d7_retention_uplift_pct": uplift,
+                "micro_survey_trigger_rate_pct": survey_rate,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_churn_sentiment_interventions(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_churn_sentiment_interventions(atlas)
+    atlas["churn_sentiment_interventions"] = rows
+    return rows
+
+
 
 
 
@@ -25573,6 +26130,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("disaster_recovery_pitr_drills") or []) < 15:
         inject_disaster_recovery_pitr_drills(atlas)
         actions.append("populated_15_disaster_recovery_pitr_drills")
+
+    # 91. Ensure all 16 Dynamic World Tavern Mini-Games, Bardic Music Buffs & Social Mercenary Recruitment Matrix records exist in `tavern_social_hubs` (D107)
+    if len(atlas.get("tavern_social_hubs") or []) < 16:
+        inject_tavern_social_hubs(atlas)
+        actions.append("populated_16_tavern_social_hubs")
+
+    # 92. Ensure all 15 Player Sentiment Telemetry, Net-Promoter In-Game Survey & Rage-Quit Churn Intervention Matrix records exist in `churn_sentiment_interventions` (D108)
+    if len(atlas.get("churn_sentiment_interventions") or []) < 15:
+        inject_churn_sentiment_interventions(atlas)
+        actions.append("populated_15_churn_sentiment_interventions")
 
     return {"actions": actions}
 
@@ -30463,15 +31030,23 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     d106_eval = score_d106_disaster_recovery_pitr_drills(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
     d106_score = d106_eval["score"]
 
+    # D107: Interactive 16-Record [Role 2: Content & World Tools — Dynamic World Tavern Mini-Games, Bardic Music Buffs & Social Mercenary Recruitment Matrix] (`tavern_social_hubs` - 16 Tavern Social Hubs)
+    d107_eval = score_d107_tavern_social_hubs(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
+    d107_score = d107_eval["score"]
+
+    # D108: Interactive 15-Record [Role 5: LiveOps & CS Portal — Player Sentiment Telemetry, Net-Promoter In-Game Survey & Rage-Quit Churn Intervention Matrix] (`churn_sentiment_interventions` - 15 Churn Interventions)
+    d108_eval = score_d108_churn_sentiment_interventions(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
+    d108_score = d108_eval["score"]
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score) / 88.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score) / 90.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0 and d95_score == 100.0 and d96_score == 100.0 and d97_score == 100.0 and d98_score == 100.0 and d99_score == 100.0 and d100_score == 100.0 and d101_score == 100.0 and d102_score == 100.0 and d103_score == 100.0 and d104_score == 100.0 and d105_score == 100.0 and d106_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score) / 90.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score) / 100.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score) / 89.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score) / 96.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score + d107_score + d108_score) / 90.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score + d107_score + d108_score) / 92.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0 and d95_score == 100.0 and d96_score == 100.0 and d97_score == 100.0 and d98_score == 100.0 and d99_score == 100.0 and d100_score == 100.0 and d101_score == 100.0 and d102_score == 100.0 and d103_score == 100.0 and d104_score == 100.0 and d105_score == 100.0 and d106_score == 100.0 and d107_score == 100.0 and d108_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score + d107_score + d108_score) / 92.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score + d107_score + d108_score) / 102.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score + d107_score + d108_score) / 91.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score + d105_score + d106_score + d107_score + d108_score) / 98.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -30582,8 +31157,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d104_score
             + d105_score
             + d106_score
+            + d107_score
+            + d108_score
         )
-        / 106.0,
+        / 108.0,
         1,
     )
 
@@ -31334,7 +31911,213 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             "D104_procedural_foliage_wind_water_ripple_and_destructible_physics_matrix": d104_eval,
             "D105_dynamic_bounty_hunter_contracts_and_chaotic_pk_manhunt_matrix": d105_eval,
             "D106_distributed_world_state_pitr_backup_and_chaos_drill_matrix": d106_eval,
+            "D107_dynamic_world_tavern_minigames_bardic_buffs_and_mercenary_hub_matrix": d107_eval,
+            "D108_player_sentiment_telemetry_and_churn_intervention_matrix": d108_eval,
         },
+    }
+
+
+def score_d107_tavern_social_hubs(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_categories = {
+        "Bardic Concert & Rhythm Buff Stage",
+        "Dwarven Dice & Relic Card Table",
+        "Party Finder & Raid Mercenary Contract Board",
+        "Culinary Feast & Vitality Rest Table",
+    }
+    expected_dishes = {
+        "Dragon-Pepper Roast Boar",
+        "Elven Starlight Ambrosia",
+        "Dwarven Mithril Stout",
+        "Aden Royal Truffle Banquet",
+    }
+    expected_buffs = {
+        "+10% EXP/SP & +5% All Stats 60m",
+        "+15% Raid Boss Drop Spoil Luck 45m",
+        "+20% Stun/Sleep/Bleed Resist 60m",
+        "+25% Vitality Consumption Shield 90m",
+    }
+    rows = atlas.get("tavern_social_hubs") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_cats: set[str] = set()
+    seen_dishes: set[str] = set()
+    seen_buffs: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        tid = str(row.get("tavern_id") or "")
+        zid = str(row.get("zone_id") or "")
+        cat = str(row.get("social_category") or "")
+        dish = str(row.get("signature_brew_or_dish") or "")
+        buff = str(row.get("party_feast_buff") or "")
+        escrow_k = int(row.get("minigame_escrow_cap_adena_k") or 0)
+        tracks = int(row.get("bard_sheet_music_tracks") or 0)
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            tid
+            and tid not in seen_ids
+            and row.get("title")
+            and zid in zone_ids_set
+            and row.get("town_id")
+            and cat in expected_categories
+            and dish in expected_dishes
+            and buff in expected_buffs
+            and 10 <= escrow_k <= 500
+            and 8 <= tracks <= 32
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#f59e0b", "#ec4899", "#a855f7", "#10b981")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(tid)
+            seen_cats.add(cat)
+            seen_dishes.add(dish)
+            seen_buffs.add(buff)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_TAVERN_HUBS_MODE",
+            "setAtlasTavernHubsMode",
+            "selectTavernSocialHub",
+            "renderAtlasTavernHubsBarHtml",
+            "studioTavernSocialHubsOverlay",
+        )
+    )
+    ratio = valid_count / 16.0
+    full_cov = (
+        valid_count == 16
+        and seen_cats == expected_categories
+        and seen_dishes == expected_dishes
+        and seen_buffs == expected_buffs
+    )
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 16,
+        "social_categories": sorted(seen_cats),
+        "signature_brews_or_dishes": sorted(seen_dishes),
+        "party_feast_buffs": sorted(seen_buffs),
+        "ui_wired": has_ui,
+    }
+
+
+def score_d108_churn_sentiment_interventions(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_triggers = {
+        "3x Consecutive Boss Wipe Frustration",
+        "+7..+15 Refinement Break Streak Pity",
+        "Quest Pathing Stall > 20m Idle",
+        "Solo Healer/Tank Farming Bottleneck",
+    }
+    expected_actions = {
+        "Newbie Helper Buff + Temporary NPC Companion",
+        "Blacksmith Blessed Fail-Safe Scroll Voucher",
+        "Dynamic Waypoint Fairy Guide Spawn",
+        "1-Click Mentor Party Auto-Match",
+    }
+    rows = atlas.get("churn_sentiment_interventions") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_triggers: set[str] = set()
+    seen_actions: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        iid = str(row.get("intervention_id") or "")
+        zid = str(row.get("zone_id") or "")
+        trig = str(row.get("friction_trigger_type") or "")
+        thresh = float(row.get("churn_risk_score_threshold") or 0.0)
+        act = str(row.get("automated_care_action") or "")
+        uplift = float(row.get("d7_retention_uplift_pct") or 0.0)
+        srate = float(row.get("micro_survey_trigger_rate_pct") or 0.0)
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            iid
+            and iid not in seen_ids
+            and row.get("title")
+            and zid in zone_ids_set
+            and row.get("town_id")
+            and trig in expected_triggers
+            and 0.68 <= thresh <= 0.92
+            and act in expected_actions
+            and 4.2 <= uplift <= 14.8
+            and 1.5 <= srate <= 5.0
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#38bdf8", "#34d399", "#f472b6", "#fbbf24")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(iid)
+            seen_triggers.add(trig)
+            seen_actions.add(act)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_CHURN_INTERVENTION_MODE",
+            "setAtlasChurnInterventionMode",
+            "selectChurnIntervention",
+            "renderAtlasChurnInterventionBarHtml",
+            "studioChurnInterventionsOverlay",
+        )
+    )
+    ratio = valid_count / 15.0
+    full_cov = (
+        valid_count == 15
+        and seen_triggers == expected_triggers
+        and seen_actions == expected_actions
+    )
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 15,
+        "friction_trigger_types": sorted(seen_triggers),
+        "automated_care_actions": sorted(seen_actions),
+        "ui_wired": has_ui,
     }
 
 
@@ -33726,7 +34509,7 @@ def evaluate_80d_atlas(whc: dict[str, Any] | None = None, atlas: dict[str, Any] 
     if atlas is None:
         atlas = json.loads(ATLAS_PATH.read_text(encoding="utf-8"))
     res = audit_world_atlas(whc, atlas)
-    res["wave"] = 51
+    res["wave"] = 52
     return res
 
 
@@ -33876,6 +34659,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D104 (15 Physics Biomes)    : {dims['D104_procedural_foliage_wind_water_ripple_and_destructible_physics_matrix']['score']}/100 ({dims['D104_procedural_foliage_wind_water_ripple_and_destructible_physics_matrix']['verified']}/{dims['D104_procedural_foliage_wind_water_ripple_and_destructible_physics_matrix']['target']} destructible physics biomes)")
         print(f"  D105 (16 Bounty Contracts)  : {dims['D105_dynamic_bounty_hunter_contracts_and_chaotic_pk_manhunt_matrix']['score']}/100 ({dims['D105_dynamic_bounty_hunter_contracts_and_chaotic_pk_manhunt_matrix']['verified']}/{dims['D105_dynamic_bounty_hunter_contracts_and_chaotic_pk_manhunt_matrix']['target']} bounty manhunt contracts)")
         print(f"  D106 (15 PITR Chaos Drills) : {dims['D106_distributed_world_state_pitr_backup_and_chaos_drill_matrix']['score']}/100 ({dims['D106_distributed_world_state_pitr_backup_and_chaos_drill_matrix']['verified']}/{dims['D106_distributed_world_state_pitr_backup_and_chaos_drill_matrix']['target']} disaster recovery pitr drills)")
+        print(f"  D107 (16 Tavern Social Hubs): {dims['D107_dynamic_world_tavern_minigames_bardic_buffs_and_mercenary_hub_matrix']['score']}/100 ({dims['D107_dynamic_world_tavern_minigames_bardic_buffs_and_mercenary_hub_matrix']['verified']}/{dims['D107_dynamic_world_tavern_minigames_bardic_buffs_and_mercenary_hub_matrix']['target']} tavern social hubs)")
+        print(f"  D108 (15 Churn Interventions): {dims['D108_player_sentiment_telemetry_and_churn_intervention_matrix']['score']}/100 ({dims['D108_player_sentiment_telemetry_and_churn_intervention_matrix']['verified']}/{dims['D108_player_sentiment_telemetry_and_churn_intervention_matrix']['target']} churn sentiment interventions)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

@@ -746,6 +746,8 @@ def validate_world_governance(
                 "destructiblePhysicsBiomesCount": len(t_doc.get("destructible_physics_biomes") or []),
                 "bountyManhuntContractsCount": len(t_doc.get("bounty_manhunt_contracts") or []),
                 "disasterRecoveryPitrDrillsCount": len(t_doc.get("disaster_recovery_pitr_drills") or []),
+                "tavernSocialHubsCount": len(t_doc.get("tavern_social_hubs") or []),
+                "churnSentimentInterventionsCount": len(t_doc.get("churn_sentiment_interventions") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -2296,6 +2298,38 @@ def validate_world_governance(
                 if pd_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: disaster_recovery_pitr_drills '{pd_id}' references unknown zone_id '{pd_zid}'"
+                    )
+
+            # Validate 16-Record Dynamic World Tavern Mini-Games, Bardic Music Buffs & Social Mercenary Recruitment Matrix (D107)
+            tavern_hubs = t_doc.get("tavern_social_hubs") or []
+            if tavern_hubs and len(tavern_hubs) < 16:
+                errors.append(
+                    f"GOV-10 violation: tavern_social_hubs must have at least 16 records, got {len(tavern_hubs)}"
+                )
+            for th_item in tavern_hubs:
+                if not isinstance(th_item, dict):
+                    continue
+                th_id = str(th_item.get("tavern_id", ""))
+                th_zid = str(th_item.get("zone_id", ""))
+                if th_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: tavern_social_hubs '{th_id}' references unknown zone_id '{th_zid}'"
+                    )
+
+            # Validate 15-Record Player Sentiment Telemetry, Net-Promoter In-Game Survey & Rage-Quit Churn Intervention Matrix (D108)
+            churn_interventions = t_doc.get("churn_sentiment_interventions") or []
+            if churn_interventions and len(churn_interventions) < 15:
+                errors.append(
+                    f"GOV-10 violation: churn_sentiment_interventions must have at least 15 records, got {len(churn_interventions)}"
+                )
+            for ci_item in churn_interventions:
+                if not isinstance(ci_item, dict):
+                    continue
+                ci_id = str(ci_item.get("intervention_id", ""))
+                ci_zid = str(ci_item.get("zone_id", ""))
+                if ci_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: churn_sentiment_interventions '{ci_id}' references unknown zone_id '{ci_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

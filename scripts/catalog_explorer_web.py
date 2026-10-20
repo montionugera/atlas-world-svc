@@ -117,15 +117,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas102DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas104DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas106DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas108DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 51)),
+        "wave": int(iter_state.get("wave", 52)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"108-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"106-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"104-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"102-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -170,7 +172,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 · D1–D90 · D1–D92 · D1–D94 · D1–D96 · D1–D98 · D1–D100 · D1–D102 · D1–D104 · D1–D106 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 · D1–D90 · D1–D92 · D1–D94 · D1–D96 · D1–D98 · D1–D100 · D1–D102 · D1–D104 · D1–D106 · D1–D108 Verified"
         ),
     }
     return merged
@@ -4432,7 +4434,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">106-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 104-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 102-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 100-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 98-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 96-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 94-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 92-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified · D1–D92 Verified · D1–D94 Verified · D1–D96 Verified · D1–D98 Verified · D1–D100 Verified · D1–D102 Verified · D1–D104 Verified · D1–D106 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">108-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 106-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 104-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 102-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 100-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 98-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 96-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 94-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 92-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified · D1–D92 Verified · D1–D94 Verified · D1–D96 Verified · D1–D98 Verified · D1–D100 Verified · D1–D102 Verified · D1–D104 Verified · D1–D106 Verified · D1–D108 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4557,6 +4559,8 @@ let ATLAS_LORE_CODEX_MODE = 'All';
 let ATLAS_PHYSICS_BIOME_MODE = 'All';
 let ATLAS_BOUNTY_MANHUNT_MODE = 'All';
 let ATLAS_PITR_CHAOS_MODE = 'All';
+let ATLAS_TAVERN_HUBS_MODE = 'All';
+let ATLAS_CHURN_INTERVENTION_MODE = 'All';
 let SELECTED_ANTI_BOT_SENTINEL_ID = '';
 let SELECTED_GODOT_STORYBOOK_PREFAB_ID = '';
 let SELECTED_NAVMESH_SECTOR_ID = '';
@@ -4581,6 +4585,8 @@ let SELECTED_ARCHAEOLOGICAL_CODEX_ID = '';
 let SELECTED_DESTRUCTIBLE_PHYSICS_BIOME_ID = '';
 let SELECTED_BOUNTY_MANHUNT_CONTRACT_ID = '';
 let SELECTED_DISASTER_RECOVERY_DRILL_ID = '';
+let SELECTED_TAVERN_SOCIAL_HUB_ID = '';
+let SELECTED_CHURN_INTERVENTION_ID = '';
 let ANTI_BOT_SENTINELS = [];
 let GODOT_STORYBOOK_PREFABS = [];
 let NAVMESH_OBSTACLE_SECTORS = [];
@@ -4605,6 +4611,8 @@ let ARCHAEOLOGICAL_CODICES = [];
 let DESTRUCTIBLE_PHYSICS_BIOMES = [];
 let BOUNTY_MANHUNT_CONTRACTS = [];
 let DISASTER_RECOVERY_DRILLS = [];
+let TAVERN_SOCIAL_HUBS = [];
+let CHURN_INTERVENTIONS = [];
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4701,6 +4709,8 @@ const ATLAS_STATE_STORE = {
   physicsBiomeMode: 'All',                 // D104: Active 15-Biome [Role 3: Technical Artist] Procedural Foliage Wind-Field, Water Ripple & Destructible Physics Selector
   bountyManhuntMode: 'All',                // D105: Active 16-Contract [Role 2: Content & World Tools] Dynamic Bounty Hunter Contracts, Chaotic PK Manhunt & High-Value Target Tracking Selector
   pitrChaosMode: 'All',                    // D106: Active 15-Shard [Role 4: Backend Infra] Distributed World-State Snapshot Backup, PITR & Disaster-Recovery Chaos Drill Selector
+  tavernHubsMode: 'All',                   // D107: Active 16-Hub [Role 2: Content & World Tools] Dynamic World Tavern Mini-Games, Bardic Music Buffs & Social Mercenary Recruitment Selector
+  churnInterventionMode: 'All',            // D108: Active 15-Town [Role 5: LiveOps & CS Portal] Player Sentiment Telemetry, Net-Promoter In-Game Survey & Rage-Quit Churn Intervention Selector
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4708,6 +4718,50 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasTavernHubsMode(modeId) {
+  ATLAS_TAVERN_HUBS_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.tavernHubsMode = ATLAS_TAVERN_HUBS_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectTavernSocialHub(tavernId) {
+  SELECTED_TAVERN_SOCIAL_HUB_ID = String(tavernId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  TAVERN_SOCIAL_HUBS = tatlas.tavern_social_hubs || [];
+  const item = TAVERN_SOCIAL_HUBS.find(t => t.tavern_id === SELECTED_TAVERN_SOCIAL_HUB_ID);
+  if (item) {
+    if (String(item.zone_id || '').startsWith('zone-town-')) {
+      focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+      return;
+    }
+    focusFieldOrFortressBlueprint(item.zone_id, `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
+
+function setAtlasChurnInterventionMode(modeId) {
+  ATLAS_CHURN_INTERVENTION_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.churnInterventionMode = ATLAS_CHURN_INTERVENTION_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectChurnIntervention(interventionId) {
+  SELECTED_CHURN_INTERVENTION_ID = String(interventionId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  CHURN_INTERVENTIONS = tatlas.churn_sentiment_interventions || [];
+  const item = CHURN_INTERVENTIONS.find(c => c.intervention_id === SELECTED_CHURN_INTERVENTION_ID);
+  if (item) {
+    focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
 
 function setAtlasLoreCodexMode(modeId) {
   ATLAS_LORE_CODEX_MODE = String(modeId || 'All');
@@ -14935,6 +14989,170 @@ function renderAtlasPitrChaosBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasTavernHubsBarHtml(tatlas) {
+  const taverns = Array.isArray(tatlas && tatlas.tavern_social_hubs) ? tatlas.tavern_social_hubs : [];
+  if (!taverns.length) return '';
+  const isAct = !!ATLAS_TAVERN_HUBS_MODE;
+  const selId = SELECTED_TAVERN_SOCIAL_HUB_ID || (taverns[0] && taverns[0].tavern_id) || 'tavern-hub-01-talking-island-salty-anchor-inn';
+  const activeTavern = taverns.find(t => t.tavern_id === selId) || taverns[0];
+
+  return `
+    <div id="atlasTavernHubsBar" style="display:flex;flex-direction:column;gap:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#f59e0b">🍺 D107 DYNAMIC WORLD TAVERN MINI-GAMES, BARDIC MUSIC BUFFS &amp; SOCIAL MERCENARY RECRUITMENT MATRIX:</span>
+          <button type="button" onclick="setAtlasTavernHubsMode(!ATLAS_TAVERN_HUBS_MODE)"
+                  style="min-height:26px;padding:3px 10px;border-radius:7px;font-size:10px;font-weight:900;cursor:pointer;border:1.5px solid ${isAct ? '#fde047' : 'rgba(245,158,11,0.55)'};background:${isAct ? '#78350f' : '#0f172a'};color:${isAct ? '#ffffff' : '#fde68a'}">
+            🍺 Taverns &amp; Bards (16) ${isAct ? '● ACTIVE' : '○ OFF'}
+          </button>
+          <span style="font-size:10px;color:#cbd5e1;font-weight:700">
+            16 Iconic Town Taverns &amp; Bard Stages · Dwarven Dice / Relic Cards / Raid Mercenary Contracts · Culinary Party Feasts
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+          ${taverns.slice(0, 6).map(t => {
+            const tSel = isAct && t.tavern_id === (activeTavern && activeTavern.tavern_id);
+            const colHex = t.accent || '#f59e0b';
+            return `
+              <button type="button" onclick="selectTavernSocialHub('${escapeHtml(t.tavern_id)}')"
+                      style="min-height:23px;padding:2px 7px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${tSel ? '#fde047' : colHex};background:${tSel ? '#78350f' : '#090d14'};color:${tSel ? '#ffffff' : '#fde68a'}">
+                🍺 ${escapeHtml((t.title || t.tavern_id).split('—')[0].trim())} (${escapeHtml(String(t.bard_sheet_music_tracks))}🎶)
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      ${isAct && activeTavern ? `
+        <div style="padding:8px 10px;border-radius:8px;background:rgba(120,53,15,0.42);border:1px solid rgba(245,158,11,0.45);display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+              <span style="font-size:11px;font-weight:900;color:#fde68a">🍺 ${escapeHtml(activeTavern.title)}</span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#fde047;border:1px solid rgba(250,204,21,0.4)">
+                Social Hub: ${escapeHtml(activeTavern.social_category)}
+              </span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#34d399;border:1px solid rgba(52,211,153,0.4)">
+                Specialty: ${escapeHtml(activeTavern.signature_brew_or_dish)} · Buff: ${escapeHtml(activeTavern.party_feast_buff)}
+              </span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#38bdf8;border:1px solid rgba(56,189,248,0.4)">
+                Escrow Cap: ${escapeHtml(String(activeTavern.minigame_escrow_cap_adena_k))}k Adena · Tracks: ${escapeHtml(String(activeTavern.bard_sheet_music_tracks))}
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button type="button" onclick="openTownDetail('${escapeHtml(activeBridgeOrTownId(activeTavern.town_id))}')"
+                      style="min-height:22px;padding:2px 8px;border-radius:5px;border:1px solid #f59e0b;background:#78350f;color:#fef3c7;font-size:9.5px;font-weight:800;cursor:pointer">
+                🏛️ Tavern Town: ${escapeHtml(activeTavern.town_id)}
+              </button>
+            </div>
+          </div>
+          <div style="font-size:10px;color:#e2e8f0;line-height:1.4">
+            <strong style="color:#fde047">Tavern Zone:</strong> <span class="mono" style="color:#38bdf8">${escapeHtml(activeTavern.zone_id)}</span>
+            · <strong style="color:#fde68a">Social &amp; Minigame Notes:</strong> ${escapeHtml(activeTavern.notes)}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:5px">
+            ${taverns.map(t => {
+              const isCardSel = t.tavern_id === activeTavern.tavern_id;
+              return `
+                <div onclick="selectTavernSocialHub('${escapeHtml(t.tavern_id)}')"
+                     style="padding:5px 7px;border-radius:6px;cursor:pointer;background:${isCardSel ? 'rgba(245,158,11,0.26)' : 'rgba(9,13,20,0.85)'};border:1px solid ${isCardSel ? '#fde047' : 'rgba(245,158,11,0.3)'};display:flex;flex-direction:column;gap:2px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.5px;font-weight:800;color:#f8fafc">${escapeHtml((t.title || t.tavern_id).split('—')[0].trim())}</span>
+                    <span class="mono" style="font-size:8.5px;color:#fde68a">${escapeHtml(String(t.minigame_escrow_cap_adena_k))}k · ${escapeHtml(String(t.bard_sheet_music_tracks))}🎶</span>
+                  </div>
+                  <div class="mono" style="font-size:8.5px;color:#cbd5e1">
+                    ${escapeHtml(t.social_category)}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasChurnInterventionBarHtml(tatlas) {
+  const interventions = Array.isArray(tatlas && tatlas.churn_sentiment_interventions) ? tatlas.churn_sentiment_interventions : [];
+  if (!interventions.length) return '';
+  const isAct = !!ATLAS_CHURN_INTERVENTION_MODE;
+  const selId = SELECTED_CHURN_INTERVENTION_ID || (interventions[0] && interventions[0].intervention_id) || 'churn-intervention-01-talking-island';
+  const activeIntervention = interventions.find(c => c.intervention_id === selId) || interventions[0];
+
+  return `
+    <div id="atlasChurnInterventionBar" style="display:flex;flex-direction:column;gap:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#34d399">💚 D108 PLAYER SENTIMENT TELEMETRY, NET-PROMOTER IN-GAME SURVEY &amp; RAGE-QUIT CHURN INTERVENTION MATRIX:</span>
+          <button type="button" onclick="setAtlasChurnInterventionMode(!ATLAS_CHURN_INTERVENTION_MODE)"
+                  style="min-height:26px;padding:3px 10px;border-radius:7px;font-size:10px;font-weight:900;cursor:pointer;border:1.5px solid ${isAct ? '#fde047' : 'rgba(52,211,153,0.55)'};background:${isAct ? '#064e3b' : '#0f172a'};color:${isAct ? '#ffffff' : '#a7f3d0'}">
+            💚 Churn &amp; Retention (15) ${isAct ? '● ACTIVE' : '○ OFF'}
+          </button>
+          <span style="font-size:10px;color:#cbd5e1;font-weight:700">
+            15 Town Friction Checkpoints · Boss Wipe / Refine Pity / Pathing Stall / Solo Bottleneck · Automated Care &amp; D7 Uplift
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+          ${interventions.slice(0, 6).map(c => {
+            const cSel = isAct && c.intervention_id === (activeIntervention && activeIntervention.intervention_id);
+            const colHex = c.accent || '#34d399';
+            return `
+              <button type="button" onclick="selectChurnIntervention('${escapeHtml(c.intervention_id)}')"
+                      style="min-height:23px;padding:2px 7px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${cSel ? '#fde047' : colHex};background:${cSel ? '#064e3b' : '#090d14'};color:${cSel ? '#ffffff' : '#a7f3d0'}">
+                💚 ${escapeHtml((c.title || c.intervention_id).split('—')[0].trim())} (+${escapeHtml(String(c.d7_retention_uplift_pct))}% D7)
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      ${isAct && activeIntervention ? `
+        <div style="padding:8px 10px;border-radius:8px;background:rgba(6,78,59,0.42);border:1px solid rgba(52,211,153,0.45);display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+              <span style="font-size:11px;font-weight:900;color:#a7f3d0">💚 ${escapeHtml(activeIntervention.title)}</span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#fde047;border:1px solid rgba(250,204,21,0.4)">
+                Trigger: ${escapeHtml(activeIntervention.friction_trigger_type)} (Risk ≥ ${escapeHtml(String(activeIntervention.churn_risk_score_threshold))})
+              </span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#34d399;border:1px solid rgba(52,211,153,0.4)">
+                Care Action: ${escapeHtml(activeIntervention.automated_care_action)}
+              </span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#38bdf8;border:1px solid rgba(56,189,248,0.4)">
+                D7 Uplift: +${escapeHtml(String(activeIntervention.d7_retention_uplift_pct))}% · NPS Survey Rate: ${escapeHtml(String(activeIntervention.micro_survey_trigger_rate_pct))}%
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button type="button" onclick="openTownDetail('${escapeHtml(activeBridgeOrTownId(activeIntervention.town_id))}')"
+                      style="min-height:22px;padding:2px 8px;border-radius:5px;border:1px solid #34d399;background:#064e3b;color:#d1fae5;font-size:9.5px;font-weight:800;cursor:pointer">
+                🏛️ Inspect Town: ${escapeHtml(activeIntervention.town_id)}
+              </button>
+            </div>
+          </div>
+          <div style="font-size:10px;color:#e2e8f0;line-height:1.4">
+            <strong style="color:#fde047">Telemetry Checkpoint:</strong> <span class="mono" style="color:#38bdf8">${escapeHtml(activeIntervention.zone_id)}</span>
+            · <strong style="color:#a7f3d0">LiveOps Intervention Notes:</strong> ${escapeHtml(activeIntervention.notes)}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:5px">
+            ${interventions.map(c => {
+              const isCardSel = c.intervention_id === activeIntervention.intervention_id;
+              return `
+                <div onclick="selectChurnIntervention('${escapeHtml(c.intervention_id)}')"
+                     style="padding:5px 7px;border-radius:6px;cursor:pointer;background:${isCardSel ? 'rgba(52,211,153,0.26)' : 'rgba(9,13,20,0.85)'};border:1px solid ${isCardSel ? '#fde047' : 'rgba(52,211,153,0.3)'};display:flex;flex-direction:column;gap:2px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.5px;font-weight:800;color:#f8fafc">${escapeHtml((c.title || c.intervention_id).split('—')[0].trim())}</span>
+                    <span class="mono" style="font-size:8.5px;color:#a7f3d0">+${escapeHtml(String(c.d7_retention_uplift_pct))}% D7 · ${escapeHtml(String(c.churn_risk_score_threshold))}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.5px;color:#cbd5e1">
+                    ${escapeHtml(c.friction_trigger_type)}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -15145,6 +15363,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasPhysicsBiomeBarHtml(tatlas)}
       ${renderAtlasBountyManhuntBarHtml(tatlas)}
       ${renderAtlasPitrChaosBarHtml(tatlas)}
+      ${renderAtlasTavernHubsBarHtml(tatlas)}
+      ${renderAtlasChurnInterventionBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -19632,6 +19852,46 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // Dynamic World Tavern Mini-Games, Bardic Music Buffs & Social Mercenary Recruitment Matrix Overlay (D107)
+  const tavernSocialHubRecords = Array.isArray(atlas.tavern_social_hubs) ? atlas.tavern_social_hubs : [];
+  const tavernSocialHubsOverlaySvg = !ATLAS_TAVERN_HUBS_MODE ? '' : `
+    <g id="studioTavernSocialHubsOverlay">
+      ${tavernSocialHubRecords.map((t) => {
+        const wx = typeof t.world_x === 'number' ? t.world_x : 540;
+        const wy = typeof t.world_y === 'number' ? t.world_y : 295;
+        const colHex = t.accent || '#fb923c';
+        const game = t.signature_minigame || '';
+        const iconTxt = game.includes('Dice') ? '🎲' : (game.includes('Tarot') ? '🃏' : (game.includes('Chess') ? '♟️' : '🍺'));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectTavernSocialHub('${escapeHtml(t.tavern_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.6" fill="rgba(124,45,18,0.78)" stroke="${escapeHtml(colHex)}" stroke-width="2.1"/>
+            <text x="${wx}" y="${wy + 3.5}" text-anchor="middle" font-size="8.5">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // Player Sentiment Telemetry, Net-Promoter In-Game Survey & Rage-Quit Churn Intervention Matrix Overlay (D108)
+  const churnInterventionRecords = Array.isArray(atlas.churn_sentiment_interventions) ? atlas.churn_sentiment_interventions : [];
+  const churnInterventionsOverlaySvg = !ATLAS_CHURN_INTERVENTION_MODE ? '' : `
+    <g id="studioChurnInterventionsOverlay">
+      ${churnInterventionRecords.map((c) => {
+        const wx = typeof c.world_x === 'number' ? c.world_x : 540;
+        const wy = typeof c.world_y === 'number' ? c.world_y : 295;
+        const colHex = c.accent || '#f43f5e';
+        const trig = c.churn_trigger_archetype || '';
+        const iconTxt = trig.includes('Enchant') ? '💔' : (trig.includes('Solo') ? '🤝' : (trig.includes('PK') ? '🕊️' : '💓'));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectChurnIntervention('${escapeHtml(c.intervention_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.6" fill="rgba(136,19,55,0.78)" stroke="${escapeHtml(colHex)}" stroke-width="2.1"/>
+            <text x="${wx}" y="${wy + 3.5}" text-anchor="middle" font-size="8.5">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -19718,6 +19978,8 @@ function renderDedicatedWorldAtlas() {
     ${destructiblePhysicsBiomesOverlaySvg}
     ${bountyManhuntContractsOverlaySvg}
     ${disasterRecoveryDrillsOverlaySvg}
+    ${tavernSocialHubsOverlaySvg}
+    ${churnInterventionsOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

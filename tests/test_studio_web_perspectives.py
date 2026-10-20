@@ -4691,9 +4691,9 @@ class TestStudioWebPerspectives(unittest.TestCase):
         whc = bundle["worldHistoryAndConcept"]
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.evaluate_80d_atlas(whc, atlas)
-        self.assertEqual(audit["wave"], 51)
+        self.assertGreaterEqual(audit["wave"], 51)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 106)
+        self.assertGreaterEqual(len(audit["dimensions"]), 106)
 
         d105 = audit["dimensions"]["D105_dynamic_bounty_hunter_contracts_and_chaotic_pk_manhunt_matrix"]
         self.assertEqual(d105["score"], 100.0)
@@ -4764,10 +4764,137 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas106DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 106)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 106)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 106)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 106)
         self.assertIn("106-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_dedicated_world_atlas_wave52_tavern_social_hubs_and_churn_sentiment_interventions(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        t_summary = report["summary"]["tShapedAtlasSummary"]
+        self.assertEqual(t_summary["tavernSocialHubsCount"], 16)
+        self.assertEqual(t_summary["churnSentimentInterventionsCount"], 15)
+
+        index_html = web.INDEX_HTML
+        for token in (
+            "ATLAS_TAVERN_HUBS_MODE",
+            "TAVERN_SOCIAL_HUBS",
+            "setAtlasTavernHubsMode",
+            "selectTavernSocialHub",
+            "renderAtlasTavernHubsBarHtml",
+            "studioTavernSocialHubsOverlay",
+            "ATLAS_CHURN_INTERVENTION_MODE",
+            "CHURN_INTERVENTIONS",
+            "setAtlasChurnInterventionMode",
+            "selectChurnIntervention",
+            "renderAtlasChurnInterventionBarHtml",
+            "studioChurnInterventionsOverlay",
+            "🍺 Taverns &amp; Bards (16)",
+            "💚 Churn &amp; Retention (15)",
+            "108-Dimension Semantic-Zoom Atlas Score",
+            "D1–D108 Verified",
+        ):
+            self.assertIn(token, index_html)
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.evaluate_80d_atlas(whc, atlas)
+        self.assertEqual(audit["wave"], 52)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 108)
+
+        d107 = audit["dimensions"]["D107_dynamic_world_tavern_minigames_bardic_buffs_and_mercenary_hub_matrix"]
+        self.assertEqual(d107["score"], 100.0)
+        self.assertEqual(d107["verified"], 16)
+        self.assertEqual(d107["target"], 16)
+        self.assertTrue(d107["ui_wired"])
+
+        d108 = audit["dimensions"]["D108_player_sentiment_telemetry_and_churn_intervention_matrix"]
+        self.assertEqual(d108["score"], 100.0)
+        self.assertEqual(d108["verified"], 15)
+        self.assertEqual(d108["target"], 15)
+        self.assertTrue(d108["ui_wired"])
+
+        taverns = atlas["tavern_social_hubs"]
+        self.assertEqual(len(taverns), 16)
+        expected_social_categories = {
+            "Bardic Concert & Rhythm Buff Stage",
+            "Dwarven Dice & Relic Card Table",
+            "Party Finder & Raid Mercenary Contract Board",
+            "Culinary Feast & Vitality Rest Table",
+        }
+        expected_dishes = {
+            "Dragon-Pepper Roast Boar",
+            "Elven Starlight Ambrosia",
+            "Dwarven Mithril Stout",
+            "Aden Royal Truffle Banquet",
+        }
+        expected_buffs = {
+            "+10% EXP/SP & +5% All Stats 60m",
+            "+15% Raid Boss Drop Spoil Luck 45m",
+            "+20% Stun/Sleep/Bleed Resist 60m",
+            "+25% Vitality Consumption Shield 90m",
+        }
+        seen_social_categories = set()
+        seen_dishes = set()
+        seen_buffs = set()
+        for t_row in taverns:
+            self.assertIn(t_row["social_category"], expected_social_categories)
+            self.assertIn(t_row["signature_brew_or_dish"], expected_dishes)
+            self.assertIn(t_row["party_feast_buff"], expected_buffs)
+            seen_social_categories.add(t_row["social_category"])
+            seen_dishes.add(t_row["signature_brew_or_dish"])
+            seen_buffs.add(t_row["party_feast_buff"])
+            self.assertGreaterEqual(t_row["minigame_escrow_cap_adena_k"], 10)
+            self.assertLessEqual(t_row["minigame_escrow_cap_adena_k"], 500)
+            self.assertGreaterEqual(t_row["bard_sheet_music_tracks"], 8)
+            self.assertLessEqual(t_row["bard_sheet_music_tracks"], 32)
+        self.assertEqual(seen_social_categories, expected_social_categories)
+        self.assertEqual(seen_dishes, expected_dishes)
+        self.assertEqual(seen_buffs, expected_buffs)
+
+        interventions = atlas["churn_sentiment_interventions"]
+        self.assertEqual(len(interventions), 15)
+        expected_triggers = {
+            "3x Consecutive Boss Wipe Frustration",
+            "+7..+15 Refinement Break Streak Pity",
+            "Quest Pathing Stall > 20m Idle",
+            "Solo Healer/Tank Farming Bottleneck",
+        }
+        expected_actions = {
+            "Newbie Helper Buff + Temporary NPC Companion",
+            "Blacksmith Blessed Fail-Safe Scroll Voucher",
+            "Dynamic Waypoint Fairy Guide Spawn",
+            "1-Click Mentor Party Auto-Match",
+        }
+        seen_triggers = set()
+        seen_actions = set()
+        for c_row in interventions:
+            self.assertIn(c_row["friction_trigger_type"], expected_triggers)
+            self.assertIn(c_row["automated_care_action"], expected_actions)
+            seen_triggers.add(c_row["friction_trigger_type"])
+            seen_actions.add(c_row["automated_care_action"])
+            self.assertGreaterEqual(c_row["churn_risk_score_threshold"], 0.68)
+            self.assertLessEqual(c_row["churn_risk_score_threshold"], 0.92)
+            self.assertGreaterEqual(c_row["d7_retention_uplift_pct"], 4.2)
+            self.assertLessEqual(c_row["d7_retention_uplift_pct"], 14.8)
+            self.assertGreaterEqual(c_row["micro_survey_trigger_rate_pct"], 1.5)
+            self.assertLessEqual(c_row["micro_survey_trigger_rate_pct"], 5.0)
+        self.assertEqual(seen_triggers, expected_triggers)
+        self.assertEqual(seen_actions, expected_actions)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas108DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 108)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 108)
+        self.assertIn("108-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

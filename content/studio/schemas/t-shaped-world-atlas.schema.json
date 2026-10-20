@@ -551,6 +551,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/disasterRecoveryPitrDrillSpec" }
     },
+    "tavern_social_hubs": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/tavernSocialHubSpec" }
+    },
+    "churn_sentiment_interventions": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/churnSentimentInterventionSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -6455,6 +6467,156 @@
         "accent": {
           "type": "string",
           "enum": ["#38bdf8", "#10b981", "#60a5fa", "#34d399"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "tavernSocialHubSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tavern_id",
+        "title",
+        "town_id",
+        "zone_id",
+        "social_category",
+        "signature_brew_or_dish",
+        "party_feast_buff",
+        "minigame_escrow_cap_adena_k",
+        "bard_sheet_music_tracks",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "tavern_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "town_id": { "type": "string", "minLength": 1 },
+        "zone_id": { "type": "string", "minLength": 1 },
+        "social_category": {
+          "type": "string",
+          "enum": [
+            "Bardic Concert & Rhythm Buff Stage",
+            "Dwarven Dice & Relic Card Table",
+            "Party Finder & Raid Mercenary Contract Board",
+            "Culinary Feast & Vitality Rest Table"
+          ]
+        },
+        "signature_brew_or_dish": {
+          "type": "string",
+          "enum": [
+            "Dragon-Pepper Roast Boar",
+            "Elven Starlight Ambrosia",
+            "Dwarven Mithril Stout",
+            "Aden Royal Truffle Banquet"
+          ]
+        },
+        "party_feast_buff": {
+          "type": "string",
+          "enum": [
+            "+10% EXP/SP & +5% All Stats 60m",
+            "+15% Raid Boss Drop Spoil Luck 45m",
+            "+20% Stun/Sleep/Bleed Resist 60m",
+            "+25% Vitality Consumption Shield 90m"
+          ]
+        },
+        "minigame_escrow_cap_adena_k": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 500
+        },
+        "bard_sheet_music_tracks": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 32
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#f59e0b", "#ec4899", "#a855f7", "#10b981"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "churnSentimentInterventionSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "intervention_id",
+        "title",
+        "town_id",
+        "zone_id",
+        "friction_trigger_type",
+        "churn_risk_score_threshold",
+        "automated_care_action",
+        "d7_retention_uplift_pct",
+        "micro_survey_trigger_rate_pct",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "intervention_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "town_id": { "type": "string", "minLength": 1 },
+        "zone_id": { "type": "string", "minLength": 1 },
+        "friction_trigger_type": {
+          "type": "string",
+          "enum": [
+            "3x Consecutive Boss Wipe Frustration",
+            "+7..+15 Refinement Break Streak Pity",
+            "Quest Pathing Stall > 20m Idle",
+            "Solo Healer/Tank Farming Bottleneck"
+          ]
+        },
+        "churn_risk_score_threshold": {
+          "type": "number",
+          "minimum": 0.68,
+          "maximum": 0.92
+        },
+        "automated_care_action": {
+          "type": "string",
+          "enum": [
+            "Newbie Helper Buff + Temporary NPC Companion",
+            "Blacksmith Blessed Fail-Safe Scroll Voucher",
+            "Dynamic Waypoint Fairy Guide Spawn",
+            "1-Click Mentor Party Auto-Match"
+          ]
+        },
+        "d7_retention_uplift_pct": {
+          "type": "number",
+          "minimum": 4.2,
+          "maximum": 14.8
+        },
+        "micro_survey_trigger_rate_pct": {
+          "type": "number",
+          "minimum": 1.5,
+          "maximum": 5.0
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#38bdf8", "#34d399", "#f472b6", "#fbbf24"]
         },
         "notes": { "type": "string" }
       }
