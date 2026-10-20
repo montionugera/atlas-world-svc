@@ -54973,5 +54973,576 @@
       ],
       "schedule_interval": "Every 45 Minutes (Minimum 18 Players \u00b7 9v9 Dawn vs. Dusk Aerial Control)"
     }
+  ],
+  "olympiad_hero_weapon_exchanges": [
+    {
+      "exchange_id": "hero-ex-01-lantern-hollow",
+      "town_zone_id": "zone-town-lantern-hollow",
+      "town_name": "Lantern Hollow Village (Human Starter)",
+      "exchange_category": "Martial_Infinity_Armory",
+      "olympiad_manager_npc": "Grand Olympiad Manager & Monument of Heroes Steward (Lantern Hollow)",
+      "monument_loc": "-83916:243317",
+      "featured_infinity_weapons": [
+        "Infinity Blade (Sword/Shield \u00b7 +25% Max HP/CP, +504 PvP Crit & Reflect Damage)",
+        "Infinity Cleaver (Two-Handed \u00b7 +504 Crit Rate, +Max HP & Extra Crit Damage)",
+        "Infinity Fang (Dualfist \u00b7 +25% Max HP/CP, Stun on Crit & Evasion +6)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Miracle (30s Invincibility + +5,400 P.Def / +4,050 M.Def)",
+        "Heroic Berserker (2m +500 P.Atk, +100 Atk.Spd, +8 Accuracy & Debuff Immunity)",
+        "Heroic Valor (2m Clan-Wide +250 P.Atk & +500 P.Def Raid/Siege Aura)"
+      ],
+      "token_exchange_catalog": "Olympiad Token / Noblesse Gate Pass -> Giant's Codex, Quick Healing Potions & Blessed Scroll: Enchant Weapon (S-Grade)",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 Class-Based & Open 1v1 / 3v3 Brackets)"
+    },
+    {
+      "exchange_id": "hero-ex-02-draft-kiln-post",
+      "town_zone_id": "zone-town-draft-kiln-post",
+      "town_name": "Draft-Kiln Post (Ogre/Orc Starter)",
+      "exchange_category": "Martial_Infinity_Armory",
+      "olympiad_manager_npc": "Grand Olympiad Manager & Pa'agrio Monument Steward (Draft-Kiln)",
+      "monument_loc": "-44587:-113391",
+      "featured_infinity_weapons": [
+        "Infinity Axe (Blunt/Shield \u00b7 +25% Max HP/CP, Disarm/Stun Proc & Reflect)",
+        "Infinity Spear (Polearm \u00b7 +504 Crit, Wide-Angle Multi-Target & Cancel Buff Proc)",
+        "Infinity Fang (Tyrant Fist \u00b7 +Atk.Spd +15%, Stun on Crit & Wings of Destiny Circlet)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Berserker (+500 P.Atk, +500 M.Atk, +100 Atk/Cast Spd & +20 Speed)",
+        "Heroic Valor (Clan-Wide +250 P.Atk / +500 P.Def & Cancel Resistance)",
+        "Heroic Dread (Instant AoE Fear + +66 Movement Speed Escape)"
+      ],
+      "token_exchange_catalog": "Olympiad Token / Noblesse Gate Pass -> Giant's Codex: Discipline, Fame Points & Ring of Olympiad (30-Day)",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 Monthly Hero Election on 1st at 12:00 UTC)"
+    },
+    {
+      "exchange_id": "hero-ex-03-cinnamon-mill",
+      "town_zone_id": "zone-town-cinnamon-mill",
+      "town_name": "Cinnamon-Mill Haven (Furral Starter)",
+      "exchange_category": "Martial_Infinity_Armory",
+      "olympiad_manager_npc": "Grand Olympiad Manager & Soul-Wing Monument Steward (Cinnamon-Mill)",
+      "monument_loc": "-117978:46601",
+      "featured_infinity_weapons": [
+        "Infinity Rapier (Kamael Rapier \u00b7 +Crit Rate, Party Haste/Miracle Proc & +Max CP)",
+        "Infinity Sword (Ancient Sword \u00b7 +25% Max HP/CP, +504 Crit & Reflect Skill)",
+        "Infinity Shooter (Crossbow \u00b7 Low MP Consumption, Slow Trap Proc & +Range)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Berserker (+500 P.Atk, +100 Atk.Spd & Soul Harmony Mastery)",
+        "Heroic Miracle (30s Absolute Invincibility Shield + Speed Boost)",
+        "Heroic Grandeur (15s AoE Physical/Magical Silence, Fear & -50% P.Def/M.Def)"
+      ],
+      "token_exchange_catalog": "Olympiad Token / Noblesse Gate Pass -> Forgotten Scroll: Fighter's/Archer's Will & Earring of Olympiad",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 34 Class Champions Crowned Monthly)"
+    },
+    {
+      "exchange_id": "hero-ex-04-kilnwatch-bastion",
+      "town_zone_id": "zone-town-kilnwatch-bastion",
+      "town_name": "Town of Kilnwatch Bastion (All-Race Lv.10-20 Convergence Castle Town)",
+      "exchange_category": "Martial_Infinity_Armory",
+      "olympiad_manager_npc": "Grand Olympiad Manager & All-Race Monument Steward (Kilnwatch Dion)",
+      "monument_loc": "-13969:123293",
+      "featured_infinity_weapons": [
+        "Infinity Stinger (Dagger \u00b7 +Backstab Crit Damage, Silence on Crit & +Evasion)",
+        "Infinity Bow (Longbow \u00b7 Low MP Rapid Shot, Slow on Crit & +Max CP)",
+        "Infinity Dualsword (Gladiator/Bladedancer \u00b7 +25% Max HP/CP & Skill Crit +15%)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Valor (Clan-Wide +250 P.Atk & +500 P.Def Siege Vanguard Aura)",
+        "Heroic Miracle (30s Invincibility + +40 Speed Breakthrough)",
+        "Heroic Dread (AoE Fear Breaking Enemy Siege Phalanx)"
+      ],
+      "token_exchange_catalog": "Olympiad Token / Noblesse Gate Pass -> Giant's Codex: Mastery, Necklace of Olympiad & High-Grade Life Stone",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 Minimum 9 Fights & 1 Win for Token Settlement)"
+    },
+    {
+      "exchange_id": "hero-ex-05-pinion-terminus",
+      "town_zone_id": "zone-town-pinion-terminus",
+      "town_name": "Pinion Terminus Township (Continent 01->02 Gateway)",
+      "exchange_category": "Martial_Infinity_Armory",
+      "olympiad_manager_npc": "Grand Olympiad Manager & Hunters Monument Steward (Pinion Terminus)",
+      "monument_loc": "82640:148385",
+      "featured_infinity_weapons": [
+        "Infinity Bow (Sniper Bow \u00b7 +504 Crit, Cheap Shot MP Recovery & Slow Proc)",
+        "Infinity Stinger (Assassin Dagger \u00b7 +Crit Damage, Deadly Blow Boost & Silence)",
+        "Wings of Destiny Circlet (Exclusive Hero Crown \u00b7 Sovereign Golden Aura)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Berserker (+500 P.Atk, +100 Atk.Spd & Debuff Cleanse Immunity)",
+        "Heroic Dread (Instant AoE Fear + Movement Speed Surge)",
+        "Heroic Miracle (30s Invincibility vs. Focus-Fire Assassination)"
+      ],
+      "token_exchange_catalog": "Olympiad Token / Noblesse Gate Pass -> Forgotten Scroll: Sixth Sense, Expose Weak Point & Giant's Codex: Oblivion",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 Spectator Broadcast Enabled at Monument)"
+    },
+    {
+      "exchange_id": "hero-ex-06-porcelain-loom",
+      "town_zone_id": "zone-town-porcelain-loom",
+      "town_name": "Porcelain Loom Sanctuary (Lunar Starter)",
+      "exchange_category": "Arcane_Infinity_Sanctum",
+      "olympiad_manager_npc": "Grand Olympiad Manager & Lunar Monument Steward (Porcelain Loom)",
+      "monument_loc": "46049:40977",
+      "featured_infinity_weapons": [
+        "Infinity Rod (One-Handed Staff \u00b7 +30% Max MP/CP, +Cast Spd & 100% Full HP Heal Proc)",
+        "Infinity Scepter (Two-Handed Staff \u00b7 +Max MP, +M.Crit Rate & Empower/Acumen Aura)",
+        "Wings of Destiny Circlet (Heroic Mystic Crown \u00b7 +Radiant Pillar of Light)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Grandeur (15s AoE -50% P.Def/M.Def, -50% Evasion, Shield Block Cancel & Silence)",
+        "Heroic Miracle (30s Invincibility + +4,050 M.Def Sanctum Barrier)",
+        "Heroic Valor (Clan-Wide +250 P.Atk / +500 P.Def Support Blessing)"
+      ],
+      "token_exchange_catalog": "Olympiad Token / Noblesse Gate Pass -> Forgotten Scroll: Enlightenment (Healer/Wizard) & Magician's Will",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 120s Arena Prep + 360s Combat Timer)"
+    },
+    {
+      "exchange_id": "hero-ex-07-carillon-belfry",
+      "town_zone_id": "zone-town-carillon-belfry",
+      "town_name": "Carillon Hearth Belfry (Dark-Lunar Starter)",
+      "exchange_category": "Arcane_Infinity_Sanctum",
+      "olympiad_manager_npc": "Grand Olympiad Manager & Dark-Lunar Monument Steward (Carillon Belfry)",
+      "monument_loc": "12658:16569",
+      "featured_infinity_weapons": [
+        "Infinity Scepter (Archmage/Storm Screamer \u00b7 +M.Atk, +M.Crit Damage & Chaos Cancel)",
+        "Infinity Rod (Cardinal/Eva's/Shillien Saint \u00b7 -MP Cost, +Cast Spd & Cleanse Proc)",
+        "Infinity Stinger (Ghost Hunter \u00b7 +Skill Crit Multiplier & Instant Silence)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Grandeur (AoE Silence, Fear & -50% Magic Defense Shred)",
+        "Heroic Dread (Instant AoE Fear + +66 Speed Reposition)",
+        "Heroic Berserker (+500 M.Atk, +100 Cast.Spd & Uninterruptible Channeling)"
+      ],
+      "token_exchange_catalog": "Olympiad Token / Noblesse Gate Pass -> Forgotten Scroll: Star Fall, Flame Hawk & Giant's Codex: Mastery",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 4 Arena Geometries: Gargoyle, Pillars, Three Bridges, Fountain)"
+    },
+    {
+      "exchange_id": "hero-ex-08-escapement-anvil",
+      "town_zone_id": "zone-town-escapement-anvil",
+      "town_name": "Town of Escapement Anvil (Stage D 2nd-Class [Learn & Try] Arena)",
+      "exchange_category": "Arcane_Infinity_Sanctum",
+      "olympiad_manager_npc": "Grand Olympiad Manager & Ivory Monument Steward (Escapement Anvil Oren)",
+      "monument_loc": "83367:52961",
+      "featured_infinity_weapons": [
+        "Infinity Scepter (Mystic Muse / Soultaker \u00b7 +M.Crit Rate +80, +Max MP & Reflect)",
+        "Infinity Rod (Arcana Lord / Elemental Master / Spectral Master \u00b7 Servitor Share Boost)",
+        "Infinity Blade (Hell Knight / Eva's / Shillien Templar \u00b7 Cancel Buff on Crit)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Grandeur (AoE Silence & -50% P.Def/M.Def Overwhelming Debuff)",
+        "Heroic Miracle (30s Invincibility for Summoner/Healer Survival)",
+        "Heroic Valor (Clan-Wide +250 P.Atk / +500 P.Def Ivory Aura)"
+      ],
+      "token_exchange_catalog": "Olympiad Token / Noblesse Gate Pass -> Forgotten Scroll: Spirit of the Phoenix / Eva's Will / Pain of Shilen",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 5 Cubics & 5 Melodies Free Arena Buffs)"
+    },
+    {
+      "exchange_id": "hero-ex-09-starfall-haven",
+      "town_zone_id": "zone-town-starfall-haven",
+      "town_name": "Starfall Haven Township (Continent 03 Sky-Harbor Capital)",
+      "exchange_category": "Arcane_Infinity_Sanctum",
+      "olympiad_manager_npc": "Grand Olympiad Manager & Astral Monument Steward (Starfall Haven Rune)",
+      "monument_loc": "44076:-48147",
+      "featured_infinity_weapons": [
+        "Infinity Scepter (Grand Khavatari / Dominator \u00b7 +Max CP/MP, +Cast Spd & Clan CP Surge)",
+        "Infinity Rod (Hierophant / Doomcryer \u00b7 -Reuse Delay, +Max MP & Cancel Resistance)",
+        "Wings of Destiny Circlet (Heroic Sovereign Crown + Global Hero Voice %Chat)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Valor (Clan-Wide +250 P.Atk / +500 P.Def Overlord/Prophet Synergy)",
+        "Heroic Grandeur (AoE Silence & Defense Crush before Siege Push)",
+        "Heroic Miracle (30s Invincibility During Castle Artifact Engraving)"
+      ],
+      "token_exchange_catalog": "Olympiad Token / Noblesse Gate Pass -> Forgotten Scroll: Great Fury, Arcane Chaos & Ring/Earring/Necklace of Olympiad",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 Hero %Chat Global Broadcast Unlocked)"
+    },
+    {
+      "exchange_id": "hero-ex-10-crown-beacon",
+      "town_zone_id": "zone-town-crown-beacon",
+      "town_name": "Town of Crown-Beacon Citadel (High-Halo Imperial Capital)",
+      "exchange_category": "Arcane_Infinity_Sanctum",
+      "olympiad_manager_npc": "Grand Olympiad Manager & High-Halo Sovereign Monument Steward (Crown-Beacon)",
+      "monument_loc": "148185:26545",
+      "featured_infinity_weapons": [
+        "Infinity Scepter (Sovereign Archmage \u00b7 +30% Max MP/CP, +M.Crit & 100% Clan Heal Proc)",
+        "Infinity Blade (Sovereign Paladin \u00b7 +25% Max HP/CP, Reflect & Cancel Buff Proc)",
+        "Infinity Bow (Sovereign Sagittarius \u00b7 Low MP Rapid Shot & Long-Range Slow)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Miracle (30s Sovereign Invincibility + +5,400 P.Def / +4,050 M.Def)",
+        "Heroic Berserker (+500 P.Atk/M.Atk, +100 Atk/Cast Spd & Debuff Immunity)",
+        "Heroic Grandeur (15s AoE Silence, Fear & -50% Defense Shred)"
+      ],
+      "token_exchange_catalog": "Olympiad Token / Noblesse Gate Pass -> Top-Tier Giant's Codex: Mastery, Blessed S-Grade Scrolls & Hero Cloak",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 Sovereign Hall of Heroes Leaderboard)"
+    },
+    {
+      "exchange_id": "hero-ex-11-root-train-roundhouse",
+      "town_zone_id": "zone-town-root-train-roundhouse",
+      "town_name": "Root-Train Roundhouse (Dwarf Starter)",
+      "exchange_category": "Olympiad_Token_Codex_Exchange",
+      "olympiad_manager_npc": "Grand Olympiad Manager & Iron Gate Token Broker (Root-Train Roundhouse)",
+      "monument_loc": "115394:-178463",
+      "featured_infinity_weapons": [
+        "Infinity Axe (Fortune Seeker / Maestro \u00b7 +25% Max HP/CP, Stun & Spoil Mastery)",
+        "Infinity Spear (Dwarven Polearm \u00b7 Multi-Target Crit & Cancel Proc)",
+        "Wings of Destiny Circlet (Dwarven Guild Hero Crown)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Valor (Clan-Wide +250 P.Atk & +500 P.Def Siege Golem Support)",
+        "Heroic Miracle (30s Invincibility on Castle Gate Breach)"
+      ],
+      "token_exchange_catalog": "5,000 Olympiad Tokens -> Giant's Codex: Mastery \u00b7 1,000 Tokens -> Giant's Codex \u00b7 22,000 Tokens -> Ring of Olympiad",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 +300 Bonus Olympiad Tokens for Hero Status)"
+    },
+    {
+      "exchange_id": "hero-ex-12-glaze-barge-quay",
+      "town_zone_id": "zone-town-glaze-barge-quay",
+      "town_name": "Glaze-Barge Quay (River Trade & Raid Port)",
+      "exchange_category": "Olympiad_Token_Codex_Exchange",
+      "olympiad_manager_npc": "Grand Olympiad Manager & Maritime Token Broker (Glaze-Barge Quay)",
+      "monument_loc": "-80897:151129",
+      "featured_infinity_weapons": [
+        "Infinity Dualsword (Sword Muse / Spectral Dancer \u00b7 +25% Max HP/CP & Song/Dance Cost -15%)",
+        "Infinity Stinger (Wind Rider / Adventurer \u00b7 +Crit Damage & Silence Proc)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Berserker (+500 P.Atk, +100 Atk.Spd & +20 Speed)",
+        "Heroic Dread (AoE Fear + Instant Dockyard Escape)"
+      ],
+      "token_exchange_catalog": "33,000 Olympiad Tokens -> Earring of Olympiad (+20% Stun/Mental Resist & Vampiric) \u00b7 44,000 Tokens -> Necklace of Olympiad",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 Grade 1\u20135 Point Settlement at Month End)"
+    },
+    {
+      "exchange_id": "hero-ex-13-saffron-press",
+      "town_zone_id": "zone-town-saffron-press",
+      "town_name": "Saffron Press Village (Manor Agricultural Hub)",
+      "exchange_category": "Olympiad_Token_Codex_Exchange",
+      "olympiad_manager_npc": "Grand Olympiad Manager & Freeholds Token Broker (Saffron Press)",
+      "monument_loc": "17712:169821",
+      "featured_infinity_weapons": [
+        "Infinity Cleaver (Titan / Dreadnought \u00b7 +Max HP/CP & Overwhelming Crit Damage)",
+        "Infinity Fang (Grand Khavatari \u00b7 +Atk.Spd +15% & Stun on Crit)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Berserker (+500 P.Atk, +100 Atk.Spd & Debuff Immunity)",
+        "Heroic Miracle (30s Invincibility in Low-HP Frenzy)"
+      ],
+      "token_exchange_catalog": "Olympiad Token / Noblesse Gate Pass -> Forgotten Scroll: Turn to Stone,Exciting Adventure, Wind Riding & Ghost Walking",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 10 Weekly Points Granted Every Monday)"
+    },
+    {
+      "exchange_id": "hero-ex-14-inductor-switchyard",
+      "town_zone_id": "zone-town-inductor-switchyard",
+      "town_name": "Town of Inductor Switchyard (Stage E 2nd-Class Promotion Capital)",
+      "exchange_category": "Olympiad_Token_Codex_Exchange",
+      "olympiad_manager_npc": "Grand Olympiad Manager & Giran Metropolitan Token Broker (Inductor Switchyard)",
+      "monument_loc": "147721:-55487",
+      "featured_infinity_weapons": [
+        "Infinity Blade (Phoenix Knight / Hell Knight \u00b7 +25% Max HP/CP & Reflect)",
+        "Infinity Scepter (Archmage / Mystic Muse \u00b7 +30% Max MP/CP & +M.Crit)",
+        "Infinity Dualsword (Duelist \u00b7 +Skill Power & +25% Max HP/CP)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Valor (Clan-Wide +250 P.Atk & +500 P.Def Metropolitan Aura)",
+        "Heroic Grandeur (AoE Silence, Fear & -50% Defense Shred)",
+        "Heroic Miracle (30s Invincibility Shield)"
+      ],
+      "token_exchange_catalog": "Olympiad Token / Noblesse Gate Pass -> Giant's Codex: Mastery/Discipline/Oblivion, Warrior's Temporary Healing Potion & Fame",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 Giran Central Monument of Heroes)"
+    },
+    {
+      "exchange_id": "hero-ex-15-torque-balance-citadel",
+      "town_zone_id": "zone-town-torque-balance-citadel",
+      "town_name": "Town of Torque-Balance Citadel (Human Ancestral Expedition Hub)",
+      "exchange_category": "Olympiad_Token_Codex_Exchange",
+      "olympiad_manager_npc": "Grand Olympiad Manager & Imperial Aden Token Broker (Torque-Balance Citadel)",
+      "monument_loc": "116730:-18695",
+      "featured_infinity_weapons": [
+        "Infinity Blade (Imperial Sovereign Armament \u00b7 +25% Max HP/CP & Cancel Proc)",
+        "Infinity Rod (Imperial Cardinal Armament \u00b7 100% Full Restore Proc & +Cast Spd)",
+        "Infinity Bow (Imperial Hawkeye Armament \u00b7 Low MP Rapid Shot & Slow)"
+      ],
+      "heroic_skills_unlocked": [
+        "Heroic Miracle (30s Imperial Invincibility + +5,400 P.Def / +4,050 M.Def)",
+        "Heroic Valor (Clan-Wide +250 P.Atk & +500 P.Def Imperial Citadel Aura)",
+        "Heroic Berserker (+500 P.Atk/M.Atk, +100 Atk/Cast Spd & Debuff Immunity)"
+      ],
+      "token_exchange_catalog": "Olympiad Token / Noblesse Gate Pass -> Complete Lv.81\u201383 Forgotten Scroll Catalog, Giant's Codex: Mastery & Olympiad Jewelry Suite",
+      "match_window_schedule": "18:00\u201324:00 Server Time (9-Match Weekly Quota \u00b7 Imperial Aden Coliseum Broadcast)"
+    }
+  ],
+  "treasure_chest_lockpick_grounds": [
+    {
+      "cache_id": "chest-01-whispering-mire-smuggler-cache",
+      "cache_name": "Whispering Mire Smuggler Cache \u2014 Grade 2\u20133 Marshland Lockboxes",
+      "cache_environment": "Overland_Pirate_Bandit_Cache",
+      "zone_id": "zone-field-whispering-mire",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-68571:228201",
+      "chest_level_bracket": "Lv.21\u201330 Treasure Chest",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 2\u20133 or Rogue/Scavenger Unlock Lv.3\u20135",
+      "true_chest_vs_mimic_ratio": "50% True Treasure Chest / 50% Explosive Box Mimic",
+      "jackpot_enchant_drops": [
+        "Scroll: Enchant Weapon (D-Grade) & Scroll: Enchant Armor (D-Grade)",
+        "Blessed Scroll of Escape & Greater Haste Potion Bundle",
+        "D-Grade Top Weapon Key Materials (Mithril Alloy & Oriharukon Ore)"
+      ]
+    },
+    {
+      "cache_id": "chest-02-cinder-apron-bandit-strongbox",
+      "cache_name": "Cinder-Apron Bandit Strongboxes \u2014 Grade 3\u20134 Highwaymen Coffers",
+      "cache_environment": "Overland_Pirate_Bandit_Cache",
+      "zone_id": "zone-field-cinder-apron",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-6557:131612",
+      "chest_level_bracket": "Lv.30\u201339 Treasure Chest",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 3\u20134 or Treasure Hunter Unlock Lv.6\u20138",
+      "true_chest_vs_mimic_ratio": "45% True Treasure Chest / 55% Explosive Box Mimic",
+      "jackpot_enchant_drops": [
+        "Scroll: Enchant Weapon (C-Grade) & Scroll: Enchant Armor (C-Grade)",
+        "Blessed Scroll of Resurrection & Quick Healing Potion Pack",
+        "Crystal: D-Grade / C-Grade & Rare Dye (+4/-4 Stat Tattoo)"
+      ]
+    },
+    {
+      "cache_id": "chest-03-brass-spur-outlaw-hoard",
+      "cache_name": "Brass-Spur Outlaw Hoard \u2014 Grade 4\u20135 Escarpment Iron Chests",
+      "cache_environment": "Overland_Pirate_Bandit_Cache",
+      "zone_id": "zone-field-brass-spur-ridge",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "89057:138223",
+      "chest_level_bracket": "Lv.42\u201351 Treasure Chest",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 4\u20135 or Maestro Key of Enigma / Unlock Lv.9\u201311",
+      "true_chest_vs_mimic_ratio": "45% True Treasure Chest / 55% Bite-Back Mimic Ambush",
+      "jackpot_enchant_drops": [
+        "Blessed Scroll: Enchant Armor (C-Grade) & Weapon (C-Grade)",
+        "Scroll: Enchant Weapon (B-Grade) & Enchant Armor (B-Grade)",
+        "Mid-Grade Life Stone (Lv.46\u201352) & Enria / Thons Spoil Cache"
+      ]
+    },
+    {
+      "cache_id": "chest-04-leyden-causeway-caravan-vault",
+      "cache_name": "Leyden Causeway Raider Cache \u2014 Grade 5\u20136 Ambush Supply Chests",
+      "cache_environment": "Overland_Pirate_Bandit_Cache",
+      "zone_id": "zone-field-leyden-causeway",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "141071:-48766",
+      "chest_level_bracket": "Lv.54\u201363 Treasure Chest",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 5\u20136 or Adventurer Unlock Lv.12\u201314",
+      "true_chest_vs_mimic_ratio": "40% True Treasure Chest / 60% Self-Destruct Mimic",
+      "jackpot_enchant_drops": [
+        "Blessed Scroll: Enchant Weapon (B-Grade) & Armor (B-Grade)",
+        "Scroll: Enchant Weapon (A-Grade) & High-Grade Life Stone (Lv.61)",
+        "Blue/Green/Red Soul Crystal Stage 7\u20139 & Asofe Bundles"
+      ]
+    },
+    {
+      "cache_id": "chest-05-kelp-spiral-pirate-cove-coffer",
+      "cache_name": "Kelp-Spiral Pirate Cove Coffers \u2014 Grade 6\u20137 Zaken Corsair Hoard",
+      "cache_environment": "Overland_Pirate_Bandit_Cache",
+      "zone_id": "zone-field-kelp-spiral-reef",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-52515:-138755",
+      "chest_level_bracket": "Lv.66\u201375 Pirate Coffer",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 6\u20137 or Fortune Seeker Unlock Lv.15 + Summon Treasure Key",
+      "true_chest_vs_mimic_ratio": "40% True Pirate Treasure Chest / 60% Cursed Corsair Mimic",
+      "jackpot_enchant_drops": [
+        "Blessed Scroll: Enchant Weapon (A-Grade) & Armor (A-Grade)",
+        "High-Grade Life Stone (Lv.70) & Pirate's Eye Patch / Gold Doubloons",
+        "60% A-Grade Weapon Recipes (Tallum Blade, Carnage Bow, Arcana Mace)"
+      ]
+    },
+    {
+      "cache_id": "chest-06-aurora-tether-sovereign-reliquary",
+      "cache_name": "Aurora-Tether Sovereign Reliquaries \u2014 Grade 8 High-Halo Royal Chests",
+      "cache_environment": "Overland_Pirate_Bandit_Cache",
+      "zone_id": "zone-field-aurora-tether",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "152299:31056",
+      "chest_level_bracket": "Lv.78\u201385 Royal Reliquary",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 8 or Unlock Lv.15 + Thief Key Mastery",
+      "true_chest_vs_mimic_ratio": "35% True Royal Treasure Chest / 65% High-Voltage Arcane Mimic",
+      "jackpot_enchant_drops": [
+        "Blessed Scroll: Enchant Weapon (S-Grade) & Armor (S-Grade)",
+        "Top-Grade Life Stone (Lv.76\u201382) & Fire/Water/Wind/Earth Elemental Stones",
+        "Giant's Codex: Mastery & S80 Dynasty Weapon Key Piece Cache"
+      ]
+    },
+    {
+      "cache_id": "chest-07-sunken-potter-hold-corsair-vault",
+      "cache_name": "Sunken Potter Hold B2 Corsair Vault \u2014 Devil's Isle Bilge Lockboxes",
+      "cache_environment": "Underground_Catacomb_Vault",
+      "zone_id": "zone-dungeon-sunken-potter-hold",
+      "dungeon_id": "zone-dungeon-sunken-potter-hold",
+      "floor_id": "B2",
+      "loc": "-78487:149067",
+      "chest_level_bracket": "Lv.45\u201354 Bilge Chest",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 5 or Treasure Hunter Unlock Lv.10",
+      "true_chest_vs_mimic_ratio": "45% True Bilge Treasure Chest / 55% Drowned Deckhand Mimic",
+      "jackpot_enchant_drops": [
+        "Scroll: Enchant Weapon (B-Grade) & Blessed Scroll: Enchant Armor (B-Grade)",
+        "Zaken's Corsair Key & Golden Mermaid Scale Spoil Crate",
+        "High-Grade Life Stone (Lv.55) & Greater CP Potion (\u00d7100)"
+      ]
+    },
+    {
+      "cache_id": "chest-08-heretic-kiln-catacomb-reliquary",
+      "cache_name": "Heretic Kiln Catacomb B2 Reliquary \u2014 Ancient Seal-Stone Coffers",
+      "cache_environment": "Underground_Catacomb_Vault",
+      "zone_id": "zone-catacomb-heretic-kiln",
+      "dungeon_id": "zone-catacomb-heretic-kiln",
+      "floor_id": "B2",
+      "loc": "19727:173278",
+      "chest_level_bracket": "Lv.33\u201342 Catacomb Chest",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 4 or Rogue Unlock Lv.8",
+      "true_chest_vs_mimic_ratio": "45% True Seal Reliquary / 55% Nephilim Sentinel Mimic",
+      "jackpot_enchant_drops": [
+        "Scroll: Enchant Weapon (C-Grade) & Ancient Adena (50,000\u2013150,000 AA)",
+        "Blue & Green Seal Stone Jackpot Bundle (\u00d715,000)",
+        "Blank Scroll & Mammon's Varnish / Synthetic Cokes"
+      ]
+    },
+    {
+      "cache_id": "chest-09-witch-pendulum-catacomb-vault",
+      "cache_name": "Astral Witch Catacomb B3 Vault \u2014 Lilim & Gigant Treasure Coffers",
+      "cache_environment": "Underground_Catacomb_Vault",
+      "zone_id": "zone-catacomb-witch-pendulum",
+      "dungeon_id": "zone-catacomb-witch-pendulum",
+      "floor_id": "B3",
+      "loc": "54141:-34911",
+      "chest_level_bracket": "Lv.57\u201366 Catacomb Vault",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 6 or Unlock Lv.13 + Maestro Key of Enigma",
+      "true_chest_vs_mimic_ratio": "40% True Catacomb Vault / 60% Lilim Shadow Mimic",
+      "jackpot_enchant_drops": [
+        "Blessed Scroll: Enchant Weapon (B-Grade) & Scroll: Enchant Armor (A-Grade)",
+        "Red Seal Stone Jackpot (\u00d710,000) & Ancient Tome of the Demon",
+        "High-Grade Life Stone (Lv.64) & A-Grade Armor Sealed Part Crate"
+      ]
+    },
+    {
+      "cache_id": "chest-10-dark-omens-catacomb-sarcophagus",
+      "cache_name": "Dark Omens Necropolis B3 Sarcophagi \u2014 Grade 7 Abyssal Lockboxes",
+      "cache_environment": "Underground_Catacomb_Vault",
+      "zone_id": "zone-catacomb-dark-omens-coral",
+      "dungeon_id": "zone-catacomb-dark-omens-coral",
+      "floor_id": "B3",
+      "loc": "38355:-29000",
+      "chest_level_bracket": "Lv.69\u201375 Necropolis Coffer",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 7 or Adventurer/Wind Rider Unlock Lv.14",
+      "true_chest_vs_mimic_ratio": "38% True Necropolis Coffer / 62% Abyssal Gargoyle Mimic",
+      "jackpot_enchant_drops": [
+        "Scroll: Enchant Weapon (A-Grade) & Blessed Scroll: Enchant Armor (A-Grade)",
+        "Top-Grade Life Stone (Lv.70) & Forgotten Scroll: Sixth Sense",
+        "Ancient Adena (250,000 AA) & Soul Crystal Stage 10"
+      ]
+    },
+    {
+      "cache_id": "chest-11-forbidden-path-catacomb-sanctum-vault",
+      "cache_name": "Forbidden Path Catacomb B3 Sanctum \u2014 Grade 8 Architect Seal Vaults",
+      "cache_environment": "Underground_Catacomb_Vault",
+      "zone_id": "zone-catacomb-forbidden-path-orrery",
+      "dungeon_id": "zone-catacomb-forbidden-path-orrery",
+      "floor_id": "B3",
+      "loc": "18369:-64289",
+      "chest_level_bracket": "Lv.78\u201385 Architect Coffer",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 8 or Ghost Hunter Unlock Lv.15",
+      "true_chest_vs_mimic_ratio": "35% True Architect Seal Coffer / 65% Elder Nephilim Mimic",
+      "jackpot_enchant_drops": [
+        "Blessed Scroll: Enchant Weapon (S-Grade) & Scroll: Enchant Weapon (S-Grade)",
+        "Top-Grade Life Stone (Lv.76) & Forgotten Scroll: Enlightenment",
+        "Draconic Bow / Imperial Crusader / Major Arcana Key Materials"
+      ]
+    },
+    {
+      "cache_id": "chest-12-kiln-cellar-queen-royal-coffer",
+      "cache_name": "Kiln Cellar B3 Queen's Nursery Coffer \u2014 Royal Chitin Treasure Boxes",
+      "cache_environment": "Tower_Sanctum_Coffer_Room",
+      "zone_id": "zone-dungeon-kiln-cellar",
+      "dungeon_id": "zone-dungeon-kiln-cellar",
+      "floor_id": "B3",
+      "loc": "75393:116742",
+      "chest_level_bracket": "Lv.36\u201342 Royal Ant Coffer",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 4 or Scavenger Unlock Lv.7",
+      "true_chest_vs_mimic_ratio": "50% True Nursery Coffer / 50% Royal Guard Ant Mimic",
+      "jackpot_enchant_drops": [
+        "Blessed Scroll: Enchant Weapon (D-Grade) & Scroll: Enchant Weapon (C-Grade)",
+        "C-Grade Weapon Key Parts (Eminence Bow & Homunkulus's Sword)",
+        "Ant Larva Royal Jelly Elixir & Quick Healing Potion Crate"
+      ]
+    },
+    {
+      "cache_id": "chest-13-pendulum-shaft-cruma-core-coffer",
+      "cache_name": "Pendulum Shaft 3F Core Coffer Room \u2014 Titan Escapement Vaults",
+      "cache_environment": "Tower_Sanctum_Coffer_Room",
+      "zone_id": "zone-dungeon-pendulum-shaft",
+      "dungeon_id": "zone-dungeon-pendulum-shaft",
+      "floor_id": "3F",
+      "loc": "85397:144133",
+      "chest_level_bracket": "Lv.48\u201354 Titan Coffer",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 5 or Warsmith Key of Enigma / Unlock Lv.11",
+      "true_chest_vs_mimic_ratio": "42% True Titan Coffer / 58% Porta Construct Mimic",
+      "jackpot_enchant_drops": [
+        "Scroll: Enchant Weapon (B-Grade) & Blessed Scroll: Enchant Armor (C-Grade)",
+        "Cruma Titan Core Gear & B-Grade Full Plate / Avadon Recipes",
+        "Mid-Grade Life Stone (Lv.52) & Greater Swift Attack Potions"
+      ]
+    },
+    {
+      "cache_id": "chest-14-chronometer-foundry-forge-coffer",
+      "cache_name": "Chronometer Foundry 2F Smeltery Coffers \u2014 Forge of the Gods Chests",
+      "cache_environment": "Tower_Sanctum_Coffer_Room",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "2F",
+      "loc": "84811:56344",
+      "chest_level_bracket": "Lv.63\u201372 Foundry Coffer",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 6\u20137 or Fortune Seeker Unlock Lv.14",
+      "true_chest_vs_mimic_ratio": "40% True Foundry Coffer / 60% Magma Golem Mimic",
+      "jackpot_enchant_drops": [
+        "Blessed Scroll: Enchant Weapon (A-Grade) & Scroll: Enchant Armor (S-Grade)",
+        "Fire Attribute Stone (+6..+150 Fire) & S-Grade Weapon Recipes",
+        "High-Grade Life Stone (Lv.70) & Oriharukon / Enria Ingot Stack"
+      ]
+    },
+    {
+      "cache_id": "chest-15-chronometer-foundry-3f-sepulcher-box",
+      "cache_name": "Chronometer Foundry 3F Sepulcher Reliquary \u2014 Halisha's Treasure Boxes",
+      "cache_environment": "Tower_Sanctum_Coffer_Room",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "3F",
+      "loc": "84825:56355",
+      "chest_level_bracket": "Lv.75\u201382 Sepulcher Box",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 7\u20138 or Chapel Key / Unlock Lv.15",
+      "true_chest_vs_mimic_ratio": "38% True Halisha Reliquary / 62% Sepulcher Scarab Mimic",
+      "jackpot_enchant_drops": [
+        "Scroll: Enchant Weapon (S-Grade) & Blessed Scroll: Enchant Armor (S-Grade)",
+        "Halisha's Brooch & S-Grade Imperial / Draconic / Arcana 60% Recipes",
+        "Top-Grade Life Stone (Lv.76) & Forgotten Scroll: Fighter's Will"
+      ]
+    },
+    {
+      "cache_id": "chest-16-star-heart-nave-3f-insolence-coffer",
+      "cache_name": "Star-Heart Nave 3F Hallon's Coffer Room \u2014 Tower of Insolence Royal Chests",
+      "cache_environment": "Tower_Sanctum_Coffer_Room",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "149239:28366",
+      "chest_level_bracket": "Lv.75\u201385 Insolence Royal Coffer",
+      "deluxe_key_grade_or_skill": "Deluxe Chest Key Grade 8 or Adventurer Unlock Lv.15 + Summon Treasure Key",
+      "true_chest_vs_mimic_ratio": "35% True Royal Coffer (Spawns Key to Hallate/Kernon/Golkonda) / 65% Platinum Angel Mimic",
+      "jackpot_enchant_drops": [
+        "Blessed Scroll: Enchant Weapon (S-Grade) & Armor (S-Grade)",
+        "Sub-Class Pipette Knife / Star of Destiny & Soul Crystal Stage 12\u201313",
+        "Top-Grade Life Stone (Lv.76\u201380) & Giant's Codex: Mastery"
+      ]
+    }
   ]
 }

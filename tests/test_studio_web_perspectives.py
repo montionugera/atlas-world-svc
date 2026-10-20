@@ -2027,7 +2027,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 54)
+        self.assertGreaterEqual(len(audit["dimensions"]), 54)
 
         d53 = audit["dimensions"]["D53_faction_alliance_war_and_totem_altars"]
         self.assertEqual(d53["score"], 100.0)
@@ -2081,10 +2081,100 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas54DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 54)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 54)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 54)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 54)
         self.assertIn("54-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave26_olympiad_hero_weapon_exchanges_and_treasure_chest_lockpick_grounds(self) -> None:
+        """Wave 26 (D55–D56): 15 Town Hero Weapon & Olympiad Token Exchanges & 16 Treasure Chest Lockpick & Mimic Cache Grounds."""
+        import scripts.catalog_explorer_web as web
+        import scripts.run_atlas_iteration_loop as loop
+        import scripts.studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["olympiadHeroWeaponExchangesCount"], 15)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["treasureChestLockpickGroundsCount"], 16)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_HERO_WEAPON_MODE",
+            "setAtlasHeroWeaponMode(",
+            "renderAtlasHeroWeaponBarHtml(",
+            "studioHeroWeaponExchangeOverlay",
+            "ATLAS_TREASURE_CHEST_MODE",
+            "setAtlasTreasureChestMode(",
+            "renderAtlasTreasureChestBarHtml(",
+            "studioTreasureChestOverlay",
+            "56-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 26 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 56)
+
+        d55 = audit["dimensions"]["D55_olympiad_hero_weapon_and_token_exchanges"]
+        self.assertEqual(d55["score"], 100.0)
+        self.assertEqual(d55["verified"], 15)
+        self.assertEqual(d55["target"], 15)
+        self.assertEqual(d55["martial_infinity_armories"], 5)
+        self.assertEqual(d55["arcane_infinity_sanctums"], 5)
+        self.assertEqual(d55["olympiad_token_codex_exchanges"], 5)
+        self.assertEqual(
+            set(d55["exchange_categories"]),
+            {
+                "Martial_Infinity_Armory",
+                "Arcane_Infinity_Sanctum",
+                "Olympiad_Token_Codex_Exchange",
+            },
+        )
+        self.assertTrue(d55["ui_wired"])
+
+        d56 = audit["dimensions"]["D56_treasure_chest_lockpick_and_mimic_grounds"]
+        self.assertEqual(d56["score"], 100.0)
+        self.assertEqual(d56["verified"], 16)
+        self.assertEqual(d56["target"], 16)
+        self.assertEqual(d56["overland_pirate_bandit_caches"], 6)
+        self.assertEqual(d56["underground_catacomb_vaults"], 5)
+        self.assertEqual(d56["tower_sanctum_coffer_rooms"], 5)
+        self.assertEqual(
+            set(d56["cache_environments"]),
+            {
+                "Overland_Pirate_Bandit_Cache",
+                "Underground_Catacomb_Vault",
+                "Tower_Sanctum_Coffer_Room",
+            },
+        )
+        self.assertTrue(d56["ui_wired"])
+
+        exchanges = atlas["olympiad_hero_weapon_exchanges"]
+        self.assertEqual(len(exchanges), 15)
+        self.assertEqual(sum(1 for e in exchanges if e["exchange_category"] == "Martial_Infinity_Armory"), 5)
+        self.assertEqual(sum(1 for e in exchanges if e["exchange_category"] == "Arcane_Infinity_Sanctum"), 5)
+        self.assertEqual(sum(1 for e in exchanges if e["exchange_category"] == "Olympiad_Token_Codex_Exchange"), 5)
+        for e in exchanges:
+            self.assertGreaterEqual(len(e["featured_infinity_weapons"]), 2)
+            self.assertGreaterEqual(len(e["heroic_skills_unlocked"]), 2)
+
+        caches = atlas["treasure_chest_lockpick_grounds"]
+        self.assertEqual(len(caches), 16)
+        self.assertEqual(sum(1 for c in caches if c["cache_environment"] == "Overland_Pirate_Bandit_Cache"), 6)
+        self.assertEqual(sum(1 for c in caches if c["cache_environment"] == "Underground_Catacomb_Vault"), 5)
+        self.assertEqual(sum(1 for c in caches if c["cache_environment"] == "Tower_Sanctum_Coffer_Room"), 5)
+        for c in caches:
+            self.assertGreaterEqual(len(c["jackpot_enchant_drops"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas56DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 56)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 56)
+        self.assertIn("56-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

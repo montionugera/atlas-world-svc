@@ -239,6 +239,18 @@
       "maxItems": 12,
       "items": { "$ref": "#/$defs/monsterTrackFantasyPlazaSpec" }
     },
+    "olympiad_hero_weapon_exchanges": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/olympiadHeroWeaponExchangeSpec" }
+    },
+    "treasure_chest_lockpick_grounds": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/treasureChestLockpickGroundSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -3060,6 +3072,93 @@
           "items": { "type": "string" }
         },
         "schedule_interval": { "type": "string" }
+      }
+    },
+    "olympiadHeroWeaponExchangeSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exchange_id",
+        "town_zone_id",
+        "town_name",
+        "exchange_category",
+        "olympiad_manager_npc",
+        "monument_loc",
+        "featured_infinity_weapons",
+        "heroic_skills_unlocked",
+        "token_exchange_catalog",
+        "match_window_schedule"
+      ],
+      "properties": {
+        "exchange_id": { "type": "string" },
+        "town_zone_id": { "type": "string" },
+        "town_name": { "type": "string" },
+        "exchange_category": {
+          "type": "string",
+          "enum": [
+            "Martial_Infinity_Armory",
+            "Arcane_Infinity_Sanctum",
+            "Olympiad_Token_Codex_Exchange"
+          ]
+        },
+        "olympiad_manager_npc": { "type": "string" },
+        "monument_loc": { "type": "string" },
+        "featured_infinity_weapons": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "heroic_skills_unlocked": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "token_exchange_catalog": { "type": "string" },
+        "match_window_schedule": { "type": "string" }
+      }
+    },
+    "treasureChestLockpickGroundSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cache_id",
+        "cache_name",
+        "cache_environment",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "chest_level_bracket",
+        "deluxe_key_grade_or_skill",
+        "true_chest_vs_mimic_ratio",
+        "jackpot_enchant_drops"
+      ],
+      "properties": {
+        "cache_id": { "type": "string" },
+        "cache_name": { "type": "string" },
+        "cache_environment": {
+          "type": "string",
+          "enum": [
+            "Overland_Pirate_Bandit_Cache",
+            "Underground_Catacomb_Vault",
+            "Tower_Sanctum_Coffer_Room"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "chest_level_bracket": { "type": "string" },
+        "deluxe_key_grade_or_skill": { "type": "string" },
+        "true_chest_vs_mimic_ratio": { "type": "string" },
+        "jackpot_enchant_drops": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
       }
     }
   }

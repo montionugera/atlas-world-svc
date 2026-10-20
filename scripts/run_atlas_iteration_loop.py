@@ -9079,6 +9079,620 @@ def _build_monster_track_fantasy_plazas(atlas: dict[str, Any]) -> list[dict[str,
     return rows
 
 
+def _build_olympiad_hero_weapon_exchanges(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15 Town Hero Weapon (Infinity Armaments) & Olympiad Token Exchanges (5 Martial_Infinity_Armory + 5 Arcane_Infinity_Sanctum + 5 Olympiad_Token_Codex_Exchange) (D55)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_towns = (zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or [])
+    town_by_id = {
+        str(t.get("zone_id")): t
+        for t in all_towns
+        if isinstance(t, dict) and t.get("zone_id")
+    }
+    specs = [
+        # 5 Martial_Infinity_Armory Towns
+        (
+            "hero-ex-01-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Martial_Infinity_Armory",
+            "Grand Olympiad Manager & Monument of Heroes Steward (Lantern Hollow)",
+            [
+                "Infinity Blade (Sword/Shield · +25% Max HP/CP, +504 PvP Crit & Reflect Damage)",
+                "Infinity Cleaver (Two-Handed · +504 Crit Rate, +Max HP & Extra Crit Damage)",
+                "Infinity Fang (Dualfist · +25% Max HP/CP, Stun on Crit & Evasion +6)",
+            ],
+            [
+                "Heroic Miracle (30s Invincibility + +5,400 P.Def / +4,050 M.Def)",
+                "Heroic Berserker (2m +500 P.Atk, +100 Atk.Spd, +8 Accuracy & Debuff Immunity)",
+                "Heroic Valor (2m Clan-Wide +250 P.Atk & +500 P.Def Raid/Siege Aura)",
+            ],
+            "Olympiad Token / Noblesse Gate Pass -> Giant's Codex, Quick Healing Potions & Blessed Scroll: Enchant Weapon (S-Grade)",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · Class-Based & Open 1v1 / 3v3 Brackets)",
+        ),
+        (
+            "hero-ex-02-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Martial_Infinity_Armory",
+            "Grand Olympiad Manager & Pa'agrio Monument Steward (Draft-Kiln)",
+            [
+                "Infinity Axe (Blunt/Shield · +25% Max HP/CP, Disarm/Stun Proc & Reflect)",
+                "Infinity Spear (Polearm · +504 Crit, Wide-Angle Multi-Target & Cancel Buff Proc)",
+                "Infinity Fang (Tyrant Fist · +Atk.Spd +15%, Stun on Crit & Wings of Destiny Circlet)",
+            ],
+            [
+                "Heroic Berserker (+500 P.Atk, +500 M.Atk, +100 Atk/Cast Spd & +20 Speed)",
+                "Heroic Valor (Clan-Wide +250 P.Atk / +500 P.Def & Cancel Resistance)",
+                "Heroic Dread (Instant AoE Fear + +66 Movement Speed Escape)",
+            ],
+            "Olympiad Token / Noblesse Gate Pass -> Giant's Codex: Discipline, Fame Points & Ring of Olympiad (30-Day)",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · Monthly Hero Election on 1st at 12:00 UTC)",
+        ),
+        (
+            "hero-ex-03-cinnamon-mill",
+            "zone-town-cinnamon-mill",
+            "Martial_Infinity_Armory",
+            "Grand Olympiad Manager & Soul-Wing Monument Steward (Cinnamon-Mill)",
+            [
+                "Infinity Rapier (Kamael Rapier · +Crit Rate, Party Haste/Miracle Proc & +Max CP)",
+                "Infinity Sword (Ancient Sword · +25% Max HP/CP, +504 Crit & Reflect Skill)",
+                "Infinity Shooter (Crossbow · Low MP Consumption, Slow Trap Proc & +Range)",
+            ],
+            [
+                "Heroic Berserker (+500 P.Atk, +100 Atk.Spd & Soul Harmony Mastery)",
+                "Heroic Miracle (30s Absolute Invincibility Shield + Speed Boost)",
+                "Heroic Grandeur (15s AoE Physical/Magical Silence, Fear & -50% P.Def/M.Def)",
+            ],
+            "Olympiad Token / Noblesse Gate Pass -> Forgotten Scroll: Fighter's/Archer's Will & Earring of Olympiad",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · 34 Class Champions Crowned Monthly)",
+        ),
+        (
+            "hero-ex-04-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Martial_Infinity_Armory",
+            "Grand Olympiad Manager & All-Race Monument Steward (Kilnwatch Dion)",
+            [
+                "Infinity Stinger (Dagger · +Backstab Crit Damage, Silence on Crit & +Evasion)",
+                "Infinity Bow (Longbow · Low MP Rapid Shot, Slow on Crit & +Max CP)",
+                "Infinity Dualsword (Gladiator/Bladedancer · +25% Max HP/CP & Skill Crit +15%)",
+            ],
+            [
+                "Heroic Valor (Clan-Wide +250 P.Atk & +500 P.Def Siege Vanguard Aura)",
+                "Heroic Miracle (30s Invincibility + +40 Speed Breakthrough)",
+                "Heroic Dread (AoE Fear Breaking Enemy Siege Phalanx)",
+            ],
+            "Olympiad Token / Noblesse Gate Pass -> Giant's Codex: Mastery, Necklace of Olympiad & High-Grade Life Stone",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · Minimum 9 Fights & 1 Win for Token Settlement)",
+        ),
+        (
+            "hero-ex-05-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Martial_Infinity_Armory",
+            "Grand Olympiad Manager & Hunters Monument Steward (Pinion Terminus)",
+            [
+                "Infinity Bow (Sniper Bow · +504 Crit, Cheap Shot MP Recovery & Slow Proc)",
+                "Infinity Stinger (Assassin Dagger · +Crit Damage, Deadly Blow Boost & Silence)",
+                "Wings of Destiny Circlet (Exclusive Hero Crown · Sovereign Golden Aura)",
+            ],
+            [
+                "Heroic Berserker (+500 P.Atk, +100 Atk.Spd & Debuff Cleanse Immunity)",
+                "Heroic Dread (Instant AoE Fear + Movement Speed Surge)",
+                "Heroic Miracle (30s Invincibility vs. Focus-Fire Assassination)",
+            ],
+            "Olympiad Token / Noblesse Gate Pass -> Forgotten Scroll: Sixth Sense, Expose Weak Point & Giant's Codex: Oblivion",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · Spectator Broadcast Enabled at Monument)",
+        ),
+        # 5 Arcane_Infinity_Sanctum Towns
+        (
+            "hero-ex-06-porcelain-loom",
+            "zone-town-porcelain-loom",
+            "Arcane_Infinity_Sanctum",
+            "Grand Olympiad Manager & Lunar Monument Steward (Porcelain Loom)",
+            [
+                "Infinity Rod (One-Handed Staff · +30% Max MP/CP, +Cast Spd & 100% Full HP Heal Proc)",
+                "Infinity Scepter (Two-Handed Staff · +Max MP, +M.Crit Rate & Empower/Acumen Aura)",
+                "Wings of Destiny Circlet (Heroic Mystic Crown · +Radiant Pillar of Light)",
+            ],
+            [
+                "Heroic Grandeur (15s AoE -50% P.Def/M.Def, -50% Evasion, Shield Block Cancel & Silence)",
+                "Heroic Miracle (30s Invincibility + +4,050 M.Def Sanctum Barrier)",
+                "Heroic Valor (Clan-Wide +250 P.Atk / +500 P.Def Support Blessing)",
+            ],
+            "Olympiad Token / Noblesse Gate Pass -> Forgotten Scroll: Enlightenment (Healer/Wizard) & Magician's Will",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · 120s Arena Prep + 360s Combat Timer)",
+        ),
+        (
+            "hero-ex-07-carillon-belfry",
+            "zone-town-carillon-belfry",
+            "Arcane_Infinity_Sanctum",
+            "Grand Olympiad Manager & Dark-Lunar Monument Steward (Carillon Belfry)",
+            [
+                "Infinity Scepter (Archmage/Storm Screamer · +M.Atk, +M.Crit Damage & Chaos Cancel)",
+                "Infinity Rod (Cardinal/Eva's/Shillien Saint · -MP Cost, +Cast Spd & Cleanse Proc)",
+                "Infinity Stinger (Ghost Hunter · +Skill Crit Multiplier & Instant Silence)",
+            ],
+            [
+                "Heroic Grandeur (AoE Silence, Fear & -50% Magic Defense Shred)",
+                "Heroic Dread (Instant AoE Fear + +66 Speed Reposition)",
+                "Heroic Berserker (+500 M.Atk, +100 Cast.Spd & Uninterruptible Channeling)",
+            ],
+            "Olympiad Token / Noblesse Gate Pass -> Forgotten Scroll: Star Fall, Flame Hawk & Giant's Codex: Mastery",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · 4 Arena Geometries: Gargoyle, Pillars, Three Bridges, Fountain)",
+        ),
+        (
+            "hero-ex-08-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Arcane_Infinity_Sanctum",
+            "Grand Olympiad Manager & Ivory Monument Steward (Escapement Anvil Oren)",
+            [
+                "Infinity Scepter (Mystic Muse / Soultaker · +M.Crit Rate +80, +Max MP & Reflect)",
+                "Infinity Rod (Arcana Lord / Elemental Master / Spectral Master · Servitor Share Boost)",
+                "Infinity Blade (Hell Knight / Eva's / Shillien Templar · Cancel Buff on Crit)",
+            ],
+            [
+                "Heroic Grandeur (AoE Silence & -50% P.Def/M.Def Overwhelming Debuff)",
+                "Heroic Miracle (30s Invincibility for Summoner/Healer Survival)",
+                "Heroic Valor (Clan-Wide +250 P.Atk / +500 P.Def Ivory Aura)",
+            ],
+            "Olympiad Token / Noblesse Gate Pass -> Forgotten Scroll: Spirit of the Phoenix / Eva's Will / Pain of Shilen",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · 5 Cubics & 5 Melodies Free Arena Buffs)",
+        ),
+        (
+            "hero-ex-09-starfall-haven",
+            "zone-town-starfall-haven",
+            "Arcane_Infinity_Sanctum",
+            "Grand Olympiad Manager & Astral Monument Steward (Starfall Haven Rune)",
+            [
+                "Infinity Scepter (Grand Khavatari / Dominator · +Max CP/MP, +Cast Spd & Clan CP Surge)",
+                "Infinity Rod (Hierophant / Doomcryer · -Reuse Delay, +Max MP & Cancel Resistance)",
+                "Wings of Destiny Circlet (Heroic Sovereign Crown + Global Hero Voice %Chat)",
+            ],
+            [
+                "Heroic Valor (Clan-Wide +250 P.Atk / +500 P.Def Overlord/Prophet Synergy)",
+                "Heroic Grandeur (AoE Silence & Defense Crush before Siege Push)",
+                "Heroic Miracle (30s Invincibility During Castle Artifact Engraving)",
+            ],
+            "Olympiad Token / Noblesse Gate Pass -> Forgotten Scroll: Great Fury, Arcane Chaos & Ring/Earring/Necklace of Olympiad",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · Hero %Chat Global Broadcast Unlocked)",
+        ),
+        (
+            "hero-ex-10-crown-beacon",
+            "zone-town-crown-beacon",
+            "Arcane_Infinity_Sanctum",
+            "Grand Olympiad Manager & High-Halo Sovereign Monument Steward (Crown-Beacon)",
+            [
+                "Infinity Scepter (Sovereign Archmage · +30% Max MP/CP, +M.Crit & 100% Clan Heal Proc)",
+                "Infinity Blade (Sovereign Paladin · +25% Max HP/CP, Reflect & Cancel Buff Proc)",
+                "Infinity Bow (Sovereign Sagittarius · Low MP Rapid Shot & Long-Range Slow)",
+            ],
+            [
+                "Heroic Miracle (30s Sovereign Invincibility + +5,400 P.Def / +4,050 M.Def)",
+                "Heroic Berserker (+500 P.Atk/M.Atk, +100 Atk/Cast Spd & Debuff Immunity)",
+                "Heroic Grandeur (15s AoE Silence, Fear & -50% Defense Shred)",
+            ],
+            "Olympiad Token / Noblesse Gate Pass -> Top-Tier Giant's Codex: Mastery, Blessed S-Grade Scrolls & Hero Cloak",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · Sovereign Hall of Heroes Leaderboard)",
+        ),
+        # 5 Olympiad_Token_Codex_Exchange Towns
+        (
+            "hero-ex-11-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Olympiad_Token_Codex_Exchange",
+            "Grand Olympiad Manager & Iron Gate Token Broker (Root-Train Roundhouse)",
+            [
+                "Infinity Axe (Fortune Seeker / Maestro · +25% Max HP/CP, Stun & Spoil Mastery)",
+                "Infinity Spear (Dwarven Polearm · Multi-Target Crit & Cancel Proc)",
+                "Wings of Destiny Circlet (Dwarven Guild Hero Crown)",
+            ],
+            [
+                "Heroic Valor (Clan-Wide +250 P.Atk & +500 P.Def Siege Golem Support)",
+                "Heroic Miracle (30s Invincibility on Castle Gate Breach)",
+            ],
+            "5,000 Olympiad Tokens -> Giant's Codex: Mastery · 1,000 Tokens -> Giant's Codex · 22,000 Tokens -> Ring of Olympiad",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · +300 Bonus Olympiad Tokens for Hero Status)",
+        ),
+        (
+            "hero-ex-12-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Olympiad_Token_Codex_Exchange",
+            "Grand Olympiad Manager & Maritime Token Broker (Glaze-Barge Quay)",
+            [
+                "Infinity Dualsword (Sword Muse / Spectral Dancer · +25% Max HP/CP & Song/Dance Cost -15%)",
+                "Infinity Stinger (Wind Rider / Adventurer · +Crit Damage & Silence Proc)",
+            ],
+            [
+                "Heroic Berserker (+500 P.Atk, +100 Atk.Spd & +20 Speed)",
+                "Heroic Dread (AoE Fear + Instant Dockyard Escape)",
+            ],
+            "33,000 Olympiad Tokens -> Earring of Olympiad (+20% Stun/Mental Resist & Vampiric) · 44,000 Tokens -> Necklace of Olympiad",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · Grade 1–5 Point Settlement at Month End)",
+        ),
+        (
+            "hero-ex-13-saffron-press",
+            "zone-town-saffron-press",
+            "Olympiad_Token_Codex_Exchange",
+            "Grand Olympiad Manager & Freeholds Token Broker (Saffron Press)",
+            [
+                "Infinity Cleaver (Titan / Dreadnought · +Max HP/CP & Overwhelming Crit Damage)",
+                "Infinity Fang (Grand Khavatari · +Atk.Spd +15% & Stun on Crit)",
+            ],
+            [
+                "Heroic Berserker (+500 P.Atk, +100 Atk.Spd & Debuff Immunity)",
+                "Heroic Miracle (30s Invincibility in Low-HP Frenzy)",
+            ],
+            "Olympiad Token / Noblesse Gate Pass -> Forgotten Scroll: Turn to Stone,Exciting Adventure, Wind Riding & Ghost Walking",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · 10 Weekly Points Granted Every Monday)",
+        ),
+        (
+            "hero-ex-14-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Olympiad_Token_Codex_Exchange",
+            "Grand Olympiad Manager & Giran Metropolitan Token Broker (Inductor Switchyard)",
+            [
+                "Infinity Blade (Phoenix Knight / Hell Knight · +25% Max HP/CP & Reflect)",
+                "Infinity Scepter (Archmage / Mystic Muse · +30% Max MP/CP & +M.Crit)",
+                "Infinity Dualsword (Duelist · +Skill Power & +25% Max HP/CP)",
+            ],
+            [
+                "Heroic Valor (Clan-Wide +250 P.Atk & +500 P.Def Metropolitan Aura)",
+                "Heroic Grandeur (AoE Silence, Fear & -50% Defense Shred)",
+                "Heroic Miracle (30s Invincibility Shield)",
+            ],
+            "Olympiad Token / Noblesse Gate Pass -> Giant's Codex: Mastery/Discipline/Oblivion, Warrior's Temporary Healing Potion & Fame",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · Giran Central Monument of Heroes)",
+        ),
+        (
+            "hero-ex-15-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "Olympiad_Token_Codex_Exchange",
+            "Grand Olympiad Manager & Imperial Aden Token Broker (Torque-Balance Citadel)",
+            [
+                "Infinity Blade (Imperial Sovereign Armament · +25% Max HP/CP & Cancel Proc)",
+                "Infinity Rod (Imperial Cardinal Armament · 100% Full Restore Proc & +Cast Spd)",
+                "Infinity Bow (Imperial Hawkeye Armament · Low MP Rapid Shot & Slow)",
+            ],
+            [
+                "Heroic Miracle (30s Imperial Invincibility + +5,400 P.Def / +4,050 M.Def)",
+                "Heroic Valor (Clan-Wide +250 P.Atk & +500 P.Def Imperial Citadel Aura)",
+                "Heroic Berserker (+500 P.Atk/M.Atk, +100 Atk/Cast Spd & Debuff Immunity)",
+            ],
+            "Olympiad Token / Noblesse Gate Pass -> Complete Lv.81–83 Forgotten Scroll Catalog, Giant's Codex: Mastery & Olympiad Jewelry Suite",
+            "18:00–24:00 Server Time (9-Match Weekly Quota · Imperial Aden Coliseum Broadcast)",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        eid,
+        tzid,
+        ecat,
+        mnpc,
+        fweapons,
+        hskills,
+        tcatalog,
+        msched,
+    ) in enumerate(specs, start=1):
+        t_obj = town_by_id.get(tzid) or {}
+        tname = str(t_obj.get("name", tzid))
+        bx, by = _parse_loc(str(t_obj.get("loc_coord") or "-84120:243500"))
+        mloc = _fmt_loc(bx + 195 + idx * 9, by - 175 - idx * 8)
+        rows.append(
+            {
+                "exchange_id": eid,
+                "town_zone_id": tzid,
+                "town_name": tname,
+                "exchange_category": ecat,
+                "olympiad_manager_npc": mnpc,
+                "monument_loc": mloc,
+                "featured_infinity_weapons": fweapons,
+                "heroic_skills_unlocked": hskills,
+                "token_exchange_catalog": tcatalog,
+                "match_window_schedule": msched,
+            }
+        )
+    return rows
+
+
+def _build_treasure_chest_lockpick_grounds(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16 Treasure Chest Lockpick (Grade 1–8 Keys) & Mimic Cache Grounds (6 Overland_Pirate_Bandit_Cache + 5 Underground_Catacomb_Vault + 5 Tower_Sanctum_Coffer_Room) (D56)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones: list[dict[str, Any]] = []
+    for entries in zdir.values():
+        if isinstance(entries, list):
+            all_zones.extend(e for e in entries if isinstance(e, dict))
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if z.get("zone_id")}
+    specs = [
+        # 6 Overland_Pirate_Bandit_Cache Grounds
+        (
+            "chest-01-whispering-mire-smuggler-cache",
+            "Whispering Mire Smuggler Cache — Grade 2–3 Marshland Lockboxes",
+            "Overland_Pirate_Bandit_Cache",
+            "zone-field-whispering-mire",
+            "",
+            "",
+            "Lv.21–30 Treasure Chest",
+            "Deluxe Chest Key Grade 2–3 or Rogue/Scavenger Unlock Lv.3–5",
+            "50% True Treasure Chest / 50% Explosive Box Mimic",
+            [
+                "Scroll: Enchant Weapon (D-Grade) & Scroll: Enchant Armor (D-Grade)",
+                "Blessed Scroll of Escape & Greater Haste Potion Bundle",
+                "D-Grade Top Weapon Key Materials (Mithril Alloy & Oriharukon Ore)",
+            ],
+        ),
+        (
+            "chest-02-cinder-apron-bandit-strongbox",
+            "Cinder-Apron Bandit Strongboxes — Grade 3–4 Highwaymen Coffers",
+            "Overland_Pirate_Bandit_Cache",
+            "zone-field-cinder-apron",
+            "",
+            "",
+            "Lv.30–39 Treasure Chest",
+            "Deluxe Chest Key Grade 3–4 or Treasure Hunter Unlock Lv.6–8",
+            "45% True Treasure Chest / 55% Explosive Box Mimic",
+            [
+                "Scroll: Enchant Weapon (C-Grade) & Scroll: Enchant Armor (C-Grade)",
+                "Blessed Scroll of Resurrection & Quick Healing Potion Pack",
+                "Crystal: D-Grade / C-Grade & Rare Dye (+4/-4 Stat Tattoo)",
+            ],
+        ),
+        (
+            "chest-03-brass-spur-outlaw-hoard",
+            "Brass-Spur Outlaw Hoard — Grade 4–5 Escarpment Iron Chests",
+            "Overland_Pirate_Bandit_Cache",
+            "zone-field-brass-spur-ridge",
+            "",
+            "",
+            "Lv.42–51 Treasure Chest",
+            "Deluxe Chest Key Grade 4–5 or Maestro Key of Enigma / Unlock Lv.9–11",
+            "45% True Treasure Chest / 55% Bite-Back Mimic Ambush",
+            [
+                "Blessed Scroll: Enchant Armor (C-Grade) & Weapon (C-Grade)",
+                "Scroll: Enchant Weapon (B-Grade) & Enchant Armor (B-Grade)",
+                "Mid-Grade Life Stone (Lv.46–52) & Enria / Thons Spoil Cache",
+            ],
+        ),
+        (
+            "chest-04-leyden-causeway-caravan-vault",
+            "Leyden Causeway Raider Cache — Grade 5–6 Ambush Supply Chests",
+            "Overland_Pirate_Bandit_Cache",
+            "zone-field-leyden-causeway",
+            "",
+            "",
+            "Lv.54–63 Treasure Chest",
+            "Deluxe Chest Key Grade 5–6 or Adventurer Unlock Lv.12–14",
+            "40% True Treasure Chest / 60% Self-Destruct Mimic",
+            [
+                "Blessed Scroll: Enchant Weapon (B-Grade) & Armor (B-Grade)",
+                "Scroll: Enchant Weapon (A-Grade) & High-Grade Life Stone (Lv.61)",
+                "Blue/Green/Red Soul Crystal Stage 7–9 & Asofe Bundles",
+            ],
+        ),
+        (
+            "chest-05-kelp-spiral-pirate-cove-coffer",
+            "Kelp-Spiral Pirate Cove Coffers — Grade 6–7 Zaken Corsair Hoard",
+            "Overland_Pirate_Bandit_Cache",
+            "zone-field-kelp-spiral-reef",
+            "",
+            "",
+            "Lv.66–75 Pirate Coffer",
+            "Deluxe Chest Key Grade 6–7 or Fortune Seeker Unlock Lv.15 + Summon Treasure Key",
+            "40% True Pirate Treasure Chest / 60% Cursed Corsair Mimic",
+            [
+                "Blessed Scroll: Enchant Weapon (A-Grade) & Armor (A-Grade)",
+                "High-Grade Life Stone (Lv.70) & Pirate's Eye Patch / Gold Doubloons",
+                "60% A-Grade Weapon Recipes (Tallum Blade, Carnage Bow, Arcana Mace)",
+            ],
+        ),
+        (
+            "chest-06-aurora-tether-sovereign-reliquary",
+            "Aurora-Tether Sovereign Reliquaries — Grade 8 High-Halo Royal Chests",
+            "Overland_Pirate_Bandit_Cache",
+            "zone-field-aurora-tether",
+            "",
+            "",
+            "Lv.78–85 Royal Reliquary",
+            "Deluxe Chest Key Grade 8 or Unlock Lv.15 + Thief Key Mastery",
+            "35% True Royal Treasure Chest / 65% High-Voltage Arcane Mimic",
+            [
+                "Blessed Scroll: Enchant Weapon (S-Grade) & Armor (S-Grade)",
+                "Top-Grade Life Stone (Lv.76–82) & Fire/Water/Wind/Earth Elemental Stones",
+                "Giant's Codex: Mastery & S80 Dynasty Weapon Key Piece Cache",
+            ],
+        ),
+        # 5 Underground_Catacomb_Vault Grounds
+        (
+            "chest-07-sunken-potter-hold-corsair-vault",
+            "Sunken Potter Hold B2 Corsair Vault — Devil's Isle Bilge Lockboxes",
+            "Underground_Catacomb_Vault",
+            "zone-dungeon-sunken-potter-hold",
+            "zone-dungeon-sunken-potter-hold",
+            "B2",
+            "Lv.45–54 Bilge Chest",
+            "Deluxe Chest Key Grade 5 or Treasure Hunter Unlock Lv.10",
+            "45% True Bilge Treasure Chest / 55% Drowned Deckhand Mimic",
+            [
+                "Scroll: Enchant Weapon (B-Grade) & Blessed Scroll: Enchant Armor (B-Grade)",
+                "Zaken's Corsair Key & Golden Mermaid Scale Spoil Crate",
+                "High-Grade Life Stone (Lv.55) & Greater CP Potion (×100)",
+            ],
+        ),
+        (
+            "chest-08-heretic-kiln-catacomb-reliquary",
+            "Heretic Kiln Catacomb B2 Reliquary — Ancient Seal-Stone Coffers",
+            "Underground_Catacomb_Vault",
+            "zone-catacomb-heretic-kiln",
+            "zone-catacomb-heretic-kiln",
+            "B2",
+            "Lv.33–42 Catacomb Chest",
+            "Deluxe Chest Key Grade 4 or Rogue Unlock Lv.8",
+            "45% True Seal Reliquary / 55% Nephilim Sentinel Mimic",
+            [
+                "Scroll: Enchant Weapon (C-Grade) & Ancient Adena (50,000–150,000 AA)",
+                "Blue & Green Seal Stone Jackpot Bundle (×15,000)",
+                "Blank Scroll & Mammon's Varnish / Synthetic Cokes",
+            ],
+        ),
+        (
+            "chest-09-witch-pendulum-catacomb-vault",
+            "Astral Witch Catacomb B3 Vault — Lilim & Gigant Treasure Coffers",
+            "Underground_Catacomb_Vault",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "Lv.57–66 Catacomb Vault",
+            "Deluxe Chest Key Grade 6 or Unlock Lv.13 + Maestro Key of Enigma",
+            "40% True Catacomb Vault / 60% Lilim Shadow Mimic",
+            [
+                "Blessed Scroll: Enchant Weapon (B-Grade) & Scroll: Enchant Armor (A-Grade)",
+                "Red Seal Stone Jackpot (×10,000) & Ancient Tome of the Demon",
+                "High-Grade Life Stone (Lv.64) & A-Grade Armor Sealed Part Crate",
+            ],
+        ),
+        (
+            "chest-10-dark-omens-catacomb-sarcophagus",
+            "Dark Omens Necropolis B3 Sarcophagi — Grade 7 Abyssal Lockboxes",
+            "Underground_Catacomb_Vault",
+            "zone-catacomb-dark-omens-coral",
+            "zone-catacomb-dark-omens-coral",
+            "B3",
+            "Lv.69–75 Necropolis Coffer",
+            "Deluxe Chest Key Grade 7 or Adventurer/Wind Rider Unlock Lv.14",
+            "38% True Necropolis Coffer / 62% Abyssal Gargoyle Mimic",
+            [
+                "Scroll: Enchant Weapon (A-Grade) & Blessed Scroll: Enchant Armor (A-Grade)",
+                "Top-Grade Life Stone (Lv.70) & Forgotten Scroll: Sixth Sense",
+                "Ancient Adena (250,000 AA) & Soul Crystal Stage 10",
+            ],
+        ),
+        (
+            "chest-11-forbidden-path-catacomb-sanctum-vault",
+            "Forbidden Path Catacomb B3 Sanctum — Grade 8 Architect Seal Vaults",
+            "Underground_Catacomb_Vault",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B3",
+            "Lv.78–85 Architect Coffer",
+            "Deluxe Chest Key Grade 8 or Ghost Hunter Unlock Lv.15",
+            "35% True Architect Seal Coffer / 65% Elder Nephilim Mimic",
+            [
+                "Blessed Scroll: Enchant Weapon (S-Grade) & Scroll: Enchant Weapon (S-Grade)",
+                "Top-Grade Life Stone (Lv.76) & Forgotten Scroll: Enlightenment",
+                "Draconic Bow / Imperial Crusader / Major Arcana Key Materials",
+            ],
+        ),
+        # 5 Tower_Sanctum_Coffer_Room Grounds
+        (
+            "chest-12-kiln-cellar-queen-royal-coffer",
+            "Kiln Cellar B3 Queen's Nursery Coffer — Royal Chitin Treasure Boxes",
+            "Tower_Sanctum_Coffer_Room",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B3",
+            "Lv.36–42 Royal Ant Coffer",
+            "Deluxe Chest Key Grade 4 or Scavenger Unlock Lv.7",
+            "50% True Nursery Coffer / 50% Royal Guard Ant Mimic",
+            [
+                "Blessed Scroll: Enchant Weapon (D-Grade) & Scroll: Enchant Weapon (C-Grade)",
+                "C-Grade Weapon Key Parts (Eminence Bow & Homunkulus's Sword)",
+                "Ant Larva Royal Jelly Elixir & Quick Healing Potion Crate",
+            ],
+        ),
+        (
+            "chest-13-pendulum-shaft-cruma-core-coffer",
+            "Pendulum Shaft 3F Core Coffer Room — Titan Escapement Vaults",
+            "Tower_Sanctum_Coffer_Room",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "3F",
+            "Lv.48–54 Titan Coffer",
+            "Deluxe Chest Key Grade 5 or Warsmith Key of Enigma / Unlock Lv.11",
+            "42% True Titan Coffer / 58% Porta Construct Mimic",
+            [
+                "Scroll: Enchant Weapon (B-Grade) & Blessed Scroll: Enchant Armor (C-Grade)",
+                "Cruma Titan Core Gear & B-Grade Full Plate / Avadon Recipes",
+                "Mid-Grade Life Stone (Lv.52) & Greater Swift Attack Potions",
+            ],
+        ),
+        (
+            "chest-14-chronometer-foundry-forge-coffer",
+            "Chronometer Foundry 2F Smeltery Coffers — Forge of the Gods Chests",
+            "Tower_Sanctum_Coffer_Room",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "2F",
+            "Lv.63–72 Foundry Coffer",
+            "Deluxe Chest Key Grade 6–7 or Fortune Seeker Unlock Lv.14",
+            "40% True Foundry Coffer / 60% Magma Golem Mimic",
+            [
+                "Blessed Scroll: Enchant Weapon (A-Grade) & Scroll: Enchant Armor (S-Grade)",
+                "Fire Attribute Stone (+6..+150 Fire) & S-Grade Weapon Recipes",
+                "High-Grade Life Stone (Lv.70) & Oriharukon / Enria Ingot Stack",
+            ],
+        ),
+        (
+            "chest-15-chronometer-foundry-3f-sepulcher-box",
+            "Chronometer Foundry 3F Sepulcher Reliquary — Halisha's Treasure Boxes",
+            "Tower_Sanctum_Coffer_Room",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "Lv.75–82 Sepulcher Box",
+            "Deluxe Chest Key Grade 7–8 or Chapel Key / Unlock Lv.15",
+            "38% True Halisha Reliquary / 62% Sepulcher Scarab Mimic",
+            [
+                "Scroll: Enchant Weapon (S-Grade) & Blessed Scroll: Enchant Armor (S-Grade)",
+                "Halisha's Brooch & S-Grade Imperial / Draconic / Arcana 60% Recipes",
+                "Top-Grade Life Stone (Lv.76) & Forgotten Scroll: Fighter's Will",
+            ],
+        ),
+        (
+            "chest-16-star-heart-nave-3f-insolence-coffer",
+            "Star-Heart Nave 3F Hallon's Coffer Room — Tower of Insolence Royal Chests",
+            "Tower_Sanctum_Coffer_Room",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "Lv.75–85 Insolence Royal Coffer",
+            "Deluxe Chest Key Grade 8 or Adventurer Unlock Lv.15 + Summon Treasure Key",
+            "35% True Royal Coffer (Spawns Key to Hallate/Kernon/Golkonda) / 65% Platinum Angel Mimic",
+            [
+                "Blessed Scroll: Enchant Weapon (S-Grade) & Armor (S-Grade)",
+                "Sub-Class Pipette Knife / Star of Destiny & Soul Crystal Stage 12–13",
+                "Top-Grade Life Stone (Lv.76–80) & Giant's Codex: Mastery",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        cid,
+        cname,
+        cenv,
+        zid,
+        did,
+        fid,
+        cbracket,
+        dkey,
+        mratio,
+        jdrops,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "48550:248400"))
+        loc = _fmt_loc(bx - 185 + idx * 14, by - 210 + idx * 11)
+        rows.append(
+            {
+                "cache_id": cid,
+                "cache_name": cname,
+                "cache_environment": cenv,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "chest_level_bracket": cbracket,
+                "deluxe_key_grade_or_skill": dkey,
+                "true_chest_vs_mimic_ratio": mratio,
+                "jackpot_enchant_drops": jdrops,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -10183,6 +10797,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("monster_track_fantasy_plazas") or []) < 12:
         atlas["monster_track_fantasy_plazas"] = _build_monster_track_fantasy_plazas(atlas)
         actions.append("populated_12_monster_track_fantasy_plazas")
+
+    # 39. Ensure all 15 Town Hero Weapon (Infinity Armaments) & Olympiad Token Exchanges exist in `olympiad_hero_weapon_exchanges` (D55)
+    if len(atlas.get("olympiad_hero_weapon_exchanges") or []) < 15:
+        atlas["olympiad_hero_weapon_exchanges"] = _build_olympiad_hero_weapon_exchanges(atlas)
+        actions.append("populated_15_olympiad_hero_weapon_exchanges")
+
+    # 40. Ensure all 16 Treasure Chest Lockpick (Grade 1-8 Keys) & Mimic Cache Grounds exist in `treasure_chest_lockpick_grounds` (D56)
+    if len(atlas.get("treasure_chest_lockpick_grounds") or []) < 16:
+        atlas["treasure_chest_lockpick_grounds"] = _build_treasure_chest_lockpick_grounds(atlas)
+        actions.append("populated_16_treasure_chest_lockpick_grounds")
 
     return {"actions": actions}
 
@@ -13008,15 +13632,152 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d54_ratio * 80.0, 1)
     )
 
+    # D55: Interactive 15-Town Hero Weapon (Infinity Armaments) & Olympiad Token Exchange Matrix (`olympiad_hero_weapon_exchanges` - 15 Towns = 5 Martial_Infinity_Armory + 5 Arcane_Infinity_Sanctum + 5 Olympiad_Token_Codex_Exchange)
+    expected_hero_exchange_categories = {
+        "Martial_Infinity_Armory",
+        "Arcane_Infinity_Sanctum",
+        "Olympiad_Token_Codex_Exchange",
+    }
+    hero_exchange_rows = atlas.get("olympiad_hero_weapon_exchanges") or []
+    valid_hero_exchanges = 0
+    martial_infinity_count = 0
+    arcane_infinity_count = 0
+    token_codex_exchange_count = 0
+    seen_hero_exchange_towns: set[str] = set()
+    seen_hero_exchange_categories: set[str] = set()
+    for herow in hero_exchange_rows:
+        if not isinstance(herow, dict):
+            continue
+        eid = str(herow.get("exchange_id") or "")
+        tzid = str(herow.get("town_zone_id") or "")
+        ecat = str(herow.get("exchange_category") or "")
+        fweapons = herow.get("featured_infinity_weapons") or []
+        hskills = herow.get("heroic_skills_unlocked") or []
+        if (
+            eid
+            and tzid in town_zone_id_set
+            and tzid not in seen_hero_exchange_towns
+            and herow.get("town_name")
+            and ecat in expected_hero_exchange_categories
+            and herow.get("olympiad_manager_npc")
+            and ":" in str(herow.get("monument_loc", ""))
+            and isinstance(fweapons, list)
+            and len(fweapons) >= 2
+            and isinstance(hskills, list)
+            and len(hskills) >= 2
+            and herow.get("token_exchange_catalog")
+            and herow.get("match_window_schedule")
+        ):
+            valid_hero_exchanges += 1
+            seen_hero_exchange_towns.add(tzid)
+            seen_hero_exchange_categories.add(ecat)
+            if ecat == "Martial_Infinity_Armory":
+                martial_infinity_count += 1
+            elif ecat == "Arcane_Infinity_Sanctum":
+                arcane_infinity_count += 1
+            elif ecat == "Olympiad_Token_Codex_Exchange":
+                token_codex_exchange_count += 1
+
+    has_d55_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_HERO_WEAPON_MODE",
+            "setAtlasHeroWeaponMode",
+            "renderAtlasHeroWeaponBarHtml",
+            "studioHeroWeaponExchangeOverlay",
+        )
+    )
+    d55_ratio = valid_hero_exchanges / 15.0
+    d55_full_coverage = (
+        martial_infinity_count == 5
+        and arcane_infinity_count == 5
+        and token_codex_exchange_count == 5
+        and seen_hero_exchange_categories == expected_hero_exchange_categories
+    )
+    d55_score = (
+        round(min(100.0, d55_ratio * 100.0), 1)
+        if (has_d55_ui and d55_full_coverage)
+        else round(d55_ratio * 80.0, 1)
+    )
+
+    # D56: Interactive 16-Zone Treasure Chest Lockpick (Grade 1-8 Keys) & Mimic Cache Matrix (`treasure_chest_lockpick_grounds` - 16 Caches = 6 Overland_Pirate_Bandit_Cache + 5 Underground_Catacomb_Vault + 5 Tower_Sanctum_Coffer_Room)
+    expected_cache_environments = {
+        "Overland_Pirate_Bandit_Cache",
+        "Underground_Catacomb_Vault",
+        "Tower_Sanctum_Coffer_Room",
+    }
+    treasure_chest_rows = atlas.get("treasure_chest_lockpick_grounds") or []
+    valid_treasure_caches = 0
+    overland_cache_count = 0
+    catacomb_vault_count = 0
+    tower_coffer_count = 0
+    seen_cache_ids: set[str] = set()
+    seen_cache_environments: set[str] = set()
+    for tcrow in treasure_chest_rows:
+        if not isinstance(tcrow, dict):
+            continue
+        cid = str(tcrow.get("cache_id") or "")
+        cenv = str(tcrow.get("cache_environment") or "")
+        zid = str(tcrow.get("zone_id") or "")
+        did = str(tcrow.get("dungeon_id") or "")
+        fid = str(tcrow.get("floor_id") or "")
+        jdrops = tcrow.get("jackpot_enchant_drops") or []
+        if (
+            cid
+            and cid not in seen_cache_ids
+            and tcrow.get("cache_name")
+            and cenv in expected_cache_environments
+            and zid in zone_ids_set
+            and (did == "" or did in mf_dungeon_id_set)
+            and fid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(tcrow.get("loc", ""))
+            and tcrow.get("chest_level_bracket")
+            and tcrow.get("deluxe_key_grade_or_skill")
+            and tcrow.get("true_chest_vs_mimic_ratio")
+            and isinstance(jdrops, list)
+            and len(jdrops) >= 2
+        ):
+            valid_treasure_caches += 1
+            seen_cache_ids.add(cid)
+            seen_cache_environments.add(cenv)
+            if cenv == "Overland_Pirate_Bandit_Cache" and did == "" and fid == "":
+                overland_cache_count += 1
+            elif cenv == "Underground_Catacomb_Vault" and did != "" and fid in ("B1", "B2", "B3"):
+                catacomb_vault_count += 1
+            elif cenv == "Tower_Sanctum_Coffer_Room" and did != "" and fid in ("B1", "B2", "B3", "1F", "2F", "3F"):
+                tower_coffer_count += 1
+
+    has_d56_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_TREASURE_CHEST_MODE",
+            "setAtlasTreasureChestMode",
+            "renderAtlasTreasureChestBarHtml",
+            "studioTreasureChestOverlay",
+        )
+    )
+    d56_ratio = valid_treasure_caches / 16.0
+    d56_full_coverage = (
+        overland_cache_count == 6
+        and catacomb_vault_count == 5
+        and tower_coffer_count == 5
+        and seen_cache_environments == expected_cache_environments
+    )
+    d56_score = (
+        round(min(100.0, d56_ratio * 100.0), 1)
+        if (has_d56_ui and d56_full_coverage)
+        else round(d56_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score) / 36.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score) / 38.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score) / 38.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score) / 48.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score) / 37.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score) / 44.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score) / 38.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score) / 40.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score) / 40.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score) / 50.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score) / 39.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score) / 46.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -13075,8 +13836,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d52_score
             + d53_score
             + d54_score
+            + d55_score
+            + d56_score
         )
-        / 54.0,
+        / 56.0,
         1,
     )
 
@@ -13506,6 +14269,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "activity_categories": sorted(seen_activity_categories),
                 "ui_wired": has_d54_ui,
             },
+            "D55_olympiad_hero_weapon_and_token_exchanges": {
+                "score": d55_score,
+                "verified": valid_hero_exchanges,
+                "target": 15,
+                "martial_infinity_armories": martial_infinity_count,
+                "arcane_infinity_sanctums": arcane_infinity_count,
+                "olympiad_token_codex_exchanges": token_codex_exchange_count,
+                "exchange_categories": sorted(seen_hero_exchange_categories),
+                "ui_wired": has_d55_ui,
+            },
+            "D56_treasure_chest_lockpick_and_mimic_grounds": {
+                "score": d56_score,
+                "verified": valid_treasure_caches,
+                "target": 16,
+                "overland_pirate_bandit_caches": overland_cache_count,
+                "underground_catacomb_vaults": catacomb_vault_count,
+                "tower_sanctum_coffer_rooms": tower_coffer_count,
+                "cache_environments": sorted(seen_cache_environments),
+                "ui_wired": has_d56_ui,
+            },
         },
     }
 
@@ -13604,6 +14387,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D52 (12 Luxury/BlackMarket) : {dims['D52_luxury_boutique_and_black_marketeer_exchange']['score']}/100 ({dims['D52_luxury_boutique_and_black_marketeer_exchange']['verified']}/{dims['D52_luxury_boutique_and_black_marketeer_exchange']['target']} luxury boutiques)")
         print(f"  D53 (14 Faction War Camps)  : {dims['D53_faction_alliance_war_and_totem_altars']['score']}/100 ({dims['D53_faction_alliance_war_and_totem_altars']['verified']}/{dims['D53_faction_alliance_war_and_totem_altars']['target']} faction camps)")
         print(f"  D54 (12 Derby/Coin/Kratei)  : {dims['D54_monster_derby_coin_and_kratei_plazas']['score']}/100 ({dims['D54_monster_derby_coin_and_kratei_plazas']['verified']}/{dims['D54_monster_derby_coin_and_kratei_plazas']['target']} event plazas)")
+        print(f"  D55 (15 Hero Weapon/Tokens) : {dims['D55_olympiad_hero_weapon_and_token_exchanges']['score']}/100 ({dims['D55_olympiad_hero_weapon_and_token_exchanges']['verified']}/{dims['D55_olympiad_hero_weapon_and_token_exchanges']['target']} hero weapon hubs)")
+        print(f"  D56 (16 Chest/Lockpick)     : {dims['D56_treasure_chest_lockpick_and_mimic_grounds']['score']}/100 ({dims['D56_treasure_chest_lockpick_and_mimic_grounds']['verified']}/{dims['D56_treasure_chest_lockpick_and_mimic_grounds']['target']} chest grounds)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

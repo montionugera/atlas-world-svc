@@ -694,6 +694,8 @@ def validate_world_governance(
                 "luxuryBlackMarketBoutiquesCount": len(t_doc.get("luxury_black_market_boutiques") or []),
                 "factionAllianceWarCampsCount": len(t_doc.get("faction_alliance_war_camps") or []),
                 "monsterTrackFantasyPlazasCount": len(t_doc.get("monster_track_fantasy_plazas") or []),
+                "olympiadHeroWeaponExchangesCount": len(t_doc.get("olympiad_hero_weapon_exchanges") or []),
+                "treasureChestLockpickGroundsCount": len(t_doc.get("treasure_chest_lockpick_grounds") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1287,6 +1289,43 @@ def validate_world_governance(
                 if fp_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: monster_track_fantasy_plazas '{fp_id}' references unknown zone_id '{fp_zid}'"
+                    )
+
+            # Validate 15 Town Hero Weapon (Infinity Armaments) & Olympiad Token Exchanges (D55)
+            hero_exchanges = t_doc.get("olympiad_hero_weapon_exchanges") or []
+            if hero_exchanges and len(hero_exchanges) != 15:
+                errors.append(
+                    f"GOV-10 violation: olympiad_hero_weapon_exchanges must have 15 town exchanges, got {len(hero_exchanges)}"
+                )
+            for he_item in hero_exchanges:
+                if not isinstance(he_item, dict):
+                    continue
+                he_id = str(he_item.get("exchange_id", ""))
+                he_tzid = str(he_item.get("town_zone_id", ""))
+                if he_tzid not in town_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: olympiad_hero_weapon_exchanges '{he_id}' references unknown town_zone_id '{he_tzid}'"
+                    )
+
+            # Validate 16 Treasure Chest Lockpick (Grade 1-8 Keys) & Mimic Cache Grounds (D56)
+            treasure_caches = t_doc.get("treasure_chest_lockpick_grounds") or []
+            if treasure_caches and len(treasure_caches) != 16:
+                errors.append(
+                    f"GOV-10 violation: treasure_chest_lockpick_grounds must have 16 caches, got {len(treasure_caches)}"
+                )
+            for tc_item in treasure_caches:
+                if not isinstance(tc_item, dict):
+                    continue
+                tc_id = str(tc_item.get("cache_id", ""))
+                tc_zid = str(tc_item.get("zone_id", ""))
+                tc_did = str(tc_item.get("dungeon_id", ""))
+                if tc_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: treasure_chest_lockpick_grounds '{tc_id}' references unknown zone_id '{tc_zid}'"
+                    )
+                if tc_did and tc_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: treasure_chest_lockpick_grounds '{tc_id}' references unknown dungeon_id '{tc_did}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

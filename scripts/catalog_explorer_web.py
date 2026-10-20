@@ -91,15 +91,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas50DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas52DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas54DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas56DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 25)),
+        "wave": int(iter_state.get("wave", 26)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"56-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"54-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"52-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"50-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -118,7 +120,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D54 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 Verified"
         ),
     }
     return merged
@@ -4380,7 +4382,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4453,6 +4455,8 @@ let ATLAS_FESTIVAL_ORACLE_MODE = 'All';
 let ATLAS_LUXURY_MARKET_MODE = 'All';
 let ATLAS_FACTION_ALLIANCE_MODE = 'All';
 let ATLAS_FANTASY_PLAZA_MODE = 'All';
+let ATLAS_HERO_WEAPON_MODE = 'All';
+let ATLAS_TREASURE_CHEST_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4497,6 +4501,8 @@ const ATLAS_STATE_STORE = {
   luxuryMarketMode: 'All',                 // D52: Active 12-Node Luxury Boutique & Black Marketeer Selector ('Off' | 'All' | 'Crystal_Luxury_Armory' | 'Black_Marketeer_of_Mammon' | 'Couture_Emporium')
   factionAllianceMode: 'All',              // D53: Active 14-Node Factional Alliance & Totem War Selector ('Off' | 'All' | 'Vanguard_Orc_Alliance_Outpost' | 'Shaman_Silenos_Alliance_Stronghold' | 'Totem_Spirit_Raid_Altar')
   fantasyPlazaMode: 'All',                 // D54: Active 12-Node Monster Derby, Coin of Magic & Kratei's Cube Selector ('Off' | 'All' | 'Monster_Derby_Race_Track' | 'Coin_of_Magic_Collector_Lodge' | 'Kratei_Cube_Fantasy_Arena')
+  heroWeaponMode: 'All',                   // D55: Active 15-Town Hero Weapon & Olympiad Token Selector ('Off' | 'All' | 'Martial_Infinity_Armory' | 'Arcane_Infinity_Sanctum' | 'Olympiad_Token_Codex_Exchange')
+  treasureChestMode: 'All',                // D56: Active 16-Zone Treasure Chest & Lockpick Cache Selector ('Off' | 'All' | 'Overland_Pirate_Bandit_Cache' | 'Underground_Catacomb_Vault' | 'Tower_Sanctum_Coffer_Room')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4557,6 +4563,20 @@ function setAtlasFactionAllianceMode(modeId) {
 function setAtlasFantasyPlazaMode(modeId) {
   ATLAS_FANTASY_PLAZA_MODE = String(modeId || 'All');
   ATLAS_STATE_STORE.fantasyPlazaMode = ATLAS_FANTASY_PLAZA_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasHeroWeaponMode(modeId) {
+  ATLAS_HERO_WEAPON_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.heroWeaponMode = ATLAS_HERO_WEAPON_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasTreasureChestMode(modeId) {
+  ATLAS_TREASURE_CHEST_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.treasureChestMode = ATLAS_TREASURE_CHEST_MODE;
   writeUrlState(false);
   render();
 }
@@ -9642,6 +9662,181 @@ function renderAtlasFantasyPlazaBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasHeroWeaponBarHtml(tatlas) {
+  const exchanges = (tatlas && tatlas.olympiad_hero_weapon_exchanges) || [];
+  if (!exchanges.length) return '';
+
+  const curMode = ATLAS_HERO_WEAPON_MODE || ATLAS_STATE_STORE.heroWeaponMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🏆 All 15 Exchanges' },
+    { id: 'Martial_Infinity_Armory', label: '🗡️ 5 Martial Infinity Hubs' },
+    { id: 'Arcane_Infinity_Sanctum', label: '🔮 5 Arcane Infinity Hubs' },
+    { id: 'Olympiad_Token_Codex_Exchange', label: '📜 5 Token & Codex Exchanges' }
+  ];
+
+  const filteredExchanges = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? exchanges : exchanges.filter(e => e.exchange_category === curMode));
+
+  const featuredExchanges = curMode === 'All'
+    ? [
+        ...exchanges.filter(e => e.exchange_category === 'Martial_Infinity_Armory').slice(0, 1),
+        ...exchanges.filter(e => e.exchange_category === 'Arcane_Infinity_Sanctum').slice(0, 1),
+        ...exchanges.filter(e => e.exchange_category === 'Olympiad_Token_Codex_Exchange').slice(0, 2)
+      ]
+    : filteredExchanges.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasHeroWeaponBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#241c09;border:1px solid rgba(250,204,21,0.58)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fef08a">🏆 15-TOWN HERO WEAPON (INFINITY ARMAMENTS) &amp; OLYMPIAD TOKEN EXCHANGE MATRIX (D55 · 15 EXCHANGES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasHeroWeaponMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(250,204,21,0.45)'};background:${isAct ? '#a16207' : '#090d14'};color:${isAct ? '#ffffff' : '#fef9c3'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          5 MARTIAL INFINITY ARMORIES + 5 ARCANE INFINITY SANCTUMS + 5 OLYMPIAD TOKEN / CODEX EXCHANGES
+        </span>
+      </div>
+
+      ${featuredExchanges.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredExchanges.map(e => {
+            const isMartial = e.exchange_category === 'Martial_Infinity_Armory';
+            const isArcane = e.exchange_category === 'Arcane_Infinity_Sanctum';
+            const catCol = isMartial ? '#f59e0b' : (isArcane ? '#c084fc' : '#38bdf8');
+            const catIcon = isMartial ? '🗡️' : (isArcane ? '🔮' : '📜');
+            const zObj = byZid[e.town_zone_id] || {};
+            const zidStr = String(e.town_zone_id || '');
+            const jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(e.monument_loc)}')`;
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(e.town_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(e.exchange_category.split('_')[0])}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fef08a;margin-top:1px">
+                    ⚔️ ${escapeHtml(((e.featured_infinity_weapons && e.featured_infinity_weapons[0]) || '').slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#bae6fd;margin-top:1px">
+                    ✨ ${escapeHtml(((e.heroic_skills_unlocked && e.heroic_skills_unlocked[0]) || '').slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#422006;color:#fef9c3;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} Jump to Town Olympiad Monument (5.2×)
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasTreasureChestBarHtml(tatlas) {
+  const caches = (tatlas && tatlas.treasure_chest_lockpick_grounds) || [];
+  if (!caches.length) return '';
+
+  const curMode = ATLAS_TREASURE_CHEST_MODE || ATLAS_STATE_STORE.treasureChestMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🗝️ All 16 Caches' },
+    { id: 'Overland_Pirate_Bandit_Cache', label: '🗝️ 6 Overland Pirate/Bandit Caches' },
+    { id: 'Underground_Catacomb_Vault', label: '🕳️ 5 Underground Catacomb Vaults' },
+    { id: 'Tower_Sanctum_Coffer_Room', label: '🗼 5 Tower Coffer Rooms' }
+  ];
+
+  const filteredCaches = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? caches : caches.filter(c => c.cache_environment === curMode));
+
+  const featuredCaches = curMode === 'All'
+    ? [
+        ...caches.filter(c => c.cache_environment === 'Overland_Pirate_Bandit_Cache').slice(0, 1),
+        ...caches.filter(c => c.cache_environment === 'Underground_Catacomb_Vault').slice(0, 1),
+        ...caches.filter(c => c.cache_environment === 'Tower_Sanctum_Coffer_Room').slice(0, 2)
+      ]
+    : filteredCaches.slice(0, 4);
+
+  return `
+    <div id="atlasTreasureChestBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1e1629;border:1px solid rgba(217,70,239,0.58)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#f5d0fe">🗝️ 16-ZONE TREASURE CHEST LOCKPICK (GRADE 1–8 KEYS) &amp; MIMIC CACHE MATRIX (D56 · 16 CACHES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasTreasureChestMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(217,70,239,0.45)'};background:${isAct ? '#86198f' : '#090d14'};color:${isAct ? '#ffffff' : '#fae8ff'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 OVERLAND PIRATE/BANDIT CACHES + 5 UNDERGROUND CATACOMB VAULTS + 5 TOWER COFFER ROOMS
+        </span>
+      </div>
+
+      ${featuredCaches.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredCaches.map(c => {
+            const isOverland = c.cache_environment === 'Overland_Pirate_Bandit_Cache';
+            const isCatacomb = c.cache_environment === 'Underground_Catacomb_Vault';
+            const catCol = isOverland ? '#fbbf24' : (isCatacomb ? '#e879f9' : '#38bdf8');
+            const catIcon = isOverland ? '🗝️' : (isCatacomb ? '🕳️' : '🗼');
+            const zidStr = String(c.zone_id || '');
+            const didStr = String(c.dungeon_id || '');
+            const fidStr = String(c.floor_id || 'B2');
+            const jumpJs = didStr
+              ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+              : `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(c.loc)}')`;
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(c.cache_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(c.chest_level_bracket)}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#f5d0fe;margin-top:1px">
+                    🔓 ${escapeHtml(c.deluxe_key_grade_or_skill.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    💎 ${escapeHtml(((c.jackpot_enchant_drops && c.jackpot_enchant_drops[0]) || '').slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#4a044e;color:#fae8ff;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} ${didStr ? `Open Coffer Floor (${escapeHtml(fidStr)})` : 'Jump to Overland Cache (3.8×)'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -9800,6 +9995,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasLuxuryMarketBarHtml(tatlas)}
       ${renderAtlasFactionAllianceBarHtml(tatlas)}
       ${renderAtlasFantasyPlazaBarHtml(tatlas)}
+      ${renderAtlasHeroWeaponBarHtml(tatlas)}
+      ${renderAtlasTreasureChestBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -12733,6 +12930,67 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D55: Interactive 15-Town Hero Weapon (Infinity Armaments) & Olympiad Token Exchange Overlay (`studioHeroWeaponExchangeOverlay`)
+  const heroExchangeRows = (tatlas && tatlas.olympiad_hero_weapon_exchanges) || [];
+  const curHeroWeaponMode = ATLAS_HERO_WEAPON_MODE || ATLAS_STATE_STORE.heroWeaponMode || 'All';
+  const activeHeroExchanges = curHeroWeaponMode === 'Off'
+    ? []
+    : (curHeroWeaponMode === 'All'
+        ? heroExchangeRows
+        : heroExchangeRows.filter(e => e.exchange_category === curHeroWeaponMode));
+  const heroWeaponExchangeOverlaySvg = `
+    <g id="studioHeroWeaponExchangeOverlay">
+      ${activeHeroExchanges.map(e => {
+        const ec = clampWorldLocCoord(e.monument_loc || '-84120:243500');
+        const zObj = allZonesById[e.town_zone_id] || {};
+        const zidStr = String(e.town_zone_id || '');
+        const isMartial = e.exchange_category === 'Martial_Infinity_Armory';
+        const isArcane = e.exchange_category === 'Arcane_Infinity_Sanctum';
+        const colHex = isMartial ? '#f59e0b' : (isArcane ? '#c084fc' : '#38bdf8');
+        const iconTxt = isMartial ? '🗡️' : (isArcane ? '🔮' : '📜');
+        const jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(e.monument_loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${ec.svgX}" cy="${ec.svgY}" r="10.5" fill="rgba(161,98,7,0.44)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${ec.svgX}" y="${ec.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D56: Interactive 16-Zone Treasure Chest Lockpick (Grade 1-8 Keys) & Mimic Cache Overlay (`studioTreasureChestOverlay`)
+  const treasureChestRows = (tatlas && tatlas.treasure_chest_lockpick_grounds) || [];
+  const curTreasureChestMode = ATLAS_TREASURE_CHEST_MODE || ATLAS_STATE_STORE.treasureChestMode || 'All';
+  const activeTreasureCaches = curTreasureChestMode === 'Off'
+    ? []
+    : (curTreasureChestMode === 'All'
+        ? treasureChestRows
+        : treasureChestRows.filter(c => c.cache_environment === curTreasureChestMode));
+  const treasureChestOverlaySvg = `
+    <g id="studioTreasureChestOverlay">
+      ${activeTreasureCaches.map(c => {
+        const cc = clampWorldLocCoord(c.loc || '48550:248400');
+        const zidStr = String(c.zone_id || '');
+        const didStr = String(c.dungeon_id || '');
+        const fidStr = String(c.floor_id || 'B2');
+        const isOverland = c.cache_environment === 'Overland_Pirate_Bandit_Cache';
+        const isCatacomb = c.cache_environment === 'Underground_Catacomb_Vault';
+        const colHex = isOverland ? '#fbbf24' : (isCatacomb ? '#e879f9' : '#38bdf8');
+        const iconTxt = isOverland ? '🗝️' : (isCatacomb ? '🕳️' : '🗼');
+        const jumpJs = didStr
+          ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+          : `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(c.loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${cc.svgX}" cy="${cc.svgY}" r="10.5" fill="rgba(134,25,143,0.44)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${cc.svgX}" y="${cc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -12767,6 +13025,8 @@ function renderDedicatedWorldAtlas() {
     ${luxuryBlackMarketOverlaySvg}
     ${factionAllianceOverlaySvg}
     ${fantasyPlazaOverlaySvg}
+    ${heroWeaponExchangeOverlaySvg}
+    ${treasureChestOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}
