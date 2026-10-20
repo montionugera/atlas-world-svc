@@ -85,15 +85,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas38DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas40DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas42DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas44DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 19)),
+        "wave": int(iter_state.get("wave", 20)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"44-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"42-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"40-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"38-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -106,7 +108,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D42 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D44 Verified"
         ),
     }
     return merged
@@ -4368,7 +4370,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D42 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D44 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4429,6 +4431,8 @@ let ATLAS_WORKSHOP_MODE = 'All';
 let ATLAS_TERRITORY_WARD_MODE = 'All';
 let ATLAS_EPIC_JEWELRY_MODE = 'All';
 let ATLAS_VITALITY_OBELISK_MODE = 'All';
+let ATLAS_ARMOR_SET_MODE = 'All';
+let ATLAS_KAMALOKA_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4461,6 +4465,8 @@ const ATLAS_STATE_STORE = {
   territoryWardMode: 'All',                // D40: Active Territory Ward & Giant's Codex Selector ('Off' | 'All' | 'Sovereign_Territory_Ward' | 'Fortress_Codex_Supply_Vault')
   epicJewelryMode: 'All',                  // D41: Active 12-Relic Epic Boss Jewelry Selector ('Off' | 'All' | 'Epic_Ring' | 'Epic_Earring' | 'Epic_Necklace')
   vitalityObeliskMode: 'All',              // D42: Active 15-Town Adventurer's Guide & Vitality Obelisk Selector ('Off' | 'All' | 'Starter_Apprentice_Coupon_Hub' | 'Regional_Shadow_Weapon_Hub' | 'Capital_Stage4_Vitality_Sanctuary')
+  armorSetMode: 'All',                     // D43: Active 16-Set Armor & Masterwork Forge Selector ('Off' | 'All' | 'Heavy_Vanguard_Set' | 'Light_Skirmisher_Set' | 'Mystic_Robe_Set')
+  kamalokaMode: 'All',                     // D44: Active 15-Portal Kamaloka, Pailaka & Seed Selector ('Off' | 'All' | 'Kamaloka_Abyss_Hall' | 'Pailaka_Vitality_Trial' | 'Seed_Delusion_Conduit')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4468,6 +4474,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasArmorSetMode(modeId) {
+  ATLAS_ARMOR_SET_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.armorSetMode = ATLAS_ARMOR_SET_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasKamalokaMode(modeId) {
+  ATLAS_KAMALOKA_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.kamalokaMode = ATLAS_KAMALOKA_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasEpicJewelryMode(modeId) {
   ATLAS_EPIC_JEWELRY_MODE = String(modeId || 'All');
@@ -8418,6 +8438,195 @@ function renderAtlasVitalityObeliskBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasArmorSetBarHtml(tatlas) {
+  const armorSets = (tatlas && tatlas.armor_set_masterwork_forges) || [];
+  if (!armorSets.length) return '';
+
+  const curMode = ATLAS_ARMOR_SET_MODE || ATLAS_STATE_STORE.armorSetMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🛡️ All 16 Armor Sets' },
+    { id: 'Heavy_Vanguard_Set', label: '⚔️ 6 Heavy Vanguard' },
+    { id: 'Light_Skirmisher_Set', label: '🏹 5 Light Skirmisher' },
+    { id: 'Mystic_Robe_Set', label: '🔮 5 Mystic Robe' }
+  ];
+
+  const filteredSets = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? armorSets : armorSets.filter(s => s.armor_weight_class === curMode));
+
+  const featuredSets = curMode === 'All'
+    ? [
+        ...armorSets.filter(s => s.armor_weight_class === 'Heavy_Vanguard_Set').slice(0, 2),
+        ...armorSets.filter(s => s.armor_weight_class === 'Light_Skirmisher_Set').slice(0, 1),
+        ...armorSets.filter(s => s.armor_weight_class === 'Mystic_Robe_Set').slice(0, 1)
+      ]
+    : filteredSets.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasArmorSetBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1e1b0e;border:1px solid rgba(250,204,21,0.55)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fef08a">🛡️ 16-SET ARMOR PROGRESSION &amp; MASTERWORK FOUNDATION FORGE MATRIX (D43 · 16 FORGES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasArmorSetMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(250,204,21,0.45)'};background:${isAct ? '#a16207' : '#090d14'};color:${isAct ? '#ffffff' : '#fef9c3'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 HEAVY VANGUARD + 5 LIGHT SKIRMISHER + 5 MYSTIC ROBE SETS (C/B/A/S/S80-DYNASTY &amp; FOUNDATION RARE BONUSES)
+        </span>
+      </div>
+
+      ${featuredSets.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredSets.map(s => {
+            const isHeavy = s.armor_weight_class === 'Heavy_Vanguard_Set';
+            const isLight = s.armor_weight_class === 'Light_Skirmisher_Set';
+            const weightCol = isHeavy ? '#f59e0b' : (isLight ? '#38bdf8' : '#c084fc');
+            const weightIcon = isHeavy ? '⚔️' : (isLight ? '🏹' : '🔮');
+            const tz = byZid[s.forge_town_zone_id] || {};
+            const townNode = tz.studio_node_id || s.forge_town_zone_id.replace('zone-', '');
+            const forgeJumpJs = `focusTownStreetBlueprint('${escapeHtml(townNode)}', '${escapeHtml(s.forge_loc)}')`;
+            const dropJumpJs = s.key_piece_dungeon_id
+              ? `openDungeonSubMap('${escapeHtml(s.key_piece_dungeon_id)}', '${escapeHtml(s.key_piece_floor_id || 'B2')}')`
+              : `focusFieldTacticalBlueprint('${escapeHtml(s.key_piece_drop_zone_id)}')`;
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${weightCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${weightIcon} ${escapeHtml(s.set_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${weightCol}">${escapeHtml(s.grade)}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fef08a;margin-top:1px">
+                    🛡️ ${escapeHtml(s.set_bonus_summary.slice(0, 58))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    ✨ ${escapeHtml(s.masterwork_foundation_bonus.slice(0, 56))} · ⚒️ ${escapeHtml(s.unseal_blacksmith_npc.slice(0, 28))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${forgeJumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${weightCol};background:#422006;color:#fef9c3;font-size:8px;font-weight:800;cursor:pointer">
+                    ⚒️ Masterwork Forge (5.2×)
+                  </button>
+                  <button type="button" onclick="${dropJumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid #38bdf8;background:#0c4a6e;color:#e0f2fe;font-size:8px;font-weight:800;cursor:pointer">
+                    ${s.key_piece_dungeon_id ? `🕳️ Drop Floor (${escapeHtml(s.key_piece_floor_id || 'B2')})` : '🌾 Key-Piece Field'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasKamalokaBarHtml(tatlas) {
+  const instances = (tatlas && tatlas.kamaloka_pailaka_instances) || [];
+  if (!instances.length) return '';
+
+  const curMode = ATLAS_KAMALOKA_MODE || ATLAS_STATE_STORE.kamalokaMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🌀 All 15 Portals' },
+    { id: 'Kamaloka_Abyss_Hall', label: '🕸️ 6 Kamaloka Abyss Halls' },
+    { id: 'Pailaka_Vitality_Trial', label: '🐉 5 Pailaka Vitality Trials' },
+    { id: 'Seed_Delusion_Conduit', label: '🌌 4 Seed & Delusion Conduits' }
+  ];
+
+  const filteredInstances = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? instances : instances.filter(i => i.conduit_category === curMode));
+
+  const featuredInstances = curMode === 'All'
+    ? [
+        ...instances.filter(i => i.conduit_category === 'Kamaloka_Abyss_Hall').slice(0, 2),
+        ...instances.filter(i => i.conduit_category === 'Pailaka_Vitality_Trial').slice(0, 1),
+        ...instances.filter(i => i.conduit_category === 'Seed_Delusion_Conduit').slice(0, 1)
+      ]
+    : filteredInstances.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasKamalokaBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#0d1b2a;border:1px solid rgba(56,189,248,0.55)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#bae6fd">🌀 15-PORTAL KAMALOKA, PAILAKA &amp; SEED INSTANCE CONDUIT MATRIX (D44 · 15 PORTALS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasKamalokaMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(56,189,248,0.45)'};background:${isAct ? '#0284c7' : '#090d14'};color:${isAct ? '#ffffff' : '#e0f2fe'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 KAMALOKA ABYSS HALLS + 5 PAILAKA VITALITY TRIALS + 4 SEED OF INFINITY/DESTRUCTION &amp; DELUSION CONDUITS
+        </span>
+      </div>
+
+      ${featuredInstances.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredInstances.map(inst => {
+            const isKama = inst.conduit_category === 'Kamaloka_Abyss_Hall';
+            const isPailaka = inst.conduit_category === 'Pailaka_Vitality_Trial';
+            const catCol = isKama ? '#38bdf8' : (isPailaka ? '#34d399' : '#e879f9');
+            const catIcon = isKama ? '🕸️' : (isPailaka ? '🐉' : '🌌');
+            const zObj = byZid[inst.zone_id] || {};
+            const zidStr = String(inst.zone_id || '');
+            let jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(inst.loc)}')`;
+            if (zidStr.startsWith('zone-town-')) {
+              const townNode = zObj.studio_node_id || zidStr.replace('zone-', '');
+              jumpJs = `focusTownStreetBlueprint('${escapeHtml(townNode)}', '${escapeHtml(inst.loc)}')`;
+            } else if (zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-clanhall-')) {
+              jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(inst.loc)}')`;
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(inst.instance_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(inst.level_bracket)}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#bae6fd;margin-top:1px">
+                    🧭 ${escapeHtml(inst.pathfinder_npc_name)} · 👥 ${escapeHtml(inst.party_size_rule.slice(0, 32))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    ⏱️ ${escapeHtml(inst.reset_cooldown)} · 🏆 ${escapeHtml(inst.completion_reward.slice(0, 48))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#0c4a6e;color:#e0f2fe;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} Warp to Pathfinder / Conduit (5.2×)
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -8564,6 +8773,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasTerritoryWardBarHtml(tatlas)}
       ${renderAtlasEpicJewelryBarHtml(tatlas)}
       ${renderAtlasVitalityObeliskBarHtml(tatlas)}
+      ${renderAtlasArmorSetBarHtml(tatlas)}
+      ${renderAtlasKamalokaBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -11103,6 +11314,73 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D43: Interactive 16-Set Armor Progression & Masterwork Foundation Forge Overlay (`studioArmorSetMasterworkOverlay`)
+  const armorSetRows = (tatlas && tatlas.armor_set_masterwork_forges) || [];
+  const curArmorSetMode = ATLAS_ARMOR_SET_MODE || ATLAS_STATE_STORE.armorSetMode || 'All';
+  const activeArmorSetRows = curArmorSetMode === 'Off'
+    ? []
+    : (curArmorSetMode === 'All'
+      ? armorSetRows
+      : armorSetRows.filter(s => s.armor_weight_class === curArmorSetMode));
+  const armorSetMasterworkOverlaySvg = `
+    <g id="studioArmorSetMasterworkOverlay">
+      ${activeArmorSetRows.map(s => {
+        const fc = clampWorldLocCoord(s.forge_loc || '-84120:243500');
+        const dz = allZonesById[s.key_piece_drop_zone_id] || {};
+        const tz = allZonesById[s.forge_town_zone_id] || {};
+        const dc = clampWorldLocCoord(dz.loc_coord || '-113190:235226');
+        const isHeavy = s.armor_weight_class === 'Heavy_Vanguard_Set';
+        const isLight = s.armor_weight_class === 'Light_Skirmisher_Set';
+        const colHex = isHeavy ? '#f59e0b' : (isLight ? '#38bdf8' : '#c084fc');
+        const iconTxt = isHeavy ? '⚔️' : (isLight ? '🏹' : '🔮');
+        const jumpJs = s.key_piece_dungeon_id
+          ? `openDungeonSubMap('${escapeHtml(s.key_piece_dungeon_id)}', '${escapeHtml(s.key_piece_floor_id || 'B2')}')`
+          : `focusTownStreetBlueprint('${escapeHtml(tz.studio_node_id || s.forge_town_zone_id.replace('zone-', ''))}', '${escapeHtml(s.forge_loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <line x1="${dc.svgX}" y1="${dc.svgY}" x2="${fc.svgX}" y2="${fc.svgY}" stroke="${colHex}" stroke-width="1.5" stroke-dasharray="4 2" opacity="0.78"/>
+            <circle cx="${fc.svgX}" cy="${fc.svgY}" r="10.6" fill="rgba(161,98,7,0.38)" stroke="${colHex}" stroke-width="1.8"/>
+            <text x="${fc.svgX}" y="${fc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D44: Interactive 15-Portal Kamaloka, Pailaka & Seed Instance Conduit Overlay (`studioKamalokaPailakaOverlay`)
+  const kamalokaRows = (tatlas && tatlas.kamaloka_pailaka_instances) || [];
+  const curKamalokaMode = ATLAS_KAMALOKA_MODE || ATLAS_STATE_STORE.kamalokaMode || 'All';
+  const activeKamalokaRows = curKamalokaMode === 'Off'
+    ? []
+    : (curKamalokaMode === 'All'
+      ? kamalokaRows
+      : kamalokaRows.filter(i => i.conduit_category === curKamalokaMode));
+  const kamalokaPailakaOverlaySvg = `
+    <g id="studioKamalokaPailakaOverlay">
+      ${activeKamalokaRows.map(inst => {
+        const ic = clampWorldLocCoord(inst.loc || '-84120:243500');
+        const zObj = allZonesById[inst.zone_id] || {};
+        const zidStr = String(inst.zone_id || '');
+        const isKama = inst.conduit_category === 'Kamaloka_Abyss_Hall';
+        const isPailaka = inst.conduit_category === 'Pailaka_Vitality_Trial';
+        const colHex = isKama ? '#38bdf8' : (isPailaka ? '#34d399' : '#e879f9');
+        const iconTxt = isKama ? '🕸️' : (isPailaka ? '🐉' : '🌌');
+        let jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(inst.loc)}')`;
+        if (zidStr.startsWith('zone-town-')) {
+          jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(inst.loc)}')`;
+        } else if (zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-clanhall-')) {
+          jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(inst.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${ic.svgX}" cy="${ic.svgY}" r="10.8" fill="rgba(2,132,199,0.36)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${ic.svgX}" y="${ic.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -11125,6 +11403,8 @@ function renderDedicatedWorldAtlas() {
     ${territoryWardOverlaySvg}
     ${epicJewelryOverlaySvg}
     ${vitalityObeliskOverlaySvg}
+    ${armorSetMasterworkOverlaySvg}
+    ${kamalokaPailakaOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

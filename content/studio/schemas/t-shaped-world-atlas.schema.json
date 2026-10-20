@@ -167,6 +167,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/adventurerVitalityObeliskSpec" }
     },
+    "armor_set_masterwork_forges": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/armorSetMasterworkForgeSpec" }
+    },
+    "kamaloka_pailaka_instances": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/kamalokaPailakaInstanceSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -2499,6 +2511,83 @@
         },
         "shadow_weapon_coupon_grade": { "type": "string" },
         "vitality_recovery_rate": { "type": "string" }
+      }
+    },
+    "armorSetMasterworkForgeSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "armor_set_id",
+        "set_name",
+        "armor_weight_class",
+        "grade",
+        "forge_town_zone_id",
+        "key_piece_drop_zone_id",
+        "key_piece_dungeon_id",
+        "key_piece_floor_id",
+        "forge_loc",
+        "set_bonus_summary",
+        "masterwork_foundation_bonus",
+        "unseal_blacksmith_npc"
+      ],
+      "properties": {
+        "armor_set_id": { "type": "string" },
+        "set_name": { "type": "string" },
+        "armor_weight_class": {
+          "type": "string",
+          "enum": [
+            "Heavy_Vanguard_Set",
+            "Light_Skirmisher_Set",
+            "Mystic_Robe_Set"
+          ]
+        },
+        "grade": {
+          "type": "string",
+          "enum": ["C-Grade", "B-Grade", "A-Grade", "S-Grade", "S80-Dynasty"]
+        },
+        "forge_town_zone_id": { "type": "string" },
+        "key_piece_drop_zone_id": { "type": "string" },
+        "key_piece_dungeon_id": { "type": "string" },
+        "key_piece_floor_id": { "type": "string" },
+        "forge_loc": { "type": "string" },
+        "set_bonus_summary": { "type": "string" },
+        "masterwork_foundation_bonus": { "type": "string" },
+        "unseal_blacksmith_npc": { "type": "string" }
+      }
+    },
+    "kamalokaPailakaInstanceSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instance_id",
+        "instance_name",
+        "conduit_category",
+        "zone_id",
+        "loc",
+        "pathfinder_npc_name",
+        "level_bracket",
+        "party_size_rule",
+        "reset_cooldown",
+        "completion_reward"
+      ],
+      "properties": {
+        "instance_id": { "type": "string" },
+        "instance_name": { "type": "string" },
+        "conduit_category": {
+          "type": "string",
+          "enum": [
+            "Kamaloka_Abyss_Hall",
+            "Pailaka_Vitality_Trial",
+            "Seed_Delusion_Conduit"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "pathfinder_npc_name": { "type": "string" },
+        "level_bracket": { "type": "string" },
+        "party_size_rule": { "type": "string" },
+        "reset_cooldown": { "type": "string" },
+        "completion_reward": { "type": "string" }
       }
     }
   }

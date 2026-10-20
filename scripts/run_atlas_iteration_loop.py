@@ -6136,6 +6136,474 @@ def _build_adventurer_vitality_obelisks(atlas: dict[str, Any]) -> list[dict[str,
     return rows
 
 
+def _build_armor_set_masterwork_forges(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16 Canonical Armor Set & Masterwork Foundation Forge Nodes (6 Heavy_Vanguard_Set + 5 Light_Skirmisher_Set + 5 Mystic_Robe_Set spanning C-Grade..S80-Dynasty) (D43)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_towns = (zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or [])
+    town_by_id = {
+        str(t.get("zone_id")): t
+        for t in all_towns
+        if isinstance(t, dict) and t.get("zone_id")
+    }
+    specs = [
+        # 6 Heavy_Vanguard_Set
+        (
+            "armor-set-01-full-plate-heavy",
+            "Full Plate Heavy Set (C-Grade Vanguard Standard)",
+            "Heavy_Vanguard_Set",
+            "C-Grade",
+            "zone-town-kilnwatch-bastion",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "2F",
+            "+269 Max HP, +5.24% Shield Defense Rate (with Full Plate Shield)",
+            "Foundation Chaos Piece: +98 Max HP & +1.5% Shield Defense per Rare Item",
+            "Head Blacksmith Poitan & Black Anvil Unsealer",
+        ),
+        (
+            "armor-set-02-blue-wolf-heavy",
+            "Blue Wolf Heavy Set (B-Grade Vanguard Rush)",
+            "Heavy_Vanguard_Set",
+            "B-Grade",
+            "zone-town-glaze-barge-quay",
+            "zone-dungeon-sunken-potter-hold",
+            "zone-dungeon-sunken-potter-hold",
+            "B2",
+            "+7 Movement Speed, +5.24% HP Recovery Rate, STR +3 / CON -1 / DEX -2",
+            "Foundation Chaos Piece: +3 Movement Speed & +1.8% P.Def per Rare Item",
+            "Head Blacksmith Kluck & Mammon Unseal Envoy",
+        ),
+        (
+            "armor-set-03-doom-plate-heavy",
+            "Doom Plate Heavy Set (B-Grade Tank Fortress)",
+            "Heavy_Vanguard_Set",
+            "B-Grade",
+            "zone-town-saffron-press",
+            "zone-catacomb-heretic-kiln",
+            "zone-catacomb-heretic-kiln",
+            "B2",
+            "+320 Max HP, +24% Shield Defense Rate, CON +3 / STR -3, Breath Gauge Bonus",
+            "Foundation Chaos Piece: +115 Max HP & +4% Shield Block per Rare Item",
+            "Head Blacksmith Pushkin & Blacksmith of Mammon",
+        ),
+        (
+            "armor-set-04-tallum-plate-heavy",
+            "Tallum Heavy Plate Set (A-Grade Melee DPS)",
+            "Heavy_Vanguard_Set",
+            "A-Grade",
+            "zone-town-escapement-anvil",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "2F",
+            "+8% Attack Spd, +5759 Weight Limit, -80% Poison/Bleed Chance, STR +2 / CON -2",
+            "Foundation Chaos Piece: +2.2% Attack Spd & +15% Poison/Bleed Resist per Rare Item",
+            "Head Blacksmith Tatabos & Blacksmith of Mammon",
+        ),
+        (
+            "armor-set-05-imperial-crusader-heavy",
+            "Imperial Crusader Heavy Set (S-Grade Sovereign Vanguard)",
+            "Heavy_Vanguard_Set",
+            "S-Grade",
+            "zone-town-inductor-switchyard",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "+8% P.Def, +445 Max HP, -70% Sleep/Hold Chance, DEX -2 / STR +2",
+            "Foundation Chaos Piece: +2.5% P.Def & +148 Max HP per Rare Item",
+            "Maestro Kusto & Blacksmith of Mammon",
+        ),
+        (
+            "armor-set-06-dynasty-platinum-heavy",
+            "Dynasty Platinum Plate Set (S80 Shield/Bard Masterwork)",
+            "Heavy_Vanguard_Set",
+            "S80-Dynasty",
+            "zone-town-crown-beacon",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B3",
+            "+5.4% P.Def, +492 Max HP, -8% Dark Damage Taken, Shield/Weapon Master Shoulder",
+            "Foundation Chaos Piece: +3.0% P.Def, +185 Max HP & +Dark Resist per Rare Item",
+            "Sovereign Maestro Ishuma & Shadai Legendary Blacksmith",
+        ),
+        # 5 Light_Skirmisher_Set
+        (
+            "armor-set-07-plated-leather-light",
+            "Plated Leather Light Set (C-Grade Skirmisher STR+4)",
+            "Light_Skirmisher_Set",
+            "C-Grade",
+            "zone-town-lantern-hollow",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B2",
+            "STR +4 / CON -1 (+12% Physical Attack Spike for Daggers, Bows & Tyrants)",
+            "Foundation Chaos Piece: +2.0% P.Atk & +1.5 Evasion per Rare Item",
+            "Head Blacksmith Kluto & Master Warsmith Pinter",
+        ),
+        (
+            "armor-set-08-zubei-leather-light",
+            "Zubei's Leather Light Set (B-Grade Evasion Skirmisher)",
+            "Light_Skirmisher_Set",
+            "B-Grade",
+            "zone-town-cinnamon-mill",
+            "zone-field-cinnamon-bark-viaduct",
+            "",
+            "",
+            "+4 Evasion Rating (Agile Rogue & Kamael Warder Evasion Standard)",
+            "Foundation Chaos Piece: +1.5 Evasion & +2.0% Attack Spd per Rare Item",
+            "Head Blacksmith Feynn & Furral Blade-Factor",
+        ),
+        (
+            "armor-set-09-majestic-leather-light",
+            "Majestic Leather Set (A-Grade Hawkeye & Ghost Sentinel)",
+            "Light_Skirmisher_Set",
+            "A-Grade",
+            "zone-town-pinion-terminus",
+            "zone-catacomb-branded-bellows",
+            "zone-catacomb-branded-bellows",
+            "B3",
+            "+8% Bow/Crossbow P.Atk, +240 Max MP, -50% Stun Chance, DEX +1 / CON -1",
+            "Foundation Chaos Piece: +2.4% Bow P.Atk & +12% Stun Resist per Rare Item",
+            "Head Blacksmith Rupio & Blacksmith of Mammon",
+        ),
+        (
+            "armor-set-10-draconic-leather-light",
+            "Draconic Leather Set (S-Grade Apex Archer & Assassin)",
+            "Light_Skirmisher_Set",
+            "S-Grade",
+            "zone-town-starfall-haven",
+            "zone-catacomb-dark-omens-coral",
+            "zone-catacomb-dark-omens-coral",
+            "B3",
+            "+4% Attack Spd, +4% P.Atk, +289 Max MP, +5759 Weight Limit, DEX +1 / STR +1 / CON -2",
+            "Foundation Chaos Piece: +1.8% Attack Spd, +1.8% P.Atk & +95 MP per Rare Item",
+            "Head Blacksmith Vincenz & Sky-Anvil Maestro",
+        ),
+        (
+            "armor-set-11-dynasty-jewel-leather",
+            "Dynasty Jewel Leather Set (S80 Dagger & Bow Masterwork)",
+            "Light_Skirmisher_Set",
+            "S80-Dynasty",
+            "zone-town-torque-balance-citadel",
+            "zone-field-aurora-tether",
+            "",
+            "",
+            "+5.4% Attack Spd, +5.4% Critical Damage, +492 Max HP, +2.2 Evasion, CON -2 / DEX +1 / STR +1",
+            "Foundation Chaos Piece: +2.5% Crit Damage & +2.2% Attack Spd per Rare Item",
+            "Head Blacksmith Hilda & Maestro Ishuma Envoy",
+        ),
+        # 5 Mystic_Robe_Set
+        (
+            "armor-set-12-karmian-tunic-robe",
+            "Karmian Tunic Mystic Set (C-Grade Universal Spellcaster)",
+            "Mystic_Robe_Set",
+            "C-Grade",
+            "zone-town-porcelain-loom",
+            "zone-dungeon-medallion-heart-vault",
+            "zone-dungeon-medallion-heart-vault",
+            "B2",
+            "+15% Casting Spd, +5.24% Physical Defense (P.Def)",
+            "Foundation Chaos Piece: +2.5% Casting Spd & +2.0% P.Def per Rare Item",
+            "Head Blacksmith Aios & Elven Master Artisan",
+        ),
+        (
+            "armor-set-13-avadon-robe",
+            "Avadon Robe Set (B-Grade High-Acumen Battle Caster)",
+            "Mystic_Robe_Set",
+            "B-Grade",
+            "zone-town-carillon-belfry",
+            "zone-dungeon-ceramic-resonator-crypt",
+            "zone-dungeon-ceramic-resonator-crypt",
+            "B2",
+            "+15% Casting Spd, +5.24% Physical Defense (P.Def), +294 Max HP with Shield",
+            "Foundation Chaos Piece: +2.5% Casting Spd & +2.5% P.Def per Rare Item",
+            "Head Blacksmith Karrod & Blacksmith of Mammon",
+        ),
+        (
+            "armor-set-14-dark-crystal-robe",
+            "Dark Crystal Robe Set (A-Grade Sovereign Nuker & Healer)",
+            "Mystic_Robe_Set",
+            "A-Grade",
+            "zone-town-draft-kiln-post",
+            "zone-catacomb-apostate-dynamo",
+            "zone-catacomb-apostate-dynamo",
+            "B3",
+            "+15% Casting Spd, +8% P.Def, +7 Movement Speed, -50% Spell Cancel, WIT +2 / MEN -2",
+            "Foundation Chaos Piece: +2.5% Casting Spd, +2.0% P.Def & -12% Cancel per Rare Item",
+            "Head Blacksmith Sumari & Blacksmith of Mammon",
+        ),
+        (
+            "armor-set-15-major-arcana-robe",
+            "Major Arcana Robe Set (S-Grade Archmage & Cardinal)",
+            "Mystic_Robe_Set",
+            "S-Grade",
+            "zone-town-root-train-roundhouse",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "+17% M.Atk, +7 Movement Speed, -50% Spell Cancel, +5759 Weight, WIT +1 / INT +1 / MEN -2",
+            "Foundation Chaos Piece: +3.2% M.Atk & -15% Spell Cancel per Rare Item",
+            "Iron Gate Chief Bronk & Blacksmith of Mammon",
+        ),
+        (
+            "armor-set-16-dynasty-silver-satin-robe",
+            "Dynasty Silver Satin Tunic Set (S80 Enchanter & Summoner)",
+            "Mystic_Robe_Set",
+            "S80-Dynasty",
+            "zone-town-crown-beacon",
+            "zone-field-kelp-spiral-reef",
+            "",
+            "",
+            "+15% Casting Spd, +321 Max MP, +6.6% M.Atk, -15% Dark Damage, INT -2 / MEN +2 / WIT +1",
+            "Foundation Chaos Piece: +2.8% Casting Spd, +3.0% M.Atk & +110 MP per Rare Item",
+            "Sovereign Maestro Ishuma & Mammon Masterwork Unsealer",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        asid,
+        sname,
+        wclass,
+        grade,
+        ftzid,
+        drop_zid,
+        drop_did,
+        drop_fid,
+        sbonus,
+        mwbonus,
+        unseal_npc,
+    ) in enumerate(specs, start=1):
+        t_obj = town_by_id.get(ftzid) or {}
+        bx, by = _parse_loc(str(t_obj.get("loc_coord") or "-84120:243500"))
+        forge_loc = _fmt_loc(bx + 145 + idx * 9, by + 155 + idx * 6)
+        rows.append(
+            {
+                "armor_set_id": asid,
+                "set_name": sname,
+                "armor_weight_class": wclass,
+                "grade": grade,
+                "forge_town_zone_id": ftzid,
+                "key_piece_drop_zone_id": drop_zid,
+                "key_piece_dungeon_id": drop_did,
+                "key_piece_floor_id": drop_fid,
+                "forge_loc": forge_loc,
+                "set_bonus_summary": sbonus,
+                "masterwork_foundation_bonus": mwbonus,
+                "unseal_blacksmith_npc": unseal_npc,
+            }
+        )
+    return rows
+
+
+def _build_kamaloka_pailaka_instances(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15 Town Pathfinder & Continent Instance Portals (6 Kamaloka_Abyss_Hall + 5 Pailaka_Vitality_Trial + 4 Seed_Delusion_Conduit) (D44)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones: list[dict[str, Any]] = []
+    for entries in zdir.values():
+        if isinstance(entries, list):
+            all_zones.extend(e for e in entries if isinstance(e, dict))
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if z.get("zone_id")}
+    specs = [
+        # 6 Kamaloka_Abyss_Hall
+        (
+            "instance-01-kamaloka-lantern-hollow",
+            "Kamaloka, Hall of the Abyss Lv.23 & 26 (Gludin Pathfinder)",
+            "Kamaloka_Abyss_Hall",
+            "zone-town-lantern-hollow",
+            "Captain Bathis & Pathfinder Worker (Gludin)",
+            "Lv.23–33",
+            "2–6 Player Party (20m Instance Limit)",
+            "Daily 06:30 UTC",
+            "Essence of Kanabion -> D/C-Grade Enchant Scrolls & Rim Pailaka Access",
+        ),
+        (
+            "instance-02-kamaloka-kilnwatch-bastion",
+            "Kamaloka, Hall of Nightmares Lv.33 & 36 (Dion Pathfinder)",
+            "Kamaloka_Abyss_Hall",
+            "zone-town-kilnwatch-bastion",
+            "Captain Lucas & Pathfinder Worker (Dion)",
+            "Lv.31–41",
+            "2–6 Player Party (20m Instance Limit)",
+            "Daily 06:30 UTC",
+            "Essence of Kanabion -> C-Grade Enchant Weapon/Armor Scrolls & Vitality",
+        ),
+        (
+            "instance-03-kamaloka-glaze-barge-quay",
+            "Kamaloka, Labyrinth of the Abyss Lv.43 & 49 (Heine Pathfinder)",
+            "Kamaloka_Abyss_Hall",
+            "zone-town-glaze-barge-quay",
+            "Captain Gosta & Pathfinder Worker (Heine)",
+            "Lv.40–54",
+            "2–6 Player Party (45m 4-Stage Ward Labyrinth)",
+            "Daily 06:30 UTC",
+            "C/B-Grade Enchant Scrolls, Kanabion Tissue & Stage-2 Vitality Boost",
+        ),
+        (
+            "instance-04-kamaloka-escapement-anvil",
+            "Kamaloka, Hall of the Abyss Lv.53 & 56 (Oren Pathfinder)",
+            "Kamaloka_Abyss_Hall",
+            "zone-town-escapement-anvil",
+            "Captain Mouen & Pathfinder Worker (Oren)",
+            "Lv.50–61",
+            "2–6 Player Party (20m Instance Limit)",
+            "Daily 06:30 UTC",
+            "B-Grade Enchant Weapon/Armor Scrolls & Essence of Kanabion",
+        ),
+        (
+            "instance-05-kamaloka-pinion-terminus",
+            "Kamaloka, Labyrinth of the Abyss Lv.63 & 69 (Schuttgart Pathfinder)",
+            "Kamaloka_Abyss_Hall",
+            "zone-town-pinion-terminus",
+            "Captain Vishotsky & Pathfinder Worker (Schuttgart)",
+            "Lv.60–74",
+            "2–6 Player Party (45m 4-Stage Ward Labyrinth)",
+            "Daily 06:30 UTC",
+            "A-Grade Enchant Scrolls, High-Grade Life Stones & Kanabion Essence",
+        ),
+        (
+            "instance-06-kamaloka-starfall-haven",
+            "Kamaloka, Labyrinth of the Abyss Lv.78 & 81 (Rune Pathfinder)",
+            "Kamaloka_Abyss_Hall",
+            "zone-town-starfall-haven",
+            "Captain Mathias & Pathfinder Worker (Rune)",
+            "Lv.75–85",
+            "2–9 Player Full Party (45m Apex Labyrinth)",
+            "Daily 06:30 UTC",
+            "S-Grade Enchant Scrolls, Dynasty Key Pieces & Top-Grade Life Stones",
+        ),
+        # 5 Pailaka_Vitality_Trial
+        (
+            "instance-07-pailaka-song-of-ice-and-fire",
+            "Pailaka — Song of Ice and Fire (Gludin Forgotten Temple Trial)",
+            "Pailaka_Vitality_Trial",
+            "zone-town-porcelain-loom",
+            "Inspector Adler & Temple Sinai Envoy",
+            "Lv.36–42",
+            "Solo + Upgraded Elemental Sprite Sword Spirit",
+            "One-Time Heritage Clear",
+            "100% Vitality Stage 4 Refill + Pailaka Ring & Pailaka Earring (C-Grade)",
+        ),
+        (
+            "instance-08-pailaka-devils-legacy",
+            "Pailaka — Devil's Legacy (Giran Pirate Island Lematan Trial)",
+            "Pailaka_Vitality_Trial",
+            "zone-town-inductor-switchyard",
+            "Devil's Isle Survivor & Dwarf Adventurer Tigress",
+            "Lv.61–67",
+            "Solo + Enhanced Ancient Legacy Sword & Tigress Summon",
+            "One-Time Heritage Clear",
+            "100% Vitality Stage 4 Refill + Pailaka Bracelet (+2 Talisman Slots) & 10.8M EXP",
+        ),
+        (
+            "instance-09-pailaka-injured-dragon",
+            "Pailaka — Injured Dragon (Goddard Varka/Ketra Latana Trial)",
+            "Pailaka_Vitality_Trial",
+            "zone-town-torque-balance-citadel",
+            "Ketra Orc Shaman & Fire Dragon Latana Steward",
+            "Lv.73–77",
+            "Solo + Spear of Silenos (Lv.3 Upgrade + 5 Scroll Buffs)",
+            "One-Time Heritage Clear",
+            "100% Vitality Stage 4 Refill + Pailaka Shirt (A-Grade) & 28M EXP",
+        ),
+        (
+            "instance-10-rim-pailaka-fortress-dungeon",
+            "Rim Pailaka — Fortress Detention Camp Kanabion Defense",
+            "Pailaka_Vitality_Trial",
+            "zone-fortress-shanty-kiln",
+            "Detention Camp Warden & Rim Pathfinder",
+            "Lv.60–80",
+            "4–9 Player Clan Party (Defense of 3 NPC Captains)",
+            "Every 4 Hours (Fortress Contract Required)",
+            "Knights' Epaulettes x300, Rim Kanabion Essence & Stage-4 Vitality Surge",
+        ),
+        (
+            "instance-11-rim-pailaka-castle-prison",
+            "Rim Pailaka — Sovereign Castle Prison Delusion Trial",
+            "Pailaka_Vitality_Trial",
+            "zone-fortress-cloud-halo",
+            "Castle Warden & Sovereign Pathfinder Arbiter",
+            "Lv.70–85",
+            "4–9 Player Sovereign Clan Party",
+            "Every 4 Hours (Independent Castle Contract)",
+            "Blood Oath x10, Giant's Codex: Mastery & 100% Vitality Refill",
+        ),
+        # 4 Seed_Delusion_Conduit
+        (
+            "instance-12-delusion-chamber-east-west",
+            "Chamber of Delusion — East & West Seal Conduits (Aenkinel Raid)",
+            "Seed_Delusion_Conduit",
+            "zone-town-saffron-press",
+            "Delusion Manager & Seal Guardian",
+            "Lv.80–85",
+            "2–9 Player Party (Guiding Tea Leaf Room Jumps)",
+            "Daily 06:30 UTC",
+            "Dynasty Armor/Jewelry Recipes, A/S Enchant Scrolls & Delusion Marks",
+        ),
+        (
+            "instance-13-delusion-tower-of-naia",
+            "Chamber of Delusion — Tower of Naia & Beleth Conduit",
+            "Seed_Delusion_Conduit",
+            "zone-field-cinder-apron",
+            "Dorian & Matras Dimensional Conduit",
+            "Lv.80–85",
+            "9–36 Player Command Channel (Lock-Room Progression)",
+            "Daily 06:30 UTC (48h Core Reset)",
+            "Dynasty Essence II, Ancient Tome of the Demon & Elemental Stones",
+        ),
+        (
+            "instance-14-seed-of-infinity-ecimus",
+            "Seed of Infinity — Hall of Suffering, Erosion & Ekimus Heart",
+            "Seed_Delusion_Conduit",
+            "zone-field-kelp-spiral-reef",
+            "Officer Tepios & Jaedin Aerial Conduit",
+            "Lv.75–85",
+            "9–27 Player Command Channel (5-Cycle Seed State)",
+            "Wed/Sat 06:30 UTC Instance Reset",
+            "Vesper/Icarus Weapon Pieces, Soul Crystal Stage 14–16 & Energy Star Stones",
+        ),
+        (
+            "instance-15-seed-of-destruction-tiat",
+            "Seed of Destruction — Dragon Mounted Troop & Tiat Throne",
+            "Seed_Delusion_Conduit",
+            "zone-town-crown-beacon",
+            "Sergeant Allenos & High-Halo Aerial Conduit",
+            "Lv.75–85",
+            "36–45 Player Command Channel (12h Open / Farming Phase)",
+            "Wed/Sat 06:30 UTC Instance Reset",
+            "Vesper Noble Enhancement Stones, 150+ Attribute Crystals & TiatWeapons",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        iid,
+        iname,
+        ccat,
+        zid,
+        pnpc,
+        lbracket,
+        prule,
+        rcooldown,
+        creward,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx - 180 - idx * 9, by - 135 - idx * 6)
+        rows.append(
+            {
+                "instance_id": iid,
+                "instance_name": iname,
+                "conduit_category": ccat,
+                "zone_id": zid,
+                "loc": loc,
+                "pathfinder_npc_name": pnpc,
+                "level_bracket": lbracket,
+                "party_size_rule": prule,
+                "reset_cooldown": rcooldown,
+                "completion_reward": creward,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -7180,6 +7648,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("adventurer_vitality_obelisks") or []) < 15:
         atlas["adventurer_vitality_obelisks"] = _build_adventurer_vitality_obelisks(atlas)
         actions.append("populated_15_adventurer_vitality_obelisks")
+
+    # 27. Ensure all 16 Armor Set & Masterwork Foundation Forges exist in `armor_set_masterwork_forges` (D43)
+    if len(atlas.get("armor_set_masterwork_forges") or []) < 16:
+        atlas["armor_set_masterwork_forges"] = _build_armor_set_masterwork_forges(atlas)
+        actions.append("populated_16_armor_set_masterwork_forges")
+
+    # 28. Ensure all 15 Kamaloka, Pailaka & Seed Instance Portals exist in `kamaloka_pailaka_instances` (D44)
+    if len(atlas.get("kamaloka_pailaka_instances") or []) < 15:
+        atlas["kamaloka_pailaka_instances"] = _build_kamaloka_pailaka_instances(atlas)
+        actions.append("populated_15_kamaloka_pailaka_instances")
 
     return {"actions": actions}
 
@@ -9164,15 +9642,157 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d42_ratio * 80.0, 1)
     )
 
+    # D43: Interactive 16-Set Armor Progression & Masterwork Foundation Forge Matrix (`armor_set_masterwork_forges` - 16/16 Sets = 6 Heavy_Vanguard_Set + 5 Light_Skirmisher_Set + 5 Mystic_Robe_Set)
+    expected_armor_weights = {
+        "Heavy_Vanguard_Set",
+        "Light_Skirmisher_Set",
+        "Mystic_Robe_Set",
+    }
+    expected_armor_grades = {
+        "C-Grade",
+        "B-Grade",
+        "A-Grade",
+        "S-Grade",
+        "S80-Dynasty",
+    }
+    armor_set_rows = atlas.get("armor_set_masterwork_forges") or []
+    valid_armor_sets = 0
+    heavy_set_count = 0
+    light_set_count = 0
+    robe_set_count = 0
+    seen_armor_set_ids: set[str] = set()
+    seen_armor_weights: set[str] = set()
+    seen_armor_grades: set[str] = set()
+    for ar in armor_set_rows:
+        if not isinstance(ar, dict):
+            continue
+        asid = str(ar.get("armor_set_id") or "")
+        wclass = str(ar.get("armor_weight_class") or "")
+        agrade = str(ar.get("grade") or "")
+        ftzid = str(ar.get("forge_town_zone_id") or "")
+        drop_zid = str(ar.get("key_piece_drop_zone_id") or "")
+        if (
+            asid
+            and asid not in seen_armor_set_ids
+            and ar.get("set_name")
+            and wclass in expected_armor_weights
+            and agrade in expected_armor_grades
+            and ftzid in town_zone_id_set
+            and drop_zid in zone_ids_set
+            and isinstance(ar.get("key_piece_dungeon_id"), str)
+            and isinstance(ar.get("key_piece_floor_id"), str)
+            and ":" in str(ar.get("forge_loc", ""))
+            and ar.get("set_bonus_summary")
+            and ar.get("masterwork_foundation_bonus")
+            and ar.get("unseal_blacksmith_npc")
+        ):
+            valid_armor_sets += 1
+            seen_armor_set_ids.add(asid)
+            seen_armor_weights.add(wclass)
+            seen_armor_grades.add(agrade)
+            if wclass == "Heavy_Vanguard_Set":
+                heavy_set_count += 1
+            elif wclass == "Light_Skirmisher_Set":
+                light_set_count += 1
+            elif wclass == "Mystic_Robe_Set":
+                robe_set_count += 1
+
+    has_d43_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_ARMOR_SET_MODE",
+            "setAtlasArmorSetMode",
+            "renderAtlasArmorSetBarHtml",
+            "studioArmorSetMasterworkOverlay",
+        )
+    )
+    d43_ratio = valid_armor_sets / 16.0
+    d43_full_coverage = (
+        heavy_set_count == 6
+        and light_set_count == 5
+        and robe_set_count == 5
+        and seen_armor_weights == expected_armor_weights
+        and seen_armor_grades == expected_armor_grades
+    )
+    d43_score = (
+        round(min(100.0, d43_ratio * 100.0), 1)
+        if (has_d43_ui and d43_full_coverage)
+        else round(d43_ratio * 80.0, 1)
+    )
+
+    # D44: Interactive 15-Portal Kamaloka, Pailaka & Seed Instance Conduit Matrix (`kamaloka_pailaka_instances` - 15/15 Portals = 6 Kamaloka_Abyss_Hall + 5 Pailaka_Vitality_Trial + 4 Seed_Delusion_Conduit)
+    expected_conduit_categories = {
+        "Kamaloka_Abyss_Hall",
+        "Pailaka_Vitality_Trial",
+        "Seed_Delusion_Conduit",
+    }
+    kamaloka_rows = atlas.get("kamaloka_pailaka_instances") or []
+    valid_kamaloka_portals = 0
+    kamaloka_hall_count = 0
+    pailaka_trial_count = 0
+    seed_conduit_count = 0
+    seen_kamaloka_ids: set[str] = set()
+    seen_conduit_categories: set[str] = set()
+    for kp in kamaloka_rows:
+        if not isinstance(kp, dict):
+            continue
+        iid = str(kp.get("instance_id") or "")
+        ccat = str(kp.get("conduit_category") or "")
+        zid = str(kp.get("zone_id") or "")
+        if (
+            iid
+            and iid not in seen_kamaloka_ids
+            and kp.get("instance_name")
+            and ccat in expected_conduit_categories
+            and zid in zone_ids_set
+            and ":" in str(kp.get("loc", ""))
+            and kp.get("pathfinder_npc_name")
+            and kp.get("level_bracket")
+            and kp.get("party_size_rule")
+            and kp.get("reset_cooldown")
+            and kp.get("completion_reward")
+        ):
+            valid_kamaloka_portals += 1
+            seen_kamaloka_ids.add(iid)
+            seen_conduit_categories.add(ccat)
+            if ccat == "Kamaloka_Abyss_Hall":
+                kamaloka_hall_count += 1
+            elif ccat == "Pailaka_Vitality_Trial":
+                pailaka_trial_count += 1
+            elif ccat == "Seed_Delusion_Conduit":
+                seed_conduit_count += 1
+
+    has_d44_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_KAMALOKA_MODE",
+            "setAtlasKamalokaMode",
+            "renderAtlasKamalokaBarHtml",
+            "studioKamalokaPailakaOverlay",
+        )
+    )
+    d44_ratio = valid_kamaloka_portals / 15.0
+    d44_full_coverage = (
+        kamaloka_hall_count == 6
+        and pailaka_trial_count == 5
+        and seed_conduit_count == 4
+        and seen_conduit_categories == expected_conduit_categories
+    )
+    d44_score = (
+        round(min(100.0, d44_ratio * 100.0), 1)
+        if (has_d44_ui and d44_full_coverage)
+        else round(d44_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score) / 24.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score) / 26.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score) / 26.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score) / 36.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score) / 25.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score) / 32.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score) / 26.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score) / 28.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score) / 28.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score) / 38.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score) / 27.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score) / 34.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -9219,8 +9839,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d40_score
             + d41_score
             + d42_score
+            + d43_score
+            + d44_score
         )
-        / 42.0,
+        / 44.0,
         1,
     )
 
@@ -9528,6 +10150,27 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "obelisk_tiers": sorted(seen_obelisk_tiers),
                 "ui_wired": has_d42_ui,
             },
+            "D43_armor_set_progression_and_masterwork_forges": {
+                "score": d43_score,
+                "verified": valid_armor_sets,
+                "target": 16,
+                "heavy_vanguard_sets": heavy_set_count,
+                "light_skirmisher_sets": light_set_count,
+                "mystic_robe_sets": robe_set_count,
+                "armor_weight_classes": sorted(seen_armor_weights),
+                "grades": sorted(seen_armor_grades),
+                "ui_wired": has_d43_ui,
+            },
+            "D44_kamaloka_pailaka_and_seed_instances": {
+                "score": d44_score,
+                "verified": valid_kamaloka_portals,
+                "target": 15,
+                "kamaloka_abyss_halls": kamaloka_hall_count,
+                "pailaka_vitality_trials": pailaka_trial_count,
+                "seed_delusion_conduits": seed_conduit_count,
+                "conduit_categories": sorted(seen_conduit_categories),
+                "ui_wired": has_d44_ui,
+            },
         },
     }
 
@@ -9614,6 +10257,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D40 (16 Territory/Codex)    : {dims['D40_territory_ward_and_fortress_codex_supply']['score']}/100 ({dims['D40_territory_ward_and_fortress_codex_supply']['verified']}/{dims['D40_territory_ward_and_fortress_codex_supply']['target']} ward/supply nodes)")
         print(f"  D41 (12 Epic Boss Jewelry)  : {dims['D41_epic_boss_jewelry_and_status_resist_sanctums']['score']}/100 ({dims['D41_epic_boss_jewelry_and_status_resist_sanctums']['verified']}/{dims['D41_epic_boss_jewelry_and_status_resist_sanctums']['target']} epic relics)")
         print(f"  D42 (15 Vitality Obelisks)  : {dims['D42_adventurer_guide_buff_and_vitality_obelisks']['score']}/100 ({dims['D42_adventurer_guide_buff_and_vitality_obelisks']['verified']}/{dims['D42_adventurer_guide_buff_and_vitality_obelisks']['target']} vitality obelisks)")
+        print(f"  D43 (16 Armor Set Forges)   : {dims['D43_armor_set_progression_and_masterwork_forges']['score']}/100 ({dims['D43_armor_set_progression_and_masterwork_forges']['verified']}/{dims['D43_armor_set_progression_and_masterwork_forges']['target']} armor sets)")
+        print(f"  D44 (15 Kamaloka/Pailaka)   : {dims['D44_kamaloka_pailaka_and_seed_instances']['score']}/100 ({dims['D44_kamaloka_pailaka_and_seed_instances']['verified']}/{dims['D44_kamaloka_pailaka_and_seed_instances']['target']} instance portals)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

@@ -682,6 +682,8 @@ def validate_world_governance(
                 "territoryWardSupplyNodesCount": len(t_doc.get("territory_ward_supply_nodes") or []),
                 "epicJewelrySanctumsCount": len(t_doc.get("epic_jewelry_sanctums") or []),
                 "adventurerVitalityObelisksCount": len(t_doc.get("adventurer_vitality_obelisks") or []),
+                "armorSetMasterworkForgesCount": len(t_doc.get("armor_set_masterwork_forges") or []),
+                "kamalokaPailakaInstancesCount": len(t_doc.get("kamaloka_pailaka_instances") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):

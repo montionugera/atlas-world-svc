@@ -1490,7 +1490,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 42)
+        self.assertGreaterEqual(len(audit["dimensions"]), 42)
 
         d41 = audit["dimensions"]["D41_epic_boss_jewelry_and_status_resist_sanctums"]
         self.assertEqual(d41["score"], 100.0)
@@ -1543,10 +1543,97 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas42DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 42)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 42)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 42)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 42)
         self.assertIn("42-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave20_armor_set_masterwork_forges_and_kamaloka_pailaka_instances(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["armorSetMasterworkForgesCount"], 16)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["kamalokaPailakaInstancesCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_ARMOR_SET_MODE",
+            "setAtlasArmorSetMode(",
+            "renderAtlasArmorSetBarHtml(",
+            "studioArmorSetMasterworkOverlay",
+            "ATLAS_KAMALOKA_MODE",
+            "setAtlasKamalokaMode(",
+            "renderAtlasKamalokaBarHtml(",
+            "studioKamalokaPailakaOverlay",
+            "44-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 20 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 44)
+
+        d43 = audit["dimensions"]["D43_armor_set_progression_and_masterwork_forges"]
+        self.assertEqual(d43["score"], 100.0)
+        self.assertEqual(d43["verified"], 16)
+        self.assertEqual(d43["target"], 16)
+        self.assertEqual(d43["heavy_vanguard_sets"], 6)
+        self.assertEqual(d43["light_skirmisher_sets"], 5)
+        self.assertEqual(d43["mystic_robe_sets"], 5)
+        self.assertEqual(
+            set(d43["armor_weight_classes"]),
+            {"Heavy_Vanguard_Set", "Light_Skirmisher_Set", "Mystic_Robe_Set"},
+        )
+        self.assertEqual(
+            set(d43["grades"]),
+            {"C-Grade", "B-Grade", "A-Grade", "S-Grade", "S80-Dynasty"},
+        )
+        self.assertTrue(d43["ui_wired"])
+
+        d44 = audit["dimensions"]["D44_kamaloka_pailaka_and_seed_instances"]
+        self.assertEqual(d44["score"], 100.0)
+        self.assertEqual(d44["verified"], 15)
+        self.assertEqual(d44["target"], 15)
+        self.assertEqual(d44["kamaloka_abyss_halls"], 6)
+        self.assertEqual(d44["pailaka_vitality_trials"], 5)
+        self.assertEqual(d44["seed_delusion_conduits"], 4)
+        self.assertEqual(
+            set(d44["conduit_categories"]),
+            {
+                "Kamaloka_Abyss_Hall",
+                "Pailaka_Vitality_Trial",
+                "Seed_Delusion_Conduit",
+            },
+        )
+        self.assertTrue(d44["ui_wired"])
+
+        armor_sets = atlas["armor_set_masterwork_forges"]
+        self.assertEqual(len(armor_sets), 16)
+        self.assertEqual(sum(1 for s in armor_sets if s["armor_weight_class"] == "Heavy_Vanguard_Set"), 6)
+        self.assertEqual(sum(1 for s in armor_sets if s["armor_weight_class"] == "Light_Skirmisher_Set"), 5)
+        self.assertEqual(sum(1 for s in armor_sets if s["armor_weight_class"] == "Mystic_Robe_Set"), 5)
+        for s in armor_sets:
+            self.assertTrue(s["set_bonus_summary"])
+            self.assertTrue(s["masterwork_foundation_bonus"])
+
+        instances = atlas["kamaloka_pailaka_instances"]
+        self.assertEqual(len(instances), 15)
+        self.assertEqual(sum(1 for i in instances if i["conduit_category"] == "Kamaloka_Abyss_Hall"), 6)
+        self.assertEqual(sum(1 for i in instances if i["conduit_category"] == "Pailaka_Vitality_Trial"), 5)
+        self.assertEqual(sum(1 for i in instances if i["conduit_category"] == "Seed_Delusion_Conduit"), 4)
+        for i in instances:
+            self.assertTrue(i["completion_reward"])
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas44DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 44)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 44)
+        self.assertIn("44-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":
